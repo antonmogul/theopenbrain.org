@@ -43,7 +43,7 @@ A collaboration platform displayed notification toasts in the bottom-right corne
 
 User research revealed consistent patterns: users noticed the first notification but frequently missed subsequent ones. They would respond to the first event while remaining unaware of others that occurred nearly simultaneously.
 
-The timing was problematic: 500ms after the first toast appeared, users were in peak attentional blink. The second toast's appearance fell directly in the deficit window.
+The timing was problematic: the second toast appeared while users were still processing the first. Even at 500ms intervals—within the late blink window where the effect is resolving—detection remained impaired enough that sequential notifications were frequently missed.
 
 The solution combined several approaches:
 - Batch related notifications into single, consolidated messages
