@@ -1,0 +1,509 @@
+// Open Brain Platform - Database Schema
+// Copy this into https://dbdiagram.io to visualize
+
+// ============================================
+// AUTHENTICATION & USERS
+// ============================================
+
+Table profiles {
+  id uuid [primary key]
+  email text [not null]
+  full_name text
+  role text [not null, note: 'creator|professor|student']
+  institution text
+  creator_bio text
+  creator_website text
+  professor_department text
+  student_year integer
+  student_major text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Extends Supabase auth.users'
+}
+
+// ============================================
+// CONTENT STRUCTURE
+// ============================================
+
+Table content_versions {
+  id uuid [primary key]
+  version_number text [unique, note: '1.0, 1.1, 2.0']
+  status text [note: 'draft|published|archived']
+  created_by uuid [ref: > profiles.id]
+  release_notes text
+  created_at timestamptz [default: `now()`]
+  published_at timestamptz
+}
+
+Table modules {
+  id uuid [primary key]
+  content_version_id uuid [ref: > content_versions.id]
+  title text [not null]
+  slug text [not null]
+  description text
+  order_index integer [not null]
+  animation_config jsonb
+  layout_config jsonb
+  status text [default: 'draft']
+  created_by uuid [ref: > profiles.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    (content_version_id, slug) [unique]
+    (content_version_id, order_index) [unique]
+  }
+}
+
+Table sections {
+  id uuid [primary key]
+  module_id uuid [ref: > modules.id]
+  title text [not null]
+  slug text [not null]
+  order_index integer [not null]
+  introduction_text text
+  animation_id uuid [ref: - animations.id]
+  animation_config jsonb
+  fullscreen boolean [default: false]
+  split_screen boolean [default: false]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    (module_id, slug) [unique]
+    (module_id, order_index) [unique]
+  }
+}
+
+Table paragraphs {
+  id uuid [primary key]
+  section_id uuid [ref: > sections.id]
+  content jsonb [not null, note: 'Structured content blocks']
+  content_text text [note: 'Plain text for search']
+  order_index integer [not null]
+  has_animation boolean [default: false]
+  animation_id uuid [ref: - animations.id]
+  animation_trigger text
+  is_subsection_header boolean [default: false]
+  subsection_level integer [default: 0]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    (section_id, order_index) [unique]
+    content_text [type: gin, note: 'Full-text search']
+  }
+}
+
+// ============================================
+// ANIMATIONS & DIAGRAMS
+// ============================================
+
+Table animations {
+  id uuid [primary key]
+  animation_key text [unique]
+  title text [not null]
+  description text
+  media_type text [note: 'lottie|video|image|youtube|gsap|css']
+  lottie_file_url text
+  video_file_url text
+  image_file_url text
+  youtube_id text
+  gsap_config jsonb
+  css_class_name text
+  interaction_type text [not null, note: 'auto_loop|click_states|switch|fullscreen_states|scroll_transition|scroll_linked|video_flip|static_image|youtube_embed']
+  component_name text [not null]
+  config jsonb [default: '{}']
+  file_size_bytes integer
+  scientific_domain text
+  load_priority text [default: 'high']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+Table animation_states {
+  id uuid [primary key]
+  animation_id uuid [ref: > animations.id]
+  state_label text [not null]
+  state_description text
+  order_index integer [not null]
+  is_highlight_state boolean [default: false]
+  highlight_class_name text
+  highlight_elements text[]
+  created_at timestamptz [default: `now()`]
+  
+  indexes {
+    (animation_id, state_label) [unique]
+    (animation_id, order_index) [unique]
+  }
+}
+
+Table animation_variants {
+  id uuid [primary key]
+  animation_id uuid [ref: > animations.id]
+  variant_label text [not null]
+  lottie_file_url text
+  video_file_url text
+  order_index integer [not null]
+  created_at timestamptz [default: `now()`]
+  
+  indexes {
+    (animation_id, variant_label) [unique]
+    (animation_id, order_index) [unique]
+  }
+}
+
+// ============================================
+// COURSE CURATION
+// ============================================
+
+Table courses {
+  id uuid [primary key]
+  professor_id uuid [ref: > profiles.id]
+  title text [not null]
+  description text
+  course_code text
+  semester text
+  published_url text [unique]
+  is_published boolean [default: false]
+  published_at timestamptz
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+Table course_modules {
+  id uuid [primary key]
+  course_id uuid [ref: > courses.id]
+  module_id uuid [ref: > modules.id]
+  order_index integer [not null]
+  custom_title text
+  is_required boolean [default: true]
+  created_at timestamptz [default: `now()`]
+  
+  indexes {
+    (course_id, module_id) [unique]
+    (course_id, order_index) [unique]
+  }
+}
+
+Table course_enrollments {
+  id uuid [primary key]
+  course_id uuid [ref: > courses.id]
+  student_id uuid [ref: > profiles.id]
+  enrolled_at timestamptz [default: `now()`]
+  last_accessed_at timestamptz
+  
+  indexes {
+    (course_id, student_id) [unique]
+  }
+}
+
+// ============================================
+// USER INTERACTIONS & COLLABORATION
+// ============================================
+
+Table highlights {
+  id uuid [primary key]
+  user_id uuid [ref: > profiles.id]
+  paragraph_id uuid [ref: > paragraphs.id]
+  start_offset integer [not null]
+  end_offset integer [not null]
+  selected_text text [not null]
+  color text [default: 'yellow']
+  note text
+  is_public boolean [default: false]
+  is_shared boolean [default: false]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    user_id
+    paragraph_id
+    is_public [where: 'is_public = true']
+  }
+}
+
+Table trending_highlights {
+  id uuid [primary key]
+  paragraph_id uuid [ref: > paragraphs.id]
+  selected_text text [not null]
+  start_offset integer [not null]
+  end_offset integer [not null]
+  highlight_count integer [default: 1]
+  last_highlighted_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    (paragraph_id, start_offset, end_offset) [unique]
+    highlight_count [order: desc]
+  }
+}
+
+Table notes {
+  id uuid [primary key]
+  user_id uuid [ref: > profiles.id]
+  highlight_id uuid [ref: - highlights.id]
+  content text [not null]
+  paragraph_id uuid [ref: - paragraphs.id]
+  section_id uuid [ref: - sections.id]
+  is_public boolean [default: false]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    user_id
+  }
+}
+
+// ============================================
+// QUIZZES & FLASHCARDS
+// ============================================
+
+Table quizzes {
+  id uuid [primary key]
+  module_id uuid [ref: - modules.id]
+  section_id uuid [ref: - sections.id]
+  course_id uuid [ref: - courses.id]
+  title text [not null]
+  description text
+  instructions text
+  time_limit_minutes integer
+  passing_score integer [default: 70]
+  allow_multiple_attempts boolean [default: true]
+  show_correct_answers boolean [default: true]
+  order_index integer
+  created_by uuid [ref: > profiles.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    module_id
+    section_id
+    course_id
+  }
+}
+
+Table quiz_questions {
+  id uuid [primary key]
+  quiz_id uuid [ref: > quizzes.id]
+  question_text text [not null]
+  question_type text [not null, note: 'multiple_choice|true_false|short_answer|essay']
+  options jsonb
+  correct_answer text
+  answer_keywords text[]
+  points integer [default: 1]
+  order_index integer [not null]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    (quiz_id, order_index) [unique]
+  }
+}
+
+Table quiz_attempts {
+  id uuid [primary key]
+  quiz_id uuid [ref: > quizzes.id]
+  student_id uuid [ref: > profiles.id]
+  score integer
+  total_points integer
+  earned_points integer
+  started_at timestamptz [default: `now()`]
+  completed_at timestamptz
+  time_spent_seconds integer
+  status text [default: 'in_progress', note: 'in_progress|completed|abandoned']
+  
+  indexes {
+    quiz_id
+    student_id
+    (quiz_id, student_id, started_at) [unique]
+  }
+}
+
+Table quiz_answers {
+  id uuid [primary key]
+  attempt_id uuid [ref: > quiz_attempts.id]
+  question_id uuid [ref: > quiz_questions.id]
+  answer_text text
+  selected_option_id integer
+  is_correct boolean
+  points_earned integer [default: 0]
+  created_at timestamptz [default: `now()`]
+}
+
+Table flashcards {
+  id uuid [primary key]
+  module_id uuid [ref: - modules.id]
+  section_id uuid [ref: - sections.id]
+  course_id uuid [ref: - courses.id]
+  front_text text [not null]
+  back_text text [not null]
+  front_image_url text
+  back_image_url text
+  tags text[]
+  difficulty integer [default: 1]
+  order_index integer
+  created_by uuid [ref: > profiles.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    module_id
+    section_id
+  }
+}
+
+Table flashcard_sessions {
+  id uuid [primary key]
+  student_id uuid [ref: > profiles.id]
+  card_ids uuid[] [not null]
+  study_mode text [default: 'review', note: 'review|learn|test']
+  started_at timestamptz [default: `now()`]
+  completed_at timestamptz
+}
+
+Table flashcard_responses {
+  id uuid [primary key]
+  session_id uuid [ref: > flashcard_sessions.id]
+  flashcard_id uuid [ref: > flashcards.id]
+  student_id uuid [ref: > profiles.id]
+  was_correct boolean [not null]
+  response_time_seconds integer
+  ease_factor decimal [default: 2.5]
+  interval_days integer [default: 1]
+  repetitions integer [default: 0]
+  next_review_date date
+  created_at timestamptz [default: `now()`]
+  
+  indexes {
+    student_id
+    next_review_date [where: 'next_review_date IS NOT NULL']
+  }
+}
+
+// ============================================
+// AI TUTOR & PYTHON LABS
+// ============================================
+
+Table ai_conversations {
+  id uuid [primary key]
+  user_id uuid [ref: > profiles.id]
+  module_id uuid [ref: - modules.id]
+  section_id uuid [ref: - sections.id]
+  paragraph_id uuid [ref: - paragraphs.id]
+  title text
+  is_active boolean [default: true]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    user_id
+  }
+}
+
+Table ai_messages {
+  id uuid [primary key]
+  conversation_id uuid [ref: > ai_conversations.id]
+  role text [not null, note: 'user|assistant|system']
+  content text [not null]
+  tokens_used integer
+  model_used text
+  created_at timestamptz [default: `now()`]
+  
+  indexes {
+    conversation_id
+  }
+}
+
+Table code_labs {
+  id uuid [primary key]
+  module_id uuid [ref: - modules.id]
+  section_id uuid [ref: - sections.id]
+  title text [not null]
+  description text
+  instructions text [not null]
+  starter_code text
+  solution_code text
+  test_cases jsonb
+  dataset_url text
+  dataset_config jsonb
+  allow_editing boolean [default: true]
+  show_solution boolean [default: false]
+  auto_grade boolean [default: false]
+  order_index integer
+  created_by uuid [ref: > profiles.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    module_id
+    section_id
+  }
+}
+
+Table code_submissions {
+  id uuid [primary key]
+  lab_id uuid [ref: > code_labs.id]
+  student_id uuid [ref: > profiles.id]
+  code text [not null]
+  output text
+  error_message text
+  test_results jsonb
+  passed boolean
+  score integer
+  git_repo_url text
+  git_commit_hash text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    lab_id
+    student_id
+  }
+}
+
+// ============================================
+// ANALYTICS & PROGRESS
+// ============================================
+
+Table reading_progress {
+  id uuid [primary key]
+  user_id uuid [ref: > profiles.id]
+  module_id uuid [ref: > modules.id]
+  course_id uuid [ref: - courses.id]
+  last_section_id uuid [ref: - sections.id]
+  last_paragraph_id uuid [ref: - paragraphs.id]
+  scroll_position decimal
+  time_spent_seconds integer [default: 0]
+  is_completed boolean [default: false]
+  completed_at timestamptz
+  last_accessed_at timestamptz [default: `now()`]
+  created_at timestamptz [default: `now()`]
+  
+  indexes {
+    (user_id, module_id, course_id) [unique]
+    user_id
+    module_id
+  }
+}
+
+Table analytics_events {
+  id uuid [primary key]
+  user_id uuid [ref: - profiles.id]
+  event_type text [not null]
+  event_data jsonb
+  module_id uuid [ref: - modules.id]
+  section_id uuid [ref: - sections.id]
+  course_id uuid [ref: - courses.id]
+  user_agent text
+  ip_address inet
+  created_at timestamptz [default: `now()`]
+  
+  indexes {
+    user_id
+    event_type
+    created_at
+  }
+}
+
