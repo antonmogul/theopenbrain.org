@@ -59,7 +59,7 @@ This timeline creates concrete guidelines for interface design:
 - **300-1000ms**: Perceived as processing. Requires visual acknowledgment (spinner, progress indicator).
 - **> 1000ms**: Perceived as slow. Risks attention drift and frustration.
 
-Notice that these thresholds align with the underlying neural processing times. The 100ms threshold matches the time for initial visual processing. The 300ms threshold matches the time for conscious recognition plus response initiation.
+Notice that these thresholds align with the underlying neural processing times. The 100ms threshold matches the time for initial visual processing. The 300ms threshold matches the time for conscious recognition—initial processing plus awareness—at which point users can evaluate what they're seeing. Beyond 300ms, users begin expecting visible progress as they initiate responses.
 
 ## The Constructed World
 
