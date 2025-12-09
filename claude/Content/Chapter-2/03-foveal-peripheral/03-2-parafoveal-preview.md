@@ -74,7 +74,7 @@ For interfaces where reading efficiency matters, left-aligned text is preferable
 
 Parafoveal preview principles extend beyond continuous reading to scannable content:
 
-**Front-load important words**. Because initial letters are processed parafoveally, placing key terms at the beginning of lines, headings, and list items supports efficient scanning. "Settings for privacy" is more scannable than "Privacy settings" because "Settings" in the parafovea is more distinctive than "Privacy."
+**Front-load important words**. Because initial letters are processed parafoveally, placing key terms at the beginning of lines, headings, and list items supports efficient scanning. "Privacy settings" is more scannable than "Settings for privacy" because users scanning a settings menu are looking for "Privacy"—the distinctive term that differentiates this item from others.
 
 **Use parallel structure**. Lists where each item begins differently support parafoveal differentiation. Lists where items begin identically force foveal reading to distinguish them.
 
