@@ -1,5 +1,16 @@
 import { ref, computed } from "vue";
-import { supabase } from "@/lib/supabase";
+import {
+  getSessionFromStorage,
+  fetchProfileREST,
+  signInREST,
+  signUpREST,
+  signOutREST,
+  resetPasswordREST,
+  updatePasswordREST,
+  listenToStorageChanges,
+  saveSessionToStorage,
+  clearSessionFromStorage,
+} from "@/utils/authHelpers";
 
 const user = ref(null);
 const session = ref(null);
@@ -7,57 +18,64 @@ const profile = ref(null);
 const loading = ref(true);
 const profileLoading = ref(false);
 
-// Fetch user profile from profiles table
-const fetchUserProfile = async (userId) => {
-  if (!userId) {
+// Fetch user profile using REST API
+const fetchUserProfile = async (userId, accessToken) => {
+  if (!userId || !accessToken) {
     profile.value = null;
     return;
   }
 
   profileLoading.value = true;
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (error) {
-      console.error("Error fetching profile:", error);
-      profile.value = null;
-    } else {
-      profile.value = data;
-    }
+    const profileData = await fetchProfileREST(userId, accessToken);
+    profile.value = profileData;
   } catch (err) {
-    console.error("Profile fetch error:", err);
+    console.error("useAuth: Profile fetch error:", err);
     profile.value = null;
   } finally {
     profileLoading.value = false;
   }
 };
 
-// Initialize auth state
-supabase.auth.getSession().then(async ({ data }) => {
-  session.value = data.session;
-  user.value = data.session?.user ?? null;
-  if (data.session?.user) {
-    await fetchUserProfile(data.session.user.id);
-  }
-  loading.value = false;
-});
+// Initialize auth state from localStorage
+function initializeAuth() {
+  console.log("useAuth: Initializing auth state...");
 
-// Listen for auth changes
-supabase.auth.onAuthStateChange(async (_event, newSession) => {
-  session.value = newSession;
-  user.value = newSession?.user ?? null;
+  const storedSession = getSessionFromStorage();
 
-  if (newSession?.user) {
-    await fetchUserProfile(newSession.user.id);
+  if (storedSession) {
+    console.log("useAuth: Found session for:", storedSession.user?.email);
+    session.value = storedSession;
+    user.value = storedSession.user ?? null;
+
+    if (storedSession.user?.id && storedSession.access_token) {
+      fetchUserProfile(storedSession.user.id, storedSession.access_token);
+    }
   } else {
-    profile.value = null;
+    console.log("useAuth: No session found");
   }
+
   loading.value = false;
-});
+
+  // Listen for storage changes (sign in/out in other tabs)
+  listenToStorageChanges((newSession) => {
+    console.log(
+      "useAuth: Storage changed, new session:",
+      newSession?.user?.email || "none",
+    );
+    session.value = newSession;
+    user.value = newSession?.user ?? null;
+
+    if (newSession?.user) {
+      fetchUserProfile(newSession.user.id, newSession.access_token);
+    } else {
+      profile.value = null;
+    }
+  });
+}
+
+// Initialize on module load
+initializeAuth();
 
 export function useAuth() {
   const isAuthenticated = computed(() => !!user.value);
@@ -74,45 +92,64 @@ export function useAuth() {
 
   // Refresh the user's profile (useful after profile updates)
   const refreshProfile = async () => {
-    if (user.value?.id) {
-      await fetchUserProfile(user.value.id);
+    if (user.value?.id && session.value?.access_token) {
+      await fetchUserProfile(user.value.id, session.value.access_token);
     }
   };
 
   const signUp = async (email, password, metadata = {}) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata, // Additional user metadata
-      },
-    });
-    return { data, error };
+    const result = await signUpREST(email, password, metadata);
+
+    if (result.data?.session) {
+      session.value = result.data.session;
+      user.value = result.data.user;
+
+      if (result.data.user?.id && result.data.session?.access_token) {
+        await fetchUserProfile(
+          result.data.user.id,
+          result.data.session.access_token,
+        );
+      }
+    }
+
+    return result;
   };
 
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { data, error };
+    const result = await signInREST(email, password);
+
+    if (result.data?.session) {
+      session.value = result.data.session;
+      user.value = result.data.user;
+
+      if (result.data.user?.id && result.data.session?.access_token) {
+        await fetchUserProfile(
+          result.data.user.id,
+          result.data.session.access_token,
+        );
+      }
+    }
+
+    return result;
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    const result = await signOutREST();
+
+    // Clear local state
+    session.value = null;
+    user.value = null;
+    profile.value = null;
+
+    return result;
   };
 
   const resetPassword = async (email) => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-    return { data, error };
+    return await resetPasswordREST(email);
   };
 
   const updatePassword = async (newPassword) => {
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-    return { data, error };
+    return await updatePasswordREST(newPassword);
   };
 
   return {

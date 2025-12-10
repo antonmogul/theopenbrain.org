@@ -49,8 +49,17 @@ const closeAuth = () => {
 };
 
 const goToDashboard = () => {
+    console.log("goToDashboard clicked");
     authStore.closeAuth();
-    router.push("/dashboard");
+    console.log("Auth closed, navigating to /dashboard");
+    router
+        .push("/dashboard")
+        .then(() => {
+            console.log("Navigation complete");
+        })
+        .catch((err) => {
+            console.error("Navigation error:", err);
+        });
 };
 
 const handleRegister = async () => {
