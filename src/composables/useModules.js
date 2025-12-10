@@ -6,7 +6,7 @@ export function useModules() {
   const loading = ref(false)
   const error = ref(null)
 
-  const fetchModules = async (versionId = null, status = 'published') => {
+  const fetchModules = async (versionId = null, status = null) => {
     loading.value = true
     error.value = null
 
@@ -21,8 +21,11 @@ export function useModules() {
             paragraphs (*)
           )
         `)
-        .eq('status', status)
         .order('order_index', { ascending: true })
+
+      if (status) {
+        query = query.eq('status', status)
+      }
 
       if (versionId) {
         query = query.eq('content_version_id', versionId)
@@ -33,7 +36,7 @@ export function useModules() {
       if (fetchError) throw fetchError
 
       modules.value = data || []
-      return { data, error: null }
+      return { data: modules.value, error: null }
     } catch (err) {
       error.value = err.message
       return { data: null, error: err }
