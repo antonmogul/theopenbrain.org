@@ -1,7 +1,7 @@
 <script setup>
-import { useGeneral } from "@/stores";
+import { useGeneral, useText } from "@/stores";
 import lottie from "lottie-web";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { watchDebounced, useMouse } from "@vueuse/core";
 
 import DownArrow from "@/icons/custom/DownArrow.vue";
@@ -9,7 +9,13 @@ import DownArrow from "@/icons/custom/DownArrow.vue";
 const { x } = useMouse();
 
 const store = useGeneral();
+const textStore = useText();
 const animation = ref();
+
+// Get chapter title from store
+const chapterTitle = computed(() => {
+  return textStore.text?.intro?.[0]?.title || 'The Open Brain';
+});
 
 watchDebounced(
   x,
@@ -46,7 +52,7 @@ const scrollToPos = () => {
       class="absolute top-0 left-0 w-screen h-screen text-white text-center flex justify-center items-center pb-8"
     >
       <div class="flex justify-center items-center flex-col w-2/3">
-        <div class="text-biggest font-text">The Retina</div>
+        <div class="text-biggest font-text">{{ chapterTitle }}</div>
         <!-- <div class="text-4xl">The Open Brain</div> -->
       </div>
     </div>

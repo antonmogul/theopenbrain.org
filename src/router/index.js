@@ -8,11 +8,11 @@ const routes = [
     name: "home",
     component: HomeView,
     redirect: () => {
-      return { path: "/chapter" };
+      return { path: "/chapter/1/the-retina" };
     },
   },
   {
-    path: "/chapter/:chapter?",
+    path: "/chapter/:number/:slug",
     name: "chapter",
     component: () => import("../views/ChapterView.vue"),
   },

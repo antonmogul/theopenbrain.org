@@ -1,5 +1,6 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref } from "vue";
+import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { toSlug, addH, removeH } from "@/helper/general";
@@ -33,17 +34,34 @@ const noise = new Perlin(seed);
 
 gsap.registerPlugin(ScrollTrigger);
 
+const route = useRoute();
 const store = useGeneral();
 
 const textStore = useText();
-const text = ref(textStore.text);
 
 const triggers = ref(null);
 
+// Check if this is Chapter 1 (for conditional rendering of Chapter 1-specific elements)
+const isChapter1 = computed(() => route.params.number === '1');
+
+// Use computed property for reactivity - this will update when store changes
 const source = computed(() => {
-  let _textStore = textStore.text;
-  return _textStore;
+  return textStore.text;
 });
+
+// Watch for store changes for debugging
+watch(() => textStore.text, (newText) => {
+  console.log('TextComp: Store text changed:', newText?.intro?.[0]?.title);
+  console.log('TextComp: Number of sections:', newText?.sections?.length || 0);
+  if (newText?.sections) {
+    console.log('TextComp: Section titles:', newText.sections.map(s => s.title));
+  }
+}, { deep: true });
+
+watch(source, (newSource) => {
+  console.log('TextComp: Source computed changed:', newSource?.intro?.[0]?.title);
+  console.log('TextComp: Number of sections in source:', newSource?.sections?.length || 0);
+}, { deep: true });
 const posAugeX = ref(0);
 const posAugeY = ref(0);
 let intervalRandom;
@@ -132,11 +150,11 @@ onBeforeUnmount(() => {
     <div id="scroller" class="pointer-events-none w-full">
       <main
         id="text"
-        class="text pointer-events-auto w-full text-left pt-[20vh] ml-text max-w-text z-30 border-l bg-white border-black tracking-wide pl-20 pr-24 duration-300"
+        class="text pointer-events-auto w-full text-left pt-[20vh] ml-text max-w-text z-30 border-l bg-white border-black tracking-wide pl-20 pr-24 duration-300 text-black"
       >
         <!-- intro -->
         <section
-          v-for="section in text['intro']"
+          v-for="section in source['intro']"
           :key="section.id"
           :id="section.id"
           class="overflow-y-visible max-w-[780px]"
@@ -161,13 +179,14 @@ onBeforeUnmount(() => {
             />
           </div>
           <h1
-            :id="'the-eye-and-retina-intro'"
+            :id="isChapter1 ? 'the-eye-and-retina-intro' : section.id"
             :class="store.imgActive ? 'opacity-0' : ''"
             class="z-40 text-black opacity-100 capitalize"
           >
             {{ section.title }}
           </h1>
-          <span class="font-mono text-small">
+          <!-- Author information - only show for Chapter 1 -->
+          <span v-if="isChapter1" class="font-mono text-small">
             <p class="font-semibold">Arjun Krishnaswamy</p>
             <p class="pb-5">
               Department of Physiology, McGill University, Montreal, Canada
@@ -178,8 +197,10 @@ onBeforeUnmount(() => {
               Canada
             </p>
           </span>
-          <br />
+          <br v-if="isChapter1" />
+          <!-- Intro paragraphs -->
           <span
+            v-if="isChapter1"
             id="triggerAnimationDragon"
             class="animationTrigger block noHighlight"
           >
@@ -191,12 +212,22 @@ onBeforeUnmount(() => {
               v-html="paragraph.text"
             />
           </span>
+          <span
+            v-else
+            class="block noHighlight"
+          >
+            <template v-for="paragraph in section.paragraphs" :key="paragraph.id">
+              <!-- If paragraph contains a heading, render it without wrapping in <p> -->
+              <div v-if="paragraph.hasHeading" :id="paragraph.id" v-html="paragraph.text" />
+              <p v-else :id="paragraph.id" class="P text-black" v-html="paragraph.text" />
+            </template>
+          </span>
         </section>
         <!-- text -->
         <div
-          v-for="(section, index) in text['sections']"
+          v-for="(section, index) in source['sections']"
           :id="toSlug(section.title)"
-          :key="toSlug(section.title)"
+          :key="section.id || toSlug(section.title)"
           ref="triggers"
           class="trigger max-w-[780px]"
         >

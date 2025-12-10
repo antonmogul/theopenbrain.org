@@ -10,6 +10,7 @@ export const useGeneral = defineStore("main", {
   state: () => ({
     activeMenu: false,
     activeAbout: false,
+    showChaptersMenu: false,
     hasBeenVisited:
       localStorage.hasBeenVisited &&
       Math.abs(localStorage?.hasBeenVisited - Date.now()) /
@@ -109,12 +110,20 @@ export const useText = defineStore("text", {
       this.router.go();
     },
     updateText(part, textNew) {
+      console.log('Store: updateText called:', part, textNew?.intro?.[0]?.title);
       if (part != "*") {
         this.text[part] = textNew;
         let _newLoaclText = JSON.stringify(this.text);
         localStorage.setItem("sections", _newLoaclText);
       } else {
-        this.text = textNew;
+        console.log('Store: Replacing all text. Old:', this.text?.intro?.[0]?.title, 'New:', textNew?.intro?.[0]?.title);
+        // Use $patch to ensure proper reactivity in Pinia
+        this.$patch((state) => {
+          state.text = textNew;
+        });
+        // Also update localStorage when replacing all text (switching chapters)
+        localStorage.setItem("sections", JSON.stringify(textNew));
+        console.log('Store: Store updated. Current text:', this.text?.intro?.[0]?.title);
       }
     },
     removeSelection(target) {

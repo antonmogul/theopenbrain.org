@@ -42,7 +42,7 @@ const toStart = () => {
         <template v-for="(chapter, index) in menu" :key="chapter">
           <RouterLink
             @click="toStart()"
-            to="/chapter"
+            to="/chapter/1/the-retina"
             v-if="index === 'Part2'"
             class="w-full py-6 text-l cursor-pointer list-item hover:blur-xs"
           >
