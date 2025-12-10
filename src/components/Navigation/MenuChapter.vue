@@ -1,11 +1,127 @@
 <script setup>
 import menu from "@/assets/json_backend/menu.json";
 import InteractionButton from "@/components/UI/InteractionButton.vue";
-import { useRoute } from "vue-router";
-import { useGeneral } from "@/stores";
+import { useRoute, useRouter } from "vue-router";
+import { useGeneral, useText } from "@/stores";
 import { toSlug } from "@/helper/general.js";
+import { computed, onMounted, ref } from "vue";
+import { useModules } from "@/composables/useModules";
+
 const store = useGeneral();
+const textStore = useText();
 const route = useRoute();
+const router = useRouter();
+const { fetchModules } = useModules();
+
+const chapterNumber = computed(() => route.params.number);
+const chapterSlug = computed(() => route.params.slug);
+
+// Fetch all modules for navigation
+const allModules = ref([]);
+const loadingModules = ref(false);
+
+onMounted(async () => {
+  loadingModules.value = true;
+  // Fetch all modules (both draft and published) for navigation
+  const { data } = await fetchModules(null, null);
+  if (data) {
+    allModules.value = data.sort((a, b) => a.order_index - b.order_index);
+  }
+  loadingModules.value = false;
+});
+
+// Get current chapter info
+const currentChapter = computed(() => {
+  if (chapterNumber.value === '1') {
+    return { number: 1, title: 'The Retina', slug: 'the-retina' };
+  }
+  
+  // Try to get from modules first
+  const module = allModules.value.find(m => m.slug === chapterSlug.value);
+  if (module) {
+    return { 
+      number: module.order_index, 
+      title: module.title, 
+      slug: module.slug 
+    };
+  }
+  
+  // Fallback to textStore if modules haven't loaded yet
+  const introTitle = textStore.text?.intro?.[0]?.title;
+  if (introTitle) {
+    return { 
+      number: parseInt(chapterNumber.value) || 2, 
+      title: introTitle, 
+      slug: chapterSlug.value || 'unknown' 
+    };
+  }
+  
+  return null;
+});
+
+// Get previous and next chapters
+const previousChapter = computed(() => {
+  if (!currentChapter.value) return null;
+  const currentIndex = currentChapter.value.number;
+  if (currentIndex === 1) return null;
+  
+  if (currentIndex === 2) {
+    return { number: 1, title: 'The Retina', slug: 'the-retina', path: '/chapter/1/the-retina' };
+  }
+  
+  const prevModule = allModules.value.find(m => m.order_index === currentIndex - 1);
+  if (prevModule) {
+    return { 
+      number: prevModule.order_index, 
+      title: prevModule.title, 
+      slug: prevModule.slug,
+      path: `/chapter/${prevModule.order_index}/${prevModule.slug}`
+    };
+  }
+  return null;
+});
+
+const nextChapter = computed(() => {
+  if (!currentChapter.value) return null;
+  const currentIndex = currentChapter.value.number;
+  
+  if (currentIndex === 1) {
+    const nextModule = allModules.value[0];
+    if (nextModule) {
+      return { 
+        number: nextModule.order_index, 
+        title: nextModule.title, 
+        slug: nextModule.slug,
+        path: `/chapter/${nextModule.order_index}/${nextModule.slug}`
+      };
+    }
+  } else {
+    const nextModule = allModules.value.find(m => m.order_index === currentIndex + 1);
+    if (nextModule) {
+      return { 
+        number: nextModule.order_index, 
+        title: nextModule.title, 
+        slug: nextModule.slug,
+        path: `/chapter/${nextModule.order_index}/${nextModule.slug}`
+      };
+    }
+  }
+  return null;
+});
+
+// Get sections for current chapter
+const currentChapterSections = computed(() => {
+  if (chapterNumber.value === '1') {
+    // Chapter 1 from JSON menu
+    return menu.Part2?.parts || [];
+  }
+  // Chapter 2+ from store
+  const sections = textStore.text?.sections || [];
+  return sections.map((section, index) => ({
+    title: section.title,
+    id: section.id
+  }));
+});
 
 const toStart = () => {
   store.startIsActive = true;
@@ -45,43 +161,61 @@ const closeMenu = () => {
         : 'w-0 ',
     ]"
   >
+    <!-- Chapters menu toggle -->
+    <Transition name="menuTo">
+      <div
+        v-if="route.name && store.activeMenu && !store.showChaptersMenu"
+        class="px-24 pt-12 pb-6 border-b border-light/70"
+      >
+        <button
+          @click="store.showChaptersMenu = true"
+          class="hover:text-violet text-baseMono transition-colors cursor-pointer"
+        >
+          ← Chapters
+        </button>
+      </div>
+    </Transition>
+
     <!-- chapter structur -->
     <Transition name="menuTo">
       <ul
-        v-if="route.name && store.activeMenu"
+        v-if="route.name && store.activeMenu && !store.showChaptersMenu"
         class="mb-52 duration-300 shrink-1 pb-24 h-full overflow-scroll"
       >
-        <template v-for="(chapter, index) in menu">
-          <li
-            :key="chapter"
-            v-if="index === 'Part2'"
-            class="w-[50vw] shrink-0 cursor-pointer"
-          >
-            <ol class="w-full list-decimal py-12 overflow-hidden duration-300">
+        <li class="w-[50vw] shrink-0 cursor-pointer">
+          <ol class="w-full list-decimal py-12 overflow-hidden duration-300">
               <div class="pb-6 pr-24">
                 <h3 class="-translate-x-0" @click="toStart()">
-                  <span class="pl-20 pr-12">3</span>
-                  <RouterLink to="/chapter/">
-                    {{ menu[index].title }}
+                  <span class="pl-20 pr-12">{{ currentChapter?.number || chapterNumber || '2' }}</span>
+                  <RouterLink 
+                    :to="chapterNumber === '1' ? '/chapter/1/the-retina' : (currentChapter?.slug ? `/chapter/${currentChapter.number}/${currentChapter.slug}` : '#')"
+                  >
+                    {{ currentChapter?.title || textStore.text?.intro?.[0]?.title || 'Chapter ' + (chapterNumber || '2') }}
                   </RouterLink>
                 </h3>
               </div>
+            
+            <!-- Intro section -->
+            <div
+              class="py-4 pl-36 pr-12 border-t border-light/70 font-medium"
+            >
               <div
-                class="py-4 pl-36 pr-12 border-t border-light/70 font-medium"
+                class="flex pl-8 border-light/70 hover:text-violet"
+                @click="scrollToMenu(chapterNumber === '1' ? 'the-eye-and-retina-intro' : (textStore.text?.intro?.[0]?.id || 'intro')), closeMenu()"
+                :class="
+                  'Footnotes' === store.currentSubChapter
+                    ? 'text-white pointer-events-none bg-violet'
+                    : ''
+                "
               >
-                <div
-                  class="flex pl-8 border-light/70 hover:text-violet"
-                  @click="scrollToMenu('the-eye-and-retina-intro'), closeMenu()"
-                  :class="
-                    'Footnotes' === store.currentSubChapter
-                      ? 'text-white pointer-events-none bg-violet'
-                      : ''
-                  "
-                >
-                  <div class="w-full max-w-[850px]">Intro</div>
-                </div>
+                <div class="w-full max-w-[850px]">Intro</div>
               </div>
-              <template v-for="part in chapter.parts" :key="part.title">
+            </div>
+            
+            <!-- Sections -->
+            <template v-if="chapterNumber === '1'">
+              <!-- Chapter 1 from JSON menu -->
+              <template v-for="part in menu.Part2?.parts" :key="part.title">
                 <div
                   class="flex py-4 pl-36 pr-12 border-t border-light/70 hover:text-violet"
                   @click="scrollToMenu(toSlug(part.title)), closeMenu()"
@@ -95,7 +229,7 @@ const closeMenu = () => {
                     {{ part.title }}
                   </li>
                 </div>
-                <ol>
+                <ol v-if="part.parts">
                   <div
                     class="block pl-44 pb-3 pt-3 hover:text-violet"
                     @click="scrollToMenu(toSlug(subPart)), closeMenu()"
@@ -106,20 +240,40 @@ const closeMenu = () => {
                   </div>
                 </ol>
               </template>
-              <div
-                class="flex py-4 pl-36 pr-12 border-t border-light/70 hover:text-violet"
-                @click="scrollToMenu('footnotes'), closeMenu()"
-                :class="
-                  'Footnotes' === store.currentSubChapter
-                    ? 'text-white pointer-events-none bg-violet'
-                    : ''
-                "
-              >
-                <li class="w-full max-w-[850px] pl-8 font-medium">Footnotes</li>
-              </div>
-            </ol>
-          </li>
-        </template>
+            </template>
+            <template v-else>
+              <!-- Chapter 2+ from store -->
+              <template v-for="section in textStore.text?.sections || []" :key="section.id">
+                <div
+                  class="flex py-4 pl-36 pr-12 border-t border-light/70 hover:text-violet"
+                  @click="scrollToMenu(toSlug(section.title)), closeMenu()"
+                  :class="
+                    toSlug(section.title) === store.currentSubChapter
+                      ? 'text-white pointer-events-none bg-violet'
+                      : ''
+                  "
+                >
+                  <li class="w-full max-w-[850px] pl-8 font-medium">
+                    {{ section.title }}
+                  </li>
+                </div>
+              </template>
+            </template>
+            
+            <!-- Footnotes -->
+            <div
+              class="flex py-4 pl-36 pr-12 border-t border-light/70 hover:text-violet"
+              @click="scrollToMenu('footnotes'), closeMenu()"
+              :class="
+                'Footnotes' === store.currentSubChapter
+                  ? 'text-white pointer-events-none bg-violet'
+                  : ''
+              "
+            >
+              <li class="w-full max-w-[850px] pl-8 font-medium">Footnotes</li>
+            </div>
+          </ol>
+        </li>
       </ul>
     </Transition>
     <InteractionButton
