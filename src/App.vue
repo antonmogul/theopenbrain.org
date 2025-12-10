@@ -1,6 +1,7 @@
 <script setup>
 import { RouterView, useRoute } from "vue-router";
 import MenuChapter from "./components/Navigation/MenuChapter.vue";
+import MenuChapters from "./components/Navigation/MenuChapters.vue";
 import MediaQueryWarning from "./components/UI/MediaQueryWarning.vue";
 import MenuHome from "./components/Navigation/MenuHome.vue";
 import MenuAbout from "./components/Navigation/MenuAbout.vue";
@@ -68,6 +69,7 @@ onBeforeUnmount(() => {
       </transition>
     </RouterView>
     <MenuChapter />
+    <MenuChapters />
     <MenuHome />
     <MenuAbout v-if="route.name === 'chapter'" />
   </div>

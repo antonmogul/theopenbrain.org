@@ -21,7 +21,8 @@
     "test:unit": "cypress open --component",
     "test:unit:ci": "cypress run --component --quiet --reporter spec",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
-    "deploy": "bash ./deploy.sh"
+    "deploy": "bash ./deploy.sh",
+    "import:chapter2": "node scripts/import-chapter-2-to-supabase.mjs"
   },
   "dependencies": {
     "@formkit/auto-animate": "^1.0.0-beta.3",
