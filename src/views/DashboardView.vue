@@ -88,12 +88,20 @@ const roleDescription = computed(() => {
                         {{ profile?.email || user?.email }}
                     </p>
                 </div>
-                <button
-                    @click="handleLogout"
-                    class="uppercase bg-transparent border border-light text-light font-mono px-6 py-2 rounded-full hover:bg-white hover:text-black hover:border-white transition-colors"
-                >
-                    Log Out
-                </button>
+                <div class="flex gap-4">
+                    <button
+                        @click="router.push('/chapter/1/the-retina')"
+                        class="uppercase bg-violet text-white border border-violet font-mono px-6 py-2 rounded-full hover:bg-white hover:text-black hover:border-white transition-colors"
+                    >
+                        Back to Book
+                    </button>
+                    <button
+                        @click="handleLogout"
+                        class="uppercase bg-transparent border border-light text-light font-mono px-6 py-2 rounded-full hover:bg-white hover:text-black hover:border-white transition-colors"
+                    >
+                        Log Out
+                    </button>
+                </div>
             </header>
 
             <!-- Role Badge -->

@@ -1,82 +1,158 @@
 <template>
-  <main class="fixed top-0 left-0 w-screen h-screen">
-    <div
-      class="fixed top-0 left-0 w-full h-full flex justify-center items-center"
+    <main
+        class="fixed top-0 left-0 w-screen h-screen bg-darker overflow-hidden"
     >
-      <div
-        v-show="!store.activeMenu"
-        class="fixed h-full w-full flex justify-center items-center text-bigest font-semibold"
-      >
-        <div class="color uppercase text-center duration-300">
-          The <br />
-          Open<br />
-          Brain
-        </div>
         <div
-          class="text-white hover:text-violet text-center text-xl mt-12 fixed bottom-12 cursor-pointer"
+            class="h-full w-full flex flex-col justify-center items-center px-8"
         >
-          <!-- <BiArrowRightCircleFill @click="enter()" /> -->
+            <!-- Logo/Title -->
+            <div class="text-center mb-12">
+                <h1
+                    class="text-6xl font-semibold text-violet uppercase tracking-wider mb-4"
+                >
+                    The<br />Open<br />Brain
+                </h1>
+                <p class="text-light text-xl max-w-md mx-auto">
+                    An interactive journey through the visual system
+                </p>
+            </div>
+
+            <!-- Chapter Selection -->
+            <div class="flex flex-col gap-4 w-full max-w-md">
+                <h2
+                    class="text-white text-lg font-mono uppercase tracking-wide mb-2"
+                >
+                    Chapters
+                </h2>
+
+                <!-- Chapter 1 -->
+                <router-link to="/chapter/1/the-retina" class="chapter-card">
+                    <span class="chapter-number">01</span>
+                    <div>
+                        <h3 class="text-xl font-semibold">The Retina</h3>
+                        <p class="text-light text-sm">
+                            Introduction to retinal structure and function
+                        </p>
+                    </div>
+                </router-link>
+
+                <!-- Chapter 2 -->
+                <router-link
+                    to="/chapter/2/visual-perception-ux"
+                    class="chapter-card"
+                >
+                    <span class="chapter-number">02</span>
+                    <div>
+                        <h3 class="text-xl font-semibold">
+                            Visual Perception & UX
+                        </h3>
+                        <p class="text-light text-sm">
+                            How we process visual information
+                        </p>
+                    </div>
+                </router-link>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="mt-12 flex gap-6">
+                <router-link
+                    v-if="isAuthenticated"
+                    to="/dashboard"
+                    class="quick-link"
+                >
+                    Dashboard
+                </router-link>
+                <button v-else @click="openAuth" class="quick-link">
+                    Sign In
+                </button>
+                <router-link to="/quiz" class="quick-link"> Quiz </router-link>
+            </div>
+
+            <!-- User Status -->
+            <div v-if="isAuthenticated" class="mt-8 text-center">
+                <p class="text-light text-sm">
+                    Signed in as
+                    <span class="text-violet">{{ user?.email }}</span>
+                    <span
+                        v-if="userRole"
+                        class="ml-2 px-2 py-1 rounded-full text-xs font-mono uppercase"
+                        :class="{
+                            'bg-violet/20 text-violet': userRole === 'creator',
+                            'bg-blue-500/20 text-blue-400':
+                                userRole === 'professor',
+                            'bg-green-500/20 text-green-400':
+                                userRole === 'student',
+                        }"
+                    >
+                        {{ userRole }}
+                    </span>
+                </p>
+            </div>
         </div>
-      </div>
-      <!-- <div
-        :class="store.activeMenu ? 'w-[65vw]' : 'w-full'"
-        class="video-background w-full absolute mix-blend-overlay pointer-events-none duration-300 right-0"
-      >
-        <iframe
-          class="pointer-event-none"
-          src="https://player.vimeo.com/video/594238871?background=1&controls=0"
-          frameborder="0"
-          allow="autoplay; fullscreen"
-          allowfullscreen
-        />
-      </div> -->
-    </div>
-  </main>
+    </main>
 </template>
 
 <script setup>
 import { useGeneral } from "@/stores/index";
+import { useAuthStore } from "@/stores/auth";
+import { useAuth } from "@/composables/useAuth";
 
 const store = useGeneral();
+const authStore = useAuthStore();
+const { isAuthenticated, user, userRole } = useAuth();
 
-const enter = () => {
-  store.isNextBack = false;
-  store.activeMenu = !store.activeMenu;
+const openAuth = () => {
+    store.activeMenu = false;
+    store.activeAbout = false;
+    authStore.openAuth();
 };
 </script>
 
 <style scoped>
-.video-background {
-  overflow: hidden;
-  height: 100vh;
-  background-image: url("/publicAssets/images/1287468234rqwifhucsaud.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+.chapter-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s;
 }
 
-.video-background iframe {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  height: 100vh;
-  transform: translate(-50%, -50%);
-}
-.color {
-  color: #9747ff;
+.chapter-card:hover {
+    background: rgba(151, 71, 255, 0.1);
+    border-color: rgba(151, 71, 255, 0.5);
+    transform: translateX(4px);
 }
 
-@media (min-aspect-ratio: 16/9) {
-  .video-background iframe {
-    /* height = 100 * (9 / 16) = 56.25 */
-    height: 56.25vw;
-    width: 100vw;
-  }
+.chapter-number {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(151, 71, 255);
+    min-width: 3rem;
 }
-@media (max-aspect-ratio: 16/9) {
-  .video-background iframe {
-    /* width = 100 / (9 / 16) = 177.777777 */
-    width: 177.78vh;
-  }
+
+.quick-link {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    transition: all 0.3s;
+    background: transparent;
+    cursor: pointer;
+}
+
+.quick-link:hover {
+    color: white;
+    border-color: rgb(151, 71, 255);
+    background: rgba(151, 71, 255, 0.1);
 }
 </style>

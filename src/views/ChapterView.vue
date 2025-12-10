@@ -74,7 +74,7 @@ async function loadChapter() {
         chapterDataLoaded.value = true;
     } else {
         // Chapter 2+: Load from Supabase
-        if (chapterSlug) {
+        if (currentSlug) {
             // Clear Chapter 1 data from localStorage when loading Chapter 2+
             const storedData = localStorage.getItem("sections")
                 ? JSON.parse(localStorage.getItem("sections"))
@@ -100,7 +100,7 @@ async function loadChapter() {
             storeText.text = null;
             await nextTick();
 
-            const { data, error: fetchError } = await fetchChapter(chapterSlug);
+            const { data, error: fetchError } = await fetchChapter(currentSlug);
             console.log("ChapterView: Fetched data:", data?.intro?.[0]?.title);
 
             if (data) {

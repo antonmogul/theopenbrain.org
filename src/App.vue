@@ -81,6 +81,7 @@ onBeforeUnmount(() => {
         <MenuAbout v-if="route.name === 'chapter'" />
         <MenuAuth
             v-if="
+                route.name === 'home' ||
                 route.name === 'chapter' ||
                 route.name === 'dashboard' ||
                 route.name === 'editor'

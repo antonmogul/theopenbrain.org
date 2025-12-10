@@ -8,9 +8,10 @@ const routes = [
     path: "/",
     name: "home",
     component: HomeView,
-    redirect: () => {
-      return { path: "/chapter/1/the-retina" };
-    },
+    // TODO: Re-enable redirect when ready for production
+    // redirect: () => {
+    //   return { path: "/chapter/1/the-retina" };
+    // },
   },
   {
     path: "/dashboard",
@@ -88,7 +89,7 @@ router.beforeEach(async (to, from) => {
       // Redirect to home if not authenticated
       // The dashboard will show an "access denied" message anyway,
       // but this provides an extra layer of protection
-      return { path: "/chapter/1/the-retina" };
+      return { path: "/" };
     }
 
     // Role-based route protection (for future use)

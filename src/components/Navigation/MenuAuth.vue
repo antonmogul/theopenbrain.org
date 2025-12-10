@@ -48,6 +48,11 @@ const closeAuth = () => {
     authStore.closeAuth();
 };
 
+const goToDashboard = () => {
+    authStore.closeAuth();
+    router.push("/dashboard");
+};
+
 const handleRegister = async () => {
     if (!email.value || !password.value) {
         authStore.setError("Please fill in all fields");
@@ -201,10 +206,7 @@ const viewTitle = computed(() => {
                         </p>
                         <div class="flex gap-4">
                             <button
-                                @click="
-                                    router.push('/dashboard');
-                                    authStore.closeAuth();
-                                "
+                                @click="goToDashboard"
                                 class="uppercase bg-violet text-white border border-violet font-mono px-6 py-2 rounded-full hover:bg-white hover:text-black hover:border-white"
                             >
                                 Dashboard
