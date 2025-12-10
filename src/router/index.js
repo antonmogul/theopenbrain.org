@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useGeneral } from "@/stores";
+import { supabase } from "@/lib/supabase";
 import HomeView from "@/views/HomeView.vue";
 
 const routes = [
@@ -10,6 +11,18 @@ const routes = [
     redirect: () => {
       return { path: "/chapter/1/the-retina" };
     },
+  },
+  {
+    path: "/dashboard",
+    name: "dashboard",
+    component: () => import("../views/DashboardView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/editor",
+    name: "editor",
+    component: () => import("../views/EditorView.vue"),
+    meta: { requiresAuth: true, requiredRole: "creator" },
   },
   {
     path: "/chapter/:number/:slug",
@@ -45,21 +58,57 @@ const router = createRouter({
     }
   },
 });
-router.beforeEach((to, from) => {
+router.beforeEach(async (to, from) => {
   const store = useGeneral();
+
+  // Handle scroll position for chapter view
   if (from.name === "chapter") {
     let scrollOffset = { top: window.scrollY };
     store.savedPosition = scrollOffset;
   }
 
+  // Handle transitions
   if (from.name === "about") {
-    to.meta = { transitionName: "aboutLeave" };
+    to.meta = { ...to.meta, transitionName: "aboutLeave" };
   }
   if (to.name === "about") {
-    to.meta = { transitionName: "aboutTo" };
+    to.meta = { ...to.meta, transitionName: "aboutTo" };
   }
   if (to.name == "home" && from.name == "chapter") {
     store.activeMenu = true;
+  }
+
+  // Auth guard for protected routes
+  if (to.meta.requiresAuth) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      // Redirect to home if not authenticated
+      // The dashboard will show an "access denied" message anyway,
+      // but this provides an extra layer of protection
+      return { path: "/chapter/1/the-retina" };
+    }
+
+    // Role-based route protection (for future use)
+    if (to.meta.requiredRole) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      const userRole = profile?.role;
+      const requiredRoles = Array.isArray(to.meta.requiredRole)
+        ? to.meta.requiredRole
+        : [to.meta.requiredRole];
+
+      if (!requiredRoles.includes(userRole)) {
+        // Redirect to dashboard if user doesn't have required role
+        return { path: "/dashboard" };
+      }
+    }
   }
 });
 

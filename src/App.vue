@@ -79,7 +79,13 @@ onBeforeUnmount(() => {
         <MenuChapters />
         <MenuHome />
         <MenuAbout v-if="route.name === 'chapter'" />
-        <MenuAuth v-if="route.name === 'chapter'" />
+        <MenuAuth
+            v-if="
+                route.name === 'chapter' ||
+                route.name === 'dashboard' ||
+                route.name === 'editor'
+            "
+        />
     </div>
     <div v-else>
         <MediaQueryWarning />
