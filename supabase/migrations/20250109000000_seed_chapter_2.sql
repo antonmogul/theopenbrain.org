@@ -15,29 +15,14 @@ BEGIN;
 -- In production, replace this with an actual creator user ID
 -- =============================================================================
 
--- Create a system/seed user if it doesn't exist (for development purposes)
--- This is a workaround - in production, use a real authenticated user
-DO $$
-DECLARE
-  seed_user_id UUID := '00000000-0000-0000-0000-000000000001';
-BEGIN
-  -- Check if we need to create a placeholder for development
-  -- Skip if profiles already has records (production)
-  IF NOT EXISTS (SELECT 1 FROM profiles LIMIT 1) THEN
-    -- Note: In production, this should be replaced with actual auth user creation
-    -- For now, we'll insert directly for seeding purposes
-    INSERT INTO profiles (id, email, full_name, role, institution, creator_bio)
-    VALUES (
-      seed_user_id,
-      'seed@theopenbrain.org',
-      'Content Seed System',
-      'creator',
-      'The Open Brain',
-      'System account for seeding initial content'
-    )
-    ON CONFLICT (id) DO NOTHING;
-  END IF;
-END $$;
+-- Note: This script requires an existing creator profile in the profiles table
+-- The profiles table has a foreign key to auth.users, so you must:
+-- 1. Create a user via Supabase Auth (sign up in your app, or use Supabase dashboard)
+-- 2. Then create a profile for that user with role='creator'
+-- 
+-- OR run this script with service_role key which can bypass RLS
+-- 
+-- For now, we'll use the first creator profile found, or raise an error if none exists
 
 -- =============================================================================
 -- Variables for IDs (using DO block to handle references)
@@ -69,11 +54,26 @@ DECLARE
   v_section_resources_id UUID;
 
 BEGIN
-  -- Get creator ID
+  -- Get creator ID (try to find existing creator)
   SELECT id INTO v_creator_id FROM profiles WHERE role = 'creator' LIMIT 1;
   
+  -- If no creator exists, try to use any existing profile (for development)
   IF v_creator_id IS NULL THEN
-    RAISE EXCEPTION 'No creator profile found. Please create a creator user first.';
+    SELECT id INTO v_creator_id FROM profiles LIMIT 1;
+  END IF;
+  
+  -- If still no profile exists, we need to create one
+  -- But we can't create a profile without an auth user
+  -- So we'll use a workaround: create content with a placeholder UUID
+  -- This will work if RLS is temporarily disabled or using service_role
+  IF v_creator_id IS NULL THEN
+    -- Use a placeholder UUID - this will only work if:
+    -- 1. RLS is disabled on content_versions/modules tables, OR
+    -- 2. Running with service_role key
+    v_creator_id := '00000000-0000-0000-0000-000000000000';
+    RAISE NOTICE 'WARNING: No creator profile found. Using placeholder UUID.';
+    RAISE NOTICE 'This will only work if RLS is disabled or using service_role key.';
+    RAISE NOTICE 'Recommended: Create a creator user first via Supabase Auth.';
   END IF;
 
   -- =============================================================================
