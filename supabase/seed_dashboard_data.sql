@@ -10,46 +10,51 @@
 -- =============================================================
 -- 1. CONTENT VERSIONS
 -- =============================================================
+-- Uses INSERT ... WHERE NOT EXISTS to skip if version_number already exists
 
 INSERT INTO content_versions (id, version_number, status, release_notes, created_at, published_at, created_by)
-VALUES
-  (
-    'a0000001-0001-0001-0001-000000000001'::uuid,
-    '1.0',
-    'published',
-    'Initial release with Chapter 1: The Retina. Covers fundamental retina anatomy, photoreceptor cells, and basic visual processing concepts.',
-    NOW() - INTERVAL '60 days',
-    NOW() - INTERVAL '55 days',
-    (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
-  ),
-  (
-    'a0000001-0001-0001-0001-000000000002'::uuid,
-    '1.1',
-    'archived',
-    'Minor corrections and additional diagrams for Chapter 1. Fixed typos in rod cell section.',
-    NOW() - INTERVAL '45 days',
-    NOW() - INTERVAL '40 days',
-    (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
-  ),
-  (
-    'a0000001-0001-0001-0001-000000000003'::uuid,
-    '2.0',
-    'published',
-    'Major update: Added Chapter 2 on Visual Perception and UX. New interactive animations for Gestalt principles.',
-    NOW() - INTERVAL '20 days',
-    NOW() - INTERVAL '15 days',
-    (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
-  ),
-  (
-    'a0000001-0001-0001-0001-000000000004'::uuid,
-    '2.1',
-    'draft',
-    'Work in progress: Adding attention and consciousness chapter. New quiz integration.',
-    NOW() - INTERVAL '5 days',
-    NULL,
-    (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
-  )
-ON CONFLICT (id) DO NOTHING;
+SELECT
+  'a0000001-0001-0001-0001-000000000001'::uuid,
+  '1.0',
+  'published',
+  'Initial release with Chapter 1: The Retina. Covers fundamental retina anatomy, photoreceptor cells, and basic visual processing concepts.',
+  NOW() - INTERVAL '60 days',
+  NOW() - INTERVAL '55 days',
+  (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM content_versions WHERE version_number = '1.0');
+
+INSERT INTO content_versions (id, version_number, status, release_notes, created_at, published_at, created_by)
+SELECT
+  'a0000001-0001-0001-0001-000000000002'::uuid,
+  '1.1',
+  'archived',
+  'Minor corrections and additional diagrams for Chapter 1. Fixed typos in rod cell section.',
+  NOW() - INTERVAL '45 days',
+  NOW() - INTERVAL '40 days',
+  (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM content_versions WHERE version_number = '1.1');
+
+INSERT INTO content_versions (id, version_number, status, release_notes, created_at, published_at, created_by)
+SELECT
+  'a0000001-0001-0001-0001-000000000003'::uuid,
+  '2.0',
+  'published',
+  'Major update: Added Chapter 2 on Visual Perception and UX. New interactive animations for Gestalt principles.',
+  NOW() - INTERVAL '20 days',
+  NOW() - INTERVAL '15 days',
+  (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM content_versions WHERE version_number = '2.0');
+
+INSERT INTO content_versions (id, version_number, status, release_notes, created_at, published_at, created_by)
+SELECT
+  'a0000001-0001-0001-0001-000000000004'::uuid,
+  '2.1',
+  'draft',
+  'Work in progress: Adding attention and consciousness chapter. New quiz integration.',
+  NOW() - INTERVAL '5 days',
+  NULL,
+  (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM content_versions WHERE version_number = '2.1');
 
 
 -- =============================================================
@@ -269,7 +274,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Quiz 1: Chapter 1 Retina Quiz
 INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, is_active, created_by, created_at)
-VALUES (
+SELECT
   'c0000001-0001-0001-0001-000000000001'::uuid,
   (SELECT id FROM modules WHERE slug = 'the-retina' LIMIT 1),
   'The Retina: Fundamentals Quiz',
@@ -281,8 +286,7 @@ VALUES (
   true,
   (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1),
   NOW() - INTERVAL '50 days'
-)
-ON CONFLICT (id) DO NOTHING;
+WHERE NOT EXISTS (SELECT 1 FROM quizzes WHERE id = 'c0000001-0001-0001-0001-000000000001'::uuid);
 
 -- Quiz 1 Questions
 INSERT INTO quiz_questions (id, quiz_id, question_text, question_type, options, correct_answer, points, order_index)
@@ -372,7 +376,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Quiz 2: Visual Perception Quiz
 INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, is_active, created_by, created_at)
-VALUES (
+SELECT
   'c0000001-0001-0001-0001-000000000002'::uuid,
   (SELECT id FROM modules WHERE slug = 'visual-perception-ux' LIMIT 1),
   'Visual Perception & UX Principles',
@@ -384,8 +388,7 @@ VALUES (
   true,
   (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1),
   NOW() - INTERVAL '15 days'
-)
-ON CONFLICT (id) DO NOTHING;
+WHERE NOT EXISTS (SELECT 1 FROM quizzes WHERE id = 'c0000001-0001-0001-0001-000000000002'::uuid);
 
 -- Quiz 2 Questions
 INSERT INTO quiz_questions (id, quiz_id, question_text, question_type, options, correct_answer, points, order_index)
