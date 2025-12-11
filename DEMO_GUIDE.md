@@ -17,7 +17,7 @@ npm start
 
 ---
 
-## Demo Flow
+## Part 1: Application Features
 
 ### 1. Home Page (Public)
 
@@ -201,44 +201,345 @@ npm start
 
 ---
 
-## Technical Highlights
+## Part 2: Supabase Integration & Database Design
 
-### Architecture
+### Why Supabase?
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | Vue 3 + Vite |
-| Styling | Tailwind CSS |
-| State | Pinia stores |
-| Auth | Supabase Auth |
-| Database | Supabase PostgreSQL |
-| Editor | TipTap |
+Supabase was chosen as the backend-as-a-service platform for several key reasons:
 
-### Database Schema
-
-Key tables:
-- `profiles` - User profiles with roles
-- `modules` - Content modules (chapters)
-- `sections` - Chapter sections
-- `courses` - Professor-created courses
-- `course_modules` - Links courses to modules
-- `course_enrollments` - Student enrollments
-- `quizzes` - Quiz definitions
-- `quiz_questions` - Quiz questions
-- `quiz_attempts` - Student quiz attempts
-- `reading_progress` - Student progress tracking
-
-### Role-Based Access
-
-| Role | Dashboard URL | Access |
-|------|---------------|--------|
-| Creator | `/dashboard` | Full content management |
-| Professor | `/professor` | Course curation, student management |
-| Student | (Coming Phase 3) | Learning interface |
+| Benefit | Description |
+|---------|-------------|
+| **Built-in Auth** | Email/password, social logins, magic links out of the box |
+| **PostgreSQL** | Full-featured relational database with advanced queries |
+| **Row-Level Security** | Fine-grained access control at the data level |
+| **Real-time** | Live subscriptions for collaborative features |
+| **Storage** | Built-in file storage for media assets |
+| **Open Source** | Aligns with Open Brain's open source philosophy |
+| **Cost Effective** | Generous free tier, predictable scaling costs |
 
 ---
 
-## Recent Development Summary
+### Database Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     SUPABASE AUTH                                │
+│              (Email/Password Authentication)                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+                    ┌────────────────┐
+                    │    profiles    │
+                    │   (3 roles)    │
+                    └────────┬───────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+        ▼                    ▼                    ▼
+   ┌─────────┐         ┌──────────┐        ┌──────────┐
+   │ Creator │         │Professor │        │ Student  │
+   └────┬────┘         └────┬─────┘        └────┬─────┘
+        │                   │                    │
+        ▼                   ▼                    ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│ Content Mgmt  │   │Course Curation│   │  Learning     │
+│ - modules     │   │ - courses     │   │ - highlights  │
+│ - sections    │   │ - enrollments │   │ - notes       │
+│ - paragraphs  │   │ - assessments │   │ - progress    │
+│ - animations  │   │               │   │ - quiz_attempts│
+│ - quizzes     │   │               │   │               │
+└───────────────┘   └───────────────┘   └───────────────┘
+```
+
+---
+
+### Core Tables (27 Total)
+
+#### Authentication & Users
+| Table | Purpose |
+|-------|---------|
+| `profiles` | Extended user data with role (creator/professor/student) |
+
+#### Content Structure
+| Table | Purpose |
+|-------|---------|
+| `content_versions` | Version control (v1.0, v1.1, v2.0) |
+| `modules` | Top-level chapters |
+| `sections` | Sections within chapters |
+| `paragraphs` | Content blocks (structured JSONB) |
+| `animations` | Animation/diagram definitions |
+| `animation_states` | Click/toggle states |
+| `animation_variants` | Switch variants (Day/Night) |
+
+#### Course Curation (Professor)
+| Table | Purpose |
+|-------|---------|
+| `courses` | Professor-created courses |
+| `course_modules` | Many-to-many: courses ↔ modules |
+| `course_enrollments` | Student enrollments |
+
+#### Interactive Features
+| Table | Purpose |
+|-------|---------|
+| `highlights` | User text highlights |
+| `trending_highlights` | Aggregated popular highlights |
+| `notes` | User notes (standalone or on highlights) |
+
+#### Assessments
+| Table | Purpose |
+|-------|---------|
+| `quizzes` | Quiz definitions |
+| `quiz_questions` | Questions (multiple choice, T/F, etc.) |
+| `quiz_attempts` | Student attempts |
+| `quiz_answers` | Individual answers |
+| `flashcards` | Flashcard decks |
+| `flashcard_sessions` | Study sessions |
+| `flashcard_responses` | Spaced repetition tracking |
+
+#### AI & Labs (Phase 3)
+| Table | Purpose |
+|-------|---------|
+| `ai_conversations` | AI tutor threads |
+| `ai_messages` | Conversation messages |
+| `code_labs` | Python lab definitions |
+| `code_submissions` | Student code submissions |
+
+#### Analytics
+| Table | Purpose |
+|-------|---------|
+| `reading_progress` | Student progress through content |
+| `analytics_events` | Detailed event tracking |
+
+---
+
+### Row-Level Security (RLS)
+
+Every table has RLS enabled with role-based policies:
+
+```sql
+-- Example: Professors can only manage their own courses
+CREATE POLICY "Professors manage own courses"
+  ON courses FOR ALL
+  USING (
+    professor_id = auth.uid() AND
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'professor'
+    )
+  );
+
+-- Example: Students can view published courses
+CREATE POLICY "Students can view published courses"
+  ON courses FOR SELECT
+  USING (is_published = TRUE);
+
+-- Example: Users can only see their own highlights
+CREATE POLICY "Users manage own highlights"
+  ON highlights FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+**Key RLS Patterns:**
+- **Content**: Published content is public, draft is creator-only
+- **Courses**: Professors manage own, students see published
+- **User Data**: Users see only their own highlights/notes/progress
+- **Analytics**: Creators can view all, users can insert own events
+
+---
+
+### Database Relationships (ER Diagram)
+
+```
+profiles ──────┬──────────────────────────────────────────────┐
+               │                                              │
+               ▼                                              ▼
+      content_versions                                    courses
+               │                                              │
+               ▼                                              │
+           modules ◄──────────────── course_modules ──────────┘
+               │                          │
+               ▼                          │
+          sections                        │
+               │                          ▼
+               ▼                 course_enrollments
+         paragraphs                       │
+               │                          │
+               ▼                          ▼
+         animations                   students
+               │                          │
+               ├──► animation_states      ├──► highlights
+               └──► animation_variants    ├──► notes
+                                          ├──► quiz_attempts
+                                          └──► reading_progress
+```
+
+---
+
+### API Integration Pattern
+
+We use **direct REST API calls** instead of the Supabase JS client for better control:
+
+```javascript
+// Example: Fetch modules for a professor
+const response = await fetch(
+  `${supabaseUrl}/rest/v1/modules?status=eq.published&select=*`,
+  {
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    }
+  }
+);
+const modules = await response.json();
+```
+
+**Benefits:**
+- Full control over requests
+- No client library overhead
+- Works with any HTTP client
+- Easier debugging
+
+---
+
+### Migration Files
+
+Located in `supabase/migrations/`:
+
+| File | Purpose |
+|------|---------|
+| `20250101000000_initial_schema.sql` | All 27 tables, indexes, RLS policies, triggers |
+| `20250101000001_fix_rls_policies.sql` | RLS policy refinements |
+| `20250109000000_seed_chapter_2.sql` | Chapter 2 content seed |
+| `20250109000001_create_seed_creator.sql` | Creator user seed |
+| `20250109000002_fix_sections_rls.sql` | Section RLS fixes |
+
+---
+
+### Key Database Features
+
+#### 1. Content Versioning
+```sql
+-- Supports v1.0, v1.1, v2.0 releases
+CREATE TABLE content_versions (
+  version_number TEXT NOT NULL UNIQUE,  -- '1.0', '1.1', '2.0'
+  status TEXT CHECK (status IN ('draft', 'published', 'archived')),
+  release_notes TEXT,
+  published_at TIMESTAMPTZ
+);
+```
+
+#### 2. Structured Content (No Raw HTML)
+```sql
+-- Paragraphs store structured JSONB, not HTML strings
+content JSONB NOT NULL,
+-- Example:
+-- {
+--   "blocks": [
+--     {"type": "text", "content": "Normal text"},
+--     {"type": "highlight", "content": "Key term", "hoverImage": "img-id"},
+--     {"type": "footnote", "ref": "1"}
+--   ]
+-- }
+```
+
+#### 3. Automatic Timestamps
+```sql
+-- All tables have automatic updated_at triggers
+CREATE TRIGGER update_modules_updated_at 
+  BEFORE UPDATE ON modules
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+```
+
+#### 4. Trending Highlights Aggregation
+```sql
+-- Automatically aggregates public highlights
+CREATE TRIGGER highlight_trending_update
+  AFTER INSERT ON highlights
+  FOR EACH ROW
+  WHEN (NEW.is_public = TRUE)
+  EXECUTE FUNCTION update_trending_highlights();
+```
+
+#### 5. Full-Text Search
+```sql
+-- Paragraph content is searchable
+CREATE INDEX idx_paragraphs_search 
+  ON paragraphs USING gin(to_tsvector('english', content_text));
+```
+
+---
+
+### Seed Data
+
+**Professor Test Data:** `supabase/seeds/professor_test_data.sql`
+
+Creates:
+- Sample professor profile
+- 3 sample courses (Introduction to Neuroscience, Visual System Lab, Retinal Circuits)
+- Course-module links
+- Sample student profiles
+- Sample enrollments
+- Sample quiz with questions
+- Sample quiz attempts
+- Sample reading progress
+
+---
+
+## Part 3: Technical Architecture
+
+### Frontend Stack
+
+| Technology | Purpose |
+|------------|---------|
+| Vue 3 | Reactive UI framework (Composition API) |
+| Vite | Fast build tool and dev server |
+| Pinia | State management |
+| Vue Router | Client-side routing |
+| Tailwind CSS | Utility-first styling |
+| TipTap | Rich text editor for content |
+| GSAP | Animations |
+
+### Project Structure
+
+```
+src/
+├── components/
+│   ├── dashboard/          # Shared dashboard components
+│   │   ├── DashboardSidebar.vue
+│   │   └── DashboardHeader.vue
+│   ├── Navigation/         # Menu components
+│   └── UI/                 # Reusable UI components
+├── composables/
+│   └── useAuth.js          # Authentication logic
+├── lib/
+│   └── supabase.js         # Supabase client config
+├── stores/
+│   └── index.js            # Pinia stores
+├── views/
+│   ├── DashboardView.vue   # Creator dashboard
+│   ├── ProfessorDashboardView.vue  # Professor dashboard
+│   ├── EnrollView.vue      # Student enrollment
+│   ├── ChapterView.vue     # Content reader
+│   └── HomeView.vue        # Landing page
+└── router/
+    └── index.js            # Route definitions + guards
+```
+
+### Role-Based Routing
+
+```javascript
+// Route guard checks role before allowing access
+{
+  path: "/professor",
+  component: ProfessorDashboardView,
+  meta: { requiresAuth: true, requiredRole: "professor" }
+}
+```
+
+---
+
+## Part 4: Development Summary
 
 ### Phase 1: Creator Dashboard (Complete)
 - Supabase integration with direct REST API
@@ -268,6 +569,7 @@ fix: overhaul auth system to use direct REST API
 feat: integrate TipTap rich text editor for content management
 feat: add role-based dashboard and navigation
 feat: add Supabase authentication UI
+feat: add database migrations for Chapter 2 and RLS policies
 ```
 
 ---
@@ -299,13 +601,29 @@ Login with your existing creator account to show the Creator Dashboard.
 
 ---
 
-## Questions to Address
+## Questions to Discuss with Stuart
 
+### Features
 1. **Course Types** - Is the Course/Assignment/Lesson/Study Guide taxonomy correct?
 2. **Invitation Flow** - Any preferences on the 3 invitation methods?
 3. **Collaboration** - Should professors be able to clone each other's courses?
 4. **Analytics** - What metrics are most important to professors?
 5. **Content Library** - How should content be organized/filtered?
+
+### Technical
+6. **Content Structure** - Is the JSONB paragraph structure flexible enough?
+7. **Versioning** - How should version releases work in practice?
+8. **Real-time** - Which features need real-time updates?
+
+---
+
+## Additional Documentation
+
+For more details, see:
+- `claude/database-schema-design.md` - Full schema documentation
+- `claude/database-er-diagram.md` - Visual ER diagram (Mermaid)
+- `claude/MASTER_PROJECT_OVERVIEW.md` - Project roadmap and phases
+- `supabase/migrations/` - All database migrations
 
 ---
 
