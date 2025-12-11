@@ -31,12 +31,25 @@
     >
       {{ index + 1 }}
     </h2>
+
+    <!-- Section title - editable for creators -->
+    <EditableBlock
+      v-if="isCreator"
+      :content="section.title"
+      :paragraph-id="`section-title-${section.id}`"
+      :is-creator="isCreator"
+      tag="h2"
+      :class-name="store.imgActive ? 'opacity-0 T duration-500 z-40 subChapter' : 'T duration-500 z-40 subChapter'"
+      @save="handleSectionTitleSave"
+    />
     <h2
+      v-else
       :class="store.imgActive ? 'opacity-0' : ''"
-      class="T durattion-500 z-40 subChapter"
+      class="T duration-500 z-40 subChapter"
     >
       {{ section.title }}
     </h2>
+
     <StartEndIcon :paragraph="section" art="start" />
     <span
       :id="
@@ -64,9 +77,18 @@
             paragraph?.type != 'breakVideo' && paragraph.type != 'breakSection'
           "
         >
-          <!-- section paragraph -->
+          <!-- section paragraph - editable for creators -->
+          <EditableBlock
+            v-if="!paragraph.subSection && isCreator"
+            :content="paragraph.text"
+            :paragraph-id="paragraph.id"
+            :is-creator="isCreator"
+            tag="p"
+            class-name="P"
+            @save="handleParagraphSave"
+          />
           <p
-            v-if="!paragraph.subSection"
+            v-else-if="!paragraph.subSection"
             :key="paragraph.id"
             :id="paragraph.id"
             class="P"
@@ -77,6 +99,8 @@
             :key="paragraph"
             :paragraph="paragraph"
             :index="index + 1"
+            :is-creator="isCreator"
+            @save="handleParagraphSave"
           />
           <InlineImages
             :paragraph="paragraph"
@@ -115,6 +139,7 @@
 </template>
 
 <script setup>
+import { inject } from "vue";
 import BreakImages from "./BreakImages.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 import SubSection from "./SubSection.vue";
@@ -122,12 +147,43 @@ import { useGeneral } from "@/stores";
 import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
+import EditableBlock from "./EditableBlock.vue";
+
 const store = useGeneral();
 
 const props = defineProps({
   section: Object,
   index: Number,
+  isCreator: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const emit = defineEmits(["save"]);
+
+// Get save handler from parent (injected from TextComp)
+const saveContent = inject("saveContent", null);
+
+const handleParagraphSave = async ({ paragraphId, content }) => {
+  console.log("SectionComp: Saving paragraph", paragraphId);
+  if (saveContent) {
+    await saveContent({ paragraphId, content, type: "paragraph" });
+  }
+  emit("save", { paragraphId, content, type: "paragraph" });
+};
+
+const handleSectionTitleSave = async ({ paragraphId, content }) => {
+  console.log("SectionComp: Saving section title", paragraphId);
+  if (saveContent) {
+    await saveContent({
+      paragraphId: props.section.id,
+      content,
+      type: "section-title"
+    });
+  }
+  emit("save", { paragraphId: props.section.id, content, type: "section-title" });
+};
 </script>
 
 <style scoped></style>

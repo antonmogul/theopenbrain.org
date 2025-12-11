@@ -23,7 +23,18 @@
             subSubSection.type != 'breakSection'
           "
         >
+          <!-- Inline editing for sub-sub-section text -->
+          <EditableBlock
+            v-if="isCreator"
+            :content="subSubSection.text"
+            :paragraph-id="subSubSection.id"
+            :is-creator="isCreator"
+            tag="p"
+            class-name="subSubP pt-0"
+            @save="handleSave"
+          />
           <p
+            v-else
             :id="subSubSection.id"
             class="subSubP pt-0"
             v-html="subSubSection.text"
@@ -43,8 +54,22 @@
               "
               :class="subSubParagraph.animation ? 'animationTrigger' : ''"
             >
-              <p
+              <!-- Inline editing for sub-sub-paragraph text -->
+              <EditableBlock
                 v-if="
+                  isCreator &&
+                  subSubParagraph.type != 'breakVideo' &&
+                  subSubSection.type != 'breakSection'
+                "
+                :content="subSubParagraph.text"
+                :paragraph-id="subSubParagraph.id"
+                :is-creator="isCreator"
+                tag="p"
+                class-name="subSubParP"
+                @save="handleSave"
+              />
+              <p
+                v-else-if="
                   subSubParagraph.type != 'breakVideo' &&
                   subSubSection.type != 'breakSection'
                 "
@@ -102,17 +127,38 @@
 </template>
 
 <script setup>
+import { inject } from "vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import BreakText from "./BreakText.vue";
 import InlineImages from "./InlineImages.vue";
-const prosp = defineProps({
+import EditableBlock from "./EditableBlock.vue";
+
+const props = defineProps({
   subParagraph: Object,
   chapterIndex: Number,
   subIndex: Number,
+  isCreator: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+// Inject save handler from parent
+const saveContent = inject("saveContent", null);
+
+// Handle save from editable block
+const handleSave = async ({ paragraphId, content }) => {
+  if (saveContent) {
+    await saveContent({
+      paragraphId,
+      content,
+      type: "subSubParagraph",
+    });
+  }
+};
 </script>
 
 <style lang="scss" scoped></style>

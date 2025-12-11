@@ -18,7 +18,19 @@
     >
       <!-- subSection title -->
       <span :id="subSections?.title ? toSlug(subSections?.title) : ''" />
+
+      <!-- SubSection title - editable for creators -->
+      <EditableBlock
+        v-if="isCreator"
+        :content="subSections.title"
+        :paragraph-id="`subsection-title-${subSections.id}`"
+        :is-creator="isCreator"
+        tag="h3"
+        :class-name="subSections.animationAnchor ? 'subT pt-[100vh] animationScrollAnchor' : 'subT'"
+        @save="({ content }) => handleSave({ paragraphId: subSections.id, content, type: 'subsection-title' })"
+      />
       <h3
+        v-else
         :id="
           subSections.animationAnchor ? 'anchor' + subSections.animation.id : ''
         "
@@ -29,6 +41,7 @@
       >
         {{ subSections.title }}
       </h3>
+
       <!-- subSection paragraph -->
       <template
         v-for="subParagraph in subSections.paragraphs"
@@ -71,8 +84,19 @@
               "
               class="transition left-0 w-full h-[50vh] bg-green-"
             />
+
+            <!-- SubSection paragraph - editable for creators -->
+            <EditableBlock
+              v-if="!subParagraph.subSubSection && !subParagraph.type && isCreator"
+              :content="subParagraph.text"
+              :paragraph-id="subParagraph.id"
+              :is-creator="isCreator"
+              tag="p"
+              class-name="subP"
+              @save="handleSave"
+            />
             <p
-              v-if="!subParagraph.subSubSection && !subParagraph.type"
+              v-else-if="!subParagraph.subSubSection && !subParagraph.type"
               :id="subParagraph.id"
               :key="subParagraph.id"
               class="subP"
@@ -84,6 +108,8 @@
               :chapter-index="index"
               :sub-index="subIndex"
               :sub-paragraph="subParagraph"
+              :is-creator="isCreator"
+              @save="handleSave"
             />
             <InlineImages
               :paragraph="subParagraph"
@@ -95,11 +121,6 @@
               v-if="subParagraph.animationFull"
               :paragraph="subParagraph"
             />
-            <!-- <BreakText
-            :key="subParagraph"
-            :paragraph="subParagraph"
-            v-else-if="subParagraph.type === 'breakText'"
-            /> -->
           </template>
           <StartEndIcon :paragraph="subParagraph" art="end" />
           <!-- subSection Break -->
@@ -129,10 +150,11 @@
 </template>
 
 <script setup>
+import { inject } from "vue";
 import SubSubSection from "./SubSubSection.vue";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
-import BreakText from "./BreakText.vue";
+import EditableBlock from "./EditableBlock.vue";
 
 import { toSlug } from "@/helper/general.js";
 import InlineImages from "./InlineImages.vue";
@@ -142,7 +164,24 @@ import StartEndIcon from "../../UI/StartEndIcon.vue";
 const props = defineProps({
   paragraph: Object,
   index: Number,
+  isCreator: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const emit = defineEmits(["save"]);
+
+// Get save handler from parent
+const saveContent = inject("saveContent", null);
+
+const handleSave = async ({ paragraphId, content, type = "paragraph" }) => {
+  console.log("SubSection: Saving", paragraphId, type);
+  if (saveContent) {
+    await saveContent({ paragraphId, content, type });
+  }
+  emit("save", { paragraphId, content, type });
+};
 </script>
 
 <style scoped></style>
