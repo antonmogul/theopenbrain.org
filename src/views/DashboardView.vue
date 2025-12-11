@@ -935,7 +935,7 @@ async function fetchAnalytics() {
 
         // Fetch quiz completion rate
         const quizAttempts = await supabaseRest(
-            `quiz_attempts?select=status,score,total_points&created_at=gte.${startDateStr}`,
+            `quiz_attempts?select=status,score,total_points,quiz_id&started_at=gte.${startDateStr}`,
         );
         const completedAttempts = quizAttempts.filter(
             (a) => a.status === "completed",
