@@ -288,7 +288,7 @@ ON CONFLICT (id) DO NOTHING;
 -- =============================================================
 
 -- Quiz 1: Chapter 1 Retina Quiz
-INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, is_active, created_by, created_at)
+INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, created_by, created_at)
 SELECT
   'c0000001-0001-0001-0001-000000000001'::uuid,
   (SELECT id FROM modules WHERE slug = 'the-retina' LIMIT 1),
@@ -296,7 +296,6 @@ SELECT
   'Test your understanding of retinal anatomy and photoreceptor function. Covers layers of the retina, rod and cone cells, and basic phototransduction.',
   15,
   70,
-  true,
   true,
   true,
   (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1),
@@ -390,7 +389,7 @@ ON CONFLICT (id) DO NOTHING;
 
 
 -- Quiz 2: Visual Perception Quiz
-INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, is_active, created_by, created_at)
+INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, created_by, created_at)
 SELECT
   'c0000001-0001-0001-0001-000000000002'::uuid,
   (SELECT id FROM modules WHERE slug = 'visual-perception-ux' LIMIT 1),
@@ -398,7 +397,6 @@ SELECT
   'Assess your knowledge of Gestalt principles, attention, and how visual perception applies to user experience design.',
   20,
   70,
-  true,
   true,
   true,
   (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1),
