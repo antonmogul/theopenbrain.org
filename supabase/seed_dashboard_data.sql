@@ -306,7 +306,7 @@ WHERE NOT EXISTS (SELECT 1 FROM quizzes WHERE id = 'c0000001-0001-0001-0001-0000
 INSERT INTO quiz_questions (id, quiz_id, question_text, question_type, options, correct_answer, points, order_index)
 VALUES
   (
-    'q0000001-0001-0001-0001-000000000001'::uuid,
+    'd0000001-0001-0001-0001-000000000001'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'How many distinct layers make up the human retina?',
     'multiple_choice',
@@ -316,7 +316,7 @@ VALUES
     1
   ),
   (
-    'q0000001-0001-0001-0001-000000000002'::uuid,
+    'd0000001-0001-0001-0001-000000000002'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'Rod cells are primarily responsible for color vision.',
     'true_false',
@@ -326,7 +326,7 @@ VALUES
     2
   ),
   (
-    'q0000001-0001-0001-0001-000000000003'::uuid,
+    'd0000001-0001-0001-0001-000000000003'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'Which type of photoreceptor is most concentrated in the fovea?',
     'multiple_choice',
@@ -336,7 +336,7 @@ VALUES
     3
   ),
   (
-    'q0000001-0001-0001-0001-000000000004'::uuid,
+    'd0000001-0001-0001-0001-000000000004'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'The blind spot occurs because there are no photoreceptors at the optic disc.',
     'true_false',
@@ -346,7 +346,7 @@ VALUES
     4
   ),
   (
-    'q0000001-0001-0001-0001-000000000005'::uuid,
+    'd0000001-0001-0001-0001-000000000005'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'Explain why we have better color vision in daylight than at night.',
     'short_answer',
@@ -356,7 +356,7 @@ VALUES
     5
   ),
   (
-    'q0000001-0001-0001-0001-000000000006'::uuid,
+    'd0000001-0001-0001-0001-000000000006'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'Which molecule undergoes conformational change when light hits a photoreceptor?',
     'multiple_choice',
@@ -366,7 +366,7 @@ VALUES
     6
   ),
   (
-    'q0000001-0001-0001-0001-000000000007'::uuid,
+    'd0000001-0001-0001-0001-000000000007'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'The human eye contains approximately how many rod cells?',
     'multiple_choice',
@@ -376,7 +376,7 @@ VALUES
     7
   ),
   (
-    'q0000001-0001-0001-0001-000000000008'::uuid,
+    'd0000001-0001-0001-0001-000000000008'::uuid,
     'c0000001-0001-0001-0001-000000000001'::uuid,
     'Horizontal cells in the retina contribute to lateral inhibition.',
     'true_false',
@@ -407,7 +407,7 @@ WHERE NOT EXISTS (SELECT 1 FROM quizzes WHERE id = 'c0000001-0001-0001-0001-0000
 INSERT INTO quiz_questions (id, quiz_id, question_text, question_type, options, correct_answer, points, order_index)
 VALUES
   (
-    'q0000001-0001-0001-0001-000000000010'::uuid,
+    'd0000001-0001-0001-0001-000000000010'::uuid,
     'c0000001-0001-0001-0001-000000000002'::uuid,
     'Which Gestalt principle states that elements close together are perceived as a group?',
     'multiple_choice',
@@ -417,7 +417,7 @@ VALUES
     1
   ),
   (
-    'q0000001-0001-0001-0001-000000000011'::uuid,
+    'd0000001-0001-0001-0001-000000000011'::uuid,
     'c0000001-0001-0001-0001-000000000002'::uuid,
     'Change blindness can occur even when people are actively watching a scene.',
     'true_false',
@@ -427,7 +427,7 @@ VALUES
     2
   ),
   (
-    'q0000001-0001-0001-0001-000000000012'::uuid,
+    'd0000001-0001-0001-0001-000000000012'::uuid,
     'c0000001-0001-0001-0001-000000000002'::uuid,
     'The cocktail party effect demonstrates which type of attention?',
     'multiple_choice',
@@ -437,7 +437,7 @@ VALUES
     3
   ),
   (
-    'q0000001-0001-0001-0001-000000000013'::uuid,
+    'd0000001-0001-0001-0001-000000000013'::uuid,
     'c0000001-0001-0001-0001-000000000002'::uuid,
     'Describe how the Gestalt principle of closure can be applied in UI design. Give a specific example.',
     'short_answer',
@@ -447,7 +447,7 @@ VALUES
     4
   ),
   (
-    'q0000001-0001-0001-0001-000000000014'::uuid,
+    'd0000001-0001-0001-0001-000000000014'::uuid,
     'c0000001-0001-0001-0001-000000000002'::uuid,
     'What percentage of the visual field does the fovea (area of sharpest vision) cover?',
     'multiple_choice',
@@ -457,7 +457,7 @@ VALUES
     5
   ),
   (
-    'q0000001-0001-0001-0001-000000000015'::uuid,
+    'd0000001-0001-0001-0001-000000000015'::uuid,
     'c0000001-0001-0001-0001-000000000002'::uuid,
     'Inattentional blindness is the same phenomenon as change blindness.',
     'true_false',
