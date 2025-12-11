@@ -68,11 +68,6 @@ const routes = [
     name: "quiz",
     component: () => import("../views/QuizView.vue"),
   },
-  {
-    path: "/test-supabase",
-    name: "test-supabase",
-    component: () => import("../components/TestSupabaseConnection.vue"),
-  },
 ];
 
 const router = createRouter({
