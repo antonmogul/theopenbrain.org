@@ -1443,7 +1443,7 @@ onMounted(() => {
         <template v-else>
             <!-- Sidebar -->
             <aside class="sidebar">
-                <!-- Logo -->
+                <!-- Logo (floating outside cards) -->
                 <div class="sidebar-logo">
                     <span class="logo-icon">OB</span>
                     <span class="logo-text">INSIDE THE BRAIN</span>
@@ -1458,180 +1458,165 @@ onMounted(() => {
                     </div>
                     <div class="user-info">
                         <p class="user-date">{{ currentDate }}</p>
-                        <p class="user-name">{{ displayName }}</p>
+                        <p class="user-greeting">Welcome back,</p>
+                        <p class="user-name">{{ displayName }}!</p>
                     </div>
-                    <button class="edit-profile-btn" title="Edit Profile">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path
-                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                            ></path>
-                            <path
-                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                            ></path>
-                        </svg>
-                    </button>
                 </div>
 
-                <!-- Navigation -->
-                <nav class="sidebar-nav">
-                    <button
-                        v-for="item in creatorNavItems"
-                        :key="item.id"
-                        @click="setActiveSection(item.id)"
-                        class="nav-item"
-                        :class="{ active: activeSection === item.id }"
-                    >
-                        <!-- Icons -->
-                        <svg
-                            v-if="item.icon === 'grid'"
-                            class="nav-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                <!-- Navigation Card -->
+                <div class="sidebar-nav-card">
+                    <nav class="sidebar-nav">
+                        <button
+                            v-for="item in creatorNavItems"
+                            :key="item.id"
+                            @click="setActiveSection(item.id)"
+                            class="nav-item"
+                            :class="{ active: activeSection === item.id }"
                         >
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                        <svg
-                            v-else-if="item.icon === 'book'"
-                            class="nav-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                            <path
-                                d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-                            ></path>
-                        </svg>
-                        <svg
-                            v-else-if="item.icon === 'layers'"
-                            class="nav-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <polygon
-                                points="12 2 2 7 12 12 22 7 12 2"
-                            ></polygon>
-                            <polyline points="2 17 12 22 22 17"></polyline>
-                            <polyline points="2 12 12 17 22 12"></polyline>
-                        </svg>
-                        <svg
-                            v-else-if="item.icon === 'image'"
-                            class="nav-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <rect
-                                x="3"
-                                y="3"
-                                width="18"
-                                height="18"
-                                rx="2"
-                                ry="2"
-                            ></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                        <svg
-                            v-else-if="item.icon === 'quiz'"
-                            class="nav-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path
-                                d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
-                            ></path>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
-                        <svg
-                            v-else-if="item.icon === 'users'"
-                            class="nav-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path
-                                d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                            ></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                        <svg
-                            v-else-if="item.icon === 'chart'"
-                            class="nav-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <line x1="18" y1="20" x2="18" y2="10"></line>
-                            <line x1="12" y1="20" x2="12" y2="4"></line>
-                            <line x1="6" y1="20" x2="6" y2="14"></line>
-                        </svg>
-                        <span class="nav-label">{{ item.label }}</span>
-                    </button>
-                </nav>
+                            <!-- Icons -->
+                            <svg
+                                v-if="item.icon === 'grid'"
+                                class="nav-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <svg
+                                v-else-if="item.icon === 'book'"
+                                class="nav-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"
+                                ></path>
+                                <path
+                                    d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                                ></path>
+                            </svg>
+                            <svg
+                                v-else-if="item.icon === 'layers'"
+                                class="nav-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <polygon
+                                    points="12 2 2 7 12 12 22 7 12 2"
+                                ></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg>
+                            <svg
+                                v-else-if="item.icon === 'image'"
+                                class="nav-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect
+                                    x="3"
+                                    y="3"
+                                    width="18"
+                                    height="18"
+                                    rx="2"
+                                    ry="2"
+                                ></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <svg
+                                v-else-if="item.icon === 'quiz'"
+                                class="nav-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path
+                                    d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                                ></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <svg
+                                v-else-if="item.icon === 'users'"
+                                class="nav-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                ></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <svg
+                                v-else-if="item.icon === 'chart'"
+                                class="nav-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            <span class="nav-label">{{ item.label }}</span>
+                        </button>
+                    </nav>
+                </div>
 
-                <!-- Read Book Button -->
+                <!-- Read Book Button (floating at bottom) -->
                 <div class="sidebar-footer">
                     <button @click="goToBook" class="read-book-btn">
                         <svg
@@ -4321,37 +4306,36 @@ onMounted(() => {
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
-    background: #1a1a1a;
+    background: #0d0d0d;
 }
 
 /* Sidebar */
 .sidebar {
-    width: 280px;
+    width: 300px;
     height: 100vh;
     position: sticky;
     top: 0;
-    background: #141414;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
     display: flex;
     flex-direction: column;
-    padding: 2.4rem;
+    padding: 2rem;
     overflow-y: auto;
+    gap: 1.6rem;
 }
 
+/* Logo - floating outside cards */
 .sidebar-logo {
     display: flex;
     align-items: center;
     gap: 1.2rem;
-    padding-bottom: 2.4rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    margin-bottom: 2.4rem;
+    padding: 0.8rem 0.4rem;
 }
 
 .logo-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     background: rgb(151, 71, 255);
-    border-radius: 8px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4371,21 +4355,19 @@ onMounted(() => {
 
 /* User Profile Card */
 .user-profile-card {
-    background: #202020;
-    border-radius: 12px;
-    padding: 1.6rem;
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 2rem;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 1.2rem;
-    margin-bottom: 2.4rem;
-    position: relative;
 }
 
 .user-avatar {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     background: linear-gradient(135deg, rgb(151, 71, 255) 0%, #6b21a8 100%);
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4399,48 +4381,49 @@ onMounted(() => {
 }
 
 .user-info {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
 }
 
 .user-date {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: #898989;
-    margin-bottom: 0.2rem;
+    color: #666;
     letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.user-greeting {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.4rem;
+    color: #888;
+    margin-top: 0.4rem;
 }
 
 .user-name {
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
+    font-size: 2.4rem;
+    font-weight: 600;
     color: white;
+    line-height: 1.2;
 }
 
-.edit-profile-btn {
-    position: absolute;
-    top: 1.2rem;
-    right: 1.2rem;
-    padding: 0.6rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 6px;
-    color: #898989;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.edit-profile-btn:hover {
-    background: rgba(151, 71, 255, 0.3);
-    color: white;
+/* Navigation Card */
+.sidebar-nav-card {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 1.2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Navigation */
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    flex: 1;
+    gap: 0.2rem;
 }
 
 .nav-item {
@@ -4464,16 +4447,22 @@ onMounted(() => {
 }
 
 .nav-item.active {
-    background: rgba(151, 71, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
     color: white;
 }
 
 .nav-item.active .nav-icon {
-    color: rgb(151, 71, 255);
+    color: white;
 }
 
 .nav-icon {
     flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.nav-item:hover .nav-icon,
+.nav-item.active .nav-icon {
+    opacity: 1;
 }
 
 .nav-label {
@@ -4484,8 +4473,6 @@ onMounted(() => {
 
 /* Sidebar Footer */
 .sidebar-footer {
-    padding-top: 1.6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
     margin-top: auto;
 }
 
@@ -4493,12 +4480,12 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.8rem;
+    gap: 1rem;
     width: 100%;
-    padding: 1.4rem;
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    padding: 1.6rem;
+    background: linear-gradient(135deg, rgb(151, 71, 255) 0%, #6b21a8 100%);
+    border: none;
+    border-radius: 12px;
     color: white;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.5rem;
@@ -4508,14 +4495,14 @@ onMounted(() => {
 }
 
 .read-book-btn:hover {
-    background: rgba(151, 71, 255, 0.2);
-    border-color: rgb(151, 71, 255);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(151, 71, 255, 0.3);
 }
 
 /* Main Content */
 .main-content {
     flex: 1;
-    background: #1a1a1a;
+    background: #0d0d0d;
     padding: 2.4rem 3.2rem;
     overflow-y: auto;
 }
@@ -4562,10 +4549,10 @@ onMounted(() => {
 
 /* Metrics Card */
 .metrics-card {
-    background: #202020;
+    background: #1a1a1a;
     border-radius: 16px;
     padding: 2.4rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: none;
 }
 
 .metrics-header {
