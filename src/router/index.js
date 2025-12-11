@@ -6,7 +6,7 @@ import HomeView from "@/views/HomeView.vue";
 function getSessionFromStorage() {
   try {
     const projectRef = import.meta.env.VITE_SUPABASE_URL?.match(
-      /https:\/\/([^.]+)/,
+      /https:\/\/([^.]+)/
     )?.[1];
     const storageKey = `sb-${projectRef}-auth-token`;
     const sessionData = localStorage.getItem(storageKey);
@@ -67,6 +67,18 @@ const routes = [
     path: "/quiz",
     name: "quiz",
     component: () => import("../views/QuizView.vue"),
+  },
+  {
+    path: "/professor",
+    name: "professor-dashboard",
+    component: () => import("../views/ProfessorDashboardView.vue"),
+    meta: { requiresAuth: true, requiredRole: "professor" },
+  },
+  {
+    path: "/enroll/:courseId",
+    name: "enroll",
+    component: () => import("../views/EnrollView.vue"),
+    meta: { requiresAuth: true },
   },
 ];
 
@@ -140,7 +152,7 @@ router.beforeEach(async (to, from) => {
               Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "application/json",
             },
-          },
+          }
         );
 
         if (response.ok) {
@@ -155,7 +167,7 @@ router.beforeEach(async (to, from) => {
               "Router: User role",
               userRole,
               "not in required roles",
-              requiredRoles,
+              requiredRoles
             );
             return { path: "/dashboard" };
           }
