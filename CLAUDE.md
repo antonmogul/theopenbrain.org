@@ -137,8 +137,12 @@ Routes defined in `src/router/index.js`:
 
 #### Data Architecture
 
+**Chapter Data Sources**:
+- **Chapter 1 ("The Retina")**: Hardcoded legacy chapter stored in local JSON files. Content modifications are persisted to localStorage.
+- **Chapter 2+**: Dynamic chapters fetched from Supabase database. Content modifications are saved via Supabase REST API.
+
 Content is stored in JSON files under `src/assets/json_backend/`:
-- `text.json` - Main educational content (sections, paragraphs, nested subsections)
+- `text.json` - Main educational content for Chapter 1 (sections, paragraphs, nested subsections)
 - `animations.json` - Animation configurations
 - `menu.json` - Navigation structure
 - `footnoets.json` - Footnotes (note the typo in filename)
@@ -150,7 +154,7 @@ The text content uses a deeply nested structure:
 sections → paragraphs → subSection → paragraphs → subSubSection
 ```
 
-User modifications to text (highlights, comments) are stored in localStorage and merged with the source JSON on load.
+User modifications to text (highlights, comments) are stored in localStorage for Chapter 1, or saved to Supabase for Chapter 2+.
 
 #### Vite Configuration
 

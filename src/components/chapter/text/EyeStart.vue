@@ -3,6 +3,7 @@ import { useGeneral, useText } from "@/stores";
 import lottie from "lottie-web";
 import { onMounted, ref, computed } from "vue";
 import { watchDebounced, useMouse } from "@vueuse/core";
+import { useRoute } from "vue-router";
 
 import DownArrow from "@/icons/custom/DownArrow.vue";
 
@@ -10,7 +11,18 @@ const { x } = useMouse();
 
 const store = useGeneral();
 const textStore = useText();
+const route = useRoute();
 const animation = ref();
+
+// Module name - for now hardcoded, could be fetched from Supabase later
+const moduleName = computed(() => {
+  // Chapter 1 belongs to "Visual Perception and UX" module
+  if (route.params.number === '1' || route.params.slug === 'the-retina') {
+    return 'Visual Perception and UX';
+  }
+  // For other chapters, could fetch from module data
+  return textStore.text?.moduleName || 'Visual Perception and UX';
+});
 
 // Get chapter title from store
 const chapterTitle = computed(() => {
