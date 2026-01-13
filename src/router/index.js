@@ -64,15 +64,28 @@ const routes = [
     component: () => import("../views/BreakView.vue"),
   },
   {
-    path: "/quiz",
+    path: "/quiz/:quizId",
     name: "quiz",
     component: () => import("../views/QuizView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/flashcards/:moduleId",
+    name: "flashcards",
+    component: () => import("../views/FlashcardView.vue"),
+    meta: { requiresAuth: true },
   },
   {
     path: "/professor",
     name: "professor-dashboard",
     component: () => import("../views/ProfessorDashboardView.vue"),
     meta: { requiresAuth: true, requiredRole: "professor" },
+  },
+  {
+    path: "/student",
+    name: "student-dashboard",
+    component: () => import("../views/StudentDashboardView.vue"),
+    meta: { requiresAuth: true, requiredRole: "student" },
   },
   {
     path: "/enroll/:courseId",

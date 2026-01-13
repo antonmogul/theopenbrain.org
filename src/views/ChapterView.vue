@@ -14,14 +14,61 @@ import MenuTutorial from "../components/Navigation/MenuTutorial.vue";
 import { useChapter } from "@/composables/useChapter";
 import jsonText from "@/assets/json_backend/text.json";
 
+// Phase 3A: Highlighting System Components
+import HighlightToolbar from "@/components/chapter/HighlightToolbar.vue";
+import NoteModal from "@/components/chapter/NoteModal.vue";
+import NotesSidebar from "@/components/chapter/NotesSidebar.vue";
+import TrendingHighlights from "@/components/chapter/TrendingHighlights.vue";
+
+// Phase 3A: Composables for highlighting
+import { useTextSelection } from "@/composables/useTextSelection";
+import { useHighlights } from "@/composables/useHighlights";
+import { useNotes } from "@/composables/useNotes";
+import { useAuth } from "@/composables/useAuth";
+
 const route = useRoute();
 const store = useGeneral();
 const storeText = useText();
 const commentStore = useCom();
 
+// Phase 3A: Authentication and highlighting composables
+const { user, isAuthenticated } = useAuth();
+
+// Text selection for highlighting
+const { selection, toolbarPosition, showToolbar, clearSelection } =
+    useTextSelection();
+
+// Highlights management
+const {
+    highlights,
+    loading: highlightsLoading,
+    highlightsByParagraph,
+    fetchHighlights,
+    createHighlight,
+    deleteHighlight,
+} = useHighlights();
+
+// Notes management
+const { notes, fetchNotes, createNote } = useNotes();
+
+// UI state for highlighting system
+const showNotesSidebar = ref(false);
+const showNoteModal = ref(false);
+const pendingHighlightForNote = ref(null);
+
 // Extract route params
 const chapterNumber = route.params.number;
 const chapterSlug = route.params.slug;
+
+// Computed module ID for Supabase chapters
+const currentModuleId = computed(() => {
+    // For Chapter 1 (the-retina), return null or a placeholder
+    // For other chapters, we need to get the module ID from the fetched data
+    if (chapterSlug === "the-retina") {
+        return null;
+    }
+    return transformedData.value?.moduleId || null;
+});
 
 // Track if chapter data is loaded
 const chapterDataLoaded = ref(false);
@@ -137,16 +184,118 @@ const showContent = computed(() => {
 });
 
 // Load chapter on mount and when route changes
-onMounted(() => {
-    loadChapter();
+onMounted(async () => {
+    await loadChapter();
+    // Fetch highlights for authenticated users on Supabase chapters
+    if (isAuthenticated.value && currentModuleId.value) {
+        await fetchHighlights();
+        await fetchNotes({ moduleId: currentModuleId.value });
+    }
 });
 
 watch(
     () => [route.params.number, route.params.slug],
-    () => {
-        loadChapter();
+    async () => {
+        await loadChapter();
+        // Re-fetch highlights when chapter changes
+        if (isAuthenticated.value && currentModuleId.value) {
+            await fetchHighlights();
+            await fetchNotes({ moduleId: currentModuleId.value });
+        }
     },
 );
+
+// === Phase 3A: Highlighting System Handlers ===
+
+// Handle creating a highlight from the toolbar
+async function handleCreateHighlight({ color, isPublic, withNote }) {
+    if (!selection.value || !isAuthenticated.value) {
+        clearSelection();
+        return;
+    }
+
+    try {
+        const newHighlight = await createHighlight({
+            paragraphId: selection.value.paragraphId,
+            startOffset: selection.value.startOffset,
+            endOffset: selection.value.endOffset,
+            selectedText: selection.value.text,
+            color: color,
+            isPublic: isPublic,
+            moduleId: currentModuleId.value,
+        });
+
+        // If user wants to add a note, show the modal
+        if (withNote && newHighlight) {
+            pendingHighlightForNote.value = {
+                ...newHighlight,
+                selectedText: selection.value.text,
+            };
+            showNoteModal.value = true;
+        }
+
+        clearSelection();
+
+        // Refresh highlights to update the display
+        if (currentModuleId.value) {
+            await fetchHighlights();
+        }
+    } catch (err) {
+        console.error("ChapterView: Error creating highlight:", err);
+        clearSelection();
+    }
+}
+
+// Handle saving a note from the note modal
+async function handleSaveNote(noteContent) {
+    if (!pendingHighlightForNote.value || !isAuthenticated.value) {
+        showNoteModal.value = false;
+        pendingHighlightForNote.value = null;
+        return;
+    }
+
+    try {
+        await createNote({
+            content: noteContent,
+            highlightId: pendingHighlightForNote.value.id,
+            paragraphId: pendingHighlightForNote.value.paragraph_id,
+            moduleId: currentModuleId.value,
+        });
+
+        showNoteModal.value = false;
+        pendingHighlightForNote.value = null;
+
+        // Refresh notes
+        if (currentModuleId.value) {
+            await fetchNotes({ moduleId: currentModuleId.value });
+        }
+    } catch (err) {
+        console.error("ChapterView: Error creating note:", err);
+    }
+}
+
+// Handle closing the note modal
+function handleCancelNoteModal() {
+    showNoteModal.value = false;
+    pendingHighlightForNote.value = null;
+}
+
+// Handle deleting a highlight
+async function handleDeleteHighlight(highlightId) {
+    try {
+        await deleteHighlight(highlightId);
+        if (currentModuleId.value) {
+            await fetchHighlights();
+        }
+    } catch (err) {
+        console.error("ChapterView: Error deleting highlight:", err);
+    }
+}
+
+// Toggle notes sidebar
+function toggleNotesSidebar() {
+    showNotesSidebar.value = !showNotesSidebar.value;
+}
 </script>
 
 <template>
@@ -224,6 +373,69 @@ watch(
                 />
             </div>
             <ExportField />
+
+            <!-- Phase 3A: Highlighting System Components -->
+
+            <!-- Highlight Toolbar (appears on text selection) -->
+            <HighlightToolbar
+                v-if="isAuthenticated && currentModuleId"
+                :visible="showToolbar"
+                :position="toolbarPosition"
+                :selection="selection"
+                @highlight="handleCreateHighlight"
+                @cancel="clearSelection"
+            />
+
+            <!-- Notes Sidebar -->
+            <NotesSidebar
+                :is-open="showNotesSidebar && isAuthenticated"
+                :module-id="currentModuleId"
+                @close="showNotesSidebar = false"
+            />
+
+            <!-- Note Modal (for adding notes to highlights) -->
+            <NoteModal
+                :visible="showNoteModal"
+                :highlight="pendingHighlightForNote"
+                @save="handleSaveNote"
+                @cancel="handleCancelNoteModal"
+            />
+
+            <!-- Trending Highlights (fixed position, right side) -->
+            <TrendingHighlights
+                v-if="isAuthenticated && currentModuleId"
+                :module-id="currentModuleId"
+                class="fixed right-4 top-24 w-72 max-h-[60vh] overflow-y-auto z-30 hidden xl:block"
+            />
+
+            <!-- Notes Toggle Button -->
+            <button
+                v-if="isAuthenticated && currentModuleId"
+                @click="toggleNotesSidebar"
+                data-testid="notes-toggle"
+                class="fixed right-4 bottom-24 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all z-40"
+                :class="{ 'ring-2 ring-blue-300': showNotesSidebar }"
+                title="Toggle Notes"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path
+                        d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"
+                    ></path>
+                    <path
+                        d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                    ></path>
+                </svg>
+            </button>
         </template>
     </div>
 </template>
