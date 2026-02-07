@@ -93,6 +93,12 @@ const routes = [
     component: () => import("../views/EnrollView.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/lab/:labId",
+    name: "lab",
+    component: () => import("../views/LabView.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

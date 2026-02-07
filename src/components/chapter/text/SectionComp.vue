@@ -91,6 +91,7 @@
             v-else-if="!paragraph.subSection"
             :key="paragraph.id"
             :id="paragraph.id"
+            :data-paragraph-id="paragraph.id"
             class="P"
             v-html="paragraph.text"
           />

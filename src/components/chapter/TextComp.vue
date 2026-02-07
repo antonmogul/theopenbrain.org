@@ -380,6 +380,7 @@ onBeforeUnmount(() => {
               <p
                 v-else
                 :id="paragraph.id"
+                :data-paragraph-id="paragraph.id"
                 class="P"
                 v-html="paragraph.text"
               />
@@ -412,8 +413,8 @@ onBeforeUnmount(() => {
                 />
               </template>
               <template v-else>
-                <div v-if="paragraph.hasHeading" :id="paragraph.id" v-html="paragraph.text" />
-                <p v-else :id="paragraph.id" class="P text-black" v-html="paragraph.text" />
+                <div v-if="paragraph.hasHeading" :id="paragraph.id" :data-paragraph-id="paragraph.id" v-html="paragraph.text" />
+                <p v-else :id="paragraph.id" :data-paragraph-id="paragraph.id" class="P text-black" v-html="paragraph.text" />
               </template>
             </template>
           </span>

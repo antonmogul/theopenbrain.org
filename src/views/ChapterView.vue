@@ -20,6 +20,9 @@ import NoteModal from "@/components/chapter/NoteModal.vue";
 import NotesSidebar from "@/components/chapter/NotesSidebar.vue";
 import TrendingHighlights from "@/components/chapter/TrendingHighlights.vue";
 
+// Phase 6: AI Tutor Components
+import AITutorSidebar from "@/components/ai/AITutorSidebar.vue";
+
 // Phase 3A: Composables for highlighting
 import { useTextSelection } from "@/composables/useTextSelection";
 import { useHighlights } from "@/composables/useHighlights";
@@ -55,6 +58,9 @@ const { notes, fetchNotes, createNote } = useNotes();
 const showNotesSidebar = ref(false);
 const showNoteModal = ref(false);
 const pendingHighlightForNote = ref(null);
+
+// Phase 6: AI Tutor UI state
+const showAITutor = ref(false);
 
 // Extract route params
 const chapterNumber = route.params.number;
@@ -436,6 +442,41 @@ function toggleNotesSidebar() {
                     ></path>
                 </svg>
             </button>
+
+            <!-- Phase 6: AI Tutor Button -->
+            <button
+                v-if="isAuthenticated"
+                @click="showAITutor = true"
+                data-testid="ai-tutor-toggle"
+                class="fixed right-4 bottom-40 bg-violet-500 hover:bg-violet-600 text-white p-4 rounded-full shadow-lg transition-all z-40"
+                :class="{ 'ring-2 ring-violet-300': showAITutor }"
+                title="AI Tutor"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                    <circle cx="12" cy="5" r="2"></circle>
+                    <path d="M12 7v4"></path>
+                    <line x1="8" y1="16" x2="8" y2="16"></line>
+                    <line x1="16" y1="16" x2="16" y2="16"></line>
+                </svg>
+            </button>
+
+            <!-- Phase 6: AI Tutor Sidebar -->
+            <AITutorSidebar
+                v-if="showAITutor && isAuthenticated"
+                :module-id="currentModuleId"
+                @close="showAITutor = false"
+            />
         </template>
     </div>
 </template>

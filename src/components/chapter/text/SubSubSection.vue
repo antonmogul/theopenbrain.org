@@ -36,6 +36,7 @@
           <p
             v-else
             :id="subSubSection.id"
+            :data-paragraph-id="subSubSection.id"
             class="subSubP pt-0"
             v-html="subSubSection.text"
           />
@@ -74,6 +75,7 @@
                   subSubSection.type != 'breakSection'
                 "
                 :id="subSubParagraph.id"
+                :data-paragraph-id="subSubParagraph.id"
                 :key="subSubParagraph.title"
                 class="subSubParP"
                 v-html="subSubParagraph.text"

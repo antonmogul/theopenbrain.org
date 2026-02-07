@@ -98,6 +98,7 @@
             <p
               v-else-if="!subParagraph.subSubSection && !subParagraph.type"
               :id="subParagraph.id"
+              :data-paragraph-id="subParagraph.id"
               :key="subParagraph.id"
               class="subP"
               v-html="subParagraph.text"

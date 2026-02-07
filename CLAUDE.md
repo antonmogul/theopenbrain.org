@@ -204,3 +204,14 @@ Version is defined in `package.json` and:
 - Exposed globally as `window.__VERSION__` via Vite config
 - Accessible in components via `app.config.globalProperties.$version`
 - Deployment triggered via `npm version` through `postversion` hook
+
+## Project Context & Documentation
+
+Detailed project documentation, PRDs, phase specs, and roadmap are maintained in the Artificial Brain vault:
+`/Users/antonmorrison/Documents/GitHub/Artificail-brain/Artificial-Brain/vault/02-projects/911/open-brain`
+
+Key documents include:
+- Phase PRDs (1-7) with feature specs and acceptance criteria
+- Database schema and Supabase table definitions
+- User role definitions (Creator, Professor, Student)
+- Roadmap and sprint history

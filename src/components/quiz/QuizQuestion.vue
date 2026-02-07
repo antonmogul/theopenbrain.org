@@ -133,6 +133,7 @@ function getOptionClass(option) {
             <svg
               v-if="option === question.correct_answer"
               class="text-green-500"
+              data-testid="answer-correct"
               xmlns="http://www.w3.org/2000/svg"
               width="20"
               height="20"
@@ -151,6 +152,7 @@ function getOptionClass(option) {
                 option !== question.correct_answer
               "
               class="text-red-500"
+              data-testid="answer-incorrect"
               xmlns="http://www.w3.org/2000/svg"
               width="20"
               height="20"
