@@ -154,7 +154,14 @@ import IllustarionMultiple from "@/components/chapter/Illus/IllustarionMultiple.
 import { ref, onMounted } from "vue";
 import { addH, removeH, toSlug, toCamelCase } from "@/helper/general";
 
-import lottie from "lottie-web";
+// Dynamic import — lottie-web only loaded when component actually mounts (not at parse time)
+let lottie;
+const lottieReady = import("lottie-web").then((m) => {
+  lottie = m.default;
+});
+
+// Detect reduced-motion preference
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 import animationJSON from "@/assets/json_backend/animations.json";
 import PlayIcon from "@/icons/custom/PlayIcon.vue";
 import PauseIcon from "@/icons/custom/PauseIcon.vue";
@@ -171,9 +178,15 @@ const props = defineProps({
 let animationLottie;
 let isPaused = ref(false);
 
-const info = animationJSON.animations.find((x) => {
-  return x.id == props.animation.id;
-});
+// Use the animation prop directly (it now contains all config from DB or JSON).
+// Fall back to JSON lookup for backward compatibility during transition.
+const info = props.animation.clickTriggered !== undefined ||
+  props.animation.loop !== undefined ||
+  props.animation.illuImage !== undefined ||
+  props.animation.flip !== undefined ||
+  props.animation.switch !== undefined
+    ? props.animation
+    : animationJSON.animations.find((x) => x.id == props.animation.id) || props.animation;
 
 const activeState = !info.blockStates
   ? ref({
@@ -258,10 +271,19 @@ const setBlockState = (index) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (info.switch) return;
+  if (info.illuImage || info.flip) return; // No Lottie needed for images/flips
+
+  // Skip animations entirely for users with reduced-motion preference
+  if (prefersReducedMotion) return;
+
   let svgContainer = document.getElementById(props.animation.id);
   if (!svgContainer) return;
+
+  // Wait for lottie-web dynamic import to resolve
+  await lottieReady;
+  if (!lottie) return;
 
   animationLottie = lottie.loadAnimation({
     rendererSettings: {

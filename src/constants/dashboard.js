@@ -37,6 +37,33 @@ export const MEDIA_TYPES = {
   YOUTUBE: 'youtube',
 };
 
+// Animation interaction types
+export const INTERACTION_TYPES = {
+  ALL: 'all',
+  AUTO_LOOP: 'auto_loop',
+  CLICK_STATES: 'click_states',
+  SWITCH: 'switch',
+  FULLSCREEN_STATES: 'fullscreen_states',
+  SCROLL_TRANSITION: 'scroll_transition',
+  SCROLL_LINKED: 'scroll_linked',
+  VIDEO_FLIP: 'video_flip',
+  STATIC_IMAGE: 'static_image',
+  YOUTUBE_EMBED: 'youtube_embed',
+};
+
+// Human-readable labels for interaction types
+export const INTERACTION_TYPE_LABELS = {
+  [INTERACTION_TYPES.AUTO_LOOP]: 'Auto Loop',
+  [INTERACTION_TYPES.CLICK_STATES]: 'Click States',
+  [INTERACTION_TYPES.SWITCH]: 'Switch',
+  [INTERACTION_TYPES.FULLSCREEN_STATES]: 'Fullscreen States',
+  [INTERACTION_TYPES.SCROLL_TRANSITION]: 'Scroll Transition',
+  [INTERACTION_TYPES.SCROLL_LINKED]: 'Scroll Linked',
+  [INTERACTION_TYPES.VIDEO_FLIP]: 'Video Flip',
+  [INTERACTION_TYPES.STATIC_IMAGE]: 'Static Image',
+  [INTERACTION_TYPES.YOUTUBE_EMBED]: 'YouTube Embed',
+};
+
 // User roles
 export const USER_ROLES = {
   CREATOR: 'creator',

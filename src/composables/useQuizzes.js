@@ -126,7 +126,7 @@ export function useQuizzes() {
     }
 
     try {
-      const query = `quiz_attempts?user_id=eq.${user.value.id}&completed_at=not.is.null&select=*,quiz:quizzes(id,title,passing_score)&order=completed_at.desc&limit=${limit}`;
+      const query = `quiz_attempts?student_id=eq.${user.value.id}&completed_at=not.is.null&select=*,quiz:quizzes(id,title,passing_score)&order=completed_at.desc&limit=${limit}`;
 
       const data = await supabaseRest(query);
 
@@ -200,7 +200,7 @@ export function useQuizzes() {
         },
         body: JSON.stringify({
           quiz_id: quizId,
-          user_id: user.value.id,
+          student_id: user.value.id,
           started_at: new Date().toISOString(),
         }),
       });
@@ -364,7 +364,7 @@ export function useQuizzes() {
     if (!user.value) return [];
 
     try {
-      let query = `quiz_attempts?user_id=eq.${user.value.id}&select=*,quiz:quizzes(id,title,passing_score)&order=started_at.desc&limit=${limit}`;
+      let query = `quiz_attempts?student_id=eq.${user.value.id}&select=*,quiz:quizzes(id,title,passing_score)&order=started_at.desc&limit=${limit}`;
 
       if (quizId) {
         query += `&quiz_id=eq.${quizId}`;
@@ -383,7 +383,7 @@ export function useQuizzes() {
     if (!user.value) return null;
 
     try {
-      const query = `quiz_attempts?user_id=eq.${user.value.id}&quiz_id=eq.${quizId}&completed_at=not.is.null&select=score&order=score.desc&limit=1`;
+      const query = `quiz_attempts?student_id=eq.${user.value.id}&quiz_id=eq.${quizId}&completed_at=not.is.null&select=score&order=score.desc&limit=1`;
       const data = await supabaseRest(query);
 
       if (data && data.length > 0) {

@@ -54,6 +54,11 @@ const routes = [
     meta: { requiresAuth: true, requiredRole: "creator" },
   },
   {
+    path: "/dashboard/chapter/new",
+    name: "chapter-wizard",
+    redirect: { path: "/dashboard", query: { section: "chapter-wizard" } },
+  },
+  {
     path: "/chapter/:number/:slug",
     name: "chapter",
     component: () => import("../views/ChapterView.vue"),
@@ -136,28 +141,21 @@ router.beforeEach(async (to, from) => {
 
   // Auth guard for protected routes
   if (to.meta.requiresAuth) {
-    console.log("Router: Checking auth for protected route:", to.path);
-
     const session = getSessionFromStorage();
 
     if (!session) {
-      console.log("Router: No valid session, redirecting to home");
       return { path: "/" };
     }
 
-    console.log("Router: Session valid for user:", session.user?.email);
+    // Role-based route protection and dashboard redirection
+    const userId = session.user?.id;
 
-    // Role-based route protection
-    if (to.meta.requiredRole) {
-      const userId = session.user?.id;
-
+    if (to.meta.requiredRole || to.name === "dashboard") {
       if (!userId) {
-        console.log("Router: No user ID, redirecting to dashboard");
-        return { path: "/dashboard" };
+        return { path: "/" };
       }
 
       try {
-        // Fetch profile using REST API
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const supabaseKey =
           import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
@@ -177,18 +175,25 @@ router.beforeEach(async (to, from) => {
         if (response.ok) {
           const profiles = await response.json();
           const userRole = profiles[0]?.role;
-          const requiredRoles = Array.isArray(to.meta.requiredRole)
-            ? to.meta.requiredRole
-            : [to.meta.requiredRole];
 
-          if (!requiredRoles.includes(userRole)) {
-            console.log(
-              "Router: User role",
-              userRole,
-              "not in required roles",
-              requiredRoles
-            );
-            return { path: "/dashboard" };
+          // Redirect /dashboard to the correct role-specific dashboard
+          if (to.name === "dashboard" && userRole !== "creator") {
+            if (userRole === "student") return { path: "/student" };
+            if (userRole === "professor") return { path: "/professor" };
+          }
+
+          // Check requiredRole guard
+          if (to.meta.requiredRole) {
+            const requiredRoles = Array.isArray(to.meta.requiredRole)
+              ? to.meta.requiredRole
+              : [to.meta.requiredRole];
+
+            if (!requiredRoles.includes(userRole)) {
+              // Redirect to the user's own dashboard instead of generic /dashboard
+              if (userRole === "student") return { path: "/student" };
+              if (userRole === "professor") return { path: "/professor" };
+              return { path: "/dashboard" };
+            }
           }
         }
       } catch (err) {

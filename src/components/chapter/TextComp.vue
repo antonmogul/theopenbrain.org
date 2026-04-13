@@ -8,7 +8,7 @@ import { toSlug, addH, removeH } from "@/helper/general";
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
 
-import { marker, pointAdderAnimation } from "@/helper/marking";
+import { pointAdderAnimation } from "@/helper/marking";
 import Section from "./text/SectionComp.vue";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
@@ -209,7 +209,6 @@ onMounted(() => {
     if (_text) {
       clearInterval(wait);
       pointAdderAnimation();
-      marker(source, container);
       const illuHighlights = document.getElementsByClassName("animationMarker");
 
       for (const highlight of illuHighlights) {
@@ -377,7 +376,7 @@ onBeforeUnmount(() => {
                 class-name="P"
                 @save="({ paragraphId, content }) => saveContent({ paragraphId, content, type: 'intro' })"
               />
-              <p
+              <div
                 v-else
                 :id="paragraph.id"
                 :data-paragraph-id="paragraph.id"
@@ -414,7 +413,7 @@ onBeforeUnmount(() => {
               </template>
               <template v-else>
                 <div v-if="paragraph.hasHeading" :id="paragraph.id" :data-paragraph-id="paragraph.id" v-html="paragraph.text" />
-                <p v-else :id="paragraph.id" :data-paragraph-id="paragraph.id" class="P text-black" v-html="paragraph.text" />
+                <div v-else :id="paragraph.id" :data-paragraph-id="paragraph.id" class="P text-black" v-html="paragraph.text" />
               </template>
             </template>
           </span>

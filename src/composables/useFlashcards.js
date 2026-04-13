@@ -92,7 +92,7 @@ export function useFlashcards() {
       // Get user's response history
       const cardIds = cards.map((c) => `"${c.id}"`).join(",");
       const responses = await supabaseRest(
-        `flashcard_responses?user_id=eq.${user.value.id}&flashcard_id=in.(${cardIds})&select=*&order=reviewed_at.desc`
+        `flashcard_responses?student_id=eq.${user.value.id}&flashcard_id=in.(${cardIds})&select=*&order=created_at.desc`
       );
 
       // Create a map of latest response per card
@@ -112,7 +112,7 @@ export function useFlashcards() {
 
         if (lastResponse) {
           const daysSinceReview =
-            (now - new Date(lastResponse.reviewed_at)) / (1000 * 60 * 60 * 24);
+            (now - new Date(lastResponse.created_at)) / (1000 * 60 * 60 * 24);
           const easeFactor = lastResponse.ease_factor || 2.5;
           const interval = lastResponse.interval_days || 1;
 
@@ -208,7 +208,7 @@ export function useFlashcards() {
       // Get user's response history
       const cardIds = cards.map((c) => `"${c.id}"`).join(",");
       const responses = await supabaseRest(
-        `flashcard_responses?user_id=eq.${user.value.id}&flashcard_id=in.(${cardIds})&select=flashcard_id,interval_days,reviewed_at&order=reviewed_at.desc`
+        `flashcard_responses?student_id=eq.${user.value.id}&flashcard_id=in.(${cardIds})&select=flashcard_id,interval_days,created_at&order=created_at.desc`
       );
 
       // Get latest response per card
@@ -229,7 +229,7 @@ export function useFlashcards() {
           dueCount++; // New card
         } else {
           const daysSince =
-            (now - new Date(resp.reviewed_at)) / (1000 * 60 * 60 * 24);
+            (now - new Date(resp.created_at)) / (1000 * 60 * 60 * 24);
           if (daysSince >= resp.interval_days) {
             dueCount++;
           }
@@ -255,6 +255,11 @@ export function useFlashcards() {
     error.value = null;
 
     try {
+      // Fetch cards first so we can include card_ids in session
+      await fetchFlashcardsWithPriority(moduleId);
+
+      const cardIds = flashcards.value.map((c) => c.id);
+
       // Create session record
       const sessionData = await supabaseRest("flashcard_sessions", {
         method: "POST",
@@ -262,9 +267,8 @@ export function useFlashcards() {
           Prefer: "return=representation",
         },
         body: JSON.stringify({
-          user_id: user.value.id,
-          module_id: moduleId,
-          started_at: new Date().toISOString(),
+          student_id: user.value.id,
+          card_ids: cardIds,
         }),
       });
 
@@ -276,9 +280,6 @@ export function useFlashcards() {
       isFlipped.value = false;
       sessionStats.value = { correct: 0, incorrect: 0, skipped: 0 };
       sessionStartTime.value = new Date();
-
-      // Fetch cards with spaced repetition priority
-      await fetchFlashcardsWithPriority(moduleId);
 
       return {
         session: currentSession.value,
@@ -365,17 +366,20 @@ export function useFlashcards() {
       }
 
       // Save response
+      const nextReview = new Date();
+      nextReview.setDate(nextReview.getDate() + interval);
+
       await supabaseRest("flashcard_responses", {
         method: "POST",
         body: JSON.stringify({
           session_id: currentSession.value.id,
           flashcard_id: card.id,
-          user_id: user.value.id,
-          rating: rating,
+          student_id: user.value.id,
+          was_correct: rating >= 3,
           ease_factor: easeFactor,
           interval_days: interval,
           repetitions: repetitions,
-          reviewed_at: new Date().toISOString(),
+          next_review_date: nextReview.toISOString().split("T")[0],
         }),
       });
 
@@ -384,7 +388,7 @@ export function useFlashcards() {
         ease_factor: easeFactor,
         interval_days: interval,
         repetitions: repetitions,
-        reviewed_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       // Move to next card
@@ -469,7 +473,7 @@ export function useFlashcards() {
     if (!user.value) return [];
 
     try {
-      const query = `flashcard_sessions?user_id=eq.${user.value.id}&completed_at=not.is.null&select=*&order=started_at.desc&limit=${limit}`;
+      const query = `flashcard_sessions?student_id=eq.${user.value.id}&completed_at=not.is.null&select=*&order=started_at.desc&limit=${limit}`;
       const data = await supabaseRest(query);
       return data || [];
     } catch (e) {
@@ -494,7 +498,7 @@ export function useFlashcards() {
       if (!cardIds) return { totalCards: 0, dueCards: 0, masteredCards: 0 };
 
       const responses = await supabaseRest(
-        `flashcard_responses?user_id=eq.${user.value.id}&flashcard_id=in.(${cardIds})&select=flashcard_id,ease_factor,interval_days,reviewed_at&order=reviewed_at.desc`
+        `flashcard_responses?student_id=eq.${user.value.id}&flashcard_id=in.(${cardIds})&select=flashcard_id,ease_factor,interval_days,created_at&order=created_at.desc`
       );
 
       // Get latest response per card
@@ -515,7 +519,7 @@ export function useFlashcards() {
           dueCards++; // New card
         } else {
           const daysSince =
-            (now - new Date(resp.reviewed_at)) / (1000 * 60 * 60 * 24);
+            (now - new Date(resp.created_at)) / (1000 * 60 * 60 * 24);
           if (daysSince >= resp.interval_days) {
             dueCards++;
           }

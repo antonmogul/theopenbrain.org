@@ -1,11 +1,11 @@
 <script setup>
 import { RouterView, useRoute } from "vue-router";
-import MenuChapter from "./components/Navigation/MenuChapter.vue";
-import MenuChapters from "./components/Navigation/MenuChapters.vue";
+import MenuNav from "./components/Navigation/MenuNav.vue";
 import MediaQueryWarning from "./components/UI/MediaQueryWarning.vue";
 import MenuHome from "./components/Navigation/MenuHome.vue";
 import MenuAbout from "./components/Navigation/MenuAbout.vue";
 import MenuAuth from "./components/Navigation/MenuAuth.vue";
+import BottomNav from "./components/Navigation/BottomNav.vue";
 import { onBeforeUnmount, ref, watch } from "vue";
 import { watchDebounced, useMediaQuery } from "@vueuse/core";
 import { useGeneral } from "@/stores";
@@ -75,8 +75,7 @@ onBeforeUnmount(() => {
                 <component :is="Component" />
             </transition>
         </RouterView>
-        <MenuChapter />
-        <MenuChapters />
+        <MenuNav />
         <MenuHome />
         <MenuAbout v-if="route.name === 'chapter'" />
         <MenuAuth
@@ -87,6 +86,7 @@ onBeforeUnmount(() => {
                 route.name === 'editor'
             "
         />
+        <BottomNav />
     </div>
     <div v-else>
         <MediaQueryWarning />

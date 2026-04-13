@@ -37,9 +37,52 @@ export function useChapter() {
    * Convert JSONB content blocks to HTML text
    * Returns an object with text (for paragraphs) and hasHeading flag
    */
+  /**
+   * Extract Chapter 1-specific metadata from content blocks.
+   * Returns extra fields to merge onto the paragraph object
+   * (animationFull, type, img, steps, etc.)
+   */
+  function extractChapter1Meta(blocks) {
+    const meta = {};
+    if (!blocks || !Array.isArray(blocks)) return meta;
+    for (const block of blocks) {
+      if (!block) continue;
+      if (block.type === "animation_full") {
+        meta.animationFull = true;
+        meta.animationId = block.animationId || null;
+        if (block.scroll) meta.scroll = true;
+      }
+      if (block.type === "break_section") {
+        meta.type = "breakSection";
+        meta.title = block.title;
+        meta.steps = block.steps;
+      }
+      if (block.type === "break_video") {
+        meta.type = "breakVideo";
+        meta.title = block.title;
+        if (block.videoSlug) meta.videoSlug = block.videoSlug;
+      }
+      if (block.type === "image") {
+        meta.img = block.src;
+        if (block.caption) meta.imgCap = block.caption;
+        if (block.closed) meta.imgClosed = block.closed;
+      }
+      if (block.type === "further_reading") {
+        meta._isFurtherReading = true;
+        meta.title = block.title;
+        meta.links = block.links;
+      }
+      if (block.type === "footnote") {
+        meta._isFootnote = true;
+        meta.footnoteNumber = block.number;
+        meta.footnoteContent = block.content;
+      }
+    }
+    return meta;
+  }
+
   function contentBlocksToHTML(blocks) {
     if (!blocks || !Array.isArray(blocks)) {
-      console.log("useChapter: No blocks or not an array:", blocks);
       return { text: "", hasHeading: false };
     }
 
@@ -71,8 +114,11 @@ export function useChapter() {
         if (block.type === "image") {
           return `<img src="${block.src || ""}" alt="${block.alt || ""}" />`;
         }
-        if (block.type === "animation") {
-          // Animation markers - skip for display
+        if (block.type === "citation_ref") {
+          return `<sup class="citation-ref" data-ref="${block.number}">${block.number}</sup>`;
+        }
+        // Chapter 1-specific types — metadata only, no HTML
+        if (["animation", "animation_full", "break_section", "break_video", "further_reading", "footnote"].includes(block.type)) {
           return "";
         }
         // Default: try to use content property
@@ -81,6 +127,141 @@ export function useChapter() {
       .join("");
 
     return { text: html, hasHeading };
+  }
+
+  /**
+   * Transform a single DB paragraph row into a legacy JSON paragraph object.
+   */
+  function transformParagraph(p) {
+    const blocks = p.content?.blocks || [];
+    const contentResult = contentBlocksToHTML(blocks);
+    const meta = extractChapter1Meta(blocks);
+
+    const para = {
+      id: p.id,
+      text: contentResult.text,
+      hasHeading: contentResult.hasHeading,
+      // Spread Chapter 1-specific metadata (animationFull, type, img, etc.)
+      ...meta,
+    };
+
+    // Add animation if present
+    if (p.animation_id) {
+      para.animation = {
+        name: p.animation_trigger || "default",
+        id: `animation${p.animation_trigger || "default"}`,
+      };
+    }
+
+    return para;
+  }
+
+  /**
+   * Reconstruct nested subSection / subSubSection structure from flat
+   * paragraph rows that have subsection_level and is_subsection_header.
+   *
+   * Input:  flat list of DB paragraph rows sorted by order_index
+   * Output: nested array matching text.json's paragraphs structure
+   */
+  function reconstructNesting(flatParagraphs) {
+    const result = [];
+    let currentSubSection = null;
+    let currentSubSubGroup = null;
+
+    for (const p of flatParagraphs) {
+      const level = p.subsection_level || 0;
+
+      if (p.is_subsection_header && level === 1) {
+        // Start a new subSection
+        if (currentSubSection) {
+          // Close any open subSubSection group
+          if (currentSubSubGroup) {
+            currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+            currentSubSubGroup = null;
+          }
+        }
+        currentSubSection = {
+          id: p.id,
+          title: p.content_text || "",
+          paragraphs: [],
+        };
+        // Add animation from the section-header paragraph
+        if (p.animation_id) {
+          currentSubSection.animation = {
+            name: p.animation_trigger || "default",
+            id: `animation${p.animation_trigger || "default"}`,
+          };
+        }
+        continue;
+      }
+
+      if (level === 2) {
+        // subSubSection content
+        if (!currentSubSubGroup) currentSubSubGroup = [];
+        currentSubSubGroup.push(transformParagraph(p));
+        continue;
+      }
+
+      if (level === 1 && currentSubSection) {
+        // Close subSubSection group if open
+        if (currentSubSubGroup) {
+          currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+          currentSubSubGroup = null;
+        }
+        currentSubSection.paragraphs.push(transformParagraph(p));
+        continue;
+      }
+
+      // level === 0: top-level paragraph
+      // First, flush any open subSection
+      if (currentSubSection) {
+        if (currentSubSubGroup) {
+          currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+          currentSubSubGroup = null;
+        }
+        // Wrap as a subSection entry in parent
+        result.push({ subSection: [currentSubSection] });
+        currentSubSection = null;
+      }
+
+      result.push(transformParagraph(p));
+    }
+
+    // Flush remaining
+    if (currentSubSection) {
+      if (currentSubSubGroup) {
+        currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+      }
+      result.push({ subSection: [currentSubSection] });
+    }
+
+    return result;
+  }
+
+  /**
+   * Group consecutive subSection entries that were split across
+   * multiple is_subsection_header rows into a single { subSection: [...] } wrapper.
+   * The original text.json has one paragraph with subSection: [sub1, sub2, sub3, ...]
+   */
+  function mergeConsecutiveSubSections(paragraphs) {
+    const merged = [];
+    let subSectionBuffer = [];
+
+    for (const p of paragraphs) {
+      if (p.subSection) {
+        subSectionBuffer.push(...p.subSection);
+      } else {
+        if (subSectionBuffer.length > 0) {
+          merged.push({ subSection: subSectionBuffer });
+          subSectionBuffer = [];
+        }
+        merged.push(p);
+      }
+    }
+    if (subSectionBuffer.length > 0) {
+      merged.push({ subSection: subSectionBuffer });
+    }
+    return merged;
   }
 
   /**
@@ -95,21 +276,23 @@ export function useChapter() {
     const sortedSections = [...module.sections].sort(
       (a, b) => a.order_index - b.order_index,
     );
-    console.log("useChapter: Total sections found:", sortedSections.length);
-    console.log(
-      "useChapter: Section titles:",
-      sortedSections.map((s) => `${s.order_index}: ${s.title}`),
-    );
 
-    // Find introduction section (order_index 0 or slug 'introduction')
+    // Find special sections
     const introSection = sortedSections.find(
       (s) => s.slug === "introduction" || s.order_index === 0,
     );
-    const mainSections = sortedSections.filter(
-      (s) => s.slug !== "introduction" && s.order_index !== 0,
+    const furtherReadingSection = sortedSections.find(
+      (s) => s.slug === "further-reading",
     );
-    console.log("useChapter: Intro section:", introSection?.title);
-    console.log("useChapter: Main sections count:", mainSections.length);
+    const footnotesSection = sortedSections.find(
+      (s) => s.slug === "footnotes",
+    );
+    const mainSections = sortedSections.filter(
+      (s) =>
+        s !== introSection &&
+        s !== furtherReadingSection &&
+        s !== footnotesSection,
+    );
 
     // Transform intro section
     const intro = introSection
@@ -117,98 +300,103 @@ export function useChapter() {
           {
             id: introSection.id,
             title: introSection.title,
+            animation: introSection.animation_config || undefined,
             paragraphs: introSection.paragraphs
               ? introSection.paragraphs
                   .sort((a, b) => a.order_index - b.order_index)
-                  .map((p) => {
-                    const contentResult = contentBlocksToHTML(
-                      p.content?.blocks || [],
-                    );
-                    return {
-                      id: p.id,
-                      text: contentResult.text,
-                      hasHeading: contentResult.hasHeading,
-                      ...(p.animation_id && {
-                        animation: {
-                          name: p.animation_trigger || "default",
-                          id: `animation${p.animation_trigger || "default"}`,
-                        },
-                      }),
-                    };
-                  })
+                  .map(transformParagraph)
               : [],
           },
         ]
       : [];
 
-    // Transform main sections
-    const sections = mainSections.map((section) => ({
-      id: section.id,
-      title: section.title,
-      paragraphs: section.paragraphs
-        ? section.paragraphs
-            .sort((a, b) => a.order_index - b.order_index)
-            .map((p) => {
-              const contentResult = contentBlocksToHTML(
-                p.content?.blocks || [],
-              );
-              const baseParagraph = {
-                id: p.id,
-                text: contentResult.text,
-                hasHeading: contentResult.hasHeading,
-              };
+    // Transform main sections — reconstruct nesting from flat paragraphs
+    const sections = mainSections.map((section) => {
+      const sorted = section.paragraphs
+        ? [...section.paragraphs].sort((a, b) => a.order_index - b.order_index)
+        : [];
 
-              // Add animation if present
-              if (p.animation_id) {
-                baseParagraph.animation = {
-                  name: p.animation_trigger || "default",
-                  id: `animation${p.animation_trigger || "default"}`,
-                };
-              }
+      // Check if any paragraphs have subsection nesting
+      const hasNesting = sorted.some((p) => (p.subsection_level || 0) > 0 || p.is_subsection_header);
 
-              // Handle subsection headers
-              if (p.is_subsection_header) {
-                baseParagraph.subSection = [
-                  {
-                    id: p.id,
-                    title: p.content_text || "",
-                    paragraphs: [], // Will be populated by subsequent paragraphs
-                  },
-                ];
-              }
+      let paragraphs;
+      if (hasNesting) {
+        paragraphs = mergeConsecutiveSubSections(reconstructNesting(sorted));
+      } else {
+        paragraphs = sorted.map(transformParagraph);
+      }
 
-              return baseParagraph;
-            })
-        : [],
-    }));
+      const sectionObj = {
+        id: section.id,
+        title: section.title,
+        paragraphs,
+      };
+
+      // Restore section-level animation from animation_config
+      if (section.animation_config) {
+        sectionObj.animation = section.animation_config;
+      }
+
+      return sectionObj;
+    });
+
+    // Build furtherReading from its section's paragraphs
+    let furtherReading = {
+      id: "default-further-reading",
+      title: "Further reading:",
+      paragraphs: [],
+    };
+    if (furtherReadingSection?.paragraphs) {
+      const frParas = [...furtherReadingSection.paragraphs]
+        .sort((a, b) => a.order_index - b.order_index);
+      furtherReading = {
+        id: furtherReadingSection.id,
+        title: furtherReadingSection.title || "Further reading:",
+        paragraphs: frParas.map((p) => {
+          const meta = extractChapter1Meta(p.content?.blocks || []);
+          return {
+            id: p.id,
+            title: meta.title || p.content_text || "",
+            links: meta.links || [],
+          };
+        }),
+      };
+    }
+
+    // Build footNotes from its section's paragraphs
+    let footNotes = {
+      id: "default-footnotes",
+      title: "Footnotes",
+      animation: { name: "Placeholder" },
+      notes: [],
+    };
+    if (footnotesSection?.paragraphs) {
+      const fnParas = [...footnotesSection.paragraphs]
+        .sort((a, b) => a.order_index - b.order_index);
+      footNotes = {
+        id: footnotesSection.id,
+        title: footnotesSection.title || "Footnotes",
+        animation: { name: "Placeholder" },
+        notes: fnParas.map((p) => {
+          const meta = extractChapter1Meta(p.content?.blocks || []);
+          return { text: meta.footnoteContent || p.content_text || "" };
+        }),
+      };
+    }
 
     const transformed = {
+      moduleId: module.id,
       intro,
       sections,
-      // Add empty furtherReading and footNotes if not present in module
-      // These are required by the TextComp component
-      furtherReading: module.furtherReading || {
-        id: "default-further-reading",
-        title: "Further reading:",
-        paragraphs: [],
-      },
-      footNotes: module.footNotes || {
-        id: "default-footnotes",
-        title: "Footnotes",
-        animation: { name: "Placeholder" },
-        notes: [],
-      },
+      furtherReading,
+      footNotes,
     };
 
     console.log(
-      "useChapter: Transformed data - intro:",
-      transformed.intro.length,
-      "sections:",
-      transformed.sections.length,
-    );
-    console.log(
-      "useChapter: Section titles in transformed:",
-      transformed.sections.map((s) => s.title),
+      "useChapter: Transformed -",
+      "intro:", transformed.intro.length,
+      "sections:", transformed.sections.length,
+      "footnotes:", transformed.footNotes.notes.length,
     );
 
     return transformed;
@@ -241,14 +429,14 @@ export function useChapter() {
         throw new Error(`Chapter with slug "${slug}" not found`);
       }
 
-      // Step 2: Get sections for this module
+      // Step 2: Get sections for this module (include animation fields for Chapter 1)
       const sectionsData = await supabaseRest(
-        `sections?module_id=eq.${moduleData.id}&select=id,title,slug,order_index,module_id&order=order_index.asc`,
+        `sections?module_id=eq.${moduleData.id}&select=id,title,slug,order_index,module_id,animation_id,animation_config&order=order_index.asc`,
       );
 
       console.log("useChapter: Sections query result:", sectionsData?.length);
 
-      // Step 3: Get paragraphs for all sections
+      // Step 3: Get paragraphs for all sections (include subsection_level for Chapter 1 nesting)
       const sectionIds = sectionsData?.map((s) => s.id) || [];
       let paragraphsData = [];
 
@@ -256,7 +444,7 @@ export function useChapter() {
         // Use 'in' filter for multiple IDs
         const idsParam = sectionIds.map((id) => `"${id}"`).join(",");
         paragraphsData = await supabaseRest(
-          `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,animation_id,animation_trigger,is_subsection_header,content_text,section_id&order=order_index.asc`,
+          `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,animation_id,animation_trigger,is_subsection_header,subsection_level,content_text,section_id&order=order_index.asc`,
         );
 
         console.log(

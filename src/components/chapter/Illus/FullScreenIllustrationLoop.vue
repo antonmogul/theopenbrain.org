@@ -126,7 +126,9 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import lottie from "lottie-web";
+
+let lottie;
+const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 import { toCamelCase } from "@/helper/general";
 import ReplayIcon from "../../../icons/custom/ReplayIcon.vue";
 import PauseIcon from "../../../icons/custom/PauseIcon.vue";
@@ -244,7 +246,10 @@ const setSpeed = () => {
 const container = ref();
 const isActive = ref(true);
 
-onMounted(() => {
+onMounted(async () => {
+  await lottieReady;
+  if (!lottie) return;
+
   let svgContainer = document.getElementById(props.animation.id);
   if (!svgContainer) return;
   animationLottie = lottie.loadAnimation({

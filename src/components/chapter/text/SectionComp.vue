@@ -87,7 +87,7 @@
             class-name="P"
             @save="handleParagraphSave"
           />
-          <p
+          <div
             v-else-if="!paragraph.subSection"
             :key="paragraph.id"
             :id="paragraph.id"

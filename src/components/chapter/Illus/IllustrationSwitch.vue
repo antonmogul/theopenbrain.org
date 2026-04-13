@@ -37,7 +37,9 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import lottie from "lottie-web";
+
+let lottie;
+const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 import StateElement from "../../UI/StateElement.vue";
 import StateElementBlock from "../../UI/StateElementBlock.vue";
 import LegendElement from "@/components/UI/LegendElement.vue";
@@ -71,7 +73,10 @@ watch(
   }
 );
 
-onMounted(() => {
+onMounted(async () => {
+  await lottieReady;
+  if (!lottie) return;
+
   let switches = props.info.switches;
   for (let index in switches) {
     let id =

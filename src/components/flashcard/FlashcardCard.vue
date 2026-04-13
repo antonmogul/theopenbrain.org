@@ -36,7 +36,7 @@ defineEmits(["flip"]);
       <div class="card-face front">
         <div class="card-label">Question</div>
         <div class="card-content">
-          <p>{{ card.front_content || card.front }}</p>
+          <p>{{ card.front_text || card.front_content || card.front }}</p>
         </div>
         <div class="flip-hint">
           <svg
@@ -63,7 +63,7 @@ defineEmits(["flip"]);
       <div class="card-face back">
         <div class="card-label">Answer</div>
         <div class="card-content">
-          <p>{{ card.back_content || card.back }}</p>
+          <p>{{ card.back_text || card.back_content || card.back }}</p>
         </div>
         <div class="flip-hint">
           <svg

@@ -8,7 +8,7 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function useNotes(options = {}) {
-  const { moduleId = null, sectionId = null } = options;
+  const { sectionId = null } = options;
 
   const notes = ref([]);
   const loading = ref(false);
@@ -65,11 +65,6 @@ export function useNotes(options = {}) {
         query += `&section_id=eq.${targetSectionId}`;
       }
 
-      const targetModuleId = filters.moduleId || moduleId;
-      if (targetModuleId) {
-        query += `&module_id=eq.${targetModuleId}`;
-      }
-
       if (filters.highlightId) {
         query += `&highlight_id=eq.${filters.highlightId}`;
       }
@@ -91,7 +86,6 @@ export function useNotes(options = {}) {
     highlightId = null,
     paragraphId = null,
     sectionId: secId = null,
-    moduleId: modId = null,
     isPublic = false,
   }) {
     if (!user.value) {
@@ -110,7 +104,6 @@ export function useNotes(options = {}) {
           highlight_id: highlightId,
           paragraph_id: paragraphId,
           section_id: secId || sectionId,
-          module_id: modId || moduleId,
           is_public: isPublic,
         }),
       });

@@ -8,7 +8,7 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function useTrendingHighlights(options = {}) {
-  const { moduleId = null, limit = 10 } = options;
+  const { limit = 10 } = options;
 
   const trending = ref([]);
   const loading = ref(false);
@@ -39,19 +39,12 @@ export function useTrendingHighlights(options = {}) {
   }
 
   // Fetch trending highlights
-  async function fetchTrending(filterModuleId = null) {
+  async function fetchTrending() {
     loading.value = true;
     error.value = null;
 
     try {
-      // Build query for trending highlights
-      let query = `trending_highlights?select=*&order=highlight_count.desc&limit=${limit}`;
-
-      const targetModuleId = filterModuleId || moduleId;
-      if (targetModuleId) {
-        query += `&module_id=eq.${targetModuleId}`;
-      }
-
+      const query = `trending_highlights?select=*&order=highlight_count.desc&limit=${limit}`;
       const data = await supabaseRest(query);
       trending.value = data || [];
     } catch (e) {

@@ -33,7 +33,7 @@
             class-name="subSubP pt-0"
             @save="handleSave"
           />
-          <p
+          <div
             v-else
             :id="subSubSection.id"
             :data-paragraph-id="subSubSection.id"
@@ -69,7 +69,7 @@
                 class-name="subSubParP"
                 @save="handleSave"
               />
-              <p
+              <div
                 v-else-if="
                   subSubParagraph.type != 'breakVideo' &&
                   subSubSection.type != 'breakSection'

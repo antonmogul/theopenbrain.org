@@ -7,7 +7,8 @@
 <script setup>
 import { watch, onMounted } from "vue";
 
-import lottie from "lottie-web";
+let lottie;
+const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 
 const props = defineProps({
   animation: Object,

@@ -1,51 +1,20 @@
 <script setup>
-import { useRoute, useRouter } from "vue-router";
 import { useGeneral } from "@/stores";
-import { useAuthStore } from "@/stores/auth";
-import IIcon from "@/icons/custom/IIcon.vue";
-import OpenArrowIcon from "@/icons/custom/OpenArrowIcon.vue";
 
-const route = useRoute();
 const store = useGeneral();
-const authStore = useAuthStore();
-
-const openAbout = () => {
-    store.activeMenu = false;
-    authStore.closeAuth();
-    store.activeAbout = true;
-};
 </script>
 
 <template>
-    <div
-        class="fixed flex bottom-4 z-[60] text-base duration-300"
-        :class="
-            route.name === 'about' || store.activeAbout
-                ? 'left-4'
-                : route.name === 'home'
-                  ? store.activeMenu
-                      ? 'left-6'
-                      : 'left-6'
-                  : store.activeMenu
-                    ? '-left-24 ml-4'
-                    : 'left-24'
-        "
-    >
-        <IIcon
-            v-if="!store.activeAbout"
-            @click="openAbout()"
-            class="icon iconInvert"
-        />
-        <!-- <BiExclamationCircleFill " /> -->
-        <OpenArrowIcon
-            class="icon iconInvert z-[60]"
-            v-else
+    <div>
+        <!-- Backdrop overlay - click to close -->
+        <div
+            v-if="store.activeAbout"
+            class="fixed inset-0 z-[55] cursor-pointer"
             @click="store.activeAbout = false"
         />
-        <!-- menu open/close -->
 
         <div
-            class="fixed h-screen bg-violet text-white overflow-y-scroll overflow-x-hidden scrollbar top-0 left-0 text-medium duration-300 border-r border-black snap-x"
+            class="fixed h-screen bg-violet text-white overflow-y-scroll overflow-x-hidden scrollbar top-0 left-0 z-[56] text-medium duration-300 border-r border-black snap-x"
             :class="[store.activeAbout ? 'w-[50vw] ml-0' : 'w-[0]']"
         >
             <div class="px-24 pt-12 pb-56 w-[50vw] max-w-[800px]">
@@ -179,6 +148,8 @@ const openAbout = () => {
         </div>
     </div>
 </template>
+
+
 
 <style scoped>
 a {

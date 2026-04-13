@@ -55,7 +55,8 @@ onMounted(async () => {
 
   if (quizId.value) {
     try {
-      await fetchQuiz(quizId.value);
+      const quiz = await fetchQuiz(quizId.value);
+      currentQuiz.value = quiz;
       quizState.value = "intro";
     } catch (e) {
       console.error("QuizView: Error loading quiz:", e);

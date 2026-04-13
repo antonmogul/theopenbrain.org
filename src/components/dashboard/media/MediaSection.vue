@@ -8,7 +8,7 @@
 import { ref, watch, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMediaStore } from '@/stores/dashboard/media';
-import { MEDIA_TYPES } from '@/constants/dashboard';
+import { MEDIA_TYPES, INTERACTION_TYPES, INTERACTION_TYPE_LABELS } from '@/constants/dashboard';
 import LoadingState from '../shared/LoadingState.vue';
 import ErrorState from '../shared/ErrorState.vue';
 import EmptyState from '../shared/EmptyState.vue';
@@ -17,6 +17,35 @@ import FilterChips from '../shared/FilterChips.vue';
 import ConfirmDialog from '../shared/ConfirmDialog.vue';
 import MediaCard from './MediaCard.vue';
 import MediaDetails from './MediaDetails.vue';
+
+// Interaction type filter (client-side, secondary filter)
+const interactionFilter = ref(INTERACTION_TYPES.ALL);
+const interactionFilterOptions = computed(() => {
+  const counts = {};
+  counts[INTERACTION_TYPES.ALL] = filteredItems.value?.length || 0;
+  for (const item of (items.value || [])) {
+    const it = item.interaction_type;
+    if (it) counts[it] = (counts[it] || 0) + 1;
+  }
+
+  return [
+    { value: INTERACTION_TYPES.ALL, label: 'All Types', count: counts[INTERACTION_TYPES.ALL] },
+    ...Object.entries(INTERACTION_TYPE_LABELS)
+      .filter(([key]) => counts[key] > 0)
+      .map(([key, label]) => ({
+        value: key,
+        label,
+        count: counts[key] || 0,
+      })),
+  ];
+});
+
+// Items with both store filter + interaction type filter applied
+const displayedItems = computed(() => {
+  if (!filteredItems.value) return [];
+  if (interactionFilter.value === INTERACTION_TYPES.ALL) return filteredItems.value;
+  return filteredItems.value.filter(item => item.interaction_type === interactionFilter.value);
+});
 
 const props = defineProps({
   active: {
@@ -117,20 +146,38 @@ function handleUpload() {
     </div>
 
     <!-- Filters -->
-    <div class="flex flex-col sm:flex-row gap-4 mb-6">
-      <div class="flex-1">
-        <SearchInput
-          v-model="search"
-          placeholder="Search media..."
-          @search="handleSearch"
+    <div class="flex flex-col gap-4 mb-6">
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1">
+          <SearchInput
+            v-model="search"
+            placeholder="Search animations..."
+            @search="handleSearch"
+          />
+        </div>
+        <FilterChips
+          :options="filterOptions"
+          :model-value="filter"
+          show-counts
+          @update:model-value="handleFilterChange"
         />
       </div>
-      <FilterChips
-        :options="filterOptions"
-        :model-value="filter"
-        show-counts
-        @update:model-value="handleFilterChange"
-      />
+      <!-- Interaction type filter row -->
+      <div v-if="interactionFilterOptions.length > 2" class="flex flex-wrap gap-2">
+        <span class="text-xs text-gray-500 self-center mr-1">Interaction:</span>
+        <button
+          v-for="opt in interactionFilterOptions"
+          :key="opt.value"
+          @click="interactionFilter = opt.value"
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
+          :class="interactionFilter === opt.value
+            ? 'bg-purple-600 text-white'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+        >
+          {{ opt.label }}
+          <span class="ml-1 opacity-70">({{ opt.count }})</span>
+        </button>
+      </div>
     </div>
 
     <!-- Loading state -->
@@ -155,7 +202,7 @@ function handleUpload() {
 
     <!-- No results -->
     <EmptyState
-      v-else-if="filteredItems.length === 0"
+      v-else-if="displayedItems.length === 0"
       title="No results found"
       message="Try adjusting your search or filter criteria."
       icon="search"
@@ -167,7 +214,7 @@ function handleUpload() {
       <div class="lg:col-span-3">
         <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           <MediaCard
-            v-for="media in filteredItems"
+            v-for="media in displayedItems"
             :key="media.id"
             :media="media"
             :selected="selectedItem?.id === media.id"

@@ -1,11 +1,14 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { useRoute } from "vue-router";
 
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
 import { useGeneral } from "@/stores";
+import { useAnimations } from "@/composables/useAnimations";
 
+// Legacy JSON fallback for Chapter 1 during transition
 import animationJSON from "@/assets/json_backend/animations.json";
 
 import Illustration from "@/components/chapter/Illus/IllustrationComp.vue";
@@ -13,12 +16,32 @@ import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScrol
 import IllustrationTransition from "@/components/chapter/Illus/IllustrationTransition.vue";
 gsap.registerPlugin(ScrollTrigger);
 
+const route = useRoute();
 const activeAnimation = ref(null);
-
 const store = useGeneral();
 const progress = ref(0);
 
-onMounted(() => {
+// Use Supabase animations composable
+const { animations: dbAnimations, fetchAnimations } = useAnimations();
+
+// Determine which animation source to use:
+// - Try Supabase first (dbAnimations)
+// - Fall back to legacy JSON if Supabase fetch fails or returns empty
+const animationList = computed(() => {
+  if (dbAnimations.value && dbAnimations.value.length > 0) {
+    return dbAnimations.value;
+  }
+  return animationJSON.animations;
+});
+
+onMounted(async () => {
+  // Attempt to load animations from Supabase
+  try {
+    await fetchAnimations();
+  } catch (err) {
+    console.warn("IllustrationsComp: Supabase fetch failed, using JSON fallback:", err);
+  }
+
   let animationTriggers = document.getElementsByClassName("animationTrigger");
   for (let trigger of animationTriggers) {
     setTimeout(() => {
@@ -75,26 +98,19 @@ onMounted(() => {
     markers: false,
     onToggle: () => {},
     onUpdate: (self) => {
-      // if (!activeAnimation.value) {
-      // let r = Math.floor(151 + Math.sin(self.progress * 50) * 40);
-      // let g = Math.floor(71 + Math.sin(self.progress * 50) * 40);
-      // let b = Math.floor(230 + Math.sin(self.progress * 50) * 40);
       let r = Math.floor(255 - self.progress * 70);
       let g = Math.floor(255 - self.progress * 70);
       let b = Math.floor(255 - self.progress * 70);
       if (!bgGradient) return;
       bgGradient.style.backgroundColor =
         "rgba(" + r + "," + g + "," + b + ", 0.7)";
-      // } else {
-      //   bgGradient.style.backgroundColor = "#F4F4F4";
-      // }
     },
   });
 });
 
 onBeforeUnmount(() => {
-  ScrollTrigger.getById("scrollTriggerAnimation").kill();
-  ScrollTrigger.getById("scrollTriggerFull").kill();
+  ScrollTrigger.getById("scrollTriggerAnimation")?.kill();
+  ScrollTrigger.getById("scrollTriggerFull")?.kill();
 });
 </script>
 
@@ -103,7 +119,7 @@ onBeforeUnmount(() => {
     v-if="!store.isScrolling"
     class="fixed top-0 left-0 h-screen w-illus z-30 pointer-events-none font-mono"
   >
-    <template v-for="animation in animationJSON.animations" :key="animation">
+    <template v-for="animation in animationList" :key="animation.id">
       <template
         v-if="
           !animation.fullscreen && !animation.scroll && !animation.isTransition

@@ -104,6 +104,7 @@ export async function createChapter(data) {
     order_index: data.order_index || 0,
     status: data.status || 'draft',
     content_version_id: data.content_version_id,
+    created_by: data.created_by,
   });
   return created;
 }
@@ -172,6 +173,71 @@ export async function updateSection(sectionId, data) {
   });
 }
 
+/**
+ * Create a new section within a module
+ * @param {Object} data - Section data
+ * @returns {Promise<Object>} Created section
+ */
+export async function createSection(data) {
+  const [created] = await post('sections', {
+    module_id: data.module_id,
+    title: data.title,
+    slug: data.slug,
+    order_index: data.order_index || 0,
+    introduction_text: data.introduction_text || null,
+  });
+  return created;
+}
+
+/**
+ * Create a new paragraph within a section
+ * @param {Object} data - Paragraph data
+ * @returns {Promise<Object>} Created paragraph
+ */
+export async function createParagraph(data) {
+  const [created] = await post('paragraphs', {
+    section_id: data.section_id,
+    content: data.content,
+    content_text: data.content_text || '',
+    order_index: data.order_index || 0,
+    is_subsection_header: data.is_subsection_header || false,
+    subsection_level: data.subsection_level || 0,
+  });
+  return created;
+}
+
+/**
+ * Create a new reference for a module
+ * @param {Object} data - Reference data
+ * @returns {Promise<Object>} Created reference
+ */
+export async function createReference(data) {
+  const [created] = await post('references', {
+    module_id: data.module_id,
+    number: data.number,
+    authors: data.authors,
+    title: data.title,
+    journal: data.journal || null,
+    year: data.year || null,
+    volume: data.volume || null,
+    pages: data.pages || null,
+    doi: data.doi || null,
+    url: data.url || null,
+    pub_type: data.pub_type || 'article',
+    raw_text: data.raw_text || null,
+  });
+  return created;
+}
+
+/**
+ * Fetch references for a module
+ * @param {string} moduleId - Module ID
+ * @returns {Promise<Array>} References ordered by number
+ */
+export async function fetchReferences(moduleId) {
+  return get(`references?module_id=eq.${moduleId}&order=number.asc`);
+}
+
 export default {
   fetchChapters,
   fetchChapter,
@@ -184,4 +250,8 @@ export default {
   updateParagraph,
   reorderParagraphs,
   updateSection,
+  createSection,
+  createParagraph,
+  createReference,
+  fetchReferences,
 };

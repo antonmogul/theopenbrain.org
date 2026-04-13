@@ -1,15 +1,9 @@
 <script setup>
 import { ref, computed, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useGeneral } from "@/stores";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
-import UserIcon from "@/icons/custom/UserIcon.vue";
-import OpenArrowIcon from "@/icons/custom/OpenArrowIcon.vue";
-
-const route = useRoute();
 const router = useRouter();
-const store = useGeneral();
 const authStore = useAuthStore();
 const {
     signUp,
@@ -38,28 +32,22 @@ watch(
     },
 );
 
-const openAuth = () => {
-    store.activeMenu = false;
-    store.activeAbout = false;
-    authStore.openAuth();
-};
-
 const closeAuth = () => {
     authStore.closeAuth();
 };
 
 const goToDashboard = () => {
-    console.log("goToDashboard clicked");
     authStore.closeAuth();
-    console.log("Auth closed, navigating to /dashboard");
-    router
-        .push("/dashboard")
-        .then(() => {
-            console.log("Navigation complete");
-        })
-        .catch((err) => {
-            console.error("Navigation error:", err);
-        });
+
+    // Route to the correct dashboard based on role
+    const role = userRole.value;
+    let target = "/dashboard";
+    if (role === "student") target = "/student";
+    else if (role === "professor") target = "/professor";
+
+    router.push(target).catch((err) => {
+        console.error("Navigation error:", err);
+    });
 };
 
 const handleRegister = async () => {
@@ -155,36 +143,17 @@ const viewTitle = computed(() => {
 </script>
 
 <template>
-    <div
-        class="fixed flex bottom-4 z-[60] text-base duration-300"
-        :class="
-            route.name === 'about' || store.activeAbout
-                ? 'left-14'
-                : authStore.activeAuth
-                  ? 'left-4'
-                  : route.name === 'home'
-                    ? store.activeMenu
-                        ? 'left-16'
-                        : 'left-16'
-                    : store.activeMenu
-                      ? '-left-24 ml-14'
-                      : 'left-[8.5rem]'
-        "
-    >
-        <UserIcon
-            v-if="!authStore.activeAuth"
-            @click="openAuth()"
-            class="icon iconInvert"
-        />
-        <OpenArrowIcon
-            class="icon iconInvert z-[60]"
-            v-else
+    <div>
+        <!-- Backdrop overlay - click to close -->
+        <div
+            v-if="authStore.activeAuth"
+            class="fixed inset-0 z-[55] cursor-pointer"
             @click="closeAuth()"
         />
 
         <!-- Auth Panel -->
         <div
-            class="fixed h-screen bg-dark text-white overflow-y-scroll overflow-x-hidden scrollbar top-0 left-0 text-medium duration-300 border-r border-violet/90"
+            class="fixed h-screen bg-dark text-white overflow-y-scroll overflow-x-hidden scrollbar top-0 left-0 z-[56] text-medium duration-300 border-r border-violet/90"
             :class="[authStore.activeAuth ? 'w-[50vw] ml-0' : 'w-[0]']"
         >
             <div class="px-24 pt-12 pb-56 w-[50vw] max-w-[800px]">

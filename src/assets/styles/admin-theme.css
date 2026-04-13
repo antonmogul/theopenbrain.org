@@ -1,0 +1,795 @@
+/**
+ * Admin Light Theme — Linktree-Inspired
+ *
+ * Scoped under .admin-light parent class.
+ * Remaps the dark dashboard palette to a warm cream/white theme
+ * while preserving the purple accent (rgb(151, 71, 255)).
+ */
+
+/* ============ LAYOUT & PAGE BACKGROUNDS ============ */
+
+.admin-light.dashboard-layout {
+    background: #f5f3f0;
+}
+
+.admin-light .main-content {
+    background: #f5f3f0;
+}
+
+/* ============ SIDEBAR ============ */
+
+.admin-light .user-profile-card {
+    background: transparent;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 0;
+    padding-bottom: 2rem;
+}
+
+.admin-light .user-name {
+    color: #1a1a1a;
+}
+
+.admin-light .user-greeting {
+    color: #4b5563;
+}
+
+.admin-light .user-date {
+    color: #9ca3af;
+}
+
+.admin-light .sidebar-nav-card {
+    background: transparent;
+}
+
+.admin-light .nav-item {
+    color: #374151;
+}
+
+.admin-light .nav-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #1a1a1a;
+}
+
+.admin-light .nav-item.active {
+    background: rgba(151, 71, 255, 0.08);
+    color: rgb(151, 71, 255);
+}
+
+.admin-light .nav-item.active .nav-icon {
+    color: rgb(151, 71, 255);
+}
+
+.admin-light .nav-item:hover .nav-icon,
+.admin-light .nav-item.active .nav-icon {
+    opacity: 1;
+}
+
+.admin-light .logo-text {
+    color: #1a1a1a;
+}
+
+/* ============ HEADER ============ */
+
+.admin-light .page-title {
+    color: #1a1a1a;
+}
+
+.admin-light .logout-btn {
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.admin-light .logout-btn:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+/* ============ DASHBOARD HOME METRICS ============ */
+/* New dashboard styles are light-first — no overrides needed */
+
+/* ============ SECTION CONTENT / PLACEHOLDERS ============ */
+
+.admin-light .section-placeholder {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .section-placeholder h2 {
+    color: #1a1a1a;
+}
+
+.admin-light .section-placeholder p {
+    color: #6b7280;
+}
+
+/* ============ SECTION TITLES ============ */
+
+.admin-light .section-title {
+    color: #1a1a1a;
+}
+
+.admin-light .total-count {
+    color: #6b7280;
+}
+
+.admin-light .section-header-row .section-title {
+    color: #1a1a1a;
+}
+
+/* ============ CHAPTERS ============ */
+
+.admin-light .chapters-loading,
+.admin-light .chapters-error {
+    background: #ffffff;
+    color: #6b7280;
+}
+
+.admin-light .chapter-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .chapter-card:hover:not(.expanded) {
+    border-color: rgba(151, 71, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.admin-light .chapter-card.expanded {
+    background: #ffffff;
+    border-color: rgba(151, 71, 255, 0.5);
+}
+
+.admin-light .chapter-card:not(.expanded) .chapter-header:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.admin-light .chapter-title {
+    color: #1a1a1a;
+}
+
+.admin-light .chapter-stats-row {
+    color: #6b7280;
+}
+
+.admin-light .chapter-stats-row .dot {
+    color: #d1d5db;
+}
+
+.admin-light .chapter-meta {
+    color: #9ca3af;
+}
+
+.admin-light .chevron-icon {
+    color: #9ca3af;
+}
+
+.admin-light .chapter-content {
+    border-top-color: #e5e7eb;
+}
+
+.admin-light .close-btn {
+    background: rgba(0, 0, 0, 0.06);
+    color: #374151;
+}
+
+.admin-light .close-btn:hover {
+    background: rgba(151, 71, 255, 0.15);
+}
+
+/* ============ BLOCKS SIDEBAR ============ */
+
+.admin-light .blocks-sidebar {
+    background: #fafafa;
+    border-color: #e5e7eb;
+}
+
+.admin-light .blocks-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.admin-light .block-item.section {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.admin-light .block-item.paragraph:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.admin-light .block-title {
+    color: #1a1a1a;
+}
+
+.admin-light .block-preview {
+    color: #6b7280;
+}
+
+.admin-light .block-icon {
+    color: #9ca3af;
+}
+
+.admin-light .drag-handle {
+    color: #d1d5db;
+}
+
+.admin-light .block-index {
+    color: #9ca3af;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+/* ============ EDITOR PANEL ============ */
+
+.admin-light .editor-panel {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .editor-header {
+    border-bottom-color: #e5e7eb;
+}
+
+.admin-light .editing-title {
+    color: #1a1a1a;
+}
+
+.admin-light .editor-footer {
+    border-top-color: #e5e7eb;
+    background: #f9fafb;
+}
+
+/* ============ STATS PANEL ============ */
+
+.admin-light .stat-value {
+    color: #1a1a1a;
+}
+
+.admin-light .stat-label {
+    color: #6b7280;
+}
+
+.admin-light .preview-title {
+    color: #6b7280;
+    border-bottom-color: #e5e7eb;
+}
+
+.admin-light .preview-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.admin-light .preview-block.paragraph {
+    border-bottom-color: #e5e7eb;
+}
+
+.admin-light .preview-section-title {
+    color: #1a1a1a;
+}
+
+.admin-light .meta-slug {
+    color: #9ca3af;
+}
+
+.admin-light .meta-index {
+    color: #9ca3af;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.admin-light .meta-words {
+    color: #9ca3af;
+}
+
+.admin-light .preview-para-content {
+    color: #4b5563;
+}
+
+.admin-light .preview-para-content :deep(h1),
+.admin-light .preview-para-content :deep(h2),
+.admin-light .preview-para-content :deep(h3) {
+    color: #1a1a1a;
+}
+
+/* ============ ADD CHAPTER BUTTON ============ */
+
+.admin-light .add-chapter-btn {
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.admin-light .add-chapter-btn:hover {
+    border-color: rgb(151, 71, 255);
+    background: rgba(151, 71, 255, 0.04);
+    color: #1a1a1a;
+}
+
+/* ============ BACK / SECONDARY BUTTONS ============ */
+
+.admin-light .back-btn {
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.admin-light .back-btn:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+.admin-light .secondary-btn {
+    border-color: #d1d5db;
+    color: #4b5563;
+}
+
+.admin-light .secondary-btn:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+.admin-light .retry-btn {
+    border-color: #d1d5db;
+    color: #4b5563;
+}
+
+.admin-light .retry-btn:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+/* ============ ACTION BUTTONS (hover rewrite for light) ============ */
+
+.admin-light .action-btn:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+.admin-light .save-btn:hover:not(:disabled) {
+    background: #1a1a1a;
+    color: white;
+}
+
+/* ============ FORMS ============ */
+
+.admin-light .form-group label {
+    color: #6b7280;
+}
+
+.admin-light .form-input,
+.admin-light .form-textarea {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #1a1a1a;
+}
+
+.admin-light .form-input:focus,
+.admin-light .form-textarea:focus {
+    border-color: rgb(151, 71, 255);
+}
+
+.admin-light .form-input::placeholder,
+.admin-light .form-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.admin-light .filter-select,
+.admin-light .form-select {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #1a1a1a;
+}
+
+.admin-light .search-input {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #1a1a1a;
+}
+
+.admin-light .search-input::placeholder {
+    color: #9ca3af;
+}
+
+.admin-light .checkbox-label {
+    color: #4b5563;
+}
+
+.admin-light .radio-label {
+    color: #4b5563;
+}
+
+.admin-light .form-actions {
+    border-top-color: #e5e7eb;
+}
+
+/* ============ MODALS ============ */
+
+.admin-light .modal-overlay {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.admin-light .modal-content {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+.admin-light .modal-content h3 {
+    color: #1a1a1a;
+}
+
+/* ============ VERSIONS ============ */
+
+.admin-light .version-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .version-number {
+    color: #1a1a1a;
+}
+
+.admin-light .version-meta {
+    color: #9ca3af;
+}
+
+.admin-light .version-notes {
+    color: #6b7280;
+}
+
+.admin-light .action-btn {
+    border-color: #d1d5db;
+    color: #4b5563;
+}
+
+/* ============ MEDIA ============ */
+
+.admin-light .media-card {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.admin-light .media-card:hover {
+    border-color: #9ca3af;
+}
+
+.admin-light .media-thumb {
+    background: #eef0f2;
+    color: #9ca3af;
+}
+
+.admin-light .media-thumb.lottie {
+    background: linear-gradient(135deg, #eef0f5, #e8ecf4);
+}
+
+.admin-light .media-thumb.video {
+    background: linear-gradient(135deg, #f0eeed, #f2edec);
+}
+
+.admin-light .media-thumb.image {
+    background: linear-gradient(135deg, #ecf0ec, #edf2ed);
+}
+
+.admin-light .media-thumb.youtube {
+    background: linear-gradient(135deg, #f2edec, #eef0f2);
+}
+
+.admin-light .media-title {
+    color: #1a1a1a;
+}
+
+.admin-light .media-size {
+    color: #9ca3af;
+}
+
+.admin-light .media-detail-panel {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .detail-header h3 {
+    color: #1a1a1a;
+}
+
+.admin-light .preview-placeholder {
+    background: #f3f4f6;
+}
+
+.admin-light .info-label {
+    color: #9ca3af;
+}
+
+.admin-light .info-value {
+    color: #4b5563;
+}
+
+.admin-light .detail-actions {
+    border-top-color: #e5e7eb;
+}
+
+/* ============ USERS ============ */
+
+.admin-light .role-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .role-card:hover {
+    border-color: #9ca3af;
+}
+
+.admin-light .role-icon.all {
+    background: rgba(0, 0, 0, 0.06);
+    color: #6b7280;
+}
+
+.admin-light .role-count {
+    color: #1a1a1a;
+}
+
+.admin-light .role-label {
+    color: #9ca3af;
+}
+
+.admin-light .user-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .user-card:hover {
+    border-color: #9ca3af;
+}
+
+.admin-light .user-info .user-name {
+    color: #1a1a1a;
+}
+
+.admin-light .user-email {
+    color: #9ca3af;
+}
+
+.admin-light .user-institution,
+.admin-light .user-joined {
+    color: #9ca3af;
+}
+
+.admin-light .pagination {
+    border-top-color: #e5e7eb;
+}
+
+.admin-light .page-btn {
+    border-color: #d1d5db;
+    color: #4b5563;
+}
+
+.admin-light .page-btn:hover:not(:disabled) {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+.admin-light .page-info {
+    color: #9ca3af;
+}
+
+.admin-light .detail-label {
+    color: #9ca3af;
+}
+
+.admin-light .detail-value {
+    color: #4b5563;
+}
+
+.admin-light .detail-row {
+    border-bottom-color: #f3f4f6;
+}
+
+.admin-light .user-detail-header {
+    border-bottom-color: #e5e7eb;
+}
+
+.admin-light .user-detail-info h3 {
+    color: #1a1a1a;
+}
+
+.admin-light .user-detail-info p {
+    color: #9ca3af;
+}
+
+.admin-light .user-detail-actions {
+    border-top-color: #e5e7eb;
+}
+
+.admin-light .user-detail-actions label {
+    color: #9ca3af;
+}
+
+/* ============ ANALYTICS ============ */
+
+.admin-light .metric-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .metric-value {
+    color: #1a1a1a;
+}
+
+.admin-light .metric-label {
+    color: #9ca3af;
+}
+
+.admin-light .chart-container {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .chart-title {
+    color: #1a1a1a;
+}
+
+.admin-light .chart-empty p {
+    color: #9ca3af;
+}
+
+.admin-light .bar-value {
+    color: #4b5563;
+}
+
+.admin-light .bar-label {
+    color: #9ca3af;
+}
+
+.admin-light .stats-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .stats-title {
+    color: #1a1a1a;
+}
+
+.admin-light .stats-empty p {
+    color: #9ca3af;
+}
+
+.admin-light .stats-name {
+    color: #4b5563;
+}
+
+.admin-light .stats-value {
+    color: #9ca3af;
+}
+
+.admin-light .stats-item {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.admin-light .highlight-text {
+    color: #6b7280;
+}
+
+/* ============ QUIZZES ============ */
+
+.admin-light .quiz-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .quiz-title {
+    color: #1a1a1a;
+}
+
+.admin-light .quiz-module {
+    color: #9ca3af;
+}
+
+.admin-light .quiz-meta {
+    color: #9ca3af;
+}
+
+.admin-light .quiz-stats {
+    border-top-color: #e5e7eb;
+}
+
+.admin-light .quiz-stats .stat-value {
+    color: #1a1a1a;
+}
+
+.admin-light .quiz-stats .stat-label {
+    color: #9ca3af;
+}
+
+.admin-light .quiz-form {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .questions-section {
+    background: #ffffff;
+    border-color: #e5e7eb;
+}
+
+.admin-light .questions-header h4 {
+    color: #1a1a1a;
+}
+
+.admin-light .empty-questions {
+    color: #9ca3af;
+}
+
+.admin-light .question-card {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.admin-light .question-type-badge {
+    background: rgba(0, 0, 0, 0.05);
+    color: #6b7280;
+}
+
+.admin-light .question-points {
+    color: #9ca3af;
+}
+
+.admin-light .question-text {
+    color: #1a1a1a;
+}
+
+.admin-light .question-options .option {
+    background: rgba(0, 0, 0, 0.02);
+    color: #6b7280;
+}
+
+.admin-light .icon-btn {
+    border-color: #d1d5db;
+    color: #9ca3af;
+}
+
+.admin-light .icon-btn:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+.admin-light .option-letter {
+    color: #9ca3af;
+}
+
+/* ============ EDITOR HEADER (quiz editor) ============ */
+
+.admin-light .editor-header h3 {
+    color: #1a1a1a;
+}
+
+/* ============ LOADING / EMPTY / ERROR STATES ============ */
+
+.admin-light .loading-state p,
+.admin-light .error-state p,
+.admin-light .empty-state p {
+    color: #6b7280;
+}
+
+.admin-light .empty-state svg {
+    color: #d1d5db;
+}
+
+.admin-light .empty-state h3 {
+    color: #4b5563;
+}
+
+/* ============ RGBA BORDER OVERRIDES ============ */
+
+.admin-light .chapter-content,
+.admin-light .editor-header,
+.admin-light .editor-footer,
+.admin-light .preview-title,
+.admin-light .form-actions,
+.admin-light .pagination,
+.admin-light .detail-actions,
+.admin-light .user-detail-header,
+.admin-light .user-detail-actions,
+.admin-light .quiz-stats {
+    border-color: #e5e7eb;
+}
+
+/* ============ SCROLLBAR ============ */
+
+.admin-light ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.admin-light ::-webkit-scrollbar-thumb {
+    background: rgba(151, 71, 255, 0.2);
+}

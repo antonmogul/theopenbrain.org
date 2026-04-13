@@ -7,14 +7,22 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// AI API config
-const AI_API_URL =
-  import.meta.env.VITE_AI_API_URL ||
-  "https://api.openai.com/v1/chat/completions";
-const AI_API_KEY = import.meta.env.VITE_AI_API_KEY;
+// AI API config — Anthropic Claude
+const AI_API_URL = "https://api.anthropic.com/v1/messages";
+const AI_API_KEY =
+  import.meta.env.VITE_ANTHROPIC_API_KEY ||
+  import.meta.env.VITE_AI_API_KEY;
 
-// System prompt for AI tutor
-const SYSTEM_PROMPT = `You are an AI tutor for The Open Brain, an interactive neuroscience textbook. Your role is to help students understand the visual system and neuroscience concepts. Be encouraging, educational, and provide clear explanations. When relevant, reference specific concepts from the textbook content. Keep responses concise but thorough. If a student seems confused, try breaking down concepts into smaller parts. Use analogies and examples when helpful.`;
+// Base system prompt template — chapter context gets appended at conversation creation
+const BASE_SYSTEM_PROMPT = `You are the AI Tutor for The Open Brain.
+
+RULES:
+- You ONLY answer questions about the current chapter's content
+- If asked about topics outside this chapter, say: "That's outside the scope of this chapter. I'm here to help you master the topics covered here — ask me anything about them!"
+- Reference specific sections and concepts from the chapter
+- Keep answers concise (2-3 paragraphs max)
+- Use analogies related to everyday visual experiences
+- Be encouraging and educational`;
 
 export function useAITutor() {
   const conversations = ref([]);
@@ -107,14 +115,15 @@ export function useAITutor() {
       currentConversation.value = newConversation;
       messages.value = [];
 
-      // Add system message with context if provided
-      if (context.contentContext) {
-        await addSystemMessage(
-          `${SYSTEM_PROMPT}\n\nCurrent section context:\n${context.contentContext}`
-        );
-      } else {
-        await addSystemMessage(SYSTEM_PROMPT);
+      // Build system prompt with chapter context
+      let systemPrompt = BASE_SYSTEM_PROMPT;
+      if (context.chapterTitle) {
+        systemPrompt += `\n\nCHAPTER: "${context.chapterTitle}"`;
       }
+      if (context.contentContext) {
+        systemPrompt += `\n\nCHAPTER CONTENT:\n${context.contentContext}`;
+      }
+      await addSystemMessage(systemPrompt);
 
       // Refresh conversations list
       await fetchConversations(context.moduleId);
@@ -268,37 +277,43 @@ export function useAITutor() {
     }
   }
 
-  // Call the AI API
+  // Call the Anthropic Claude API
   async function callAIAPI(messageHistory) {
     if (!AI_API_KEY) {
-      // Return mock response if no API key configured
       console.warn("useAITutor: No AI API key configured, using mock response");
       return {
         content:
-          "I'm the AI Tutor for The Open Brain. To enable full AI responses, please configure the VITE_AI_API_KEY environment variable. In the meantime, I can help you understand neuroscience concepts - just ask your questions and imagine how I might respond!",
+          "I'm the AI Tutor for The Open Brain. To enable full AI responses, please configure the VITE_ANTHROPIC_API_KEY environment variable.",
         tokensUsed: 0,
         model: "mock",
       };
     }
 
-    // Format messages for API
-    const apiMessages = messageHistory.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-    }));
+    // Anthropic format: system prompt is separate, messages only contain user/assistant
+    const systemMessages = messageHistory.filter((m) => m.role === "system");
+    const systemPrompt = systemMessages.map((m) => m.content).join("\n\n");
+
+    const apiMessages = messageHistory
+      .filter((m) => m.role !== "system")
+      .map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
 
     try {
       const response = await fetch(AI_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${AI_API_KEY}`,
+          "x-api-key": AI_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
         },
         body: JSON.stringify({
-          model: "gpt-4-turbo-preview",
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1024,
+          system: systemPrompt,
           messages: apiMessages,
-          max_tokens: 1000,
-          temperature: 0.7,
         }),
       });
 
@@ -310,9 +325,10 @@ export function useAITutor() {
       const data = await response.json();
 
       return {
-        content: data.choices[0]?.message?.content || "No response generated",
-        tokensUsed: data.usage?.total_tokens || 0,
-        model: data.model || "gpt-4-turbo-preview",
+        content: data.content?.[0]?.text || "No response generated",
+        tokensUsed:
+          (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
+        model: data.model || "claude-sonnet-4-20250514",
       };
     } catch (e) {
       console.error("useAITutor: AI API call failed:", e);

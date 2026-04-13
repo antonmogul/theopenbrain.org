@@ -1,6 +1,7 @@
 <script setup>
 import { useGeneral, useText } from "@/stores";
-import lottie from "lottie-web";
+let lottie;
+const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 import { onMounted, ref, computed } from "vue";
 import { watchDebounced, useMouse } from "@vueuse/core";
 import { useRoute } from "vue-router";
@@ -57,8 +58,7 @@ const scrollToPos = () => {
 <template>
   <div
     id="titleAnimation"
-    :class="store.activeMenu ? 'w-[65vw]' : 'w-screen'"
-    class="bg-img bg-light absolute right-0 h-screen z-[50] duration-300 flex justify-start items-start"
+    class="bg-img bg-light absolute right-0 w-screen h-screen z-[50] duration-300 flex justify-start items-start"
   >
     <div
       class="absolute top-0 left-0 w-screen h-screen text-white text-center flex justify-center items-center pb-8"

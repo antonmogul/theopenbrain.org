@@ -95,7 +95,7 @@
               class-name="subP"
               @save="handleSave"
             />
-            <p
+            <div
               v-else-if="!subParagraph.subSubSection && !subParagraph.type"
               :id="subParagraph.id"
               :data-paragraph-id="subParagraph.id"

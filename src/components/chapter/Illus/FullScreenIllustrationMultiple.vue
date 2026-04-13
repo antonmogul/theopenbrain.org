@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from "vue";
-import lottie from "lottie-web";
+let lottie;
+const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 import { toSlug, addH, removeH } from "@/helper/general";
 
 const props = defineProps({

@@ -1,32 +1,6 @@
-import { useText } from "../stores";
 import { useAnimation } from "../stores/animation";
 
-const textStore = useText();
 const animationStore = useAnimation();
-
-const marker = (text, container) => {
-  let _wait = setInterval(() => {
-    if (container) {
-      clearInterval(_wait);
-
-      container.addEventListener("dblclick", (e) => {
-        if (e.target.tagName == "MARK") {
-          textStore.removeSelection(e.target);
-        }
-      }),
-        container.addEventListener("click", (e) => {
-          let selection = document.getSelection();
-          let base = selection?.anchorNode?.parentElement;
-          let extend = selection?.focusNode?.parentElement;
-          if (base !== extend) {
-            alert("it is onyl supported to mark inside a paragraph");
-          } else {
-            textStore.addSelection(selection);
-          }
-        });
-    }
-  }, 1);
-};
 
 const pointAdderAnimation = () => {
   let trigger = document.getElementById("animation-1-structures");
@@ -56,4 +30,4 @@ const pointAdderAnimation = () => {
   _container.appendChild(punkt);
 };
 
-export { marker, pointAdderAnimation };
+export { pointAdderAnimation };

@@ -3,10 +3,6 @@ import { onMounted } from "vue";
 import { useTrendingHighlights } from "@/composables/useTrendingHighlights";
 
 const props = defineProps({
-  moduleId: {
-    type: String,
-    default: null,
-  },
   limit: {
     type: Number,
     default: 10,
@@ -21,10 +17,10 @@ const {
   scrollToHighlight,
   formatRelativeTime,
   truncateText,
-} = useTrendingHighlights({ moduleId: props.moduleId, limit: props.limit });
+} = useTrendingHighlights({ limit: props.limit });
 
 onMounted(() => {
-  fetchTrending(props.moduleId);
+  fetchTrending();
 });
 </script>
 

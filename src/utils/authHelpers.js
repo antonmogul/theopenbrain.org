@@ -112,7 +112,7 @@ export async function signInREST(email, password) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: data };
+      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Login failed' } };
     }
 
     // The response contains access_token, refresh_token, user, etc.
@@ -151,7 +151,7 @@ export async function signUpREST(email, password, metadata = {}) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: data };
+      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Sign up failed' } };
     }
 
     // If email confirmation is disabled, session will be returned
@@ -214,7 +214,7 @@ export async function resetPasswordREST(email) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: data };
+      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Password reset failed' } };
     }
 
     return { data, error: null };
@@ -244,7 +244,7 @@ export async function updatePasswordREST(newPassword) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: data };
+      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Password update failed' } };
     }
 
     return { data, error: null };

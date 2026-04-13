@@ -1,5 +1,6 @@
 <script setup>
-import lottie from "lottie-web";
+let lottie;
+const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 import { onMounted, ref } from "vue";
 
 import { toSlug } from "@/helper/general";

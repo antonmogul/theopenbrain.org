@@ -37,3 +37,18 @@ coverage
 
 # Supabase temp files
 supabase/.temp/
+
+# Debug screenshots (root level)
+/auth-modal-open.png
+/chapter1-loaded.png
+/chapter1-scrolled.png
+/chapter2-loading.png
+/creator-chapter-expanded.png
+/creator-chapters.png
+/creator-dashboard.png
+/dashboard-current.png
+/editor-view.png
+/home-after-enter.png
+/home-initial-load.png
+/logged-in-auth-panel.png
+/test-chapter.md

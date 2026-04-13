@@ -223,6 +223,14 @@ h4 {
   padding-bottom: 2rem;
 }
 
+/* Vertical rhythm for inner <p> tags from Supabase content blocks */
+[data-paragraph-id] p {
+  margin-bottom: 1.6rem !important;
+}
+[data-paragraph-id] p:last-child {
+  margin-bottom: 0 !important;
+}
+
 .subSubP,
 .subSubParP {
 }
@@ -347,26 +355,8 @@ h4 {
   cursor: pointer;
 }
 
-mark {
-  background: var(--violet);
-  color: whitesmoke;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-mark.hoverActive {
-  /* text-decoration: none;
-  background: var(--violet) 1);
-  color: white; */
-
-  /* filter: blur(1px); */
-  /*text-decoration: underline;
-  text-underline-offset: 0.5rem;
-  cursor: pointer; */
-}
-mark.comment {
-  text-decoration: unset;
-  background: transparent;
+mark[data-hl-id] {
+  color: inherit;
 }
 
 /* we will explain what these classes do next! */
@@ -514,6 +504,25 @@ sup:hover {
   fill: white;
 }
 
+
+/* Citation reference superscripts (Supabase chapters) */
+.citation-ref {
+  color: #7c3aed;
+  cursor: pointer;
+  font-weight: 600;
+  position: relative;
+}
+.citation-ref:hover {
+  text-decoration: underline;
+  text-decoration-color: #7c3aed;
+}
+.citation-flash {
+  animation: citationPulse 1.5s ease;
+}
+@keyframes citationPulse {
+  0%, 100% { background: transparent; }
+  20%, 60% { background: #ede9fe; border-radius: 3px; }
+}
 
 .-translate-x-custom {
   transform: translateX(min(-50vw, calc(-100vw + 780px + 11rem - 1px)));

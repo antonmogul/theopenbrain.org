@@ -17,7 +17,7 @@ export const HIGHLIGHT_COLORS = [
 ];
 
 export function useHighlights(options = {}) {
-  const { moduleId = null, paragraphId = null } = options;
+  const { paragraphId = null } = options;
 
   const highlights = ref([]);
   const loading = ref(false);
@@ -71,11 +71,6 @@ export function useHighlights(options = {}) {
       const targetParagraphId = filterParagraphId || paragraphId;
       if (targetParagraphId) {
         query += `&paragraph_id=eq.${targetParagraphId}`;
-      }
-
-      // Filter by module if specified
-      if (moduleId) {
-        query += `&module_id=eq.${moduleId}`;
       }
 
       const data = await supabaseRest(query);
@@ -139,8 +134,7 @@ export function useHighlights(options = {}) {
     color = "yellow",
     note = null,
     isPublic = false,
-    moduleId: mId = null,
-    sectionId = null,
+    tags = [],
   }) {
     if (!user.value) {
       throw new Error("User not authenticated");
@@ -155,14 +149,13 @@ export function useHighlights(options = {}) {
         body: JSON.stringify({
           user_id: user.value.id,
           paragraph_id: pId,
-          module_id: mId || moduleId,
-          section_id: sectionId,
           start_offset: startOffset,
           end_offset: endOffset,
           selected_text: selectedText,
           color: color,
           note: note,
           is_public: isPublic,
+          tags: tags,
         }),
       });
 

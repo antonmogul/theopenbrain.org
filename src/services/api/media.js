@@ -17,9 +17,9 @@ import { MEDIA_TYPES } from '@/constants/dashboard';
 export async function fetchMedia({ type = MEDIA_TYPES.ALL, search = '' } = {}) {
   let query = 'animations?select=*&order=created_at.desc';
 
-  // Apply type filter
+  // Apply type filter (supports both media_type and legacy animation_type columns)
   if (type && type !== MEDIA_TYPES.ALL) {
-    query += `&animation_type=eq.${type}`;
+    query += `&media_type=eq.${type}`;
   }
 
   // Apply search filter (searches title, animation_key, description)
@@ -116,6 +116,82 @@ export async function getMediaTypeCounts() {
   return counts;
 }
 
+/**
+ * Fetch animation states for a specific animation
+ * @param {string} animationId - Animation UUID
+ * @returns {Promise<Array>} Animation states
+ */
+export async function fetchAnimationStates(animationId) {
+  return get(`animation_states?animation_id=eq.${animationId}&order=order_index`);
+}
+
+/**
+ * Fetch animation variants for a specific animation
+ * @param {string} animationId - Animation UUID
+ * @returns {Promise<Array>} Animation variants
+ */
+export async function fetchAnimationVariants(animationId) {
+  return get(`animation_variants?animation_id=eq.${animationId}&order=order_index`);
+}
+
+/**
+ * Create an animation state
+ * @param {Object} data - State data
+ * @returns {Promise<Object>} Created state
+ */
+export async function createAnimationState(data) {
+  const [created] = await post('animation_states', data);
+  return created;
+}
+
+/**
+ * Update an animation state
+ * @param {string} stateId - State UUID
+ * @param {Object} data - Updated data
+ * @returns {Promise<Object>} Success indicator
+ */
+export async function updateAnimationState(stateId, data) {
+  return patch(`animation_states?id=eq.${stateId}`, data);
+}
+
+/**
+ * Delete an animation state
+ * @param {string} stateId - State UUID
+ * @returns {Promise<Object>} Success indicator
+ */
+export async function deleteAnimationState(stateId) {
+  return del(`animation_states?id=eq.${stateId}`);
+}
+
+/**
+ * Create an animation variant
+ * @param {Object} data - Variant data
+ * @returns {Promise<Object>} Created variant
+ */
+export async function createAnimationVariant(data) {
+  const [created] = await post('animation_variants', data);
+  return created;
+}
+
+/**
+ * Update an animation variant
+ * @param {string} variantId - Variant UUID
+ * @param {Object} data - Updated data
+ * @returns {Promise<Object>} Success indicator
+ */
+export async function updateAnimationVariant(variantId, data) {
+  return patch(`animation_variants?id=eq.${variantId}`, data);
+}
+
+/**
+ * Delete an animation variant
+ * @param {string} variantId - Variant UUID
+ * @returns {Promise<Object>} Success indicator
+ */
+export async function deleteAnimationVariant(variantId) {
+  return del(`animation_variants?id=eq.${variantId}`);
+}
+
 export default {
   fetchMedia,
   fetchMediaItem,
@@ -124,4 +200,12 @@ export default {
   updateMedia,
   deleteMedia,
   getMediaTypeCounts,
+  fetchAnimationStates,
+  fetchAnimationVariants,
+  createAnimationState,
+  updateAnimationState,
+  deleteAnimationState,
+  createAnimationVariant,
+  updateAnimationVariant,
+  deleteAnimationVariant,
 };

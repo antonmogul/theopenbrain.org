@@ -7,7 +7,9 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export function useReadingProgress(moduleId, courseId = null) {
+export function useReadingProgress(initialModuleId = null, courseId = null) {
+  let moduleId = initialModuleId;
+
   const progress = ref(null);
   const timeSpent = ref(0);
   const loading = ref(false);
@@ -18,6 +20,16 @@ export function useReadingProgress(moduleId, courseId = null) {
   let saveInterval = null;
   let startTime = Date.now();
   let isTracking = false;
+
+  // Allow setting moduleId after initialization (for lazy-loaded chapters)
+  async function initForModule(newModuleId) {
+    if (isTracking) stopTracking();
+    moduleId = newModuleId;
+    if (moduleId) {
+      await loadProgress();
+      startTracking();
+    }
+  }
 
   // Helper for REST API calls
   async function supabaseRest(endpoint, options = {}) {
@@ -187,6 +199,7 @@ export function useReadingProgress(moduleId, courseId = null) {
     timeSpent,
     loading,
     error,
+    initForModule,
     loadProgress,
     saveProgress,
     startTracking,

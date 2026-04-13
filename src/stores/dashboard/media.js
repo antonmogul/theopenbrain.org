@@ -25,13 +25,18 @@ export const useMediaStore = defineStore('dashboardMedia', () => {
   // Upload modal
   const showUploadModal = ref(false);
 
+  // Helper: get the media type from either column name (supports both legacy and new schema)
+  function getMediaType(item) {
+    return item.media_type || item.animation_type;
+  }
+
   // Getters
   const filteredItems = computed(() => {
     let result = items.value;
 
     // Apply type filter
     if (filter.value && filter.value !== MEDIA_TYPES.ALL) {
-      result = result.filter(item => item.animation_type === filter.value);
+      result = result.filter(item => getMediaType(item) === filter.value);
     }
 
     // Apply search filter
@@ -56,8 +61,9 @@ export const useMediaStore = defineStore('dashboardMedia', () => {
     };
 
     items.value.forEach(item => {
-      if (grouped[item.animation_type]) {
-        grouped[item.animation_type].push(item);
+      const type = getMediaType(item);
+      if (grouped[type]) {
+        grouped[type].push(item);
       }
     });
 

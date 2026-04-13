@@ -1,10 +1,31 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useAuth } from "@/composables/useAuth";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
+import "@/assets/styles/admin-theme.css";
+
+// Wizard step components
+import WizardStepMeta from "@/components/dashboard/chapters/WizardStepMeta.vue";
+import WizardStepImport from "@/components/dashboard/chapters/WizardStepImport.vue";
+import WizardStepStructure from "@/components/dashboard/chapters/WizardStepStructure.vue";
+import WizardStepReview from "@/components/dashboard/chapters/WizardStepReview.vue";
+
+// Wizard API functions
+import {
+    createChapter as apiCreateChapter,
+    createSection as apiCreateSection,
+    createParagraph as apiCreateParagraph,
+    createReference as apiCreateReference,
+    fetchChapters as apiFetchChapters,
+} from "@/services/api/chapters";
+import {
+    fetchVersions as apiFetchVersions,
+    createVersion as apiCreateVersion,
+} from "@/services/api/versions";
 
 const router = useRouter();
+const route = useRoute();
 const {
     user,
     profile,
@@ -52,6 +73,9 @@ async function supabaseRest(endpoint, options = {}) {
 
 // Current active section in sidebar
 const activeSection = ref("dashboard");
+
+// Dashboard home loading state
+const dashboardLoading = ref(true);
 
 // Navigation items for Creator role
 const creatorNavItems = [
@@ -1372,6 +1396,179 @@ const setActiveSection = (sectionId) => {
     activeSection.value = sectionId;
 };
 
+// ============ CHAPTER WIZARD STATE ============
+const wizardCurrentStep = ref(1);
+const wizardSteps = [
+    { number: 1, label: "Details" },
+    { number: 2, label: "Import" },
+    { number: 3, label: "Structure" },
+    { number: 4, label: "Review" },
+];
+
+const wizardMeta = ref({
+    title: "",
+    description: "",
+    slug: "",
+    order_index: 0,
+});
+
+const wizardSections = ref([]);
+const wizardReferences = ref([]);
+const wizardCreating = ref(false);
+const wizardCreateError = ref(null);
+const wizardCreatedChapter = ref(null);
+const stepMetaRef = ref(null);
+
+async function initWizardOrderIndex() {
+    try {
+        const chapters = await apiFetchChapters();
+        const maxOrder = chapters.reduce((max, ch) => Math.max(max, ch.order_index), 1);
+        wizardMeta.value.order_index = maxOrder + 1;
+    } catch {
+        wizardMeta.value.order_index = 3;
+    }
+}
+
+function startChapterWizard() {
+    // Reset wizard state
+    wizardCurrentStep.value = 1;
+    wizardMeta.value = { title: "", description: "", slug: "", order_index: 0 };
+    wizardSections.value = [];
+    wizardReferences.value = [];
+    wizardCreating.value = false;
+    wizardCreateError.value = null;
+    wizardCreatedChapter.value = null;
+    activeSection.value = "chapter-wizard";
+    initWizardOrderIndex();
+}
+
+const wizardCanGoNext = computed(() => {
+    switch (wizardCurrentStep.value) {
+        case 1: return wizardMeta.value.title.trim().length > 0;
+        case 2: return wizardSections.value.length > 0;
+        case 3: return wizardSections.value.length > 0;
+        case 4: return !wizardCreating.value;
+        default: return false;
+    }
+});
+
+function wizardNextStep() {
+    if (wizardCurrentStep.value < 4 && wizardCanGoNext.value) {
+        wizardCurrentStep.value++;
+    }
+}
+
+function wizardPrevStep() {
+    if (wizardCurrentStep.value > 1) {
+        wizardCurrentStep.value--;
+    }
+}
+
+function wizardGoToStep(step) {
+    if (step <= wizardCurrentStep.value) {
+        wizardCurrentStep.value = step;
+    }
+    if (step === 2 && wizardMeta.value.title.trim()) wizardCurrentStep.value = 2;
+    if (step === 3 && wizardSections.value.length > 0) wizardCurrentStep.value = 3;
+    if (step === 4 && wizardSections.value.length > 0) wizardCurrentStep.value = 4;
+}
+
+function onWizardContentParsed(result) {
+    if (result.sections) {
+        wizardSections.value = result.sections;
+    }
+}
+
+async function handleWizardCreate() {
+    wizardCreating.value = true;
+    wizardCreateError.value = null;
+
+    try {
+        // 1. Get or create a content version
+        const versions = await apiFetchVersions();
+        let contentVersionId;
+
+        const draftVersion = versions.find((v) => v.status === "draft");
+        if (draftVersion) {
+            contentVersionId = draftVersion.id;
+        } else {
+            const newVersion = await apiCreateVersion(
+                {
+                    version_number: `v${versions.length + 1}.0`,
+                    release_notes: `Created for chapter: ${wizardMeta.value.title}`,
+                },
+                user.value?.id,
+            );
+            contentVersionId = newVersion.id;
+        }
+
+        // 2. Create the module (chapter)
+        const chapter = await apiCreateChapter({
+            title: wizardMeta.value.title,
+            slug: wizardMeta.value.slug,
+            order_index: wizardMeta.value.order_index,
+            status: "draft",
+            content_version_id: contentVersionId,
+            created_by: user.value?.id,
+        });
+
+        // 3. Create sections and paragraphs
+        for (const section of wizardSections.value) {
+            const createdSection = await apiCreateSection({
+                module_id: chapter.id,
+                title: section.title,
+                slug: section.slug,
+                order_index: section.order_index,
+            });
+
+            await Promise.all(
+                section.paragraphs.map((para) =>
+                    apiCreateParagraph({
+                        section_id: createdSection.id,
+                        content: para.content,
+                        content_text: para.content_text,
+                        order_index: para.order_index,
+                        is_subsection_header: para.is_subsection_header,
+                        subsection_level: para.subsection_level,
+                    }),
+                ),
+            );
+        }
+
+        // 4. Create references if any
+        if (wizardReferences.value.length > 0) {
+            await Promise.all(
+                wizardReferences.value.map((ref) =>
+                    apiCreateReference({
+                        module_id: chapter.id,
+                        number: ref.number,
+                        authors: ref.authors,
+                        title: ref.title,
+                        journal: ref.journal,
+                        year: ref.year,
+                        volume: ref.volume,
+                        pages: ref.pages,
+                        doi: ref.doi,
+                        url: ref.url,
+                        pub_type: ref.pub_type,
+                        raw_text: ref.raw_text,
+                    }),
+                ),
+            );
+        }
+
+        wizardCreatedChapter.value = chapter;
+
+        // Refresh the chapters list
+        await fetchAllChapters();
+    } catch (err) {
+        wizardCreateError.value = err.message || "Failed to create chapter. Please try again.";
+        console.error("Chapter creation error:", err);
+    } finally {
+        wizardCreating.value = false;
+    }
+}
+
 // Watch for section changes to fetch data
 watch(activeSection, (newSection) => {
     switch (newSection) {
@@ -1405,15 +1602,66 @@ watch(expandedChapterId, () => {
     });
 });
 
+// Dashboard stats computed from fetched data
+const dashboardStats = computed(() => ({
+    chapters: chapters.value.length,
+    totalSections: chapters.value.reduce((s, c) => s + (c.sectionCount || 0), 0),
+    totalParagraphs: chapters.value.reduce((s, c) => s + (c.paragraphCount || 0), 0),
+    totalWords: chapters.value.reduce((s, c) => s + (c.wordCount || 0), 0),
+    totalUsers: usersTotalCount.value,
+    totalQuizzes: quizzes.value.length,
+    totalMedia: mediaItems.value.length,
+    publishedChapters: chapters.value.filter(c => c.status === 'published').length,
+    draftChapters: chapters.value.filter(c => c.status === 'draft').length,
+    avgReadingTime: chapters.value.length
+        ? Math.round(chapters.value.reduce((s, c) => s + (c.readingTime || 0), 0) / chapters.value.length)
+        : 0,
+}));
+
+// Sorted chapters for dashboard display
+const recentChapters = computed(() => {
+    return [...chapters.value].sort((a, b) => {
+        const dateA = a.updated_at ? new Date(a.updated_at) : 0;
+        const dateB = b.updated_at ? new Date(b.updated_at) : 0;
+        return dateB - dateA;
+    });
+});
+
+// Max role count for bar chart scaling
+const maxRoleCount = computed(() => {
+    const b = userRoleBreakdown.value;
+    return Math.max(b.creators, b.professors, b.students, 1);
+});
+
+async function fetchDashboardData() {
+    dashboardLoading.value = true;
+    await Promise.allSettled([
+        fetchAllChapters(),
+        fetchUsers(),
+        fetchQuizzes(),
+        fetchMedia(),
+        fetchAnalytics(),
+    ]);
+    dashboardLoading.value = false;
+}
+
 onMounted(() => {
-    if (activeSection.value === "chapters") {
+    // Check for query param to open a specific section (e.g., from redirect)
+    if (route.query.section === "chapter-wizard") {
+        startChapterWizard();
+        return;
+    }
+
+    if (activeSection.value === "dashboard") {
+        fetchDashboardData();
+    } else if (activeSection.value === "chapters") {
         fetchAllChapters();
     }
 });
 </script>
 
 <template>
-    <div class="dashboard-layout">
+    <div class="dashboard-layout admin-light">
         <!-- Loading State -->
         <div
             v-if="loading || profileLoading"
@@ -1667,255 +1915,232 @@ onMounted(() => {
                     v-if="activeSection === 'dashboard'"
                     class="dashboard-content"
                 >
-                    <!-- Metrics Graph -->
-                    <div class="metrics-card">
-                        <div class="metrics-header">
-                            <div class="metrics-period">
-                                <button class="period-btn active">
-                                    Last 7 Days
+                    <!-- Loading State -->
+                    <div v-if="dashboardLoading" class="dash-loading">
+                        <div class="dash-loading-spinner"></div>
+                        <p>Loading dashboard data...</p>
+                    </div>
+
+                    <template v-else>
+                        <!-- A. Top Metrics Row -->
+                        <div class="dashboard-metrics-row">
+                            <button class="dashboard-metric" @click="setActiveSection('chapters')">
+                                <div class="dm-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                    </svg>
+                                </div>
+                                <span class="dm-value">{{ dashboardStats.chapters }}</span>
+                                <span class="dm-label">Chapters</span>
+                            </button>
+
+                            <button class="dashboard-metric" @click="setActiveSection('users')">
+                                <div class="dm-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </div>
+                                <span class="dm-value">{{ dashboardStats.totalUsers }}</span>
+                                <span class="dm-label">Users</span>
+                            </button>
+
+                            <button class="dashboard-metric" @click="setActiveSection('quizzes')">
+                                <div class="dm-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9 11l3 3L22 4"></path>
+                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                    </svg>
+                                </div>
+                                <span class="dm-value">{{ dashboardStats.totalQuizzes }}</span>
+                                <span class="dm-label">Quizzes</span>
+                            </button>
+
+                            <div class="dashboard-metric">
+                                <div class="dm-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    </svg>
+                                </div>
+                                <span class="dm-value">{{ dashboardStats.totalWords.toLocaleString() }}</span>
+                                <span class="dm-label">Words</span>
+                            </div>
+
+                            <button class="dashboard-metric" @click="setActiveSection('media')">
+                                <div class="dm-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="dm-value">{{ dashboardStats.totalMedia }}</span>
+                                <span class="dm-label">Media Assets</span>
+                            </button>
+                        </div>
+
+                        <!-- B. Recent Chapters -->
+                        <div class="dash-card">
+                            <h3 class="dash-card-title">Recent Chapters</h3>
+                            <div v-if="recentChapters.length === 0" class="dash-empty">
+                                <p>No chapters yet. Create your first chapter to get started.</p>
+                            </div>
+                            <div v-else class="recent-chapters-list">
+                                <button
+                                    v-for="ch in recentChapters"
+                                    :key="ch.id"
+                                    class="chapter-row"
+                                    @click="setActiveSection('chapters')"
+                                >
+                                    <span class="ch-order">Ch{{ ch.order_index }}</span>
+                                    <span class="ch-title">{{ ch.title }}</span>
+                                    <span
+                                        class="ch-status"
+                                        :class="ch.status === 'published' ? 'published' : 'draft'"
+                                    >{{ ch.status || 'draft' }}</span>
+                                    <span class="ch-meta">{{ ch.sectionCount }} sections</span>
+                                    <span class="ch-meta">{{ ch.readingTime }} min read</span>
                                 </button>
-                                <button class="period-btn">Last 30 Days</button>
-                                <button class="period-btn">All Time</button>
                             </div>
                         </div>
-                        <div class="metrics-chart">
-                            <!-- Placeholder chart -->
-                            <div class="chart-placeholder">
-                                <svg viewBox="0 0 400 150" class="chart-svg">
-                                    <!-- Grid lines -->
-                                    <line
-                                        x1="0"
-                                        y1="30"
-                                        x2="400"
-                                        y2="30"
-                                        class="grid-line"
-                                    />
-                                    <line
-                                        x1="0"
-                                        y1="60"
-                                        x2="400"
-                                        y2="60"
-                                        class="grid-line"
-                                    />
-                                    <line
-                                        x1="0"
-                                        y1="90"
-                                        x2="400"
-                                        y2="90"
-                                        class="grid-line"
-                                    />
-                                    <line
-                                        x1="0"
-                                        y1="120"
-                                        x2="400"
-                                        y2="120"
-                                        class="grid-line"
-                                    />
 
-                                    <!-- Active users line (violet) -->
-                                    <path
-                                        d="M0,100 C50,90 100,70 150,75 S250,50 300,40 S380,30 400,25"
-                                        class="chart-line-active"
-                                        fill="none"
-                                    />
-
-                                    <!-- Edits line (lighter) -->
-                                    <path
-                                        d="M0,110 C50,105 100,95 150,100 S250,80 300,85 S380,70 400,65"
-                                        class="chart-line-edits"
-                                        fill="none"
-                                    />
-
-                                    <!-- Sign ups line (lightest) -->
-                                    <path
-                                        d="M0,130 C50,125 100,120 150,115 S250,110 300,100 S380,95 400,90"
-                                        class="chart-line-signups"
-                                        fill="none"
-                                    />
-                                </svg>
-                                <div class="chart-labels">
-                                    <span>0</span>
-                                    <span>1</span>
-                                    <span>2</span>
-                                    <span>3</span>
-                                    <span>4</span>
-                                    <span>5</span>
-                                    <span>6</span>
-                                    <span>7</span>
+                        <!-- C. Two-Column Row: Users by Role + Quick Actions -->
+                        <div class="dash-two-col">
+                            <!-- Users by Role -->
+                            <div class="dash-card">
+                                <h3 class="dash-card-title">Users by Role</h3>
+                                <div class="role-bars">
+                                    <div class="role-bar-row">
+                                        <span class="role-bar-label">Creators</span>
+                                        <span class="role-bar-count">{{ userRoleBreakdown.creators }}</span>
+                                        <div class="role-bar-track">
+                                            <div
+                                                class="role-bar-fill creators"
+                                                :style="{ width: (userRoleBreakdown.creators / maxRoleCount * 100) + '%' }"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div class="role-bar-row">
+                                        <span class="role-bar-label">Professors</span>
+                                        <span class="role-bar-count">{{ userRoleBreakdown.professors }}</span>
+                                        <div class="role-bar-track">
+                                            <div
+                                                class="role-bar-fill professors"
+                                                :style="{ width: (userRoleBreakdown.professors / maxRoleCount * 100) + '%' }"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div class="role-bar-row">
+                                        <span class="role-bar-label">Students</span>
+                                        <span class="role-bar-count">{{ userRoleBreakdown.students }}</span>
+                                        <div class="role-bar-track">
+                                            <div
+                                                class="role-bar-fill students"
+                                                :style="{ width: (userRoleBreakdown.students / maxRoleCount * 100) + '%' }"
+                                            ></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="chart-legend">
-                                <span class="legend-item"
-                                    ><span class="legend-dot active"></span>
-                                    Active</span
-                                >
-                                <span class="legend-item"
-                                    ><span class="legend-dot edits"></span>
-                                    Edits</span
-                                >
-                                <span class="legend-item"
-                                    ><span class="legend-dot signups"></span>
-                                    Sign Ups</span
-                                >
+
+                            <!-- Quick Actions -->
+                            <div class="dash-card quick-actions-card">
+                                <h3 class="dash-card-title">Quick Actions</h3>
+                                <div class="quick-actions-list">
+                                    <button class="quick-action-btn" @click="startChapterWizard()">
+                                        <span class="qa-plus">+</span> New Chapter
+                                    </button>
+                                    <button class="quick-action-btn" @click="setActiveSection('quizzes'); showQuizEditor = true;">
+                                        <span class="qa-plus">+</span> New Quiz
+                                    </button>
+                                    <button class="quick-action-btn" @click="setActiveSection('users')">
+                                        <span class="qa-plus">+</span> Manage Users
+                                    </button>
+                                    <button class="quick-action-btn" @click="setActiveSection('analytics')">
+                                        <span class="qa-plus">+</span> View Analytics
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Quick Access Cards -->
-                    <div class="cards-grid">
-                        <!-- Chapters Card (Large) -->
-                        <button
-                            @click="setActiveSection('chapters')"
-                            class="quick-card large"
-                        >
-                            <div class="card-icon">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="32"
-                                    height="32"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path
-                                        d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"
-                                    ></path>
-                                    <path
-                                        d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-                                    ></path>
-                                </svg>
+                        <!-- D. Quiz Performance Table -->
+                        <div class="dash-card">
+                            <h3 class="dash-card-title">Quiz Performance</h3>
+                            <div v-if="quizzes.length === 0" class="dash-empty">
+                                <p>No quizzes created yet.</p>
                             </div>
-                            <h3 class="card-title">Chapters</h3>
-                            <p class="card-subtitle">Manage content</p>
-                        </button>
+                            <table v-else class="quiz-perf-table">
+                                <thead>
+                                    <tr>
+                                        <th>Quiz Name</th>
+                                        <th>Questions</th>
+                                        <th>Attempts</th>
+                                        <th>Avg Score</th>
+                                        <th>Pass Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="q in quizzes" :key="q.id">
+                                        <td class="quiz-name-cell">{{ q.title }}</td>
+                                        <td>{{ q.questionCount }}</td>
+                                        <td>{{ q.attemptCount }}</td>
+                                        <td>{{ q.avgScore }}%</td>
+                                        <td>{{ q.passRate }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                        <!-- Users Card (Large) -->
-                        <button
-                            @click="setActiveSection('users')"
-                            class="quick-card large"
-                        >
-                            <div class="card-icon">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="32"
-                                    height="32"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path
-                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                                    ></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
+                        <!-- E. Two-Column Row: Content Stats + Trending Highlights -->
+                        <div class="dash-two-col">
+                            <!-- Content Stats -->
+                            <div class="dash-card">
+                                <h3 class="dash-card-title">Content Stats</h3>
+                                <div class="content-stats-grid">
+                                    <div class="cs-item">
+                                        <span class="cs-value">{{ dashboardStats.totalSections }}</span>
+                                        <span class="cs-label">Total Sections</span>
+                                    </div>
+                                    <div class="cs-item">
+                                        <span class="cs-value">{{ dashboardStats.totalParagraphs }}</span>
+                                        <span class="cs-label">Total Paragraphs</span>
+                                    </div>
+                                    <div class="cs-item">
+                                        <span class="cs-value">{{ dashboardStats.avgReadingTime }} min</span>
+                                        <span class="cs-label">Avg Reading Time</span>
+                                    </div>
+                                    <div class="cs-item">
+                                        <span class="cs-value">{{ dashboardStats.publishedChapters }} / {{ dashboardStats.draftChapters }}</span>
+                                        <span class="cs-label">Published / Draft</span>
+                                    </div>
+                                </div>
                             </div>
-                            <h3 class="card-title">Users</h3>
-                            <p class="card-subtitle">Professors & Students</p>
-                        </button>
 
-                        <!-- Media Card (Small) -->
-                        <button
-                            @click="setActiveSection('media')"
-                            class="quick-card small"
-                        >
-                            <div class="card-icon">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <rect
-                                        x="3"
-                                        y="3"
-                                        width="18"
-                                        height="18"
-                                        rx="2"
-                                        ry="2"
-                                    ></rect>
-                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                    <polyline
-                                        points="21 15 16 10 5 21"
-                                    ></polyline>
-                                </svg>
+                            <!-- Trending Highlights -->
+                            <div class="dash-card">
+                                <h3 class="dash-card-title">Trending Highlights</h3>
+                                <div v-if="trendingHighlights.length === 0" class="dash-empty">
+                                    <p>No highlights yet</p>
+                                </div>
+                                <div v-else class="highlights-list">
+                                    <div
+                                        v-for="(h, i) in trendingHighlights.slice(0, 5)"
+                                        :key="i"
+                                        class="highlight-item"
+                                    >
+                                        <span class="hi-text">"{{ (h.highlighted_text || h.text || '').slice(0, 80) }}{{ (h.highlighted_text || h.text || '').length > 80 ? '...' : '' }}"</span>
+                                        <span class="hi-count">{{ h.highlight_count || h.count || 0 }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <h3 class="card-title">Media</h3>
-                        </button>
-
-                        <!-- Analytics Card (Small) -->
-                        <button
-                            @click="setActiveSection('analytics')"
-                            class="quick-card small"
-                        >
-                            <div class="card-icon">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <line
-                                        x1="18"
-                                        y1="20"
-                                        x2="18"
-                                        y2="10"
-                                    ></line>
-                                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                                </svg>
-                            </div>
-                            <h3 class="card-title">Analytics</h3>
-                        </button>
-
-                        <!-- Versions Card (Small) -->
-                        <button
-                            @click="setActiveSection('versions')"
-                            class="quick-card small"
-                        >
-                            <div class="card-icon">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <polygon
-                                        points="12 2 2 7 12 12 22 7 12 2"
-                                    ></polygon>
-                                    <polyline
-                                        points="2 17 12 22 22 17"
-                                    ></polyline>
-                                    <polyline
-                                        points="2 12 12 17 22 12"
-                                    ></polyline>
-                                </svg>
-                            </div>
-                            <h3 class="card-title">Versions</h3>
-                        </button>
-                    </div>
+                        </div>
+                    </template>
                 </section>
 
                 <!-- Chapters Section -->
@@ -2418,7 +2643,7 @@ onMounted(() => {
                         </div>
 
                         <!-- Add New Chapter Button -->
-                        <button class="add-chapter-btn">
+                        <button class="add-chapter-btn" @click="startChapterWizard()">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
@@ -2432,6 +2657,109 @@ onMounted(() => {
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
                             <span>Add New Chapter</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Chapter Wizard Section -->
+                <section
+                    v-else-if="activeSection === 'chapter-wizard'"
+                    class="section-content wizard-section"
+                >
+                    <!-- Header with back button -->
+                    <div class="wizard-header-row">
+                        <button class="wizard-back-btn" @click="activeSection = 'chapters'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                            Back to Chapters
+                        </button>
+                        <h2 class="section-title">New Chapter</h2>
+                    </div>
+
+                    <!-- Step Indicator -->
+                    <div class="wizard-step-indicator">
+                        <div
+                            v-for="step in wizardSteps"
+                            :key="step.number"
+                            class="wizard-step-dot"
+                            :class="{
+                                active: wizardCurrentStep === step.number,
+                                completed: wizardCurrentStep > step.number,
+                                clickable: step.number <= wizardCurrentStep,
+                            }"
+                            @click="wizardGoToStep(step.number)"
+                        >
+                            <span class="wizard-dot-number" v-if="wizardCurrentStep <= step.number">{{ step.number }}</span>
+                            <span class="wizard-dot-check" v-else>&#10003;</span>
+                            <span class="wizard-dot-label">{{ step.label }}</span>
+                        </div>
+                        <div class="wizard-step-line" />
+                    </div>
+
+                    <!-- Step Content -->
+                    <div class="wizard-content">
+                        <WizardStepMeta
+                            v-if="wizardCurrentStep === 1"
+                            ref="stepMetaRef"
+                            v-model="wizardMeta"
+                            :existing-chapter-count="wizardMeta.order_index"
+                        />
+
+                        <WizardStepImport
+                            v-if="wizardCurrentStep === 2"
+                            :sections="wizardSections"
+                            :references="wizardReferences"
+                            @update:sections="wizardSections = $event"
+                            @update:references="wizardReferences = $event"
+                            @parsed="onWizardContentParsed"
+                        />
+
+                        <WizardStepStructure
+                            v-if="wizardCurrentStep === 3"
+                            :sections="wizardSections"
+                            :references="wizardReferences"
+                            @update:sections="wizardSections = $event"
+                            @update:references="wizardReferences = $event"
+                        />
+
+                        <WizardStepReview
+                            v-if="wizardCurrentStep === 4"
+                            :meta="wizardMeta"
+                            :sections="wizardSections"
+                            :references="wizardReferences"
+                            :creating="wizardCreating"
+                            :create-error="wizardCreateError"
+                            :created-chapter="wizardCreatedChapter"
+                            @create="handleWizardCreate"
+                        />
+                    </div>
+
+                    <!-- Navigation Footer -->
+                    <div v-if="!wizardCreatedChapter" class="wizard-footer">
+                        <button
+                            v-if="wizardCurrentStep > 1"
+                            class="wizard-nav-btn wizard-nav-secondary"
+                            @click="wizardPrevStep"
+                        >
+                            Back
+                        </button>
+                        <div class="wizard-footer-spacer" />
+                        <button
+                            v-if="wizardCurrentStep < 4"
+                            class="wizard-nav-btn wizard-nav-primary"
+                            :disabled="!wizardCanGoNext"
+                            @click="wizardNextStep"
+                        >
+                            Continue
+                        </button>
+                    </div>
+
+                    <!-- Success: Return to chapters -->
+                    <div v-if="wizardCreatedChapter" class="wizard-success-actions">
+                        <button class="wizard-nav-btn wizard-nav-primary" @click="activeSection = 'chapters'">
+                            View Chapters
                         </button>
                     </div>
                 </section>
@@ -4306,7 +4634,7 @@ onMounted(() => {
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
-    background: #0d0d0d;
+    background: #f5f3f0;
 }
 
 /* Sidebar */
@@ -4349,15 +4677,17 @@ onMounted(() => {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     letter-spacing: 0.05em;
 }
 
 /* User Profile Card */
 .user-profile-card {
-    background: #1a1a1a;
-    border-radius: 16px;
+    background: transparent;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 0;
     padding: 2rem;
+    padding-bottom: 2rem;
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
@@ -4389,7 +4719,7 @@ onMounted(() => {
 .user-date {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: #666;
+    color: #9ca3af;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
@@ -4397,7 +4727,7 @@ onMounted(() => {
 .user-greeting {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #888;
+    color: #4b5563;
     margin-top: 0.4rem;
 }
 
@@ -4405,13 +4735,13 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.4rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     line-height: 1.2;
 }
 
 /* Navigation Card */
 .sidebar-nav-card {
-    background: #1a1a1a;
+    background: transparent;
     border-radius: 16px;
     padding: 1.2rem;
     flex: 1;
@@ -4434,7 +4764,7 @@ onMounted(() => {
     background: transparent;
     border: none;
     border-radius: 10px;
-    color: #898989;
+    color: #374151;
     cursor: pointer;
     transition: all 0.2s;
     text-align: left;
@@ -4442,17 +4772,17 @@ onMounted(() => {
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
+    background: rgba(0, 0, 0, 0.04);
+    color: #1a1a1a;
 }
 
 .nav-item.active {
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
+    background: rgba(151, 71, 255, 0.08);
+    color: rgb(151, 71, 255);
 }
 
 .nav-item.active .nav-icon {
-    color: white;
+    color: rgb(151, 71, 255);
 }
 
 .nav-icon {
@@ -4502,7 +4832,7 @@ onMounted(() => {
 /* Main Content */
 .main-content {
     flex: 1;
-    background: #0d0d0d;
+    background: #f5f3f0;
     padding: 2.4rem 3.2rem;
     overflow-y: auto;
 }
@@ -4519,15 +4849,15 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
 }
 
 .logout-btn {
     padding: 1rem 2rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #d1d5db;
     border-radius: 9999px;
-    color: #898989;
+    color: #6b7280;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
     text-transform: uppercase;
@@ -4536,8 +4866,8 @@ onMounted(() => {
 }
 
 .logout-btn:hover {
-    border-color: rgba(255, 255, 255, 0.5);
-    color: white;
+    border-color: #9ca3af;
+    color: #1a1a1a;
 }
 
 /* Dashboard Content */
@@ -4547,199 +4877,387 @@ onMounted(() => {
     gap: 2.4rem;
 }
 
-/* Metrics Card */
-.metrics-card {
-    background: #1a1a1a;
-    border-radius: 16px;
-    padding: 2.4rem;
-    border: none;
-}
-
-.metrics-header {
+/* Dashboard Loading */
+.dash-loading {
     display: flex;
-    justify-content: flex-start;
-    margin-bottom: 2.4rem;
-}
-
-.metrics-period {
-    display: flex;
-    gap: 0.8rem;
-}
-
-.period-btn {
-    padding: 0.8rem 1.6rem;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: #898989;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.period-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
-}
-
-.period-btn.active {
-    background: rgba(151, 71, 255, 0.2);
-    border-color: rgb(151, 71, 255);
-    color: white;
-}
-
-/* Chart */
-.metrics-chart {
-    position: relative;
-}
-
-.chart-placeholder {
-    height: 200px;
-    position: relative;
-}
-
-.chart-svg {
-    width: 100%;
-    height: 160px;
-}
-
-.grid-line {
-    stroke: rgba(255, 255, 255, 0.05);
-    stroke-width: 1;
-}
-
-.chart-line-active {
-    stroke: rgb(151, 71, 255);
-    stroke-width: 2.5;
-}
-
-.chart-line-edits {
-    stroke: #898989;
-    stroke-width: 2;
-}
-
-.chart-line-signups {
-    stroke: #4a4a4a;
-    stroke-width: 2;
-}
-
-.chart-labels {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.8rem 0;
-    color: #4a4a4a;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-}
-
-.chart-legend {
-    display: flex;
-    gap: 2.4rem;
-    justify-content: flex-end;
-    margin-top: 0.8rem;
-}
-
-.legend-item {
-    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.8rem;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #898989;
-}
-
-.legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.legend-dot.active {
-    background: rgb(151, 71, 255);
-}
-
-.legend-dot.edits {
-    background: #898989;
-}
-
-.legend-dot.signups {
-    background: #4a4a4a;
-}
-
-/* Cards Grid */
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: auto auto;
+    justify-content: center;
+    padding: 8rem 2rem;
     gap: 1.6rem;
 }
 
-.quick-card {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+.dash-loading p {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.4rem;
+    color: #6b7280;
+}
+
+.dash-loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e5e7eb;
+    border-top-color: rgb(151, 71, 255);
+    border-radius: 50%;
+    animation: dash-spin 0.8s linear infinite;
+}
+
+@keyframes dash-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Top Metrics Row */
+.dashboard-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.6rem;
+}
+
+.dashboard-metric {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 16px;
-    padding: 2.4rem;
-    text-align: left;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
     cursor: pointer;
     transition: all 0.2s;
+    text-align: left;
 }
 
-.quick-card:hover {
-    background: #262626;
+.dashboard-metric:hover {
     border-color: rgba(151, 71, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-.quick-card.large {
-    grid-row: span 1;
-}
-
-.quick-card.large:first-child {
-    grid-column: 1;
-}
-
-.quick-card.large:nth-child(2) {
-    grid-column: 2;
-}
-
-.quick-card.small {
-    grid-column: 3;
-}
-
-.card-icon {
-    width: 56px;
-    height: 56px;
-    background: rgba(151, 71, 255, 0.1);
-    border-radius: 12px;
+.dm-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(151, 71, 255, 0.08);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: rgb(151, 71, 255);
+}
+
+.dm-value {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+.dm-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Dash Card (shared base) */
+.dash-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 2.4rem;
+}
+
+.dash-card-title {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #1a1a1a;
     margin-bottom: 1.6rem;
 }
 
-.quick-card.small .card-icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1.2rem;
+.dash-empty {
+    padding: 2rem 0;
+    text-align: center;
 }
 
-.card-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: white;
-    margin-bottom: 0.4rem;
-}
-
-.quick-card.small .card-title {
-    font-size: 1.6rem;
-}
-
-.card-subtitle {
+.dash-empty p {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #898989;
+    color: #9ca3af;
+}
+
+/* Two-column layout */
+.dash-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6rem;
+}
+
+/* Recent Chapters List */
+.recent-chapters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.chapter-row {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 1.6rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-align: left;
+    width: 100%;
+    font-family: "IBM Plex Sans", sans-serif;
+}
+
+.chapter-row:last-child {
+    border-bottom: none;
+}
+
+.chapter-row:hover {
+    background: rgba(151, 71, 255, 0.04);
+}
+
+.ch-order {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: rgb(151, 71, 255);
+    min-width: 40px;
+}
+
+.ch-title {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    flex: 1;
+}
+
+.ch-status {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+}
+
+.ch-status.published {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.ch-status.draft {
+    background: rgba(234, 179, 8, 0.1);
+    color: #ca8a04;
+}
+
+.ch-meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2rem;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+/* Users by Role - Horizontal Bars */
+.role-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+}
+
+.role-bar-row {
+    display: grid;
+    grid-template-columns: 90px 30px 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.role-bar-label {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.4rem;
+    color: #4b5563;
+}
+
+.role-bar-count {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: right;
+}
+
+.role-bar-track {
+    height: 10px;
+    background: #f3f4f6;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.role-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s ease;
+    min-width: 4px;
+}
+
+.role-bar-fill.creators {
+    background: rgb(151, 71, 255);
+}
+
+.role-bar-fill.professors {
+    background: #3b82f6;
+}
+
+.role-bar-fill.students {
+    background: #22c55e;
+}
+
+/* Quick Actions */
+.quick-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.2rem 1.6rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.4rem;
+    color: #374151;
+    width: 100%;
+    text-align: left;
+}
+
+.quick-action-btn:hover {
+    border-color: rgba(151, 71, 255, 0.3);
+    background: rgba(151, 71, 255, 0.04);
+    color: rgb(151, 71, 255);
+}
+
+.qa-plus {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: rgb(151, 71, 255);
+}
+
+/* Quiz Performance Table */
+.quiz-perf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "IBM Plex Sans", sans-serif;
+}
+
+.quiz-perf-table thead th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9ca3af;
+    padding: 0.8rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 500;
+}
+
+.quiz-perf-table tbody td {
+    font-size: 1.4rem;
+    color: #4b5563;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.quiz-perf-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.quiz-perf-table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.quiz-name-cell {
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+/* Content Stats Grid */
+.content-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6rem;
+}
+
+.cs-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.cs-value {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.cs-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2rem;
+    color: #9ca3af;
+}
+
+/* Trending Highlights */
+.highlights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.highlight-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.highlight-item:last-child {
+    border-bottom: none;
+}
+
+.hi-text {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.3rem;
+    color: #6b7280;
+    font-style: italic;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.hi-count {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: rgb(151, 71, 255);
+    background: rgba(151, 71, 255, 0.08);
+    padding: 0.2rem 0.8rem;
+    border-radius: 6px;
+    white-space: nowrap;
 }
 
 /* Section Content */
@@ -4748,25 +5266,25 @@ onMounted(() => {
 }
 
 .section-placeholder {
-    background: #202020;
+    background: #ffffff;
     border-radius: 16px;
     padding: 4.8rem;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid #e5e7eb;
 }
 
 .section-placeholder h2 {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.4rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin-bottom: 1.2rem;
 }
 
 .section-placeholder p {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
-    color: #898989;
+    color: #6b7280;
     margin-bottom: 2.4rem;
 }
 
@@ -4784,8 +5302,8 @@ onMounted(() => {
 }
 
 .action-btn:hover {
-    background: white;
-    color: black;
+    background: #1a1a1a;
+    color: white;
 }
 
 /* ============ CHAPTERS SECTION ============ */
@@ -4797,11 +5315,11 @@ onMounted(() => {
 
 .chapters-loading,
 .chapters-error {
-    background: #202020;
+    background: #ffffff;
     border-radius: 12px;
     padding: 4rem;
     text-align: center;
-    color: #898989;
+    color: #6b7280;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
 }
@@ -4819,20 +5337,20 @@ onMounted(() => {
 
 /* Chapter Card */
 .chapter-card {
-    background: #202020;
+    background: #ffffff;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid #e5e7eb;
     overflow: hidden;
     transition: all 0.3s ease;
 }
 
 .chapter-card:hover:not(.expanded) {
     border-color: rgba(151, 71, 255, 0.3);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .chapter-card.expanded {
-    background: #1a1a1a;
+    background: #ffffff;
     border-color: rgba(151, 71, 255, 0.5);
 }
 
@@ -4844,7 +5362,7 @@ onMounted(() => {
 }
 
 .chapter-card:not(.expanded) .chapter-header:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .chapter-title-row {
@@ -4866,7 +5384,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
@@ -4895,7 +5413,7 @@ onMounted(() => {
 }
 
 .chevron-icon {
-    color: #898989;
+    color: #6b7280;
     transition: transform 0.3s ease;
 }
 
@@ -4908,10 +5426,10 @@ onMounted(() => {
     align-items: center;
     gap: 0.6rem;
     padding: 0.6rem 1.2rem;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.06);
     border: none;
     border-radius: 6px;
-    color: white;
+    color: #1a1a1a;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
     cursor: pointer;
@@ -4930,23 +5448,23 @@ onMounted(() => {
     margin-top: 1.2rem;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #898989;
+    color: #6b7280;
 }
 
 .chapter-stats-row .dot {
-    color: #4a4a4a;
+    color: #d1d5db;
 }
 
 .chapter-meta {
     margin-top: 0.8rem;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.2rem;
-    color: #5a5a5a;
+    color: #9ca3af;
 }
 
 /* Chapter Content (Expanded) */
 .chapter-content {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid #e5e7eb;
     padding: 2rem;
 }
 
@@ -4959,9 +5477,9 @@ onMounted(() => {
 
 /* Blocks Sidebar */
 .blocks-sidebar {
-    background: #141414;
+    background: #fafafa;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid #e5e7eb;
     overflow: hidden;
     position: sticky;
     top: 2rem;
@@ -4981,7 +5499,7 @@ onMounted(() => {
 }
 
 .blocks-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .blocks-list::-webkit-scrollbar-thumb {
@@ -5002,7 +5520,7 @@ onMounted(() => {
 }
 
 .block-item.section {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.03);
     cursor: default;
     margin-top: 1.2rem;
 }
@@ -5016,7 +5534,7 @@ onMounted(() => {
 }
 
 .block-item.paragraph:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .block-item.selected {
@@ -5045,7 +5563,7 @@ onMounted(() => {
 }
 
 .block-icon {
-    color: #898989;
+    color: #6b7280;
     flex-shrink: 0;
 }
 
@@ -5053,11 +5571,11 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.3rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
 }
 
 .drag-handle {
-    color: #4a4a4a;
+    color: #d1d5db;
     flex-shrink: 0;
     cursor: grab;
 }
@@ -5069,8 +5587,8 @@ onMounted(() => {
 .block-index {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1rem;
-    color: #5a5a5a;
-    background: rgba(255, 255, 255, 0.05);
+    color: #9ca3af;
+    background: rgba(0, 0, 0, 0.04);
     padding: 0.2rem 0.5rem;
     border-radius: 3px;
     flex-shrink: 0;
@@ -5080,7 +5598,7 @@ onMounted(() => {
     flex: 1;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.3rem;
-    color: #898989;
+    color: #6b7280;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -5093,9 +5611,9 @@ onMounted(() => {
 
 /* Editor Panel */
 .editor-panel {
-    background: #202020;
+    background: #ffffff;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
@@ -5126,14 +5644,14 @@ onMounted(() => {
     font-family: "IBM Plex Mono", monospace;
     font-size: 2.4rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin-bottom: 0.4rem;
 }
 
 .stat-label {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.2rem;
-    color: #898989;
+    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -5149,12 +5667,12 @@ onMounted(() => {
 .preview-title {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #898989;
+    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 1.6rem;
     padding-bottom: 1.2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .preview-content {
@@ -5168,7 +5686,7 @@ onMounted(() => {
 }
 
 .preview-content::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .preview-content::-webkit-scrollbar-thumb {
@@ -5182,7 +5700,7 @@ onMounted(() => {
 }
 
 .preview-block.paragraph {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid #e5e7eb;
     padding: 1.6rem 0;
 }
 
@@ -5233,14 +5751,14 @@ onMounted(() => {
 .meta-slug {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: #5a5a5a;
+    color: #9ca3af;
 }
 
 .preview-section-title {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
@@ -5260,8 +5778,8 @@ onMounted(() => {
 .meta-index {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1rem;
-    color: #5a5a5a;
-    background: rgba(255, 255, 255, 0.05);
+    color: #9ca3af;
+    background: rgba(0, 0, 0, 0.04);
     padding: 0.2rem 0.6rem;
     border-radius: 3px;
 }
@@ -5269,21 +5787,21 @@ onMounted(() => {
 .meta-words {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: #4a4a4a;
+    color: #d1d5db;
 }
 
 .preview-para-content {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
     line-height: 1.7;
-    color: #a0a0a0;
+    color: #4b5563;
 }
 
 .preview-para-content :deep(h1),
 .preview-para-content :deep(h2),
 .preview-para-content :deep(h3) {
     font-weight: 600;
-    color: #c0c0c0;
+    color: #1a1a1a;
     margin-bottom: 0.8rem;
 }
 
@@ -5306,7 +5824,7 @@ onMounted(() => {
 
 .editor-header {
     padding: 1.6rem 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .back-btn {
@@ -5315,9 +5833,9 @@ onMounted(() => {
     gap: 0.6rem;
     padding: 0.6rem 1.2rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #d1d5db;
     border-radius: 6px;
-    color: #898989;
+    color: #6b7280;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
     cursor: pointer;
@@ -5326,15 +5844,15 @@ onMounted(() => {
 }
 
 .back-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: #9ca3af;
+    color: #1a1a1a;
 }
 
 .editing-title {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5353,8 +5871,8 @@ onMounted(() => {
     align-items: center;
     gap: 1.6rem;
     padding: 1.6rem 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
 }
 
 .save-status {
@@ -5382,8 +5900,8 @@ onMounted(() => {
 }
 
 .save-btn:hover:not(:disabled) {
-    background: white;
-    color: black;
+    background: #1a1a1a;
+    color: white;
 }
 
 .save-btn:disabled {
@@ -5400,9 +5918,9 @@ onMounted(() => {
     width: 100%;
     padding: 3.2rem;
     background: transparent;
-    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border: 2px dashed #d1d5db;
     border-radius: 12px;
-    color: #898989;
+    color: #6b7280;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     cursor: pointer;
@@ -5412,7 +5930,7 @@ onMounted(() => {
 .add-chapter-btn:hover {
     border-color: rgb(151, 71, 255);
     background: rgba(151, 71, 255, 0.05);
-    color: white;
+    color: #1a1a1a;
 }
 
 .add-chapter-btn svg {
@@ -5437,14 +5955,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.4rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
 .total-count {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.4rem;
-    color: #898989;
+    color: #6b7280;
 }
 
 .header-controls {
@@ -5478,9 +5996,9 @@ onMounted(() => {
     gap: 0.8rem;
     padding: 1rem 2rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    color: #a0a0a0;
+    color: #4b5563;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.4rem;
     cursor: pointer;
@@ -5488,8 +6006,8 @@ onMounted(() => {
 }
 
 .secondary-btn:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    color: white;
+    border-color: #9ca3af;
+    color: #1a1a1a;
 }
 
 .danger-btn {
@@ -5511,10 +6029,10 @@ onMounted(() => {
 .filter-select,
 .form-select {
     padding: 1rem 1.6rem;
-    background: #252525;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    color: white;
+    color: #1a1a1a;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
     cursor: pointer;
@@ -5522,10 +6040,10 @@ onMounted(() => {
 
 .search-input {
     padding: 1rem 1.6rem;
-    background: #252525;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    color: white;
+    color: #1a1a1a;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
     min-width: 200px;
@@ -5536,7 +6054,7 @@ onMounted(() => {
 }
 
 .search-input::placeholder {
-    color: #666;
+    color: #9ca3af;
 }
 
 .loading-state,
@@ -5570,12 +6088,12 @@ onMounted(() => {
 .empty-state p {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.5rem;
-    color: #898989;
+    color: #6b7280;
     margin-top: 1.6rem;
 }
 
 .empty-state svg {
-    color: #4a4a4a;
+    color: #d1d5db;
     margin-bottom: 1.6rem;
 }
 
@@ -5583,7 +6101,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 500;
-    color: #a0a0a0;
+    color: #4b5563;
     margin: 0 0 0.8rem;
 }
 
@@ -5591,17 +6109,17 @@ onMounted(() => {
     margin-top: 1.6rem;
     padding: 1rem 2rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    color: #a0a0a0;
+    color: #4b5563;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
     cursor: pointer;
 }
 
 .retry-btn:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    color: white;
+    border-color: #9ca3af;
+    color: #1a1a1a;
 }
 
 /* Modal Styles */
@@ -5611,7 +6129,7 @@ onMounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5619,8 +6137,8 @@ onMounted(() => {
 }
 
 .modal-content {
-    background: #1e1e1e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid #d1d5db;
     border-radius: 16px;
     padding: 2.4rem;
     width: 100%;
@@ -5633,7 +6151,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 2rem;
 }
 
@@ -5653,7 +6171,7 @@ onMounted(() => {
     display: block;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #898989;
+    color: #6b7280;
     margin-bottom: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -5663,10 +6181,10 @@ onMounted(() => {
 .form-textarea {
     width: 100%;
     padding: 1.2rem 1.6rem;
-    background: #252525;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    color: white;
+    color: #1a1a1a;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.5rem;
     transition: border-color 0.2s;
@@ -5706,7 +6224,7 @@ onMounted(() => {
     justify-content: flex-end;
     gap: 1.2rem;
     padding-top: 1.6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid #e5e7eb;
 }
 
 .checkbox-label {
@@ -5715,7 +6233,7 @@ onMounted(() => {
     gap: 0.8rem;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #a0a0a0;
+    color: #4b5563;
     cursor: pointer;
 }
 
@@ -5731,7 +6249,7 @@ onMounted(() => {
     gap: 0.6rem;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #a0a0a0;
+    color: #4b5563;
     cursor: pointer;
 }
 
@@ -5749,8 +6267,8 @@ onMounted(() => {
 }
 
 .version-card {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 2rem;
 }
@@ -5772,7 +6290,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
@@ -5784,9 +6302,9 @@ onMounted(() => {
 .action-btn {
     padding: 0.8rem 1.6rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid #d1d5db;
     border-radius: 6px;
-    color: #a0a0a0;
+    color: #4b5563;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
     cursor: pointer;
@@ -5794,8 +6312,8 @@ onMounted(() => {
 }
 
 .action-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: #9ca3af;
+    color: #1a1a1a;
 }
 
 .action-btn.publish {
@@ -5832,14 +6350,14 @@ onMounted(() => {
     gap: 2rem;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .version-notes {
     margin-top: 1.2rem;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #898989;
+    color: #6b7280;
     line-height: 1.5;
 }
 
@@ -5864,7 +6382,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: #a0a0a0;
+    color: #4b5563;
     margin: 0 0 1.6rem;
 }
 
@@ -5875,8 +6393,8 @@ onMounted(() => {
 }
 
 .media-card {
-    background: #252525;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
@@ -5884,7 +6402,7 @@ onMounted(() => {
 }
 
 .media-card:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: #d1d5db;
     transform: translateY(-2px);
 }
 
@@ -5898,21 +6416,21 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1a1a1a;
-    color: #4a4a4a;
+    background: #eef0f2;
+    color: #d1d5db;
 }
 
 .media-thumb.lottie {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    background: linear-gradient(135deg, #eef0f5, #e8ecf4);
 }
 .media-thumb.video {
-    background: linear-gradient(135deg, #1a1a1a, #2d1f1f);
+    background: linear-gradient(135deg, #f0eeed, #f2edec);
 }
 .media-thumb.image {
-    background: linear-gradient(135deg, #1a1f1a, #1f2d1f);
+    background: linear-gradient(135deg, #ecf0ec, #edf2ed);
 }
 .media-thumb.youtube {
-    background: linear-gradient(135deg, #2d1f1f, #1a1a1a);
+    background: linear-gradient(135deg, #f2edec, #eef0f2);
     color: #ff0000;
 }
 
@@ -5930,7 +6448,7 @@ onMounted(() => {
     display: block;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.3rem;
-    color: white;
+    color: #1a1a1a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5940,13 +6458,13 @@ onMounted(() => {
     display: block;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: #666;
+    color: #9ca3af;
     margin-top: 0.4rem;
 }
 
 .media-detail-panel {
-    background: #1e1e1e;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 2rem;
     height: fit-content;
@@ -5965,20 +6483,20 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
 .close-btn {
     background: transparent;
     border: none;
-    color: #666;
+    color: #9ca3af;
     cursor: pointer;
     padding: 0.4rem;
 }
 
 .close-btn:hover {
-    color: white;
+    color: #1a1a1a;
 }
 
 .detail-preview {
@@ -5987,7 +6505,7 @@ onMounted(() => {
 
 .preview-placeholder {
     height: 180px;
-    background: #252525;
+    background: #f9fafb;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -6025,19 +6543,19 @@ onMounted(() => {
 .info-label {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
     text-transform: uppercase;
 }
 
 .info-value {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #a0a0a0;
+    color: #4b5563;
 }
 
 .detail-actions {
     padding-top: 1.6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid #e5e7eb;
 }
 
 /* ============ USERS STYLES ============ */
@@ -6054,15 +6572,15 @@ onMounted(() => {
     align-items: center;
     gap: 1.6rem;
     padding: 2rem;
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .role-card:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: #d1d5db;
 }
 
 .role-card.active {
@@ -6092,8 +6610,8 @@ onMounted(() => {
     color: rgb(34, 197, 94);
 }
 .role-icon.all {
-    background: rgba(255, 255, 255, 0.1);
-    color: #a0a0a0;
+    background: rgba(0, 0, 0, 0.06);
+    color: #4b5563;
 }
 
 .role-info {
@@ -6105,13 +6623,13 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.4rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
 }
 
 .role-label {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .users-toolbar {
@@ -6129,15 +6647,15 @@ onMounted(() => {
     align-items: center;
     gap: 1.6rem;
     padding: 1.6rem 2rem;
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .user-card:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: #d1d5db;
 }
 
 .user-avatar {
@@ -6170,13 +6688,13 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
 }
 
 .user-email {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .user-meta {
@@ -6210,7 +6728,7 @@ onMounted(() => {
 .user-joined {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .pagination {
@@ -6220,7 +6738,7 @@ onMounted(() => {
     gap: 2rem;
     margin-top: 2.4rem;
     padding-top: 2.4rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid #e5e7eb;
 }
 
 .page-btn {
@@ -6229,17 +6747,17 @@ onMounted(() => {
     gap: 0.6rem;
     padding: 0.8rem 1.6rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid #d1d5db;
     border-radius: 6px;
-    color: #a0a0a0;
+    color: #4b5563;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
     cursor: pointer;
 }
 
 .page-btn:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: #9ca3af;
+    color: #1a1a1a;
 }
 
 .page-btn:disabled {
@@ -6250,7 +6768,7 @@ onMounted(() => {
 .page-info {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .user-detail-modal {
@@ -6261,7 +6779,7 @@ onMounted(() => {
     display: flex;
     gap: 1.6rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #e5e7eb;
     position: relative;
 }
 
@@ -6275,14 +6793,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 0.4rem;
 }
 
 .user-detail-info p {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
     margin: 0 0 1rem;
 }
 
@@ -6294,19 +6812,19 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     padding: 1rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .detail-label {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .detail-value {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #a0a0a0;
+    color: #4b5563;
 }
 
 .user-detail-actions {
@@ -6314,13 +6832,13 @@ onMounted(() => {
     align-items: center;
     gap: 1.2rem;
     padding-top: 1.6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid #e5e7eb;
 }
 
 .user-detail-actions label {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 /* ============ ANALYTICS STYLES ============ */
@@ -6342,8 +6860,8 @@ onMounted(() => {
     align-items: center;
     gap: 1.6rem;
     padding: 2rem;
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
 }
 
@@ -6382,20 +6900,20 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     line-height: 1;
 }
 
 .metric-label {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
     margin-top: 0.4rem;
 }
 
 .chart-container {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 2rem;
 }
@@ -6404,7 +6922,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 2rem;
 }
 
@@ -6422,7 +6940,7 @@ onMounted(() => {
 .chart-empty p {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .simple-chart {
@@ -6466,7 +6984,7 @@ onMounted(() => {
     transform: translateX(-50%);
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: #a0a0a0;
+    color: #4b5563;
 }
 
 .bar-label {
@@ -6474,7 +6992,7 @@ onMounted(() => {
     bottom: -25px;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1rem;
-    color: #666;
+    color: #9ca3af;
     white-space: nowrap;
 }
 
@@ -6485,8 +7003,8 @@ onMounted(() => {
 }
 
 .stats-card {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 2rem;
 }
@@ -6499,7 +7017,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 1.6rem;
 }
 
@@ -6511,7 +7029,7 @@ onMounted(() => {
 .stats-empty p {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .stats-list {
@@ -6525,7 +7043,7 @@ onMounted(() => {
     align-items: center;
     gap: 1.2rem;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 8px;
 }
 
@@ -6546,7 +7064,7 @@ onMounted(() => {
     flex: 1;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #a0a0a0;
+    color: #4b5563;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6555,7 +7073,7 @@ onMounted(() => {
 .stats-value {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .highlights-list {
@@ -6566,7 +7084,7 @@ onMounted(() => {
 
 .highlight-item {
     padding: 1.2rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 8px;
     border-left: 3px solid rgb(151, 71, 255);
 }
@@ -6580,7 +7098,7 @@ onMounted(() => {
 .highlight-text {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #898989;
+    color: #6b7280;
     margin: 0.8rem 0 0;
     line-height: 1.5;
     font-style: italic;
@@ -6595,8 +7113,8 @@ onMounted(() => {
 }
 
 .quiz-card {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 2rem;
 }
@@ -6615,14 +7133,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 0.4rem;
 }
 
 .quiz-module {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .quiz-actions {
@@ -6636,14 +7154,14 @@ onMounted(() => {
     margin-bottom: 1.6rem;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .quiz-stats {
     display: flex;
     gap: 3.2rem;
     padding-top: 1.6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid #e5e7eb;
 }
 
 .quiz-stats .stat {
@@ -6655,13 +7173,13 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.4rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
 }
 
 .quiz-stats .stat-label {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .quiz-editor {
@@ -6678,21 +7196,21 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
 .quiz-form {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2.4rem;
 }
 
 .questions-section {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 2rem;
 }
@@ -6708,14 +7226,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
 .empty-questions {
     padding: 3rem;
     text-align: center;
-    color: #666;
+    color: #9ca3af;
 }
 
 .questions-list {
@@ -6725,8 +7243,8 @@ onMounted(() => {
 }
 
 .question-card {
-    background: #252525;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
     padding: 1.6rem;
 }
@@ -6747,24 +7265,24 @@ onMounted(() => {
 
 .question-type-badge {
     padding: 0.3rem 0.8rem;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.06);
     border-radius: 4px;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: #898989;
+    color: #6b7280;
 }
 
 .question-points {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
     margin-left: auto;
 }
 
 .question-text {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.5rem;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 1.2rem;
     line-height: 1.5;
 }
@@ -6778,11 +7296,11 @@ onMounted(() => {
 
 .question-options .option {
     padding: 0.8rem 1.2rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.03);
     border-radius: 6px;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #898989;
+    color: #6b7280;
 }
 
 .question-options .option.correct {
@@ -6804,16 +7322,16 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #d1d5db;
     border-radius: 6px;
-    color: #666;
+    color: #9ca3af;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .icon-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: #9ca3af;
+    color: #1a1a1a;
 }
 
 .icon-btn.danger:hover {
@@ -6837,7 +7355,7 @@ onMounted(() => {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.4rem;
     font-weight: 600;
-    color: #666;
+    color: #9ca3af;
 }
 
 .option-input-row .form-input {
@@ -6846,5 +7364,177 @@ onMounted(() => {
 
 .option-input-row .radio-label {
     white-space: nowrap;
+}
+
+/* ============ CHAPTER WIZARD STYLES ============ */
+.wizard-section {
+    padding: 0 2rem;
+}
+
+.wizard-header-row {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding-bottom: 2.4rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 3.2rem;
+}
+
+.wizard-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    color: #6b7280;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wizard-back-btn:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+.wizard-step-indicator {
+    display: flex;
+    align-items: flex-start;
+    gap: 4rem;
+    margin-bottom: 4rem;
+    position: relative;
+    padding: 0 2rem;
+}
+
+.wizard-step-line {
+    position: absolute;
+    top: 18px;
+    left: 54px;
+    right: 54px;
+    height: 2px;
+    background: #e5e7eb;
+    z-index: 0;
+}
+
+.wizard-step-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    z-index: 1;
+    cursor: default;
+}
+
+.wizard-step-dot.clickable {
+    cursor: pointer;
+}
+
+.wizard-dot-number,
+.wizard-dot-check {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    border: 2px solid #d1d5db;
+    background: #f5f3f0;
+    color: #9ca3af;
+    transition: all 0.3s;
+}
+
+.wizard-step-dot.active .wizard-dot-number {
+    border-color: rgb(151, 71, 255);
+    color: rgb(151, 71, 255);
+    background: rgba(151, 71, 255, 0.08);
+}
+
+.wizard-step-dot.completed .wizard-dot-check {
+    border-color: #22c55e;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.wizard-dot-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.1rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.wizard-step-dot.active .wizard-dot-label {
+    color: rgb(151, 71, 255);
+}
+
+.wizard-step-dot.completed .wizard-dot-label {
+    color: #22c55e;
+}
+
+.wizard-content {
+    min-height: 400px;
+    padding: 0 2rem;
+}
+
+.wizard-footer {
+    display: flex;
+    align-items: center;
+    padding: 2.4rem 2rem;
+    margin-top: 4rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.wizard-footer-spacer {
+    flex: 1;
+}
+
+.wizard-nav-btn {
+    padding: 1.2rem 3.2rem;
+    border-radius: 8px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.4rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wizard-nav-primary {
+    background: rgb(151, 71, 255);
+    border: none;
+    color: white;
+}
+
+.wizard-nav-primary:hover:not(:disabled) {
+    background: #1a1a1a;
+    color: white;
+}
+
+.wizard-nav-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.wizard-nav-secondary {
+    background: transparent;
+    border: 1px solid #d1d5db;
+    color: #4b5563;
+}
+
+.wizard-nav-secondary:hover {
+    border-color: #9ca3af;
+    color: #1a1a1a;
+}
+
+.wizard-success-actions {
+    display: flex;
+    justify-content: center;
+    padding: 2.4rem 2rem;
+    margin-top: 2rem;
 }
 </style>

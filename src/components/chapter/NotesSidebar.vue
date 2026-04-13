@@ -7,10 +7,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  moduleId: {
-    type: String,
-    default: null,
-  },
   sectionId: {
     type: String,
     default: null,
@@ -20,7 +16,7 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 
 const { notes, loading, fetchNotes, createNote, updateNote, deleteNote } =
-  useNotes({ moduleId: props.moduleId });
+  useNotes();
 
 // UI State
 const isAddingNote = ref(false);
@@ -34,14 +30,14 @@ watch(
   () => props.isOpen,
   (isOpen) => {
     if (isOpen) {
-      fetchNotes({ moduleId: props.moduleId, sectionId: props.sectionId });
+      fetchNotes({ sectionId: props.sectionId });
     }
   }
 );
 
 onMounted(() => {
   if (props.isOpen) {
-    fetchNotes({ moduleId: props.moduleId, sectionId: props.sectionId });
+    fetchNotes({ sectionId: props.sectionId });
   }
 });
 
@@ -62,7 +58,6 @@ async function saveNewNote() {
   try {
     await createNote({
       content: newNoteContent.value.trim(),
-      moduleId: props.moduleId,
       sectionId: props.sectionId,
     });
     cancelNewNote();
