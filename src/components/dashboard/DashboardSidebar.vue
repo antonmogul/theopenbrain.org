@@ -52,7 +52,7 @@ function handleFooterClick() {
 </script>
 
 <template>
-    <aside class="sidebar">
+    <aside class="sidebar" :style="{ '--accent': accentColor }">
         <!-- Logo -->
         <div class="sidebar-logo">
             <span class="logo-icon" :style="{ background: accentColor }">OB</span>
@@ -61,7 +61,7 @@ function handleFooterClick() {
 
         <!-- User Profile Card -->
         <div class="user-profile-card">
-            <div class="user-avatar" :style="{ background: `linear-gradient(135deg, ${accentColor} 0%, #6b21a8 100%)` }">
+            <div class="user-avatar">
                 <span class="avatar-icon">{{ avatarInitial }}</span>
             </div>
             <div class="user-info">
@@ -300,7 +300,7 @@ function handleFooterClick() {
 
         <!-- Footer Button -->
         <div v-if="showFooterButton" class="sidebar-footer">
-            <button @click="handleFooterClick" class="footer-btn" :style="{ background: `linear-gradient(135deg, ${accentColor} 0%, #6b21a8 100%)` }">
+            <button @click="handleFooterClick" class="footer-btn">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -376,6 +376,7 @@ function handleFooterClick() {
     width: 52px;
     height: 52px;
     border-radius: 12px;
+    background: var(--accent, rgb(151, 71, 255));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -453,7 +454,7 @@ function handleFooterClick() {
 }
 
 .nav-item.active {
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--accent, rgb(151, 71, 255)) 18%, transparent);
     color: white;
 }
 
@@ -490,6 +491,7 @@ function handleFooterClick() {
     padding: 1.6rem;
     border: none;
     border-radius: 12px;
+    background: var(--accent, rgb(151, 71, 255));
     color: white;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.5rem;
@@ -500,6 +502,7 @@ function handleFooterClick() {
 
 .footer-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(151, 71, 255, 0.3);
+    filter: brightness(1.1);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent, rgb(151, 71, 255)) 30%, transparent);
 }
 </style>

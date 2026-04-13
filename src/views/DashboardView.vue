@@ -802,8 +802,31 @@ const mediaByType = computed(() => {
     return groups;
 });
 
-function selectMedia(item) {
+async function selectMedia(item) {
     selectedMedia.value = item;
+
+    // Load Lottie preview for lottie items
+    if (item.media_type === 'lottie' && item.lottie_file_url) {
+        await nextTick();
+        const container = document.getElementById('lottie-preview-' + item.id);
+        if (container) {
+            container.innerHTML = '';
+            try {
+                const lottieModule = await import('lottie-web');
+                const lottie = lottieModule.default;
+                lottie.loadAnimation({
+                    container,
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    path: item.lottie_file_url,
+                });
+            } catch (err) {
+                console.error('Failed to load lottie preview:', err);
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 2rem;">Failed to load animation</p>';
+            }
+        }
+    }
 }
 
 async function deleteMedia(mediaId) {
@@ -1927,9 +1950,6 @@ onMounted(() => {
                         </h1>
                     </div>
                     <div class="header-right">
-                        <button @click="handleLogout" class="logout-btn">
-                            Log Out
-                        </button>
                     </div>
                 </header>
 
@@ -3323,103 +3343,49 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <!-- Detail Panel -->
-                        <div v-if="selectedMedia" class="media-detail-panel">
-                            <div class="detail-header">
-                                <h3>
-                                    {{
-                                        selectedMedia.title ||
-                                        selectedMedia.animation_key
-                                    }}
-                                </h3>
-                                <button
-                                    class="close-btn"
-                                    @click="selectedMedia = null"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <line
-                                            x1="18"
-                                            y1="6"
-                                            x2="6"
-                                            y2="18"
-                                        ></line>
-                                        <line
-                                            x1="6"
-                                            y1="6"
-                                            x2="18"
-                                            y2="18"
-                                        ></line>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="detail-preview">
-                                <div class="preview-placeholder">
-                                    <span class="media-type-badge">{{
-                                        selectedMedia.media_type
-                                    }}</span>
-                                </div>
-                            </div>
-                            <div class="detail-info">
-                                <div class="info-row">
-                                    <span class="info-label">Key</span>
-                                    <span class="info-value">{{
-                                        selectedMedia.animation_key
-                                    }}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">Type</span>
-                                    <span class="info-value">{{
-                                        selectedMedia.media_type
-                                    }}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">Size</span>
-                                    <span class="info-value">{{
-                                        formatFileSize(
-                                            selectedMedia.file_size_bytes,
-                                        )
-                                    }}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">Priority</span>
-                                    <span class="info-value">{{
-                                        selectedMedia.load_priority || "normal"
-                                    }}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">Domain</span>
-                                    <span class="info-value">{{
-                                        selectedMedia.scientific_domain || "-"
-                                    }}</span>
-                                </div>
-                                <div
-                                    v-if="selectedMedia.description"
-                                    class="info-row full"
-                                >
-                                    <span class="info-label">Description</span>
-                                    <p class="info-value">
-                                        {{ selectedMedia.description }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="detail-actions">
-                                <button
-                                    class="danger-btn"
-                                    @click="deleteMedia(selectedMedia.id)"
-                                >
-                                    Delete Asset
-                                </button>
-                            </div>
-                        </div>
                     </div>
+
+                    <!-- Full-page Media Detail Modal -->
+                    <Teleport to="body">
+                        <Transition name="modal">
+                            <div v-if="selectedMedia" class="media-modal-overlay" @click.self="selectedMedia = null">
+                                <div class="media-modal">
+                                    <div class="media-modal__header">
+                                        <div>
+                                            <h2 class="media-modal__title">{{ selectedMedia.title || selectedMedia.animation_key }}</h2>
+                                            <span class="media-modal__type">{{ selectedMedia.media_type }} &middot; {{ formatFileSize(selectedMedia.file_size_bytes) }}</span>
+                                        </div>
+                                        <button class="media-modal__close" @click="selectedMedia = null">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="media-modal__preview">
+                                        <!-- Lottie preview -->
+                                        <div v-if="selectedMedia.media_type === 'lottie'" :id="'lottie-preview-' + selectedMedia.id" class="media-modal__lottie"></div>
+                                        <!-- Image preview -->
+                                        <img v-else-if="selectedMedia.media_type === 'image'" :src="selectedMedia.lottie_file_url || selectedMedia.file_path" class="media-modal__img" />
+                                        <!-- Video preview -->
+                                        <video v-else-if="selectedMedia.media_type === 'video'" :src="selectedMedia.lottie_file_url || selectedMedia.file_path" controls class="media-modal__video"></video>
+                                        <!-- Fallback -->
+                                        <div v-else class="media-modal__placeholder">
+                                            <span>{{ selectedMedia.media_type }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="media-modal__info">
+                                        <div class="media-modal__row"><span class="media-modal__label">Animation Key</span><span class="media-modal__val">{{ selectedMedia.animation_key }}</span></div>
+                                        <div class="media-modal__row"><span class="media-modal__label">Interaction</span><span class="media-modal__val">{{ selectedMedia.interaction_type || '-' }}</span></div>
+                                        <div class="media-modal__row"><span class="media-modal__label">Component</span><span class="media-modal__val">{{ selectedMedia.component_name || '-' }}</span></div>
+                                        <div class="media-modal__row"><span class="media-modal__label">Priority</span><span class="media-modal__val">{{ selectedMedia.load_priority || 'normal' }}</span></div>
+                                        <div class="media-modal__row"><span class="media-modal__label">Domain</span><span class="media-modal__val">{{ selectedMedia.scientific_domain || '-' }}</span></div>
+                                        <div v-if="selectedMedia.description" class="media-modal__row media-modal__row--full"><span class="media-modal__label">Description</span><p class="media-modal__val">{{ selectedMedia.description }}</p></div>
+                                    </div>
+                                    <div class="media-modal__actions">
+                                        <button class="danger-btn" @click="deleteMedia(selectedMedia.id)">Delete Asset</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Transition>
+                    </Teleport>
                 </section>
 
                 <!-- Quizzes Section -->
@@ -4907,6 +4873,7 @@ onMounted(() => {
     background: #f5f3f0;
     padding: 2.4rem 3.2rem;
     overflow-y: auto;
+    height: 100vh;
 }
 
 /* Header */
@@ -4914,7 +4881,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3.2rem;
+    margin-bottom: 2rem;
 }
 
 .page-title {
@@ -6436,8 +6403,8 @@ onMounted(() => {
 /* ============ MEDIA STYLES ============ */
 
 .media-layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
+    display: flex;
+    flex-direction: column;
     gap: 2.4rem;
 }
 
@@ -6460,15 +6427,27 @@ onMounted(() => {
 
 .media-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.6rem;
+}
+
+@media (max-width: 1023px) {
+    .media-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 479px) {
+    .media-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .media-card {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -6490,6 +6469,8 @@ onMounted(() => {
     justify-content: center;
     background: #eef0f2;
     color: #d1d5db;
+    border-radius: 12px 12px 0 0;
+    pointer-events: none;
 }
 
 .media-thumb.lottie {
@@ -6628,6 +6609,171 @@ onMounted(() => {
 .detail-actions {
     padding-top: 1.6rem;
     border-top: 1px solid #e5e7eb;
+}
+
+/* ============ MEDIA MODAL ============ */
+
+.media-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.media-modal {
+    background: white;
+    border-radius: 16px;
+    width: min(900px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+}
+
+.media-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2.4rem 2.4rem 0;
+}
+
+.media-modal__title {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.media-modal__type {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.media-modal__close {
+    background: transparent;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.6rem;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.media-modal__close:hover {
+    border-color: #1a1a1a;
+    color: #1a1a1a;
+}
+
+.media-modal__preview {
+    padding: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    background: #f9fafb;
+    margin: 2rem 2.4rem;
+    border-radius: 12px;
+}
+
+.media-modal__lottie {
+    width: 100%;
+    height: 400px;
+}
+
+.media-modal__lottie svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.media-modal__img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.media-modal__video {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 8px;
+}
+
+.media-modal__placeholder {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.4rem;
+    color: #d1d5db;
+    text-transform: uppercase;
+}
+
+.media-modal__info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6rem;
+    padding: 0 2.4rem 2rem;
+}
+
+.media-modal__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.media-modal__row--full {
+    grid-column: 1 / -1;
+}
+
+.media-modal__label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.1rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.media-modal__val {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.4rem;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.media-modal__actions {
+    padding: 0 2.4rem 2.4rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Modal transitions */
+.modal-enter-active {
+    transition: opacity 0.3s ease;
+}
+.modal-enter-active .media-modal {
+    animation: modal-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-leave-active {
+    transition: opacity 0.2s ease;
+}
+.modal-leave-active .media-modal {
+    animation: modal-out 0.2s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+@keyframes modal-in {
+    from { transform: scale(0.95) translateY(8px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes modal-out {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(0.95); opacity: 0; }
 }
 
 /* ============ USERS STYLES ============ */

@@ -840,7 +840,7 @@ onMounted(() => {
                 v-model:active-section="activeSection"
                 :display-name="displayName"
                 :current-date="currentDate"
-                accent-color="rgb(59, 130, 246)"
+                accent-color="#C86948"
                 logo-text="PROFESSOR PORTAL"
                 footer-button-text="Read Book"
                 @footer-click="goToBook"
@@ -1508,7 +1508,7 @@ onMounted(() => {
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
-    background: #0d0d0d;
+    background: #FFFAF9;
 }
 
 .loading-screen,
@@ -1519,15 +1519,15 @@ onMounted(() => {
     justify-content: center;
     height: 100vh;
     width: 100%;
-    background: #0d0d0d;
-    color: white;
+    background: #FFFAF9;
+    color: #1a1a1a;
 }
 
 .loading-screen .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(59, 130, 246, 0.2);
-    border-top-color: rgb(59, 130, 246);
+    border: 3px solid rgba(200, 105, 72, 0.2);
+    border-top-color: #C86948;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -1542,14 +1542,14 @@ onMounted(() => {
 }
 
 .access-denied p {
-    color: #898989;
+    color: #78716C;
     margin-bottom: 2.4rem;
 }
 
 /* Main Content */
 .main-content {
     flex: 1;
-    background: #0d0d0d;
+    background: #FFFAF9;
     padding: 2.4rem 3.2rem;
     overflow-y: auto;
 }
@@ -1569,7 +1569,7 @@ onMounted(() => {
 }
 
 .stat-card {
-    background: #1a1a1a;
+    background: white;
     border-radius: 12px;
     padding: 2rem;
     display: flex;
@@ -1587,8 +1587,8 @@ onMounted(() => {
 }
 
 .stat-icon.blue {
-    background: rgba(59, 130, 246, 0.15);
-    color: rgb(59, 130, 246);
+    background: rgba(200, 105, 72, 0.15);
+    color: #C86948;
 }
 
 .stat-icon.green {
@@ -1615,13 +1615,13 @@ onMounted(() => {
     font-family: "IBM Plex Mono", monospace;
     font-size: 2.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
 }
 
 .stat-label {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.3rem;
-    color: #898989;
+    color: #78716C;
 }
 
 /* Quick Actions */
@@ -1629,7 +1629,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin-bottom: 1.6rem;
 }
 
@@ -1640,8 +1640,8 @@ onMounted(() => {
 }
 
 .action-card {
-    background: #202020;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: #FEF6F3;
+    border: 1px solid rgba(0, 0, 0, 0.04);
     border-radius: 12px;
     padding: 2.4rem;
     display: flex;
@@ -1650,17 +1650,17 @@ onMounted(() => {
     gap: 1.2rem;
     cursor: pointer;
     transition: all 0.2s;
-    color: #898989;
+    color: #78716C;
 }
 
 .action-card:hover {
-    background: #262626;
-    border-color: rgba(59, 130, 246, 0.3);
-    color: white;
+    background: #FEF1EC;
+    border-color: rgba(200, 105, 72, 0.3);
+    color: #1a1a1a;
 }
 
 .action-card svg {
-    color: rgb(59, 130, 246);
+    color: #C86948;
 }
 
 .action-card span {
@@ -1677,7 +1677,7 @@ onMounted(() => {
 }
 
 .recent-item {
-    background: #1a1a1a;
+    background: white;
     border-radius: 10px;
     padding: 1.6rem 2rem;
     display: flex;
@@ -1689,14 +1689,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin-bottom: 0.4rem;
 }
 
 .recent-meta {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 /* Section Content */
@@ -1715,14 +1715,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2.4rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
 .total-count {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.4rem;
-    color: #898989;
+    color: #78716C;
 }
 
 /* Status Badges */
@@ -1751,7 +1751,7 @@ onMounted(() => {
     align-items: center;
     gap: 0.8rem;
     padding: 1rem 2rem;
-    background: rgb(59, 130, 246);
+    background: #C86948;
     border: none;
     border-radius: 8px;
     color: white;
@@ -1762,7 +1762,7 @@ onMounted(() => {
 }
 
 .primary-btn:hover {
-    background: rgb(37, 99, 235);
+    background: #AC5A3E;
 }
 
 .primary-btn:disabled {
@@ -1776,9 +1776,9 @@ onMounted(() => {
     gap: 0.8rem;
     padding: 1rem 2rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
-    color: #a0a0a0;
+    color: #6b7280;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.4rem;
     cursor: pointer;
@@ -1786,16 +1786,16 @@ onMounted(() => {
 }
 
 .secondary-btn:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    color: white;
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #1a1a1a;
 }
 
 .action-btn {
     padding: 0.8rem 1.6rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 6px;
-    color: #a0a0a0;
+    color: #6b7280;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
     cursor: pointer;
@@ -1803,8 +1803,8 @@ onMounted(() => {
 }
 
 .action-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #1a1a1a;
 }
 
 .action-btn.danger {
@@ -1822,9 +1822,9 @@ onMounted(() => {
     gap: 0.6rem;
     padding: 0.6rem 1.2rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 6px;
-    color: #898989;
+    color: #78716C;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
     cursor: pointer;
@@ -1833,32 +1833,32 @@ onMounted(() => {
 }
 
 .back-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #1a1a1a;
 }
 
 .icon-btn {
     padding: 0.8rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 6px;
-    color: #898989;
+    color: #78716C;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .icon-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #1a1a1a;
 }
 
 .retry-btn {
     margin-top: 1.6rem;
     padding: 1rem 2rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
-    color: #a0a0a0;
+    color: #6b7280;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
     cursor: pointer;
@@ -1884,8 +1884,8 @@ onMounted(() => {
 .loading-state .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(59, 130, 246, 0.2);
-    border-top-color: rgb(59, 130, 246);
+    border: 3px solid rgba(200, 105, 72, 0.2);
+    border-top-color: #C86948;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -1895,7 +1895,7 @@ onMounted(() => {
 .empty-state p {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.5rem;
-    color: #898989;
+    color: #78716C;
     margin-top: 1.6rem;
 }
 
@@ -1908,7 +1908,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 500;
-    color: #a0a0a0;
+    color: #6b7280;
     margin: 0 0 0.8rem;
 }
 
@@ -1921,7 +1921,7 @@ onMounted(() => {
     display: block;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #898989;
+    color: #78716C;
     margin-bottom: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1933,9 +1933,9 @@ onMounted(() => {
     width: 100%;
     padding: 1.2rem 1.6rem;
     background: #252525;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
-    color: white;
+    color: #1a1a1a;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.5rem;
     transition: border-color 0.2s;
@@ -1945,7 +1945,7 @@ onMounted(() => {
 .form-textarea:focus,
 .form-select:focus {
     outline: none;
-    border-color: rgb(59, 130, 246);
+    border-color: #C86948;
 }
 
 .form-input.small {
@@ -1985,14 +1985,14 @@ onMounted(() => {
     gap: 0.8rem;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #a0a0a0;
+    color: #6b7280;
     cursor: pointer;
 }
 
 .checkbox-label input[type="checkbox"] {
     width: 18px;
     height: 18px;
-    accent-color: rgb(59, 130, 246);
+    accent-color: #C86948;
 }
 
 .radio-label {
@@ -2001,7 +2001,7 @@ onMounted(() => {
     gap: 0.6rem;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #a0a0a0;
+    color: #6b7280;
     cursor: pointer;
 }
 
@@ -2013,16 +2013,16 @@ onMounted(() => {
 .search-input {
     padding: 1rem 1.6rem;
     background: #252525;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 8px;
-    color: white;
+    color: #1a1a1a;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
     min-width: 250px;
 }
 
 .search-input::placeholder {
-    color: #666;
+    color: #9ca3af;
 }
 
 /* Filters Bar */
@@ -2048,7 +2048,7 @@ onMounted(() => {
 
 .modal-content {
     background: #1e1e1e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 16px;
     padding: 2.4rem;
     width: 100%;
@@ -2061,7 +2061,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 2rem;
 }
 
@@ -2080,7 +2080,7 @@ onMounted(() => {
 }
 
 .course-card {
-    background: #202020;
+    background: #FEF6F3;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 2rem;
@@ -2097,20 +2097,20 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 0.4rem;
 }
 
 .course-meta {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .course-description {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #898989;
+    color: #78716C;
     margin-bottom: 1.2rem;
 }
 
@@ -2119,7 +2119,7 @@ onMounted(() => {
     gap: 1.6rem;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
     margin-bottom: 1.6rem;
 }
 
@@ -2131,7 +2131,7 @@ onMounted(() => {
 /* Course Editor */
 .course-editor,
 .assessment-editor {
-    background: #1a1a1a;
+    background: white;
     border-radius: 12px;
     padding: 2.4rem;
 }
@@ -2144,7 +2144,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0;
 }
 
@@ -2153,7 +2153,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 1.6rem;
-    background: #1a1a1a;
+    background: white;
     padding: 1.6rem 2rem;
     border-radius: 10px;
     margin-bottom: 2.4rem;
@@ -2162,7 +2162,7 @@ onMounted(() => {
 .add-to-course-bar span {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #898989;
+    color: #78716C;
 }
 
 .modules-list {
@@ -2172,14 +2172,14 @@ onMounted(() => {
 }
 
 .module-card {
-    background: #202020;
+    background: #FEF6F3;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     overflow: hidden;
 }
 
 .module-card.expanded {
-    border-color: rgba(59, 130, 246, 0.3);
+    border-color: rgba(200, 105, 72, 0.3);
 }
 
 .module-header {
@@ -2201,7 +2201,7 @@ onMounted(() => {
 .module-number {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.1rem;
-    color: rgb(59, 130, 246);
+    color: #C86948;
     letter-spacing: 0.1em;
 }
 
@@ -2209,19 +2209,19 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0.4rem 0;
 }
 
 .module-description {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
-    color: #898989;
+    color: #78716C;
     margin: 0;
 }
 
 .chevron-icon {
-    color: #898989;
+    color: #78716C;
     transition: transform 0.3s ease;
 }
 
@@ -2232,7 +2232,7 @@ onMounted(() => {
 .module-sections {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding: 1.6rem 2rem;
-    background: #1a1a1a;
+    background: white;
 }
 
 .section-item {
@@ -2240,7 +2240,7 @@ onMounted(() => {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    color: #898989;
+    color: #78716C;
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.4rem;
 }
@@ -2253,7 +2253,7 @@ onMounted(() => {
 }
 
 .student-card {
-    background: #202020;
+    background: #FEF6F3;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 1.6rem 2rem;
@@ -2265,7 +2265,7 @@ onMounted(() => {
 .student-avatar {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, rgb(59, 130, 246) 0%, #1d4ed8 100%);
+    background: linear-gradient(135deg, #C86948 0%, #8C4A32 100%);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -2273,7 +2273,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-weight: 600;
     font-size: 1.8rem;
-    color: white;
+    color: #1a1a1a;
 }
 
 .student-info {
@@ -2284,14 +2284,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 0.4rem;
 }
 
 .student-email {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .student-enrollments {
@@ -2303,8 +2303,8 @@ onMounted(() => {
 .enrollment-badge {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1rem;
-    background: rgba(59, 130, 246, 0.15);
-    color: rgb(59, 130, 246);
+    background: rgba(200, 105, 72, 0.15);
+    color: #C86948;
     padding: 0.3rem 0.8rem;
     border-radius: 4px;
 }
@@ -2316,7 +2316,7 @@ onMounted(() => {
     gap: 0.4rem;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 /* Invite Modal */
@@ -2340,9 +2340,9 @@ onMounted(() => {
     font-family: "IBM Plex Mono", monospace;
     font-size: 2.4rem;
     font-weight: 600;
-    color: rgb(59, 130, 246);
+    color: #C86948;
     letter-spacing: 0.2em;
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(200, 105, 72, 0.1);
     padding: 1.2rem 2.4rem;
     border-radius: 8px;
 }
@@ -2355,7 +2355,7 @@ onMounted(() => {
 }
 
 .assessment-card {
-    background: #202020;
+    background: #FEF6F3;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 2rem;
@@ -2372,14 +2372,14 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.8rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 0.4rem;
 }
 
 .assessment-course {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 .assessment-meta {
@@ -2387,7 +2387,7 @@ onMounted(() => {
     gap: 1.6rem;
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.3rem;
-    color: #666;
+    color: #9ca3af;
     margin-bottom: 1.6rem;
 }
 
@@ -2405,13 +2405,13 @@ onMounted(() => {
     font-family: "IBM Plex Mono", monospace;
     font-size: 2rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
 }
 
 .assessment-stats .stat-label {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.2rem;
-    color: #898989;
+    color: #78716C;
 }
 
 .assessment-actions {
@@ -2433,7 +2433,7 @@ onMounted(() => {
 }
 
 .analytics-card {
-    background: #202020;
+    background: #FEF6F3;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 2rem;
@@ -2443,7 +2443,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 1.6rem;
 }
 
@@ -2461,13 +2461,13 @@ onMounted(() => {
     font-family: "IBM Plex Mono", monospace;
     font-size: 2rem;
     font-weight: 600;
-    color: rgb(59, 130, 246);
+    color: #C86948;
 }
 
 .analytics-metrics .metric-label {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.2rem;
-    color: #898989;
+    color: #78716C;
 }
 
 /* Collaboration */
@@ -2482,7 +2482,7 @@ onMounted(() => {
 }
 
 .shared-course-card {
-    background: #202020;
+    background: #FEF6F3;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 1.6rem 2rem;
@@ -2495,7 +2495,7 @@ onMounted(() => {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.6rem;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 0.4rem;
 }
 
@@ -2517,12 +2517,12 @@ onMounted(() => {
 .shared-author {
     font-family: "IBM Plex Mono", monospace;
     font-size: 1.2rem;
-    color: #898989;
+    color: #78716C;
 }
 
 .shared-institution {
     font-family: "IBM Plex Sans", sans-serif;
     font-size: 1.2rem;
-    color: #666;
+    color: #9ca3af;
 }
 </style>

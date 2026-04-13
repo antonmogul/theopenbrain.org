@@ -1,21 +1,10 @@
 <script setup>
 import { RouterView, useRoute } from "vue-router";
-import MenuNav from "./components/Navigation/MenuNav.vue";
-import MenuHome from "./components/Navigation/MenuHome.vue";
-import MenuAbout from "./components/Navigation/MenuAbout.vue";
-import MenuAuth from "./components/Navigation/MenuAuth.vue";
-import BottomNav from "./components/Navigation/BottomNav.vue";
-import { defineAsyncComponent, onBeforeUnmount, ref, watch } from "vue";
+import MainNav from "./components/Navigation/MainNav.vue";
+import { onBeforeUnmount, ref, watch } from "vue";
 import { watchDebounced } from "@vueuse/core";
 import { useGeneral } from "@/stores";
-import { useAuthStore } from "@/stores/auth";
 import OverlayInfo from "./components/UI/OverlayInfo.vue";
-
-const authStore = useAuthStore();
-
-const DevToolbar = import.meta.env.DEV
-    ? defineAsyncComponent(() => import("./components/dev/DevToolbar.vue"))
-    : null;
 
 const route = useRoute();
 const resize = ref(0);
@@ -63,10 +52,7 @@ onBeforeUnmount(() => {
             v-slot="{ Component }"
             class="z-0 duration-300"
             :class="
-                store.activeAbout ||
-                store.activeMenu ||
-                authStore.activeAuth ||
-                !store.hasBeenVisited
+                store.activeMenu || !store.hasBeenVisited
                     ? 'blur-md grayscale-0 pointer-events-none'
                     : ''
             "
@@ -75,19 +61,7 @@ onBeforeUnmount(() => {
                 <component :is="Component" />
             </transition>
         </RouterView>
-        <MenuNav />
-        <MenuHome />
-        <MenuAbout v-if="route.name === 'chapter'" />
-        <MenuAuth
-            v-if="
-                route.name === 'home' ||
-                route.name === 'chapter' ||
-                route.name === 'dashboard' ||
-                route.name === 'editor'
-            "
-        />
-        <BottomNav />
-        <DevToolbar v-if="DevToolbar" />
+        <MainNav />
     </div>
 </template>
 

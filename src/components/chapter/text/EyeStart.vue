@@ -58,7 +58,7 @@ const scrollToPos = () => {
 <template>
   <div
     id="titleAnimation"
-    class="bg-img bg-light absolute right-0 w-screen h-screen z-[50] duration-300 flex justify-start items-start"
+    class="bg-img bg-light absolute right-0 w-screen h-screen z-[50] duration-300 flex justify-start items-start pointer-events-none"
   >
     <div
       class="absolute top-0 left-0 w-screen h-screen text-white text-center flex justify-center items-center pb-8"

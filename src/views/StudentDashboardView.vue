@@ -10,7 +10,7 @@ import { useFlashcards } from "@/composables/useFlashcards";
 import { useStudentStore } from "@/stores/student";
 
 // Components
-import StudentSidebar from "@/components/student/StudentSidebar.vue";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar.vue";
 import CourseCard from "@/components/student/CourseCard.vue";
 import StudyStats from "@/components/student/StudyStats.vue";
 import ProgressCard from "@/components/student/ProgressCard.vue";
@@ -180,12 +180,14 @@ function formatScore(score, total) {
 <template>
   <div class="student-dashboard">
     <!-- Sidebar -->
-    <StudentSidebar
+    <DashboardSidebar
       :nav-items="navItems"
-      :active-section="activeSection"
+      v-model:active-section="activeSection"
       :display-name="displayName"
       :current-date="currentDate"
-      @update:active-section="activeSection = $event"
+      accent-color="rgb(34, 197, 94)"
+      logo-text="STUDENT PORTAL"
+      footer-button-text="Read Book"
       @footer-click="handleFooterClick"
     />
 
@@ -697,19 +699,19 @@ function formatScore(score, total) {
 
 .page-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 2rem;
+  font-size: 2.8rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
 }
 
 .signout-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.8rem 1.6rem;
   background: white;
   color: #6b7280;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -759,7 +761,7 @@ function formatScore(score, total) {
 
 .section-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
@@ -769,7 +771,7 @@ function formatScore(score, total) {
   background: none;
   border: none;
   color: #3b82f6;
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   cursor: pointer;
   transition: color 0.15s;
 }
@@ -805,7 +807,7 @@ function formatScore(score, total) {
 }
 
 .empty-hint {
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   margin-top: 0.25rem;
 }
 
@@ -828,7 +830,7 @@ function formatScore(score, total) {
 }
 
 .empty-state-large h3 {
-  font-size: 1.25rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #6b7280;
   margin: 0 0 0.5rem 0;
@@ -876,7 +878,7 @@ function formatScore(score, total) {
 }
 
 .highlight-text {
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   color: #374151;
   font-style: italic;
   line-height: 1.5;
@@ -884,7 +886,7 @@ function formatScore(score, total) {
 }
 
 .highlight-date {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: #9ca3af;
 }
 
@@ -915,7 +917,7 @@ function formatScore(score, total) {
 }
 
 .has-note {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: #3b82f6;
   background: #eff6ff;
   padding: 0.125rem 0.5rem;
@@ -927,7 +929,7 @@ function formatScore(score, total) {
 }
 
 .note-highlight-preview {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   font-style: italic;
   color: #6b7280;
   padding: 0.5rem;
@@ -937,14 +939,14 @@ function formatScore(score, total) {
 }
 
 .note-content {
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   color: #374151;
   line-height: 1.5;
   margin: 0 0 0.5rem 0;
 }
 
 .note-date {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: #9ca3af;
 }
 
@@ -961,7 +963,7 @@ function formatScore(score, total) {
 }
 
 .progress-summary h3 {
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 1rem 0;
@@ -980,7 +982,7 @@ function formatScore(score, total) {
 }
 
 .settings-card h3 {
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 1rem 0;
@@ -1016,7 +1018,7 @@ function formatScore(score, total) {
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -1099,14 +1101,14 @@ function formatScore(score, total) {
 
 .quiz-title,
 .deck-title {
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   font-weight: 500;
   color: #1f2937;
 }
 
 .quiz-meta,
 .deck-meta {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: #6b7280;
 }
 
@@ -1132,7 +1134,7 @@ function formatScore(score, total) {
   color: #92400e;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   margin-bottom: 0.75rem;
 }
 
@@ -1175,18 +1177,18 @@ function formatScore(score, total) {
 }
 
 .attempt-title {
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: #1f2937;
 }
 
 .attempt-date {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: #9ca3af;
 }
 
 .attempt-score {
-  font-size: 1rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #dc2626;
 }
@@ -1210,7 +1212,7 @@ function formatScore(score, total) {
 
 .history-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.125rem;
+  font-size: 1.8rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 1rem 0;
@@ -1237,13 +1239,13 @@ function formatScore(score, total) {
 }
 
 .attempt-quiz-title {
-  font-size: 0.9375rem;
+  font-size: 1.5rem;
   font-weight: 500;
   color: #1f2937;
 }
 
 .attempt-score-badge {
-  font-size: 0.875rem;
+  font-size: 1.4rem;
   font-weight: 600;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -1259,7 +1261,7 @@ function formatScore(score, total) {
 .attempt-details {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: #6b7280;
 }
 

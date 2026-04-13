@@ -148,15 +148,25 @@ router.beforeEach(async (to, from) => {
     }
 
     // Dev mode: role override bypass
-    if (import.meta.env.DEV && to.meta.requiredRole) {
+    if (import.meta.env.DEV) {
       const { useAuth } = await import("@/composables/useAuth");
       const { devRoleOverride } = useAuth();
       if (devRoleOverride.value) {
-        const requiredRoles = Array.isArray(to.meta.requiredRole)
-          ? to.meta.requiredRole
-          : [to.meta.requiredRole];
-        if (!requiredRoles.includes(devRoleOverride.value)) {
-          return { path: "/dashboard" };
+        // Redirect /dashboard to the correct role-specific dashboard
+        if (to.name === "dashboard" && devRoleOverride.value !== "creator") {
+          if (devRoleOverride.value === "student") return { path: "/student" };
+          if (devRoleOverride.value === "professor") return { path: "/professor" };
+        }
+        // Check requiredRole guard
+        if (to.meta.requiredRole) {
+          const requiredRoles = Array.isArray(to.meta.requiredRole)
+            ? to.meta.requiredRole
+            : [to.meta.requiredRole];
+          if (!requiredRoles.includes(devRoleOverride.value)) {
+            if (devRoleOverride.value === "student") return { path: "/student" };
+            if (devRoleOverride.value === "professor") return { path: "/professor" };
+            return { path: "/dashboard" };
+          }
         }
         return;
       }

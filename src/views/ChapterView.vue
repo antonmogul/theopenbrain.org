@@ -27,6 +27,7 @@ import { useHighlightRenderer } from "@/composables/useHighlightRenderer";
 import { useNotes } from "@/composables/useNotes";
 import { useReadingProgress } from "@/composables/useReadingProgress";
 import { useAuth } from "@/composables/useAuth";
+import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { toSlug } from "@/helper/general.js";
 
 const route = useRoute();
@@ -36,6 +37,7 @@ const commentStore = useCom();
 
 // Phase 3A: Authentication and highlighting composables
 const { user, isAuthenticated } = useAuth();
+const { toggle: toggleStudentTools, isOpen: studentToolsOpen } = useReaderSidebar();
 
 // Text selection for highlighting
 const {
@@ -379,6 +381,18 @@ async function handleDeleteHighlight(highlightId) {
             <!-- Citation tooltip for Supabase chapters -->
             <CitationTooltip v-if="isSupabaseChapter" />
 
+            <!-- Student Tools toggle button -->
+            <button
+                v-if="isAuthenticated && isSupabaseChapter"
+                class="student-tools-toggle"
+                :class="{ open: studentToolsOpen }"
+                @click="toggleStudentTools()"
+            >
+                <svg v-if="!studentToolsOpen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10"/><path d="M7 12h4"/></svg>
+                <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Student Tools</span>
+            </button>
+
             <!-- Unified Reader Sidebar (Supabase chapters only) -->
             <ReaderSidebar
                 v-if="isAuthenticated && isSupabaseChapter"
@@ -399,5 +413,40 @@ export default {
 .duration-Fix {
     transition: all 0s !important;
     transition-delay: 0;
+}
+
+.student-tools-toggle {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 180;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.8rem;
+    border-radius: 12px;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    color: #343434;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.student-tools-toggle:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.student-tools-toggle.open {
+    background: white;
+    border-color: rgb(151, 71, 255);
+    color: rgb(151, 71, 255);
 }
 </style>

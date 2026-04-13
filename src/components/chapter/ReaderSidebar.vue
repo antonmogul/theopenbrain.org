@@ -108,10 +108,15 @@ function demoModalTitle() {
 <template>
   <Teleport to="body">
     <Transition name="slide">
-      <aside
+      <div
         v-if="isOpen"
+        class="reader-overlay"
+        @click.self="close"
+      >
+      <aside
         class="reader-sidebar"
         data-testid="reader-sidebar"
+        @click.stop
       >
         <!-- Tab bar -->
         <div class="tab-bar">
@@ -219,6 +224,7 @@ function demoModalTitle() {
           </div>
         </div>
       </aside>
+      </div>
     </Transition>
   </Teleport>
 
@@ -257,18 +263,25 @@ export default {
 </script>
 
 <style scoped>
-.reader-sidebar {
+.reader-overlay {
   position: fixed;
-  right: 0;
-  top: 0;
-  height: 100vh;
-  width: 400px;
-  max-width: 100vw;
+  inset: 0;
+  z-index: 190;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 1.2rem;
+}
+
+.reader-sidebar {
+  width: min(420px, 100%);
+  height: 100%;
   background: white;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
-  z-index: 1000;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Tab bar */
@@ -285,12 +298,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 14px 8px;
+  gap: 0.6rem;
+  padding: 1.4rem 0.8rem;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-size: 14px;
+  font-size: 1.4rem;
   font-weight: 500;
   color: #6b7280;
   cursor: pointer;
@@ -308,7 +321,7 @@ export default {
 }
 
 .tab-icon {
-  font-size: 15px;
+  font-size: 1.5rem;
 }
 
 .tab-label {
@@ -345,7 +358,7 @@ export default {
 /* Demos section */
 .demos-section {
   flex-shrink: 0;
-  padding: 0.75rem 1rem 1rem;
+  padding: 1.2rem 1.6rem 1.6rem;
 }
 
 .demos-divider {
@@ -356,37 +369,37 @@ export default {
 
 .demos-label {
   display: block;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.6875rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 1.1rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: #9ca3af;
-  margin-bottom: 0.625rem;
+  margin-bottom: 1rem;
 }
 
 .demos-loading {
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   color: #9ca3af;
   text-align: center;
-  padding: 0.5rem 0;
+  padding: 0.8rem 0;
 }
 
 .demos-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+  gap: 0.8rem;
 }
 
 .demo-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.625rem;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.8125rem;
+  font-size: 1.3rem;
   font-weight: 500;
   color: #374151;
   cursor: pointer;
@@ -412,13 +425,28 @@ export default {
 }
 
 /* Slide transition */
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.25s ease;
+.slide-enter-active {
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
+.slide-leave-active {
+  transition: opacity 0.25s ease;
+}
 .slide-enter-from,
 .slide-leave-to {
-  transform: translateX(100%);
+  opacity: 0;
+}
+.slide-enter-active .reader-sidebar {
+  animation: sidebar-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.slide-leave-active .reader-sidebar {
+  animation: sidebar-out 0.25s ease forwards;
+}
+@keyframes sidebar-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes sidebar-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(16px); }
 }
 </style>
