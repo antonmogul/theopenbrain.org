@@ -30,6 +30,14 @@ const chapterTitle = computed(() => {
   return textStore.text?.intro?.[0]?.title || 'The Open Brain';
 });
 
+// Chapter cover image based on route
+const coverImage = computed(() => {
+  const slug = route.params.slug;
+  if (slug === 'the-retina') return '/publicAssets/images/00-matisse-bg.jpg';
+  if (slug === 'visual-perception-ux') return '/publicAssets/images/marguerite.png';
+  return '/publicAssets/images/background.jpg';
+});
+
 watchDebounced(
   x,
   (x) => {
@@ -58,7 +66,8 @@ const scrollToPos = () => {
 <template>
   <div
     id="titleAnimation"
-    class="bg-img bg-light absolute right-0 w-screen h-screen z-[50] duration-300 flex justify-start items-start pointer-events-none"
+    class="bg-light absolute right-0 w-screen h-screen z-[50] duration-300 flex justify-start items-start pointer-events-none"
+    :style="{ backgroundImage: `url(${coverImage})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center 20%', backgroundSize: 'cover' }"
   >
     <div
       class="absolute top-0 left-0 w-screen h-screen text-white text-center flex justify-center items-center pb-8"

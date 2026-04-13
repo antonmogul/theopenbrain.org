@@ -136,6 +136,69 @@ const mediaSearch = ref("");
 const selectedMedia = ref(null);
 const showMediaUploadModal = ref(false);
 
+// ============ MEDIA PICKER (for attaching to content blocks) ============
+const showMediaPicker = ref(false);
+const mediaPickerTarget = ref(null); // the block we're attaching media to
+const mediaPickerSearch = ref("");
+
+const mediaPickerFiltered = computed(() => {
+    if (!mediaPickerSearch.value) return mediaItems.value;
+    const q = mediaPickerSearch.value.toLowerCase();
+    return mediaItems.value.filter(
+        (m) =>
+            (m.title || "").toLowerCase().includes(q) ||
+            (m.animation_key || "").toLowerCase().includes(q),
+    );
+});
+
+function openMediaPicker(block) {
+    mediaPickerTarget.value = block;
+    mediaPickerSearch.value = "";
+    showMediaPicker.value = true;
+    // Ensure media is loaded
+    if (mediaItems.value.length === 0) fetchMedia();
+}
+
+async function attachMedia(animation) {
+    if (!mediaPickerTarget.value) return;
+    const blockId = mediaPickerTarget.value.id;
+    const trigger = animation.animation_key.replace("animation", "");
+    try {
+        await supabaseRest(`paragraphs?id=eq.${blockId}`, {
+            method: "PATCH",
+            body: JSON.stringify({
+                animation_id: animation.id,
+                animation_trigger: trigger,
+            }),
+        });
+        // Update local state
+        mediaPickerTarget.value.animationId = animation.id;
+        mediaPickerTarget.value.animationTrigger = trigger;
+        mediaPickerTarget.value.animationTitle = animation.title || animation.animation_key;
+        showMediaPicker.value = false;
+        mediaPickerTarget.value = null;
+    } catch (err) {
+        console.error("Error attaching media:", err);
+    }
+}
+
+async function detachMedia(block) {
+    try {
+        await supabaseRest(`paragraphs?id=eq.${block.id}`, {
+            method: "PATCH",
+            body: JSON.stringify({
+                animation_id: null,
+                animation_trigger: null,
+            }),
+        });
+        block.animationId = null;
+        block.animationTrigger = null;
+        block.animationTitle = null;
+    } catch (err) {
+        console.error("Error detaching media:", err);
+    }
+}
+
 // ============ USERS SECTION STATE ============
 const users = ref([]);
 const usersLoading = ref(false);
@@ -281,7 +344,7 @@ async function fetchChapterContent(moduleId) {
         if (sectionIds.length > 0) {
             const idsParam = sectionIds.map((id) => `"${id}"`).join(",");
             paragraphs = await supabaseRest(
-                `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,content_text,section_id,is_subsection_header&order=order_index.asc`,
+                `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,content_text,section_id,is_subsection_header,animation_id,animation_trigger&order=order_index.asc`,
             );
         }
         expandedChapterParagraphs.value = paragraphs;
@@ -335,6 +398,13 @@ function buildFlatBlocks() {
                 paraIndex: paraIndex,
                 isSubsectionHeader: p.is_subsection_header,
                 wordCount: wordCount,
+                animationId: p.animation_id || null,
+                animationTrigger: p.animation_trigger || null,
+                animationTitle: p.animation_id
+                    ? (mediaItems.value.find(m => m.id === p.animation_id)?.title ||
+                       mediaItems.value.find(m => m.id === p.animation_id)?.animation_key ||
+                       p.animation_trigger || 'Media')
+                    : null,
             });
         });
     });
@@ -2444,6 +2514,26 @@ onMounted(() => {
                                                             "Empty paragraph"
                                                         }}</span
                                                     >
+                                                    <!-- Media badge -->
+                                                    <span
+                                                        v-if="block.animationId"
+                                                        class="media-badge"
+                                                        @click.stop="detachMedia(block)"
+                                                        title="Click to remove media"
+                                                    >
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                                        {{ block.animationTrigger || 'Media' }}
+                                                        <span class="media-badge-x">&times;</span>
+                                                    </span>
+                                                    <!-- Attach media button -->
+                                                    <button
+                                                        v-else
+                                                        class="attach-media-btn"
+                                                        @click.stop="openMediaPicker(block)"
+                                                        title="Attach animation or media"
+                                                    >
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                                    </button>
                                                     <svg
                                                         v-if="
                                                             selectedBlock?.id ===
@@ -3381,6 +3471,52 @@ onMounted(() => {
                                     </div>
                                     <div class="media-modal__actions">
                                         <button class="danger-btn" @click="deleteMedia(selectedMedia.id)">Delete Asset</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Transition>
+                    </Teleport>
+
+                    <!-- Media Picker Modal (for attaching media to content blocks) -->
+                    <Teleport to="body">
+                        <Transition name="modal">
+                            <div v-if="showMediaPicker" class="media-picker-overlay" @click.self="showMediaPicker = false">
+                                <div class="media-picker">
+                                    <div class="media-picker__header">
+                                        <div>
+                                            <h2 class="media-picker__title">Attach Media</h2>
+                                            <p class="media-picker__subtitle">Select an animation or media to attach to this content block</p>
+                                        </div>
+                                        <button class="media-modal__close" @click="showMediaPicker = false">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="media-picker__search">
+                                        <input
+                                            v-model="mediaPickerSearch"
+                                            type="text"
+                                            placeholder="Search animations..."
+                                            class="media-picker__input"
+                                        />
+                                    </div>
+                                    <div class="media-picker__grid">
+                                        <div
+                                            v-for="item in mediaPickerFiltered"
+                                            :key="item.id"
+                                            class="media-picker__item"
+                                            @click="attachMedia(item)"
+                                        >
+                                            <div class="media-picker__thumb">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                            </div>
+                                            <div class="media-picker__info">
+                                                <span class="media-picker__name">{{ item.title || item.animation_key }}</span>
+                                                <span class="media-picker__meta">{{ item.interaction_type }} &middot; {{ item.media_type }}</span>
+                                            </div>
+                                        </div>
+                                        <div v-if="mediaPickerFiltered.length === 0" class="media-picker__empty">
+                                            No media found
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -6774,6 +6910,204 @@ onMounted(() => {
 @keyframes modal-out {
     from { transform: scale(1); opacity: 1; }
     to { transform: scale(0.95); opacity: 0; }
+}
+
+/* ============ MEDIA PICKER ============ */
+
+.media-picker-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.media-picker {
+    background: white;
+    border-radius: 16px;
+    width: min(700px, 100%);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+}
+
+.media-picker__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2.4rem 2.4rem 0;
+}
+
+.media-picker__title {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.media-picker__subtitle {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.3rem;
+    color: #9ca3af;
+    margin: 0.4rem 0 0;
+}
+
+.media-picker__search {
+    padding: 1.6rem 2.4rem;
+}
+
+.media-picker__input {
+    width: 100%;
+    padding: 1rem 1.4rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.4rem;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.media-picker__input:focus {
+    border-color: rgb(151, 71, 255);
+}
+
+.media-picker__input::placeholder {
+    color: #d1d5db;
+}
+
+.media-picker__grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 2.4rem 2.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.media-picker__item {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 1.2rem 1.4rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.media-picker__item:hover {
+    background: #f3f0ff;
+}
+
+.media-picker__thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d1d5db;
+    flex-shrink: 0;
+}
+
+.media-picker__item:hover .media-picker__thumb {
+    background: rgba(151, 71, 255, 0.1);
+    color: rgb(151, 71, 255);
+}
+
+.media-picker__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.media-picker__name {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-picker__meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.1rem;
+    color: #9ca3af;
+    text-transform: lowercase;
+}
+
+.media-picker__empty {
+    text-align: center;
+    padding: 3rem;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 1.4rem;
+    color: #9ca3af;
+}
+
+/* Media badge on content blocks */
+.media-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.8rem;
+    background: rgba(151, 71, 255, 0.1);
+    color: rgb(151, 71, 255);
+    border-radius: 4px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.media-badge:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.media-badge-x {
+    font-size: 1.3rem;
+    line-height: 1;
+    margin-left: 0.2rem;
+}
+
+.attach-media-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 6px;
+    border: 1px dashed #d1d5db;
+    background: transparent;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    margin-left: auto;
+    opacity: 0;
+}
+
+.block-item:hover .attach-media-btn {
+    opacity: 1;
+}
+
+.attach-media-btn:hover {
+    border-color: rgb(151, 71, 255);
+    color: rgb(151, 71, 255);
+    background: rgba(151, 71, 255, 0.05);
 }
 
 /* ============ USERS STYLES ============ */
