@@ -33,13 +33,22 @@ module.exports = {
       ],
     },
     screens: {
-      s: "640px",
+      xs: "480px",
+      // => @media (min-width: 480px) { ... }
+
+      sm: "640px",
       // => @media (min-width: 640px) { ... }
 
-      m: "1300px",
+      md: "768px",
+      // => @media (min-width: 768px) { ... }
+
+      lg: "1024px",
+      // => @media (min-width: 1024px) { ... }
+
+      xl: "1300px",
       // => @media (min-width: 1300px) { ... }
 
-      l: "1500px",
+      "2xl": "1500px",
       // => @media (min-width: 1500px) { ... }
     },
     extend: {

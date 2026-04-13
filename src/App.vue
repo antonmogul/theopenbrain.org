@@ -1,21 +1,21 @@
 <script setup>
 import { RouterView, useRoute } from "vue-router";
 import MenuNav from "./components/Navigation/MenuNav.vue";
-import MediaQueryWarning from "./components/UI/MediaQueryWarning.vue";
 import MenuHome from "./components/Navigation/MenuHome.vue";
 import MenuAbout from "./components/Navigation/MenuAbout.vue";
 import MenuAuth from "./components/Navigation/MenuAuth.vue";
 import BottomNav from "./components/Navigation/BottomNav.vue";
-import { onBeforeUnmount, ref, watch } from "vue";
-import { watchDebounced, useMediaQuery } from "@vueuse/core";
+import { defineAsyncComponent, onBeforeUnmount, ref, watch } from "vue";
+import { watchDebounced } from "@vueuse/core";
 import { useGeneral } from "@/stores";
 import { useAuthStore } from "@/stores/auth";
 import OverlayInfo from "./components/UI/OverlayInfo.vue";
-import { storeToRefs } from "pinia";
 
 const authStore = useAuthStore();
 
-const isLargeScreen = useMediaQuery("(min-width: 1300px)");
+const DevToolbar = import.meta.env.DEV
+    ? defineAsyncComponent(() => import("./components/dev/DevToolbar.vue"))
+    : null;
 
 const route = useRoute();
 const resize = ref(0);
@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div v-if="isLargeScreen" class="text-base cursor-default font-sans">
+    <div class="text-base cursor-default font-sans">
         <OverlayInfo v-if="!store.hasBeenVisited" />
         <div class="bg-img" />
         <RouterView
@@ -87,9 +87,7 @@ onBeforeUnmount(() => {
             "
         />
         <BottomNav />
-    </div>
-    <div v-else>
-        <MediaQueryWarning />
+        <DevToolbar v-if="DevToolbar" />
     </div>
 </template>
 

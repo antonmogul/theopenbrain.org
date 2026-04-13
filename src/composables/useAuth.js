@@ -18,6 +18,9 @@ const profile = ref(null);
 const loading = ref(true);
 const profileLoading = ref(false);
 
+// Dev-only role override
+const devRoleOverride = ref(null);
+
 // Fetch user profile using REST API
 const fetchUserProfile = async (userId, accessToken) => {
   if (!userId || !accessToken) {
@@ -81,6 +84,10 @@ export function useAuth() {
   const isAuthenticated = computed(() => !!user.value);
 
   const userRole = computed(() => {
+    // Dev override takes precedence
+    if (import.meta.env.DEV && devRoleOverride.value) {
+      return devRoleOverride.value;
+    }
     // Primary source: profiles table (fetched automatically)
     // Fallback: user_metadata (set during signup)
     return profile.value?.role ?? user.value?.user_metadata?.role ?? null;
@@ -169,5 +176,6 @@ export function useAuth() {
     resetPassword,
     updatePassword,
     refreshProfile,
+    devRoleOverride,
   };
 }

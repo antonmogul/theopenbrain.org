@@ -150,7 +150,7 @@ function isSectionActive(slug) {
         :class="[
             store.activeMenu
                 ? route.name === 'chapter'
-                    ? 'w-[50vw]'
+                    ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none'
                     : 'w-[0]'
                 : 'w-0',
         ]"

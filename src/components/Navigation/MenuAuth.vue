@@ -154,9 +154,9 @@ const viewTitle = computed(() => {
         <!-- Auth Panel -->
         <div
             class="fixed h-screen bg-dark text-white overflow-y-scroll overflow-x-hidden scrollbar top-0 left-0 z-[56] text-medium duration-300 border-r border-violet/90"
-            :class="[authStore.activeAuth ? 'w-[50vw] ml-0' : 'w-[0]']"
+            :class="[authStore.activeAuth ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none ml-0' : 'w-[0]']"
         >
-            <div class="px-24 pt-12 pb-56 w-[50vw] max-w-[800px]">
+            <div class="px-8 xl:px-24 pt-12 pb-56 w-full max-w-[800px]">
                 <div class="font-sans">
                     <h2 class="text-white">{{ viewTitle }}</h2>
 

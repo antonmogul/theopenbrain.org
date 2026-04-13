@@ -108,6 +108,122 @@
   }
 }
 
+/* Tablet: 768px - 1299px */
+@media (max-width: 1299px) {
+  .text-smaller {
+    font-size: 1.1rem;
+    line-height: 1.4rem;
+    letter-spacing: -0.01rem;
+  }
+  .text-small {
+    font-size: 1.1rem;
+    line-height: 1.5rem;
+    letter-spacing: 0.02rem;
+  }
+  .text-medium {
+    font-size: 1.35rem;
+    line-height: 2.2rem;
+  }
+  .text-baseMono {
+    font-size: 1.6rem;
+    line-height: 2.4rem;
+  }
+  .text-base {
+    font-size: 1.7rem;
+    line-height: 2.7rem;
+  }
+  .text-h2 {
+    font-size: 3rem;
+    line-height: 4rem;
+  }
+  .text-h3 {
+    font-size: 2.4rem;
+    line-height: 3rem;
+  }
+  .text-blindness {
+    font-size: 7rem;
+    line-height: 7rem;
+  }
+  .text-biggest {
+    font-size: 5rem;
+    line-height: 6rem;
+  }
+  .text-big {
+    font-size: 5rem;
+    line-height: 5rem;
+  }
+  h1 {
+    font-size: 3.5rem;
+    line-height: 4rem;
+    padding-bottom: 3rem;
+  }
+  h2 {
+    font-size: 3.2rem;
+    line-height: 4rem;
+  }
+  h3 {
+    font-size: 2.4rem;
+    line-height: 3rem;
+  }
+}
+
+/* Phone: below 768px */
+@media (max-width: 767px) {
+  .text-smaller {
+    font-size: 1rem;
+    line-height: 1.3rem;
+  }
+  .text-small {
+    font-size: 1rem;
+    line-height: 1.4rem;
+  }
+  .text-medium {
+    font-size: 1.2rem;
+    line-height: 2rem;
+  }
+  .text-baseMono {
+    font-size: 1.4rem;
+    line-height: 2.2rem;
+  }
+  .text-base {
+    font-size: 1.5rem;
+    line-height: 2.4rem;
+  }
+  .text-h2 {
+    font-size: 2.4rem;
+    line-height: 3.2rem;
+  }
+  .text-h3 {
+    font-size: 2rem;
+    line-height: 2.6rem;
+  }
+  .text-blindness {
+    font-size: 5rem;
+    line-height: 5rem;
+  }
+  .text-biggest {
+    font-size: 3.5rem;
+    line-height: 4rem;
+  }
+  .text-big {
+    font-size: 3.5rem;
+    line-height: 3.5rem;
+  }
+  h1 {
+    font-size: 2.8rem;
+    line-height: 3.2rem;
+    padding-bottom: 2rem;
+  }
+  h2 {
+    font-size: 2.4rem;
+    line-height: 3rem;
+  }
+  h3 {
+    font-size: 2rem;
+    line-height: 2.6rem;
+  }
+}
+
 html,
 body {
   font-size: 62.5%;
@@ -347,6 +463,13 @@ h4 {
   transition: none;
 }
 
+@media (max-width: 1299px) {
+  .punkt,
+  .punktComment {
+    display: none;
+  }
+}
+
 .punktComment {
   background-color: white;
   top: 0px;
@@ -464,6 +587,14 @@ sup:hover {
   top: 50vh;
 }
 
+@media (max-width: 1299px) {
+  .marker-start,
+  .marker-end,
+  .marker-center {
+    display: none;
+  }
+}
+
 .icon {
   cursor: pointer;
   height: 2.5rem;
@@ -526,4 +657,10 @@ sup:hover {
 
 .-translate-x-custom {
   transform: translateX(min(-50vw, calc(-100vw + 780px + 11rem - 1px)));
+}
+
+@media (max-width: 1299px) {
+  .-translate-x-custom {
+    transform: none;
+  }
 }

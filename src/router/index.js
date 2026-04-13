@@ -147,6 +147,21 @@ router.beforeEach(async (to, from) => {
       return { path: "/" };
     }
 
+    // Dev mode: role override bypass
+    if (import.meta.env.DEV && to.meta.requiredRole) {
+      const { useAuth } = await import("@/composables/useAuth");
+      const { devRoleOverride } = useAuth();
+      if (devRoleOverride.value) {
+        const requiredRoles = Array.isArray(to.meta.requiredRole)
+          ? to.meta.requiredRole
+          : [to.meta.requiredRole];
+        if (!requiredRoles.includes(devRoleOverride.value)) {
+          return { path: "/dashboard" };
+        }
+        return;
+      }
+    }
+
     // Role-based route protection and dashboard redirection
     const userId = session.user?.id;
 

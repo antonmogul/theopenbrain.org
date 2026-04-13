@@ -74,6 +74,9 @@ async function supabaseRest(endpoint, options = {}) {
 // Current active section in sidebar
 const activeSection = ref("dashboard");
 
+// Mobile sidebar toggle
+const sidebarOpen = ref(false);
+
 // Dashboard home loading state
 const dashboardLoading = ref(true);
 
@@ -1394,6 +1397,7 @@ const goToBook = () => {
 
 const setActiveSection = (sectionId) => {
     activeSection.value = sectionId;
+    sidebarOpen.value = false;
 };
 
 // ============ CHAPTER WIZARD STATE ============
@@ -1689,8 +1693,27 @@ onMounted(() => {
 
         <!-- Authenticated Dashboard -->
         <template v-else>
+            <!-- Mobile sidebar overlay -->
+            <div
+                v-if="sidebarOpen"
+                class="sidebar-overlay"
+                @click="sidebarOpen = false"
+            ></div>
+
+            <!-- Mobile hamburger -->
+            <button
+                class="mobile-hamburger"
+                @click="sidebarOpen = !sidebarOpen"
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
             <!-- Sidebar -->
-            <aside class="sidebar">
+            <aside class="sidebar" :class="{ open: sidebarOpen }">
                 <!-- Logo (floating outside cards) -->
                 <div class="sidebar-logo">
                     <span class="logo-icon">OB</span>
@@ -4649,6 +4672,55 @@ onMounted(() => {
     padding: 2rem;
     overflow-y: auto;
     gap: 1.6rem;
+}
+
+/* Mobile hamburger button */
+.mobile-hamburger {
+    display: none;
+    position: fixed;
+    top: 1.6rem;
+    left: 1.6rem;
+    z-index: 110;
+    background: rgba(151, 71, 255, 0.9);
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem;
+    color: white;
+    cursor: pointer;
+}
+
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+}
+
+@media (max-width: 1023px) {
+    .mobile-hamburger {
+        display: flex;
+    }
+    .sidebar-overlay {
+        display: block;
+    }
+    .sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        z-index: 100;
+        background: #f5f3f0;
+        transition: left 0.3s ease;
+    }
+    .sidebar.open {
+        left: 0;
+    }
+    .main-content {
+        width: 100%;
+        padding: 2rem 1.6rem;
+        padding-top: 5.6rem;
+    }
 }
 
 /* Logo - floating outside cards */

@@ -279,7 +279,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     id="container"
-    class="absolute top-start z-40 w-[50vw] pointer-events-none font-sans"
+    class="absolute top-start z-40 w-full xl:w-[50vw] pointer-events-none font-sans"
   >
     <!-- Creator mode indicator -->
     <div
@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
     <div id="scroller" class="pointer-events-none w-full">
       <main
         id="text"
-        class="text pointer-events-auto w-full text-left pt-[20vh] ml-text max-w-text z-30 border-l bg-white border-black tracking-wide pl-20 pr-24 duration-300 text-black"
+        class="text pointer-events-auto w-full text-left pt-[20vh] ml-text z-30 xl:border-l bg-white border-black tracking-wide duration-300 text-black"
       >
         <!-- intro -->
         <section
@@ -453,7 +453,28 @@ onBeforeUnmount(() => {
 }
 
 .ml-text {
-  width: min(50vw, calc(780px + 11rem));
-  margin-left: calc(100vw - min(50vw, calc(780px + 11rem)));
+  width: 100%;
+  margin-left: 0;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+@media (min-width: 768px) {
+  .ml-text {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+@media (min-width: 1300px) {
+  .ml-text {
+    width: min(50vw, calc(780px + 11rem));
+    margin-left: calc(100vw - min(50vw, calc(780px + 11rem)));
+    margin-right: 0;
+    max-width: unset;
+    padding-left: 5rem;
+    padding-right: 6rem;
+  }
 }
 </style>

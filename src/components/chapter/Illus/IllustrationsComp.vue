@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="!store.isScrolling"
-    class="fixed top-0 left-0 h-screen w-illus z-30 pointer-events-none font-mono"
+    class="hidden xl:block xl:fixed xl:top-0 xl:left-0 xl:h-screen xl:w-illus xl:z-30 pointer-events-none font-mono"
   >
     <template v-for="animation in animationList" :key="animation.id">
       <template
