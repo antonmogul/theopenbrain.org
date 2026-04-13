@@ -4,7 +4,6 @@ import MainNav from "./components/Navigation/MainNav.vue";
 import { onBeforeUnmount, ref, watch } from "vue";
 import { watchDebounced } from "@vueuse/core";
 import { useGeneral } from "@/stores";
-import OverlayInfo from "./components/UI/OverlayInfo.vue";
 
 const route = useRoute();
 const resize = ref(0);
@@ -46,13 +45,12 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="text-base cursor-default font-sans">
-        <OverlayInfo v-if="!store.hasBeenVisited" />
         <div class="bg-img" />
         <RouterView
             v-slot="{ Component }"
             class="z-0 duration-300"
             :class="
-                store.activeMenu || !store.hasBeenVisited
+                store.activeMenu
                     ? 'blur-md grayscale-0 pointer-events-none'
                     : ''
             "
