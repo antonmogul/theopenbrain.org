@@ -1,4 +1,5 @@
 @import url("/src/ibm-plex.css");
+@import url("/src/styles/fonts.css");
 @import url("/src/styles/brand.css");
 
 @tailwind base;

@@ -3,34 +3,11 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx,vue}"],
   theme: {
     fontFamily: {
-      sans: [
-        "IBM Plex Sans",
-        "ui-sans-serif",
-        "system-ui",
-        "-apple-system",
-        "BlinkMacSystemFont",
-        "Segoe UI",
-        "Roboto",
-        "Helvetica Neue",
-        "Arial",
-        "Noto Sans",
-        "sans-serif",
-        "Apple Color Emoji",
-        "Segoe UI Emoji",
-        "Segoe UI Symbol",
-        "Noto Color Emoji",
-      ],
-      mono: [
-        "IBM Plex Mono",
-        "ui-monospace",
-        "SFMono-Regular",
-        "Menlo",
-        "Monaco",
-        "Consolas",
-        "Liberation Mono",
-        "Courier New",
-        "monospace",
-      ],
+      // font-sans / font-serif / font-mono respond to active [data-fontpair]
+      // because the CSS variables are themselves bound per pair in brand.css.
+      sans: ["var(--font-ui)", "system-ui", "sans-serif"],
+      serif: ["var(--font-body)", "Georgia", "serif"],
+      mono: ["var(--font-mono)", "ui-monospace", "monospace"],
     },
     screens: {
       xs: "480px",

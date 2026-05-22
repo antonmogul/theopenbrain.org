@@ -1,15 +1,16 @@
 /*
- * Design tokens — Track 1, Phase A
- *
- * Phase A: values intentionally mirror today's palette so visual diff = 0.
- * Phase B will flip these to the umbrella-spec values.
+ * Design tokens — Track 1
  *
  * Channels are stored as space-separated RGB triplets so Tailwind's
  * <alpha-value> placeholder works: rgb(var(--color-x) / 0.5).
+ *
+ * To add a new accent: define a [data-accent="name"] block below.
+ * To add a new font pair: define a [data-fontpair="name"] block below and
+ *   update FontPairPicker.vue + usePreferences DEFAULTS.
  */
 
 :root {
-  /* Surface scale — light theme (paper-warm per umbrella spec) */
+  /* Surface scale — light theme */
   --color-bg: 247 245 240;        /* #f7f5f0 — paper-warm */
   --color-paper: 255 255 255;
   --color-ink: 10 10 10;          /* #0a0a0a */
@@ -21,11 +22,11 @@
   --color-complete: 61 217 181;   /* #3DD9B5 — teal "takeaway" */
   --color-warn: 244 166 33;       /* #F4A621 — amber */
 
-  /* Highlighter palette */
-  --color-mark1: 13 211 16;       /* #0DD310 — green */
-  --color-mark2: 233 27 11;       /* #E91B0B — red */
+  /* Highlighter palette (yellow / pink / blue / green per umbrella spec) */
+  --color-mark1: 253 231 63;      /* #FDE73F — yellow */
+  --color-mark2: 233 30 140;      /* #E91E8C — pink */
   --color-mark3: 16 23 226;       /* #1017E2 — blue */
-  --color-mark4: 253 231 63;      /* #FDE73F — yellow */
+  --color-mark4: 61 217 181;      /* #3DD9B5 — green/teal */
 
   /* Legacy alias used directly by index.css */
   --violet: rgb(var(--color-accent));
@@ -33,6 +34,12 @@
   /* Type controls (user-tunable from Settings) */
   --reading-size: 1;
   --reading-measure: 780px;
+
+  /* Font roles — IBM Plex is the :root default, matching today's behavior.
+     [data-fontpair="newsreader"] etc. override these per-pair. */
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-ui: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 [data-theme="dark"] {
@@ -47,6 +54,44 @@
 [data-accent="teal"] { --color-accent: 61 217 181; }
 [data-accent="amber"] { --color-accent: 244 166 33; }
 [data-accent="mono"] { --color-accent: 32 32 32; }
+
+/* Font pairs (default IBM Plex inherited from :root) */
+[data-fontpair="ibm-plex-legacy"] {
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-ui: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+[data-fontpair="newsreader"] {
+  --font-body: "Newsreader", "Source Serif Pro", Georgia, serif;
+  --font-ui: "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+}
+
+[data-fontpair="literata"] {
+  --font-body: "Literata", Georgia, serif;
+  --font-ui: "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+}
+
+[data-fontpair="georgia"] {
+  --font-body: Georgia, "Times New Roman", serif;
+  --font-ui: system-ui, "IBM Plex Sans", sans-serif;
+  --font-mono: ui-monospace, "IBM Plex Mono", monospace;
+}
+
+[data-fontpair="sans"] {
+  --font-body: "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-ui: "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Apply roles globally. UI surfaces opt into --font-ui by setting font-family
+   explicitly; everything else inherits the body font. */
+html { font-family: var(--font-body); }
+code, pre, kbd, samp, .mono, [class*="font-mono"] {
+  font-family: var(--font-mono);
+}
 
 /* Explicit reduce-motion opt-in (separate from prefers-reduced-motion) */
 [data-reduce-motion="1"] *,
