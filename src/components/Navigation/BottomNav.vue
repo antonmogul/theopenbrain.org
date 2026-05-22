@@ -2,7 +2,6 @@
 import { useRoute, useRouter } from "vue-router";
 import { useGeneral } from "@/stores";
 import { useAuthStore } from "@/stores/auth";
-import { useAuth } from "@/composables/useAuth";
 import IIcon from "@/icons/custom/IIcon.vue";
 import UserIcon from "@/icons/custom/UserIcon.vue";
 import OpenArrowIcon from "@/icons/custom/OpenArrowIcon.vue";
@@ -12,7 +11,6 @@ const route = useRoute();
 const router = useRouter();
 const store = useGeneral();
 const authStore = useAuthStore();
-const { isAuthenticated } = useAuth();
 
 const toggleAbout = () => {
     if (store.activeAbout) {
@@ -90,7 +88,7 @@ const toggleChapterMenu = () => {
 
         <!-- Settings -->
         <button
-            v-if="isAuthenticated && route.name !== 'settings'"
+            v-if="route.name !== 'settings'"
             @click="router.push('/settings')"
             class="nav-icon"
             title="Settings"

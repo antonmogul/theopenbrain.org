@@ -23,7 +23,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Open Brain – The Retina</title>
     <script>
-      // Apply theme/accent/font-pair attributes before CSS loads so first paint matches user prefs.
+      // Apply theme/accent/font-pair attributes and reading-size/line-length CSS
+      // variables before CSS loads so first paint matches user prefs.
+      // Maps must stay in sync with src/composables/usePreferences.js.
       (function () {
         try {
           var d = document.documentElement;
@@ -40,6 +42,16 @@
             localStorage.getItem("ob.fontPair") || "ibm-plex-legacy";
           var rm = localStorage.getItem("ob.reduceMotion");
           if (rm === "on") d.dataset.reduceMotion = "1";
+
+          var sizeScale = { compact: 0.95, regular: 1, comfortable: 1.1 };
+          var measureMap = { tight: "64ch", standard: "72ch", wide: "80ch" };
+          var size = localStorage.getItem("ob.typeSize") || "regular";
+          var measure = localStorage.getItem("ob.lineLength") || "standard";
+          d.style.setProperty("--reading-size", String(sizeScale[size] || 1));
+          d.style.setProperty(
+            "--reading-measure",
+            measureMap[measure] || "72ch"
+          );
         } catch (e) {
           /* private mode / disabled storage — skip */
         }
