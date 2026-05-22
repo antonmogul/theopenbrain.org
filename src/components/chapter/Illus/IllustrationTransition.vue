@@ -6,9 +6,9 @@
 
 <script setup>
 import { watch, onMounted } from "vue";
+import { loadLottie } from "@/composables/useLottie";
 
 let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 
 const props = defineProps({
   animation: Object,
@@ -30,7 +30,8 @@ watch(
   }
 );
 
-onMounted(() => {
+onMounted(async () => {
+  lottie = await loadLottie();
   let svgContainer = document.getElementById(props.animation.id);
   animationLottie = lottie.loadAnimation({
     rendererSettings: {

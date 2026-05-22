@@ -29,10 +29,10 @@
 <script setup>
 import { ref, watch, onMounted } from "vue";
 import { addH, removeH } from "@/helper/general";
+import { loadLottie } from "@/composables/useLottie";
+import animationJSON from "@/assets/json_backend/animations.json";
 
 let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
-import animationJSON from "@/assets/json_backend/animations.json";
 
 const props = defineProps({
   animation: Object,
@@ -77,7 +77,8 @@ const setState = (index, state) => {
 
 const activeAnimation = ref(null);
 
-onMounted(() => {
+onMounted(async () => {
+  lottie = await loadLottie();
   let svgContainer = document.getElementById(props.animation.id);
   animationLottie = lottie.loadAnimation({
     rendererSettings: {

@@ -98,13 +98,13 @@ const continueCard = computed(() => {
   };
 });
 
+// order_index is 1-based in DB and matches /chapter/:n URL numbering directly.
 function chapterRoute(mod) {
-  const num = (mod.order_index ?? 0) + 1;
-  return `/chapter/${num}`;
+  return `/chapter/${mod.order_index}`;
 }
 
 function chapterNumberFor(mod) {
-  return (mod.order_index ?? 0) + 1;
+  return mod.order_index;
 }
 </script>
 

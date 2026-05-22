@@ -153,12 +153,9 @@
 import IllustarionMultiple from "@/components/chapter/Illus/IllustarionMultiple.vue";
 import { ref, onMounted } from "vue";
 import { addH, removeH, toSlug, toCamelCase } from "@/helper/general";
+import { loadLottie } from "@/composables/useLottie";
 
-// Dynamic import — lottie-web only loaded when component actually mounts (not at parse time)
 let lottie;
-const lottieReady = import("lottie-web").then((m) => {
-  lottie = m.default;
-});
 
 // Detect reduced-motion preference
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -281,9 +278,7 @@ onMounted(async () => {
   let svgContainer = document.getElementById(props.animation.id);
   if (!svgContainer) return;
 
-  // Wait for lottie-web dynamic import to resolve
-  await lottieReady;
-  if (!lottie) return;
+  lottie = await loadLottie();
 
   animationLottie = lottie.loadAnimation({
     rendererSettings: {

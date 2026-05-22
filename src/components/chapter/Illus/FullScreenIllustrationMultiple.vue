@@ -1,8 +1,9 @@
 <script setup>
 import { onMounted } from "vue";
-let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
+import { loadLottie } from "@/composables/useLottie";
 import { toSlug, addH, removeH } from "@/helper/general";
+
+let lottie;
 
 const props = defineProps({
   animation: Object,
@@ -10,7 +11,8 @@ const props = defineProps({
 });
 let animationLottie;
 
-onMounted(() => {
+onMounted(async () => {
+  lottie = await loadLottie();
   let svgContainer = document.getElementById(
     props.animation.id + "-" + toSlug(props.state)
   );

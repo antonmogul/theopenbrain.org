@@ -437,6 +437,10 @@ onBeforeUnmount(() => {
 
         <div class="-ml-20 w-text">
           <QuizSection />
+          <!-- End-of-chapter callout slot — ChapterView fills this with
+               EndOfChapterCallout. Inside TextComp so absolute positioning
+               doesn't pull it to the top of the document. -->
+          <slot name="end-of-chapter" />
           <DownloadSection />
           <FurtherReading :content="source['furtherReading']" />
           <FootNotes :content="source['footNotes']" />

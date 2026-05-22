@@ -15,7 +15,7 @@ This is **not a rewrite.** It's a polish pass on existing components.
 
 In scope:
 - Confirm and tune the 1.5fr / 1fr split (figure pane vs prose).
-- Confirm scroll-coupled figure swap via `IntersectionObserver` already in `IllustrationOnScrollLinked`.
+- Confirm scroll-coupled figure swap behavior. **Correction (2026-05-22 audit):** the file `IllustrationOnScrollLinked.vue` was referenced in the umbrella spec as the home of this logic, but it was dead code (unimported, syntactically broken) and has been deleted. The actual scroll-coupled behavior lives in `IllustrationsComp.vue` via GSAP `ScrollTrigger` (not `IntersectionObserver`). Figure-pin work needs to integrate there.
 - Add a bottom dot-indicator strip showing which sections map to which figure.
 - Add a figure-picker dropdown + "● Tracking scroll" / pinned-figure UI to the top of the sticky pane.
 - End-of-chapter callout block: teal-tinted "Key takeaways" + reading-stats strip + CTAs (Take quiz / Review flashcards / Chapter overview) + "Up Next" card linking to next chapter.
@@ -39,7 +39,7 @@ Explicitly deferred:
 |---|---|---|
 | Two-column layout | `ChapterView.vue` + Tailwind `w-text`/`w-illus` | Working. Uses `xl:fixed xl:w-illus` for the figure pane. Token-correct after Track 1 aliases. |
 | Sticky figure pane | `IllustrationsComp.vue` | Working. Sticky positioning, full-height. |
-| Scroll-coupled figure swap | `IllustrationOnScrollLinked.vue` | Working. `IntersectionObserver`-driven (113 LOC). |
+| Scroll-coupled figure swap | `IllustrationsComp.vue` (GSAP ScrollTrigger, not the dead `IllustrationOnScrollLinked.vue`) | Working. |
 | Top bar | `ReaderTopBar.vue` | Working. ~300 LOC, has chapter title, progress, controls. |
 | Right floating panel | `ReaderSidebar.vue` (Info/Notebook/Chat tabs) | Working. ~450 LOC. |
 | Demo modal | `chapter/demos/DemoModal.vue` + `ConeExplorerPanel`/`FlashcardPanel`/`LabPanel`/`QuizPanel` | Working. |
@@ -71,7 +71,7 @@ Add to the top of the sticky figure pane (`IllustrationsComp.vue` or a new wrapp
 
 Backed by:
 - A new tiny composable `useFigurePin` returning `{ pinnedFigureId, pinFigure, unpin }`.
-- `IllustrationOnScrollLinked` updated to skip its observer-driven swap when `pinnedFigureId.value` is non-null.
+- `IllustrationsComp` updated to skip its ScrollTrigger-driven swap when `pinnedFigureId.value` is non-null.
 
 State is per-chapter, not persisted — pin clears on chapter navigation.
 
@@ -148,7 +148,7 @@ New:
 Modified:
 - `src/views/ChapterView.vue` — render `<EndOfChapterCallout>` after `<Text>` (D4)
 - `src/components/chapter/Illus/IllustrationsComp.vue` — figure-picker chip + dropdown + dot strip wrapper (D2, D3)
-- `src/components/chapter/Illus/IllustrationOnScrollLinked.vue` — respect `pinnedFigureId` (D2)
+- `src/components/chapter/Illus/IllustrationsComp.vue` — respect `pinnedFigureId` (D2)
 - `src/components/chapter/TextComp.vue` — `prose-measure` already used; verify with new `--reading-measure`
 - `src/components/chapter/ReaderTopBar.vue` — token migration if needed (D7)
 - `src/components/chapter/ReaderSidebar.vue` — visual refresh (D6)
@@ -189,7 +189,7 @@ Cypress: defer to Track 3.1.
 
 ## Risks and call-outs
 
-1. **`IllustrationOnScrollLinked` is 113 LOC and underdocumented.** Adding pin-state to it without breaking the observer-based swap is fiddly. Consider extracting the observer logic into the new `useFigurePin` composable to make both code paths explicit.
+1. **GSAP `ScrollTrigger` logic in `IllustrationsComp.vue` is the real swap mechanism.** Adding pin-state needs careful integration so the trigger doesn't override the user's pin. Consider extracting the trigger setup into the new `useFigurePin` composable to make pin-aware and pin-unaware code paths explicit.
 
 2. **End-of-chapter component needs data this app doesn't all have yet.**
    - Takeaways: new column, no UI for editing in Creator dashboard yet — Track 3 ships the column but editing is a follow-up (likely a tiny addition in Track 3 or deferred to a Creator-dashboard polish pass).

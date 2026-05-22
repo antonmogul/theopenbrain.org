@@ -4,9 +4,10 @@
 
 <script setup>
 import { onMounted } from "vue";
-let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
+import { loadLottie } from "@/composables/useLottie";
 import { addH, removeH } from "@/helper/general";
+
+let lottie;
 
 import animationJSON from "@/assets/json_backend/animations.json";
 
@@ -17,7 +18,8 @@ const props = defineProps({
 
 let animationLottie;
 
-onMounted(() => {
+onMounted(async () => {
+  lottie = await loadLottie();
   let svgContainer = document.getElementById(
     props.animation.id + props.state.toUpperCase()
   );

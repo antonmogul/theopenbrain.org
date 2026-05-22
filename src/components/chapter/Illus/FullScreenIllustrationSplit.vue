@@ -19,10 +19,10 @@
 
 <script setup>
 import { onMounted, ref, watch } from "vue";
+import { loadLottie } from "@/composables/useLottie";
+import { gsap } from "gsap";
 
 let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
-import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { toSlug } from "@/helper/general.js";
 import SourceElement from "../../UI/SourceElement.vue";
@@ -40,8 +40,7 @@ let progress = ref();
 let activeLayer = ref(null);
 
 onMounted(async () => {
-  await lottieReady;
-  if (!lottie) return;
+  lottie = await loadLottie();
 
   let svgContainerLeft = document.getElementById(props.animation.id + "Left");
   if (!svgContainerLeft) return;

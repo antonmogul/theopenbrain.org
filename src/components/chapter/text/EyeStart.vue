@@ -1,7 +1,5 @@
 <script setup>
 import { useGeneral, useText } from "@/stores";
-let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 import { onMounted, ref, computed } from "vue";
 import { watchDebounced, useMouse } from "@vueuse/core";
 import { useRoute } from "vue-router";

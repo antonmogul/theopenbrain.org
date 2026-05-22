@@ -126,10 +126,10 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { loadLottie } from "@/composables/useLottie";
+import { toCamelCase } from "@/helper/general";
 
 let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
-import { toCamelCase } from "@/helper/general";
 import ReplayIcon from "../../../icons/custom/ReplayIcon.vue";
 import PauseIcon from "../../../icons/custom/PauseIcon.vue";
 import NextIcon from "../../../icons/custom/NextIcon.vue";
@@ -247,8 +247,7 @@ const container = ref();
 const isActive = ref(true);
 
 onMounted(async () => {
-  await lottieReady;
-  if (!lottie) return;
+  lottie = await loadLottie();
 
   let svgContainer = document.getElementById(props.animation.id);
   if (!svgContainer) return;

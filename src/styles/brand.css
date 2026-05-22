@@ -28,9 +28,6 @@
   --color-mark3: 16 23 226;       /* #1017E2 — blue */
   --color-mark4: 61 217 181;      /* #3DD9B5 — green/teal */
 
-  /* Legacy alias used directly by index.css */
-  --violet: rgb(var(--color-accent));
-
   /* Type controls (user-tunable from Settings) */
   --reading-size: 1;
   --reading-measure: 780px;

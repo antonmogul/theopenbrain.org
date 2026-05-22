@@ -136,7 +136,7 @@ const nextChapterInfo = computed(() => {
     const next = nextAfter(currentModuleId.value);
     if (!next) return null;
     return {
-        number: (next.order_index ?? 0) + 1,
+        number: next.order_index,
         slug: next.slug,
         title: next.title,
     };
@@ -335,7 +335,7 @@ async function handleDeleteHighlight(highlightId) {
 </script>
 
 <template>
-    <div>
+    <div class="chapter-reader">
         <!-- Loading state -->
         <div
             v-if="loading"
@@ -388,21 +388,25 @@ async function handleDeleteHighlight(highlightId) {
             <EyeStart />
             <Text
                 :key="`chapter-${chapterNumber}-${chapterSlug || 'default'}`"
-            />
-
-            <!-- End-of-chapter callout (Track 3) -->
-            <EndOfChapterCallout
-                v-if="showContent"
-                :chapter-number="chapterNumber"
-                :chapter-title="chapterTitle"
-                :module-id="currentModuleId"
-                :key-takeaways="currentModuleMeta?.key_takeaways || []"
-                :highlight-count="highlights?.length || 0"
-                :note-count="notes?.length || 0"
-                :time-spent-seconds="calloutTimeSpent"
-                :progress-percent="calloutProgressPercent"
-                :next-chapter="nextChapterInfo"
-            />
+            >
+                <!-- End-of-chapter callout slot (Track 3) — rendered inside
+                     TextComp so absolute positioning doesn't pull it to the
+                     top of the document. -->
+                <template #end-of-chapter>
+                    <EndOfChapterCallout
+                        v-if="showContent"
+                        :chapter-number="chapterNumber"
+                        :chapter-title="chapterTitle"
+                        :module-id="currentModuleId"
+                        :key-takeaways="currentModuleMeta?.key_takeaways || []"
+                        :highlight-count="highlights?.length || 0"
+                        :note-count="notes?.length || 0"
+                        :time-spent-seconds="calloutTimeSpent"
+                        :progress-percent="calloutProgressPercent"
+                        :next-chapter="nextChapterInfo"
+                    />
+                </template>
+            </Text>
 
             <FootNotesWindow />
             <Comment v-if="commentStore.activeCom" />

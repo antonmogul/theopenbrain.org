@@ -29,8 +29,14 @@ async function fetchCatalog() {
   if (loaded.value) return modules.value;
   if (fetchPromise) return fetchPromise;
   loading.value = true;
+  // NOTE: key_takeaways is added by migration 20260522000000_modules_add_key_takeaways.sql.
+  // Re-add `,key_takeaways` to the select once that migration is applied to prod.
+  // cover_image_url does not exist on modules either — covers are currently
+  // hard-coded per-slug in EyeStart.vue. When a real cover column is added,
+  // re-add it here and the views will pick it up automatically (they already
+  // fall back to the gradient placeholder when the field is missing).
   fetchPromise = rest(
-    "modules?status=eq.published&select=id,title,slug,order_index,cover_image_url,key_takeaways&order=order_index.asc"
+    "modules?status=eq.published&select=id,title,slug,order_index&order=order_index.asc"
   )
     .then((rows) => {
       modules.value = rows || [];
@@ -49,14 +55,10 @@ async function fetchCatalog() {
 }
 
 function findByNumber(number) {
+  // modules.order_index is 1-based in this DB (confirmed 2026-05-22).
+  // The chapter URL number /chapter/:n is also 1-based, so they match directly.
   const n = Number(number);
-  // order_index is 0-based historically; chapter URL number is 1-based.
-  // Match either to handle both legacy and current data.
-  return (
-    modules.value.find((m) => m.order_index === n - 1) ||
-    modules.value.find((m) => m.order_index === n) ||
-    null
-  );
+  return modules.value.find((m) => m.order_index === n) || null;
 }
 
 function findById(id) {

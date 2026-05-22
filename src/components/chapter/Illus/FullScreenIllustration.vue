@@ -1,7 +1,7 @@
 <script setup>
-let lottie;
-const lottieReady = import("lottie-web").then((m) => { lottie = m.default; });
 import { onMounted, ref } from "vue";
+import { loadLottie } from "@/composables/useLottie";
+let lottie;
 
 import { toSlug } from "@/helper/general";
 import gsap from "gsap";
@@ -33,8 +33,9 @@ const activeState = ref({
   toggle: false,
 });
 
-onMounted(() => {
+onMounted(async () => {
   if (props.paragraph.scroll) return;
+  lottie = await loadLottie();
   const id = props.paragraph.animationId;
   var svgContainer = document.getElementById("container" + id);
   animation.value = lottie.loadAnimation({
