@@ -59,6 +59,16 @@ const routes = [
     redirect: { path: "/dashboard", query: { section: "chapter-wizard" } },
   },
   {
+    path: "/chapters",
+    name: "chapters",
+    component: () => import("../views/ChaptersView.vue"),
+  },
+  {
+    path: "/chapter/:number(\\d+)",
+    name: "chapter-overview",
+    component: () => import("../views/ChapterOverviewView.vue"),
+  },
+  {
     path: "/chapter/:number/:slug",
     name: "chapter",
     component: () => import("../views/ChapterView.vue"),
@@ -126,6 +136,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, from) => {
   const store = useGeneral();
+
+  // Default-route redirect: signed-in users land on the chapter library, not
+  // the anonymous marketing home. Anonymous users keep HomeView at /.
+  if (to.path === "/" && getSessionFromStorage()) {
+    return { path: "/chapters" };
+  }
 
   // Handle scroll position for chapter view
   if (from.name === "chapter") {
