@@ -11,11 +11,13 @@ const options = [
 </script>
 
 <template>
-  <div class="theme-cards">
+  <div class="theme-cards" role="radiogroup" aria-label="Appearance">
     <button
       v-for="opt in options"
       :key="opt.value"
       type="button"
+      role="radio"
+      :aria-checked="theme === opt.value"
       class="card"
       :class="{ selected: theme === opt.value }"
       @click="theme = opt.value"
@@ -63,6 +65,11 @@ const options = [
 .card.selected {
   border-color: rgb(var(--color-accent));
   box-shadow: 0 0 0 2px rgb(var(--color-accent) / 0.25);
+}
+
+.card:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
 }
 
 .preview {

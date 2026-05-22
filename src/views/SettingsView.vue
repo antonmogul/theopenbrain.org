@@ -59,6 +59,7 @@ const motionOptions = [
       <SegmentedControl
         v-model="readingSize"
         :options="readingSizeOptions"
+        aria-label="Reading size"
       />
     </section>
 
@@ -70,6 +71,7 @@ const motionOptions = [
       <SegmentedControl
         v-model="lineLength"
         :options="lineLengthOptions"
+        aria-label="Line length"
       />
     </section>
 
@@ -81,6 +83,7 @@ const motionOptions = [
       <SegmentedControl
         v-model="reduceMotion"
         :options="motionOptions"
+        aria-label="Motion"
       />
     </section>
 

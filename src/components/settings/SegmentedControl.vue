@@ -2,16 +2,19 @@
 defineProps({
   modelValue: { type: String, required: true },
   options: { type: Array, required: true },
+  ariaLabel: { type: String, default: "" },
 });
 defineEmits(["update:modelValue"]);
 </script>
 
 <template>
-  <div class="segmented">
+  <div class="segmented" role="radiogroup" :aria-label="ariaLabel">
     <button
       v-for="opt in options"
       :key="opt.value"
       type="button"
+      role="radio"
+      :aria-checked="modelValue === opt.value"
       class="segment"
       :class="{ selected: modelValue === opt.value }"
       @click="$emit('update:modelValue', opt.value)"
@@ -50,5 +53,10 @@ defineEmits(["update:modelValue"]);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+.segment:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
 }
 </style>

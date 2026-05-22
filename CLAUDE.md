@@ -122,6 +122,14 @@ src/
 **useCom Store** (`src/stores/comments.js`):
 - Manages user comments on highlighted text
 
+**usePreferences Composable** (`src/composables/usePreferences.js`):
+- Owns user-facing display prefs: `theme`, `accent`, `fontPair`, `readingSize`, `lineLength`, `reduceMotion`.
+- Module-scope refs (single source of truth, not a Pinia store).
+- localStorage keys are `ob.*` namespaced. Supabase `user_preferences` table syncs (debounced 800ms) when authenticated; LS-only when anonymous.
+- Rendering contract: components style off `data-*` attributes on `<html>` (`data-theme`, `data-accent`, `data-fontpair`, `data-reduce-motion`), not directly off the composable's values.
+- Dirty-tracking: server hydration skips fields the user has changed in this session so anonymous → signed-in transitions don't clobber unsaved changes.
+- To add a new pref: add LS key + default + watch + apply function in `usePreferences.js`; add column to `user_preferences` migration; add field to hydrate logic; add UI control on `SettingsView`.
+
 #### Routing
 
 Routes defined in `src/router/index.js`:
@@ -174,6 +182,21 @@ User modifications to text (highlights, comments) are stored in localStorage for
   - Responsive layout: `width: text` and `width: illus` for split-screen design
 
 - **Media Queries**: The app checks for `min-width: 1300px` and displays a warning for smaller screens via `MediaQueryWarning.vue`
+
+#### Design System (Tokens & Typography)
+
+CSS custom properties in `src/styles/brand.css` are the single source of truth for color, font roles, and reading-prefs CSS vars. Tailwind's `tailwind.config.js` consumes the same tokens via `rgb(var(--color-x) / <alpha-value>)`.
+
+Conventions:
+- **Theme** — `[data-theme="light|dark"]` on `<html>`. System mode resolved live via `matchMedia`.
+- **Accent** — `[data-accent="magenta|teal|amber|mono"]` on `<html>` overrides `--color-accent`.
+- **Font pair** — `[data-fontpair="ibm-plex-legacy|newsreader|literata|georgia|sans"]` on `<html>` overrides `--font-body`, `--font-ui`, `--font-mono`. Default `:root` binds these to IBM Plex (today's behavior); `data-fontpair="newsreader"` etc. swap them.
+- **Reduce motion** — `[data-reduce-motion="1"]` on `<html>` zeroes animation durations globally.
+- **Pre-paint** — Inline `<script>` in `index.html` reads localStorage and sets the `data-*` attributes + reading-size/measure CSS vars before CSS loads, preventing flash. Maps in that script must stay in sync with `usePreferences.js`.
+
+Variable web fonts (Newsreader, Inter Tight, JetBrains Mono, Literata) self-hosted under `public/publicAssets/fonts/`. Latin subset only (~260KB total). Declared in `src/styles/fonts.css`.
+
+Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `accent`, `complete`, `warn`) plus legacy aliases (`lightest`, `lighter`, `magenta`, `violet`, `green`, etc.) that resolve to the same tokens — both work during the migration. Drop legacy aliases only as you migrate the consuming components.
 
 #### Key Features
 

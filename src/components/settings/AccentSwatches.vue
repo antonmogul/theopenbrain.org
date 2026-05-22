@@ -12,11 +12,13 @@ const swatches = [
 </script>
 
 <template>
-  <div class="swatches">
+  <div class="swatches" role="radiogroup" aria-label="Accent color">
     <button
       v-for="s in swatches"
       :key="s.value"
       type="button"
+      role="radio"
+      :aria-checked="accent === s.value"
       class="swatch"
       :class="{ selected: accent === s.value }"
       :style="{ '--swatch': s.color }"
@@ -57,6 +59,11 @@ const swatches = [
 .swatch.selected {
   border-color: var(--swatch);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--swatch) 30%, transparent);
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--swatch);
+  outline-offset: 2px;
 }
 
 .dot {

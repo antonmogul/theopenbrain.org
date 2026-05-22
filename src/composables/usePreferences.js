@@ -47,6 +47,10 @@ const fontPair = ref(DEFAULTS.fontPair);
 let initialized = false;
 let syncTimer = null;
 let mediaQuery = null;
+// Tracks which prefs the user touched in this session. Server hydration
+// skips dirty keys so anon → signed-in transitions don't clobber unsaved
+// changes.
+const dirty = new Set();
 
 function readLS(key, fallback) {
   try {
@@ -175,13 +179,17 @@ async function hydrateFromServer() {
     const row = rows[0];
     if (!row) return;
 
-    // Server wins for fields it has; localStorage retains anything missing
-    if (row.theme) theme.value = row.theme;
-    if (row.accent) accent.value = row.accent;
-    if (row.reading_size) readingSize.value = row.reading_size;
-    if (row.line_length) lineLength.value = row.line_length;
-    if (row.reduce_motion) reduceMotion.value = row.reduce_motion;
-    if (row.font_pair) fontPair.value = row.font_pair;
+    // Server wins for untouched fields; user's in-session changes are preserved.
+    if (row.theme && !dirty.has("theme")) theme.value = row.theme;
+    if (row.accent && !dirty.has("accent")) accent.value = row.accent;
+    if (row.reading_size && !dirty.has("readingSize"))
+      readingSize.value = row.reading_size;
+    if (row.line_length && !dirty.has("lineLength"))
+      lineLength.value = row.line_length;
+    if (row.reduce_motion && !dirty.has("reduceMotion"))
+      reduceMotion.value = row.reduce_motion;
+    if (row.font_pair && !dirty.has("fontPair"))
+      fontPair.value = row.font_pair;
   } catch (err) {
     console.warn("usePreferences: hydrate failed", err);
   }
@@ -205,33 +213,40 @@ function init() {
     if (theme.value === "system") applyTheme();
   });
 
-  // Each pref: persist to LS, apply to DOM, schedule server sync
+  // Each pref: mark dirty, persist to LS, apply to DOM, schedule server sync.
+  // dirty marks ensure hydrateFromServer doesn't overwrite the user's choice.
   watch(theme, (v) => {
+    dirty.add("theme");
     writeLS(STORAGE_KEYS.theme, v);
     applyTheme();
     scheduleSync();
   });
   watch(accent, (v) => {
+    dirty.add("accent");
     writeLS(STORAGE_KEYS.accent, v);
     applyAccent();
     scheduleSync();
   });
   watch(readingSize, (v) => {
+    dirty.add("readingSize");
     writeLS(STORAGE_KEYS.readingSize, v);
     applyReadingSize();
     scheduleSync();
   });
   watch(lineLength, (v) => {
+    dirty.add("lineLength");
     writeLS(STORAGE_KEYS.lineLength, v);
     applyLineLength();
     scheduleSync();
   });
   watch(reduceMotion, (v) => {
+    dirty.add("reduceMotion");
     writeLS(STORAGE_KEYS.reduceMotion, v);
     applyReduceMotion();
     scheduleSync();
   });
   watch(fontPair, (v) => {
+    dirty.add("fontPair");
     writeLS(STORAGE_KEYS.fontPair, v);
     applyFontPair();
     scheduleSync();
