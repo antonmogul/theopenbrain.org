@@ -19,6 +19,7 @@ import HighlightToolbar from "@/components/chapter/HighlightToolbar.vue";
 import ReaderTopBar from "@/components/chapter/ReaderTopBar.vue";
 import ReaderSidebar from "@/components/chapter/ReaderSidebar.vue";
 import CitationTooltip from "@/components/chapter/CitationTooltip.vue";
+import EndOfChapterCallout from "@/components/chapter/EndOfChapterCallout.vue";
 
 // Phase 3A: Composables for highlighting
 import { useTextSelection } from "@/composables/useTextSelection";
@@ -28,6 +29,7 @@ import { useNotes } from "@/composables/useNotes";
 import { useReadingProgress } from "@/composables/useReadingProgress";
 import { useAuth } from "@/composables/useAuth";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
+import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
 
 const route = useRoute();
@@ -67,7 +69,11 @@ const { notes, fetchNotes, createNote, updateNote, deleteNote } = useNotes();
 const { renderAllHighlights } = useHighlightRenderer(highlightsByParagraph);
 
 // Reading progress tracking (initialized lazily after chapter loads)
-const { initForModule: initReadingProgress } = useReadingProgress();
+const {
+    initForModule: initReadingProgress,
+    progress: readingProgress,
+    timeSpent: readingTimeSpent,
+} = useReadingProgress();
 
 // References for Supabase chapters (citations system)
 const {
@@ -120,6 +126,34 @@ const breadcrumbSections = computed(() => {
 
 // Chapter title for ReaderTopBar
 const chapterTitle = computed(() => storeText.text?.intro?.[0]?.title || "");
+
+// Chapter catalog — used to look up next chapter for the end-of-chapter callout
+const { fetchCatalog, nextAfter, findById } = useChapterCatalog();
+fetchCatalog();
+
+const nextChapterInfo = computed(() => {
+    if (!currentModuleId.value) return null;
+    const next = nextAfter(currentModuleId.value);
+    if (!next) return null;
+    return {
+        number: (next.order_index ?? 0) + 1,
+        slug: next.slug,
+        title: next.title,
+    };
+});
+
+const currentModuleMeta = computed(() =>
+    currentModuleId.value ? findById(currentModuleId.value) : null
+);
+
+const calloutProgressPercent = computed(
+    () => readingProgress.value?.scroll_position || 0
+);
+const calloutTimeSpent = computed(
+    () =>
+        (readingProgress.value?.time_spent_seconds || 0) +
+        (readingTimeSpent.value || 0)
+);
 
 // Track if chapter data is loaded
 const chapterDataLoaded = ref(false);
@@ -355,6 +389,21 @@ async function handleDeleteHighlight(highlightId) {
             <Text
                 :key="`chapter-${chapterNumber}-${chapterSlug || 'default'}`"
             />
+
+            <!-- End-of-chapter callout (Track 3) -->
+            <EndOfChapterCallout
+                v-if="showContent"
+                :chapter-number="chapterNumber"
+                :chapter-title="chapterTitle"
+                :module-id="currentModuleId"
+                :key-takeaways="currentModuleMeta?.key_takeaways || []"
+                :highlight-count="highlights?.length || 0"
+                :note-count="notes?.length || 0"
+                :time-spent-seconds="calloutTimeSpent"
+                :progress-percent="calloutProgressPercent"
+                :next-chapter="nextChapterInfo"
+            />
+
             <FootNotesWindow />
             <Comment v-if="commentStore.activeCom" />
 
@@ -445,8 +494,8 @@ export default {
 }
 
 .student-tools-toggle.open {
-    background: white;
-    border-color: rgb(151, 71, 255);
-    color: rgb(151, 71, 255);
+    background: rgb(var(--color-paper));
+    border-color: rgb(var(--color-accent));
+    color: rgb(var(--color-accent));
 }
 </style>
