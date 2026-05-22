@@ -1,0 +1,59 @@
+/*
+ * Design tokens — Track 1, Phase A
+ *
+ * Phase A: values intentionally mirror today's palette so visual diff = 0.
+ * Phase B will flip these to the umbrella-spec values.
+ *
+ * Channels are stored as space-separated RGB triplets so Tailwind's
+ * <alpha-value> placeholder works: rgb(var(--color-x) / 0.5).
+ */
+
+:root {
+  /* Surface scale — light theme (paper-warm per umbrella spec) */
+  --color-bg: 247 245 240;        /* #f7f5f0 — paper-warm */
+  --color-paper: 255 255 255;
+  --color-ink: 10 10 10;          /* #0a0a0a */
+  --color-mute: 107 107 102;      /* #6b6b66 */
+  --color-line: 229 229 224;      /* #e5e5e0 — derived hairline */
+
+  /* Semantic accents (default = magenta) */
+  --color-accent: 233 30 140;     /* #E91E8C — magenta primary */
+  --color-complete: 61 217 181;   /* #3DD9B5 — teal "takeaway" */
+  --color-warn: 244 166 33;       /* #F4A621 — amber */
+
+  /* Highlighter palette */
+  --color-mark1: 13 211 16;       /* #0DD310 — green */
+  --color-mark2: 233 27 11;       /* #E91B0B — red */
+  --color-mark3: 16 23 226;       /* #1017E2 — blue */
+  --color-mark4: 253 231 63;      /* #FDE73F — yellow */
+
+  /* Legacy alias used directly by index.css */
+  --violet: rgb(var(--color-accent));
+
+  /* Type controls (user-tunable from Settings) */
+  --reading-size: 1;
+  --reading-measure: 780px;
+}
+
+[data-theme="dark"] {
+  --color-bg: 14 19 19;           /* #0e1313 */
+  --color-paper: 22 28 28;        /* #161c1c */
+  --color-ink: 243 239 230;       /* #f3efe6 */
+  --color-mute: 154 152 144;      /* #f3efe6 at ~0.55 perceived; opaque mid */
+  --color-line: 49 56 56;         /* hairline derived from paper */
+}
+
+/* Accent variants (default magenta inherited from :root) */
+[data-accent="teal"] { --color-accent: 61 217 181; }
+[data-accent="amber"] { --color-accent: 244 166 33; }
+[data-accent="mono"] { --color-accent: 32 32 32; }
+
+/* Explicit reduce-motion opt-in (separate from prefers-reduced-motion) */
+[data-reduce-motion="1"] *,
+[data-reduce-motion="1"] *::before,
+[data-reduce-motion="1"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

@@ -1,15 +1,18 @@
 <script setup>
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useGeneral } from "@/stores";
 import { useAuthStore } from "@/stores/auth";
+import { useAuth } from "@/composables/useAuth";
 import IIcon from "@/icons/custom/IIcon.vue";
 import UserIcon from "@/icons/custom/UserIcon.vue";
 import OpenArrowIcon from "@/icons/custom/OpenArrowIcon.vue";
 import Brain from "@/icons/custom/Brain.vue";
 
 const route = useRoute();
+const router = useRouter();
 const store = useGeneral();
 const authStore = useAuthStore();
+const { isAuthenticated } = useAuth();
 
 const toggleAbout = () => {
     if (store.activeAbout) {
@@ -84,6 +87,27 @@ const toggleChapterMenu = () => {
             <OpenArrowIcon v-if="store.activeMenu" class="nav-icon-svg" />
             <Brain v-else class="nav-icon-svg" />
         </button>
+
+        <!-- Settings -->
+        <button
+            v-if="isAuthenticated && route.name !== 'settings'"
+            @click="router.push('/settings')"
+            class="nav-icon"
+            title="Settings"
+        >
+            <svg
+                class="nav-icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+        </button>
     </div>
 </template>
 
@@ -95,21 +119,22 @@ const toggleChapterMenu = () => {
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 9999px;
-    background-color: #222;
-    border: 1px solid #222;
+    background-color: rgb(var(--color-ink));
+    border: 1px solid rgb(var(--color-ink));
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .nav-icon:hover,
 .nav-icon.active {
-    background-color: rgb(151, 71, 255);
-    border-color: rgb(151, 71, 255);
+    background-color: rgb(var(--color-accent));
+    border-color: rgb(var(--color-accent));
 }
 
 .nav-icon-svg {
     width: 1.5rem;
     height: 1.5rem;
-    fill: white;
+    fill: rgb(var(--color-paper));
+    color: rgb(var(--color-paper));
 }
 </style>

@@ -1,11 +1,16 @@
 @import url("/src/ibm-plex.css");
+@import url("/src/styles/brand.css");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --violet: rgb(151, 71, 255);
+/* --violet legacy alias is now defined in styles/brand.css */
+
+/* Prose width consumes the user's line-length preference.
+   Default `--reading-measure` (72ch in brand.css) ≈ today's 780px in IBM Plex. */
+.prose-measure {
+  max-width: var(--reading-measure, 780px);
 }
 
 /* fonts */
@@ -33,8 +38,8 @@
 }
 
 .text-base {
-  font-size: 2rem;
-  line-height: 3.1rem;
+  font-size: calc(2rem * var(--reading-size, 1));
+  line-height: calc(3.1rem * var(--reading-size, 1));
 }
 .text-h2 {
   font-size: 4rem;
@@ -82,8 +87,8 @@
   }
 
   .text-base {
-    font-size: 1.9rem;
-    line-height: 3rem;
+    font-size: calc(1.9rem * var(--reading-size, 1));
+    line-height: calc(3rem * var(--reading-size, 1));
   }
   .text-h2 {
     font-size: 4rem;
@@ -129,8 +134,8 @@
     line-height: 2.4rem;
   }
   .text-base {
-    font-size: 1.7rem;
-    line-height: 2.7rem;
+    font-size: calc(1.7rem * var(--reading-size, 1));
+    line-height: calc(2.7rem * var(--reading-size, 1));
   }
   .text-h2 {
     font-size: 3rem;
@@ -186,8 +191,8 @@
     line-height: 2.2rem;
   }
   .text-base {
-    font-size: 1.5rem;
-    line-height: 2.4rem;
+    font-size: calc(1.5rem * var(--reading-size, 1));
+    line-height: calc(2.4rem * var(--reading-size, 1));
   }
   .text-h2 {
     font-size: 2.4rem;
@@ -228,8 +233,8 @@ html,
 body {
   font-size: 62.5%;
   hyphens: auto;
-  background: #f3f4f6;
-  /* background: var(--violet); */
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
 }
 
 /* *{background: #000;} */
@@ -253,7 +258,7 @@ canvas {
 }
 
 input {
-  color: black;
+  color: rgb(var(--color-ink));
 }
 
 section {
@@ -437,12 +442,11 @@ h4 {
 }
 .animationTrigger.active,
 .animationTrigger.active {
-  color: #353535;
-  /* font-style: italic; */
+  color: rgb(var(--color-ink) / 0.85);
 }
 
 .animationTrigger.active.noHighlight {
-  color: black;
+  color: rgb(var(--color-ink));
   font-style: normal;
 }
 
@@ -599,9 +603,9 @@ sup:hover {
   cursor: pointer;
   height: 2.5rem;
   width: 2.5rem;
-  border: #222 solid 1px;
-  background-color: white;
-  fill: black;
+  border: 1px solid rgb(var(--color-ink));
+  background-color: rgb(var(--color-paper));
+  fill: rgb(var(--color-ink));
   border-radius: 9999%;
 }
 
@@ -631,28 +635,28 @@ sup:hover {
 }
 
 .iconInvert {
-  background-color: #222;
-  fill: white;
+  background-color: rgb(var(--color-ink));
+  fill: rgb(var(--color-paper));
 }
 
 
 /* Citation reference superscripts (Supabase chapters) */
 .citation-ref {
-  color: #7c3aed;
+  color: rgb(var(--color-accent));
   cursor: pointer;
   font-weight: 600;
   position: relative;
 }
 .citation-ref:hover {
   text-decoration: underline;
-  text-decoration-color: #7c3aed;
+  text-decoration-color: rgb(var(--color-accent));
 }
 .citation-flash {
   animation: citationPulse 1.5s ease;
 }
 @keyframes citationPulse {
   0%, 100% { background: transparent; }
-  20%, 60% { background: #ede9fe; border-radius: 3px; }
+  20%, 60% { background: rgb(var(--color-accent) / 0.18); border-radius: 3px; }
 }
 
 .-translate-x-custom {

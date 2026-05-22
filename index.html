@@ -22,6 +22,29 @@
     <link rel="manifest" href="/favicon_io/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Open Brain – The Retina</title>
+    <script>
+      // Apply theme/accent/font-pair attributes before CSS loads so first paint matches user prefs.
+      (function () {
+        try {
+          var d = document.documentElement;
+          var theme = localStorage.getItem("ob.theme") || "system";
+          var resolved =
+            theme === "system"
+              ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+              : theme;
+          d.dataset.theme = resolved;
+          d.dataset.accent = localStorage.getItem("ob.accent") || "magenta";
+          d.dataset.fontpair =
+            localStorage.getItem("ob.fontPair") || "ibm-plex-legacy";
+          var rm = localStorage.getItem("ob.reduceMotion");
+          if (rm === "on") d.dataset.reduceMotion = "1";
+        } catch (e) {
+          /* private mode / disabled storage — skip */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app" class="w-screen"></div>

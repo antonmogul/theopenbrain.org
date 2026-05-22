@@ -305,7 +305,7 @@ onBeforeUnmount(() => {
           v-for="section in source['intro']"
           :key="section.id"
           :id="section.id"
-          class="overflow-y-visible max-w-[780px]"
+          class="overflow-y-visible prose-measure"
         >
           <div
             class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[8.6rem] -translate-y-[0.9rem] w-28 h-28 flex items-center justify-center"
@@ -425,7 +425,7 @@ onBeforeUnmount(() => {
           :id="toSlug(section.title)"
           :key="section.id || toSlug(section.title)"
           ref="triggers"
-          class="trigger max-w-[780px]"
+          class="trigger prose-measure"
         >
           <Section
             :section="section"
