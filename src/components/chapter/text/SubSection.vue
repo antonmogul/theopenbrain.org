@@ -7,6 +7,10 @@
     class="sub"
   >
     <StartEndIcon :paragraph="subSections" art="start" />
+    <IllustrationInline
+      v-if="isMobile && subSections?.animation?.id"
+      :animation-id="subSections.animation.id"
+    />
     <span
       :id="
         subSections?.animation?.name &&
@@ -122,6 +126,11 @@
               v-if="subParagraph.animationFull"
               :paragraph="subParagraph"
             />
+            <IllustrationInline
+              v-if="isMobile && subParagraph?.animation?.id"
+              :key="'inline' + subParagraph.id"
+              :animation-id="subParagraph.animation.id"
+            />
           </template>
           <StartEndIcon :paragraph="subParagraph" art="end" />
           <!-- subSection Break -->
@@ -160,7 +169,12 @@ import EditableBlock from "./EditableBlock.vue";
 import { toSlug } from "@/helper/general.js";
 import InlineImages from "./InlineImages.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
+import IllustrationInline from "../Illus/IllustrationInline.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
+import { useMediaQuery } from "@/composables/useMediaQuery";
+
+// Below the desktop pane's breakpoint, render trigger figures inline.
+const isMobile = useMediaQuery("(max-width: 1299px)");
 
 const props = defineProps({
   paragraph: Object,

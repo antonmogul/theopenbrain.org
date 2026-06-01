@@ -124,7 +124,7 @@
       <template v-else>
         <div
           v-if="!animation.multiple && !animation.flip && !animation.switch"
-          :id="animation.id"
+          :id="scopeId || animation.id"
           class="w-full"
         />
         <IllustrationFlip
@@ -135,6 +135,7 @@
           v-if="!animation.multiple && !animation.flip && animation.switch"
           :info="info"
           :isPaused="isPaused"
+          :scope-id="scopeId"
         />
       </template>
     </div>
@@ -151,7 +152,7 @@
 
 <script setup>
 import IllustarionMultiple from "@/components/chapter/Illus/IllustarionMultiple.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { addH, removeH, toSlug, toCamelCase } from "@/helper/general";
 import { loadLottie } from "@/composables/useLottie";
 
@@ -171,6 +172,11 @@ import SourceElement from "@/components/UI/SourceElement.vue";
 const props = defineProps({
   animation: Object,
   activeAnimation: String,
+  // Optional scoped DOM id for the Lottie mount node. When set (inline/mobile
+  // rendering), the figure mounts into this id instead of the global
+  // `animation.id`, so multiple instances don't collide. The asset PATH still
+  // uses `animation.id` (the .json filename). Absent = desktop behavior.
+  scopeId: { type: String, default: null },
 });
 let animationLottie;
 let isPaused = ref(false);
@@ -275,7 +281,7 @@ onMounted(async () => {
   // Skip animations entirely for users with reduced-motion preference
   if (prefersReducedMotion) return;
 
-  let svgContainer = document.getElementById(props.animation.id);
+  let svgContainer = document.getElementById(props.scopeId || props.animation.id);
   if (!svgContainer) return;
 
   lottie = await loadLottie();
@@ -284,7 +290,7 @@ onMounted(async () => {
     rendererSettings: {
       progressiveLoad: true,
     },
-    id: props.animation.id,
+    id: props.scopeId || props.animation.id,
     speed: info.speed || 1,
     wrapper: svgContainer,
     animType: "svg",
@@ -336,6 +342,13 @@ onMounted(async () => {
       animationLottie.play();
     }, 300);
   }
+});
+
+// Release the Lottie instance on teardown. Matters most for inline/mobile
+// rendering, where many figures mount and unmount as the column scrolls;
+// without this each leaves a retained AnimationItem (and a live rAF for loops).
+onUnmounted(() => {
+  animationLottie?.destroy?.();
 });
 </script>
 

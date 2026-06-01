@@ -51,6 +51,10 @@
     </h2>
 
     <StartEndIcon :paragraph="section" art="start" />
+    <IllustrationInline
+      v-if="isMobile && section?.animation?.id"
+      :animation-id="section.animation.id"
+    />
     <span
       :id="
         section?.animation?.name
@@ -113,6 +117,11 @@
             v-if="paragraph.animationFull"
             :paragraph="paragraph"
           />
+          <IllustrationInline
+            v-if="isMobile && paragraph?.animation?.id"
+            :key="'inline' + paragraph.id"
+            :animation-id="paragraph.animation.id"
+          />
         </span>
         <!-- section Break -->
         <BreakImages
@@ -143,6 +152,8 @@
 import { inject } from "vue";
 import BreakImages from "./BreakImages.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
+import IllustrationInline from "@/components/chapter/Illus/IllustrationInline.vue";
+import { useMediaQuery } from "@/composables/useMediaQuery";
 import SubSection from "./SubSection.vue";
 import { useGeneral } from "@/stores";
 import BreakSection from "./BreakSection.vue";
@@ -151,6 +162,11 @@ import StartEndIcon from "../../UI/StartEndIcon.vue";
 import EditableBlock from "./EditableBlock.vue";
 
 const store = useGeneral();
+
+// Below the desktop breakpoint the sticky illustration pane is hidden, so
+// trigger figures are rendered inline here instead. Matches the pane's `xl`
+// (1300px) gate.
+const isMobile = useMediaQuery("(max-width: 1299px)");
 
 const props = defineProps({
   section: Object,

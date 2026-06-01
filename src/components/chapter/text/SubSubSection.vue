@@ -101,6 +101,11 @@
                 v-if="subSubParagraph.animationFull"
                 :paragraph="subSubParagraph"
               />
+              <IllustrationInline
+                v-if="isMobile && subSubParagraph?.animation?.id"
+                :key="'inline' + subSubParagraph.id"
+                :animation-id="subSubParagraph.animation.id"
+              />
             </div>
             <StartEndIcon :paragraph="subSubParagraph" art="end" />
           </template>
@@ -121,6 +126,11 @@
           v-if="subSubSection.animationFull"
           :paragraph="subSubSection"
         />
+        <IllustrationInline
+          v-if="isMobile && subSubSection?.animation?.id"
+          :key="'inline' + subSubSection.id"
+          :animation-id="subSubSection.animation.id"
+        />
       </div>
       <StartEndIcon :paragraph="subSubSection" art="end" />
     </template>
@@ -132,6 +142,8 @@
 import { inject } from "vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
+import IllustrationInline from "../Illus/IllustrationInline.vue";
+import { useMediaQuery } from "@/composables/useMediaQuery";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import BreakText from "./BreakText.vue";
@@ -147,6 +159,9 @@ const props = defineProps({
     default: false,
   },
 });
+
+// Below the desktop pane's breakpoint, render trigger figures inline.
+const isMobile = useMediaQuery("(max-width: 1299px)");
 
 // Inject save handler from parent
 const saveContent = inject("saveContent", null);

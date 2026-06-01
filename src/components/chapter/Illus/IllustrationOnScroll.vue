@@ -22,12 +22,12 @@
         </p>
       </div>
     </div>
-    <div :id="animation.id" class="w-full h-full" />
+    <div :id="scopeId || animation.id" class="w-full h-full" />
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { addH, removeH } from "@/helper/general";
 import { loadLottie } from "@/composables/useLottie";
 import animationJSON from "@/assets/json_backend/animations.json";
@@ -38,6 +38,9 @@ const props = defineProps({
   animation: Object,
   activeAnimation: String,
   progress: Number,
+  // Optional scoped DOM id for inline/mobile rendering (see IllustrationComp).
+  // Path and config lookups still use `animation.id`.
+  scopeId: { type: String, default: null },
 });
 let animationLottie;
 // const emit = defineEmits(["clickAction"]);
@@ -79,12 +82,12 @@ const activeAnimation = ref(null);
 
 onMounted(async () => {
   lottie = await loadLottie();
-  let svgContainer = document.getElementById(props.animation.id);
+  let svgContainer = document.getElementById(props.scopeId || props.animation.id);
   animationLottie = lottie.loadAnimation({
     rendererSettings: {
       progressiveLoad: true,
     },
-    id: props.animation.id,
+    id: props.scopeId || props.animation.id,
     speed: 3,
     wrapper: svgContainer,
     animType: "svg",
@@ -102,6 +105,11 @@ onMounted(async () => {
   animationLottie.setSubframe(true);
   animationLottie.setSpeed(1);
   animationLottie.play();
+});
+
+// Release the Lottie instance on teardown (see IllustrationComp note).
+onUnmounted(() => {
+  animationLottie?.destroy?.();
 });
 </script>
 
