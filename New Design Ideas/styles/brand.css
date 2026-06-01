@@ -1,0 +1,142 @@
+/* Open Brain — brand tokens */
+:root, [data-theme="light"] {
+  /* Color */
+  --ob-bg: #f7f5f0;          /* warm off-white page */
+  --ob-paper: #ffffff;
+  --ob-ink: #0a0a0a;          /* near-black */
+  --ob-ink-2: #1a1a1a;
+  --ob-ink-3: #3a3a3a;
+  --ob-rule: #0a0a0a;
+  --ob-mute: #6b6b66;
+  --ob-mute-2: #9b9b95;
+  --ob-line: rgba(10,10,10,.12);
+  --ob-line-strong: rgba(10,10,10,.85);
+
+  --ob-teal: #3DD9B5;         /* primary accent */
+  --ob-teal-ink: #0a3d33;
+  --ob-magenta: #E91E8C;      /* secondary accent / step-by-step */
+  --ob-magenta-ink: #4a0a2c;
+  --ob-yellow: #F4D03F;       /* highlighter */
+  --ob-pink: #F8B8D8;
+  --ob-blue: #B8D8F8;
+  --ob-green: #B8E8C8;
+  --ob-purple: #C8B8E8;
+
+  /* Dark mode (reader) */
+  --ob-dark-bg: #0e1313;
+  --ob-dark-paper: #161c1c;
+  --ob-dark-ink: #f3efe6;
+  --ob-dark-rule: rgba(243,239,230,.14);
+}
+
+/* Dark theme — applied via [data-theme="dark"] on <html> */
+[data-theme="dark"] {
+  --ob-bg: #0e1313;
+  --ob-paper: #161c1c;
+  --ob-ink: #f3efe6;
+  --ob-ink-2: #e6e2d9;
+  --ob-ink-3: #c8c4bd;
+  --ob-rule: rgba(243,239,230,0.85);
+  --ob-mute: rgba(243,239,230,0.55);
+  --ob-mute-2: rgba(243,239,230,0.35);
+  --ob-line: rgba(243,239,230,0.16);
+  --ob-line-strong: rgba(243,239,230,0.55);
+  --ob-teal-ink: #cdf5e8;
+  --ob-magenta-ink: #ffd4ec;
+}
+
+/* Theme transition */
+html { transition: background-color 220ms ease, color 220ms ease; }
+body { background: var(--ob-bg); color: var(--ob-ink); }
+[data-theme="dark"] .ob-btn:hover { background: var(--ob-paper); color: var(--ob-ink); }
+[data-theme="dark"] .ob-btn--solid { background: var(--ob-ink); color: var(--ob-bg); }
+[data-theme="dark"] .ob-btn--ghost:hover { background: rgba(243,239,230,.08); }
+
+  /* Type */
+  --ob-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --ob-serif: 'Newsreader', 'Source Serif Pro', Georgia, serif;
+  --ob-sans: 'Inter Tight', 'Helvetica Neue', system-ui, sans-serif;
+
+  /* Scale (display) */
+  --ob-fs-xs: 11px;
+  --ob-fs-s: 13px;
+  --ob-fs-m: 15px;
+  --ob-fs-l: 18px;
+  --ob-fs-xl: 24px;
+  --ob-fs-2xl: 36px;
+  --ob-fs-3xl: 56px;
+  --ob-fs-4xl: 88px;
+
+  /* Radius — mostly Swiss = small */
+  --ob-r-0: 0px;
+  --ob-r-1: 2px;
+  --ob-r-2: 6px;
+  --ob-r-3: 12px;
+  --ob-r-pill: 999px;
+}
+
+/* Reset-ish */
+* { box-sizing: border-box; }
+
+/* Utility classes */
+.ob-mono { font-family: var(--ob-mono); font-feature-settings: "ss01"; letter-spacing: 0.02em; }
+.ob-serif { font-family: var(--ob-serif); }
+.ob-sans { font-family: var(--ob-sans); letter-spacing: -0.01em; }
+.ob-uppercase { text-transform: uppercase; letter-spacing: 0.08em; }
+.ob-eyebrow { font-family: var(--ob-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ob-mute); }
+
+/* Buttons — Swiss bracketed style like (?) CLEAR EXPORT IMPORT */
+.ob-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--ob-mono); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 6px 12px;
+  background: transparent; color: var(--ob-ink);
+  border: 1px solid var(--ob-line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+.ob-btn:hover { background: var(--ob-ink); color: var(--ob-paper); }
+.ob-btn--solid { background: var(--ob-ink); color: var(--ob-paper); }
+.ob-btn--solid:hover { background: var(--ob-ink-2); }
+.ob-btn--teal { background: var(--ob-teal); color: var(--ob-teal-ink); border-color: var(--ob-teal); }
+.ob-btn--teal:hover { background: var(--ob-teal-ink); color: var(--ob-teal); }
+.ob-btn--ghost { border-color: transparent; }
+.ob-btn--ghost:hover { background: rgba(0,0,0,.06); color: var(--ob-ink); }
+
+/* Hairline rule */
+.ob-rule { border: 0; border-top: 1px solid var(--ob-rule); }
+.ob-rule-soft { border: 0; border-top: 1px solid var(--ob-line); }
+
+/* Inputs */
+.ob-input {
+  font-family: var(--ob-sans); font-size: 14px;
+  border: 0; border-bottom: 1px solid var(--ob-line);
+  padding: 8px 0;
+  background: transparent;
+  outline: none; width: 100%;
+}
+.ob-input:focus { border-bottom-color: var(--ob-ink); }
+
+/* Card chassis */
+.ob-card {
+  background: var(--ob-paper);
+  border: 1px solid var(--ob-line);
+  border-radius: var(--ob-r-2);
+}
+
+/* Diagram chassis */
+.ob-diagram {
+  background: var(--ob-paper);
+  border: 1px solid var(--ob-line-strong);
+  border-radius: var(--ob-r-2);
+  overflow: hidden;
+  position: relative;
+}
+.ob-diagram--dark { background: var(--ob-dark-paper); color: var(--ob-dark-ink); border-color: rgba(243,239,230,.18); }
+
+/* Scrollbar polish */
+.ob-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.ob-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.18); border-radius: 8px; }
+.ob-scroll::-webkit-scrollbar-track { background: transparent; }

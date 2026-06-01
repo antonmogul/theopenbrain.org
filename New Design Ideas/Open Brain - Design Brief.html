@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Open Brain — Design Brief & Engineering Handoff</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/brand.css" />
+
+  <style>
+    body { margin: 0; background: var(--ob-bg); color: var(--ob-ink); font-family: var(--ob-serif); font-size: 16px; line-height: 1.6; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 80px 56px 120px; }
+    h1 { font-family: var(--ob-serif); font-weight: 400; font-size: 88px; line-height: 0.96; letter-spacing: -0.025em; margin: 0 0 24px; }
+    h2 { font-family: var(--ob-serif); font-weight: 500; font-size: 36px; line-height: 1.1; letter-spacing: -0.014em; margin: 80px 0 12px; }
+    h3 { font-family: var(--ob-serif); font-weight: 500; font-size: 22px; line-height: 1.2; letter-spacing: -0.005em; margin: 32px 0 8px; }
+    h4 { font-family: var(--ob-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ob-mute); margin: 24px 0 10px; font-weight: 500; }
+    p { margin: 0 0 14px; max-width: 70ch; }
+    ul, ol { padding-left: 22px; margin: 0 0 16px; max-width: 70ch; }
+    li { margin: 0 0 6px; }
+    code { font-family: var(--ob-mono); font-size: 13px; background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 3px; }
+    pre { font-family: var(--ob-mono); font-size: 13px; background: var(--ob-paper); border: 1px solid var(--ob-line); border-radius: 4px; padding: 16px 20px; overflow-x: auto; line-height: 1.55; margin: 8px 0 24px; }
+    pre code { background: transparent; padding: 0; }
+    .eyebrow { font-family: var(--ob-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ob-mute); margin-bottom: 14px; }
+    .lede { font-family: var(--ob-serif); font-size: 22px; line-height: 1.45; color: var(--ob-mute); font-style: italic; max-width: 720px; margin: 0 0 48px; }
+    hr { border: 0; border-top: 1px solid var(--ob-rule); margin: 64px 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin: 16px 0 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0 24px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 24px; }
+    .swatch { aspect-ratio: 4/3; border: 1px solid var(--ob-line); border-radius: 4px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; font-family: var(--ob-mono); font-size: 10px; }
+    .card { background: var(--ob-paper); border: 1px solid var(--ob-line); border-radius: 6px; padding: 24px; margin: 12px 0; }
+    .pill { display: inline-block; font-family: var(--ob-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 10px; border: 1px solid var(--ob-line-strong); border-radius: 999px; margin-right: 6px; vertical-align: middle; }
+    .pill--ink { background: var(--ob-ink); color: var(--ob-paper); border-color: var(--ob-ink); }
+    .pill--magenta { background: var(--ob-magenta); color: #fff; border-color: var(--ob-magenta); }
+    .pill--teal { background: var(--ob-teal); color: var(--ob-teal-ink); border-color: var(--ob-teal); }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; font-size: 14px; }
+    th, td { border-bottom: 1px solid var(--ob-line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { font-family: var(--ob-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ob-mute); font-weight: 500; }
+    .toc { columns: 2; column-gap: 32px; max-width: 720px; }
+    .toc a { color: var(--ob-ink); text-decoration: none; display: block; padding: 6px 0; border-bottom: 1px solid var(--ob-line); font-size: 14px; break-inside: avoid; }
+    .toc a:hover { color: var(--ob-magenta); }
+    .toc .num { font-family: var(--ob-mono); font-size: 10px; color: var(--ob-mute); margin-right: 10px; }
+    img.shot { width: 100%; border: 1px solid var(--ob-line); border-radius: 4px; display: block; margin: 12px 0; }
+    .key-fact { display: grid; grid-template-columns: 180px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--ob-line); }
+    .key-fact:last-child { border-bottom: 0; }
+    .key-fact .k { font-family: var(--ob-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ob-mute); }
+    .callout { padding: 20px 24px; border-left: 3px solid var(--ob-magenta); background: rgba(233,30,140,0.06); margin: 16px 0 24px; border-radius: 0 4px 4px 0; }
+    .callout p:last-child { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="eyebrow">DESIGN BRIEF · ENGINEERING HANDOFF · v1.0 · MAY 2026</div>
+    <h1>The Open Brain</h1>
+    <p class="lede">A reimagined textbook for visual neuroscience. This document hands the design system, screen specs, and behavior contracts to the engineering team — everything needed to build the production app from the prototype shipped alongside.</p>
+
+    <div class="card">
+      <h4 style="margin-top:0">PROTOTYPE</h4>
+      <p style="margin-bottom:8px"><a href="prototype.html" style="color:var(--ob-magenta); text-decoration:none; font-family:var(--ob-mono); font-size:13px;">→ prototype.html — the clickable spec</a></p>
+      <h4>DESIGN CANVAS (variations)</h4>
+      <p style="margin-bottom:0"><a href="Open Brain - Design Iteration v2.html" style="color:var(--ob-magenta); text-decoration:none; font-family:var(--ob-mono); font-size:13px;">→ Open Brain — Design Iteration v2.html — every artboard, side-by-side</a></p>
+    </div>
+
+    <h4>Contents</h4>
+    <nav class="toc">
+      <a href="#vision"><span class="num">01</span>Product vision</a>
+      <a href="#principles"><span class="num">02</span>Design principles</a>
+      <a href="#system"><span class="num">03</span>Design system</a>
+      <a href="#type"><span class="num">04</span>Typography</a>
+      <a href="#color"><span class="num">05</span>Color & theming</a>
+      <a href="#screens"><span class="num">06</span>Screens & flows</a>
+      <a href="#diagrams"><span class="num">07</span>Interactive diagrams</a>
+      <a href="#mobile"><span class="num">08</span>Mobile</a>
+      <a href="#accounts"><span class="num">09</span>Accounts & settings</a>
+      <a href="#data"><span class="num">10</span>Data model</a>
+      <a href="#stack"><span class="num">11</span>Tech stack</a>
+      <a href="#a11y"><span class="num">12</span>Accessibility</a>
+      <a href="#analytics"><span class="num">13</span>Analytics</a>
+      <a href="#scope"><span class="num">14</span>Scope & milestones</a>
+    </nav>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="vision">01 · Product vision</h2>
+    <p>Open Brain is an openly-licensed textbook on visual neuroscience that treats the figure, not the paragraph, as the unit of explanation. Every chapter pairs editorial-quality prose with a fullscreen interactive diagram that the prose drives via scroll — the diagram is the protagonist, the writing is its narration.</p>
+
+    <p>The product is free, syncs the reader's progress and notes across devices, and ships in light and dark modes that follow OS preference by default.</p>
+
+    <h4>Audience</h4>
+    <ul>
+      <li><strong>Primary —</strong> undergraduates and self-directed learners working through introductory or intermediate neuroscience content.</li>
+      <li><strong>Secondary —</strong> educators who assign chapters and want their students to engage with diagrams that aren't passive PDFs.</li>
+      <li><strong>Tertiary —</strong> researchers, clinicians, and curious adults who want a high-quality refresher on a specific topic.</li>
+    </ul>
+
+    <h4>Core jobs-to-be-done</h4>
+    <ol>
+      <li>Read a chapter in a single continuous session — figures, prose, and recall checks integrated.</li>
+      <li>Resume where I left off — across devices, across sessions, with my notes intact.</li>
+      <li>Lock in what I just read — quizzes and flashcards immediately after the section.</li>
+      <li>Manipulate a phenomenon to understand it — not watch a video of someone else doing it.</li>
+      <li>Make it mine — highlights, notes, type/theme preferences that persist.</li>
+    </ol>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="principles">02 · Design principles</h2>
+
+    <h3>The figure is the protagonist</h3>
+    <p>On desktop, the interactive diagram occupies a sticky 60% pane while the prose scrolls past on the right and updates which figure is in view. Engineers must preserve this hierarchy: the diagram is never collapsed into a "show figure" footnote.</p>
+
+    <h3>Editorial, not corporate</h3>
+    <p>Open Brain looks like a thoughtful indie magazine that happens to be a software product — heavy serif display type, hairline rules, generous whitespace, mono-spaced metadata. Avoid: gradient-heavy heroes, drop shadows, rounded corners over 6px on structural surfaces, emoji, "AI"-flavored visual language.</p>
+
+    <h3>Quiet defaults, loud accents</h3>
+    <p>The page is paper-warm off-white (light) or near-black (dark). One accent — magenta — does the heavy lifting for active states, progress, and inline emphasis. The teal is reserved for "completed" and key-takeaway callouts. Highlighter swatches (yellow / pink / blue / green / purple) are user-applied only.</p>
+
+    <h3>Calm interactions</h3>
+    <p>Diagram steps cross-fade over 320ms. Theme transitions ease over 220ms. No bouncy springs, no flashing badges, no "you've got mail!" enthusiasm. Animation exists to clarify state changes, not to entertain.</p>
+
+    <h3>Mobile is its own product, not a squeeze</h3>
+    <p>On mobile, the side-by-side scroll-coupled layout collapses into a single integrated stream — diagrams render inline, prose flows around them, and an expand-to-fullscreen control lets the reader manipulate a figure without losing place in the prose.</p>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="system">03 · Design system</h2>
+    <p>All design tokens live in <code>styles/brand.css</code>. The CSS file is the source of truth for the prototype and should remain so for production — engineers should consume the same custom properties (or generate equivalent design tokens) rather than hard-coding values.</p>
+
+    <h4>Spacing scale (px)</h4>
+    <p style="font-family:var(--ob-mono); font-size:13px;">4 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 48 · 56 · 64 · 80 · 96 · 120</p>
+
+    <h4>Radius scale</h4>
+    <table>
+      <tr><th>Token</th><th>Value</th><th>Use</th></tr>
+      <tr><td><code>--ob-r-0</code></td><td>0</td><td>Hairline rules, full-bleed dividers</td></tr>
+      <tr><td><code>--ob-r-1</code></td><td>2px</td><td>Inputs, segmented controls, callouts</td></tr>
+      <tr><td><code>--ob-r-2</code></td><td>6px</td><td>Cards, diagram chassis, panels</td></tr>
+      <tr><td><code>--ob-r-3</code></td><td>12px</td><td>Floating panels, modals only</td></tr>
+      <tr><td><code>--ob-r-pill</code></td><td>999px</td><td>Buttons, badges, avatars</td></tr>
+    </table>
+
+    <h4>Iconography</h4>
+    <p>1.4 stroke weight, current-color, no fills. Icons are 14×14 inside 30–36px hit targets. Source set should be hand-drawn or Phosphor / Lucide thin — never multi-color.</p>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="type">04 · Typography</h2>
+
+    <div class="grid-2">
+      <div>
+        <div style="font-family: var(--ob-serif); font-size: 64px; line-height: 1; letter-spacing: -0.02em;">Newsreader</div>
+        <div class="eyebrow" style="margin-top: 16px;">SERIF · DISPLAY & READING</div>
+        <p style="font-size: 14px;">Variable serif from Production Type. All display headings, all body prose, callouts. Weights 400 / 500. Italics used for inline emphasis and figure captions.</p>
+      </div>
+      <div>
+        <div style="font-family: var(--ob-mono); font-size: 32px;">JetBrains Mono</div>
+        <div class="eyebrow" style="margin-top: 16px;">MONO · METADATA & UI</div>
+        <p style="font-size: 14px;">All eyebrows, navigation labels, button text, figure numbers, page-number-style chrome. Letter-spacing 0.08–0.12em uppercase.</p>
+      </div>
+    </div>
+
+    <h4>Type scale</h4>
+    <table>
+      <tr><th>Token</th><th>Size</th><th>Use</th></tr>
+      <tr><td><code>--ob-fs-xs</code></td><td>11px</td><td>Eyebrows, button labels, badges (always mono uppercase)</td></tr>
+      <tr><td><code>--ob-fs-s</code></td><td>13px</td><td>Captions, secondary metadata</td></tr>
+      <tr><td><code>--ob-fs-m</code></td><td>15–17px</td><td>UI text, list items, table cells</td></tr>
+      <tr><td><code>--ob-fs-l</code></td><td>19px</td><td>Reading body (default — user can override)</td></tr>
+      <tr><td><code>--ob-fs-xl</code></td><td>22–28px</td><td>Section heads, lede text</td></tr>
+      <tr><td><code>--ob-fs-2xl</code></td><td>36–44px</td><td>H2 within prose</td></tr>
+      <tr><td><code>--ob-fs-3xl</code></td><td>56–64px</td><td>Index hero, login quote</td></tr>
+      <tr><td><code>--ob-fs-4xl</code></td><td>88px</td><td>Chapter title (reader hero only)</td></tr>
+    </table>
+
+    <h4>User-controllable type</h4>
+    <p>Profile → Reading & Display exposes:</p>
+    <ul>
+      <li><strong>Font pairing —</strong> Newsreader+InterTight (default), Literata+InterTight, Georgia+system, InterTight only. Persists to <code>localStorage.ob.fontPair</code>.</li>
+      <li><strong>Reading size —</strong> Compact 14.5px / Regular 16px / Comfortable 17.5px (root font-size). Persists to <code>localStorage.ob.typeSize</code>.</li>
+      <li><strong>Line length —</strong> Tight 52ch / Standard 68ch / Wide 84ch (reader prose column max-width).</li>
+    </ul>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="color">05 · Color & theming</h2>
+
+    <h3>Light theme</h3>
+    <div class="grid-4">
+      <div class="swatch" style="background:#f7f5f0;"><span>BG</span><span>#f7f5f0</span></div>
+      <div class="swatch" style="background:#ffffff;"><span>PAPER</span><span>#ffffff</span></div>
+      <div class="swatch" style="background:#0a0a0a; color:#fff;"><span>INK</span><span>#0a0a0a</span></div>
+      <div class="swatch" style="background:#6b6b66; color:#fff;"><span>MUTE</span><span>#6b6b66</span></div>
+    </div>
+
+    <h3>Dark theme</h3>
+    <div class="grid-4">
+      <div class="swatch" style="background:#0e1313; color:#f3efe6;"><span>BG</span><span>#0e1313</span></div>
+      <div class="swatch" style="background:#161c1c; color:#f3efe6;"><span>PAPER</span><span>#161c1c</span></div>
+      <div class="swatch" style="background:#f3efe6;"><span>INK</span><span>#f3efe6</span></div>
+      <div class="swatch" style="background:rgba(243,239,230,0.55); color:#0e1313;"><span>MUTE</span><span>α 0.55</span></div>
+    </div>
+
+    <h3>Accents</h3>
+    <div class="grid-4">
+      <div class="swatch" style="background:#E91E8C; color:#fff;"><span>MAGENTA</span><span>#E91E8C</span></div>
+      <div class="swatch" style="background:#3DD9B5; color:#0a3d33;"><span>TEAL</span><span>#3DD9B5</span></div>
+      <div class="swatch" style="background:#F4A621; color:#3d2700;"><span>AMBER</span><span>#F4A621</span></div>
+      <div class="swatch" style="background:#0a0a0a; color:#fff;"><span>MONO</span><span>#0a0a0a</span></div>
+    </div>
+
+    <h3>Highlighter palette (user-applied)</h3>
+    <div class="grid-4">
+      <div class="swatch" style="background:#F4D03F;"><span>YELLOW</span><span>#F4D03F</span></div>
+      <div class="swatch" style="background:#F8B8D8;"><span>PINK</span><span>#F8B8D8</span></div>
+      <div class="swatch" style="background:#B8D8F8;"><span>BLUE</span><span>#B8D8F8</span></div>
+      <div class="swatch" style="background:#B8E8C8;"><span>GREEN</span><span>#B8E8C8</span></div>
+    </div>
+
+    <h3>Theme behavior</h3>
+    <div class="callout">
+      <p><strong>System preference is the default.</strong> On first load, read <code>prefers-color-scheme</code> and set <code>data-theme</code> on <code>&lt;html&gt;</code>. The user can override to "Light" or "Dark" in Profile → Theme & Accents; their choice persists to <code>localStorage.ob.theme</code>.</p>
+      <p>When the user is in <code>system</code> mode and the OS preference changes mid-session, the app must respond live via a <code>matchMedia</code> change listener — already wired in <code>useThemeManager</code>.</p>
+    </div>
+
+    <pre><code>// styles/brand.css contract
+:root, [data-theme="light"] { /* tokens */ }
+[data-theme="dark"]         { /* tokens override */ }
+
+// Engineers must set data-theme on &lt;html&gt; — never on body or root component.
+// All CSS uses var(--ob-*) tokens; no hard-coded hex outside the token file.</code></pre>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="screens">06 · Screens & flows</h2>
+
+    <p>Every screen below has a corresponding artboard in the design canvas (linked at top) and a wired version in <code>prototype.html</code>. Engineers should treat the prototype as the behavioral source of truth — copy fragments and animation timings from there, not from this document.</p>
+
+    <h3>6.1 — Login</h3>
+    <div class="key-fact"><div class="k">Route</div><div><code>#/login</code></div></div>
+    <div class="key-fact"><div class="k">Layout</div><div>Two-column 1.05fr / 1fr. Left is editorial: ink background, large pull quote from a chapter, OB wordmark top, subtle metadata below. Right is the form on paper background.</div></div>
+    <div class="key-fact"><div class="k">Form</div><div>Email + password. "Remember me" + "Forgot?". Primary "Sign in →" pill button. Below an OR rule, two ghost buttons: Continue with Google, SSO. Footer: Back to book / Create an account.</div></div>
+    <div class="key-fact"><div class="k">On success</div><div>Navigate to last-read chapter, or <code>#/</code> if none.</div></div>
+
+    <h3>6.2 — Chapter Index</h3>
+    <div class="key-fact"><div class="k">Route</div><div><code>#/</code></div></div>
+    <div class="key-fact"><div class="k">Hero</div><div>Title block (left) + featured "Continue Reading" card (right) showing chapter cover, progress bar in magenta, time-remaining estimate.</div></div>
+    <div class="key-fact"><div class="k">Grid</div><div>4-column responsive grid (3 at md, 2 at sm). Each card: 3:4 cover art, "CHAPTER N" mono label, serif title, mono subtitle, magenta progress bar if started, magenta "Reading" pill or ink "✓ Done" pill if applicable.</div></div>
+
+    <h3>6.3 — Chapter Overview</h3>
+    <div class="key-fact"><div class="k">Route</div><div><code>#/chapter/:n</code></div></div>
+    <div class="key-fact"><div class="k">Layout</div><div>320px left rail (cover, title, progress, primary CTAs) / right column (sections list, figures grid, recent notes).</div></div>
+    <div class="key-fact"><div class="k">Sections list</div><div>Each row: section number, title, magenta "X% · resume" or "no notes" / "N notes", figure count, minutes, completion checkmark.</div></div>
+
+    <h3>6.4 — Reader (the heart of the product)</h3>
+    <div class="key-fact"><div class="k">Route</div><div><code>#/read/:n</code></div></div>
+    <div class="key-fact"><div class="k">Hero</div><div>Full-bleed band: chapter eyebrow, 88px serif title, 24px italic mute lede.</div></div>
+    <div class="key-fact"><div class="k">Body</div><div>1.5fr / 1fr split. Left: sticky figure pane (full viewport height minus app bar) containing the active interactive diagram, top toolbar (figure label · "● Tracking scroll" · figure picker), bottom dot indicator showing which sections map to which figure. Right: prose column scrolling past, sections at 70vh+ each.</div></div>
+    <div class="key-fact"><div class="k">Scroll coupling</div><div>An IntersectionObserver on each <code>&lt;section&gt;</code> updates the sticky pane's active figure. User can pin a figure manually via the toolbar dropdown — pinned state shows an "unpin" affordance. Implemented in <code>ReaderScreen</code>.</div></div>
+    <div class="key-fact"><div class="k">End of chapter</div><div>Teal-tinted "Key takeaways" callout listing the chapter's main points + 4-up reading-stats strip + CTAs: Take 5-question quiz / Review flashcards / Chapter overview. Below: "Up Next" card linking to next chapter.</div></div>
+
+    <h3>6.5 — Quiz</h3>
+    <div class="key-fact"><div class="k">Route</div><div><code>#/quiz/:n</code> or modal from end-of-chapter</div></div>
+    <div class="key-fact"><div class="k">Stages</div><div>start → q (per question, 1 of N) → done. Modal version uses backdrop blur 6px, scale-up entrance 320ms.</div></div>
+    <div class="key-fact"><div class="k">Question UI</div><div>Mono "QUESTION X OF Y" + magenta progress bar. 4 ghost-button options. After pick: correct turns teal-bordered/teal-tinted, wrong turns magenta. "Next question →" appears bottom-right.</div></div>
+
+    <h3>6.6 — Flashcards</h3>
+    <p>3D card flip on tap. Front is paper with mono "TERM" eyebrow + 40px serif term. Back is ink with paper text. Bottom controls: ← Previous / Missed / Got it ✓ (teal solid).</p>
+
+    <h3>6.7 — Floating Panel (Notebook / Info / Chat)</h3>
+    <div class="key-fact"><div class="k">Trigger</div><div>App bar buttons: Info · Notebook · Chat. Each toggles a draggable 380×560 floating panel with grab handle and × close.</div></div>
+    <div class="key-fact"><div class="k">Tabs</div><div>Info: chapter metadata, references, glossary. Notebook: user's highlights & notes filtered to current section. Chat: AI assistant context-aware to the chapter (uses <code>window.claude.complete</code> in prototype).</div></div>
+    <div class="key-fact"><div class="k">Behavior</div><div>Position persists across pan/screen. Margin-clamps to viewport edges on resize.</div></div>
+
+    <h3>6.8 — Profile & Settings</h3>
+    <p>See section 09. New in this brief.</p>
+
+    <h3>6.9 — Nav Drawer</h3>
+    <p>Slides in from left (380px). Sections: Continue / Jump To (full chapter list with completion state) / user footer. Backdrop click closes.</p>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="diagrams">07 · Interactive diagrams</h2>
+
+    <p>Each chapter has 1–N interactive figures rendered as React components. The Reader's sticky pane swaps between them based on scroll. Three reference implementations ship in the prototype:</p>
+
+    <table>
+      <tr><th>Component</th><th>File</th><th>Demonstrates</th></tr>
+      <tr><td><code>RefractionDiagram</code></td><td>components/refraction-diagram.jsx</td><td>Toggle myopia / hyperopia / astigmatism. Shows ray paths, focal point relative to retina, corrective lens overlay.</td></tr>
+      <tr><td><code>PhotoTransduction</code></td><td>components/photo-transduction.jsx</td><td>8-step cascade. Each step has a prose caption, an SVG state, and animates in 320ms cross-fade. Auto-advance toggle.</td></tr>
+      <tr><td><code>ConeExplorer</code></td><td>components/diagrams.jsx</td><td>Three overlapping cone-sensitivity curves (S/M/L). Slider controls test wavelength; readout shows excitation ratio.</td></tr>
+    </table>
+
+    <h4>Diagram chassis contract</h4>
+    <ul>
+      <li>Component must fill its container (<code>position:relative; width/height: 100%</code>) — no fixed dimensions.</li>
+      <li>State that should persist between scroll-out and scroll-back lives in <code>localStorage</code> under <code>ob.diagram.&lt;id&gt;.&lt;key&gt;</code>.</li>
+      <li>Honor <code>prefers-reduced-motion</code> via <code>theme.reduceMotion</code> setting — disable cross-fades and parallax.</li>
+      <li>Expose at minimum: a fullscreen-expand button (mobile), a reset button, and screen-reader text describing the current state.</li>
+    </ul>
+
+    <h4>Step diagrams (cascade-style)</h4>
+    <p>Render as a vertical sequence of steps inside the figure pane. Active step is highlighted; completed steps are dimmed; future steps show only their number. "Auto-play step diagrams" preference (Profile → Reading) controls whether scroll-into-view auto-advances them.</p>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="mobile">08 · Mobile</h2>
+    <p>Mobile branches via a viewport check (<code>useIsMobile</code> @ &lt;768px) and renders <code>MobileApp</code> from <code>components/mobile.jsx</code>. The Reader becomes a single integrated stream:</p>
+    <ol>
+      <li>Slim sticky app bar (menu + chapter title + progress dot).</li>
+      <li>Hero block.</li>
+      <li>Prose sections interleaved with inline-rendered diagrams (each with a <strong>fullscreen-expand</strong> control).</li>
+      <li>Inline quiz/flashcard checkpoints between sections.</li>
+      <li>Two-state bottom sheet (peek / expanded) for Notebook & Tools — replaces the desktop floating panel.</li>
+    </ol>
+
+    <p>Profile on mobile uses a single-column variant (<code>ProfileMobileScreen</code>) — top bar, avatar+name header, theme cards 3-up, segmented size control, accent dots, email-prefs list, sign-out button at the foot.</p>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="accounts">09 · Accounts & settings</h2>
+
+    <h3>Sections (left rail)</h3>
+    <ol>
+      <li><strong>Profile —</strong> avatar, display name, email, bio (280 char), role/field, location.</li>
+      <li><strong>Reading & display —</strong> font pairing (4 specimen cards), reading size (3-segment), line length (3-segment), diagram toggles (auto-play, reduce motion, inline captions).</li>
+      <li><strong>Theme & accents —</strong> appearance (System / Light / Dark with mini previews), accent color (4 swatches: Magenta, Teal, Amber, Monochrome), highlighter palette toggles.</li>
+      <li><strong>Email preferences —</strong> 5 toggles bordered as a single card: weekly nudge, new chapters, milestones, annotation digest, research updates. Default state: weekly + new chapters + research = on.</li>
+      <li><strong>Data & privacy —</strong> stats strip (highlights / notes / chapters / storage), 3 toggles, Download / Delete buttons.</li>
+      <li><strong>Account —</strong> change password, 2FA, connected accounts, subscription, danger-zone delete account.</li>
+    </ol>
+
+    <h3>Persistence keys</h3>
+    <table>
+      <tr><th>Key</th><th>Values</th><th>Default</th></tr>
+      <tr><td><code>ob.theme</code></td><td>system / light / dark</td><td>system</td></tr>
+      <tr><td><code>ob.fontPair</code></td><td>newsreader / literata / georgia / sans</td><td>newsreader</td></tr>
+      <tr><td><code>ob.typeSize</code></td><td>compact / regular / comfortable</td><td>regular</td></tr>
+      <tr><td><code>ob.accent</code></td><td>magenta / teal / amber / mono</td><td>magenta</td></tr>
+      <tr><td><code>ob.lineLength</code></td><td>tight / standard / wide</td><td>standard</td></tr>
+      <tr><td><code>ob.reduceMotion</code></td><td>boolean (overrides OS)</td><td>follows OS</td></tr>
+    </table>
+
+    <p>In production, settings sync to the server-side user record on change (debounced 800ms) and pull on login. <code>localStorage</code> is the optimistic cache.</p>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="data">10 · Data model</h2>
+
+    <pre><code>User
+  id, email, displayName, avatarUrl, bio, role, location
+  preferences: { theme, fontPair, typeSize, accent, lineLength, reduceMotion }
+  emailPrefs: { weekly, newChapters, achievements, digest, research }
+
+Chapter
+  n, title, subtitle, sections[]
+  publishedAt, updatedAt, status: 'draft' | 'published'
+
+Section
+  id (e.g. '2.3'), title, slug
+  paragraphs[], figures[]
+  estimatedMinutes
+
+Figure
+  id, kind: 'static' | 'interactive', componentName
+  caption, sourceCredit
+
+ReadingProgress  (per User × Chapter)
+  chapterN, percentComplete, lastSectionId, lastReadAt
+  sessions: [{ startedAt, endedAt }]
+
+Note  (per User × Section)
+  id, sectionId, kind: 'highlight' | 'note'
+  range: { startOffset, endOffset, anchorText }
+  color (highlighter), body (notes only), createdAt, updatedAt
+
+QuizAttempt
+  chapterN, score, total, answers[], completedAt</code></pre>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="stack">11 · Tech stack recommendation</h2>
+    <ul>
+      <li><strong>Frontend —</strong> React 18 + TypeScript + Vite. Routing: TanStack Router or React Router 6 (the prototype's hash router is for demo only).</li>
+      <li><strong>Styling —</strong> CSS custom properties from <code>brand.css</code> consumed via vanilla CSS modules or Vanilla Extract. <em>Do not</em> introduce Tailwind, styled-components, or emotion — the design system is token-first and the prototype intentionally uses inline styles + utility classes that map 1:1 to tokens.</li>
+      <li><strong>State —</strong> Zustand or Jotai for app state; TanStack Query for server data. No Redux.</li>
+      <li><strong>Backend —</strong> opinion-free; FastAPI / Rails / Hono all fine. PostgreSQL for relational data, plus a simple object store for chapter assets.</li>
+      <li><strong>Auth —</strong> WorkOS or Clerk for SSO; magic-link via Postmark for password-light flows.</li>
+      <li><strong>Content —</strong> chapters authored in MDX, with custom MDX components mapping to the diagram React components. Each chapter is a directory: <code>chapters/02-vision/index.mdx</code> + co-located figures.</li>
+      <li><strong>AI Chat —</strong> the prototype uses <code>window.claude.complete</code>. Production should proxy through a backend endpoint that injects the current chapter context and rate-limits per user.</li>
+    </ul>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="a11y">12 · Accessibility</h2>
+    <ul>
+      <li><strong>Contrast —</strong> All text passes WCAG AA in both themes. The mute color (<code>#6b6b66</code> on bg <code>#f7f5f0</code>) is intentionally close to the limit at 14px+ — never use it under 13px.</li>
+      <li><strong>Focus —</strong> 2px solid magenta outline with 2px offset, never <code>outline:none</code>.</li>
+      <li><strong>Keyboard —</strong> Reader: ↑/↓ scroll prose; ←/→ change pinned figure; <kbd>K</kbd> opens notebook; <kbd>?</kbd> opens shortcuts. Quiz: 1–4 select answer, Enter advances.</li>
+      <li><strong>Reduced motion —</strong> Respect <code>prefers-reduced-motion: reduce</code> by default; user can also toggle it on explicitly. Disables cross-fades, scroll-coupled diagram swaps (figure pane just changes instantly), and modal scale-ins.</li>
+      <li><strong>Screen readers —</strong> Each diagram exposes a live-region textual description of its current state. Section navigation announces section number + title.</li>
+      <li><strong>Min hit target —</strong> 44×44 on mobile, 30×30 on desktop with at least 4px padding around clickable text.</li>
+    </ul>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="analytics">13 · Analytics</h2>
+    <p>The "Anonymous reading analytics" toggle (default on, user can opt out) sends these events. No PII, no IP-level tracking.</p>
+    <table>
+      <tr><th>Event</th><th>Properties</th></tr>
+      <tr><td><code>chapter_opened</code></td><td>chapterN, source (index / continue / link)</td></tr>
+      <tr><td><code>section_dwell</code></td><td>sectionId, dwellMs (only sent on section exit)</td></tr>
+      <tr><td><code>diagram_interacted</code></td><td>figureId, action (toggle / step / slider)</td></tr>
+      <tr><td><code>quiz_completed</code></td><td>chapterN, score, total, durationMs</td></tr>
+      <tr><td><code>theme_changed</code></td><td>from, to (one-shot per change)</td></tr>
+      <tr><td><code>note_created</code></td><td>sectionId, kind, color (no body content)</td></tr>
+    </table>
+
+    <hr/>
+
+    <!-- ─────────────────────────────────────────── -->
+    <h2 id="scope">14 · Scope & milestones</h2>
+
+    <h3>M1 — Reader MVP (4 weeks)</h3>
+    <ul>
+      <li>Auth (email + Google).</li>
+      <li>Chapter index, chapter overview, reader with one chapter shipped.</li>
+      <li>Light + dark + system theme switching.</li>
+      <li>One interactive diagram (refraction) wired through scroll-coupled pane.</li>
+      <li>Profile screen with all settings except Data & Privacy section.</li>
+    </ul>
+
+    <h3>M2 — Recall (3 weeks)</h3>
+    <ul>
+      <li>Quiz flow w/ persistence.</li>
+      <li>Flashcard review w/ spaced-repetition queue.</li>
+      <li>Highlights & notes with color picker.</li>
+      <li>Notebook tab populated.</li>
+    </ul>
+
+    <h3>M3 — Mobile (3 weeks)</h3>
+    <ul>
+      <li>Integrated mobile reader stream.</li>
+      <li>Fullscreen-expand for diagrams on mobile.</li>
+      <li>Bottom-sheet notebook & tools.</li>
+      <li>Profile mobile variant.</li>
+    </ul>
+
+    <h3>M4 — Author tooling & content pipeline (parallel, 4 weeks)</h3>
+    <ul>
+      <li>MDX chapter authoring with custom diagram components.</li>
+      <li>Chapter preview environment for authors.</li>
+      <li>Versioning + research-update bulletin emails.</li>
+    </ul>
+
+    <h3>M5 — AI Chat & polish (2 weeks)</h3>
+    <ul>
+      <li>Chapter-context-aware assistant.</li>
+      <li>Analytics, A11y audit, performance pass.</li>
+    </ul>
+
+    <hr/>
+
+    <p style="font-family: var(--ob-mono); font-size: 11px; color: var(--ob-mute); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 80px;">END OF BRIEF · OPEN BRAIN · v1.0</p>
+    <p style="font-family: var(--ob-mono); font-size: 11px; color: var(--ob-mute); margin: 0;">Questions: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0e6a6b7d6769604e7a666b617e6b606c7c6f676020617c69">[email&#160;protected]</a> · Engineering: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96f4e3fffaf2d6e2fef3f9e6f3f8f4e4f7fff8b8f9e4f1">[email&#160;protected]</a></p>
+
+  </div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+</html>

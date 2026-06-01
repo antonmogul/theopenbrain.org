@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Open Brain — Design Iteration</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/brand.css" />
+
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: #f0eee9; font-family: var(--ob-sans); color: var(--ob-ink); }
+    #root { min-height: 100vh; }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="components/primitives.jsx"></script>
+  <script type="text/babel" src="components/chapter-index.jsx"></script>
+  <script type="text/babel" src="components/reader.jsx"></script>
+  <script type="text/babel" src="components/diagrams.jsx"></script>
+  <script type="text/babel" src="components/tools.jsx"></script>
+  <script type="text/babel" src="components/v2-additions.jsx"></script>
+  <script type="text/babel" src="components/refraction-diagram.jsx"></script>
+  <script type="text/babel" src="components/photo-transduction.jsx"></script>
+
+  <script type="text/babel">
+    const App = () => (
+      <DesignCanvas>
+        {/* ─── 1. Chapter Index ──────────────────────────────────────── */}
+        <DCSection id="index" title="01 · Book Index" subtitle="Editorial grid — homepage with continue-reading + 14 chapters.">
+          <DCArtboard id="idx-a" label="Book Index · Editorial grid + featured" width={1200} height={1400}>
+            <ChapterIndexA />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="overview" title="02 · Chapter Overview" subtitle="Repurposed TOC — landing page for one chapter showing all sections, progress, figures, references.">
+          <DCArtboard id="ch-overview" label="Chapter Overview · Visual Perception" width={1200} height={1100}>
+            <ChapterOverview />
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 2. Reader ─────────────────────────────────────────────── */}
+        <DCSection id="reader" title="03 · Chapter Reader" subtitle="Diagram now contained in a box w/ expand-to-fullscreen. Light + dark.">
+          <DCArtboard id="reader-light" label="Light · Reader (contained diagram)" width={1280} height={820}>
+            <ChapterReaderV2 dark={false} />
+          </DCArtboard>
+          <DCArtboard id="reader-dark" label="Dark · Reader" width={1280} height={820}>
+            <ChapterReaderV2 dark={true} />
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 3. Diagrams ───────────────────────────────────────────── */}
+        <DCSection id="diagrams" title="03 · Interactive diagrams" subtitle="Unified chassis. Step-by-step diagram redesigned (was scattered). Cone explorer in brand language.">
+          <DCArtboard id="diag-step" label="Step-by-step · Pupillary reflex (redone)" width={760} height={680}>
+            <StepDiagram />
+          </DCArtboard>
+          <DCArtboard id="diag-cone" label="Cone Spectral Sensitivity Explorer" width={760} height={680}>
+            <ConeExplorer />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="refraction" title="03b · Refraction errors diagram" subtitle="Diagram itself unchanged — controls reorganized into a clean segmented picker + corrected toggle. Plus a mobile version.">
+          <DCArtboard id="ref-desktop" label="Desktop · Refraction errors (interactive)" width={1000} height={620}>
+            <RefractionDiagram />
+          </DCArtboard>
+          <DCArtboard id="ref-mobile" label="Mobile · Refraction errors" width={390} height={780}>
+            <RefractionDiagramMobile />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="photo" title="03c · Phototransduction (step diagram)" subtitle="Reorganized — diagram dominates, single bottom strip for steps + nav + utilities, legend hidden behind a toggle. Plus mobile.">
+          <DCArtboard id="photo-desktop" label="Desktop · Phototransduction (legend hidden)" width={1000} height={680}>
+            <PhotoTransduction />
+          </DCArtboard>
+          <DCArtboard id="photo-mobile" label="Mobile · Phototransduction" width={390} height={820}>
+            <PhotoTransductionMobile />
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 4. Floating Panel ─────────────────────────────────────── */}
+        <DCSection id="panel" title="04 · Floating panel — Info / Notebook / Chat" subtitle="Draggable. Three tabs share the same shell. SaaS purple/blue dropped — teal + magenta only.">
+          <DCArtboard id="panel-info" label="Info tab" width={420} height={680}>
+            <div style={{ padding: 20, background: 'rgba(0,0,0,0.04)', height: '100%', display: 'grid', placeItems: 'center' }}>
+              <FloatingPanel initialTab="info" />
+            </div>
+          </DCArtboard>
+          <DCArtboard id="panel-notebook" label="Notebook · Highlights" width={420} height={680}>
+            <div style={{ padding: 20, background: 'rgba(0,0,0,0.04)', height: '100%', display: 'grid', placeItems: 'center' }}>
+              <FloatingPanel initialTab="notebook" />
+            </div>
+          </DCArtboard>
+          <DCArtboard id="panel-chat" label="Chat" width={420} height={680}>
+            <div style={{ padding: 20, background: 'rgba(0,0,0,0.04)', height: '100%', display: 'grid', placeItems: 'center' }}>
+              <FloatingPanel initialTab="chat" />
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 5. Quiz ──────────────────────────────────────────────── */}
+        <DCSection id="quiz" title="05 · Quiz flow" subtitle="Start screen + question screen. SaaS blue replaced w/ brand ink + magenta.">
+          <DCArtboard id="quiz-start" label="Start" width={900} height={620}>
+            <QuizStart />
+          </DCArtboard>
+          <DCArtboard id="quiz-q" label="Question" width={900} height={620}>
+            <QuizQuestion />
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 6. Flashcards ────────────────────────────────────────── */}
+        <DCSection id="cards" title="06 · Flashcards" subtitle="Tap to flip. Got it / missed. Keyboard-first.">
+          <DCArtboard id="cards-1" label="Flashcards" width={760} height={620}>
+            <Flashcards />
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 7. Nav popover ───────────────────────────────────────── */}
+        <DCSection id="nav" title="07 · Nav popover" subtitle="Tightened — added current chapter, resume CTA, account row.">
+          <DCArtboard id="nav-1" label="Nav popover" width={420} height={720}>
+            <NavPopover />
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 8. Mobile ────────────────────────────────────────────── */}
+        <DCSection id="mobile" title="08 · Mobile" subtitle="Index (grid + list views), reader w/ contained+expandable diagram, two-state bottom sheet (peek → expanded).">
+          <DCArtboard id="m-index" label="Mobile · Index (grid)" width={390} height={780}>
+            <MobileIndex />
+          </DCArtboard>
+          <DCArtboard id="m-index-list" label="Mobile · Index (list)" width={390} height={780}>
+            <MobileIndexList />
+          </DCArtboard>
+          <DCArtboard id="m-reader" label="Mobile · Reader (contained diagram)" width={390} height={780}>
+            <MobileReaderV2 />
+          </DCArtboard>
+          <DCArtboard id="m-panel-peek" label="Mobile · Panel (peek state)" width={390} height={780}>
+            <MobilePanelPeek />
+          </DCArtboard>
+          <DCArtboard id="m-panel" label="Mobile · Panel (expanded)" width={390} height={780}>
+            <MobilePanelExpanded />
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+    );
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
