@@ -74,16 +74,60 @@ const overallPercent = computed(() =>
 );
 const isComplete = computed(() => progressRow.value?.is_completed === true);
 
+// Per-section figure count (paragraphs carrying an animation/illustration) and a
+// reading-time estimate from word count (~200 wpm). Honest derivations from the
+// chapter data — no fabricated demo numbers.
+function sectionMeta(section) {
+  const paras = section?.paragraphs || [];
+  let figures = 0;
+  let words = 0;
+  const walk = (list) => {
+    for (const p of list || []) {
+      if (p.animation || p.animationFull || p.img) figures += 1;
+      if (typeof p.text === "string") {
+        words += p.text.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+      }
+      if (p.subSection) walk(p.subSection);
+      if (p.subSubSection) walk(p.subSubSection);
+      if (p.paragraphs) walk(p.paragraphs);
+    }
+  };
+  walk(paras);
+  const mins = Math.max(1, Math.round(words / 200));
+  return { figures, mins };
+}
+
+// All interactive/static figures across the chapter, for the "Figures" grid.
+const chapterFigures = computed(() => {
+  const out = [];
+  const walk = (list) => {
+    for (const p of list || []) {
+      if (p.animation || p.animationFull) {
+        out.push({
+          id: p.animation?.id || p.animationId || `fig-${out.length}`,
+          kind: p.animationFull ? "Interactive" : "Figure",
+          title: p.title || p.animation?.name || `Figure ${out.length + 1}`,
+        });
+      }
+      if (p.subSection) walk(p.subSection);
+      if (p.subSubSection) walk(p.subSubSection);
+      if (p.paragraphs) walk(p.paragraphs);
+    }
+  };
+  for (const s of sections.value) walk(s.paragraphs);
+  return out;
+});
+
 const primaryCta = computed(() => {
   if (!moduleSummary.value) return null;
   const baseRoute = `/chapter/${chapterNumber.value}/${moduleSummary.value.slug}`;
   if (!isAuthenticated.value) {
-    return { label: "Read chapter", route: baseRoute };
+    return { label: "Read chapter →", route: baseRoute };
   }
   if (progressRow.value && overallPercent.value > 0) {
-    return { label: "Continue reading", route: baseRoute };
+    return { label: "Continue reading →", route: baseRoute };
   }
-  return { label: "Start reading", route: baseRoute };
+  return { label: "Start reading →", route: baseRoute };
 });
 
 function sectionTitleById(id) {
@@ -104,7 +148,7 @@ function sectionTitleById(id) {
         <div v-else class="cover-fallback" />
       </div>
 
-      <span class="chapter-label">Chapter {{ chapterNumber }}</span>
+      <span class="eyebrow chapter-label">Chapter {{ chapterNumber }}</span>
       <h1>{{ moduleSummary.title }}</h1>
 
       <div v-if="isAuthenticated" class="progress-block">
@@ -115,28 +159,27 @@ function sectionTitleById(id) {
           />
         </div>
         <span class="progress-label">
-          {{ isComplete ? "Complete" : `${overallPercent}% read` }}
+          {{ isComplete ? "Complete" : `${overallPercent}% complete` }}
+          · {{ sections.length }} sections
         </span>
       </div>
 
       <div class="ctas">
-        <router-link v-if="primaryCta" :to="primaryCta.route" class="cta cta-primary">
+        <router-link
+          v-if="primaryCta"
+          :to="primaryCta.route"
+          class="btn btn--solid"
+        >
           {{ primaryCta.label }}
         </router-link>
-        <router-link
-          v-if="isAuthenticated"
-          :to="`/quiz/${moduleSummary.id}`"
-          class="cta cta-secondary"
-        >
-          Take quiz
-        </router-link>
-        <router-link
-          v-if="isAuthenticated"
-          :to="`/flashcards/${moduleSummary.id}`"
-          class="cta cta-secondary"
-        >
-          Review flashcards
-        </router-link>
+        <div v-if="isAuthenticated" class="ctas-row">
+          <router-link :to="`/quiz/${moduleSummary.id}`" class="btn">
+            Take quiz
+          </router-link>
+          <router-link :to="`/flashcards/${moduleSummary.id}`" class="btn">
+            Flashcards
+          </router-link>
+        </div>
       </div>
 
       <p v-if="!isAuthenticated" class="signin-hint">
@@ -145,21 +188,41 @@ function sectionTitleById(id) {
     </aside>
 
     <section class="content">
-      <h2>Sections</h2>
-      <ul class="sections-list">
-        <li v-for="(s, i) in sections" :key="s.id || i">
+      <p class="eyebrow">Sections</p>
+      <div class="sections-list">
+        <router-link
+          v-for="(s, i) in sections"
+          :key="s.id || i"
+          :to="`/chapter/${chapterNumber}/${moduleSummary.slug}#${s.slug || ''}`"
+          class="section-row"
+        >
+          <span class="section-num">{{ i + 1 }}.</span>
+          <span class="section-title">{{ s.title }}</span>
+          <span class="section-meta">
+            {{ sectionMeta(s).figures }} figs · {{ sectionMeta(s).mins }} min
+          </span>
+        </router-link>
+      </div>
+
+      <template v-if="chapterFigures.length">
+        <hr class="rule" />
+        <p class="eyebrow">Figures in this chapter</p>
+        <div class="figures-grid">
           <router-link
-            :to="`/chapter/${chapterNumber}/${moduleSummary.slug}#${s.slug || ''}`"
-            class="section-row"
+            v-for="fig in chapterFigures"
+            :key="fig.id"
+            :to="`/chapter/${chapterNumber}/${moduleSummary.slug}`"
+            class="figure-card"
           >
-            <span class="section-num">{{ i + 1 }}.</span>
-            <span class="section-title">{{ s.title }}</span>
+            <span class="figure-kind">{{ fig.kind }}</span>
+            <span class="figure-title">{{ fig.title }}</span>
           </router-link>
-        </li>
-      </ul>
+        </div>
+      </template>
 
       <template v-if="isAuthenticated && notes.length">
-        <h2>Recent notes</h2>
+        <hr class="rule" />
+        <p class="eyebrow">Recent notes</p>
         <ul class="notes-list">
           <li v-for="n in notes" :key="n.id">
             <p class="note-content">"{{ n.content }}"</p>
@@ -179,10 +242,13 @@ function sectionTitleById(id) {
 </template>
 
 <style scoped>
+/* Chapter overview — matches prototype ChapterOverviewScreen (New Design Ideas/
+   components/prototype.jsx). 320px rail + content; flat hairline section rows,
+   ink/ghost buttons, figures grid, sharp radii. */
 .overview {
-  max-width: 140rem;
+  max-width: 132rem;
   margin: 0 auto;
-  padding: 6rem 2.4rem 12rem;
+  padding: 3.2rem 5.6rem 6rem;
   display: grid;
   grid-template-columns: 1fr;
   gap: 4rem;
@@ -193,6 +259,7 @@ function sectionTitleById(id) {
 @media (min-width: 900px) {
   .overview {
     grid-template-columns: 32rem 1fr;
+    gap: 5.6rem;
   }
 }
 
@@ -203,18 +270,31 @@ function sectionTitleById(id) {
   color: rgb(var(--color-mute));
 }
 
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-mute));
+  margin: 0 0 1.8rem;
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid rgb(var(--color-ink));
+  margin: 3.2rem 0 1.8rem;
+}
+
 .rail {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
 }
 
 .cover {
   aspect-ratio: 3 / 4;
-  border-radius: 0.8rem;
   overflow: hidden;
   background: rgb(var(--color-bg));
-  margin-bottom: 0.8rem;
+  margin-bottom: 1.8rem;
 }
 
 .cover img {
@@ -228,96 +308,100 @@ function sectionTitleById(id) {
   height: 100%;
   background: linear-gradient(
     135deg,
-    rgb(var(--color-accent) / 0.15),
-    rgb(var(--color-complete) / 0.15)
+    rgb(var(--color-accent) / 0.18),
+    rgb(var(--color-complete) / 0.18)
   );
 }
 
 .chapter-label {
-  font-size: 1.2rem;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgb(var(--color-mute));
+  margin-bottom: 0.4rem;
 }
 
 .rail h1 {
   font-size: 3.2rem;
-  line-height: 1.15;
-  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.6rem;
   padding: 0;
 }
 
 .progress-block {
-  margin-top: 0.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 0.4rem;
-  background: rgb(var(--color-line));
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: rgb(var(--color-accent));
-  transition: width 0.3s ease;
-}
-
-.progress-label {
-  font-size: 1.2rem;
-  color: rgb(var(--color-mute));
-  font-family: var(--font-mono);
-}
-
-.ctas {
-  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
 
-.cta {
+/* Rail progress bar is teal (complete-family), per prototype */
+.progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgb(var(--color-ink) / 0.08);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: rgb(var(--color-complete));
+  transition: width 0.3s ease;
+}
+
+.progress-label {
+  font-size: 1rem;
+  color: rgb(var(--color-mute));
+  font-family: var(--font-mono);
+}
+
+.ctas {
+  margin-top: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.ctas-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+/* Bracketed/pill buttons — restrained, mono uppercase, hairline border */
+.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem 1.6rem;
-  border-radius: 0.8rem;
-  font-size: 1.4rem;
-  font-family: var(--font-ui);
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   text-decoration: none;
-  border: 1px solid transparent;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  color: rgb(var(--color-ink));
+  background: transparent;
+  border: 1px solid rgb(var(--color-ink) / 0.85);
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
-.cta-primary {
-  background: rgb(var(--color-accent));
+.btn:hover {
+  background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
 }
 
-.cta-primary:hover {
-  background: rgb(var(--color-accent) / 0.85);
+.btn--solid {
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  padding: 1.2rem;
 }
 
-.cta-secondary {
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border-color: rgb(var(--color-line));
-}
-
-.cta-secondary:hover {
-  border-color: rgb(var(--color-accent));
-  color: rgb(var(--color-accent));
+.btn--solid:hover {
+  background: rgb(var(--color-ink) / 0.85);
 }
 
 .signin-hint {
-  margin-top: 0.4rem;
-  font-size: 1.2rem;
+  margin-top: 1.6rem;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   color: rgb(var(--color-mute));
 }
 
@@ -326,72 +410,119 @@ function sectionTitleById(id) {
   text-decoration: underline;
 }
 
-.content h2 {
+/* Flat section rows separated by hairlines — no card chrome */
+.sections-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-row {
+  display: grid;
+  grid-template-columns: 4rem 1fr auto;
+  align-items: baseline;
+  gap: 1.8rem;
+  padding: 1.8rem 0;
+  border-top: 1px solid rgb(var(--color-line));
+  text-decoration: none;
+  color: inherit;
+  transition: padding-left 0.12s ease;
+}
+
+.section-row:last-child {
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+
+.section-row:hover {
+  padding-left: 0.6rem;
+}
+
+.section-num {
+  font-family: var(--font-mono);
+  color: rgb(var(--color-mute));
+  font-size: 1.2rem;
+}
+
+.section-title {
   font-size: 1.8rem;
-  font-weight: 600;
-  margin: 0 0 1.6rem;
-  padding: 0;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
-.content h2:not(:first-child) {
-  margin-top: 3.2rem;
+.section-meta {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+  white-space: nowrap;
 }
 
-.sections-list,
+/* Figures grid — 3 across, paper cards, radius 4 */
+.figures-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+
+@media (min-width: 1100px) {
+  .figures-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.figure-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.2rem;
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.12s ease;
+}
+
+.figure-card:hover {
+  border-color: rgb(var(--color-ink));
+}
+
+.figure-kind {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-mute));
+}
+
+.figure-title {
+  font-size: 1.4rem;
+}
+
 .notes-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
-}
-
-.section-row {
-  display: flex;
-  gap: 1.2rem;
-  padding: 1.4rem 1.6rem;
-  background: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 0.8rem;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.15s, transform 0.1s;
-}
-
-.section-row:hover {
-  border-color: rgb(var(--color-accent));
-  transform: translateX(2px);
-}
-
-.section-num {
-  font-family: var(--font-mono);
-  color: rgb(var(--color-mute));
-  font-size: 1.3rem;
-  flex-shrink: 0;
-  width: 2.4rem;
-}
-
-.section-title {
-  font-size: 1.5rem;
 }
 
 .notes-list li {
-  padding: 1.4rem 1.6rem;
-  background: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 0.8rem;
+  padding: 1.6rem 0;
+  border-top: 1px solid rgb(var(--color-line));
 }
 
 .note-content {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-style: italic;
   margin: 0 0 0.4rem;
 }
 
 .note-section {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
 }
 </style>

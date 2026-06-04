@@ -32,6 +32,13 @@
   --reading-size: 1;
   --reading-measure: 780px;
 
+  /* Reader layout (Track 3 D1). Single source of truth for the desktop split:
+     the prose column is --reader-prose-w pinned right, the figure pane fills the
+     rest → ~1.5:1 (figure : prose) at 40vw prose. --reader-topbar-h lets the
+     sticky figure pane start below the fixed top bar instead of behind it. */
+  --reader-prose-w: min(40vw, calc(780px + 11rem));
+  --reader-topbar-h: 2.5rem;
+
   /* Font roles — IBM Plex is the :root default, matching today's behavior.
      [data-fontpair="newsreader"] etc. override these per-pair. */
   --font-body: "IBM Plex Sans", system-ui, sans-serif;

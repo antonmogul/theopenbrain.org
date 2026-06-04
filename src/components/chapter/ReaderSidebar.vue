@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
+import { useDraggablePanel } from "@/composables/useDraggablePanel";
 import { useAuth } from "@/composables/useAuth";
 import InfoTab from "./sidebar/InfoTab.vue";
 import NotebookTab from "./sidebar/NotebookTab.vue";
@@ -26,10 +27,21 @@ const props = defineProps({
 const { isOpen, activeTab, close, setTab } = useReaderSidebar();
 const { session } = useAuth();
 
+// Floating-panel drag: the handle scopes dragging to the grip only, so tabs
+// and content stay clickable. Position persists + clamps (brief §6.7).
+const panelRef = ref(null);
+const handleRef = ref(null);
+const { x: panelX, y: panelY } = useDraggablePanel(panelRef, handleRef, {
+  storageKey: "ob.toolkitPos",
+  width: 380,
+  height: 620,
+  margin: 16,
+});
+
 const tabs = [
-  { key: "info", label: "Info", icon: "ℹ" },
-  { key: "notebook", label: "Notebook", icon: "📓" },
-  { key: "chat", label: "Chat", icon: "💬" },
+  { key: "info", label: "Info" },
+  { key: "notebook", label: "Notebook" },
+  { key: "chat", label: "Chat" },
 ];
 
 // --- Demos state ---
@@ -107,19 +119,23 @@ function demoModalTitle() {
 
 <template>
   <Teleport to="body">
-    <Transition name="slide">
-      <div
-        v-if="isOpen"
-        class="reader-overlay"
-        @click.self="close"
-      >
+    <Transition name="panel">
       <aside
-        class="reader-sidebar"
+        v-if="isOpen"
+        ref="panelRef"
+        class="toolkit-panel"
         data-testid="reader-sidebar"
-        @click.stop
+        :style="{ left: `${panelX}px`, top: `${panelY}px` }"
       >
-        <!-- Tab bar -->
+        <!-- Drag handle + tab bar -->
         <div class="tab-bar">
+          <div ref="handleRef" class="drag-handle" title="Drag to move">
+            <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+              <circle cx="2" cy="3" r="1" /><circle cx="8" cy="3" r="1" />
+              <circle cx="2" cy="7" r="1" /><circle cx="8" cy="7" r="1" />
+              <circle cx="2" cy="11" r="1" /><circle cx="8" cy="11" r="1" />
+            </svg>
+          </div>
           <button
             v-for="tab in tabs"
             :key="tab.key"
@@ -127,12 +143,11 @@ function demoModalTitle() {
             :class="{ active: activeTab === tab.key }"
             @click="setTab(tab.key)"
           >
-            <span class="tab-icon">{{ tab.icon }}</span>
-            <span class="tab-label">{{ tab.label }}</span>
+            {{ tab.label }}
           </button>
 
-          <button class="close-btn" @click="close" title="Close sidebar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="close-btn" @click="close" title="Close toolkit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -224,7 +239,6 @@ function demoModalTitle() {
           </div>
         </div>
       </aside>
-      </div>
     </Transition>
   </Teleport>
 
@@ -263,89 +277,89 @@ export default {
 </script>
 
 <style scoped>
-.reader-overlay {
+/* Floating draggable panel — matches prototype FloatingPanel (tools.jsx):
+   380×620, paper, radius 10, soft shadow, no backdrop. Positioned via inline
+   left/top from useDraggablePanel. */
+.toolkit-panel {
   position: fixed;
-  inset: 0;
   z-index: 190;
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
-  padding: 1.2rem;
-}
-
-.reader-sidebar {
-  width: min(420px, 100%);
-  height: 100%;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  width: 380px;
+  height: 620px;
+  max-height: calc(100vh - 3.2rem);
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
+  border-radius: 10px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  color: rgb(var(--color-ink));
 }
 
-/* Tab bar */
+/* Tab bar (also the drag region via the grip handle) */
 .tab-bar {
   display: flex;
-  align-items: center;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
+  align-items: stretch;
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-paper));
   flex-shrink: 0;
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  cursor: grab;
+  color: rgb(var(--color-mute) / 0.6);
+  border-right: 1px solid rgb(var(--color-line));
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .tab-btn {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  padding: 1.4rem 0.8rem;
+  padding: 12px 8px;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.12s ease, border-color 0.12s ease;
 }
 
 .tab-btn:hover {
-  color: #374151;
-  background: #f9fafb;
+  color: rgb(var(--color-ink));
 }
 
 .tab-btn.active {
-  color: #7c3aed;
-  border-bottom-color: #7c3aed;
-}
-
-.tab-icon {
-  font-size: 1.5rem;
-}
-
-.tab-label {
-  font-family: "IBM Plex Sans", sans-serif;
+  color: rgb(var(--color-ink));
+  border-bottom-color: rgb(var(--color-ink));
 }
 
 .close-btn {
-  width: 40px;
-  height: 100%;
+  width: 36px;
   border: none;
   background: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
-  transition: all 0.15s;
+  color: rgb(var(--color-mute));
+  transition: color 0.12s ease, background 0.12s ease;
   flex-shrink: 0;
-  border-left: 1px solid #f3f4f6;
+  border-left: 1px solid rgb(var(--color-line));
 }
 
 .close-btn:hover {
-  color: #374151;
-  background: #f3f4f6;
+  color: rgb(var(--color-ink));
+  background: rgb(var(--color-ink) / 0.05);
 }
 
 /* Tab content */
@@ -363,23 +377,23 @@ export default {
 
 .demos-divider {
   height: 1px;
-  background: #e5e7eb;
+  background: rgb(var(--color-line));
   margin-bottom: 0.75rem;
 }
 
 .demos-label {
   display: block;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #9ca3af;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--color-mute));
   margin-bottom: 1rem;
 }
 
 .demos-loading {
   font-size: 1.3rem;
-  color: #9ca3af;
+  color: rgb(var(--color-mute));
   text-align: center;
   padding: 0.8rem 0;
 }
@@ -395,58 +409,55 @@ export default {
   align-items: center;
   gap: 0.8rem;
   padding: 0.8rem 1rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.3rem;
-  font-weight: 500;
-  color: #374151;
+  background: transparent;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-ink));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.12s ease, color 0.12s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .demo-btn:hover {
-  background: #f3f4f6;
-  border-color: #7c3aed;
-  color: #7c3aed;
+  border-color: rgb(var(--color-ink));
 }
 
 .demo-btn svg {
   flex-shrink: 0;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .demo-btn:hover svg {
-  color: #7c3aed;
+  color: rgb(var(--color-ink));
 }
 
-/* Slide transition */
-.slide-enter-active {
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+/* Panel entrance — scale-up fade, no backdrop (brief §6.5 modal feel) */
+.panel-enter-active {
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.slide-leave-active {
-  transition: opacity 0.25s ease;
+.panel-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
-.slide-enter-from,
-.slide-leave-to {
+.panel-enter-from,
+.panel-leave-to {
   opacity: 0;
+  transform: scale(0.97);
 }
-.slide-enter-active .reader-sidebar {
-  animation: sidebar-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-.slide-leave-active .reader-sidebar {
-  animation: sidebar-out 0.25s ease forwards;
-}
-@keyframes sidebar-in {
-  from { opacity: 0; transform: translateX(16px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes sidebar-out {
-  from { opacity: 1; transform: translateX(0); }
-  to { opacity: 0; transform: translateX(16px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-enter-active,
+  .panel-leave-active {
+    transition: opacity 0.12s ease;
+  }
+  .panel-enter-from,
+  .panel-leave-to {
+    transform: none;
+  }
 }
 </style>

@@ -52,8 +52,12 @@ module.exports = {
         body: "calc(100vh - 2.2rem)",
       },
       width: {
-        text: "min(50vw, calc(780px + 11rem))",
-        illus: "max(50vw, calc(100vw - 780px - 11rem))",
+        // Reader split (Track 3 D1): figure pane is the protagonist at ~1.5:1
+        // on wide screens. Both widths derive from --reader-prose-w (brand.css,
+        // = 40vw prose) so the figure pane fills the remaining ~60vw and the two
+        // can never drift. Fallback keeps the old 50vw if the var is absent.
+        text: "var(--reader-prose-w, min(50vw, calc(780px + 11rem)))",
+        illus: "calc(100vw - var(--reader-prose-w, min(50vw, calc(780px + 11rem))))",
         menu: "35vw",
         "1/8": " calc(100% / 8 * 1)",
         "2/8": " calc(100% / 8 * 2)",

@@ -473,8 +473,11 @@ onBeforeUnmount(() => {
 }
 @media (min-width: 1300px) {
   .ml-text {
-    width: min(50vw, calc(780px + 11rem));
-    margin-left: calc(100vw - min(50vw, calc(780px + 11rem)));
+    /* Prose column width + right-pinned offset both derive from the shared
+       --reader-prose-w token (brand.css) so the figure pane and prose can't
+       drift. Track 3 D1: prose = 40vw, figure pane fills the remaining ~60vw. */
+    width: var(--reader-prose-w);
+    margin-left: calc(100vw - var(--reader-prose-w));
     margin-right: 0;
     max-width: unset;
     padding-left: 5rem;

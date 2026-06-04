@@ -125,6 +125,10 @@ function onBackdropClick() {
   top: 0;
   left: 0;
   right: 0;
+  /* Definite height so the sticky figure pane can offset below it via
+     --reader-topbar-h (Track 3 D1). min-height keeps content from clipping. */
+  height: var(--reader-topbar-h, 2.5rem);
+  min-height: var(--reader-topbar-h, 2.5rem);
   z-index: 45;
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -138,7 +142,8 @@ function onBackdropClick() {
 
 .progress-fill {
   height: 100%;
-  background: #8b5cf6;
+  /* Track 3 D7: progress fill follows the user's accent token, not legacy purple. */
+  background: rgb(var(--color-accent));
   transition: width 0.15s ease;
 }
 

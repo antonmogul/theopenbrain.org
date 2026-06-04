@@ -251,19 +251,22 @@ function formatDate(dateString) {
 </template>
 
 <style scoped>
+/* Chat tab chrome — matches prototype FloatingPanel chat header (tools.jsx):
+   bracketed History/New buttons, hairline history list. Bubbles live in
+   AITutorChat.vue. Token-driven. */
 .chat-tab {
   display: flex;
   flex-direction: column;
   height: 100%;
+  font-family: var(--font-body);
 }
 
 .chat-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 16px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fafafa;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .header-btn {
@@ -271,25 +274,26 @@ function formatDate(dateString) {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: none;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #6b7280;
+  background: transparent;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-ink));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
 .header-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  border-color: rgb(var(--color-ink));
 }
 
 .header-btn.active {
-  background: #ede9fe;
-  border-color: #c4b5fd;
-  color: #7c3aed;
+  background: rgb(var(--color-ink));
+  border-color: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 .new-btn {
@@ -298,53 +302,52 @@ function formatDate(dateString) {
 
 /* History panel */
 .history-panel {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgb(var(--color-line));
   max-height: 250px;
   overflow-y: auto;
-  background: #f9fafb;
 }
 
 .history-label {
-  padding: 8px 16px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
+  padding: 10px 18px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: rgb(var(--color-mute));
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid #e5e7eb;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .history-empty {
   padding: 16px;
   text-align: center;
-  color: #9ca3af;
-  font-size: 14px;
+  color: rgb(var(--color-mute));
+  font-size: 1.3rem;
 }
 
 .history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgb(var(--color-line));
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.12s ease;
 }
 
-.history-item:hover { background: #f3f4f6; }
-.history-item.active { background: #ede9fe; }
+.history-item:hover { background: rgb(var(--color-ink) / 0.04); }
+.history-item.active { background: rgb(var(--color-accent) / 0.08); }
 
 .item-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 
 .item-title {
-  font-size: 14px;
-  color: #374151;
+  font-size: 1.3rem;
+  color: rgb(var(--color-ink));
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -352,8 +355,11 @@ function formatDate(dateString) {
 }
 
 .item-date {
-  font-size: 12px;
-  color: #9ca3af;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-mute));
 }
 
 .delete-btn {
@@ -366,13 +372,13 @@ function formatDate(dateString) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute));
   opacity: 0;
-  transition: all 0.15s;
+  transition: opacity 0.12s ease, color 0.12s ease;
 }
 
 .history-item:hover .delete-btn { opacity: 1; }
-.delete-btn:hover { background: #fef2f2; color: #ef4444; }
+.delete-btn:hover { color: rgb(var(--color-accent)); }
 
 .delete-confirm {
   width: 100%;
@@ -381,8 +387,8 @@ function formatDate(dateString) {
 
 .delete-confirm p {
   margin: 0 0 6px 0;
-  font-size: 14px;
-  color: #374151;
+  font-size: 1.3rem;
+  color: rgb(var(--color-ink));
 }
 
 .confirm-actions {
@@ -392,35 +398,37 @@ function formatDate(dateString) {
 }
 
 .btn-sm {
-  padding: 4px 10px;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease;
 }
 
 .btn-sm.secondary {
-  background: white;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-line));
 }
 
-.btn-sm.secondary:hover { background: #f3f4f6; }
+.btn-sm.secondary:hover { background: rgb(var(--color-ink) / 0.05); }
 
 .btn-sm.danger {
-  background: #ef4444;
-  color: white;
+  background: rgb(var(--color-accent));
+  color: #fff;
   border: none;
 }
 
-.btn-sm.danger:hover { background: #dc2626; }
+.btn-sm.danger:hover { background: rgb(var(--color-accent) / 0.85); }
 
 /* Error banner */
 .error-banner {
-  padding: 8px 16px;
-  background: #fef2f2;
-  border-bottom: 1px solid #fecaca;
+  padding: 8px 18px;
+  background: rgb(var(--color-accent) / 0.08);
+  border-bottom: 1px solid rgb(var(--color-accent) / 0.25);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -429,16 +437,16 @@ function formatDate(dateString) {
 
 .error-banner p {
   margin: 0;
-  font-size: 14px;
-  color: #dc2626;
+  font-size: 1.3rem;
+  color: rgb(var(--color-accent));
 }
 
 .dismiss-btn {
   padding: 3px 6px;
   background: none;
   border: none;
-  color: #dc2626;
-  font-size: 12px;
+  color: rgb(var(--color-accent));
+  font-size: 1.1rem;
   cursor: pointer;
   text-decoration: underline;
 }

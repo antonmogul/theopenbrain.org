@@ -110,10 +110,15 @@ function chapterNumberFor(mod) {
 
 <template>
   <main class="chapters">
+    <!-- Hero: book title (left) + featured continue card (right), per
+         prototype IndexScreen. Grid 1fr / 1.4fr. -->
     <header class="hero">
       <div class="hero-text">
+        <p class="eyebrow">Book · {{ modules.length }} chapters</p>
         <h1>Chapters</h1>
-        <p class="lede">Browse the textbook — pick up where you left off.</p>
+        <p class="lede">
+          An openly-published, interactive textbook — pick up where you left off.
+        </p>
         <p v-if="!isAuthenticated" class="signin-cta">
           <router-link to="/">Sign in</router-link> to track your progress.
         </p>
@@ -134,7 +139,7 @@ function chapterNumberFor(mod) {
           <div v-else class="cover-fallback" />
         </div>
         <div class="continue-meta">
-          <span class="continue-label">Continue reading</span>
+          <span class="continue-label">● Continue reading</span>
           <span class="continue-chapter">
             Chapter {{ chapterNumberFor(continueCard.module) }}
           </span>
@@ -145,12 +150,16 @@ function chapterNumberFor(mod) {
               :style="{ width: `${continueCard.percent}%` }"
             />
           </div>
-          <span v-if="continueCard.remainingMin" class="time-remaining">
-            ~{{ continueCard.remainingMin }} min left
+          <span class="continue-stat">
+            {{ continueCard.percent }}%<template v-if="continueCard.remainingMin">
+              · ~{{ continueCard.remainingMin }} min left</template>
           </span>
         </div>
       </router-link>
     </header>
+
+    <hr class="rule" />
+    <p class="eyebrow section-label">All chapters</p>
 
     <div v-if="loading" class="loading">Loading chapters…</div>
 
@@ -164,21 +173,6 @@ function chapterNumberFor(mod) {
               :alt="mod.title"
             />
             <div v-else class="cover-fallback" />
-          </div>
-          <div class="meta">
-            <span class="chapter-label">
-              CHAPTER {{ chapterNumberFor(mod) }}
-            </span>
-            <h3 class="title">{{ mod.title }}</h3>
-            <div
-              v-if="isAuthenticated && progressFor(mod.id)"
-              class="progress-bar"
-            >
-              <div
-                class="progress-bar-fill"
-                :style="{ width: `${percentFor(mod.id)}%` }"
-              />
-            </div>
             <span
               v-if="isAuthenticated && pillFor(mod.id) === 'done'"
               class="pill pill-done"
@@ -189,8 +183,24 @@ function chapterNumberFor(mod) {
               v-else-if="isAuthenticated && pillFor(mod.id) === 'reading'"
               class="pill pill-reading"
             >
-              Reading · {{ percentFor(mod.id) }}%
+              Reading
             </span>
+          </div>
+          <div class="meta">
+            <span class="chapter-label">
+              Chapter {{ chapterNumberFor(mod) }}
+            </span>
+            <h3 class="title">{{ mod.title }}</h3>
+            <p v-if="mod.subtitle" class="subtitle">{{ mod.subtitle }}</p>
+            <div
+              v-if="isAuthenticated && pillFor(mod.id) === 'reading'"
+              class="progress-bar progress-bar--thin"
+            >
+              <div
+                class="progress-bar-fill"
+                :style="{ width: `${percentFor(mod.id)}%` }"
+              />
+            </div>
           </div>
         </router-link>
       </li>
@@ -199,45 +209,77 @@ function chapterNumberFor(mod) {
 </template>
 
 <style scoped>
+/* Chapter index — matches prototype IndexScreen (New Design Ideas/components/
+   prototype.jsx). Editorial grid: serif titles, mono metadata, hairline rules,
+   sharp 4px/0 radii, magenta progress. --ob-* tokens map to live --color-*. */
 .chapters {
-  max-width: 140rem;
+  max-width: 132rem;
   margin: 0 auto;
-  padding: 6rem 2.4rem 12rem;
+  padding: 3.2rem 5.6rem 6rem;
   color: rgb(var(--color-ink));
   font-family: var(--font-body);
 }
 
+/* Shared mono eyebrow */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-mute));
+  margin: 0;
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid rgb(var(--color-ink));
+  margin: 0;
+}
+
+.section-label {
+  margin: 2.4rem 0 1.6rem;
+}
+
+/* Hero: 1fr / 1.4fr (book title | featured card) */
 .hero {
   display: grid;
   grid-template-columns: 1fr;
   gap: 3rem;
-  margin-bottom: 4rem;
+  margin: 0 0 3.6rem;
 }
 
 @media (min-width: 900px) {
   .hero {
-    grid-template-columns: 1fr 36rem;
-    gap: 4rem;
-    align-items: end;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 5.6rem;
+    align-items: center;
   }
 }
 
+.hero-text .eyebrow {
+  margin-bottom: 1.8rem;
+}
+
 .hero-text h1 {
-  font-size: 5rem;
-  line-height: 1.05;
+  font-size: 6.4rem;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
   padding: 0;
   margin: 0;
 }
 
 .lede {
-  margin-top: 1.2rem;
+  margin-top: 1.8rem;
+  max-width: 36rem;
   font-size: 1.8rem;
+  line-height: 1.45;
   color: rgb(var(--color-mute));
 }
 
 .signin-cta {
   margin-top: 1.6rem;
-  font-size: 1.4rem;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
   color: rgb(var(--color-mute));
 }
 
@@ -246,28 +288,28 @@ function chapterNumberFor(mod) {
   text-decoration: underline;
 }
 
+/* Featured "continue reading" card */
 .continue-card {
-  display: flex;
-  gap: 1.6rem;
-  padding: 1.6rem;
+  display: grid;
+  grid-template-columns: 14rem 1fr;
+  gap: 2.4rem;
+  align-items: center;
+  padding: 2.4rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 1.2rem;
+  border-radius: 4px;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, transform 0.1s;
+  transition: border-color 0.15s ease;
 }
 
 .continue-card:hover {
-  border-color: rgb(var(--color-accent));
-  transform: translateY(-1px);
+  border-color: rgb(var(--color-ink));
 }
 
 .continue-cover {
-  flex: 0 0 8rem;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  border-radius: 0.6rem;
   background: rgb(var(--color-bg));
 }
 
@@ -284,49 +326,63 @@ function chapterNumberFor(mod) {
   height: 100%;
   background: linear-gradient(
     135deg,
-    rgb(var(--color-accent) / 0.15),
-    rgb(var(--color-complete) / 0.15)
+    rgb(var(--color-accent) / 0.18),
+    rgb(var(--color-complete) / 0.18)
   );
 }
 
 .continue-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  flex: 1;
   min-width: 0;
 }
 
-.continue-label,
-.chapter-label {
-  font-size: 1.1rem;
+.continue-label {
   font-family: var(--font-mono);
+  font-size: 1.1rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-accent));
+  margin-bottom: 0.8rem;
+}
+
+.continue-chapter,
+.chapter-label,
+.continue-stat,
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   color: rgb(var(--color-mute));
 }
 
 .continue-chapter {
-  font-size: 1.3rem;
-  font-family: var(--font-mono);
-  color: rgb(var(--color-mute));
+  margin-bottom: 0.4rem;
 }
 
 .continue-title {
-  font-size: 1.8rem;
+  font-size: 2.8rem;
   font-weight: 500;
-  margin: 0.2rem 0;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.2rem;
   padding: 0;
-  line-height: 1.2;
 }
 
+.continue-stat {
+  margin-top: 0.6rem;
+}
+
+/* Progress bars: square, magenta, thin */
 .progress-bar {
-  margin-top: 0.4rem;
   width: 100%;
-  height: 0.4rem;
-  background: rgb(var(--color-line));
-  border-radius: 9999px;
+  height: 3px;
+  background: rgb(var(--color-ink) / 0.08);
   overflow: hidden;
+}
+
+.progress-bar--thin {
+  height: 2px;
+  margin-top: 0.8rem;
 }
 
 .progress-bar-fill {
@@ -335,31 +391,20 @@ function chapterNumberFor(mod) {
   transition: width 0.3s ease;
 }
 
-.time-remaining {
-  margin-top: 0.4rem;
-  font-size: 1.2rem;
-  color: rgb(var(--color-mute));
-}
-
 .loading {
   text-align: center;
   color: rgb(var(--color-mute));
   padding: 4rem;
 }
 
+/* All-chapters grid: 4 across, gap 28px, borderless cards */
 .grid {
   list-style: none;
-  padding: 0;
+  padding: 0 0 4.8rem;
   margin: 0;
   display: grid;
-  gap: 2.4rem;
-  grid-template-columns: repeat(1, 1fr);
-}
-
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  gap: 2.8rem;
+  grid-template-columns: repeat(2, 1fr);
 }
 
 @media (min-width: 1024px) {
@@ -377,60 +422,68 @@ function chapterNumberFor(mod) {
 .card {
   display: flex;
   flex-direction: column;
-  background: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 1rem;
-  overflow: hidden;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, transform 0.1s;
-}
-
-.card:hover {
-  border-color: rgb(var(--color-accent));
-  transform: translateY(-2px);
 }
 
 .cover {
+  position: relative;
   aspect-ratio: 3 / 4;
   background: rgb(var(--color-bg));
   overflow: hidden;
+  margin-bottom: 1.2rem;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover .cover {
+  opacity: 0.92;
 }
 
 .meta {
-  padding: 1.6rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+}
+
+.chapter-label {
+  margin-bottom: 0.2rem;
 }
 
 .title {
-  font-size: 1.8rem;
+  font-size: 1.7rem;
   font-weight: 500;
-  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  margin: 0 0 0.4rem;
   padding: 0;
-  line-height: 1.2;
 }
 
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.3rem 0.8rem;
-  border-radius: 9999px;
-  font-size: 1.1rem;
-  font-family: var(--font-mono);
+.subtitle {
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  width: fit-content;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Status pills sit on the cover, top-right */
+.pill {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .pill-done {
-  background: rgb(var(--color-complete) / 0.15);
-  color: rgb(var(--color-complete));
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 .pill-reading {
-  background: rgb(var(--color-accent) / 0.15);
-  color: rgb(var(--color-accent));
+  background: rgb(var(--color-accent));
+  color: #fff;
 }
 </style>

@@ -670,3 +670,11 @@ sup:hover {
     transform: none;
   }
 }
+
+/* Highlight flash when scrolling to a highlight/note from the toolkit
+   (accent token, replaces legacy ring-violet utilities). */
+.ob-flash {
+  box-shadow: 0 0 0 2px rgb(var(--color-accent) / 0.7);
+  background: rgb(var(--color-accent) / 0.06);
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+}

@@ -67,9 +67,9 @@ function scrollToHighlightInText(highlight) {
     const topBarOffset = 60;
     const y = el.getBoundingClientRect().top + window.scrollY - topBarOffset;
     window.scrollTo({ top: y, behavior: "smooth" });
-    // Brief flash effect
-    el.classList.add("ring-2", "ring-violet-400", "bg-violet-50");
-    setTimeout(() => el.classList.remove("ring-2", "ring-violet-400", "bg-violet-50"), 2000);
+    // Brief flash effect (accent token, not legacy violet)
+    el.classList.add("ob-flash");
+    setTimeout(() => el.classList.remove("ob-flash"), 2000);
   }
 }
 
@@ -360,73 +360,69 @@ function formatDate(dateString) {
 </template>
 
 <style scoped>
+/* Notebook tab — matches prototype FloatingPanel notebook (tools.jsx):
+   text sub-tabs with teal count badge, color-filter row, borderless highlight
+   rows (3px color bar + italic-serif quote + mono date). Token-driven. */
 .notebook-tab {
   display: flex;
   flex-direction: column;
   height: 100%;
+  font-family: var(--font-body);
 }
 
-/* Sub-navigation pills */
+/* Sub-navigation — text tabs, not pills */
 .sub-nav {
   display: flex;
-  gap: 4px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fafafa;
+  gap: 16px;
+  padding: 12px 18px 0;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .pill {
-  flex: 1;
-  padding: 8px 8px;
+  padding: 0 0 10px;
   background: none;
   border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-mute));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.12s ease, border-color 0.12s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .pill:hover {
-  background: #f3f4f6;
-  color: #374151;
+  color: rgb(var(--color-ink));
 }
 
 .pill.active {
-  background: #ede9fe;
-  color: #7c3aed;
+  color: rgb(var(--color-ink));
+  border-bottom-color: rgb(var(--color-ink));
 }
 
 .badge {
-  font-size: 12px;
-  background: #e5e7eb;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  background: rgb(var(--color-complete));
+  color: #0a3d33;
   padding: 1px 6px;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
-.pill.active .badge {
-  background: #c4b5fd;
-  color: #5b21b6;
+  border-radius: 999px;
 }
 
 /* View content */
 .view-content {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: 8px 18px;
 }
 
 .items-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 /* Color filter */
@@ -434,41 +430,41 @@ function formatDate(dateString) {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f3f4f6;
+  margin: 0 -18px 0;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .color-dot-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 2px solid transparent;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid transparent;
   background: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.12s ease;
   padding: 0;
 }
 
 .color-dot-btn:hover {
-  border-color: #d1d5db;
+  border-color: rgb(var(--color-line));
 }
 
 .color-dot-btn.active {
-  border-color: #374151;
+  border-color: rgb(var(--color-ink));
 }
 
 .dot-all {
-  font-size: 11px;
-  font-weight: 600;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: rgb(var(--color-mute));
 }
 
 .color-dot-btn.active .dot-all {
-  color: #374151;
+  color: rgb(var(--color-ink));
 }
 
 .color-dot {
@@ -482,33 +478,33 @@ function formatDate(dateString) {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin: 4px 0;
+  margin: 0 0 6px;
 }
 
 .tag-chip {
   display: inline-block;
   padding: 1px 8px;
-  background: #ede9fe;
-  color: #6d28d9;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 500;
+  background: rgb(var(--color-accent) / 0.12);
+  color: rgb(var(--color-accent));
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-/* Highlight items */
+/* Highlight rows — borderless, hairline-separated, color bar + serif quote */
 .highlight-item {
   display: flex;
-  gap: 10px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(var(--color-line));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: padding-left 0.12s ease;
 }
 
 .highlight-item:hover {
-  background: #f3f4f6;
-  transform: translateX(2px);
+  padding-left: 4px;
 }
 
 .color-border {
@@ -531,21 +527,24 @@ function formatDate(dateString) {
 }
 
 .item-text {
-  font-size: 14px;
-  color: #374151;
+  font-size: 1.3rem;
+  color: rgb(var(--color-ink));
   line-height: 1.5;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
   font-style: italic;
 }
 
 .item-date {
-  font-size: 12px;
-  color: #9ca3af;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-mute));
 }
 
 /* Notes */
 .add-note-section {
-  margin-bottom: 12px;
+  margin: 8px 0 12px;
 }
 
 .add-note-btn {
@@ -555,29 +554,31 @@ function formatDate(dateString) {
   justify-content: center;
   gap: 6px;
   padding: 10px;
-  background: #3b82f6;
-  color: white;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease;
 }
 
 .add-note-btn:hover {
-  background: #2563eb;
+  background: rgb(var(--color-ink) / 0.85);
 }
 
 .note-editor {
-  background: #f0f9ff;
-  border-radius: 8px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
   padding: 12px;
   margin-bottom: 12px;
 }
 
 .note-editor.inline {
-  background: white;
+  border: none;
   padding: 0;
   margin-top: 8px;
 }
@@ -585,18 +586,17 @@ function formatDate(dateString) {
 .note-textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 15px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 1.4rem;
   resize: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.12s ease;
 }
 
 .note-textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: rgb(var(--color-ink));
 }
 
 .editor-actions {
@@ -606,58 +606,47 @@ function formatDate(dateString) {
   margin-top: 8px;
 }
 
-.btn-primary {
-  padding: 6px 12px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
-.btn-primary:hover { background: #2563eb; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink));
+}
+
+.btn-primary:hover { background: rgb(var(--color-ink) / 0.85); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn-secondary {
-  padding: 6px 12px;
-  background: white;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-line));
 }
 
-.btn-secondary:hover { background: #f3f4f6; }
+.btn-secondary:hover { background: rgb(var(--color-ink) / 0.05); }
 
 .btn-danger {
-  padding: 6px 12px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
+  background: rgb(var(--color-accent));
+  color: #fff;
+  border: 1px solid rgb(var(--color-accent));
 }
 
-.btn-danger:hover { background: #dc2626; }
+.btn-danger:hover { background: rgb(var(--color-accent) / 0.85); }
 
 .note-card {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 12px;
-  transition: all 0.15s;
-}
-
-.note-card:hover {
-  background: #f3f4f6;
+  padding: 14px 0;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .highlight-preview {
@@ -665,11 +654,11 @@ function formatDate(dateString) {
   align-items: flex-start;
   gap: 8px;
   padding: 6px 8px;
-  background: white;
+  background: rgb(var(--color-bg));
   border-radius: 4px;
   margin-bottom: 8px;
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 1.3rem;
+  color: rgb(var(--color-mute));
   font-style: italic;
 }
 
@@ -678,9 +667,9 @@ function formatDate(dateString) {
 }
 
 .note-content {
-  font-size: 15px;
-  color: #374151;
-  line-height: 1.5;
+  font-size: 1.4rem;
+  color: rgb(var(--color-ink));
+  line-height: 1.55;
   margin: 0;
   white-space: pre-wrap;
 }
@@ -706,16 +695,19 @@ function formatDate(dateString) {
 .action-btn {
   background: none;
   border: none;
-  font-size: 12px;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-mute));
   cursor: pointer;
   padding: 3px 6px;
   border-radius: 4px;
-  transition: all 0.15s;
+  transition: color 0.12s ease;
 }
 
-.action-btn:hover { background: #e5e7eb; color: #374151; }
-.action-btn.danger:hover { background: #fef2f2; color: #ef4444; }
+.action-btn:hover { color: rgb(var(--color-ink)); }
+.action-btn.danger:hover { color: rgb(var(--color-accent)); }
 
 .delete-confirm {
   text-align: center;
@@ -724,8 +716,8 @@ function formatDate(dateString) {
 
 .delete-confirm p {
   margin: 0 0 8px 0;
-  font-size: 14px;
-  color: #374151;
+  font-size: 1.3rem;
+  color: rgb(var(--color-ink));
 }
 
 .confirm-actions {
@@ -734,27 +726,27 @@ function formatDate(dateString) {
   gap: 6px;
 }
 
-/* Trending items */
+/* Trending rows — same austere treatment, no yellow card */
 .trending-item {
-  padding: 12px;
-  background: #fefce8;
-  border: 1px solid #fef08a;
-  border-radius: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(var(--color-line));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: padding-left 0.12s ease;
 }
 
 .trending-item:hover {
-  background: #fef9c3;
-  transform: translateX(2px);
+  padding-left: 4px;
 }
 
 .trending-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-mute));
   margin-top: 6px;
 }
 
@@ -762,11 +754,12 @@ function formatDate(dateString) {
   display: flex;
   align-items: center;
   gap: 4px;
+  color: rgb(var(--color-accent));
 }
 
-.people-count svg { opacity: 0.7; }
+.people-count svg { opacity: 0.8; }
 
-.time-ago { color: #9ca3af; }
+.time-ago { color: rgb(var(--color-mute)); }
 
 /* Shared states */
 .empty-state {
@@ -775,19 +768,18 @@ function formatDate(dateString) {
   align-items: center;
   justify-content: center;
   padding: 32px 16px;
-  color: #9ca3af;
+  color: rgb(var(--color-mute));
   text-align: center;
 }
 
 .empty-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: #6b7280;
+  font-size: 1.5rem;
+  color: rgb(var(--color-ink));
   margin: 0 0 4px 0;
 }
 
 .empty-text {
-  font-size: 14px;
+  font-size: 1.3rem;
   margin: 0;
 }
 
@@ -796,15 +788,15 @@ function formatDate(dateString) {
   flex-direction: column;
   align-items: center;
   padding: 32px;
-  color: #6b7280;
-  font-size: 14px;
+  color: rgb(var(--color-mute));
+  font-size: 1.3rem;
 }
 
 .loading-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #e5e7eb;
-  border-top-color: #8b5cf6;
+  border: 2px solid rgb(var(--color-line));
+  border-top-color: rgb(var(--color-accent));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 8px;

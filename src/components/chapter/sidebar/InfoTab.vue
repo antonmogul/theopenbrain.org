@@ -226,39 +226,39 @@ function scrollToCitation(number) {
 </template>
 
 <style scoped>
+/* Info tab — matches prototype FloatingPanel info (tools.jsx): magenta eyebrow,
+   serif title, teal progress, bordered 3×2 stats grid, mono collapsibles. */
 .info-tab {
-  padding: 24px;
+  padding: 18px;
+  font-family: var(--font-body);
 }
 
 .chapter-header {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .chapter-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #8b5cf6;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-accent));
 }
 
 .chapter-title {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 4px 0 0 0;
-  line-height: 1.3;
+  font-family: var(--font-body);
+  font-size: 2.2rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 6px 0 0 0;
+  line-height: 1.15;
 }
 
 .reading-stats {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  background: #f9fafb;
-  border-radius: 10px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .stat {
@@ -269,63 +269,74 @@ function scrollToCitation(number) {
 
 .stat-bar-track {
   flex: 1;
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
+  height: 4px;
+  background: rgb(var(--color-ink) / 0.08);
   overflow: hidden;
 }
 
 .stat-bar-fill {
   height: 100%;
-  background: #8b5cf6;
-  border-radius: 3px;
+  background: rgb(var(--color-complete));
   transition: width 0.3s ease;
 }
 
 .stat-icon {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   flex-shrink: 0;
 }
 
 .stat-text {
-  font-size: 14px;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
   white-space: nowrap;
 }
 
-/* Stats grid */
+/* Stats grid — bordered with internal hairlines, serif values */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 24px;
+  border: 1px solid rgb(var(--color-line));
+  margin-bottom: 18px;
 }
 
 .stats-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 10px 4px;
-  background: #f9fafb;
-  border-radius: 8px;
+  padding: 12px 10px;
+  border-right: 1px solid rgb(var(--color-line));
+  border-top: 1px solid rgb(var(--color-line));
+}
+
+/* No top border on the first row, no right border on the last column */
+.stats-card:nth-child(-n + 3) {
+  border-top: none;
+}
+
+.stats-card:nth-child(3n) {
+  border-right: none;
 }
 
 .stats-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #374151;
-  line-height: 1.2;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  line-height: 1;
 }
 
 .stats-label {
-  font-size: 11px;
-  color: #9ca3af;
-  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+  margin-top: 4px;
 }
 
 .toc {
-  border-top: 1px solid #f3f4f6;
-  padding-top: 16px;
+  border-top: 1px solid rgb(var(--color-line));
+  padding-top: 14px;
 }
 
 .collapsible-heading {
@@ -340,24 +351,23 @@ function scrollToCitation(number) {
 }
 
 .collapsible-label {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #9ca3af;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-ink));
 }
 
 .collapsible-count {
-  font-size: 12px;
-  color: #d1d5db;
-  font-weight: 400;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
 }
 
 .chevron {
   display: flex;
   align-items: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute));
   transition: transform 0.2s ease;
   transform: rotate(0deg);
 }
@@ -369,84 +379,79 @@ function scrollToCitation(number) {
 .toc-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
 }
 
 .toc-item {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 8px 0;
   background: none;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.15s;
+  transition: padding-left 0.12s ease;
   width: 100%;
 }
 
 .toc-item:hover {
-  background: #f3f4f6;
-}
-
-.toc-item.active {
-  background: #ede9fe;
+  padding-left: 4px;
 }
 
 .toc-item.active .toc-number {
-  color: #7c3aed;
+  color: rgb(var(--color-accent));
 }
 
 .toc-item.active .toc-title {
-  color: #5b21b6;
+  color: rgb(var(--color-ink));
   font-weight: 500;
 }
 
 .toc-number {
-  font-size: 13px;
-  color: #9ca3af;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
   flex-shrink: 0;
   width: 20px;
 }
 
 .toc-title {
-  font-size: 15px;
-  color: #374151;
-  line-height: 1.4;
+  font-size: 1.4rem;
+  color: rgb(var(--color-ink));
+  line-height: 1.35;
 }
 
 /* References section */
 .refs-section {
-  margin-top: 8px;
+  margin-top: 14px;
 }
 
 .refs-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
 .ref-item {
   display: flex;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 10px 0;
   background: none;
   border: none;
-  border-radius: 6px;
+  border-top: 1px solid rgb(var(--color-line));
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: background 0.15s;
+  transition: padding-left 0.12s ease;
 }
 
 .ref-item:hover {
-  background: #f3f4f6;
+  padding-left: 4px;
 }
 
 .ref-number {
-  font-size: 13px;
-  color: #9ca3af;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
   flex-shrink: 0;
   width: 24px;
   text-align: right;
@@ -458,15 +463,18 @@ function scrollToCitation(number) {
 }
 
 .ref-text {
-  font-size: 13px;
-  color: #4b5563;
+  font-size: 1.2rem;
+  color: rgb(var(--color-ink) / 0.75);
   line-height: 1.5;
 }
 
 .ref-doi {
   display: inline-block;
-  font-size: 11px;
-  color: #7c3aed;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-accent));
   text-decoration: none;
   margin-left: 4px;
 }
