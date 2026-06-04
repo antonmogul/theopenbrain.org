@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
+import { useHomeRoute } from "@/composables/useHomeRoute";
 
 const props = defineProps({
   chapterTitle: {
@@ -19,7 +20,27 @@ const props = defineProps({
 });
 
 const store = useGeneral();
-const { toggle: toggleSidebar, isOpen: sidebarOpen } = useReaderSidebar();
+const {
+  toggle: toggleSidebar,
+  isOpen: sidebarOpen,
+  activeTab,
+} = useReaderSidebar();
+
+// Wordmark routes to the library when signed-in, marketing home otherwise
+// (also wires the long-parked Track 4 D4 gap).
+const homeRoute = useHomeRoute();
+
+// Panel tool buttons (Info / Notebook / Chat) — share the floating-panel toggle.
+const panelTabs = [
+  { key: "info", label: "Info" },
+  { key: "notebook", label: "Notebook" },
+  { key: "chat", label: "Chat" },
+];
+
+// A tool button is "active" only when the panel is open AND showing that tab.
+function isPanelTabActive(key) {
+  return sidebarOpen.value && activeTab.value === key;
+}
 
 const showDropdown = ref(false);
 
@@ -52,7 +73,7 @@ function onBackdropClick() {
 
 <template>
   <div class="reader-top-bar" data-testid="reader-top-bar">
-    <!-- Progress bar -->
+    <!-- Progress bar (kept along the top edge) -->
     <div class="progress-track">
       <div
         class="progress-fill"
@@ -60,42 +81,59 @@ function onBackdropClick() {
       ></div>
     </div>
 
-    <!-- Breadcrumb row -->
-    <div class="breadcrumb-row">
-      <div class="breadcrumb" @click="toggleDropdown">
-        <span class="chapter-ref">Ch {{ chapterNumber }}</span>
-        <template v-if="currentSectionTitle">
-          <span class="sep">/</span>
-          <span class="section-name">{{ currentSectionTitle }}</span>
-        </template>
+    <!-- Single app-bar row (prototype AppBar) -->
+    <div class="bar-row">
+      <!-- Menu -->
+      <button class="icon-btn" title="Menu" @click="store.activeMenu = true">
+        <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.4" fill="none">
+          <path d="M2 4h10M2 7h10M2 10h10" />
+        </svg>
+      </button>
+
+      <!-- Wordmark -->
+      <router-link :to="homeRoute" class="wordmark" title="The Open Brain">
+        <svg class="wordmark-logo" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
+        </svg>
+        <span class="wordmark-text">the<br />open brain</span>
+      </router-link>
+
+      <div class="divider"></div>
+
+      <!-- Chapter + section (section is click-to-jump) -->
+      <span class="chapter-eyebrow">Ch {{ chapterNumber }}</span>
+      <button
+        v-if="currentSectionTitle"
+        class="section-jump"
+        :class="{ open: showDropdown }"
+        @click="toggleDropdown"
+      >
+        <span class="section-name">{{ currentSectionTitle }}</span>
         <svg
           class="chevron"
           :class="{ rotated: showDropdown }"
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         >
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
-      </div>
-
-      <button
-        class="sidebar-toggle"
-        :class="{ active: sidebarOpen }"
-        @click="toggleSidebar()"
-        title="Toggle sidebar"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="15" y1="3" x2="15" y2="21"></line>
-        </svg>
       </button>
+
+      <div class="spacer"></div>
+
+      <!-- Panel tool buttons -->
+      <div class="tool-buttons">
+        <button
+          v-for="t in panelTabs"
+          :key="t.key"
+          class="tool-btn"
+          :class="{ active: isPanelTabActive(t.key) }"
+          @click="toggleSidebar(t.key)"
+        >
+          {{ t.label }}
+        </button>
+      </div>
     </div>
 
     <!-- Section dropdown -->
@@ -120,71 +158,123 @@ function onBackdropClick() {
 </template>
 
 <style scoped>
+/* Reader app bar — prototype AppBar: single row, paper, bottom hairline,
+   wordmark + chapter/section + tool buttons. Progress track kept on top edge. */
 .reader-top-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  /* Definite height so the sticky figure pane can offset below it via
-     --reader-topbar-h (Track 3 D1). min-height keeps content from clipping. */
-  height: var(--reader-topbar-h, 2.5rem);
-  min-height: var(--reader-topbar-h, 2.5rem);
+  /* Height drives the sticky figure-pane offset via --reader-topbar-h. */
+  height: var(--reader-topbar-h, 3.6rem);
+  min-height: var(--reader-topbar-h, 3.6rem);
   z-index: 45;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: rgb(var(--color-paper));
+  border-bottom: 1px solid rgb(var(--color-line));
+  color: rgb(var(--color-ink));
 }
 
-/* Progress bar */
+/* Progress bar — thin strip along the very top edge */
 .progress-track {
-  height: 3px;
-  background: #f3f4f6;
+  height: 2px;
+  background: rgb(var(--color-ink) / 0.06);
 }
 
 .progress-fill {
   height: 100%;
-  /* Track 3 D7: progress fill follows the user's accent token, not legacy purple. */
   background: rgb(var(--color-accent));
   transition: width 0.15s ease;
 }
 
-/* Breadcrumb row */
-.breadcrumb-row {
+/* Single bar row */
+.bar-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 20px;
-  border-bottom: 1px solid #f3f4f6;
+  gap: 14px;
+  padding: 8px 18px;
 }
 
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 4px 8px;
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgb(var(--color-line));
   border-radius: 6px;
-  transition: background 0.15s;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: border-color 0.12s ease;
 }
 
-.breadcrumb:hover {
-  background: #f3f4f6;
+.icon-btn:hover {
+  border-color: rgb(var(--color-ink));
 }
 
-.chapter-ref {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  font-family: "IBM Plex Sans", sans-serif;
+/* Wordmark */
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: rgb(var(--color-ink));
+  flex-shrink: 0;
 }
 
-.sep {
-  color: #d1d5db;
-  font-size: 14px;
+.wordmark-logo {
+  flex-shrink: 0;
+}
+
+.wordmark-text {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  line-height: 1.1;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+
+.divider {
+  width: 1px;
+  height: 18px;
+  background: rgb(var(--color-line));
+  flex-shrink: 0;
+}
+
+.chapter-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-mute));
+  flex-shrink: 0;
+}
+
+/* Section jump (keeps the click-to-jump dropdown affordance) */
+.section-jump {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-ink));
+  transition: background 0.12s ease;
+  min-width: 0;
+}
+
+.section-jump:hover,
+.section-jump.open {
+  background: rgb(var(--color-ink) / 0.05);
 }
 
 .section-name {
-  font-size: 14px;
-  color: #6b7280;
   max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -192,7 +282,7 @@ function onBackdropClick() {
 }
 
 .chevron {
-  color: #9ca3af;
+  color: rgb(var(--color-mute));
   transition: transform 0.2s;
   flex-shrink: 0;
 }
@@ -201,41 +291,51 @@ function onBackdropClick() {
   transform: rotate(180deg);
 }
 
-.sidebar-toggle {
-  width: 34px;
-  height: 34px;
-  border: 1px solid #e5e7eb;
-  background: white;
-  border-radius: 8px;
-  cursor: pointer;
+.spacer {
+  flex: 1;
+}
+
+/* Tool buttons (Info / Notebook / Chat) */
+.tool-buttons {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  transition: all 0.15s;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-.sidebar-toggle:hover {
-  background: #f3f4f6;
-  color: #374151;
+.tool-btn {
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
-.sidebar-toggle.active {
-  background: #ede9fe;
-  border-color: #c4b5fd;
-  color: #7c3aed;
+.tool-btn:hover {
+  background: rgb(var(--color-ink) / 0.05);
+}
+
+.tool-btn.active {
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 /* Section dropdown */
 .section-dropdown {
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: 18px;
+  right: 18px;
   top: 100%;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  max-width: 420px;
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
   max-height: 60vh;
   overflow-y: auto;
   z-index: 50;
@@ -245,45 +345,46 @@ function onBackdropClick() {
 .dropdown-item {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   padding: 10px 12px;
   background: none;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.15s;
+  transition: background 0.12s ease;
 }
 
 .dropdown-item:hover {
-  background: #f3f4f6;
+  background: rgb(var(--color-ink) / 0.05);
 }
 
 .dropdown-item.active {
-  background: #ede9fe;
+  background: rgb(var(--color-accent) / 0.08);
 }
 
 .dropdown-item.active .dropdown-num {
-  color: #7c3aed;
+  color: rgb(var(--color-accent));
 }
 
 .dropdown-item.active .dropdown-title {
-  color: #5b21b6;
+  color: rgb(var(--color-ink));
   font-weight: 500;
 }
 
 .dropdown-num {
-  font-size: 13px;
-  color: #9ca3af;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
   flex-shrink: 0;
   width: 20px;
 }
 
 .dropdown-title {
-  font-size: 15px;
-  color: #374151;
-  line-height: 1.4;
+  font-size: 1.4rem;
+  color: rgb(var(--color-ink));
+  line-height: 1.35;
 }
 
 .dropdown-backdrop {
