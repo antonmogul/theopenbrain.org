@@ -327,7 +327,9 @@ const formattedDuration = computed(() => {
 <style scoped>
 .flashcard-view {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-body);
   padding: 1.5rem;
 }
 
@@ -341,14 +343,14 @@ const formattedDuration = computed(() => {
   justify-content: center;
   min-height: 80vh;
   gap: 1rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #8b5cf6;
+  border: 3px solid rgb(var(--color-line));
+  border-top-color: rgb(var(--color-accent));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -361,13 +363,13 @@ const formattedDuration = computed(() => {
 
 .error-container svg,
 .empty-container svg {
-  color: #8b5cf6;
+  color: rgb(var(--color-accent));
 }
 
 .error-container h2,
 .empty-container h2 {
   margin: 0;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
 }
 
 /* Study Container */
@@ -386,21 +388,20 @@ const formattedDuration = computed(() => {
 .exit-btn {
   width: 40px;
   height: 40px;
-  border: none;
-  background: white;
-  border-radius: 8px;
+  border: 1px solid rgb(var(--color-line));
+  background: transparent;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
-  transition: all 0.15s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: rgb(var(--color-mute));
+  transition: border-color 0.12s ease, color 0.12s ease;
 }
 
 .exit-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
+  border-color: rgb(var(--color-ink));
+  color: rgb(var(--color-ink));
 }
 
 .session-info {
@@ -410,9 +411,9 @@ const formattedDuration = computed(() => {
 }
 
 .session-timer {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
   font-variant-numeric: tabular-nums;
 }
 
@@ -420,20 +421,20 @@ const formattedDuration = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 1rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
 }
 
 .stat.correct {
-  color: #16a34a;
+  color: rgb(var(--color-complete));
 }
 
 .stat.incorrect {
-  color: #dc2626;
+  color: rgb(var(--color-accent));
 }
 
 .stat-separator {
-  color: #d1d5db;
+  color: rgb(var(--color-mute));
 }
 
 .progress-container {
@@ -442,15 +443,13 @@ const formattedDuration = computed(() => {
 
 .progress-bar {
   height: 4px;
-  background: rgba(139, 92, 246, 0.2);
-  border-radius: 2px;
+  background: rgb(var(--color-ink) / 0.08);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: #8b5cf6;
-  border-radius: 2px;
+  background: rgb(var(--color-accent));
   transition: width 0.3s ease;
 }
 
@@ -471,12 +470,12 @@ const formattedDuration = computed(() => {
 .keyboard-hints kbd {
   display: inline-block;
   padding: 0.125rem 0.375rem;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 0.8125rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: rgb(var(--color-ink));
 }
 
 /* Complete Container */
@@ -501,8 +500,9 @@ const formattedDuration = computed(() => {
 }
 
 .confirm-modal {
-  background: white;
-  border-radius: 12px;
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
   padding: 1.5rem;
   max-width: 400px;
   width: 100%;
@@ -511,11 +511,13 @@ const formattedDuration = computed(() => {
 
 .confirm-modal h3 {
   margin: 0 0 0.5rem 0;
-  color: #1f2937;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: rgb(var(--color-ink));
 }
 
 .confirm-modal p {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0 0 1.5rem 0;
 }
 
@@ -532,33 +534,35 @@ const formattedDuration = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
 .btn-primary {
-  background: #8b5cf6;
-  color: white;
-  border: none;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink));
 }
 
 .btn-primary:hover {
-  background: #7c3aed;
+  background: rgb(var(--color-ink) / 0.85);
 }
 
 .btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 /* Transitions */

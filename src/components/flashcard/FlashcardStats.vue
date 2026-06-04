@@ -123,13 +123,16 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
 </template>
 
 <style scoped>
+/* Flashcard session summary — token-driven; teal=correct/high, magenta=low,
+   amber=incorrect. Bordered stat cards, mono labels, serif values. */
 .stats-container {
-  background: white;
-  border-radius: 16px;
+  background: transparent;
   padding: 2rem;
   max-width: 480px;
   margin: 0 auto;
   text-align: center;
+  font-family: var(--font-body);
+  color: rgb(var(--color-ink));
 }
 
 .stats-header {
@@ -139,26 +142,27 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
 .checkmark-icon {
   width: 64px;
   height: 64px;
-  background: #dcfce7;
+  background: rgb(var(--color-complete) / 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 1rem;
-  color: #16a34a;
+  color: rgb(var(--color-complete));
 }
 
 .stats-title {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.25rem 0;
 }
 
 .performance-message {
-  font-size: 1rem;
-  color: #6b7280;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: rgb(var(--color-ink) / 0.7);
   margin: 0;
 }
 
@@ -170,66 +174,44 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
 }
 
 .stat-card {
-  background: #f9fafb;
-  border-radius: 12px;
+  background: transparent;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
   padding: 1rem;
-}
-
-.stat-card.accuracy.high {
-  background: #dcfce7;
-}
-
-.stat-card.accuracy.low {
-  background: #fef2f2;
-}
-
-.stat-card.correct {
-  background: #dcfce7;
-}
-
-.stat-card.incorrect {
-  background: #fef3c7;
-}
-
-.stat-card.skipped {
-  background: #f3f4f6;
-}
-
-.stat-card.time {
-  background: #eff6ff;
 }
 
 .stat-value {
   display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
 }
 
-.stat-card.accuracy.high .stat-value {
-  color: #16a34a;
+.stat-card.accuracy.high .stat-value,
+.stat-card.correct .stat-value {
+  color: rgb(var(--color-complete));
 }
 
 .stat-card.accuracy.low .stat-value {
-  color: #dc2626;
-}
-
-.stat-card.correct .stat-value {
-  color: #16a34a;
+  color: rgb(var(--color-accent));
 }
 
 .stat-card.incorrect .stat-value {
-  color: #d97706;
+  color: rgb(var(--color-warn));
 }
 
 .stat-card.time .stat-value {
-  color: #3b82f6;
+  color: rgb(var(--color-ink));
 }
 
 .stat-label {
   display: block;
-  font-size: 0.75rem;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
   margin-top: 0.25rem;
 }
 
@@ -245,33 +227,35 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
 .btn-primary {
-  background: #8b5cf6;
-  color: white;
-  border: none;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink));
 }
 
 .btn-primary:hover {
-  background: #7c3aed;
+  background: rgb(var(--color-ink) / 0.85);
 }
 
 .btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 /* Responsive */

@@ -75,13 +75,19 @@ const ratings = [
 </template>
 
 <style scoped>
+/* Flashcard rating — SM-2 4-level scale kept; restyled to the token spectrum
+   (Again=magenta, Hard=amber, Good=teal, Easy=ink). Class names from the
+   ratings[] array are preserved; only what they paint is remapped. */
 .rating-container {
   text-align: center;
 }
 
 .rating-prompt {
-  font-size: 0.9375rem;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-mute));
   margin: 0 0 1rem 0;
 }
 
@@ -96,76 +102,80 @@ const ratings = [
   flex-direction: column;
   align-items: center;
   padding: 1rem 0.5rem;
-  border-radius: 12px;
+  border-radius: 4px;
   border: none;
-  color: white;
+  color: #fff;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: opacity 0.12s ease;
   position: relative;
 }
 
 .rating-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.88;
 }
 
 .rating-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .rating-label {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .rating-subtext {
-  font-size: 0.6875rem;
-  opacity: 0.8;
-  margin-top: 0.125rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-top: 0.2rem;
 }
 
 .key-hint {
   position: absolute;
   bottom: 4px;
   right: 6px;
-  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   opacity: 0.5;
-  font-weight: 500;
 }
 
 .skip-btn {
   margin-top: 1rem;
   padding: 0.5rem 1.5rem;
   background: transparent;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
 .skip-btn:hover:not(:disabled) {
-  background: #f3f4f6;
-  color: #374151;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 .skip-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Color classes */
-.bg-red-500 { background-color: #ef4444; }
-.bg-orange-500 { background-color: #f97316; }
-.bg-green-500 { background-color: #22c55e; }
-.bg-blue-500 { background-color: #3b82f6; }
-.hover\:bg-red-600:hover { background-color: #dc2626; }
-.hover\:bg-orange-600:hover { background-color: #ea580c; }
-.hover\:bg-green-600:hover { background-color: #16a34a; }
-.hover\:bg-blue-600:hover { background-color: #2563eb; }
+/* SM-2 scale → token spectrum. Easy uses ink so white label stays legible. */
+.bg-red-500 { background-color: rgb(var(--color-accent)); }
+.bg-orange-500 { background-color: rgb(var(--color-warn)); color: #4a2c00; }
+.bg-green-500 { background-color: rgb(var(--color-complete)); color: #0a3d33; }
+.bg-blue-500 { background-color: rgb(var(--color-ink)); }
+.hover\:bg-red-600:hover,
+.hover\:bg-orange-600:hover,
+.hover\:bg-green-600:hover,
+.hover\:bg-blue-600:hover { opacity: 0.88; }
 
 /* Responsive */
 @media (max-width: 480px) {

@@ -34,7 +34,7 @@ defineEmits(["flip"]);
     <div class="flashcard" :class="{ flipped: isFlipped }">
       <!-- Front -->
       <div class="card-face front">
-        <div class="card-label">Question</div>
+        <div class="card-label">Term</div>
         <div class="card-content">
           <p>{{ card.front_text || card.front_content || card.front }}</p>
         </div>
@@ -61,7 +61,7 @@ defineEmits(["flip"]);
 
       <!-- Back -->
       <div class="card-face back">
-        <div class="card-label">Answer</div>
+        <div class="card-label">Definition</div>
         <div class="card-content">
           <p>{{ card.back_text || card.back_content || card.back }}</p>
         </div>
@@ -100,8 +100,11 @@ defineEmits(["flip"]);
 
 .card-counter {
   text-align: center;
-  font-size: 0.875rem;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
   margin-bottom: 1rem;
 }
 
@@ -109,7 +112,7 @@ defineEmits(["flip"]);
   position: relative;
   width: 100%;
   height: 320px;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
 }
 
@@ -121,38 +124,40 @@ defineEmits(["flip"]);
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 2rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
+/* Front: paper, hairline border, serif term */
 .front {
-  background: white;
-  border: 2px solid #e5e7eb;
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
 }
 
+/* Back: flat ink, paper text, teal eyebrow (prototype) */
 .back {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-  color: white;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink));
   transform: rotateY(180deg);
 }
 
 .card-label {
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.7;
+  letter-spacing: 0.12em;
   margin-bottom: 0.75rem;
 }
 
 .front .card-label {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .back .card-label {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgb(var(--color-complete));
 }
 
 .card-content {
@@ -164,18 +169,27 @@ defineEmits(["flip"]);
 }
 
 .card-content p {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.375rem;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: 2.4rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
+/* Definition (back) reads as body prose, not a big display term */
+.back .card-content p {
+  font-size: 1.7rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 .front .card-content p {
-  color: #1f2937;
+  color: rgb(var(--color-ink));
 }
 
 .back .card-content p {
-  color: white;
+  color: rgb(var(--color-paper));
 }
 
 .flip-hint {
@@ -183,21 +197,24 @@ defineEmits(["flip"]);
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  font-size: 0.75rem;
-  opacity: 0.5;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
   transition: opacity 0.2s;
 }
 
 .flashcard-wrapper:hover .flip-hint {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .front .flip-hint {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .back .flip-hint {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgb(var(--color-paper) / 0.7);
 }
 
 /* Responsive */
