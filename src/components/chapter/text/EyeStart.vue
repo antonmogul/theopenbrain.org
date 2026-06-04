@@ -1,6 +1,6 @@
 <script setup>
 import { useGeneral, useText } from "@/stores";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, onBeforeUnmount, ref, computed } from "vue";
 import { watchDebounced, useMouse } from "@vueuse/core";
 import { useRoute } from "vue-router";
 
@@ -12,6 +12,52 @@ const store = useGeneral();
 const textStore = useText();
 const route = useRoute();
 const animation = ref();
+
+// Scroll-driven hero treatment: the cover stays pinned (fixed) and, as the
+// reader scrolls the first viewport, it progressively blurs and darkens while
+// the title fades — the text column (#container, top:100vh) rises over it.
+const scrollProgress = ref(0); // 0 at top → 1 after one viewport scrolled
+
+let ticking = false;
+function onScroll() {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => {
+    const p = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+    scrollProgress.value = p;
+    ticking = false;
+  });
+}
+
+const heroStyle = computed(() => {
+  const p = scrollProgress.value;
+  return {
+    backgroundImage: `url(${coverImage.value})`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "center 20%",
+    backgroundSize: "cover",
+    filter: `blur(${(p * 12).toFixed(2)}px)`,
+    // Slight scale prevents blurred edges from showing the paper behind.
+    transform: `scale(${(1 + p * 0.06).toFixed(3)})`,
+    // Once fully scrolled past the banner, hide the hero entirely so it can
+    // never show behind the opaque split-screen (no transparent side).
+    visibility: p >= 1 ? "hidden" : "visible",
+  };
+});
+
+// Darkening scrim + title fade derived from the same progress.
+const scrimOpacity = computed(() => (scrollProgress.value * 0.35).toFixed(3));
+const titleOpacity = computed(() =>
+  Math.max(0, 1 - scrollProgress.value * 2).toFixed(3)
+);
+
+onMounted(() => {
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", onScroll);
+});
 
 // Module name - for now hardcoded, could be fetched from Supabase later
 const moduleName = computed(() => {
@@ -64,20 +110,26 @@ const scrollToPos = () => {
 <template>
   <div
     id="titleAnimation"
-    class="bg-light absolute right-0 w-screen h-screen z-[50] duration-300 flex justify-start items-start pointer-events-none"
-    :style="{ backgroundImage: `url(${coverImage})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center 20%', backgroundSize: 'cover' }"
+    class="bg-light fixed top-0 right-0 w-screen h-screen z-[30] flex justify-start items-start pointer-events-none overflow-hidden"
+    :style="heroStyle"
   >
+    <!-- Darkening scrim — grows with scroll so rising text stays readable -->
+    <div
+      class="absolute inset-0 bg-black"
+      :style="{ opacity: scrimOpacity }"
+    ></div>
     <div
       class="absolute top-0 left-0 w-screen h-screen text-white text-center flex justify-center items-center pb-8"
+      :style="{ opacity: titleOpacity }"
     >
       <div class="flex justify-center items-center flex-col w-2/3">
         <div class="text-biggest font-text">{{ chapterTitle }}</div>
-        <!-- <div class="text-4xl">The Open Brain</div> -->
       </div>
     </div>
     <div
+      v-show="scrollProgress < 0.1"
       @click="scrollToPos()"
-      class="absolute bottom-8 left-1/ -ml-5 flex justify-center items-center text-center"
+      class="absolute bottom-8 left-1/ -ml-5 flex justify-center items-center text-center duration-300"
     >
       <DownArrow class="pointer-events-auto icon iconMed" />
     </div>

@@ -12,10 +12,39 @@ const { fetchCatalog, modules, loading } = useChapterCatalog();
 const progressByModule = ref({});
 const progressLoaded = ref(false);
 
+// Reading stats (highlights / notes counts fetched separately; chapters,
+// sessions and total time derived from the progress rows we already load).
+const highlightCount = ref(0);
+const noteCount = ref(0);
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// PostgREST exact-count helper: a HEAD request with count=exact returns the
+// total in the Content-Range header without fetching the rows.
+async function countRows(table) {
+  if (!user.value || !session.value?.access_token) return 0;
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/${table}?user_id=eq.${user.value.id}&select=id`,
+      {
+        method: "HEAD",
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${session.value.access_token}`,
+          Prefer: "count=exact",
+        },
+      }
+    );
+    const range = res.headers.get("content-range"); // e.g. "0-24/47" or "*/0"
+    const total = range?.split("/")?.[1];
+    return total ? parseInt(total, 10) : 0;
+  } catch {
+    return 0;
+  }
+}
 
 async function loadProgress() {
   if (!user.value || !session.value?.access_token) {
@@ -51,6 +80,13 @@ async function loadProgress() {
 onMounted(async () => {
   await fetchCatalog();
   await loadProgress();
+  // Stat counts (only meaningful when signed in)
+  if (isAuthenticated.value) {
+    [highlightCount.value, noteCount.value] = await Promise.all([
+      countRows("highlights"),
+      countRows("notes"),
+    ]);
+  }
 });
 
 function progressFor(moduleId) {
@@ -98,9 +134,36 @@ const continueCard = computed(() => {
   };
 });
 
+// Reading stats row — all derived from real data (counts fetched above;
+// chapters / sessions / time from the reading_progress rows we already loaded).
+const stats = computed(() => {
+  const rows = Object.values(progressByModule.value);
+  const completed = rows.filter((r) => r.is_completed).length;
+  const totalSec = rows.reduce(
+    (sum, r) => sum + (r.time_spent_seconds || 0),
+    0
+  );
+  const hrs = Math.floor(totalSec / 3600);
+  const mins = Math.round((totalSec % 3600) / 60);
+  const timeLabel = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+  return [
+    { label: "Chapters", value: `${completed}/${modules.value.length}` },
+    { label: "Highlights", value: String(highlightCount.value) },
+    { label: "Notes", value: String(noteCount.value) },
+    // "Sessions" = distinct chapters opened (one reading_progress row each)
+    { label: "Sessions", value: String(rows.length) },
+    { label: "Total time", value: timeLabel },
+  ];
+});
+
 // order_index is 1-based in DB and matches /chapter/:n URL numbering directly.
+// The numeric route is the chapter OVERVIEW; the slug route is the READER.
 function chapterRoute(mod) {
   return `/chapter/${mod.order_index}`;
+}
+
+function readerRoute(mod) {
+  return `/chapter/${mod.order_index}/${mod.slug}`;
 }
 
 function chapterNumberFor(mod) {
@@ -124,12 +187,7 @@ function chapterNumberFor(mod) {
         </p>
       </div>
 
-      <router-link
-        v-if="continueCard"
-        :to="chapterRoute(continueCard.module)"
-        class="continue-card"
-        aria-label="Continue reading"
-      >
+      <div v-if="continueCard" class="continue-card">
         <div class="continue-cover">
           <img
             v-if="continueCard.module.cover_image_url"
@@ -144,9 +202,9 @@ function chapterNumberFor(mod) {
             Chapter {{ chapterNumberFor(continueCard.module) }}
           </span>
           <h2 class="continue-title">{{ continueCard.module.title }}</h2>
-          <div class="progress-bar">
+          <div class="progress-bar progress-bar--dark">
             <div
-              class="progress-bar-fill"
+              class="progress-bar-fill progress-bar-fill--teal"
               :style="{ width: `${continueCard.percent}%` }"
             />
           </div>
@@ -155,8 +213,23 @@ function chapterNumberFor(mod) {
               · ~{{ continueCard.remainingMin }} min left</template>
           </span>
         </div>
-      </router-link>
+        <router-link
+          :to="readerRoute(continueCard.module)"
+          class="resume-btn"
+          aria-label="Resume reading"
+        >
+          Resume →
+        </router-link>
+      </div>
     </header>
+
+    <!-- Reading stats (signed-in only — anonymous users have no data) -->
+    <div v-if="isAuthenticated && progressLoaded" class="stats">
+      <div v-for="s in stats" :key="s.label" class="stat">
+        <span class="stat-label">{{ s.label }}</span>
+        <span class="stat-value">{{ s.value }}</span>
+      </div>
+    </div>
 
     <hr class="rule" />
     <p class="eyebrow section-label">All chapters</p>
@@ -165,8 +238,12 @@ function chapterNumberFor(mod) {
 
     <ul v-else class="grid">
       <li v-for="mod in modules" :key="mod.id">
-        <router-link :to="chapterRoute(mod)" class="card">
-          <div class="cover">
+        <div class="card">
+          <router-link
+            :to="chapterRoute(mod)"
+            class="cover"
+            :aria-label="`${mod.title} — overview`"
+          >
             <img
               v-if="mod.cover_image_url"
               :src="mod.cover_image_url"
@@ -185,12 +262,16 @@ function chapterNumberFor(mod) {
             >
               Reading
             </span>
-          </div>
+          </router-link>
           <div class="meta">
             <span class="chapter-label">
               Chapter {{ chapterNumberFor(mod) }}
             </span>
-            <h3 class="title">{{ mod.title }}</h3>
+            <h3 class="title">
+              <router-link :to="chapterRoute(mod)" class="title-link">
+                {{ mod.title }}
+              </router-link>
+            </h3>
             <p v-if="mod.subtitle" class="subtitle">{{ mod.subtitle }}</p>
             <div
               v-if="isAuthenticated && pillFor(mod.id) === 'reading'"
@@ -201,8 +282,16 @@ function chapterNumberFor(mod) {
                 :style="{ width: `${percentFor(mod.id)}%` }"
               />
             </div>
+            <div class="card-actions">
+              <router-link :to="readerRoute(mod)" class="card-action">
+                Read →
+              </router-link>
+              <router-link :to="chapterRoute(mod)" class="card-action card-action--muted">
+                Overview →
+              </router-link>
+            </div>
           </div>
-        </router-link>
+        </div>
       </li>
     </ul>
   </main>
@@ -288,23 +377,16 @@ function chapterNumberFor(mod) {
   text-decoration: underline;
 }
 
-/* Featured "continue reading" card */
+/* Featured "continue reading" card — dark band (prototype IndexScreen A) */
 .continue-card {
   display: grid;
-  grid-template-columns: 14rem 1fr;
+  grid-template-columns: 14rem 1fr auto;
   gap: 2.4rem;
   align-items: center;
   padding: 2.4rem;
-  background: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.15s ease;
-}
-
-.continue-card:hover {
-  border-color: rgb(var(--color-ink));
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border-radius: 6px;
 }
 
 .continue-cover {
@@ -346,9 +428,15 @@ function chapterNumberFor(mod) {
   margin-bottom: 0.8rem;
 }
 
+/* On the dark band, chapter + stat lines read as dimmed paper */
 .continue-chapter,
+.continue-stat {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-paper) / 0.7);
+}
+
 .chapter-label,
-.continue-stat,
 .subtitle {
   font-family: var(--font-mono);
   font-size: 1.1rem;
@@ -389,6 +477,60 @@ function chapterNumberFor(mod) {
   height: 100%;
   background: rgb(var(--color-accent));
   transition: width 0.3s ease;
+}
+
+/* Dark-band variants (continue card) */
+.progress-bar--dark {
+  background: rgb(var(--color-paper) / 0.18);
+}
+.progress-bar-fill--teal {
+  background: rgb(var(--color-complete));
+}
+
+/* Resume button (continue card) */
+.resume-btn {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  padding: 0.9rem 1.8rem;
+  border-radius: 999px;
+  background: rgb(var(--color-complete));
+  color: #0a3d33;
+  text-decoration: none;
+  transition: opacity 0.12s ease;
+}
+.resume-btn:hover {
+  opacity: 0.88;
+}
+
+/* Stats row — hairline top + bottom, evenly spaced */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4rem;
+  margin: 3.2rem 0 0;
+  padding: 1.8rem 0;
+  border-top: 1px solid rgb(var(--color-line));
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-mute));
+}
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .loading {
@@ -462,6 +604,40 @@ function chapterNumberFor(mod) {
   letter-spacing: 0.06em;
   font-size: 1rem;
   margin: 0;
+}
+
+.title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.title-link:hover {
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--color-accent));
+}
+
+/* Two-link action row: Read (→ reader) · Overview (→ overview page) */
+.card-actions {
+  display: flex;
+  gap: 1.6rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(var(--color-line));
+}
+.card-action {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: rgb(var(--color-accent));
+  transition: opacity 0.12s ease;
+}
+.card-action:hover {
+  text-decoration: underline;
+}
+.card-action--muted {
+  color: rgb(var(--color-mute));
 }
 
 /* Status pills sit on the cover, top-right */

@@ -367,9 +367,10 @@ async function handleDeleteHighlight(highlightId) {
 
         <!-- Chapter content -->
         <template v-if="showContent">
-            <!-- Unified Reader Top Bar (Supabase chapters only) -->
+            <!-- Unified Reader Top Bar — shown to all readers (anonymous too).
+                 Auth-only panels (Notebook/Chat) handle their own gating. -->
             <ReaderTopBar
-                v-if="isAuthenticated && isSupabaseChapter"
+                v-if="isSupabaseChapter"
                 :chapter-title="chapterTitle"
                 :chapter-number="chapterNumber"
                 :sections="breadcrumbSections"

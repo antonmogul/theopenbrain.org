@@ -96,7 +96,7 @@ function onBackdropClick() {
           <circle cx="12" cy="12" r="9" />
           <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
         </svg>
-        <span class="wordmark-text">the<br />open brain</span>
+        <span class="wordmark-text">the open brain</span>
       </router-link>
 
       <div class="divider"></div>
@@ -228,10 +228,11 @@ function onBackdropClick() {
 
 .wordmark-text {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
-  line-height: 1.1;
+  font-size: 1.2rem;
+  line-height: 1;
   text-transform: lowercase;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .divider {

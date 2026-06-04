@@ -118,7 +118,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="!store.isScrolling"
-    class="hidden xl:block xl:fixed xl:left-0 xl:w-illus xl:z-30 pointer-events-none font-mono xl:top-[var(--reader-topbar-h)] xl:h-[calc(100vh-var(--reader-topbar-h))]"
+    class="hidden xl:block xl:fixed xl:left-0 xl:w-illus xl:z-30 pointer-events-none font-mono xl:top-[var(--reader-topbar-h)] xl:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
   >
     <template v-for="animation in animationList" :key="animation.id">
       <!-- Typed figure/box placeholder (no artwork yet) -->
