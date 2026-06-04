@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
     <div id="scroller" class="pointer-events-none w-full">
       <main
         id="text"
-        class="text pointer-events-auto w-full text-left pt-16 ml-text z-30 xl:border-l bg-white border-black tracking-wide duration-300 text-black"
+        class="text pointer-events-auto w-full text-left pt-[calc(var(--reader-topbar-h)+2rem)] ml-text z-30 xl:border-l bg-white border-black tracking-wide duration-300 text-black"
       >
         <!-- intro -->
         <section

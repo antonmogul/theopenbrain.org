@@ -165,9 +165,9 @@ function onBackdropClick() {
   top: 0;
   left: 0;
   right: 0;
-  /* Height drives the sticky figure-pane offset via --reader-topbar-h. */
-  height: var(--reader-topbar-h, 3.6rem);
-  min-height: var(--reader-topbar-h, 3.6rem);
+  /* The bar sizes to its content; the token (brand.css) is tuned to match this
+     rendered height so the figure pane / prose offsets stay aligned. Use a
+     box that exactly fits: progress track (2px) + bar-row content. */
   z-index: 45;
   background: rgb(var(--color-paper));
   border-bottom: 1px solid rgb(var(--color-line));
@@ -229,7 +229,7 @@ function onBackdropClick() {
 .wordmark-text {
   font-family: var(--font-mono);
   font-size: 1.2rem;
-  line-height: 1;
+  line-height: 1.4;
   text-transform: lowercase;
   letter-spacing: 0.02em;
   white-space: nowrap;

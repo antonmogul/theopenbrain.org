@@ -37,7 +37,9 @@
      rest → ~1.5:1 (figure : prose) at 40vw prose. --reader-topbar-h lets the
      sticky figure pane start below the fixed top bar instead of behind it. */
   --reader-prose-w: min(40vw, calc(780px + 11rem));
-  --reader-topbar-h: 3.6rem;
+  /* Matches the rendered app-bar height (progress track + bar-row content).
+     Keep in sync if the bar's padding / button size changes. */
+  --reader-topbar-h: 6.4rem;
 
   /* Font roles — IBM Plex is the :root default, matching today's behavior.
      [data-fontpair="newsreader"] etc. override these per-pair. */

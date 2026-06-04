@@ -36,19 +36,15 @@ const heroStyle = computed(() => {
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center 20%",
     backgroundSize: "cover",
-    filter: `blur(${(p * 12).toFixed(2)}px)`,
-    // Slight scale prevents blurred edges from showing the paper behind.
-    transform: `scale(${(1 + p * 0.06).toFixed(3)})`,
-    // Once fully scrolled past the banner, hide the hero entirely so it can
-    // never show behind the opaque split-screen (no transparent side).
-    visibility: p >= 1 ? "hidden" : "visible",
+    // Gentle blur as the banner scrolls out of view.
+    filter: `blur(${(p * 8).toFixed(2)}px)`,
   };
 });
 
-// Darkening scrim + title fade derived from the same progress.
-const scrimOpacity = computed(() => (scrollProgress.value * 0.35).toFixed(3));
+// Title fades as the banner leaves; a light scrim keeps it legible early on.
+const scrimOpacity = computed(() => (scrollProgress.value * 0.25).toFixed(3));
 const titleOpacity = computed(() =>
-  Math.max(0, 1 - scrollProgress.value * 2).toFixed(3)
+  Math.max(0, 1 - scrollProgress.value * 1.6).toFixed(3)
 );
 
 onMounted(() => {
@@ -108,12 +104,15 @@ const scrollToPos = () => {
 };
 </script>
 <template>
+  <!-- Hero banner: a normal in-flow block at the very top that scrolls away as
+       the reader moves into the chapter. NOT fixed, so nothing lingers behind
+       the split-screen — both reading panels stay fully solid. A gentle blur on
+       the way out keeps a touch of the parallax feel. -->
   <div
     id="titleAnimation"
-    class="bg-light fixed top-0 right-0 w-screen h-screen z-[30] flex justify-start items-start pointer-events-none overflow-hidden"
+    class="bg-light absolute top-0 right-0 w-screen h-screen z-[35] flex justify-start items-start pointer-events-none overflow-hidden"
     :style="heroStyle"
   >
-    <!-- Darkening scrim — grows with scroll so rising text stays readable -->
     <div
       class="absolute inset-0 bg-black"
       :style="{ opacity: scrimOpacity }"
