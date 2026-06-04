@@ -117,6 +117,13 @@ export function useChapter() {
         if (block.type === "citation_ref") {
           return `<sup class="citation-ref" data-ref="${block.number}">${block.number}</sup>`;
         }
+        if (block.type === "figure_placeholder") {
+          // Inline "(Figure N)" callout. Anchors to the left-column placeholder
+          // via data-figure so it can later deep-link / scroll-sync.
+          const n = block.number;
+          const label = n === undefined || n === null ? "Figure" : `Figure ${n}`;
+          return `<span class="figure-ref" data-figure="${n ?? ""}">${label}</span>`;
+        }
         // Chapter 1-specific types — metadata only, no HTML
         if (["animation", "animation_full", "break_section", "break_video", "further_reading", "footnote"].includes(block.type)) {
           return "";
@@ -145,11 +152,21 @@ export function useChapter() {
       ...meta,
     };
 
-    // Add animation if present
-    if (p.animation_id) {
+    // Add animation if present. The left column matches on the animation KEY
+    // (IllustrationsComp compares activeAnimation === animation.id.toLowerCase()),
+    // and the DOM trigger id is `triggerAnimation` + animation.name. So `name`
+    // must be the animation_key with its leading "animation" prefix removed and
+    // `id` the full key — mirroring Chapter 1's text.json shape
+    // ({name:"EyeStructur", id:"animationEyeStructur"}). `animation_key` is
+    // attached to the row during fetch (see fetchChapter); fall back gracefully
+    // if it is missing.
+    if (p.animation_id && p.animation_key) {
       para.animation = {
-        name: p.animation_trigger || "default",
-        id: `animation${p.animation_trigger || "default"}`,
+        name: p.animation_key.replace(/^animation/, ""),
+        id: p.animation_key,
+        title: p.animation_title || "",
+        // 'scroll' trigger → scroll-transition figure (matches Ch1 transition flag)
+        transition: p.animation_trigger === "scroll",
       };
     }
 
@@ -185,11 +202,14 @@ export function useChapter() {
           title: p.content_text || "",
           paragraphs: [],
         };
-        // Add animation from the section-header paragraph
-        if (p.animation_id) {
+        // Add animation from the section-header paragraph (keyed off the real
+        // animation_key — see transformParagraph for the contract).
+        if (p.animation_id && p.animation_key) {
           currentSubSection.animation = {
-            name: p.animation_trigger || "default",
-            id: `animation${p.animation_trigger || "default"}`,
+            name: p.animation_key.replace(/^animation/, ""),
+            id: p.animation_key,
+            title: p.animation_title || "",
+            transition: p.animation_trigger === "scroll",
           };
         }
         continue;
@@ -451,6 +471,33 @@ export function useChapter() {
           "useChapter: Paragraphs query result:",
           paragraphsData?.length,
         );
+      }
+
+      // Step 3b: Resolve animation keys for paragraphs that link an animation.
+      // The transform needs the animation_key (not just the FK) to build the
+      // left-column trigger id, so attach animation_key/title onto each row.
+      const animationIds = [
+        ...new Set(
+          (paragraphsData || [])
+            .map((p) => p.animation_id)
+            .filter(Boolean),
+        ),
+      ];
+      if (animationIds.length > 0) {
+        const animIdsParam = animationIds.map((id) => `"${id}"`).join(",");
+        const animRows = await supabaseRest(
+          `animations?id=in.(${animIdsParam})&select=id,animation_key,title`,
+        );
+        const animById = new Map(
+          (animRows || []).map((a) => [a.id, a]),
+        );
+        for (const p of paragraphsData) {
+          const a = p.animation_id && animById.get(p.animation_id);
+          if (a) {
+            p.animation_key = a.animation_key;
+            p.animation_title = a.title || "";
+          }
+        }
       }
 
       // Step 4: Assemble the chapter structure

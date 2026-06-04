@@ -661,6 +661,20 @@ sup:hover {
   20%, 60% { background: rgb(var(--color-accent) / 0.18); border-radius: 3px; }
 }
 
+/* Inline figure callouts — "(Figure N)" anchoring the left-column placeholder */
+.figure-ref {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  letter-spacing: 0.04em;
+  color: rgb(var(--color-complete));
+  cursor: pointer;
+  white-space: nowrap;
+}
+.figure-ref:hover {
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--color-complete));
+}
+
 .-translate-x-custom {
   transform: translateX(min(-50vw, calc(-100vw + 780px + 11rem - 1px)));
 }

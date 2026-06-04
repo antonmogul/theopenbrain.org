@@ -14,6 +14,7 @@ import animationJSON from "@/assets/json_backend/animations.json";
 import Illustration from "@/components/chapter/Illus/IllustrationComp.vue";
 import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScroll.vue";
 import IllustrationTransition from "@/components/chapter/Illus/IllustrationTransition.vue";
+import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 gsap.registerPlugin(ScrollTrigger);
 
 const route = useRoute();
@@ -120,9 +121,22 @@ onBeforeUnmount(() => {
     class="hidden xl:block xl:fixed xl:left-0 xl:w-illus xl:z-30 pointer-events-none font-mono xl:top-[var(--reader-topbar-h)] xl:h-[calc(100vh-var(--reader-topbar-h))]"
   >
     <template v-for="animation in animationList" :key="animation.id">
+      <!-- Typed figure/box placeholder (no artwork yet) -->
+      <template v-if="animation.placeholder">
+        <transition name="fade" mode="out-in">
+          <IllustrationPlaceholder
+            v-if="activeAnimation === animation.id.toLowerCase()"
+            :animation="animation"
+            class="max-w-[1000px] m-auto h-full"
+          />
+        </transition>
+      </template>
       <template
         v-if="
-          !animation.fullscreen && !animation.scroll && !animation.isTransition
+          !animation.placeholder &&
+          !animation.fullscreen &&
+          !animation.scroll &&
+          !animation.isTransition
         "
       >
         <transition name="fade" mode="out-in">
