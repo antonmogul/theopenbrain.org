@@ -116,11 +116,11 @@ function goToQuestion(index) {
 </template>
 
 <style scoped>
+/* Quiz progress — prototype QuizQuestion header: mono counters, magenta
+   progress bar, numbered chips (ink current, teal answered). */
 .quiz-progress {
-  background: white;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: transparent;
+  padding: 0;
 }
 
 .progress-header {
@@ -133,66 +133,63 @@ function goToQuestion(index) {
 .progress-info {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.2rem;
 }
 
 .question-count {
-  font-size: 0.9375rem;
-  color: #374151;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-ink));
 }
 
 .question-count strong {
   font-weight: 600;
-  color: #1f2937;
 }
 
 .answered-count {
-  font-size: 0.75rem;
-  color: #9ca3af;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-mute));
 }
 
 .timer {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  background: #f3f4f6;
-  border-radius: 6px;
-  color: #4b5563;
+  padding: 0.375rem 0.9rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 999px;
+  color: rgb(var(--color-ink));
 }
 
 .timer.time-low {
-  background: #fef2f2;
-  color: #dc2626;
+  border-color: rgb(var(--color-accent));
+  color: rgb(var(--color-accent));
   animation: pulse-warning 1s infinite;
 }
 
 @keyframes pulse-warning {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .time-value {
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   font-variant-numeric: tabular-nums;
 }
 
 .progress-bar-container {
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
+  height: 4px;
+  background: rgb(var(--color-ink) / 0.08);
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  border-radius: 3px;
+  background: rgb(var(--color-accent));
   transition: width 0.3s ease;
 }
 
@@ -201,40 +198,37 @@ function goToQuestion(index) {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f3f4f6;
 }
 
 .nav-dot {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid #e5e7eb;
-  background: white;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #6b7280;
+  border: 1px solid rgb(var(--color-line));
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-ink));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .nav-dot:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: rgb(var(--color-ink));
 }
 
 .nav-dot.current {
-  border-color: #3b82f6;
-  background: #3b82f6;
-  color: white;
+  border-color: rgb(var(--color-ink));
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 .nav-dot.answered:not(.current) {
-  border-color: #22c55e;
-  background: #dcfce7;
-  color: #16a34a;
+  border-color: rgb(var(--color-complete));
+  background: rgb(var(--color-complete) / 0.12);
+  color: rgb(var(--color-complete));
 }
 </style>

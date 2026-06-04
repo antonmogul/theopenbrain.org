@@ -222,11 +222,13 @@ function getOptionClass(option) {
 </template>
 
 <style scoped>
+/* Quiz question — prototype QuizQuestion: serif question, ghost-button options,
+   teal=correct / magenta=wrong+selected (design-system semantics). Option-state
+   class NAMES are kept (getOptionClass logic untouched); only what they paint
+   is remapped to tokens. */
 .quiz-question {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: transparent;
+  padding: 0;
 }
 
 .question-header {
@@ -236,27 +238,22 @@ function getOptionClass(option) {
   margin-bottom: 0.75rem;
 }
 
-.question-type {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  font-weight: 500;
-}
-
+.question-type,
 .question-number {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
 }
 
 .question-text {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-family: var(--font-body);
+  font-size: 2.2rem;
   font-weight: 500;
-  color: #1f2937;
-  line-height: 1.5;
-  margin: 0 0 1.5rem 0;
+  color: rgb(var(--color-ink));
+  line-height: 1.25;
+  margin: 0 0 2rem 0;
 }
 
 .options-list {
@@ -266,8 +263,8 @@ function getOptionClass(option) {
 }
 
 .options-list button {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1rem;
+  font-family: var(--font-body);
+  font-size: 1.5rem;
   cursor: pointer;
 }
 
@@ -285,29 +282,29 @@ function getOptionClass(option) {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: rgb(var(--color-ink) / 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
   flex-shrink: 0;
 }
 
 .border-blue-500 .option-letter {
-  background: #3b82f6;
-  color: white;
+  background: rgb(var(--color-accent));
+  color: #fff;
 }
 
 .border-green-500 .option-letter {
-  background: #22c55e;
-  color: white;
+  background: rgb(var(--color-complete));
+  color: #0a3d33;
 }
 
 .border-red-500 .option-letter {
-  background: #ef4444;
-  color: white;
+  background: rgb(var(--color-accent));
+  color: #fff;
 }
 
 .option-text {
@@ -325,96 +322,107 @@ function getOptionClass(option) {
 .answer-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1rem;
-  transition: all 0.15s;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  transition: border-color 0.12s ease;
 }
 
 .answer-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: rgb(var(--color-ink));
 }
 
 .answer-input:disabled {
-  background: #f9fafb;
+  background: rgb(var(--color-bg));
 }
 
 .answer-input.correct {
-  border-color: #22c55e;
-  background: #f0fdf4;
+  border-color: rgb(var(--color-complete));
+  background: rgb(var(--color-complete) / 0.08);
 }
 
 .answer-input.incorrect {
-  border-color: #ef4444;
-  background: #fef2f2;
+  border-color: rgb(var(--color-accent));
+  background: rgb(var(--color-accent) / 0.08);
 }
 
 .correct-answer-hint {
   margin: 0.75rem 0 0 0;
-  font-size: 0.875rem;
-  color: #16a34a;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-complete));
 }
 
 .explanation {
   margin-top: 1.5rem;
-  padding: 1rem;
-  background: #f0f9ff;
-  border-radius: 8px;
-  border-left: 3px solid #3b82f6;
+  padding: 1rem 1.2rem;
+  background: rgb(var(--color-ink) / 0.03);
+  border-radius: 4px;
+  border-left: 3px solid rgb(var(--color-complete));
 }
 
 .explanation-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1e40af;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-ink));
   margin-bottom: 0.5rem;
 }
 
 .explanation-text {
-  font-size: 0.9375rem;
-  color: #374151;
-  line-height: 1.5;
+  font-size: 1.4rem;
+  color: rgb(var(--color-ink) / 0.8);
+  line-height: 1.55;
   margin: 0;
 }
 
-/* Tailwind-like utility classes */
+/* Option-state classes (names from getOptionClass) → tokens.
+   teal = correct, magenta = wrong/selected. */
+.options-list button {
+  padding: 1rem 1.2rem !important;
+  border-radius: 4px !important;
+  border-width: 1px !important;
+  transition: border-color 0.12s ease, background 0.12s ease !important;
+}
 .border-gray-200 {
-  border-color: #e5e7eb;
+  border-color: rgb(var(--color-line));
 }
 .border-gray-300 {
-  border-color: #d1d5db;
+  border-color: rgb(var(--color-ink) / 0.3);
 }
 .border-blue-500 {
-  border-color: #3b82f6;
+  border-color: rgb(var(--color-accent));
 }
 .border-green-500 {
-  border-color: #22c55e;
+  border-color: rgb(var(--color-complete));
 }
 .border-red-500 {
-  border-color: #ef4444;
+  border-color: rgb(var(--color-accent));
 }
 .bg-blue-50 {
-  background-color: #eff6ff;
+  background-color: rgb(var(--color-accent) / 0.08);
 }
 .bg-green-50 {
-  background-color: #f0fdf4;
+  background-color: rgb(var(--color-complete) / 0.08);
 }
 .bg-red-50 {
-  background-color: #fef2f2;
+  background-color: rgb(var(--color-accent) / 0.08);
 }
 .bg-gray-50 {
-  background-color: #f9fafb;
+  background-color: rgb(var(--color-ink) / 0.04);
 }
 .text-green-500 {
-  color: #22c55e;
+  color: rgb(var(--color-complete));
 }
 .text-red-500 {
-  color: #ef4444;
+  color: rgb(var(--color-accent));
 }
 </style>

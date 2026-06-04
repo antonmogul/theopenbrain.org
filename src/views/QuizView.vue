@@ -183,23 +183,7 @@ function handleGoToQuestion(index) {
     <!-- Quiz Intro -->
     <div v-else-if="quizState === 'intro' && currentQuiz" class="intro-container">
       <div class="intro-card">
-        <div class="quiz-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-        </div>
+        <p class="quiz-eyebrow">Assessment</p>
 
         <h1 class="quiz-title">{{ currentQuiz.title }}</h1>
 
@@ -209,68 +193,25 @@ function handleGoToQuestion(index) {
 
         <div class="quiz-meta">
           <div class="meta-item">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-              ></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-            <span>{{ currentQuiz.quiz_questions?.length || 0 }} Questions</span>
+            <span class="meta-value">
+              {{ currentQuiz.quiz_questions?.length || 0 }}
+            </span>
+            <span class="meta-label">Questions</span>
           </div>
-
           <div v-if="currentQuiz.time_limit_minutes" class="meta-item">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            <span>{{ currentQuiz.time_limit_minutes }} Minutes</span>
+            <span class="meta-value">{{ currentQuiz.time_limit_minutes }}</span>
+            <span class="meta-label">Minutes</span>
           </div>
-
           <div class="meta-item">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span>{{ currentQuiz.passing_score || 70 }}% to Pass</span>
+            <span class="meta-value">{{ currentQuiz.passing_score || 70 }}%</span>
+            <span class="meta-label">to Pass</span>
           </div>
         </div>
 
         <div class="intro-actions">
           <button @click="handleExit" class="btn-secondary">Cancel</button>
           <button @click="handleStartQuiz" class="btn-primary" data-testid="start-quiz">
-            Start Quiz
+            Start Quiz →
           </button>
         </div>
       </div>
@@ -440,7 +381,9 @@ function handleGoToQuestion(index) {
 <style scoped>
 .quiz-view {
   min-height: 100vh;
-  background: #f9fafb;
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-body);
   padding: 1.5rem;
 }
 
@@ -453,14 +396,14 @@ function handleGoToQuestion(index) {
   justify-content: center;
   min-height: 80vh;
   gap: 1rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #3b82f6;
+  border: 3px solid rgb(var(--color-line));
+  border-top-color: rgb(var(--color-accent));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -472,12 +415,12 @@ function handleGoToQuestion(index) {
 }
 
 .error-container svg {
-  color: #dc2626;
+  color: rgb(var(--color-accent));
 }
 
 .error-container h2 {
   margin: 0;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
 }
 
 /* Intro State */
@@ -489,63 +432,76 @@ function handleGoToQuestion(index) {
 }
 
 .intro-card {
-  background: white;
-  border-radius: 16px;
+  background: transparent;
   padding: 2.5rem;
   max-width: 480px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-.quiz-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  background: #eff6ff;
-  border-radius: 50%;
-  margin: 0 auto 1.5rem;
-  color: #3b82f6;
+.quiz-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-accent));
+  margin: 0 0 1.4rem;
 }
 
 .quiz-title {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 0.75rem 0;
+  font-family: var(--font-body);
+  font-size: 3.2rem;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: rgb(var(--color-ink));
+  margin: 0 0 1.4rem 0;
 }
 
 .quiz-description {
-  font-size: 1rem;
-  color: #6b7280;
-  line-height: 1.5;
-  margin: 0 0 1.5rem 0;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: rgb(var(--color-ink) / 0.7);
+  line-height: 1.55;
+  margin: 0 0 2.4rem 0;
 }
 
+/* Bordered 3-up stats grid (prototype QuizStart) */
 .quiz-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid rgb(var(--color-line));
+  margin-bottom: 2.4rem;
 }
 
 .meta-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  color: #4b5563;
-  font-size: 0.9375rem;
+  padding: 1.6rem 1rem;
+  border-right: 1px solid rgb(var(--color-line));
 }
 
-.meta-item svg {
-  color: #9ca3af;
+.meta-item:last-child {
+  border-right: none;
+}
+
+.meta-value {
+  font-family: var(--font-body);
+  font-size: 2.6rem;
+  font-weight: 500;
+  line-height: 1;
+  color: rgb(var(--color-ink));
+}
+
+.meta-label {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+  margin-top: 6px;
 }
 
 .intro-actions {
@@ -570,28 +526,28 @@ function handleGoToQuestion(index) {
 .exit-btn {
   width: 40px;
   height: 40px;
-  border: none;
-  background: white;
-  border-radius: 8px;
+  border: 1px solid rgb(var(--color-line));
+  background: transparent;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
-  transition: all 0.15s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: rgb(var(--color-mute));
+  transition: border-color 0.12s ease, color 0.12s ease;
 }
 
 .exit-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
+  border-color: rgb(var(--color-ink));
+  color: rgb(var(--color-ink));
 }
 
 .header-title {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-ink));
   margin: 0;
 }
 
@@ -609,34 +565,37 @@ function handleGoToQuestion(index) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  padding: 0.8rem 1.6rem;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
 .nav-btn:hover:not(:disabled) {
-  background: #f3f4f6;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 
 .nav-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .nav-btn.primary {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border-color: rgb(var(--color-ink));
 }
 
 .nav-btn.primary:hover {
-  background: #2563eb;
+  background: rgb(var(--color-ink) / 0.85);
 }
 
 /* Modal */
@@ -652,8 +611,9 @@ function handleGoToQuestion(index) {
 }
 
 .confirm-modal {
-  background: white;
-  border-radius: 12px;
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
   padding: 1.5rem;
   max-width: 400px;
   width: 100%;
@@ -662,11 +622,13 @@ function handleGoToQuestion(index) {
 
 .confirm-modal h3 {
   margin: 0 0 0.75rem 0;
-  color: #1f2937;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: rgb(var(--color-ink));
 }
 
 .confirm-modal p {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0 0 1.5rem 0;
 }
 
@@ -699,10 +661,10 @@ function handleGoToQuestion(index) {
 }
 
 .review-header h2 {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
   margin: 0;
 }
 
@@ -729,32 +691,34 @@ function handleGoToQuestion(index) {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
-  border: none;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink));
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: rgb(var(--color-ink) / 0.85);
 }
 
 .btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 </style>

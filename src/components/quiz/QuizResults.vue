@@ -66,16 +66,16 @@ const performanceMessage = computed(() => {
           cy="64"
           r="56"
           fill="none"
-          stroke="#e5e7eb"
+          stroke="rgb(var(--color-ink) / 0.08)"
           stroke-width="10"
         />
-        <!-- Progress circle -->
+        <!-- Progress circle — teal pass / magenta fail (design semantics) -->
         <circle
           cx="64"
           cy="64"
           r="56"
           fill="none"
-          :stroke="passed ? '#22c55e' : '#ef4444'"
+          :stroke="passed ? 'rgb(var(--color-complete))' : 'rgb(var(--color-accent))'"
           stroke-width="10"
           stroke-linecap="round"
           :stroke-dasharray="circumference"
@@ -219,13 +219,15 @@ const performanceMessage = computed(() => {
 </template>
 
 <style scoped>
+/* Quiz results — token-driven, teal pass / magenta fail. */
 .quiz-results {
-  background: white;
-  border-radius: 16px;
+  background: transparent;
   padding: 2rem;
   max-width: 480px;
   margin: 0 auto;
   text-align: center;
+  font-family: var(--font-body);
+  color: rgb(var(--color-ink));
 }
 
 .score-circle-container {
@@ -254,15 +256,16 @@ const performanceMessage = computed(() => {
 }
 
 .score-number {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-family: var(--font-body);
+  font-size: 3.2rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
 }
 
 .score-percent {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 500;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin-left: 2px;
 }
 
@@ -271,23 +274,24 @@ const performanceMessage = computed(() => {
 }
 
 .result-title {
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 500;
   margin: 0 0 0.25rem 0;
 }
 
 .result-message.passed .result-title {
-  color: #16a34a;
+  color: rgb(var(--color-complete));
 }
 
 .result-message.failed .result-title {
-  color: #dc2626;
+  color: rgb(var(--color-accent));
 }
 
 .performance-message {
-  font-size: 1rem;
-  color: #6b7280;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: rgb(var(--color-ink) / 0.7);
   margin: 0;
 }
 
@@ -303,8 +307,8 @@ const performanceMessage = computed(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: #f9fafb;
-  border-radius: 8px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
 }
 
 .stat-icon {
@@ -317,18 +321,18 @@ const performanceMessage = computed(() => {
 }
 
 .stat-icon.correct {
-  background: #dcfce7;
-  color: #16a34a;
+  background: rgb(var(--color-complete) / 0.15);
+  color: rgb(var(--color-complete));
 }
 
 .stat-icon.incorrect {
-  background: #fef2f2;
-  color: #dc2626;
+  background: rgb(var(--color-accent) / 0.15);
+  color: rgb(var(--color-accent));
 }
 
 .stat-icon.time {
-  background: #eff6ff;
-  color: #3b82f6;
+  background: rgb(var(--color-ink) / 0.06);
+  color: rgb(var(--color-mute));
 }
 
 .stat-content {
@@ -338,24 +342,29 @@ const performanceMessage = computed(() => {
 }
 
 .stat-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
 }
 
 .stat-label {
-  font-size: 0.75rem;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-mute));
 }
 
 .passing-info {
-  font-size: 0.9375rem;
-  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
   margin: 0 0 1.5rem 0;
 }
 
 .passing-info strong {
-  color: #1f2937;
+  color: rgb(var(--color-ink));
 }
 
 .actions {
@@ -371,43 +380,36 @@ const performanceMessage = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
-  border: none;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-ink));
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: rgb(var(--color-ink) / 0.85);
 }
 
-.btn-secondary {
-  background: #f3f4f6;
-  color: #374151;
-  border: none;
-}
-
-.btn-secondary:hover {
-  background: #e5e7eb;
-}
-
+.btn-secondary,
 .btn-outline {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-ink) / 0.85);
 }
 
+.btn-secondary:hover,
 .btn-outline:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
 }
 </style>
