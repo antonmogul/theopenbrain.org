@@ -1,6 +1,7 @@
 <script setup>
 import { RouterView, useRoute } from "vue-router";
-import MainNav from "./components/Navigation/MainNav.vue";
+import NavDrawer from "./components/Navigation/NavDrawer.vue";
+import MenuAuth from "./components/Navigation/MenuAuth.vue";
 import { onBeforeUnmount, ref, watch } from "vue";
 import { watchDebounced } from "@vueuse/core";
 import { useGeneral } from "@/stores";
@@ -59,7 +60,8 @@ onBeforeUnmount(() => {
                 <component :is="Component" />
             </transition>
         </RouterView>
-        <MainNav />
+        <NavDrawer />
+        <MenuAuth />
     </div>
 </template>
 
