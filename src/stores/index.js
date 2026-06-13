@@ -61,20 +61,17 @@ export const useText = defineStore("text", {
   getters: {},
   actions: {
     updateText(part, textNew) {
-      console.log('Store: updateText called:', part, textNew?.intro?.[0]?.title);
       if (part != "*") {
         this.text[part] = textNew;
         let _newLoaclText = JSON.stringify(this.text);
         localStorage.setItem("sections", _newLoaclText);
       } else {
-        console.log('Store: Replacing all text. Old:', this.text?.intro?.[0]?.title, 'New:', textNew?.intro?.[0]?.title);
         // Use $patch to ensure proper reactivity in Pinia
         this.$patch((state) => {
           state.text = textNew;
         });
         // Also update localStorage when replacing all text (switching chapters)
         localStorage.setItem("sections", JSON.stringify(textNew));
-        console.log('Store: Store updated. Current text:', this.text?.intro?.[0]?.title);
       }
     },
   },

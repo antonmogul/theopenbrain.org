@@ -8,7 +8,6 @@ import { toSlug, addH, removeH } from "@/helper/general";
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
 
-import { pointAdderAnimation } from "@/helper/marking";
 import Section from "./text/SectionComp.vue";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
@@ -44,30 +43,13 @@ const source = computed(() => {
   return textStore.text;
 });
 
-// Watch for store changes for debugging
-watch(() => textStore.text, (newText) => {
-  console.log('TextComp: Store text changed:', newText?.intro?.[0]?.title);
-  console.log('TextComp: Number of sections:', newText?.sections?.length || 0);
-  if (newText?.sections) {
-    console.log('TextComp: Section titles:', newText.sections.map(s => s.title));
-  }
-}, { deep: true });
-
-watch(source, (newSource) => {
-  console.log('TextComp: Source computed changed:', newSource?.intro?.[0]?.title);
-  console.log('TextComp: Number of sections in source:', newSource?.sections?.length || 0);
-}, { deep: true });
-
 // Save content to Supabase
 const saveContent = async ({ paragraphId, content, type }) => {
-  console.log("TextComp: saveContent called", { paragraphId, content, type });
-
   // Get current chapter slug
   const chapterSlug = route.params.slug;
 
   // For Chapter 1 (JSON-based), update localStorage
   if (chapterSlug === "the-retina") {
-    console.log("TextComp: Saving to localStorage (Chapter 1)");
     // Update the store directly for Chapter 1
     updateLocalContent(paragraphId, content, type);
     return;
@@ -107,8 +89,6 @@ const saveContent = async ({ paragraphId, content, type }) => {
         throw new Error(`Failed to save paragraph: ${response.status}`);
       }
 
-      console.log("TextComp: Paragraph saved to Supabase");
-
       // Update local store
       updateLocalContent(paragraphId, content, type);
 
@@ -133,8 +113,6 @@ const saveContent = async ({ paragraphId, content, type }) => {
       if (!response.ok) {
         throw new Error(`Failed to save section title: ${response.status}`);
       }
-
-      console.log("TextComp: Section title saved to Supabase");
 
       // Update local store
       updateLocalContent(paragraphId, content, type);
@@ -208,7 +186,6 @@ onMounted(() => {
     const container = document.getElementById("container");
     if (_text) {
       clearInterval(wait);
-      pointAdderAnimation();
       const illuHighlights = document.getElementsByClassName("animationMarker");
 
       for (const highlight of illuHighlights) {
