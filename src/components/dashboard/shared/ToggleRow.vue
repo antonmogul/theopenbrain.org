@@ -1,13 +1,15 @@
 <script setup>
 // Label + hint + Switch row, matching the prototype ToggleRow (profile.jsx).
 // v-model:checked. Used by Email preferences, Data & privacy, and diagram toggles.
-import SettingsSwitch from "./SettingsSwitch.vue";
+import Switch from "./Switch.vue";
+import PreviewTag from "./PreviewTag.vue";
 
 defineProps({
   label: { type: String, required: true },
   hint: { type: String, default: "" },
   checked: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
+  preview: { type: Boolean, default: false },
 });
 defineEmits(["update:checked"]);
 </script>
@@ -15,10 +17,12 @@ defineEmits(["update:checked"]);
 <template>
   <div class="toggle-row">
     <div class="toggle-text">
-      <div class="toggle-label">{{ label }}</div>
+      <div class="toggle-label">
+        {{ label }} <PreviewTag v-if="preview" />
+      </div>
       <div v-if="hint" class="toggle-hint">{{ hint }}</div>
     </div>
-    <SettingsSwitch
+    <Switch
       :checked="checked"
       :disabled="disabled"
       @update:checked="$emit('update:checked', $event)"
