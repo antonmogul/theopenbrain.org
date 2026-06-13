@@ -1,9 +1,33 @@
 <script setup>
+// Creator dashboard — reskinned to the unified token design (sub-project D).
+// Adopts DashboardShell (accent=magenta, the default) + the shared component
+// library. All fetch/CRUD/wizard logic is preserved verbatim; supabaseRest is
+// kept local. Only chrome/markup changed. The abandoned DashboardViewRefactored
+// stays dead code — this is the live monolith, reskinned in place.
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter, useRoute } from "vue-router";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
-import "@/assets/styles/admin-theme.css";
+
+// Shared dashboard library (token-based)
+import {
+    DashboardShell,
+    SectionHeader,
+    BaseCard,
+    StatCard,
+    StatGrid,
+    ListRow,
+    StatusBadge,
+    EmptyState,
+    LoadingState,
+    ErrorState,
+    BaseModal,
+    Button,
+    SearchInput,
+    FilterChips,
+    SegmentedControl,
+    FormField,
+} from "@/components/dashboard/shared";
 
 // Wizard step components
 import WizardStepMeta from "@/components/dashboard/chapters/WizardStepMeta.vue";
@@ -89,6 +113,31 @@ const creatorNavItems = [
     { id: "quizzes", label: "Quizzes", icon: "quiz" },
     { id: "users", label: "Users", icon: "users" },
     { id: "analytics", label: "Analytics", icon: "chart" },
+];
+
+// Filter/segmented-control option sets (shared components)
+const mediaFilterOptions = [
+    { value: "all", label: "All types" },
+    { value: "lottie", label: "Lottie" },
+    { value: "video", label: "Video" },
+    { value: "image", label: "Image" },
+    { value: "youtube", label: "YouTube" },
+];
+const usersFilterOptions = [
+    { value: "all", label: "All" },
+    { value: "creator", label: "Creators" },
+    { value: "professor", label: "Professors" },
+    { value: "student", label: "Students" },
+];
+const analyticsRangeOptions = [
+    { value: "7days", label: "7 days" },
+    { value: "30days", label: "30 days" },
+    { value: "90days", label: "90 days" },
+];
+const roleSelectOptions = [
+    { value: "student", label: "Student" },
+    { value: "professor", label: "Professor" },
+    { value: "creator", label: "Creator" },
 ];
 
 // ============ CHAPTERS SECTION STATE ============
@@ -893,7 +942,7 @@ async function selectMedia(item) {
                 });
             } catch (err) {
                 console.error('Failed to load lottie preview:', err);
-                container.innerHTML = '<p style="color: #999; text-align: center; padding: 2rem;">Failed to load animation</p>';
+                container.innerHTML = '<p style="color: rgb(var(--color-mute)); text-align: center; padding: 2rem;">Failed to load animation</p>';
             }
         }
     }
@@ -1106,8 +1155,10 @@ async function fetchAnalytics() {
                 {
                     label: "Active Users",
                     data: sortedDates.map((d) => dailyData[d].size),
-                    borderColor: "rgb(151, 71, 255)",
-                    backgroundColor: "rgba(151, 71, 255, 0.1)",
+                    // Bars render via CSS (.chart-bar → rgb(var(--color-accent)));
+                    // these dataset colors resolve to the same accent token.
+                    borderColor: "rgb(var(--color-accent))",
+                    backgroundColor: "rgb(var(--color-accent) / 0.1)",
                     fill: true,
                     tension: 0.4,
                 },
@@ -1493,6 +1544,32 @@ const setActiveSection = (sectionId) => {
     sidebarOpen.value = false;
 };
 
+// Shared-control change handlers (FilterChips/SegmentedControl emit
+// update:modelValue, not native @change — these wrap the old inline handlers).
+function onMediaFilter(value) {
+    mediaFilter.value = value;
+    fetchMedia();
+}
+function onUsersFilter(value) {
+    usersFilter.value = value;
+    usersPage.value = 1;
+    fetchUsers();
+}
+function onAnalyticsRange(value) {
+    analyticsDateRange.value = value;
+    fetchAnalytics();
+}
+function onUsersSearch(value) {
+    usersSearch.value = value;
+    usersPage.value = 1;
+    fetchUsers();
+}
+function goToUsersPage(page) {
+    if (page < 1 || page > usersTotalPages.value) return;
+    usersPage.value = page;
+    fetchUsers();
+}
+
 // ============ CHAPTER WIZARD STATE ============
 const wizardCurrentStep = ref(1);
 const wizardSteps = [
@@ -1757,6336 +1834,1413 @@ onMounted(() => {
 });
 </script>
 
+
 <template>
-    <div class="dashboard-layout admin-light">
-        <!-- Loading State -->
-        <div
-            v-if="loading || profileLoading"
-            class="flex items-center justify-center h-screen bg-darker"
-        >
-            <div class="text-xl text-light font-mono">Loading...</div>
-        </div>
+    <!-- Loading -->
+    <div v-if="loading || profileLoading" class="screen">
+        <LoadingState message="Loading…" size="lg" />
+    </div>
 
-        <!-- Not Authenticated -->
-        <div
-            v-else-if="!isAuthenticated"
-            class="flex flex-col items-center justify-center h-screen bg-darker gap-6"
-        >
-            <h1 class="text-4xl font-semibold text-white">Access Denied</h1>
-            <p class="text-light text-lg">
-                Please log in to access your dashboard.
-            </p>
-            <button
-                @click="router.push('/')"
-                class="uppercase bg-violet text-white font-mono px-8 py-3 rounded-full hover:bg-white hover:text-black transition-colors"
-            >
-                Go Home
-            </button>
-        </div>
+    <!-- Not authenticated -->
+    <div v-else-if="!isAuthenticated" class="screen">
+        <ErrorState
+            title="Access denied"
+            message="Please log in to access your dashboard."
+            retry-label="Go home"
+            @retry="router.push('/')"
+        />
+    </div>
 
-        <!-- Authenticated Dashboard -->
-        <template v-else>
-            <!-- Mobile sidebar overlay -->
-            <div
-                v-if="sidebarOpen"
-                class="sidebar-overlay"
-                @click="sidebarOpen = false"
-            ></div>
+    <!-- Authenticated dashboard -->
+    <DashboardShell
+        v-else
+        :nav-items="creatorNavItems"
+        :active-section="activeSection"
+        :display-name="displayName"
+        :email="user?.email"
+        role="Creator"
+        accent="magenta"
+        :back-to="'/chapter/1/the-retina'"
+        back-label="Read book"
+        @update:active-section="setActiveSection"
+    >
+        <!-- DASHBOARD -->
+        <section v-if="activeSection === 'dashboard'" class="section">
+            <SectionHeader eyebrow="01 · Overview" title="Creator console" />
 
-            <!-- Mobile hamburger -->
-            <button
-                class="mobile-hamburger"
-                @click="sidebarOpen = !sidebarOpen"
-            >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
+            <LoadingState v-if="dashboardLoading" message="Loading dashboard data…" />
 
-            <!-- Sidebar -->
-            <aside class="sidebar" :class="{ open: sidebarOpen }">
-                <!-- Logo (floating outside cards) -->
-                <div class="sidebar-logo">
-                    <span class="logo-icon">OB</span>
-                    <span class="logo-text">INSIDE THE BRAIN</span>
+            <template v-else>
+                <!-- A. Top metrics -->
+                <StatGrid :columns="5">
+                    <StatCard
+                        class="stat-click"
+                        :value="dashboardStats.chapters"
+                        label="Chapters"
+                        @click="setActiveSection('chapters')"
+                    />
+                    <StatCard
+                        class="stat-click"
+                        :value="dashboardStats.totalUsers"
+                        label="Users"
+                        @click="setActiveSection('users')"
+                    />
+                    <StatCard
+                        class="stat-click"
+                        :value="dashboardStats.totalQuizzes"
+                        label="Quizzes"
+                        @click="setActiveSection('quizzes')"
+                    />
+                    <StatCard :value="dashboardStats.totalWords" label="Words" />
+                    <StatCard
+                        class="stat-click"
+                        :value="dashboardStats.totalMedia"
+                        label="Media assets"
+                        @click="setActiveSection('media')"
+                    />
+                </StatGrid>
+
+                <!-- B. Recent chapters -->
+                <div>
+                    <div class="card-head">
+                        <h3 class="card-title">Recent chapters</h3>
+                        <Button variant="ghost" size="sm" @click="setActiveSection('chapters')">View all</Button>
+                    </div>
+                    <EmptyState
+                        v-if="recentChapters.length === 0"
+                        title="No chapters yet"
+                        message="Create your first chapter to get started."
+                        action-label="New chapter"
+                        @action="startChapterWizard()"
+                    />
+                    <BaseCard v-else>
+                        <ListRow
+                            v-for="ch in recentChapters"
+                            :key="ch.id"
+                            :label="ch.title"
+                            :hint="`Ch ${ch.order_index} · ${ch.sectionCount} sections · ${ch.readingTime} min read`"
+                            interactive
+                            @click="setActiveSection('chapters')"
+                        >
+                            <StatusBadge :status="ch.status || 'draft'" />
+                        </ListRow>
+                    </BaseCard>
                 </div>
 
-                <!-- User Profile Card -->
-                <div class="user-profile-card">
-                    <div class="user-avatar">
-                        <span class="avatar-icon">{{
-                            displayName.charAt(0).toUpperCase()
-                        }}</span>
-                    </div>
-                    <div class="user-info">
-                        <p class="user-date">{{ currentDate }}</p>
-                        <p class="user-greeting">Welcome back,</p>
-                        <p class="user-name">{{ displayName }}!</p>
-                    </div>
+                <!-- C. Users by role + quick actions -->
+                <div class="grid-2">
+                    <BaseCard>
+                        <h3 class="card-title">Users by role</h3>
+                        <div class="role-bars">
+                            <div class="role-bar-row">
+                                <span class="role-bar-label">Creators</span>
+                                <span class="role-bar-count">{{ userRoleBreakdown.creators }}</span>
+                                <div class="role-bar-track">
+                                    <div class="role-bar-fill" :style="{ width: (userRoleBreakdown.creators / maxRoleCount * 100) + '%' }"></div>
+                                </div>
+                            </div>
+                            <div class="role-bar-row">
+                                <span class="role-bar-label">Professors</span>
+                                <span class="role-bar-count">{{ userRoleBreakdown.professors }}</span>
+                                <div class="role-bar-track">
+                                    <div class="role-bar-fill" :style="{ width: (userRoleBreakdown.professors / maxRoleCount * 100) + '%' }"></div>
+                                </div>
+                            </div>
+                            <div class="role-bar-row">
+                                <span class="role-bar-label">Students</span>
+                                <span class="role-bar-count">{{ userRoleBreakdown.students }}</span>
+                                <div class="role-bar-track">
+                                    <div class="role-bar-fill" :style="{ width: (userRoleBreakdown.students / maxRoleCount * 100) + '%' }"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </BaseCard>
+
+                    <BaseCard>
+                        <h3 class="card-title">Quick actions</h3>
+                        <div class="qa-list">
+                            <Button variant="outline" size="sm" block @click="startChapterWizard()">+ New chapter</Button>
+                            <Button variant="outline" size="sm" block @click="setActiveSection('quizzes'); showQuizEditor = true;">+ New quiz</Button>
+                            <Button variant="outline" size="sm" block @click="setActiveSection('users')">Manage users</Button>
+                            <Button variant="outline" size="sm" block @click="setActiveSection('analytics')">View analytics</Button>
+                        </div>
+                    </BaseCard>
                 </div>
 
-                <!-- Navigation Card -->
-                <div class="sidebar-nav-card">
-                    <nav class="sidebar-nav">
+                <!-- D. Quiz performance -->
+                <div>
+                    <h3 class="card-title">Quiz performance</h3>
+                    <EmptyState v-if="quizzes.length === 0" title="No quizzes created yet" />
+                    <BaseCard v-else padding="none" class="mt-3">
+                        <table class="data-tbl">
+                            <thead>
+                                <tr>
+                                    <th>Quiz name</th>
+                                    <th>Questions</th>
+                                    <th>Attempts</th>
+                                    <th>Avg score</th>
+                                    <th>Pass rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="q in quizzes" :key="q.id">
+                                    <td class="cell-strong">{{ q.title }}</td>
+                                    <td>{{ q.questionCount }}</td>
+                                    <td>{{ q.attemptCount }}</td>
+                                    <td>{{ q.avgScore }}%</td>
+                                    <td>{{ q.passRate }}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </BaseCard>
+                </div>
+
+                <!-- E. Content stats + trending highlights -->
+                <div class="grid-2">
+                    <BaseCard>
+                        <h3 class="card-title">Content stats</h3>
+                        <div class="mini-stats wrap mt-3">
+                            <div class="mini-stat">
+                                <span class="mini-value">{{ dashboardStats.totalSections }}</span>
+                                <span class="mini-label">Total sections</span>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="mini-value">{{ dashboardStats.totalParagraphs }}</span>
+                                <span class="mini-label">Total paragraphs</span>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="mini-value">{{ dashboardStats.avgReadingTime }} min</span>
+                                <span class="mini-label">Avg reading time</span>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="mini-value">{{ dashboardStats.publishedChapters }} / {{ dashboardStats.draftChapters }}</span>
+                                <span class="mini-label">Published / draft</span>
+                            </div>
+                        </div>
+                    </BaseCard>
+
+                    <BaseCard>
+                        <h3 class="card-title">Trending highlights</h3>
+                        <EmptyState v-if="trendingHighlights.length === 0" title="No highlights yet" />
+                        <div v-else class="mt-3">
+                            <ListRow
+                                v-for="(h, i) in trendingHighlights.slice(0, 5)"
+                                :key="i"
+                                :label="`“${(h.highlighted_text || h.text || '').slice(0, 80)}${(h.highlighted_text || h.text || '').length > 80 ? '…' : ''}”`"
+                            >
+                                <StatusBadge variant="accent">{{ h.highlight_count || h.count || 0 }}</StatusBadge>
+                            </ListRow>
+                        </div>
+                    </BaseCard>
+                </div>
+            </template>
+        </section>
+
+        <!-- CHAPTERS -->
+        <section v-else-if="activeSection === 'chapters'" class="section">
+            <SectionHeader eyebrow="02 · Chapters" title="Book content">
+                <template #actions>
+                    <Button variant="solid" size="sm" @click="startChapterWizard()">New chapter</Button>
+                </template>
+            </SectionHeader>
+
+            <LoadingState v-if="chaptersLoading" message="Loading chapters…" />
+            <ErrorState v-else-if="chaptersError" :message="chaptersError" @retry="fetchAllChapters" />
+
+            <div v-else class="stack">
+                <BaseCard
+                    v-for="chapter in chapters"
+                    :key="chapter.id"
+                    padding="none"
+                    :class="{ 'chapter-expanded': expandedChapterId === chapter.id }"
+                >
+                    <!-- Chapter header (always visible) -->
+                    <div class="chapter-head" @click="toggleChapter(chapter.id)">
+                        <div class="chapter-head-main">
+                            <span class="eyebrow-mono">Chapter {{ chapter.order_index }}</span>
+                            <h3 class="card-title sm">{{ chapter.title }}</h3>
+                            <div v-if="expandedChapterId !== chapter.id" class="meta-row mt-1">
+                                <span>{{ chapter.sectionCount }} sections</span>
+                                <span>{{ chapter.paragraphCount }} paragraphs</span>
+                                <span>{{ chapter.wordCount.toLocaleString() }} words</span>
+                                <span>{{ chapter.readingTime }} min read</span>
+                            </div>
+                            <span v-if="expandedChapterId !== chapter.id" class="muted-mono">
+                                Last edited: {{ formatDate(chapter.updated_at) }}
+                            </span>
+                        </div>
+                        <StatusBadge :status="chapter.status || 'draft'" />
                         <button
-                            v-for="item in creatorNavItems"
-                            :key="item.id"
-                            @click="setActiveSection(item.id)"
-                            class="nav-item"
-                            :class="{ active: activeSection === item.id }"
+                            v-if="expandedChapterId === chapter.id"
+                            type="button"
+                            class="chev-btn"
+                            @click.stop="toggleChapter(chapter.id)"
+                            aria-label="Collapse"
                         >
-                            <!-- Icons -->
-                            <svg
-                                v-if="item.icon === 'grid'"
-                                class="nav-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <rect x="3" y="3" width="7" height="7"></rect>
-                                <rect x="14" y="3" width="7" height="7"></rect>
-                                <rect x="14" y="14" width="7" height="7"></rect>
-                                <rect x="3" y="14" width="7" height="7"></rect>
-                            </svg>
-                            <svg
-                                v-else-if="item.icon === 'book'"
-                                class="nav-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path
-                                    d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"
-                                ></path>
-                                <path
-                                    d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-                                ></path>
-                            </svg>
-                            <svg
-                                v-else-if="item.icon === 'layers'"
-                                class="nav-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <polygon
-                                    points="12 2 2 7 12 12 22 7 12 2"
-                                ></polygon>
-                                <polyline points="2 17 12 22 22 17"></polyline>
-                                <polyline points="2 12 12 17 22 12"></polyline>
-                            </svg>
-                            <svg
-                                v-else-if="item.icon === 'image'"
-                                class="nav-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <rect
-                                    x="3"
-                                    y="3"
-                                    width="18"
-                                    height="18"
-                                    rx="2"
-                                    ry="2"
-                                ></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                            <svg
-                                v-else-if="item.icon === 'quiz'"
-                                class="nav-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path
-                                    d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
-                                ></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                            <svg
-                                v-else-if="item.icon === 'users'"
-                                class="nav-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path
-                                    d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                                ></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            <svg
-                                v-else-if="item.icon === 'chart'"
-                                class="nav-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <line x1="18" y1="20" x2="18" y2="10"></line>
-                                <line x1="12" y1="20" x2="12" y2="4"></line>
-                                <line x1="6" y1="20" x2="6" y2="14"></line>
-                            </svg>
-                            <span class="nav-label">{{ item.label }}</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
                         </button>
-                    </nav>
-                </div>
-
-                <!-- Read Book Button (floating at bottom) -->
-                <div class="sidebar-footer">
-                    <button @click="goToBook" class="read-book-btn">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path
-                                d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
-                            ></path>
-                            <path
-                                d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
-                            ></path>
-                        </svg>
-                        Read Book
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="main-content">
-                <!-- Header -->
-                <header class="content-header">
-                    <div class="header-left">
-                        <h1 class="page-title">
-                            {{
-                                creatorNavItems.find(
-                                    (i) => i.id === activeSection,
-                                )?.label || "Dashboard"
-                            }}
-                        </h1>
-                    </div>
-                    <div class="header-right">
-                    </div>
-                </header>
-
-                <!-- Dashboard Overview (default view) -->
-                <section
-                    v-if="activeSection === 'dashboard'"
-                    class="dashboard-content"
-                >
-                    <!-- Loading State -->
-                    <div v-if="dashboardLoading" class="dash-loading">
-                        <div class="dash-loading-spinner"></div>
-                        <p>Loading dashboard data...</p>
+                        <svg v-else class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
 
-                    <template v-else>
-                        <!-- A. Top Metrics Row -->
-                        <div class="dashboard-metrics-row">
-                            <button class="dashboard-metric" @click="setActiveSection('chapters')">
-                                <div class="dm-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                    </svg>
-                                </div>
-                                <span class="dm-value">{{ dashboardStats.chapters }}</span>
-                                <span class="dm-label">Chapters</span>
-                            </button>
-
-                            <button class="dashboard-metric" @click="setActiveSection('users')">
-                                <div class="dm-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                </div>
-                                <span class="dm-value">{{ dashboardStats.totalUsers }}</span>
-                                <span class="dm-label">Users</span>
-                            </button>
-
-                            <button class="dashboard-metric" @click="setActiveSection('quizzes')">
-                                <div class="dm-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M9 11l3 3L22 4"></path>
-                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                                    </svg>
-                                </div>
-                                <span class="dm-value">{{ dashboardStats.totalQuizzes }}</span>
-                                <span class="dm-label">Quizzes</span>
-                            </button>
-
-                            <div class="dashboard-metric">
-                                <div class="dm-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    </svg>
-                                </div>
-                                <span class="dm-value">{{ dashboardStats.totalWords.toLocaleString() }}</span>
-                                <span class="dm-label">Words</span>
-                            </div>
-
-                            <button class="dashboard-metric" @click="setActiveSection('media')">
-                                <div class="dm-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                        <polyline points="21 15 16 10 5 21"></polyline>
-                                    </svg>
-                                </div>
-                                <span class="dm-value">{{ dashboardStats.totalMedia }}</span>
-                                <span class="dm-label">Media Assets</span>
-                            </button>
-                        </div>
-
-                        <!-- B. Recent Chapters -->
-                        <div class="dash-card">
-                            <h3 class="dash-card-title">Recent Chapters</h3>
-                            <div v-if="recentChapters.length === 0" class="dash-empty">
-                                <p>No chapters yet. Create your first chapter to get started.</p>
-                            </div>
-                            <div v-else class="recent-chapters-list">
-                                <button
-                                    v-for="ch in recentChapters"
-                                    :key="ch.id"
-                                    class="chapter-row"
-                                    @click="setActiveSection('chapters')"
-                                >
-                                    <span class="ch-order">Ch{{ ch.order_index }}</span>
-                                    <span class="ch-title">{{ ch.title }}</span>
-                                    <span
-                                        class="ch-status"
-                                        :class="ch.status === 'published' ? 'published' : 'draft'"
-                                    >{{ ch.status || 'draft' }}</span>
-                                    <span class="ch-meta">{{ ch.sectionCount }} sections</span>
-                                    <span class="ch-meta">{{ ch.readingTime }} min read</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- C. Two-Column Row: Users by Role + Quick Actions -->
-                        <div class="dash-two-col">
-                            <!-- Users by Role -->
-                            <div class="dash-card">
-                                <h3 class="dash-card-title">Users by Role</h3>
-                                <div class="role-bars">
-                                    <div class="role-bar-row">
-                                        <span class="role-bar-label">Creators</span>
-                                        <span class="role-bar-count">{{ userRoleBreakdown.creators }}</span>
-                                        <div class="role-bar-track">
-                                            <div
-                                                class="role-bar-fill creators"
-                                                :style="{ width: (userRoleBreakdown.creators / maxRoleCount * 100) + '%' }"
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <div class="role-bar-row">
-                                        <span class="role-bar-label">Professors</span>
-                                        <span class="role-bar-count">{{ userRoleBreakdown.professors }}</span>
-                                        <div class="role-bar-track">
-                                            <div
-                                                class="role-bar-fill professors"
-                                                :style="{ width: (userRoleBreakdown.professors / maxRoleCount * 100) + '%' }"
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <div class="role-bar-row">
-                                        <span class="role-bar-label">Students</span>
-                                        <span class="role-bar-count">{{ userRoleBreakdown.students }}</span>
-                                        <div class="role-bar-track">
-                                            <div
-                                                class="role-bar-fill students"
-                                                :style="{ width: (userRoleBreakdown.students / maxRoleCount * 100) + '%' }"
-                                            ></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Quick Actions -->
-                            <div class="dash-card quick-actions-card">
-                                <h3 class="dash-card-title">Quick Actions</h3>
-                                <div class="quick-actions-list">
-                                    <button class="quick-action-btn" @click="startChapterWizard()">
-                                        <span class="qa-plus">+</span> New Chapter
-                                    </button>
-                                    <button class="quick-action-btn" @click="setActiveSection('quizzes'); showQuizEditor = true;">
-                                        <span class="qa-plus">+</span> New Quiz
-                                    </button>
-                                    <button class="quick-action-btn" @click="setActiveSection('users')">
-                                        <span class="qa-plus">+</span> Manage Users
-                                    </button>
-                                    <button class="quick-action-btn" @click="setActiveSection('analytics')">
-                                        <span class="qa-plus">+</span> View Analytics
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- D. Quiz Performance Table -->
-                        <div class="dash-card">
-                            <h3 class="dash-card-title">Quiz Performance</h3>
-                            <div v-if="quizzes.length === 0" class="dash-empty">
-                                <p>No quizzes created yet.</p>
-                            </div>
-                            <table v-else class="quiz-perf-table">
-                                <thead>
-                                    <tr>
-                                        <th>Quiz Name</th>
-                                        <th>Questions</th>
-                                        <th>Attempts</th>
-                                        <th>Avg Score</th>
-                                        <th>Pass Rate</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="q in quizzes" :key="q.id">
-                                        <td class="quiz-name-cell">{{ q.title }}</td>
-                                        <td>{{ q.questionCount }}</td>
-                                        <td>{{ q.attemptCount }}</td>
-                                        <td>{{ q.avgScore }}%</td>
-                                        <td>{{ q.passRate }}%</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- E. Two-Column Row: Content Stats + Trending Highlights -->
-                        <div class="dash-two-col">
-                            <!-- Content Stats -->
-                            <div class="dash-card">
-                                <h3 class="dash-card-title">Content Stats</h3>
-                                <div class="content-stats-grid">
-                                    <div class="cs-item">
-                                        <span class="cs-value">{{ dashboardStats.totalSections }}</span>
-                                        <span class="cs-label">Total Sections</span>
-                                    </div>
-                                    <div class="cs-item">
-                                        <span class="cs-value">{{ dashboardStats.totalParagraphs }}</span>
-                                        <span class="cs-label">Total Paragraphs</span>
-                                    </div>
-                                    <div class="cs-item">
-                                        <span class="cs-value">{{ dashboardStats.avgReadingTime }} min</span>
-                                        <span class="cs-label">Avg Reading Time</span>
-                                    </div>
-                                    <div class="cs-item">
-                                        <span class="cs-value">{{ dashboardStats.publishedChapters }} / {{ dashboardStats.draftChapters }}</span>
-                                        <span class="cs-label">Published / Draft</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Trending Highlights -->
-                            <div class="dash-card">
-                                <h3 class="dash-card-title">Trending Highlights</h3>
-                                <div v-if="trendingHighlights.length === 0" class="dash-empty">
-                                    <p>No highlights yet</p>
-                                </div>
-                                <div v-else class="highlights-list">
+                    <!-- Expanded content -->
+                    <div v-if="expandedChapterId === chapter.id" class="chapter-body">
+                        <div class="chapter-editor-layout">
+                            <!-- Left: block list -->
+                            <div class="blocks-sidebar">
+                                <div class="blocks-list">
                                     <div
-                                        v-for="(h, i) in trendingHighlights.slice(0, 5)"
-                                        :key="i"
-                                        class="highlight-item"
+                                        v-for="block in flatBlocks"
+                                        :key="block.id"
+                                        class="block-item"
+                                        :class="{
+                                            section: block.type === 'section',
+                                            paragraph: block.type === 'paragraph',
+                                            selected: selectedBlock?.id === block.id,
+                                            highlighted: highlightedBlockId === block.id && !selectedBlock,
+                                            'drag-over': dragOverBlockId === block.id,
+                                        }"
+                                        :draggable="block.type === 'paragraph'"
+                                        @click="selectBlock(block)"
+                                        @dragstart="handleDragStart($event, block)"
+                                        @dragover="handleDragOver($event, block)"
+                                        @dragleave="handleDragLeave"
+                                        @drop="handleDrop($event, block)"
+                                        @dragend="handleDragEnd"
                                     >
-                                        <span class="hi-text">"{{ (h.highlighted_text || h.text || '').slice(0, 80) }}{{ (h.highlighted_text || h.text || '').length > 80 ? '...' : '' }}"</span>
-                                        <span class="hi-count">{{ h.highlight_count || h.count || 0 }}</span>
+                                        <template v-if="block.type === 'section'">
+                                            <svg class="block-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                                            <span class="block-title">{{ block.title }}</span>
+                                        </template>
+                                        <template v-else>
+                                            <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"></circle><circle cx="15" cy="5" r="1.5"></circle><circle cx="9" cy="12" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="9" cy="19" r="1.5"></circle><circle cx="15" cy="19" r="1.5"></circle></svg>
+                                            <span class="block-index">P{{ block.paraIndex + 1 }}</span>
+                                            <span class="block-preview">{{ block.preview || "Empty paragraph" }}</span>
+                                            <span
+                                                v-if="block.animationId"
+                                                class="media-badge"
+                                                @click.stop="detachMedia(block)"
+                                                title="Click to remove media"
+                                            >
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                                {{ block.animationTrigger || 'Media' }}
+                                                <span class="media-badge-x">&times;</span>
+                                            </span>
+                                            <button
+                                                v-else
+                                                type="button"
+                                                class="attach-media-btn"
+                                                @click.stop="openMediaPicker(block)"
+                                                title="Attach animation or media"
+                                            >
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                            </button>
+                                            <svg v-if="selectedBlock?.id === block.id" class="selected-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18l6-6-6-6"></path></svg>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </template>
-                </section>
 
-                <!-- Chapters Section -->
-                <section
-                    v-else-if="activeSection === 'chapters'"
-                    class="chapters-section"
-                >
-                    <!-- Loading State -->
-                    <div v-if="chaptersLoading" class="chapters-loading">
-                        <span>Loading chapters...</span>
-                    </div>
+                            <!-- Right: stats panel or editor -->
+                            <div class="editor-panel">
+                                <!-- Stats panel (no selection) -->
+                                <div v-if="!selectedBlock" class="stats-panel">
+                                    <StatGrid :columns="4">
+                                        <StatCard :value="chapterStats?.sections || 0" label="Sections" />
+                                        <StatCard :value="chapterStats?.paragraphs || 0" label="Paragraphs" />
+                                        <StatCard :value="chapterStats?.words || 0" label="Words" />
+                                        <StatCard :value="chapterStats?.readingTime || 0" label="Min read" />
+                                    </StatGrid>
 
-                    <!-- Error State -->
-                    <div v-else-if="chaptersError" class="chapters-error">
-                        <p>Error loading chapters: {{ chaptersError }}</p>
-                        <button @click="fetchAllChapters" class="action-btn">
-                            Retry
-                        </button>
-                    </div>
-
-                    <!-- Chapters List -->
-                    <div v-else class="chapters-list">
-                        <!-- Chapter Cards -->
-                        <div
-                            v-for="(chapter, chapterIndex) in chapters"
-                            :key="chapter.id"
-                            class="chapter-card"
-                            :class="{
-                                expanded: expandedChapterId === chapter.id,
-                            }"
-                        >
-                            <!-- Chapter Header (always visible) -->
-                            <div
-                                class="chapter-header"
-                                @click="toggleChapter(chapter.id)"
-                            >
-                                <div class="chapter-title-row">
-                                    <span class="chapter-number">
-                                        CHAPTER {{ chapter.order_index }}
-                                    </span>
-                                    <h3 class="chapter-title">
-                                        {{ chapter.title }}
-                                    </h3>
-                                    <span
-                                        class="status-badge"
-                                        :class="chapter.status"
-                                    >
-                                        {{ chapter.status }}
-                                    </span>
-                                    <button
-                                        v-if="expandedChapterId === chapter.id"
-                                        class="close-btn"
-                                        @click.stop="toggleChapter(chapter.id)"
-                                    >
-                                        Close
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <polyline
-                                                points="18 15 12 9 6 15"
-                                            ></polyline>
-                                        </svg>
-                                    </button>
-                                    <svg
-                                        v-else
-                                        class="chevron-icon"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <polyline
-                                            points="6 9 12 15 18 9"
-                                        ></polyline>
-                                    </svg>
-                                </div>
-
-                                <!-- Stats Row (collapsed state) -->
-                                <div
-                                    v-if="expandedChapterId !== chapter.id"
-                                    class="chapter-stats-row"
-                                >
-                                    <span
-                                        >{{
-                                            chapter.sectionCount
-                                        }}
-                                        sections</span
-                                    >
-                                    <span class="dot">·</span>
-                                    <span
-                                        >{{
-                                            chapter.paragraphCount
-                                        }}
-                                        paragraphs</span
-                                    >
-                                    <span class="dot">·</span>
-                                    <span
-                                        >{{
-                                            chapter.wordCount.toLocaleString()
-                                        }}
-                                        words</span
-                                    >
-                                    <span class="dot">·</span>
-                                    <span
-                                        >{{ chapter.readingTime }} min
-                                        read</span
-                                    >
-                                </div>
-                                <div
-                                    v-if="expandedChapterId !== chapter.id"
-                                    class="chapter-meta"
-                                >
-                                    Last edited:
-                                    {{ formatDate(chapter.updated_at) }}
-                                </div>
-                            </div>
-
-                            <!-- Expanded Content -->
-                            <div
-                                v-if="expandedChapterId === chapter.id"
-                                class="chapter-content"
-                            >
-                                <div class="chapter-editor-layout">
-                                    <!-- Left: Block List -->
-                                    <div class="blocks-sidebar">
-                                        <div class="blocks-list">
+                                    <div class="content-preview" ref="contentPreviewRef">
+                                        <h4 class="preview-title">Content preview</h4>
+                                        <div class="preview-content">
                                             <div
                                                 v-for="block in flatBlocks"
                                                 :key="block.id"
-                                                class="block-item"
-                                                :class="{
-                                                    section:
-                                                        block.type ===
-                                                        'section',
-                                                    paragraph:
-                                                        block.type ===
-                                                        'paragraph',
-                                                    selected:
-                                                        selectedBlock?.id ===
-                                                        block.id,
-                                                    highlighted:
-                                                        highlightedBlockId ===
-                                                            block.id &&
-                                                        !selectedBlock,
-                                                    'drag-over':
-                                                        dragOverBlockId ===
-                                                        block.id,
-                                                }"
-                                                :draggable="
-                                                    block.type === 'paragraph'
-                                                "
-                                                @click="selectBlock(block)"
-                                                @dragstart="
-                                                    handleDragStart(
-                                                        $event,
-                                                        block,
-                                                    )
-                                                "
-                                                @dragover="
-                                                    handleDragOver(
-                                                        $event,
-                                                        block,
-                                                    )
-                                                "
-                                                @dragleave="handleDragLeave"
-                                                @drop="
-                                                    handleDrop($event, block)
-                                                "
-                                                @dragend="handleDragEnd"
+                                                :data-block-id="block.id"
+                                                class="preview-block"
+                                                :class="{ section: block.type === 'section', paragraph: block.type === 'paragraph' }"
                                             >
-                                                <!-- Section -->
-                                                <template
-                                                    v-if="
-                                                        block.type === 'section'
-                                                    "
-                                                >
-                                                    <svg
-                                                        class="block-icon"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                    >
-                                                        <path
-                                                            d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"
-                                                        ></path>
-                                                        <path
-                                                            d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-                                                        ></path>
-                                                    </svg>
-                                                    <span class="block-title">{{
-                                                        block.title
-                                                    }}</span>
-                                                </template>
-
-                                                <!-- Paragraph -->
-                                                <template v-else>
-                                                    <svg
-                                                        class="drag-handle"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="14"
-                                                        height="14"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                    >
-                                                        <circle
-                                                            cx="9"
-                                                            cy="5"
-                                                            r="1.5"
-                                                        ></circle>
-                                                        <circle
-                                                            cx="15"
-                                                            cy="5"
-                                                            r="1.5"
-                                                        ></circle>
-                                                        <circle
-                                                            cx="9"
-                                                            cy="12"
-                                                            r="1.5"
-                                                        ></circle>
-                                                        <circle
-                                                            cx="15"
-                                                            cy="12"
-                                                            r="1.5"
-                                                        ></circle>
-                                                        <circle
-                                                            cx="9"
-                                                            cy="19"
-                                                            r="1.5"
-                                                        ></circle>
-                                                        <circle
-                                                            cx="15"
-                                                            cy="19"
-                                                            r="1.5"
-                                                        ></circle>
-                                                    </svg>
-                                                    <span class="block-index"
-                                                        >P{{
-                                                            block.paraIndex + 1
-                                                        }}</span
-                                                    >
-                                                    <span
-                                                        class="block-preview"
-                                                        >{{
-                                                            block.preview ||
-                                                            "Empty paragraph"
-                                                        }}</span
-                                                    >
-                                                    <!-- Media badge -->
-                                                    <span
-                                                        v-if="block.animationId"
-                                                        class="media-badge"
-                                                        @click.stop="detachMedia(block)"
-                                                        title="Click to remove media"
-                                                    >
-                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                                        {{ block.animationTrigger || 'Media' }}
-                                                        <span class="media-badge-x">&times;</span>
-                                                    </span>
-                                                    <!-- Attach media button -->
-                                                    <button
-                                                        v-else
-                                                        class="attach-media-btn"
-                                                        @click.stop="openMediaPicker(block)"
-                                                        title="Attach animation or media"
-                                                    >
-                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                                    </button>
-                                                    <svg
-                                                        v-if="
-                                                            selectedBlock?.id ===
-                                                            block.id
-                                                        "
-                                                        class="selected-arrow"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path
-                                                            d="M9 18l6-6-6-6"
-                                                        ></path>
-                                                    </svg>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Right: Stats Panel or Editor -->
-                                    <div class="editor-panel">
-                                        <!-- Stats Panel (no selection) -->
-                                        <div
-                                            v-if="!selectedBlock"
-                                            class="stats-panel"
-                                        >
-                                            <div class="stats-grid">
-                                                <div class="stat-item">
-                                                    <span class="stat-value">{{
-                                                        chapterStats?.sections ||
-                                                        0
-                                                    }}</span>
-                                                    <span class="stat-label"
-                                                        >Sections</span
-                                                    >
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-value">{{
-                                                        chapterStats?.paragraphs ||
-                                                        0
-                                                    }}</span>
-                                                    <span class="stat-label"
-                                                        >Paragraphs</span
-                                                    >
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-value">{{
-                                                        chapterStats?.words?.toLocaleString() ||
-                                                        0
-                                                    }}</span>
-                                                    <span class="stat-label"
-                                                        >Words</span
-                                                    >
-                                                </div>
-                                                <div class="stat-item">
-                                                    <span class="stat-value">{{
-                                                        chapterStats?.readingTime ||
-                                                        0
-                                                    }}</span>
-                                                    <span class="stat-label"
-                                                        >Min Read</span
-                                                    >
-                                                </div>
-                                            </div>
-
-                                            <!-- Content Preview -->
-                                            <div
-                                                class="content-preview"
-                                                ref="contentPreviewRef"
-                                            >
-                                                <h4 class="preview-title">
-                                                    Content Preview
-                                                </h4>
-                                                <div class="preview-content">
-                                                    <div
-                                                        v-for="block in flatBlocks"
-                                                        :key="block.id"
-                                                        :data-block-id="
-                                                            block.id
-                                                        "
-                                                        class="preview-block"
-                                                        :class="{
-                                                            section:
-                                                                block.type ===
-                                                                'section',
-                                                            paragraph:
-                                                                block.type ===
-                                                                'paragraph',
-                                                        }"
-                                                    >
-                                                        <!-- Section Header -->
-                                                        <template
-                                                            v-if="
-                                                                block.type ===
-                                                                'section'
-                                                            "
-                                                        >
-                                                            <div
-                                                                class="preview-section-header"
-                                                            >
-                                                                <div
-                                                                    class="preview-section-meta"
-                                                                >
-                                                                    <span
-                                                                        class="meta-badge section-badge"
-                                                                        >Section
-                                                                        {{
-                                                                            block.sectionIndex +
-                                                                            1
-                                                                        }}</span
-                                                                    >
-                                                                    <span
-                                                                        class="meta-slug"
-                                                                        >{{
-                                                                            block.slug
-                                                                        }}</span
-                                                                    >
-                                                                </div>
-                                                                <h5
-                                                                    class="preview-section-title"
-                                                                >
-                                                                    {{
-                                                                        block.title
-                                                                    }}
-                                                                </h5>
-                                                            </div>
-                                                        </template>
-
-                                                        <!-- Paragraph Block -->
-                                                        <template v-else>
-                                                            <div
-                                                                class="preview-para-wrapper"
-                                                            >
-                                                                <div
-                                                                    class="preview-para-meta"
-                                                                >
-                                                                    <span
-                                                                        class="meta-index"
-                                                                        >P{{
-                                                                            block.paraIndex +
-                                                                            1
-                                                                        }}</span
-                                                                    >
-                                                                    <span
-                                                                        class="meta-words"
-                                                                        >{{
-                                                                            block.wordCount
-                                                                        }}
-                                                                        words</span
-                                                                    >
-                                                                    <span
-                                                                        v-if="
-                                                                            block.isSubsectionHeader
-                                                                        "
-                                                                        class="meta-badge subsection-badge"
-                                                                        >Subsection</span
-                                                                    >
-                                                                </div>
-                                                                <div
-                                                                    class="preview-para-content"
-                                                                    v-html="
-                                                                        block.htmlContent ||
-                                                                        block.contentText ||
-                                                                        block.preview
-                                                                    "
-                                                                ></div>
-                                                            </div>
-                                                        </template>
+                                                <template v-if="block.type === 'section'">
+                                                    <div class="preview-section-header">
+                                                        <div class="preview-section-meta">
+                                                            <span class="meta-badge section-badge">Section {{ block.sectionIndex + 1 }}</span>
+                                                            <span class="meta-slug">{{ block.slug }}</span>
+                                                        </div>
+                                                        <h5 class="preview-section-title">{{ block.title }}</h5>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Editor Panel (with selection) -->
-                                        <div v-else class="editor-content">
-                                            <div class="editor-header">
-                                                <button
-                                                    class="back-btn"
-                                                    @click="clearSelection"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                    >
-                                                        <path
-                                                            d="M19 12H5M12 19l-7-7 7-7"
-                                                        ></path>
-                                                    </svg>
-                                                    Back to overview
-                                                </button>
-                                                <h4 class="editing-title">
-                                                    Editing:
-                                                    {{
-                                                        selectedBlock.preview ||
-                                                        "Paragraph"
-                                                    }}
-                                                </h4>
-                                            </div>
-
-                                            <TipTapEditor
-                                                v-model="editorContent"
-                                                placeholder="Start writing..."
-                                            />
-
-                                            <div class="editor-footer">
-                                                <span
-                                                    v-if="saveStatus"
-                                                    class="save-status"
-                                                    :class="{
-                                                        error: saveStatus.includes(
-                                                            'Error',
-                                                        ),
-                                                    }"
-                                                >
-                                                    {{ saveStatus }}
-                                                </span>
-                                                <button
-                                                    class="save-btn"
-                                                    @click="saveBlock"
-                                                    :disabled="saving"
-                                                >
-                                                    {{
-                                                        saving
-                                                            ? "Saving..."
-                                                            : "Save"
-                                                    }}
-                                                </button>
+                                                </template>
+                                                <template v-else>
+                                                    <div class="preview-para-wrapper">
+                                                        <div class="preview-para-meta">
+                                                            <span class="meta-index">P{{ block.paraIndex + 1 }}</span>
+                                                            <span class="meta-words">{{ block.wordCount }} words</span>
+                                                            <span v-if="block.isSubsectionHeader" class="meta-badge subsection-badge">Subsection</span>
+                                                        </div>
+                                                        <div class="preview-para-content" v-html="block.htmlContent || block.contentText || block.preview"></div>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Add New Chapter Button -->
-                        <button class="add-chapter-btn" @click="startChapterWizard()">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            <span>Add New Chapter</span>
-                        </button>
-                    </div>
-                </section>
+                                <!-- Editor panel (with selection) -->
+                                <div v-else class="editor-content">
+                                    <div class="editor-head">
+                                        <Button variant="ghost" size="sm" @click="clearSelection">← Back to overview</Button>
+                                        <h4 class="editing-title">Editing: {{ selectedBlock.preview || "Paragraph" }}</h4>
+                                    </div>
 
-                <!-- Chapter Wizard Section -->
-                <section
-                    v-else-if="activeSection === 'chapter-wizard'"
-                    class="section-content wizard-section"
-                >
-                    <!-- Header with back button -->
-                    <div class="wizard-header-row">
-                        <button class="wizard-back-btn" @click="activeSection = 'chapters'">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                 fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="15 18 9 12 15 6" />
-                            </svg>
-                            Back to Chapters
-                        </button>
-                        <h2 class="section-title">New Chapter</h2>
-                    </div>
+                                    <TipTapEditor v-model="editorContent" placeholder="Start writing..." />
 
-                    <!-- Step Indicator -->
-                    <div class="wizard-step-indicator">
-                        <div
-                            v-for="step in wizardSteps"
-                            :key="step.number"
-                            class="wizard-step-dot"
-                            :class="{
-                                active: wizardCurrentStep === step.number,
-                                completed: wizardCurrentStep > step.number,
-                                clickable: step.number <= wizardCurrentStep,
-                            }"
-                            @click="wizardGoToStep(step.number)"
-                        >
-                            <span class="wizard-dot-number" v-if="wizardCurrentStep <= step.number">{{ step.number }}</span>
-                            <span class="wizard-dot-check" v-else>&#10003;</span>
-                            <span class="wizard-dot-label">{{ step.label }}</span>
-                        </div>
-                        <div class="wizard-step-line" />
-                    </div>
-
-                    <!-- Step Content -->
-                    <div class="wizard-content">
-                        <WizardStepMeta
-                            v-if="wizardCurrentStep === 1"
-                            ref="stepMetaRef"
-                            v-model="wizardMeta"
-                            :existing-chapter-count="wizardMeta.order_index"
-                        />
-
-                        <WizardStepImport
-                            v-if="wizardCurrentStep === 2"
-                            :sections="wizardSections"
-                            :references="wizardReferences"
-                            @update:sections="wizardSections = $event"
-                            @update:references="wizardReferences = $event"
-                            @parsed="onWizardContentParsed"
-                        />
-
-                        <WizardStepStructure
-                            v-if="wizardCurrentStep === 3"
-                            :sections="wizardSections"
-                            :references="wizardReferences"
-                            @update:sections="wizardSections = $event"
-                            @update:references="wizardReferences = $event"
-                        />
-
-                        <WizardStepReview
-                            v-if="wizardCurrentStep === 4"
-                            :meta="wizardMeta"
-                            :sections="wizardSections"
-                            :references="wizardReferences"
-                            :creating="wizardCreating"
-                            :create-error="wizardCreateError"
-                            :created-chapter="wizardCreatedChapter"
-                            @create="handleWizardCreate"
-                        />
-                    </div>
-
-                    <!-- Navigation Footer -->
-                    <div v-if="!wizardCreatedChapter" class="wizard-footer">
-                        <button
-                            v-if="wizardCurrentStep > 1"
-                            class="wizard-nav-btn wizard-nav-secondary"
-                            @click="wizardPrevStep"
-                        >
-                            Back
-                        </button>
-                        <div class="wizard-footer-spacer" />
-                        <button
-                            v-if="wizardCurrentStep < 4"
-                            class="wizard-nav-btn wizard-nav-primary"
-                            :disabled="!wizardCanGoNext"
-                            @click="wizardNextStep"
-                        >
-                            Continue
-                        </button>
-                    </div>
-
-                    <!-- Success: Return to chapters -->
-                    <div v-if="wizardCreatedChapter" class="wizard-success-actions">
-                        <button class="wizard-nav-btn wizard-nav-primary" @click="activeSection = 'chapters'">
-                            View Chapters
-                        </button>
-                    </div>
-                </section>
-
-                <!-- Versions Section -->
-                <section
-                    v-else-if="activeSection === 'versions'"
-                    class="section-content"
-                >
-                    <div class="section-header-row">
-                        <h2 class="section-title">Versions</h2>
-                        <button
-                            class="primary-btn"
-                            @click="showNewVersionModal = true"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            New Version
-                        </button>
-                    </div>
-
-                    <!-- Loading -->
-                    <div v-if="versionsLoading" class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading versions...</p>
-                    </div>
-
-                    <!-- Error -->
-                    <div v-else-if="versionsError" class="error-state">
-                        <p>{{ versionsError }}</p>
-                        <button @click="fetchVersions" class="retry-btn">
-                            Retry
-                        </button>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div v-else-if="versions.length === 0" class="empty-state">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="48"
-                            height="48"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                        >
-                            <polygon
-                                points="12 2 2 7 12 12 22 7 12 2"
-                            ></polygon>
-                            <polyline points="2 17 12 22 22 17"></polyline>
-                            <polyline points="2 12 12 17 22 12"></polyline>
-                        </svg>
-                        <h3>No versions yet</h3>
-                        <p>Create your first content version to get started.</p>
-                        <button
-                            class="primary-btn"
-                            @click="showNewVersionModal = true"
-                        >
-                            Create Version
-                        </button>
-                    </div>
-
-                    <!-- Versions List -->
-                    <div v-else class="versions-list">
-                        <div
-                            v-for="version in versions"
-                            :key="version.id"
-                            class="version-card"
-                        >
-                            <div class="version-header">
-                                <div class="version-info">
-                                    <h3 class="version-number">
-                                        v{{ version.version_number }}
-                                    </h3>
-                                    <span
-                                        class="status-badge"
-                                        :class="version.status"
-                                    >
-                                        {{ version.status }}
-                                    </span>
-                                </div>
-                                <div class="version-actions">
-                                    <button
-                                        v-if="version.status === 'draft'"
-                                        class="action-btn publish"
-                                        @click="
-                                            updateVersionStatus(
-                                                version.id,
-                                                'published',
-                                            )
-                                        "
-                                        title="Publish"
-                                    >
-                                        Publish
-                                    </button>
-                                    <button
-                                        v-if="version.status === 'published'"
-                                        class="action-btn archive"
-                                        @click="
-                                            updateVersionStatus(
-                                                version.id,
-                                                'archived',
-                                            )
-                                        "
-                                        title="Archive"
-                                    >
-                                        Archive
-                                    </button>
-                                    <button
-                                        class="action-btn delete"
-                                        @click="deleteVersion(version.id)"
-                                        title="Delete"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <polyline
-                                                points="3 6 5 6 21 6"
-                                            ></polyline>
-                                            <path
-                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                                            ></path>
-                                        </svg>
-                                    </button>
+                                    <div class="editor-footer">
+                                        <span v-if="saveStatus" class="save-status" :class="{ error: saveStatus.includes('Error') }">{{ saveStatus }}</span>
+                                        <Button variant="solid" size="sm" :loading="saving" @click="saveBlock">{{ saving ? "Saving…" : "Save" }}</Button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="version-meta">
-                                <span>{{ version.moduleCount }} modules</span>
-                                <span
-                                    >Created
-                                    {{ formatDate(version.created_at) }}</span
-                                >
-                                <span v-if="version.published_at"
-                                    >Published
-                                    {{ formatDate(version.published_at) }}</span
-                                >
-                            </div>
-                            <p
-                                v-if="version.release_notes"
-                                class="version-notes"
-                            >
-                                {{ version.release_notes }}
-                            </p>
                         </div>
                     </div>
+                </BaseCard>
 
-                    <!-- New Version Modal -->
-                    <div
-                        v-if="showNewVersionModal"
-                        class="modal-overlay"
-                        @click.self="showNewVersionModal = false"
+                <Button variant="outline" size="md" @click="startChapterWizard()">+ Add new chapter</Button>
+            </div>
+        </section>
+
+        <!-- CHAPTER WIZARD (sub-view of Chapters) -->
+        <section v-else-if="activeSection === 'chapter-wizard'" class="section">
+            <div class="wizard-head-row">
+                <Button variant="ghost" size="sm" @click="activeSection = 'chapters'">← Back to chapters</Button>
+                <h2 class="wizard-title">New chapter</h2>
+            </div>
+
+            <!-- Stepper -->
+            <div class="wizard-stepper">
+                <button
+                    v-for="step in wizardSteps"
+                    :key="step.number"
+                    type="button"
+                    class="wizard-step"
+                    :class="{
+                        active: wizardCurrentStep === step.number,
+                        completed: wizardCurrentStep > step.number,
+                        clickable: step.number <= wizardCurrentStep,
+                    }"
+                    @click="wizardGoToStep(step.number)"
+                >
+                    <span class="wizard-step-num">
+                        <template v-if="wizardCurrentStep > step.number">&#10003;</template>
+                        <template v-else>{{ step.number }}</template>
+                    </span>
+                    <span class="wizard-step-label">{{ step.label }}</span>
+                </button>
+            </div>
+
+            <!-- Step content -->
+            <div class="wizard-content">
+                <WizardStepMeta
+                    v-if="wizardCurrentStep === 1"
+                    ref="stepMetaRef"
+                    v-model="wizardMeta"
+                    :existing-chapter-count="wizardMeta.order_index"
+                />
+                <WizardStepImport
+                    v-if="wizardCurrentStep === 2"
+                    :sections="wizardSections"
+                    :references="wizardReferences"
+                    @update:sections="wizardSections = $event"
+                    @update:references="wizardReferences = $event"
+                    @parsed="onWizardContentParsed"
+                />
+                <WizardStepStructure
+                    v-if="wizardCurrentStep === 3"
+                    :sections="wizardSections"
+                    :references="wizardReferences"
+                    @update:sections="wizardSections = $event"
+                    @update:references="wizardReferences = $event"
+                />
+                <WizardStepReview
+                    v-if="wizardCurrentStep === 4"
+                    :meta="wizardMeta"
+                    :sections="wizardSections"
+                    :references="wizardReferences"
+                    :creating="wizardCreating"
+                    :create-error="wizardCreateError"
+                    :created-chapter="wizardCreatedChapter"
+                    @create="handleWizardCreate"
+                />
+            </div>
+
+            <!-- Footer nav -->
+            <div v-if="!wizardCreatedChapter" class="wizard-footer">
+                <Button v-if="wizardCurrentStep > 1" variant="outline" size="sm" @click="wizardPrevStep">Back</Button>
+                <div class="wizard-footer-spacer" />
+                <Button
+                    v-if="wizardCurrentStep < 4"
+                    variant="solid"
+                    size="sm"
+                    :disabled="!wizardCanGoNext"
+                    @click="wizardNextStep"
+                >
+                    Continue
+                </Button>
+            </div>
+
+            <div v-if="wizardCreatedChapter" class="wizard-footer">
+                <div class="wizard-footer-spacer" />
+                <Button variant="solid" size="sm" @click="activeSection = 'chapters'">View chapters</Button>
+            </div>
+        </section>
+
+        <!-- VERSIONS -->
+        <section v-else-if="activeSection === 'versions'" class="section">
+            <SectionHeader eyebrow="03 · Versions" title="Content versions">
+                <template #actions>
+                    <Button variant="solid" size="sm" @click="showNewVersionModal = true">New version</Button>
+                </template>
+            </SectionHeader>
+
+            <LoadingState v-if="versionsLoading" message="Loading versions…" />
+            <ErrorState v-else-if="versionsError" :message="versionsError" @retry="fetchVersions" />
+            <EmptyState
+                v-else-if="versions.length === 0"
+                title="No versions yet"
+                message="Create your first content version to get started."
+                action-label="Create version"
+                @action="showNewVersionModal = true"
+            />
+
+            <div v-else class="stack">
+                <BaseCard v-for="version in versions" :key="version.id" padding="md">
+                    <div class="card-head">
+                        <div class="vh-info">
+                            <h3 class="card-title sm">v{{ version.version_number }}</h3>
+                            <StatusBadge :status="version.status" />
+                        </div>
+                        <div class="btn-row">
+                            <Button
+                                v-if="version.status === 'draft'"
+                                variant="outline"
+                                size="sm"
+                                @click="updateVersionStatus(version.id, 'published')"
+                            >
+                                Publish
+                            </Button>
+                            <Button
+                                v-if="version.status === 'published'"
+                                variant="outline"
+                                size="sm"
+                                @click="updateVersionStatus(version.id, 'archived')"
+                            >
+                                Archive
+                            </Button>
+                            <Button variant="danger" size="sm" @click="deleteVersion(version.id)">Delete</Button>
+                        </div>
+                    </div>
+                    <div class="meta-row">
+                        <span>{{ version.moduleCount }} modules</span>
+                        <span>Created {{ formatDate(version.created_at) }}</span>
+                        <span v-if="version.published_at">Published {{ formatDate(version.published_at) }}</span>
+                    </div>
+                    <p v-if="version.release_notes" class="muted">{{ version.release_notes }}</p>
+                </BaseCard>
+            </div>
+
+            <!-- New version modal -->
+            <BaseModal v-model="showNewVersionModal" title="Create new version" size="lg">
+                <div class="form-stack">
+                    <FormField label="Version number">
+                        <input v-model="newVersionForm.version_number" type="text" placeholder="e.g., 2.0" />
+                    </FormField>
+                    <FormField label="Release notes">
+                        <textarea v-model="newVersionForm.release_notes" placeholder="What's new in this version…" rows="4"></textarea>
+                    </FormField>
+                </div>
+                <template #footer>
+                    <Button variant="ghost" size="sm" @click="showNewVersionModal = false">Cancel</Button>
+                    <Button variant="solid" size="sm" @click="createVersion">Create version</Button>
+                </template>
+            </BaseModal>
+        </section>
+
+        <!-- MEDIA -->
+        <section v-else-if="activeSection === 'media'" class="section">
+            <SectionHeader eyebrow="04 · Media" title="Images & assets" />
+
+            <div class="filters-bar">
+                <FilterChips :options="mediaFilterOptions" :model-value="mediaFilter" @update:model-value="onMediaFilter" />
+                <SearchInput v-model="mediaSearch" placeholder="Search media…" class="search-grow" />
+            </div>
+
+            <LoadingState v-if="mediaLoading" message="Loading media…" />
+            <ErrorState v-else-if="mediaError" :message="mediaError" @retry="fetchMedia" />
+            <EmptyState
+                v-else-if="filteredMedia.length === 0"
+                title="No media found"
+                message="Upload animations, images, and videos to use in your content."
+            />
+
+            <div v-else class="stack-lg">
+                <div v-if="mediaByType.lottie.length > 0">
+                    <h3 class="card-title sm">Lottie animations ({{ mediaByType.lottie.length }})</h3>
+                    <div class="media-grid mt-3">
+                        <BaseCard
+                            v-for="item in mediaByType.lottie"
+                            :key="item.id"
+                            padding="none"
+                            interactive
+                            class="media-card"
+                            :class="{ selected: selectedMedia?.id === item.id }"
+                            @click="selectMedia(item)"
+                        >
+                            <div class="media-thumb">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            </div>
+                            <div class="media-info">
+                                <span class="media-title">{{ item.title || item.animation_key }}</span>
+                                <span class="media-size">{{ formatFileSize(item.file_size_bytes) }}</span>
+                            </div>
+                        </BaseCard>
+                    </div>
+                </div>
+
+                <div v-if="mediaByType.video.length > 0">
+                    <h3 class="card-title sm">Videos ({{ mediaByType.video.length }})</h3>
+                    <div class="media-grid mt-3">
+                        <BaseCard
+                            v-for="item in mediaByType.video"
+                            :key="item.id"
+                            padding="none"
+                            interactive
+                            class="media-card"
+                            :class="{ selected: selectedMedia?.id === item.id }"
+                            @click="selectMedia(item)"
+                        >
+                            <div class="media-thumb">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                            </div>
+                            <div class="media-info">
+                                <span class="media-title">{{ item.title || item.animation_key }}</span>
+                                <span class="media-size">{{ formatFileSize(item.file_size_bytes) }}</span>
+                            </div>
+                        </BaseCard>
+                    </div>
+                </div>
+
+                <div v-if="mediaByType.image.length > 0">
+                    <h3 class="card-title sm">Images ({{ mediaByType.image.length }})</h3>
+                    <div class="media-grid mt-3">
+                        <BaseCard
+                            v-for="item in mediaByType.image"
+                            :key="item.id"
+                            padding="none"
+                            interactive
+                            class="media-card"
+                            :class="{ selected: selectedMedia?.id === item.id }"
+                            @click="selectMedia(item)"
+                        >
+                            <div class="media-thumb">
+                                <img v-if="item.image_file_url" :src="item.image_file_url" :alt="item.title" />
+                                <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            </div>
+                            <div class="media-info">
+                                <span class="media-title">{{ item.title || item.animation_key }}</span>
+                                <span class="media-size">{{ formatFileSize(item.file_size_bytes) }}</span>
+                            </div>
+                        </BaseCard>
+                    </div>
+                </div>
+
+                <div v-if="mediaByType.youtube.length > 0">
+                    <h3 class="card-title sm">YouTube ({{ mediaByType.youtube.length }})</h3>
+                    <div class="media-grid mt-3">
+                        <BaseCard
+                            v-for="item in mediaByType.youtube"
+                            :key="item.id"
+                            padding="none"
+                            interactive
+                            class="media-card"
+                            :class="{ selected: selectedMedia?.id === item.id }"
+                            @click="selectMedia(item)"
+                        >
+                            <div class="media-thumb">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                            </div>
+                            <div class="media-info">
+                                <span class="media-title">{{ item.title || item.animation_key }}</span>
+                                <span class="media-size">{{ item.youtube_id }}</span>
+                            </div>
+                        </BaseCard>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media detail modal -->
+            <BaseModal
+                :model-value="!!selectedMedia"
+                size="full"
+                :title="selectedMedia ? (selectedMedia.title || selectedMedia.animation_key) : ''"
+                @update:model-value="selectedMedia = null"
+            >
+                <template v-if="selectedMedia">
+                    <span class="muted-mono">{{ selectedMedia.media_type }} · {{ formatFileSize(selectedMedia.file_size_bytes) }}</span>
+                    <div class="media-modal-preview">
+                        <div v-if="selectedMedia.media_type === 'lottie'" :id="'lottie-preview-' + selectedMedia.id" class="media-modal-lottie"></div>
+                        <img v-else-if="selectedMedia.media_type === 'image'" :src="selectedMedia.lottie_file_url || selectedMedia.file_path" class="media-modal-img" />
+                        <video v-else-if="selectedMedia.media_type === 'video'" :src="selectedMedia.lottie_file_url || selectedMedia.file_path" controls class="media-modal-video"></video>
+                        <div v-else class="media-modal-placeholder"><span>{{ selectedMedia.media_type }}</span></div>
+                    </div>
+                    <div class="kv-list">
+                        <div class="kv-row"><span class="kv-key">Animation key</span><span class="kv-val">{{ selectedMedia.animation_key }}</span></div>
+                        <div class="kv-row"><span class="kv-key">Interaction</span><span class="kv-val">{{ selectedMedia.interaction_type || '-' }}</span></div>
+                        <div class="kv-row"><span class="kv-key">Component</span><span class="kv-val">{{ selectedMedia.component_name || '-' }}</span></div>
+                        <div class="kv-row"><span class="kv-key">Priority</span><span class="kv-val">{{ selectedMedia.load_priority || 'normal' }}</span></div>
+                        <div class="kv-row"><span class="kv-key">Domain</span><span class="kv-val">{{ selectedMedia.scientific_domain || '-' }}</span></div>
+                        <div v-if="selectedMedia.description" class="kv-row kv-full"><span class="kv-key">Description</span><p class="kv-val">{{ selectedMedia.description }}</p></div>
+                    </div>
+                </template>
+                <template #footer>
+                    <Button variant="ghost" size="sm" @click="selectedMedia = null">Close</Button>
+                    <Button v-if="selectedMedia" variant="danger" size="sm" @click="deleteMedia(selectedMedia.id)">Delete asset</Button>
+                </template>
+            </BaseModal>
+
+            <!-- Media picker modal (attach to content block) -->
+            <BaseModal v-model="showMediaPicker" title="Attach media" size="xl">
+                <p class="muted">Select an animation or media to attach to this content block.</p>
+                <SearchInput v-model="mediaPickerSearch" placeholder="Search animations…" class="mt-3" />
+                <div class="media-picker-grid mt-3">
+                    <BaseCard
+                        v-for="item in mediaPickerFiltered"
+                        :key="item.id"
+                        padding="sm"
+                        interactive
+                        class="media-picker-item"
+                        @click="attachMedia(item)"
                     >
-                        <div class="modal-content">
-                            <h3>Create New Version</h3>
-                            <div class="form-group">
-                                <label>Version Number</label>
+                        <div class="media-picker-thumb">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        </div>
+                        <div class="media-info">
+                            <span class="media-title">{{ item.title || item.animation_key }}</span>
+                            <span class="media-size">{{ item.interaction_type }} · {{ item.media_type }}</span>
+                        </div>
+                    </BaseCard>
+                    <EmptyState v-if="mediaPickerFiltered.length === 0" title="No media found" />
+                </div>
+                <template #footer>
+                    <Button variant="ghost" size="sm" @click="showMediaPicker = false">Close</Button>
+                </template>
+            </BaseModal>
+        </section>
+
+        <!-- QUIZZES -->
+        <section v-else-if="activeSection === 'quizzes'" class="section">
+            <SectionHeader eyebrow="05 · Quizzes" title="Assessments">
+                <template #actions>
+                    <Button v-if="!showQuizEditor" variant="solid" size="sm" @click="openQuizEditor()">New quiz</Button>
+                </template>
+            </SectionHeader>
+
+            <LoadingState v-if="quizzesLoading" message="Loading quizzes…" />
+            <ErrorState v-else-if="quizzesError" :message="quizzesError" @retry="fetchQuizzes" />
+
+            <EmptyState
+                v-else-if="quizzes.length === 0 && !showQuizEditor"
+                title="No quizzes yet"
+                message="Create quizzes to test student understanding."
+                action-label="Create quiz"
+                @action="openQuizEditor()"
+            />
+
+            <!-- Quiz editor (inline panel) -->
+            <BaseCard v-else-if="showQuizEditor" padding="lg">
+                <div class="card-head">
+                    <h3 class="card-title">{{ editingQuiz ? "Edit quiz" : "New quiz" }}</h3>
+                    <Button variant="ghost" size="sm" @click="closeQuizEditor">← Back to quizzes</Button>
+                </div>
+                <div class="form-stack">
+                    <FormField label="Quiz title">
+                        <input v-model="quizForm.title" type="text" placeholder="e.g., Chapter 1 Quiz" />
+                    </FormField>
+                    <FormField label="Description">
+                        <textarea v-model="quizForm.description" placeholder="Quiz description…" rows="2"></textarea>
+                    </FormField>
+                    <div class="grid-2">
+                        <FormField label="Time limit (min)">
+                            <input v-model.number="quizForm.time_limit_minutes" type="number" min="1" />
+                        </FormField>
+                        <FormField label="Passing score (%)">
+                            <input v-model.number="quizForm.passing_score" type="number" min="0" max="100" />
+                        </FormField>
+                    </div>
+                    <label class="check-row">
+                        <input type="checkbox" v-model="quizForm.allow_multiple_attempts" />
+                        <span>Allow multiple attempts</span>
+                    </label>
+                    <label class="check-row">
+                        <input type="checkbox" v-model="quizForm.show_correct_answers" />
+                        <span>Show correct answers after submission</span>
+                    </label>
+                    <div class="form-actions">
+                        <Button variant="ghost" size="sm" @click="closeQuizEditor">Cancel</Button>
+                        <Button variant="solid" size="sm" @click="saveQuiz">{{ editingQuiz ? "Save changes" : "Create quiz" }}</Button>
+                    </div>
+                </div>
+
+                <!-- Questions (only when editing existing quiz) -->
+                <div v-if="editingQuiz" class="questions-section">
+                    <div class="card-head">
+                        <h4 class="card-title sm">Questions ({{ quizForm.questions.length }})</h4>
+                        <Button variant="outline" size="sm" @click="openQuestionEditor()">+ Add question</Button>
+                    </div>
+
+                    <EmptyState
+                        v-if="quizForm.questions.length === 0"
+                        title="No questions yet"
+                        message="Add your first question to get started."
+                    />
+
+                    <div v-else class="stack">
+                        <BaseCard v-for="(question, index) in quizForm.questions" :key="question.id" padding="md">
+                            <div class="card-head">
+                                <div class="q-head-meta">
+                                    <span class="eyebrow-mono">Q{{ index + 1 }}</span>
+                                    <StatusBadge variant="neutral">{{ question.question_type }}</StatusBadge>
+                                    <span class="muted-mono">{{ question.points }} pt{{ question.points !== 1 ? "s" : "" }}</span>
+                                </div>
+                                <div class="btn-row">
+                                    <Button variant="outline" size="sm" @click="openQuestionEditor(question)">Edit</Button>
+                                    <Button variant="danger" size="sm" @click="deleteQuestion(question.id)">Delete</Button>
+                                </div>
+                            </div>
+                            <p class="q-text">{{ question.question_text }}</p>
+                            <div v-if="question.options" class="q-options">
+                                <div
+                                    v-for="(option, optIndex) in question.options"
+                                    :key="optIndex"
+                                    class="q-option"
+                                    :class="{ correct: option === question.correct_answer }"
+                                >
+                                    {{ String.fromCharCode(65 + optIndex) }}. {{ option }}
+                                </div>
+                            </div>
+                        </BaseCard>
+                    </div>
+                </div>
+
+                <!-- Question editor modal -->
+                <BaseModal v-model="showQuestionEditor" :title="editingQuestion ? 'Edit question' : 'Add question'" size="lg">
+                    <div class="form-stack">
+                        <FormField label="Question type">
+                            <select v-model="questionForm.question_type">
+                                <option value="multiple_choice">Multiple choice</option>
+                                <option value="true_false">True/False</option>
+                                <option value="short_answer">Short answer</option>
+                            </select>
+                        </FormField>
+                        <FormField label="Question">
+                            <textarea v-model="questionForm.question_text" placeholder="Enter your question…" rows="3"></textarea>
+                        </FormField>
+
+                        <div v-if="questionForm.question_type === 'multiple_choice'">
+                            <span class="field-label-static">Options</span>
+                            <div
+                                v-for="(option, index) in questionForm.options"
+                                :key="index"
+                                class="option-input-row"
+                            >
+                                <span class="option-letter">{{ String.fromCharCode(65 + index) }}</span>
                                 <input
-                                    v-model="newVersionForm.version_number"
+                                    v-model="questionForm.options[index]"
                                     type="text"
-                                    placeholder="e.g., 2.0"
-                                    class="form-input"
+                                    :placeholder="'Option ' + String.fromCharCode(65 + index)"
+                                    class="option-text-input"
                                 />
+                                <label class="radio-label">
+                                    <input type="radio" :value="questionForm.options[index]" v-model="questionForm.correct_answer" />
+                                    Correct
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label>Release Notes</label>
-                                <textarea
-                                    v-model="newVersionForm.release_notes"
-                                    placeholder="What's new in this version..."
-                                    class="form-textarea"
-                                    rows="4"
-                                ></textarea>
+                        </div>
+
+                        <FormField v-else-if="questionForm.question_type === 'true_false'" label="Correct answer">
+                            <div class="radio-row">
+                                <label class="radio-label"><input type="radio" value="true" v-model="questionForm.correct_answer" /> True</label>
+                                <label class="radio-label"><input type="radio" value="false" v-model="questionForm.correct_answer" /> False</label>
                             </div>
-                            <div class="modal-actions">
-                                <button
-                                    class="secondary-btn"
-                                    @click="showNewVersionModal = false"
+                        </FormField>
+
+                        <FormField v-else label="Expected answer (keywords)">
+                            <input v-model="questionForm.correct_answer" type="text" placeholder="Keywords separated by commas" />
+                        </FormField>
+
+                        <FormField label="Points">
+                            <input v-model.number="questionForm.points" type="number" min="1" />
+                        </FormField>
+                    </div>
+                    <template #footer>
+                        <Button variant="ghost" size="sm" @click="closeQuestionEditor">Cancel</Button>
+                        <Button variant="solid" size="sm" @click="saveQuestion">{{ editingQuestion ? "Save changes" : "Add question" }}</Button>
+                    </template>
+                </BaseModal>
+            </BaseCard>
+
+            <!-- Quizzes list -->
+            <div v-else class="card-grid">
+                <BaseCard v-for="quiz in quizzes" :key="quiz.id" padding="md">
+                    <div class="card-head">
+                        <div>
+                            <h3 class="card-title sm">{{ quiz.title }}</h3>
+                            <span v-if="quiz.modules" class="muted-mono">{{ quiz.modules.title }}</span>
+                        </div>
+                        <div class="btn-row">
+                            <Button variant="outline" size="sm" @click="openQuizEditor(quiz)">Edit</Button>
+                            <Button variant="danger" size="sm" @click="deleteQuiz(quiz.id)">Delete</Button>
+                        </div>
+                    </div>
+                    <div class="meta-row">
+                        <span>{{ quiz.questionCount }} questions</span>
+                        <span>{{ quiz.time_limit_minutes }} min</span>
+                        <span>Pass: {{ quiz.passing_score }}%</span>
+                    </div>
+                    <div class="mini-stats">
+                        <div class="mini-stat">
+                            <span class="mini-value">{{ quiz.attemptCount }}</span>
+                            <span class="mini-label">Attempts</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-value">{{ quiz.avgScore }}%</span>
+                            <span class="mini-label">Avg score</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-value">{{ quiz.passRate }}%</span>
+                            <span class="mini-label">Pass rate</span>
+                        </div>
+                    </div>
+                </BaseCard>
+            </div>
+        </section>
+
+        <!-- USERS -->
+        <section v-else-if="activeSection === 'users'" class="section">
+            <SectionHeader eyebrow="06 · Users" title="Accounts & roles">
+                <template #actions>
+                    <span class="muted-mono">{{ usersTotalCount }} total</span>
+                </template>
+            </SectionHeader>
+
+            <!-- Role breakdown stats (also act as filters) -->
+            <StatGrid :columns="4">
+                <StatCard
+                    class="stat-click"
+                    :value="userRoleBreakdown.creators"
+                    label="Creators"
+                    :tone="usersFilter === 'creator' ? 'accent' : 'auto'"
+                    @click="onUsersFilter('creator')"
+                />
+                <StatCard
+                    class="stat-click"
+                    :value="userRoleBreakdown.professors"
+                    label="Professors"
+                    :tone="usersFilter === 'professor' ? 'accent' : 'auto'"
+                    @click="onUsersFilter('professor')"
+                />
+                <StatCard
+                    class="stat-click"
+                    :value="userRoleBreakdown.students"
+                    label="Students"
+                    :tone="usersFilter === 'student' ? 'accent' : 'auto'"
+                    @click="onUsersFilter('student')"
+                />
+                <StatCard
+                    class="stat-click"
+                    :value="userRoleBreakdown.creators + userRoleBreakdown.professors + userRoleBreakdown.students"
+                    label="All users"
+                    :tone="usersFilter === 'all' ? 'accent' : 'auto'"
+                    @click="onUsersFilter('all')"
+                />
+            </StatGrid>
+
+            <div class="filters-bar">
+                <FilterChips :options="usersFilterOptions" :model-value="usersFilter" @update:model-value="onUsersFilter" />
+                <SearchInput :model-value="usersSearch" placeholder="Search by name or email…" class="search-grow" @update:model-value="onUsersSearch" />
+            </div>
+
+            <LoadingState v-if="usersLoading" message="Loading users…" />
+            <ErrorState v-else-if="usersError" :message="usersError" @retry="fetchUsers" />
+            <EmptyState v-else-if="users.length === 0" title="No users found" />
+
+            <div v-else class="stack">
+                <BaseCard v-for="u in users" :key="u.id" padding="md" interactive @click="selectUser(u)">
+                    <div class="user-row">
+                        <div class="user-avatar" aria-hidden="true">{{ (u.full_name || u.email || "?")[0].toUpperCase() }}</div>
+                        <div class="user-info-col">
+                            <span class="card-title sm">{{ u.full_name || "Unnamed user" }}</span>
+                            <span class="muted-mono">{{ u.email }}</span>
+                        </div>
+                        <div class="user-meta-col">
+                            <StatusBadge variant="accent">{{ u.role }}</StatusBadge>
+                            <span class="muted-mono">{{ u.institution || "—" }}</span>
+                            <span class="muted-mono">Joined {{ formatDate(u.created_at) }}</span>
+                        </div>
+                    </div>
+                </BaseCard>
+
+                <!-- Pagination -->
+                <div v-if="usersTotalPages > 1" class="pager">
+                    <Button variant="outline" size="sm" :disabled="usersPage === 1" @click="goToUsersPage(usersPage - 1)">‹ Prev</Button>
+                    <span class="muted-mono">Page {{ usersPage }} of {{ usersTotalPages }}</span>
+                    <Button variant="outline" size="sm" :disabled="usersPage === usersTotalPages" @click="goToUsersPage(usersPage + 1)">Next ›</Button>
+                </div>
+            </div>
+
+            <!-- User detail modal -->
+            <BaseModal
+                :model-value="!!selectedUser"
+                size="lg"
+                :title="selectedUser ? (selectedUser.full_name || 'Unnamed user') : ''"
+                @update:model-value="selectedUser = null"
+            >
+                <template v-if="selectedUser">
+                    <div class="user-detail-head">
+                        <div class="user-avatar lg" aria-hidden="true">{{ (selectedUser.full_name || selectedUser.email || "?")[0].toUpperCase() }}</div>
+                        <div>
+                            <span class="muted-mono">{{ selectedUser.email }}</span>
+                            <div class="mt-2"><StatusBadge variant="accent">{{ selectedUser.role }}</StatusBadge></div>
+                        </div>
+                    </div>
+                    <div class="kv-list mt-3">
+                        <div class="kv-row"><span class="kv-key">Institution</span><span class="kv-val">{{ selectedUser.institution || "—" }}</span></div>
+                        <div class="kv-row"><span class="kv-key">Joined</span><span class="kv-val">{{ formatDate(selectedUser.created_at) }}</span></div>
+                        <div v-if="selectedUser.role === 'professor'" class="kv-row"><span class="kv-key">Department</span><span class="kv-val">{{ selectedUser.professor_department || "—" }}</span></div>
+                        <div v-if="selectedUser.role === 'student'" class="kv-row"><span class="kv-key">Year</span><span class="kv-val">{{ selectedUser.student_year || "—" }}</span></div>
+                        <div v-if="selectedUser.role === 'student'" class="kv-row"><span class="kv-key">Major</span><span class="kv-val">{{ selectedUser.student_major || "—" }}</span></div>
+                        <div v-if="selectedUser.role === 'creator'" class="kv-row"><span class="kv-key">Bio</span><span class="kv-val">{{ selectedUser.creator_bio || "—" }}</span></div>
+                    </div>
+                    <FormField label="Change role" class="mt-3">
+                        <select :value="selectedUser.role" @change="updateUserRole(selectedUser.id, $event.target.value)">
+                            <option v-for="opt in roleSelectOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                        </select>
+                    </FormField>
+                </template>
+                <template #footer>
+                    <Button variant="ghost" size="sm" @click="selectedUser = null">Close</Button>
+                </template>
+            </BaseModal>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section v-else-if="activeSection === 'analytics'" class="section">
+            <SectionHeader eyebrow="07 · Analytics" title="Platform analytics">
+                <template #actions>
+                    <SegmentedControl
+                        :model-value="analyticsDateRange"
+                        :options="analyticsRangeOptions"
+                        aria-label="Analytics date range"
+                        @update:model-value="onAnalyticsRange"
+                    />
+                </template>
+            </SectionHeader>
+
+            <LoadingState v-if="analyticsLoading" message="Loading analytics…" />
+            <ErrorState v-else-if="analyticsError" :message="analyticsError" @retry="fetchAnalytics" />
+
+            <template v-else>
+                <!-- Overview metrics -->
+                <StatGrid :columns="4">
+                    <StatCard :value="analyticsMetrics.activeUsers" label="Active users" />
+                    <StatCard :value="analyticsMetrics.totalPageViews" label="Page views" />
+                    <StatCard :value="formatDuration(analyticsMetrics.avgTimeOnContent)" label="Avg time on content" />
+                    <StatCard :value="analyticsMetrics.quizCompletionRate" suffix="%" label="Quiz pass rate" />
+                </StatGrid>
+
+                <!-- Engagement chart -->
+                <BaseCard padding="lg">
+                    <h3 class="card-title">User engagement over time</h3>
+                    <div class="chart-wrapper mt-3">
+                        <EmptyState
+                            v-if="analyticsChartData.labels.length === 0"
+                            title="No engagement data for this period"
+                            message="Active-user data will appear here once readers visit the book in this window."
+                        />
+                        <div v-else class="chart-bars">
+                            <div
+                                v-for="(value, index) in analyticsChartData.datasets[0]?.data || []"
+                                :key="index"
+                                class="chart-bar-col"
+                            >
+                                <div
+                                    class="chart-bar"
+                                    :style="{ height: Math.max(4, (value / Math.max(...analyticsChartData.datasets[0].data, 1)) * 100) + '%' }"
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    class="primary-btn"
-                                    @click="createVersion"
-                                >
-                                    Create Version
-                                </button>
+                                    <span class="bar-value">{{ value }}</span>
+                                </div>
+                                <span class="bar-label">{{ analyticsChartData.labels[index] }}</span>
                             </div>
                         </div>
                     </div>
-                </section>
+                </BaseCard>
 
-                <!-- Media Section -->
-                <section
-                    v-else-if="activeSection === 'media'"
-                    class="section-content"
-                >
-                    <div class="section-header-row">
-                        <h2 class="section-title">Media Library</h2>
-                        <div class="header-controls">
-                            <select
-                                v-model="mediaFilter"
-                                @change="fetchMedia"
-                                class="filter-select"
-                            >
-                                <option value="all">All Types</option>
-                                <option value="lottie">Lottie</option>
-                                <option value="video">Video</option>
-                                <option value="image">Image</option>
-                                <option value="youtube">YouTube</option>
-                            </select>
-                            <input
-                                v-model="mediaSearch"
-                                type="text"
-                                placeholder="Search media..."
-                                class="search-input"
+                <!-- Two-column performance tables -->
+                <div class="grid-2">
+                    <BaseCard padding="md">
+                        <h3 class="card-title sm">Content performance</h3>
+                        <EmptyState v-if="contentPerformance.length === 0" title="No content views recorded" />
+                        <div v-else class="mt-3">
+                            <ListRow
+                                v-for="(item, index) in contentPerformance"
+                                :key="index"
+                                :label="`${index + 1}. ${item.title}`"
+                                :hint="`${item.views} views`"
                             />
                         </div>
-                    </div>
+                    </BaseCard>
 
-                    <!-- Loading -->
-                    <div v-if="mediaLoading" class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading media...</p>
-                    </div>
+                    <BaseCard padding="md">
+                        <h3 class="card-title sm">Quiz performance</h3>
+                        <EmptyState v-if="quizPerformance.length === 0" title="No quiz attempts recorded" />
+                        <div v-else class="mt-3">
+                            <ListRow
+                                v-for="(item, index) in quizPerformance"
+                                :key="index"
+                                :label="`${index + 1}. ${item.title}`"
+                                :hint="`${item.avgScore}% avg`"
+                            />
+                        </div>
+                    </BaseCard>
+                </div>
 
-                    <!-- Error -->
-                    <div v-else-if="mediaError" class="error-state">
-                        <p>{{ mediaError }}</p>
-                        <button @click="fetchMedia" class="retry-btn">
-                            Retry
-                        </button>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div
-                        v-else-if="filteredMedia.length === 0"
-                        class="empty-state"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="48"
-                            height="48"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
+                <BaseCard padding="md">
+                    <h3 class="card-title sm">Trending highlights</h3>
+                    <EmptyState v-if="trendingHighlights.length === 0" title="No highlights recorded" />
+                    <div v-else class="mt-3">
+                        <ListRow
+                            v-for="(item, index) in trendingHighlights"
+                            :key="index"
+                            :label="`“${item.selected_text?.slice(0, 100) || ''}…”`"
                         >
-                            <rect
-                                x="3"
-                                y="3"
-                                width="18"
-                                height="18"
-                                rx="2"
-                                ry="2"
-                            ></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                        <h3>No media found</h3>
-                        <p>
-                            Upload animations, images, and videos to use in your
-                            content.
-                        </p>
+                            <StatusBadge variant="accent">{{ item.highlight_count }} users</StatusBadge>
+                        </ListRow>
                     </div>
-
-                    <!-- Media Grid with Detail Panel -->
-                    <div v-else class="media-layout">
-                        <div class="media-grid-container">
-                            <!-- Lottie Section -->
-                            <div
-                                v-if="mediaByType.lottie.length > 0"
-                                class="media-type-section"
-                            >
-                                <h3 class="media-type-title">
-                                    Lottie Animations ({{
-                                        mediaByType.lottie.length
-                                    }})
-                                </h3>
-                                <div class="media-grid">
-                                    <div
-                                        v-for="item in mediaByType.lottie"
-                                        :key="item.id"
-                                        class="media-card"
-                                        :class="{
-                                            selected:
-                                                selectedMedia?.id === item.id,
-                                        }"
-                                        @click="selectMedia(item)"
-                                    >
-                                        <div class="media-thumb lottie">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="32"
-                                                height="32"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                            >
-                                                <polygon
-                                                    points="5 3 19 12 5 21 5 3"
-                                                ></polygon>
-                                            </svg>
-                                        </div>
-                                        <div class="media-info">
-                                            <span class="media-title">{{
-                                                item.title || item.animation_key
-                                            }}</span>
-                                            <span class="media-size">{{
-                                                formatFileSize(
-                                                    item.file_size_bytes,
-                                                )
-                                            }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Video Section -->
-                            <div
-                                v-if="mediaByType.video.length > 0"
-                                class="media-type-section"
-                            >
-                                <h3 class="media-type-title">
-                                    Videos ({{ mediaByType.video.length }})
-                                </h3>
-                                <div class="media-grid">
-                                    <div
-                                        v-for="item in mediaByType.video"
-                                        :key="item.id"
-                                        class="media-card"
-                                        :class="{
-                                            selected:
-                                                selectedMedia?.id === item.id,
-                                        }"
-                                        @click="selectMedia(item)"
-                                    >
-                                        <div class="media-thumb video">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="32"
-                                                height="32"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                            >
-                                                <rect
-                                                    x="2"
-                                                    y="2"
-                                                    width="20"
-                                                    height="20"
-                                                    rx="2.18"
-                                                    ry="2.18"
-                                                ></rect>
-                                                <line
-                                                    x1="7"
-                                                    y1="2"
-                                                    x2="7"
-                                                    y2="22"
-                                                ></line>
-                                                <line
-                                                    x1="17"
-                                                    y1="2"
-                                                    x2="17"
-                                                    y2="22"
-                                                ></line>
-                                                <line
-                                                    x1="2"
-                                                    y1="12"
-                                                    x2="22"
-                                                    y2="12"
-                                                ></line>
-                                                <line
-                                                    x1="2"
-                                                    y1="7"
-                                                    x2="7"
-                                                    y2="7"
-                                                ></line>
-                                                <line
-                                                    x1="2"
-                                                    y1="17"
-                                                    x2="7"
-                                                    y2="17"
-                                                ></line>
-                                                <line
-                                                    x1="17"
-                                                    y1="17"
-                                                    x2="22"
-                                                    y2="17"
-                                                ></line>
-                                                <line
-                                                    x1="17"
-                                                    y1="7"
-                                                    x2="22"
-                                                    y2="7"
-                                                ></line>
-                                            </svg>
-                                        </div>
-                                        <div class="media-info">
-                                            <span class="media-title">{{
-                                                item.title || item.animation_key
-                                            }}</span>
-                                            <span class="media-size">{{
-                                                formatFileSize(
-                                                    item.file_size_bytes,
-                                                )
-                                            }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Image Section -->
-                            <div
-                                v-if="mediaByType.image.length > 0"
-                                class="media-type-section"
-                            >
-                                <h3 class="media-type-title">
-                                    Images ({{ mediaByType.image.length }})
-                                </h3>
-                                <div class="media-grid">
-                                    <div
-                                        v-for="item in mediaByType.image"
-                                        :key="item.id"
-                                        class="media-card"
-                                        :class="{
-                                            selected:
-                                                selectedMedia?.id === item.id,
-                                        }"
-                                        @click="selectMedia(item)"
-                                    >
-                                        <div class="media-thumb image">
-                                            <img
-                                                v-if="item.image_file_url"
-                                                :src="item.image_file_url"
-                                                :alt="item.title"
-                                            />
-                                            <svg
-                                                v-else
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="32"
-                                                height="32"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                            >
-                                                <rect
-                                                    x="3"
-                                                    y="3"
-                                                    width="18"
-                                                    height="18"
-                                                    rx="2"
-                                                    ry="2"
-                                                ></rect>
-                                                <circle
-                                                    cx="8.5"
-                                                    cy="8.5"
-                                                    r="1.5"
-                                                ></circle>
-                                                <polyline
-                                                    points="21 15 16 10 5 21"
-                                                ></polyline>
-                                            </svg>
-                                        </div>
-                                        <div class="media-info">
-                                            <span class="media-title">{{
-                                                item.title || item.animation_key
-                                            }}</span>
-                                            <span class="media-size">{{
-                                                formatFileSize(
-                                                    item.file_size_bytes,
-                                                )
-                                            }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- YouTube Section -->
-                            <div
-                                v-if="mediaByType.youtube.length > 0"
-                                class="media-type-section"
-                            >
-                                <h3 class="media-type-title">
-                                    YouTube ({{ mediaByType.youtube.length }})
-                                </h3>
-                                <div class="media-grid">
-                                    <div
-                                        v-for="item in mediaByType.youtube"
-                                        :key="item.id"
-                                        class="media-card"
-                                        :class="{
-                                            selected:
-                                                selectedMedia?.id === item.id,
-                                        }"
-                                        @click="selectMedia(item)"
-                                    >
-                                        <div class="media-thumb youtube">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="32"
-                                                height="32"
-                                                viewBox="0 0 24 24"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <div class="media-info">
-                                            <span class="media-title">{{
-                                                item.title || item.animation_key
-                                            }}</span>
-                                            <span class="media-size">{{
-                                                item.youtube_id
-                                            }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Full-page Media Detail Modal -->
-                    <Teleport to="body">
-                        <Transition name="modal">
-                            <div v-if="selectedMedia" class="media-modal-overlay" @click.self="selectedMedia = null">
-                                <div class="media-modal">
-                                    <div class="media-modal__header">
-                                        <div>
-                                            <h2 class="media-modal__title">{{ selectedMedia.title || selectedMedia.animation_key }}</h2>
-                                            <span class="media-modal__type">{{ selectedMedia.media_type }} &middot; {{ formatFileSize(selectedMedia.file_size_bytes) }}</span>
-                                        </div>
-                                        <button class="media-modal__close" @click="selectedMedia = null">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                        </button>
-                                    </div>
-                                    <div class="media-modal__preview">
-                                        <!-- Lottie preview -->
-                                        <div v-if="selectedMedia.media_type === 'lottie'" :id="'lottie-preview-' + selectedMedia.id" class="media-modal__lottie"></div>
-                                        <!-- Image preview -->
-                                        <img v-else-if="selectedMedia.media_type === 'image'" :src="selectedMedia.lottie_file_url || selectedMedia.file_path" class="media-modal__img" />
-                                        <!-- Video preview -->
-                                        <video v-else-if="selectedMedia.media_type === 'video'" :src="selectedMedia.lottie_file_url || selectedMedia.file_path" controls class="media-modal__video"></video>
-                                        <!-- Fallback -->
-                                        <div v-else class="media-modal__placeholder">
-                                            <span>{{ selectedMedia.media_type }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="media-modal__info">
-                                        <div class="media-modal__row"><span class="media-modal__label">Animation Key</span><span class="media-modal__val">{{ selectedMedia.animation_key }}</span></div>
-                                        <div class="media-modal__row"><span class="media-modal__label">Interaction</span><span class="media-modal__val">{{ selectedMedia.interaction_type || '-' }}</span></div>
-                                        <div class="media-modal__row"><span class="media-modal__label">Component</span><span class="media-modal__val">{{ selectedMedia.component_name || '-' }}</span></div>
-                                        <div class="media-modal__row"><span class="media-modal__label">Priority</span><span class="media-modal__val">{{ selectedMedia.load_priority || 'normal' }}</span></div>
-                                        <div class="media-modal__row"><span class="media-modal__label">Domain</span><span class="media-modal__val">{{ selectedMedia.scientific_domain || '-' }}</span></div>
-                                        <div v-if="selectedMedia.description" class="media-modal__row media-modal__row--full"><span class="media-modal__label">Description</span><p class="media-modal__val">{{ selectedMedia.description }}</p></div>
-                                    </div>
-                                    <div class="media-modal__actions">
-                                        <button class="danger-btn" @click="deleteMedia(selectedMedia.id)">Delete Asset</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </Transition>
-                    </Teleport>
-
-                    <!-- Media Picker Modal (for attaching media to content blocks) -->
-                    <Teleport to="body">
-                        <Transition name="modal">
-                            <div v-if="showMediaPicker" class="media-picker-overlay" @click.self="showMediaPicker = false">
-                                <div class="media-picker">
-                                    <div class="media-picker__header">
-                                        <div>
-                                            <h2 class="media-picker__title">Attach Media</h2>
-                                            <p class="media-picker__subtitle">Select an animation or media to attach to this content block</p>
-                                        </div>
-                                        <button class="media-modal__close" @click="showMediaPicker = false">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                        </button>
-                                    </div>
-                                    <div class="media-picker__search">
-                                        <input
-                                            v-model="mediaPickerSearch"
-                                            type="text"
-                                            placeholder="Search animations..."
-                                            class="media-picker__input"
-                                        />
-                                    </div>
-                                    <div class="media-picker__grid">
-                                        <div
-                                            v-for="item in mediaPickerFiltered"
-                                            :key="item.id"
-                                            class="media-picker__item"
-                                            @click="attachMedia(item)"
-                                        >
-                                            <div class="media-picker__thumb">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                            </div>
-                                            <div class="media-picker__info">
-                                                <span class="media-picker__name">{{ item.title || item.animation_key }}</span>
-                                                <span class="media-picker__meta">{{ item.interaction_type }} &middot; {{ item.media_type }}</span>
-                                            </div>
-                                        </div>
-                                        <div v-if="mediaPickerFiltered.length === 0" class="media-picker__empty">
-                                            No media found
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </Transition>
-                    </Teleport>
-                </section>
-
-                <!-- Quizzes Section -->
-                <section
-                    v-else-if="activeSection === 'quizzes'"
-                    class="section-content"
-                >
-                    <div class="section-header-row">
-                        <h2 class="section-title">Quizzes</h2>
-                        <button class="primary-btn" @click="openQuizEditor()">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            New Quiz
-                        </button>
-                    </div>
-
-                    <!-- Loading -->
-                    <div v-if="quizzesLoading" class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading quizzes...</p>
-                    </div>
-
-                    <!-- Error -->
-                    <div v-else-if="quizzesError" class="error-state">
-                        <p>{{ quizzesError }}</p>
-                        <button @click="fetchQuizzes" class="retry-btn">
-                            Retry
-                        </button>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div
-                        v-else-if="quizzes.length === 0 && !showQuizEditor"
-                        class="empty-state"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="48"
-                            height="48"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                        >
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path
-                                d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
-                            ></path>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
-                        <h3>No quizzes yet</h3>
-                        <p>Create quizzes to test student understanding.</p>
-                        <button class="primary-btn" @click="openQuizEditor()">
-                            Create Quiz
-                        </button>
-                    </div>
-
-                    <!-- Quiz Editor -->
-                    <div v-else-if="showQuizEditor" class="quiz-editor">
-                        <div class="editor-header">
-                            <button class="back-btn" @click="closeQuizEditor">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <polyline
-                                        points="15 18 9 12 15 6"
-                                    ></polyline>
-                                </svg>
-                                Back to Quizzes
-                            </button>
-                            <h3>
-                                {{ editingQuiz ? "Edit Quiz" : "New Quiz" }}
-                            </h3>
-                        </div>
-
-                        <div class="quiz-form">
-                            <div class="form-row">
-                                <div class="form-group flex-1">
-                                    <label>Quiz Title</label>
-                                    <input
-                                        v-model="quizForm.title"
-                                        type="text"
-                                        placeholder="e.g., Chapter 1 Quiz"
-                                        class="form-input"
-                                    />
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group flex-1">
-                                    <label>Description</label>
-                                    <textarea
-                                        v-model="quizForm.description"
-                                        placeholder="Quiz description..."
-                                        class="form-textarea"
-                                        rows="2"
-                                    ></textarea>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Time Limit (minutes)</label>
-                                    <input
-                                        v-model.number="
-                                            quizForm.time_limit_minutes
-                                        "
-                                        type="number"
-                                        min="1"
-                                        class="form-input small"
-                                    />
-                                </div>
-                                <div class="form-group">
-                                    <label>Passing Score (%)</label>
-                                    <input
-                                        v-model.number="quizForm.passing_score"
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        class="form-input small"
-                                    />
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <label class="checkbox-label">
-                                    <input
-                                        type="checkbox"
-                                        v-model="
-                                            quizForm.allow_multiple_attempts
-                                        "
-                                    />
-                                    Allow multiple attempts
-                                </label>
-                                <label class="checkbox-label">
-                                    <input
-                                        type="checkbox"
-                                        v-model="quizForm.show_correct_answers"
-                                    />
-                                    Show correct answers after submission
-                                </label>
-                            </div>
-
-                            <div class="form-actions">
-                                <button
-                                    class="secondary-btn"
-                                    @click="closeQuizEditor"
-                                >
-                                    Cancel
-                                </button>
-                                <button class="primary-btn" @click="saveQuiz">
-                                    {{
-                                        editingQuiz
-                                            ? "Save Changes"
-                                            : "Create Quiz"
-                                    }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Questions Section (only when editing existing quiz) -->
-                        <div v-if="editingQuiz" class="questions-section">
-                            <div class="questions-header">
-                                <h4>
-                                    Questions ({{ quizForm.questions.length }})
-                                </h4>
-                                <button
-                                    class="secondary-btn"
-                                    @click="openQuestionEditor()"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <line
-                                            x1="12"
-                                            y1="5"
-                                            x2="12"
-                                            y2="19"
-                                        ></line>
-                                        <line
-                                            x1="5"
-                                            y1="12"
-                                            x2="19"
-                                            y2="12"
-                                        ></line>
-                                    </svg>
-                                    Add Question
-                                </button>
-                            </div>
-
-                            <div
-                                v-if="quizForm.questions.length === 0"
-                                class="empty-questions"
-                            >
-                                <p>
-                                    No questions yet. Add your first question to
-                                    get started.
-                                </p>
-                            </div>
-
-                            <div v-else class="questions-list">
-                                <div
-                                    v-for="(
-                                        question, index
-                                    ) in quizForm.questions"
-                                    :key="question.id"
-                                    class="question-card"
-                                >
-                                    <div class="question-header">
-                                        <span class="question-number"
-                                            >Q{{ index + 1 }}</span
-                                        >
-                                        <span class="question-type-badge">{{
-                                            question.question_type
-                                        }}</span>
-                                        <span class="question-points"
-                                            >{{ question.points }} pt{{
-                                                question.points !== 1 ? "s" : ""
-                                            }}</span
-                                        >
-                                    </div>
-                                    <p class="question-text">
-                                        {{ question.question_text }}
-                                    </p>
-                                    <div
-                                        v-if="question.options"
-                                        class="question-options"
-                                    >
-                                        <div
-                                            v-for="(
-                                                option, optIndex
-                                            ) in question.options"
-                                            :key="optIndex"
-                                            class="option"
-                                            :class="{
-                                                correct:
-                                                    option ===
-                                                    question.correct_answer,
-                                            }"
-                                        >
-                                            {{
-                                                String.fromCharCode(
-                                                    65 + optIndex,
-                                                )
-                                            }}. {{ option }}
-                                        </div>
-                                    </div>
-                                    <div class="question-actions">
-                                        <button
-                                            class="icon-btn"
-                                            @click="
-                                                openQuestionEditor(question)
-                                            "
-                                            title="Edit"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                            >
-                                                <path
-                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                                                ></path>
-                                                <path
-                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                                                ></path>
-                                            </svg>
-                                        </button>
-                                        <button
-                                            class="icon-btn danger"
-                                            @click="deleteQuestion(question.id)"
-                                            title="Delete"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                            >
-                                                <polyline
-                                                    points="3 6 5 6 21 6"
-                                                ></polyline>
-                                                <path
-                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                                                ></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Question Editor Modal -->
-                        <div
-                            v-if="showQuestionEditor"
-                            class="modal-overlay"
-                            @click.self="closeQuestionEditor"
-                        >
-                            <div class="modal-content question-modal">
-                                <h3>
-                                    {{
-                                        editingQuestion
-                                            ? "Edit Question"
-                                            : "Add Question"
-                                    }}
-                                </h3>
-                                <div class="form-group">
-                                    <label>Question Type</label>
-                                    <select
-                                        v-model="questionForm.question_type"
-                                        class="form-select"
-                                    >
-                                        <option value="multiple_choice">
-                                            Multiple Choice
-                                        </option>
-                                        <option value="true_false">
-                                            True/False
-                                        </option>
-                                        <option value="short_answer">
-                                            Short Answer
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Question</label>
-                                    <textarea
-                                        v-model="questionForm.question_text"
-                                        placeholder="Enter your question..."
-                                        class="form-textarea"
-                                        rows="3"
-                                    ></textarea>
-                                </div>
-                                <div
-                                    v-if="
-                                        questionForm.question_type ===
-                                        'multiple_choice'
-                                    "
-                                    class="form-group"
-                                >
-                                    <label>Options</label>
-                                    <div
-                                        v-for="(
-                                            option, index
-                                        ) in questionForm.options"
-                                        :key="index"
-                                        class="option-input-row"
-                                    >
-                                        <span class="option-letter">{{
-                                            String.fromCharCode(65 + index)
-                                        }}</span>
-                                        <input
-                                            v-model="
-                                                questionForm.options[index]
-                                            "
-                                            type="text"
-                                            :placeholder="
-                                                'Option ' +
-                                                String.fromCharCode(65 + index)
-                                            "
-                                            class="form-input"
-                                        />
-                                        <label class="radio-label">
-                                            <input
-                                                type="radio"
-                                                :value="
-                                                    questionForm.options[index]
-                                                "
-                                                v-model="
-                                                    questionForm.correct_answer
-                                                "
-                                            />
-                                            Correct
-                                        </label>
-                                    </div>
-                                </div>
-                                <div
-                                    v-else-if="
-                                        questionForm.question_type ===
-                                        'true_false'
-                                    "
-                                    class="form-group"
-                                >
-                                    <label>Correct Answer</label>
-                                    <div class="radio-group">
-                                        <label class="radio-label">
-                                            <input
-                                                type="radio"
-                                                value="true"
-                                                v-model="
-                                                    questionForm.correct_answer
-                                                "
-                                            />
-                                            True
-                                        </label>
-                                        <label class="radio-label">
-                                            <input
-                                                type="radio"
-                                                value="false"
-                                                v-model="
-                                                    questionForm.correct_answer
-                                                "
-                                            />
-                                            False
-                                        </label>
-                                    </div>
-                                </div>
-                                <div v-else class="form-group">
-                                    <label>Expected Answer (keywords)</label>
-                                    <input
-                                        v-model="questionForm.correct_answer"
-                                        type="text"
-                                        placeholder="Keywords separated by commas"
-                                        class="form-input"
-                                    />
-                                </div>
-                                <div class="form-group">
-                                    <label>Points</label>
-                                    <input
-                                        v-model.number="questionForm.points"
-                                        type="number"
-                                        min="1"
-                                        class="form-input small"
-                                    />
-                                </div>
-                                <div class="modal-actions">
-                                    <button
-                                        class="secondary-btn"
-                                        @click="closeQuestionEditor"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        class="primary-btn"
-                                        @click="saveQuestion"
-                                    >
-                                        {{
-                                            editingQuestion
-                                                ? "Save Changes"
-                                                : "Add Question"
-                                        }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quizzes List -->
-                    <div v-else class="quizzes-list">
-                        <div
-                            v-for="quiz in quizzes"
-                            :key="quiz.id"
-                            class="quiz-card"
-                        >
-                            <div class="quiz-header">
-                                <div class="quiz-info">
-                                    <h3 class="quiz-title">{{ quiz.title }}</h3>
-                                    <span
-                                        v-if="quiz.modules"
-                                        class="quiz-module"
-                                        >{{ quiz.modules.title }}</span
-                                    >
-                                </div>
-                                <div class="quiz-actions">
-                                    <button
-                                        class="action-btn"
-                                        @click="openQuizEditor(quiz)"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        class="action-btn danger"
-                                        @click="deleteQuiz(quiz.id)"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="quiz-meta">
-                                <span>{{ quiz.questionCount }} questions</span>
-                                <span>{{ quiz.time_limit_minutes }} min</span>
-                                <span>Pass: {{ quiz.passing_score }}%</span>
-                            </div>
-                            <div class="quiz-stats">
-                                <div class="stat">
-                                    <span class="stat-value">{{
-                                        quiz.attemptCount
-                                    }}</span>
-                                    <span class="stat-label">Attempts</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value"
-                                        >{{ quiz.avgScore }}%</span
-                                    >
-                                    <span class="stat-label">Avg Score</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value"
-                                        >{{ quiz.passRate }}%</span
-                                    >
-                                    <span class="stat-label">Pass Rate</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Users Section -->
-                <section
-                    v-else-if="activeSection === 'users'"
-                    class="section-content"
-                >
-                    <div class="section-header-row">
-                        <h2 class="section-title">Users</h2>
-                        <span class="total-count"
-                            >{{ usersTotalCount }} total</span
-                        >
-                    </div>
-
-                    <!-- Role Breakdown Cards -->
-                    <div class="role-breakdown">
-                        <div
-                            class="role-card"
-                            :class="{ active: usersFilter === 'creator' }"
-                            @click="
-                                usersFilter = 'creator';
-                                usersPage = 1;
-                                fetchUsers();
-                            "
-                        >
-                            <div class="role-icon creator">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path d="M12 20h9"></path>
-                                    <path
-                                        d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
-                                    ></path>
-                                </svg>
-                            </div>
-                            <div class="role-info">
-                                <span class="role-count">{{
-                                    userRoleBreakdown.creators
-                                }}</span>
-                                <span class="role-label">Creators</span>
-                            </div>
-                        </div>
-                        <div
-                            class="role-card"
-                            :class="{ active: usersFilter === 'professor' }"
-                            @click="
-                                usersFilter = 'professor';
-                                usersPage = 1;
-                                fetchUsers();
-                            "
-                        >
-                            <div class="role-icon professor">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        d="M22 10v6M2 10l10-5 10 5-10 5z"
-                                    ></path>
-                                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                                </svg>
-                            </div>
-                            <div class="role-info">
-                                <span class="role-count">{{
-                                    userRoleBreakdown.professors
-                                }}</span>
-                                <span class="role-label">Professors</span>
-                            </div>
-                        </div>
-                        <div
-                            class="role-card"
-                            :class="{ active: usersFilter === 'student' }"
-                            @click="
-                                usersFilter = 'student';
-                                usersPage = 1;
-                                fetchUsers();
-                            "
-                        >
-                            <div class="role-icon student">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                                    ></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                            </div>
-                            <div class="role-info">
-                                <span class="role-count">{{
-                                    userRoleBreakdown.students
-                                }}</span>
-                                <span class="role-label">Students</span>
-                            </div>
-                        </div>
-                        <div
-                            class="role-card"
-                            :class="{ active: usersFilter === 'all' }"
-                            @click="
-                                usersFilter = 'all';
-                                usersPage = 1;
-                                fetchUsers();
-                            "
-                        >
-                            <div class="role-icon all">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                                    ></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                            </div>
-                            <div class="role-info">
-                                <span class="role-count">{{
-                                    userRoleBreakdown.creators +
-                                    userRoleBreakdown.professors +
-                                    userRoleBreakdown.students
-                                }}</span>
-                                <span class="role-label">All Users</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Search -->
-                    <div class="users-toolbar">
-                        <input
-                            v-model="usersSearch"
-                            @input="
-                                usersPage = 1;
-                                fetchUsers();
-                            "
-                            type="text"
-                            placeholder="Search by name or email..."
-                            class="search-input wide"
-                        />
-                    </div>
-
-                    <!-- Loading -->
-                    <div v-if="usersLoading" class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading users...</p>
-                    </div>
-
-                    <!-- Error -->
-                    <div v-else-if="usersError" class="error-state">
-                        <p>{{ usersError }}</p>
-                        <button @click="fetchUsers" class="retry-btn">
-                            Retry
-                        </button>
-                    </div>
-
-                    <!-- Users List -->
-                    <div v-else class="users-list">
-                        <div
-                            v-for="user in users"
-                            :key="user.id"
-                            class="user-card"
-                            @click="selectUser(user)"
-                        >
-                            <div class="user-avatar">
-                                {{
-                                    (user.full_name ||
-                                        user.email ||
-                                        "?")[0].toUpperCase()
-                                }}
-                            </div>
-                            <div class="user-info">
-                                <div class="user-name">
-                                    {{ user.full_name || "Unnamed User" }}
-                                </div>
-                                <div class="user-email">{{ user.email }}</div>
-                            </div>
-                            <div class="user-meta">
-                                <span class="role-badge" :class="user.role">{{
-                                    user.role
-                                }}</span>
-                                <span class="user-institution">{{
-                                    user.institution || "-"
-                                }}</span>
-                                <span class="user-joined"
-                                    >Joined
-                                    {{ formatDate(user.created_at) }}</span
-                                >
-                            </div>
-                        </div>
-
-                        <!-- Pagination -->
-                        <div v-if="usersTotalPages > 1" class="pagination">
-                            <button
-                                class="page-btn"
-                                :disabled="usersPage === 1"
-                                @click="prevUsersPage"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <polyline
-                                        points="15 18 9 12 15 6"
-                                    ></polyline>
-                                </svg>
-                                Prev
-                            </button>
-                            <span class="page-info"
-                                >Page {{ usersPage }} of
-                                {{ usersTotalPages }}</span
-                            >
-                            <button
-                                class="page-btn"
-                                :disabled="usersPage === usersTotalPages"
-                                @click="nextUsersPage"
-                            >
-                                Next
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <polyline
-                                        points="9 18 15 12 9 6"
-                                    ></polyline>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- User Detail Modal -->
-                    <div
-                        v-if="selectedUser"
-                        class="modal-overlay"
-                        @click.self="selectedUser = null"
-                    >
-                        <div class="modal-content user-detail-modal">
-                            <div class="user-detail-header">
-                                <div class="user-avatar large">
-                                    {{
-                                        (selectedUser.full_name ||
-                                            selectedUser.email ||
-                                            "?")[0].toUpperCase()
-                                    }}
-                                </div>
-                                <div class="user-detail-info">
-                                    <h3>
-                                        {{
-                                            selectedUser.full_name ||
-                                            "Unnamed User"
-                                        }}
-                                    </h3>
-                                    <p>{{ selectedUser.email }}</p>
-                                    <span
-                                        class="role-badge"
-                                        :class="selectedUser.role"
-                                        >{{ selectedUser.role }}</span
-                                    >
-                                </div>
-                                <button
-                                    class="close-btn"
-                                    @click="selectedUser = null"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <line
-                                            x1="18"
-                                            y1="6"
-                                            x2="6"
-                                            y2="18"
-                                        ></line>
-                                        <line
-                                            x1="6"
-                                            y1="6"
-                                            x2="18"
-                                            y2="18"
-                                        ></line>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="user-detail-body">
-                                <div class="detail-row">
-                                    <span class="detail-label"
-                                        >Institution</span
-                                    >
-                                    <span class="detail-value">{{
-                                        selectedUser.institution || "-"
-                                    }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Joined</span>
-                                    <span class="detail-value">{{
-                                        formatDate(selectedUser.created_at)
-                                    }}</span>
-                                </div>
-                                <div
-                                    v-if="selectedUser.role === 'professor'"
-                                    class="detail-row"
-                                >
-                                    <span class="detail-label">Department</span>
-                                    <span class="detail-value">{{
-                                        selectedUser.professor_department || "-"
-                                    }}</span>
-                                </div>
-                                <div
-                                    v-if="selectedUser.role === 'student'"
-                                    class="detail-row"
-                                >
-                                    <span class="detail-label">Year</span>
-                                    <span class="detail-value">{{
-                                        selectedUser.student_year || "-"
-                                    }}</span>
-                                </div>
-                                <div
-                                    v-if="selectedUser.role === 'student'"
-                                    class="detail-row"
-                                >
-                                    <span class="detail-label">Major</span>
-                                    <span class="detail-value">{{
-                                        selectedUser.student_major || "-"
-                                    }}</span>
-                                </div>
-                                <div
-                                    v-if="selectedUser.role === 'creator'"
-                                    class="detail-row"
-                                >
-                                    <span class="detail-label">Bio</span>
-                                    <span class="detail-value">{{
-                                        selectedUser.creator_bio || "-"
-                                    }}</span>
-                                </div>
-                            </div>
-                            <div class="user-detail-actions">
-                                <label>Change Role:</label>
-                                <select
-                                    :value="selectedUser.role"
-                                    @change="
-                                        updateUserRole(
-                                            selectedUser.id,
-                                            $event.target.value,
-                                        )
-                                    "
-                                    class="form-select"
-                                >
-                                    <option value="student">Student</option>
-                                    <option value="professor">Professor</option>
-                                    <option value="creator">Creator</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Analytics Section -->
-                <section
-                    v-else-if="activeSection === 'analytics'"
-                    class="section-content"
-                >
-                    <div class="section-header-row">
-                        <h2 class="section-title">Analytics</h2>
-                        <select
-                            v-model="analyticsDateRange"
-                            @change="fetchAnalytics"
-                            class="filter-select"
-                        >
-                            <option value="7days">Last 7 days</option>
-                            <option value="30days">Last 30 days</option>
-                            <option value="90days">Last 90 days</option>
-                        </select>
-                    </div>
-
-                    <!-- Loading -->
-                    <div v-if="analyticsLoading" class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading analytics...</p>
-                    </div>
-
-                    <!-- Error -->
-                    <div v-else-if="analyticsError" class="error-state">
-                        <p>{{ analyticsError }}</p>
-                        <button @click="fetchAnalytics" class="retry-btn">
-                            Retry
-                        </button>
-                    </div>
-
-                    <!-- Analytics Dashboard -->
-                    <div v-else class="analytics-dashboard">
-                        <!-- Overview Metrics -->
-                        <div class="metrics-row">
-                            <div class="metric-card">
-                                <div class="metric-icon users">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <path
-                                            d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                                        ></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                    </svg>
-                                </div>
-                                <div class="metric-info">
-                                    <span class="metric-value">{{
-                                        analyticsMetrics.activeUsers
-                                    }}</span>
-                                    <span class="metric-label"
-                                        >Active Users</span
-                                    >
-                                </div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-icon views">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <path
-                                            d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                                        ></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </div>
-                                <div class="metric-info">
-                                    <span class="metric-value">{{
-                                        analyticsMetrics.totalPageViews
-                                    }}</span>
-                                    <span class="metric-label">Page Views</span>
-                                </div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-icon time">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <polyline
-                                            points="12 6 12 12 16 14"
-                                        ></polyline>
-                                    </svg>
-                                </div>
-                                <div class="metric-info">
-                                    <span class="metric-value">{{
-                                        formatDuration(
-                                            analyticsMetrics.avgTimeOnContent,
-                                        )
-                                    }}</span>
-                                    <span class="metric-label"
-                                        >Avg Time on Content</span
-                                    >
-                                </div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-icon quiz">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <path
-                                            d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
-                                        ></path>
-                                        <polyline
-                                            points="22 4 12 14.01 9 11.01"
-                                        ></polyline>
-                                    </svg>
-                                </div>
-                                <div class="metric-info">
-                                    <span class="metric-value"
-                                        >{{
-                                            analyticsMetrics.quizCompletionRate
-                                        }}%</span
-                                    >
-                                    <span class="metric-label"
-                                        >Quiz Pass Rate</span
-                                    >
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Chart -->
-                        <div class="chart-container">
-                            <h3 class="chart-title">
-                                User Engagement Over Time
-                            </h3>
-                            <div class="chart-wrapper">
-                                <div
-                                    v-if="
-                                        analyticsChartData.labels.length === 0
-                                    "
-                                    class="chart-empty"
-                                >
-                                    <p>No engagement data for this period</p>
-                                </div>
-                                <div v-else class="simple-chart">
-                                    <div class="chart-bars">
-                                        <div
-                                            v-for="(
-                                                value, index
-                                            ) in analyticsChartData.datasets[0]
-                                                ?.data || []"
-                                            :key="index"
-                                            class="chart-bar-container"
-                                        >
-                                            <div
-                                                class="chart-bar"
-                                                :style="{
-                                                    height:
-                                                        Math.max(
-                                                            4,
-                                                            (value /
-                                                                Math.max(
-                                                                    ...analyticsChartData
-                                                                        .datasets[0]
-                                                                        .data,
-                                                                    1,
-                                                                )) *
-                                                                100,
-                                                        ) + '%',
-                                                }"
-                                            >
-                                                <span class="bar-value">{{
-                                                    value
-                                                }}</span>
-                                            </div>
-                                            <span class="bar-label">{{
-                                                analyticsChartData.labels[index]
-                                            }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Two Column Stats -->
-                        <div class="stats-grid">
-                            <!-- Content Performance -->
-                            <div class="stats-card">
-                                <h3 class="stats-title">Content Performance</h3>
-                                <div
-                                    v-if="contentPerformance.length === 0"
-                                    class="stats-empty"
-                                >
-                                    <p>No content views recorded</p>
-                                </div>
-                                <div v-else class="stats-list">
-                                    <div
-                                        v-for="(
-                                            item, index
-                                        ) in contentPerformance"
-                                        :key="index"
-                                        class="stats-item"
-                                    >
-                                        <span class="stats-rank">{{
-                                            index + 1
-                                        }}</span>
-                                        <span class="stats-name">{{
-                                            item.title
-                                        }}</span>
-                                        <span class="stats-value"
-                                            >{{ item.views }} views</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Quiz Performance -->
-                            <div class="stats-card">
-                                <h3 class="stats-title">Quiz Performance</h3>
-                                <div
-                                    v-if="quizPerformance.length === 0"
-                                    class="stats-empty"
-                                >
-                                    <p>No quiz attempts recorded</p>
-                                </div>
-                                <div v-else class="stats-list">
-                                    <div
-                                        v-for="(item, index) in quizPerformance"
-                                        :key="index"
-                                        class="stats-item"
-                                    >
-                                        <span class="stats-rank">{{
-                                            index + 1
-                                        }}</span>
-                                        <span class="stats-name">{{
-                                            item.title
-                                        }}</span>
-                                        <span class="stats-value"
-                                            >{{ item.avgScore }}% avg</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Trending Highlights -->
-                            <div class="stats-card wide">
-                                <h3 class="stats-title">Trending Highlights</h3>
-                                <div
-                                    v-if="trendingHighlights.length === 0"
-                                    class="stats-empty"
-                                >
-                                    <p>No highlights recorded</p>
-                                </div>
-                                <div v-else class="highlights-list">
-                                    <div
-                                        v-for="(
-                                            item, index
-                                        ) in trendingHighlights"
-                                        :key="index"
-                                        class="highlight-item"
-                                    >
-                                        <span class="highlight-count"
-                                            >{{
-                                                item.highlight_count
-                                            }}
-                                            users</span
-                                        >
-                                        <p class="highlight-text">
-                                            "{{
-                                                item.selected_text?.slice(
-                                                    0,
-                                                    100,
-                                                )
-                                            }}..."
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </template>
-    </div>
+                </BaseCard>
+            </template>
+        </section>
+    </DashboardShell>
 </template>
 
 <style scoped>
 /*
- * NOTE: This project uses font-size: 62.5% on html/body,
- * making 1rem = 10px instead of 16px.
- * All rem values below are scaled accordingly.
+ * NOTE: this project uses font-size: 62.5% on html/body so 1rem = 10px.
+ * Sidebar, metric cards, status badges, loading/empty/error states, buttons,
+ * modals and form inputs are now owned by the shared dashboard library — their
+ * old bespoke CSS was deleted. What remains are layout helpers the Creator
+ * sections still need (chapter editor, content preview, wizard stepper, media
+ * grid/modal, analytics chart), all tokenized.
  */
 
-/* Layout */
-.dashboard-layout {
-    display: flex;
+/* Full-screen states (loading / access denied) */
+.screen {
     min-height: 100vh;
-    background: #f5f3f0;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 300px;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    background: transparent;
-    display: flex;
-    flex-direction: column;
-    padding: 2rem;
-    overflow-y: auto;
-    gap: 1.6rem;
-}
-
-/* Mobile hamburger button */
-.mobile-hamburger {
-    display: none;
-    position: fixed;
-    top: 1.6rem;
-    left: 1.6rem;
-    z-index: 110;
-    background: rgba(151, 71, 255, 0.9);
-    border: none;
-    border-radius: 8px;
-    padding: 0.8rem;
-    color: white;
-    cursor: pointer;
-}
-
-/* Mobile sidebar overlay */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 99;
-}
-
-@media (max-width: 1023px) {
-    .mobile-hamburger {
-        display: flex;
-    }
-    .sidebar-overlay {
-        display: block;
-    }
-    .sidebar {
-        position: fixed;
-        left: -300px;
-        top: 0;
-        z-index: 100;
-        background: #f5f3f0;
-        transition: left 0.3s ease;
-    }
-    .sidebar.open {
-        left: 0;
-    }
-    .main-content {
-        width: 100%;
-        padding: 2rem 1.6rem;
-        padding-top: 5.6rem;
-    }
-}
-
-/* Logo - floating outside cards */
-.sidebar-logo {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    padding: 0.8rem 0.4rem;
-}
-
-.logo-icon {
-    width: 44px;
-    height: 44px;
-    background: rgb(151, 71, 255);
-    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "IBM Plex Mono", monospace;
-    font-weight: 600;
-    font-size: 1.4rem;
-    color: white;
-}
-
-.logo-text {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    letter-spacing: 0.05em;
-}
-
-/* User Profile Card */
-.user-profile-card {
-    background: transparent;
-    border-bottom: 1px solid #e5e7eb;
-    border-radius: 0;
-    padding: 2rem;
-    padding-bottom: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.user-avatar {
-    width: 52px;
-    height: 52px;
-    background: linear-gradient(135deg, rgb(151, 71, 255) 0%, #6b21a8 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.avatar-icon {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-weight: 600;
-    font-size: 2rem;
-    color: white;
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.user-date {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #9ca3af;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
-
-.user-greeting {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #4b5563;
-    margin-top: 0.4rem;
-}
-
-.user-name {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.4rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    line-height: 1.2;
-}
-
-/* Navigation Card */
-.sidebar-nav-card {
-    background: transparent;
-    border-radius: 16px;
-    padding: 1.2rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Navigation */
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-    padding: 1.4rem 1.6rem;
-    background: transparent;
-    border: none;
-    border-radius: 10px;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-    width: 100%;
-}
-
-.nav-item:hover {
-    background: rgba(0, 0, 0, 0.04);
-    color: #1a1a1a;
-}
-
-.nav-item.active {
-    background: rgba(151, 71, 255, 0.08);
-    color: rgb(151, 71, 255);
-}
-
-.nav-item.active .nav-icon {
-    color: rgb(151, 71, 255);
-}
-
-.nav-icon {
-    flex-shrink: 0;
-    opacity: 0.7;
-}
-
-.nav-item:hover .nav-icon,
-.nav-item.active .nav-icon {
-    opacity: 1;
-}
-
-.nav-label {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
-    font-weight: 500;
-}
-
-/* Sidebar Footer */
-.sidebar-footer {
-    margin-top: auto;
-}
-
-.read-book-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    width: 100%;
-    padding: 1.6rem;
-    background: linear-gradient(135deg, rgb(151, 71, 255) 0%, #6b21a8 100%);
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.read-book-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(151, 71, 255, 0.3);
-}
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    background: #f5f3f0;
-    padding: 2.4rem 3.2rem;
-    overflow-y: auto;
-    height: 100vh;
-}
-
-/* Header */
-.content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.page-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.8rem;
-    font-weight: 600;
-    color: #1a1a1a;
-}
-
-.logout-btn {
-    padding: 1rem 2rem;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 9999px;
-    color: #6b7280;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.logout-btn:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-/* Dashboard Content */
-.dashboard-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2.4rem;
-}
-
-/* Dashboard Loading */
-.dash-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8rem 2rem;
-    gap: 1.6rem;
-}
-
-.dash-loading p {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    color: #6b7280;
-}
-
-.dash-loading-spinner {
-    width: 36px;
-    height: 36px;
-    border: 3px solid #e5e7eb;
-    border-top-color: rgb(151, 71, 255);
-    border-radius: 50%;
-    animation: dash-spin 0.8s linear infinite;
-}
-
-@keyframes dash-spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Top Metrics Row */
-.dashboard-metrics-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1.6rem;
-}
-
-.dashboard-metric {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-}
-
-.dashboard-metric:hover {
-    border-color: rgba(151, 71, 255, 0.3);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-}
-
-.dm-icon {
-    width: 44px;
-    height: 44px;
-    background: rgba(151, 71, 255, 0.08);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgb(151, 71, 255);
-}
-
-.dm-value {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.8rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    line-height: 1;
-}
-
-.dm-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* Dash Card (shared base) */
-.dash-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 2.4rem;
-}
-
-.dash-card-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 1.6rem;
-}
-
-.dash-empty {
-    padding: 2rem 0;
-    text-align: center;
-}
-
-.dash-empty p {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #9ca3af;
-}
-
-/* Two-column layout */
-.dash-two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.6rem;
-}
-
-/* Recent Chapters List */
-.recent-chapters-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-.chapter-row {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    padding: 1.2rem 1.6rem;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #f3f4f6;
-    cursor: pointer;
-    transition: background 0.15s;
-    text-align: left;
-    width: 100%;
-    font-family: "IBM Plex Sans", sans-serif;
-}
-
-.chapter-row:last-child {
-    border-bottom: none;
-}
-
-.chapter-row:hover {
-    background: rgba(151, 71, 255, 0.04);
-}
-
-.ch-order {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: rgb(151, 71, 255);
-    min-width: 40px;
-}
-
-.ch-title {
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    flex: 1;
-}
-
-.ch-status {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-}
-
-.ch-status.published {
-    background: rgba(34, 197, 94, 0.1);
-    color: #16a34a;
-}
-
-.ch-status.draft {
-    background: rgba(234, 179, 8, 0.1);
-    color: #ca8a04;
-}
-
-.ch-meta {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-    white-space: nowrap;
-}
-
-/* Users by Role - Horizontal Bars */
-.role-bars {
-    display: flex;
-    flex-direction: column;
-    gap: 1.4rem;
-}
-
-.role-bar-row {
-    display: grid;
-    grid-template-columns: 90px 30px 1fr;
-    align-items: center;
-    gap: 1rem;
-}
-
-.role-bar-label {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #4b5563;
-}
-
-.role-bar-count {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    text-align: right;
-}
-
-.role-bar-track {
-    height: 10px;
-    background: #f3f4f6;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.role-bar-fill {
-    height: 100%;
-    border-radius: 5px;
-    transition: width 0.6s ease;
-    min-width: 4px;
-}
-
-.role-bar-fill.creators {
-    background: rgb(151, 71, 255);
-}
-
-.role-bar-fill.professors {
-    background: #3b82f6;
-}
-
-.role-bar-fill.students {
-    background: #22c55e;
-}
-
-/* Quick Actions */
-.quick-actions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.quick-action-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 1.2rem 1.6rem;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #374151;
-    width: 100%;
-    text-align: left;
-}
-
-.quick-action-btn:hover {
-    border-color: rgba(151, 71, 255, 0.3);
-    background: rgba(151, 71, 255, 0.04);
-    color: rgb(151, 71, 255);
-}
-
-.qa-plus {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: rgb(151, 71, 255);
-}
-
-/* Quiz Performance Table */
-.quiz-perf-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: "IBM Plex Sans", sans-serif;
-}
-
-.quiz-perf-table thead th {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #9ca3af;
-    padding: 0.8rem 1.2rem;
-    text-align: left;
-    border-bottom: 1px solid #e5e7eb;
-    font-weight: 500;
-}
-
-.quiz-perf-table tbody td {
-    font-size: 1.4rem;
-    color: #4b5563;
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.quiz-perf-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.quiz-perf-table tbody tr:hover {
-    background: rgba(0, 0, 0, 0.02);
-}
-
-.quiz-name-cell {
-    color: #1a1a1a;
-    font-weight: 500;
-}
-
-/* Content Stats Grid */
-.content-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.6rem;
-}
-
-.cs-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.cs-value {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1a1a1a;
-}
-
-.cs-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-/* Trending Highlights */
-.highlights-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-.highlight-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1.2rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.highlight-item:last-child {
-    border-bottom: none;
-}
-
-.hi-text {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.3rem;
-    color: #6b7280;
-    font-style: italic;
-    flex: 1;
-    line-height: 1.4;
-}
-
-.hi-count {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: rgb(151, 71, 255);
-    background: rgba(151, 71, 255, 0.08);
-    padding: 0.2rem 0.8rem;
-    border-radius: 6px;
-    white-space: nowrap;
-}
-
-/* Section Content */
-.section-content {
-    flex: 1;
-}
-
-.section-placeholder {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 4.8rem;
-    text-align: center;
-    border: 1px solid #e5e7eb;
-}
-
-.section-placeholder h2 {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.4rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 1.2rem;
-}
-
-.section-placeholder p {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    color: #6b7280;
-    margin-bottom: 2.4rem;
-}
-
-.action-btn {
-    padding: 1.2rem 2.4rem;
-    background: rgb(151, 71, 255);
-    border: none;
-    border-radius: 9999px;
-    color: white;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.action-btn:hover {
-    background: #1a1a1a;
-    color: white;
-}
-
-/* ============ CHAPTERS SECTION ============ */
-.chapters-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1.6rem;
-}
-
-.chapters-loading,
-.chapters-error {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 4rem;
-    text-align: center;
-    color: #6b7280;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-}
-
-.chapters-error p {
-    margin-bottom: 2rem;
-    color: #ef4444;
-}
-
-.chapters-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.6rem;
-}
-
-/* Chapter Card */
-.chapter-card {
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.chapter-card:hover:not(.expanded) {
-    border-color: rgba(151, 71, 255, 0.3);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-}
-
-.chapter-card.expanded {
-    background: #ffffff;
-    border-color: rgba(151, 71, 255, 0.5);
-}
-
-/* Chapter Header */
-.chapter-header {
-    padding: 2rem 2.4rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.chapter-card:not(.expanded) .chapter-header:hover {
-    background: rgba(0, 0, 0, 0.02);
-}
-
-.chapter-title-row {
-    display: flex;
-    align-items: center;
-    gap: 1.6rem;
-}
-
-.chapter-number {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: rgb(151, 71, 255);
-    letter-spacing: 0.1em;
-    font-weight: 500;
-}
-
-.chapter-title {
-    flex: 1;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.status-badge {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
-    letter-spacing: 0.05em;
-}
-
-.status-badge.draft {
-    background: rgba(255, 193, 7, 0.15);
-    color: #ffc107;
-}
-
-.status-badge.published {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-}
-
-.status-badge.archived {
-    background: rgba(156, 163, 175, 0.15);
-    color: #9ca3af;
-}
-
-.chevron-icon {
-    color: #6b7280;
-    transition: transform 0.3s ease;
-}
-
-.chapter-card.expanded .chevron-icon {
-    transform: rotate(180deg);
-}
-
-.close-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 1.2rem;
-    background: rgba(0, 0, 0, 0.06);
-    border: none;
-    border-radius: 6px;
-    color: #1a1a1a;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.close-btn:hover {
-    background: rgba(151, 71, 255, 0.3);
-}
-
-/* Chapter Stats Row */
-.chapter-stats-row {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin-top: 1.2rem;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #6b7280;
-}
-
-.chapter-stats-row .dot {
-    color: #d1d5db;
-}
-
-.chapter-meta {
-    margin-top: 0.8rem;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-/* Chapter Content (Expanded) */
-.chapter-content {
-    border-top: 1px solid #e5e7eb;
-    padding: 2rem;
-}
-
-.chapter-editor-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 2rem;
-    min-height: 500px;
-}
-
-/* Blocks Sidebar */
-.blocks-sidebar {
-    background: #fafafa;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-    position: sticky;
-    top: 2rem;
-    max-height: calc(100vh - 4rem);
-    display: flex;
-    flex-direction: column;
-}
-
-.blocks-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.2rem;
-}
-
-.blocks-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.blocks-list::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.02);
-}
-
-.blocks-list::-webkit-scrollbar-thumb {
-    background: rgba(151, 71, 255, 0.3);
-    border-radius: 2px;
-}
-
-/* Block Item */
-.block-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.2rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 0.4rem;
-}
-
-.block-item.section {
-    background: rgba(0, 0, 0, 0.03);
-    cursor: default;
-    margin-top: 1.2rem;
-}
-
-.block-item.section:first-child {
-    margin-top: 0;
-}
-
-.block-item.paragraph {
-    padding-left: 2.4rem;
-}
-
-.block-item.paragraph:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
-
-.block-item.selected {
-    background: rgba(151, 71, 255, 0.2);
-    border-left: 3px solid rgb(151, 71, 255);
-    padding-left: calc(2.4rem - 3px);
-}
-
-.block-item.highlighted {
-    box-shadow: 0 0 0 2px rgba(151, 71, 255, 0.3);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        box-shadow: 0 0 0 2px rgba(151, 71, 255, 0.3);
-    }
-    50% {
-        box-shadow: 0 0 0 4px rgba(151, 71, 255, 0.15);
-    }
-}
-
-.block-item.drag-over {
-    border-top: 2px dashed rgb(151, 71, 255);
-}
-
-.block-icon {
-    color: #6b7280;
-    flex-shrink: 0;
-}
-
-.block-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #1a1a1a;
-}
-
-.drag-handle {
-    color: #d1d5db;
-    flex-shrink: 0;
-    cursor: grab;
-}
-
-.drag-handle:active {
-    cursor: grabbing;
-}
-
-.block-index {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1rem;
-    color: #9ca3af;
-    background: rgba(0, 0, 0, 0.04);
-    padding: 0.2rem 0.5rem;
-    border-radius: 3px;
-    flex-shrink: 0;
-}
-
-.block-preview {
-    flex: 1;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.3rem;
-    color: #6b7280;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.selected-arrow {
-    color: rgb(151, 71, 255);
-    flex-shrink: 0;
-}
-
-/* Editor Panel */
-.editor-panel {
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-}
-
-/* Stats Panel */
-.stats-panel {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.6rem;
-    margin-bottom: 2.4rem;
-}
-
-.stat-item {
-    background: rgba(151, 71, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.6rem;
-    text-align: center;
-}
-
-.stat-value {
-    display: block;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 2.4rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 0.4rem;
-}
-
-.stat-label {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.2rem;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* Content Preview */
-.content-preview {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.preview-title {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 1.6rem;
-    padding-bottom: 1.2rem;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.preview-content {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 1rem;
-}
-
-.preview-content::-webkit-scrollbar {
-    width: 4px;
-}
-
-.preview-content::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.02);
-}
-
-.preview-content::-webkit-scrollbar-thumb {
-    background: rgba(151, 71, 255, 0.3);
-    border-radius: 2px;
-}
-
-/* Preview Block Base */
-.preview-block {
-    margin-bottom: 0;
-}
-
-.preview-block.paragraph {
-    border-bottom: 1px solid #e5e7eb;
-    padding: 1.6rem 0;
-}
-
-.preview-block.paragraph:last-child {
-    border-bottom: none;
-}
-
-/* Section Header */
-.preview-section-header {
-    background: rgba(151, 71, 255, 0.08);
-    margin: 0 -2rem;
-    padding: 1.6rem 2rem;
-    border-top: 2px solid rgba(151, 71, 255, 0.3);
-    margin-top: 2.4rem;
-}
-
-.preview-block.section:first-child .preview-section-header {
-    margin-top: 0;
-    border-top: none;
-}
-
-.preview-section-meta {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    margin-bottom: 0.8rem;
-}
-
-.meta-badge {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
-}
-
-.meta-badge.section-badge {
-    background: rgba(151, 71, 255, 0.2);
-    color: rgb(151, 71, 255);
-}
-
-.meta-badge.subsection-badge {
-    background: rgba(59, 130, 246, 0.2);
-    color: #3b82f6;
-}
-
-.meta-slug {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #9ca3af;
-}
-
-.preview-section-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-/* Paragraph Block */
-.preview-para-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.preview-para-meta {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-}
-
-.meta-index {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1rem;
-    color: #9ca3af;
-    background: rgba(0, 0, 0, 0.04);
-    padding: 0.2rem 0.6rem;
-    border-radius: 3px;
-}
-
-.meta-words {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #d1d5db;
-}
-
-.preview-para-content {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    line-height: 1.7;
-    color: #4b5563;
-}
-
-.preview-para-content :deep(h1),
-.preview-para-content :deep(h2),
-.preview-para-content :deep(h3) {
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 0.8rem;
-}
-
-.preview-para-content :deep(h1) {
-    font-size: 1.8rem;
-}
-.preview-para-content :deep(h2) {
-    font-size: 1.6rem;
-}
-.preview-para-content :deep(h3) {
-    font-size: 1.5rem;
-}
-
-/* Editor Content */
-.editor-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.editor-header {
-    padding: 1.6rem 2rem;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 1.2rem;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    color: #6b7280;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 1.2rem;
-}
-
-.back-btn:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-.editing-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.editor-content :deep(.tiptap-editor) {
-    flex: 1;
-    border: none;
-    border-radius: 0;
-}
-
-.editor-footer {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1.6rem;
-    padding: 1.6rem 2rem;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
-}
-
-.save-status {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #22c55e;
-}
-
-.save-status.error {
-    color: #ef4444;
-}
-
-.save-btn {
-    padding: 1.2rem 3.2rem;
-    background: rgb(151, 71, 255);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.save-btn:hover:not(:disabled) {
-    background: #1a1a1a;
-    color: white;
-}
-
-.save-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Add New Chapter Button */
-.add-chapter-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.2rem;
-    width: 100%;
-    padding: 3.2rem;
-    background: transparent;
-    border: 2px dashed #d1d5db;
-    border-radius: 12px;
-    color: #6b7280;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.add-chapter-btn:hover {
-    border-color: rgb(151, 71, 255);
-    background: rgba(151, 71, 255, 0.05);
-    color: #1a1a1a;
-}
-
-.add-chapter-btn svg {
-    opacity: 0.5;
-}
-
-.add-chapter-btn:hover svg {
-    opacity: 1;
-    color: rgb(151, 71, 255);
-}
-
-/* ============ SHARED STYLES FOR NEW TABS ============ */
-
-.section-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.4rem;
-}
-
-.section-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.4rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.total-count {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    color: #6b7280;
-}
-
-.header-controls {
-    display: flex;
-    gap: 1.2rem;
-    align-items: center;
-}
-
-.primary-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 1rem 2rem;
-    background: rgb(151, 71, 255);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.primary-btn:hover {
-    background: rgb(131, 51, 235);
-}
-
-.secondary-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 1rem 2rem;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #4b5563;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.secondary-btn:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-.danger-btn {
-    padding: 1rem 2rem;
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
-    color: #ef4444;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.danger-btn:hover {
-    background: rgba(239, 68, 68, 0.25);
-}
-
-.filter-select,
-.form-select {
-    padding: 1rem 1.6rem;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #1a1a1a;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    cursor: pointer;
-}
-
-.search-input {
-    padding: 1rem 1.6rem;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #1a1a1a;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    min-width: 200px;
-}
-
-.search-input.wide {
-    min-width: 300px;
-}
-
-.search-input::placeholder {
-    color: #9ca3af;
-}
-
-.loading-state,
-.error-state,
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 6rem 2rem;
-    text-align: center;
-}
-
-.loading-state .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(151, 71, 255, 0.2);
-    border-top-color: rgb(151, 71, 255);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.loading-state p,
-.error-state p,
-.empty-state p {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
-    color: #6b7280;
-    margin-top: 1.6rem;
-}
-
-.empty-state svg {
-    color: #d1d5db;
-    margin-bottom: 1.6rem;
-}
-
-.empty-state h3 {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.8rem;
-    font-weight: 500;
-    color: #4b5563;
-    margin: 0 0 0.8rem;
-}
-
-.retry-btn {
-    margin-top: 1.6rem;
-    padding: 1rem 2rem;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #4b5563;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    cursor: pointer;
-}
-
-.retry-btn:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-/* Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 16px;
-    padding: 2.4rem;
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.modal-content h3 {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 2rem;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1.2rem;
-    margin-top: 2.4rem;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 1.6rem;
-}
-
-.form-group label {
-    display: block;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #6b7280;
-    margin-bottom: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.form-input,
-.form-textarea {
-    width: 100%;
-    padding: 1.2rem 1.6rem;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #1a1a1a;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
-    transition: border-color 0.2s;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-    outline: none;
-    border-color: rgb(151, 71, 255);
-}
-
-.form-input.small {
-    width: 120px;
-}
-
-.form-textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.form-row {
-    display: flex;
-    gap: 1.6rem;
-    margin-bottom: 1.6rem;
-}
-
-.form-row .form-group {
-    margin-bottom: 0;
-}
-
-.flex-1 {
-    flex: 1;
-}
-
+    background: rgb(var(--color-bg));
+}
+
+/* Section layout helpers (mirror Student/Professor vocabulary) */
+.section { display: flex; flex-direction: column; gap: 24px; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.stack-lg { display: flex; flex-direction: column; gap: 28px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+
+/* Clickable StatCards (dashboard metrics, users role filters) — class falls
+   through to the StatCard root, so :deep targets it through the StatGrid slot. */
+:deep(.stat-click) { cursor: pointer; transition: background 0.12s ease; }
+:deep(.stat-click:hover) { background: rgb(var(--color-ink) / 0.03); }
+
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.card-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.card-title.sm { font-size: 1.6rem; margin: 0 0 4px; }
+
+.muted { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 8px 0 0; line-height: 1.5; }
+.muted-mono { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); }
+.eyebrow-mono {
+    font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: rgb(var(--color-accent));
+}
+
+.meta-row {
+    display: flex; flex-wrap: wrap; gap: 16px; font-family: var(--font-mono);
+    font-size: 1.3rem; color: rgb(var(--color-mute)); margin-bottom: 16px;
+}
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chev { color: rgb(var(--color-mute)); flex: none; }
+.chev-btn { border: 0; background: transparent; color: rgb(var(--color-mute)); cursor: pointer; padding: 0; display: flex; }
+.chev-btn:hover { color: rgb(var(--color-ink)); }
+
+/* Forms */
+.form-stack { display: flex; flex-direction: column; gap: 18px; }
 .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1.2rem;
-    padding-top: 1.6rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #4b5563;
-    cursor: pointer;
-}
-
-.checkbox-label input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: rgb(151, 71, 255);
-}
-
-.radio-label {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #4b5563;
-    cursor: pointer;
-}
-
-.radio-group {
-    display: flex;
-    gap: 2rem;
-}
-
-/* ============ VERSIONS STYLES ============ */
-
-.versions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.6rem;
-}
-
-.version-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2rem;
-}
-
-.version-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.2rem;
-}
-
-.version-info {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-}
-
-.version-number {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.version-actions {
-    display: flex;
-    gap: 0.8rem;
-}
-
-.action-btn {
-    padding: 0.8rem 1.6rem;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    color: #4b5563;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.action-btn:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-.action-btn.publish {
-    border-color: rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-}
-
-.action-btn.publish:hover {
-    background: rgba(34, 197, 94, 0.1);
-}
-
-.action-btn.archive {
-    border-color: rgba(234, 179, 8, 0.3);
-    color: #eab308;
-}
-
-.action-btn.archive:hover {
-    background: rgba(234, 179, 8, 0.1);
-}
-
-.action-btn.delete,
-.action-btn.danger {
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-}
-
-.action-btn.delete:hover,
-.action-btn.danger:hover {
-    background: rgba(239, 68, 68, 0.1);
-}
-
-.version-meta {
-    display: flex;
-    gap: 2rem;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #9ca3af;
-}
-
-.version-notes {
-    margin-top: 1.2rem;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #6b7280;
-    line-height: 1.5;
-}
-
-/* ============ MEDIA STYLES ============ */
-
-.media-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 2.4rem;
-}
-
-.media-grid-container {
-    display: flex;
-    flex-direction: column;
-    gap: 3.2rem;
-}
-
-.media-type-section {
-}
-
-.media-type-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: #4b5563;
-    margin: 0 0 1.6rem;
-}
-
-.media-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.6rem;
-}
-
-@media (max-width: 1023px) {
-    .media-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 479px) {
-    .media-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.media-card {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    overflow: visible;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.media-card:hover {
-    border-color: #d1d5db;
-    transform: translateY(-2px);
-}
-
-.media-card.selected {
-    border-color: rgb(151, 71, 255);
-    box-shadow: 0 0 0 1px rgb(151, 71, 255);
-}
-
-.media-thumb {
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #eef0f2;
-    color: #d1d5db;
-    border-radius: 12px 12px 0 0;
-    pointer-events: none;
-}
-
-.media-thumb.lottie {
-    background: linear-gradient(135deg, #eef0f5, #e8ecf4);
-}
-.media-thumb.video {
-    background: linear-gradient(135deg, #f0eeed, #f2edec);
-}
-.media-thumb.image {
-    background: linear-gradient(135deg, #ecf0ec, #edf2ed);
-}
-.media-thumb.youtube {
-    background: linear-gradient(135deg, #f2edec, #eef0f2);
-    color: #ff0000;
-}
-
-.media-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.media-info {
-    padding: 1.2rem;
-}
-
-.media-title {
-    display: block;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.3rem;
-    color: #1a1a1a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.media-size {
-    display: block;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #9ca3af;
-    margin-top: 0.4rem;
-}
-
-.media-detail-panel {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2rem;
-    height: fit-content;
-    position: sticky;
-    top: 2rem;
-}
-
-.detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.6rem;
-}
-
-.detail-header h3 {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.close-btn {
-    background: transparent;
-    border: none;
-    color: #9ca3af;
-    cursor: pointer;
-    padding: 0.4rem;
-}
-
-.close-btn:hover {
-    color: #1a1a1a;
-}
-
-.detail-preview {
-    margin-bottom: 2rem;
-}
-
-.preview-placeholder {
-    height: 180px;
-    background: #f9fafb;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.media-type-badge {
-    padding: 0.6rem 1.2rem;
-    background: rgba(151, 71, 255, 0.2);
-    border-radius: 4px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: rgb(151, 71, 255);
-    text-transform: uppercase;
-}
-
-.detail-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-    margin-bottom: 2rem;
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.info-row.full {
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-.info-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-    text-transform: uppercase;
-}
-
-.info-value {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #4b5563;
-}
-
-.detail-actions {
-    padding-top: 1.6rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-/* ============ MEDIA MODAL ============ */
-
-.media-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-}
-
-.media-modal {
-    background: white;
-    border-radius: 16px;
-    width: min(900px, 100%);
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
-}
-
-.media-modal__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 2.4rem 2.4rem 0;
-}
-
-.media-modal__title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.2rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.media-modal__type {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.media-modal__close {
-    background: transparent;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.6rem;
-    color: #9ca3af;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-.media-modal__close:hover {
-    border-color: #1a1a1a;
-    color: #1a1a1a;
-}
-
-.media-modal__preview {
-    padding: 2.4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    background: #f9fafb;
-    margin: 2rem 2.4rem;
-    border-radius: 12px;
-}
-
-.media-modal__lottie {
-    width: 100%;
-    height: 400px;
-}
-
-.media-modal__lottie svg {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.media-modal__img {
-    max-width: 100%;
-    max-height: 400px;
-    object-fit: contain;
-}
-
-.media-modal__video {
-    max-width: 100%;
-    max-height: 400px;
-    border-radius: 8px;
-}
-
-.media-modal__placeholder {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    color: #d1d5db;
-    text-transform: uppercase;
-}
-
-.media-modal__info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.6rem;
-    padding: 0 2.4rem 2rem;
-}
-
-.media-modal__row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-}
-
-.media-modal__row--full {
-    grid-column: 1 / -1;
-}
-
-.media-modal__label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.media-modal__val {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.media-modal__actions {
-    padding: 0 2.4rem 2.4rem;
-    display: flex;
-    justify-content: flex-end;
-}
-
-/* Modal transitions */
-.modal-enter-active {
-    transition: opacity 0.3s ease;
-}
-.modal-enter-active .media-modal {
-    animation: modal-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.modal-leave-active {
-    transition: opacity 0.2s ease;
-}
-.modal-leave-active .media-modal {
-    animation: modal-out 0.2s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
-    opacity: 0;
-}
-@keyframes modal-in {
-    from { transform: scale(0.95) translateY(8px); opacity: 0; }
-    to { transform: scale(1) translateY(0); opacity: 1; }
-}
-@keyframes modal-out {
-    from { transform: scale(1); opacity: 1; }
-    to { transform: scale(0.95); opacity: 0; }
-}
-
-/* ============ MEDIA PICKER ============ */
-
-.media-picker-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-}
-
-.media-picker {
-    background: white;
-    border-radius: 16px;
-    width: min(700px, 100%);
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
-}
-
-.media-picker__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 2.4rem 2.4rem 0;
-}
-
-.media-picker__title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.media-picker__subtitle {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.3rem;
-    color: #9ca3af;
-    margin: 0.4rem 0 0;
-}
-
-.media-picker__search {
-    padding: 1.6rem 2.4rem;
-}
-
-.media-picker__input {
-    width: 100%;
-    padding: 1rem 1.4rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #1a1a1a;
-    outline: none;
-    transition: border-color 0.15s;
-}
-
-.media-picker__input:focus {
-    border-color: rgb(151, 71, 255);
-}
-
-.media-picker__input::placeholder {
-    color: #d1d5db;
-}
-
-.media-picker__grid {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 2.4rem 2.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.media-picker__item {
-    display: flex;
-    align-items: center;
-    gap: 1.4rem;
-    padding: 1.2rem 1.4rem;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.15s;
-}
-
-.media-picker__item:hover {
-    background: #f3f0ff;
-}
-
-.media-picker__thumb {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #d1d5db;
-    flex-shrink: 0;
-}
-
-.media-picker__item:hover .media-picker__thumb {
-    background: rgba(151, 71, 255, 0.1);
-    color: rgb(151, 71, 255);
-}
-
-.media-picker__info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.media-picker__name {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.media-picker__meta {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #9ca3af;
-    text-transform: lowercase;
-}
-
-.media-picker__empty {
-    text-align: center;
-    padding: 3rem;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #9ca3af;
-}
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding-top: 16px; border-top: 1px solid rgb(var(--color-line));
+}
+.check-row, .radio-label {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); cursor: pointer;
+}
+.radio-row { display: flex; flex-wrap: wrap; gap: 20px; }
+.check-row input[type="checkbox"], .radio-label input { accent-color: rgb(var(--color-accent)); }
+.field-label-static {
+    display: block; font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-bottom: 8px;
+}
+
+/* Filters bar */
+.filters-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.search-grow { flex: 1; min-width: 240px; }
+
+/* Quick actions */
+.qa-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+
+/* Users-by-role bars (dashboard) */
+.role-bars { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+.role-bar-row { display: grid; grid-template-columns: 90px 40px 1fr; align-items: center; gap: 12px; }
+.role-bar-label { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); }
+.role-bar-count { font-family: var(--font-mono); font-size: 1.4rem; color: rgb(var(--color-mute)); text-align: right; }
+.role-bar-track { height: 10px; background: rgb(var(--color-ink) / 0.06); border-radius: 999px; overflow: hidden; }
+.role-bar-fill { height: 100%; background: rgb(var(--color-accent)); border-radius: 999px; transition: width 0.3s ease; }
+
+/* Simple data table (dashboard quiz performance) */
+.data-tbl { width: 100%; border-collapse: collapse; }
+.data-tbl thead th {
+    text-align: left; font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: rgb(var(--color-mute)); padding: 12px 16px;
+    border-bottom: 1px solid rgb(var(--color-line)); white-space: nowrap;
+}
+.data-tbl tbody td {
+    font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink));
+    padding: 14px 16px; border-bottom: 1px solid rgb(var(--color-line));
+}
+.data-tbl tbody tr:last-child td { border-bottom: 0; }
+.data-tbl tbody tr:hover { background: rgb(var(--color-ink) / 0.03); }
+.cell-strong { font-weight: 500; }
+
+/* Mini stat rows (quiz / content-stats cards) */
+.mini-stats { display: flex; gap: 28px; margin-top: 8px; }
+.mini-stats.wrap { flex-wrap: wrap; gap: 24px 40px; }
+.mini-stat { display: flex; flex-direction: column; }
+.mini-value { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); line-height: 1; }
+.mini-label { font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px; }
+
+/* ============ CHAPTERS: expandable card + editor ============ */
+.chapter-expanded { border-color: rgb(var(--color-accent) / 0.4); }
+.chapter-head { display: flex; align-items: flex-start; gap: 16px; padding: 20px; cursor: pointer; }
+.chapter-head-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.chapter-body { border-top: 1px solid rgb(var(--color-line)); }
+
+.chapter-editor-layout { display: grid; grid-template-columns: 340px 1fr; min-height: 480px; }
+@media (max-width: 1100px) { .chapter-editor-layout { grid-template-columns: 1fr; } }
+
+.blocks-sidebar { border-right: 1px solid rgb(var(--color-line)); }
+@media (max-width: 1100px) { .blocks-sidebar { border-right: 0; border-bottom: 1px solid rgb(var(--color-line)); } }
+.blocks-list { max-height: 600px; overflow-y: auto; padding: 8px; }
+.blocks-list::-webkit-scrollbar { width: 8px; }
+.blocks-list::-webkit-scrollbar-track { background: transparent; }
+.blocks-list::-webkit-scrollbar-thumb { background: rgb(var(--color-ink) / 0.15); border-radius: 999px; }
+
+.block-item {
+    display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 4px;
+    cursor: pointer; font-family: var(--font-body); transition: background 0.12s ease;
+}
+.block-item.section { margin-top: 12px; }
+.block-item.section:first-child { margin-top: 0; }
+.block-item.paragraph:hover { background: rgb(var(--color-ink) / 0.04); }
+.block-item.selected { background: rgb(var(--color-accent) / 0.1); }
+.block-item.highlighted { background: rgb(var(--color-accent) / 0.05); }
+.block-item.drag-over { box-shadow: inset 0 2px 0 rgb(var(--color-accent)); }
+
+.block-icon { color: rgb(var(--color-accent)); flex: none; }
+.block-title { font-size: 1.4rem; font-weight: 500; color: rgb(var(--color-ink)); }
+.drag-handle { color: rgb(var(--color-mute)); flex: none; cursor: grab; }
+.drag-handle:active { cursor: grabbing; }
+.block-index { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); flex: none; }
+.block-preview {
+    font-size: 1.3rem; color: rgb(var(--color-ink)); flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.selected-arrow { color: rgb(var(--color-accent)); flex: none; }
 
-/* Media badge on content blocks */
 .media-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.2rem 0.8rem;
-    background: rgba(151, 71, 255, 0.1);
-    color: rgb(151, 71, 255);
-    border-radius: 4px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-    margin-left: auto;
-    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 4px; flex: none;
+    font-family: var(--font-mono); font-size: 1rem; padding: 2px 7px; border-radius: 999px;
+    background: rgb(var(--color-accent) / 0.12); color: rgb(var(--color-accent)); cursor: pointer;
 }
-
-.media-badge:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-}
-
-.media-badge-x {
-    font-size: 1.3rem;
-    line-height: 1;
-    margin-left: 0.2rem;
-}
-
+.media-badge:hover { background: rgb(var(--color-accent) / 0.2); }
+.media-badge-x { font-size: 1.3rem; line-height: 1; }
 .attach-media-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 6px;
-    border: 1px dashed #d1d5db;
-    background: transparent;
-    color: #d1d5db;
-    cursor: pointer;
-    transition: all 0.15s;
-    flex-shrink: 0;
-    margin-left: auto;
-    opacity: 0;
+    flex: none; border: 1px solid rgb(var(--color-line)); border-radius: 999px; background: transparent;
+    color: rgb(var(--color-mute)); cursor: pointer; padding: 4px; display: flex; opacity: 0;
+    transition: opacity 0.12s ease, color 0.12s ease;
+}
+.block-item:hover .attach-media-btn { opacity: 1; }
+.attach-media-btn:hover { color: rgb(var(--color-accent)); border-color: rgb(var(--color-accent)); }
+
+.editor-panel { padding: 20px; min-width: 0; }
+.stats-panel { display: flex; flex-direction: column; gap: 20px; }
+
+.content-preview { border: 1px solid rgb(var(--color-line)); border-radius: 4px; overflow: hidden; }
+.preview-title {
+    font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: rgb(var(--color-mute)); margin: 0; padding: 12px 16px; border-bottom: 1px solid rgb(var(--color-line));
+}
+.preview-content { max-height: 480px; overflow-y: auto; padding: 16px; }
+.preview-content::-webkit-scrollbar { width: 8px; }
+.preview-content::-webkit-scrollbar-track { background: transparent; }
+.preview-content::-webkit-scrollbar-thumb { background: rgb(var(--color-ink) / 0.15); border-radius: 999px; }
+
+.preview-block.paragraph { padding: 12px 0; border-bottom: 1px solid rgb(var(--color-line)); }
+.preview-block.paragraph:last-child { border-bottom: 0; }
+.preview-section-header { padding: 16px 0 8px; }
+.preview-block.section:first-child .preview-section-header { padding-top: 0; }
+.preview-section-meta { display: flex; align-items: center; gap: 10px; }
+.meta-badge {
+    font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 2px 8px; border-radius: 999px;
+}
+.meta-badge.section-badge { background: rgb(var(--color-accent) / 0.12); color: rgb(var(--color-accent)); }
+.meta-badge.subsection-badge { background: rgb(var(--color-complete) / 0.14); color: rgb(var(--color-complete)); }
+.meta-slug { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
+.preview-section-title { font-family: var(--font-body); font-size: 1.7rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 8px 0 0; }
+
+.preview-para-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.meta-index { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-accent)); }
+.meta-words { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
+.preview-para-content { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); line-height: 1.6; }
+.preview-para-content :deep(h1), .preview-para-content :deep(h2), .preview-para-content :deep(h3) {
+    font-weight: 500; color: rgb(var(--color-ink)); margin: 8px 0;
+}
+.preview-para-content :deep(h1) { font-size: 1.9rem; }
+.preview-para-content :deep(h2) { font-size: 1.7rem; }
+.preview-para-content :deep(h3) { font-size: 1.5rem; }
+
+.editor-content { display: flex; flex-direction: column; gap: 16px; }
+.editor-head { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.editing-title { font-family: var(--font-body); font-size: 1.6rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.editor-content :deep(.tiptap-editor) { border: 1px solid rgb(var(--color-line)); border-radius: 4px; min-height: 280px; }
+.editor-footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.save-status { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-complete)); }
+.save-status.error { color: rgb(var(--color-accent)); }
+
+/* ============ CHAPTER WIZARD ============ */
+.wizard-head-row { display: flex; align-items: center; gap: 16px; }
+.wizard-title { font-family: var(--font-body); font-size: 2.4rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.wizard-stepper { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.wizard-step {
+    display: flex; align-items: center; gap: 10px; background: transparent; border: 0;
+    padding: 0; cursor: default; font-family: var(--font-body);
+}
+.wizard-step.clickable { cursor: pointer; }
+.wizard-step-num {
+    width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; flex: none;
+    border: 1px solid rgb(var(--color-line)); font-family: var(--font-mono); font-size: 1.3rem;
+    color: rgb(var(--color-mute)); transition: all 0.12s ease;
+}
+.wizard-step.active .wizard-step-num { border-color: rgb(var(--color-accent)); color: rgb(var(--color-accent)); }
+.wizard-step.completed .wizard-step-num { background: rgb(var(--color-accent)); border-color: rgb(var(--color-accent)); color: rgb(var(--color-paper)); }
+.wizard-step-label { font-size: 1.4rem; color: rgb(var(--color-mute)); }
+.wizard-step.active .wizard-step-label, .wizard-step.completed .wizard-step-label { color: rgb(var(--color-ink)); }
+.wizard-content { padding: 8px 0; }
+.wizard-footer { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(var(--color-line)); }
+.wizard-footer-spacer { flex: 1; }
+
+/* ============ MEDIA ============ */
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+@media (max-width: 1023px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+.media-card.selected { border-color: rgb(var(--color-accent)); }
+.media-thumb {
+    aspect-ratio: 16 / 10; display: grid; place-items: center; color: rgb(var(--color-mute));
+    background: rgb(var(--color-ink) / 0.04); border-bottom: 1px solid rgb(var(--color-line));
+}
+.media-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.media-info { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; }
+.media-title { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.media-size { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-mute)); }
+
+.media-modal-preview {
+    margin: 16px 0; min-height: 280px; display: grid; place-items: center;
+    background: rgb(var(--color-ink) / 0.04); border: 1px solid rgb(var(--color-line)); border-radius: 4px; overflow: hidden;
+}
+.media-modal-lottie { width: 100%; max-width: 480px; height: 320px; }
+.media-modal-lottie :deep(svg) { width: 100%; height: 100%; }
+.media-modal-img { max-width: 100%; max-height: 420px; object-fit: contain; }
+.media-modal-video { max-width: 100%; max-height: 420px; }
+.media-modal-placeholder { font-family: var(--font-mono); font-size: 1.4rem; color: rgb(var(--color-mute)); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.kv-list { display: flex; flex-direction: column; }
+.kv-row { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgb(var(--color-line)); }
+.kv-row:last-child { border-bottom: 0; }
+.kv-full { flex-direction: column; gap: 4px; }
+.kv-key { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgb(var(--color-mute)); min-width: 130px; }
+.kv-val { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); margin: 0; }
+
+.media-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.media-picker-item { display: flex; align-items: center; gap: 12px; }
+.media-picker-thumb {
+    width: 40px; height: 40px; border-radius: 4px; flex: none; display: grid; place-items: center;
+    background: rgb(var(--color-accent) / 0.1); color: rgb(var(--color-accent));
 }
 
-.block-item:hover .attach-media-btn {
-    opacity: 1;
+/* ============ QUIZZES: editor questions ============ */
+.questions-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgb(var(--color-line)); display: flex; flex-direction: column; gap: 16px; }
+.q-head-meta { display: flex; align-items: center; gap: 10px; }
+.q-text { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); line-height: 1.5; margin: 0 0 12px; }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-option {
+    font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-ink));
+    padding: 8px 12px; border: 1px solid rgb(var(--color-line)); border-radius: 4px;
 }
+.q-option.correct { border-color: rgb(var(--color-complete)); background: rgb(var(--color-complete) / 0.1); color: rgb(var(--color-complete)); }
+.option-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.option-letter {
+    width: 28px; height: 28px; border-radius: 999px; flex: none; display: grid; place-items: center;
+    background: rgb(var(--color-ink) / 0.06); font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute));
+}
+.option-text-input {
+    flex: 1; border: 1px solid rgb(var(--color-line)); border-radius: 4px; background: transparent;
+    padding: 9px 12px; font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); outline: none;
+    transition: border-color 0.12s ease;
+}
+.option-text-input:focus { border-color: rgb(var(--color-ink)); }
 
-.attach-media-btn:hover {
-    border-color: rgb(151, 71, 255);
-    color: rgb(151, 71, 255);
-    background: rgba(151, 71, 255, 0.05);
-}
-
-/* ============ USERS STYLES ============ */
-
-.role-breakdown {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.6rem;
-    margin-bottom: 2.4rem;
-}
-
-.role-card {
-    display: flex;
-    align-items: center;
-    gap: 1.6rem;
-    padding: 2rem;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.role-card:hover {
-    border-color: #d1d5db;
-}
-
-.role-card.active {
-    border-color: rgb(151, 71, 255);
-    background: rgba(151, 71, 255, 0.05);
-}
-
-.role-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.role-icon.creator {
-    background: rgba(151, 71, 255, 0.2);
-    color: rgb(151, 71, 255);
-}
-.role-icon.professor {
-    background: rgba(59, 130, 246, 0.2);
-    color: rgb(59, 130, 246);
-}
-.role-icon.student {
-    background: rgba(34, 197, 94, 0.2);
-    color: rgb(34, 197, 94);
-}
-.role-icon.all {
-    background: rgba(0, 0, 0, 0.06);
-    color: #4b5563;
-}
-
-.role-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.role-count {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.4rem;
-    font-weight: 600;
-    color: #1a1a1a;
-}
-
-.role-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-.users-toolbar {
-    margin-bottom: 2rem;
-}
-
-.users-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.user-card {
-    display: flex;
-    align-items: center;
-    gap: 1.6rem;
-    padding: 1.6rem 2rem;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.user-card:hover {
-    border-color: #d1d5db;
-}
-
+/* ============ USERS ============ */
+.user-row { display: flex; align-items: center; gap: 16px; }
 .user-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgb(151, 71, 255), rgb(100, 50, 200));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: white;
-    flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 999px; flex: none; display: grid; place-items: center;
+    background: rgb(var(--color-accent)); color: rgb(var(--color-paper));
+    font-family: var(--font-mono); font-size: 1.6rem; font-weight: 600;
 }
+.user-avatar.lg { width: 56px; height: 56px; font-size: 2rem; }
+.user-info-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.user-meta-col { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.user-detail-head { display: flex; align-items: center; gap: 16px; }
+.pager { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 12px; }
 
-.user-avatar.large {
-    width: 64px;
-    height: 64px;
-    font-size: 2.4rem;
-}
-
-.user-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.user-name {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: #1a1a1a;
-}
-
-.user-email {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #9ca3af;
-}
-
-.user-meta {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.role-badge {
-    padding: 0.4rem 1rem;
-    border-radius: 4px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-}
-
-.role-badge.creator {
-    background: rgba(151, 71, 255, 0.2);
-    color: rgb(151, 71, 255);
-}
-.role-badge.professor {
-    background: rgba(59, 130, 246, 0.2);
-    color: rgb(59, 130, 246);
-}
-.role-badge.student {
-    background: rgba(34, 197, 94, 0.2);
-    color: rgb(34, 197, 94);
-}
-
-.user-institution,
-.user-joined {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    margin-top: 2.4rem;
-    padding-top: 2.4rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.page-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.8rem 1.6rem;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    color: #4b5563;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    cursor: pointer;
-}
-
-.page-btn:hover:not(:disabled) {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-.page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.page-info {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #9ca3af;
-}
-
-.user-detail-modal {
-    max-width: 480px;
-}
-
-.user-detail-header {
-    display: flex;
-    gap: 1.6rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid #e5e7eb;
-    position: relative;
-}
-
-.user-detail-header .close-btn {
-    position: absolute;
-    top: 0;
-    right: 0;
-}
-
-.user-detail-info h3 {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 0.4rem;
-}
-
-.user-detail-info p {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #9ca3af;
-    margin: 0 0 1rem;
-}
-
-.user-detail-body {
-    padding: 2rem 0;
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem 0;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.detail-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-.detail-value {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #4b5563;
-}
-
-.user-detail-actions {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    padding-top: 1.6rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.user-detail-actions label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-/* ============ ANALYTICS STYLES ============ */
-
-.analytics-dashboard {
-    display: flex;
-    flex-direction: column;
-    gap: 2.4rem;
-}
-
-.metrics-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.6rem;
-}
-
-.metric-card {
-    display: flex;
-    align-items: center;
-    gap: 1.6rem;
-    padding: 2rem;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-}
-
-.metric-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.metric-icon.users {
-    background: rgba(151, 71, 255, 0.2);
-    color: rgb(151, 71, 255);
-}
-.metric-icon.views {
-    background: rgba(59, 130, 246, 0.2);
-    color: rgb(59, 130, 246);
-}
-.metric-icon.time {
-    background: rgba(234, 179, 8, 0.2);
-    color: rgb(234, 179, 8);
-}
-.metric-icon.quiz {
-    background: rgba(34, 197, 94, 0.2);
-    color: rgb(34, 197, 94);
-}
-
-.metric-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.metric-value {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.8rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    line-height: 1;
-}
-
-.metric-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-    margin-top: 0.4rem;
-}
-
-.chart-container {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2rem;
-}
-
-.chart-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    margin: 0 0 2rem;
-}
-
-.chart-wrapper {
-    height: 250px;
-}
-
-.chart-empty {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.chart-empty p {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #9ca3af;
-}
-
-.simple-chart {
-    height: 100%;
-}
-
-.chart-bars {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    height: 200px;
-    padding-bottom: 30px;
-    gap: 4px;
-}
-
-.chart-bar-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-}
-
+/* ============ ANALYTICS: chart ============ */
+.chart-wrapper { min-height: 220px; }
+.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 220px; padding-top: 16px; }
+.chart-bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; }
 .chart-bar {
-    width: 100%;
-    max-width: 40px;
-    background: linear-gradient(
-        to top,
-        rgb(151, 71, 255),
-        rgba(151, 71, 255, 0.5)
-    );
-    border-radius: 4px 4px 0 0;
-    position: relative;
+    width: 100%; max-width: 36px; background: rgb(var(--color-accent)); border-radius: 4px 4px 0 0;
+    position: relative; display: flex; align-items: flex-start; justify-content: center; margin-top: auto;
     transition: height 0.3s ease;
 }
-
-.bar-value {
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #4b5563;
-}
-
-.bar-label {
-    position: absolute;
-    bottom: -25px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1rem;
-    color: #9ca3af;
-    white-space: nowrap;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.6rem;
-}
-
-.stats-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2rem;
-}
-
-.stats-card.wide {
-    grid-column: span 2;
-}
-
-.stats-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    margin: 0 0 1.6rem;
-}
-
-.stats-empty {
-    padding: 2rem;
-    text-align: center;
-}
-
-.stats-empty p {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #9ca3af;
-}
-
-.stats-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.stats-item {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
-}
-
-.stats-rank {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: rgba(151, 71, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: rgb(151, 71, 255);
-}
-
-.stats-name {
-    flex: 1;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #4b5563;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.stats-value {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #9ca3af;
-}
-
-.highlights-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.highlight-item {
-    padding: 1.2rem;
-    background: rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
-    border-left: 3px solid rgb(151, 71, 255);
-}
-
-.highlight-count {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: rgb(151, 71, 255);
-}
-
-.highlight-text {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #6b7280;
-    margin: 0.8rem 0 0;
-    line-height: 1.5;
-    font-style: italic;
-}
-
-/* ============ QUIZZES STYLES ============ */
-
-.quizzes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.6rem;
-}
-
-.quiz-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2rem;
-}
-
-.quiz-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.2rem;
-}
-
-.quiz-info {
-}
-
-.quiz-title {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.8rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    margin: 0 0 0.4rem;
-}
-
-.quiz-module {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-.quiz-actions {
-    display: flex;
-    gap: 0.8rem;
-}
-
-.quiz-meta {
-    display: flex;
-    gap: 2rem;
-    margin-bottom: 1.6rem;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
-    color: #9ca3af;
-}
-
-.quiz-stats {
-    display: flex;
-    gap: 3.2rem;
-    padding-top: 1.6rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.quiz-stats .stat {
-    display: flex;
-    flex-direction: column;
-}
-
-.quiz-stats .stat-value {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.4rem;
-    font-weight: 600;
-    color: #1a1a1a;
-}
-
-.quiz-stats .stat-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-}
-
-.quiz-editor {
-}
-
-.editor-header {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    margin-bottom: 2.4rem;
-}
-
-.editor-header h3 {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.quiz-form {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2.4rem;
-}
-
-.questions-section {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2rem;
-}
-
-.questions-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.questions-header h4 {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
-    font-weight: 500;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.empty-questions {
-    padding: 3rem;
-    text-align: center;
-    color: #9ca3af;
-}
-
-.questions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.question-card {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1.6rem;
-}
-
-.question-header {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    margin-bottom: 1rem;
-}
-
-.question-number {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: rgb(151, 71, 255);
-}
-
-.question-type-badge {
-    padding: 0.3rem 0.8rem;
-    background: rgba(0, 0, 0, 0.06);
-    border-radius: 4px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #6b7280;
-}
-
-.question-points {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    color: #9ca3af;
-    margin-left: auto;
-}
-
-.question-text {
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
-    color: #1a1a1a;
-    margin: 0 0 1.2rem;
-    line-height: 1.5;
-}
-
-.question-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin-bottom: 1.2rem;
-}
-
-.question-options .option {
-    padding: 0.8rem 1.2rem;
-    background: rgba(0, 0, 0, 0.03);
-    border-radius: 6px;
-    font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.4rem;
-    color: #6b7280;
-}
-
-.question-options .option.correct {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.question-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.8rem;
-}
-
-.icon-btn {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    color: #9ca3af;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.icon-btn:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-.icon-btn.danger:hover {
-    border-color: rgba(239, 68, 68, 0.5);
-    color: #ef4444;
-}
-
-.question-modal {
-    max-width: 600px;
-}
-
-.option-input-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.option-letter {
-    width: 24px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #9ca3af;
-}
-
-.option-input-row .form-input {
-    flex: 1;
-}
-
-.option-input-row .radio-label {
-    white-space: nowrap;
-}
-
-/* ============ CHAPTER WIZARD STYLES ============ */
-.wizard-section {
-    padding: 0 2rem;
-}
-
-.wizard-header-row {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding-bottom: 2.4rem;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 3.2rem;
-}
-
-.wizard-back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 1.2rem;
-    background: transparent;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    color: #6b7280;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.wizard-back-btn:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-.wizard-step-indicator {
-    display: flex;
-    align-items: flex-start;
-    gap: 4rem;
-    margin-bottom: 4rem;
-    position: relative;
-    padding: 0 2rem;
-}
-
-.wizard-step-line {
-    position: absolute;
-    top: 18px;
-    left: 54px;
-    right: 54px;
-    height: 2px;
-    background: #e5e7eb;
-    z-index: 0;
-}
-
-.wizard-step-dot {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.8rem;
-    z-index: 1;
-    cursor: default;
-}
-
-.wizard-step-dot.clickable {
-    cursor: pointer;
-}
-
-.wizard-dot-number,
-.wizard-dot-check {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    font-weight: 600;
-    border: 2px solid #d1d5db;
-    background: #f5f3f0;
-    color: #9ca3af;
-    transition: all 0.3s;
-}
-
-.wizard-step-dot.active .wizard-dot-number {
-    border-color: rgb(151, 71, 255);
-    color: rgb(151, 71, 255);
-    background: rgba(151, 71, 255, 0.08);
-}
-
-.wizard-step-dot.completed .wizard-dot-check {
-    border-color: #22c55e;
-    color: #22c55e;
-    background: rgba(34, 197, 94, 0.08);
-}
-
-.wizard-dot-label {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.1rem;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.wizard-step-dot.active .wizard-dot-label {
-    color: rgb(151, 71, 255);
-}
-
-.wizard-step-dot.completed .wizard-dot-label {
-    color: #22c55e;
-}
-
-.wizard-content {
-    min-height: 400px;
-    padding: 0 2rem;
-}
-
-.wizard-footer {
-    display: flex;
-    align-items: center;
-    padding: 2.4rem 2rem;
-    margin-top: 4rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.wizard-footer-spacer {
-    flex: 1;
-}
-
-.wizard-nav-btn {
-    padding: 1.2rem 3.2rem;
-    border-radius: 8px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 1.4rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.wizard-nav-primary {
-    background: rgb(151, 71, 255);
-    border: none;
-    color: white;
-}
-
-.wizard-nav-primary:hover:not(:disabled) {
-    background: #1a1a1a;
-    color: white;
-}
-
-.wizard-nav-primary:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.wizard-nav-secondary {
-    background: transparent;
-    border: 1px solid #d1d5db;
-    color: #4b5563;
-}
-
-.wizard-nav-secondary:hover {
-    border-color: #9ca3af;
-    color: #1a1a1a;
-}
-
-.wizard-success-actions {
-    display: flex;
-    justify-content: center;
-    padding: 2.4rem 2rem;
-    margin-top: 2rem;
-}
+.bar-value { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-ink)); position: absolute; top: -16px; }
+.bar-label { font-family: var(--font-mono); font-size: 0.9rem; color: rgb(var(--color-mute)); white-space: nowrap; }
 </style>
