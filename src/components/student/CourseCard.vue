@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { shortDate } from "@/utils/format";
 
 const props = defineProps({
   enrollment: {
@@ -27,14 +28,7 @@ function navigateToModule(module) {
   });
 }
 
-function formatDate(dateString) {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 </script>
 
 <template>

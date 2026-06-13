@@ -2,6 +2,7 @@
 import { ref, computed, inject, onMounted } from "vue";
 import { HIGHLIGHT_COLORS } from "@/composables/useHighlights";
 import { useTrendingHighlights } from "@/composables/useTrendingHighlights";
+import { dateTime as formatDate } from "@/utils/format";
 
 defineProps({
   moduleId: {
@@ -143,16 +144,6 @@ async function executeDelete() {
   }
 }
 
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 </script>
 
 <template>

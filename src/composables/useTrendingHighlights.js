@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { useAuth } from "./useAuth";
+import { relativeShort } from "@/utils/format";
 
 // Supabase REST API config
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -95,25 +96,6 @@ export function useTrendingHighlights(options = {}) {
     }
   }
 
-  // Format relative time
-  function formatRelativeTime(dateString) {
-    if (!dateString) return "";
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return date.toLocaleDateString();
-  }
-
   // Truncate text with ellipsis
   function truncateText(text, maxLength = 100) {
     if (!text || text.length <= maxLength) return text;
@@ -127,7 +109,7 @@ export function useTrendingHighlights(options = {}) {
     fetchTrending,
     fetchTrendingForSection,
     scrollToHighlight,
-    formatRelativeTime,
+    formatRelativeTime: relativeShort,
     truncateText,
   };
 }

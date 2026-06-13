@@ -6,6 +6,7 @@ export default { name: "ChatTab" };
 import { ref, onMounted } from "vue";
 import { useAITutor } from "@/composables/useAITutor";
 import { useText } from "@/stores";
+import { chatTimestamp as formatDate } from "@/utils/format";
 import AITutorChat from "@/components/ai/AITutorChat.vue";
 
 const props = defineProps({
@@ -136,28 +137,6 @@ async function executeDelete() {
   }
 }
 
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now - date;
-
-  if (diff < 86400000) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-
-  if (diff < 604800000) {
-    return date.toLocaleDateString("en-US", { weekday: "short" });
-  }
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 </script>
 
 <template>

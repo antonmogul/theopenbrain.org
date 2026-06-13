@@ -7,6 +7,7 @@
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter, useRoute } from "vue-router";
+import { relativeLong as formatDate } from "@/utils/format";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
 
 // Shared dashboard library (token-based)
@@ -1499,23 +1500,6 @@ async function deleteQuestion(questionId) {
 }
 
 // ============ UTILITIES ============
-function formatDate(dateString) {
-    if (!dateString) return "Never";
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now - date;
-
-    if (diff < 60000) return "Just now";
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
-    if (diff < 172800000) return "Yesterday";
-
-    return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-    });
-}
 
 // Get current date formatted
 const currentDate = computed(() => {

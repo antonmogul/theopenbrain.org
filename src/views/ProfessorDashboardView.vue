@@ -7,6 +7,7 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter } from "vue-router";
+import { relativeLong as formatDate } from "@/utils/format";
 
 // Shared library
 import {
@@ -792,23 +793,6 @@ async function deleteAssessment(assessmentId) {
 
 // ============ UTILITIES ============
 
-function formatDate(dateString) {
-    if (!dateString) return "Never";
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now - date;
-
-    if (diff < 60000) return "Just now";
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
-    if (diff < 172800000) return "Yesterday";
-
-    return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-    });
-}
 
 // QW-3: render "—" instead of NaN/NaN% for non-finite percentages
 // (e.g. avgScore when total_points is 0, or completionRate with no data).

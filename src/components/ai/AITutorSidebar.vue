@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useAITutor } from "@/composables/useAITutor";
 import AITutorChat from "./AITutorChat.vue";
+import { chatTimestamp as formatDate } from "@/utils/format";
 
 const props = defineProps({
   moduleId: {
@@ -118,30 +119,6 @@ async function executeDelete() {
 }
 
 // Format date for history list
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now - date;
-
-  // Less than 24 hours
-  if (diff < 86400000) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-
-  // Less than 7 days
-  if (diff < 604800000) {
-    return date.toLocaleDateString("en-US", { weekday: "short" });
-  }
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 </script>
 
 <template>
