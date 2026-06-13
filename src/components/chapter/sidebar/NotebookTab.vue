@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, inject, onMounted } from "vue";
-import { HIGHLIGHT_COLORS } from "@/composables/useHighlights";
+import { HIGHLIGHT_COLORS, HIGHLIGHT_HEX } from "@/composables/useHighlights";
 import { useTrendingHighlights } from "@/composables/useTrendingHighlights";
 import { dateTime as formatDate } from "@/utils/format";
 
@@ -75,14 +75,7 @@ function scrollToHighlightInText(highlight) {
 }
 
 function getColorBorder(color) {
-  const map = {
-    yellow: "#fcd34d",
-    green: "#86efac",
-    blue: "#93c5fd",
-    pink: "#f9a8d4",
-    purple: "#c4b5fd",
-  };
-  return map[color] || map.yellow;
+  return HIGHLIGHT_HEX[color] || HIGHLIGHT_HEX.yellow;
 }
 
 // === Notes handlers (migrated from NotesSidebar) ===
