@@ -42,6 +42,3 @@ export { default as PreviewTag } from "./PreviewTag.vue";
 
 // Pagination
 export { default as Pagination } from "./Pagination.vue";
-
-// Temporary alias for any dead code still importing MetricCard.
-export { default as MetricCard } from "./StatCard.vue";
