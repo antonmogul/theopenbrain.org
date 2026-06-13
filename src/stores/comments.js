@@ -3,7 +3,6 @@ import { defineStore } from "pinia";
 export const useCom = defineStore("comments", {
   state: () => ({
     comments: localStorage.comments ? JSON.parse(localStorage.comments) : {},
-    commentsId: [],
     activeCom: null,
   }),
   getters: {},
@@ -18,9 +17,6 @@ export const useCom = defineStore("comments", {
     },
     getCom() {
       return this.comments[this.activeCom];
-    },
-    allCom() {
-      return this.comments;
     },
     updateCom(input, event) {
       if (input.length !== 0) {

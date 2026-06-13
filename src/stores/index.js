@@ -23,7 +23,6 @@ export const useGeneral = defineStore("main", {
     startIsActive: true,
     activeMenuIndex: null,
     activeSidebar: false,
-    count: 0,
     imgActive: false,
     currentSubChapter: null,
     progress: 0,
@@ -31,10 +30,7 @@ export const useGeneral = defineStore("main", {
     isNextBack: false,
     savedPosition: undefined,
   }),
-  getters: {
-    getactiveMenu: (state) => state.activeMenu,
-    doubleCount: (state) => state.count * 2,
-  },
+  getters: {},
   actions: {
     unSetMenu() {
       this.activeMenu = false;
