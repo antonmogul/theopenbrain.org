@@ -47,7 +47,7 @@ Three new files in `src/components/dashboard/shared/`:
   - User card: 2-letter initials (SettingsView logic), accent-tinted avatar, name, role/email meta line. No dated greeting.
 - **`DashboardNavIcon.vue`** — extracts the `v-if/v-else-if` SVG icon switch from `DashboardSidebar.vue`. Supported names: `grid · book · layers · image · quiz · flashcard · highlight · notes · progress · users · chart · folder · clipboard · graduation · share · settings` (extended with the Student glyphs that currently fall through to the default).
 
-**Per-role accent mapping** (proposed): Student = `teal`, Professor = `amber` (substitutes the legacy `#C86948` brown — no token equivalent exists), Creator = `magenta` (substitutes the legacy violet). _See Open Question Q1._
+**Per-role accent mapping** (confirmed): Student = `teal`, Professor = `amber` (substitutes the legacy `#C86948` brown — no token equivalent), Creator = `magenta` (substitutes the legacy violet). No new tokens.
 
 ### 3.2 Shared component library (`src/components/dashboard/shared/`)
 
@@ -191,15 +191,20 @@ Each sub-project is verified with `npm run build` + `npm run lint` before moving
 
 ---
 
-## 7. Open Questions (resolve before / during execution)
+## 7. Resolved Decisions & Remaining Open Questions
 
-- **Q1 — Per-role accent values.** Student=`teal`, Professor=`amber`, Creator=`magenta` proposed. Professor's legacy brown `#C86948` has no token; `amber` substitutes (or add a `[data-accent="clay"]` block to `brand.css` for a faithful brown). Confirm.
-- **Q2 — Canonical home for `Switch`/`SegmentedControl`** (reader-global): canonical in `dashboard/shared` + UI alias, or canonical in `UI/` + dashboard re-export? Pick one.
-- **Q3 — Student "Settings" nav item:** route to `/settings`, or keep a minimal in-panel readout? Recommend route-out for a single canonical Settings.
-- **Q4 — Does `SettingsView` also adopt `DashboardShell`** (unifying the rail, but it uses scroll-spy not tab-switch), or only share the leaf components? Recommend: share leaf components, keep its scroll-spy layout.
+**Resolved (user, 2026-06-13):**
+- **Q1 — Per-role accent → token accents.** Student=`teal`, Professor=`amber` (replaces legacy `#C86948` brown), Creator=`magenta` (replaces legacy violet). No new tokens added to `brand.css`.
+- **Q3 — Student "Settings" nav item → routes to `/settings`** (the canonical `SettingsView`). No in-panel settings duplicate; remove the inline Settings rows (`StudentDashboardView.vue:648-675`).
+
+**Resolved by default (will report outcome; reversible if you object):**
+- **Q2 — `Switch`/`SegmentedControl` canonical in `dashboard/shared`**, with thin re-export shims from `src/components/UI/` for reader-side imports.
+- **Q4 — `SettingsView` shares the leaf components** (`SectionHeader`, `Button`, `FormField`, `ToggleRow`, `Switch`, `SegmentedControl`) but keeps its own scroll-spy layout (does NOT adopt `DashboardShell`, which is tab-switch).
+- **Q6 — `pendingAssessments` renders `—`** (no agreed product definition of "pending"); revisit if a definition lands.
+
+**Still open (decided during execution, reported):**
 - **Q5 — Creator end-state:** if all six sections pass the 4-point check, switch the router to `DashboardViewRefactored.vue` and retire the monolith; else keep the monolith as shell with adopted sections embedded. Decide after Chapters + Versions verify.
-- **Q6 — `pendingAssessments`:** quick-win (define + compute) or render `—`? Needs a product definition of "pending."
-- **Q7 — Creator Analytics data pipeline:** code is functional but depends on `analytics_events` being populated in prod. If empty, consider a `· preview` tag despite working code.
+- **Q7 — Creator Analytics data pipeline:** code is functional but depends on `analytics_events` being populated. If empty in practice, add a `· preview` tag despite working code; otherwise leave untagged.
 
 ---
 
