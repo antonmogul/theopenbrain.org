@@ -9,7 +9,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useRouter, useRoute } from "vue-router";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
-import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
+import ChapterBlockEditor from "@/components/dashboard/chapters/ChapterBlockEditor.vue";
 
 // Shared dashboard library (token-based)
 import {
@@ -116,24 +116,13 @@ const chaptersLoading = ref(false);
 const chaptersError = ref(null);
 const expandedChapterId = ref(null);
 
-// Expanded chapter content
+// Expanded chapter content (passed to ChapterBlockEditor as props)
 const expandedChapterSections = ref([]);
 const expandedChapterParagraphs = ref([]);
-const flatBlocks = ref([]);
 
-// Editor state
-const selectedBlock = ref(null);
-const editorContent = ref("");
+// Save state (passed to the editor; set by onBlockSave)
 const saving = ref(false);
 const saveStatus = ref("");
-
-// Scroll sync
-const highlightedBlockId = ref(null);
-const contentPreviewRef = ref(null);
-
-// Drag and drop
-const draggedBlockId = ref(null);
-const dragOverBlockId = ref(null);
 
 // ============ VERSIONS SECTION STATE ============
 const versions = ref([]);
@@ -190,12 +179,10 @@ async function attachMedia(animation) {
                 animation_trigger: trigger,
             }),
         });
-        // Update local state
-        mediaPickerTarget.value.animationId = animation.id;
-        mediaPickerTarget.value.animationTrigger = trigger;
-        mediaPickerTarget.value.animationTitle = animation.title || animation.animation_key;
         showMediaPicker.value = false;
         mediaPickerTarget.value = null;
+        // Refresh content so ChapterBlockEditor rebuilds with the new media badge.
+        await fetchChapterContent(expandedChapterId.value);
     } catch (err) {
         console.error("Error attaching media:", err);
     }
@@ -210,9 +197,8 @@ async function detachMedia(block) {
                 animation_trigger: null,
             }),
         });
-        block.animationId = null;
-        block.animationTrigger = null;
-        block.animationTitle = null;
+        // Refresh content so ChapterBlockEditor rebuilds without the media badge.
+        await fetchChapterContent(expandedChapterId.value);
     } catch (err) {
         console.error("Error detaching media:", err);
     }
@@ -333,18 +319,15 @@ async function fetchAllChapters() {
 // ============ EXPAND/COLLAPSE CHAPTER ============
 async function toggleChapter(chapterId) {
     if (expandedChapterId.value === chapterId) {
-        // Collapse
+        // Collapse (ChapterBlockEditor unmounts and resets its own state)
         expandedChapterId.value = null;
         expandedChapterSections.value = [];
         expandedChapterParagraphs.value = [];
-        flatBlocks.value = [];
-        selectedBlock.value = null;
         return;
     }
 
     // Expand new chapter
     expandedChapterId.value = chapterId;
-    selectedBlock.value = null;
     await fetchChapterContent(chapterId);
 }
 
@@ -367,234 +350,32 @@ async function fetchChapterContent(moduleId) {
             );
         }
         expandedChapterParagraphs.value = paragraphs;
-
-        // Build flat blocks list
-        buildFlatBlocks();
+        // ChapterBlockEditor rebuilds its flat block list from these props.
     } catch (err) {
         console.error("Error fetching chapter content:", err);
     }
 }
 
-function buildFlatBlocks() {
-    const blocks = [];
+// ============ CHAPTER BLOCK EDITOR HANDLERS ============
+// ChapterBlockEditor owns the editing UI + pure transforms; the DB writes that
+// need a content refresh are handled here so the parent stays the data owner.
 
-    expandedChapterSections.value.forEach((section, sectionIndex) => {
-        // Add section as a block
-        blocks.push({
-            type: "section",
-            id: section.id,
-            title: section.title,
-            slug: section.slug,
-            depth: 0,
-            sectionId: section.id,
-            sectionIndex: sectionIndex,
-            orderIndex: section.order_index,
-        });
-
-        // Add paragraphs for this section
-        const sectionParagraphs = expandedChapterParagraphs.value
-            .filter((p) => p.section_id === section.id)
-            .sort((a, b) => a.order_index - b.order_index);
-
-        sectionParagraphs.forEach((p, paraIndex) => {
-            const wordCount = (p.content_text || "")
-                .split(/\s+/)
-                .filter(Boolean).length;
-            // Convert JSONB blocks to HTML for preview
-            const jsonBlocks = p.content?.blocks || [];
-            const htmlContent = blocksToHtml(jsonBlocks);
-            blocks.push({
-                type: "paragraph",
-                id: p.id,
-                content: p.content,
-                contentText: p.content_text,
-                htmlContent: htmlContent,
-                preview: getBlockPreview(p),
-                depth: 1,
-                sectionId: section.id,
-                sectionTitle: section.title,
-                orderIndex: p.order_index,
-                paraIndex: paraIndex,
-                isSubsectionHeader: p.is_subsection_header,
-                wordCount: wordCount,
-                animationId: p.animation_id || null,
-                animationTrigger: p.animation_trigger || null,
-                animationTitle: p.animation_id
-                    ? (mediaItems.value.find(m => m.id === p.animation_id)?.title ||
-                       mediaItems.value.find(m => m.id === p.animation_id)?.animation_key ||
-                       p.animation_trigger || 'Media')
-                    : null,
-            });
-        });
-    });
-
-    flatBlocks.value = blocks;
-    console.log("Built flat blocks:", blocks.length, "items");
-}
-
-function getBlockPreview(paragraph) {
-    // Get first 60 chars of content text
-    const text = paragraph.content_text || "";
-    const stripped = text.replace(/<[^>]*>/g, "").trim();
-    return stripped.length > 60 ? stripped.slice(0, 60) + "..." : stripped;
-}
-
-// ============ BLOCK SELECTION & EDITING ============
-function selectBlock(block) {
-    if (block.type === "section") return; // Sections not editable
-
-    selectedBlock.value = block;
-    saveStatus.value = "";
-
-    // Convert JSONB blocks to HTML
-    const blocks = block.content?.blocks || [];
-    editorContent.value = blocksToHtml(blocks);
-}
-
-function clearSelection() {
-    selectedBlock.value = null;
-    editorContent.value = "";
-    saveStatus.value = "";
-}
-
-// Convert JSONB blocks to HTML (from EditorView pattern)
-function blocksToHtml(blocks) {
-    if (!blocks || !Array.isArray(blocks)) return "";
-
-    return blocks
-        .map((block) => {
-            switch (block.type) {
-                case "heading":
-                    const level = block.level || 2;
-                    return `<h${level}>${block.content || ""}</h${level}>`;
-                case "paragraph":
-                case "text":
-                    return `<p>${block.content || ""}</p>`;
-                case "list":
-                    const items = (block.items || [])
-                        .map((item) => `<li>${item}</li>`)
-                        .join("");
-                    return block.ordered
-                        ? `<ol>${items}</ol>`
-                        : `<ul>${items}</ul>`;
-                case "blockquote":
-                    return `<blockquote><p>${block.content || ""}</p></blockquote>`;
-                case "code":
-                    return `<pre><code>${block.content || ""}</code></pre>`;
-                case "image":
-                    return `<img src="${block.src || ""}" alt="${block.alt || ""}" />`;
-                default:
-                    return `<p>${block.content || ""}</p>`;
-            }
-        })
-        .join("\n");
-}
-
-// Convert HTML back to JSONB blocks
-function htmlToBlocks(html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const blocks = [];
-
-    doc.body.childNodes.forEach((node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            const tagName = node.tagName.toLowerCase();
-
-            if (tagName.match(/^h[1-6]$/)) {
-                blocks.push({
-                    type: "heading",
-                    level: parseInt(tagName[1]),
-                    content: node.textContent,
-                });
-            } else if (tagName === "p") {
-                blocks.push({
-                    type: "paragraph",
-                    content: node.innerHTML,
-                });
-            } else if (tagName === "ul") {
-                blocks.push({
-                    type: "list",
-                    ordered: false,
-                    items: Array.from(node.querySelectorAll("li")).map(
-                        (li) => li.textContent,
-                    ),
-                });
-            } else if (tagName === "ol") {
-                blocks.push({
-                    type: "list",
-                    ordered: true,
-                    items: Array.from(node.querySelectorAll("li")).map(
-                        (li) => li.textContent,
-                    ),
-                });
-            } else if (tagName === "blockquote") {
-                blocks.push({
-                    type: "blockquote",
-                    content: node.textContent,
-                });
-            } else if (tagName === "pre") {
-                blocks.push({
-                    type: "code",
-                    content: node.textContent,
-                });
-            } else if (tagName === "img") {
-                blocks.push({
-                    type: "image",
-                    src: node.getAttribute("src"),
-                    alt: node.getAttribute("alt") || "",
-                });
-            }
-        }
-    });
-
-    return blocks;
-}
-
-// ============ SAVE BLOCK ============
-async function saveBlock() {
-    if (!selectedBlock.value) return;
-
+async function onBlockSave({ paragraphId, content, contentText }) {
     saving.value = true;
     saveStatus.value = "";
-
     try {
-        const blocks = htmlToBlocks(editorContent.value);
-        const contentText = blocks
-            .map((b) => b.content || b.items?.join(" ") || "")
-            .join(" ")
-            .replace(/<[^>]*>/g, "");
-
-        await supabaseRest(`paragraphs?id=eq.${selectedBlock.value.id}`, {
+        await supabaseRest(`paragraphs?id=eq.${paragraphId}`, {
             method: "PATCH",
             headers: { Prefer: "return=minimal" },
             body: JSON.stringify({
-                content: { blocks },
+                content,
                 content_text: contentText,
                 updated_at: new Date().toISOString(),
             }),
         });
-
         saveStatus.value = "Saved!";
-
-        // Update local state
-        selectedBlock.value.content = { blocks };
-        selectedBlock.value.contentText = contentText;
-        selectedBlock.value.preview = getBlockPreview({
-            content_text: contentText,
-        });
-
-        // Refresh the expanded chapter
+        // Refresh the expanded chapter content + the chapters list stats.
         await fetchChapterContent(expandedChapterId.value);
-
-        // Re-select the block to update preview
-        const updatedBlock = flatBlocks.value.find(
-            (b) => b.id === selectedBlock.value.id,
-        );
-        if (updatedBlock) {
-            selectedBlock.value = updatedBlock;
-        }
-
-        // Refresh chapter stats
         await fetchAllChapters();
     } catch (err) {
         console.error("Error saving block:", err);
@@ -604,151 +385,23 @@ async function saveBlock() {
     }
 }
 
-// ============ DRAG AND DROP ============
-function handleDragStart(e, block) {
-    if (block.type === "section") return;
-    draggedBlockId.value = block.id;
-    e.dataTransfer.effectAllowed = "move";
-}
-
-function handleDragOver(e, block) {
-    e.preventDefault();
-    if (block.type === "section") return;
-    if (draggedBlockId.value && draggedBlockId.value !== block.id) {
-        dragOverBlockId.value = block.id;
-    }
-}
-
-function handleDragLeave() {
-    dragOverBlockId.value = null;
-}
-
-async function handleDrop(e, targetBlock) {
-    e.preventDefault();
-
-    if (!draggedBlockId.value || targetBlock.type === "section") {
-        draggedBlockId.value = null;
-        dragOverBlockId.value = null;
-        return;
-    }
-
-    const draggedBlock = flatBlocks.value.find(
-        (b) => b.id === draggedBlockId.value,
-    );
-
-    if (!draggedBlock || draggedBlock.sectionId !== targetBlock.sectionId) {
-        // Only allow reordering within same section for now
-        draggedBlockId.value = null;
-        dragOverBlockId.value = null;
-        return;
-    }
-
-    // Calculate new order
-    const sectionBlocks = flatBlocks.value
-        .filter(
-            (b) =>
-                b.type === "paragraph" && b.sectionId === targetBlock.sectionId,
-        )
-        .sort((a, b) => a.orderIndex - b.orderIndex);
-
-    const draggedIndex = sectionBlocks.findIndex(
-        (b) => b.id === draggedBlock.id,
-    );
-    const targetIndex = sectionBlocks.findIndex((b) => b.id === targetBlock.id);
-
-    if (draggedIndex === targetIndex) {
-        draggedBlockId.value = null;
-        dragOverBlockId.value = null;
-        return;
-    }
-
-    // Reorder in array
-    sectionBlocks.splice(draggedIndex, 1);
-    sectionBlocks.splice(targetIndex, 0, draggedBlock);
-
-    // Update order_index for all affected blocks
+async function onBlockReorder({ orderedIds }) {
     try {
-        for (let i = 0; i < sectionBlocks.length; i++) {
-            if (sectionBlocks[i].orderIndex !== i) {
-                await supabaseRest(`paragraphs?id=eq.${sectionBlocks[i].id}`, {
-                    method: "PATCH",
-                    headers: { Prefer: "return=minimal" },
-                    body: JSON.stringify({
-                        order_index: i,
-                        updated_at: new Date().toISOString(),
-                    }),
-                });
-            }
+        for (let i = 0; i < orderedIds.length; i++) {
+            await supabaseRest(`paragraphs?id=eq.${orderedIds[i]}`, {
+                method: "PATCH",
+                headers: { Prefer: "return=minimal" },
+                body: JSON.stringify({
+                    order_index: i,
+                    updated_at: new Date().toISOString(),
+                }),
+            });
         }
-
-        // Refresh content
         await fetchChapterContent(expandedChapterId.value);
     } catch (err) {
         console.error("Error reordering blocks:", err);
     }
-
-    draggedBlockId.value = null;
-    dragOverBlockId.value = null;
 }
-
-function handleDragEnd() {
-    draggedBlockId.value = null;
-    dragOverBlockId.value = null;
-}
-
-// ============ SCROLL SYNC ============
-function setupScrollObserver() {
-    if (!contentPreviewRef.value) return;
-
-    const observer = new IntersectionObserver(
-        (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    highlightedBlockId.value =
-                        entry.target.dataset.blockId || null;
-                }
-            });
-        },
-        {
-            root: contentPreviewRef.value,
-            threshold: 0.5,
-        },
-    );
-
-    // Observe all block elements
-    nextTick(() => {
-        const blockElements =
-            contentPreviewRef.value?.querySelectorAll("[data-block-id]");
-        blockElements?.forEach((el) => observer.observe(el));
-    });
-
-    return observer;
-}
-
-// ============ COMPUTED ============
-const expandedChapter = computed(() => {
-    return chapters.value.find((c) => c.id === expandedChapterId.value);
-});
-
-const chapterStats = computed(() => {
-    if (!expandedChapter.value) return null;
-
-    const sectionCount = expandedChapterSections.value.length;
-    const paragraphCount = flatBlocks.value.filter(
-        (b) => b.type === "paragraph",
-    ).length;
-    const wordCount = expandedChapterParagraphs.value.reduce((sum, p) => {
-        const text = p.content_text || "";
-        return sum + text.split(/\s+/).filter(Boolean).length;
-    }, 0);
-
-    return {
-        sections: sectionCount,
-        paragraphs: paragraphCount,
-        words: wordCount,
-        readingTime: Math.ceil(wordCount / 200),
-    };
-});
 
 // ============ VERSIONS FUNCTIONS ============
 async function fetchVersions() {
@@ -1720,15 +1373,6 @@ watch(activeSection, (newSection) => {
     }
 });
 
-// Watch for expanded chapter to setup scroll observer
-watch(expandedChapterId, () => {
-    nextTick(() => {
-        if (expandedChapterId.value && !selectedBlock.value) {
-            setupScrollObserver();
-        }
-    });
-});
-
 // Dashboard stats computed from fetched data
 const dashboardStats = computed(() => ({
     chapters: chapters.value.length,
@@ -2037,123 +1681,17 @@ onMounted(() => {
 
                     <!-- Expanded content -->
                     <div v-if="expandedChapterId === chapter.id" class="chapter-body">
-                        <div class="chapter-editor-layout">
-                            <!-- Left: block list -->
-                            <div class="blocks-sidebar">
-                                <div class="blocks-list">
-                                    <div
-                                        v-for="block in flatBlocks"
-                                        :key="block.id"
-                                        class="block-item"
-                                        :class="{
-                                            section: block.type === 'section',
-                                            paragraph: block.type === 'paragraph',
-                                            selected: selectedBlock?.id === block.id,
-                                            highlighted: highlightedBlockId === block.id && !selectedBlock,
-                                            'drag-over': dragOverBlockId === block.id,
-                                        }"
-                                        :draggable="block.type === 'paragraph'"
-                                        @click="selectBlock(block)"
-                                        @dragstart="handleDragStart($event, block)"
-                                        @dragover="handleDragOver($event, block)"
-                                        @dragleave="handleDragLeave"
-                                        @drop="handleDrop($event, block)"
-                                        @dragend="handleDragEnd"
-                                    >
-                                        <template v-if="block.type === 'section'">
-                                            <svg class="block-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                            <span class="block-title">{{ block.title }}</span>
-                                        </template>
-                                        <template v-else>
-                                            <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"></circle><circle cx="15" cy="5" r="1.5"></circle><circle cx="9" cy="12" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="9" cy="19" r="1.5"></circle><circle cx="15" cy="19" r="1.5"></circle></svg>
-                                            <span class="block-index">P{{ block.paraIndex + 1 }}</span>
-                                            <span class="block-preview">{{ block.preview || "Empty paragraph" }}</span>
-                                            <span
-                                                v-if="block.animationId"
-                                                class="media-badge"
-                                                @click.stop="detachMedia(block)"
-                                                title="Click to remove media"
-                                            >
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                                {{ block.animationTrigger || 'Media' }}
-                                                <span class="media-badge-x">&times;</span>
-                                            </span>
-                                            <button
-                                                v-else
-                                                type="button"
-                                                class="attach-media-btn"
-                                                @click.stop="openMediaPicker(block)"
-                                                title="Attach animation or media"
-                                            >
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                            </button>
-                                            <svg v-if="selectedBlock?.id === block.id" class="selected-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18l6-6-6-6"></path></svg>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right: stats panel or editor -->
-                            <div class="editor-panel">
-                                <!-- Stats panel (no selection) -->
-                                <div v-if="!selectedBlock" class="stats-panel">
-                                    <StatGrid :columns="4">
-                                        <StatCard :value="chapterStats?.sections || 0" label="Sections" />
-                                        <StatCard :value="chapterStats?.paragraphs || 0" label="Paragraphs" />
-                                        <StatCard :value="chapterStats?.words || 0" label="Words" />
-                                        <StatCard :value="chapterStats?.readingTime || 0" label="Min read" />
-                                    </StatGrid>
-
-                                    <div class="content-preview" ref="contentPreviewRef">
-                                        <h4 class="preview-title">Content preview</h4>
-                                        <div class="preview-content">
-                                            <div
-                                                v-for="block in flatBlocks"
-                                                :key="block.id"
-                                                :data-block-id="block.id"
-                                                class="preview-block"
-                                                :class="{ section: block.type === 'section', paragraph: block.type === 'paragraph' }"
-                                            >
-                                                <template v-if="block.type === 'section'">
-                                                    <div class="preview-section-header">
-                                                        <div class="preview-section-meta">
-                                                            <span class="meta-badge section-badge">Section {{ block.sectionIndex + 1 }}</span>
-                                                            <span class="meta-slug">{{ block.slug }}</span>
-                                                        </div>
-                                                        <h5 class="preview-section-title">{{ block.title }}</h5>
-                                                    </div>
-                                                </template>
-                                                <template v-else>
-                                                    <div class="preview-para-wrapper">
-                                                        <div class="preview-para-meta">
-                                                            <span class="meta-index">P{{ block.paraIndex + 1 }}</span>
-                                                            <span class="meta-words">{{ block.wordCount }} words</span>
-                                                            <span v-if="block.isSubsectionHeader" class="meta-badge subsection-badge">Subsection</span>
-                                                        </div>
-                                                        <div class="preview-para-content" v-html="block.htmlContent || block.contentText || block.preview"></div>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Editor panel (with selection) -->
-                                <div v-else class="editor-content">
-                                    <div class="editor-head">
-                                        <Button variant="ghost" size="sm" @click="clearSelection">← Back to overview</Button>
-                                        <h4 class="editing-title">Editing: {{ selectedBlock.preview || "Paragraph" }}</h4>
-                                    </div>
-
-                                    <TipTapEditor v-model="editorContent" placeholder="Start writing..." />
-
-                                    <div class="editor-footer">
-                                        <span v-if="saveStatus" class="save-status" :class="{ error: saveStatus.includes('Error') }">{{ saveStatus }}</span>
-                                        <Button variant="solid" size="sm" :loading="saving" @click="saveBlock">{{ saving ? "Saving…" : "Save" }}</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <ChapterBlockEditor
+                            :sections="expandedChapterSections"
+                            :paragraphs="expandedChapterParagraphs"
+                            :media-items="mediaItems"
+                            :saving="saving"
+                            :save-status="saveStatus"
+                            @save="onBlockSave"
+                            @reorder="onBlockReorder"
+                            @attach-media="openMediaPicker"
+                            @detach-media="detachMedia"
+                        />
                     </div>
                 </BaseCard>
 
@@ -2998,98 +2536,6 @@ onMounted(() => {
 .chapter-head-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .chapter-body { border-top: 1px solid rgb(var(--color-line)); }
 
-.chapter-editor-layout { display: grid; grid-template-columns: 340px 1fr; min-height: 480px; }
-@media (max-width: 1100px) { .chapter-editor-layout { grid-template-columns: 1fr; } }
-
-.blocks-sidebar { border-right: 1px solid rgb(var(--color-line)); }
-@media (max-width: 1100px) { .blocks-sidebar { border-right: 0; border-bottom: 1px solid rgb(var(--color-line)); } }
-.blocks-list { max-height: 600px; overflow-y: auto; padding: 8px; }
-.blocks-list::-webkit-scrollbar { width: 8px; }
-.blocks-list::-webkit-scrollbar-track { background: transparent; }
-.blocks-list::-webkit-scrollbar-thumb { background: rgb(var(--color-ink) / 0.15); border-radius: 999px; }
-
-.block-item {
-    display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 4px;
-    cursor: pointer; font-family: var(--font-body); transition: background 0.12s ease;
-}
-.block-item.section { margin-top: 12px; }
-.block-item.section:first-child { margin-top: 0; }
-.block-item.paragraph:hover { background: rgb(var(--color-ink) / 0.04); }
-.block-item.selected { background: rgb(var(--color-accent) / 0.1); }
-.block-item.highlighted { background: rgb(var(--color-accent) / 0.05); }
-.block-item.drag-over { box-shadow: inset 0 2px 0 rgb(var(--color-accent)); }
-
-.block-icon { color: rgb(var(--color-accent)); flex: none; }
-.block-title { font-size: 1.4rem; font-weight: 500; color: rgb(var(--color-ink)); }
-.drag-handle { color: rgb(var(--color-mute)); flex: none; cursor: grab; }
-.drag-handle:active { cursor: grabbing; }
-.block-index { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); flex: none; }
-.block-preview {
-    font-size: 1.3rem; color: rgb(var(--color-ink)); flex: 1; min-width: 0;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.selected-arrow { color: rgb(var(--color-accent)); flex: none; }
-
-.media-badge {
-    display: inline-flex; align-items: center; gap: 4px; flex: none;
-    font-family: var(--font-mono); font-size: 1rem; padding: 2px 7px; border-radius: 999px;
-    background: rgb(var(--color-accent) / 0.12); color: rgb(var(--color-accent)); cursor: pointer;
-}
-.media-badge:hover { background: rgb(var(--color-accent) / 0.2); }
-.media-badge-x { font-size: 1.3rem; line-height: 1; }
-.attach-media-btn {
-    flex: none; border: 1px solid rgb(var(--color-line)); border-radius: 999px; background: transparent;
-    color: rgb(var(--color-mute)); cursor: pointer; padding: 4px; display: flex; opacity: 0;
-    transition: opacity 0.12s ease, color 0.12s ease;
-}
-.block-item:hover .attach-media-btn { opacity: 1; }
-.attach-media-btn:hover { color: rgb(var(--color-accent)); border-color: rgb(var(--color-accent)); }
-
-.editor-panel { padding: 20px; min-width: 0; }
-.stats-panel { display: flex; flex-direction: column; gap: 20px; }
-
-.content-preview { border: 1px solid rgb(var(--color-line)); border-radius: 4px; overflow: hidden; }
-.preview-title {
-    font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.1em;
-    color: rgb(var(--color-mute)); margin: 0; padding: 12px 16px; border-bottom: 1px solid rgb(var(--color-line));
-}
-.preview-content { max-height: 480px; overflow-y: auto; padding: 16px; }
-.preview-content::-webkit-scrollbar { width: 8px; }
-.preview-content::-webkit-scrollbar-track { background: transparent; }
-.preview-content::-webkit-scrollbar-thumb { background: rgb(var(--color-ink) / 0.15); border-radius: 999px; }
-
-.preview-block.paragraph { padding: 12px 0; border-bottom: 1px solid rgb(var(--color-line)); }
-.preview-block.paragraph:last-child { border-bottom: 0; }
-.preview-section-header { padding: 16px 0 8px; }
-.preview-block.section:first-child .preview-section-header { padding-top: 0; }
-.preview-section-meta { display: flex; align-items: center; gap: 10px; }
-.meta-badge {
-    font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em;
-    padding: 2px 8px; border-radius: 999px;
-}
-.meta-badge.section-badge { background: rgb(var(--color-accent) / 0.12); color: rgb(var(--color-accent)); }
-.meta-badge.subsection-badge { background: rgb(var(--color-complete) / 0.14); color: rgb(var(--color-complete)); }
-.meta-slug { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
-.preview-section-title { font-family: var(--font-body); font-size: 1.7rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 8px 0 0; }
-
-.preview-para-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.meta-index { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-accent)); }
-.meta-words { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
-.preview-para-content { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); line-height: 1.6; }
-.preview-para-content :deep(h1), .preview-para-content :deep(h2), .preview-para-content :deep(h3) {
-    font-weight: 500; color: rgb(var(--color-ink)); margin: 8px 0;
-}
-.preview-para-content :deep(h1) { font-size: 1.9rem; }
-.preview-para-content :deep(h2) { font-size: 1.7rem; }
-.preview-para-content :deep(h3) { font-size: 1.5rem; }
-
-.editor-content { display: flex; flex-direction: column; gap: 16px; }
-.editor-head { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-.editing-title { font-family: var(--font-body); font-size: 1.6rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.editor-content :deep(.tiptap-editor) { border: 1px solid rgb(var(--color-line)); border-radius: 4px; min-height: 280px; }
-.editor-footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.save-status { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-complete)); }
-.save-status.error { color: rgb(var(--color-accent)); }
 
 /* ============ CHAPTER WIZARD ============ */
 .wizard-head-row { display: flex; align-items: center; gap: 16px; }
