@@ -1,27 +1,5 @@
 import { ref } from "vue";
-
-// Direct REST API helper to bypass supabase-js client issues with new key format
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-async function supabaseRest(endpoint) {
-  const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`API Error ${response.status}: ${errorText}`);
-  }
-
-  return response.json();
-}
+import { apiRequest as supabaseRest } from "@/services/api/client";
 
 /**
  * Generic composable to fetch and transform any chapter from Supabase

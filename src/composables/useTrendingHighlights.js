@@ -1,12 +1,6 @@
 import { ref } from "vue";
-import { useAuth } from "./useAuth";
 import { relativeShort } from "@/utils/format";
-
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { apiRequest as supabaseRest } from "@/services/api/client";
 
 export function useTrendingHighlights(options = {}) {
   const { limit = 10 } = options;
@@ -14,30 +8,6 @@ export function useTrendingHighlights(options = {}) {
   const trending = ref([]);
   const loading = ref(false);
   const error = ref(null);
-
-  const { session } = useAuth();
-
-  // Helper for REST API calls
-  async function supabaseRest(endpoint) {
-    const accessToken = session.value?.access_token;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${accessToken || supabaseKey}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    const text = await response.text();
-    if (!text) return [];
-    return JSON.parse(text);
-  }
 
   // Fetch trending highlights
   async function fetchTrending() {

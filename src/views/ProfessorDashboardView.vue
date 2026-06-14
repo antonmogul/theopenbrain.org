@@ -3,11 +3,12 @@
 // Adopts DashboardShell (accent=amber), shared SectionHeader/StatGrid/BaseCard/
 // ListRow/StatusBadge/FormField/Button/BaseModal/EmptyState/LoadingState/ErrorState.
 // All CRUD + fetch logic preserved; mocked surfaces (email invite, access code,
-// collaboration sharing) are marked with PreviewTag. supabaseRest kept local.
+// collaboration sharing) are marked with PreviewTag. Uses shared API client.
 import { ref, computed, watch, onMounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter } from "vue-router";
 import { relativeLong as formatDate } from "@/utils/format";
+import { authedRequest as supabaseRest } from "@/services/api/client";
 
 // Shared library
 import {
@@ -37,39 +38,7 @@ const {
     isAuthenticated,
     isProfessor,
     signOut,
-    session,
 } = useAuth();
-
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-async function supabaseRest(endpoint, options = {}) {
-    const { headers: optionHeaders, ...restOptions } = options;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-        ...restOptions,
-        headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${session.value?.access_token || supabaseKey}`,
-            "Content-Type": "application/json",
-            ...optionHeaders,
-        },
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    if (options.method === "PATCH" || options.method === "DELETE") {
-        return { success: true };
-    }
-
-    return response.json();
-}
 
 // Current active section in sidebar
 const activeSection = ref("dashboard");

@@ -7,6 +7,7 @@
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter, useRoute } from "vue-router";
+import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
 
@@ -62,39 +63,7 @@ const {
     isProfessor,
     isStudent,
     signOut,
-    session,
 } = useAuth();
-
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-async function supabaseRest(endpoint, options = {}) {
-    const { headers: optionHeaders, ...restOptions } = options;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-        ...restOptions,
-        headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${session.value?.access_token || supabaseKey}`,
-            "Content-Type": "application/json",
-            ...optionHeaders,
-        },
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    if (options.method === "PATCH" || options.method === "DELETE") {
-        return { success: true };
-    }
-
-    return response.json();
-}
 
 // Current active section in sidebar
 const activeSection = ref("dashboard");
