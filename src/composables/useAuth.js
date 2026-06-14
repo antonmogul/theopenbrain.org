@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import {
   getSessionFromStorage,
   fetchProfileREST,
@@ -11,12 +11,17 @@ import {
   saveSessionToStorage,
   clearSessionFromStorage,
 } from "@/utils/authHelpers";
+import { setSession as setApiSession } from "@/services/api/client";
 
 const user = ref(null);
 const session = ref(null);
 const profile = ref(null);
 const loading = ref(true);
 const profileLoading = ref(false);
+
+// Keep the shared API client's session holder in sync with the auth session,
+// so services/api/client.js + everything migrated onto it sends the right token.
+watch(session, (s) => setApiSession(s), { immediate: true });
 
 // Dev-only role override
 const devRoleOverride = ref(null);
