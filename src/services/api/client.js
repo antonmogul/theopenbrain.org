@@ -70,6 +70,18 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 /**
+ * Like apiRequest, but fails fast on a non-GET write when there's no session
+ * (matches the guard the inline supabaseRest copies had). Drop-in replacement
+ * for those `supabaseRest(endpoint, options)` call sites.
+ * @param {string} endpoint - API endpoint
+ * @param {Object} options - Fetch options
+ * @returns {Promise<any>} Response data
+ */
+export async function authedRequest(endpoint, options = {}) {
+  return apiRequest(endpoint, { requireAuth: true, ...options });
+}
+
+/**
  * GET request helper
  * @param {string} endpoint - API endpoint
  * @param {Object} options - Additional fetch options
