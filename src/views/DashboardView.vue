@@ -4,9 +4,10 @@
 // library. All fetch/CRUD/wizard logic is preserved verbatim; supabaseRest is
 // kept local. Only chrome/markup changed. The abandoned DashboardViewRefactored
 // stays dead code — this is the live monolith, reskinned in place.
-import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useVersions } from "@/composables/useVersions";
+import { useDashboardMedia } from "@/composables/useDashboardMedia";
 import { useRouter, useRoute } from "vue-router";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
@@ -140,14 +141,24 @@ const {
     deleteVersion,
 } = useVersions(profile);
 
-// ============ MEDIA SECTION STATE ============
-const mediaItems = ref([]);
-const mediaLoading = ref(false);
-const mediaError = ref(null);
-const mediaFilter = ref("all"); // all, lottie, video, image, youtube
-const mediaSearch = ref("");
-const selectedMedia = ref(null);
-const showMediaUploadModal = ref(false);
+// ============ MEDIA SECTION ============
+// Library state + CRUD extracted to useDashboardMedia (#10). The media picker
+// below stays in the view — it is glue to the chapters section.
+const {
+    mediaItems,
+    mediaLoading,
+    mediaError,
+    mediaFilter,
+    mediaSearch,
+    selectedMedia,
+    showMediaUploadModal,
+    filteredMedia,
+    mediaByType,
+    fetchMedia,
+    selectMedia,
+    deleteMedia,
+    formatFileSize,
+} = useDashboardMedia();
 
 // ============ MEDIA PICKER (for attaching to content blocks) ============
 const showMediaPicker = ref(false);
@@ -408,108 +419,6 @@ async function onBlockReorder({ orderedIds }) {
     }
 }
 
-
-// ============ MEDIA FUNCTIONS ============
-async function fetchMedia() {
-    mediaLoading.value = true;
-    mediaError.value = null;
-
-    try {
-        let endpoint = "animations?select=*&order=media_type,title";
-
-        if (mediaFilter.value !== "all") {
-            endpoint += `&media_type=eq.${mediaFilter.value}`;
-        }
-
-        const data = await supabaseRest(endpoint);
-        mediaItems.value = data;
-    } catch (err) {
-        console.error("Error fetching media:", err);
-        mediaError.value = err.message;
-    } finally {
-        mediaLoading.value = false;
-    }
-}
-
-const filteredMedia = computed(() => {
-    if (!mediaSearch.value) return mediaItems.value;
-    const search = mediaSearch.value.toLowerCase();
-    return mediaItems.value.filter(
-        (item) =>
-            item.title?.toLowerCase().includes(search) ||
-            item.animation_key?.toLowerCase().includes(search) ||
-            item.description?.toLowerCase().includes(search),
-    );
-});
-
-const mediaByType = computed(() => {
-    const groups = {
-        lottie: [],
-        video: [],
-        image: [],
-        youtube: [],
-        gsap: [],
-        css: [],
-    };
-
-    filteredMedia.value.forEach((item) => {
-        const type = item.media_type || "other";
-        if (groups[type]) {
-            groups[type].push(item);
-        }
-    });
-
-    return groups;
-});
-
-async function selectMedia(item) {
-    selectedMedia.value = item;
-
-    // Load Lottie preview for lottie items
-    if (item.media_type === 'lottie' && item.lottie_file_url) {
-        await nextTick();
-        const container = document.getElementById('lottie-preview-' + item.id);
-        if (container) {
-            container.innerHTML = '';
-            try {
-                const lottieModule = await import('lottie-web');
-                const lottie = lottieModule.default;
-                lottie.loadAnimation({
-                    container,
-                    renderer: 'svg',
-                    loop: true,
-                    autoplay: true,
-                    path: item.lottie_file_url,
-                });
-            } catch (err) {
-                console.error('Failed to load lottie preview:', err);
-                container.innerHTML = '<p style="color: rgb(var(--color-mute)); text-align: center; padding: 2rem;">Failed to load animation</p>';
-            }
-        }
-    }
-}
-
-async function deleteMedia(mediaId) {
-    if (!confirm("Are you sure you want to delete this media asset?")) return;
-
-    try {
-        await supabaseRest(`animations?id=eq.${mediaId}`, {
-            method: "DELETE",
-        });
-        selectedMedia.value = null;
-        await fetchMedia();
-    } catch (err) {
-        console.error("Error deleting media:", err);
-        alert("Failed to delete media: " + err.message);
-    }
-}
-
-function formatFileSize(bytes) {
-    if (!bytes) return "Unknown";
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-}
 
 // ============ USERS FUNCTIONS ============
 async function fetchUsers() {
