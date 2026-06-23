@@ -8,13 +8,13 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter } from "vue-router";
 import { relativeLong as formatDate } from "@/utils/format";
-import { authedRequest as supabaseRest } from "@/services/api/client";
 import { useProfessorDashboardStats } from "@/composables/useProfessorDashboardStats";
 import { useProfessorCourses } from "@/composables/useProfessorCourses";
 import { useProfessorLibrary } from "@/composables/useProfessorLibrary";
 import { useProfessorStudents } from "@/composables/useProfessorStudents";
 import { useProfessorAssessments } from "@/composables/useProfessorAssessments";
 import { useProfessorAnalytics } from "@/composables/useProfessorAnalytics";
+import { useProfessorCollaboration } from "@/composables/useProfessorCollaboration";
 
 // Shared library
 import {
@@ -157,34 +157,14 @@ const {
 } = useProfessorAnalytics(profile);
 
 // ============ COLLABORATION SECTION STATE ============
-const sharedCourses = ref([]);
-const sharedCoursesLoading = ref(false);
-const mySharedCourses = ref([]);
-
-// ============ FETCH FUNCTIONS ============
-
-async function fetchSharedCourses() {
-    sharedCoursesLoading.value = true;
-
-    try {
-        // Fetch courses marked as shared by other professors
-        // For now, we'll simulate this with courses that have visibility set
-        const data = await supabaseRest(
-            `courses?is_published=eq.true&professor_id=neq.${profile.value?.id}&select=*,profiles(full_name,institution)`
-        );
-        sharedCourses.value = data;
-
-        // Fetch my courses that I've shared
-        const myCourses = await supabaseRest(
-            `courses?professor_id=eq.${profile.value?.id}&is_published=eq.true&select=*`
-        );
-        mySharedCourses.value = myCourses;
-    } catch (err) {
-        console.error("Error fetching shared courses:", err);
-    } finally {
-        sharedCoursesLoading.value = false;
-    }
-}
+// State + fetch extracted to useProfessorCollaboration (#12). The "Clone" action
+// reuses duplicateCourse from useProfessorCourses.
+const {
+    sharedCourses,
+    sharedCoursesLoading,
+    mySharedCourses,
+    fetchSharedCourses,
+} = useProfessorCollaboration(profile);
 
 // ============ STUDENT INVITATIONS ============
 
