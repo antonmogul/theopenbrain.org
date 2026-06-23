@@ -45,6 +45,7 @@
     "marked": "^17.0.3",
     "pinia": "^2.0.23",
     "pyodide": "^0.29.2",
+    "serve": "^14.2.6",
     "vite-plugin-html": "^3.2.0",
     "vue": "^3.2.38",
     "vue-chartjs": "^5.3.3",
