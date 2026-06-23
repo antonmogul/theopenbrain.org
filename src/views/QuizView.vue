@@ -7,6 +7,8 @@ import { useAuth } from "@/composables/useAuth";
 import QuizProgress from "@/components/quiz/QuizProgress.vue";
 import QuizQuestion from "@/components/quiz/QuizQuestion.vue";
 import QuizResults from "@/components/quiz/QuizResults.vue";
+import QuizIntro from "@/components/quiz/QuizIntro.vue";
+import QuizReview from "@/components/quiz/QuizReview.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -181,41 +183,12 @@ function handleGoToQuestion(index) {
     </div>
 
     <!-- Quiz Intro -->
-    <div v-else-if="quizState === 'intro' && currentQuiz" class="intro-container">
-      <div class="intro-card">
-        <p class="quiz-eyebrow">Assessment</p>
-
-        <h1 class="quiz-title">{{ currentQuiz.title }}</h1>
-
-        <p v-if="currentQuiz.description" class="quiz-description">
-          {{ currentQuiz.description }}
-        </p>
-
-        <div class="quiz-meta">
-          <div class="meta-item">
-            <span class="meta-value">
-              {{ currentQuiz.quiz_questions?.length || 0 }}
-            </span>
-            <span class="meta-label">Questions</span>
-          </div>
-          <div v-if="currentQuiz.time_limit_minutes" class="meta-item">
-            <span class="meta-value">{{ currentQuiz.time_limit_minutes }}</span>
-            <span class="meta-label">Minutes</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-value">{{ currentQuiz.passing_score || 70 }}%</span>
-            <span class="meta-label">to Pass</span>
-          </div>
-        </div>
-
-        <div class="intro-actions">
-          <button @click="handleExit" class="btn-secondary">Cancel</button>
-          <button @click="handleStartQuiz" class="btn-primary" data-testid="start-quiz">
-            Start Quiz →
-          </button>
-        </div>
-      </div>
-    </div>
+    <QuizIntro
+      v-else-if="quizState === 'intro' && currentQuiz"
+      :quiz="currentQuiz"
+      @exit="handleExit"
+      @start="handleStartQuiz"
+    />
 
     <!-- Taking Quiz -->
     <div v-else-if="quizState === 'taking'" class="quiz-container">
@@ -318,43 +291,13 @@ function handleGoToQuestion(index) {
     </div>
 
     <!-- Review Mode -->
-    <div v-else-if="quizState === 'review'" class="review-container">
-      <div class="review-header">
-        <button @click="handleExit" class="btn-secondary">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-          Back to Dashboard
-        </button>
-        <h2>Review Your Answers</h2>
-      </div>
-
-      <div class="review-questions">
-        <QuizQuestion
-          v-for="(question, index) in questions"
-          :key="question.id"
-          :question="question"
-          :selected-answer="answers[question.id]"
-          :question-number="index + 1"
-          :show-result="true"
-        />
-      </div>
-
-      <div class="review-actions">
-        <button @click="handleRetry" class="btn-secondary">Try Again</button>
-        <button @click="handleExit" class="btn-primary">Continue Learning</button>
-      </div>
-    </div>
+    <QuizReview
+      v-else-if="quizState === 'review'"
+      :questions="questions"
+      :answers="answers"
+      @exit="handleExit"
+      @retry="handleRetry"
+    />
 
     <!-- Confirm Submit Modal -->
     <Teleport to="body">
@@ -421,93 +364,6 @@ function handleGoToQuestion(index) {
 .error-container h2 {
   margin: 0;
   color: rgb(var(--color-ink));
-}
-
-/* Intro State */
-.intro-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-}
-
-.intro-card {
-  background: transparent;
-  padding: 2.5rem;
-  max-width: 480px;
-  width: 100%;
-  text-align: center;
-}
-
-.quiz-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgb(var(--color-accent));
-  margin: 0 0 1.4rem;
-}
-
-.quiz-title {
-  font-family: var(--font-body);
-  font-size: 3.2rem;
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  color: rgb(var(--color-ink));
-  margin: 0 0 1.4rem 0;
-}
-
-.quiz-description {
-  font-family: var(--font-body);
-  font-style: italic;
-  font-size: 1.5rem;
-  color: rgb(var(--color-ink) / 0.7);
-  line-height: 1.55;
-  margin: 0 0 2.4rem 0;
-}
-
-/* Bordered 3-up stats grid (prototype QuizStart) */
-.quiz-meta {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border: 1px solid rgb(var(--color-line));
-  margin-bottom: 2.4rem;
-}
-
-.meta-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.6rem 1rem;
-  border-right: 1px solid rgb(var(--color-line));
-}
-
-.meta-item:last-child {
-  border-right: none;
-}
-
-.meta-value {
-  font-family: var(--font-body);
-  font-size: 2.6rem;
-  font-weight: 500;
-  line-height: 1;
-  color: rgb(var(--color-ink));
-}
-
-.meta-label {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgb(var(--color-mute));
-  margin-top: 6px;
-}
-
-.intro-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
 }
 
 /* Quiz Container */
@@ -648,42 +504,6 @@ function handleGoToQuestion(index) {
 }
 
 /* Review */
-.review-container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.review-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.review-header h2 {
-  font-family: var(--font-body);
-  font-size: 2rem;
-  font-weight: 500;
-  color: rgb(var(--color-ink));
-  margin: 0;
-}
-
-.review-questions {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.review-actions {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 12px;
-}
-
 /* Buttons */
 .btn-primary,
 .btn-secondary {
