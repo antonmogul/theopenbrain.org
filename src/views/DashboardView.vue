@@ -17,6 +17,8 @@ import { relativeLong as formatDate } from "@/utils/format";
 import ChapterBlockEditor from "@/components/dashboard/chapters/ChapterBlockEditor.vue";
 import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
+import UsersSection from "@/components/dashboard/sections/UsersSection.vue";
+import AnalyticsSection from "@/components/dashboard/sections/AnalyticsSection.vue";
 
 // Shared dashboard library (token-based)
 import {
@@ -1312,210 +1314,43 @@ onMounted(() => {
             </div>
         </section>
 
-        <!-- USERS -->
-        <section v-else-if="activeSection === 'users'" class="section">
-            <SectionHeader eyebrow="06 · Users" title="Accounts & roles">
-                <template #actions>
-                    <span class="muted-mono">{{ usersTotalCount }} total</span>
-                </template>
-            </SectionHeader>
+        <UsersSection
+            v-else-if="activeSection === 'users'"
+            :users="users"
+            :users-loading="usersLoading"
+            :users-error="usersError"
+            :users-filter="usersFilter"
+            :users-filter-options="usersFilterOptions"
+            :users-search="usersSearch"
+            :users-page="usersPage"
+            :users-total-pages="usersTotalPages"
+            :users-total-count="usersTotalCount"
+            :user-role-breakdown="userRoleBreakdown"
+            :role-select-options="roleSelectOptions"
+            v-model:selected-user="selectedUser"
+            @fetch="fetchUsers"
+            @filter="onUsersFilter"
+            @search="onUsersSearch"
+            @select="selectUser"
+            @page="goToUsersPage"
+            @update-role="updateUserRole"
+        />
 
-            <!-- Role breakdown stats (also act as filters) -->
-            <StatGrid :columns="4">
-                <StatCard
-                    class="stat-click"
-                    :value="userRoleBreakdown.creators"
-                    label="Creators"
-                    :tone="usersFilter === 'creator' ? 'accent' : 'auto'"
-                    @click="onUsersFilter('creator')"
-                />
-                <StatCard
-                    class="stat-click"
-                    :value="userRoleBreakdown.professors"
-                    label="Professors"
-                    :tone="usersFilter === 'professor' ? 'accent' : 'auto'"
-                    @click="onUsersFilter('professor')"
-                />
-                <StatCard
-                    class="stat-click"
-                    :value="userRoleBreakdown.students"
-                    label="Students"
-                    :tone="usersFilter === 'student' ? 'accent' : 'auto'"
-                    @click="onUsersFilter('student')"
-                />
-                <StatCard
-                    class="stat-click"
-                    :value="userRoleBreakdown.creators + userRoleBreakdown.professors + userRoleBreakdown.students"
-                    label="All users"
-                    :tone="usersFilter === 'all' ? 'accent' : 'auto'"
-                    @click="onUsersFilter('all')"
-                />
-            </StatGrid>
-
-            <div class="filters-bar">
-                <FilterChips :options="usersFilterOptions" :model-value="usersFilter" @update:model-value="onUsersFilter" />
-                <SearchInput :model-value="usersSearch" placeholder="Search by name or email…" class="search-grow" @update:model-value="onUsersSearch" />
-            </div>
-
-            <LoadingState v-if="usersLoading" message="Loading users…" />
-            <ErrorState v-else-if="usersError" :message="usersError" @retry="fetchUsers" />
-            <EmptyState v-else-if="users.length === 0" title="No users found" />
-
-            <div v-else class="stack">
-                <BaseCard v-for="u in users" :key="u.id" padding="md" interactive @click="selectUser(u)">
-                    <div class="user-row">
-                        <div class="user-avatar" aria-hidden="true">{{ (u.full_name || u.email || "?")[0].toUpperCase() }}</div>
-                        <div class="user-info-col">
-                            <span class="card-title sm">{{ u.full_name || "Unnamed user" }}</span>
-                            <span class="muted-mono">{{ u.email }}</span>
-                        </div>
-                        <div class="user-meta-col">
-                            <StatusBadge variant="accent">{{ u.role }}</StatusBadge>
-                            <span class="muted-mono">{{ u.institution || "—" }}</span>
-                            <span class="muted-mono">Joined {{ formatDate(u.created_at) }}</span>
-                        </div>
-                    </div>
-                </BaseCard>
-
-                <!-- Pagination -->
-                <div v-if="usersTotalPages > 1" class="pager">
-                    <Button variant="outline" size="sm" :disabled="usersPage === 1" @click="goToUsersPage(usersPage - 1)">‹ Prev</Button>
-                    <span class="muted-mono">Page {{ usersPage }} of {{ usersTotalPages }}</span>
-                    <Button variant="outline" size="sm" :disabled="usersPage === usersTotalPages" @click="goToUsersPage(usersPage + 1)">Next ›</Button>
-                </div>
-            </div>
-
-            <!-- User detail modal -->
-            <BaseModal
-                :model-value="!!selectedUser"
-                size="lg"
-                :title="selectedUser ? (selectedUser.full_name || 'Unnamed user') : ''"
-                @update:model-value="selectedUser = null"
-            >
-                <template v-if="selectedUser">
-                    <div class="user-detail-head">
-                        <div class="user-avatar lg" aria-hidden="true">{{ (selectedUser.full_name || selectedUser.email || "?")[0].toUpperCase() }}</div>
-                        <div>
-                            <span class="muted-mono">{{ selectedUser.email }}</span>
-                            <div class="mt-2"><StatusBadge variant="accent">{{ selectedUser.role }}</StatusBadge></div>
-                        </div>
-                    </div>
-                    <div class="kv-list mt-3">
-                        <div class="kv-row"><span class="kv-key">Institution</span><span class="kv-val">{{ selectedUser.institution || "—" }}</span></div>
-                        <div class="kv-row"><span class="kv-key">Joined</span><span class="kv-val">{{ formatDate(selectedUser.created_at) }}</span></div>
-                        <div v-if="selectedUser.role === 'professor'" class="kv-row"><span class="kv-key">Department</span><span class="kv-val">{{ selectedUser.professor_department || "—" }}</span></div>
-                        <div v-if="selectedUser.role === 'student'" class="kv-row"><span class="kv-key">Year</span><span class="kv-val">{{ selectedUser.student_year || "—" }}</span></div>
-                        <div v-if="selectedUser.role === 'student'" class="kv-row"><span class="kv-key">Major</span><span class="kv-val">{{ selectedUser.student_major || "—" }}</span></div>
-                        <div v-if="selectedUser.role === 'creator'" class="kv-row"><span class="kv-key">Bio</span><span class="kv-val">{{ selectedUser.creator_bio || "—" }}</span></div>
-                    </div>
-                    <FormField label="Change role" class="mt-3">
-                        <select :value="selectedUser.role" @change="updateUserRole(selectedUser.id, $event.target.value)">
-                            <option v-for="opt in roleSelectOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                        </select>
-                    </FormField>
-                </template>
-                <template #footer>
-                    <Button variant="ghost" size="sm" @click="selectedUser = null">Close</Button>
-                </template>
-            </BaseModal>
-        </section>
-
-        <!-- ANALYTICS -->
-        <section v-else-if="activeSection === 'analytics'" class="section">
-            <SectionHeader eyebrow="07 · Analytics" title="Platform analytics">
-                <template #actions>
-                    <SegmentedControl
-                        :model-value="analyticsDateRange"
-                        :options="analyticsRangeOptions"
-                        aria-label="Analytics date range"
-                        @update:model-value="onAnalyticsRange"
-                    />
-                </template>
-            </SectionHeader>
-
-            <LoadingState v-if="analyticsLoading" message="Loading analytics…" />
-            <ErrorState v-else-if="analyticsError" :message="analyticsError" @retry="fetchAnalytics" />
-
-            <template v-else>
-                <!-- Overview metrics -->
-                <StatGrid :columns="4">
-                    <StatCard :value="analyticsMetrics.activeUsers" label="Active users" />
-                    <StatCard :value="analyticsMetrics.totalPageViews" label="Page views" />
-                    <StatCard :value="formatDuration(analyticsMetrics.avgTimeOnContent)" label="Avg time on content" />
-                    <StatCard :value="analyticsMetrics.quizCompletionRate" suffix="%" label="Quiz pass rate" />
-                </StatGrid>
-
-                <!-- Engagement chart -->
-                <BaseCard padding="lg">
-                    <h3 class="card-title">User engagement over time</h3>
-                    <div class="chart-wrapper mt-3">
-                        <EmptyState
-                            v-if="analyticsChartData.labels.length === 0"
-                            title="No engagement data for this period"
-                            message="Active-user data will appear here once readers visit the book in this window."
-                        />
-                        <div v-else class="chart-bars">
-                            <div
-                                v-for="(value, index) in analyticsChartData.datasets[0]?.data || []"
-                                :key="index"
-                                class="chart-bar-col"
-                            >
-                                <div
-                                    class="chart-bar"
-                                    :style="{ height: Math.max(4, (value / Math.max(...analyticsChartData.datasets[0].data, 1)) * 100) + '%' }"
-                                >
-                                    <span class="bar-value">{{ value }}</span>
-                                </div>
-                                <span class="bar-label">{{ analyticsChartData.labels[index] }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </BaseCard>
-
-                <!-- Two-column performance tables -->
-                <div class="grid-2">
-                    <BaseCard padding="md">
-                        <h3 class="card-title sm">Content performance</h3>
-                        <EmptyState v-if="contentPerformance.length === 0" title="No content views recorded" />
-                        <div v-else class="mt-3">
-                            <ListRow
-                                v-for="(item, index) in contentPerformance"
-                                :key="index"
-                                :label="`${index + 1}. ${item.title}`"
-                                :hint="`${item.views} views`"
-                            />
-                        </div>
-                    </BaseCard>
-
-                    <BaseCard padding="md">
-                        <h3 class="card-title sm">Quiz performance</h3>
-                        <EmptyState v-if="quizPerformance.length === 0" title="No quiz attempts recorded" />
-                        <div v-else class="mt-3">
-                            <ListRow
-                                v-for="(item, index) in quizPerformance"
-                                :key="index"
-                                :label="`${index + 1}. ${item.title}`"
-                                :hint="`${item.avgScore}% avg`"
-                            />
-                        </div>
-                    </BaseCard>
-                </div>
-
-                <BaseCard padding="md">
-                    <h3 class="card-title sm">Trending highlights</h3>
-                    <EmptyState v-if="trendingHighlights.length === 0" title="No highlights recorded" />
-                    <div v-else class="mt-3">
-                        <ListRow
-                            v-for="(item, index) in trendingHighlights"
-                            :key="index"
-                            :label="`“${item.selected_text?.slice(0, 100) || ''}…”`"
-                        >
-                            <StatusBadge variant="accent">{{ item.highlight_count }} users</StatusBadge>
-                        </ListRow>
-                    </div>
-                </BaseCard>
-            </template>
-        </section>
+        <AnalyticsSection
+            v-else-if="activeSection === 'analytics'"
+            :analytics-loading="analyticsLoading"
+            :analytics-error="analyticsError"
+            :analytics-date-range="analyticsDateRange"
+            :analytics-range-options="analyticsRangeOptions"
+            :analytics-metrics="analyticsMetrics"
+            :analytics-chart-data="analyticsChartData"
+            :content-performance="contentPerformance"
+            :quiz-performance="quizPerformance"
+            :trending-highlights="trendingHighlights"
+            :format-duration="formatDuration"
+            @fetch="fetchAnalytics"
+            @range-change="onAnalyticsRange"
+        />
 
         <!-- Media picker modal — section-independent: opened from
              ChapterBlockEditor (chapters section), so it must render
