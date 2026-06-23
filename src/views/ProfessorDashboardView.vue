@@ -12,6 +12,7 @@ import { authedRequest as supabaseRest } from "@/services/api/client";
 import { useProfessorDashboardStats } from "@/composables/useProfessorDashboardStats";
 import { useProfessorCourses } from "@/composables/useProfessorCourses";
 import { useProfessorLibrary } from "@/composables/useProfessorLibrary";
+import { useProfessorStudents } from "@/composables/useProfessorStudents";
 
 // Shared library
 import {
@@ -106,11 +107,16 @@ const {
 } = useProfessorLibrary(fetchCourses);
 
 // ============ STUDENTS SECTION STATE ============
-const students = ref([]);
-const studentsLoading = ref(false);
-const studentsError = ref(null);
-const studentSearch = ref("");
-const selectedCourseFilter = ref("all");
+// State + fetch + filteredStudents extracted to useProfessorStudents (#12).
+const {
+    students,
+    studentsLoading,
+    studentsError,
+    studentSearch,
+    selectedCourseFilter,
+    filteredStudents,
+    fetchStudents,
+} = useProfessorStudents(profile);
 const showInviteModal = ref(false);
 const inviteForm = ref({
     method: "url", // url, email, code
@@ -151,61 +157,6 @@ const sharedCoursesLoading = ref(false);
 const mySharedCourses = ref([]);
 
 // ============ FETCH FUNCTIONS ============
-
-async function fetchStudents() {
-    studentsLoading.value = true;
-    studentsError.value = null;
-
-    try {
-        // Get all courses for this professor
-        const coursesData = await supabaseRest(
-            `courses?professor_id=eq.${profile.value?.id}&select=id,title`
-        );
-
-        if (coursesData.length === 0) {
-            students.value = [];
-            return;
-        }
-
-        const courseIds = coursesData.map(c => c.id).join(",");
-
-        // Get enrollments with student profiles
-        let endpoint = `course_enrollments?course_id=in.(${courseIds})&select=*,profiles(id,email,full_name,student_year,student_major),courses(id,title)`;
-
-        if (selectedCourseFilter.value !== "all") {
-            endpoint = `course_enrollments?course_id=eq.${selectedCourseFilter.value}&select=*,profiles(id,email,full_name,student_year,student_major),courses(id,title)`;
-        }
-
-        const enrollments = await supabaseRest(endpoint);
-
-        // Map to student-centric view
-        const studentMap = new Map();
-        enrollments.forEach(enrollment => {
-            const studentId = enrollment.profiles?.id;
-            if (!studentId) return;
-
-            if (!studentMap.has(studentId)) {
-                studentMap.set(studentId, {
-                    ...enrollment.profiles,
-                    enrollments: [],
-                });
-            }
-            studentMap.get(studentId).enrollments.push({
-                course_id: enrollment.course_id,
-                course_title: enrollment.courses?.title,
-                enrolled_at: enrollment.enrolled_at,
-                last_accessed_at: enrollment.last_accessed_at,
-            });
-        });
-
-        students.value = Array.from(studentMap.values());
-    } catch (err) {
-        console.error("Error fetching students:", err);
-        studentsError.value = err.message;
-    } finally {
-        studentsLoading.value = false;
-    }
-}
 
 async function fetchAssessments() {
     assessmentsLoading.value = true;
@@ -502,15 +453,6 @@ const dateRangeOptions = [
     { value: "30days", label: "30 days" },
     { value: "90days", label: "90 days" },
 ];
-
-const filteredStudents = computed(() => {
-    if (!studentSearch.value) return students.value;
-    const search = studentSearch.value.toLowerCase();
-    return students.value.filter(s =>
-        s.full_name?.toLowerCase().includes(search) ||
-        s.email?.toLowerCase().includes(search)
-    );
-});
 
 const handleLogout = async () => {
     await signOut();
