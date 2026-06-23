@@ -9,6 +9,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useRouter } from "vue-router";
 import { relativeLong as formatDate } from "@/utils/format";
 import { authedRequest as supabaseRest } from "@/services/api/client";
+import { useProfessorDashboardStats } from "@/composables/useProfessorDashboardStats";
 
 // Shared library
 import {
@@ -63,12 +64,9 @@ const courseTypeOptions = [
 ];
 
 // ============ DASHBOARD SECTION STATE ============
-const dashboardStats = ref({
-    totalCourses: 0,
-    activeStudents: 0,
-    pendingAssessments: 0,
-    avgCompletion: 0,
-});
+// State + fetch extracted to useProfessorDashboardStats (#12).
+const { dashboardStats, fetchDashboardStats } =
+    useProfessorDashboardStats(profile);
 
 // ============ COURSES SECTION STATE ============
 const courses = ref([]);
@@ -140,44 +138,6 @@ const sharedCoursesLoading = ref(false);
 const mySharedCourses = ref([]);
 
 // ============ FETCH FUNCTIONS ============
-
-async function fetchDashboardStats() {
-    try {
-        // Fetch courses count
-        const coursesData = await supabaseRest(
-            `courses?professor_id=eq.${profile.value?.id}&select=id`
-        );
-        dashboardStats.value.totalCourses = coursesData.length;
-
-        // Fetch active students (enrolled in professor's courses)
-        if (coursesData.length > 0) {
-            const courseIds = coursesData.map(c => c.id).join(",");
-            const enrollments = await supabaseRest(
-                `course_enrollments?course_id=in.(${courseIds})&select=student_id`
-            );
-            const uniqueStudents = new Set(enrollments.map(e => e.student_id));
-            dashboardStats.value.activeStudents = uniqueStudents.size;
-
-            // QW-2: average completion across all of the professor's courses.
-            // One query over reading_progress, guarded so a failure here doesn't
-            // wipe out the other stats.
-            try {
-                const progress = await supabaseRest(
-                    `reading_progress?course_id=in.(${courseIds})&select=is_completed`
-                );
-                const total = progress.length;
-                const completed = progress.filter(p => p.is_completed).length;
-                dashboardStats.value.avgCompletion = total
-                    ? Math.round((completed / total) * 100)
-                    : 0;
-            } catch (progressErr) {
-                console.error("Error fetching avg completion:", progressErr);
-            }
-        }
-    } catch (err) {
-        console.error("Error fetching dashboard stats:", err);
-    }
-}
 
 async function fetchCourses() {
     coursesLoading.value = true;
