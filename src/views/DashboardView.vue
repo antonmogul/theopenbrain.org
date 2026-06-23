@@ -15,6 +15,7 @@ import { useRouter, useRoute } from "vue-router";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
 import ChapterBlockEditor from "@/components/dashboard/chapters/ChapterBlockEditor.vue";
+import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 
 // Shared dashboard library (token-based)
 import {
@@ -1092,75 +1093,18 @@ onMounted(() => {
         </section>
 
         <!-- VERSIONS -->
-        <section v-else-if="activeSection === 'versions'" class="section">
-            <SectionHeader eyebrow="03 · Versions" title="Content versions">
-                <template #actions>
-                    <Button variant="solid" size="sm" @click="showNewVersionModal = true">New version</Button>
-                </template>
-            </SectionHeader>
-
-            <LoadingState v-if="versionsLoading" message="Loading versions…" />
-            <ErrorState v-else-if="versionsError" :message="versionsError" @retry="fetchVersions" />
-            <EmptyState
-                v-else-if="versions.length === 0"
-                title="No versions yet"
-                message="Create your first content version to get started."
-                action-label="Create version"
-                @action="showNewVersionModal = true"
-            />
-
-            <div v-else class="stack">
-                <BaseCard v-for="version in versions" :key="version.id" padding="md">
-                    <div class="card-head">
-                        <div class="vh-info">
-                            <h3 class="card-title sm">v{{ version.version_number }}</h3>
-                            <StatusBadge :status="version.status" />
-                        </div>
-                        <div class="btn-row">
-                            <Button
-                                v-if="version.status === 'draft'"
-                                variant="outline"
-                                size="sm"
-                                @click="updateVersionStatus(version.id, 'published')"
-                            >
-                                Publish
-                            </Button>
-                            <Button
-                                v-if="version.status === 'published'"
-                                variant="outline"
-                                size="sm"
-                                @click="updateVersionStatus(version.id, 'archived')"
-                            >
-                                Archive
-                            </Button>
-                            <Button variant="danger" size="sm" @click="deleteVersion(version.id)">Delete</Button>
-                        </div>
-                    </div>
-                    <div class="meta-row">
-                        <span>{{ version.moduleCount }} modules</span>
-                        <span>Created {{ formatDate(version.created_at) }}</span>
-                        <span v-if="version.published_at">Published {{ formatDate(version.published_at) }}</span>
-                    </div>
-                    <p v-if="version.release_notes" class="muted">{{ version.release_notes }}</p>
-                </BaseCard>
-            </div>
-
-            <!-- New version modal -->
-            <BaseModal v-model="showNewVersionModal" title="Create new version" size="lg">
-                <div class="form-stack">
-                    <FormField label="Version number">
-                        <input v-model="newVersionForm.version_number" type="text" placeholder="e.g., 2.0" />
-                    </FormField>
-                    <FormField label="Release notes">
-                        <textarea v-model="newVersionForm.release_notes" placeholder="What's new in this version…" rows="4"></textarea>
-                    </FormField>
-                </div>
-                <template #footer>
-                    <Button variant="ghost" size="sm" @click="showNewVersionModal = false">Cancel</Button>
-                    <Button variant="solid" size="sm" @click="createVersion">Create version</Button>
-                </template>
-            </BaseModal>
-        </section>
+        <VersionsSection
+            v-else-if="activeSection === 'versions'"
+            :versions="versions"
+            :versions-loading="versionsLoading"
+            :versions-error="versionsError"
+            v-model:show-new-version-modal="showNewVersionModal"
+            v-model:new-version-form="newVersionForm"
+            @fetch="fetchVersions"
+            @create="createVersion"
+            @update-status="updateVersionStatus"
+            @delete="deleteVersion"
+        />
 
         <!-- MEDIA -->
         <section v-else-if="activeSection === 'media'" class="section">
@@ -1730,13 +1674,15 @@ onMounted(() => {
 
 <style scoped>
 /*
+ * Shared section layout/visual classes live in
+ * src/styles/dashboard-sections.css (imported below) so the per-section
+ * components (#11 split) and this view render identically from one source.
+ * Only scoped-only rules remain here: full-screen states and :deep() targets
+ * that reach into shared library components.
+ *
  * NOTE: this project uses font-size: 62.5% on html/body so 1rem = 10px.
- * Sidebar, metric cards, status badges, loading/empty/error states, buttons,
- * modals and form inputs are now owned by the shared dashboard library — their
- * old bespoke CSS was deleted. What remains are layout helpers the Creator
- * sections still need (chapter editor, content preview, wizard stepper, media
- * grid/modal, analytics chart), all tokenized.
  */
+@import "@/styles/dashboard-sections.css";
 
 /* Full-screen states (loading / access denied) */
 .screen {
@@ -1747,206 +1693,11 @@ onMounted(() => {
     background: rgb(var(--color-bg));
 }
 
-/* Section layout helpers (mirror Student/Professor vocabulary) */
-.section { display: flex; flex-direction: column; gap: 24px; }
-.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.stack { display: flex; flex-direction: column; gap: 12px; }
-.stack-lg { display: flex; flex-direction: column; gap: 28px; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-@media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
-.mt-1 { margin-top: 4px; }
-.mt-2 { margin-top: 8px; }
-.mt-3 { margin-top: 12px; }
-
 /* Clickable StatCards (dashboard metrics, users role filters) — class falls
    through to the StatCard root, so :deep targets it through the StatGrid slot. */
 :deep(.stat-click) { cursor: pointer; transition: background 0.12s ease; }
 :deep(.stat-click:hover) { background: rgb(var(--color-ink) / 0.03); }
 
-.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.card-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.card-title.sm { font-size: 1.6rem; margin: 0 0 4px; }
-
-.muted { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 8px 0 0; line-height: 1.5; }
-.muted-mono { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); }
-.eyebrow-mono {
-    font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
-    letter-spacing: 0.1em; color: rgb(var(--color-accent));
-}
-
-.meta-row {
-    display: flex; flex-wrap: wrap; gap: 16px; font-family: var(--font-mono);
-    font-size: 1.3rem; color: rgb(var(--color-mute)); margin-bottom: 16px;
-}
-.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.chev { color: rgb(var(--color-mute)); flex: none; }
-.chev-btn { border: 0; background: transparent; color: rgb(var(--color-mute)); cursor: pointer; padding: 0; display: flex; }
-.chev-btn:hover { color: rgb(var(--color-ink)); }
-
-/* Forms */
-.form-stack { display: flex; flex-direction: column; gap: 18px; }
-.form-actions {
-    display: flex; justify-content: flex-end; gap: 8px;
-    padding-top: 16px; border-top: 1px solid rgb(var(--color-line));
-}
-.check-row, .radio-label {
-    display: flex; align-items: center; gap: 8px;
-    font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); cursor: pointer;
-}
-.radio-row { display: flex; flex-wrap: wrap; gap: 20px; }
-.check-row input[type="checkbox"], .radio-label input { accent-color: rgb(var(--color-accent)); }
-.field-label-static {
-    display: block; font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
-    letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-bottom: 8px;
-}
-
-/* Filters bar */
-.filters-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-.search-grow { flex: 1; min-width: 240px; }
-
-/* Quick actions */
-.qa-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-
-/* Users-by-role bars (dashboard) */
-.role-bars { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
-.role-bar-row { display: grid; grid-template-columns: 90px 40px 1fr; align-items: center; gap: 12px; }
-.role-bar-label { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); }
-.role-bar-count { font-family: var(--font-mono); font-size: 1.4rem; color: rgb(var(--color-mute)); text-align: right; }
-.role-bar-track { height: 10px; background: rgb(var(--color-ink) / 0.06); border-radius: 999px; overflow: hidden; }
-.role-bar-fill { height: 100%; background: rgb(var(--color-accent)); border-radius: 999px; transition: width 0.3s ease; }
-
-/* Simple data table (dashboard quiz performance) */
-.data-tbl { width: 100%; border-collapse: collapse; }
-.data-tbl thead th {
-    text-align: left; font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
-    letter-spacing: 0.1em; color: rgb(var(--color-mute)); padding: 12px 16px;
-    border-bottom: 1px solid rgb(var(--color-line)); white-space: nowrap;
-}
-.data-tbl tbody td {
-    font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink));
-    padding: 14px 16px; border-bottom: 1px solid rgb(var(--color-line));
-}
-.data-tbl tbody tr:last-child td { border-bottom: 0; }
-.data-tbl tbody tr:hover { background: rgb(var(--color-ink) / 0.03); }
-.cell-strong { font-weight: 500; }
-
-/* Mini stat rows (quiz / content-stats cards) */
-.mini-stats { display: flex; gap: 28px; margin-top: 8px; }
-.mini-stats.wrap { flex-wrap: wrap; gap: 24px 40px; }
-.mini-stat { display: flex; flex-direction: column; }
-.mini-value { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); line-height: 1; }
-.mini-label { font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px; }
-
-/* ============ CHAPTERS: expandable card + editor ============ */
-.chapter-expanded { border-color: rgb(var(--color-accent) / 0.4); }
-.chapter-head { display: flex; align-items: flex-start; gap: 16px; padding: 20px; cursor: pointer; }
-.chapter-head-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.chapter-body { border-top: 1px solid rgb(var(--color-line)); }
-
-
-/* ============ CHAPTER WIZARD ============ */
-.wizard-head-row { display: flex; align-items: center; gap: 16px; }
-.wizard-title { font-family: var(--font-body); font-size: 2.4rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.wizard-stepper { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-.wizard-step {
-    display: flex; align-items: center; gap: 10px; background: transparent; border: 0;
-    padding: 0; cursor: default; font-family: var(--font-body);
-}
-.wizard-step.clickable { cursor: pointer; }
-.wizard-step-num {
-    width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; flex: none;
-    border: 1px solid rgb(var(--color-line)); font-family: var(--font-mono); font-size: 1.3rem;
-    color: rgb(var(--color-mute)); transition: all 0.12s ease;
-}
-.wizard-step.active .wizard-step-num { border-color: rgb(var(--color-accent)); color: rgb(var(--color-accent)); }
-.wizard-step.completed .wizard-step-num { background: rgb(var(--color-accent)); border-color: rgb(var(--color-accent)); color: rgb(var(--color-paper)); }
-.wizard-step-label { font-size: 1.4rem; color: rgb(var(--color-mute)); }
-.wizard-step.active .wizard-step-label, .wizard-step.completed .wizard-step-label { color: rgb(var(--color-ink)); }
-.wizard-content { padding: 8px 0; }
-.wizard-footer { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(var(--color-line)); }
-.wizard-footer-spacer { flex: 1; }
-
-/* ============ MEDIA ============ */
-.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-@media (max-width: 1023px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
-.media-card.selected { border-color: rgb(var(--color-accent)); }
-.media-thumb {
-    aspect-ratio: 16 / 10; display: grid; place-items: center; color: rgb(var(--color-mute));
-    background: rgb(var(--color-ink) / 0.04); border-bottom: 1px solid rgb(var(--color-line));
-}
-.media-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.media-info { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; }
-.media-title { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.media-size { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-mute)); }
-
-.media-modal-preview {
-    margin: 16px 0; min-height: 280px; display: grid; place-items: center;
-    background: rgb(var(--color-ink) / 0.04); border: 1px solid rgb(var(--color-line)); border-radius: 4px; overflow: hidden;
-}
-.media-modal-lottie { width: 100%; max-width: 480px; height: 320px; }
+/* Lottie SVG fill inside the media modal preview (scoped :deep). */
 .media-modal-lottie :deep(svg) { width: 100%; height: 100%; }
-.media-modal-img { max-width: 100%; max-height: 420px; object-fit: contain; }
-.media-modal-video { max-width: 100%; max-height: 420px; }
-.media-modal-placeholder { font-family: var(--font-mono); font-size: 1.4rem; color: rgb(var(--color-mute)); text-transform: uppercase; letter-spacing: 0.08em; }
-
-.kv-list { display: flex; flex-direction: column; }
-.kv-row { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgb(var(--color-line)); }
-.kv-row:last-child { border-bottom: 0; }
-.kv-full { flex-direction: column; gap: 4px; }
-.kv-key { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgb(var(--color-mute)); min-width: 130px; }
-.kv-val { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); margin: 0; }
-
-.media-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.media-picker-item { display: flex; align-items: center; gap: 12px; }
-.media-picker-thumb {
-    width: 40px; height: 40px; border-radius: 4px; flex: none; display: grid; place-items: center;
-    background: rgb(var(--color-accent) / 0.1); color: rgb(var(--color-accent));
-}
-
-/* ============ QUIZZES: editor questions ============ */
-.questions-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgb(var(--color-line)); display: flex; flex-direction: column; gap: 16px; }
-.q-head-meta { display: flex; align-items: center; gap: 10px; }
-.q-text { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); line-height: 1.5; margin: 0 0 12px; }
-.q-options { display: flex; flex-direction: column; gap: 6px; }
-.q-option {
-    font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-ink));
-    padding: 8px 12px; border: 1px solid rgb(var(--color-line)); border-radius: 4px;
-}
-.q-option.correct { border-color: rgb(var(--color-complete)); background: rgb(var(--color-complete) / 0.1); color: rgb(var(--color-complete)); }
-.option-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.option-letter {
-    width: 28px; height: 28px; border-radius: 999px; flex: none; display: grid; place-items: center;
-    background: rgb(var(--color-ink) / 0.06); font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute));
-}
-.option-text-input {
-    flex: 1; border: 1px solid rgb(var(--color-line)); border-radius: 4px; background: transparent;
-    padding: 9px 12px; font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); outline: none;
-    transition: border-color 0.12s ease;
-}
-.option-text-input:focus { border-color: rgb(var(--color-ink)); }
-
-/* ============ USERS ============ */
-.user-row { display: flex; align-items: center; gap: 16px; }
-.user-avatar {
-    width: 44px; height: 44px; border-radius: 999px; flex: none; display: grid; place-items: center;
-    background: rgb(var(--color-accent)); color: rgb(var(--color-paper));
-    font-family: var(--font-mono); font-size: 1.6rem; font-weight: 600;
-}
-.user-avatar.lg { width: 56px; height: 56px; font-size: 2rem; }
-.user-info-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.user-meta-col { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.user-detail-head { display: flex; align-items: center; gap: 16px; }
-.pager { display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 12px; }
-
-/* ============ ANALYTICS: chart ============ */
-.chart-wrapper { min-height: 220px; }
-.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 220px; padding-top: 16px; }
-.chart-bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; }
-.chart-bar {
-    width: 100%; max-width: 36px; background: rgb(var(--color-accent)); border-radius: 4px 4px 0 0;
-    position: relative; display: flex; align-items: flex-start; justify-content: center; margin-top: auto;
-    transition: height 0.3s ease;
-}
-.bar-value { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-ink)); position: absolute; top: -16px; }
-.bar-label { font-family: var(--font-mono); font-size: 0.9rem; color: rgb(var(--color-mute)); white-space: nowrap; }
 </style>
