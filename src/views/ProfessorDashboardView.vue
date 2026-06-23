@@ -10,6 +10,7 @@ import { useRouter } from "vue-router";
 import { relativeLong as formatDate } from "@/utils/format";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { useProfessorDashboardStats } from "@/composables/useProfessorDashboardStats";
+import { useProfessorCourses } from "@/composables/useProfessorCourses";
 
 // Shared library
 import {
@@ -69,20 +70,22 @@ const { dashboardStats, fetchDashboardStats } =
     useProfessorDashboardStats(profile);
 
 // ============ COURSES SECTION STATE ============
-const courses = ref([]);
-const coursesLoading = ref(false);
-const coursesError = ref(null);
-const showCourseEditor = ref(false);
-const editingCourse = ref(null);
-const courseForm = ref({
-    title: "",
-    description: "",
-    course_code: "",
-    semester: "",
-    course_type: "course",
-    welcome_message: "",
-    is_published: false,
-});
+// State + CRUD (incl. duplicateCourse, reused by Collaboration) extracted to
+// useProfessorCourses (#12).
+const {
+    courses,
+    coursesLoading,
+    coursesError,
+    showCourseEditor,
+    editingCourse,
+    courseForm,
+    fetchCourses,
+    openCourseEditor,
+    closeCourseEditor,
+    saveCourse,
+    deleteCourse,
+    duplicateCourse,
+} = useProfessorCourses(profile);
 
 // ============ CONTENT LIBRARY STATE ============
 const modules = ref([]);
@@ -138,41 +141,6 @@ const sharedCoursesLoading = ref(false);
 const mySharedCourses = ref([]);
 
 // ============ FETCH FUNCTIONS ============
-
-async function fetchCourses() {
-    coursesLoading.value = true;
-    coursesError.value = null;
-
-    try {
-        const data = await supabaseRest(
-            `courses?professor_id=eq.${profile.value?.id}&select=*&order=created_at.desc`
-        );
-
-        // Get enrollment counts for each course
-        const coursesWithStats = await Promise.all(
-            data.map(async (course) => {
-                const enrollments = await supabaseRest(
-                    `course_enrollments?course_id=eq.${course.id}&select=id`
-                );
-                const moduleCount = await supabaseRest(
-                    `course_modules?course_id=eq.${course.id}&select=id`
-                );
-                return {
-                    ...course,
-                    studentCount: enrollments.length,
-                    moduleCount: moduleCount.length,
-                };
-            })
-        );
-
-        courses.value = coursesWithStats;
-    } catch (err) {
-        console.error("Error fetching courses:", err);
-        coursesError.value = err.message;
-    } finally {
-        coursesLoading.value = false;
-    }
-}
 
 async function fetchModules() {
     modulesLoading.value = true;
@@ -399,137 +367,6 @@ async function fetchSharedCourses() {
         console.error("Error fetching shared courses:", err);
     } finally {
         sharedCoursesLoading.value = false;
-    }
-}
-
-// ============ COURSE CRUD ============
-
-function openCourseEditor(course = null) {
-    if (course) {
-        editingCourse.value = course;
-        courseForm.value = {
-            title: course.title,
-            description: course.description || "",
-            course_code: course.course_code || "",
-            semester: course.semester || "",
-            course_type: course.course_type || "course",
-            welcome_message: course.welcome_message || "",
-            is_published: course.is_published || false,
-        };
-    } else {
-        editingCourse.value = null;
-        courseForm.value = {
-            title: "",
-            description: "",
-            course_code: "",
-            semester: "",
-            course_type: "course",
-            welcome_message: "",
-            is_published: false,
-        };
-    }
-    showCourseEditor.value = true;
-}
-
-function closeCourseEditor() {
-    showCourseEditor.value = false;
-    editingCourse.value = null;
-}
-
-async function saveCourse() {
-    try {
-        const courseData = {
-            title: courseForm.value.title,
-            description: courseForm.value.description,
-            course_code: courseForm.value.course_code,
-            semester: courseForm.value.semester,
-            is_published: courseForm.value.is_published,
-        };
-
-        if (editingCourse.value) {
-            await supabaseRest(`courses?id=eq.${editingCourse.value.id}`, {
-                method: "PATCH",
-                body: JSON.stringify(courseData),
-            });
-        } else {
-            courseData.professor_id = profile.value?.id;
-            await supabaseRest("courses", {
-                method: "POST",
-                headers: { Prefer: "return=representation" },
-                body: JSON.stringify(courseData),
-            });
-        }
-
-        closeCourseEditor();
-        await fetchCourses();
-    } catch (err) {
-        console.error("Error saving course:", err);
-        alert("Failed to save course: " + err.message);
-    }
-}
-
-async function deleteCourse(courseId) {
-    if (!confirm("Are you sure you want to delete this course? All enrollments will be removed.")) return;
-
-    try {
-        // Delete enrollments first
-        await supabaseRest(`course_enrollments?course_id=eq.${courseId}`, {
-            method: "DELETE",
-        });
-        // Delete course modules
-        await supabaseRest(`course_modules?course_id=eq.${courseId}`, {
-            method: "DELETE",
-        });
-        // Delete course
-        await supabaseRest(`courses?id=eq.${courseId}`, {
-            method: "DELETE",
-        });
-        await fetchCourses();
-    } catch (err) {
-        console.error("Error deleting course:", err);
-        alert("Failed to delete course: " + err.message);
-    }
-}
-
-async function duplicateCourse(course) {
-    try {
-        const newCourse = {
-            professor_id: profile.value?.id,
-            title: `${course.title} (Copy)`,
-            description: course.description,
-            course_code: "",
-            semester: "",
-            is_published: false,
-        };
-
-        const result = await supabaseRest("courses", {
-            method: "POST",
-            headers: { Prefer: "return=representation" },
-            body: JSON.stringify(newCourse),
-        });
-
-        // Copy course modules
-        const courseModules = await supabaseRest(
-            `course_modules?course_id=eq.${course.id}&select=*`
-        );
-
-        for (const mod of courseModules) {
-            await supabaseRest("course_modules", {
-                method: "POST",
-                body: JSON.stringify({
-                    course_id: result[0].id,
-                    module_id: mod.module_id,
-                    order_index: mod.order_index,
-                    custom_title: mod.custom_title,
-                    is_required: mod.is_required,
-                }),
-            });
-        }
-
-        await fetchCourses();
-    } catch (err) {
-        console.error("Error duplicating course:", err);
-        alert("Failed to duplicate course: " + err.message);
     }
 }
 
