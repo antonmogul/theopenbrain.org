@@ -1,3 +1,5 @@
+// Validated against dependency-cruiser@16.10.4 on Node 20 (node ^18.17 || >=20).
+// Use: npx -y dependency-cruiser@16.10.4 --config .dependency-cruiser.cjs --output-type json src/App.vue
 const path = require("path");
 
 module.exports = {
