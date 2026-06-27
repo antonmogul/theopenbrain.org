@@ -1,39 +1,28 @@
 <script setup>
-import { ref, computed, watch } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
+import AuthForm from "@/components/Navigation/AuthForm.vue";
 const router = useRouter();
 const authStore = useAuthStore();
-const {
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
-    isAuthenticated,
-    user,
-    profile,
-    userRole,
-} = useAuth();
+const { signOut, isAuthenticated, user, userRole } = useAuth();
 
-// Form state
-const email = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-
-// Reset form when view changes
-watch(
-    () => authStore.authView,
-    () => {
-        email.value = "";
-        password.value = "";
-        confirmPassword.value = "";
-        authStore.clearMessages();
-    },
-);
+// The login/register/forgot forms + validation + auth calls live in the shared
+// AuthForm (audit #19). This panel owns the surrounding chrome, the
+// authenticated/account view, logout, and the post-login behavior (show a
+// success note then auto-close).
 
 const closeAuth = () => {
     authStore.closeAuth();
+};
+
+// Preserve MenuAuth's original post-login behavior: success note then close.
+const onAuthLogin = () => {
+    authStore.setSuccess("Logged in successfully");
+    setTimeout(() => {
+        authStore.closeAuth();
+    }, 1500);
 };
 
 const goToDashboard = () => {
@@ -48,73 +37,6 @@ const goToDashboard = () => {
     router.push(target).catch((err) => {
         console.error("Navigation error:", err);
     });
-};
-
-const handleRegister = async () => {
-    if (!email.value || !password.value) {
-        authStore.setError("Please fill in all fields");
-        return;
-    }
-    if (password.value !== confirmPassword.value) {
-        authStore.setError("Passwords do not match");
-        return;
-    }
-    if (password.value.length < 6) {
-        authStore.setError("Password must be at least 6 characters");
-        return;
-    }
-
-    authStore.setLoading(true);
-    const { data, error } = await signUp(email.value, password.value);
-    authStore.setLoading(false);
-
-    if (error) {
-        authStore.setError(error.message);
-    } else {
-        authStore.setSuccess("Check your email to confirm your account");
-        email.value = "";
-        password.value = "";
-        confirmPassword.value = "";
-    }
-};
-
-const handleLogin = async () => {
-    if (!email.value || !password.value) {
-        authStore.setError("Please fill in all fields");
-        return;
-    }
-
-    authStore.setLoading(true);
-    const { data, error } = await signIn(email.value, password.value);
-    authStore.setLoading(false);
-
-    if (error) {
-        authStore.setError(error.message);
-    } else {
-        authStore.setSuccess("Logged in successfully");
-        setTimeout(() => {
-            authStore.closeAuth();
-        }, 1500);
-    }
-};
-
-const handleForgotPassword = async () => {
-    if (!email.value) {
-        authStore.setError("Please enter your email");
-        return;
-    }
-
-    authStore.setLoading(true);
-    const { data, error } = await resetPassword(email.value);
-    authStore.setLoading(false);
-
-    if (error) {
-        authStore.setError(error.message);
-    } else {
-        authStore.setSuccess(
-            "Check your email for password reset instructions",
-        );
-    }
 };
 
 const handleLogout = async () => {
@@ -199,241 +121,14 @@ const viewTitle = computed(() => {
                         </div>
                     </section>
 
-                    <!-- Register Form -->
-                    <section
-                        v-else-if="authStore.authView === 'register'"
-                        class="pb-8"
-                    >
-                        <form
-                            @submit.prevent="handleRegister"
-                            class="flex flex-col gap-6"
-                        >
-                            <div class="flex flex-col gap-2">
-                                <label
-                                    class="text-small uppercase font-mono text-light"
-                                    >Email</label
-                                >
-                                <input
-                                    v-model="email"
-                                    type="email"
-                                    placeholder="your@email.com"
-                                    class="auth-input"
-                                    :disabled="authStore.authLoading"
-                                />
-                            </div>
-                            <div class="flex flex-col gap-2">
-                                <label
-                                    class="text-small uppercase font-mono text-light"
-                                    >Password</label
-                                >
-                                <input
-                                    v-model="password"
-                                    type="password"
-                                    placeholder="Min 6 characters"
-                                    class="auth-input"
-                                    :disabled="authStore.authLoading"
-                                />
-                            </div>
-                            <div class="flex flex-col gap-2">
-                                <label
-                                    class="text-small uppercase font-mono text-light"
-                                    >Confirm Password</label
-                                >
-                                <input
-                                    v-model="confirmPassword"
-                                    type="password"
-                                    placeholder="Confirm password"
-                                    class="auth-input"
-                                    :disabled="authStore.authLoading"
-                                />
-                            </div>
-
-                            <!-- Error/Success Messages -->
-                            <p
-                                v-if="authStore.authError"
-                                class="text-small text-red-400"
-                            >
-                                {{ authStore.authError }}
-                            </p>
-                            <p
-                                v-if="authStore.authSuccess"
-                                class="text-small text-green-400"
-                            >
-                                {{ authStore.authSuccess }}
-                            </p>
-
-                            <button
-                                type="submit"
-                                :disabled="authStore.authLoading"
-                                class="uppercase bg-white text-black border border-white font-mono px-6 py-2 rounded-full hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
-                            >
-                                {{
-                                    authStore.authLoading
-                                        ? "Creating account..."
-                                        : "Create Account"
-                                }}
-                            </button>
-                        </form>
-
-                        <div class="pt-8 text-base">
-                            <p class="text-light">
-                                Already have an account?
-                                <button
-                                    @click="authStore.setView('login')"
-                                    class="text-violet hover:underline"
-                                >
-                                    Login
-                                </button>
-                            </p>
-                        </div>
-                    </section>
-
-                    <!-- Login Form -->
-                    <section
-                        v-else-if="authStore.authView === 'login'"
-                        class="pb-8"
-                    >
-                        <form
-                            @submit.prevent="handleLogin"
-                            class="flex flex-col gap-6"
-                        >
-                            <div class="flex flex-col gap-2">
-                                <label
-                                    class="text-small uppercase font-mono text-light"
-                                    >Email</label
-                                >
-                                <input
-                                    v-model="email"
-                                    type="email"
-                                    placeholder="your@email.com"
-                                    class="auth-input"
-                                    :disabled="authStore.authLoading"
-                                />
-                            </div>
-                            <div class="flex flex-col gap-2">
-                                <label
-                                    class="text-small uppercase font-mono text-light"
-                                    >Password</label
-                                >
-                                <input
-                                    v-model="password"
-                                    type="password"
-                                    placeholder="Your password"
-                                    class="auth-input"
-                                    :disabled="authStore.authLoading"
-                                />
-                            </div>
-
-                            <!-- Error/Success Messages -->
-                            <p
-                                v-if="authStore.authError"
-                                class="text-small text-red-400"
-                            >
-                                {{ authStore.authError }}
-                            </p>
-                            <p
-                                v-if="authStore.authSuccess"
-                                class="text-small text-green-400"
-                            >
-                                {{ authStore.authSuccess }}
-                            </p>
-
-                            <button
-                                type="submit"
-                                :disabled="authStore.authLoading"
-                                class="uppercase bg-white text-black border border-white font-mono px-6 py-2 rounded-full hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
-                            >
-                                {{
-                                    authStore.authLoading
-                                        ? "Logging in..."
-                                        : "Login"
-                                }}
-                            </button>
-                        </form>
-
-                        <div class="pt-8 text-base flex flex-col gap-2">
-                            <p class="text-light">
-                                Don't have an account?
-                                <button
-                                    @click="authStore.setView('register')"
-                                    class="text-violet hover:underline"
-                                >
-                                    Register
-                                </button>
-                            </p>
-                            <p class="text-light">
-                                <button
-                                    @click="authStore.setView('forgot')"
-                                    class="text-violet hover:underline"
-                                >
-                                    Forgot password?
-                                </button>
-                            </p>
-                        </div>
-                    </section>
-
-                    <!-- Forgot Password Form -->
-                    <section
-                        v-else-if="authStore.authView === 'forgot'"
-                        class="pb-8"
-                    >
-                        <form
-                            @submit.prevent="handleForgotPassword"
-                            class="flex flex-col gap-6"
-                        >
-                            <div class="flex flex-col gap-2">
-                                <label
-                                    class="text-small uppercase font-mono text-light"
-                                    >Email</label
-                                >
-                                <input
-                                    v-model="email"
-                                    type="email"
-                                    placeholder="your@email.com"
-                                    class="auth-input"
-                                    :disabled="authStore.authLoading"
-                                />
-                            </div>
-
-                            <!-- Error/Success Messages -->
-                            <p
-                                v-if="authStore.authError"
-                                class="text-small text-red-400"
-                            >
-                                {{ authStore.authError }}
-                            </p>
-                            <p
-                                v-if="authStore.authSuccess"
-                                class="text-small text-green-400"
-                            >
-                                {{ authStore.authSuccess }}
-                            </p>
-
-                            <button
-                                type="submit"
-                                :disabled="authStore.authLoading"
-                                class="uppercase bg-white text-black border border-white font-mono px-6 py-2 rounded-full hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
-                            >
-                                {{
-                                    authStore.authLoading
-                                        ? "Sending..."
-                                        : "Send Reset Link"
-                                }}
-                            </button>
-                        </form>
-
-                        <div class="pt-8 text-base">
-                            <p class="text-light">
-                                Back to
-                                <button
-                                    @click="authStore.setView('login')"
-                                    class="text-violet hover:underline"
-                                >
-                                    Login
-                                </button>
-                            </p>
-                        </div>
-                    </section>
+                    <!-- Login / Register / Forgot forms (shared AuthForm) -->
+                    <AuthForm
+                        v-else
+                        variant="panel"
+                        :view="authStore.authView"
+                        @set-view="authStore.setView"
+                        @login-success="onAuthLogin"
+                    />
                 </div>
             </div>
         </div>
@@ -441,29 +136,6 @@ const viewTitle = computed(() => {
 </template>
 
 <style scoped>
-.auth-input {
-    all: unset;
-    background: transparent;
-    border-bottom: 1px solid rgb(181, 181, 181);
-    padding: 0.75rem 0;
-    font-size: 1.6rem;
-    line-height: 2rem;
-    color: white;
-    transition: border-color 0.3s;
-}
-
-.auth-input:focus {
-    border-color: rgb(151, 71, 255);
-}
-
-.auth-input::placeholder {
-    color: rgb(137, 137, 137);
-}
-
-.auth-input:disabled {
-    opacity: 0.5;
-}
-
 section {
     display: block;
     padding-bottom: 4rem;

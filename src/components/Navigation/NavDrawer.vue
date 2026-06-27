@@ -1,9 +1,9 @@
 <script setup>
 // Navigation drawer — rebuilt to the New Design Ideas prototype (NavDrawer in
 // prototype.jsx): focused reading-navigator. Continue card → JUMP TO chapter
-// list with progress → user footer. Auth lives in MenuAuth (opened from the
-// footer's Sign in), the section accordion is dropped (covered by the reader's
-// Info tab + section dots). Open state is the existing useGeneral.activeMenu so
+// list with progress → user footer. Auth is an in-drawer form (shared
+// AuthForm.vue, variant="drawer") revealed by the footer's Sign in; the
+// section accordion is dropped (covered by the reader's Info tab + section dots). Open state is the existing useGeneral.activeMenu so
 // all current triggers (ReaderTopBar menu button, BottomNav, router) work
 // unchanged. Token-driven; replaces the legacy violet MainNav.
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
@@ -11,14 +11,15 @@ import { useRouter } from "vue-router";
 import { useGeneral } from "@/stores";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
+import CloseIcon from "@/icons/custom/CloseIcon.vue";
+import AuthForm from "@/components/Navigation/AuthForm.vue";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useHomeRoute } from "@/composables/useHomeRoute";
 
 const router = useRouter();
 const store = useGeneral();
 const authStore = useAuthStore();
-const { user, profile, isAuthenticated, signIn, signUp, resetPassword } =
-  useAuth();
+const { user, profile, isAuthenticated } = useAuth();
 const { modules, fetchCatalog } = useChapterCatalog();
 const homeRoute = useHomeRoute();
 
@@ -107,10 +108,9 @@ function go(path) {
   close();
 }
 // In-drawer auth (restored from the old MainNav so login lives in the hamburger
-// nav, not a separate screen). authStore drives which form shows + loading/error.
-const email = ref("");
-const password = ref("");
-const confirmPassword = ref("");
+// nav, not a separate screen). The form itself + validation + auth calls live
+// in the shared AuthForm (audit #19); the drawer just owns the tabs, the
+// open/close chrome, and the post-login behavior (close the drawer).
 const showAuth = ref(false);
 
 function openSignIn() {
@@ -119,67 +119,9 @@ function openSignIn() {
   authStore.setError(null);
 }
 
-async function handleLogin() {
-  if (!email.value || !password.value) {
-    authStore.setError("Please enter your email and password");
-    return;
-  }
-  authStore.authLoading = true;
-  const { error } = await signIn(email.value, password.value);
-  authStore.authLoading = false;
-  if (error) {
-    authStore.setError(error.message || "Login failed");
-    return;
-  }
-  resetAuthForm();
-  close();
-}
-
-async function handleRegister() {
-  if (!email.value || !password.value) {
-    authStore.setError("Please enter your email and password");
-    return;
-  }
-  if (password.value !== confirmPassword.value) {
-    authStore.setError("Passwords don't match");
-    return;
-  }
-  if (password.value.length < 6) {
-    authStore.setError("Password must be at least 6 characters");
-    return;
-  }
-  authStore.authLoading = true;
-  const { error } = await signUp(email.value, password.value);
-  authStore.authLoading = false;
-  if (error) {
-    authStore.setError(error.message || "Sign up failed");
-    return;
-  }
-  authStore.setSuccess("Check your email to confirm your account");
-  password.value = "";
-  confirmPassword.value = "";
-}
-
-async function handleForgot() {
-  if (!email.value) {
-    authStore.setError("Please enter your email");
-    return;
-  }
-  authStore.authLoading = true;
-  const { error } = await resetPassword(email.value);
-  authStore.authLoading = false;
-  if (error) {
-    authStore.setError(error.message || "Couldn't send reset link");
-    return;
-  }
-  authStore.setSuccess("Check your email for reset instructions");
-}
-
-function resetAuthForm() {
-  email.value = "";
-  password.value = "";
-  confirmPassword.value = "";
+function onAuthLogin() {
   authStore.setError(null);
+  close();
 }
 
 function onKey(e) {
@@ -209,9 +151,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               <span class="wordmark-text">the<br />open brain</span>
             </router-link>
             <button class="close-btn" type="button" title="Close" @click="close">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <CloseIcon :width="16" :height="16" />
             </button>
           </div>
 
@@ -303,119 +243,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
                 </button>
               </div>
 
-              <!-- Login -->
-              <form
-                v-if="authStore.authView === 'login'"
-                class="auth-form"
-                @submit.prevent="handleLogin"
-              >
-                <input
-                  v-model="email"
-                  class="auth-input"
-                  type="email"
-                  placeholder="Email"
-                  autocomplete="email"
-                  :disabled="authStore.authLoading"
-                />
-                <input
-                  v-model="password"
-                  class="auth-input"
-                  type="password"
-                  placeholder="Password"
-                  autocomplete="current-password"
-                  :disabled="authStore.authLoading"
-                />
-                <button
-                  class="auth-submit"
-                  type="submit"
-                  :disabled="authStore.authLoading"
-                >
-                  {{ authStore.authLoading ? "…" : "Login" }}
-                </button>
-                <button
-                  class="auth-link"
-                  type="button"
-                  @click="authStore.setView('forgot')"
-                >
-                  Forgot password?
-                </button>
-              </form>
-
-              <!-- Register -->
-              <form
-                v-else-if="authStore.authView === 'register'"
-                class="auth-form"
-                @submit.prevent="handleRegister"
-              >
-                <input
-                  v-model="email"
-                  class="auth-input"
-                  type="email"
-                  placeholder="Email"
-                  autocomplete="email"
-                  :disabled="authStore.authLoading"
-                />
-                <input
-                  v-model="password"
-                  class="auth-input"
-                  type="password"
-                  placeholder="Password (min 6 chars)"
-                  autocomplete="new-password"
-                  :disabled="authStore.authLoading"
-                />
-                <input
-                  v-model="confirmPassword"
-                  class="auth-input"
-                  type="password"
-                  placeholder="Confirm password"
-                  autocomplete="new-password"
-                  :disabled="authStore.authLoading"
-                />
-                <button
-                  class="auth-submit"
-                  type="submit"
-                  :disabled="authStore.authLoading"
-                >
-                  {{ authStore.authLoading ? "…" : "Create account" }}
-                </button>
-              </form>
-
-              <!-- Forgot -->
-              <form
-                v-else-if="authStore.authView === 'forgot'"
-                class="auth-form"
-                @submit.prevent="handleForgot"
-              >
-                <input
-                  v-model="email"
-                  class="auth-input"
-                  type="email"
-                  placeholder="Email"
-                  autocomplete="email"
-                  :disabled="authStore.authLoading"
-                />
-                <button
-                  class="auth-submit"
-                  type="submit"
-                  :disabled="authStore.authLoading"
-                >
-                  {{ authStore.authLoading ? "…" : "Send reset link" }}
-                </button>
-                <button
-                  class="auth-link"
-                  type="button"
-                  @click="authStore.setView('login')"
-                >
-                  Back to login
-                </button>
-              </form>
-
-              <p v-if="authStore.authError" class="auth-msg auth-msg--error">
-                {{ authStore.authError }}
-              </p>
-              <p v-if="authStore.authSuccess" class="auth-msg auth-msg--ok">
-                {{ authStore.authSuccess }}
-              </p>
+              <AuthForm
+                variant="drawer"
+                :view="authStore.authView"
+                @set-view="authStore.setView"
+                @login-success="onAuthLogin"
+              />
             </div>
           </template>
         </aside>
@@ -659,70 +492,6 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
   border-color: rgb(var(--color-ink));
-}
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.auth-input {
-  width: 100%;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
-  background: transparent;
-  padding: 10px 12px;
-  font-family: var(--font-body);
-  font-size: 1.4rem;
-  color: rgb(var(--color-ink));
-  outline: none;
-}
-.auth-input:focus {
-  border-color: rgb(var(--color-ink));
-}
-.auth-submit {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 11px 18px;
-  border-radius: 999px;
-  background: rgb(var(--color-accent));
-  color: #fff;
-  border: 1px solid rgb(var(--color-accent));
-  cursor: pointer;
-  transition: opacity 0.12s ease;
-}
-.auth-submit:hover:not(:disabled) {
-  opacity: 0.9;
-}
-.auth-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.auth-link {
-  align-self: flex-start;
-  background: transparent;
-  border: 0;
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  color: rgb(var(--color-mute));
-  cursor: pointer;
-  padding: 2px 0;
-}
-.auth-link:hover {
-  color: rgb(var(--color-accent));
-  text-decoration: underline;
-}
-.auth-msg {
-  font-family: var(--font-mono);
-  font-size: 1.05rem;
-  margin: 0;
-}
-.auth-msg--error {
-  color: rgb(var(--color-accent));
-}
-.auth-msg--ok {
-  color: rgb(var(--color-complete));
 }
 
 /* Slide-in 320ms */
