@@ -1,6 +1,18 @@
 <script setup>
-import { ref, watch, nextTick } from "vue";
-import { HIGHLIGHT_COLORS } from "@/composables/useHighlights";
+// Highlight toolbar (#18 split): this parent owns the risky selection/
+// positioning core — the Teleport + Transition shell, the floating position,
+// the create-vs-edit mode coordination, the active-highlight watch, and the
+// single-open-panel orchestration. Presentational sub-units (color picker,
+// edit action bar, note/tag/delete panels) live in ./highlight-toolbar/ and
+// take props in / emit intent out, mirroring the dashboard section-split
+// pattern. The public contract (props + emits) is unchanged for ChapterView.
+import { ref, watch } from "vue";
+import CloseIcon from "@/icons/custom/CloseIcon.vue";
+import HighlightColorPicker from "@/components/chapter/highlight-toolbar/HighlightColorPicker.vue";
+import HighlightActionBar from "@/components/chapter/highlight-toolbar/HighlightActionBar.vue";
+import HighlightNotePanel from "@/components/chapter/highlight-toolbar/HighlightNotePanel.vue";
+import HighlightTagPanel from "@/components/chapter/highlight-toolbar/HighlightTagPanel.vue";
+import HighlightDeleteConfirm from "@/components/chapter/highlight-toolbar/HighlightDeleteConfirm.vue";
 
 const props = defineProps({
   visible: {
@@ -45,7 +57,6 @@ const showOverflowMenu = ref(false);
 
 // Note input
 const noteContent = ref("");
-const noteTextarea = ref(null);
 
 // Tag input
 const tagInput = ref("");
@@ -96,6 +107,15 @@ function onHighlight(color) {
   });
 }
 
+// Color-pick dispatcher: create mode highlights, edit mode recolors.
+function onColorPick(color) {
+  if (props.mode === "edit") {
+    onChangeColor(color);
+  } else {
+    onHighlight(color);
+  }
+}
+
 // === Edit mode handlers ===
 
 function onChangeColor(color) {
@@ -111,9 +131,6 @@ function toggleNotePanel() {
   showTagPanel.value = false;
   showDeleteConfirm.value = false;
   showOverflowMenu.value = false;
-  if (showNotePanel.value) {
-    nextTick(() => noteTextarea.value?.focus());
-  }
 }
 
 function toggleTagPanel() {
@@ -215,280 +232,69 @@ function onCancel() {
         <!-- Main pill bar -->
         <div class="hl-pill">
           <!-- Color dots -->
-          <div class="hl-colors">
-            <button
-              v-for="color in HIGHLIGHT_COLORS"
-              :key="color.value"
-              @click="
-                mode === 'edit'
-                  ? onChangeColor(color.value)
-                  : onHighlight(color.value)
-              "
-              class="hl-color-dot"
-              :class="[
-                `dot-${color.value}`,
-                {
-                  'dot-active':
-                    mode === 'edit' &&
-                    activeHighlight?.color === color.value,
-                },
-              ]"
-              :title="color.name"
-              :data-testid="`highlight-${color.value}`"
-            >
-              <!-- Checkmark for active color in edit mode -->
-              <svg
-                v-if="
-                  mode === 'edit' &&
-                  activeHighlight?.color === color.value
-                "
-                class="dot-check"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="2,6 5,9 10,3" />
-              </svg>
-            </button>
-          </div>
+          <HighlightColorPicker
+            :mode="mode"
+            :active-color="activeHighlight?.color"
+            @pick="onColorPick"
+          />
 
           <!-- Divider -->
           <div class="hl-divider"></div>
 
           <!-- Edit mode actions -->
-          <template v-if="mode === 'edit'">
-            <!-- Note button -->
-            <button
-              @click="toggleNotePanel"
-              class="hl-action"
-              :class="{ 'hl-action-active': showNotePanel }"
-              title="Add note"
-              data-testid="edit-note-btn"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"
-                />
-                <path
-                  d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                />
-              </svg>
-            </button>
-
-            <!-- Tag button -->
-            <button
-              @click="toggleTagPanel"
-              class="hl-action"
-              :class="{ 'hl-action-active': showTagPanel }"
-              title="Add tags"
-              data-testid="edit-tag-btn"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
-                />
-                <line x1="7" y1="7" x2="7.01" y2="7" />
-              </svg>
-            </button>
-
-            <!-- Delete button -->
-            <button
-              @click="toggleDeleteConfirm"
-              class="hl-action hl-action-danger"
-              :class="{ 'hl-action-active': showDeleteConfirm }"
-              title="Delete highlight"
-              data-testid="edit-delete-btn"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="3 6 5 6 21 6" />
-                <path
-                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                />
-              </svg>
-            </button>
-
-            <!-- Overflow menu -->
-            <div class="hl-overflow-wrap">
-              <button
-                @click="toggleOverflowMenu"
-                class="hl-action"
-                title="More actions"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <circle cx="12" cy="5" r="2" />
-                  <circle cx="12" cy="12" r="2" />
-                  <circle cx="12" cy="19" r="2" />
-                </svg>
-              </button>
-
-              <!-- Overflow dropdown -->
-              <div v-if="showOverflowMenu" class="hl-dropdown">
-                <button @click="copyText" class="hl-dropdown-item">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="13"
-                      height="13"
-                      rx="2"
-                      ry="2"
-                    />
-                    <path
-                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                    />
-                  </svg>
-                  Copy text
-                </button>
-              </div>
-            </div>
-          </template>
+          <HighlightActionBar
+            v-if="mode === 'edit'"
+            :note-panel-active="showNotePanel"
+            :tag-panel-active="showTagPanel"
+            :delete-confirm-active="showDeleteConfirm"
+            :overflow-open="showOverflowMenu"
+            @toggle-note="toggleNotePanel"
+            @toggle-tag="toggleTagPanel"
+            @toggle-delete="toggleDeleteConfirm"
+            @toggle-overflow="toggleOverflowMenu"
+            @copy-text="copyText"
+          />
 
           <!-- Create mode actions -->
-          <template v-else>
-            <button
-              @click="onCancel"
-              class="hl-action hl-action-cancel"
-              title="Cancel"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </template>
+          <button
+            v-else
+            @click="onCancel"
+            class="hl-action hl-action-cancel"
+            title="Cancel"
+          >
+            <CloseIcon :width="16" :height="16" />
+          </button>
         </div>
 
         <!-- Expandable panels (edit mode only) -->
         <template v-if="mode === 'edit'">
           <!-- Note panel -->
           <Transition name="panel">
-            <div v-if="showNotePanel" class="hl-panel">
-              <textarea
-                ref="noteTextarea"
-                v-model="noteContent"
-                class="hl-textarea"
-                placeholder="Write a note..."
-                rows="3"
-                data-testid="edit-note-textarea"
-              ></textarea>
-              <div class="hl-panel-actions">
-                <button
-                  @click="saveNote"
-                  class="hl-btn-save"
-                  data-testid="edit-note-save"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
+            <HighlightNotePanel
+              v-if="showNotePanel"
+              v-model:note="noteContent"
+              @save="saveNote"
+            />
           </Transition>
 
           <!-- Tag panel -->
           <Transition name="panel">
-            <div v-if="showTagPanel" class="hl-panel">
-              <div class="hl-tags-list">
-                <span
-                  v-for="(tag, i) in localTags"
-                  :key="tag"
-                  class="hl-tag-chip"
-                >
-                  {{ tag }}
-                  <button
-                    @click="removeTag(i)"
-                    class="hl-tag-remove"
-                    :data-testid="`remove-tag-${tag}`"
-                  >
-                    &times;
-                  </button>
-                </span>
-                <input
-                  v-model="tagInput"
-                  @keydown="onTagKeydown"
-                  class="hl-tag-input"
-                  placeholder="Add tag..."
-                  data-testid="edit-tag-input"
-                />
-              </div>
-            </div>
+            <HighlightTagPanel
+              v-if="showTagPanel"
+              :tags="localTags"
+              v-model:tag-input="tagInput"
+              @remove="removeTag"
+              @keydown="onTagKeydown"
+            />
           </Transition>
 
           <!-- Delete confirmation -->
           <Transition name="panel">
-            <div v-if="showDeleteConfirm" class="hl-panel hl-panel-delete">
-              <span class="hl-delete-text">Delete this highlight?</span>
-              <div class="hl-panel-actions">
-                <button
-                  @click="showDeleteConfirm = false"
-                  class="hl-btn-cancel"
-                >
-                  Cancel
-                </button>
-                <button
-                  @click="confirmDelete"
-                  class="hl-btn-delete"
-                  data-testid="confirm-delete-btn"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+            <HighlightDeleteConfirm
+              v-if="showDeleteConfirm"
+              @cancel="showDeleteConfirm = false"
+              @confirm="confirmDelete"
+            />
           </Transition>
         </template>
       </div>
@@ -497,7 +303,12 @@ function onCancel() {
 </template>
 
 <style scoped>
-/* === Dark pill toolbar (Readwise Reader style) === */
+/* === Themed pill toolbar (Readwise Reader style) ===
+   Chrome (surfaces, text, borders, hover, accent, destructive) is driven by
+   brand.css tokens so the toolbar follows [data-theme] / [data-accent]. The
+   highlight swatch colors are intentionally theme-fixed and bound inline from
+   HIGHLIGHT_COLORS (single source) inside HighlightColorPicker. Sub-unit chrome
+   (color dots, action buttons, panels) is scoped to each extracted child. */
 .hl-toolbar {
   position: absolute;
   z-index: 9999;
@@ -507,64 +318,25 @@ function onCancel() {
 }
 
 .hl-pill {
-  background: #1f2937;
+  background: rgb(var(--color-paper));
   border-radius: 10px;
   padding: 6px 8px;
   display: flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-/* Color dots */
-.hl-colors {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.hl-color-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: transform 0.12s ease, border-color 0.12s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.hl-color-dot:hover {
-  transform: scale(1.15);
-}
-
-.hl-color-dot.dot-active {
-  border-color: rgba(255, 255, 255, 0.8);
-}
-
-.dot-yellow  { background-color: #fcd34d; }
-.dot-green   { background-color: #86efac; }
-.dot-blue    { background-color: #93c5fd; }
-.dot-pink    { background-color: #f9a8d4; }
-.dot-purple  { background-color: #c4b5fd; }
-
-.dot-check {
-  width: 10px;
-  height: 10px;
-  color: #1f2937;
+  box-shadow: 0 4px 20px rgb(var(--color-ink) / 0.18),
+    0 0 0 1px rgb(var(--color-line));
 }
 
 /* Divider */
 .hl-divider {
   width: 1px;
   height: 20px;
-  background: #374151;
+  background: rgb(var(--color-line));
   margin: 0 4px;
 }
 
-/* Action buttons */
+/* Create-mode cancel button (edit-mode actions live in HighlightActionBar). */
 .hl-action {
   width: 28px;
   height: 28px;
@@ -575,229 +347,17 @@ function onCancel() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute));
   transition: all 0.12s ease;
 }
 
 .hl-action:hover {
-  background: #374151;
-  color: #e5e7eb;
-}
-
-.hl-action-active {
-  background: #374151;
-  color: #60a5fa;
-}
-
-.hl-action-danger:hover {
-  color: #f87171;
+  background: rgb(var(--color-ink) / 0.06);
+  color: rgb(var(--color-ink));
 }
 
 .hl-action-cancel:hover {
-  color: #f87171;
-}
-
-/* Overflow menu */
-.hl-overflow-wrap {
-  position: relative;
-}
-
-.hl-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: #1f2937;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  min-width: 130px;
-}
-
-.hl-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  color: #d1d5db;
-  font-size: 13px;
-  font-family: "IBM Plex Sans", sans-serif;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.hl-dropdown-item:hover {
-  background: #374151;
-  color: #f3f4f6;
-}
-
-/* === Expandable panels === */
-.hl-panel {
-  background: #1f2937;
-  border-radius: 10px;
-  padding: 10px 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-.hl-textarea {
-  width: 100%;
-  min-width: 260px;
-  padding: 8px 10px;
-  background: #111827;
-  border: 1px solid #374151;
-  border-radius: 6px;
-  color: #e5e7eb;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 13px;
-  resize: none;
-  transition: border-color 0.15s;
-}
-
-.hl-textarea:focus {
-  outline: none;
-  border-color: #60a5fa;
-}
-
-.hl-textarea::placeholder {
-  color: #6b7280;
-}
-
-.hl-panel-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.hl-btn-save {
-  padding: 4px 14px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-
-.hl-btn-save:hover {
-  background: #2563eb;
-}
-
-.hl-btn-cancel {
-  padding: 4px 14px;
-  background: transparent;
-  color: #9ca3af;
-  border: 1px solid #374151;
-  border-radius: 5px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.12s;
-}
-
-.hl-btn-cancel:hover {
-  background: #374151;
-  color: #d1d5db;
-}
-
-.hl-btn-delete {
-  padding: 4px 14px;
-  background: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-
-.hl-btn-delete:hover {
-  background: #b91c1c;
-}
-
-/* Tags */
-.hl-tags-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  min-width: 240px;
-}
-
-.hl-tag-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  background: #374151;
-  color: #d1d5db;
-  border-radius: 12px;
-  font-size: 12px;
-  font-family: "IBM Plex Sans", sans-serif;
-}
-
-.hl-tag-remove {
-  width: 14px;
-  height: 14px;
-  border: none;
-  background: transparent;
-  color: #9ca3af;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.1s;
-}
-
-.hl-tag-remove:hover {
-  background: #4b5563;
-  color: #f87171;
-}
-
-.hl-tag-input {
-  flex: 1;
-  min-width: 80px;
-  padding: 4px 8px;
-  background: #111827;
-  border: 1px solid #374151;
-  border-radius: 6px;
-  color: #e5e7eb;
-  font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
-}
-
-.hl-tag-input:focus {
-  outline: none;
-  border-color: #60a5fa;
-}
-
-.hl-tag-input::placeholder {
-  color: #6b7280;
-}
-
-/* Delete confirmation */
-.hl-panel-delete {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hl-delete-text {
-  color: #f87171;
-  font-size: 13px;
-  font-family: "IBM Plex Sans", sans-serif;
-  white-space: nowrap;
+  color: rgb(var(--color-warn));
 }
 
 /* === Transitions === */
