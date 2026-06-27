@@ -9,6 +9,7 @@ import QuizQuestion from "@/components/quiz/QuizQuestion.vue";
 import QuizResults from "@/components/quiz/QuizResults.vue";
 import QuizIntro from "@/components/quiz/QuizIntro.vue";
 import QuizReview from "@/components/quiz/QuizReview.vue";
+import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -194,20 +195,7 @@ function handleGoToQuestion(index) {
     <div v-else-if="quizState === 'taking'" class="quiz-container">
       <div class="quiz-header">
         <button @click="handleExit" class="exit-btn" title="Exit Quiz">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <CloseIcon :width="20" :height="20" />
         </button>
         <h2 class="header-title">{{ currentQuiz?.title }}</h2>
       </div>
