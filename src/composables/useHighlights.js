@@ -1,6 +1,7 @@
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useAuth } from "./useAuth";
 import { authedRequest as supabaseRest } from "@/services/api/client";
+import { useCrudResource } from "./useCrudResource";
 
 // Available highlight colors. `hex` is the Tailwind -300 border/dot shade —
 // the single source for JS color lookups (e.g. NotebookTab border dots).
@@ -20,11 +21,21 @@ export const HIGHLIGHT_HEX = Object.fromEntries(
 export function useHighlights(options = {}) {
   const { paragraphId = null } = options;
 
-  const highlights = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
-
   const { user } = useAuth();
+
+  // Shared list/loading/error + fetch/delete scaffold. `highlights` is an alias
+  // for the resource's `list` so the public API is unchanged.
+  const {
+    list: highlights,
+    loading,
+    error,
+    runFetch,
+    removeById,
+  } = useCrudResource({
+    request: supabaseRest,
+    table: "highlights",
+    logLabel: "useHighlights",
+  });
 
   // Fetch highlights for current user
   async function fetchHighlights(filterParagraphId = null) {
@@ -33,27 +44,15 @@ export function useHighlights(options = {}) {
       return;
     }
 
-    loading.value = true;
-    error.value = null;
+    let query = `highlights?user_id=eq.${user.value.id}&select=*&order=created_at.desc`;
 
-    try {
-      let query = `highlights?user_id=eq.${user.value.id}&select=*&order=created_at.desc`;
-
-      // Filter by paragraph if specified
-      const targetParagraphId = filterParagraphId || paragraphId;
-      if (targetParagraphId) {
-        query += `&paragraph_id=eq.${targetParagraphId}`;
-      }
-
-      const data = await supabaseRest(query);
-      highlights.value = data || [];
-    } catch (e) {
-      console.error("useHighlights: Error fetching highlights:", e);
-      error.value = e.message;
-      highlights.value = [];
-    } finally {
-      loading.value = false;
+    // Filter by paragraph if specified
+    const targetParagraphId = filterParagraphId || paragraphId;
+    if (targetParagraphId) {
+      query += `&paragraph_id=eq.${targetParagraphId}`;
     }
+
+    await runFetch(query);
   }
 
   // Fetch highlights for multiple paragraphs (batch)
@@ -63,22 +62,10 @@ export function useHighlights(options = {}) {
       return;
     }
 
-    loading.value = true;
-    error.value = null;
+    const idsParam = paragraphIds.map((id) => `"${id}"`).join(",");
+    const query = `highlights?user_id=eq.${user.value.id}&paragraph_id=in.(${idsParam})&select=*&order=start_offset.asc`;
 
-    try {
-      const idsParam = paragraphIds.map((id) => `"${id}"`).join(",");
-      const query = `highlights?user_id=eq.${user.value.id}&paragraph_id=in.(${idsParam})&select=*&order=start_offset.asc`;
-
-      const data = await supabaseRest(query);
-      highlights.value = data || [];
-    } catch (e) {
-      console.error("useHighlights: Error fetching highlights:", e);
-      error.value = e.message;
-      highlights.value = [];
-    } finally {
-      loading.value = false;
-    }
+    await runFetch(query);
   }
 
   // Get highlights grouped by paragraph
@@ -165,17 +152,7 @@ export function useHighlights(options = {}) {
 
   // Delete a highlight
   async function deleteHighlight(highlightId) {
-    try {
-      await supabaseRest(`highlights?id=eq.${highlightId}`, {
-        method: "DELETE",
-      });
-
-      // Remove from local state
-      highlights.value = highlights.value.filter((h) => h.id !== highlightId);
-    } catch (e) {
-      console.error("useHighlights: Error deleting highlight:", e);
-      throw e;
-    }
+    await removeById(highlightId);
   }
 
   // Toggle public status

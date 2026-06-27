@@ -1,15 +1,26 @@
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useAuth } from "./useAuth";
 import { authedRequest as supabaseRest } from "@/services/api/client";
+import { useCrudResource } from "./useCrudResource";
 
 export function useNotes(options = {}) {
   const { sectionId = null } = options;
 
-  const notes = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
-
   const { user } = useAuth();
+
+  // Shared list/loading/error + fetch/delete scaffold. `notes` aliases the
+  // resource's `list` so the public API is unchanged.
+  const {
+    list: notes,
+    loading,
+    error,
+    runFetch,
+    removeById,
+  } = useCrudResource({
+    request: supabaseRest,
+    table: "notes",
+    logLabel: "useNotes",
+  });
 
   // Fetch notes for current user with optional filters
   async function fetchNotes(filters = {}) {
@@ -18,32 +29,20 @@ export function useNotes(options = {}) {
       return;
     }
 
-    loading.value = true;
-    error.value = null;
+    // Build query with joined highlight data
+    let query = `notes?user_id=eq.${user.value.id}&select=*,highlight:highlights(id,selected_text,color,paragraph_id)&order=created_at.desc`;
 
-    try {
-      // Build query with joined highlight data
-      let query = `notes?user_id=eq.${user.value.id}&select=*,highlight:highlights(id,selected_text,color,paragraph_id)&order=created_at.desc`;
-
-      // Apply filters
-      const targetSectionId = filters.sectionId || sectionId;
-      if (targetSectionId) {
-        query += `&section_id=eq.${targetSectionId}`;
-      }
-
-      if (filters.highlightId) {
-        query += `&highlight_id=eq.${filters.highlightId}`;
-      }
-
-      const data = await supabaseRest(query);
-      notes.value = data || [];
-    } catch (e) {
-      console.error("useNotes: Error fetching notes:", e);
-      error.value = e.message;
-      notes.value = [];
-    } finally {
-      loading.value = false;
+    // Apply filters
+    const targetSectionId = filters.sectionId || sectionId;
+    if (targetSectionId) {
+      query += `&section_id=eq.${targetSectionId}`;
     }
+
+    if (filters.highlightId) {
+      query += `&highlight_id=eq.${filters.highlightId}`;
+    }
+
+    await runFetch(query);
   }
 
   // Create a new note
@@ -129,17 +128,7 @@ export function useNotes(options = {}) {
 
   // Delete a note
   async function deleteNote(noteId) {
-    try {
-      await supabaseRest(`notes?id=eq.${noteId}`, {
-        method: "DELETE",
-      });
-
-      // Remove from local state
-      notes.value = notes.value.filter((n) => n.id !== noteId);
-    } catch (e) {
-      console.error("useNotes: Error deleting note:", e);
-      throw e;
-    }
+    await removeById(noteId);
   }
 
   // Toggle note public status

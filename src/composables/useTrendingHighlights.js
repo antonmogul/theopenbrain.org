@@ -1,48 +1,35 @@
-import { ref } from "vue";
 import { relativeShort } from "@/utils/format";
 import { apiRequest as supabaseRest } from "@/services/api/client";
+import { useCrudResource } from "./useCrudResource";
 
 export function useTrendingHighlights(options = {}) {
   const { limit = 10 } = options;
 
-  const trending = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
+  // Shared list/loading/error + fetch scaffold. `trending` aliases the
+  // resource's `list`. This resource is read-only (no create/update/delete),
+  // so only runFetch is used.
+  const {
+    list: trending,
+    loading,
+    error,
+    runFetch,
+  } = useCrudResource({
+    request: supabaseRest,
+    logLabel: "useTrendingHighlights",
+  });
 
   // Fetch trending highlights
   async function fetchTrending() {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      const query = `trending_highlights?select=*&order=highlight_count.desc&limit=${limit}`;
-      const data = await supabaseRest(query);
-      trending.value = data || [];
-    } catch (e) {
-      console.error("useTrendingHighlights: Error fetching trending:", e);
-      error.value = e.message;
-      trending.value = [];
-    } finally {
-      loading.value = false;
-    }
+    await runFetch(
+      `trending_highlights?select=*&order=highlight_count.desc&limit=${limit}`
+    );
   }
 
   // Fetch trending highlights for a section
   async function fetchTrendingForSection(sectionId) {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      const query = `trending_highlights?section_id=eq.${sectionId}&select=*&order=highlight_count.desc&limit=${limit}`;
-      const data = await supabaseRest(query);
-      trending.value = data || [];
-    } catch (e) {
-      console.error("useTrendingHighlights: Error fetching trending:", e);
-      error.value = e.message;
-      trending.value = [];
-    } finally {
-      loading.value = false;
-    }
+    await runFetch(
+      `trending_highlights?section_id=eq.${sectionId}&select=*&order=highlight_count.desc&limit=${limit}`
+    );
   }
 
   // Scroll to a highlight in the page
