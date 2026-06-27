@@ -29,6 +29,7 @@ import {
 } from "@/components/dashboard/shared";
 
 // Domain components (functional — kept, only wrapped/restyled)
+import SettingsPanels from "@/components/settings/SettingsPanels.vue";
 import CourseCard from "@/components/student/CourseCard.vue";
 import StudyStats from "@/components/student/StudyStats.vue";
 import ProgressCard from "@/components/student/ProgressCard.vue";
@@ -109,12 +110,7 @@ async function loadQuizzesAndFlashcards() {
   }
 }
 
-// Settings is a route, not an in-dashboard panel — intercept its nav.
 function onNav(id) {
-  if (id === "settings") {
-    router.push("/settings");
-    return;
-  }
   activeSection.value = id;
 }
 
@@ -387,6 +383,12 @@ function formatScore(score, total) {
         <h3 class="card-title">Reading progress by module <PreviewTag variant="soon" /></h3>
         <p class="muted">Detailed per-module progress tracking is coming soon.</p>
       </BaseCard>
+    </section>
+
+    <!-- SETTINGS -->
+    <section v-else-if="activeSection === 'settings'" class="section">
+      <SectionHeader eyebrow="08 · Settings" title="Your account & preferences" />
+      <SettingsPanels />
     </section>
   </DashboardShell>
 </template>
