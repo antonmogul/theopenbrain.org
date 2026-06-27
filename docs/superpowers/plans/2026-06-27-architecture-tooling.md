@@ -1,5 +1,17 @@
 # Architecture-Graph Tooling Implementation Plan
 
+> **⚠️ SUPERSEDED — this is the original plan, not the shipped state.** The
+> live reference for how the tooling actually works is
+> [`docs/architecture/README.md`](../../architecture/README.md). Two
+> corrections were discovered during implementation and are NOT reflected in
+> the command examples below:
+> - **madge has no `--config` flag** — the shipped scripts use
+>   `--webpack-config madge.webpack.cjs --extensions js,ts,vue` (and
+>   `madge.config.json` was removed as inert).
+> - **dependency-cruiser is pinned to `@16.10.4`, not `@18.0.0`** — `@18`
+>   requires Node ≥22 but the project runs Node 20.
+> Read the README for the authoritative commands.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stand up an `npx`-driven, Vite-aware dependency-graph workflow (madge + dependency-cruiser) that visualizes `src/` dependencies, surfaces orphans/cycles, and enforces layering rules — without adding a permanent runtime dependency.
