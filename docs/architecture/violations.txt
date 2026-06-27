@@ -1,0 +1,7 @@
+
+> theopenbrain.org@0.1.18 graph:check
+> npx -y dependency-cruiser@16.10.4 --config .dependency-cruiser.cjs --output-type err src
+
+
+✔ no dependency violations found (242 modules, 461 dependencies cruised)
+

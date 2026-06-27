@@ -51,7 +51,7 @@ module.exports = {
   options: {
     doNotFollow: { path: "node_modules" },
     exclude: { path: "(node_modules|dist)" },
-    // dc18 does not support enhancedResolveOptions.alias; use tsConfig paths instead.
+    // dc does not support enhancedResolveOptions.alias (removed from schema); use tsConfig paths instead.
     tsConfig: { fileName: "tsconfig.json" },
     enhancedResolveOptions: {
       extensions: [".js", ".ts", ".vue", ".json"],
