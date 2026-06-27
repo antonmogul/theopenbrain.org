@@ -3,6 +3,7 @@ import { ref, computed, inject, onMounted } from "vue";
 import { HIGHLIGHT_COLORS, HIGHLIGHT_HEX } from "@/composables/useHighlights";
 import { useTrendingHighlights } from "@/composables/useTrendingHighlights";
 import { dateTime as formatDate } from "@/utils/format";
+import { EmptyState, LoadingState, Button } from "@/components/dashboard/shared";
 
 defineProps({
   moduleId: {
@@ -192,14 +193,16 @@ async function executeDelete() {
         </button>
       </div>
 
-      <div v-if="!highlights || highlights.length === 0" class="empty-state">
-        <p class="empty-title">No highlights yet</p>
-        <p class="empty-text">Select text in the chapter to create highlights</p>
-      </div>
-      <div v-else-if="filteredHighlights.length === 0" class="empty-state">
-        <p class="empty-title">No {{ selectedColor }} highlights</p>
-        <p class="empty-text">Try a different color filter</p>
-      </div>
+      <EmptyState
+        v-if="!highlights || highlights.length === 0"
+        title="No highlights yet"
+        message="Select text in the chapter to create highlights"
+      />
+      <EmptyState
+        v-else-if="filteredHighlights.length === 0"
+        :title="`No ${selectedColor} highlights`"
+        message="Try a different color filter"
+      />
       <div v-else class="items-list">
         <div
           v-for="h in filteredHighlights"
@@ -245,12 +248,13 @@ async function executeDelete() {
           autofocus
         ></textarea>
         <div class="editor-actions">
-          <button @click="cancelNewNote" class="btn-secondary">Cancel</button>
-          <button
-            @click="saveNewNote"
+          <Button variant="outline" size="sm" @click="cancelNewNote">Cancel</Button>
+          <Button
+            variant="solid"
+            size="sm"
             :disabled="!newNoteContent.trim()"
-            class="btn-primary"
-          >Save</button>
+            @click="saveNewNote"
+          >Save</Button>
         </div>
       </div>
 
@@ -261,8 +265,8 @@ async function executeDelete() {
           <div v-if="deleteConfirmId === note.id" class="delete-confirm">
             <p>Delete this note?</p>
             <div class="confirm-actions">
-              <button @click="cancelDelete" class="btn-secondary">Cancel</button>
-              <button @click="executeDelete" class="btn-danger">Delete</button>
+              <Button variant="outline" size="sm" @click="cancelDelete">Cancel</Button>
+              <Button variant="danger" size="sm" @click="executeDelete">Delete</Button>
             </div>
           </div>
 
@@ -280,8 +284,8 @@ async function executeDelete() {
             <div v-if="editingNoteId === note.id" class="note-editor inline">
               <textarea v-model="editNoteContent" class="note-textarea" rows="4"></textarea>
               <div class="editor-actions">
-                <button @click="cancelEditNote" class="btn-secondary">Cancel</button>
-                <button @click="saveEditNote" class="btn-primary">Save</button>
+                <Button variant="outline" size="sm" @click="cancelEditNote">Cancel</Button>
+                <Button variant="solid" size="sm" @click="saveEditNote">Save</Button>
               </div>
             </div>
 
@@ -301,23 +305,22 @@ async function executeDelete() {
       </div>
 
       <!-- Empty state -->
-      <div v-if="!isAddingNote && (!notes || notes.length === 0)" class="empty-state">
-        <p class="empty-title">No notes yet</p>
-        <p class="empty-text">Highlight text or click "Add Note" to get started</p>
-      </div>
+      <EmptyState
+        v-if="!isAddingNote && (!notes || notes.length === 0)"
+        title="No notes yet"
+        message="Highlight text or click &quot;Add Note&quot; to get started"
+      />
     </div>
 
     <!-- TRENDING VIEW -->
     <div v-if="activeView === 'trending'" class="view-content">
-      <div v-if="trendingLoading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Loading trending...</p>
-      </div>
+      <LoadingState v-if="trendingLoading" message="Loading trending…" />
 
-      <div v-else-if="trending.length === 0" class="empty-state">
-        <p class="empty-title">No trending highlights</p>
-        <p class="empty-text">Be the first to highlight something!</p>
-      </div>
+      <EmptyState
+        v-else-if="trending.length === 0"
+        title="No trending highlights"
+        message="Be the first to highlight something!"
+      />
 
       <div v-else class="items-list">
         <div
@@ -590,44 +593,6 @@ async function executeDelete() {
   margin-top: 8px;
 }
 
-.btn-primary,
-.btn-secondary,
-.btn-danger {
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
-}
-
-.btn-primary {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-ink));
-}
-
-.btn-primary:hover { background: rgb(var(--color-ink) / 0.85); }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.btn-secondary {
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-line));
-}
-
-.btn-secondary:hover { background: rgb(var(--color-ink) / 0.05); }
-
-.btn-danger {
-  background: rgb(var(--color-accent));
-  color: #fff;
-  border: 1px solid rgb(var(--color-accent));
-}
-
-.btn-danger:hover { background: rgb(var(--color-accent) / 0.85); }
-
 .note-card {
   padding: 14px 0;
   border-bottom: 1px solid rgb(var(--color-line));
@@ -744,49 +709,4 @@ async function executeDelete() {
 .people-count svg { opacity: 0.8; }
 
 .time-ago { color: rgb(var(--color-mute)); }
-
-/* Shared states */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 16px;
-  color: rgb(var(--color-mute));
-  text-align: center;
-}
-
-.empty-title {
-  font-size: 1.5rem;
-  color: rgb(var(--color-ink));
-  margin: 0 0 4px 0;
-}
-
-.empty-text {
-  font-size: 1.3rem;
-  margin: 0;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 32px;
-  color: rgb(var(--color-mute));
-  font-size: 1.3rem;
-}
-
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgb(var(--color-line));
-  border-top-color: rgb(var(--color-accent));
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 8px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 </style>
