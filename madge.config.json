@@ -1,0 +1,9 @@
+{
+  "fileExtensions": ["js", "ts", "vue"],
+  "tsConfig": null,
+  "webpackConfig": "./madge.webpack.cjs",
+  "detectiveOptions": {
+    "es6": { "mixedImports": true }
+  },
+  "excludeRegExp": ["node_modules", "dist", "\\.d\\.ts$"]
+}
