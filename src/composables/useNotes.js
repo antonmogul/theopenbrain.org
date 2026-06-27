@@ -1,49 +1,26 @@
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useAuth } from "./useAuth";
-
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { authedRequest as supabaseRest } from "@/services/api/client";
+import { useCrudResource } from "./useCrudResource";
 
 export function useNotes(options = {}) {
   const { sectionId = null } = options;
 
-  const notes = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
+  const { user } = useAuth();
 
-  const { user, session } = useAuth();
-
-  // Helper for REST API calls
-  async function supabaseRest(endpoint, options = {}) {
-    const accessToken = session.value?.access_token;
-    if (!accessToken && options.method !== "GET") {
-      throw new Error("No access token available");
-    }
-
-    const { headers: optionHeaders, ...restOptions } = options;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-      ...restOptions,
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${accessToken || supabaseKey}`,
-        "Content-Type": "application/json",
-        ...optionHeaders,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    const text = await response.text();
-    if (!text) return options.method === "POST" ? [] : { success: true };
-    return JSON.parse(text);
-  }
+  // Shared list/loading/error + fetch/delete scaffold. `notes` aliases the
+  // resource's `list` so the public API is unchanged.
+  const {
+    list: notes,
+    loading,
+    error,
+    runFetch,
+    removeById,
+  } = useCrudResource({
+    request: supabaseRest,
+    table: "notes",
+    logLabel: "useNotes",
+  });
 
   // Fetch notes for current user with optional filters
   async function fetchNotes(filters = {}) {
@@ -52,32 +29,20 @@ export function useNotes(options = {}) {
       return;
     }
 
-    loading.value = true;
-    error.value = null;
+    // Build query with joined highlight data
+    let query = `notes?user_id=eq.${user.value.id}&select=*,highlight:highlights(id,selected_text,color,paragraph_id)&order=created_at.desc`;
 
-    try {
-      // Build query with joined highlight data
-      let query = `notes?user_id=eq.${user.value.id}&select=*,highlight:highlights(id,selected_text,color,paragraph_id)&order=created_at.desc`;
-
-      // Apply filters
-      const targetSectionId = filters.sectionId || sectionId;
-      if (targetSectionId) {
-        query += `&section_id=eq.${targetSectionId}`;
-      }
-
-      if (filters.highlightId) {
-        query += `&highlight_id=eq.${filters.highlightId}`;
-      }
-
-      const data = await supabaseRest(query);
-      notes.value = data || [];
-    } catch (e) {
-      console.error("useNotes: Error fetching notes:", e);
-      error.value = e.message;
-      notes.value = [];
-    } finally {
-      loading.value = false;
+    // Apply filters
+    const targetSectionId = filters.sectionId || sectionId;
+    if (targetSectionId) {
+      query += `&section_id=eq.${targetSectionId}`;
     }
+
+    if (filters.highlightId) {
+      query += `&highlight_id=eq.${filters.highlightId}`;
+    }
+
+    await runFetch(query);
   }
 
   // Create a new note
@@ -163,17 +128,7 @@ export function useNotes(options = {}) {
 
   // Delete a note
   async function deleteNote(noteId) {
-    try {
-      await supabaseRest(`notes?id=eq.${noteId}`, {
-        method: "DELETE",
-      });
-
-      // Remove from local state
-      notes.value = notes.value.filter((n) => n.id !== noteId);
-    } catch (e) {
-      console.error("useNotes: Error deleting note:", e);
-      throw e;
-    }
+    await removeById(noteId);
   }
 
   // Toggle note public status

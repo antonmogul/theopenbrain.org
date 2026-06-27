@@ -1,61 +1,27 @@
 <script setup>
-/**
- * LoadingState Component
- *
- * Displays a loading spinner with optional message.
- */
-
+// Token spinner + optional message. Spinner respects [data-reduce-motion]
+// globally via brand.css animation override.
 defineProps({
-  message: {
-    type: String,
-    default: 'Loading...',
-  },
-  size: {
-    type: String,
-    default: 'md', // sm, md, lg
-  },
-  inline: {
-    type: Boolean,
-    default: false,
-  },
+  message: { type: String, default: "Loading…" },
+  size: { type: String, default: "md" }, // sm | md | lg
+  inline: { type: Boolean, default: false },
 });
-
-const sizeClasses = {
-  sm: 'w-4 h-4',
-  md: 'w-8 h-8',
-  lg: 'w-12 h-12',
-};
 </script>
 
 <template>
-  <div
-    :class="[
-      'flex items-center justify-center',
-      inline ? 'inline-flex' : 'py-12',
-    ]"
-  >
-    <div class="text-center">
-      <svg
-        :class="[sizeClasses[size], 'animate-spin text-indigo-600 mx-auto']"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-        />
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        />
-      </svg>
-      <p v-if="message" class="mt-2 text-sm text-gray-500">{{ message }}</p>
-    </div>
+  <div class="loading" :class="[{ inline }, `s-${size}`]">
+    <span class="spinner" aria-hidden="true" />
+    <span v-if="message" class="loading-msg">{{ message }}</span>
   </div>
 </template>
+
+<style scoped>
+.loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 48px 24px; }
+.loading.inline { padding: 0; }
+.spinner { border-radius: 999px; border: 2px solid rgb(var(--color-line)); border-top-color: rgb(var(--color-accent)); animation: ls-spin 0.7s linear infinite; }
+.s-sm .spinner { width: 16px; height: 16px; }
+.s-md .spinner { width: 22px; height: 22px; }
+.s-lg .spinner { width: 32px; height: 32px; border-width: 3px; }
+.loading-msg { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); text-transform: uppercase; letter-spacing: 0.08em; }
+@keyframes ls-spin { to { transform: rotate(360deg); } }
+</style>

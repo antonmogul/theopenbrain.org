@@ -1,11 +1,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useAuth } from "./useAuth";
-
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { authedRequest as supabaseRest } from "@/services/api/client";
 
 export function useReadingProgress(initialModuleId = null, courseId = null) {
   let moduleId = initialModuleId;
@@ -15,7 +10,7 @@ export function useReadingProgress(initialModuleId = null, courseId = null) {
   const loading = ref(false);
   const error = ref(null);
 
-  const { user, session } = useAuth();
+  const { user } = useAuth();
 
   let saveInterval = null;
   let startTime = Date.now();
@@ -29,36 +24,6 @@ export function useReadingProgress(initialModuleId = null, courseId = null) {
       await loadProgress();
       startTracking();
     }
-  }
-
-  // Helper for REST API calls
-  async function supabaseRest(endpoint, options = {}) {
-    const accessToken = session.value?.access_token;
-    if (!accessToken) {
-      throw new Error("No access token available");
-    }
-
-    const { headers: optionHeaders, ...restOptions } = options;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-      ...restOptions,
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        ...optionHeaders,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    // Handle empty responses for PATCH/DELETE
-    const text = await response.text();
-    if (!text) return { success: true };
-    return JSON.parse(text);
   }
 
   // Load existing progress

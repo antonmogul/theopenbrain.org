@@ -1,57 +1,32 @@
 <script setup>
-/**
- * ErrorState Component
- *
- * Displays an error message with optional retry button.
- */
-
+// Centered error state with retry. Warn-toned icon; retry uses shared Button.
+import Button from "./Button.vue";
 defineProps({
-  title: {
-    type: String,
-    default: 'Something went wrong',
-  },
-  message: {
-    type: String,
-    default: '',
-  },
-  showRetry: {
-    type: Boolean,
-    default: true,
-  },
-  retryLabel: {
-    type: String,
-    default: 'Try again',
-  },
+  title: { type: String, default: "Something went wrong" },
+  message: { type: String, default: "" },
+  retryLabel: { type: String, default: "Try again" },
+  showRetry: { type: Boolean, default: true },
 });
-
-const emit = defineEmits(['retry']);
+defineEmits(["retry"]);
 </script>
 
 <template>
-  <div class="py-12 text-center">
-    <div class="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
-      <svg
-        class="w-6 h-6 text-red-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-        />
-      </svg>
+  <div class="state">
+    <div class="state-icon"><slot name="icon">⚠</slot></div>
+    <h3 class="state-title">{{ title }}</h3>
+    <p v-if="message" class="state-msg">{{ message }}</p>
+    <div v-if="showRetry || $slots.action" class="state-action">
+      <slot name="action">
+        <Button variant="outline" size="sm" @click="$emit('retry')">{{ retryLabel }}</Button>
+      </slot>
     </div>
-    <h3 class="text-lg font-medium text-gray-900 mb-1">{{ title }}</h3>
-    <p v-if="message" class="text-sm text-gray-500 mb-4">{{ message }}</p>
-    <button
-      v-if="showRetry"
-      @click="emit('retry')"
-      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-    >
-      {{ retryLabel }}
-    </button>
   </div>
 </template>
+
+<style scoped>
+.state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 24px; gap: 8px; }
+.state-icon { color: rgb(var(--color-warn)); font-size: 2.4rem; margin-bottom: 4px; }
+.state-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42rem; line-height: 1.5; }
+.state-action { margin-top: 12px; }
+</style>

@@ -1,58 +1,41 @@
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useAuth } from "./useAuth";
+import { authedRequest as supabaseRest } from "@/services/api/client";
+import { useCrudResource } from "./useCrudResource";
 
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Available highlight colors
+// Available highlight colors. `hex` is the Tailwind -300 border/dot shade —
+// the single source for JS color lookups (e.g. NotebookTab border dots).
 export const HIGHLIGHT_COLORS = [
-  { value: "yellow", name: "Yellow", class: "bg-yellow-200", bgClass: "bg-yellow-300" },
-  { value: "green", name: "Green", class: "bg-green-200", bgClass: "bg-green-300" },
-  { value: "blue", name: "Blue", class: "bg-blue-200", bgClass: "bg-blue-300" },
-  { value: "pink", name: "Pink", class: "bg-pink-200", bgClass: "bg-pink-300" },
-  { value: "purple", name: "Purple", class: "bg-purple-200", bgClass: "bg-purple-300" },
+  { value: "yellow", name: "Yellow", class: "bg-yellow-200", bgClass: "bg-yellow-300", hex: "#fcd34d" },
+  { value: "green", name: "Green", class: "bg-green-200", bgClass: "bg-green-300", hex: "#86efac" },
+  { value: "blue", name: "Blue", class: "bg-blue-200", bgClass: "bg-blue-300", hex: "#93c5fd" },
+  { value: "pink", name: "Pink", class: "bg-pink-200", bgClass: "bg-pink-300", hex: "#f9a8d4" },
+  { value: "purple", name: "Purple", class: "bg-purple-200", bgClass: "bg-purple-300", hex: "#c4b5fd" },
 ];
+
+// Map of highlight color value -> border/dot hex (the -300 shade).
+export const HIGHLIGHT_HEX = Object.fromEntries(
+  HIGHLIGHT_COLORS.map((c) => [c.value, c.hex])
+);
 
 export function useHighlights(options = {}) {
   const { paragraphId = null } = options;
 
-  const highlights = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
+  const { user } = useAuth();
 
-  const { user, session } = useAuth();
-
-  // Helper for REST API calls
-  async function supabaseRest(endpoint, options = {}) {
-    const accessToken = session.value?.access_token;
-    if (!accessToken && options.method !== "GET") {
-      throw new Error("No access token available");
-    }
-
-    const { headers: optionHeaders, ...restOptions } = options;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-      ...restOptions,
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${accessToken || supabaseKey}`,
-        "Content-Type": "application/json",
-        ...optionHeaders,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    const text = await response.text();
-    if (!text) return options.method === "POST" ? [] : { success: true };
-    return JSON.parse(text);
-  }
+  // Shared list/loading/error + fetch/delete scaffold. `highlights` is an alias
+  // for the resource's `list` so the public API is unchanged.
+  const {
+    list: highlights,
+    loading,
+    error,
+    runFetch,
+    removeById,
+  } = useCrudResource({
+    request: supabaseRest,
+    table: "highlights",
+    logLabel: "useHighlights",
+  });
 
   // Fetch highlights for current user
   async function fetchHighlights(filterParagraphId = null) {
@@ -61,27 +44,15 @@ export function useHighlights(options = {}) {
       return;
     }
 
-    loading.value = true;
-    error.value = null;
+    let query = `highlights?user_id=eq.${user.value.id}&select=*&order=created_at.desc`;
 
-    try {
-      let query = `highlights?user_id=eq.${user.value.id}&select=*&order=created_at.desc`;
-
-      // Filter by paragraph if specified
-      const targetParagraphId = filterParagraphId || paragraphId;
-      if (targetParagraphId) {
-        query += `&paragraph_id=eq.${targetParagraphId}`;
-      }
-
-      const data = await supabaseRest(query);
-      highlights.value = data || [];
-    } catch (e) {
-      console.error("useHighlights: Error fetching highlights:", e);
-      error.value = e.message;
-      highlights.value = [];
-    } finally {
-      loading.value = false;
+    // Filter by paragraph if specified
+    const targetParagraphId = filterParagraphId || paragraphId;
+    if (targetParagraphId) {
+      query += `&paragraph_id=eq.${targetParagraphId}`;
     }
+
+    await runFetch(query);
   }
 
   // Fetch highlights for multiple paragraphs (batch)
@@ -91,22 +62,10 @@ export function useHighlights(options = {}) {
       return;
     }
 
-    loading.value = true;
-    error.value = null;
+    const idsParam = paragraphIds.map((id) => `"${id}"`).join(",");
+    const query = `highlights?user_id=eq.${user.value.id}&paragraph_id=in.(${idsParam})&select=*&order=start_offset.asc`;
 
-    try {
-      const idsParam = paragraphIds.map((id) => `"${id}"`).join(",");
-      const query = `highlights?user_id=eq.${user.value.id}&paragraph_id=in.(${idsParam})&select=*&order=start_offset.asc`;
-
-      const data = await supabaseRest(query);
-      highlights.value = data || [];
-    } catch (e) {
-      console.error("useHighlights: Error fetching highlights:", e);
-      error.value = e.message;
-      highlights.value = [];
-    } finally {
-      loading.value = false;
-    }
+    await runFetch(query);
   }
 
   // Get highlights grouped by paragraph
@@ -193,17 +152,7 @@ export function useHighlights(options = {}) {
 
   // Delete a highlight
   async function deleteHighlight(highlightId) {
-    try {
-      await supabaseRest(`highlights?id=eq.${highlightId}`, {
-        method: "DELETE",
-      });
-
-      // Remove from local state
-      highlights.value = highlights.value.filter((h) => h.id !== highlightId);
-    } catch (e) {
-      console.error("useHighlights: Error deleting highlight:", e);
-      throw e;
-    }
+    await removeById(highlightId);
   }
 
   // Toggle public status

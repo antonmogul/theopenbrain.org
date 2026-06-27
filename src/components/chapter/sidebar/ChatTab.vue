@@ -6,7 +6,9 @@ export default { name: "ChatTab" };
 import { ref, onMounted } from "vue";
 import { useAITutor } from "@/composables/useAITutor";
 import { useText } from "@/stores";
+import { chatTimestamp as formatDate } from "@/utils/format";
 import AITutorChat from "@/components/ai/AITutorChat.vue";
+import { Button } from "@/components/dashboard/shared";
 
 const props = defineProps({
   moduleId: {
@@ -136,28 +138,6 @@ async function executeDelete() {
   }
 }
 
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now - date;
-
-  if (diff < 86400000) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-
-  if (diff < 604800000) {
-    return date.toLocaleDateString("en-US", { weekday: "short" });
-  }
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 </script>
 
 <template>
@@ -207,8 +187,8 @@ function formatDate(dateString) {
           <div v-if="deleteConfirmId === conv.id" class="delete-confirm">
             <p>Delete this conversation?</p>
             <div class="confirm-actions">
-              <button @click="cancelDelete" class="btn-sm secondary">Cancel</button>
-              <button @click="executeDelete" class="btn-sm danger">Delete</button>
+              <Button variant="ghost" size="sm" @click="cancelDelete">Cancel</Button>
+              <Button variant="danger" size="sm" @click="executeDelete">Delete</Button>
             </div>
           </div>
 
@@ -396,33 +376,6 @@ function formatDate(dateString) {
   gap: 6px;
   justify-content: center;
 }
-
-.btn-sm {
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.btn-sm.secondary {
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-line));
-}
-
-.btn-sm.secondary:hover { background: rgb(var(--color-ink) / 0.05); }
-
-.btn-sm.danger {
-  background: rgb(var(--color-accent));
-  color: #fff;
-  border: none;
-}
-
-.btn-sm.danger:hover { background: rgb(var(--color-accent) / 0.85); }
 
 /* Error banner */
 .error-banner {

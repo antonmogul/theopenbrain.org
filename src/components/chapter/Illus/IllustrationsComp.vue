@@ -127,7 +127,7 @@ onBeforeUnmount(() => {
           <IllustrationPlaceholder
             v-if="activeAnimation === animation.id.toLowerCase()"
             :animation="animation"
-            class="max-w-[1000px] m-auto h-full"
+            class="w-full h-full"
           />
         </transition>
       </template>

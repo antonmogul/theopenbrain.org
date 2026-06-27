@@ -2,10 +2,11 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
+import { authedRequest as supabaseRest } from "@/services/api/client";
 
 const route = useRoute();
 const router = useRouter();
-const { user, profile, session, isAuthenticated } = useAuth();
+const { user, profile, isAuthenticated } = useAuth();
 
 const courseId = route.params.courseId;
 const course = ref(null);
@@ -13,37 +14,6 @@ const loading = ref(true);
 const enrolling = ref(false);
 const error = ref(null);
 const enrolled = ref(false);
-
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-async function supabaseRest(endpoint, options = {}) {
-    const { headers: optionHeaders, ...restOptions } = options;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-        ...restOptions,
-        headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${session.value?.access_token || supabaseKey}`,
-            "Content-Type": "application/json",
-            ...optionHeaders,
-        },
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    if (options.method === "POST" || options.method === "PATCH" || options.method === "DELETE") {
-        return { success: true };
-    }
-
-    return response.json();
-}
 
 async function fetchCourse() {
     loading.value = true;

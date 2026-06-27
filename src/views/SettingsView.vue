@@ -12,9 +12,9 @@ import { useHomeRoute } from "@/composables/useHomeRoute";
 
 import ThemeCards from "@/components/settings/ThemeCards.vue";
 import AccentSwatches from "@/components/settings/AccentSwatches.vue";
-import SegmentedControl from "@/components/settings/SegmentedControl.vue";
+import SegmentedControl from "@/components/dashboard/shared/SegmentedControl.vue";
 import FontPairPicker from "@/components/settings/FontPairPicker.vue";
-import SettingsToggleRow from "@/components/settings/SettingsToggleRow.vue";
+import ToggleRow from "@/components/dashboard/shared/ToggleRow.vue";
 import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 
@@ -168,12 +168,12 @@ function toggleHighlighter(key) {
             </div>
             <div class="field-block">
               <p class="field-label">Diagrams</p>
-              <SettingsToggleRow
+              <ToggleRow
                 v-model:checked="diagramPrefs.autoplay"
                 label="Auto-play step diagrams"
                 hint="Cascade diagrams advance automatically as you scroll past."
               />
-              <SettingsToggleRow
+              <ToggleRow
                 v-model:checked="diagramPrefs.captions"
                 label="Show figure captions inline"
                 hint="Otherwise captions appear on hover / tap."
@@ -250,27 +250,27 @@ function toggleHighlighter(key) {
             </p>
           </header>
           <div class="bordered-card">
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="emailPrefs.weekly"
               label="Weekly reading nudge"
               hint="A gentle Sunday email recapping where you left off and what's next."
             />
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="emailPrefs.newChapters"
               label="New chapters published"
               hint="When a chapter graduates from draft. About one per quarter."
             />
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="emailPrefs.milestones"
               label="Quiz & flashcard milestones"
               hint="5-day streaks, perfect quizzes, chapter completions."
             />
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="emailPrefs.digest"
               label="Annotation digest"
               hint="Weekly summary of community notes & highlights on chapters you're reading."
             />
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="emailPrefs.research"
               label="Research-update bulletins"
               hint="When a chapter is updated to reflect new findings, we'll tell you what changed."
@@ -299,17 +299,17 @@ function toggleHighlighter(key) {
           </div>
 
           <div class="stack">
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="privacyPrefs.shareNotes"
               label="Allow community to view my notes"
               hint="Off by default. Notes are private to you unless you explicitly publish."
             />
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="privacyPrefs.analytics"
               label="Anonymous reading analytics"
               hint="Helps us understand which sections are confusing. No identifiable data leaves your device."
             />
-            <SettingsToggleRow
+            <ToggleRow
               v-model:checked="privacyPrefs.improve"
               label="Use my notes for chapter improvement"
               hint="Authors review aggregated patterns to revise chapters. Your name is never attached."

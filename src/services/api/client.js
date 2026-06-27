@@ -34,13 +34,20 @@ export function getSession() {
  * @returns {Promise<any>} Response data
  */
 export async function apiRequest(endpoint, options = {}) {
-  const { headers: optionHeaders, ...restOptions } = options;
+  const { headers: optionHeaders, requireAuth = false, ...restOptions } = options;
+  const accessToken = currentSession?.access_token;
+
+  // Opt-in auth guard (matches the inline copies that threw before a write
+  // when no session was present). Off by default for public/read fetches.
+  if (requireAuth && !accessToken && options.method && options.method !== 'GET') {
+    throw new Error('No access token available');
+  }
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
     ...restOptions,
     headers: {
       apikey: supabaseKey,
-      Authorization: `Bearer ${currentSession?.access_token || supabaseKey}`,
+      Authorization: `Bearer ${accessToken || supabaseKey}`,
       'Content-Type': 'application/json',
       ...optionHeaders,
     },
@@ -54,17 +61,24 @@ export async function apiRequest(endpoint, options = {}) {
     throw error;
   }
 
-  // For PATCH/DELETE, return success indicator
-  if (options.method === 'PATCH' || options.method === 'DELETE') {
-    return { success: true };
-  }
+  // Read the body as text so an empty 200 (e.g. a write with no representation)
+  // doesn't throw on response.json(). Non-empty bodies are JSON-parsed; empty
+  // bodies resolve to a success indicator. (Superset of all inline variants.)
+  const text = await response.text();
+  if (!text) return { success: true };
+  return JSON.parse(text);
+}
 
-  // For HEAD requests or 204 responses, return empty
-  if (options.method === 'HEAD' || response.status === 204) {
-    return { success: true };
-  }
-
-  return response.json();
+/**
+ * Like apiRequest, but fails fast on a non-GET write when there's no session
+ * (matches the guard the inline supabaseRest copies had). Drop-in replacement
+ * for those `supabaseRest(endpoint, options)` call sites.
+ * @param {string} endpoint - API endpoint
+ * @param {Object} options - Fetch options
+ * @returns {Promise<any>} Response data
+ */
+export async function authedRequest(endpoint, options = {}) {
+  return apiRequest(endpoint, { requireAuth: true, ...options });
 }
 
 /**

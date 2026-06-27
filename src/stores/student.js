@@ -1,12 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { useAuth } from "@/composables/useAuth";
-
-// Supabase REST API config
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { authedRequest as supabaseRest } from "@/services/api/client";
 
 export const useStudentStore = defineStore("student", () => {
   // State
@@ -45,33 +40,6 @@ export const useStudentStore = defineStore("student", () => {
       (p) => p.is_completed
     ).length;
   });
-
-  // Helper for REST API calls
-  async function supabaseRest(endpoint, options = {}) {
-    const { session } = useAuth();
-    const accessToken = session.value?.access_token;
-
-    const { headers: optionHeaders, ...restOptions } = options;
-
-    const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
-      ...restOptions,
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${accessToken || supabaseKey}`,
-        "Content-Type": "application/json",
-        ...optionHeaders,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API Error ${response.status}: ${errorText}`);
-    }
-
-    const text = await response.text();
-    if (!text) return [];
-    return JSON.parse(text);
-  }
 
   // Actions
   async function loadStudentData() {

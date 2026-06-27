@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useFlashcards } from "@/composables/useFlashcards";
+import { shortDate as formatDate } from "@/utils/format";
 
 const props = defineProps({
   moduleId: {
@@ -39,14 +40,6 @@ function handleStart() {
   emit("start", props.moduleId);
 }
 
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 </script>
 
 <template>

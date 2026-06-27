@@ -1,9 +1,9 @@
 <script setup>
 // Navigation drawer — rebuilt to the New Design Ideas prototype (NavDrawer in
 // prototype.jsx): focused reading-navigator. Continue card → JUMP TO chapter
-// list with progress → user footer. Auth lives in MenuAuth (opened from the
-// footer's Sign in), the section accordion is dropped (covered by the reader's
-// Info tab + section dots). Open state is the existing useGeneral.activeMenu so
+// list with progress → user footer. Auth is an in-drawer form (shared
+// AuthForm.vue, variant="drawer") revealed by the footer's Sign in; the
+// section accordion is dropped (covered by the reader's Info tab + section dots). Open state is the existing useGeneral.activeMenu so
 // all current triggers (ReaderTopBar menu button, BottomNav, router) work
 // unchanged. Token-driven; replaces the legacy violet MainNav.
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
@@ -11,6 +11,8 @@ import { useRouter } from "vue-router";
 import { useGeneral } from "@/stores";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
+import CloseIcon from "@/icons/custom/CloseIcon.vue";
+import AuthForm from "@/components/Navigation/AuthForm.vue";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useHomeRoute } from "@/composables/useHomeRoute";
 
@@ -105,10 +107,21 @@ function go(path) {
   router.push(path);
   close();
 }
+// In-drawer auth (restored from the old MainNav so login lives in the hamburger
+// nav, not a separate screen). The form itself + validation + auth calls live
+// in the shared AuthForm (audit #19); the drawer just owns the tabs, the
+// open/close chrome, and the post-login behavior (close the drawer).
+const showAuth = ref(false);
+
 function openSignIn() {
-  close();
-  authStore.openAuth();
+  showAuth.value = true;
   authStore.setView("login");
+  authStore.setError(null);
+}
+
+function onAuthLogin() {
+  authStore.setError(null);
+  close();
 }
 
 function onKey(e) {
@@ -138,9 +151,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               <span class="wordmark-text">the<br />open brain</span>
             </router-link>
             <button class="close-btn" type="button" title="Close" @click="close">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <CloseIcon :width="16" :height="16" />
             </button>
           </div>
 
@@ -201,9 +212,45 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               </router-link>
             </div>
           </div>
-          <button v-else class="signin-btn" type="button" @click="openSignIn">
-            Sign in
-          </button>
+          <!-- Anonymous: in-drawer auth (login / register / forgot) -->
+          <template v-else>
+            <button
+              v-if="!showAuth"
+              class="signin-btn"
+              type="button"
+              @click="openSignIn"
+            >
+              Sign in
+            </button>
+
+            <div v-else class="auth">
+              <div class="auth-tabs">
+                <button
+                  class="auth-tab"
+                  :class="{ active: authStore.authView === 'login' }"
+                  type="button"
+                  @click="authStore.setView('login')"
+                >
+                  Login
+                </button>
+                <button
+                  class="auth-tab"
+                  :class="{ active: authStore.authView === 'register' }"
+                  type="button"
+                  @click="authStore.setView('register')"
+                >
+                  Sign Up
+                </button>
+              </div>
+
+              <AuthForm
+                variant="drawer"
+                :view="authStore.authView"
+                @set-view="authStore.setView"
+                @login-success="onAuthLogin"
+              />
+            </div>
+          </template>
         </aside>
       </div>
     </Transition>
@@ -415,6 +462,36 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .signin-btn:hover {
   background: rgb(var(--color-ink) / 0.85);
+}
+
+/* In-drawer auth (login / register / forgot) */
+.auth {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+}
+.auth-tab {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 0;
+  background: transparent;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  color: rgb(var(--color-mute));
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.auth-tab.active {
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border-color: rgb(var(--color-ink));
 }
 
 /* Slide-in 320ms */
