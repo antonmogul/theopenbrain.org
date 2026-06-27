@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { authedRequest as supabaseRest } from "@/services/api/client";
+import { withAsyncState } from "@/composables/withAsyncState";
 
 /**
  * Creator-dashboard "Analytics" section: metrics, daily-active chart, content/
@@ -35,10 +36,16 @@ export function useDashboardAnalytics() {
 
     // ---- fetch ----
     async function fetchAnalytics() {
-        analyticsLoading.value = true;
-        analyticsError.value = null;
+        await withAsyncState(
+            { loading: analyticsLoading, error: analyticsError },
+            "Error fetching analytics:",
+            async () => {
+                await runFetchAnalytics();
+            },
+        );
+    }
 
-        try {
+    async function runFetchAnalytics() {
             const now = new Date();
             let startDate;
 
@@ -202,12 +209,6 @@ export function useDashboardAnalytics() {
                 "trending_highlights?select=*&order=highlight_count.desc&limit=5",
             );
             trendingHighlights.value = highlights;
-        } catch (err) {
-            console.error("Error fetching analytics:", err);
-            analyticsError.value = err.message;
-        } finally {
-            analyticsLoading.value = false;
-        }
     }
 
     function formatDuration(seconds) {

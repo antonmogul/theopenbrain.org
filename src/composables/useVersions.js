@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { authedRequest as supabaseRest } from "@/services/api/client";
+import { withAsyncState } from "@/composables/withAsyncState";
 
 /**
  * Creator-dashboard "Versions" section: content_versions data + CRUD.
@@ -25,34 +26,30 @@ export function useVersions(profile) {
 
     // ---- fetch ----
     async function fetchVersions() {
-        versionsLoading.value = true;
-        versionsError.value = null;
+        await withAsyncState(
+            { loading: versionsLoading, error: versionsError },
+            "Error fetching versions:",
+            async () => {
+                const data = await supabaseRest(
+                    "content_versions?select=*&order=created_at.desc",
+                );
 
-        try {
-            const data = await supabaseRest(
-                "content_versions?select=*&order=created_at.desc",
-            );
+                // Get module counts for each version
+                const versionsWithCounts = await Promise.all(
+                    data.map(async (version) => {
+                        const modules = await supabaseRest(
+                            `modules?content_version_id=eq.${version.id}&select=id`,
+                        );
+                        return {
+                            ...version,
+                            moduleCount: modules.length,
+                        };
+                    }),
+                );
 
-            // Get module counts for each version
-            const versionsWithCounts = await Promise.all(
-                data.map(async (version) => {
-                    const modules = await supabaseRest(
-                        `modules?content_version_id=eq.${version.id}&select=id`,
-                    );
-                    return {
-                        ...version,
-                        moduleCount: modules.length,
-                    };
-                }),
-            );
-
-            versions.value = versionsWithCounts;
-        } catch (err) {
-            console.error("Error fetching versions:", err);
-            versionsError.value = err.message;
-        } finally {
-            versionsLoading.value = false;
-        }
+                versions.value = versionsWithCounts;
+            },
+        );
     }
 
     // ---- CRUD ----

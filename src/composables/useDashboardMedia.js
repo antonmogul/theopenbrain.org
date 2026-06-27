@@ -1,5 +1,6 @@
 import { ref, computed, nextTick } from "vue";
 import { authedRequest as supabaseRest } from "@/services/api/client";
+import { withAsyncState } from "@/composables/withAsyncState";
 
 /**
  * Creator-dashboard "Media" library section: animations/media data + CRUD.
@@ -26,24 +27,20 @@ export function useDashboardMedia() {
 
     // ---- fetch ----
     async function fetchMedia() {
-        mediaLoading.value = true;
-        mediaError.value = null;
+        await withAsyncState(
+            { loading: mediaLoading, error: mediaError },
+            "Error fetching media:",
+            async () => {
+                let endpoint = "animations?select=*&order=media_type,title";
 
-        try {
-            let endpoint = "animations?select=*&order=media_type,title";
+                if (mediaFilter.value !== "all") {
+                    endpoint += `&media_type=eq.${mediaFilter.value}`;
+                }
 
-            if (mediaFilter.value !== "all") {
-                endpoint += `&media_type=eq.${mediaFilter.value}`;
-            }
-
-            const data = await supabaseRest(endpoint);
-            mediaItems.value = data;
-        } catch (err) {
-            console.error("Error fetching media:", err);
-            mediaError.value = err.message;
-        } finally {
-            mediaLoading.value = false;
-        }
+                const data = await supabaseRest(endpoint);
+                mediaItems.value = data;
+            },
+        );
     }
 
     // ---- derived ----
