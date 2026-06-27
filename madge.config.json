@@ -1,4 +1,5 @@
 {
+  "_note": "madge 8.x CLI has no --config flag. Use: --webpack-config madge.webpack.cjs --extensions js,ts,vue",
   "fileExtensions": ["js", "ts", "vue"],
   "tsConfig": null,
   "webpackConfig": "./madge.webpack.cjs",

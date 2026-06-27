@@ -24,7 +24,9 @@
     "deploy": "bash ./deploy.sh",
     "import:chapter2": "node scripts/import-chapter-2-to-supabase.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "graph:orphans": "npx -y madge@8.0.0 --webpack-config madge.webpack.cjs --extensions js,ts,vue --orphans src",
+    "graph:cycles": "npx -y madge@8.0.0 --webpack-config madge.webpack.cjs --extensions js,ts,vue --circular src"
   },
   "dependencies": {
     "@formkit/auto-animate": "^1.0.0-beta.3",

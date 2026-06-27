@@ -1,0 +1,9 @@
+
+> theopenbrain.org@0.1.18 graph:cycles
+> npx -y madge@8.0.0 --webpack-config madge.webpack.cjs --extensions js,ts,vue --circular src
+
+- Finding files
+Processed 273 files (475ms) (17 warnings)
+
+✔ No circular dependency found!
+
