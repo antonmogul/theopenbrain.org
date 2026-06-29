@@ -39,6 +39,7 @@
 .text-base {
   font-size: calc(2rem * var(--reading-size, 1));
   line-height: calc(3.1rem * var(--reading-size, 1));
+  letter-spacing: 0.5px;
 }
 .text-h2 {
   font-size: 4rem;
