@@ -29,13 +29,14 @@ export async function initPyodide() {
     // Pre-load packages commonly used in neuroscience labs
     await pyodideInstance.loadPackage(["numpy", "matplotlib"]);
 
-    // Set up matplotlib for non-interactive backend and create helper function
+    // Set up matplotlib for non-interactive backend and create helper functions
     await pyodideInstance.runPythonAsync(`
 import matplotlib
 matplotlib.use('AGG')
 import matplotlib.pyplot as plt
 import io
 import base64
+import json as _json
 
 def get_plot_base64():
     """Save current figure to base64 encoded PNG string"""
@@ -45,6 +46,22 @@ def get_plot_base64():
     img_base64 = base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
     return img_base64
+
+def get_all_plots_base64():
+    """Save every open matplotlib figure to a list of base64 PNG strings.
+
+    Demos that build multi-panel evolutions (e.g. Game of Life) create more
+    than one figure; capturing all of them keeps parity with what the user sees.
+    """
+    images = []
+    for num in plt.get_fignums():
+        fig = plt.figure(num)
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', bbox_inches='tight', dpi=100)
+        buf.seek(0)
+        images.append(base64.b64encode(buf.read()).decode('utf-8'))
+        buf.close()
+    return images
 `);
 
     return pyodideInstance;
@@ -57,9 +74,13 @@ def get_plot_base64():
  * Run Python code and optionally execute test cases
  * @param {string} code - The Python code to execute
  * @param {Array} testCases - Optional array of test cases to run
+ * @param {Object} [options] - Extra execution options
+ * @param {Object} [options.globals] - Variables to inject into the Python
+ *   namespace before the code runs (e.g. `{ uploaded_data: "<csv text>" }`).
+ *   Used by the playground's "upload your own data" demo.
  * @returns {Object} Results object with output, error, plots, testResults, passed
  */
-export async function runPython(code, testCases = []) {
+export async function runPython(code, testCases = [], options = {}) {
   const pyodide = await initPyodide();
 
   const results = {
@@ -82,6 +103,13 @@ sys.stdout = _captured_stdout = StringIO()
 sys.stderr = _captured_stderr = StringIO()
 `);
 
+    // Inject any host-provided globals (e.g. uploaded file contents)
+    if (options.globals && typeof options.globals === "object") {
+      for (const [key, value] of Object.entries(options.globals)) {
+        pyodide.globals.set(key, value);
+      }
+    }
+
     // Run user code
     await pyodide.runPythonAsync(code);
 
@@ -90,18 +118,14 @@ sys.stderr = _captured_stderr = StringIO()
 _captured_stdout.getvalue() + _captured_stderr.getvalue()
 `);
 
-    // Check for matplotlib figures and capture them
-    const hasFigures = await pyodide.runPythonAsync(`
+    // Capture every open matplotlib figure as a base64 PNG
+    const plotsJson = await pyodide.runPythonAsync(`
 import matplotlib.pyplot as plt
-len(plt.get_fignums()) > 0
+_json.dumps(get_all_plots_base64())
 `);
-
-    if (hasFigures) {
-      const plotBase64 = await pyodide.runPythonAsync(`
-get_plot_base64()
-`);
-      results.plots.push(plotBase64);
-
+    const plots = JSON.parse(plotsJson);
+    if (plots.length > 0) {
+      results.plots.push(...plots);
       // Close figures to clean up
       await pyodide.runPythonAsync(`plt.close('all')`);
     }
@@ -184,7 +208,8 @@ import sys
 # Get list of user-defined globals to delete
 _to_delete = [name for name in list(globals().keys())
               if not name.startswith('_')
-              and name not in ['sys', 'io', 'base64', 'matplotlib', 'plt', 'np', 'numpy', 'get_plot_base64', 'StringIO']]
+              and name not in ['sys', 'io', 'base64', 'matplotlib', 'plt', 'np', 'numpy',
+                               'get_plot_base64', 'get_all_plots_base64', 'StringIO', 'json']]
 for name in _to_delete:
     del globals()[name]
 

@@ -55,6 +55,9 @@ const features = [
                 <router-link to="/chapters" class="btn btn--solid">
                     Browse chapters
                 </router-link>
+                <router-link to="/playground" class="btn btn--ghost">
+                    Python playground
+                </router-link>
                 <router-link
                     v-if="isAuthenticated"
                     to="/dashboard"
