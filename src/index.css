@@ -6,6 +6,97 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * ── Type scale role classes ──────────────────────────────────────────────
+ * The public API of the typography system. Components apply `.t-h2`, `.t-body`,
+ * `.t-label` etc. instead of raw Tailwind text-* / the legacy .text-base scale.
+ *
+ * The `t-` prefix is the collision firewall: Tailwind ships no `t-*` text
+ * utilities, so these names can never be shadowed (unlike .text-base, which
+ * index.css used to redefine). Values resolve from the --type-* tokens in
+ * brand.css — that file is the single source of truth for sizes.
+ *
+ * Defined in @layer components so a one-off Tailwind utility (e.g. `text-accent`)
+ * can still win on a specific element without fighting specificity.
+ */
+@layer components {
+  .t-display {
+    font-size: var(--type-display-size);
+    line-height: var(--type-display-lh);
+    letter-spacing: var(--type-display-ls);
+    font-weight: 700;
+    font-family: var(--font-body);
+  }
+  .t-h1 {
+    font-size: var(--type-h1-size);
+    line-height: var(--type-h1-lh);
+    letter-spacing: var(--type-h1-ls);
+    font-weight: 700;
+    font-family: var(--font-body);
+  }
+  .t-h2 {
+    font-size: var(--type-h2-size);
+    line-height: var(--type-h2-lh);
+    letter-spacing: var(--type-h2-ls);
+    font-weight: 600;
+    font-family: var(--font-body);
+  }
+  .t-h3 {
+    font-size: var(--type-h3-size);
+    line-height: var(--type-h3-lh);
+    letter-spacing: var(--type-h3-ls);
+    font-weight: 600;
+    font-family: var(--font-body);
+  }
+  .t-subhead {
+    font-size: var(--type-subhead-size);
+    line-height: var(--type-subhead-lh);
+    letter-spacing: var(--type-subhead-ls);
+    font-weight: 600;
+    font-family: var(--font-body);
+  }
+  .t-body-lg {
+    font-size: var(--type-body-lg-size);
+    line-height: var(--type-body-lg-lh);
+    letter-spacing: var(--type-body-lg-ls);
+    font-weight: 400;
+    font-family: var(--font-body);
+  }
+  /* The base reading role — multiplies by --reading-size so the reading-size
+     pref still scales body prose (and only body prose). */
+  .t-body {
+    font-size: calc(var(--type-body-size) * var(--reading-size, 1));
+    line-height: var(--type-body-lh);
+    letter-spacing: var(--type-body-ls);
+    font-weight: 400;
+    font-family: var(--font-body);
+  }
+  .t-body-sm {
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-lh);
+    letter-spacing: var(--type-body-sm-ls);
+    font-weight: 400;
+    font-family: var(--font-body);
+  }
+  /* Caption + label default to MONO — they carry the editorial / metadata role
+     (figure captions, eyebrows, badges) that IBM Plex Mono owns in this app. */
+  .t-caption {
+    font-size: var(--type-caption-size);
+    line-height: var(--type-caption-lh);
+    letter-spacing: var(--type-caption-ls);
+    font-weight: 400;
+    font-family: var(--font-mono);
+  }
+  .t-label {
+    font-size: var(--type-label-size);
+    line-height: var(--type-label-lh);
+    letter-spacing: var(--type-label-ls);
+    font-weight: 500;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+  }
+}
+
 /* Prose width consumes the user's line-length preference.
    Default `--reading-measure` (72ch in brand.css) ≈ today's 780px in IBM Plex. */
 .prose-measure {
