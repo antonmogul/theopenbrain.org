@@ -115,6 +115,11 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/playground",
+    name: "playground",
+    component: () => import("../views/PythonPlaygroundView.vue"),
+  },
+  {
     path: "/settings",
     name: "settings",
     component: () => import("../views/SettingsView.vue"),
