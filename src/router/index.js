@@ -125,6 +125,12 @@ const routes = [
     component: () => import("../views/SettingsView.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    // Internal design-system reference. Not linked in nav; open /styleguide directly.
+    path: "/styleguide",
+    name: "styleguide",
+    component: () => import("../views/StyleGuideView.vue"),
+  },
 ];
 
 const router = createRouter({

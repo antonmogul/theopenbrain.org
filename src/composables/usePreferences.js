@@ -69,7 +69,17 @@ function writeLS(key, value) {
   }
 }
 
+// --- Feature pin (2026-06-30): dark mode + font choice are disabled. ---
+// The pref machinery (refs, watchers, LS + Supabase sync) is kept intact so the
+// features can be revived later — we only force the *applied* value to the
+// originals (light theme, IBM Plex). Pinning here (not at the ref/LS layer)
+// guarantees light even for users with a stale "dark" value stored or synced.
+// To revive: delete these pins and restore the original bodies below.
+const FORCE_LIGHT_THEME = true;
+const FORCE_LEGACY_FONTPAIR = true;
+
 function resolvedTheme() {
+  if (FORCE_LIGHT_THEME) return "light";
   if (theme.value === "system") {
     return window.matchMedia?.("(prefers-color-scheme: dark)").matches
       ? "dark"
@@ -87,7 +97,10 @@ function applyAccent() {
 }
 
 function applyFontPair() {
-  document.documentElement.dataset.fontpair = fontPair.value;
+  // Pinned to the original IBM Plex pair (see FORCE_LEGACY_FONTPAIR above).
+  document.documentElement.dataset.fontpair = FORCE_LEGACY_FONTPAIR
+    ? "ibm-plex-legacy"
+    : fontPair.value;
 }
 
 function applyReadingSize() {

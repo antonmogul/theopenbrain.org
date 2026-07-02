@@ -29,17 +29,13 @@
       (function () {
         try {
           var d = document.documentElement;
-          var theme = localStorage.getItem("ob.theme") || "system";
-          var resolved =
-            theme === "system"
-              ? window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light"
-              : theme;
-          d.dataset.theme = resolved;
+          // Dark mode + font choice are disabled (2026-06-30). Pin to the
+          // originals here too so returning users with a stale "dark" / font
+          // value in localStorage don't flash before usePreferences runs. Stored
+          // values are left untouched so the features can be revived later.
+          d.dataset.theme = "light";
           d.dataset.accent = localStorage.getItem("ob.accent") || "magenta";
-          d.dataset.fontpair =
-            localStorage.getItem("ob.fontPair") || "ibm-plex-legacy";
+          d.dataset.fontpair = "ibm-plex-legacy";
           var rm = localStorage.getItem("ob.reduceMotion");
           if (rm === "on") d.dataset.reduceMotion = "1";
 
