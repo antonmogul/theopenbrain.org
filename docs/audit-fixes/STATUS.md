@@ -156,3 +156,36 @@ at 2048px for retina displays; converting them to WebP would need the shared
 follow-up. eyeDots.svg (278KB) untouched (SVG minification out of scope tonight).
 
 Verified: build exit 0, tests 141/141.
+
+## Task 3 — B2 Lottie + code-splitting (done)
+
+**(a) Lottie optimization — lossless only.**
+- Confirmed: all Lottie JSONs are runtime-fetched
+  (`lottie.loadAnimation({ path: "/publicAssets/animations/…" })`), never
+  bundled, and load only when the owning component mounts. No bundling fix needed.
+- JSONs were already single-line minified; the weight is embedded `data:` frames.
+  `animationStart.json`'s 137 frames are actually **JPEGs** (1920×1080, ~100KB each).
+- Applied **lossless** recompression to embedded frames: `jpegtran -optimize
+  -progressive -copy none` for JPEG frames, `oxipng -o4 --strip safe` for PNG
+  frames. Pixel-identical output; new base64 substituted into the raw JSON text
+  so everything else in each file is byte-identical (re-validated as JSON).
+- Results: animations dir 29MB → 23MB. Per file: animationStart 18.7→13.9MB
+  (109 unique frames), EyeStructurTransition 2.4→1.8MB, LatteralOrganizationRight
+  4.7→4.3MB, Dragon 1.1→1.0MB, AccommodationVergence 0.3→0.2MB, EyeMovements /
+  ImpairedVision small gains. Files with vector-only content unchanged.
+- **Skipped (not lossless — for Anton):** lossy WebP/quality-reduced frames or
+  frame decimation on animationStart could take 13.9MB → ~2-4MB but changes
+  pixels; needs visual sign-off. Base64 33% overhead is inherent to embedded
+  Lottie assets; the real fix is re-exporting with external asset folder or
+  a .lottie (zip) pipeline.
+
+**(b) Vite manualChunks.** Added `build.rollupOptions.output.manualChunks` in
+vite.config.js splitting `vendor-lottie` (300KB), `vendor-gsap` (112KB),
+`vendor-supabase` (208KB), `vendor-vue` (109KB); all other modules keep
+Rollup's default per-route splitting (a first attempt with a catch-all
+`vendor` chunk produced an eager 1.13MB chunk and was dropped).
+Entry `index.js` 253KB → 145KB; ChapterView chunk 468KB → 356KB; vendor chunks
+are now long-term cacheable across deploys. Remaining large chunks (494KB,
+393KB) are app data/JSON-heavy chunks — candidates for later work.
+
+Verified: build exit 0, tests 141/141.

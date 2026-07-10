@@ -20,6 +20,25 @@ export default ({ mode }) => {
       commonjsOptions: {
         esmExternals: true,
       },
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes("node_modules")) return undefined;
+            if (id.includes("lottie-web")) return "vendor-lottie";
+            if (id.includes("gsap")) return "vendor-gsap";
+            if (id.includes("@supabase")) return "vendor-supabase";
+            if (
+              id.includes("/vue/") ||
+              id.includes("@vue/") ||
+              id.includes("vue-router") ||
+              id.includes("pinia")
+            )
+              return "vendor-vue";
+            // everything else keeps Rollup's default per-route splitting
+            return undefined;
+          },
+        },
+      },
     },
     plugins: [
       vue(),
