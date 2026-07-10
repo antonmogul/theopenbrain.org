@@ -119,7 +119,23 @@ headers config in repo). index.html has one inline pre-paint `<script>` (theme/p
 
 # Work log
 
-(Filled in per task below, with commit hashes and before/after numbers.)
+Commits on `audit/mini-groundwork`:
+- a06e7cf — audit(diagnosis): this status doc (Task 1)
+- 5b91bb4 — audit(B3): image compression (Task 2)
+- 510dd9b — audit(B2): lossless Lottie recompression + manualChunks (Task 3)
+- b568eef — audit(B5): CSP meta (Task 4)
+
+Every commit gated on `npm run build` exit 0 and `npm test` 141/141.
+Note: vitest prints unhandled-rejection stack noise on some suites — pre-existing
+on main baseline, all 30 files / 141 tests pass.
+
+**Reserved for Anton (untouched):**
+- B1 XSS sanitizer — approach in B1 section above (dompurify wrapper, allowlist
+  must include the highlight system's `<mark>` markup; convert low-risk files first).
+- B4 62.5% font rip-out — codemod plan in B4 section above; needs visual QA.
+- Lossy animationStart reduction (13.9MB → ~2-4MB possible) — needs visual sign-off.
+- Pre-existing IBM Plex split-font 404s (see Task 4) — fonts referenced by CSS
+  missing from public/.
 
 ## Task 2 — B3 image compression (done)
 
