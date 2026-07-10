@@ -157,6 +157,43 @@ follow-up. eyeDots.svg (278KB) untouched (SVG minification out of scope tonight)
 
 Verified: build exit 0, tests 141/141.
 
+## Task 4 — B5 CSP (done)
+
+Added an enforcing `<meta http-equiv="Content-Security-Policy">` to index.html
+(note: `<meta>` CSP cannot be Report-Only — that requires a response header, so
+this is a deliberately permissive enforcing policy instead):
+
+```
+default-src 'self';
+script-src 'self' 'unsafe-inline';   ← pre-paint prefs script in index.html
+style-src 'self' 'unsafe-inline';    ← Vue SFC injected styles / inline styles
+img-src 'self' data: blob: https://*.supabase.co;  ← Lottie base64 frames + Supabase storage
+media-src 'self' blob: https://*.supabase.co;
+connect-src 'self' https://*.supabase.co wss://*.supabase.co;  ← REST + realtime
+font-src 'self' data:;
+worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'
+```
+
+Required external domains: only `*.supabase.co` (http + websocket). Fonts,
+Lottie JSONs, images, and break videos are all same-origin.
+
+Verified with the built app (`npm run preview` + headless Chromium): zero CSP
+violations on load. Only console errors are **pre-existing 404s** for IBM Plex
+split font files (`public/publicAssets/fonts/IBM-Plex/.../fonts/split/...`
+paths referenced by CSS but not present in repo) — unrelated to this change,
+flagged for follow-up.
+
+Hardening plan (hosting layer, for Anton):
+- Move policy to a response header at the host/CDN; add `frame-ancestors 'none'`
+  and `report-uri`/`report-to` (both unsupported in `<meta>`).
+- Replace `script-src 'unsafe-inline'` with the sha256 hash of the pre-paint
+  script (stable per build via vite-plugin-html) or a nonce.
+- `style-src 'unsafe-inline'` is hard to drop with Vue runtime style bindings;
+  keep, or adopt hashes if Vue 3.5 trusted-types work lands.
+- Tighten `https://*.supabase.co` to the exact project ref from VITE_SUPABASE_URL.
+
+Verified: build exit 0, tests 141/141, app loads under CSP.
+
 ## Task 3 — B2 Lottie + code-splitting (done)
 
 **(a) Lottie optimization — lossless only.**
