@@ -120,3 +120,39 @@ headers config in repo). index.html has one inline pre-paint `<script>` (theme/p
 # Work log
 
 (Filled in per task below, with commit hashes and before/after numbers.)
+
+## Task 2 — B3 image compression (done)
+
+Strategy: recompress **in place, same filename + extension**, because chapter
+templates hard-code extensions in URL builders (`InlineImages.vue` appends
+`.png`, `IllustrationFlip.vue` appends `.jpg`, etc.) and Supabase-driven
+chapters may reference these public URLs. Originals recoverable from git history.
+
+Tools: `sips` (resize + JPEG re-encode q75, max edge 2000/2048px),
+`pngquant --quality=70-95 --speed 1`, `cwebp -q 80`.
+
+| File | before | after |
+|---|---|---|
+| ramonYCajal.png (3396px → 2048px) | 6.6MB | 1.1MB |
+| 00-matisse-augen-cutout.png (5174px → 2048px) | 5.2MB | 1.0MB |
+| 9-1-glaucoma.jpg (2192px → 2000px) | 2.1MB | 500KB |
+| marguerite.jpg (5473px → 2000px) | 2.0MB | 847KB |
+| 00-matisse-bg.jpg (5473px → 2000px) | 2.0MB | 847KB |
+| 9-1-macular-degeneration.jpg | 1.1MB | 595KB |
+| placeholders/monaLisa.webp (→1200px) | 1.0MB | 170KB |
+| marguerite.png | 891KB | 441KB |
+| breakVideos/dowling-and-werblin.png | 687KB | 233KB |
+| retinoRecipientRegions.png | 613KB | 66KB |
+
+Total: ~22.2MB → ~5.8MB (−16.4MB).
+
+Reverted (sips re-encode came out LARGER than original — already well
+compressed): background.jpg (500KB), 9-1-cataracts.jpg (289KB),
+9-1-retinitis-pigmentosa.jpg (333KB). Left as-is.
+
+Over-500KB stragglers, justified: the two large PNGs are detailed artwork kept
+at 2048px for retina displays; converting them to WebP would need the shared
+`.png` URL-builder templates changed (affects all inline images) — left for a
+follow-up. eyeDots.svg (278KB) untouched (SVG minification out of scope tonight).
+
+Verified: build exit 0, tests 141/141.
