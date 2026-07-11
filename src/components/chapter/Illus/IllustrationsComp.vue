@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import { gsap } from "gsap";
@@ -7,6 +7,7 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 
 import { useGeneral } from "@/stores";
 import { useAnimations } from "@/composables/useAnimations";
+import { clog, cgroup, announce } from "@/helper/chapterDebug";
 
 // Legacy JSON fallback for Chapter 1 during transition
 import animationJSON from "@/assets/json_backend/animations.json";
@@ -30,12 +31,62 @@ const { animations: dbAnimations, fetchAnimations } = useAnimations();
 // - Fall back to legacy JSON if Supabase fetch fails or returns empty
 const animationList = computed(() => {
   if (dbAnimations.value && dbAnimations.value.length > 0) {
+    // [4 MOUNT] which source is driving the figures + one-line inventory
+    cgroup("MOUNT", `source = SUPABASE (${dbAnimations.value.length} figures)`, () => {
+      clog("MOUNT", "renderer each figure will mount when active", {
+        list: dbAnimations.value.map((a) => ({
+          id: a.id,
+          renderer: a.placeholder
+            ? "Placeholder"
+            : a.fullscreen
+              ? "FullScreen"
+              : a.switch
+                ? "Switch"
+                : a.scroll
+                  ? "OnScroll"
+                  : a.isTransition
+                    ? "Transition"
+                    : "Inline",
+          states: a.states?.length || 0,
+        })),
+      });
+    });
     return dbAnimations.value;
   }
+  clog("MOUNT", "source = STATIC JSON fallback (Supabase empty/failed)");
   return animationJSON.animations;
 });
 
+// [4 MOUNT] when a figure becomes active, log which renderer branch the template
+// takes for it — the placeholder/fullscreen/switch/scroll/inline decision.
+watch(activeAnimation, (id) => {
+  if (!id) return;
+  const a = animationList.value.find((x) => x.id.toLowerCase() === id);
+  if (!a) {
+    clog("MOUNT", `active="${id}" but NO matching figure in list (key mismatch?)`);
+    return;
+  }
+  const renderer = a.placeholder
+    ? "IllustrationPlaceholder"
+    : a.fullscreen
+      ? "FullScreenIllustration"
+      : a.switch
+        ? "IllustrationSwitch"
+        : a.scroll
+          ? "IllustrationOnScroll"
+          : a.isTransition
+            ? "IllustrationTransition"
+            : "Illustration (inline)";
+  clog("MOUNT", `mount → ${renderer}`, {
+    figure: a.id,
+    states: a.states?.length || 0,
+    statesHighlight: a.statesHighlight?.length || 0,
+    switches: a.switches?.length || 0,
+  });
+});
+
 onMounted(async () => {
+  announce();
   // Attempt to load animations from Supabase
   try {
     await fetchAnimations();
@@ -44,6 +95,10 @@ onMounted(async () => {
   }
 
   let animationTriggers = document.getElementsByClassName("animationTrigger");
+  // [3 SCROLL] how many GSAP scroll-triggers were wired up. Each corresponds to a
+  // figure anchor in the DOM; if this is low, figures didn't emit their trigger class.
+  clog("SCROLL", `wiring ${animationTriggers.length} .animationTrigger + ` +
+    `${document.getElementsByClassName("animationScrollAnchor").length} .animationScrollAnchor`);
   for (let trigger of animationTriggers) {
     setTimeout(() => {
       ScrollTrigger.create({
@@ -60,10 +115,18 @@ onMounted(async () => {
               .replace("trigger", "")
               .toLowerCase();
             store.animationActive = true;
+            // [3 SCROLL] a figure scrolled into the viewport centre and became active.
+            // `activeAnimation` is what the template matches to decide which figure to
+            // render — this is the "why did this animation start" answer.
+            clog("SCROLL", `▶ ACTIVE: ${self.trigger.id}`, {
+              activeAnimation: activeAnimation.value,
+              triggerId: self.trigger.id,
+            });
           } else {
             trigger.classList.remove("active");
             activeAnimation.value = null;
             store.animationActive = false;
+            clog("SCROLL", `⏹ left: ${self.trigger.id}`);
           }
         },
         onUpdate: (self) => {},

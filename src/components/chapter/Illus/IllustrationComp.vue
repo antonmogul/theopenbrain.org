@@ -153,6 +153,7 @@
 </template>
 
 <script setup>
+import { clog } from "@/helper/chapterDebug";
 import IllustarionMultiple from "@/components/chapter/Illus/IllustarionMultiple.vue";
 import { ref, onMounted, onUnmounted } from "vue";
 import { addH, removeH, toSlug, toCamelCase } from "@/helper/general";
@@ -229,6 +230,16 @@ const playPause = () => {
 const setState = (event) => {
   let index = event.index;
   let indexBefore = event.activeState;
+
+  // [5 STATE] a state step was requested. `info.highlight` decides the branch:
+  // highlight figures sync DOM highlight classes; non-highlight ones drive Lottie frames.
+  clog("STATE", `setState "${props.animation?.id}" ${indexBefore} → ${index}`, {
+    figure: props.animation?.id,
+    from: indexBefore,
+    to: index,
+    mode: info.highlight ? "highlight-sync" : "lottie-frame",
+    multiple: !!props.animation?.multiple,
+  });
 
   if (!info.highlight) {
     if (!props.animation.multiple) {

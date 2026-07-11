@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { apiRequest as supabaseRest } from "@/services/api/client";
+import { clog, cgroup } from "@/helper/chapterDebug";
 
 /**
  * Generic composable to fetch and transform any chapter from Supabase
@@ -516,6 +517,34 @@ export function useChapter() {
 
       chapterData.value = chapter;
       transformedData.value = transformModuleToChapterFormat(chapter);
+
+      // [2 TREE] summarise the transformed tree: sections, subsections, figures, and
+      // how many carry a scroll `transition` flag (that's the seeded animation_trigger
+      // ='scroll' rows). This is the reconstructNesting output — the #1-fix surface.
+      try {
+        const t = transformedData.value;
+        const sections = t?.sections || [];
+        let subSections = 0, figures = 0, transitions = 0;
+        const walk = (nodes) => {
+          for (const n of nodes || []) {
+            if (n.subSection) { subSections += n.subSection.length; n.subSection.forEach((s) => walk(s.paragraphs)); }
+            if (n.subSubSection) walk(n.subSubSection);
+            if (n.animation) { figures++; if (n.animation.transition) transitions++; }
+          }
+        };
+        sections.forEach((s) => walk(s.paragraphs));
+        cgroup("TREE", `transform → ${sections.length} sections`, () => {
+          clog("TREE", "tree shape", {
+            sections: sections.length,
+            subSections,
+            figures,
+            scrollTransitions: transitions,
+            title: t?.intro?.[0]?.title,
+          });
+        });
+      } catch (e) {
+        clog("TREE", "tree summary failed (non-fatal)", { error: String(e) });
+      }
 
       return { data: transformedData.value, error: null };
     } catch (err) {

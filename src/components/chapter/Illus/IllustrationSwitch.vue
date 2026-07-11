@@ -37,6 +37,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
+import { clog } from "@/helper/chapterDebug";
 import { loadLottie } from "@/composables/useLottie";
 import StateElement from "../../UI/StateElement.vue";
 
@@ -59,11 +60,17 @@ let activeState = ref(0);
 
 let setState = (event) => {
   let max = props.info.switches.length;
-  animationLottie[event.index || (activeState.value + 1) % max].goToAndPlay(
-    0,
-    true
-  );
-  activeState.value = event.index || (activeState.value + 1) % max;
+  const next = event.index || (activeState.value + 1) % max;
+  // [5 STATE] a switch figure toggled between its variants (from the seeded
+  // animation_variants → info.switches array). If this never fires, switches[] is empty.
+  clog("STATE", `switch "${props.info?.id}" → variant ${next}/${max}`, {
+    figure: props.info?.id,
+    from: activeState.value,
+    to: next,
+    variants: props.info?.switches,
+  });
+  animationLottie[next].goToAndPlay(0, true);
+  activeState.value = next;
 };
 
 watch(

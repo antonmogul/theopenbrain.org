@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { apiRequest as supabaseRest } from "@/services/api/client";
+import { clog, cgroup } from "@/helper/chapterDebug";
 
 // Module-level cache so multiple components share the same data
 const animationsCache = new Map();
@@ -102,7 +103,32 @@ export function useAnimations() {
           anim.youtubeID = row.youtube_id;
         }
 
+        // [1 DATA] trace what this figure got from the DB — states/highlight/switches
+        // come from the animation_states / animation_variants tables (the seeded data).
+        clog("DATA", `figure "${anim.id}"`, {
+          states: anim.states?.length || 0,
+          statesHighlight: anim.statesHighlight?.length || 0,
+          switches: anim.switches?.length || 0,
+          isSwitch: !!anim.switch,
+          fullscreen: !!anim.fullscreen,
+          rawStateRows: states.length,
+        });
+
         return anim;
+      });
+
+      // [1 DATA] summary — how many figures actually got interactive data. If states
+      // total is 0 here, the seed didn't apply (or the cache is stale).
+      cgroup("DATA", `fetchAnimations → ${transformed.length} figures`, () => {
+        const withStates = transformed.filter((a) => a.states || a.statesHighlight);
+        const withSwitch = transformed.filter((a) => a.switch);
+        clog("DATA", "totals", {
+          figures: transformed.length,
+          withStatesOrHighlight: withStates.length,
+          switchFigures: withSwitch.length,
+          totalStateRows: stateRows.length,
+          totalVariantRows: variantRows.length,
+        });
       });
 
       animations.value = transformed;
