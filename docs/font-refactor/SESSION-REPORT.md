@@ -2,7 +2,10 @@
 
 **Branch:** `refactor/remove-font-hack`
 **Date:** 2026-07-10 (session), analysis continued into 2026-07-11 UTC
-**Outcome:** ⛔ **HALTED — NOT PUSHED.** Layer-2 rendered verification found a real, widespread size regression the codemod did not cover. Pushing would ship a broken layout. Per the session's STOP conditions, the branch is left committed locally but **not pushed**.
+**Outcome (Phase 1, 2026-07-10):** ⛔ **HALTED — Layer-2 found a Tailwind-default-scale regression the codemod did not cover.**
+**Outcome (Phase 2, 2026-07-11):** ✅ **RESOLVED — PUSHED.** The Tailwind default scale was rebased ÷1.6, the one remaining runtime-computed rem was fixed, and Layer-2 re-verification is clean: **Chapter 1 rendered-element size deltas dropped from 747 → 0** (only `<html>`/`<head>` font inheritance changes, as intended). Build exit 0, tests 141/141.
+
+> The sections below marked **[Phase 1]** record the halted state as it stood on 2026-07-10. The **Phase 2 resolution** at the bottom documents what closed the gap and why the branch is now pushable.
 
 ---
 
@@ -90,13 +93,57 @@ Whichever path, **Layer-2 rendered parity must be the acceptance gate** — the 
 
 ## State left behind
 
-- Branch `refactor/remove-font-hack` has all work committed **locally** (codemod, conversions, hack removal, audit harness, this report). **Not pushed** — do not push until the Tailwind-scale gap is closed and Layer-2 passes.
+- Branch `refactor/remove-font-hack` has all work committed **locally** (codemod, conversions, hack removal, audit harness, this report). **[Phase 1: Not pushed]** — do not push until the Tailwind-scale gap is closed and Layer-2 passes. *(Phase 2 closed the gap and pushed — see the Phase 2 resolution below.)*
 - `docs/font-refactor/PLAN.md` — full plan + all 7 round verdicts.
 - `docs/font-refactor/conversion-manifest.tsv` — every one of the 1408 converted tokens.
 - `scripts/convert-rem.mjs` — re-runnable codemod (`--check` / apply / `--audit`).
 - Preview servers and the `/tmp/ob-main` worktree were transient (may be cleaned up).
 
-## Uncertain / not covered
+## Uncertain / not covered [Phase 1]
 
 - **Chapter 2+ / dashboard / settings** were not rendered-verified beyond Chapter 1 + the observation above (Supabase-backed; the same Tailwind-scale regression applies to them a fortiori since they use more utility classes).
 - The exact count of visually-affected elements app-wide is ≥747 on Chapter 1 alone; the app-wide total is larger.
+
+---
+
+# Phase 2 resolution — Tailwind default-scale rebase (2026-07-11) ✅ PUSHED
+
+## What was done
+
+1. **Rebased Tailwind's default rem scales ÷1.6** — new `scripts/tailwind-rebase.cjs` imports Tailwind 3.4.19's resolved default theme and divides every rem literal in the six rem-bearing scales (`spacing`, `fontSize`, `lineHeight`, `borderRadius`, `maxWidth`, `columns`) by 1.6, using the same exact-decimal arithmetic as Phase 1 (`×0.625` + per-token round-trip assertion). Wired into `tailwind.config.js` as **hard overrides** under `theme` (not `theme.extend`), so utilities emit the same pixels at the 16px base as at the old 10px base. Overriding `theme.spacing` cascades to `padding`/`margin`/`gap`/`width`/`height`/`inset`/`translate`/`size`/etc. automatically (they derive from spacing in core). The config's pre-existing custom `extend` keys (already Phase-1-converted) survive on top.
+   - Scale coverage was scoped to actual `src/` usage: spacing **585 uses**, fontSize **78**, borderRadius **61**, lineHeight **3**, maxWidth **8**, columns **0** — all rebased.
+   - Self-audit: `node scripts/tailwind-rebase.cjs --audit` → **126/126 rebased rem tokens are exactly default ÷ 1.6.**
+   - Built-CSS spot-check confirmed the exact Phase-1 regression classes now emit the right values: `.px-24{padding:3.75rem}` (60px), `.gap-2{gap:.3125rem}` (5px), `.py-10{1.5625rem}` (25px), `.-ml-5{-.78125rem}` (-12.5px), `.h-64{10rem}` (160px).
+
+2. **Fixed the one runtime-computed rem** — `src/components/chapter/TextComp.vue` builds the moving intro-dot's width/height rem by string concatenation: `'' + (2.5 - Math.abs(posAugeX)/20) + 'rem'`. This has **no `Nrem` literal**, so the Phase-1 regex codemod structurally could not match it, and it rendered 1.6× too big. Rebased by hand: `2.5 → 1.5625` (÷1.6) and divisor `20 → 32` (×1.6). Both old and new formulas reduce algebraically to **`25 − |posAugeX|/2` px**, so the dot is pixel-identical for *every* animation frame (verified analytically to ≤3.55e-15px across posAugeX ∈ {0…40}).
+
+## Codex review (Phase 2)
+
+**Round 1 — VERDICT: CLEAN.** (No second round needed.) Codex confirmed: the ÷1.6 arithmetic is correct (`×0.625` + round-trip, 126 tokens pass); all rem-bearing default scales used in `src/` are covered; overriding `theme.spacing` correctly cascades to the ~15 derived scales (padding/margin/gap/dimensions/inset/translate/size/flex-basis/scroll/border-spacing/text-indent); hard overrides replace defaults while preserving `extend.height.header`/`width.text`/`spacing.text`/`margin.body`; no double-conversion; non-rem values unchanged; `fontSize` tuple line-heights rebased and unitless `"1"` preserved. Codex independently probed `textIndent` (auto-rebases from spacing) and `decoration-*`/`ring-offset-*`/`blur-*` (no rem usage in `src/`) and found no miss.
+
+## Layer-2 re-verification (the hard gate) — main (:4174) vs branch (:4173)
+
+Method identical to Phase 1: two preview builds (main worktree at `/tmp/ob-main` with the same `.env` so Supabase Chapter-1 content loads identically), `data-reduce-motion=1`, `document.fonts.ready`, exhaustive `querySelectorAll('*')` computed-style traversal over the full size-property set, ≤0.1px tolerance, `transform` compared as numeric matrices.
+
+| Page | Viewport | Nodes | `<html>` deltas (intended) | Rendered-node size regressions |
+|------|----------|-------|----------------------------|--------------------------------|
+| **Chapter 1 (the-retina)** | 1440×900 | 1792 | 2 (`fontSize` 10→16px, `lineHeight` 15→24px) | **0** *(was 747)* |
+| **Chapter 1 (the-retina)** | 390×844 (mobile) | 3473 | 2 | **0** (16 raw deltas, all animation-phase drift on the dot + 13 rotating SVG `<g>` groups whose transform **scale = 1.0000 on both** sides — pure rotation/translation frame drift, zero rem-scale change) |
+| **Home `/`** | 1440×900 | 88 | 2 | **0** (page is fully static; every rendered node — widths, `304px`/`290.664px` grids, paddings, `999px`/`4px`/`9999px` radii, font sizes — byte-identical) |
+
+- `<body>` fontSize is **6.25px on both** everywhere (the §4a body pin holds exactly).
+- The Phase-1 idx-81 dot regression (39.4px vs 20.7px) is **gone** after the TextComp fix; its residual live-diff delta is pure animation-phase drift, proven invariant.
+
+## Headline
+
+**Chapter 1 "The Retina" — the north-star page — rendered-element size deltas: 747 → 0.** Only `<html>`/`<head>` font-size changes (10px → 16px), which is the entire point of removing the hack. Every rendered, non-animated element is pixel-identical to `main`; the two animated elements (the intro dot and Lottie SVG groups) are proven invariant.
+
+## What shipped (Phase 2 commits)
+
+- `refactor(font): Phase 2 — rebase Tailwind default scales ÷1.6` — `scripts/tailwind-rebase.cjs` + `tailwind.config.js` hard overrides + PLAN §Phase 2.
+- `refactor(font): rebase runtime-computed dot rem (TextComp) ÷1.6` — the sole runtime rem.
+- `docs(font-refactor): Phase 2 resolution — Layer-2 clean, pushed` (this update).
+
+## Still not rendered-verified (deferred, unchanged from Phase 1)
+
+- **Chapter 2+ / dashboard / settings** — Supabase-backed and mostly gated behind auth locally; not rendered-diffed. They rely on the **same** rebased Tailwind scale + authored rem, both now proven invariant on Chapter 1 and Home, so the fix applies uniformly; but a full render diff of those routes is left for a follow-up. Chapter 1 (the north-star) and Home are the authoritative gates and are clean.
