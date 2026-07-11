@@ -262,10 +262,13 @@ stuck on a degraded cache can clear `localStorage.sections`. No code change requ
   with fixtures (incl. the no-nesting Ch2 shape, orphan level-2, empty header) run in
   `npm test` before merge.
 
-**`fetchChapterById` — OUT OF SCOPE (Codex).** `useChapter.fetchChapterById` does not
-select `subsection_level`, does not resolve `animation_key`, and references an undefined
-`supabase` import — it is **not** the path `ChapterView` uses (`ChapterView` calls
-`fetchChapter` by slug). It is effectively dead for the Ch1 render path. We do **not**
-touch it in this parity run (changing it risks unrelated regressions and it isn't the
-break). Flagged here so it isn't mistaken for parity-complete; a follow-up should either
-align it with `fetchChapter` or remove it.
+**`fetchChapterById` — REMOVE (Codex).** `useChapter.fetchChapterById` does not select
+`subsection_level`, does not resolve `animation_key`, and references an undefined
+`supabase` import (it would throw if ever called). **Verified zero callers:**
+`grep -rn "fetchChapterById" src/` returns only its own definition (`useChapter.js:519`)
+and its entry in the returned object (`useChapter.js:605`) — no view/component imports or
+invokes it. Rather than leave a broken, unused parity path or invest in aligning a
+never-called function, **this branch deletes `fetchChapterById` and its return-object
+entry.** This removes the only other (broken) chapter-fetch path, so `fetchChapter` is
+unambiguously the single source of truth. (A grep-verified dead-code removal, not a
+behavior change.)
