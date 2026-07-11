@@ -226,32 +226,32 @@ const segmentOptions = [
 
 <style scoped>
 .col-head {
-  margin-bottom: 3rem;
+  margin-bottom: 1.875rem;
 }
 .col-eyebrow {
   color: rgb(var(--color-accent));
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 .col-note {
   color: rgb(var(--color-mute));
   max-width: 62ch;
-  margin-top: 0.75rem;
+  margin-top: 0.46875rem;
 }
 .cat-eyebrow {
   color: rgb(var(--color-accent));
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.46875rem;
   border-bottom: 1px solid rgb(var(--color-line));
-  margin: 3rem 0 1.5rem;
+  margin: 1.875rem 0 0.9375rem;
 }
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  gap: 0.9375rem;
 }
 .badge-row,
 .icon-row {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.46875rem;
   align-items: center;
 }
 </style>

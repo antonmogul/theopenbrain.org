@@ -108,43 +108,43 @@ function goNext() {
 
 <style scoped>
 .eoc-callout {
-  margin: 6rem auto 12rem;
+  margin: 3.75rem auto 7.5rem;
   max-width: var(--reading-measure, 780px);
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.25rem;
   font-family: var(--font-body);
 }
 
 .takeaways {
   background: rgb(var(--color-complete) / 0.08);
   border: 1px solid rgb(var(--color-complete) / 0.4);
-  border-radius: 1.2rem;
-  padding: 2rem 2.4rem;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
 }
 
 .takeaways-header {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 1.2rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .takeaways-header .check {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: 9999px;
   background: rgb(var(--color-complete));
   color: rgb(var(--color-paper));
   font-weight: 600;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
 }
 
 .takeaways h3 {
-  font-size: 1.8rem;
+  font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
   padding: 0;
@@ -153,14 +153,14 @@ function goNext() {
 
 .takeaways ul {
   margin: 0;
-  padding-left: 2rem;
+  padding-left: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .takeaways li {
-  font-size: 1.6rem;
+  font-size: 1rem;
   line-height: 1.6;
   color: rgb(var(--color-ink));
 }
@@ -168,29 +168,29 @@ function goNext() {
 .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: 0.625rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 1.2rem;
-  padding: 1.6rem 1rem;
+  border-radius: 0.75rem;
+  padding: 1rem 0.625rem;
 }
 
 .stat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.125rem;
 }
 
 .stat-value {
-  font-size: 2.2rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
 }
 
 .stat-label {
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -200,15 +200,15 @@ function goNext() {
 .ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
 .cta {
   display: inline-flex;
   align-items: center;
-  padding: 1rem 1.8rem;
-  border-radius: 0.8rem;
-  font-size: 1.4rem;
+  padding: 0.625rem 1.125rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   font-family: var(--font-ui);
   text-decoration: none;
   cursor: pointer;
@@ -248,8 +248,8 @@ function goNext() {
   width: 100%;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 1.2rem;
-  padding: 1.6rem 2rem;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, transform 0.1s;
@@ -268,11 +268,11 @@ function goNext() {
 .up-next-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.125rem;
 }
 
 .up-next-label {
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -280,19 +280,19 @@ function goNext() {
 }
 
 .up-next-title {
-  font-size: 1.6rem;
+  font-size: 1rem;
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 
 .up-next-arrow {
-  font-size: 2rem;
+  font-size: 1.25rem;
   color: rgb(var(--color-accent));
 }
 
 @media (max-width: 767px) {
   .eoc-callout {
-    margin: 4rem 1.6rem 8rem;
+    margin: 2.5rem 1rem 5rem;
   }
   .stats {
     grid-template-columns: repeat(2, 1fr);

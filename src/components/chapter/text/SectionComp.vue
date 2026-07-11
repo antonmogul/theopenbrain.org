@@ -27,7 +27,7 @@
     />
 
     <h2
-      class="TN border border-black bg-white rounded-full absolute -translate-x-[8.65rem] -translate-y-[0.8rem] w-28 h-28 flex items-center justify-center"
+      class="TN border border-black bg-white rounded-full absolute -translate-x-[5.40625rem] -translate-y-[0.5rem] w-28 h-28 flex items-center justify-center"
     >
       {{ index + 1 }}
     </h2>

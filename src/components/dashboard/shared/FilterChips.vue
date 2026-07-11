@@ -36,11 +36,11 @@ function select(v) {
 .chip {
   display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
   border: 1px solid rgb(var(--color-line)); border-radius: 999px; background: transparent;
-  font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+  font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase;
   letter-spacing: 0.06em; color: rgb(var(--color-mute)); cursor: pointer;
   transition: border-color 0.12s ease, color 0.12s ease;
 }
 .chip:hover { color: rgb(var(--color-ink)); }
 .chip.on { border-color: rgb(var(--color-accent)); color: rgb(var(--color-accent)); }
-.chip-count { font-size: 1rem; opacity: 0.7; }
+.chip-count { font-size: 0.625rem; opacity: 0.7; }
 </style>

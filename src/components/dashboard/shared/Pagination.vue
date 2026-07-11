@@ -48,11 +48,11 @@ function goToPage(page) { if (page !== "…" && page !== props.currentPage) emit
 
 <style scoped>
 .pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.page-info { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgb(var(--color-mute)); }
+.page-info { font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgb(var(--color-mute)); }
 .page-nav { display: flex; align-items: center; gap: 4px; }
 .page-btn {
   min-width: 32px; padding: 6px 10px; border: 1px solid transparent; border-radius: 999px;
-  background: transparent; font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-ink)); cursor: pointer;
+  background: transparent; font-family: var(--font-mono); font-size: 0.75rem; color: rgb(var(--color-ink)); cursor: pointer;
 }
 .page-btn:hover:not(:disabled):not(.current) { background: rgb(var(--color-ink) / 0.06); }
 .page-btn.current { background: rgb(var(--color-ink)); color: rgb(var(--color-paper)); }

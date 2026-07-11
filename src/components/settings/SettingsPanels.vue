@@ -118,7 +118,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 .settings-panels {
   display: flex;
   flex-direction: column;
-  gap: 6.4rem;
+  gap: 4rem;
 }
 .rule {
   border: 0;
@@ -131,7 +131,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -142,7 +142,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .section-header h2 {
   font-family: var(--font-body);
-  font-size: 3.2rem;
+  font-size: 2rem;
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.012em;
@@ -150,11 +150,11 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .subtitle {
   font-family: var(--font-body);
-  font-size: 1.6rem;
+  font-size: 1rem;
   line-height: 1.5;
   color: rgb(var(--color-mute));
   margin: 0;
-  max-width: 64rem;
+  max-width: 40rem;
 }
 
 .stack {
@@ -196,7 +196,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 .stat-value {
   display: block;
   font-family: var(--font-body);
-  font-size: 3.2rem;
+  font-size: 2rem;
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -204,7 +204,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 .stat-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -218,7 +218,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .btn {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 8px 16px;

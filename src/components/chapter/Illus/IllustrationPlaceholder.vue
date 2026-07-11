@@ -169,26 +169,26 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.2rem;
-  padding: 1rem 1.4rem;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
   border-bottom: 1px solid rgb(var(--color-line));
   flex-shrink: 0;
 }
 .fig-toolbar-left {
   display: flex;
   align-items: baseline;
-  gap: 1rem;
+  gap: 0.625rem;
   min-width: 0;
 }
 .fig-label {
-  font-size: 1.05rem;
+  font-size: 0.65625rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
   flex-shrink: 0;
 }
 .fig-name {
-  font-size: 1.15rem;
+  font-size: 0.71875rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
@@ -221,37 +221,37 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.25rem;
 }
 .fig-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1rem;
+  gap: 0.625rem;
   max-width: 420px;
 }
 .fig-type-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.05rem;
+  gap: 0.3125rem;
+  font-size: 0.65625rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-accent));
   border: 1px solid rgb(var(--color-accent) / 0.5);
   border-radius: 999px;
-  padding: 0.3rem 0.9rem;
+  padding: 0.1875rem 0.5625rem;
 }
 .fig-glyph {
-  font-size: 5rem;
+  font-size: 3.125rem;
   line-height: 1;
   color: rgb(var(--color-mute) / 0.5);
-  margin-top: 0.6rem;
+  margin-top: 0.375rem;
 }
 .fig-title {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -260,30 +260,30 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .fig-caption {
   font-family: var(--font-body);
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   line-height: 1.45;
   color: rgb(var(--color-mute));
   margin: 0;
 }
 .fig-status {
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: rgb(var(--color-mute) / 0.8);
-  margin: 0.2rem 0 0;
+  margin: 0.125rem 0 0;
 }
 .fig-note {
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   line-height: 1.5;
   color: rgb(var(--color-mute));
-  margin: 1rem 0 0;
+  margin: 0.625rem 0 0;
   max-width: 360px;
 }
 .note-tag {
-  font-size: 0.95rem;
+  font-size: 0.59375rem;
   letter-spacing: 0.12em;
   color: rgb(var(--color-complete));
-  margin-right: 0.4rem;
+  margin-right: 0.25rem;
 }
 
 /* Fullscreen overlay */
@@ -310,9 +310,9 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   overflow: hidden;
 }
 .fs-glyph {
-  font-size: 8rem;
+  font-size: 5rem;
 }
 .fs-title {
-  font-size: 3rem;
+  font-size: 1.875rem;
 }
 </style>

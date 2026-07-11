@@ -116,10 +116,10 @@ function select(id) {
   flex-direction: column;
   background: rgb(var(--color-paper));
   border-right: 1px solid rgb(var(--color-line));
-  padding: 2.5rem 1.5rem;
+  padding: 1.5625rem 0.9375rem;
 }
 .sg-brand {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5625rem;
 }
 .sg-logo {
   width: 140px;
@@ -128,38 +128,38 @@ function select(id) {
 }
 .sg-brand-tag {
   color: rgb(var(--color-mute));
-  margin-top: 1rem;
+  margin-top: 0.625rem;
 }
 
 .sg-nav {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.25rem;
   flex: 1;
   overflow-y: auto;
 }
 .sg-nav-group {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.15625rem;
 }
 .sg-nav-heading {
   color: rgb(var(--color-mute));
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3125rem;
 }
 .sg-nav-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.3125rem;
   width: 100%;
-  padding: 0.6rem 0.875rem;
+  padding: 0.375rem 0.546875rem;
   border: none;
   border-radius: 8px;
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-body);
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   text-align: left;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -177,11 +177,11 @@ function select(id) {
 }
 .sg-nav-count {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-mute));
   background: rgb(var(--color-bg));
   border-radius: 999px;
-  padding: 0.1rem 0.6rem;
+  padding: 0.0625rem 0.375rem;
 }
 .sg-nav-item.is-active .sg-nav-count {
   color: rgb(var(--color-accent));
@@ -189,9 +189,9 @@ function select(id) {
 }
 
 .sg-foot {
-  padding-top: 1.5rem;
+  padding-top: 0.9375rem;
   border-top: 1px solid rgb(var(--color-line));
-  margin-top: 1.5rem;
+  margin-top: 0.9375rem;
 }
 .sg-foot-link {
   color: rgb(var(--color-mute));
@@ -203,7 +203,7 @@ function select(id) {
 
 /* Content */
 .sg-content {
-  padding: 4rem 4rem 8rem;
+  padding: 2.5rem 2.5rem 5rem;
   max-width: 1200px;
   overflow-x: hidden;
 }

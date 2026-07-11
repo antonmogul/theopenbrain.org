@@ -311,15 +311,15 @@ onMounted(async () => {
 }
 
 .block-1 {
-  width: max(50vw, calc(100vw - 780px - 11rem));
+  width: max(50vw, calc(100vw - 780px - 6.875rem));
 }
 .block-2 {
-  width: min(calc(50vw / 8 * 5), calc((780px + 11rem) / 8 * 5));
+  width: min(calc(50vw / 8 * 5), calc((780px + 6.875rem) / 8 * 5));
   overflow: hidden;
 }
 .block-3 {
-  /* width: calc(780px + 11rem); */
-  width: min(calc(50vw / 8 * 3), calc((780px + 11rem) / 8 * 3));
+  /* width: calc(780px + 6.875rem); */
+  width: min(calc(50vw / 8 * 3), calc((780px + 6.875rem) / 8 * 3));
   overflow: hidden;
 }
 </style>

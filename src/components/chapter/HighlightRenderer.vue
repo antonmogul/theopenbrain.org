@@ -127,8 +127,8 @@ function handleClick(event) {
 /* Mark styles - using global styles since they're in v-html */
 .highlight-renderer mark {
   background-color: inherit;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.125rem;
+  padding: 0.078125rem 0.15625rem;
+  border-radius: 0.078125rem;
   cursor: pointer;
   transition: all 0.15s ease;
 }

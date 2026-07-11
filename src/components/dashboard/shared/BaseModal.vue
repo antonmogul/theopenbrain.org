@@ -49,11 +49,11 @@ onUnmounted(() => { document.removeEventListener("keydown", handleEscape); docum
   border: 1px solid rgb(var(--color-line)); border-radius: 6px;
   box-shadow: 0 20px 60px rgb(var(--color-ink) / 0.18);
 }
-.sz-sm { max-width: 28rem; } .sz-md { max-width: 36rem; } .sz-lg { max-width: 52rem; }
-.sz-xl { max-width: 72rem; } .sz-full { max-width: 96rem; }
+.sz-sm { max-width: 17.5rem; } .sz-md { max-width: 22.5rem; } .sz-lg { max-width: 32.5rem; }
+.sz-xl { max-width: 45rem; } .sz-full { max-width: 60rem; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid rgb(var(--color-line)); }
-.modal-title { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.modal-close { border: 0; background: transparent; color: rgb(var(--color-mute)); font-size: 1.6rem; cursor: pointer; line-height: 1; }
+.modal-title { font-family: var(--font-body); font-size: 1.25rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.modal-close { border: 0; background: transparent; color: rgb(var(--color-mute)); font-size: 1rem; cursor: pointer; line-height: 1; }
 .modal-close:hover { color: rgb(var(--color-ink)); }
 .modal-body { padding: 22px; }
 .modal-footer { padding: 16px 22px; border-top: 1px solid rgb(var(--color-line)); display: flex; justify-content: flex-end; gap: 8px; }

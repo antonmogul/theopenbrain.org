@@ -58,15 +58,15 @@ const metaLine = computed(() => (props.role ? props.role.toUpperCase() : props.e
 
 <style scoped>
 .rail { align-self: start; display: flex; flex-direction: column; gap: 4px; }
-@media (min-width: 900px) { .rail { position: sticky; top: 4rem; } }
+@media (min-width: 900px) { .rail { position: sticky; top: 2.5rem; } }
 .rail-user { margin-bottom: 18px; }
 .rail-avatar {
   width: 80px; height: 80px; border-radius: 999px; background: rgb(var(--color-accent));
   color: rgb(var(--color-paper)); display: grid; place-items: center;
-  font-family: var(--font-mono); font-size: 2.6rem; font-weight: 600;
+  font-family: var(--font-mono); font-size: 1.625rem; font-weight: 600;
 }
-.rail-name { font-family: var(--font-body); font-size: 2.2rem; letter-spacing: -0.01em; margin-top: 14px; color: rgb(var(--color-ink)); }
-.rail-meta { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+.rail-name { font-family: var(--font-body); font-size: 1.375rem; letter-spacing: -0.01em; margin-top: 14px; color: rgb(var(--color-ink)); }
+.rail-meta { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
 .rail-nav { display: flex; flex-direction: column; }
 .rail-link {
   display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
@@ -74,9 +74,9 @@ const metaLine = computed(() => (props.role ? props.role.toUpperCase() : props.e
 }
 .rail-bar { width: 4px; height: 16px; flex: none; background: transparent; transition: background 200ms ease; }
 .rail-icon { flex: none; opacity: 0.7; }
-.rail-label { font-family: var(--font-body); font-size: 1.5rem; font-weight: 400; flex: 1; }
-.rail-soon { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-mute) / 0.7); }
-.rail-count { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
+.rail-label { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 400; flex: 1; }
+.rail-soon { font-family: var(--font-mono); font-size: 0.625rem; color: rgb(var(--color-mute) / 0.7); }
+.rail-count { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); }
 .rail-link:hover { color: rgb(var(--color-ink)); }
 .rail-link:hover .rail-icon { opacity: 1; }
 .rail-link.active { color: rgb(var(--color-ink)); }
@@ -84,6 +84,6 @@ const metaLine = computed(() => (props.role ? props.role.toUpperCase() : props.e
 .rail-link.active .rail-icon { opacity: 1; }
 .rail-link.active .rail-label { font-weight: 500; }
 .rail-rule { border: 0; border-top: 1px solid rgb(var(--color-line)); margin: 20px 0 12px; width: 100%; }
-.rail-back { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgb(var(--color-ink)); text-decoration: none; background: transparent; border: 0; cursor: pointer; text-align: left; padding: 0; }
+.rail-back { font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgb(var(--color-ink)); text-decoration: none; background: transparent; border: 0; cursor: pointer; text-align: left; padding: 0; }
 .rail-back:hover { color: rgb(var(--color-accent)); }
 </style>

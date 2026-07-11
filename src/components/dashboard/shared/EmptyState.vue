@@ -26,7 +26,7 @@ defineEmits(["action"]);
 <style scoped>
 .state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 24px; gap: 8px; }
 .state-icon { color: rgb(var(--color-mute)); opacity: 0.6; margin-bottom: 8px; }
-.state-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42rem; line-height: 1.5; }
+.state-title { font-family: var(--font-body); font-size: 1.125rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.state-msg { font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-mute)); margin: 0; max-width: 26.25rem; line-height: 1.5; }
 .state-action { margin-top: 12px; }
 </style>

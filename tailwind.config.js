@@ -34,30 +34,30 @@ module.exports = {
       },
       fontSize: {
         // smaller: [
-        //   "1.1rem",
-        //   { lineHeight: "1.4rem", letterSpacing: "-0.01rem" },
+        //   "0.6875rem",
+        //   { lineHeight: "0.875rem", letterSpacing: "-0.00625rem" },
         // ],
-        // small: ["1.35rem", { lineHeight: "1.9rem", letterSpacing: "0.02rem" }],
-        // medium: ["1.6rem", { lineHeight: "2.65rem" }],
-        // baseMono: ["1.8rem", "2.8rem"],
-        // base: ["2rem", "3.1rem"],
-        // h3: ["3.0rem", "3.8rem"],
-        // h2: ["4.8rem", "5.8rem"],
-        // blindness: ["11rem", "11rem"],
-        // biggest: ["8rem", "12rem"],
-        // big: ["8rem", "8rem"],
+        // small: ["0.84375rem", { lineHeight: "1.1875rem", letterSpacing: "0.0125rem" }],
+        // medium: ["1rem", { lineHeight: "1.65625rem" }],
+        // baseMono: ["1.125rem", "1.75rem"],
+        // base: ["1.25rem", "1.9375rem"],
+        // h3: ["1.875rem", "2.375rem"],
+        // h2: ["3rem", "3.625rem"],
+        // blindness: ["6.875rem", "6.875rem"],
+        // biggest: ["5rem", "7.5rem"],
+        // big: ["5rem", "5rem"],
       },
       height: {
-        header: "2.2rem",
-        body: "calc(100vh - 2.2rem)",
+        header: "1.375rem",
+        body: "calc(100vh - 1.375rem)",
       },
       width: {
         // Reader split (Track 3 D1): figure pane is the protagonist at ~1.5:1
         // on wide screens. Both widths derive from --reader-prose-w (brand.css,
         // = 40vw prose) so the figure pane fills the remaining ~60vw and the two
         // can never drift. Fallback keeps the old 50vw if the var is absent.
-        text: "var(--reader-prose-w, min(50vw, calc(780px + 11rem)))",
-        illus: "calc(100vw - var(--reader-prose-w, min(50vw, calc(780px + 11rem))))",
+        text: "var(--reader-prose-w, min(50vw, calc(780px + 6.875rem)))",
+        illus: "calc(100vw - var(--reader-prose-w, min(50vw, calc(780px + 6.875rem))))",
         menu: "35vw",
         "1/8": " calc(100% / 8 * 1)",
         "2/8": " calc(100% / 8 * 2)",
@@ -68,10 +68,10 @@ module.exports = {
         "7/8": " calc(100% / 8 * 7)",
       },
       spacing: {
-        text: "max(50vw, calc(100vw - 780px - 11rem))",
+        text: "max(50vw, calc(100vw - 780px - 6.875rem))",
       },
       margin: {
-        body: "2.2rem",
+        body: "1.375rem",
       },
       colors: {
         // Token-backed semantic names — Track 1 design system

@@ -165,7 +165,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 1.25rem;
 }
 
 .enroll-container {
@@ -177,7 +177,7 @@ onMounted(() => {
 .error-state,
 .success-state {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 2.5rem 1.25rem;
 }
 
 .loading-state .spinner {
@@ -187,7 +187,7 @@ onMounted(() => {
     border-top-color: rgb(59, 130, 246);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-    margin: 0 auto 2rem;
+    margin: 0 auto 1.25rem;
 }
 
 @keyframes spin {
@@ -197,34 +197,34 @@ onMounted(() => {
 .loading-state p,
 .error-state p {
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
+    font-size: 1rem;
     color: #898989;
 }
 
 .error-state svg {
     color: #ef4444;
-    margin-bottom: 1.6rem;
+    margin-bottom: 1rem;
 }
 
 .error-state h2,
 .success-state h2 {
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.4rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: white;
-    margin-bottom: 1rem;
+    margin-bottom: 0.625rem;
 }
 
 .success-state svg {
     color: #22c55e;
-    margin-bottom: 1.6rem;
+    margin-bottom: 1rem;
 }
 
 .success-state p {
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
+    font-size: 1rem;
     color: #898989;
-    margin-bottom: 2.4rem;
+    margin-bottom: 1.5rem;
 }
 
 .success-state strong {
@@ -235,51 +235,51 @@ onMounted(() => {
     background: #1a1a1a;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    padding: 3.2rem;
+    padding: 2rem;
 }
 
 .course-header {
     text-align: center;
-    margin-bottom: 2.4rem;
+    margin-bottom: 1.5rem;
 }
 
 .course-badge {
     display: inline-block;
     font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     background: rgba(59, 130, 246, 0.15);
     color: rgb(59, 130, 246);
-    padding: 0.4rem 1.2rem;
+    padding: 0.25rem 0.75rem;
     border-radius: 4px;
-    margin-bottom: 1.6rem;
+    margin-bottom: 1rem;
 }
 
 .course-header h1 {
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 2.8rem;
+    font-size: 1.75rem;
     font-weight: 600;
     color: white;
-    margin: 0 0 1rem;
+    margin: 0 0 0.625rem;
 }
 
 .course-instructor {
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
+    font-size: 0.9375rem;
     color: #898989;
 }
 
 .course-description {
     background: rgba(255, 255, 255, 0.03);
     border-radius: 10px;
-    padding: 1.6rem;
-    margin-bottom: 2.4rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .course-description p {
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
+    font-size: 0.9375rem;
     line-height: 1.6;
     color: #a0a0a0;
     margin: 0;
@@ -288,16 +288,16 @@ onMounted(() => {
 .course-details {
     display: flex;
     justify-content: center;
-    gap: 2.4rem;
-    margin-bottom: 3.2rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .detail-item {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.5rem;
     font-family: "IBM Plex Mono", monospace;
-    font-size: 1.3rem;
+    font-size: 0.8125rem;
     color: #898989;
 }
 
@@ -308,18 +308,18 @@ onMounted(() => {
 .enrollment-actions {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0.75rem;
 }
 
 .enroll-btn {
     width: 100%;
-    padding: 1.6rem;
+    padding: 1rem;
     background: rgb(59, 130, 246);
     border: none;
     border-radius: 10px;
     color: white;
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.6rem;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -336,13 +336,13 @@ onMounted(() => {
 
 .primary-btn {
     display: inline-block;
-    padding: 1.4rem 3.2rem;
+    padding: 0.875rem 2rem;
     background: rgb(59, 130, 246);
     border: none;
     border-radius: 10px;
     color: white;
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
+    font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -354,13 +354,13 @@ onMounted(() => {
 
 .secondary-btn {
     width: 100%;
-    padding: 1.4rem;
+    padding: 0.875rem;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     color: #898989;
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.5rem;
+    font-size: 0.9375rem;
     cursor: pointer;
     transition: all 0.2s;
 }

@@ -426,7 +426,7 @@ async function handleForgot() {
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-body);
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: rgb(var(--color-ink));
   outline: none;
 }
@@ -435,7 +435,7 @@ async function handleForgot() {
 }
 .auth-submit {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 11px 18px;
@@ -458,7 +458,7 @@ async function handleForgot() {
   background: transparent;
   border: 0;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   color: rgb(var(--color-mute));
   cursor: pointer;
   padding: 2px 0;
@@ -469,7 +469,7 @@ async function handleForgot() {
 }
 .auth-msg {
   font-family: var(--font-mono);
-  font-size: 1.05rem;
+  font-size: 0.65625rem;
   margin: 0;
 }
 .auth-msg--error {
@@ -486,9 +486,9 @@ async function handleForgot() {
   all: unset;
   background: transparent;
   border-bottom: 1px solid rgb(181, 181, 181);
-  padding: 0.75rem 0;
-  font-size: 1.6rem;
-  line-height: 2rem;
+  padding: 0.46875rem 0;
+  font-size: 1rem;
+  line-height: 1.25rem;
   color: white;
   transition: border-color 0.3s;
 }
@@ -503,7 +503,7 @@ async function handleForgot() {
 }
 section {
   display: block;
-  padding-bottom: 4rem;
+  padding-bottom: 2.5rem;
   min-height: unset;
 }
 </style>

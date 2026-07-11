@@ -283,7 +283,7 @@ export default {
   z-index: 190;
   width: 380px;
   height: 620px;
-  max-height: calc(100vh - 3.2rem);
+  max-height: calc(100vh - 2rem);
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-ink) / 0.85);
   border-radius: 10px;
@@ -324,7 +324,7 @@ export default {
   border: none;
   border-bottom: 2px solid transparent;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -370,48 +370,48 @@ export default {
 /* Demos section */
 .demos-section {
   flex-shrink: 0;
-  padding: 1.2rem 1.6rem 1.6rem;
+  padding: 0.75rem 1rem 1rem;
 }
 
 .demos-divider {
   height: 1px;
   background: rgb(var(--color-line));
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 
 .demos-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
-  margin-bottom: 1rem;
+  margin-bottom: 0.625rem;
 }
 
 .demos-loading {
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: rgb(var(--color-mute));
   text-align: center;
-  padding: 0.8rem 0;
+  padding: 0.5rem 0;
 }
 
 .demos-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .demo-btn {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.8rem 1rem;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
   background: transparent;
   border: 1px solid rgb(var(--color-line));
   border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));

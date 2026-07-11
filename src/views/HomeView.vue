@@ -194,18 +194,18 @@ const features = [
 .feature-eyebrow,
 .foot-eyebrow {
     font-family: var(--font-mono);
-    font-size: 1.1rem;
+    font-size: 0.6875rem;
     text-transform: uppercase;
     letter-spacing: 0.14em;
     color: rgb(var(--color-mute));
-    margin: 0 0 1rem;
+    margin: 0 0 0.625rem;
 }
 
 /* ── Hero ── */
 .hero {
     width: 100%;
     max-width: 720px;
-    padding: 7rem 2.4rem 4rem;
+    padding: 4.375rem 1.5rem 2.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -214,40 +214,40 @@ const features = [
 .hero-logo {
     width: min(300px, 72vw);
     height: auto;
-    margin-bottom: 2.4rem;
+    margin-bottom: 1.5rem;
 }
 .hero-strap {
-    font-size: 1.7rem;
+    font-size: 1.0625rem;
     line-height: 1.55;
     color: rgb(var(--color-mute));
     max-width: 480px;
-    margin: 0 0 2.6rem;
+    margin: 0 0 1.625rem;
     font-style: italic;
 }
 .hero-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.625rem;
     flex-wrap: wrap;
     justify-content: center;
 }
 .hero-user {
-    margin-top: 1.6rem;
+    margin-top: 1rem;
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.5rem;
     font-family: var(--font-mono);
-    font-size: 1.2rem;
+    font-size: 0.75rem;
     color: rgb(var(--color-mute));
 }
 
 /* ── Buttons ── */
 .btn {
     font-family: var(--font-mono);
-    font-size: 1.2rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     border-radius: 999px;
-    padding: 0.9rem 1.8rem;
+    padding: 0.5625rem 1.125rem;
     cursor: pointer;
     transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
     text-decoration: none;
@@ -273,29 +273,29 @@ const features = [
     color: rgb(var(--color-bg));
 }
 .btn--lg {
-    font-size: 1.35rem;
-    padding: 1.1rem 2.4rem;
+    font-size: 0.84375rem;
+    padding: 0.6875rem 1.5rem;
 }
 
 /* ── Mission ── */
 .mission {
     width: 100%;
     max-width: 720px;
-    padding: 3rem 2.4rem;
+    padding: 1.875rem 1.5rem;
     border-top: 1px solid rgb(var(--color-line));
 }
 .mission-head {
-    font-size: 2.8rem;
+    font-size: 1.75rem;
     font-weight: 500;
     line-height: 1.2;
     letter-spacing: -0.015em;
-    margin: 0 0 1.4rem;
+    margin: 0 0 0.875rem;
 }
 .mission-head em {
     font-style: italic;
 }
 .mission-body {
-    font-size: 1.6rem;
+    font-size: 1rem;
     line-height: 1.6;
     color: rgb(var(--color-mute));
     margin: 0;
@@ -306,32 +306,32 @@ const features = [
 .how {
     width: 100%;
     max-width: 960px;
-    padding: 3rem 2.4rem;
+    padding: 1.875rem 1.5rem;
 }
 .how-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 1.25rem;
 }
 .feature {
     border: 1px solid rgb(var(--color-line));
     border-radius: 4px;
     background: rgb(var(--color-paper));
-    padding: 2rem 1.8rem;
+    padding: 1.25rem 1.125rem;
 }
 .feature-eyebrow {
     color: rgb(var(--color-accent));
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
 }
 .feature-title {
-    font-size: 1.8rem;
+    font-size: 1.125rem;
     font-weight: 500;
     line-height: 1.25;
     letter-spacing: -0.01em;
-    margin: 0 0 0.9rem;
+    margin: 0 0 0.5625rem;
 }
 .feature-body {
-    font-size: 1.4rem;
+    font-size: 0.875rem;
     line-height: 1.55;
     color: rgb(var(--color-mute));
     margin: 0;
@@ -341,20 +341,20 @@ const features = [
 .cta {
     width: 100%;
     max-width: 720px;
-    padding: 4rem 2.4rem;
+    padding: 2.5rem 1.5rem;
     text-align: center;
 }
 .cta-head {
-    font-size: 2.4rem;
+    font-size: 1.5rem;
     font-weight: 500;
     letter-spacing: -0.012em;
-    margin: 0 0 1rem;
+    margin: 0 0 0.625rem;
 }
 .cta-body {
-    font-size: 1.5rem;
+    font-size: 0.9375rem;
     line-height: 1.55;
     color: rgb(var(--color-mute));
-    margin: 0 auto 2rem;
+    margin: 0 auto 1.25rem;
     max-width: 460px;
 }
 
@@ -362,7 +362,7 @@ const features = [
 .foot {
     width: 100%;
     border-top: 1px solid rgb(var(--color-line));
-    padding: 3.5rem 2.4rem 4rem;
+    padding: 2.1875rem 1.5rem 2.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -372,11 +372,11 @@ const features = [
     max-width: 960px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2.4rem;
-    margin-bottom: 3rem;
+    gap: 1.5rem;
+    margin-bottom: 1.875rem;
 }
 .foot-text {
-    font-size: 1.3rem;
+    font-size: 0.8125rem;
     line-height: 1.55;
     color: rgb(var(--color-mute));
     margin: 0;
@@ -391,7 +391,7 @@ const features = [
 }
 .foot-legal {
     font-family: var(--font-mono);
-    font-size: 1.1rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.06em;
     color: rgb(var(--color-mute));
     margin: 0;
@@ -400,10 +400,10 @@ const features = [
 /* ── Role tag (signed-in pill) ── */
 .role-tag {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: 0.625rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 0.2rem 0.7rem;
+    padding: 0.125rem 0.4375rem;
     border-radius: 999px;
     border: 1px solid rgb(var(--color-line));
 }

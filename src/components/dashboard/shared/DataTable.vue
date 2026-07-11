@@ -110,7 +110,7 @@ const someSelected = computed(() => selectedRows.value.size > 0 && selectedRows.
 .table-wrap { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; }
 thead th {
-  text-align: left; font-family: var(--font-mono); font-size: 1rem;
+  text-align: left; font-family: var(--font-mono); font-size: 0.625rem;
   text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute));
   padding: 12px 16px; border-bottom: 1px solid rgb(var(--color-line)); white-space: nowrap;
 }
@@ -118,9 +118,9 @@ thead th {
 thead th.sortable { cursor: pointer; }
 thead th.sortable:hover { color: rgb(var(--color-ink)); }
 .th-inner { display: inline-flex; align-items: center; gap: 6px; }
-.sort-caret { font-size: 0.8rem; }
+.sort-caret { font-size: 0.5rem; }
 tbody td {
-  font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink));
+  font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-ink));
   padding: 14px 16px; border-bottom: 1px solid rgb(var(--color-line)); vertical-align: middle;
 }
 .data-table.dense tbody td { padding: 9px 12px; }

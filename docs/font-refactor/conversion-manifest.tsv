@@ -1,0 +1,1409 @@
+file	line	old	new	context
+src/assets/styles/admin-theme.css	25	2rem	1.25rem	padding-bottom: 2rem;
+src/components/Editor/TipTapEditor.vue	513	1rem	0.625rem	Note: Project uses 62.5% base font-size (1rem = 10px)
+src/components/Editor/TipTapEditor.vue	526	0.6rem	0.375rem	gap: 0.6rem;
+src/components/Editor/TipTapEditor.vue	527	1.2rem	0.75rem	padding: 1.2rem 1.6rem;
+src/components/Editor/TipTapEditor.vue	527	1.6rem	1rem	padding: 1.2rem 1.6rem;
+src/components/Editor/TipTapEditor.vue	534	0.4rem	0.25rem	gap: 0.4rem;
+src/components/Editor/TipTapEditor.vue	540	0.8rem	0.5rem	margin: 0 0.8rem;
+src/components/Editor/TipTapEditor.vue	547	3.6rem	2.25rem	min-width: 3.6rem;
+src/components/Editor/TipTapEditor.vue	548	3.6rem	2.25rem	height: 3.6rem;
+src/components/Editor/TipTapEditor.vue	555	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/Editor/TipTapEditor.vue	575	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/Editor/TipTapEditor.vue	585	1.8rem	1.125rem	width: 1.8rem;
+src/components/Editor/TipTapEditor.vue	586	1.8rem	1.125rem	height: 1.8rem;
+src/components/Editor/TipTapEditor.vue	591	2.4rem	1.5rem	padding: 2.4rem 3rem;
+src/components/Editor/TipTapEditor.vue	591	3rem	1.875rem	padding: 2.4rem 3rem;
+src/components/Editor/TipTapEditor.vue	599	1.7rem	1.0625rem	font-size: 1.7rem;
+src/components/Editor/TipTapEditor.vue	604	1.6rem	1rem	margin-bottom: 1.6rem;
+src/components/Editor/TipTapEditor.vue	608	3.2rem	2rem	font-size: 3.2rem;
+src/components/Editor/TipTapEditor.vue	610	1.6rem	1rem	margin-bottom: 1.6rem;
+src/components/Editor/TipTapEditor.vue	611	3.2rem	2rem	margin-top: 3.2rem;
+src/components/Editor/TipTapEditor.vue	617	2.4rem	1.5rem	font-size: 2.4rem;
+src/components/Editor/TipTapEditor.vue	619	1.2rem	0.75rem	margin-bottom: 1.2rem;
+src/components/Editor/TipTapEditor.vue	620	2.8rem	1.75rem	margin-top: 2.8rem;
+src/components/Editor/TipTapEditor.vue	626	2rem	1.25rem	font-size: 2rem;
+src/components/Editor/TipTapEditor.vue	628	1rem	0.625rem	margin-bottom: 1rem;
+src/components/Editor/TipTapEditor.vue	629	2.4rem	1.5rem	margin-top: 2.4rem;
+src/components/Editor/TipTapEditor.vue	636	2.4rem	1.5rem	padding-left: 2.4rem;
+src/components/Editor/TipTapEditor.vue	637	1.6rem	1rem	margin-bottom: 1.6rem;
+src/components/Editor/TipTapEditor.vue	641	0.6rem	0.375rem	margin-bottom: 0.6rem;
+src/components/Editor/TipTapEditor.vue	646	2rem	1.25rem	padding-left: 2rem;
+src/components/Editor/TipTapEditor.vue	648	1.6rem	1rem	margin-bottom: 1.6rem;
+src/components/Editor/TipTapEditor.vue	655	0.2rem	0.125rem	padding: 0.2rem 0.6rem;
+src/components/Editor/TipTapEditor.vue	655	0.6rem	0.375rem	padding: 0.2rem 0.6rem;
+src/components/Editor/TipTapEditor.vue	663	1.6rem	1rem	padding: 1.6rem 2rem;
+src/components/Editor/TipTapEditor.vue	663	2rem	1.25rem	padding: 1.6rem 2rem;
+src/components/Editor/TipTapEditor.vue	666	1.6rem	1rem	margin-bottom: 1.6rem;
+src/components/Editor/TipTapEditor.vue	667	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/Editor/TipTapEditor.vue	679	3rem	1.875rem	margin: 3rem 0;
+src/components/Editor/TipTapEditor.vue	686	1.6rem	1rem	margin: 1.6rem 0;
+src/components/Editor/TipTapEditor.vue	695	1.7rem	1.0625rem	font-size: 1.7rem;
+src/components/Navigation/AuthForm.vue	429	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/Navigation/AuthForm.vue	438	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/Navigation/AuthForm.vue	461	1rem	0.625rem	font-size: 1rem;
+src/components/Navigation/AuthForm.vue	472	1.05rem	0.65625rem	font-size: 1.05rem;
+src/components/Navigation/AuthForm.vue	489	0.75rem	0.46875rem	padding: 0.75rem 0;
+src/components/Navigation/AuthForm.vue	490	1.6rem	1rem	font-size: 1.6rem;
+src/components/Navigation/AuthForm.vue	491	2rem	1.25rem	line-height: 2rem;
+src/components/Navigation/AuthForm.vue	506	4rem	2.5rem	padding-bottom: 4rem;
+src/components/Navigation/MenuAuth.vue	141	4rem	2.5rem	padding-bottom: 4rem;
+src/components/Navigation/MenuAuth.vue	146	3rem	1.875rem	padding-bottom: 3rem;
+src/components/Navigation/NavDrawer.vue	297	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/Navigation/NavDrawer.vue	320	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/Navigation/NavDrawer.vue	367	1rem	0.625rem	font-size: 1rem;
+src/components/Navigation/NavDrawer.vue	372	1.6rem	1rem	font-size: 1.6rem;
+src/components/Navigation/NavDrawer.vue	401	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/Navigation/NavDrawer.vue	406	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/Navigation/NavDrawer.vue	413	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/Navigation/NavDrawer.vue	432	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/Navigation/NavDrawer.vue	438	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/Navigation/NavDrawer.vue	442	1rem	0.625rem	font-size: 1rem;
+src/components/Navigation/NavDrawer.vue	453	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/Navigation/NavDrawer.vue	480	1.05rem	0.65625rem	font-size: 1.05rem;
+src/components/UI/InteractionButton.vue	29	2rem	1.25rem	width: 2rem;
+src/components/UI/InteractionButton.vue	30	2rem	1.25rem	height: 2rem;
+src/components/UI/StateElement.vue	2	5.8rem	3.625rem	<div class="absolute top-40 left-[5.8rem] z-50">
+src/components/ai/AITutorChat.vue	193	1.6rem	1rem	font-size: 1.6rem;
+src/components/ai/AITutorChat.vue	200	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/ai/AITutorChat.vue	240	1.35rem	0.84375rem	font-size: 1.35rem;
+src/components/ai/AITutorChat.vue	253	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/ai/AITutorChat.vue	312	1.35rem	0.84375rem	font-size: 1.35rem;
+src/components/ai/AITutorSidebar.vue	338	1rem	0.625rem	padding: 1rem 1.25rem;
+src/components/ai/AITutorSidebar.vue	338	1.25rem	0.78125rem	padding: 1rem 1.25rem;
+src/components/ai/AITutorSidebar.vue	347	0.625rem	0.390625rem	gap: 0.625rem;
+src/components/ai/AITutorSidebar.vue	352	1.125rem	0.703125rem	font-size: 1.125rem;
+src/components/ai/AITutorSidebar.vue	364	0.375rem	0.234375rem	gap: 0.375rem;
+src/components/ai/AITutorSidebar.vue	398	0.75rem	0.46875rem	padding: 0.75rem 1.25rem;
+src/components/ai/AITutorSidebar.vue	398	1.25rem	0.78125rem	padding: 0.75rem 1.25rem;
+src/components/ai/AITutorSidebar.vue	399	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/ai/AITutorSidebar.vue	408	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/ai/AITutorSidebar.vue	411	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/ai/AITutorSidebar.vue	418	0.75rem	0.46875rem	padding: 0.75rem 1.25rem;
+src/components/ai/AITutorSidebar.vue	418	1.25rem	0.78125rem	padding: 0.75rem 1.25rem;
+src/components/ai/AITutorSidebar.vue	436	0.125rem	0.078125rem	gap: 0.125rem;
+src/components/ai/AITutorSidebar.vue	441	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/ai/AITutorSidebar.vue	450	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/ai/AITutorSidebar.vue	485	0.5rem	0.3125rem	margin: 0 0 0.5rem 0;
+src/components/ai/AITutorSidebar.vue	486	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/ai/AITutorSidebar.vue	492	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/ai/AITutorSidebar.vue	498	0.375rem	0.234375rem	padding: 0.375rem 0.75rem;
+src/components/ai/AITutorSidebar.vue	498	0.75rem	0.46875rem	padding: 0.375rem 0.75rem;
+src/components/ai/AITutorSidebar.vue	500	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/ai/AITutorSidebar.vue	528	0.75rem	0.46875rem	padding: 0.75rem 1rem;
+src/components/ai/AITutorSidebar.vue	528	1rem	0.625rem	padding: 0.75rem 1rem;
+src/components/ai/AITutorSidebar.vue	534	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/ai/AITutorSidebar.vue	539	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/ai/AITutorSidebar.vue	544	0.25rem	0.15625rem	padding: 0.25rem 0.5rem;
+src/components/ai/AITutorSidebar.vue	544	0.5rem	0.3125rem	padding: 0.25rem 0.5rem;
+src/components/ai/AITutorSidebar.vue	548	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/chapter/EndOfChapterCallout.vue	111	6rem	3.75rem	margin: 6rem auto 12rem;
+src/components/chapter/EndOfChapterCallout.vue	111	12rem	7.5rem	margin: 6rem auto 12rem;
+src/components/chapter/EndOfChapterCallout.vue	115	2rem	1.25rem	gap: 2rem;
+src/components/chapter/EndOfChapterCallout.vue	122	1.2rem	0.75rem	border-radius: 1.2rem;
+src/components/chapter/EndOfChapterCallout.vue	123	2rem	1.25rem	padding: 2rem 2.4rem;
+src/components/chapter/EndOfChapterCallout.vue	123	2.4rem	1.5rem	padding: 2rem 2.4rem;
+src/components/chapter/EndOfChapterCallout.vue	129	0.8rem	0.5rem	gap: 0.8rem;
+src/components/chapter/EndOfChapterCallout.vue	130	1.2rem	0.75rem	margin-bottom: 1.2rem;
+src/components/chapter/EndOfChapterCallout.vue	137	2.4rem	1.5rem	width: 2.4rem;
+src/components/chapter/EndOfChapterCallout.vue	138	2.4rem	1.5rem	height: 2.4rem;
+src/components/chapter/EndOfChapterCallout.vue	143	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/chapter/EndOfChapterCallout.vue	147	1.8rem	1.125rem	font-size: 1.8rem;
+src/components/chapter/EndOfChapterCallout.vue	156	2rem	1.25rem	padding-left: 2rem;
+src/components/chapter/EndOfChapterCallout.vue	159	0.8rem	0.5rem	gap: 0.8rem;
+src/components/chapter/EndOfChapterCallout.vue	163	1.6rem	1rem	font-size: 1.6rem;
+src/components/chapter/EndOfChapterCallout.vue	171	1rem	0.625rem	gap: 1rem;
+src/components/chapter/EndOfChapterCallout.vue	174	1.2rem	0.75rem	border-radius: 1.2rem;
+src/components/chapter/EndOfChapterCallout.vue	175	1.6rem	1rem	padding: 1.6rem 1rem;
+src/components/chapter/EndOfChapterCallout.vue	175	1rem	0.625rem	padding: 1.6rem 1rem;
+src/components/chapter/EndOfChapterCallout.vue	182	0.2rem	0.125rem	gap: 0.2rem;
+src/components/chapter/EndOfChapterCallout.vue	186	2.2rem	1.375rem	font-size: 2.2rem;
+src/components/chapter/EndOfChapterCallout.vue	193	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/EndOfChapterCallout.vue	203	1rem	0.625rem	gap: 1rem;
+src/components/chapter/EndOfChapterCallout.vue	209	1rem	0.625rem	padding: 1rem 1.8rem;
+src/components/chapter/EndOfChapterCallout.vue	209	1.8rem	1.125rem	padding: 1rem 1.8rem;
+src/components/chapter/EndOfChapterCallout.vue	210	0.8rem	0.5rem	border-radius: 0.8rem;
+src/components/chapter/EndOfChapterCallout.vue	211	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/chapter/EndOfChapterCallout.vue	251	1.2rem	0.75rem	border-radius: 1.2rem;
+src/components/chapter/EndOfChapterCallout.vue	252	1.6rem	1rem	padding: 1.6rem 2rem;
+src/components/chapter/EndOfChapterCallout.vue	252	2rem	1.25rem	padding: 1.6rem 2rem;
+src/components/chapter/EndOfChapterCallout.vue	271	0.2rem	0.125rem	gap: 0.2rem;
+src/components/chapter/EndOfChapterCallout.vue	275	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/EndOfChapterCallout.vue	283	1.6rem	1rem	font-size: 1.6rem;
+src/components/chapter/EndOfChapterCallout.vue	289	2rem	1.25rem	font-size: 2rem;
+src/components/chapter/EndOfChapterCallout.vue	295	4rem	2.5rem	margin: 4rem 1.6rem 8rem;
+src/components/chapter/EndOfChapterCallout.vue	295	1.6rem	1rem	margin: 4rem 1.6rem 8rem;
+src/components/chapter/EndOfChapterCallout.vue	295	8rem	5rem	margin: 4rem 1.6rem 8rem;
+src/components/chapter/HighlightRenderer.vue	130	0.125rem	0.078125rem	padding: 0.125rem 0.25rem;
+src/components/chapter/HighlightRenderer.vue	130	0.25rem	0.15625rem	padding: 0.125rem 0.25rem;
+src/components/chapter/HighlightRenderer.vue	131	0.125rem	0.078125rem	border-radius: 0.125rem;
+src/components/chapter/Illus/FullScreenIllustrationLoop.vue	314	11rem	6.875rem	width: max(50vw, calc(100vw - 780px - 11rem));
+src/components/chapter/Illus/FullScreenIllustrationLoop.vue	317	11rem	6.875rem	width: min(calc(50vw / 8 * 5), calc((780px + 11rem) / 8 * 5));
+src/components/chapter/Illus/FullScreenIllustrationLoop.vue	321	11rem	6.875rem	/* width: calc(780px + 11rem); */
+src/components/chapter/Illus/FullScreenIllustrationLoop.vue	322	11rem	6.875rem	width: min(calc(50vw / 8 * 3), calc((780px + 11rem) / 8 * 3));
+src/components/chapter/Illus/FullScreenIllustrationSplit.vue	132	5rem	3.125rem	height: calc(100% + 5rem);
+src/components/chapter/Illus/IllustrationInline.vue	190	0.5rem	0.3125rem	padding: 0.5rem;
+src/components/chapter/Illus/IllustrationInline.vue	212	0.75rem	0.46875rem	top: 0.75rem;
+src/components/chapter/Illus/IllustrationInline.vue	213	0.75rem	0.46875rem	right: 0.75rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	172	1.2rem	0.75rem	gap: 1.2rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	173	1rem	0.625rem	padding: 1rem 1.4rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	173	1.4rem	0.875rem	padding: 1rem 1.4rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	180	1rem	0.625rem	gap: 1rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	184	1.05rem	0.65625rem	font-size: 1.05rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	191	1.15rem	0.71875rem	font-size: 1.15rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	224	2rem	1.25rem	padding: 2rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	231	1rem	0.625rem	gap: 1rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	237	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	238	1.05rem	0.65625rem	font-size: 1.05rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	244	0.3rem	0.1875rem	padding: 0.3rem 0.9rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	244	0.9rem	0.5625rem	padding: 0.3rem 0.9rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	247	5rem	3.125rem	font-size: 5rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	250	0.6rem	0.375rem	margin-top: 0.6rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	254	2rem	1.25rem	font-size: 2rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	263	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	269	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	273	0.2rem	0.125rem	margin: 0.2rem 0 0;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	276	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	279	1rem	0.625rem	margin: 1rem 0 0;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	283	0.95rem	0.59375rem	font-size: 0.95rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	286	0.4rem	0.25rem	margin-right: 0.4rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	313	8rem	5rem	font-size: 8rem;
+src/components/chapter/Illus/IllustrationPlaceholder.vue	316	3rem	1.875rem	font-size: 3rem;
+src/components/chapter/Illus/TextOverlay.vue	38	-0.2rem	-0.125rem	class="w-full h-full flex flex-col justify-center items-start mt-[-0.2rem] text-small"
+src/components/chapter/ReaderSidebar.vue	286	3.2rem	2rem	max-height: calc(100vh - 3.2rem);
+src/components/chapter/ReaderSidebar.vue	327	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/ReaderSidebar.vue	373	1.2rem	0.75rem	padding: 1.2rem 1.6rem 1.6rem;
+src/components/chapter/ReaderSidebar.vue	373	1.6rem	1rem	padding: 1.2rem 1.6rem 1.6rem;
+src/components/chapter/ReaderSidebar.vue	373	1.6rem	1rem	padding: 1.2rem 1.6rem 1.6rem;
+src/components/chapter/ReaderSidebar.vue	379	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/chapter/ReaderSidebar.vue	385	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/ReaderSidebar.vue	389	1rem	0.625rem	margin-bottom: 1rem;
+src/components/chapter/ReaderSidebar.vue	393	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/ReaderSidebar.vue	396	0.8rem	0.5rem	padding: 0.8rem 0;
+src/components/chapter/ReaderSidebar.vue	402	0.8rem	0.5rem	gap: 0.8rem;
+src/components/chapter/ReaderSidebar.vue	408	0.8rem	0.5rem	gap: 0.8rem;
+src/components/chapter/ReaderSidebar.vue	409	0.8rem	0.5rem	padding: 0.8rem 1rem;
+src/components/chapter/ReaderSidebar.vue	409	1rem	0.625rem	padding: 0.8rem 1rem;
+src/components/chapter/ReaderSidebar.vue	414	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/ReaderTopBar.vue	231	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/chapter/ReaderTopBar.vue	247	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/ReaderTopBar.vue	265	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/ReaderTopBar.vue	312	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/ReaderTopBar.vue	379	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/ReaderTopBar.vue	386	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/chapter/TextComp.vue	278	2rem	1.25rem	class="text pointer-events-auto w-full text-left pt-[calc(var(--reader-topbar-h)+2rem)] ml-text z-30 xl:border-l bg-whit
+src/components/chapter/TextComp.vue	288	8.6rem	5.375rem	class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[8.6rem] -translate-y-[0.9rem] w-28 
+src/components/chapter/TextComp.vue	288	0.9rem	0.5625rem	class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[8.6rem] -translate-y-[0.9rem] w-28 
+src/components/chapter/TextComp.vue	439	1.5rem	0.9375rem	padding-left: 1.5rem;
+src/components/chapter/TextComp.vue	440	1.5rem	0.9375rem	padding-right: 1.5rem;
+src/components/chapter/TextComp.vue	447	2rem	1.25rem	padding-left: 2rem;
+src/components/chapter/TextComp.vue	448	2rem	1.25rem	padding-right: 2rem;
+src/components/chapter/TextComp.vue	460	5rem	3.125rem	padding-left: 5rem;
+src/components/chapter/TextComp.vue	461	6rem	3.75rem	padding-right: 6rem;
+src/components/chapter/TrendingHighlights.vue	111	1.25rem	0.78125rem	padding: 1.25rem;
+src/components/chapter/TrendingHighlights.vue	118	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/chapter/TrendingHighlights.vue	120	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/TrendingHighlights.vue	123	1rem	0.625rem	margin: 0 0 1rem 0;
+src/components/chapter/TrendingHighlights.vue	133	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/chapter/TrendingHighlights.vue	137	0.75rem	0.46875rem	padding: 0.75rem;
+src/components/chapter/TrendingHighlights.vue	147	0.5rem	0.3125rem	margin-bottom: 0.5rem;
+src/components/chapter/TrendingHighlights.vue	172	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/chapter/TrendingHighlights.vue	177	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/chapter/TrendingHighlights.vue	178	0.25rem	0.15625rem	margin-top: 0.25rem;
+src/components/chapter/TrendingHighlights.vue	184	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/chapter/TrendingHighlights.vue	188	0.875rem	0.546875rem	padding: 0.875rem;
+src/components/chapter/TrendingHighlights.vue	202	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/chapter/TrendingHighlights.vue	205	0.5rem	0.3125rem	margin: 0 0 0.5rem 0;
+src/components/chapter/TrendingHighlights.vue	213	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/chapter/TrendingHighlights.vue	220	0.25rem	0.15625rem	gap: 0.25rem;
+src/components/chapter/demos/DemoModal.vue	77	2rem	1.25rem	padding: 2rem;
+src/components/chapter/demos/DemoModal.vue	86	4rem	2.5rem	height: calc(100vh - 4rem);
+src/components/chapter/demos/FlashcardPanel.vue	245	1rem	0.625rem	margin-bottom: 1rem;
+src/components/chapter/demos/FlashcardPanel.vue	268	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/chapter/demos/FlashcardPanel.vue	286	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/chapter/demos/FlashcardPanel.vue	290	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/chapter/demos/LabPanel.vue	191	1rem	0.625rem	gap: 1rem;
+src/components/chapter/demos/LabPanel.vue	219	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/chapter/demos/LabPanel.vue	220	1rem	0.625rem	margin-bottom: 1rem;
+src/components/chapter/demos/LabPanel.vue	226	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/chapter/demos/LabPanel.vue	238	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/chapter/demos/LabPanel.vue	239	0.125rem	0.078125rem	padding: 0.125rem 0.5rem;
+src/components/chapter/demos/LabPanel.vue	239	0.5rem	0.3125rem	padding: 0.125rem 0.5rem;
+src/components/chapter/demos/LabPanel.vue	248	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/chapter/demos/LabPanel.vue	252	0.8125rem	0.5078125rem	font-size: 0.8125rem;
+src/components/chapter/demos/LabPanel.vue	254	0.25rem	0.15625rem	padding: 0.25rem 0.625rem;
+src/components/chapter/demos/LabPanel.vue	254	0.625rem	0.390625rem	padding: 0.25rem 0.625rem;
+src/components/chapter/demos/LabPanel.vue	267	0.5rem	0.3125rem	padding: 0.5rem 1rem;
+src/components/chapter/demos/LabPanel.vue	267	1rem	0.625rem	padding: 0.5rem 1rem;
+src/components/chapter/demos/LabPanel.vue	269	0.8125rem	0.5078125rem	font-size: 0.8125rem;
+src/components/chapter/demos/LabPanel.vue	304	1rem	0.625rem	padding: 1rem;
+src/components/chapter/demos/LabPanel.vue	305	1rem	0.625rem	margin-bottom: 1rem;
+src/components/chapter/demos/LabPanel.vue	310	0.9375rem	0.5859375rem	font-size: 0.9375rem;
+src/components/chapter/demos/LabPanel.vue	320	0.75rem	0.46875rem	padding: 0.75rem 1rem;
+src/components/chapter/demos/LabPanel.vue	320	1rem	0.625rem	padding: 0.75rem 1rem;
+src/components/chapter/demos/LabPanel.vue	321	1rem	0.625rem	margin-bottom: 1rem;
+src/components/chapter/demos/LabPanel.vue	322	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/chapter/demos/LabPanel.vue	330	1rem	0.625rem	gap: 1rem;
+src/components/chapter/demos/LabPanel.vue	342	0.375rem	0.234375rem	gap: 0.375rem;
+src/components/chapter/demos/LabPanel.vue	343	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/chapter/demos/LabPanel.vue	347	0.375rem	0.234375rem	padding: 0.375rem 0.75rem;
+src/components/chapter/demos/LabPanel.vue	347	0.75rem	0.46875rem	padding: 0.375rem 0.75rem;
+src/components/chapter/demos/LabPanel.vue	349	0.8125rem	0.5078125rem	font-size: 0.8125rem;
+src/components/chapter/demos/LabPanel.vue	357	0.375rem	0.234375rem	gap: 0.375rem;
+src/components/chapter/demos/LabPanel.vue	372	0.6875rem	0.4296875rem	font-size: 0.6875rem;
+src/components/chapter/demos/LabPanel.vue	373	0.0625rem	0.0390625rem	padding: 0.0625rem 0.375rem;
+src/components/chapter/demos/LabPanel.vue	373	0.375rem	0.234375rem	padding: 0.0625rem 0.375rem;
+src/components/chapter/demos/QuizPanel.vue	274	1rem	0.625rem	padding: 1rem 0;
+src/components/chapter/demos/QuizPanel.vue	307	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/chapter/demos/QuizPanel.vue	313	0.5rem	0.3125rem	padding: 0.5rem 0;
+src/components/chapter/demos/QuizPanel.vue	317	1.25rem	0.78125rem	margin: 1.25rem 0;
+src/components/chapter/demos/QuizPanel.vue	324	1.25rem	0.78125rem	gap: 1.25rem;
+src/components/chapter/demos/QuizPanel.vue	325	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/chapter/demos/QuizPanel.vue	329	1rem	0.625rem	padding-top: 1rem;
+src/components/chapter/demos/QuizPanel.vue	348	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/chapter/demos/QuizPanel.vue	356	0.5rem	0.3125rem	margin: 0 0 0.5rem;
+src/components/chapter/demos/QuizPanel.vue	362	1.25rem	0.78125rem	margin: 0 0 1.25rem;
+src/components/chapter/demos/QuizPanel.vue	363	0.9375rem	0.5859375rem	font-size: 0.9375rem;
+src/components/chapter/sidebar/ChatTab.vue	261	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/sidebar/ChatTab.vue	293	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/sidebar/ChatTab.vue	304	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/sidebar/ChatTab.vue	329	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/sidebar/ChatTab.vue	339	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/chapter/sidebar/ChatTab.vue	370	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/sidebar/ChatTab.vue	393	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/sidebar/ChatTab.vue	402	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/InfoTab.vue	242	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/InfoTab.vue	250	2.2rem	1.375rem	font-size: 2.2rem;
+src/components/chapter/sidebar/InfoTab.vue	290	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/InfoTab.vue	322	2rem	1.25rem	font-size: 2rem;
+src/components/chapter/sidebar/InfoTab.vue	330	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/sidebar/InfoTab.vue	355	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/InfoTab.vue	363	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/InfoTab.vue	412	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/InfoTab.vue	419	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/chapter/sidebar/InfoTab.vue	453	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/InfoTab.vue	466	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/chapter/sidebar/InfoTab.vue	474	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/sidebar/NotebookTab.vue	374	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/NotebookTab.vue	396	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/chapter/sidebar/NotebookTab.vue	449	1rem	0.625rem	font-size: 1rem;
+src/components/chapter/sidebar/NotebookTab.vue	478	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/chapter/sidebar/NotebookTab.vue	517	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/sidebar/NotebookTab.vue	526	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/chapter/sidebar/NotebookTab.vue	549	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/chapter/sidebar/NotebookTab.vue	579	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/chapter/sidebar/NotebookTab.vue	609	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/sidebar/NotebookTab.vue	619	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/chapter/sidebar/NotebookTab.vue	648	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/chapter/sidebar/NotebookTab.vue	668	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/chapter/sidebar/NotebookTab.vue	695	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/chapter/text/BreakImages.vue	37	-0.2rem	-0.125rem	class="w-full h-full flex flex-col justify-center items-start mt-[-0.2rem] text-small"
+src/components/chapter/text/BreakSection.vue	119	11rem	6.875rem	transform: translateX(min(-50vw, calc(-100vw + 780px + 11rem - 1px)));
+src/components/chapter/text/CommentComp.vue	74	0rem	0rem	border-radius: 0rem;
+src/components/chapter/text/EyeStart.vue	140	5rem	3.125rem	height: calc(100vh - 5rem);
+src/components/chapter/text/InlineImages_openClose.vue	61	3rem	1.875rem	width: calc(100vw - 3rem);
+src/components/chapter/text/InlineImages_openClose.vue	65	3rem	1.875rem	width: calc(50vw - 3rem + 4px);
+src/components/chapter/text/SectionComp.vue	30	8.65rem	5.40625rem	class="TN border border-black bg-white rounded-full absolute -translate-x-[8.65rem] -translate-y-[0.8rem] w-28 h-28 flex
+src/components/chapter/text/SectionComp.vue	30	0.8rem	0.5rem	class="TN border border-black bg-white rounded-full absolute -translate-x-[8.65rem] -translate-y-[0.8rem] w-28 h-28 flex
+src/components/dashboard/chapters/ChapterBlockEditor.vue	408	1.4rem	0.875rem	.block-title { font-size: 1.4rem; font-weight: 500; color: rgb(var(--color-ink)); }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	411	1.1rem	0.6875rem	.block-index { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); flex: none; }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	413	1.3rem	0.8125rem	font-size: 1.3rem; color: rgb(var(--color-ink)); flex: 1; min-width: 0;
+src/components/dashboard/chapters/ChapterBlockEditor.vue	420	1rem	0.625rem	font-family: var(--font-mono); font-size: 1rem; border-radius: 999px;
+src/components/dashboard/chapters/ChapterBlockEditor.vue	425	1.3rem	0.8125rem	.media-badge-x { font-size: 1.3rem; line-height: 1; }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	439	1.1rem	0.6875rem	font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+src/components/dashboard/chapters/ChapterBlockEditor.vue	454	1rem	0.625rem	font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
+src/components/dashboard/chapters/ChapterBlockEditor.vue	459	1.1rem	0.6875rem	.meta-slug { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	460	1.7rem	1.0625rem	.preview-section-title { font-family: var(--font-body); font-size: 1.7rem; font-weight: 500; color: rgb(var(--color-ink)
+src/components/dashboard/chapters/ChapterBlockEditor.vue	462	1.1rem	0.6875rem	.meta-index { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-accent)); }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	463	1.1rem	0.6875rem	.meta-words { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	464	1.4rem	0.875rem	.preview-para-content { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); line-height: 1.6
+src/components/dashboard/chapters/ChapterBlockEditor.vue	468	1.9rem	1.1875rem	.preview-para-content :deep(h1) { font-size: 1.9rem; }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	469	1.7rem	1.0625rem	.preview-para-content :deep(h2) { font-size: 1.7rem; }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	470	1.5rem	0.9375rem	.preview-para-content :deep(h3) { font-size: 1.5rem; }
+src/components/dashboard/chapters/ChapterBlockEditor.vue	474	1.6rem	1rem	.editing-title { font-family: var(--font-body); font-size: 1.6rem; font-weight: 500; color: rgb(var(--color-ink)); margi
+src/components/dashboard/chapters/ChapterBlockEditor.vue	477	1.2rem	0.75rem	.save-status { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-complete)); }
+src/components/dashboard/chapters/WizardStepImport.vue	259	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/components/dashboard/chapters/WizardStepImport.vue	266	2rem	1.25rem	gap: 2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	271	2rem	1.25rem	font-size: 2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	274	0.8rem	0.5rem	margin: 0 0 0.8rem;
+src/components/dashboard/chapters/WizardStepImport.vue	279	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepImport.vue	287	0.6rem	0.375rem	gap: 0.6rem;
+src/components/dashboard/chapters/WizardStepImport.vue	288	0.8rem	0.5rem	padding: 0.8rem 1.6rem;
+src/components/dashboard/chapters/WizardStepImport.vue	288	1.6rem	1rem	padding: 0.8rem 1.6rem;
+src/components/dashboard/chapters/WizardStepImport.vue	294	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	310	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/components/dashboard/chapters/WizardStepImport.vue	314	1.2rem	0.75rem	padding: 1.2rem 2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	314	2rem	1.25rem	padding: 1.2rem 2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	320	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepImport.vue	340	1.6rem	1rem	padding: 1.6rem;
+src/components/dashboard/chapters/WizardStepImport.vue	342	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepImport.vue	359	1.6rem	1rem	margin-top: 1.6rem;
+src/components/dashboard/chapters/WizardStepImport.vue	360	1.2rem	0.75rem	padding: 1.2rem 3.2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	360	3.2rem	2rem	padding: 1.2rem 3.2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	366	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepImport.vue	388	1.2rem	0.75rem	gap: 1.2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	389	4.8rem	3rem	padding: 4.8rem 2.4rem;
+src/components/dashboard/chapters/WizardStepImport.vue	389	2.4rem	1.5rem	padding: 4.8rem 2.4rem;
+src/components/dashboard/chapters/WizardStepImport.vue	405	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/dashboard/chapters/WizardStepImport.vue	412	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	421	0.8rem	0.5rem	gap: 0.8rem;
+src/components/dashboard/chapters/WizardStepImport.vue	422	2rem	1.25rem	margin-top: 2rem;
+src/components/dashboard/chapters/WizardStepImport.vue	423	1.2rem	0.75rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepImport.vue	423	1.6rem	1rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepImport.vue	426	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepImport.vue	448	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	136	3.2rem	2rem	margin-bottom: 3.2rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	141	2rem	1.25rem	font-size: 2rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	144	0.8rem	0.5rem	margin: 0 0 0.8rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	149	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	157	2.4rem	1.5rem	gap: 2.4rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	163	0.8rem	0.5rem	gap: 0.8rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	173	2rem	1.25rem	gap: 2rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	179	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	200	1.2rem	0.75rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	200	1.6rem	1rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	202	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	220	1.2rem	0.75rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	220	1.6rem	1rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	222	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	248	1.2rem	0.75rem	padding: 1.2rem 0 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	248	1.2rem	0.75rem	padding: 1.2rem 0 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	248	1.6rem	1rem	padding: 1.2rem 0 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepMeta.vue	250	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepReview.vue	146	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	151	2rem	1.25rem	font-size: 2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	154	0.8rem	0.5rem	margin: 0 0 0.8rem;
+src/components/dashboard/chapters/WizardStepReview.vue	159	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	169	2rem	1.25rem	padding: 2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	172	1.2rem	0.75rem	gap: 1.2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	183	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	192	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/dashboard/chapters/WizardStepReview.vue	200	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	204	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepReview.vue	212	0.4rem	0.25rem	margin: 0.4rem 0;
+src/components/dashboard/chapters/WizardStepReview.vue	217	0.3rem	0.1875rem	padding: 0.3rem 1rem;
+src/components/dashboard/chapters/WizardStepReview.vue	217	1rem	0.625rem	padding: 0.3rem 1rem;
+src/components/dashboard/chapters/WizardStepReview.vue	222	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/dashboard/chapters/WizardStepReview.vue	228	2.4rem	1.5rem	margin-top: 2.4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	233	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	236	1.2rem	0.75rem	margin: 0 0 1.2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	241	2rem	1.25rem	padding-left: 2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	244	0.6rem	0.375rem	gap: 0.6rem;
+src/components/dashboard/chapters/WizardStepReview.vue	255	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	261	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/dashboard/chapters/WizardStepReview.vue	267	1.6rem	1rem	margin-top: 1.6rem;
+src/components/dashboard/chapters/WizardStepReview.vue	268	1.2rem	0.75rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepReview.vue	268	1.6rem	1rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepReview.vue	274	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepReview.vue	279	3.2rem	2rem	margin-top: 3.2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	285	0.8rem	0.5rem	gap: 0.8rem;
+src/components/dashboard/chapters/WizardStepReview.vue	286	1.6rem	1rem	padding: 1.6rem 4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	286	4rem	2.5rem	padding: 1.6rem 4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	292	1.6rem	1rem	font-size: 1.6rem;
+src/components/dashboard/chapters/WizardStepReview.vue	324	4rem	2.5rem	padding: 4rem 2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	324	2rem	1.25rem	padding: 4rem 2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	333	3.2rem	2rem	font-size: 3.2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	337	2rem	1.25rem	margin: 0 auto 2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	342	2.4rem	1.5rem	font-size: 2.4rem;
+src/components/dashboard/chapters/WizardStepReview.vue	345	1rem	0.625rem	margin: 0 0 1rem;
+src/components/dashboard/chapters/WizardStepReview.vue	350	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/dashboard/chapters/WizardStepReview.vue	352	3.2rem	2rem	margin: 0 0 3.2rem;
+src/components/dashboard/chapters/WizardStepReview.vue	357	1.6rem	1rem	gap: 1.6rem;
+src/components/dashboard/chapters/WizardStepReview.vue	362	1.2rem	0.75rem	padding: 1.2rem 2.8rem;
+src/components/dashboard/chapters/WizardStepReview.vue	362	2.8rem	1.75rem	padding: 1.2rem 2.8rem;
+src/components/dashboard/chapters/WizardStepReview.vue	365	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	197	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	202	2rem	1.25rem	font-size: 2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	205	0.8rem	0.5rem	margin: 0 0 0.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	210	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	218	2.4rem	1.5rem	gap: 2.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	219	1.6rem	1rem	padding: 1.6rem 2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	219	2rem	1.25rem	padding: 1.6rem 2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	223	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	229	0.2rem	0.125rem	gap: 0.2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	234	1.8rem	1.125rem	font-size: 1.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	241	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	249	4rem	2.5rem	padding: 4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	253	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	262	1.6rem	1rem	gap: 1.6rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	275	1.2rem	0.75rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	275	1.6rem	1rem	padding: 1.2rem 1.6rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	283	1.2rem	0.75rem	gap: 1.2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	289	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	292	0.3rem	0.1875rem	padding: 0.3rem 0.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	292	0.8rem	0.5rem	padding: 0.3rem 0.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	300	0.4rem	0.25rem	padding: 0.4rem 0.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	300	0.8rem	0.5rem	padding: 0.4rem 0.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	302	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	318	0.8rem	0.5rem	gap: 0.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	323	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	325	0.8rem	0.5rem	margin-right: 0.8rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	338	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	367	1rem	0.625rem	gap: 1rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	368	0.8rem	0.5rem	padding: 0.8rem 1.6rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	368	1.6rem	1rem	padding: 0.8rem 1.6rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	373	3.2rem	2rem	padding-left: 3.2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	382	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	389	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	398	3.2rem	2rem	margin-top: 3.2rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	399	2.4rem	1.5rem	padding-top: 2.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	405	1.6rem	1rem	font-size: 1.6rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	408	1.6rem	1rem	margin: 0 0 1.6rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	413	2.4rem	1.5rem	padding-left: 2.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	416	1rem	0.625rem	gap: 1rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	421	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	433	0.4rem	0.25rem	margin: 0 0.4rem;
+src/components/dashboard/chapters/WizardStepStructure.vue	451	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/dashboard/shared/BaseModal.vue	52	28rem	17.5rem	.sz-sm { max-width: 28rem; } .sz-md { max-width: 36rem; } .sz-lg { max-width: 52rem; }
+src/components/dashboard/shared/BaseModal.vue	52	36rem	22.5rem	.sz-sm { max-width: 28rem; } .sz-md { max-width: 36rem; } .sz-lg { max-width: 52rem; }
+src/components/dashboard/shared/BaseModal.vue	52	52rem	32.5rem	.sz-sm { max-width: 28rem; } .sz-md { max-width: 36rem; } .sz-lg { max-width: 52rem; }
+src/components/dashboard/shared/BaseModal.vue	53	72rem	45rem	.sz-xl { max-width: 72rem; } .sz-full { max-width: 96rem; }
+src/components/dashboard/shared/BaseModal.vue	53	96rem	60rem	.sz-xl { max-width: 72rem; } .sz-full { max-width: 96rem; }
+src/components/dashboard/shared/BaseModal.vue	55	2rem	1.25rem	.modal-title { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0
+src/components/dashboard/shared/BaseModal.vue	56	1.6rem	1rem	.modal-close { border: 0; background: transparent; color: rgb(var(--color-mute)); font-size: 1.6rem; cursor: pointer; li
+src/components/dashboard/shared/Button.vue	53	1rem	0.625rem	.s-sm { font-size: 1rem; padding: 6px 12px; }
+src/components/dashboard/shared/Button.vue	54	1.1rem	0.6875rem	.s-md { font-size: 1.1rem; padding: 9px 18px; }
+src/components/dashboard/shared/Button.vue	55	1.3rem	0.8125rem	.s-lg { font-size: 1.3rem; padding: 12px 24px; }
+src/components/dashboard/shared/ConfirmDialog.vue	36	1.5rem	0.9375rem	.confirm-msg { font-family: var(--font-body); font-size: 1.5rem; line-height: 1.5; color: rgb(var(--color-ink)); margin:
+src/components/dashboard/shared/DashboardRail.vue	61	4rem	2.5rem	@media (min-width: 900px) { .rail { position: sticky; top: 4rem; } }
+src/components/dashboard/shared/DashboardRail.vue	66	2.6rem	1.625rem	font-family: var(--font-mono); font-size: 2.6rem; font-weight: 600;
+src/components/dashboard/shared/DashboardRail.vue	68	2.2rem	1.375rem	.rail-name { font-family: var(--font-body); font-size: 2.2rem; letter-spacing: -0.01em; margin-top: 14px; color: rgb(var
+src/components/dashboard/shared/DashboardRail.vue	69	1.1rem	0.6875rem	.rail-meta { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); margin-top: 2px; text-tran
+src/components/dashboard/shared/DashboardRail.vue	77	1.5rem	0.9375rem	.rail-label { font-family: var(--font-body); font-size: 1.5rem; font-weight: 400; flex: 1; }
+src/components/dashboard/shared/DashboardRail.vue	78	1rem	0.625rem	.rail-soon { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-mute) / 0.7); }
+src/components/dashboard/shared/DashboardRail.vue	79	1.1rem	0.6875rem	.rail-count { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
+src/components/dashboard/shared/DashboardRail.vue	87	1.1rem	0.6875rem	.rail-back { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; color:
+src/components/dashboard/shared/DashboardShell.vue	41	124rem	77.5rem	display: grid; grid-template-columns: 1fr; max-width: 124rem; margin: 0 auto;
+src/components/dashboard/shared/DashboardShell.vue	42	4rem	2.5rem	padding: 4rem 4.8rem 9.6rem; gap: 4.8rem;
+src/components/dashboard/shared/DashboardShell.vue	42	4.8rem	3rem	padding: 4rem 4.8rem 9.6rem; gap: 4.8rem;
+src/components/dashboard/shared/DashboardShell.vue	42	9.6rem	6rem	padding: 4rem 4.8rem 9.6rem; gap: 4.8rem;
+src/components/dashboard/shared/DashboardShell.vue	42	4.8rem	3rem	padding: 4rem 4.8rem 9.6rem; gap: 4.8rem;
+src/components/dashboard/shared/DashboardShell.vue	44	28rem	17.5rem	@media (min-width: 900px) { .shell-layout { grid-template-columns: 28rem 1fr; } }
+src/components/dashboard/shared/DashboardShell.vue	45	2.4rem	1.5rem	@media (max-width: 767px) { .shell-layout { padding: 2.4rem 1.8rem 8rem; } }
+src/components/dashboard/shared/DashboardShell.vue	45	1.8rem	1.125rem	@media (max-width: 767px) { .shell-layout { padding: 2.4rem 1.8rem 8rem; } }
+src/components/dashboard/shared/DashboardShell.vue	45	8rem	5rem	@media (max-width: 767px) { .shell-layout { padding: 2.4rem 1.8rem 8rem; } }
+src/components/dashboard/shared/DashboardShell.vue	46	6.4rem	4rem	.shell-content { display: flex; flex-direction: column; gap: 6.4rem; min-width: 0; }
+src/components/dashboard/shared/DataTable.vue	113	1rem	0.625rem	text-align: left; font-family: var(--font-mono); font-size: 1rem;
+src/components/dashboard/shared/DataTable.vue	121	0.8rem	0.5rem	.sort-caret { font-size: 0.8rem; }
+src/components/dashboard/shared/DataTable.vue	123	1.4rem	0.875rem	font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink));
+src/components/dashboard/shared/EmptyState.vue	29	1.8rem	1.125rem	.state-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin:
+src/components/dashboard/shared/EmptyState.vue	30	1.4rem	0.875rem	.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42re
+src/components/dashboard/shared/EmptyState.vue	30	42rem	26.25rem	.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42re
+src/components/dashboard/shared/ErrorState.vue	28	2.4rem	1.5rem	.state-icon { color: rgb(var(--color-warn)); font-size: 2.4rem; margin-bottom: 4px; }
+src/components/dashboard/shared/ErrorState.vue	29	1.8rem	1.125rem	.state-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin:
+src/components/dashboard/shared/ErrorState.vue	30	1.4rem	0.875rem	.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42re
+src/components/dashboard/shared/ErrorState.vue	30	42rem	26.25rem	.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42re
+src/components/dashboard/shared/FilterChips.vue	39	1.1rem	0.6875rem	font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+src/components/dashboard/shared/FilterChips.vue	45	1rem	0.625rem	.chip-count { font-size: 1rem; opacity: 0.7; }
+src/components/dashboard/shared/FormField.vue	26	1rem	0.625rem	font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
+src/components/dashboard/shared/FormField.vue	30	1.3rem	0.8125rem	.field-hint { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-mute)); margin-top: 4px; line-hei
+src/components/dashboard/shared/FormField.vue	31	1.1rem	0.6875rem	.field-error { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-accent)); margin-top: 4px; }
+src/components/dashboard/shared/FormField.vue	39	1.4rem	0.875rem	font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); outline: none;
+src/components/dashboard/shared/ListRow.vue	36	1.5rem	0.9375rem	.row-label { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); }
+src/components/dashboard/shared/ListRow.vue	37	1.3rem	0.8125rem	.row-hint { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-mute)); margin-top: 2px; line-heigh
+src/components/dashboard/shared/LoadingState.vue	25	1.2rem	0.75rem	.loading-msg { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); text-transform: uppercas
+src/components/dashboard/shared/Pagination.vue	51	1.1rem	0.6875rem	.page-info { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.06em; color:
+src/components/dashboard/shared/Pagination.vue	55	1.2rem	0.75rem	background: transparent; font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-ink)); cursor: pointer
+src/components/dashboard/shared/PreviewTag.vue	19	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/dashboard/shared/SearchInput.vue	39	1.4rem	0.875rem	padding: 9px 34px 9px 36px; font-family: var(--font-body); font-size: 1.4rem;
+src/components/dashboard/shared/SearchInput.vue	44	1.3rem	0.8125rem	.search-clear { position: absolute; right: 10px; border: 0; background: transparent; color: rgb(var(--color-mute)); curs
+src/components/dashboard/shared/SectionHeader.vue	35	1.1rem	0.6875rem	font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+src/components/dashboard/shared/SectionHeader.vue	39	3.2rem	2rem	font-family: var(--font-body); font-size: 3.2rem; font-weight: 500;
+src/components/dashboard/shared/SectionHeader.vue	43	1.6rem	1rem	font-family: var(--font-body); font-size: 1.6rem; line-height: 1.5;
+src/components/dashboard/shared/SectionHeader.vue	44	64rem	40rem	color: rgb(var(--color-mute)); margin: 8px 0 0; max-width: 64rem;
+src/components/dashboard/shared/SegmentedControl.vue	32	0.8rem	0.5rem	border-radius: 0.8rem;
+src/components/dashboard/shared/SegmentedControl.vue	33	0.3rem	0.1875rem	padding: 0.3rem;
+src/components/dashboard/shared/SegmentedControl.vue	34	0.2rem	0.125rem	gap: 0.2rem;
+src/components/dashboard/shared/SegmentedControl.vue	38	0.6rem	0.375rem	padding: 0.6rem 1.4rem;
+src/components/dashboard/shared/SegmentedControl.vue	38	1.4rem	0.875rem	padding: 0.6rem 1.4rem;
+src/components/dashboard/shared/SegmentedControl.vue	39	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dashboard/shared/SegmentedControl.vue	42	0.6rem	0.375rem	border-radius: 0.6rem;
+src/components/dashboard/shared/StatCard.vue	40	3.2rem	2rem	display: block; font-family: var(--font-body); font-size: 3.2rem;
+src/components/dashboard/shared/StatCard.vue	44	1rem	0.625rem	display: block; font-family: var(--font-mono); font-size: 1rem;
+src/components/dashboard/shared/StatCard.vue	47	1.1rem	0.6875rem	.stat-delta { display: block; font-family: var(--font-mono); font-size: 1.1rem; margin-top: 6px; }
+src/components/dashboard/shared/StatusBadge.vue	33	1rem	0.625rem	.s-sm { font-size: 1rem; padding: 3px 9px; }
+src/components/dashboard/shared/StatusBadge.vue	34	1.1rem	0.6875rem	.s-md { font-size: 1.1rem; padding: 4px 11px; }
+src/components/dashboard/shared/StatusBadge.vue	35	1.3rem	0.8125rem	.s-lg { font-size: 1.3rem; padding: 6px 14px; }
+src/components/dashboard/shared/ToggleRow.vue	45	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/dashboard/shared/ToggleRow.vue	51	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/dev/DevToolbar.vue	16	1.2rem	0.75rem	style="font-size: 1.2rem; line-height: 1.6rem"
+src/components/dev/DevToolbar.vue	16	1.6rem	1rem	style="font-size: 1.2rem; line-height: 1.6rem"
+src/components/dev/DevToolbar.vue	21	1.1rem	0.6875rem	style="font-size: 1.1rem"
+src/components/flashcard/FlashcardCard.vue	104	1rem	0.625rem	font-size: 1rem;
+src/components/flashcard/FlashcardCard.vue	108	1rem	0.625rem	margin-bottom: 1rem;
+src/components/flashcard/FlashcardCard.vue	128	2rem	1.25rem	padding: 2rem;
+src/components/flashcard/FlashcardCard.vue	149	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/flashcard/FlashcardCard.vue	152	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/flashcard/FlashcardCard.vue	173	2.4rem	1.5rem	font-size: 2.4rem;
+src/components/flashcard/FlashcardCard.vue	182	1.7rem	1.0625rem	font-size: 1.7rem;
+src/components/flashcard/FlashcardCard.vue	199	0.375rem	0.234375rem	gap: 0.375rem;
+src/components/flashcard/FlashcardCard.vue	201	1rem	0.625rem	font-size: 1rem;
+src/components/flashcard/FlashcardCard.vue	227	1.125rem	0.703125rem	font-size: 1.125rem;
+src/components/flashcard/FlashcardDeck.vue	118	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/flashcard/FlashcardDeck.vue	130	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/flashcard/FlashcardDeck.vue	131	1rem	0.625rem	margin-bottom: 1rem;
+src/components/flashcard/FlashcardDeck.vue	147	1.125rem	0.703125rem	font-size: 1.125rem;
+src/components/flashcard/FlashcardDeck.vue	155	1rem	0.625rem	gap: 1rem;
+src/components/flashcard/FlashcardDeck.vue	156	1rem	0.625rem	margin-bottom: 1rem;
+src/components/flashcard/FlashcardDeck.vue	175	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/flashcard/FlashcardDeck.vue	176	1rem	0.625rem	margin-bottom: 1rem;
+src/components/flashcard/FlashcardDeck.vue	182	0.75rem	0.46875rem	padding: 0.75rem;
+src/components/flashcard/FlashcardDeck.vue	196	1.25rem	0.78125rem	font-size: 1.25rem;
+src/components/flashcard/FlashcardDeck.vue	211	0.6875rem	0.4296875rem	font-size: 0.6875rem;
+src/components/flashcard/FlashcardDeck.vue	213	0.125rem	0.078125rem	margin-top: 0.125rem;
+src/components/flashcard/FlashcardDeck.vue	219	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/flashcard/FlashcardDeck.vue	220	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/flashcard/FlashcardDeck.vue	222	1rem	0.625rem	margin-bottom: 1rem;
+src/components/flashcard/FlashcardDeck.vue	235	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/flashcard/FlashcardDeck.vue	236	0.75rem	0.46875rem	padding: 0.75rem 1.5rem;
+src/components/flashcard/FlashcardDeck.vue	236	1.5rem	0.9375rem	padding: 0.75rem 1.5rem;
+src/components/flashcard/FlashcardDeck.vue	242	0.9375rem	0.5859375rem	font-size: 0.9375rem;
+src/components/flashcard/FlashcardRating.vue	87	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/flashcard/FlashcardRating.vue	91	1rem	0.625rem	margin: 0 0 1rem 0;
+src/components/flashcard/FlashcardRating.vue	97	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/flashcard/FlashcardRating.vue	104	1rem	0.625rem	padding: 1rem 0.5rem;
+src/components/flashcard/FlashcardRating.vue	104	0.5rem	0.3125rem	padding: 1rem 0.5rem;
+src/components/flashcard/FlashcardRating.vue	124	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/flashcard/FlashcardRating.vue	131	0.85rem	0.53125rem	font-size: 0.85rem;
+src/components/flashcard/FlashcardRating.vue	133	0.2rem	0.125rem	margin-top: 0.2rem;
+src/components/flashcard/FlashcardRating.vue	141	0.7rem	0.4375rem	font-size: 0.7rem;
+src/components/flashcard/FlashcardRating.vue	146	1rem	0.625rem	margin-top: 1rem;
+src/components/flashcard/FlashcardRating.vue	147	0.5rem	0.3125rem	padding: 0.5rem 1.5rem;
+src/components/flashcard/FlashcardRating.vue	147	1.5rem	0.9375rem	padding: 0.5rem 1.5rem;
+src/components/flashcard/FlashcardRating.vue	153	1rem	0.625rem	font-size: 1rem;
+src/components/flashcard/FlashcardStats.vue	130	2rem	1.25rem	padding: 2rem;
+src/components/flashcard/FlashcardStats.vue	139	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/flashcard/FlashcardStats.vue	150	1rem	0.625rem	margin: 0 auto 1rem;
+src/components/flashcard/FlashcardStats.vue	156	2rem	1.25rem	font-size: 2rem;
+src/components/flashcard/FlashcardStats.vue	159	0.25rem	0.15625rem	margin: 0 0 0.25rem 0;
+src/components/flashcard/FlashcardStats.vue	164	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/flashcard/FlashcardStats.vue	172	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/flashcard/FlashcardStats.vue	173	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/flashcard/FlashcardStats.vue	180	1rem	0.625rem	padding: 1rem;
+src/components/flashcard/FlashcardStats.vue	186	2rem	1.25rem	font-size: 2rem;
+src/components/flashcard/FlashcardStats.vue	211	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/flashcard/FlashcardStats.vue	215	0.25rem	0.15625rem	margin-top: 0.25rem;
+src/components/flashcard/FlashcardStats.vue	220	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/flashcard/FlashcardStats.vue	229	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/flashcard/FlashcardStats.vue	230	0.8rem	0.5rem	padding: 0.8rem 1.6rem;
+src/components/flashcard/FlashcardStats.vue	230	1.6rem	1rem	padding: 0.8rem 1.6rem;
+src/components/flashcard/FlashcardStats.vue	233	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/lab/CodeEditor.vue	141	3rem	1.875rem	min-width: 3rem;
+src/components/quiz/QuizCard.vue	144	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/quiz/QuizCard.vue	157	1rem	0.625rem	gap: 1rem;
+src/components/quiz/QuizCard.vue	158	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/quiz/QuizCard.vue	163	1.125rem	0.703125rem	font-size: 1.125rem;
+src/components/quiz/QuizCard.vue	172	0.25rem	0.15625rem	gap: 0.25rem;
+src/components/quiz/QuizCard.vue	177	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/quiz/QuizCard.vue	182	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/quiz/QuizCard.vue	184	0.125rem	0.078125rem	padding: 0.125rem 0.5rem;
+src/components/quiz/QuizCard.vue	184	0.5rem	0.3125rem	padding: 0.125rem 0.5rem;
+src/components/quiz/QuizCard.vue	199	0.9375rem	0.5859375rem	font-size: 0.9375rem;
+src/components/quiz/QuizCard.vue	202	1rem	0.625rem	margin: 0 0 1rem 0;
+src/components/quiz/QuizCard.vue	208	1rem	0.625rem	gap: 1rem;
+src/components/quiz/QuizCard.vue	209	1.25rem	0.78125rem	margin-bottom: 1.25rem;
+src/components/quiz/QuizCard.vue	215	0.375rem	0.234375rem	gap: 0.375rem;
+src/components/quiz/QuizCard.vue	216	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/quiz/QuizCard.vue	229	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/quiz/QuizCard.vue	230	0.75rem	0.46875rem	padding: 0.75rem 1.5rem;
+src/components/quiz/QuizCard.vue	230	1.5rem	0.9375rem	padding: 0.75rem 1.5rem;
+src/components/quiz/QuizCard.vue	236	0.9375rem	0.5859375rem	font-size: 0.9375rem;
+src/components/quiz/QuizIntro.vue	49	2.5rem	1.5625rem	.intro-card { background: transparent; padding: 2.5rem; max-width: 480px; width: 100%; text-align: center; }
+src/components/quiz/QuizIntro.vue	51	1.1rem	0.6875rem	font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+src/components/quiz/QuizIntro.vue	52	1.4rem	0.875rem	letter-spacing: 0.12em; color: rgb(var(--color-accent)); margin: 0 0 1.4rem;
+src/components/quiz/QuizIntro.vue	55	3.2rem	2rem	font-family: var(--font-body); font-size: 3.2rem; font-weight: 500; line-height: 1.05;
+src/components/quiz/QuizIntro.vue	56	1.4rem	0.875rem	letter-spacing: -0.01em; color: rgb(var(--color-ink)); margin: 0 0 1.4rem 0;
+src/components/quiz/QuizIntro.vue	59	1.5rem	0.9375rem	font-family: var(--font-body); font-style: italic; font-size: 1.5rem;
+src/components/quiz/QuizIntro.vue	60	2.4rem	1.5rem	color: rgb(var(--color-ink) / 0.7); line-height: 1.55; margin: 0 0 2.4rem 0;
+src/components/quiz/QuizIntro.vue	62	2.4rem	1.5rem	.quiz-meta { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid rgb(var(--color-line)); margin-bott
+src/components/quiz/QuizIntro.vue	63	1.6rem	1rem	.meta-item { display: flex; flex-direction: column; align-items: center; padding: 1.6rem 1rem; border-right: 1px solid r
+src/components/quiz/QuizIntro.vue	63	1rem	0.625rem	.meta-item { display: flex; flex-direction: column; align-items: center; padding: 1.6rem 1rem; border-right: 1px solid r
+src/components/quiz/QuizIntro.vue	65	2.6rem	1.625rem	.meta-value { font-family: var(--font-body); font-size: 2.6rem; font-weight: 500; line-height: 1; color: rgb(var(--color
+src/components/quiz/QuizIntro.vue	66	1rem	0.625rem	.meta-label { font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: r
+src/components/quiz/QuizIntro.vue	67	1rem	0.625rem	.intro-actions { display: flex; gap: 1rem; justify-content: center; }
+src/components/quiz/QuizIntro.vue	71	0.5rem	0.3125rem	display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+src/components/quiz/QuizIntro.vue	72	0.8rem	0.5rem	padding: 0.8rem 1.6rem; border-radius: 999px; font-family: var(--font-mono);
+src/components/quiz/QuizIntro.vue	72	1.6rem	1rem	padding: 0.8rem 1.6rem; border-radius: 999px; font-family: var(--font-mono);
+src/components/quiz/QuizIntro.vue	73	1.1rem	0.6875rem	font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+src/components/quiz/QuizProgress.vue	130	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/quiz/QuizProgress.vue	136	0.2rem	0.125rem	gap: 0.2rem;
+src/components/quiz/QuizProgress.vue	141	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/quiz/QuizProgress.vue	151	1rem	0.625rem	font-size: 1rem;
+src/components/quiz/QuizProgress.vue	160	0.375rem	0.234375rem	gap: 0.375rem;
+src/components/quiz/QuizProgress.vue	161	0.375rem	0.234375rem	padding: 0.375rem 0.9rem;
+src/components/quiz/QuizProgress.vue	161	0.9rem	0.5625rem	padding: 0.375rem 0.9rem;
+src/components/quiz/QuizProgress.vue	180	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/quiz/QuizProgress.vue	199	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/quiz/QuizProgress.vue	200	1rem	0.625rem	margin-top: 1rem;
+src/components/quiz/QuizProgress.vue	210	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/quiz/QuizQuestion.vue	238	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/quiz/QuizQuestion.vue	244	1rem	0.625rem	font-size: 1rem;
+src/components/quiz/QuizQuestion.vue	252	2.2rem	1.375rem	font-size: 2.2rem;
+src/components/quiz/QuizQuestion.vue	256	2rem	1.25rem	margin: 0 0 2rem 0;
+src/components/quiz/QuizQuestion.vue	262	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/quiz/QuizQuestion.vue	267	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/quiz/QuizQuestion.vue	278	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/quiz/QuizQuestion.vue	290	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/quiz/QuizQuestion.vue	319	1rem	0.625rem	margin-top: 1rem;
+src/components/quiz/QuizQuestion.vue	324	0.875rem	0.546875rem	padding: 0.875rem 1rem;
+src/components/quiz/QuizQuestion.vue	324	1rem	0.625rem	padding: 0.875rem 1rem;
+src/components/quiz/QuizQuestion.vue	328	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/quiz/QuizQuestion.vue	354	0.75rem	0.46875rem	margin: 0.75rem 0 0 0;
+src/components/quiz/QuizQuestion.vue	356	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/quiz/QuizQuestion.vue	361	1.5rem	0.9375rem	margin-top: 1.5rem;
+src/components/quiz/QuizQuestion.vue	362	1rem	0.625rem	padding: 1rem 1.2rem;
+src/components/quiz/QuizQuestion.vue	362	1.2rem	0.75rem	padding: 1rem 1.2rem;
+src/components/quiz/QuizQuestion.vue	371	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/quiz/QuizQuestion.vue	373	1rem	0.625rem	font-size: 1rem;
+src/components/quiz/QuizQuestion.vue	377	0.5rem	0.3125rem	margin-bottom: 0.5rem;
+src/components/quiz/QuizQuestion.vue	381	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/quiz/QuizQuestion.vue	390	1rem	0.625rem	padding: 1rem 1.2rem !important;
+src/components/quiz/QuizQuestion.vue	390	1.2rem	0.75rem	padding: 1rem 1.2rem !important;
+src/components/quiz/QuizResults.vue	225	2rem	1.25rem	padding: 2rem;
+src/components/quiz/QuizResults.vue	237	1.5rem	0.9375rem	margin: 0 auto 1.5rem;
+src/components/quiz/QuizResults.vue	260	3.2rem	2rem	font-size: 3.2rem;
+src/components/quiz/QuizResults.vue	266	1.6rem	1rem	font-size: 1.6rem;
+src/components/quiz/QuizResults.vue	273	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/quiz/QuizResults.vue	278	2rem	1.25rem	font-size: 2rem;
+src/components/quiz/QuizResults.vue	280	0.25rem	0.15625rem	margin: 0 0 0.25rem 0;
+src/components/quiz/QuizResults.vue	293	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/quiz/QuizResults.vue	301	1rem	0.625rem	gap: 1rem;
+src/components/quiz/QuizResults.vue	302	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/quiz/QuizResults.vue	308	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/quiz/QuizResults.vue	309	0.75rem	0.46875rem	padding: 0.75rem 1rem;
+src/components/quiz/QuizResults.vue	309	1rem	0.625rem	padding: 0.75rem 1rem;
+src/components/quiz/QuizResults.vue	346	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/quiz/QuizResults.vue	353	0.9rem	0.5625rem	font-size: 0.9rem;
+src/components/quiz/QuizResults.vue	361	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/quiz/QuizResults.vue	363	1.5rem	0.9375rem	margin: 0 0 1.5rem 0;
+src/components/quiz/QuizResults.vue	373	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/quiz/QuizResults.vue	382	0.5rem	0.3125rem	gap: 0.5rem;
+src/components/quiz/QuizResults.vue	383	0.8rem	0.5rem	padding: 0.8rem 1.6rem;
+src/components/quiz/QuizResults.vue	383	1.6rem	1rem	padding: 0.8rem 1.6rem;
+src/components/quiz/QuizResults.vue	386	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/quiz/QuizReview.vue	56	1rem	0.625rem	.review-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+src/components/quiz/QuizReview.vue	56	1.5rem	0.9375rem	.review-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+src/components/quiz/QuizReview.vue	57	2rem	1.25rem	.review-header h2 { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); marg
+src/components/quiz/QuizReview.vue	58	1.5rem	0.9375rem	.review-questions { display: flex; flex-direction: column; gap: 1.5rem; }
+src/components/quiz/QuizReview.vue	59	1rem	0.625rem	.review-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; padding: 1.5rem; background: whit
+src/components/quiz/QuizReview.vue	59	2rem	1.25rem	.review-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; padding: 1.5rem; background: whit
+src/components/quiz/QuizReview.vue	59	1.5rem	0.9375rem	.review-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; padding: 1.5rem; background: whit
+src/components/quiz/QuizReview.vue	63	0.5rem	0.3125rem	display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+src/components/quiz/QuizReview.vue	64	0.8rem	0.5rem	padding: 0.8rem 1.6rem; border-radius: 999px; font-family: var(--font-mono);
+src/components/quiz/QuizReview.vue	64	1.6rem	1rem	padding: 0.8rem 1.6rem; border-radius: 999px; font-family: var(--font-mono);
+src/components/quiz/QuizReview.vue	65	1.1rem	0.6875rem	font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+src/components/settings/AccentSwatches.vue	39	1rem	0.625rem	gap: 1rem;
+src/components/settings/AccentSwatches.vue	46	0.6rem	0.375rem	gap: 0.6rem;
+src/components/settings/AccentSwatches.vue	47	1rem	0.625rem	padding: 1rem 0.6rem;
+src/components/settings/AccentSwatches.vue	47	0.6rem	0.375rem	padding: 1rem 0.6rem;
+src/components/settings/AccentSwatches.vue	50	0.8rem	0.5rem	border-radius: 0.8rem;
+src/components/settings/AccentSwatches.vue	70	2.4rem	1.5rem	width: 2.4rem;
+src/components/settings/AccentSwatches.vue	71	2.4rem	1.5rem	height: 2.4rem;
+src/components/settings/AccentSwatches.vue	77	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/settings/FontPairPicker.vue	64	1rem	0.625rem	gap: 1rem;
+src/components/settings/FontPairPicker.vue	76	0.6rem	0.375rem	gap: 0.6rem;
+src/components/settings/FontPairPicker.vue	77	1.2rem	0.75rem	padding: 1.2rem 1rem;
+src/components/settings/FontPairPicker.vue	77	1rem	0.625rem	padding: 1.2rem 1rem;
+src/components/settings/FontPairPicker.vue	80	0.8rem	0.5rem	border-radius: 0.8rem;
+src/components/settings/FontPairPicker.vue	101	2.8rem	1.75rem	font-size: 2.8rem;
+src/components/settings/FontPairPicker.vue	107	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsAccountSection.vue	161	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsAccountSection.vue	169	3.2rem	2rem	font-size: 3.2rem;
+src/components/settings/SettingsAccountSection.vue	195	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/settings/SettingsAccountSection.vue	200	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/settings/SettingsAccountSection.vue	220	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/settings/SettingsAccountSection.vue	234	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsAccountSection.vue	252	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsAccountSection.vue	274	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsPanels.vue	121	6.4rem	4rem	gap: 6.4rem;
+src/components/settings/SettingsPanels.vue	134	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsPanels.vue	145	3.2rem	2rem	font-size: 3.2rem;
+src/components/settings/SettingsPanels.vue	153	1.6rem	1rem	font-size: 1.6rem;
+src/components/settings/SettingsPanels.vue	157	64rem	40rem	max-width: 64rem;
+src/components/settings/SettingsPanels.vue	199	3.2rem	2rem	font-size: 3.2rem;
+src/components/settings/SettingsPanels.vue	207	1rem	0.625rem	font-size: 1rem;
+src/components/settings/SettingsPanels.vue	221	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsProfileSection.vue	173	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsProfileSection.vue	181	3.2rem	2rem	font-size: 3.2rem;
+src/components/settings/SettingsProfileSection.vue	189	1.6rem	1rem	font-size: 1.6rem;
+src/components/settings/SettingsProfileSection.vue	193	64rem	40rem	max-width: 64rem;
+src/components/settings/SettingsProfileSection.vue	212	4rem	2.5rem	font-size: 4rem;
+src/components/settings/SettingsProfileSection.vue	232	1rem	0.625rem	font-size: 1rem;
+src/components/settings/SettingsProfileSection.vue	239	1.3rem	0.8125rem	font-size: 1.3rem;
+src/components/settings/SettingsProfileSection.vue	257	1.8rem	1.125rem	font-size: 1.8rem;
+src/components/settings/SettingsProfileSection.vue	263	1.6rem	1rem	font-size: 1.6rem;
+src/components/settings/SettingsProfileSection.vue	282	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/SettingsProfileSection.vue	290	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/ThemeCards.vue	44	1.2rem	0.75rem	gap: 1.2rem;
+src/components/settings/ThemeCards.vue	54	0.8rem	0.5rem	border-radius: 0.8rem;
+src/components/settings/ThemeCards.vue	77	0.8rem	0.5rem	padding: 0.8rem;
+src/components/settings/ThemeCards.vue	80	0.4rem	0.25rem	gap: 0.4rem;
+src/components/settings/ThemeCards.vue	96	0.6rem	0.375rem	height: 0.6rem;
+src/components/settings/ThemeCards.vue	99	0.3rem	0.1875rem	border-radius: 0.3rem;
+src/components/settings/ThemeCards.vue	105	0.3rem	0.1875rem	gap: 0.3rem;
+src/components/settings/ThemeCards.vue	111	0.4rem	0.25rem	height: 0.4rem;
+src/components/settings/ThemeCards.vue	115	0.2rem	0.125rem	border-radius: 0.2rem;
+src/components/settings/ThemeCards.vue	128	0.8rem	0.5rem	padding: 0.8rem 1rem;
+src/components/settings/ThemeCards.vue	128	1rem	0.625rem	padding: 0.8rem 1rem;
+src/components/settings/ThemeCards.vue	133	1.4rem	0.875rem	font-size: 1.4rem;
+src/components/settings/ThemeCards.vue	139	1.1rem	0.6875rem	font-size: 1.1rem;
+src/components/settings/ThemeCards.vue	141	0.2rem	0.125rem	margin-top: 0.2rem;
+src/components/student/CourseCard.vue	128	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/student/CourseCard.vue	132	1rem	0.625rem	gap: 1rem;
+src/components/student/CourseCard.vue	142	1.25rem	0.78125rem	font-size: 1.25rem;
+src/components/student/CourseCard.vue	145	0.25rem	0.15625rem	margin: 0 0 0.25rem 0;
+src/components/student/CourseCard.vue	150	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/CourseCard.vue	152	0.5rem	0.3125rem	margin: 0 0 0.5rem 0;
+src/components/student/CourseCard.vue	156	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/CourseCard.vue	158	0.5rem	0.3125rem	margin: 0 0 0.5rem 0;
+src/components/student/CourseCard.vue	163	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/CourseCard.vue	172	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/student/CourseCard.vue	174	0.25rem	0.15625rem	padding: 0.25rem 0.75rem;
+src/components/student/CourseCard.vue	174	0.75rem	0.46875rem	padding: 0.25rem 0.75rem;
+src/components/student/CourseCard.vue	182	1.5rem	0.9375rem	margin: 0 1.5rem;
+src/components/student/CourseCard.vue	193	0.75rem	0.46875rem	padding: 0.75rem 1.5rem;
+src/components/student/CourseCard.vue	193	1.5rem	0.9375rem	padding: 0.75rem 1.5rem;
+src/components/student/CourseCard.vue	195	1rem	0.625rem	margin-top: 1rem;
+src/components/student/CourseCard.vue	202	0.75rem	0.46875rem	padding: 0.75rem 0;
+src/components/student/CourseCard.vue	214	-1.5rem	-0.9375rem	margin: 0 -1.5rem;
+src/components/student/CourseCard.vue	215	1.5rem	0.9375rem	padding-left: 1.5rem;
+src/components/student/CourseCard.vue	216	1.5rem	0.9375rem	padding-right: 1.5rem;
+src/components/student/CourseCard.vue	222	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/student/CourseCard.vue	245	0.9375rem	0.5859375rem	font-size: 0.9375rem;
+src/components/student/CourseCard.vue	253	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/CourseCard.vue	256	0.25rem	0.15625rem	padding: 0.25rem 0.5rem;
+src/components/student/CourseCard.vue	256	0.5rem	0.3125rem	padding: 0.25rem 0.5rem;
+src/components/student/CourseCard.vue	266	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/student/CourseCard.vue	269	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/CourseCard.vue	273	1rem	0.625rem	padding: 1rem 1.5rem;
+src/components/student/CourseCard.vue	273	1.5rem	0.9375rem	padding: 1rem 1.5rem;
+src/components/student/CourseCard.vue	279	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/student/ProgressCard.vue	121	1.5rem	0.9375rem	padding: 1.5rem;
+src/components/student/ProgressCard.vue	127	2rem	1.25rem	margin-bottom: 2rem;
+src/components/student/ProgressCard.vue	157	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/student/ProgressCard.vue	162	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/student/ProgressCard.vue	169	0.75rem	0.46875rem	font-size: 0.75rem;
+src/components/student/ProgressCard.vue	175	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/student/ProgressCard.vue	178	0.25rem	0.15625rem	margin: 0 0 0.25rem 0;
+src/components/student/ProgressCard.vue	183	0.9375rem	0.5859375rem	font-size: 0.9375rem;
+src/components/student/ProgressCard.vue	185	1rem	0.625rem	margin: 0 0 1rem 0;
+src/components/student/ProgressCard.vue	191	1rem	0.625rem	gap: 1rem;
+src/components/student/ProgressCard.vue	210	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/ProgressCard.vue	224	1rem	0.625rem	margin-left: 1rem;
+src/components/student/ProgressCard.vue	239	1rem	0.625rem	margin-bottom: 1rem;
+src/components/student/ProgressCard.vue	245	1.125rem	0.703125rem	font-size: 1.125rem;
+src/components/student/ProgressCard.vue	248	0.5rem	0.3125rem	margin: 0 0 0.5rem 0;
+src/components/student/ProgressCard.vue	252	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/StudyStats.vue	157	2rem	1.25rem	margin-bottom: 2rem;
+src/components/student/StudyStats.vue	162	1.125rem	0.703125rem	font-size: 1.125rem;
+src/components/student/StudyStats.vue	165	1rem	0.625rem	margin: 0 0 1rem 0;
+src/components/student/StudyStats.vue	171	1rem	0.625rem	gap: 1rem;
+src/components/student/StudyStats.vue	184	1.25rem	0.78125rem	padding: 1.25rem;
+src/components/student/StudyStats.vue	187	1rem	0.625rem	gap: 1rem;
+src/components/student/StudyStats.vue	215	1.5rem	0.9375rem	font-size: 1.5rem;
+src/components/student/StudyStats.vue	223	0.875rem	0.546875rem	font-size: 0.875rem;
+src/components/student/StudyStats.vue	225	0.25rem	0.15625rem	margin: 0.25rem 0 0 0;
+src/components/styleguide/ArchivedCollection.vue	46	2rem	1.25rem	margin-bottom: 2rem;
+src/components/styleguide/ArchivedCollection.vue	50	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/styleguide/ArchivedCollection.vue	55	0.75rem	0.46875rem	margin-top: 0.75rem;
+src/components/styleguide/ArchivedCollection.vue	63	0.4rem	0.25rem	padding: 0.4rem 1rem;
+src/components/styleguide/ArchivedCollection.vue	63	1rem	0.625rem	padding: 0.4rem 1rem;
+src/components/styleguide/ArchivedCollection.vue	64	2rem	1.25rem	margin-bottom: 2rem;
+src/components/styleguide/ArchivedCollection.vue	69	1.5rem	0.9375rem	gap: 1.5rem;
+src/components/styleguide/BookCollection.vue	167	3rem	1.875rem	margin-bottom: 3rem;
+src/components/styleguide/BookCollection.vue	171	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/styleguide/BookCollection.vue	176	0.75rem	0.46875rem	margin-top: 0.75rem;
+src/components/styleguide/BookCollection.vue	180	0.75rem	0.46875rem	padding-bottom: 0.75rem;
+src/components/styleguide/BookCollection.vue	182	3rem	1.875rem	margin: 3rem 0 1.5rem;
+src/components/styleguide/BookCollection.vue	182	1.5rem	0.9375rem	margin: 3rem 0 1.5rem;
+src/components/styleguide/BookCollection.vue	187	1.5rem	0.9375rem	gap: 1.5rem;
+src/components/styleguide/ColoursSection.vue	105	3rem	1.875rem	margin-bottom: 3rem;
+src/components/styleguide/ColoursSection.vue	110	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/styleguide/ColoursSection.vue	116	0.75rem	0.46875rem	margin-top: 0.75rem;
+src/components/styleguide/ColoursSection.vue	119	3.5rem	2.1875rem	margin-bottom: 3.5rem;
+src/components/styleguide/ColoursSection.vue	122	0.75rem	0.46875rem	padding-bottom: 0.75rem;
+src/components/styleguide/ColoursSection.vue	126	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/styleguide/ColoursSection.vue	131	1.5rem	0.9375rem	gap: 1.5rem;
+src/components/styleguide/ColoursSection.vue	136	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/styleguide/ColoursSection.vue	146	0.2rem	0.125rem	gap: 0.2rem;
+src/components/styleguide/ColoursSection.vue	153	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/styleguide/ColoursSection.vue	160	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/styleguide/SharedCollection.vue	229	3rem	1.875rem	margin-bottom: 3rem;
+src/components/styleguide/SharedCollection.vue	233	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/styleguide/SharedCollection.vue	238	0.75rem	0.46875rem	margin-top: 0.75rem;
+src/components/styleguide/SharedCollection.vue	242	0.75rem	0.46875rem	padding-bottom: 0.75rem;
+src/components/styleguide/SharedCollection.vue	244	3rem	1.875rem	margin: 3rem 0 1.5rem;
+src/components/styleguide/SharedCollection.vue	244	1.5rem	0.9375rem	margin: 3rem 0 1.5rem;
+src/components/styleguide/SharedCollection.vue	249	1.5rem	0.9375rem	gap: 1.5rem;
+src/components/styleguide/SharedCollection.vue	254	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/styleguide/Specimen.vue	46	2.5rem	1.5625rem	padding: 2.5rem 2rem;
+src/components/styleguide/Specimen.vue	46	2rem	1.25rem	padding: 2.5rem 2rem;
+src/components/styleguide/Specimen.vue	63	0.25rem	0.15625rem	gap: 0.25rem;
+src/components/styleguide/Specimen.vue	64	1rem	0.625rem	padding: 1rem 1.25rem;
+src/components/styleguide/Specimen.vue	64	1.25rem	0.78125rem	padding: 1rem 1.25rem;
+src/components/styleguide/Specimen.vue	72	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/styleguide/Specimen.vue	77	0.15rem	0.09375rem	margin-top: 0.15rem;
+src/components/styleguide/TypeSection.vue	111	3rem	1.875rem	margin-bottom: 3rem;
+src/components/styleguide/TypeSection.vue	116	0.75rem	0.46875rem	margin-bottom: 0.75rem;
+src/components/styleguide/TypeSection.vue	121	0.75rem	0.46875rem	margin-top: 0.75rem;
+src/components/styleguide/TypeSection.vue	124	3.5rem	2.1875rem	margin-bottom: 3.5rem;
+src/components/styleguide/TypeSection.vue	127	0.75rem	0.46875rem	padding-bottom: 0.75rem;
+src/components/styleguide/TypeSection.vue	129	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/styleguide/TypeSection.vue	134	2rem	1.25rem	gap: 2rem;
+src/components/styleguide/TypeSection.vue	136	1.5rem	0.9375rem	padding: 1.5rem 0;
+src/components/styleguide/TypeSection.vue	142	0.4rem	0.25rem	gap: 0.4rem;
+src/components/styleguide/TypeSection.vue	146	1.2rem	0.75rem	font-size: 1.2rem;
+src/components/styleguide/TypeSection.vue	159	2.4rem	1.5rem	font-size: 2.4rem;
+src/components/styleguide/TypeSection.vue	163	3rem	1.875rem	gap: 3rem;
+src/components/styleguide/TypeSection.vue	170	0.75rem	0.46875rem	gap: 0.75rem;
+src/components/styleguide/TypeSection.vue	173	4.8rem	3rem	font-size: 4.8rem;
+src/components/styleguide/TypeSection.vue	181	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/components/styleguide/TypeSection.vue	187	1.5rem	0.9375rem	gap: 1.5rem;
+src/components/styleguide/TypeSection.vue	189	0.75rem	0.46875rem	padding: 0.75rem 0;
+src/components/styleguide/TypeSection.vue	192	1.3rem	0.8125rem	font-size: 1.3rem;
+src/composables/useDashboardMedia.js	100	2rem	1.25rem	container.innerHTML = '<p style="color: rgb(var(--color-mute)); text-align: center; padding: 2rem;">Failed to load anima
+src/index.css	109	1.1rem	0.6875rem	font-size: 1.1rem;
+src/index.css	110	1.4rem	0.875rem	line-height: 1.4rem;
+src/index.css	111	-0.01rem	-0.00625rem	letter-spacing: -0.01rem;
+src/index.css	115	1.35rem	0.84375rem	font-size: 1.35rem;
+src/index.css	116	1.9rem	1.1875rem	line-height: 1.9rem;
+src/index.css	117	-0.02rem	-0.0125rem	letter-spacing: -0.02rem;
+src/index.css	121	1.6rem	1rem	font-size: 1.6rem;
+src/index.css	122	2.65rem	1.65625rem	line-height: 2.65rem;
+src/index.css	126	1.8rem	1.125rem	font-size: 1.8rem;
+src/index.css	127	2.8rem	1.75rem	line-height: 2.8rem;
+src/index.css	131	2rem	1.25rem	font-size: calc(2rem * var(--reading-size, 1));
+src/index.css	132	3.1rem	1.9375rem	line-height: calc(3.1rem * var(--reading-size, 1));
+src/index.css	136	4rem	2.5rem	font-size: 4rem;
+src/index.css	137	5.8rem	3.625rem	line-height: 5.8rem;
+src/index.css	140	3rem	1.875rem	font-size: 3rem;
+src/index.css	141	3.8rem	2.375rem	line-height: 3.8rem;
+src/index.css	144	11rem	6.875rem	font-size: 11rem;
+src/index.css	145	11rem	6.875rem	line-height: 11rem;
+src/index.css	148	16rem	10rem	font-size: 16rem;
+src/index.css	149	12rem	7.5rem	line-height: 12rem;
+src/index.css	150	-0.08rem	-0.05rem	letter-spacing: -0.08rem;
+src/index.css	153	8rem	5rem	font-size: 8rem;
+src/index.css	154	8rem	5rem	line-height: 8rem;
+src/index.css	159	1.2rem	0.75rem	font-size: 1.2rem;
+src/index.css	160	1.6rem	1rem	line-height: 1.6rem;
+src/index.css	161	-0.01rem	-0.00625rem	letter-spacing: -0.01rem;
+src/index.css	165	1.2rem	0.75rem	font-size: 1.2rem;
+src/index.css	166	1.6rem	1rem	line-height: 1.6rem;
+src/index.css	167	0.02rem	0.0125rem	letter-spacing: 0.02rem;
+src/index.css	171	1.5rem	0.9375rem	font-size: 1.5rem;
+src/index.css	172	2.65rem	1.65625rem	line-height: 2.65rem;
+src/index.css	176	1.7rem	1.0625rem	font-size: 1.7rem;
+src/index.css	177	2.8rem	1.75rem	line-height: 2.8rem;
+src/index.css	181	1.9rem	1.1875rem	font-size: calc(1.9rem * var(--reading-size, 1));
+src/index.css	182	3rem	1.875rem	line-height: calc(3rem * var(--reading-size, 1));
+src/index.css	185	4rem	2.5rem	font-size: 4rem;
+src/index.css	186	5.8rem	3.625rem	line-height: 5.8rem;
+src/index.css	189	3rem	1.875rem	font-size: 3rem;
+src/index.css	190	4rem	2.5rem	line-height: 4rem;
+src/index.css	193	11rem	6.875rem	font-size: 11rem;
+src/index.css	194	11rem	6.875rem	line-height: 11rem;
+src/index.css	198	8rem	5rem	font-size: 8rem;
+src/index.css	199	12rem	7.5rem	line-height: 12rem;
+src/index.css	202	8rem	5rem	font-size: 8rem;
+src/index.css	203	8rem	5rem	line-height: 8rem;
+src/index.css	210	1.1rem	0.6875rem	font-size: 1.1rem;
+src/index.css	211	1.4rem	0.875rem	line-height: 1.4rem;
+src/index.css	212	-0.01rem	-0.00625rem	letter-spacing: -0.01rem;
+src/index.css	215	1.1rem	0.6875rem	font-size: 1.1rem;
+src/index.css	216	1.5rem	0.9375rem	line-height: 1.5rem;
+src/index.css	217	0.02rem	0.0125rem	letter-spacing: 0.02rem;
+src/index.css	220	1.35rem	0.84375rem	font-size: 1.35rem;
+src/index.css	221	2.2rem	1.375rem	line-height: 2.2rem;
+src/index.css	224	1.6rem	1rem	font-size: 1.6rem;
+src/index.css	225	2.4rem	1.5rem	line-height: 2.4rem;
+src/index.css	228	1.7rem	1.0625rem	font-size: calc(1.7rem * var(--reading-size, 1));
+src/index.css	229	2.7rem	1.6875rem	line-height: calc(2.7rem * var(--reading-size, 1));
+src/index.css	232	3rem	1.875rem	font-size: 3rem;
+src/index.css	233	4rem	2.5rem	line-height: 4rem;
+src/index.css	236	2.4rem	1.5rem	font-size: 2.4rem;
+src/index.css	237	3rem	1.875rem	line-height: 3rem;
+src/index.css	240	7rem	4.375rem	font-size: 7rem;
+src/index.css	241	7rem	4.375rem	line-height: 7rem;
+src/index.css	244	5rem	3.125rem	font-size: 5rem;
+src/index.css	245	6rem	3.75rem	line-height: 6rem;
+src/index.css	248	5rem	3.125rem	font-size: 5rem;
+src/index.css	249	5rem	3.125rem	line-height: 5rem;
+src/index.css	252	3.5rem	2.1875rem	font-size: 3.5rem;
+src/index.css	253	4rem	2.5rem	line-height: 4rem;
+src/index.css	254	3rem	1.875rem	padding-bottom: 3rem;
+src/index.css	257	3.2rem	2rem	font-size: 3.2rem;
+src/index.css	258	4rem	2.5rem	line-height: 4rem;
+src/index.css	261	2.4rem	1.5rem	font-size: 2.4rem;
+src/index.css	262	3rem	1.875rem	line-height: 3rem;
+src/index.css	269	1rem	0.625rem	font-size: 1rem;
+src/index.css	270	1.3rem	0.8125rem	line-height: 1.3rem;
+src/index.css	273	1rem	0.625rem	font-size: 1rem;
+src/index.css	274	1.4rem	0.875rem	line-height: 1.4rem;
+src/index.css	277	1.2rem	0.75rem	font-size: 1.2rem;
+src/index.css	278	2rem	1.25rem	line-height: 2rem;
+src/index.css	281	1.4rem	0.875rem	font-size: 1.4rem;
+src/index.css	282	2.2rem	1.375rem	line-height: 2.2rem;
+src/index.css	285	1.5rem	0.9375rem	font-size: calc(1.5rem * var(--reading-size, 1));
+src/index.css	286	2.4rem	1.5rem	line-height: calc(2.4rem * var(--reading-size, 1));
+src/index.css	289	2.4rem	1.5rem	font-size: 2.4rem;
+src/index.css	290	3.2rem	2rem	line-height: 3.2rem;
+src/index.css	293	2rem	1.25rem	font-size: 2rem;
+src/index.css	294	2.6rem	1.625rem	line-height: 2.6rem;
+src/index.css	297	5rem	3.125rem	font-size: 5rem;
+src/index.css	298	5rem	3.125rem	line-height: 5rem;
+src/index.css	301	3.5rem	2.1875rem	font-size: 3.5rem;
+src/index.css	302	4rem	2.5rem	line-height: 4rem;
+src/index.css	305	3.5rem	2.1875rem	font-size: 3.5rem;
+src/index.css	306	3.5rem	2.1875rem	line-height: 3.5rem;
+src/index.css	309	2.8rem	1.75rem	font-size: 2.8rem;
+src/index.css	310	3.2rem	2rem	line-height: 3.2rem;
+src/index.css	311	2rem	1.25rem	padding-bottom: 2rem;
+src/index.css	314	2.4rem	1.5rem	font-size: 2.4rem;
+src/index.css	315	3rem	1.875rem	line-height: 3rem;
+src/index.css	318	2rem	1.25rem	font-size: 2rem;
+src/index.css	319	2.6rem	1.625rem	line-height: 2.6rem;
+src/index.css	363	3rem	1.875rem	/* padding-top: 3rem; */
+src/index.css	389	24rem	15rem	padding-bottom: 24rem;
+src/index.css	400	5rem	3.125rem	font-size: 5rem;
+src/index.css	401	5rem	3.125rem	line-height: 5rem;
+src/index.css	402	5rem	3.125rem	padding-bottom: 5rem;
+src/index.css	406	4.8rem	3rem	font-size: 4.8rem;
+src/index.css	407	5.8rem	3.625rem	line-height: 5.8rem;
+src/index.css	408	2rem	1.25rem	padding-bottom: 2rem;
+src/index.css	412	3.8rem	2.375rem	font-size: 3.8rem;
+src/index.css	413	0.2rem	0.125rem	padding-bottom: 0.2rem;
+src/index.css	418	3rem	1.875rem	font-size: 3rem;
+src/index.css	419	3.8rem	2.375rem	line-height: 3.8rem;
+src/index.css	420	2rem	1.25rem	padding-top: 2rem;
+src/index.css	421	1.2rem	0.75rem	padding-bottom: 1.2rem;
+src/index.css	425	2rem	1.25rem	font-size: 2rem;
+src/index.css	426	2.3rem	1.4375rem	line-height: 2.3rem;
+src/index.css	438	2rem	1.25rem	padding-bottom: 2rem;
+src/index.css	443	1.6rem	1rem	margin-bottom: 1.6rem !important;
+src/index.css	456	3rem	1.875rem	height: 3rem;
+src/index.css	457	1rem	0.625rem	padding-top: 1rem;
+src/index.css	458	3rem	1.875rem	padding-left: 3rem !important;
+src/index.css	468	0.5rem	0.3125rem	/* padding: 0 0.5rem 0 0.5rem; */
+src/index.css	468	0.5rem	0.3125rem	/* padding: 0 0.5rem 0 0.5rem; */
+src/index.css	470	0.2rem	0.125rem	padding: 0.2rem 0.4rem;
+src/index.css	470	0.4rem	0.25rem	padding: 0.2rem 0.4rem;
+src/index.css	478	0.2rem	0.125rem	padding: 0.2rem 0.4rem;
+src/index.css	478	0.4rem	0.25rem	padding: 0.2rem 0.4rem;
+src/index.css	550	-1.25rem	-0.78125rem	left: -1.25rem;
+src/index.css	551	0.75rem	0.46875rem	left: calc(50vw - min(calc(50vw + 0.75rem), calc(780px + 11rem)) - 1.25rem);
+src/index.css	551	11rem	6.875rem	left: calc(50vw - min(calc(50vw + 0.75rem), calc(780px + 11rem)) - 1.25rem);
+src/index.css	551	1.25rem	0.78125rem	left: calc(50vw - min(calc(50vw + 0.75rem), calc(780px + 11rem)) - 1.25rem);
+src/index.css	552	2.5rem	1.5625rem	width: 2.5rem;
+src/index.css	553	2.5rem	1.5625rem	height: 2.5rem;
+src/index.css	557	1.5rem	0.9375rem	font-size: 1.5rem;
+src/index.css	558	2.2rem	1.375rem	line-height: 2.2rem;
+src/index.css	664	1rem	0.625rem	width: 1rem;
+src/index.css	665	1rem	0.625rem	height: 1rem;
+src/index.css	666	0.5rem	0.3125rem	margin-top: 0.5rem;
+src/index.css	671	11rem	6.875rem	left: calc(100vw - min(50vw, calc(780px + 11rem)) - 0.5rem);
+src/index.css	671	0.5rem	0.3125rem	left: calc(100vw - min(50vw, calc(780px + 11rem)) - 0.5rem);
+src/index.css	674	-0.5rem	-0.3125rem	margin-top: -0.5rem;
+src/index.css	680	1rem	0.625rem	width: 1rem;
+src/index.css	684	11rem	6.875rem	left: calc(100vw - min(50vw, calc(780px + 11rem)) - 0.5rem);
+src/index.css	684	0.5rem	0.3125rem	left: calc(100vw - min(50vw, calc(780px + 11rem)) - 0.5rem);
+src/index.css	698	2.5rem	1.5625rem	height: 2.5rem;
+src/index.css	699	2.5rem	1.5625rem	width: 2.5rem;
+src/index.css	716	4rem	2.5rem	height: 4rem;
+src/index.css	717	4rem	2.5rem	width: 4rem;
+src/index.css	721	2.5rem	1.5625rem	height: 2.5rem;
+src/index.css	722	2.5rem	1.5625rem	width: 2.5rem;
+src/index.css	771	11rem	6.875rem	transform: translateX(min(-50vw, calc(-100vw + 780px + 11rem - 1px)));
+src/styles/brand.css	40	1rem	0.625rem	* NB project root is `font-size: 62.5%` (index.css) so 1rem = 10px; each
+src/styles/brand.css	47	11.2rem	7rem	--type-display-size: 11.2rem; --type-display-lh: 1; --type-display-ls: -0.02em;
+src/styles/brand.css	48	8.4rem	5.25rem	--type-h1-size: 8.4rem;  --type-h1-lh: 1.05; --type-h1-ls: -0.015em;
+src/styles/brand.css	49	6.3rem	3.9375rem	--type-h2-size: 6.3rem;  --type-h2-lh: 1.1;  --type-h2-ls: -0.01em;
+src/styles/brand.css	50	4.7rem	2.9375rem	--type-h3-size: 4.7rem;  --type-h3-lh: 1.15; --type-h3-ls: -0.005em;
+src/styles/brand.css	51	3.6rem	2.25rem	--type-subhead-size: 3.6rem; --type-subhead-lh: 1.2; --type-subhead-ls: 0;
+src/styles/brand.css	52	2.7rem	1.6875rem	--type-body-lg-size: 2.7rem; --type-body-lg-lh: 1.45; --type-body-lg-ls: 0;
+src/styles/brand.css	53	2rem	1.25rem	--type-body-size: 2rem;  --type-body-lh: 1.55; --type-body-ls: 0.01em;
+src/styles/brand.css	54	1.7rem	1.0625rem	--type-body-sm-size: 1.7rem; --type-body-sm-lh: 1.5; --type-body-sm-ls: 0;
+src/styles/brand.css	55	1.3rem	0.8125rem	--type-caption-size: 1.3rem; --type-caption-lh: 1.4; --type-caption-ls: 0;
+src/styles/brand.css	56	1.1rem	0.6875rem	--type-label-size: 1.1rem; --type-label-lh: 1.3; --type-label-ls: 0.06em;
+src/styles/brand.css	62	11rem	6.875rem	--reader-prose-w: min(40vw, calc(780px + 11rem));
+src/styles/brand.css	65	6.4rem	4rem	--reader-topbar-h: 6.4rem;
+src/styles/dashboard-sections.css	11	1rem	0.625rem	* NOTE: this project uses font-size: 62.5% on html/body so 1rem = 10px.
+src/styles/dashboard-sections.css	26	1.8rem	1.125rem	.card-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 
+src/styles/dashboard-sections.css	27	1.6rem	1rem	.card-title.sm { font-size: 1.6rem; margin: 0 0 4px; }
+src/styles/dashboard-sections.css	29	1.4rem	0.875rem	.muted { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 8px 0 0; line-height: 
+src/styles/dashboard-sections.css	30	1.2rem	0.75rem	.muted-mono { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); }
+src/styles/dashboard-sections.css	32	1.1rem	0.6875rem	font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+src/styles/dashboard-sections.css	38	1.3rem	0.8125rem	font-size: 1.3rem; color: rgb(var(--color-mute)); margin-bottom: 16px;
+src/styles/dashboard-sections.css	53	1.4rem	0.875rem	font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); cursor: pointer;
+src/styles/dashboard-sections.css	58	1rem	0.625rem	display: block; font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
+src/styles/dashboard-sections.css	72	1.4rem	0.875rem	.role-bar-label { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); }
+src/styles/dashboard-sections.css	73	1.4rem	0.875rem	.role-bar-count { font-family: var(--font-mono); font-size: 1.4rem; color: rgb(var(--color-mute)); text-align: right; }
+src/styles/dashboard-sections.css	80	1rem	0.625rem	text-align: left; font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
+src/styles/dashboard-sections.css	85	1.4rem	0.875rem	font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink));
+src/styles/dashboard-sections.css	96	2rem	1.25rem	.mini-value { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); line-heigh
+src/styles/dashboard-sections.css	97	1rem	0.625rem	.mini-label { font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: r
+src/styles/dashboard-sections.css	107	2.4rem	1.5rem	.wizard-title { font-family: var(--font-body); font-size: 2.4rem; font-weight: 500; color: rgb(var(--color-ink)); margin
+src/styles/dashboard-sections.css	116	1.3rem	0.8125rem	border: 1px solid rgb(var(--color-line)); font-family: var(--font-mono); font-size: 1.3rem;
+src/styles/dashboard-sections.css	121	1.4rem	0.875rem	.wizard-step-label { font-size: 1.4rem; color: rgb(var(--color-mute)); }
+src/styles/dashboard-sections.css	137	1.3rem	0.8125rem	.media-title { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-ink)); white-space: nowrap; over
+src/styles/dashboard-sections.css	138	1rem	0.625rem	.media-size { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-mute)); }
+src/styles/dashboard-sections.css	147	1.4rem	0.875rem	.media-modal-placeholder { font-family: var(--font-mono); font-size: 1.4rem; color: rgb(var(--color-mute)); text-transfo
+src/styles/dashboard-sections.css	153	1.1rem	0.6875rem	.kv-key { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; color: rg
+src/styles/dashboard-sections.css	154	1.4rem	0.875rem	.kv-val { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); margin: 0; }
+src/styles/dashboard-sections.css	166	1.5rem	0.9375rem	.q-text { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); line-height: 1.5; margin: 0 0 
+src/styles/dashboard-sections.css	169	1.3rem	0.8125rem	font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-ink));
+src/styles/dashboard-sections.css	176	1.2rem	0.75rem	background: rgb(var(--color-ink) / 0.06); font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)
+src/styles/dashboard-sections.css	180	1.4rem	0.875rem	padding: 9px 12px; font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); outline: none;
+src/styles/dashboard-sections.css	190	1.6rem	1rem	font-family: var(--font-mono); font-size: 1.6rem; font-weight: 600;
+src/styles/dashboard-sections.css	192	2rem	1.25rem	.user-avatar.lg { width: 56px; height: 56px; font-size: 2rem; }
+src/styles/dashboard-sections.css	207	1rem	0.625rem	.bar-value { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-ink)); position: absolute; top: -16p
+src/styles/dashboard-sections.css	208	0.9rem	0.5625rem	.bar-label { font-family: var(--font-mono); font-size: 0.9rem; color: rgb(var(--color-mute)); white-space: nowrap; }
+src/views/BreakView.vue	45	6rem	3.75rem	width: calc(100% - 6rem);
+src/views/ChapterOverviewView.vue	249	132rem	82.5rem	max-width: 132rem;
+src/views/ChapterOverviewView.vue	251	3.2rem	2rem	padding: 3.2rem 5.6rem 6rem;
+src/views/ChapterOverviewView.vue	251	5.6rem	3.5rem	padding: 3.2rem 5.6rem 6rem;
+src/views/ChapterOverviewView.vue	251	6rem	3.75rem	padding: 3.2rem 5.6rem 6rem;
+src/views/ChapterOverviewView.vue	254	4rem	2.5rem	gap: 4rem;
+src/views/ChapterOverviewView.vue	261	32rem	20rem	grid-template-columns: 32rem 1fr;
+src/views/ChapterOverviewView.vue	262	5.6rem	3.5rem	gap: 5.6rem;
+src/views/ChapterOverviewView.vue	267	60rem	37.5rem	max-width: 60rem;
+src/views/ChapterOverviewView.vue	268	12rem	7.5rem	margin: 12rem auto;
+src/views/ChapterOverviewView.vue	275	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChapterOverviewView.vue	279	1.8rem	1.125rem	margin: 0 0 1.8rem;
+src/views/ChapterOverviewView.vue	285	3.2rem	2rem	margin: 3.2rem 0 1.8rem;
+src/views/ChapterOverviewView.vue	285	1.8rem	1.125rem	margin: 3.2rem 0 1.8rem;
+src/views/ChapterOverviewView.vue	297	1.8rem	1.125rem	margin-bottom: 1.8rem;
+src/views/ChapterOverviewView.vue	317	0.4rem	0.25rem	margin-bottom: 0.4rem;
+src/views/ChapterOverviewView.vue	321	3.2rem	2rem	font-size: 3.2rem;
+src/views/ChapterOverviewView.vue	324	1.6rem	1rem	margin: 0 0 1.6rem;
+src/views/ChapterOverviewView.vue	331	0.8rem	0.5rem	gap: 0.8rem;
+src/views/ChapterOverviewView.vue	349	1rem	0.625rem	font-size: 1rem;
+src/views/ChapterOverviewView.vue	355	2.4rem	1.5rem	margin-top: 2.4rem;
+src/views/ChapterOverviewView.vue	358	0.8rem	0.5rem	gap: 0.8rem;
+src/views/ChapterOverviewView.vue	364	0.8rem	0.5rem	gap: 0.8rem;
+src/views/ChapterOverviewView.vue	372	0.6rem	0.375rem	gap: 0.6rem;
+src/views/ChapterOverviewView.vue	373	0.8rem	0.5rem	padding: 0.8rem 1.4rem;
+src/views/ChapterOverviewView.vue	373	1.4rem	0.875rem	padding: 0.8rem 1.4rem;
+src/views/ChapterOverviewView.vue	376	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChapterOverviewView.vue	394	1.2rem	0.75rem	padding: 1.2rem;
+src/views/ChapterOverviewView.vue	402	1.6rem	1rem	margin-top: 1.6rem;
+src/views/ChapterOverviewView.vue	404	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChapterOverviewView.vue	421	4rem	2.5rem	grid-template-columns: 4rem 1fr auto;
+src/views/ChapterOverviewView.vue	423	1.8rem	1.125rem	gap: 1.8rem;
+src/views/ChapterOverviewView.vue	424	1.8rem	1.125rem	padding: 1.8rem 0;
+src/views/ChapterOverviewView.vue	436	0.6rem	0.375rem	padding-left: 0.6rem;
+src/views/ChapterOverviewView.vue	442	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/ChapterOverviewView.vue	446	1.8rem	1.125rem	font-size: 1.8rem;
+src/views/ChapterOverviewView.vue	453	1rem	0.625rem	font-size: 1rem;
+src/views/ChapterOverviewView.vue	464	1.2rem	0.75rem	gap: 1.2rem;
+src/views/ChapterOverviewView.vue	476	0.4rem	0.25rem	gap: 0.4rem;
+src/views/ChapterOverviewView.vue	477	1.2rem	0.75rem	padding: 1.2rem;
+src/views/ChapterOverviewView.vue	492	1rem	0.625rem	font-size: 1rem;
+src/views/ChapterOverviewView.vue	499	1.4rem	0.875rem	font-size: 1.4rem;
+src/views/ChapterOverviewView.vue	511	1.6rem	1rem	padding: 1.6rem 0;
+src/views/ChapterOverviewView.vue	516	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/ChapterOverviewView.vue	518	0.4rem	0.25rem	margin: 0 0 0.4rem;
+src/views/ChapterOverviewView.vue	522	1rem	0.625rem	font-size: 1rem;
+src/views/ChapterView.vue	475	2rem	1.25rem	bottom: 2rem;
+src/views/ChapterView.vue	476	2rem	1.25rem	right: 2rem;
+src/views/ChapterView.vue	480	0.8rem	0.5rem	gap: 0.8rem;
+src/views/ChapterView.vue	481	1rem	0.625rem	padding: 1rem 1.8rem;
+src/views/ChapterView.vue	481	1.8rem	1.125rem	padding: 1rem 1.8rem;
+src/views/ChapterView.vue	488	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChapterWizardView.vue	292	4rem	2.5rem	padding: 0 4rem 8rem;
+src/views/ChapterWizardView.vue	292	8rem	5rem	padding: 0 4rem 8rem;
+src/views/ChapterWizardView.vue	300	2rem	1.25rem	gap: 2rem;
+src/views/ChapterWizardView.vue	301	2.4rem	1.5rem	padding: 2.4rem 0;
+src/views/ChapterWizardView.vue	303	3.2rem	2rem	margin-bottom: 3.2rem;
+src/views/ChapterWizardView.vue	309	0.6rem	0.375rem	gap: 0.6rem;
+src/views/ChapterWizardView.vue	310	0.6rem	0.375rem	padding: 0.6rem 1.2rem;
+src/views/ChapterWizardView.vue	310	1.2rem	0.75rem	padding: 0.6rem 1.2rem;
+src/views/ChapterWizardView.vue	316	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/ChapterWizardView.vue	328	2rem	1.25rem	font-size: 2rem;
+src/views/ChapterWizardView.vue	338	4rem	2.5rem	gap: 4rem;
+src/views/ChapterWizardView.vue	339	4rem	2.5rem	margin-bottom: 4rem;
+src/views/ChapterWizardView.vue	341	2rem	1.25rem	padding: 0 2rem;
+src/views/ChapterWizardView.vue	358	0.8rem	0.5rem	gap: 0.8rem;
+src/views/ChapterWizardView.vue	376	1.4rem	0.875rem	font-size: 1.4rem;
+src/views/ChapterWizardView.vue	398	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChapterWizardView.vue	415	2rem	1.25rem	padding: 0 2rem;
+src/views/ChapterWizardView.vue	422	2.4rem	1.5rem	padding: 2.4rem 2rem;
+src/views/ChapterWizardView.vue	422	2rem	1.25rem	padding: 2.4rem 2rem;
+src/views/ChapterWizardView.vue	423	4rem	2.5rem	margin-top: 4rem;
+src/views/ChapterWizardView.vue	432	1.2rem	0.75rem	padding: 1.2rem 3.2rem;
+src/views/ChapterWizardView.vue	432	3.2rem	2rem	padding: 1.2rem 3.2rem;
+src/views/ChapterWizardView.vue	435	1.4rem	0.875rem	font-size: 1.4rem;
+src/views/ChaptersView.vue	305	132rem	82.5rem	max-width: 132rem;
+src/views/ChaptersView.vue	307	3.2rem	2rem	padding: 3.2rem 5.6rem 6rem;
+src/views/ChaptersView.vue	307	5.6rem	3.5rem	padding: 3.2rem 5.6rem 6rem;
+src/views/ChaptersView.vue	307	6rem	3.75rem	padding: 3.2rem 5.6rem 6rem;
+src/views/ChaptersView.vue	315	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChaptersView.vue	329	2.4rem	1.5rem	margin: 2.4rem 0 1.6rem;
+src/views/ChaptersView.vue	329	1.6rem	1rem	margin: 2.4rem 0 1.6rem;
+src/views/ChaptersView.vue	336	3rem	1.875rem	gap: 3rem;
+src/views/ChaptersView.vue	337	3.6rem	2.25rem	margin: 0 0 3.6rem;
+src/views/ChaptersView.vue	343	5.6rem	3.5rem	gap: 5.6rem;
+src/views/ChaptersView.vue	349	1.8rem	1.125rem	margin-bottom: 1.8rem;
+src/views/ChaptersView.vue	353	6.4rem	4rem	font-size: 6.4rem;
+src/views/ChaptersView.vue	361	1.8rem	1.125rem	margin-top: 1.8rem;
+src/views/ChaptersView.vue	362	36rem	22.5rem	max-width: 36rem;
+src/views/ChaptersView.vue	363	1.8rem	1.125rem	font-size: 1.8rem;
+src/views/ChaptersView.vue	369	1.6rem	1rem	margin-top: 1.6rem;
+src/views/ChaptersView.vue	371	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/ChaptersView.vue	383	14rem	8.75rem	grid-template-columns: 14rem 1fr auto;
+src/views/ChaptersView.vue	384	2.4rem	1.5rem	gap: 2.4rem;
+src/views/ChaptersView.vue	386	2.4rem	1.5rem	padding: 2.4rem;
+src/views/ChaptersView.vue	424	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChaptersView.vue	428	0.8rem	0.5rem	margin-bottom: 0.8rem;
+src/views/ChaptersView.vue	435	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChaptersView.vue	442	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChaptersView.vue	447	0.4rem	0.25rem	margin-bottom: 0.4rem;
+src/views/ChaptersView.vue	451	2.8rem	1.75rem	font-size: 2.8rem;
+src/views/ChaptersView.vue	455	1.2rem	0.75rem	margin: 0 0 1.2rem;
+src/views/ChaptersView.vue	460	0.6rem	0.375rem	margin-top: 0.6rem;
+src/views/ChaptersView.vue	473	0.8rem	0.5rem	margin-top: 0.8rem;
+src/views/ChaptersView.vue	493	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/ChaptersView.vue	497	0.9rem	0.5625rem	padding: 0.9rem 1.8rem;
+src/views/ChaptersView.vue	497	1.8rem	1.125rem	padding: 0.9rem 1.8rem;
+src/views/ChaptersView.vue	512	4rem	2.5rem	gap: 4rem;
+src/views/ChaptersView.vue	513	3.2rem	2rem	margin: 3.2rem 0 0;
+src/views/ChaptersView.vue	514	1.8rem	1.125rem	padding: 1.8rem 0;
+src/views/ChaptersView.vue	521	0.4rem	0.25rem	gap: 0.4rem;
+src/views/ChaptersView.vue	525	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChaptersView.vue	531	2.2rem	1.375rem	font-size: 2.2rem;
+src/views/ChaptersView.vue	539	4rem	2.5rem	padding: 4rem;
+src/views/ChaptersView.vue	545	4.8rem	3rem	padding: 0 0 4.8rem;
+src/views/ChaptersView.vue	548	2.8rem	1.75rem	gap: 2.8rem;
+src/views/ChaptersView.vue	576	1.2rem	0.75rem	margin-bottom: 1.2rem;
+src/views/ChaptersView.vue	590	0.2rem	0.125rem	margin-bottom: 0.2rem;
+src/views/ChaptersView.vue	594	1.7rem	1.0625rem	font-size: 1.7rem;
+src/views/ChaptersView.vue	598	0.4rem	0.25rem	margin: 0 0 0.4rem;
+src/views/ChaptersView.vue	605	1rem	0.625rem	font-size: 1rem;
+src/views/ChaptersView.vue	621	1.6rem	1rem	gap: 1.6rem;
+src/views/ChaptersView.vue	623	1rem	0.625rem	margin-top: 1rem;
+src/views/ChaptersView.vue	624	1rem	0.625rem	padding-top: 1rem;
+src/views/ChaptersView.vue	629	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/ChaptersView.vue	646	0.8rem	0.5rem	top: 0.8rem;
+src/views/ChaptersView.vue	647	0.8rem	0.5rem	right: 0.8rem;
+src/views/ChaptersView.vue	648	0.2rem	0.125rem	padding: 0.2rem 0.8rem;
+src/views/ChaptersView.vue	648	0.8rem	0.5rem	padding: 0.2rem 0.8rem;
+src/views/ChaptersView.vue	650	1rem	0.625rem	font-size: 1rem;
+src/views/DashboardView.vue	1230	1rem	0.625rem	* NOTE: this project uses font-size: 62.5% on html/body so 1rem = 10px.
+src/views/EnrollView.vue	168	2rem	1.25rem	padding: 2rem;
+src/views/EnrollView.vue	180	4rem	2.5rem	padding: 4rem 2rem;
+src/views/EnrollView.vue	180	2rem	1.25rem	padding: 4rem 2rem;
+src/views/EnrollView.vue	190	2rem	1.25rem	margin: 0 auto 2rem;
+src/views/EnrollView.vue	200	1.6rem	1rem	font-size: 1.6rem;
+src/views/EnrollView.vue	206	1.6rem	1rem	margin-bottom: 1.6rem;
+src/views/EnrollView.vue	212	2.4rem	1.5rem	font-size: 2.4rem;
+src/views/EnrollView.vue	215	1rem	0.625rem	margin-bottom: 1rem;
+src/views/EnrollView.vue	220	1.6rem	1rem	margin-bottom: 1.6rem;
+src/views/EnrollView.vue	225	1.6rem	1rem	font-size: 1.6rem;
+src/views/EnrollView.vue	227	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/views/EnrollView.vue	238	3.2rem	2rem	padding: 3.2rem;
+src/views/EnrollView.vue	243	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/views/EnrollView.vue	249	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/EnrollView.vue	254	0.4rem	0.25rem	padding: 0.4rem 1.2rem;
+src/views/EnrollView.vue	254	1.2rem	0.75rem	padding: 0.4rem 1.2rem;
+src/views/EnrollView.vue	256	1.6rem	1rem	margin-bottom: 1.6rem;
+src/views/EnrollView.vue	261	2.8rem	1.75rem	font-size: 2.8rem;
+src/views/EnrollView.vue	264	1rem	0.625rem	margin: 0 0 1rem;
+src/views/EnrollView.vue	269	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/EnrollView.vue	276	1.6rem	1rem	padding: 1.6rem;
+src/views/EnrollView.vue	277	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/views/EnrollView.vue	282	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/EnrollView.vue	291	2.4rem	1.5rem	gap: 2.4rem;
+src/views/EnrollView.vue	292	3.2rem	2rem	margin-bottom: 3.2rem;
+src/views/EnrollView.vue	298	0.8rem	0.5rem	gap: 0.8rem;
+src/views/EnrollView.vue	300	1.3rem	0.8125rem	font-size: 1.3rem;
+src/views/EnrollView.vue	311	1.2rem	0.75rem	gap: 1.2rem;
+src/views/EnrollView.vue	316	1.6rem	1rem	padding: 1.6rem;
+src/views/EnrollView.vue	322	1.6rem	1rem	font-size: 1.6rem;
+src/views/EnrollView.vue	339	1.4rem	0.875rem	padding: 1.4rem 3.2rem;
+src/views/EnrollView.vue	339	3.2rem	2rem	padding: 1.4rem 3.2rem;
+src/views/EnrollView.vue	345	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/EnrollView.vue	357	1.4rem	0.875rem	padding: 1.4rem;
+src/views/EnrollView.vue	363	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/FlashcardView.vue	321	1.5rem	0.9375rem	padding: 1.5rem;
+src/views/FlashcardView.vue	333	1rem	0.625rem	gap: 1rem;
+src/views/FlashcardView.vue	373	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/views/FlashcardView.vue	398	1.5rem	0.9375rem	gap: 1.5rem;
+src/views/FlashcardView.vue	403	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/FlashcardView.vue	411	0.25rem	0.15625rem	gap: 0.25rem;
+src/views/FlashcardView.vue	413	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/FlashcardView.vue	429	2rem	1.25rem	margin-bottom: 2rem;
+src/views/FlashcardView.vue	445	2rem	1.25rem	margin-bottom: 2rem;
+src/views/FlashcardView.vue	449	2rem	1.25rem	margin-bottom: 2rem;
+src/views/FlashcardView.vue	454	0.875rem	0.546875rem	font-size: 0.875rem;
+src/views/FlashcardView.vue	460	0.125rem	0.078125rem	padding: 0.125rem 0.375rem;
+src/views/FlashcardView.vue	460	0.375rem	0.234375rem	padding: 0.125rem 0.375rem;
+src/views/FlashcardView.vue	465	1rem	0.625rem	font-size: 1rem;
+src/views/FlashcardView.vue	475	2rem	1.25rem	padding: 2rem;
+src/views/FlashcardView.vue	487	1rem	0.625rem	padding: 1rem;
+src/views/FlashcardView.vue	494	1.5rem	0.9375rem	padding: 1.5rem;
+src/views/FlashcardView.vue	501	0.5rem	0.3125rem	margin: 0 0 0.5rem 0;
+src/views/FlashcardView.vue	509	1.5rem	0.9375rem	margin: 0 0 1.5rem 0;
+src/views/FlashcardView.vue	514	0.75rem	0.46875rem	gap: 0.75rem;
+src/views/FlashcardView.vue	524	0.5rem	0.3125rem	gap: 0.5rem;
+src/views/FlashcardView.vue	525	0.8rem	0.5rem	padding: 0.8rem 1.6rem;
+src/views/FlashcardView.vue	525	1.6rem	1rem	padding: 0.8rem 1.6rem;
+src/views/FlashcardView.vue	528	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/HomeView.vue	197	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/HomeView.vue	201	1rem	0.625rem	margin: 0 0 1rem;
+src/views/HomeView.vue	208	7rem	4.375rem	padding: 7rem 2.4rem 4rem;
+src/views/HomeView.vue	208	2.4rem	1.5rem	padding: 7rem 2.4rem 4rem;
+src/views/HomeView.vue	208	4rem	2.5rem	padding: 7rem 2.4rem 4rem;
+src/views/HomeView.vue	217	2.4rem	1.5rem	margin-bottom: 2.4rem;
+src/views/HomeView.vue	220	1.7rem	1.0625rem	font-size: 1.7rem;
+src/views/HomeView.vue	224	2.6rem	1.625rem	margin: 0 0 2.6rem;
+src/views/HomeView.vue	229	1rem	0.625rem	gap: 1rem;
+src/views/HomeView.vue	234	1.6rem	1rem	margin-top: 1.6rem;
+src/views/HomeView.vue	237	0.8rem	0.5rem	gap: 0.8rem;
+src/views/HomeView.vue	239	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/HomeView.vue	246	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/HomeView.vue	250	0.9rem	0.5625rem	padding: 0.9rem 1.8rem;
+src/views/HomeView.vue	250	1.8rem	1.125rem	padding: 0.9rem 1.8rem;
+src/views/HomeView.vue	276	1.35rem	0.84375rem	font-size: 1.35rem;
+src/views/HomeView.vue	277	1.1rem	0.6875rem	padding: 1.1rem 2.4rem;
+src/views/HomeView.vue	277	2.4rem	1.5rem	padding: 1.1rem 2.4rem;
+src/views/HomeView.vue	284	3rem	1.875rem	padding: 3rem 2.4rem;
+src/views/HomeView.vue	284	2.4rem	1.5rem	padding: 3rem 2.4rem;
+src/views/HomeView.vue	288	2.8rem	1.75rem	font-size: 2.8rem;
+src/views/HomeView.vue	292	1.4rem	0.875rem	margin: 0 0 1.4rem;
+src/views/HomeView.vue	298	1.6rem	1rem	font-size: 1.6rem;
+src/views/HomeView.vue	309	3rem	1.875rem	padding: 3rem 2.4rem;
+src/views/HomeView.vue	309	2.4rem	1.5rem	padding: 3rem 2.4rem;
+src/views/HomeView.vue	314	2rem	1.25rem	gap: 2rem;
+src/views/HomeView.vue	320	2rem	1.25rem	padding: 2rem 1.8rem;
+src/views/HomeView.vue	320	1.8rem	1.125rem	padding: 2rem 1.8rem;
+src/views/HomeView.vue	324	0.8rem	0.5rem	margin-bottom: 0.8rem;
+src/views/HomeView.vue	327	1.8rem	1.125rem	font-size: 1.8rem;
+src/views/HomeView.vue	331	0.9rem	0.5625rem	margin: 0 0 0.9rem;
+src/views/HomeView.vue	334	1.4rem	0.875rem	font-size: 1.4rem;
+src/views/HomeView.vue	344	4rem	2.5rem	padding: 4rem 2.4rem;
+src/views/HomeView.vue	344	2.4rem	1.5rem	padding: 4rem 2.4rem;
+src/views/HomeView.vue	348	2.4rem	1.5rem	font-size: 2.4rem;
+src/views/HomeView.vue	351	1rem	0.625rem	margin: 0 0 1rem;
+src/views/HomeView.vue	354	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/HomeView.vue	357	2rem	1.25rem	margin: 0 auto 2rem;
+src/views/HomeView.vue	365	3.5rem	2.1875rem	padding: 3.5rem 2.4rem 4rem;
+src/views/HomeView.vue	365	2.4rem	1.5rem	padding: 3.5rem 2.4rem 4rem;
+src/views/HomeView.vue	365	4rem	2.5rem	padding: 3.5rem 2.4rem 4rem;
+src/views/HomeView.vue	375	2.4rem	1.5rem	gap: 2.4rem;
+src/views/HomeView.vue	376	3rem	1.875rem	margin-bottom: 3rem;
+src/views/HomeView.vue	379	1.3rem	0.8125rem	font-size: 1.3rem;
+src/views/HomeView.vue	394	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/HomeView.vue	403	1rem	0.625rem	font-size: 1rem;
+src/views/HomeView.vue	406	0.2rem	0.125rem	padding: 0.2rem 0.7rem;
+src/views/HomeView.vue	406	0.7rem	0.4375rem	padding: 0.2rem 0.7rem;
+src/views/ProfessorDashboardView.vue	804	1.8rem	1.125rem	.card-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 
+src/views/ProfessorDashboardView.vue	805	1.6rem	1rem	.card-title.sm { font-size: 1.6rem; margin: 0 0 4px; }
+src/views/ProfessorDashboardView.vue	807	1.4rem	0.875rem	.muted { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0 0 12px; line-height:
+src/views/ProfessorDashboardView.vue	808	1.2rem	0.75rem	.muted-mono { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); }
+src/views/ProfessorDashboardView.vue	810	1.1rem	0.6875rem	font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+src/views/ProfessorDashboardView.vue	816	1.3rem	0.8125rem	font-size: 1.3rem; color: rgb(var(--color-mute)); margin-bottom: 16px;
+src/views/ProfessorDashboardView.vue	823	1.1rem	0.6875rem	display: block; font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+src/views/ProfessorDashboardView.vue	830	1.5rem	0.9375rem	.qa-label { font-family: var(--font-body); font-size: 1.5rem; font-weight: 500; color: rgb(var(--color-ink)); }
+src/views/ProfessorDashboardView.vue	840	1.4rem	0.875rem	font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); cursor: pointer;
+src/views/ProfessorDashboardView.vue	848	1.4rem	0.875rem	padding: 9px 12px; font-family: var(--font-body); font-size: 1.4rem;
+src/views/ProfessorDashboardView.vue	856	1.4rem	0.875rem	padding: 9px 12px; font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); outline: none;
+src/views/ProfessorDashboardView.vue	881	1.8rem	1.125rem	font-size: 1.8rem; font-weight: 600;
+src/views/ProfessorDashboardView.vue	887	1.2rem	0.75rem	font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute));
+src/views/ProfessorDashboardView.vue	892	1.3rem	0.8125rem	.method-help { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-mute)); margin: 0; line-height: 
+src/views/ProfessorDashboardView.vue	895	2.4rem	1.5rem	font-family: var(--font-mono); font-size: 2.4rem; font-weight: 600;
+src/views/ProfessorDashboardView.vue	903	2rem	1.25rem	.mini-value { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); line-heigh
+src/views/ProfessorDashboardView.vue	904	1rem	0.625rem	.mini-label { font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: r
+src/views/QuizView.vue	318	1.5rem	0.9375rem	padding: 1.5rem;
+src/views/QuizView.vue	329	1rem	0.625rem	gap: 1rem;
+src/views/QuizView.vue	366	1rem	0.625rem	gap: 1rem;
+src/views/QuizView.vue	367	1.5rem	0.9375rem	margin-bottom: 1.5rem;
+src/views/QuizView.vue	391	1.2rem	0.75rem	font-size: 1.2rem;
+src/views/QuizView.vue	399	1.5rem	0.9375rem	margin: 1.5rem 0;
+src/views/QuizView.vue	405	1rem	0.625rem	gap: 1rem;
+src/views/QuizView.vue	411	0.5rem	0.3125rem	gap: 0.5rem;
+src/views/QuizView.vue	412	0.8rem	0.5rem	padding: 0.8rem 1.6rem;
+src/views/QuizView.vue	412	1.6rem	1rem	padding: 0.8rem 1.6rem;
+src/views/QuizView.vue	418	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/QuizView.vue	454	1rem	0.625rem	padding: 1rem;
+src/views/QuizView.vue	461	1.5rem	0.9375rem	padding: 1.5rem;
+src/views/QuizView.vue	468	0.75rem	0.46875rem	margin: 0 0 0.75rem 0;
+src/views/QuizView.vue	476	1.5rem	0.9375rem	margin: 0 0 1.5rem 0;
+src/views/QuizView.vue	481	0.75rem	0.46875rem	gap: 0.75rem;
+src/views/QuizView.vue	491	2rem	1.25rem	padding: 2rem;
+src/views/QuizView.vue	501	0.5rem	0.3125rem	gap: 0.5rem;
+src/views/QuizView.vue	502	0.8rem	0.5rem	padding: 0.8rem 1.6rem;
+src/views/QuizView.vue	502	1.6rem	1rem	padding: 0.8rem 1.6rem;
+src/views/QuizView.vue	505	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/SettingsView.vue	95	124rem	77.5rem	max-width: 124rem;
+src/views/SettingsView.vue	97	4rem	2.5rem	padding: 4rem 4.8rem 9.6rem;
+src/views/SettingsView.vue	97	4.8rem	3rem	padding: 4rem 4.8rem 9.6rem;
+src/views/SettingsView.vue	97	9.6rem	6rem	padding: 4rem 4.8rem 9.6rem;
+src/views/SettingsView.vue	98	4.8rem	3rem	gap: 4.8rem;
+src/views/SettingsView.vue	103	28rem	17.5rem	grid-template-columns: 28rem 1fr;
+src/views/SettingsView.vue	117	4rem	2.5rem	top: 4rem;
+src/views/SettingsView.vue	132	2.6rem	1.625rem	font-size: 2.6rem;
+src/views/SettingsView.vue	138	2.2rem	1.375rem	font-size: 2.2rem;
+src/views/SettingsView.vue	144	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/SettingsView.vue	172	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/SettingsView.vue	191	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/SettingsView.vue	203	2.4rem	1.5rem	padding: 2.4rem 1.8rem 8rem;
+src/views/SettingsView.vue	203	1.8rem	1.125rem	padding: 2.4rem 1.8rem 8rem;
+src/views/SettingsView.vue	203	8rem	5rem	padding: 2.4rem 1.8rem 8rem;
+src/views/StudentDashboardView.vue	405	1.8rem	1.125rem	.card-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 
+src/views/StudentDashboardView.vue	407	1.6rem	1rem	.chev { font-family: var(--font-mono); color: rgb(var(--color-mute)); font-size: 1.6rem; }
+src/views/StudentDashboardView.vue	411	1.3rem	0.8125rem	padding: 8px 12px; border-radius: 4px; font-family: var(--font-body); font-size: 1.3rem; margin-bottom: 12px;
+src/views/StudentDashboardView.vue	413	1.5rem	0.9375rem	.due-banner.big { font-size: 1.5rem; padding: 14px 18px; }
+src/views/StudentDashboardView.vue	416	1.4rem	0.875rem	.hl-text { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); font-style: italic; line-heig
+src/views/StudentDashboardView.vue	418	1.1rem	0.6875rem	.hl-date { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
+src/views/StudentDashboardView.vue	420	1.5rem	0.9375rem	.attempt-title { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); }
+src/views/StudentDashboardView.vue	421	1.1rem	0.6875rem	.attempt-meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 1.1rem; color: 
+src/views/StudentDashboardView.vue	423	1.2rem	0.75rem	.note-preview { font-family: var(--font-body); font-size: 1.2rem; font-style: italic; color: rgb(var(--color-mute)); pad
+src/views/StudentDashboardView.vue	424	1.5rem	0.9375rem	.note-content { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); line-height: 1.5; margin
+src/views/StudentDashboardView.vue	425	1.4rem	0.875rem	.muted { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 8px 0 0; }
+src/views/StyleGuideView.vue	119	2.5rem	1.5625rem	padding: 2.5rem 1.5rem;
+src/views/StyleGuideView.vue	119	1.5rem	0.9375rem	padding: 2.5rem 1.5rem;
+src/views/StyleGuideView.vue	122	2.5rem	1.5625rem	margin-bottom: 2.5rem;
+src/views/StyleGuideView.vue	131	1rem	0.625rem	margin-top: 1rem;
+src/views/StyleGuideView.vue	137	2rem	1.25rem	gap: 2rem;
+src/views/StyleGuideView.vue	144	0.25rem	0.15625rem	gap: 0.25rem;
+src/views/StyleGuideView.vue	148	0.5rem	0.3125rem	margin-bottom: 0.5rem;
+src/views/StyleGuideView.vue	154	0.5rem	0.3125rem	gap: 0.5rem;
+src/views/StyleGuideView.vue	156	0.6rem	0.375rem	padding: 0.6rem 0.875rem;
+src/views/StyleGuideView.vue	156	0.875rem	0.546875rem	padding: 0.6rem 0.875rem;
+src/views/StyleGuideView.vue	162	1.5rem	0.9375rem	font-size: 1.5rem;
+src/views/StyleGuideView.vue	180	1.1rem	0.6875rem	font-size: 1.1rem;
+src/views/StyleGuideView.vue	184	0.1rem	0.0625rem	padding: 0.1rem 0.6rem;
+src/views/StyleGuideView.vue	184	0.6rem	0.375rem	padding: 0.1rem 0.6rem;
+src/views/StyleGuideView.vue	192	1.5rem	0.9375rem	padding-top: 1.5rem;
+src/views/StyleGuideView.vue	194	1.5rem	0.9375rem	margin-top: 1.5rem;
+src/views/StyleGuideView.vue	206	4rem	2.5rem	padding: 4rem 4rem 8rem;
+src/views/StyleGuideView.vue	206	4rem	2.5rem	padding: 4rem 4rem 8rem;
+src/views/StyleGuideView.vue	206	8rem	5rem	padding: 4rem 4rem 8rem;
+tailwind.config.js	37	1.1rem	0.6875rem	//   "1.1rem",
+tailwind.config.js	38	1.4rem	0.875rem	//   { lineHeight: "1.4rem", letterSpacing: "-0.01rem" },
+tailwind.config.js	38	-0.01rem	-0.00625rem	//   { lineHeight: "1.4rem", letterSpacing: "-0.01rem" },
+tailwind.config.js	40	1.35rem	0.84375rem	// small: ["1.35rem", { lineHeight: "1.9rem", letterSpacing: "0.02rem" }],
+tailwind.config.js	40	1.9rem	1.1875rem	// small: ["1.35rem", { lineHeight: "1.9rem", letterSpacing: "0.02rem" }],
+tailwind.config.js	40	0.02rem	0.0125rem	// small: ["1.35rem", { lineHeight: "1.9rem", letterSpacing: "0.02rem" }],
+tailwind.config.js	41	1.6rem	1rem	// medium: ["1.6rem", { lineHeight: "2.65rem" }],
+tailwind.config.js	41	2.65rem	1.65625rem	// medium: ["1.6rem", { lineHeight: "2.65rem" }],
+tailwind.config.js	42	1.8rem	1.125rem	// baseMono: ["1.8rem", "2.8rem"],
+tailwind.config.js	42	2.8rem	1.75rem	// baseMono: ["1.8rem", "2.8rem"],
+tailwind.config.js	43	2rem	1.25rem	// base: ["2rem", "3.1rem"],
+tailwind.config.js	43	3.1rem	1.9375rem	// base: ["2rem", "3.1rem"],
+tailwind.config.js	44	3.0rem	1.875rem	// h3: ["3.0rem", "3.8rem"],
+tailwind.config.js	44	3.8rem	2.375rem	// h3: ["3.0rem", "3.8rem"],
+tailwind.config.js	45	4.8rem	3rem	// h2: ["4.8rem", "5.8rem"],
+tailwind.config.js	45	5.8rem	3.625rem	// h2: ["4.8rem", "5.8rem"],
+tailwind.config.js	46	11rem	6.875rem	// blindness: ["11rem", "11rem"],
+tailwind.config.js	46	11rem	6.875rem	// blindness: ["11rem", "11rem"],
+tailwind.config.js	47	8rem	5rem	// biggest: ["8rem", "12rem"],
+tailwind.config.js	47	12rem	7.5rem	// biggest: ["8rem", "12rem"],
+tailwind.config.js	48	8rem	5rem	// big: ["8rem", "8rem"],
+tailwind.config.js	48	8rem	5rem	// big: ["8rem", "8rem"],
+tailwind.config.js	51	2.2rem	1.375rem	header: "2.2rem",
+tailwind.config.js	52	2.2rem	1.375rem	body: "calc(100vh - 2.2rem)",
+tailwind.config.js	59	11rem	6.875rem	text: "var(--reader-prose-w, min(50vw, calc(780px + 11rem)))",
+tailwind.config.js	60	11rem	6.875rem	illus: "calc(100vw - var(--reader-prose-w, min(50vw, calc(780px + 11rem))))",
+tailwind.config.js	71	11rem	6.875rem	text: "max(50vw, calc(100vw - 780px - 11rem))",
+tailwind.config.js	74	2.2rem	1.375rem	body: "2.2rem",

@@ -1227,7 +1227,7 @@ onMounted(() => {
  * Only scoped-only rules remain here: full-screen states and :deep() targets
  * that reach into shared library components.
  *
- * NOTE: this project uses font-size: 62.5% on html/body so 1rem = 10px.
+ * NOTE: this project uses font-size: 62.5% on html/body so 0.625rem = 10px.
  */
 @import "@/styles/dashboard-sections.css";
 

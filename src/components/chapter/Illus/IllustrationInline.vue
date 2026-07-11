@@ -187,7 +187,7 @@ const youtubeSrc = computed(() =>
   position: absolute;
   inset-inline: 0;
   bottom: 0;
-  padding: 0.5rem;
+  padding: 0.3125rem;
   background: rgb(var(--color-bg, 247 245 240) / 0.85);
   text-align: center;
 }
@@ -209,8 +209,8 @@ const youtubeSrc = computed(() =>
 
 .illu-inline__close {
   position: fixed;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 0.46875rem;
+  right: 0.46875rem;
   z-index: 101;
   background: rgb(var(--color-bg, 247 245 240) / 0.9);
 }

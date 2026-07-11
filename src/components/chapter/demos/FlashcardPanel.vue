@@ -242,7 +242,7 @@ const formattedDuration = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.625rem;
 }
 
 .timer {
@@ -265,7 +265,7 @@ const formattedDuration = computed(() => {
 .sep { color: #d1d5db; }
 
 .progress-bar-wrap {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9375rem;
 }
 
 .progress-bar {
@@ -283,11 +283,11 @@ const formattedDuration = computed(() => {
 }
 
 .card-area {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9375rem;
 }
 
 .rating-area {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9375rem;
 }
 
 .kbd-hints {

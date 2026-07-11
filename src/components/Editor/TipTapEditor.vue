@@ -510,7 +510,7 @@ const isActive = (type, attrs = {}) => {
 
 <style scoped>
 /* TipTap Editor Scoped Styles
-   Note: Project uses 62.5% base font-size (1rem = 10px)
+   Note: Project uses 62.5% base font-size (0.625rem = 10px)
    These styles are scoped to this component only */
 
 .tiptap-editor {
@@ -523,36 +523,36 @@ const isActive = (type, attrs = {}) => {
 .toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
-    padding: 1.2rem 1.6rem;
+    gap: 0.375rem;
+    padding: 0.75rem 1rem;
     background: rgba(0, 0, 0, 0.5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .toolbar-group {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.25rem;
 }
 
 .toolbar-divider {
     width: 1px;
     background: rgba(255, 255, 255, 0.15);
-    margin: 0 0.8rem;
+    margin: 0 0.5rem;
 }
 
 .toolbar button {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 3.6rem;
-    height: 3.6rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
     padding: 0;
     background: transparent;
     border: none;
     border-radius: 6px;
     color: rgba(255, 255, 255, 0.6);
     font-family: "IBM Plex Mono", monospace;
-    font-size: 1.2rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.15s ease;
 }
@@ -572,7 +572,7 @@ const isActive = (type, attrs = {}) => {
 }
 
 .toolbar button .btn-label {
-    font-size: 1.3rem;
+    font-size: 0.8125rem;
     font-weight: 600;
 }
 
@@ -582,13 +582,13 @@ const isActive = (type, attrs = {}) => {
 }
 
 .toolbar button svg {
-    width: 1.8rem;
-    height: 1.8rem;
+    width: 1.125rem;
+    height: 1.125rem;
 }
 
 .editor-content {
     min-height: 500px;
-    padding: 2.4rem 3rem;
+    padding: 1.5rem 1.875rem;
 }
 
 .editor-content :deep(.ProseMirror) {
@@ -596,63 +596,63 @@ const isActive = (type, attrs = {}) => {
     outline: none;
     color: rgba(255, 255, 255, 0.9);
     font-family: "IBM Plex Sans", sans-serif;
-    font-size: 1.7rem;
+    font-size: 1.0625rem;
     line-height: 1.8;
 }
 
 .editor-content :deep(.ProseMirror p) {
-    margin-bottom: 1.6rem;
+    margin-bottom: 1rem;
 }
 
 .editor-content :deep(.ProseMirror h1) {
-    font-size: 3.2rem;
+    font-size: 2rem;
     font-weight: 600;
-    margin-bottom: 1.6rem;
-    margin-top: 3.2rem;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
     color: white;
     line-height: 1.3;
 }
 
 .editor-content :deep(.ProseMirror h2) {
-    font-size: 2.4rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    margin-bottom: 1.2rem;
-    margin-top: 2.8rem;
+    margin-bottom: 0.75rem;
+    margin-top: 1.75rem;
     color: white;
     line-height: 1.35;
 }
 
 .editor-content :deep(.ProseMirror h3) {
-    font-size: 2rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 1rem;
-    margin-top: 2.4rem;
+    margin-bottom: 0.625rem;
+    margin-top: 1.5rem;
     color: white;
     line-height: 1.4;
 }
 
 .editor-content :deep(.ProseMirror ul),
 .editor-content :deep(.ProseMirror ol) {
-    padding-left: 2.4rem;
-    margin-bottom: 1.6rem;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .editor-content :deep(.ProseMirror li) {
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.375rem;
 }
 
 .editor-content :deep(.ProseMirror blockquote) {
     border-left: 4px solid rgb(151, 71, 255);
-    padding-left: 2rem;
+    padding-left: 1.25rem;
     margin-left: 0;
-    margin-bottom: 1.6rem;
+    margin-bottom: 1rem;
     color: rgba(255, 255, 255, 0.75);
     font-style: italic;
 }
 
 .editor-content :deep(.ProseMirror code) {
     background: rgba(151, 71, 255, 0.2);
-    padding: 0.2rem 0.6rem;
+    padding: 0.125rem 0.375rem;
     border-radius: 4px;
     font-family: "IBM Plex Mono", monospace;
     font-size: 0.9em;
@@ -660,11 +660,11 @@ const isActive = (type, attrs = {}) => {
 
 .editor-content :deep(.ProseMirror pre) {
     background: rgba(0, 0, 0, 0.5);
-    padding: 1.6rem 2rem;
+    padding: 1rem 1.25rem;
     border-radius: 8px;
     overflow-x: auto;
-    margin-bottom: 1.6rem;
-    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
 }
 
 .editor-content :deep(.ProseMirror pre code) {
@@ -676,14 +676,14 @@ const isActive = (type, attrs = {}) => {
 .editor-content :deep(.ProseMirror hr) {
     border: none;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
-    margin: 3rem 0;
+    margin: 1.875rem 0;
 }
 
 .editor-content :deep(.ProseMirror img) {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
-    margin: 1.6rem 0;
+    margin: 1rem 0;
 }
 
 .editor-content :deep(.ProseMirror p.is-editor-empty:first-child::before) {
@@ -692,7 +692,7 @@ const isActive = (type, attrs = {}) => {
     color: rgba(255, 255, 255, 0.3);
     pointer-events: none;
     height: 0;
-    font-size: 1.7rem;
+    font-size: 1.0625rem;
 }
 
 .editor-content :deep(.ProseMirror a) {

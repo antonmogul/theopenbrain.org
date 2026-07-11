@@ -289,7 +289,7 @@ async function handleCreate() {
 .wizard-page {
   min-height: 100vh;
   background: #f5f3f0;
-  padding: 0 4rem 8rem;
+  padding: 0 2.5rem 5rem;
   font-size: 10px;
 }
 
@@ -297,23 +297,23 @@ async function handleCreate() {
 .wizard-topbar {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  padding: 2.4rem 0;
+  gap: 1.25rem;
+  padding: 1.5rem 0;
   border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 3.2rem;
+  margin-bottom: 2rem;
 }
 
 .back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 1.2rem;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
   background: transparent;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   color: #6b7280;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -325,7 +325,7 @@ async function handleCreate() {
 
 .wizard-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;
@@ -335,10 +335,10 @@ async function handleCreate() {
 .step-indicator {
   display: flex;
   align-items: flex-start;
-  gap: 4rem;
-  margin-bottom: 4rem;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
   position: relative;
-  padding: 0 2rem;
+  padding: 0 1.25rem;
 }
 
 .step-line {
@@ -355,7 +355,7 @@ async function handleCreate() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.5rem;
   z-index: 1;
   cursor: default;
 }
@@ -373,7 +373,7 @@ async function handleCreate() {
   align-items: center;
   justify-content: center;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   font-weight: 600;
   border: 2px solid #d1d5db;
   background: #f5f3f0;
@@ -395,7 +395,7 @@ async function handleCreate() {
 
 .dot-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -412,15 +412,15 @@ async function handleCreate() {
 /* Content Area */
 .wizard-content {
   min-height: 400px;
-  padding: 0 2rem;
+  padding: 0 1.25rem;
 }
 
 /* Footer Navigation */
 .wizard-footer {
   display: flex;
   align-items: center;
-  padding: 2.4rem 2rem;
-  margin-top: 4rem;
+  padding: 1.5rem 1.25rem;
+  margin-top: 2.5rem;
   border-top: 1px solid #e5e7eb;
 }
 
@@ -429,10 +429,10 @@ async function handleCreate() {
 }
 
 .nav-btn {
-  padding: 1.2rem 3.2rem;
+  padding: 0.75rem 2rem;
   border-radius: 8px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;

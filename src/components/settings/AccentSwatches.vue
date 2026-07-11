@@ -36,18 +36,18 @@ const swatches = [
 .swatches {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
 .swatch {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  padding: 1rem 0.6rem;
+  gap: 0.375rem;
+  padding: 0.625rem 0.375rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: border-color 0.15s;
 }
@@ -67,14 +67,14 @@ const swatches = [
 }
 
 .dot {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 1.5rem;
+  height: 1.5rem;
   background: var(--swatch);
   border-radius: 50%;
 }
 
 .label {
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: rgb(var(--color-ink));
 }
 </style>

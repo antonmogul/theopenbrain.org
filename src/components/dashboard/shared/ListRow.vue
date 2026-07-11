@@ -33,7 +33,7 @@ defineEmits(["click"]);
 .list-row.interactive:hover { background: rgb(var(--color-ink) / 0.03); }
 .row-media { flex: none; }
 .row-text { flex: 1; min-width: 0; }
-.row-label { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); }
-.row-hint { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-mute)); margin-top: 2px; line-height: 1.45; }
+.row-label { font-family: var(--font-body); font-size: 0.9375rem; color: rgb(var(--color-ink)); }
+.row-hint { font-family: var(--font-body); font-size: 0.8125rem; color: rgb(var(--color-mute)); margin-top: 2px; line-height: 1.45; }
 .row-action { flex: none; }
 </style>

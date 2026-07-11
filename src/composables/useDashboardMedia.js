@@ -97,7 +97,7 @@ export function useDashboardMedia() {
                     });
                 } catch (err) {
                     console.error('Failed to load lottie preview:', err);
-                    container.innerHTML = '<p style="color: rgb(var(--color-mute)); text-align: center; padding: 2rem;">Failed to load animation</p>';
+                    container.innerHTML = '<p style="color: rgb(var(--color-mute)); text-align: center; padding: 1.25rem;">Failed to load animation</p>';
                 }
             }
         }

@@ -256,27 +256,27 @@ Citations use [^1] or [1] notation."
 }
 
 .step-header {
-  margin-bottom: 2.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .step-header-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 2rem;
+  gap: 1.25rem;
 }
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
@@ -284,14 +284,14 @@ Citations use [^1] or [1] notation."
 .template-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.8rem 1.6rem;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
   background: transparent;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   color: #4b5563;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -307,17 +307,17 @@ Citations use [^1] or [1] notation."
   display: flex;
   gap: 0;
   border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 2.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .import-tab {
-  padding: 1.2rem 2rem;
+  padding: 0.75rem 1.25rem;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   color: #6b7280;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -337,9 +337,9 @@ Citations use [^1] or [1] notation."
   background: #f9fafb;
   border: 1px solid #d1d5db;
   border-radius: 8px;
-  padding: 1.6rem;
+  padding: 1rem;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   line-height: 1.8;
   color: #1a1a1a;
   resize: vertical;
@@ -356,14 +356,14 @@ Citations use [^1] or [1] notation."
 }
 
 .parse-btn {
-  margin-top: 1.6rem;
-  padding: 1.2rem 3.2rem;
+  margin-top: 1rem;
+  padding: 0.75rem 2rem;
   background: rgb(151, 71, 255);
   border: none;
   border-radius: 8px;
   color: white;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -385,8 +385,8 @@ Citations use [^1] or [1] notation."
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.2rem;
-  padding: 4.8rem 2.4rem;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
   border: 2px dashed #d1d5db;
   border-radius: 12px;
   cursor: pointer;
@@ -402,14 +402,14 @@ Citations use [^1] or [1] notation."
 
 .upload-text {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   color: #4b5563;
   margin: 0;
 }
 
 .upload-hint {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: #9ca3af;
   margin: 0;
 }
@@ -418,12 +418,12 @@ Citations use [^1] or [1] notation."
 .import-status {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  margin-top: 2rem;
-  padding: 1.2rem 1.6rem;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
 }
 
 .import-status.success {
@@ -445,7 +445,7 @@ Citations use [^1] or [1] notation."
 }
 
 .status-icon {
-  font-size: 1.4rem;
+  font-size: 0.875rem;
 }
 
 .status-icon.spinning {

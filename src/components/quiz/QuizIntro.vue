@@ -46,31 +46,31 @@ defineEmits(["exit", "start"]);
 
 <style scoped>
 .intro-container { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
-.intro-card { background: transparent; padding: 2.5rem; max-width: 480px; width: 100%; text-align: center; }
+.intro-card { background: transparent; padding: 1.5625rem; max-width: 480px; width: 100%; text-align: center; }
 .quiz-eyebrow {
-    font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
-    letter-spacing: 0.12em; color: rgb(var(--color-accent)); margin: 0 0 1.4rem;
+    font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase;
+    letter-spacing: 0.12em; color: rgb(var(--color-accent)); margin: 0 0 0.875rem;
 }
 .quiz-title {
-    font-family: var(--font-body); font-size: 3.2rem; font-weight: 500; line-height: 1.05;
-    letter-spacing: -0.01em; color: rgb(var(--color-ink)); margin: 0 0 1.4rem 0;
+    font-family: var(--font-body); font-size: 2rem; font-weight: 500; line-height: 1.05;
+    letter-spacing: -0.01em; color: rgb(var(--color-ink)); margin: 0 0 0.875rem 0;
 }
 .quiz-description {
-    font-family: var(--font-body); font-style: italic; font-size: 1.5rem;
-    color: rgb(var(--color-ink) / 0.7); line-height: 1.55; margin: 0 0 2.4rem 0;
+    font-family: var(--font-body); font-style: italic; font-size: 0.9375rem;
+    color: rgb(var(--color-ink) / 0.7); line-height: 1.55; margin: 0 0 1.5rem 0;
 }
-.quiz-meta { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid rgb(var(--color-line)); margin-bottom: 2.4rem; }
-.meta-item { display: flex; flex-direction: column; align-items: center; padding: 1.6rem 1rem; border-right: 1px solid rgb(var(--color-line)); }
+.quiz-meta { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid rgb(var(--color-line)); margin-bottom: 1.5rem; }
+.meta-item { display: flex; flex-direction: column; align-items: center; padding: 1rem 0.625rem; border-right: 1px solid rgb(var(--color-line)); }
 .meta-item:last-child { border-right: none; }
-.meta-value { font-family: var(--font-body); font-size: 2.6rem; font-weight: 500; line-height: 1; color: rgb(var(--color-ink)); }
-.meta-label { font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px; }
-.intro-actions { display: flex; gap: 1rem; justify-content: center; }
+.meta-value { font-family: var(--font-body); font-size: 1.625rem; font-weight: 500; line-height: 1; color: rgb(var(--color-ink)); }
+.meta-label { font-family: var(--font-mono); font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px; }
+.intro-actions { display: flex; gap: 0.625rem; justify-content: center; }
 
 /* Shared pill buttons (kept local so this screen is self-contained) */
 .btn-primary, .btn-secondary {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 0.8rem 1.6rem; border-radius: 999px; font-family: var(--font-mono);
-    font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.3125rem;
+    padding: 0.5rem 1rem; border-radius: 999px; font-family: var(--font-mono);
+    font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
     transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 .btn-primary { background: rgb(var(--color-ink)); color: rgb(var(--color-paper)); border: 1px solid rgb(var(--color-ink)); }

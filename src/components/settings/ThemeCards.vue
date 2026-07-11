@@ -41,7 +41,7 @@ const options = [
 .theme-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.2rem;
+  gap: 0.75rem;
 }
 
 .card {
@@ -51,7 +51,7 @@ const options = [
   padding: 0;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   cursor: pointer;
   overflow: hidden;
   transition: border-color 0.15s, transform 0.1s;
@@ -74,10 +74,10 @@ const options = [
 
 .preview {
   aspect-ratio: 16 / 9;
-  padding: 0.8rem;
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 
 .preview[data-preview="light"] {
@@ -93,26 +93,26 @@ const options = [
 }
 
 .preview-bar {
-  height: 0.6rem;
+  height: 0.375rem;
   width: 60%;
   background: rgb(var(--color-accent));
-  border-radius: 0.3rem;
+  border-radius: 0.1875rem;
 }
 
 .preview-body {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.1875rem;
   flex: 1;
   justify-content: flex-end;
 }
 
 .preview-line {
-  height: 0.4rem;
+  height: 0.25rem;
   width: 100%;
   background: currentColor;
   opacity: 0.4;
-  border-radius: 0.2rem;
+  border-radius: 0.125rem;
 }
 
 .preview-line.short {
@@ -125,19 +125,19 @@ const options = [
 }
 
 .meta {
-  padding: 0.8rem 1rem;
+  padding: 0.5rem 0.625rem;
   border-top: 1px solid rgb(var(--color-line));
 }
 
 .label {
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 
 .hint {
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-mute));
-  margin-top: 0.2rem;
+  margin-top: 0.125rem;
 }
 </style>

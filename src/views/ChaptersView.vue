@@ -302,9 +302,9 @@ function chapterNumberFor(mod) {
    prototype.jsx). Editorial grid: serif titles, mono metadata, hairline rules,
    sharp 4px/0 radii, magenta progress. --ob-* tokens map to live --color-*. */
 .chapters {
-  max-width: 132rem;
+  max-width: 82.5rem;
   margin: 0 auto;
-  padding: 3.2rem 5.6rem 6rem;
+  padding: 2rem 3.5rem 3.75rem;
   color: rgb(var(--color-ink));
   font-family: var(--font-body);
 }
@@ -312,7 +312,7 @@ function chapterNumberFor(mod) {
 /* Shared mono eyebrow */
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -326,31 +326,31 @@ function chapterNumberFor(mod) {
 }
 
 .section-label {
-  margin: 2.4rem 0 1.6rem;
+  margin: 1.5rem 0 1rem;
 }
 
 /* Hero: 1fr / 1.4fr (book title | featured card) */
 .hero {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem;
-  margin: 0 0 3.6rem;
+  gap: 1.875rem;
+  margin: 0 0 2.25rem;
 }
 
 @media (min-width: 900px) {
   .hero {
     grid-template-columns: 1fr 1.4fr;
-    gap: 5.6rem;
+    gap: 3.5rem;
     align-items: center;
   }
 }
 
 .hero-text .eyebrow {
-  margin-bottom: 1.8rem;
+  margin-bottom: 1.125rem;
 }
 
 .hero-text h1 {
-  font-size: 6.4rem;
+  font-size: 4rem;
   line-height: 0.96;
   letter-spacing: -0.02em;
   padding: 0;
@@ -358,17 +358,17 @@ function chapterNumberFor(mod) {
 }
 
 .lede {
-  margin-top: 1.8rem;
-  max-width: 36rem;
-  font-size: 1.8rem;
+  margin-top: 1.125rem;
+  max-width: 22.5rem;
+  font-size: 1.125rem;
   line-height: 1.45;
   color: rgb(var(--color-mute));
 }
 
 .signin-cta {
-  margin-top: 1.6rem;
+  margin-top: 1rem;
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: rgb(var(--color-mute));
 }
 
@@ -380,10 +380,10 @@ function chapterNumberFor(mod) {
 /* Featured "continue reading" card — dark band (prototype IndexScreen A) */
 .continue-card {
   display: grid;
-  grid-template-columns: 14rem 1fr auto;
-  gap: 2.4rem;
+  grid-template-columns: 8.75rem 1fr auto;
+  gap: 1.5rem;
   align-items: center;
-  padding: 2.4rem;
+  padding: 1.5rem;
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
   border-radius: 6px;
@@ -421,43 +421,43 @@ function chapterNumberFor(mod) {
 
 .continue-label {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-accent));
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.5rem;
 }
 
 /* On the dark band, chapter + stat lines read as dimmed paper */
 .continue-chapter,
 .continue-stat {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-paper) / 0.7);
 }
 
 .chapter-label,
 .subtitle {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-mute));
 }
 
 .continue-chapter {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.25rem;
 }
 
 .continue-title {
-  font-size: 2.8rem;
+  font-size: 1.75rem;
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.01em;
-  margin: 0 0 1.2rem;
+  margin: 0 0 0.75rem;
   padding: 0;
 }
 
 .continue-stat {
-  margin-top: 0.6rem;
+  margin-top: 0.375rem;
 }
 
 /* Progress bars: square, magenta, thin */
@@ -470,7 +470,7 @@ function chapterNumberFor(mod) {
 
 .progress-bar--thin {
   height: 2px;
-  margin-top: 0.8rem;
+  margin-top: 0.5rem;
 }
 
 .progress-bar-fill {
@@ -490,11 +490,11 @@ function chapterNumberFor(mod) {
 /* Resume button (continue card) */
 .resume-btn {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   white-space: nowrap;
-  padding: 0.9rem 1.8rem;
+  padding: 0.5625rem 1.125rem;
   border-radius: 999px;
   background: rgb(var(--color-complete));
   color: #0a3d33;
@@ -509,26 +509,26 @@ function chapterNumberFor(mod) {
 .stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 4rem;
-  margin: 3.2rem 0 0;
-  padding: 1.8rem 0;
+  gap: 2.5rem;
+  margin: 2rem 0 0;
+  padding: 1.125rem 0;
   border-top: 1px solid rgb(var(--color-line));
   border-bottom: 1px solid rgb(var(--color-line));
 }
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
 }
 .stat-value {
-  font-size: 2.2rem;
+  font-size: 1.375rem;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -536,16 +536,16 @@ function chapterNumberFor(mod) {
 .loading {
   text-align: center;
   color: rgb(var(--color-mute));
-  padding: 4rem;
+  padding: 2.5rem;
 }
 
 /* All-chapters grid: 4 across, gap 28px, borderless cards */
 .grid {
   list-style: none;
-  padding: 0 0 4.8rem;
+  padding: 0 0 3rem;
   margin: 0;
   display: grid;
-  gap: 2.8rem;
+  gap: 1.75rem;
   grid-template-columns: repeat(2, 1fr);
 }
 
@@ -573,7 +573,7 @@ function chapterNumberFor(mod) {
   aspect-ratio: 3 / 4;
   background: rgb(var(--color-bg));
   overflow: hidden;
-  margin-bottom: 1.2rem;
+  margin-bottom: 0.75rem;
   transition: opacity 0.15s ease;
 }
 
@@ -587,22 +587,22 @@ function chapterNumberFor(mod) {
 }
 
 .chapter-label {
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.125rem;
 }
 
 .title {
-  font-size: 1.7rem;
+  font-size: 1.0625rem;
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: -0.005em;
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.25rem;
   padding: 0;
 }
 
 .subtitle {
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 1rem;
+  font-size: 0.625rem;
   margin: 0;
 }
 
@@ -618,15 +618,15 @@ function chapterNumberFor(mod) {
 /* Two-link action row: Read (→ reader) · Overview (→ overview page) */
 .card-actions {
   display: flex;
-  gap: 1.6rem;
+  gap: 1rem;
   align-items: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: 0.625rem;
+  padding-top: 0.625rem;
   border-top: 1px solid rgb(var(--color-line));
 }
 .card-action {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   text-decoration: none;
@@ -643,11 +643,11 @@ function chapterNumberFor(mod) {
 /* Status pills sit on the cover, top-right */
 .pill {
   position: absolute;
-  top: 0.8rem;
-  right: 0.8rem;
-  padding: 0.2rem 0.8rem;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.125rem 0.5rem;
   border-radius: 9999px;
-  font-size: 1rem;
+  font-size: 0.625rem;
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.1em;

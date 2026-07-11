@@ -101,11 +101,11 @@ defineEmits(["flip"]);
 .card-counter {
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
-  margin-bottom: 1rem;
+  margin-bottom: 0.625rem;
 }
 
 .flashcard {
@@ -125,7 +125,7 @@ defineEmits(["flip"]);
   inset: 0;
   backface-visibility: hidden;
   border-radius: 8px;
-  padding: 2rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
 }
@@ -146,10 +146,10 @@ defineEmits(["flip"]);
 
 .card-label {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 
 .front .card-label {
@@ -170,7 +170,7 @@ defineEmits(["flip"]);
 
 .card-content p {
   font-family: var(--font-body);
-  font-size: 2.4rem;
+  font-size: 1.5rem;
   font-weight: 500;
   line-height: 1.25;
   letter-spacing: -0.01em;
@@ -179,7 +179,7 @@ defineEmits(["flip"]);
 
 /* Definition (back) reads as body prose, not a big display term */
 .back .card-content p {
-  font-size: 1.7rem;
+  font-size: 1.0625rem;
   font-weight: 400;
   line-height: 1.5;
 }
@@ -196,9 +196,9 @@ defineEmits(["flip"]);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
+  gap: 0.234375rem;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   opacity: 0.55;
@@ -224,7 +224,7 @@ defineEmits(["flip"]);
   }
 
   .card-content p {
-    font-size: 1.125rem;
+    font-size: 0.703125rem;
   }
 }
 </style>

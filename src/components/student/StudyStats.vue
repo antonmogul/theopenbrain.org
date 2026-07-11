@@ -154,21 +154,21 @@ const statItems = computed(() => [
 
 <style scoped>
 .study-stats {
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .stats-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.125rem;
+  font-size: 0.703125rem;
   font-weight: 600;
   color: #1f2937;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.625rem 0;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
 @media (max-width: 1400px) {
@@ -181,10 +181,10 @@ const statItems = computed(() => [
   background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 1.25rem;
+  padding: 0.78125rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.625rem;
   transition: all 0.2s;
 }
 
@@ -212,7 +212,7 @@ const statItems = computed(() => [
 
 .stat-value {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
@@ -220,8 +220,8 @@ const statItems = computed(() => [
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   color: #6b7280;
-  margin: 0.25rem 0 0 0;
+  margin: 0.15625rem 0 0 0;
 }
 </style>

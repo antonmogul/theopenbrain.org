@@ -58,11 +58,11 @@ const openImage = () => {
 
 <style scoped>
 .imageW {
-  width: calc(100vw - 3rem);
+  width: calc(100vw - 1.875rem);
 }
 @media (min-width: 1300px) {
   .imageW {
-    width: calc(50vw - 3rem + 4px);
+    width: calc(50vw - 1.875rem + 4px);
   }
 }
 </style>

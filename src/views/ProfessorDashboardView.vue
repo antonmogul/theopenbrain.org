@@ -801,33 +801,33 @@ onMounted(() => {
 .mt-3 { margin-top: 12px; }
 
 .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.card-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.card-title.sm { font-size: 1.6rem; margin: 0 0 4px; }
+.card-title { font-family: var(--font-body); font-size: 1.125rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.card-title.sm { font-size: 1rem; margin: 0 0 4px; }
 
-.muted { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0 0 12px; line-height: 1.5; }
-.muted-mono { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); }
+.muted { font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-mute)); margin: 0 0 12px; line-height: 1.5; }
+.muted-mono { font-family: var(--font-mono); font-size: 0.75rem; color: rgb(var(--color-mute)); }
 .eyebrow-mono {
-    font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+    font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase;
     letter-spacing: 0.1em; color: rgb(var(--color-accent));
 }
 
 .meta-row {
     display: flex; flex-wrap: wrap; gap: 16px; font-family: var(--font-mono);
-    font-size: 1.3rem; color: rgb(var(--color-mute)); margin-bottom: 16px;
+    font-size: 0.8125rem; color: rgb(var(--color-mute)); margin-bottom: 16px;
 }
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* Rail footer (overrides default back-link to add Sign out) */
 .rail-rule { border: 0; border-top: 1px solid rgb(var(--color-line)); margin: 20px 0 12px; width: 100%; }
 .rail-back {
-    display: block; font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+    display: block; font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase;
     letter-spacing: 0.08em; color: rgb(var(--color-ink)); text-decoration: none;
     background: transparent; border: 0; cursor: pointer; text-align: left; padding: 4px 0;
 }
 .rail-back:hover { color: rgb(var(--color-accent)); }
 
 /* Quick-action cards */
-.qa-label { font-family: var(--font-body); font-size: 1.5rem; font-weight: 500; color: rgb(var(--color-ink)); }
+.qa-label { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 500; color: rgb(var(--color-ink)); }
 
 /* Forms */
 .form-stack { display: flex; flex-direction: column; gap: 18px; }
@@ -837,7 +837,7 @@ onMounted(() => {
 }
 .check-row, .radio-label {
     display: flex; align-items: center; gap: 8px;
-    font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); cursor: pointer;
+    font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-ink)); cursor: pointer;
 }
 .radio-row { display: flex; flex-wrap: wrap; gap: 20px; }
 .check-row input[type="checkbox"], .radio-label input { accent-color: rgb(var(--color-accent)); }
@@ -845,7 +845,7 @@ onMounted(() => {
 /* Bare select (used outside FormField, e.g. filter/target-course bars) */
 .bare-select {
     border: 1px solid rgb(var(--color-line)); border-radius: 4px; background: transparent;
-    padding: 9px 12px; font-family: var(--font-body); font-size: 1.4rem;
+    padding: 9px 12px; font-family: var(--font-body); font-size: 0.875rem;
     color: rgb(var(--color-ink)); outline: none; transition: border-color 0.12s ease;
 }
 .bare-select:focus { border-color: rgb(var(--color-ink)); }
@@ -853,7 +853,7 @@ onMounted(() => {
 /* Boxed input (readonly invite URL) */
 .boxed-input {
     flex: 1; border: 1px solid rgb(var(--color-line)); border-radius: 4px; background: transparent;
-    padding: 9px 12px; font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); outline: none;
+    padding: 9px 12px; font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-ink)); outline: none;
 }
 
 /* Filters bar */
@@ -878,21 +878,21 @@ onMounted(() => {
     width: 48px; height: 48px; border-radius: 999px; flex: none;
     background: rgb(var(--color-accent)); color: rgb(var(--color-paper));
     display: grid; place-items: center; font-family: var(--font-mono);
-    font-size: 1.8rem; font-weight: 600;
+    font-size: 1.125rem; font-weight: 600;
 }
 .student-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .badge-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .student-meta {
     display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-    font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute));
+    font-family: var(--font-mono); font-size: 0.75rem; color: rgb(var(--color-mute));
 }
 
 /* Invite modal method blocks */
 .method-block { display: flex; flex-direction: column; gap: 12px; }
-.method-help { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-mute)); margin: 0; line-height: 1.5; }
+.method-help { font-family: var(--font-body); font-size: 0.8125rem; color: rgb(var(--color-mute)); margin: 0; line-height: 1.5; }
 .generated-row { display: flex; align-items: center; gap: 10px; }
 .access-code {
-    font-family: var(--font-mono); font-size: 2.4rem; font-weight: 600;
+    font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600;
     color: rgb(var(--color-accent)); letter-spacing: 0.2em;
     background: rgb(var(--color-accent) / 0.1); padding: 10px 20px; border-radius: 6px;
 }
@@ -900,6 +900,6 @@ onMounted(() => {
 /* Mini stat rows (assessment / analytics cards) */
 .mini-stats { display: flex; gap: 28px; margin-top: 8px; }
 .mini-stat { display: flex; flex-direction: column; }
-.mini-value { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); line-height: 1; }
-.mini-label { font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px; }
+.mini-value { font-family: var(--font-body); font-size: 1.25rem; font-weight: 500; color: rgb(var(--color-ink)); line-height: 1; }
+.mini-label { font-family: var(--font-mono); font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px; }
 </style>

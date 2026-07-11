@@ -194,20 +194,20 @@ function getBlockPreview(paragraph) {
 }
 
 .step-header {
-  margin-bottom: 2.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
@@ -215,30 +215,30 @@ function getBlockPreview(paragraph) {
 /* Stats */
 .stats-bar {
   display: flex;
-  gap: 2.4rem;
-  padding: 1.6rem 2rem;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  margin-bottom: 2.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.125rem;
 }
 
 .stat-value {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.8rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #1a1a1a;
 }
 
 .stat-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -246,11 +246,11 @@ function getBlockPreview(paragraph) {
 
 /* Empty State */
 .empty-state {
-  padding: 4rem;
+  padding: 2.5rem;
   text-align: center;
   color: #9ca3af;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   border: 1px dashed #d1d5db;
   border-radius: 8px;
 }
@@ -259,7 +259,7 @@ function getBlockPreview(paragraph) {
 .section-tree {
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  gap: 1rem;
 }
 
 .section-node {
@@ -272,7 +272,7 @@ function getBlockPreview(paragraph) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.2rem 1.6rem;
+  padding: 0.75rem 1rem;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -280,16 +280,16 @@ function getBlockPreview(paragraph) {
 .section-title-group {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 0.75rem;
   flex: 1;
 }
 
 .section-number {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: rgb(151, 71, 255);
   background: rgba(151, 71, 255, 0.08);
-  padding: 0.3rem 0.8rem;
+  padding: 0.1875rem 0.5rem;
   border-radius: 4px;
 }
 
@@ -297,9 +297,9 @@ function getBlockPreview(paragraph) {
   background: transparent;
   border: 1px solid transparent;
   border-radius: 4px;
-  padding: 0.4rem 0.8rem;
+  padding: 0.25rem 0.5rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   color: #1a1a1a;
   flex: 1;
@@ -315,14 +315,14 @@ function getBlockPreview(paragraph) {
 .section-actions {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .paragraph-count {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: #9ca3af;
-  margin-right: 0.8rem;
+  margin-right: 0.5rem;
 }
 
 .icon-btn {
@@ -335,7 +335,7 @@ function getBlockPreview(paragraph) {
   border: 1px solid #d1d5db;
   border-radius: 4px;
   color: #6b7280;
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -364,13 +364,13 @@ function getBlockPreview(paragraph) {
 .paragraph-preview {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 0.8rem 1.6rem;
+  gap: 0.625rem;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid #f3f4f6;
 }
 
 .paragraph-preview.subsection {
-  padding-left: 3.2rem;
+  padding-left: 2rem;
 }
 
 .paragraph-preview:last-child {
@@ -379,14 +379,14 @@ function getBlockPreview(paragraph) {
 
 .para-index {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: #9ca3af;
   min-width: 24px;
 }
 
 .para-text {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: #6b7280;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -395,30 +395,30 @@ function getBlockPreview(paragraph) {
 
 /* References */
 .references-section {
-  margin-top: 3.2rem;
-  padding-top: 2.4rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
   border-top: 1px solid #e5e7eb;
 }
 
 .references-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.6rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 1.6rem;
+  margin: 0 0 1rem;
 }
 
 .references-list {
   list-style: decimal;
-  padding-left: 2.4rem;
+  padding-left: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
 .reference-item {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: #4b5563;
   line-height: 1.6;
 }
@@ -430,7 +430,7 @@ function getBlockPreview(paragraph) {
 
 .ref-year {
   color: #6b7280;
-  margin: 0 0.4rem;
+  margin: 0 0.25rem;
 }
 
 .ref-title {
@@ -448,7 +448,7 @@ function getBlockPreview(paragraph) {
 .ref-doi {
   color: #9ca3af;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
 }
 
 .ref-doi::before {

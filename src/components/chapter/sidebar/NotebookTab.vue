@@ -371,7 +371,7 @@ async function executeDelete() {
   border: none;
   border-bottom: 2px solid transparent;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -393,7 +393,7 @@ async function executeDelete() {
 
 .badge {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.5625rem;
   background: rgb(var(--color-complete));
   color: #0a3d33;
   padding: 1px 6px;
@@ -446,7 +446,7 @@ async function executeDelete() {
 
 .dot-all {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   color: rgb(var(--color-mute));
 }
 
@@ -475,7 +475,7 @@ async function executeDelete() {
   color: rgb(var(--color-accent));
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -514,7 +514,7 @@ async function executeDelete() {
 }
 
 .item-text {
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: rgb(var(--color-ink));
   line-height: 1.5;
   margin: 0 0 6px 0;
@@ -523,7 +523,7 @@ async function executeDelete() {
 
 .item-date {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -546,7 +546,7 @@ async function executeDelete() {
   border: none;
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -576,7 +576,7 @@ async function executeDelete() {
   border: 1px solid rgb(var(--color-line));
   border-radius: 4px;
   font-family: var(--font-body);
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   resize: none;
   transition: border-color 0.12s ease;
 }
@@ -606,7 +606,7 @@ async function executeDelete() {
   background: rgb(var(--color-bg));
   border-radius: 4px;
   margin-bottom: 8px;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: rgb(var(--color-mute));
   font-style: italic;
 }
@@ -616,7 +616,7 @@ async function executeDelete() {
 }
 
 .note-content {
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: rgb(var(--color-ink));
   line-height: 1.55;
   margin: 0;
@@ -645,7 +645,7 @@ async function executeDelete() {
   background: none;
   border: none;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-mute));
@@ -665,7 +665,7 @@ async function executeDelete() {
 
 .delete-confirm p {
   margin: 0 0 8px 0;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: rgb(var(--color-ink));
 }
 
@@ -692,7 +692,7 @@ async function executeDelete() {
   align-items: center;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-mute));

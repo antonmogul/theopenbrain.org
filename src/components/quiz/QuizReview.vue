@@ -53,16 +53,16 @@ defineEmits(["exit", "retry"]);
 
 <style scoped>
 .review-container { max-width: 800px; margin: 0 auto; }
-.review-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
-.review-header h2 { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.review-questions { display: flex; flex-direction: column; gap: 1.5rem; }
-.review-actions { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; padding: 1.5rem; background: white; border-radius: 12px; }
+.review-header { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.9375rem; }
+.review-header h2 { font-family: var(--font-body); font-size: 1.25rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.review-questions { display: flex; flex-direction: column; gap: 0.9375rem; }
+.review-actions { display: flex; justify-content: center; gap: 0.625rem; margin-top: 1.25rem; padding: 0.9375rem; background: white; border-radius: 12px; }
 
 /* Shared pill buttons (kept local so this screen is self-contained) */
 .btn-primary, .btn-secondary {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 0.8rem 1.6rem; border-radius: 999px; font-family: var(--font-mono);
-    font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.3125rem;
+    padding: 0.5rem 1rem; border-radius: 999px; font-family: var(--font-mono);
+    font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
     transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 .btn-primary { background: rgb(var(--color-ink)); color: rgb(var(--color-paper)); border: 1px solid rgb(var(--color-ink)); }

@@ -138,7 +138,7 @@ const languageLabel = computed(() => {
 }
 
 .line-numbers {
-  min-width: 3rem;
+  min-width: 1.875rem;
   border-right: 1px solid #374151;
 }
 

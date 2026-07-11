@@ -33,5 +33,5 @@ function cancel() { emit("update:modelValue", false); emit("cancel"); }
 </template>
 
 <style scoped>
-.confirm-msg { font-family: var(--font-body); font-size: 1.5rem; line-height: 1.5; color: rgb(var(--color-ink)); margin: 0; }
+.confirm-msg { font-family: var(--font-body); font-size: 0.9375rem; line-height: 1.5; color: rgb(var(--color-ink)); margin: 0; }
 </style>

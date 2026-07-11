@@ -137,7 +137,7 @@ const scrollToPos = () => {
 
 <style>
 #animationStart > svg {
-  height: calc(100vh - 5rem);
+  height: calc(100vh - 3.125rem);
 }
 .h-start {
   height: calc(100vh);

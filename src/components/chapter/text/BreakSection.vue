@@ -116,7 +116,7 @@ const openInfo = () => {
 }
 @media (min-width: 1300px) {
   .-translate-x-custom {
-    transform: translateX(min(-50vw, calc(-100vw + 780px + 11rem - 1px)));
+    transform: translateX(min(-50vw, calc(-100vw + 780px + 6.875rem - 1px)));
   }
 }
 </style>

@@ -138,11 +138,11 @@ const viewTitle = computed(() => {
 <style scoped>
 section {
     display: block;
-    padding-bottom: 4rem;
+    padding-bottom: 2.5rem;
     min-height: unset;
 }
 
 h2 {
-    padding-bottom: 3rem;
+    padding-bottom: 1.875rem;
 }
 </style>

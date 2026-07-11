@@ -30,9 +30,9 @@ const autoLabel = computed(() => (props.status ? props.status.charAt(0).toUpperC
   font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em;
   border-radius: 999px; border: 1px solid transparent; white-space: nowrap;
 }
-.s-sm { font-size: 1rem; padding: 3px 9px; }
-.s-md { font-size: 1.1rem; padding: 4px 11px; }
-.s-lg { font-size: 1.3rem; padding: 6px 14px; }
+.s-sm { font-size: 0.625rem; padding: 3px 9px; }
+.s-md { font-size: 0.6875rem; padding: 4px 11px; }
+.s-lg { font-size: 0.8125rem; padding: 6px 14px; }
 .dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
 .v-neutral { color: rgb(var(--color-mute)); background: rgb(var(--color-mute) / 0.1); }
 .v-accent { color: rgb(var(--color-accent)); background: rgb(var(--color-accent) / 0.1); }

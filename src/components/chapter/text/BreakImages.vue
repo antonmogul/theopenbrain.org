@@ -34,7 +34,7 @@ const currentVideo = jsonVideos.videos[props.slug];
       <PlayIcon class="absolute -left-8 -top-8 icon iconBig" />
 
       <div
-        class="w-full h-full flex flex-col justify-center items-start mt-[-0.2rem] text-small"
+        class="w-full h-full flex flex-col justify-center items-start mt-[-0.125rem] text-small"
       >
         <span class="block text-left font-semibold">
           {{ slug !== "placeholder" ? currentVideo?.title : title }}

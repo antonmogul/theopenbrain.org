@@ -271,7 +271,7 @@ function handleGoToQuestion(index) {
 /* Intro */
 .intro {
   text-align: center;
-  padding: 1rem 0;
+  padding: 0.625rem 0;
 }
 
 .intro-title {
@@ -304,29 +304,29 @@ function handleGoToQuestion(index) {
 .review-actions,
 .confirm-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.46875rem;
   justify-content: center;
 }
 
 /* Taking */
 .taking {
-  padding: 0.5rem 0;
+  padding: 0.3125rem 0;
 }
 
 .question-area {
-  margin: 1.25rem 0;
+  margin: 0.78125rem 0;
 }
 
 /* Review */
 .review-questions {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
+  gap: 0.78125rem;
+  margin-bottom: 0.9375rem;
 }
 
 .review-actions {
-  padding-top: 1rem;
+  padding-top: 0.625rem;
   border-top: 1px solid #e5e7eb;
 }
 
@@ -345,7 +345,7 @@ function handleGoToQuestion(index) {
 .confirm-box {
   background: white;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 0.9375rem;
   max-width: 360px;
   width: 90%;
   text-align: center;
@@ -353,14 +353,14 @@ function handleGoToQuestion(index) {
 }
 
 .confirm-box h3 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.3125rem;
   color: #1f2937;
 }
 
 .confirm-box p {
   color: #6b7280;
-  margin: 0 0 1.25rem;
-  font-size: 0.9375rem;
+  margin: 0 0 0.78125rem;
+  font-size: 0.5859375rem;
 }
 
 /* Buttons */

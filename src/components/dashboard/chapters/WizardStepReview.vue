@@ -143,20 +143,20 @@ const wordCount = computed(() =>
 }
 
 .step-header {
-  margin-bottom: 2.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
@@ -166,10 +166,10 @@ const wordCount = computed(() =>
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 2rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.75rem;
 }
 
 .review-row {
@@ -180,7 +180,7 @@ const wordCount = computed(() =>
 
 .review-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -189,7 +189,7 @@ const wordCount = computed(() =>
 
 .review-value {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   color: #1a1a1a;
   text-align: right;
   flex: 1;
@@ -197,11 +197,11 @@ const wordCount = computed(() =>
 
 .review-value.mono {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
 }
 
 .review-value.description {
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: #4b5563;
   max-width: 400px;
 }
@@ -209,39 +209,39 @@ const wordCount = computed(() =>
 .review-divider {
   height: 1px;
   background: #f3f4f6;
-  margin: 0.4rem 0;
+  margin: 0.25rem 0;
 }
 
 .status-badge {
   display: inline-block;
-  padding: 0.3rem 1rem;
+  padding: 0.1875rem 0.625rem;
   background: rgba(234, 179, 8, 0.12);
   color: #ca8a04;
   border-radius: 4px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
 }
 
 /* Sections Summary */
 .sections-summary {
-  margin-top: 2.4rem;
+  margin-top: 1.5rem;
 }
 
 .summary-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #4b5563;
-  margin: 0 0 1.2rem;
+  margin: 0 0 0.75rem;
 }
 
 .section-list {
   list-style: decimal;
-  padding-left: 2rem;
+  padding-left: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.375rem;
 }
 
 .section-item {
@@ -252,44 +252,44 @@ const wordCount = computed(() =>
 
 .section-name {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: #1a1a1a;
 }
 
 .section-meta {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: #9ca3af;
 }
 
 /* Error */
 .create-error {
-  margin-top: 1.6rem;
-  padding: 1.2rem 1.6rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 8px;
   color: #dc2626;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
 }
 
 /* Create Button */
 .create-actions {
-  margin-top: 3.2rem;
+  margin-top: 2rem;
 }
 
 .create-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 1.6rem 4rem;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
   background: rgb(151, 71, 255);
   border: none;
   border-radius: 10px;
   color: white;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.6rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -321,7 +321,7 @@ const wordCount = computed(() =>
 /* Success State */
 .success-state {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 2.5rem 1.25rem;
 }
 
 .success-icon {
@@ -330,39 +330,39 @@ const wordCount = computed(() =>
   border-radius: 50%;
   background: rgba(34, 197, 94, 0.1);
   color: #16a34a;
-  font-size: 3.2rem;
+  font-size: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 2rem;
+  margin: 0 auto 1.25rem;
 }
 
 .success-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 2.4rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 1rem;
+  margin: 0 0 0.625rem;
 }
 
 .success-message {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   color: #4b5563;
-  margin: 0 0 3.2rem;
+  margin: 0 0 2rem;
 }
 
 .success-actions {
   display: flex;
-  gap: 1.6rem;
+  gap: 1rem;
   justify-content: center;
 }
 
 .action-btn {
-  padding: 1.2rem 2.8rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 8px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
   transition: all 0.2s;

@@ -275,7 +275,7 @@ onBeforeUnmount(() => {
     <div id="scroller" class="pointer-events-none w-full">
       <main
         id="text"
-        class="text pointer-events-auto w-full text-left pt-[calc(var(--reader-topbar-h)+2rem)] ml-text z-30 xl:border-l bg-white border-black tracking-wide duration-300 text-black"
+        class="text pointer-events-auto w-full text-left pt-[calc(var(--reader-topbar-h)+1.25rem)] ml-text z-30 xl:border-l bg-white border-black tracking-wide duration-300 text-black"
       >
         <!-- intro -->
         <section
@@ -285,7 +285,7 @@ onBeforeUnmount(() => {
           class="overflow-y-visible prose-measure"
         >
           <div
-            class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[8.6rem] -translate-y-[0.9rem] w-28 h-28 flex items-center justify-center"
+            class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[5.375rem] -translate-y-[0.5625rem] w-28 h-28 flex items-center justify-center"
           >
             <div
               :style="
@@ -436,16 +436,16 @@ onBeforeUnmount(() => {
 .ml-text {
   width: 100%;
   margin-left: 0;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 0.9375rem;
+  padding-right: 0.9375rem;
 }
 @media (min-width: 768px) {
   .ml-text {
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
 }
 @media (min-width: 1300px) {
@@ -457,8 +457,8 @@ onBeforeUnmount(() => {
     margin-left: calc(100vw - var(--reader-prose-w));
     margin-right: 0;
     max-width: unset;
-    padding-left: 5rem;
-    padding-right: 6rem;
+    padding-left: 3.125rem;
+    padding-right: 3.75rem;
   }
 }
 </style>

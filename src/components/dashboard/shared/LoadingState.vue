@@ -22,6 +22,6 @@ defineProps({
 .s-sm .spinner { width: 16px; height: 16px; }
 .s-md .spinner { width: 22px; height: 22px; }
 .s-lg .spinner { width: 32px; height: 32px; border-width: 3px; }
-.loading-msg { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); text-transform: uppercase; letter-spacing: 0.08em; }
+.loading-msg { font-family: var(--font-mono); font-size: 0.75rem; color: rgb(var(--color-mute)); text-transform: uppercase; letter-spacing: 0.08em; }
 @keyframes ls-spin { to { transform: rotate(360deg); } }
 </style>

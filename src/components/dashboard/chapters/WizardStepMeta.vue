@@ -133,20 +133,20 @@ defineExpose({ isValid });
 }
 
 .step-header {
-  margin-bottom: 3.2rem;
+  margin-bottom: 2rem;
 }
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
@@ -154,13 +154,13 @@ defineExpose({ isValid });
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 2.4rem;
+  gap: 1.5rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.5rem;
   flex: 1;
 }
 
@@ -170,13 +170,13 @@ defineExpose({ isValid });
 
 .form-row {
   display: flex;
-  gap: 2rem;
+  gap: 1.25rem;
   align-items: flex-start;
 }
 
 .form-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #4b5563;
   text-transform: uppercase;
@@ -197,9 +197,9 @@ defineExpose({ isValid });
   background: #f9fafb;
   border: 1px solid #d1d5db;
   border-radius: 8px;
-  padding: 1.2rem 1.6rem;
+  padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   color: #1a1a1a;
   transition: border-color 0.2s;
 }
@@ -217,9 +217,9 @@ defineExpose({ isValid });
   background: #f9fafb;
   border: 1px solid #d1d5db;
   border-radius: 8px;
-  padding: 1.2rem 1.6rem;
+  padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   color: #1a1a1a;
   resize: vertical;
   min-height: 80px;
@@ -245,9 +245,9 @@ defineExpose({ isValid });
 }
 
 .slug-prefix {
-  padding: 1.2rem 0 1.2rem 1.6rem;
+  padding: 0.75rem 0 0.75rem 1rem;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: #9ca3af;
   white-space: nowrap;
 }

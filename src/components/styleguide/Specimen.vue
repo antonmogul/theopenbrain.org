@@ -43,7 +43,7 @@ defineProps({
   align-items: center;
   justify-content: center;
   min-height: 120px;
-  padding: 2.5rem 2rem;
+  padding: 1.5625rem 1.25rem;
 }
 .stage--paper {
   background: rgb(var(--color-paper));
@@ -60,8 +60,8 @@ defineProps({
 .caption {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 1rem 1.25rem;
+  gap: 0.15625rem;
+  padding: 0.625rem 0.78125rem;
   border-top: 1px solid rgb(var(--color-line));
   background: rgb(var(--color-bg) / 0.5);
 }
@@ -69,11 +69,11 @@ defineProps({
   font-weight: 600;
 }
 .note {
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: rgb(var(--color-mute));
 }
 .path {
   color: rgb(var(--color-accent));
-  margin-top: 0.15rem;
+  margin-top: 0.09375rem;
 }
 </style>

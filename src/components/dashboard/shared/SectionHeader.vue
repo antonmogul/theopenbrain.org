@@ -32,15 +32,15 @@ defineProps({
 .header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .header-actions { flex: none; display: flex; align-items: center; gap: 8px; padding-top: 4px; }
 .eyebrow {
-  font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
+  font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase;
   letter-spacing: 0.12em; color: rgb(var(--color-mute)); margin: 0 0 10px;
 }
 h2 {
-  font-family: var(--font-body); font-size: 3.2rem; font-weight: 500;
+  font-family: var(--font-body); font-size: 2rem; font-weight: 500;
   line-height: 1.1; letter-spacing: -0.012em; margin: 0;
 }
 .subtitle {
-  font-family: var(--font-body); font-size: 1.6rem; line-height: 1.5;
-  color: rgb(var(--color-mute)); margin: 8px 0 0; max-width: 64rem;
+  font-family: var(--font-body); font-size: 1rem; line-height: 1.5;
+  color: rgb(var(--color-mute)); margin: 8px 0 0; max-width: 40rem;
 }
 </style>

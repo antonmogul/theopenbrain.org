@@ -228,7 +228,7 @@ function onBackdropClick() {
 
 .wordmark-text {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   line-height: 1.4;
   text-transform: lowercase;
   letter-spacing: 0.02em;
@@ -244,7 +244,7 @@ function onBackdropClick() {
 
 .chapter-eyebrow {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -262,7 +262,7 @@ function onBackdropClick() {
   padding: 4px 6px;
   border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-ink));
@@ -309,7 +309,7 @@ function onBackdropClick() {
   border: 1px solid transparent;
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
@@ -376,14 +376,14 @@ function onBackdropClick() {
 
 .dropdown-num {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-mute));
   flex-shrink: 0;
   width: 20px;
 }
 
 .dropdown-title {
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: rgb(var(--color-ink));
   line-height: 1.35;
 }

@@ -127,7 +127,7 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
    amber=incorrect. Bordered stat cards, mono labels, serif values. */
 .stats-container {
   background: transparent;
-  padding: 2rem;
+  padding: 1.25rem;
   max-width: 480px;
   margin: 0 auto;
   text-align: center;
@@ -136,7 +136,7 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
 }
 
 .stats-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9375rem;
 }
 
 .checkmark-icon {
@@ -147,21 +147,21 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1rem;
+  margin: 0 auto 0.625rem;
   color: rgb(var(--color-complete));
 }
 
 .stats-title {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 500;
   color: rgb(var(--color-ink));
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.15625rem 0;
 }
 
 .performance-message {
   font-style: italic;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   color: rgb(var(--color-ink) / 0.7);
   margin: 0;
 }
@@ -169,21 +169,21 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: 0.46875rem;
+  margin-bottom: 0.9375rem;
 }
 
 .stat-card {
   background: transparent;
   border: 1px solid rgb(var(--color-line));
   border-radius: 4px;
-  padding: 1rem;
+  padding: 0.625rem;
 }
 
 .stat-value {
   display: block;
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
@@ -208,16 +208,16 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
 .stat-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
-  margin-top: 0.25rem;
+  margin-top: 0.15625rem;
 }
 
 .stats-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.46875rem;
   justify-content: center;
 }
 
@@ -226,11 +226,11 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.8rem 1.6rem;
+  gap: 0.3125rem;
+  padding: 0.5rem 1rem;
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

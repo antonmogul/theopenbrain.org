@@ -125,11 +125,11 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 }
 
 .card-header {
-  padding: 1.5rem;
+  padding: 0.9375rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
 .header-content {
@@ -139,28 +139,28 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 
 .course-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-size: 0.78125rem;
   font-weight: 600;
   color: #1f2937;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.15625rem 0;
 }
 
 .course-meta {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   color: #6b7280;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.3125rem 0;
 }
 
 .course-description {
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   color: #6b7280;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.3125rem 0;
   line-height: 1.5;
 }
 
 .course-professor {
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   color: #3b82f6;
   margin: 0;
 }
@@ -169,9 +169,9 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
   flex-shrink: 0;
   background: #eff6ff;
   color: #3b82f6;
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   font-weight: 500;
-  padding: 0.25rem 0.75rem;
+  padding: 0.15625rem 0.46875rem;
   border-radius: 9999px;
   white-space: nowrap;
 }
@@ -179,7 +179,7 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 .progress-bar-container {
   height: 4px;
   background: #e5e7eb;
-  margin: 0 1.5rem;
+  margin: 0 0.9375rem;
 }
 
 .progress-bar-fill {
@@ -190,16 +190,16 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 }
 
 .modules-list {
-  padding: 0.75rem 1.5rem;
+  padding: 0.46875rem 0.9375rem;
   border-top: 1px solid #f3f4f6;
-  margin-top: 1rem;
+  margin-top: 0.625rem;
 }
 
 .module-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 0;
+  padding: 0.46875rem 0;
   border-bottom: 1px solid #f3f4f6;
   cursor: pointer;
   transition: background 0.2s;
@@ -211,15 +211,15 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 
 .module-item:hover {
   background: #f9fafb;
-  margin: 0 -1.5rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  margin: 0 -0.9375rem;
+  padding-left: 0.9375rem;
+  padding-right: 0.9375rem;
 }
 
 .module-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.46875rem;
 }
 
 .module-status {
@@ -242,7 +242,7 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 }
 
 .module-title {
-  font-size: 0.9375rem;
+  font-size: 0.5859375rem;
   color: #374151;
 }
 
@@ -250,10 +250,10 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
   background: none;
   border: none;
   color: #3b82f6;
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   font-weight: 500;
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  padding: 0.15625rem 0.3125rem;
   border-radius: 4px;
   transition: background 0.2s;
 }
@@ -263,20 +263,20 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 }
 
 .modules-empty {
-  padding: 1.5rem;
+  padding: 0.9375rem;
   text-align: center;
   color: #9ca3af;
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
 }
 
 .card-footer {
-  padding: 1rem 1.5rem;
+  padding: 0.625rem 0.9375rem;
   background: #f9fafb;
   border-top: 1px solid #f3f4f6;
 }
 
 .enrolled-date {
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   color: #9ca3af;
 }
 </style>

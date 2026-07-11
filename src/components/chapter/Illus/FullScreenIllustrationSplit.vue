@@ -129,6 +129,6 @@ watch(
 }
 
 .hPlus {
-  height: calc(100% + 5rem);
+  height: calc(100% + 3.125rem);
 }
 </style>

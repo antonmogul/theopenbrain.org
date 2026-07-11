@@ -84,24 +84,24 @@ const ratings = [
 
 .rating-prompt {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.625rem 0;
 }
 
 .rating-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
+  gap: 0.46875rem;
 }
 
 .rating-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem 0.5rem;
+  padding: 0.625rem 0.3125rem;
   border-radius: 4px;
   border: none;
   color: #fff;
@@ -121,16 +121,16 @@ const ratings = [
 
 .rating-label {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .rating-subtext {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.53125rem;
   opacity: 0.85;
-  margin-top: 0.2rem;
+  margin-top: 0.125rem;
 }
 
 .key-hint {
@@ -138,19 +138,19 @@ const ratings = [
   bottom: 4px;
   right: 6px;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.4375rem;
   opacity: 0.5;
 }
 
 .skip-btn {
-  margin-top: 1rem;
-  padding: 0.5rem 1.5rem;
+  margin-top: 0.625rem;
+  padding: 0.3125rem 0.9375rem;
   background: transparent;
   color: rgb(var(--color-ink));
   border: 1px solid rgb(var(--color-ink) / 0.85);
   border-radius: 999px;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

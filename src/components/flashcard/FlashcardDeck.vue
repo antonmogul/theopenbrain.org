@@ -115,7 +115,7 @@ function handleStart() {
   background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 1.5rem;
+  padding: 0.9375rem;
   transition: all 0.2s;
 }
 
@@ -127,8 +127,8 @@ function handleStart() {
 .deck-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.46875rem;
+  margin-bottom: 0.625rem;
 }
 
 .deck-icon {
@@ -144,7 +144,7 @@ function handleStart() {
 
 .deck-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.125rem;
+  font-size: 0.703125rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
@@ -152,8 +152,8 @@ function handleStart() {
 
 .loading-stats {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
 }
 
 .skeleton-stat {
@@ -172,14 +172,14 @@ function handleStart() {
 .deck-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.46875rem;
+  margin-bottom: 0.625rem;
 }
 
 .stat {
   background: #f9fafb;
   border-radius: 8px;
-  padding: 0.75rem;
+  padding: 0.46875rem;
   text-align: center;
 }
 
@@ -193,7 +193,7 @@ function handleStart() {
 
 .stat-value {
   display: block;
-  font-size: 1.25rem;
+  font-size: 0.78125rem;
   font-weight: 600;
   color: #1f2937;
 }
@@ -208,18 +208,18 @@ function handleStart() {
 
 .stat-label {
   display: block;
-  font-size: 0.6875rem;
+  font-size: 0.4296875rem;
   color: #6b7280;
-  margin-top: 0.125rem;
+  margin-top: 0.078125rem;
 }
 
 .last-session {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  gap: 0.3125rem;
+  font-size: 0.546875rem;
   color: #6b7280;
-  margin-bottom: 1rem;
+  margin-bottom: 0.625rem;
 }
 
 .session-date {
@@ -232,14 +232,14 @@ function handleStart() {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.3125rem;
+  padding: 0.46875rem 0.9375rem;
   background: #8b5cf6;
   color: white;
   border: none;
   border-radius: 8px;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: 0.5859375rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;

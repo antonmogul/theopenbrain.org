@@ -13,12 +13,12 @@ function setRole(role) {
 <template>
     <div
         class="fixed bottom-4 left-4 z-[200] flex items-center gap-2 rounded-full bg-black/80 px-4 py-2 text-white font-mono shadow-lg backdrop-blur-sm"
-        style="font-size: 1.2rem; line-height: 1.6rem"
+        style="font-size: 0.75rem; line-height: 1rem"
     >
         <span class="opacity-60 text-xs uppercase tracking-wider">DEV</span>
         <select
             class="bg-transparent border border-white/30 rounded px-2 py-1 text-white cursor-pointer"
-            style="font-size: 1.1rem"
+            style="font-size: 0.6875rem"
             :value="devRoleOverride || ''"
             @change="setRole($event.target.value)"
         >

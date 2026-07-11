@@ -158,7 +158,7 @@ async function handleSignOut() {
 }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -166,7 +166,7 @@ async function handleSignOut() {
 }
 .section-header h2 {
   font-family: var(--font-body);
-  font-size: 3.2rem;
+  font-size: 2rem;
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.012em;
@@ -192,12 +192,12 @@ async function handleSignOut() {
 }
 .row-label {
   font-family: var(--font-body);
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   color: rgb(var(--color-ink));
 }
 .row-hint {
   font-family: var(--font-body);
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: rgb(var(--color-mute));
   margin-top: 2px;
   line-height: 1.45;
@@ -217,7 +217,7 @@ async function handleSignOut() {
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-body);
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: rgb(var(--color-ink));
   outline: none;
 }
@@ -231,7 +231,7 @@ async function handleSignOut() {
 }
 .pw-status {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
 }
 .pw-status.ok {
   color: rgb(var(--color-complete));
@@ -249,7 +249,7 @@ async function handleSignOut() {
 }
 .danger-eyebrow {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-accent));
@@ -271,7 +271,7 @@ async function handleSignOut() {
 .btn-ghost,
 .btn-danger {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

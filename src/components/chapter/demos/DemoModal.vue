@@ -74,7 +74,7 @@ onUnmounted(() => {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.25rem;
 }
 
 .demo-panel {
@@ -83,7 +83,7 @@ onUnmounted(() => {
   width: 100%;
   max-width: 1200px;
   margin: auto;
-  height: calc(100vh - 4rem);
+  height: calc(100vh - 2.5rem);
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);

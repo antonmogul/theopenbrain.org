@@ -50,9 +50,9 @@ const tag = computed(() => props.as);
   transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 .btn.block { width: 100%; }
-.s-sm { font-size: 1rem; padding: 6px 12px; }
-.s-md { font-size: 1.1rem; padding: 9px 18px; }
-.s-lg { font-size: 1.3rem; padding: 12px 24px; }
+.s-sm { font-size: 0.625rem; padding: 6px 12px; }
+.s-md { font-size: 0.6875rem; padding: 9px 18px; }
+.s-lg { font-size: 0.8125rem; padding: 12px 24px; }
 
 .v-solid { background: rgb(var(--color-ink)); color: rgb(var(--color-paper)); border-color: rgb(var(--color-ink)); }
 .v-solid:hover { background: rgb(var(--color-ink) / 0.85); }

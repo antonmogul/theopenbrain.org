@@ -42,6 +42,6 @@ const info = infos.videos?.[route.params.video];
 
 <style scoped>
 .w-video {
-  width: calc(100% - 6rem);
+  width: calc(100% - 3.75rem);
 }
 </style>

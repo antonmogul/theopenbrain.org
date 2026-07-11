@@ -102,38 +102,38 @@ onMounted(() => {
 
 <style scoped>
 .sec-head {
-  margin-bottom: 3rem;
+  margin-bottom: 1.875rem;
 }
 .sec-eyebrow,
 .group-eyebrow {
   color: rgb(var(--color-accent));
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 .sec-note,
 .group-note {
   color: rgb(var(--color-mute));
   max-width: 62ch;
-  margin-top: 0.75rem;
+  margin-top: 0.46875rem;
 }
 .group {
-  margin-bottom: 3.5rem;
+  margin-bottom: 2.1875rem;
 }
 .group-eyebrow {
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.46875rem;
   border-bottom: 1px solid rgb(var(--color-line));
 }
 .group-note {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9375rem;
 }
 .swatch-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.5rem;
+  gap: 0.9375rem;
 }
 .swatch {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.46875rem;
 }
 .swatch-chip {
   height: 88px;
@@ -143,21 +143,21 @@ onMounted(() => {
 .swatch-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.125rem;
 }
 .swatch-name {
   font-weight: 600;
 }
 .swatch-hex {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: rgb(var(--color-ink));
 }
 .swatch-token {
   color: rgb(var(--color-accent));
 }
 .swatch-use {
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: rgb(var(--color-mute));
 }
 </style>

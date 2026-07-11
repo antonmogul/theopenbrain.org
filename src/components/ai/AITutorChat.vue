@@ -190,14 +190,14 @@ function getVisibleMessages() {
 
 .empty-title {
   font-family: var(--font-body);
-  font-size: 1.6rem;
+  font-size: 1rem;
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0 0 4px 0;
 }
 
 .empty-text {
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
   color: rgb(var(--color-mute));
   margin: 0;
 }
@@ -237,7 +237,7 @@ function getVisibleMessages() {
 
 .message-content {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 0.84375rem;
   line-height: 1.55;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -250,7 +250,7 @@ function getVisibleMessages() {
 .message-time {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.5625rem;
   margin-top: 6px;
   opacity: 0.6;
 }
@@ -309,7 +309,7 @@ function getVisibleMessages() {
   border: 1px solid rgb(var(--color-line));
   border-radius: 999px;
   font-family: var(--font-body);
-  font-size: 1.35rem;
+  font-size: 0.84375rem;
   resize: none;
   transition: border-color 0.12s ease;
 }

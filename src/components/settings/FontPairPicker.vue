@@ -61,7 +61,7 @@ const options = [
 .picker {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
 @media (max-width: 767px) {
@@ -73,11 +73,11 @@ const options = [
 .card {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 1.2rem 1rem;
+  gap: 0.375rem;
+  padding: 0.75rem 0.625rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s;
@@ -98,13 +98,13 @@ const options = [
 }
 
 .sample {
-  font-size: 2.8rem;
+  font-size: 1.75rem;
   line-height: 1;
   color: rgb(var(--color-ink));
 }
 
 .label {
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-mute));
 }
 </style>

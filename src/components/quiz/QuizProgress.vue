@@ -127,18 +127,18 @@ function goToQuestion(index) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 
 .progress-info {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.125rem;
 }
 
 .question-count {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-ink));
 }
 
@@ -148,7 +148,7 @@ function goToQuestion(index) {
 
 .answered-count {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-mute));
@@ -157,8 +157,8 @@ function goToQuestion(index) {
 .timer {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.9rem;
+  gap: 0.234375rem;
+  padding: 0.234375rem 0.5625rem;
   border: 1px solid rgb(var(--color-line));
   border-radius: 999px;
   color: rgb(var(--color-ink));
@@ -177,7 +177,7 @@ function goToQuestion(index) {
 
 .time-value {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -196,8 +196,8 @@ function goToQuestion(index) {
 .question-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: 0.3125rem;
+  margin-top: 0.625rem;
 }
 
 .nav-dot {
@@ -207,7 +207,7 @@ function goToQuestion(index) {
   border: 1px solid rgb(var(--color-line));
   background: transparent;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-ink));
   cursor: pointer;
   transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;

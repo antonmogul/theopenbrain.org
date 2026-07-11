@@ -118,13 +118,13 @@ function formatRelativeTime(date) {
 .progress-card {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 0.9375rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   transition: all 0.2s;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .progress-card:hover {
@@ -154,41 +154,41 @@ function formatRelativeTime(date) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 
 .card-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .last-accessed {
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .module-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: white;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.15625rem 0;
   line-height: 1.3;
 }
 
 .course-name {
-  font-size: 0.9375rem;
+  font-size: 0.5859375rem;
   color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.625rem 0;
 }
 
 .progress-section {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.625rem;
 }
 
 .progress-bar {
@@ -207,7 +207,7 @@ function formatRelativeTime(date) {
 }
 
 .progress-text {
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
 }
@@ -221,7 +221,7 @@ function formatRelativeTime(date) {
   align-items: center;
   justify-content: center;
   color: white;
-  margin-left: 1rem;
+  margin-left: 0.625rem;
   transition: all 0.2s;
 }
 
@@ -236,20 +236,20 @@ function formatRelativeTime(date) {
 }
 
 .empty-content svg {
-  margin-bottom: 1rem;
+  margin-bottom: 0.625rem;
   color: #d1d5db;
 }
 
 .empty-content h3 {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.125rem;
+  font-size: 0.703125rem;
   font-weight: 600;
   color: #6b7280;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.3125rem 0;
 }
 
 .empty-content p {
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   margin: 0;
 }
 </style>

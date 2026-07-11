@@ -108,42 +108,42 @@ const legacy = [
 
 <style scoped>
 .sec-head {
-  margin-bottom: 3rem;
+  margin-bottom: 1.875rem;
 }
 .sec-eyebrow,
 .block-eyebrow {
   color: rgb(var(--color-accent));
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 .sec-note {
   color: rgb(var(--color-mute));
   max-width: 62ch;
-  margin-top: 0.75rem;
+  margin-top: 0.46875rem;
 }
 .block {
-  margin-bottom: 3.5rem;
+  margin-bottom: 2.1875rem;
 }
 .block-eyebrow {
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.46875rem;
   border-bottom: 1px solid rgb(var(--color-line));
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9375rem;
 }
 .row {
   display: grid;
   grid-template-columns: 220px 1fr;
-  gap: 2rem;
+  gap: 1.25rem;
   align-items: baseline;
-  padding: 1.5rem 0;
+  padding: 0.9375rem 0;
   border-bottom: 1px solid rgb(var(--color-line) / 0.6);
 }
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 .cls {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 0.75rem;
   color: rgb(var(--color-accent));
 }
 .role {
@@ -156,21 +156,21 @@ const legacy = [
   overflow-wrap: anywhere;
 }
 .sample--fam {
-  font-size: 2.4rem;
+  font-size: 1.5rem;
 }
 .weights {
   display: flex;
-  gap: 3rem;
+  gap: 1.875rem;
   flex-wrap: wrap;
 }
 .weight {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.46875rem;
 }
 .weight-glyph {
-  font-size: 4.8rem;
+  font-size: 3rem;
   font-family: var(--font-body);
 }
 .block--legacy {
@@ -178,18 +178,18 @@ const legacy = [
 }
 .legacy-note {
   color: rgb(var(--color-mute));
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.9375rem;
   max-width: 62ch;
 }
 .legacy-row {
   display: grid;
   grid-template-columns: 200px 100px 1fr;
-  gap: 1.5rem;
+  gap: 0.9375rem;
   align-items: center;
-  padding: 0.75rem 0;
+  padding: 0.46875rem 0;
   border-bottom: 1px solid rgb(var(--color-line) / 0.5);
   font-family: var(--font-mono);
-  font-size: 1.3rem;
+  font-size: 0.8125rem;
 }
 .legacy-px {
   color: rgb(var(--color-mute));

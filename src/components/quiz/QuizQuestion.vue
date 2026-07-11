@@ -235,13 +235,13 @@ function getOptionClass(option) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 
 .question-type,
 .question-number {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -249,22 +249,22 @@ function getOptionClass(option) {
 
 .question-text {
   font-family: var(--font-body);
-  font-size: 2.2rem;
+  font-size: 1.375rem;
   font-weight: 500;
   color: rgb(var(--color-ink));
   line-height: 1.25;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1.25rem 0;
 }
 
 .options-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.46875rem;
 }
 
 .options-list button {
   font-family: var(--font-body);
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   cursor: pointer;
 }
 
@@ -275,7 +275,7 @@ function getOptionClass(option) {
 .option-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.46875rem;
 }
 
 .option-letter {
@@ -287,7 +287,7 @@ function getOptionClass(option) {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-mute));
   flex-shrink: 0;
 }
@@ -316,16 +316,16 @@ function getOptionClass(option) {
 }
 
 .short-answer-input {
-  margin-top: 1rem;
+  margin-top: 0.625rem;
 }
 
 .answer-input {
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.546875rem 0.625rem;
   border: 1px solid rgb(var(--color-line));
   border-radius: 6px;
   font-family: var(--font-body);
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   transition: border-color 0.12s ease;
@@ -351,15 +351,15 @@ function getOptionClass(option) {
 }
 
 .correct-answer-hint {
-  margin: 0.75rem 0 0 0;
+  margin: 0.46875rem 0 0 0;
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-complete));
 }
 
 .explanation {
-  margin-top: 1.5rem;
-  padding: 1rem 1.2rem;
+  margin-top: 0.9375rem;
+  padding: 0.625rem 0.75rem;
   background: rgb(var(--color-ink) / 0.03);
   border-radius: 4px;
   border-left: 3px solid rgb(var(--color-complete));
@@ -368,17 +368,17 @@ function getOptionClass(option) {
 .explanation-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3125rem;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-ink));
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3125rem;
 }
 
 .explanation-text {
-  font-size: 1.4rem;
+  font-size: 0.875rem;
   color: rgb(var(--color-ink) / 0.8);
   line-height: 1.55;
   margin: 0;
@@ -387,7 +387,7 @@ function getOptionClass(option) {
 /* Option-state classes (names from getOptionClass) → tokens.
    teal = correct, magenta = wrong/selected. */
 .options-list button {
-  padding: 1rem 1.2rem !important;
+  padding: 0.625rem 0.75rem !important;
   border-radius: 4px !important;
   border-width: 1px !important;
   transition: border-color 0.12s ease, background 0.12s ease !important;

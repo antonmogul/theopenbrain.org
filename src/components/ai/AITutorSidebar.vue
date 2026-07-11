@@ -335,7 +335,7 @@ async function executeDelete() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
+  padding: 0.625rem 0.78125rem;
   border-bottom: 1px solid #e5e7eb;
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
   color: white;
@@ -344,12 +344,12 @@ async function executeDelete() {
 .header-title {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.390625rem;
 }
 
 .header-title h2 {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.125rem;
+  font-size: 0.703125rem;
   font-weight: 600;
   margin: 0;
 }
@@ -361,7 +361,7 @@ async function executeDelete() {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.234375rem;
 }
 
 .icon-btn {
@@ -395,8 +395,8 @@ async function executeDelete() {
 }
 
 .history-header {
-  padding: 0.75rem 1.25rem;
-  font-size: 0.75rem;
+  padding: 0.46875rem 0.78125rem;
+  font-size: 0.46875rem;
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
@@ -405,17 +405,17 @@ async function executeDelete() {
 }
 
 .history-empty {
-  padding: 1.5rem;
+  padding: 0.9375rem;
   text-align: center;
   color: #9ca3af;
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
 }
 
 .history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.25rem;
+  padding: 0.46875rem 0.78125rem;
   border-bottom: 1px solid #f3f4f6;
   cursor: pointer;
   transition: background 0.15s;
@@ -433,12 +433,12 @@ async function executeDelete() {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.078125rem;
   min-width: 0;
 }
 
 .item-title {
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   color: #374151;
   font-weight: 500;
   white-space: nowrap;
@@ -447,7 +447,7 @@ async function executeDelete() {
 }
 
 .item-date {
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   color: #9ca3af;
 }
 
@@ -482,22 +482,22 @@ async function executeDelete() {
 }
 
 .delete-confirm p {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.875rem;
+  margin: 0 0 0.3125rem 0;
+  font-size: 0.546875rem;
   color: #374151;
 }
 
 .confirm-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.3125rem;
   justify-content: center;
 }
 
 .btn-secondary,
 .btn-danger {
-  padding: 0.375rem 0.75rem;
+  padding: 0.234375rem 0.46875rem;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -525,27 +525,27 @@ async function executeDelete() {
 
 /* Error banner */
 .error-banner {
-  padding: 0.75rem 1rem;
+  padding: 0.46875rem 0.625rem;
   background: #fef2f2;
   border-bottom: 1px solid #fecaca;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.3125rem;
 }
 
 .error-banner p {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   color: #dc2626;
 }
 
 .dismiss-btn {
-  padding: 0.25rem 0.5rem;
+  padding: 0.15625rem 0.3125rem;
   background: none;
   border: none;
   color: #dc2626;
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   cursor: pointer;
   text-decoration: underline;
 }

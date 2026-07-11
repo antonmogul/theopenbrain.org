@@ -141,7 +141,7 @@ const questionCount =
   background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 1.5rem;
+  padding: 0.9375rem;
   transition: all 0.2s;
 }
 
@@ -154,13 +154,13 @@ const questionCount =
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
+  gap: 0.625rem;
+  margin-bottom: 0.46875rem;
 }
 
 .quiz-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.125rem;
+  font-size: 0.703125rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
@@ -169,19 +169,19 @@ const questionCount =
 .best-score {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.15625rem;
   flex-shrink: 0;
 }
 
 .score-label {
-  font-size: 0.75rem;
+  font-size: 0.46875rem;
   color: #6b7280;
 }
 
 .score-value {
-  font-size: 0.875rem;
+  font-size: 0.546875rem;
   font-weight: 600;
-  padding: 0.125rem 0.5rem;
+  padding: 0.078125rem 0.3125rem;
   border-radius: 4px;
 }
 
@@ -196,24 +196,24 @@ const questionCount =
 }
 
 .quiz-description {
-  font-size: 0.9375rem;
+  font-size: 0.5859375rem;
   color: #6b7280;
   line-height: 1.5;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.625rem 0;
 }
 
 .quiz-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 0.625rem;
+  margin-bottom: 0.78125rem;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.875rem;
+  gap: 0.234375rem;
+  font-size: 0.546875rem;
   color: #6b7280;
 }
 
@@ -226,14 +226,14 @@ const questionCount =
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.3125rem;
+  padding: 0.46875rem 0.9375rem;
   background: #3b82f6;
   color: white;
   border: none;
   border-radius: 8px;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: 0.5859375rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;

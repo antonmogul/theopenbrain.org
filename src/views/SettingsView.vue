@@ -92,15 +92,15 @@ const railInitials = computed(() => {
 .layout {
   display: grid;
   grid-template-columns: 1fr;
-  max-width: 124rem;
+  max-width: 77.5rem;
   margin: 0 auto;
-  padding: 4rem 4.8rem 9.6rem;
-  gap: 4.8rem;
+  padding: 2.5rem 3rem 6rem;
+  gap: 3rem;
 }
 
 @media (min-width: 900px) {
   .layout {
-    grid-template-columns: 28rem 1fr;
+    grid-template-columns: 17.5rem 1fr;
   }
 }
 
@@ -114,7 +114,7 @@ const railInitials = computed(() => {
 @media (min-width: 900px) {
   .rail {
     position: sticky;
-    top: 4rem;
+    top: 2.5rem;
   }
 }
 .rail-user {
@@ -129,19 +129,19 @@ const railInitials = computed(() => {
   display: grid;
   place-items: center;
   font-family: var(--font-mono);
-  font-size: 2.6rem;
+  font-size: 1.625rem;
   font-weight: 600;
   border: 1px solid rgb(var(--color-line));
 }
 .rail-name {
   font-family: var(--font-body);
-  font-size: 2.2rem;
+  font-size: 1.375rem;
   letter-spacing: -0.01em;
   margin-top: 14px;
 }
 .rail-email {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   color: rgb(var(--color-mute));
   margin-top: 2px;
 }
@@ -169,7 +169,7 @@ const railInitials = computed(() => {
 }
 .rail-label {
   font-family: var(--font-body);
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   font-weight: 400;
 }
 .rail-link.active {
@@ -188,7 +188,7 @@ const railInitials = computed(() => {
 }
 .rail-back {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-ink));
@@ -200,7 +200,7 @@ const railInitials = computed(() => {
 
 @media (max-width: 767px) {
   .layout {
-    padding: 2.4rem 1.8rem 8rem;
+    padding: 1.5rem 1.125rem 5rem;
   }
 }
 </style>

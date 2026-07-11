@@ -37,14 +37,14 @@ const deltaTone = computed(() => {
 <style scoped>
 .stat.pad { padding: 20px 10px; }
 .stat-value {
-  display: block; font-family: var(--font-body); font-size: 3.2rem;
+  display: block; font-family: var(--font-body); font-size: 2rem;
   font-weight: 500; line-height: 1; letter-spacing: -0.01em; color: rgb(var(--color-ink));
 }
 .stat-label {
-  display: block; font-family: var(--font-mono); font-size: 1rem;
+  display: block; font-family: var(--font-mono); font-size: 0.625rem;
   text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px;
 }
-.stat-delta { display: block; font-family: var(--font-mono); font-size: 1.1rem; margin-top: 6px; }
+.stat-delta { display: block; font-family: var(--font-mono); font-size: 0.6875rem; margin-top: 6px; }
 .t-complete { color: rgb(var(--color-complete)); }
 .t-warn { color: rgb(var(--color-warn)); }
 .t-accent { color: rgb(var(--color-accent)); }

@@ -29,17 +29,17 @@ defineEmits(["update:modelValue"]);
   display: inline-flex;
   background: rgb(var(--color-bg));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.8rem;
-  padding: 0.3rem;
-  gap: 0.2rem;
+  border-radius: 0.5rem;
+  padding: 0.1875rem;
+  gap: 0.125rem;
 }
 
 .segment {
-  padding: 0.6rem 1.4rem;
-  font-size: 1.3rem;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
   background: transparent;
   border: none;
-  border-radius: 0.6rem;
+  border-radius: 0.375rem;
   color: rgb(var(--color-mute));
   cursor: pointer;
   transition: background 0.15s, color 0.15s;

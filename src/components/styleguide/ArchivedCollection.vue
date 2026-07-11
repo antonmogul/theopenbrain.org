@@ -43,16 +43,16 @@ import AccentSwatches from "@/components/settings/AccentSwatches.vue";
 
 <style scoped>
 .col-head {
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 .col-eyebrow {
   color: rgb(var(--color-mute));
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.46875rem;
 }
 .col-note {
   color: rgb(var(--color-mute));
   max-width: 62ch;
-  margin-top: 0.75rem;
+  margin-top: 0.46875rem;
 }
 .archived-banner {
   display: inline-block;
@@ -60,13 +60,13 @@ import AccentSwatches from "@/components/settings/AccentSwatches.vue";
   background: rgb(var(--color-warn) / 0.1);
   border: 1px solid rgb(var(--color-warn) / 0.4);
   border-radius: 999px;
-  padding: 0.4rem 1rem;
-  margin-bottom: 2rem;
+  padding: 0.25rem 0.625rem;
+  margin-bottom: 1.25rem;
 }
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  gap: 0.9375rem;
   /* dim the retired controls so they don't read as live UI */
   opacity: 0.75;
 }
