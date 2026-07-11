@@ -250,3 +250,55 @@ _Superseded by the Layer-2 finding below — the diff review was not the binding
 Rendered comparison of Chapter 1 (main vs branch, 1440×900) found **747 elements differing**, with hundreds of sizes shifted **1.6×**. Root cause: **Tailwind's default utility scale** (`gap-2`=`0.5rem`, `px-24`=`6rem`, `h-64`=`16rem`, …) lives in Tailwind core, **out of the codemod's `src/` scope**, so it was not converted. The `62.5%` hack was rendering those utilities at 0.625×; removing it makes them 1.6× larger. ~572 such utility uses exist app-wide.
 
 This is a genuine size regression → **STOP condition triggered → NOT pushed.** The Layer-1 token audit passing (0/1408 mismatches) is correct but insufficient: token correctness ≠ pixel invariance when out-of-scope rem sources (Tailwind defaults, runtime JS-injected rem) depend on the root base. Fix path: override Tailwind's rem scales ÷1.6 in `tailwind.config.js` + sweep runtime rem, then re-gate on Layer-2. Full analysis in `docs/font-refactor/SESSION-REPORT.md`.
+
+---
+
+## Phase 2 — Tailwind default-scale rebase (closes the Layer-2 gap)
+
+**Goal:** make Tailwind's built-in default utilities (`p-*`, `gap-*`, `h-*`, `text-*`, `rounded-*`, `leading-*`, `max-w-*`, …) render the **same pixels at the new 16px base** as they did at the old 10px (`62.5%`) base — pixel-invariant, exactly as Phase 1 did for authored `rem`.
+
+### Why Phase 1 was insufficient
+
+Phase 1's codemod is scoped to `src/` + `tailwind.config.js`. It correctly ÷1.6'd every **authored** rem literal. But Tailwind's default scale (`spacing.4 = 1rem`, `spacing.24 = 6rem`, `borderRadius.DEFAULT = 0.25rem`, `fontSize.base = 1rem`, …) is defined in **Tailwind core**, and this project's config uses `theme.extend`, which **inherits** that default scale unchanged. At the old base `p-4` = 1rem = 10px; removing the hack makes `p-4` = 1rem = 16px = **1.6× too big**. This drove the 747-element Chapter-1 regression.
+
+### Which scales are rebased (and why exactly these)
+
+Enumerated from Tailwind 3.4.19's resolved default theme (`resolveConfig({content:[]}).theme`) as the scales that carry their **own** rem literals, cross-checked against **actual usage in `src/`** (utility-class grep): spacing **585 uses**, fontSize **78**, borderRadius **61**, lineHeight **3**, maxWidth **8**, columns **0** (rebased for safety/completeness).
+
+| Scale | Rebased? | Note |
+|-------|----------|------|
+| `spacing` | ✅ (master) | `padding`, `margin`, `gap`, `inset`, `width`, `height`, `size`, `translate`, `space`, `scroll-margin/padding`, `flex-basis`, `borderSpacing`, etc. are defined in core as `theme => theme('spacing')`, so overriding `spacing` **cascades** to all of them — one override fixes ~15 utility families. |
+| `fontSize` | ✅ | Own rem literals; the `lineHeight`/`letterSpacing` sub-value in each `[size, {…}]` tuple is also rebased. Unitless line-heights (`"1"`) and `em` letter-spacings pass through. |
+| `lineHeight` | ✅ | Own rem literals (keys `3`–`10`); unitless keywords (`none`/`tight`/…) pass through. |
+| `borderRadius` | ✅ | Own rem literals; `none: 0px` / `full: 9999px` pass through. |
+| `maxWidth` | ✅ | Resolved scale = spacing keys **plus** its own `xs`–`7xl` rem keys; both rebased. `ch`/`vw`/`%`/keyword values pass through. |
+| `columns` | ✅ | Own `3xs`–`7xl` rem keys (0 uses today; rebased for completeness). |
+
+Scales that are **pure functions of `spacing`** with no independent rem (`padding`, `margin`, `gap`, `inset`, `width`, `height`, `translate`, `size`, `min/maxHeight`, `minWidth`, `scrollMargin/Padding`, `space`, `flexBasis`) are **not** overridden directly — they re-derive from the rebased `spacing` automatically. This is the minimal, complete set.
+
+### How it is derived (generated, not hand-typed)
+
+`scripts/tailwind-rebase.cjs` imports Tailwind's resolved default theme and divides **every rem literal** in the six scales above by 1.6, reusing Phase 1's exact-decimal arithmetic:
+- `×0.625` (= 5/8, exactly representable in IEEE-754 — avoids a `/1.6` rounding artifact), then `Number.toString()` (shortest round-tripping decimal). Guards against exponential output.
+- **Per-token round-trip assertion:** `converted × 1.6 == original` within `1e-9 × max(1,|value|)`. Magnitude-relative, so large values aren't falsely rejected.
+- Non-rem values (`px`, `%`, `vw`, `ch`, keywords, unitless, `calc()` without rem) pass through untouched; rem **inside** a `calc()`/`min()`/`max()` is divided in place (same negative-lookbehind regex as Phase 1).
+
+The result is wired into `tailwind.config.js` as **hard overrides** under `theme` (NOT `theme.extend` — extend would *merge*, leaving the original default rem alive). The config's pre-existing custom `extend` keys (`height.header`, `width.text`, `spacing.text`, `margin.body`, …) are already Phase-1-converted authored values and survive on top of the rebased base — verified via `resolveConfig`.
+
+### Invariance proof (same as Phase 1)
+
+A utility sized `X rem` renders at `X × base_px`. Before: `X × 10`. After ÷1.6 at the new base: `(X/1.6) × 16 = X × 10`. **Identical pixels.** ∎ Spot-checked against the exact regression classes from SESSION-REPORT: `.px-24 → 3.75rem` (60px), `.gap-2 → .3125rem` (5px), `.py-10 → 1.5625rem` (25px), `.-ml-5 → -.78125rem` (-12.5px) — all match `main`'s rendered pixels.
+
+### How it is verified
+
+1. **Rebase self-audit** — `node scripts/tailwind-rebase.cjs --audit`: for every rebased rem token, asserts `rebased × 1.6 == default` (independent re-derivation). **PASS: 126/126 tokens.**
+2. **Built-CSS spot-check** — grep the exact SESSION-REPORT regression classes out of `dist/` and confirm the emitted rem × 16px == `main`'s pixels.
+3. **Build gate** — `npm run build` exit 0.
+4. **Test gate** — `npm test` 141/141.
+5. **Layer-2 rendered pixel diff (the hard gate)** — re-run the same main-vs-branch computed-style traversal that caught the regression, on Chapter 1 (1440×900 + a mobile width) and home. The non-`<html>` element-delta count must drop from ~747 to ~0 (sub-pixel rounding only). If any size delta remains, the rebase is incomplete → iterate or STOP; **do not push.**
+
+### Explicitly NOT done (and why it's OK)
+
+- **JS/GSAP runtime-injected inline rem** (e.g. an animation setting `height: 2.0815rem` at runtime) scales with the root by design and is not a Tailwind default; if Layer-2 flags any such element it is investigated separately. These are *not* Tailwind-scale and are not in Phase-2 scope; Layer-2 is the backstop that would surface them.
+- **Reintroducing `62.5%`** — not done. The rebase re-expresses the default scale at the true 16px base; it does not restore the hack.
+- **Touching any `src/` authored value** — not done. Those are already correct from Phase 1; Phase 2 is purely the Tailwind-core default scale.

@@ -1,7 +1,26 @@
 /** @type {import('tailwindcss').Config} */
+// Phase 2 of the `font-size: 62.5%` removal (docs/font-refactor/PLAN.md §Phase 2).
+// Tailwind's DEFAULT utility scale (spacing/fontSize/lineHeight/borderRadius/
+// maxWidth/columns) is defined in rem in Tailwind core — out of the Phase-1
+// codemod's `src/` scope. Removing the 62.5% hack (10px→16px base) would make
+// every default utility render 1.6× larger. `rebasedScales` divides each of
+// those default rem literals by 1.6, so utilities emit the SAME PIXELS at the
+// new 16px base as they did at the old 10px base. These are HARD OVERRIDES
+// (under `theme`, not `theme.extend`) so they replace the defaults rather than
+// merge with them. Regenerate/verify: `node scripts/tailwind-rebase.cjs --audit`.
+const { buildRebasedScales } = require("./scripts/tailwind-rebase.cjs");
+const rebasedScales = buildRebasedScales();
+
 module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx,vue}"],
   theme: {
+    // Hard overrides — rebased Tailwind default scales (÷1.6). See note above.
+    spacing: rebasedScales.spacing,
+    fontSize: rebasedScales.fontSize,
+    lineHeight: rebasedScales.lineHeight,
+    borderRadius: rebasedScales.borderRadius,
+    maxWidth: rebasedScales.maxWidth,
+    columns: rebasedScales.columns,
     fontFamily: {
       // font-sans / font-serif / font-mono respond to active [data-fontpair]
       // because the CSS variables are themselves bound per pair in brand.css.
