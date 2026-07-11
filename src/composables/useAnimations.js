@@ -80,9 +80,15 @@ export function useAnimations() {
           anim.statesHighlight = highlightStates.map((s) => s.state_label);
         }
 
-        // Add switch variants
-        if (variants.length > 0 && row.interaction_type === "switch") {
-          anim.switches = variants.map((v) => v.variant_label);
+        // Add switch variants. Also derive the `switch` flag from interaction_type:
+        // IllustrationComp mounts IllustrationSwitch off `animation.switch`, but the DB
+        // config JSONB omits it, so without this the 4 switch figures render the ordinary
+        // Lottie renderer and can't be toggled. Setting it here works without a data change.
+        if (row.interaction_type === "switch") {
+          anim.switch = true;
+          if (variants.length > 0) {
+            anim.switches = variants.map((v) => v.variant_label);
+          }
         }
 
         // Preserve source from config or add from DB

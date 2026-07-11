@@ -138,7 +138,12 @@ export function useChapter() {
     // ({name:"EyeStructur", id:"animationEyeStructur"}). `animation_key` is
     // attached to the row during fetch (see fetchChapter); fall back gracefully
     // if it is missing.
-    if (p.animation_id && p.animation_key) {
+    // Skip the inline animation object on fullscreen rows: those carry an
+    // `animation_full` block (→ para.animationFull, spread from meta above) AND an
+    // animation_id FK. Attaching both makes mobile SectionComp mount FullScreenIllustration
+    // *and* IllustrationInline for the same paragraph. Static fullscreen paragraphs carry
+    // only animationFull.
+    if (p.animation_id && p.animation_key && !para.animationFull) {
       para.animation = {
         name: p.animation_key.replace(/^animation/, ""),
         id: p.animation_key,
@@ -167,14 +172,24 @@ export function useChapter() {
       const level = p.subsection_level || 0;
 
       if (p.is_subsection_header && level === 1) {
-        // Start a new subSection
+        // Start a new subSection. FLUSH the previous one first — otherwise a run of
+        // consecutive subsection headers silently overwrites all but the last (this
+        // dropped ~11 of Chapter 1's figures, incl. the entire Diseases video strip).
+        // mergeConsecutiveSubSections() re-groups the flushed entries into a single
+        // { subSection: [...] } wrapper matching text.json's shape.
         if (currentSubSection) {
-          // Close any open subSubSection group
+          // Close any open subSubSection group before flushing its parent
           if (currentSubSubGroup) {
             currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
             currentSubSubGroup = null;
           }
+          result.push({ subSection: [currentSubSection] });
         }
+        // Defensive: discard any orphan subSubSection group with no valid parent
+        // (a level-2 row that arrived before any header). Real Ch1 data never emits
+        // one, but the transformer is shared with Chapter 2+ and must not leak it
+        // forward into the new subSection.
+        currentSubSubGroup = null;
         currentSubSection = {
           id: p.id,
           title: p.content_text || "",
@@ -512,96 +527,11 @@ export function useChapter() {
     }
   }
 
-  /**
-   * Fetch chapter by module ID - direct query without nested joins
-   * @param {string} moduleId - The module UUID
-   */
-  async function fetchChapterById(moduleId) {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      if (!moduleId) {
-        throw new Error("Module ID is required");
-      }
-
-      console.log("useChapter: Fetching chapter by ID:", moduleId);
-
-      // Step 1: Get the module by ID
-      const { data: moduleData, error: moduleError } = await supabase
-        .from("modules")
-        .select("id, title, slug, order_index, status")
-        .eq("id", moduleId)
-        .single();
-
-      if (moduleError) {
-        throw new Error(`Module not found: ${moduleError.message}`);
-      }
-
-      if (!moduleData) {
-        throw new Error("Chapter not found");
-      }
-
-      // Step 2: Get sections for this module
-      const { data: sectionsData, error: sectionsError } = await supabase
-        .from("sections")
-        .select("id, title, slug, order_index, module_id")
-        .eq("module_id", moduleId)
-        .order("order_index", { ascending: true });
-
-      if (sectionsError) {
-        throw new Error(`Failed to load sections: ${sectionsError.message}`);
-      }
-
-      // Step 3: Get paragraphs for all sections
-      const sectionIds = sectionsData?.map((s) => s.id) || [];
-      let paragraphsData = [];
-
-      if (sectionIds.length > 0) {
-        const { data: pData, error: paragraphsError } = await supabase
-          .from("paragraphs")
-          .select(
-            "id, order_index, content, animation_id, animation_trigger, is_subsection_header, content_text, section_id",
-          )
-          .in("section_id", sectionIds)
-          .order("order_index", { ascending: true });
-
-        if (paragraphsError) {
-          throw new Error(
-            `Failed to load paragraphs: ${paragraphsError.message}`,
-          );
-        }
-        paragraphsData = pData || [];
-      }
-
-      // Step 4: Assemble the chapter structure
-      const chapter = {
-        ...moduleData,
-        sections: sectionsData?.map((section) => ({
-          ...section,
-          paragraphs: paragraphsData.filter((p) => p.section_id === section.id),
-        })),
-      };
-
-      chapterData.value = chapter;
-      transformedData.value = transformModuleToChapterFormat(chapter);
-
-      return { data: transformedData.value, error: null };
-    } catch (err) {
-      console.error("useChapter: Error fetching chapter by ID:", err);
-      error.value = err.message;
-      return { data: null, error: err };
-    } finally {
-      loading.value = false;
-    }
-  }
-
   return {
     chapterData,
     transformedData,
     loading,
     error,
     fetchChapter,
-    fetchChapterById,
   };
 }
