@@ -191,10 +191,22 @@ function remTokens(text) {
 // base does not — the deterministic edits from PLAN §4a/§5. Any working-tree rem
 // token not explained by (a) a ÷1.6 conversion of a base token or (b) this
 // allowlist is an unaccounted change → audit fails.
-//   src/index.css: the body pin `font-size: 0.390625rem` is added by hand
-//   (6.25px at 16px root); it has no counterpart in the base file.
+//
+// Each entry is ANCHORED by exact rem-stream index (Codex round-6): value-only
+// removal (indexOf) could be gamed by a contrived mis-conversion that produces
+// the manual value elsewhere while the real pin is mangled. We instead require
+// the token to sit at a specific position in the working-tree rem stream AND
+// equal the declared value, then splice exactly that index. Both must hold.
+//
+//   src/index.css: the body pin `font-size: 0.390625rem` (6.25px at 16px root)
+//   is inserted at the split `body { … }` rule. 101 base rem tokens precede that
+//   line in index.css, and the pin is the first (and only) rem on the body rule,
+//   so in the CONVERTED file it is rem-stream index 101 (0-based). The audit
+//   asserts index 101 holds exactly "0.390625"; if the insertion point ever
+//   moves, this index must be updated (the audit will fail loudly if it's stale,
+//   which is the intended tripwire).
 const MANUAL_ADDED_TOKENS = {
-  "src/index.css": ["0.390625"],
+  "src/index.css": [{ value: "0.390625", index: 101 }],
 };
 
 // ── audit: prove every rem token in the working tree is a correct ÷1.6 ──────
@@ -269,10 +281,16 @@ function runAudit(files) {
     const manualAdded = MANUAL_ADDED_TOKENS[rel] || [];
     const curRemaining = [...curToks];
     const manualProblems = [];
-    for (const t of manualAdded) {
-      const at = curRemaining.indexOf(t);
-      if (at === -1) manualProblems.push(`declared manual token ${t}rem not found in working tree`);
-      else curRemaining.splice(at, 1);
+    // Remove anchored manual tokens by EXACT index (validate value there), from
+    // highest index down so earlier splices don't shift later anchors.
+    for (const { value, index } of [...manualAdded].sort((a, b) => b.index - a.index)) {
+      if (index < 0 || index >= curRemaining.length) {
+        manualProblems.push(`declared manual token ${value}rem expected at rem-index ${index}, but stream has only ${curRemaining.length} token(s)`);
+      } else if (curRemaining[index] !== value) {
+        manualProblems.push(`declared manual token expected ${value}rem at rem-index ${index}, found ${curRemaining[index]}rem`);
+      } else {
+        curRemaining.splice(index, 1);
+      }
     }
 
     const expected = baseToks.map((t) => convertToken(t));

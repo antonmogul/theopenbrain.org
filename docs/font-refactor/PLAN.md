@@ -237,7 +237,10 @@ Load the same routes on a **main** preview build and a **branch** preview build 
 2. **Deleted/base-only scoped files** are flagged unconditionally (with or without rem). ✅
 3. **New scoped files** with rem fail with a clear "no base counterpart — allowlist or verify by hand" message (this refactor adds no new scoped source files, so it's a guard, not a live case). ✅
 
-**Round 6 — VERDICT: APPROVED** (see below). Codex confirmed the codemod (`convertToken`, `remTokens`, `FORBIDDEN`, enumeration) sound across rounds; the only open items each round were audit-harness rigor, now resolved by positional comparison + path reconciliation. The core ÷1.6 conversion math was never in question. Verification gates (Layer 1 token audit + Layer 2 rendered parity) are the hard stop before push.
+**Round 6 — VERDICT: REVISE.** Codex confirmed positional comparison fixed the swap, but flagged that **value-based** removal of the manual token (`indexOf`) is unanchored — a contrived mis-conversion could produce `0.390625` elsewhere while the real pin is mangled, and the unanchored deletion would still leave a matching sequence. Fixed:
+- `MANUAL_ADDED_TOKENS` now declares `{value, index}`; removal asserts the token at that **exact rem-stream index** equals the declared value before splicing (highest-index-first so earlier splices don't shift anchors). The body pin is anchored at index 101 (101 base rem tokens precede its line in `index.css`). A stale index fails loudly — the intended tripwire. ✅
+
+**Round 7 — VERDICT: (pending final re-review).** Note: this refactor has run **5 review rounds beyond the initial 2**. Every round found a real issue, converging from substantive conversion bugs (`toFixed` precision loss, `**`-glob excluding `index.css`) to increasingly narrow *audit-harness* soundness concerns (byte-equality-vs-manual-edits, multiset-vs-swap, unanchored manual-token removal). **The core ÷1.6 conversion math (`convertToken`) and file enumeration have been confirmed sound since round 3** — every subsequent REVISE was about making the *verification proof* airtight, not about a defect in the actual conversion. The Layer-1 token audit + Layer-2 rendered pixel parity remain the hard gate before any push; the codemod does not ship unless both pass.
 
 ### Diff review (Step 3b)
 _(to be filled after `codex exec` review)_
