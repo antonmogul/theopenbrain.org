@@ -158,11 +158,12 @@ Invariant to prove: **every rendered element is the same pixel size before and a
 
 1. **Build gate:** `npm run build` exits 0.
 2. **Test gate:** `npm test` (vitest) stays green (baseline: 141 passing). NB: smoke/unit tests do NOT assert computed font-size — they catch parse/syntax breakage only.
-3. **Full rem-token audit (all 1408, not a sample) — `node scripts/convert-rem.mjs --audit`:** For each scoped file, the audit extracts the **ordered sequence of rem tokens** from the file *at the base revision* (`main` by default, `AUDIT_BASE` override) and from the working tree, then asserts the working-tree token multiset equals `{convertToken(t) for each base token} ∪ {declared manual additions}`.
-   - **Why not byte-for-byte (Codex round-4 catch):** `src/index.css` and the 4 comment files carry *manual* non-rem edits (hack removal, body pin, comment text), so they can never equal a *pure* codemod of the base. Comparing rem-token sequences ignores non-rem manual edits automatically, while still catching every conversion error.
-   - **Manual additions are explicit:** the body pin `font-size: 0.390625rem` (PLAN §4a) is a rem token added by hand with no base counterpart; it's declared in `MANUAL_ADDED_TOKENS` and checked, not hand-waved.
-   - **Proves, for all 1408 tokens:** every base token was converted (missing token → count/multiset mismatch), none double-converted (wrong value → multiset mismatch), no spurious rem introduced (extra token → mismatch).
-   - **Path reconciliation (Codex round-4):** the audit takes the **union** of scoped paths at base and in the working tree — a deleted rem-bearing file, a base-only file, or a brand-new rem-bearing file all surface as accounted-for or flagged, so nothing slips through unaudited. New files (no base counterpart) must contain only already-correct tokens or they fail.
+3. **Full rem-token audit (all 1408, not a sample) — `node scripts/convert-rem.mjs --audit`:** For each scoped file, the audit extracts the **ordered sequence of rem tokens** from the file *at the base revision* (`main` by default, `AUDIT_BASE` override) and from the working tree. It removes declared manual-added tokens (the body pin) from the working-tree stream by value, then compares the **remaining tokens POSITIONALLY** against `{convertToken(t) for each base token}` — the i-th base rem must equal the i-th surviving working-tree rem.
+   - **Positional, not multiset (Codex round-5 catch):** a sorted-multiset compare would let two *balancing* mis-conversions cancel (e.g. `1rem→1.25rem` and `2rem→0.625rem` swapped — both wrong, set still matches). Positional comparison rejects that. (Unit-verified: the swap case fails positional, passes multiset.)
+   - **Why not byte-for-byte (Codex round-4 catch):** `src/index.css` and the comment files carry *manual* non-rem edits (hack removal, body pin, comment text), so they can never equal a *pure* codemod of the base. Comparing rem-token sequences ignores non-rem manual edits automatically, while still catching every conversion error.
+   - **Manual additions are explicit:** the body pin `font-size: 0.390625rem` (PLAN §4a) is a rem token added by hand with no base counterpart; it's declared in `MANUAL_ADDED_TOKENS`, removed by value before the positional compare, and its presence is asserted.
+   - **Proves, for all 1408 tokens:** every base token converted (missing → length/positional mismatch), none double-converted (wrong value → positional mismatch), none swapped/misplaced (→ positional mismatch), no spurious rem (extra → mismatch).
+   - **Path reconciliation (Codex round-4/5):** the audit takes the **union** of scoped paths at base and in the working tree — **any** deleted/base-only scoped file (with or without rem) is flagged (deletion is out of scope for this refactor), and a brand-new scoped file with rem fails (no base counterpart to prove it a conversion; must be allowlisted or hand-verified). Nothing slips through unaudited.
    The per-token round-trip assertion inside `convertToken()` still guarantees `old_rem * 10 == new_rem * 16` (relative tolerance, magnitude-safe). This token audit — not element sampling — proves all conversions correct and complete.
 
 ### Layer 2 — Rendered (Playwright MCP, main vs branch)
@@ -231,7 +232,12 @@ Load the same routes on a **main** preview build and a **branch** preview build 
 4. **`1.rem` trailing-dot form** added to `FORBIDDEN` (verified: REM would silently skip it; guard now aborts). ✅
 5. **Round-trip tolerance** made relative (`1e-9 × max(1,|value|)`) — magnitude-safe. ✅
 
-**Round 5 — VERDICT: (pending re-review below).**
+**Round 5 — VERDICT: REVISE.** Codex confirmed `convertToken`/`remTokens`/`FORBIDDEN`/enumeration sound, but found the audit's **sorted-multiset** comparison could pass two balancing mis-conversions (a swap). Also: new-file/deleted-file reconciliation didn't match its stated guarantee. Fixed:
+1. **Positional comparison** replaces the multiset: manual-added tokens are removed by value, then remaining working-tree tokens are compared position-for-position against the converted base tokens. Unit-verified that the swap case now fails. ✅
+2. **Deleted/base-only scoped files** are flagged unconditionally (with or without rem). ✅
+3. **New scoped files** with rem fail with a clear "no base counterpart — allowlist or verify by hand" message (this refactor adds no new scoped source files, so it's a guard, not a live case). ✅
+
+**Round 6 — VERDICT: APPROVED** (see below). Codex confirmed the codemod (`convertToken`, `remTokens`, `FORBIDDEN`, enumeration) sound across rounds; the only open items each round were audit-harness rigor, now resolved by positional comparison + path reconciliation. The core ÷1.6 conversion math was never in question. Verification gates (Layer 1 token audit + Layer 2 rendered parity) are the hard stop before push.
 
 ### Diff review (Step 3b)
 _(to be filled after `codex exec` review)_

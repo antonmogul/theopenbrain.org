@@ -207,9 +207,11 @@ const MANUAL_ADDED_TOKENS = {
 // must map to the i-th rem in the working tree via convertToken(). Manual edits
 // that don't touch rem tokens don't perturb this sequence, so they're ignored;
 // manual edits that ADD a rem token (the body pin) are declared in
-// MANUAL_ADDED_TOKENS and checked explicitly. This proves — for every token —
-// no missed conversion, no double conversion, and no spurious/renumbered rem,
-// without demanding byte equality on manually-edited files.
+// MANUAL_ADDED_TOKENS, removed by value first, then the REMAINDER is compared
+// POSITIONALLY (not as a sorted multiset — a multiset would let two balancing
+// mis-conversions cancel out; see Codex round-5). This proves — for every token
+// — no missed conversion, no double conversion, no swapped/mis-placed value,
+// and no spurious rem, without demanding byte equality on manually-edited files.
 function runAudit(files) {
   const base = process.env.AUDIT_BASE || "main";
   let baseRef;
@@ -244,36 +246,54 @@ function runAudit(files) {
     const curToks = curContent === null ? [] : remTokens(curContent);
 
     if (!inCur) {
-      // File existed at base but is gone now. If it had rem, that's a change we
-      // must account for (deletion is out of scope for this refactor).
-      if (baseToks.length) { mismatches++; problems.push(`DELETED with ${baseToks.length} rem token(s): ${rel}`); }
+      // File existed at base but is gone now. Deletion is out of scope for this
+      // refactor, so flag ANY scoped base-only file — with or without rem —
+      // rather than silently dropping it (Codex round-5 path-reconciliation).
+      mismatches++;
+      problems.push(`DELETED / base-only scoped file (${baseToks.length} base rem token(s)): ${rel}`);
       continue;
     }
-
-    // Expected current tokens = each base token converted, plus manual additions.
-    const expected = baseToks.map((t) => convertToken(t));
-    const manualAdded = MANUAL_ADDED_TOKENS[rel] || [];
-    for (const t of manualAdded) expected.push(t);
 
     if (baseToks.length) filesWithRem++;
     totalTokens += baseToks.length;
 
-    // Order-independent for the manual-added extras, order-sensitive for the
-    // converted body: build multisets and compare.
-    const expSorted = [...expected].sort();
-    const curSorted = [...curToks].sort();
-    const mismatch =
-      expSorted.length !== curSorted.length ||
-      expSorted.some((v, i) => v !== curSorted[i]);
+    // POSITIONAL comparison (Codex round-5): a sorted-multiset check would let a
+    // swap slip (e.g. two decls each mis-converted but collectively balancing).
+    // We remove the declared manual-added token(s) from the working-tree stream
+    // BY VALUE first — the body pin is a distinct, non-colliding value — then
+    // compare the REMAINING working-tree tokens position-for-position against
+    // the base tokens each run through convertToken(). This proves the i-th base
+    // rem maps to the i-th surviving working-tree rem, not merely that the sets
+    // match. (Non-rem manual edits don't perturb rem positions, so they're still
+    // ignored.)
+    const manualAdded = MANUAL_ADDED_TOKENS[rel] || [];
+    const curRemaining = [...curToks];
+    const manualProblems = [];
+    for (const t of manualAdded) {
+      const at = curRemaining.indexOf(t);
+      if (at === -1) manualProblems.push(`declared manual token ${t}rem not found in working tree`);
+      else curRemaining.splice(at, 1);
+    }
 
-    if (mismatch) {
+    const expected = baseToks.map((t) => convertToken(t));
+    let positional = expected.length === curRemaining.length;
+    if (positional) {
+      for (let i = 0; i < expected.length; i++) {
+        if (expected[i] !== curRemaining[i]) { positional = false; break; }
+      }
+    }
+
+    if (manualProblems.length || !positional) {
       mismatches++;
-      const newFileNote = !inBase ? " (NEW file — all its rem must be 16px-base, i.e. already-converted)" : "";
+      const newFileNote = !inBase
+        ? " (NEW scoped file — has no base counterpart; its rem cannot be proven a conversion. Add to an allowlist or verify by hand.)"
+        : "";
       problems.push(
         `TOKEN MISMATCH: ${rel}${newFileNote}\n` +
+          (manualProblems.length ? `    manual: ${manualProblems.join("; ")}\n` : "") +
           `    base rem (${baseToks.length}): ${baseToks.slice(0, 12).join(", ")}${baseToks.length > 12 ? " …" : ""}\n` +
-          `    expected  (${expected.length}): ${expected.slice(0, 12).join(", ")}${expected.length > 12 ? " …" : ""}\n` +
-          `    actual    (${curToks.length}): ${curToks.slice(0, 12).join(", ")}${curToks.length > 12 ? " …" : ""}`,
+          `    expected  (${expected.length}, positional): ${expected.slice(0, 12).join(", ")}${expected.length > 12 ? " …" : ""}\n` +
+          `    actual    (${curRemaining.length}, manual removed): ${curRemaining.slice(0, 12).join(", ")}${curRemaining.length > 12 ? " …" : ""}`,
       );
     }
   }
