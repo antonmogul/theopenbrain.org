@@ -287,6 +287,15 @@ onBeforeUnmount(() => {
           <div
             class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[5.375rem] -translate-y-[0.5625rem] w-28 h-28 flex items-center justify-center"
           >
+            <!--
+              Runtime-computed rem for the moving dot. Constants are at the
+              16px root base (post-62.5%-removal): 1.5625 = 2.5/1.6 and the
+              /32 divisor = /20 × 1.6, so newRem × 16px == oldRem × 10px — the
+              dot stays the exact same pixel size. This expression builds the
+              rem via string concat, so the Phase-1 ÷1.6 codemod could not match
+              it (no `Nrem` literal); it is rebased by hand. See
+              docs/font-refactor/PLAN.md §Phase 2.
+            -->
             <div
               :style="
                 'transform: translate(' +
@@ -295,9 +304,9 @@ onBeforeUnmount(() => {
                 posAugeY / 2 +
                 'px);' +
                 'height: ' +
-                (2.5 - Math.abs(posAugeX.toFixed(2)) / 20) +
+                (1.5625 - Math.abs(posAugeX.toFixed(2)) / 32) +
                 'rem; width: ' +
-                (2.5 - Math.abs(posAugeX.toFixed(2)) / 20) +
+                (1.5625 - Math.abs(posAugeX.toFixed(2)) / 32) +
                 'rem;'
               "
               class="bg-black h-14 w-14 rounded-full translate-x-2"
