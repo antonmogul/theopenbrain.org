@@ -1,0 +1,622 @@
+[
+ {
+  "id": "eye-anatomy-diagram",
+  "title": "Eye Anatomy Diagram"
+ },
+ {
+  "id": "fovea-detail",
+  "title": "Fovea Detail View"
+ },
+ {
+  "id": "retina-layers-cross-section",
+  "title": "Retina Layers Cross Section"
+ },
+ {
+  "id": "optic-disc-photo",
+  "title": "Optic Disc Photograph"
+ },
+ {
+  "id": "color-spectrum-wavelengths",
+  "title": "Visible Light Spectrum"
+ },
+ {
+  "id": "rod-cone-comparison",
+  "title": "Rod vs Cone Cells"
+ },
+ {
+  "id": "phototransduction-cascade",
+  "title": "Phototransduction Cascade"
+ },
+ {
+  "id": "receptive-field-demo",
+  "title": "Center-Surround Receptive Fields"
+ },
+ {
+  "id": "visual-pathway-animation",
+  "title": "Visual Pathway Journey"
+ },
+ {
+  "id": "lateral-inhibition-video",
+  "title": "Lateral Inhibition Explained"
+ },
+ {
+  "id": "gestalt-proximity",
+  "title": "Gestalt Proximity Principle"
+ },
+ {
+  "id": "gestalt-similarity",
+  "title": "Gestalt Similarity Principle"
+ },
+ {
+  "id": "attention-spotlight",
+  "title": "Attention Spotlight Demo"
+ },
+ {
+  "id": "change-blindness-demo",
+  "title": "Change Blindness Demo"
+ },
+ {
+  "id": "inattentional-blindness-gorilla",
+  "title": "Invisible Gorilla Experiment"
+ },
+ {
+  "id": "animationRetinalCellTypes2",
+  "title": "Retinal cell types",
+  "set": 2,
+  "icons": [
+   "true",
+   "true",
+   "true",
+   "true",
+   "true"
+  ],
+  "autoplay": true,
+  "highlight": true,
+  "fullscreen": false,
+  "iconPraefix": "retinalCellTypes",
+  "clickTriggered": true
+ },
+ {
+  "id": "animationRetinalCellTypes3",
+  "title": "Retinal cell types",
+  "set": 1,
+  "icons": [
+   "true",
+   "true",
+   "true",
+   "true",
+   "true"
+  ],
+  "autoplay": true,
+  "highlight": true,
+  "fullscreen": false,
+  "iconPraefix": "retinalCellTypes",
+  "clickTriggered": true
+ },
+ {
+  "id": "animationCenterSurroundReceptiveFields",
+  "title": "Center surround receptive fields",
+  "loop": true,
+  "legend": [
+   "Photoreceptors",
+   "Horizontal cells",
+   "Bipolar cells",
+   "Amacrine cells",
+   "Ganglion cells",
+   "Hyperpolarization",
+   "Depolarization",
+   "Spike train",
+   "special",
+   "Inhibition",
+   "Excitatation",
+   "Gap junction"
+  ],
+  "fullscreen": false,
+  "blockSwitches": true
+ },
+ {
+  "id": "animationColorOpponency",
+  "title": "Color Opponency",
+  "illuImage": true,
+  "fullHeight": true,
+  "imageUrl": "/publicAssets/images/illuImages/animationColorOpponency.png"
+ },
+ {
+  "id": "animationONOFFLamina",
+  "title": "ON and OFF lamina",
+  "illuImage": true,
+  "fullHeight": false,
+  "imageUrl": "/publicAssets/images/illuImages/animationONOFFLamina.png"
+ },
+ {
+  "id": "animationDirectionSelectivity",
+  "title": "Direction selectivity",
+  "loop": true,
+  "legend": [
+   "Photoreceptors",
+   "Horizontal cells",
+   "Bipolar cells",
+   "Amacrine cells",
+   "Ganglion cells",
+   "Hyperpolarization",
+   "Depolarization",
+   "Spike train",
+   "special",
+   "Inhibition",
+   "Excitatation",
+   "Gap junction"
+  ],
+  "fullscreen": false,
+  "blockSwitches": true
+ },
+ {
+  "id": "animationObjectMotionSensitivity",
+  "title": "Object motion sensitivity",
+  "loop": true,
+  "legend": [
+   "Photoreceptors",
+   "Horizontal cells",
+   "Bipolar cells",
+   "Amacrine cells",
+   "Ganglion cells",
+   "Hyperpolarization",
+   "Depolarization",
+   "Spike train",
+   "special",
+   "Inhibition",
+   "Excitatation",
+   "Gap junction"
+  ],
+  "fullscreen": false,
+  "blockSwitches": true
+ },
+ {
+  "id": "animationRodVsConeCircuits",
+  "title": "Rod vs. cone circuits",
+  "loop": true,
+  "legend": [
+   "Photoreceptors",
+   "Horizontal cells",
+   "Bipolar cells",
+   "Amacrine cells",
+   "Ganglion cells",
+   "Hyperpolarization",
+   "Depolarization",
+   "Spike train",
+   "special",
+   "Inhibition",
+   "Excitatation",
+   "Gap junction"
+  ],
+  "fullscreen": false,
+  "iconPraefix": "retinalCircuits",
+  "blockSwitches": true,
+  "swicthSymboles": true
+ },
+ {
+  "id": "animationLightSensitiveGanglionCells",
+  "title": "Light sensitive ganglion cells",
+  "loop": true,
+  "legend": [
+   "Photoreceptors",
+   "Horizontal cells",
+   "Bipolar cells",
+   "Amacrine cells",
+   "Ganglion cells",
+   "Hyperpolarization",
+   "Depolarization",
+   "Spike train",
+   "special",
+   "Inhibition",
+   "Excitatation",
+   "Gap junction"
+  ],
+  "fullscreen": false
+ },
+ {
+  "id": "animationWavesOfActivity",
+  "title": "Spontaneous waves of activity",
+  "illuImage": true,
+  "youtubeID": "k0_HXpcH4zI"
+ },
+ {
+  "id": "animationNormalVision",
+  "title": "Normal vision",
+  "flip": true,
+  "video": "normal-vision",
+  "fullscreen": false,
+  "videoUrl": "/publicAssets/video/9-1-diseases/9-1-normal-vision.mp4"
+ },
+ {
+  "id": "animationCataracts",
+  "title": "Cataracts",
+  "flip": true,
+  "video": "cataracts",
+  "source": "Xu et al., 2021, Biomed Eng Online",
+  "fullscreen": false,
+  "videoUrl": "/publicAssets/video/9-1-diseases/9-1-cataracts.mp4"
+ },
+ {
+  "id": "animationGlaucoma",
+  "title": "Glaucoma",
+  "flip": true,
+  "video": "glaucoma",
+  "source": "Viewpoint online",
+  "fullscreen": false,
+  "videoUrl": "/publicAssets/video/9-1-diseases/9-1-glaucoma.mp4"
+ },
+ {
+  "id": "animationDiabeticRetinopathy",
+  "title": "Diabetic retinopathy",
+  "flip": true,
+  "video": "diabetic-retinopathy",
+  "source": "Ramasy et al., 2021, PeerJ Computer Science",
+  "fullscreen": false,
+  "videoUrl": "/publicAssets/video/9-1-diseases/9-1-diabetic-retinopathy.mp4"
+ },
+ {
+  "id": "animationEyeMovements",
+  "title": "Eye Movements",
+  "loop": true,
+  "source": "Artistic reinterpretaton",
+  "fullscreen": false
+ },
+ {
+  "id": "animationDragon",
+  "title": "Dragon",
+  "loop": true,
+  "fullscreen": false,
+  "loopSection": [
+   82,
+   287
+  ]
+ },
+ {
+  "id": "animationEyeStructurTransition",
+  "title": "Eye Structure",
+  "noBleed": true,
+  "isTransition": true
+ },
+ {
+  "id": "animationEyeStructur",
+  "title": "Eye structure",
+  "highlight": true,
+  "fullscreen": false,
+  "clickTriggered": true
+ },
+ {
+  "id": "animationAccommodationVergence",
+  "title": "Accommodation & vergence",
+  "loop": true,
+  "fullscreen": false,
+  "loopSection": null
+ },
+ {
+  "id": "animationPupillaryLightreflex",
+  "title": "Pathway for the pupillary light reflex",
+  "loop": true,
+  "fullscreen": true,
+  "hasSpeedControl": true
+ },
+ {
+  "id": "animationImpairedVision",
+  "title": "Refraction errors",
+  "loop": false,
+  "toggle": "Corrected",
+  "infoText": "Despite our body's best laid plans, a variety of developmental and age-related issues can cause our eyes to improperly focus incoming images onto the retina, resulting in impaired vision. Two common issues result from the image being focused either in front of (myopia) or behind (hyperopia) the retina. Myopia, also commonly referred to as nearsightedness, blurs images of far-away images. In contrast, hyperopia, commonly referred to as farsightedness, blurs images of nearby images. Another common refractive issue is astigmatism, which results in uneven focus of the incoming image on the retina, due to irregular curvature of the cornea, or lens abnormalities. Finally, as we age, the lens becomes less elastic and the ciliary muscles become less effective at accommodating different focal planes, leading to presbyopia, which tends to focus images behind the retina. In general, most types of refractive errors can be addressed with corrective lenses.",
+  "fullscreen": true
+ },
+ {
+  "id": "animationLatteralOrganization",
+  "title": "Lateral organization",
+  "split": true,
+  "sources": [
+   "Cone mosaic in the fovea. Source Wikipedia.",
+   "Red, cone terminals; Green, horizontal cell mosaic; Blue, bipolar cell mosaic. Source Webvision (Luna, Fisher and Lewis).",
+   "ON alpha ganglion cell mosaic from cat retina. Source Wässle et al., 1981, Nature."
+  ],
+  "multiple": false,
+  "fullscreen": true
+ },
+ {
+  "id": "animationPhototransduction",
+  "title": "Phototransduction",
+  "loop": true,
+  "infoText": "In the dark, the photoreceptor outer segment has a high concentration of the small molecule cGMP...",
+  "fullscreen": true,
+  "hasSpeedControl": true
+ },
+ {
+  "id": "animationTheVisualCycle",
+  "title": "The visual cycle",
+  "loop": true,
+  "infoText": "When rhodopsin absorbs a photon, its light-catching 11-cis retinal chromophore is isomerized into all-trans retinal...",
+  "fullscreen": true,
+  "hasSpeedControl": true
+ },
+ {
+  "id": "animationSynapticArchitecture",
+  "title": "Synaptic architecture",
+  "fullscreen": false,
+  "blockStates": true,
+  "iconPraefix": "retinalCircuits",
+  "hasTransition": true,
+  "clickTriggered": true
+ },
+ {
+  "id": "animationPhotoreceptors",
+  "title": "Photoreceptors",
+  "speed": 0.7,
+  "highlight": true,
+  "fullscreen": false,
+  "hasTransition": true,
+  "clickTriggered": true
+ },
+ {
+  "id": "animationLateralOrganization",
+  "title": "Lateral organization",
+  "split": true,
+  "scroll": true,
+  "fullscreen": true
+ },
+ {
+  "id": "animationRetinalCellTypesTransition",
+  "title": "Retinal cell types",
+  "noBleed": true,
+  "isTransition": true
+ },
+ {
+  "id": "animationRetinalCellTypes",
+  "title": "Retinal cell types",
+  "icons": [
+   "true",
+   "true",
+   "true",
+   "true",
+   "true"
+  ],
+  "autoplay": true,
+  "highlight": true,
+  "fullscreen": false,
+  "iconPraefix": "retinalCellTypes",
+  "clickTriggered": true
+ },
+ {
+  "id": "animationAgeRelatedMacularDegeneration",
+  "title": "Age related macular degeneration",
+  "flip": true,
+  "video": "macular-degeneration",
+  "source": "Eyerounds.org",
+  "fullscreen": false,
+  "videoUrl": "/publicAssets/video/9-1-diseases/9-1-macular-degeneration.mp4"
+ },
+ {
+  "id": "animationRetinitisPigmentosa",
+  "title": "Retinitis pigmentosa",
+  "flip": true,
+  "video": "retinitis-pigmentosa",
+  "source": "Hamel Orphanet Journal of Rare Diseases 2006 1:40 doi:10.1186/1750-1172-1-40)",
+  "fullscreen": false,
+  "videoUrl": "/publicAssets/video/9-1-diseases/9-1-retinitis-pigmentosa.mp4"
+ },
+ {
+  "id": "animationPlaceholder",
+  "title": "Placeholder",
+  "loop": true,
+  "fullParagraph": true
+ },
+ {
+  "id": "animationFoundationsFig1",
+  "title": "Trepanned Incan skull",
+  "note": "Source: photo of the Squier/Broca Incan trepanned skull.",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": 1
+ },
+ {
+  "id": "animationFoundationsFig2",
+  "title": "Methods of trepanation",
+  "note": "Source: diagram of prehistoric trepanation methods.",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": 2
+ },
+ {
+  "id": "animationFoundationsFig3",
+  "title": "The Edwin Smith papyrus",
+  "note": "Source: image of the Edwin Smith surgical papyrus.",
+  "diagramType": "manuscript",
+  "placeholder": true,
+  "figureNumber": 3
+ },
+ {
+  "id": "animationFoundationsFig4",
+  "title": "Edwin Smith papyrus, case 20",
+  "note": "Source: image of Edwin Smith papyrus case 20.",
+  "diagramType": "manuscript",
+  "placeholder": true,
+  "figureNumber": 4
+ },
+ {
+  "id": "animationFoundationsFig9",
+  "title": "Leborgne (“Tan”): left frontal damage",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": 9
+ },
+ {
+  "id": "animationFoundationsFig10",
+  "title": "Fritsch & Hitzig's motor cortex map",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": 10
+ },
+ {
+  "id": "animationFoundationsFig11",
+  "title": "Goltz's dog vs. Ferrier's monkey",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": 11
+ },
+ {
+  "id": "animationFoundationsFig12",
+  "title": "Van Leeuwenhoek's microscope",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": 12
+ },
+ {
+  "id": "animationFoundationsFig13",
+  "title": "Deiters' nerve cell (axon & dendrites)",
+  "diagramType": "illustration",
+  "placeholder": true,
+  "figureNumber": 13
+ },
+ {
+  "id": "animationFoundationsFig14",
+  "title": "Golgi's olfactory bulb",
+  "diagramType": "illustration",
+  "placeholder": true,
+  "figureNumber": 14
+ },
+ {
+  "id": "animationFoundationsFig15",
+  "title": "Ramón y Cajal's growth cone",
+  "diagramType": "illustration",
+  "placeholder": true,
+  "figureNumber": 15
+ },
+ {
+  "id": "animationFoundationsFig16",
+  "title": "Cajal's law of dynamic polarization",
+  "diagramType": "illustration",
+  "placeholder": true,
+  "figureNumber": 16
+ },
+ {
+  "id": "animationFoundationsFig17",
+  "title": "Golgi's lab at the University of Pavia",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": 17
+ },
+ {
+  "id": "animationFoundationsFig18",
+  "title": "The synapse under electron microscopy",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": 18
+ },
+ {
+  "id": "animationFoundationsFig19",
+  "title": "Galvani's frog leg preparation",
+  "diagramType": "illustration",
+  "placeholder": true,
+  "figureNumber": 19
+ },
+ {
+  "id": "animationFoundationsFig20",
+  "title": "Loewi's two-heart experiment",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": 20
+ },
+ {
+  "id": "animationFoundationsFig21",
+  "title": "Eccles' stretch-reflex circuit",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": 21
+ },
+ {
+  "id": "animationFoundationsFigA",
+  "title": "Descartes' skull, Musée de l'homme",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": "A"
+ },
+ {
+  "id": "animationFoundationsFigB",
+  "title": "“Skull of the Philosopher Descartes”, Lund",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": "B"
+ },
+ {
+  "id": "animationFoundationsFigC",
+  "title": "The rete mirabile",
+  "diagramType": "illustration",
+  "placeholder": true,
+  "figureNumber": "C"
+ },
+ {
+  "id": "animationFoundationsFigD",
+  "title": "Hippocampus minor across species",
+  "diagramType": "illustration",
+  "placeholder": true,
+  "figureNumber": "D"
+ },
+ {
+  "id": "animationFoundationsFigE",
+  "title": "Burckhardt's cortical excisions",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": "E"
+ },
+ {
+  "id": "animationFoundationsFigF",
+  "title": "Freeman's transorbital lobotomy",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": "F"
+ },
+ {
+  "id": "animationFoundationsFig6",
+  "title": "The cell doctrine (ventricular theory)",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": 6
+ },
+ {
+  "id": "animationFoundationsFigG",
+  "title": "Mary Rafferty's exposed brain",
+  "diagramType": "photo",
+  "placeholder": true,
+  "figureNumber": "G"
+ },
+ {
+  "id": "animationFoundationsFig5",
+  "title": "Galen silences a squealing pig",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": 5
+ },
+ {
+  "id": "animationFoundationsFigJ",
+  "title": "The cortical homunculus",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": "J"
+ },
+ {
+  "id": "animationFoundationsFigK",
+  "title": "The four humors",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": "K"
+ },
+ {
+  "id": "animationFoundationsFig7",
+  "title": "Vesalius, De Humani Corporis Fabrica",
+  "diagramType": "manuscript",
+  "placeholder": true,
+  "figureNumber": 7
+ },
+ {
+  "id": "animationFoundationsFig8",
+  "title": "Gall & Spurzheim's phrenological map",
+  "diagramType": "diagram",
+  "placeholder": true,
+  "figureNumber": 8
+ }
+]
