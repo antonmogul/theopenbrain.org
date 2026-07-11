@@ -117,7 +117,7 @@ const REM = /(?<![\w.])(-?\d*\.?\d+)rem\b/gi;
 ## 5. The 62.5% removal & comment fixes (manual, post-codemod)
 
 After the codemod runs, manual edits:
-1. `src/index.css:325` — remove `font-size: 62.5%;` from the `html, body` block (browser default 100% = 16px applies). Keep the other properties in that block. **See §4a below on the `body` compounding subtlety.**
+1. `src/index.css:325` — the grouped `html, body { font-size: 62.5% }` becomes: **`html`'s** `font-size: 62.5%` is removed (root → 16px). **`body` is pinned explicitly to `font-size: 0.390625rem`** to preserve its old 6.25px computed size exactly (see §4a — this is the deterministic fix, applied unconditionally, not "if a leak is found"). Concretely: split the grouped rule so `html` loses the font-size and `body` gains `font-size: 0.390625rem;`. The other properties (`hyphens`, `background`, `color`) are preserved on both.
 2. Update **all four** stale `1rem = 10px` / `62.5%` comments (full-repo sweep confirms exactly these four) → reflect `1rem = 16px`:
    - `src/styles/brand.css:40`
    - `src/styles/dashboard-sections.css:11`
@@ -132,14 +132,20 @@ The selector is a **grouped** `html, body { font-size: 62.5% }`, so `body` *also
 - `<html>` = 62.5% × 16px = **10px** → `1rem = 10px` (rem resolves against `<html>` only — this is why the ÷1.6 rem math is correct and unaffected by body).
 - `<body>` = 62.5% × 10px (inherits html) = **6.25px**.
 
-`rem` is **immune** to this (root-relative). But `em`, `%`, and *inherited/unitless* font-sizes on elements whose font-size is NOT explicitly set resolve against their parent chain — which could bottom out at body's 6.25px. Removing the hack raises that floor from 6.25px → 16px.
+`rem` is **immune** to this (root-relative), so the ÷1.6 conversion is unaffected. But `em`, `%`, and *inherited/unitless* font-sizes on elements whose font-size is NOT explicitly set resolve against their parent chain — which bottoms out at body's 6.25px. Simply deleting the grouped rule would raise that floor 6.25px → 16px and change any body-inheriting text.
 
-**Why this is low-risk here but still explicitly verified:**
-- Nearly all text is sized via the `.t-*` type-role classes or explicit rem/px font-sizes, so the raw body base rarely surfaces.
-- The one `%` font-size (`sup { font-size: 55% }`, index.css:643) and the 159 `em` values resolve against their *parent's explicit* font-size (paragraphs/headings all set explicit sizes), not body's raw base.
-- **BUT** any element that inherits font-size straight from body with no explicit size in between WILL change. The verification step (§6) therefore explicitly compares **`body`'s computed font-size and a traversal of em/%/inheriting elements**, not just rem-sized ones. If any such element's rendered px changes, we detect it and either (a) add an explicit `body { font-size: 1.6rem }` (= 10px, restoring the old body base) or (b) accept it if it affects nothing rendered. **Decision recorded after empirical check, not assumed.**
+**The deterministic fix (applied unconditionally — no "if a leak is found" reasoning):**
 
-Mitigation baked into the build step: after removing the hack, if pixel-parity flags any body-inheriting element, restore the old body base explicitly with `body { font-size: 1.6rem; }` (1.6rem × 16px = 10px — wait: old body was 6.25px, old html was 10px; to restore *body* to 6.25px would be `0.625rem`. But nothing should legitimately want 6.25px text — that was itself an accident of the double-application. The correct fix if anything breaks is to pin body to the intended 10px reading base, i.e. `body { font-size: 1rem }` post-refactor = 16px... ). **This is exactly why we verify empirically before deciding** — the plan does not hard-code a fix for a leak we haven't confirmed exists.
+Split the grouped rule and **pin `body` to exactly its old computed size**:
+```css
+html { /* font-size removed → 16px */ hyphens: auto; background: …; color: …; }
+body { font-size: 0.390625rem; hyphens: auto; background: …; color: …; }
+```
+`0.390625rem × 16px = 6.25px` — **exactly** the old computed body size (verified: `6.25 / 16 = 0.390625`, exact since `0.390625 = 25/64`). This preserves body's base identically, so **every** em/%/inherited descendant resolves against the same 6.25px floor as before. The `%`-font-size `sup` (index.css:643) and all 159 `em` values are therefore unchanged whether or not they ultimately trace to body.
+
+**Confirmed:** `body` has no other font-size declaration anywhere (grep verified) — the grouped `62.5%` rule is its sole source — so pinning it is sufficient and complete; nothing else competes in the cascade.
+
+**Parity rule (removes the Round-2 contradiction):** because body is pinned to preserve 6.25px, Layer-2 verification requires **every element — including `<body>` — to have identical computed `fontSize`**. Only **`<html>`** is expected to change (10px → 16px, asserted as a ratio). There is no "accept an explainable delta" loophole: a font-size delta on *any* element other than `<html>` fails verification and stops the push.
 
 ---
 
@@ -161,8 +167,8 @@ Invariant to prove: **every rendered element is the same pixel size before and a
 
 Load the same routes on a **main** preview build and a **branch** preview build (sequential checkout + `vite preview`, or two ports). Compare via `getComputedStyle`:
 
-4. **Base-change confirmation via RATIO, not hardcoded px** (Codex catch — don't assume 16px browser default): assert `computed(html).fontSize_branch / computed(html).fontSize_main == 1.6` (10px→16px is the *expected ratio* regardless of the user's actual browser base). Also record both absolute values for the report.
-5. **Exhaustive computed-style traversal, not a hand-picked few:** walk *all* rendered elements on each key page (`document.querySelectorAll('*')`), and for each compare `fontSize`, `lineHeight`, `width`, `height`, `marginTop/Left`, `paddingTop/Left` between main and branch. Assert every property matches within `<0.1px`. This catches a missed/double-converted value **anywhere**, not just at sampled nodes. Explicitly include **`<html>` and `<body>`** and elements sized via `em`/`%`/inherited font-size (the §4a body-compounding risk) — if a body-inheriting element's px changed, it shows up here.
+4. **Base-change confirmation via RATIO, not hardcoded px** (Codex catch — don't assume 16px browser default): `<html>` is the **only** element whose computed `fontSize` is expected to change; assert `computed(html).fontSize_branch / computed(html).fontSize_main == 1.6` (the expected 10px→16px ratio regardless of the user's actual browser base). Record both absolute values for the report.
+5. **Exhaustive computed-style traversal — every element AND pseudo-element:** walk *all* rendered nodes on each key page (`document.querySelectorAll('*')`) **plus `::before`/`::after`** (`getComputedStyle(el, '::before')`), and compare the full set of size-affecting properties between main and branch: `fontSize`, `lineHeight`, `letterSpacing`, `width`, `height`, `marginTop/Right/Bottom/Left`, `paddingTop/Right/Bottom/Left`, `top/right/bottom/left`, `gap`, `borderWidth`. **Parity rule:** every node's every property must match within `<0.1px` — with the **single exception of `<html>`'s `fontSize`** (expected 1.6× per step 4). A delta on **any other node or pseudo-element, including `<body>`,** fails verification → STOP. This is exhaustive (not sampled) and includes em/%/inherited nodes, so a §4a body-inheritance regression or any missed/double-converted rem shows up as a hard failure, not a judgment call.
 6. **Key pages:**
    - `/` (redirects to `/chapter`)
    - `/chapter/1` — **Chapter 1 "The Retina" — the north-star page. Must render pixel-identical.**
@@ -202,7 +208,12 @@ Load the same routes on a **main** preview build and a **branch** preview build 
 7. **Missed stale comment** `DashboardView.vue:1230`: added; full sweep found a **4th** (`TipTapEditor.vue:513`) — all four now listed. ✅
 8. **Verification insufficient**: replaced sampling with (a) exhaustive mechanical token audit over all 1408, (b) full `querySelectorAll('*')` computed-style traversal incl. html/body/em/%, (c) ratio-not-hardcoded base assertion, (d) responsive + hover states, (e) stabilized screenshots. ✅
 
-_Round 2 verdict below._
+**Round 2 — VERDICT: REVISE.** Codex found §4a still had a correctness gap (my fault — muddled body-fix math + a contradiction). Fixed:
+1. **Wrong body-fix math** (I wrote `0.625rem`/`1rem`/`1.6rem`, all wrong): corrected to the exact value **`body { font-size: 0.390625rem }`** = 6.25px at 16px root (`6.25/16 = 25/64 = 0.390625`, exact). ✅
+2. **Contradiction** (Layer 2 required body to match *and* change): resolved — body is now **pinned** to preserve 6.25px, so the parity rule is "**only `<html>` changes; every other node including `<body>` must match**." No contradiction. ✅
+3. **"Accept if explainable" loophole + missing pseudo-elements + partial property set:** removed the loophole entirely (any non-html delta = STOP); traversal now includes `::before`/`::after` and a full size-property set. ✅
+
+**Round 3 — VERDICT: (pending re-review).**
 
 ### Diff review (Step 3b)
 _(to be filled after `codex exec` review)_
