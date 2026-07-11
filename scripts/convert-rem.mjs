@@ -272,12 +272,12 @@ function runAudit(files) {
     // POSITIONAL comparison (Codex round-5): a sorted-multiset check would let a
     // swap slip (e.g. two decls each mis-converted but collectively balancing).
     // We remove the declared manual-added token(s) from the working-tree stream
-    // BY VALUE first — the body pin is a distinct, non-colliding value — then
-    // compare the REMAINING working-tree tokens position-for-position against
-    // the base tokens each run through convertToken(). This proves the i-th base
-    // rem maps to the i-th surviving working-tree rem, not merely that the sets
-    // match. (Non-rem manual edits don't perturb rem positions, so they're still
-    // ignored.)
+    // by their EXACT ANCHORED INDEX (Codex round-6: value-only removal is
+    // exploitable), then compare the REMAINING working-tree tokens
+    // position-for-position against the base tokens each run through
+    // convertToken(). This proves the i-th base rem maps to the i-th surviving
+    // working-tree rem, not merely that the sets match. (Non-rem manual edits
+    // don't perturb rem positions, so they're still ignored.)
     const manualAdded = MANUAL_ADDED_TOKENS[rel] || [];
     const curRemaining = [...curToks];
     const manualProblems = [];
