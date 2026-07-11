@@ -8,7 +8,7 @@
  * stay in DashboardView's <style scoped>; section-specific :deep rules live in
  * their own section component.
  *
- * NOTE: this project uses font-size: 62.5% on html/body so 0.625rem = 10px.
+ * NOTE: root font-size is the browser default (16px), so one rem equals 16px.
  */
 
 /* Section layout helpers (mirror Student/Professor vocabulary) */

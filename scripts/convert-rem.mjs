@@ -209,6 +209,22 @@ const MANUAL_ADDED_TOKENS = {
   "src/index.css": [{ value: "0.390625", index: 101 }],
 };
 
+// Manual, non-codemod rem tokens the BASE has that the working tree does NOT —
+// i.e. deliberate removals. The stale "1rem = 10px" documenting comments each
+// contained a literal `1rem` (a base rem token at index 0 in the base file's rem
+// stream). Those comments are reworded to "one rem equals 16px" (no rem literal),
+// so their token disappears. We account for that here, anchored by the token's
+// index IN THE BASE rem stream and its value, so the removal is explicit and can
+// only match the intended comment token — not a real CSS value.
+//   NB index.css is NOT here: its comment carried no rem token in the base; the
+//   body pin (an ADDED token) is the only manual delta there.
+const MANUAL_REMOVED_TOKENS = {
+  "src/views/DashboardView.vue": [{ value: "1", baseIndex: 0 }],
+  "src/styles/dashboard-sections.css": [{ value: "1", baseIndex: 0 }],
+  "src/styles/brand.css": [{ value: "1", baseIndex: 0 }],
+  "src/components/Editor/TipTapEditor.vue": [{ value: "1", baseIndex: 0 }],
+};
+
 // ── audit: prove every rem token in the working tree is a correct ÷1.6 ──────
 // conversion of the corresponding base token, positionally.
 //
@@ -266,6 +282,21 @@ function runAudit(files) {
       continue;
     }
 
+    // Account for deliberately-removed base tokens (reworded comments) BEFORE
+    // conversion, anchored by exact base-stream index + value, highest-first.
+    const removed = MANUAL_REMOVED_TOKENS[rel] || [];
+    const baseProblems = [];
+    const baseEffective = [...baseToks];
+    for (const { value, baseIndex } of [...removed].sort((a, b) => b.baseIndex - a.baseIndex)) {
+      if (baseIndex < 0 || baseIndex >= baseEffective.length) {
+        baseProblems.push(`declared removed token ${value}rem expected at base-index ${baseIndex}, but base has ${baseEffective.length} token(s)`);
+      } else if (baseEffective[baseIndex] !== value) {
+        baseProblems.push(`declared removed token expected ${value}rem at base-index ${baseIndex}, base has ${baseEffective[baseIndex]}rem`);
+      } else {
+        baseEffective.splice(baseIndex, 1);
+      }
+    }
+
     if (baseToks.length) filesWithRem++;
     totalTokens += baseToks.length;
 
@@ -293,7 +324,7 @@ function runAudit(files) {
       }
     }
 
-    const expected = baseToks.map((t) => convertToken(t));
+    const expected = baseEffective.map((t) => convertToken(t));
     let positional = expected.length === curRemaining.length;
     if (positional) {
       for (let i = 0; i < expected.length; i++) {
@@ -301,15 +332,16 @@ function runAudit(files) {
       }
     }
 
-    if (manualProblems.length || !positional) {
+    if (manualProblems.length || baseProblems.length || !positional) {
       mismatches++;
       const newFileNote = !inBase
         ? " (NEW scoped file — has no base counterpart; its rem cannot be proven a conversion. Add to an allowlist or verify by hand.)"
         : "";
       problems.push(
         `TOKEN MISMATCH: ${rel}${newFileNote}\n` +
-          (manualProblems.length ? `    manual: ${manualProblems.join("; ")}\n` : "") +
-          `    base rem (${baseToks.length}): ${baseToks.slice(0, 12).join(", ")}${baseToks.length > 12 ? " …" : ""}\n` +
+          (baseProblems.length ? `    base-removal: ${baseProblems.join("; ")}\n` : "") +
+          (manualProblems.length ? `    manual-add: ${manualProblems.join("; ")}\n` : "") +
+          `    base rem (${baseEffective.length} after declared removals): ${baseEffective.slice(0, 12).join(", ")}${baseEffective.length > 12 ? " …" : ""}\n` +
           `    expected  (${expected.length}, positional): ${expected.slice(0, 12).join(", ")}${expected.length > 12 ? " …" : ""}\n` +
           `    actual    (${curRemaining.length}, manual removed): ${curRemaining.slice(0, 12).join(", ")}${curRemaining.length > 12 ? " …" : ""}`,
       );

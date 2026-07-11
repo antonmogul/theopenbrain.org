@@ -510,7 +510,7 @@ const isActive = (type, attrs = {}) => {
 
 <style scoped>
 /* TipTap Editor Scoped Styles
-   Note: Project uses 62.5% base font-size (0.625rem = 10px)
+   Note: root font-size is the browser default 16px (one rem equals 16px)
    These styles are scoped to this component only */
 
 .tiptap-editor {

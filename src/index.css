@@ -320,9 +320,22 @@
   }
 }
 
-html,
+html {
+  /* Root font-size removed: it now inherits the browser default (100% = 16px),
+     so one rem equals 16px. All rem literals were recomputed ÷1.6 (see
+     docs/font-refactor/PLAN.md) so rendered pixel sizes are unchanged. */
+  hyphens: auto;
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+}
+
 body {
-  font-size: 62.5%;
+  /* Pin body to preserve its old computed size (6.25px) exactly. Previously
+     `html, body { font-size: 62.5% }` made html 10px and body 6.25px (62.5% of
+     html's 10px, via inheritance). rem is root-relative so it's unaffected, but
+     em/%/inherited font-sizes bottom out at body — pinning body keeps that floor
+     identical. The value below is 6.25 ÷ 16 (= 25/64), exact. See PLAN.md §4a. */
+  font-size: 0.390625rem;
   hyphens: auto;
   background: rgb(var(--color-bg));
   color: rgb(var(--color-ink));

@@ -22,8 +22,10 @@ existing components onto it is the remaining work. Updated 2026-06-30.
 
 ### Tokens — `src/styles/brand.css` (single source of truth for sizes)
 A `--type-*` block defines size / line-height / letter-spacing for each role.
-Because the project root is `font-size: 62.5%` (1rem = 10px), each token's rem is
-`px ÷ 10` (e.g. body = `2rem` = 20px).
+The root font-size is the browser default (16px), so 1rem = 16px, and each
+token's rem is `px ÷ 16` (e.g. body = `1.25rem` = 20px). *(Historically the root
+used a `font-size: 62.5%` hack making 1rem = 10px; that was removed and all rem
+values recomputed ÷1.6 — see `docs/font-refactor/PLAN.md`.)*
 
 ### Role classes — `src/index.css` `@layer components`
 The public API. Components apply these, never raw Tailwind `text-*` or the legacy
@@ -114,7 +116,7 @@ Each step is independently shippable; verify against `/styleguide` + `npm run bu
 
 ## Files of record
 - `src/styles/brand.css` — `--type-*` tokens (sizes).
-- `src/index.css` — `.t-*` role classes; the 62.5% root (line ~234); legacy scale to retire.
+- `src/index.css` — `.t-*` role classes; the root font-size (now browser default, 62.5% hack removed); legacy scale to retire.
 - `src/views/StyleGuideView.vue` — specimen (`/styleguide`).
 - `src/composables/usePreferences.js` — the theme/font pins (revival point).
 - `index.html` — pre-paint pins.

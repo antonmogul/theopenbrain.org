@@ -37,8 +37,8 @@
    * Single source of truth for typography. One unified scale serves the whole
    * app (book + admin). Ratio: Perfect Fourth (1.333), base 20px body.
    *
-   * NB project root is `font-size: 62.5%` (index.css) so 0.625rem = 10px; each
-   * token's rem is therefore px ÷ 10. Sizes are the desktop target; the `body`
+   * NB root font-size is the browser default (16px), so one rem equals 16px;
+   * each token's rem is therefore px ÷ 16. Sizes are the desktop target; `body`
    * role multiplies by --reading-size so the reading-size pref still works.
    *
    * Steps (px): 11 · 13 · 17 · 20 · 27 · 36 · 47 · 63 · 84 · 112
