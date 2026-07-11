@@ -158,11 +158,12 @@ Invariant to prove: **every rendered element is the same pixel size before and a
 
 1. **Build gate:** `npm run build` exits 0.
 2. **Test gate:** `npm test` (vitest) stays green (baseline: 141 passing). NB: smoke/unit tests do NOT assert computed font-size — they catch parse/syntax breakage only.
-3. **Full diff-based audit (all 1408, not a sample) — `node scripts/convert-rem.mjs --audit`:** Rather than scan the branch for "leftover old token strings" (ambiguous — Codex round-3 catch: an old token may legitimately equal another token's *converted* value, so string-membership gives false results), the audit reconstructs each tracked file **from the base revision** (`main` by default, `AUDIT_BASE` override), runs the **exact same** `convertContent()` transform on it, and asserts the result equals the working-tree file **byte-for-byte**. This positionally proves, for all 1408 tokens at once:
-   - **every base rem token was converted** (any missed token → the fresh conversion differs → MISMATCH),
-   - **none was double-converted** (a double-convert differs from a single fresh conversion → MISMATCH),
-   - **no non-rem byte changed** in any rem-bearing file (any stray edit → the bytes differ → MISMATCH).
-   Files git changed for a *non-rem* reason (index.css hack removal, the comment/doc fixes, the script, docs) are outside this set and reviewed separately in the diff review. The per-token round-trip assertion inside `convertToken()` still guarantees `old_rem * 10 == new_rem * 16` exactly for every token. This diff-based audit — not element sampling — is what proves all conversions are correct and complete.
+3. **Full rem-token audit (all 1408, not a sample) — `node scripts/convert-rem.mjs --audit`:** For each scoped file, the audit extracts the **ordered sequence of rem tokens** from the file *at the base revision* (`main` by default, `AUDIT_BASE` override) and from the working tree, then asserts the working-tree token multiset equals `{convertToken(t) for each base token} ∪ {declared manual additions}`.
+   - **Why not byte-for-byte (Codex round-4 catch):** `src/index.css` and the 4 comment files carry *manual* non-rem edits (hack removal, body pin, comment text), so they can never equal a *pure* codemod of the base. Comparing rem-token sequences ignores non-rem manual edits automatically, while still catching every conversion error.
+   - **Manual additions are explicit:** the body pin `font-size: 0.390625rem` (PLAN §4a) is a rem token added by hand with no base counterpart; it's declared in `MANUAL_ADDED_TOKENS` and checked, not hand-waved.
+   - **Proves, for all 1408 tokens:** every base token was converted (missing token → count/multiset mismatch), none double-converted (wrong value → multiset mismatch), no spurious rem introduced (extra token → mismatch).
+   - **Path reconciliation (Codex round-4):** the audit takes the **union** of scoped paths at base and in the working tree — a deleted rem-bearing file, a base-only file, or a brand-new rem-bearing file all surface as accounted-for or flagged, so nothing slips through unaudited. New files (no base counterpart) must contain only already-correct tokens or they fail.
+   The per-token round-trip assertion inside `convertToken()` still guarantees `old_rem * 10 == new_rem * 16` (relative tolerance, magnitude-safe). This token audit — not element sampling — proves all conversions correct and complete.
 
 ### Layer 2 — Rendered (Playwright MCP, main vs branch)
 
@@ -223,7 +224,14 @@ Load the same routes on a **main** preview build and a **branch** preview build 
 6. **"Exactly four stale comments" false** (omitted current doc `typography-normalization.md`): split into 4 code comments + 1 current doc (both fixed) vs. historical audit logs (left as dated records). ✅
 7. **Minor:** manifest fields now escape tab/CR/newline (`tsvField`); `--check` now also refuses once the hack is gone; the audit inconsistency ("regex used for post-run audit" that didn't exist) is resolved by the real audit. `1.rem` malformed form verified absent (grep). ✅
 
-**Round 4 — VERDICT: (pending re-review below).**
+**Round 4 — VERDICT: REVISE.** Codex confirmed all round-3 fixes landed but found the diff-based audit had a blocking flaw: byte-for-byte file equality can *never* pass for `src/index.css` + the comment files, which carry manual non-rem edits. Also flagged: new files skipped, base/current path set not reconciled, `1.rem` not in FORBIDDEN, absolute round-trip tolerance. All fixed:
+1. **Audit reworked to rem-token-sequence comparison** (not byte equality): per file, working-tree rem multiset must equal `{÷1.6 of each base token} ∪ {declared manual additions}`. Manual non-rem edits no longer break the audit; the body pin `0.390625rem` is an explicit declared addition. ✅
+2. **Path reconciliation:** audit iterates the **union** of scoped paths at base and current; deleted/base-only/new rem-bearing files are accounted for or flagged. ✅
+3. **New files audited:** a new file's tokens must all be already-correct (no base counterpart to convert) or it fails. ✅
+4. **`1.rem` trailing-dot form** added to `FORBIDDEN` (verified: REM would silently skip it; guard now aborts). ✅
+5. **Round-trip tolerance** made relative (`1e-9 × max(1,|value|)`) — magnitude-safe. ✅
+
+**Round 5 — VERDICT: (pending re-review below).**
 
 ### Diff review (Step 3b)
 _(to be filled after `codex exec` review)_

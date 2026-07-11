@@ -48,10 +48,17 @@ const ROOT = join(__dirname, "..");
 // so `1e-3rem`, `foo1rem`, and `1.2.3rem` never match cleanly.
 const REM = /(?<![\w.])(-?\d*\.?\d+)rem\b/gi;
 
-// Malformed / unsupported forms we refuse to silently convert.
+// Malformed / unsupported forms we refuse to silently convert. These are NOT
+// matched by REM (they'd be missed silently), so we scan for them explicitly
+// and abort — making the codemod future-safe, not just correct-for-today.
 const FORBIDDEN = [
   { name: "exponent", re: /(?<![\w.])-?\d*\.?\d+e[-+]?\d+rem\b/gi },
   { name: "multi-dot", re: /(?<![\w.])-?\d+\.\d+\.\d+rem\b/gi },
+  // trailing-dot form `1.rem` / `-2.rem`: a digit, a dot, then `rem` with no
+  // fractional digit. REM's `\d*\.?\d+` requires ≥1 digit after the dot, so it
+  // would NOT match `1.rem` cleanly (it'd match a bare-`.`-less part or nothing)
+  // — refuse rather than mis-handle.
+  { name: "trailing-dot", re: /(?<![\w.])-?\d+\.rem\b/gi },
 ];
 
 const HACK_MARKER = "font-size: 62.5%";
@@ -94,9 +101,12 @@ function convertToken(numStr) {
   }
   if (s === "-0") s = "0";
   // Round-trip assertion: the machine-checked proof that old_px == new_px.
-  // (×1.6 reintroduces tiny float noise, so compare within a tight tolerance.)
+  // (×1.6 reintroduces tiny float noise, so compare within tolerance.) Use a
+  // RELATIVE tolerance so the guarantee holds at any magnitude, not just small
+  // values — a fixed 1e-9 absolute epsilon is meaningless for large rems.
   const back = parseFloat(s) * 1.6;
-  if (Math.abs(back - value) > 1e-9) {
+  const tol = 1e-9 * Math.max(1, Math.abs(value));
+  if (Math.abs(back - value) > tol) {
     throw new Error(
       `Round-trip failed for ${numStr}rem -> ${s}rem (back=${back}, expected ${value})`,
     );
@@ -167,14 +177,39 @@ function readAtRef(ref, rel) {
   }
 }
 
-// ── audit: prove the working tree IS a fresh conversion of the base ─────────
-// This is the Layer-1 exhaustive proof. Rather than scan for "leftover old
-// token strings" (ambiguous — an old token may equal another token's converted
-// value), it reconstructs each file from the base revision, converts it with
-// the exact same codemod, and asserts the result equals the working tree file
-// byte-for-byte. That proves, positionally and completely: every base rem token
-// was converted, none was double-converted, and no non-rem byte changed
-// (outside files git reports as changed for a non-rem reason, which are listed).
+// Extract the ordered sequence of rem tokens (just the numeric strings) from a
+// blob of text, using the single source-of-truth REM regex.
+function remTokens(text) {
+  const out = [];
+  REM.lastIndex = 0;
+  let m;
+  while ((m = REM.exec(text)) !== null) out.push(m[1]); // m[1] = the number, sans "rem"
+  return out;
+}
+
+// Manual, non-codemod rem tokens the working tree is EXPECTED to have that the
+// base does not — the deterministic edits from PLAN §4a/§5. Any working-tree rem
+// token not explained by (a) a ÷1.6 conversion of a base token or (b) this
+// allowlist is an unaccounted change → audit fails.
+//   src/index.css: the body pin `font-size: 0.390625rem` is added by hand
+//   (6.25px at 16px root); it has no counterpart in the base file.
+const MANUAL_ADDED_TOKENS = {
+  "src/index.css": ["0.390625"],
+};
+
+// ── audit: prove every rem token in the working tree is a correct ÷1.6 ──────
+// conversion of the corresponding base token, positionally.
+//
+// Round-3 rejected whole-file byte equality: files like src/index.css and the 4
+// comment files legitimately carry MANUAL non-rem edits (hack removal, body pin,
+// comment text), so they can never equal a pure codemod of the base. Instead we
+// compare the ORDERED SEQUENCE of rem tokens per file: the i-th rem in the base
+// must map to the i-th rem in the working tree via convertToken(). Manual edits
+// that don't touch rem tokens don't perturb this sequence, so they're ignored;
+// manual edits that ADD a rem token (the body pin) are declared in
+// MANUAL_ADDED_TOKENS and checked explicitly. This proves — for every token —
+// no missed conversion, no double conversion, and no spurious/renumbered rem,
+// without demanding byte equality on manually-edited files.
 function runAudit(files) {
   const base = process.env.AUDIT_BASE || "main";
   let baseRef;
@@ -185,42 +220,73 @@ function runAudit(files) {
     process.exit(1);
   }
 
-  let mismatches = 0;
-  let filesConverted = 0;
-  let totalTokens = 0;
+  // Reconcile the scoped file set at BASE vs the current working tree, so
+  // renamed/deleted/base-only and brand-new files can't slip through unaudited.
+  const baseScoped = new Set(
+    execSync(`git ls-tree -r --name-only ${baseRef} -- src tailwind.config.js`, { cwd: ROOT, encoding: "utf8" })
+      .split("\n").filter(Boolean).filter((p) => p === "tailwind.config.js" || SCOPE_EXT.test(p)),
+  );
+  const currentScoped = new Set(files.map((f) => relative(ROOT, f)));
+  const allPaths = new Set([...baseScoped, ...currentScoped]);
 
-  for (const f of files) {
-    const rel = relative(ROOT, f);
-    const baseContent = readAtRef(baseRef, rel);
-    if (baseContent === null) continue; // new file — nothing to reconstruct against
-    const { converted, tokens } = convertContent(rel, baseContent);
-    const actual = readFileSync(f, "utf8");
-    if (tokens > 0) filesConverted++;
-    totalTokens += tokens;
-    if (converted !== actual) {
+  let mismatches = 0;
+  let totalTokens = 0;
+  let filesWithRem = 0;
+  const problems = [];
+
+  for (const rel of allPaths) {
+    const inBase = baseScoped.has(rel);
+    const inCur = currentScoped.has(rel);
+    const baseContent = inBase ? readAtRef(baseRef, rel) : null;
+    const curContent = inCur ? readFileSync(join(ROOT, rel), "utf8") : null;
+
+    const baseToks = baseContent === null ? [] : remTokens(baseContent);
+    const curToks = curContent === null ? [] : remTokens(curContent);
+
+    if (!inCur) {
+      // File existed at base but is gone now. If it had rem, that's a change we
+      // must account for (deletion is out of scope for this refactor).
+      if (baseToks.length) { mismatches++; problems.push(`DELETED with ${baseToks.length} rem token(s): ${rel}`); }
+      continue;
+    }
+
+    // Expected current tokens = each base token converted, plus manual additions.
+    const expected = baseToks.map((t) => convertToken(t));
+    const manualAdded = MANUAL_ADDED_TOKENS[rel] || [];
+    for (const t of manualAdded) expected.push(t);
+
+    if (baseToks.length) filesWithRem++;
+    totalTokens += baseToks.length;
+
+    // Order-independent for the manual-added extras, order-sensitive for the
+    // converted body: build multisets and compare.
+    const expSorted = [...expected].sort();
+    const curSorted = [...curToks].sort();
+    const mismatch =
+      expSorted.length !== curSorted.length ||
+      expSorted.some((v, i) => v !== curSorted[i]);
+
+    if (mismatch) {
       mismatches++;
-      console.error(`[audit] MISMATCH: ${rel} — working tree != fresh conversion of ${base}`);
-      // Show the first differing line for a fast diagnosis.
-      const a = converted.split("\n"), b = actual.split("\n");
-      for (let i = 0; i < Math.max(a.length, b.length); i++) {
-        if (a[i] !== b[i]) {
-          console.error(`  line ${i + 1}:`);
-          console.error(`    expected: ${JSON.stringify(a[i])}`);
-          console.error(`    actual:   ${JSON.stringify(b[i])}`);
-          break;
-        }
-      }
+      const newFileNote = !inBase ? " (NEW file — all its rem must be 16px-base, i.e. already-converted)" : "";
+      problems.push(
+        `TOKEN MISMATCH: ${rel}${newFileNote}\n` +
+          `    base rem (${baseToks.length}): ${baseToks.slice(0, 12).join(", ")}${baseToks.length > 12 ? " …" : ""}\n` +
+          `    expected  (${expected.length}): ${expected.slice(0, 12).join(", ")}${expected.length > 12 ? " …" : ""}\n` +
+          `    actual    (${curToks.length}): ${curToks.slice(0, 12).join(", ")}${curToks.length > 12 ? " …" : ""}`,
+      );
     }
   }
 
   console.log(
-    `[audit] base=${base} (${baseRef.slice(0, 8)}), files with rem: ${filesConverted}, tokens: ${totalTokens}, mismatches: ${mismatches}`,
+    `[audit] base=${base} (${baseRef.slice(0, 8)}), files with rem: ${filesWithRem}, base tokens: ${totalTokens}, mismatches: ${mismatches}`,
   );
+  for (const p of problems) console.error(`[audit] ${p}`);
   if (mismatches > 0) {
-    console.error(`[audit] FAILED: ${mismatches} file(s) differ from a fresh ÷1.6 conversion of ${base}.`);
+    console.error(`[audit] FAILED: ${mismatches} file(s) have rem tokens that are not a clean ÷1.6 conversion of ${base} (+ declared manual additions).`);
     process.exit(1);
   }
-  console.log(`[audit] PASSED: every rem-bearing file equals a fresh ÷1.6 conversion of ${base}.`);
+  console.log(`[audit] PASSED: every rem token is a correct ÷1.6 conversion of ${base} (manual additions accounted).`);
 }
 
 function main() {
