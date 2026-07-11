@@ -25,15 +25,13 @@ This MUST be an **automated, deterministic codemod** (committed under `scripts/`
 
 ## 2. File scope — how the ~107 files are enumerated
 
-The codemod targets exactly the files that contain a `rem` unit literal, enumerated by:
+The codemod enumerates candidate files **itself** via `git ls-files src tailwind.config.js`, then filters by extension (`.vue|.css|.js|.ts|.html`) and applies the `REM` regex — so the file set scanned for conversion *is* the set converted (no drift vs a separate grep).
 
-```bash
-grep -rElo '\-?[0-9]*\.?[0-9]+rem\b' src/ tailwind.config.js
-```
+> **Enumeration bug found & fixed during Step-1 re-check:** the first draft used `git ls-files 'src/**/*.css' …`. A `**` glob does **not** match files directly in `src/`, so it silently **excluded `src/index.css`** — the file that holds the hack itself *and* 152 rem literals (11% of all tokens). That would have under-converted the north-star page catastrophically. Fixed to a directory pathspec (`src`) + JS extension filter, which cannot miss top-level files. The token count going from 1256 → 1408 after the fix is the proof.
 
 Measured scope (2026-07-10):
-- **Total `rem` occurrences: 1408** (`grep -rEon '\-?[0-9]*\.?[0-9]+rem\b' src/ tailwind.config.js | wc -l`)
-- **Files: 103 in `src/`** (98 `.vue`, 4 `.css`, 1 `.js`) **+ `tailwind.config.js`** = 104 files.
+- **Total `rem` occurrences converted: 1408** (verified by `node scripts/convert-rem.mjs --check`).
+- **Files with rem: 103** (98 `.vue`, 4 `.css` incl. `src/index.css`, 1 `.js`) **+ `tailwind.config.js`** where applicable.
 - File types processed: `.vue`, `.css`, `.js`, `.ts`, `.html` under `src/`, plus the root `tailwind.config.js`.
 
 `tailwind.config.js` is IN scope: it defines width/height utilities in rem (`header: "2.2rem"`, `text: "...calc(780px + 11rem)"`, etc.) that generate Tailwind classes consumed by components. Its **commented-out** rem lines (lines 37–48) are inert; the codemod will still convert the numbers inside comments for consistency (harmless — they're dead code either way). This is called out for the reviewer.
@@ -57,8 +55,8 @@ converted = value / 1.6
 
 Because `1/1.6 = 0.625 = 5/8`, multiplying **any finite decimal** by `0.625` **always terminates** (5/8 is `5 / 2³`, and dividing by a power of two adds at most 3 decimal places per source decimal place). So the exact result is representable exactly in decimal. The script therefore:
 1. Computes `converted = value * 0.625` (equivalent to `/1.6`, but `0.625` is exactly representable in IEEE-754, avoiding a division-rounding artifact).
-2. Formats with `toFixed(6)` then **strips trailing zeros** (6 dp is more than the exact result ever needs for the source precisions present — max source precision here is 2 dp → exact result ≤ 5 dp).
-3. **Asserts round-trip:** `parseFloat(newStr) * 1.6` must equal `value` within `1e-9`, else the script aborts on that token (guards against any formatting loss).
+2. Formats with **`Number.toString()`** — the shortest decimal string that round-trips to that exact double. Since `×0.625 = ×5/8` always terminates, this is the *exact* converted value at full precision (e.g. `0.8125 → 0.5078125`, a 4-dp source producing 7 dp). **Correction (found during Step-1 re-check):** an earlier draft used `toFixed(6)`, which silently rounded results longer than 6 dp — `0.8125rem` (present in the repo) became `0.507813` and failed the round-trip. `toString()` is precision-exact and is what the script now uses; a defensive guard aborts if it ever emits exponential form.
+3. **Asserts round-trip:** `parseFloat(newStr) * 1.6` must equal `value` within `1e-9`, else the script aborts on that token. (The `×1.6` back-multiply reintroduces sub-`1e-14` float noise for a few values, e.g. `11.2 → 7 → 11.2000000000000011`; the `1e-9` tolerance absorbs that noise while still catching any real formatting loss like the `toFixed` bug above, which was off by `8e-7`.)
 
 This gives **exact** conversions (e.g. `2.5 → 1.5625`, `1.1 → 0.6875`, `1.3 → 0.8125`, `1.7 → 1.0625`, `11.2 → 7`) with **zero rounding error** for every value in this codebase — so the "accumulation" concern (repeated widths, grid tracks, translates summing) is moot: there is no per-token error to accumulate. The round-trip assertion is the machine-checked proof of this for all 1408 tokens.
 
@@ -118,11 +116,14 @@ const REM = /(?<![\w.])(-?\d*\.?\d+)rem\b/gi;
 
 After the codemod runs, manual edits:
 1. `src/index.css:325` — the grouped `html, body { font-size: 62.5% }` becomes: **`html`'s** `font-size: 62.5%` is removed (root → 16px). **`body` is pinned explicitly to `font-size: 0.390625rem`** to preserve its old 6.25px computed size exactly (see §4a — this is the deterministic fix, applied unconditionally, not "if a leak is found"). Concretely: split the grouped rule so `html` loses the font-size and `body` gains `font-size: 0.390625rem;`. The other properties (`hyphens`, `background`, `color`) are preserved on both.
-2. Update **all four** stale `1rem = 10px` / `62.5%` comments (full-repo sweep confirms exactly these four) → reflect `1rem = 16px`:
-   - `src/styles/brand.css:40`
-   - `src/styles/dashboard-sections.css:11`
-   - `src/views/DashboardView.vue:1230`
-   - `src/components/Editor/TipTapEditor.vue:513`
+2. Update stale `1rem = 10px` / `62.5%` docs to reflect `1rem = 16px`. Two categories (Codex round-3 catch — the earlier "exactly four" claim omitted current docs):
+   - **Code comments (4)** — these document live source and MUST be corrected:
+     - `src/styles/brand.css:40`
+     - `src/styles/dashboard-sections.css:11`
+     - `src/views/DashboardView.vue:1230`
+     - `src/components/Editor/TipTapEditor.vue:513`
+   - **Current design docs (1)** — `docs/typography-normalization.md:25` (and its line ~117 root reference) describes the *active* root as 62.5%; update to 16px + note the hack was removed.
+   - **Historical audit logs (left as-is, they record past state):** `docs/audit-fixes/STATUS.md` (B4 diagnosis) intentionally keeps the 62.5% description — it is a dated work log of the pre-refactor state, not live guidance. Noted so the reviewer knows the omission is deliberate.
 
 (Note: the `--type-*-size` vars in `brand.css` are rem and will be converted by the codemod; the comment near them is what changes manually.)
 
@@ -157,25 +158,25 @@ Invariant to prove: **every rendered element is the same pixel size before and a
 
 1. **Build gate:** `npm run build` exits 0.
 2. **Test gate:** `npm test` (vitest) stays green (baseline: 141 passing). NB: smoke/unit tests do NOT assert computed font-size — they catch parse/syntax breakage only.
-3. **Full token audit (all 1408, not a sample):** a `--audit` mode re-parses `git diff main...HEAD`, extracts every changed `Nrem` token, and asserts **for every one**: `old_rem * 10 == new_rem * 16` within `1e-6` px. Also asserts:
-   - **no old rem token was left unconverted** (re-scan the branch tree; the only surviving pre-hack rem values allowed are those that were already `0rem`),
-   - **no non-rem numeric text changed** (diff hunks touch only `Nrem` tokens + the 4 comments + the hack line),
-   - **no out-of-scope files changed** (diff file list ⊆ enumerated set ∪ {index.css, the 4 comment files, docs, scripts}).
-   This mechanical audit — not element sampling — is what proves all 1408 conversions are correct and complete.
+3. **Full diff-based audit (all 1408, not a sample) — `node scripts/convert-rem.mjs --audit`:** Rather than scan the branch for "leftover old token strings" (ambiguous — Codex round-3 catch: an old token may legitimately equal another token's *converted* value, so string-membership gives false results), the audit reconstructs each tracked file **from the base revision** (`main` by default, `AUDIT_BASE` override), runs the **exact same** `convertContent()` transform on it, and asserts the result equals the working-tree file **byte-for-byte**. This positionally proves, for all 1408 tokens at once:
+   - **every base rem token was converted** (any missed token → the fresh conversion differs → MISMATCH),
+   - **none was double-converted** (a double-convert differs from a single fresh conversion → MISMATCH),
+   - **no non-rem byte changed** in any rem-bearing file (any stray edit → the bytes differ → MISMATCH).
+   Files git changed for a *non-rem* reason (index.css hack removal, the comment/doc fixes, the script, docs) are outside this set and reviewed separately in the diff review. The per-token round-trip assertion inside `convertToken()` still guarantees `old_rem * 10 == new_rem * 16` exactly for every token. This diff-based audit — not element sampling — is what proves all conversions are correct and complete.
 
 ### Layer 2 — Rendered (Playwright MCP, main vs branch)
 
 Load the same routes on a **main** preview build and a **branch** preview build (sequential checkout + `vite preview`, or two ports). Compare via `getComputedStyle`:
 
 4. **Base-change confirmation via RATIO, not hardcoded px** (Codex catch — don't assume 16px browser default): `<html>` is the **only** element whose computed `fontSize` is expected to change; assert `computed(html).fontSize_branch / computed(html).fontSize_main == 1.6` (the expected 10px→16px ratio regardless of the user's actual browser base). Record both absolute values for the report.
-5. **Exhaustive computed-style traversal — every element AND pseudo-element:** walk *all* rendered nodes on each key page (`document.querySelectorAll('*')`) **plus `::before`/`::after`** (`getComputedStyle(el, '::before')`), and compare the full set of size-affecting properties between main and branch: `fontSize`, `lineHeight`, `letterSpacing`, `width`, `height`, `marginTop/Right/Bottom/Left`, `paddingTop/Right/Bottom/Left`, `top/right/bottom/left`, `gap`, `borderWidth`. **Parity rule:** every node's every property must match within `<0.1px` — with the **single exception of `<html>`'s `fontSize`** (expected 1.6× per step 4). A delta on **any other node or pseudo-element, including `<body>`,** fails verification → STOP. This is exhaustive (not sampled) and includes em/%/inherited nodes, so a §4a body-inheritance regression or any missed/double-converted rem shows up as a hard failure, not a judgment call.
+5. **Exhaustive computed-style traversal — every element AND pseudo-element:** walk *all* rendered nodes on each key page (`document.querySelectorAll('*')`) **plus `::before`/`::after`** (skip pseudo-elements whose computed `content` is `none` — Codex #4), and compare the full set of size-affecting properties between main and branch. The property list is **derived from the rem-bearing properties actually present in the codebase** (Codex #3), not a guess — it includes at minimum: `fontSize`, `lineHeight`, `letterSpacing`, `width`, `height`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, `marginTop/Right/Bottom/Left`, `paddingTop/Right/Bottom/Left`, `top/right/bottom/left`, `gap`, `rowGap`, `columnGap`, `borderTopWidth/RightWidth/BottomWidth/LeftWidth`, `borderTopLeftRadius/TopRightRadius/BottomRightRadius/BottomLeftRadius`, `gridTemplateColumns`, `gridTemplateRows`, `transform` (computed matrix — catches `translateX(11rem)`), `backgroundPosition`, `backgroundSize`, `textIndent`, `outlineWidth`, `outlineOffset`. Actual repo examples the earlier list missed: `max-width: 64rem`, `border-radius: 0.8rem`, `translateX(...11rem...)`, `grid-template-columns: 28rem 1fr`. **DOM pairing (Codex #4):** first assert both trees have identical `querySelectorAll('*').length`; abort the comparison as inconclusive (→ STOP, investigate) if counts differ, rather than index-aligning mismatched nodes. Stabilize fonts (`document.fonts.ready`), viewport, `data-reduce-motion=1`, and app state before sampling. **Parity rule:** every paired node's every property must match within `<0.1px` (compare `transform` matrices numerically) — with the **single exception of `<html>`'s `fontSize`** (expected 1.6× per step 4). A delta on **any other node or pseudo-element, including `<body>`,** fails verification → STOP. This is exhaustive (not sampled) and includes em/%/inherited nodes, so a §4a body-inheritance regression or any missed/double-converted rem shows up as a hard failure, not a judgment call.
 6. **Key pages:**
    - `/` (redirects to `/chapter`)
    - `/chapter/1` — **Chapter 1 "The Retina" — the north-star page. Must render pixel-identical.**
    - `/styleguide` — exercises the full type scale (`--type-*`), accent/theme, specimens.
    - dashboard/settings routes if reachable without auth; else noted as deferred (local dev has no Supabase — see caveat).
 7. **Interactive/responsive states:** for at least the north-star page, also compare at the desktop width the app targets (≥1300px, per CLAUDE.md the app warns below that) and check one hover/focus state (a button) so hover-only rem sizing is covered. (Mobile <1300px shows a media-query warning screen, so full mobile parity is lower value, but the warning screen itself is sampled.)
-8. **Screenshot diff:** full-page screenshots of key pages on both branches, with animations stabilized (the app has an `animation-stopper` class per CLAUDE.md; also set `data-reduce-motion` and wait for fonts/Lottie idle) to avoid nondeterministic diffs. Any *stable* visible delta = bad conversion → STOP.
+8. **Screenshot diff (secondary — the computed-style traversal in step 5 is the authoritative numeric gate):** full-page screenshots of key pages on both branches, with animations stabilized (`animation-stopper` class per CLAUDE.md; also `data-reduce-motion=1` and wait for `document.fonts.ready` + Lottie idle). **Numeric acceptance rule (Codex #5):** the traversal in step 5 is the deterministic gate (any non-`<html>` delta ≥0.1px = STOP). Screenshots are a defense-in-depth cross-check for anything a computed-style walk can't see (e.g. a glyph shift). Because pixel-diff tooling may not be wired locally, screenshots are compared by (a) the step-5 numeric traversal already having passed, and (b) visual inspection of the paired full-page captures; any *stable* visible delta not explained by `<html>`'s expected base change = STOP. If a pixel-diff tool is available, threshold = 0 stable differing pixels outside masked dynamic regions (none expected on Chapter 1).
 
 ### Caveats & stop condition
 
@@ -213,7 +214,16 @@ Load the same routes on a **main** preview build and a **branch** preview build 
 2. **Contradiction** (Layer 2 required body to match *and* change): resolved — body is now **pinned** to preserve 6.25px, so the parity rule is "**only `<html>` changes; every other node including `<body>` must match**." No contradiction. ✅
 3. **"Accept if explainable" loophole + missing pseudo-elements + partial property set:** removed the loophole entirely (any non-html delta = STOP); traversal now includes `::before`/`::after` and a full size-property set. ✅
 
-**Round 3 — VERDICT: (pending re-review).**
+**Round 3 — VERDICT: REVISE.** Codex confirmed the core codemod (calc, shorthand, negatives, `0rem`, static JS/template literals, media-block declarations, untouched unitless line-heights, the body pin) is correct, but flagged the verification/audit layer. All addressed:
+1. **`--audit` was a stub** (re-ran the conversion in memory without a real diff comparison): reimplemented as a **diff-based audit** — reconstructs each file from the base ref, converts it with the same `convertContent()`, and asserts byte-for-byte equality with the working tree. Proves completeness + no-double-convert + no-stray-edit positionally. ✅
+2. **"Leftover old token" scan ill-defined** (an old token can equal another's converted value): dropped entirely in favor of the positional byte-for-byte audit above. ✅
+3. **Rendered property list incomplete** (missed `max/min-width/height`, `transform`, `grid-template-*`, `border-radius`): property list is now derived from rem-bearing properties actually in the repo; expanded accordingly. ✅
+4. **DOM pairing by index unsafe:** assert identical node counts first, stabilize fonts/viewport/motion/state, skip `content:none` pseudo-elements. ✅
+5. **Screenshot rule subjective:** demoted to a secondary cross-check; the numeric computed-style traversal (step 5, ≥0.1px = STOP) is the authoritative gate. ✅
+6. **"Exactly four stale comments" false** (omitted current doc `typography-normalization.md`): split into 4 code comments + 1 current doc (both fixed) vs. historical audit logs (left as dated records). ✅
+7. **Minor:** manifest fields now escape tab/CR/newline (`tsvField`); `--check` now also refuses once the hack is gone; the audit inconsistency ("regex used for post-run audit" that didn't exist) is resolved by the real audit. `1.rem` malformed form verified absent (grep). ✅
+
+**Round 4 — VERDICT: (pending re-review below).**
 
 ### Diff review (Step 3b)
 _(to be filled after `codex exec` review)_
