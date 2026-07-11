@@ -1,0 +1,119 @@
+animationDragon
+   title=''
+   flags: {"fullscreen": false, "loop": true, "loopSection": [82, 287]}
+animationEyeStructurTransition
+   title='Eye Structure'
+   flags: {"isTransition": true, "noBleed": true}
+animationEyeStructur
+   title='Eye structure'
+   states(11): ['Lens', 'Iris', 'Cornea', 'Choroid', 'Sclera', 'Fovea', 'Aqueous humour', 'Ciliary muscle', 'Retina', 'Vitreous humour', 'Optic nerve']
+   flags: {"fullscreen": false, "clickTriggered": true, "highlight": true}
+animationAccommodationVergence
+   title='Accommodation & vergence'
+   flags: {"fullscreen": false, "loop": true, "loopSection": null}
+animationPupillaryLightreflex
+   title='Pathway for the pupillary light reflex'
+   states(5): ['Light shines into an eye, activating the retina', 'Retinal ganglion cells project bilaterally to the pretectal olivary nucleus', 'Each pretectal nucleus projects bilaterally to the Edinger-Westphal Nucleus', 'The Edinger-Westphal nucleus projects ipsilaterally to the ciliary ganglion', 'Postganglionic parasympathetic neurons project ipsilaterally to the iris spinster muscle']
+   statesHighlight(4): ['Pretectal nucleus', 'Edinger-Westphal nucleus', 'Ciliary ganglion', 'Iris muscle']
+   flags: {"fullscreen": true, "loop": true}
+animationImpairedVision
+   title='Refraction errors'
+   states(4): ['Normal eye (emmetropia)', 'Myopia', 'Hyperopia', 'Astigmatism']
+   flags: {"fullscreen": true, "loop": false, "infoText": "Despite our body\u2019s best laid plans, a variety of developmental and age-related issues can cause our eyes to improperly focus incoming images onto the retina, resulting in impaired vision. Two common issues result from the image being focused either in front of (myopia) or behind (hyperopia) the retina. Myopia, also commonly referred to as nearsightedness, blurs images of far-away images. In contrast, hyperopia, commonly referred to as farsightedness, blurs images of nearby images. Another common refractive issue is astigmatism, which results in uneven focus of the incoming image on the retina, due to irregular curvature of the cornea, or lens abnormalities. Finally, as we age, the lens becomes less elastic and the ciliary muscles become less effective at accommodating different focal planes, leading to presbyopia, which tends to focus images behind the retina. In general, most types of refractive errors can be addressed with corrective lenses.", "toggle": "Corrected"}
+animationLatteralOrganization
+   title='Lateral organization'
+   flags: {"fullscreen": true, "split": true, "multiple": false, "sources": ["Cone mosaic in the fovea. Source Wikipedia.", "Red, cone terminals; Green, horizontal cell mosaic; Blue, bipolar cell mosaic. Source Webvision (Luna, Fisher and Lewis).", "ON alpha ganglion cell mosaic from cat retina. Source W\u00e4ssle et al., 1981, Nature."]}
+animationPhototransduction
+   title='Phototransduction'
+   states(8): ['Rod is in the dark. Rhodopsin is inactive', 'A flash of light, and a photon activates rhodopsin', 'Retinal changes conformation', 'Activated rhodopsin in turn activates transducin', 'The alpha subunit of transducin activates phosphodiesterase (PDE)', 'PDE degrades cGMP into GMP, leading to a decrease in intracellular [cGMP]', 'cGMP-gated ion channels close', 'The rod membrane hyperpolarizes']
+   statesHighlight(11): ['Rhodopsin', 'Retinal', 'Transducin', 'Phosphodiesterase (PDE)', 'cGMP', 'GMP', 'α', 'γ', 'β', 'GTP', 'NA+']
+   flags: {"fullscreen": true, "loop": true, "infoText": "In the dark, the photoreceptor outer segment has a high concentration of the small molecule cGMP (cyclic guanosine monophosphate). These small molecules bind to and activate cGMP-gated cationic channels, resulting in Na+ and Ca2+ inflow in the outer segment, which balance an ongoing efflux of K+ ions in the inner segment. Together, these ion flows result in a relatively depolarized resting membrane potential (Vm) of ~-30mV in darkness. Rhodopsin is a G-protein coupled receptor. It becomes enzymatically active following photon absorption and in turn activates the G-protein transducin. Transducin is composed of \u03b1, \u03b2, and \u03b3 subunits, and upon activation, releases its \u03b2\u03b3 subunit, which in turn activates a phosphodiesterase (PDE) that then hydrolyzes cGMP molecules. The resulting decrease in intracellular [cGMP] in the outer segment leads to the closure of cGMP-gated cation channels<sup data-sup='28'>28</sup>. Since the efflux of K+ ions continues in the inner segment, closing cGMP-gated channels in the outer segment results in photoreceptor membrane hyperpolarization, leading to a decrease in glutamate release. This light-evoked hyperpolarization is called a photovoltage, and its amplitude and duration depend on the luminance, size and duration of the light flash. Finally, an activated rhodopsin molecule needs to be de-activated, otherwise the phototransduction cascade would continue endlessly. Phototransduction terminates when an activated rhodopsin is phosphorylated by a membrane bound enzyme called rhodopsin kinase. The addition of a phosphate to rhodopsin leads to its binding by a protein called arrestin, which ejects the rhodopsin kinase, and quenches rhodopsin\u2019s ability to activate transducin by breaking the bond between all-trans retinal and opsin<sup data-sup='28'>28,</sup><sup data-sup='29'>29,</sup><sup data-sup='42'>42</sup>."}
+animationTheVisualCycle
+   title='The visual cycle'
+   states(6): ['Rhodopsin absorps a photon of light and retinal changes from 11-cis to all-trans', 'All-trans retinal exits the rod', 'All-trans retinal binds to IRBP, which transports it into the RPE', 'In the RPE, All-trans retinal undergoes further changes until restored to 11-cis ', '11-cis retinal binds is shuttled out of the RPE', '11-cis retinal re-enters the rod where it can get activated by light again']
+   statesHighlight(5): ['Rhodopsin', 'Retinal ', 'Rod', 'RPE', 'IRBP']
+   flags: {"fullscreen": true, "loop": true, "infoText": "When rhodopsin absorbs a photon, its light-catching 11-cis retinal chromophore is isomerized into all-trans retinal. This latter form cannot be used for photon absorption, and the retina undertakes a complex series of steps to convert all-trans retinal back to photo-activatable 11-cis retinal. Following binding of arrestin, the bond between all-trans retinal and the opsin is broken. The released all-trans aldehyde is quickly converted to all-trans retinol by membrane bound retinal dehydrogenase, which is in turn bound by an all-trans retinol binding protein. From here, a transport protein called intraretinal binding protein takes all-trans retinol on an inter-cellular journey into the retina pigment epithelium, which intercalates with photoreceptor outer segments. The RPE contain a pair of enzymes \u2013 retinyl-ester isomerase which converts all-trans retinol to 11-cis retinol, and 11-cis retinol dehydrogenase which uses ATP to convert 11-cis retinol back into 11-cis retinal. The regenerated 11-cis retinal is highly insoluble and is quickly bound by an 11-cis retinal binding protein which encapsulates the molecule, which makes the return trip out of retina pigment epithelium and back into the photoreceptor outer segment, where it is released and binds anew with an opsin<sup data-sup='28'>28,</sup><sup data-sup='41'>41</sup>."}
+animationSynapticArchitecture
+   title='Synaptic architecture'
+   states(3): ['Inhibition', 'Excitatation', 'Gap junction']
+   flags: {"fullscreen": false, "clickTriggered": true, "blockStates": true, "hasTransition": true, "iconPraefix": "retinalCircuits"}
+animationPhotoreceptors
+   title='Photoreceptors'
+   states(6): ['Disks', 'Opsins', 'Outer segment', 'Inner segment', 'Mitocondria', 'Nucleus']
+   flags: {"fullscreen": false, "clickTriggered": true, "hasTransition": true, "highlight": true, "speed": 0.7}
+animationLateralOrganization
+   title='Lateral organization'
+   flags: {"fullscreen": true, "scroll": true, "split": true}
+animationRetinalCellTypesTransition
+   title='Retinal cell types'
+   flags: {"isTransition": true, "noBleed": true}
+animationRetinalCellTypes
+   title='Retinal cell types'
+   states(10): ['Photoreceptors', 'Horizontal cells', 'Bipolar cells', 'Amacrine cells', 'Ganglion cells', 'Inner nuclear layer', 'Inner plexiform layer', 'Outer nuclear layer', 'Outer plexiform layer', 'Ganglion cell layer']
+   flags: {"fullscreen": false, "clickTriggered": true, "highlight": true, "iconPraefix": "retinalCellTypes", "icons": ["true", "true", "true", "true", "true"], "autoplay": true}
+animationRetinalCellTypes2
+   title='Retinal cell types'
+   states(10): ['Photoreceptors', 'Horizontal cells', 'Bipolar cells', 'Amacrine cells', 'Ganglion cells', 'Inner nuclear layer', 'Inner plexiform layer', 'Outer nuclear layer', 'Outer plexiform layer', 'Ganglion cell layer']
+   flags: {"fullscreen": false, "clickTriggered": true, "highlight": true, "iconPraefix": "retinalCellTypes", "icons": ["true", "true", "true", "true", "true"], "autoplay": true, "set": 2}
+animationRetinalCellTypes3
+   title='Retinal cell types'
+   states(10): ['Photoreceptors', 'Horizontal cells', 'Bipolar cells', 'Amacrine cells', 'Ganglion cells', 'Inner nuclear layer', 'Inner plexiform layer', 'Outer nuclear layer', 'Outer plexiform layer', 'Ganglion cell layer']
+   flags: {"fullscreen": false, "clickTriggered": true, "highlight": true, "iconPraefix": "retinalCellTypes", "set": 1, "icons": ["true", "true", "true", "true", "true"], "autoplay": true}
+animationCenterSurroundReceptiveFields
+   title='Center surround receptive fields'
+   switches(2): ['Small light', 'Wide light']
+   flags: {"fullscreen": false, "loop": true, "switch": true, "blockSwitches": true, "legend": ["Photoreceptors", "Horizontal cells", "Bipolar cells", "Amacrine cells", "Ganglion cells", "Hyperpolarization", "Depolarization", "Spike train", "special", "Inhibition", "Excitatation", "Gap junction"]}
+animationColorOpponency
+   title='Color Opponency'
+   flags: {"illuImage": true, "fullHeight": true}
+animationONOFFLamina
+   title='ON and OFF lamina'
+   flags: {"illuImage": true, "fullHeight": false}
+animationDirectionSelectivity
+   title='Direction selectivity'
+   switches(2): ['Prefered', 'Null']
+   flags: {"fullscreen": false, "loop": true, "switch": true, "blockSwitches": true, "legend": ["Photoreceptors", "Horizontal cells", "Bipolar cells", "Amacrine cells", "Ganglion cells", "Hyperpolarization", "Depolarization", "Spike train", "special", "Inhibition", "Excitatation", "Gap junction"]}
+animationObjectMotionSensitivity
+   title='Object motion sensitivity'
+   switches(2): ['Symmetric center', 'Asymmetric center']
+   flags: {"fullscreen": false, "loop": true, "switch": true, "blockSwitches": true, "legend": ["Photoreceptors", "Horizontal cells", "Bipolar cells", "Amacrine cells", "Ganglion cells", "Hyperpolarization", "Depolarization", "Spike train", "special", "Inhibition", "Excitatation", "Gap junction"]}
+animationRodVsConeCircuits
+   title='Rod vs. cone circuits'
+   switches(2): ['Day', 'Night']
+   flags: {"fullscreen": false, "loop": true, "switch": true, "swicthSymboles": true, "blockSwitches": true, "iconPraefix": "retinalCircuits", "legend": ["Photoreceptors", "Horizontal cells", "Bipolar cells", "Amacrine cells", "Ganglion cells", "Hyperpolarization", "Depolarization", "Spike train", "special", "Inhibition", "Excitatation", "Gap junction"]}
+animationLightSensitiveGanglionCells
+   title='Light sensitive ganglion cells'
+   flags: {"fullscreen": false, "loop": true, "legend": ["Photoreceptors", "Horizontal cells", "Bipolar cells", "Amacrine cells", "Ganglion cells", "Hyperpolarization", "Depolarization", "Spike train", "special", "Inhibition", "Excitatation", "Gap junction"]}
+animationWavesOfActivity
+   title='Spontaneous waves of activity'
+   flags: {"illuImage": true, "youtubeID": "k0_HXpcH4zI"}
+animationNormalVision
+   title='Normal vision'
+   states(0): []
+   flags: {"fullscreen": false, "flip": true, "video": "normal-vision"}
+animationCataracts
+   title='Cataracts'
+   states(0): []
+   flags: {"fullscreen": false, "flip": true, "video": "cataracts", "source": "Xu et al., 2021, Biomed Eng Online"}
+animationGlaucoma
+   title='Glaucoma'
+   states(0): []
+   flags: {"fullscreen": false, "flip": true, "video": "glaucoma", "source": "Viewpoint online"}
+animationDiabeticRetinopathy
+   title='Diabetic retinopathy'
+   states(0): []
+   flags: {"fullscreen": false, "flip": true, "video": "diabetic-retinopathy", "source": "Ramasy et al., 2021, PeerJ Computer Science"}
+animationAgeRelatedMacularDegeneration
+   title='Age related macular degeneration'
+   states(0): []
+   flags: {"fullscreen": false, "flip": true, "video": "macular-degeneration", "source": "Eyerounds.org"}
+animationRetinitisPigmentosa
+   title='Retinitis pigmentosa'
+   states(0): []
+   flags: {"fullscreen": false, "flip": true, "video": "retinitis-pigmentosa", "source": "Hamel Orphanet Journal of Rare Diseases 2006 1:40 doi:10.1186/1750-1172-1-40)"}
+animationEyeMovements
+   title='Eye Movements'
+   flags: {"source": "Artistic reinterpretaton", "fullscreen": false, "loop": true}
+animationPlaceholder
+   title=''
+   flags: {"loop": true, "fullParagraph": true}
