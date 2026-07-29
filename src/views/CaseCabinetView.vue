@@ -132,25 +132,35 @@ function setStackRef(el, i) {
 function drawerSeed(flyer, r) {
   const s = leafSize(flyer);
   /*
-   * The flyer must START as an exact overlay of the clicked folder — same box,
-   * same place — so the swap from folder to flyer is invisible. The flyer's
-   * layout box is one portrait leaf anchored top-left at viewport centre, so we
-   * scale each axis independently to the folder's rect and translate the
-   * (top-left) origin onto it.
+   * The file is a rigid object: it ROTATES out of the drawer, it does not
+   * deform. So the seed uses a single UNIFORM scale plus a -90° rotation —
+   * never scaleX ≠ scaleY. (Matching the folder's box on both axes would mean
+   * scaling x1.92 by one axis and x0.47 by the other: the folder is aspect
+   * ~3.07, the leaf ~0.75. That stretch is what reads as "morphing" rather
+   * than rotating, and it distorts the tab and everything else inside.)
    *
-   * Non-uniform scale is deliberate: the folder is landscape (≈920×300) and the
-   * leaf is portrait (480×640). Matching both axes is what makes the first frame
-   * line up; phase 1 then tweens scale back to 1 as it rises to portrait.
+   * Lying on its side (-90°) the portrait leaf presents its HEIGHT horizontally
+   * and its WIDTH vertically. We match the leaf's width to the folder's height,
+   * so the file spans the drawer slot's thickness and keeps its proportions.
+   * The overhang past the folder's width is correct: a portrait file really is
+   * longer than the drawer front it sits behind.
    *
-   * NB transformOrigin is top-left to match the anchor above — with a centred
-   * origin the scale would pull the box off the folder.
+   * Origin is "left top" to match the flyer's top-left anchor at viewport
+   * centre; rotating about that corner swings the body up-and-right out of the
+   * slot, so the pivot reads as lifting the file rather than sliding it.
    */
+  // Lying at -90° the leaf's HEIGHT runs horizontally, so match that to the
+  // folder's width — the file spans the drawer front, and its (portrait) width
+  // becomes the visible depth, overhanging the slot as a real file would.
+  const scale = r.width / s.h;
+  // Rotating -90° about the top-left corner puts the box ABOVE that corner, so
+  // drop the anchor by the rotated height (s.w * scale) to land it in the slot.
   return {
     x: r.left - window.innerWidth / 2,
-    y: r.top - window.innerHeight / 2,
-    scaleX: r.width / s.w,
-    scaleY: r.height / s.h,
-    rotation: 0,
+    y: r.top - window.innerHeight / 2 + s.w * scale,
+    scaleX: scale,
+    scaleY: scale,
+    rotation: -90,
     transformOrigin: "left top",
   };
 }
@@ -214,6 +224,7 @@ async function open(c, evt) {
     y: pc.y,
     scaleX: 1,
     scaleY: 1,
+    // -90 → 0: the file swings upright, rotating rather than stretching.
     rotation: 0,
     // Must match the seed's origin, or GSAP re-resolves it mid-tween and the
     // box jumps off the folder it just grew out of.
