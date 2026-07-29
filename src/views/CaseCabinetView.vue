@@ -350,8 +350,11 @@ async function close() {
       <div v-if="openCase" ref="flyerEl" class="flyer" :style="{ '--tint': openCase.tint }">
         <button class="flyer__close" @click="close">✕</button>
         <div ref="bookEl" class="book">
-          <!-- LEFT half: the cover (front) + the file inside (revealed on open) -->
+          <!-- LEFT half: the cover (front) + the file inside (revealed on open).
+               This leaf never moves, so the tab lives here — pinned to its LEFT
+               (outer) edge, the far side from the spine. -->
           <div class="leaf leaf--left">
+            <span class="folder__tab folder__tab--side">{{ openCase.tab }}</span>
             <!-- the file: brain illustration + regions -->
             <div class="illus">
               <img
@@ -386,13 +389,13 @@ async function close() {
           </div>
 
           <!-- RIGHT half: hinged cover that swings open. Its BACK (facing us when
-               closed) is the plain folder + tab; its FRONT (seen when open) is the
-               notes page. -->
+               closed) is the plain folder; its FRONT (seen when open) is the
+               notes page. The tab is NOT here — it belongs to the stationary
+               left leaf (see .folder__tab--side), so it stays on the folder's
+               outer edge instead of travelling to the spine as this swings. -->
           <div ref="rightLeafEl" class="leaf--right-hinge">
-            <!-- outer/back = plain folder cover with the tab -->
-            <div class="cover-back">
-              <span class="folder__tab folder__tab--side">{{ openCase.tab }}</span>
-            </div>
+            <!-- outer/back = plain folder cover -->
+            <div class="cover-back"></div>
             <!-- inner/front = the transcript page -->
             <div class="leaf leaf--right">
               <span class="leaf__index">{{ openCase.regions[0]?.n }}</span>
@@ -612,12 +615,15 @@ async function close() {
   overflow-y: auto;
   backface-visibility: hidden;
 }
-/* side tab that ends up on the open book's right edge (frame 4) */
+/* The folder's own tab, riding the stationary left leaf. It sits on that leaf's
+   LEFT (outer) edge — the far side from the spine — so when the cover swings
+   open the tab stays on the outside of the spread rather than drifting inward. */
 .folder__tab--side {
   position: absolute;
   top: 40%;
-  right: -34px;
+  left: -34px;
   writing-mode: vertical-rl;
+  transform: rotate(180deg); /* read bottom-up on the left edge */
   background: var(--tint);
   color: #fff;
   padding: 14px 6px;
@@ -625,6 +631,7 @@ async function close() {
   font-weight: 700;
   letter-spacing: 0.15em;
   font-size: 0.72rem;
+  z-index: 1;
 }
 .illus {
   position: relative;
