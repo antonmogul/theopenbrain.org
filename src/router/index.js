@@ -131,6 +131,14 @@ const routes = [
     name: "styleguide",
     component: () => import("../views/StyleGuideView.vue"),
   },
+  {
+    // Case Cabinet prototype (History chapter). Reads mock data from
+    // src/mocks/caseFiles.js until the case_files tables exist. Not linked in
+    // nav; open /case-cabinet directly.
+    path: "/case-cabinet",
+    name: "case-cabinet",
+    component: () => import("../views/CaseCabinetView.vue"),
+  },
 ];
 
 const router = createRouter({

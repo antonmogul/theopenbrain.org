@@ -205,6 +205,8 @@ function select(id) {
 .sg-content {
   padding: 2.5rem 2.5rem 5rem;
   max-width: 1200px;
-  overflow-x: hidden;
+  /* No overflow-x here: `hidden` on one axis forces the other to `auto`, which
+     turned this into a scroll container and broke page scrolling. Clip wide
+     children (specimen rows, swatch grids) at their own container instead. */
 }
 </style>
