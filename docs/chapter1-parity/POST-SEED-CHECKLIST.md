@@ -10,7 +10,27 @@
 > inert again, check RLS policies before re-running seeds** — counts via the SQL
 > editor (service_role) look fine while the app sees nothing.
 >
-> Remaining: sections 2–4 (runtime transform, rendered behaviour, regression).
+> **Section 2 (runtime transform) COMPLETE.** Replaying the `useAnimations` transform
+> against the live API *with the anon key* gives **14/14 interactive figures carrying
+> data** (was 0/14 pre-fix). Per-figure states/highlight/switch counts all match the
+> static source table below.
+>
+> **Section 3 (rendered behaviour) VERIFIED on `/chapter/1/the-retina`:** EyeStructur
+> renders all 11 state labels and clicking one (Retina) highlights the label and lights
+> the corresponding layer — state-stepping works. CenterSurroundReceptiveFields renders
+> its 2 variant toggles ("Small light" / "Wide light") from `animation_variants` —
+> switch figures work. The `triggerAnimationEyeStructurTransition` scroll anchor is
+> present in the DOM (`animationScrollAnchor transition`), so the `animation_trigger`
+> rows are being read. Console clean of animation/data errors.
+>
+> **Section 4 (regression) COMPLETE:** `npm test` — 154/154 passing across 32 files.
+>
+> Not yet exercised by hand: highlight-sync on Phototransduction/TheVisualCycle
+> (data confirmed present: 11 and 5 highlight states, infoText 1864/1342 chars),
+> the other 3 switch figures, and the mobile no-double-render check.
+>
+> Unrelated pre-existing issue seen while testing: Vue Router logs "No match found"
+> for `/quiz` and `chapter/break/placeholder`.
 
 Run this **after** applying the two seed migrations (and the backup). It confirms the
 DB now matches the static source of truth and that Chapter 1 renders with full
