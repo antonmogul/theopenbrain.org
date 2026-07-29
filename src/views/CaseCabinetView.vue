@@ -20,7 +20,10 @@
  */
 import { ref, onMounted, nextTick } from "vue";
 import gsap from "gsap";
+import { Flip } from "gsap/Flip";
 import { useCaseFiles } from "@/mocks/caseFiles";
+
+gsap.registerPlugin(Flip);
 
 const cases = ref([]);
 const openCase = ref(null); // the case object being shown, or null
@@ -197,20 +200,44 @@ async function open(c, evt) {
   if (!c.openable || openCase.value || animating.value) return;
   animating.value = true;
 
-  const r = evt.currentTarget.getBoundingClientRect(); // folder's slot rect
+  /*
+   * ONE ELEMENT, START TO FINISH — this is a GSAP Flip, not a hand-off.
+   *
+   * We record the clicked folder's real state, then let Vue promote that SAME
+   * node into the open layout (`.folder--flying` lifts it to fixed position and
+   * the open size). Flip.from() diffs the two states and animates the actual
+   * element between them. There is no second node to seed, disguise or
+   * cross-fade — which is what made the previous version read as a new element
+   * appearing: it genuinely was one.
+   *
+   * Flip handles the position/parent change safely, so the old worry about
+   * reparenting a v-for node and corrupting the vdom doesn't apply: Vue still
+   * owns the node, we only change its class.
+   */
+  const folderNode = evt.currentTarget;
+  // The mount entrance (gsap.from opacity) can leave an inline opacity behind;
+  // clear it so the flying folder is never animated out from under us.
+  gsap.set(folderNode, { clearProps: "opacity" });
+  const state = Flip.getState(folderNode, { props: "borderRadius,backgroundColor" });
+
   openCase.value = c;
   await nextTick();
   const flyer = flyerEl.value;
   const right = rightLeafEl.value;
 
-  // Seed into the drawer (behind the front files) while still hidden → first
-  // visible frame is the file tucked in the drawer, ready to rise up and out.
-  const start = drawerSeed(flyer, r);
-  gsap.set(flyer, start); // rotation is part of the seed (-90, landscape)
   gsap.set(right, { rotationY: -180 }); // right cover folded shut over the file
-  gsap.set(skinEl.value, { autoAlpha: 1 }); // skin visible again for this open
   gsap.set(flyer.querySelector(".flyer__close"), { autoAlpha: 0 });
-  gsap.set(flyer, { autoAlpha: 1 }); // reveal only after the seed transform is set
+  // The flyer carries the spread's contents. It stays hidden until the Flip has
+  // delivered the folder to the open position, then fades in over it.
+  gsap.set(flyer, { autoAlpha: 0 });
+
+  // Animate the real folder from its drawer slot into the open card.
+  const flip = Flip.from(state, {
+    duration: 0.7 * SPEED,
+    ease: "power3.inOut",
+    absolute: true,
+    scale: false, // tween width/height, so the tab and contents don't distort
+  });
 
   const tl = trackTimeline(
     gsap.timeline({
@@ -219,32 +246,13 @@ async function open(c, evt) {
     "open"
   );
 
-  // 1) Rise + rotate to an upright CLOSED portrait, centered as a single leaf.
-  const pc = portraitCenter(flyer);
-  tl.to(flyer, {
-    x: pc.x,
-    y: pc.y,
-    scaleX: 1,
-    scaleY: 1,
-    // -90 → 0: the file swings upright, rotating rather than stretching.
-    rotation: 0,
-    // Must match the seed's origin, or GSAP re-resolves it mid-tween and the
-    // box jumps off the folder it just grew out of.
-    transformOrigin: "left top",
-    duration: 0.6 * SPEED,
-    ease: "power3.inOut",
-    force3D: true,
-  })
-    // 1b) Cross-fade the folder skin away once the file is clear of the drawer
-    //     and clearly upright — late enough that the swap isn't perceptible.
-    .to(
-      skinEl.value,
-      { autoAlpha: 0, duration: 0.3 * SPEED, ease: "power1.in" },
-      "-=" + 0.32 * SPEED
-    )
-    // 2) Shift to the open-book center as the right cover swings open.
-    .to(flyer, { x: openCenter(flyer).x, duration: 0.7 * SPEED, ease: "power2.inOut" }, ">")
-    .to(right, { rotationY: 0, duration: 0.7 * SPEED, ease: "power2.inOut" }, "<")
+  // 1) The Flip itself: the real folder travels from its drawer slot to the
+  //    open card, tweening size and border-radius as one continuous object.
+  tl.add(flip)
+    // 2) The spread's contents fade in over the arrived folder, then the cover
+    //    swings open. The folder itself remains the card beneath.
+    .to(flyer, { autoAlpha: 1, duration: 0.25 * SPEED }, ">-" + 0.15 * SPEED)
+    .to(right, { rotationY: 0, duration: 0.7 * SPEED, ease: "power2.inOut" }, ">-" + 0.1 * SPEED)
     // 3) Reveal the file + notes as it finishes opening.
     .to(flyer.querySelector(".flyer__close"), { autoAlpha: 1, duration: 0.2 * SPEED }, "-=" + 0.2 * SPEED)
     .from(
@@ -349,7 +357,10 @@ async function close() {
         :key="c.id"
         :ref="(el) => setStackRef(el, i)"
         class="folder"
-        :class="{ 'folder--locked': !c.openable, 'folder--hidden': openCase && openCase.id === c.id }"
+        :class="{
+          'folder--locked': !c.openable,
+          'folder--flying': openCase && openCase.id === c.id,
+        }"
         :style="{
           '--tint': c.tint,
           '--tab-x': c.tabX + '%',
@@ -482,13 +493,19 @@ async function close() {
   height: 480px;
   transition: opacity 0.3s;
 }
-.stack--dimmed {
+/* Dim the drawer behind the opened file — but never the flying folder itself,
+   which has left the stack visually and must stay at full strength. */
+.stack--dimmed .folder:not(.folder--flying) {
   opacity: 0.25;
 }
 .folder {
   --tint: #8b5cf6;
   --depth: 0;
   --lip: 84px; /* vertical step between folders (how much of each shows) */
+  /* Open-card dimensions, mirrored from .flyer so .folder--flying can size
+     itself against them (custom properties don't cross to a different subtree). */
+  --leaf-w: min(480px, 46vw);
+  --leaf-h: min(640px, 61.33vw);
   position: absolute;
   left: 0;
   right: 0;
@@ -520,9 +537,34 @@ async function close() {
 .folder:hover {
   transform: translateY(calc(var(--depth) * var(--lip) * -1 - 14px));
 }
-/* the origin folder is hidden while its flyer is out */
-.folder--hidden {
-  visibility: hidden;
+/*
+ * The clicked folder's OPEN state. Flip animates the real node from its drawer
+ * slot into this — it is the same element, promoted to fixed position and the
+ * open card's size. Sized to one leaf so it lands as the spread's left half.
+ */
+.folder--flying {
+  position: fixed;
+  /* Positioned with plain offsets, NOT a translate: Flip owns `transform` while
+     it animates, so a CSS translate here would be overwritten mid-flight and
+     the element would land off-screen. calc() puts the left leaf's right edge
+     on the viewport's centre line (the spine). */
+  left: calc(50% - var(--leaf-w, min(480px, 46vw)));
+  top: calc(50% - var(--leaf-h, min(640px, 61.33vw)) / 2);
+  right: auto;
+  bottom: auto;
+  transform: none;
+  width: var(--leaf-w, min(480px, 46vw));
+  height: var(--leaf-h, min(640px, 61.33vw));
+  border-radius: 18px 0 0 18px;
+  z-index: 210;
+}
+/* Its raised tab keeps riding the outer (left) edge as it flies. */
+.folder--flying::before {
+  top: 40%;
+  left: -34px;
+  width: 30px;
+  height: 76px;
+  border-radius: 14px 0 0 14px;
 }
 .folder__tab {
   position: absolute;
