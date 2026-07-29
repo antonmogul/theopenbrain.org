@@ -1,5 +1,17 @@
 # Chapter 1 parity — post-seed verification checklist
 
+> **STATUS 2026-07-29 — Section 1 (DB data layer) COMPLETE.** Seeds applied to prod;
+> all counts verified and matching the static source of truth. One issue not
+> anticipated by this checklist was found and fixed: `animation_states` and
+> `animation_variants` had **RLS enabled with zero policies**, so the seeded rows
+> were invisible to the anon key — the app read empty arrays with no error, and
+> figures stayed inert even with correct data. Fixed in migration
+> `20260729000000_animation_child_tables_read_policy.sql`. **If figures are ever
+> inert again, check RLS policies before re-running seeds** — counts via the SQL
+> editor (service_role) look fine while the app sees nothing.
+>
+> Remaining: sections 2–4 (runtime transform, rendered behaviour, regression).
+
 Run this **after** applying the two seed migrations (and the backup). It confirms the
 DB now matches the static source of truth and that Chapter 1 renders with full
 interactivity. Three layers: **DB data → runtime transform → rendered behaviour.**
