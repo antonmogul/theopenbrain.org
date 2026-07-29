@@ -40,8 +40,30 @@ const GROUPS = [
   },
 ];
 
+/*
+ * Chapter ramps. Each chapter owns an identity colour with four steps. Unlike
+ * the groups above these live under [data-chapter="n"] rather than :root, so
+ * they're resolved off a detached probe element carrying that attribute (see
+ * readChapterRamps) instead of from the document root.
+ */
+const CHAPTERS = [
+  { n: 1, name: "Fundamentals" },
+  { n: 2, name: "Perception" },
+  { n: 3, name: "Movement" },
+  { n: 4, name: "Learning, Cognition & Memory" },
+  { n: 5, name: "Development & Degeneration" },
+];
+
+const RAMP_STEPS = [
+  { token: "--color-chapter", label: "primary", use: "Section numbers, buttons, active states" },
+  { token: "--color-chapter-deep", label: "deep", use: "Hover / pressed, text on light tints" },
+  { token: "--color-chapter-soft", label: "soft", use: "Fills, selected rows" },
+  { token: "--color-chapter-pale", label: "pale", use: "Highlight washes, backgrounds" },
+];
+
 // Resolve each token's RGB triplet → hex, read live from the document root.
 const hexValues = ref({});
+const chapterRamps = ref([]);
 
 function tripletToHex(triplet) {
   const parts = triplet.trim().split(/\s+/).map(Number);
@@ -55,6 +77,33 @@ function tripletToHex(triplet) {
   );
 }
 
+/*
+ * The ramps are defined on [data-chapter="n"] selectors, so they only resolve
+ * on an element carrying that attribute. Mount one hidden probe per chapter,
+ * read the computed values, then remove it — this keeps the swatches sourced
+ * from brand.css rather than duplicating the hexes here.
+ */
+function readChapterRamps() {
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none";
+  document.body.appendChild(probe);
+
+  const ramps = CHAPTERS.map((c) => {
+    probe.dataset.chapter = String(c.n);
+    const cs = getComputedStyle(probe);
+    return {
+      ...c,
+      steps: RAMP_STEPS.map((s) => ({
+        ...s,
+        hex: tripletToHex(cs.getPropertyValue(s.token)),
+      })),
+    };
+  });
+
+  probe.remove();
+  return ramps;
+}
+
 onMounted(() => {
   const cs = getComputedStyle(document.documentElement);
   const out = {};
@@ -64,6 +113,7 @@ onMounted(() => {
     }
   }
   hexValues.value = out;
+  chapterRamps.value = readChapterRamps();
 });
 </script>
 
@@ -94,6 +144,49 @@ onMounted(() => {
             <span class="t-label swatch-token">{{ s.token }}</span>
             <span class="swatch-use">{{ s.use }}</span>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="group">
+      <p class="t-label group-eyebrow">Chapter ramps</p>
+      <p class="t-body-sm group-note">
+        Each chapter carries its own identity colour, set via
+        <code>data-chapter</code> on <code>&lt;html&gt;</code>. Four steps per
+        chapter: primary, deep, soft, pale. Not yet wired to the router — these
+        are the tokens only.
+      </p>
+
+      <div class="ramps">
+        <!-- data-chapter must sit on the element itself: the swatch backgrounds
+             resolve --color-chapter-* through their own ancestry, so without it
+             every ramp would fall back to the :root default. -->
+        <div
+          v-for="c in chapterRamps"
+          :key="c.n"
+          class="ramp"
+          :data-chapter="c.n"
+        >
+          <p class="t-label ramp-head">
+            <span class="ramp-num">Chapter {{ c.n }}</span>
+            <span class="ramp-name">{{ c.name }}</span>
+          </p>
+          <div class="ramp-bar">
+            <div
+              v-for="s in c.steps"
+              :key="s.token"
+              class="ramp-step"
+              :class="{ 'ramp-step--lead': s.label === 'primary' }"
+              :style="{ background: `rgb(var(${s.token}))` }"
+              :title="`${s.token} — ${s.use}`"
+            />
+          </div>
+          <dl class="ramp-legend">
+            <div v-for="s in c.steps" :key="s.token" class="ramp-legend-row">
+              <dt class="t-label">{{ s.label }}</dt>
+              <dd><code class="swatch-hex">{{ s.hex || "…" }}</code></dd>
+            </div>
+          </dl>
         </div>
       </div>
     </section>
@@ -159,5 +252,57 @@ onMounted(() => {
 .swatch-use {
   font-size: 0.75rem;
   color: rgb(var(--color-mute));
+}
+
+/* Chapter ramps */
+.ramps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+.ramp-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.09375rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid rgb(var(--color-line));
+  margin-bottom: 0.5rem;
+}
+.ramp-num {
+  color: rgb(var(--color-mute));
+}
+.ramp-name {
+  color: rgb(var(--color-ink));
+  font-weight: 600;
+}
+/* The lead (primary) step is widest, mirroring the Figma board's proportions. */
+.ramp-bar {
+  display: grid;
+  grid-template-columns: 2.6fr 1fr 1fr 1fr;
+  height: 76px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-line));
+}
+.ramp-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem;
+  margin-top: 0.4375rem;
+}
+.ramp-legend-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  min-width: 0;
+}
+.ramp-legend-row dt {
+  color: rgb(var(--color-mute));
+}
+.ramp-legend-row dd {
+  margin: 0;
+}
+.ramp-legend .swatch-hex {
+  font-size: 0.625rem;
 }
 </style>

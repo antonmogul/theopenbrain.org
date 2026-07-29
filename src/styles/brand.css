@@ -84,6 +84,70 @@
 [data-accent="amber"] { --color-accent: 244 166 33; }
 [data-accent="mono"] { --color-accent: 32 32 32; }
 
+/*
+ * ── Chapter colour ramps ───────────────────────────────────────────────────
+ * Each chapter carries its own identity colour. Values sampled from the Figma
+ * "Chapter primary colors" board; four steps per chapter:
+ *
+ *   --color-chapter        primary   — section numbers, buttons, active states
+ *   --color-chapter-deep   deeper    — hover/pressed, text on light tints
+ *   --color-chapter-soft   mid tint  — fills, selected rows, folder mid-tones
+ *   --color-chapter-pale   pale tint — highlight washes, large background areas
+ *
+ * :root holds a neutral default so any view rendered outside a chapter still
+ * resolves. Set `data-chapter` on <html> to switch (see index.html pre-paint).
+ *
+ * NOT YET WIRED: nothing sets data-chapter yet and --color-accent is still
+ * independent. Wiring these to the router (so chapter colour drives the accent)
+ * is the next step — see the Chapter ramps group in the styleguide Colours panel.
+ */
+:root {
+  --color-chapter: 124 59 238;
+  --color-chapter-deep: 107 0 236;
+  --color-chapter-soft: 178 138 246;
+  --color-chapter-pale: 213 197 245;
+}
+
+/* Ch 1 — Fundamentals (purple) */
+[data-chapter="1"] {
+  --color-chapter: 124 59 238;       /* #7C3BEE */
+  --color-chapter-deep: 107 0 236;   /* #6B00EC */
+  --color-chapter-soft: 178 138 246; /* #B28AF6 */
+  --color-chapter-pale: 213 197 245; /* #D5C5F5 */
+}
+
+/* Ch 2 — Perception (teal) */
+[data-chapter="2"] {
+  --color-chapter: 87 208 178;       /* #57D0B2 */
+  --color-chapter-deep: 61 168 156;  /* #3DA89C */
+  --color-chapter-soft: 102 228 198; /* #66E4C6 */
+  --color-chapter-pale: 161 246 228; /* #A1F6E4 */
+}
+
+/* Ch 3 — Movement (blue) */
+[data-chapter="3"] {
+  --color-chapter: 44 95 234;        /* #2C5FEA */
+  --color-chapter-deep: 35 80 183;   /* #2350B7 */
+  --color-chapter-soft: 96 152 232;  /* #6098E8 */
+  --color-chapter-pale: 149 181 233; /* #95B5E9 */
+}
+
+/* Ch 4 — Learning, Cognition & Memory (red) */
+[data-chapter="4"] {
+  --color-chapter: 239 64 75;        /* #EF404B */
+  --color-chapter-deep: 173 35 41;   /* #AD2329 */
+  --color-chapter-soft: 238 109 128; /* #EE6D80 */
+  --color-chapter-pale: 248 194 204; /* #F8C2CC */
+}
+
+/* Ch 5 — Development & Degeneration (amber) */
+[data-chapter="5"] {
+  --color-chapter: 233 183 72;       /* #E9B748 */
+  --color-chapter-deep: 187 136 43;  /* #BB882B */
+  --color-chapter-soft: 250 213 132; /* #FAD584 */
+  --color-chapter-pale: 252 228 182; /* #FCE4B6 */
+}
+
 /* Font pairs (default IBM Plex inherited from :root) */
 [data-fontpair="ibm-plex-legacy"] {
   --font-body: "IBM Plex Sans", system-ui, sans-serif;
