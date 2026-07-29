@@ -131,23 +131,27 @@ function setStackRef(el, i) {
  */
 function drawerSeed(flyer, r) {
   const s = leafSize(flyer);
-  // Rotated -90°, the leaf's on-screen width = its height (s.h). Match to folder width.
-  const scale = r.width / s.h;
-  const cx = window.innerWidth / 2 + s.w / 2; // flyer's untransformed center x
-  const cy = window.innerHeight / 2 + s.h / 2; // and center y
-  // Place the leaf's center so the rotated landscape box overlays the folder:
-  // center on the folder horizontally, and vertically sit its body in the drawer.
-  const targetCenterX = r.left + r.width / 2;
-  const targetCenterY = r.top + r.height / 2;
+  /*
+   * The flyer must START as an exact overlay of the clicked folder — same box,
+   * same place — so the swap from folder to flyer is invisible. The flyer's
+   * layout box is one portrait leaf anchored top-left at viewport centre, so we
+   * scale each axis independently to the folder's rect and translate the
+   * (top-left) origin onto it.
+   *
+   * Non-uniform scale is deliberate: the folder is landscape (≈920×300) and the
+   * leaf is portrait (480×640). Matching both axes is what makes the first frame
+   * line up; phase 1 then tweens scale back to 1 as it rises to portrait.
+   *
+   * NB transformOrigin is top-left to match the anchor above — with a centred
+   * origin the scale would pull the box off the folder.
+   */
   return {
-    x: targetCenterX - cx,
-    y: targetCenterY - cy,
-    scaleX: scale,
-    scaleY: scale,
-    rotation: -90, // landscape, matching the flat drawer folder
-    // Pivot from the drawer corner: the folder's left/bottom stays low while the
-    // body swings up-and-right as it rotates to upright (your frame 2).
-    transformOrigin: "left bottom",
+    x: r.left - window.innerWidth / 2,
+    y: r.top - window.innerHeight / 2,
+    scaleX: r.width / s.w,
+    scaleY: r.height / s.h,
+    rotation: 0,
+    transformOrigin: "left top",
   };
 }
 
@@ -159,8 +163,9 @@ const SPEED = 3;
 function leafSize(flyer) {
   return { w: flyer.offsetWidth, h: flyer.offsetHeight };
 }
-// The flyer (one leaf) is anchored top-left at viewport center.
-// Closed portrait, centered as a single leaf: shift left+up by half its size.
+// The flyer (one leaf) is anchored top-left at viewport center, and every tween
+// uses transformOrigin "left top" (see drawerSeed), so centring means shifting
+// the top-left corner back by half the leaf's size.
 function portraitCenter(flyer) {
   const s = leafSize(flyer);
   return { x: -s.w / 2, y: -s.h / 2 };
@@ -210,6 +215,9 @@ async function open(c, evt) {
     scaleX: 1,
     scaleY: 1,
     rotation: 0,
+    // Must match the seed's origin, or GSAP re-resolves it mid-tween and the
+    // box jumps off the folder it just grew out of.
+    transformOrigin: "left top",
     duration: 0.6 * SPEED,
     ease: "power3.inOut",
     force3D: true,
