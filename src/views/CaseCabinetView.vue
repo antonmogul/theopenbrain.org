@@ -96,7 +96,6 @@ const stackEls = ref([]); // stack folder nodes (for entrance + rect capture)
 const flyerEl = ref(null); // the 3D stage (positioned/scaled onto the folder slot)
 const bookEl = ref(null); // preserve-3d book; rotates portrait→upright
 const rightLeafEl = ref(null); // hinged cover that swings open
-const skinEl = ref(null); // folder look-alike overlay, fades out during the rise
 
 const { fetchCases } = useCaseFiles();
 
@@ -293,7 +292,6 @@ async function close() {
     .to(flyer, { x: pc.x, duration: 0.5 * SPEED, ease: "power2.inOut" }, "<")
     // Skin fades back in as the file drops into the slot, so the hand-off back
     // to the real folder is hidden the same way the outbound one is.
-    .to(skinEl.value, { autoAlpha: 1, duration: 0.3 * SPEED }, "<")
     .to(flyer, { ...seed, duration: 0.5 * SPEED, ease: "power3.inOut" }, "<")
     .to(flyer, { autoAlpha: 0, duration: 0.15 * SPEED }, "-=0.1");
 }
@@ -382,12 +380,6 @@ async function close() {
          then swings open to reveal the two-leaf landscape spread. -->
     <Teleport to="body">
       <div v-if="openCase" ref="flyerEl" class="flyer" :style="{ '--tint': openCase.tint }">
-        <!-- Continuity skin: an exact visual copy of the stack folder (same
-             radius, same raised tab, same shadow) laid over the flyer. It is
-             what you see for the first part of the rise, so the swap from the
-             real folder to this element is invisible; it cross-fades out only
-             once the file is clear of the drawer and reading as upright. -->
-        <div ref="skinEl" class="folder-skin" :style="{ '--tab-x': openCase.tabX + '%' }"></div>
         <button class="flyer__close" @click="close">✕</button>
         <div ref="bookEl" class="book">
           <!-- LEFT half: the cover (front) + the file inside (revealed on open).
@@ -596,19 +588,19 @@ async function close() {
   opacity: 0.7;
 }
 
-/* ---- the morphing flyer: a 3D book ----
-   The flyer box is ONE portrait leaf (half of the open landscape spread), pinned
-   just right of viewport-center so its LEFT edge is the book spine. The right
-   cover swings out from that spine to fill the left half → centered open book. */
+/* ---- the spread's contents ----
+   Since the Flip refactor the CLICKED FOLDER is the left leaf — it flies in and
+   becomes the card. This element now only carries what sits inside/right of it:
+   the file illustration and the hinged notes page. It must therefore align
+   exactly with .folder--flying's open box, or you see two offset folders. */
 .flyer {
   --tint: #8b5cf6;
   --leaf-w: min(480px, 46vw); /* one leaf = half the open landscape width */
   --leaf-h: min(640px, 61.33vw); /* portrait height */
   position: fixed;
-  /* top-left anchored at viewport center; JS transform positions from there so
-     GSAP owns the full transform (no CSS translate for it to clobber). */
-  top: 50%;
-  left: 50%;
+  /* Same geometry as .folder--flying: left leaf's right edge on the centre line. */
+  top: calc(50% - var(--leaf-h) / 2);
+  left: calc(50% - var(--leaf-w));
   z-index: 200;
   width: var(--leaf-w);
   height: var(--leaf-h);
@@ -652,27 +644,6 @@ async function close() {
  * It sits in the leaf's coordinate space, so it inherits the -90° seed rotation
  * and lies landscape over the drawer slot exactly like the folder does.
  */
-.folder-skin {
-  position: absolute;
-  inset: 0;
-  background: var(--tint);
-  border-radius: 18px 18px 22px 22px; /* matches .folder */
-  box-shadow: 0 -8px 18px rgb(0 0 0 / 0.18); /* matches .folder */
-  pointer-events: none;
-  z-index: 15;
-}
-/* the raised tab — mirrors .folder::before */
-.folder-skin::before {
-  content: "";
-  position: absolute;
-  top: -26px;
-  left: var(--tab-x, 20%);
-  width: 150px;
-  height: 30px;
-  background: var(--tint);
-  border-radius: 14px 14px 0 0;
-}
-
 /* ---- the two leaves ---- */
 .leaf {
   padding: 2rem;
