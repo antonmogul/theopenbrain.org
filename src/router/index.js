@@ -131,6 +131,12 @@ const routes = [
     name: "styleguide",
     component: () => import("../views/StyleGuideView.vue"),
   },
+  {
+    // Prototype: Case Cabinet (folder-stack animation). Open /cabinet directly.
+    path: "/cabinet",
+    name: "cabinet",
+    component: () => import("../views/CaseCabinetView.vue"),
+  },
 ];
 
 const router = createRouter({

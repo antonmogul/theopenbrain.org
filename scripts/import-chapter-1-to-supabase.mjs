@@ -81,20 +81,24 @@ function buildContent(paragraph, opts = {}) {
     blocks.push({ type: "text", content: paragraph.text });
   }
 
-  // Break section steps
-  if (paragraph.type === "breakSection" && paragraph.steps) {
-    blocks.push({ type: "break_section", title: paragraph.title || "", steps: paragraph.steps });
+  // Break section (with or without steps)
+  if (paragraph.type === "breakSection") {
+    blocks.push({
+      type: "break_section",
+      title: paragraph.title || "",
+      ...(paragraph.steps ? { steps: paragraph.steps } : {}),
+    });
   }
 
-  // Break video
-  if (paragraph.type === "breakVideo" || (paragraph.type && paragraph.type !== "breakSection")) {
-    if (!paragraph.text && paragraph.title) {
-      blocks.push({
-        type: "break_video",
-        title: paragraph.title,
-        videoSlug: paragraph.videoSlug || null,
-      });
-    }
+  // Break video — only when the type is explicitly "breakVideo"
+  if (paragraph.type === "breakVideo") {
+    blocks.push({
+      type: "break_video",
+      title: paragraph.title || "",
+      videoSlug: paragraph.videoSlug || null,
+      // Include text if present (some breakVideo entries have descriptive text)
+      ...(paragraph.text ? { text: paragraph.text } : {}),
+    });
   }
 
   // Image
@@ -133,12 +137,26 @@ function flattenParagraphs(items, level = 0) {
     // ── subSection array (level 1 nesting) ──
     if (item.subSection) {
       for (const sub of item.subSection) {
+        // Build content JSONB, including animation display flags
+        // (start/middel/end) that StartEndIcon.vue needs
+        const headerContent = buildContent({}, { title: sub.title, headingLevel: 3 });
+        if (sub.animation) {
+          const flags = {};
+          if (sub.animation.start) flags.start = true;
+          if (sub.animation.middel) flags.middel = true;
+          if (sub.animation.end) flags.end = true;
+          if (sub.animation.transition) flags.transition = true;
+          if (sub.animation.stage) flags.stage = sub.animation.stage;
+          if (Object.keys(flags).length > 0) {
+            headerContent.animationFlags = flags;
+          }
+        }
         // SubSection header
         result.push({
           id: sub.id,
           is_subsection_header: true,
           subsection_level: 1,
-          content: buildContent({}, { title: sub.title, headingLevel: 3 }),
+          content: headerContent,
           content_text: sub.title || "",
           animation: sub.animation || null,
         });
@@ -153,11 +171,24 @@ function flattenParagraphs(items, level = 0) {
     // ── subSubSection array (level 2 nesting) ──
     if (item.subSubSection) {
       for (const subsub of item.subSubSection) {
+        const subsubContent = buildContent(subsub);
+        // Preserve animation display flags in content JSONB
+        if (subsub.animation) {
+          const flags = {};
+          if (subsub.animation.start) flags.start = true;
+          if (subsub.animation.middel) flags.middel = true;
+          if (subsub.animation.end) flags.end = true;
+          if (subsub.animation.transition) flags.transition = true;
+          if (subsub.animation.stage) flags.stage = subsub.animation.stage;
+          if (Object.keys(flags).length > 0) {
+            subsubContent.animationFlags = flags;
+          }
+        }
         result.push({
           id: subsub.id,
           is_subsection_header: false,
           subsection_level: 2,
-          content: buildContent(subsub),
+          content: subsubContent,
           content_text: subsub.text ? subsub.text.replace(/<[^>]+>/g, "").slice(0, 200) : "",
           animation: subsub.animation || null,
         });
@@ -172,11 +203,24 @@ function flattenParagraphs(items, level = 0) {
     }
 
     // ── Regular paragraph ──
+    const paraContent = buildContent(item);
+    // Preserve animation display flags (start/middel/end/transition) in content JSONB
+    if (item.animation) {
+      const flags = {};
+      if (item.animation.start) flags.start = true;
+      if (item.animation.middel) flags.middel = true;
+      if (item.animation.end) flags.end = true;
+      if (item.animation.transition) flags.transition = true;
+      if (item.animation.stage) flags.stage = item.animation.stage;
+      if (Object.keys(flags).length > 0) {
+        paraContent.animationFlags = flags;
+      }
+    }
     result.push({
       id: item.id,
       is_subsection_header: false,
       subsection_level: level,
-      content: buildContent(item),
+      content: paraContent,
       content_text: item.text ? item.text.replace(/<[^>]+>/g, "").slice(0, 200) : "",
       animation: item.animation || null,
       animationFull: item.animationFull || false,
@@ -384,7 +428,10 @@ async function migrate() {
       if (fp.animation?.name) {
         const key = animationNameToKey(fp.animation.name);
         paraAnimId = animLookup[key] || animLookup[key?.toLowerCase()] || null;
-        animTrigger = fp.animation.name;
+        // Store "scroll" as trigger when the animation has a transition flag,
+        // so useChapter.js can reconstruct `transition: true` via
+        // `animation_trigger === "scroll"`.
+        animTrigger = fp.animation.transition ? "scroll" : fp.animation.name;
         if (paraAnimId) linkedAnimations++;
       }
 

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 let lottie;
 
@@ -8,7 +8,9 @@ import gsap from "gsap";
 
 import FullScreenIllustrationMultiple from "@/components/chapter/Illus/FullScreenIllustrationMultiple.vue";
 
-import animations from "@/assets/json_backend/animations.json";
+import { useAnimations } from "@/composables/useAnimations";
+// Legacy JSON fallback for Chapter 1 during transition
+import animationsJSON from "@/assets/json_backend/animations.json";
 import FullScreenIllustrationLoop from "./FullScreenIllustrationLoop.vue";
 import FullScreenIllustrationSplit from "./FullScreenIllustrationSplit.vue";
 import SourceElement from "../../UI/SourceElement.vue";
@@ -22,22 +24,52 @@ const animation = ref(null);
 const totalFrames = ref(null);
 const containerScroll = ref();
 
-const thisAnimation = ref(
-  animations.animations.find((x) => x.id == props.paragraph.animationId)
-);
+// Use Supabase animations with JSON fallback
+const { animations: dbAnimations, fetchAnimations } = useAnimations();
+
+// Resolve the animation: try DB first, fall back to legacy JSON
+const animationSource = computed(() => {
+  if (dbAnimations.value && dbAnimations.value.length > 0) {
+    return dbAnimations.value;
+  }
+  return animationsJSON.animations;
+});
+
+const thisAnimation = ref(null);
+
+// Initialise thisAnimation once the animation source is available
+const resolveAnimation = () => {
+  const source = animationSource.value;
+  thisAnimation.value =
+    source.find((x) => x.id == props.paragraph.animationId) || null;
+};
 
 const activeState = ref({
-  state: !thisAnimation.value?.multiple
-    ? 0
-    : Object.keys(thisAnimation.value.states)[0],
+  state: 0,
   toggle: false,
 });
 
 onMounted(async () => {
+  // Fetch DB animations (composable caches, so this is cheap if already loaded)
+  try {
+    await fetchAnimations();
+  } catch (err) {
+    console.warn("FullScreenIllustration: DB fetch failed, using JSON fallback:", err);
+  }
+
+  // Resolve animation from whichever source is available
+  resolveAnimation();
+
+  // Update activeState now that thisAnimation is resolved
+  if (thisAnimation.value?.multiple && thisAnimation.value?.states) {
+    activeState.value.state = Object.keys(thisAnimation.value.states)[0];
+  }
+
   if (props.paragraph.scroll) return;
   lottie = await loadLottie();
   const id = props.paragraph.animationId;
   var svgContainer = document.getElementById("container" + id);
+  if (!svgContainer || !thisAnimation.value) return;
   animation.value = lottie.loadAnimation({
     speed: 3,
     wrapper: svgContainer,
@@ -104,6 +136,7 @@ const openInfo = () => {
 
 <template>
   <div
+    v-if="thisAnimation"
     ref="containerScroll"
     class="w-screen border-y bg-light text-black border-black -translate-x-custom -ml-20 my-[0] text-small font-mono duration-300"
     :class="[
