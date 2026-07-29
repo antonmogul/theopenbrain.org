@@ -93,6 +93,7 @@ const stackEls = ref([]); // stack folder nodes (for entrance + rect capture)
 const flyerEl = ref(null); // the 3D stage (positioned/scaled onto the folder slot)
 const bookEl = ref(null); // preserve-3d book; rotates portrait→upright
 const rightLeafEl = ref(null); // hinged cover that swings open
+const skinEl = ref(null); // folder look-alike overlay, fades out during the rise
 
 const { fetchCases } = useCaseFiles();
 
@@ -207,6 +208,7 @@ async function open(c, evt) {
   const start = drawerSeed(flyer, r);
   gsap.set(flyer, start); // rotation is part of the seed (-90, landscape)
   gsap.set(right, { rotationY: -180 }); // right cover folded shut over the file
+  gsap.set(skinEl.value, { autoAlpha: 1 }); // skin visible again for this open
   gsap.set(flyer.querySelector(".flyer__close"), { autoAlpha: 0 });
   gsap.set(flyer, { autoAlpha: 1 }); // reveal only after the seed transform is set
 
@@ -233,6 +235,13 @@ async function open(c, evt) {
     ease: "power3.inOut",
     force3D: true,
   })
+    // 1b) Cross-fade the folder skin away once the file is clear of the drawer
+    //     and clearly upright — late enough that the swap isn't perceptible.
+    .to(
+      skinEl.value,
+      { autoAlpha: 0, duration: 0.3 * SPEED, ease: "power1.in" },
+      "-=" + 0.32 * SPEED
+    )
     // 2) Shift to the open-book center as the right cover swings open.
     .to(flyer, { x: openCenter(flyer).x, duration: 0.7 * SPEED, ease: "power2.inOut" }, ">")
     .to(right, { rotationY: 0, duration: 0.7 * SPEED, ease: "power2.inOut" }, "<")
@@ -274,7 +283,10 @@ async function close() {
   tl.to(flyer.querySelector(".flyer__close"), { autoAlpha: 0, duration: 0.15 * SPEED })
     .to(right, { rotationY: -180, duration: 0.5 * SPEED, ease: "power2.inOut" }, "<")
     .to(flyer, { x: pc.x, duration: 0.5 * SPEED, ease: "power2.inOut" }, "<")
-    .to(flyer, { ...seed, rotation: 10, duration: 0.5 * SPEED, ease: "power3.inOut" })
+    // Skin fades back in as the file drops into the slot, so the hand-off back
+    // to the real folder is hidden the same way the outbound one is.
+    .to(skinEl.value, { autoAlpha: 1, duration: 0.3 * SPEED }, "<")
+    .to(flyer, { ...seed, duration: 0.5 * SPEED, ease: "power3.inOut" }, "<")
     .to(flyer, { autoAlpha: 0, duration: 0.15 * SPEED }, "-=0.1");
 }
 </script>
@@ -359,6 +371,12 @@ async function close() {
          then swings open to reveal the two-leaf landscape spread. -->
     <Teleport to="body">
       <div v-if="openCase" ref="flyerEl" class="flyer" :style="{ '--tint': openCase.tint }">
+        <!-- Continuity skin: an exact visual copy of the stack folder (same
+             radius, same raised tab, same shadow) laid over the flyer. It is
+             what you see for the first part of the rise, so the swap from the
+             real folder to this element is invisible; it cross-fades out only
+             once the file is clear of the drawer and reading as upright. -->
+        <div ref="skinEl" class="folder-skin" :style="{ '--tab-x': openCase.tabX + '%' }"></div>
         <button class="flyer__close" @click="close">✕</button>
         <div ref="bookEl" class="book">
           <!-- LEFT half: the cover (front) + the file inside (revealed on open).
@@ -581,6 +599,36 @@ async function close() {
   border-radius: 50%;
   cursor: pointer;
   font-size: 0.9rem;
+}
+
+/*
+ * Continuity skin — a pixel-copy of .folder painted over the flyer so the first
+ * frames of the rise show the SAME object the user clicked. Kept in sync with
+ * .folder / .folder::before by hand; if the folder's radius, tab size or shadow
+ * changes, change it here too or the swap becomes visible again.
+ *
+ * It sits in the leaf's coordinate space, so it inherits the -90° seed rotation
+ * and lies landscape over the drawer slot exactly like the folder does.
+ */
+.folder-skin {
+  position: absolute;
+  inset: 0;
+  background: var(--tint);
+  border-radius: 18px 18px 22px 22px; /* matches .folder */
+  box-shadow: 0 -8px 18px rgb(0 0 0 / 0.18); /* matches .folder */
+  pointer-events: none;
+  z-index: 15;
+}
+/* the raised tab — mirrors .folder::before */
+.folder-skin::before {
+  content: "";
+  position: absolute;
+  top: -26px;
+  left: var(--tab-x, 20%);
+  width: 150px;
+  height: 30px;
+  background: var(--tint);
+  border-radius: 14px 14px 0 0;
 }
 
 /* ---- the two leaves ---- */
