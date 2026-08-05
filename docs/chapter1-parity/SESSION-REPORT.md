@@ -8,6 +8,7 @@ Supabase (`ocenwbkdzmxhsvwlornp`), run through the **verbatim** `useChapter.js` 
 ---
 
 ## #1 ROOT CAUSE (headline)
+
 **`reconstructNesting()` in `useChapter.js` silently drops every level-1 subsection
 header except the last in a consecutive run** — taking its animation, prose, and
 child paragraphs with it. This alone erases ~11 of Chapter 1's ~12 missing
@@ -16,6 +17,7 @@ and their subsection bodies. `useChapter.js:169-193` never flushes the prior
 `currentSubSection` before overwriting it.
 
 ## What was found
+
 - **Section skeleton & body prose:** faithful (10 sections, correct titles/order,
   intro dragon). Divergence is the **illustration layer**, plus subsection bodies lost
   via the nesting bug.
@@ -33,6 +35,7 @@ and their subsection bodies. `useChapter.js:169-193` never flushes the prior
   store before paint; static `source` only feeds caption strings.
 
 ## Ranked root cause (see ROOT-CAUSE.md for full detail)
+
 1. **Nesting flush bug** — CODE — ~11 figures + subsection bodies. 🔴 biggest lever.
 2. **Empty `animation_states`/`animation_variants`** — DATA — 14 dead figures. 🔴
 3. **Missing `switch` config flag** — DATA/code — 4 switch figures. 🟠
@@ -41,15 +44,18 @@ and their subsection bodies. `useChapter.js:169-193` never flushes the prior
 6. **Truncated `infoText`** — DATA — 2 panels. 🟡
 7. **Scroll-transition (`animation_trigger` never "scroll")** — DATA — 2 transitions. 🟡
 8. **AccommodationVergence key typo** — DATA (verify asset). 🟢
+
 - ~~RetinalCellTypes3 name/id mismatch~~ — **RETRACTED** (round-trips correctly).
 - Split-brain seed — **not a cause** (monitor only).
 
 ## Data-fix vs code-fix
+
 - **CODE:** #1 (nesting flush), #4 (fullscreen double-emit). Both touch the **shared**
   transformer → require cross-chapter fixtures before merge (see caveat).
 - **DATA:** #2, #3, #5, #6, #7, #8 — all Chapter-1 ID-scoped → **safe for Chapter 2+.**
 
 ## Codex verdict
+
 Round 1: **VERDICT: GAPS** — substantive and mostly correct. It confirmed the two
 headline root causes (#1, #2) unchanged, caught two of my errors (RetinalCellTypes3 was
 NOT a bug → retracted; transition mis-framed → reframed), and surfaced four real
@@ -59,6 +65,7 @@ re-verified against live data/code before acceptance — none on faith.** Round 
 needed. See ROOT-CAUSE.md §STEP 4.
 
 ## Live-fetched or traced?
+
 **LIVE-FETCHED.** All numbers come from production Supabase run through the real
 transform code. Artifacts committed for reproducibility:
 `_db_transformed_text.json`, `_db_transformed_anims.json`, `_static_anim_states.txt`,
@@ -67,6 +74,7 @@ transform code. Artifacts committed for reproducibility:
 ---
 
 ## Recommended fix sequence for the NEXT (build) run
+
 1. **Fix `reconstructNesting`** to flush each subsection before starting the next
    (push `{subSection:[current]}` into a buffer / result). **Ship with fixtures:**
    consecutive level-1 headers, empty headers, level-2 rows, animation_full+FK rows —

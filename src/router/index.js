@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useGeneral } from "@/stores";
+import { applyChapterAttr } from "@/helper/chapterTheme";
 import HomeView from "@/views/HomeView.vue";
 
 // Helper to get session from localStorage (bypasses supabase-js client issues)
@@ -285,6 +286,12 @@ router.beforeEach(async (to, from) => {
       }
     }
   }
+});
+
+// Chapter colour ramps: brand.css switches on data-chapter on <html>. Runs
+// afterEach (not beforeEach) so a guard redirect can't leave a stale value.
+router.afterEach((to) => {
+  applyChapterAttr(to.params.number);
 });
 
 export default router;
