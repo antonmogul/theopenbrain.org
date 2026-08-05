@@ -10,17 +10,22 @@
  * This is the 3D counterpart to PhrenologyView.vue (the flat-engraving
  * version). Both share the same mock data from @/mocks/phrenology.js.
  *
- * GLB model: drop a skull.glb into public/publicAssets/models/skull.glb.
- * Until that file exists, a placeholder message is shown.
+ * GLB model: public/publicAssets/models/skull.glb ships with the app
+ * (quantized + webp, ~407 KB — see OPENBRAIN-7). The placeholder message
+ * only appears if it fails to load.
  *
  * Data seam: @/mocks/phrenology — swap for Supabase later.
  * Unlisted route: /phrenology-3d (not linked in nav).
  */
-import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import "@google/model-viewer";
 import gsap from "gsap";
-import { PHRENOLOGY_VIEWS, usePhrenology } from "@/mocks/phrenology";
+import { PHRENOLOGY_CITATION, usePhrenology } from "@/mocks/phrenology";
 import { reducedMotionK } from "@/helper/motion";
+
+// Narrow viewports get the detail card as a bottom sheet (see the media query
+// below), so its slide animation runs on the y axis instead of x.
+const isNarrow = () => window.matchMedia("(max-width: 760px)").matches;
 
 /* ── Reduce-motion multiplier (shared convention, src/helper/motion.js) ───── */
 const K = reducedMotionK();
@@ -70,13 +75,15 @@ async function selectRegion(region) {
   const tl = gsap.timeline();
 
   if (!wasOpen) {
-    // Panel slides in from right
-    tl.fromTo(
-      panelEl.value,
-      { xPercent: 108, opacity: 0.4 },
-      { xPercent: 0, opacity: 1, duration: 0.55 * K, ease: "power3.out" },
-      0
-    );
+    // Panel slides in — from the right on wide screens, up from the bottom
+    // (as a sheet) on narrow ones.
+    const from = isNarrow()
+      ? { yPercent: 110, opacity: 0.4 }
+      : { xPercent: 108, opacity: 0.4 };
+    const to = isNarrow()
+      ? { yPercent: 0, opacity: 1, duration: 0.55 * K, ease: "power3.out" }
+      : { xPercent: 0, opacity: 1, duration: 0.55 * K, ease: "power3.out" };
+    tl.fromTo(panelEl.value, from, to, 0);
   } else {
     // Panel content dips & refreshes
     tl.fromTo(
@@ -94,7 +101,7 @@ function closePanel() {
     onComplete: () => (activeRegion.value = null),
   });
   tl.to(panelEl.value, {
-    xPercent: 108,
+    ...(isNarrow() ? { yPercent: 110 } : { xPercent: 108 }),
     opacity: 0.4,
     duration: 0.4 * K,
     ease: "power2.in",
@@ -116,18 +123,18 @@ onMounted(async () => {
     if (modelLoaded.value) return; // debounce
     modelLoaded.value = true;
     const dots = Object.values(hotspotEls.value);
-    gsap.fromTo(
-      dots,
-      { scale: 0, opacity: 0 },
-      {
-        scale: 1,
-        opacity: 1,
-        duration: 0.35 * K,
-        ease: "back.out(2.2)",
-        stagger: 0.06 * K,
-        delay: 0.3 * K,
-      }
-    );
+    // clearProps is essential: model-viewer fades away-facing hotspots via a
+    // shadow ::slotted(*) opacity rule, which any leftover inline opacity
+    // would override — the dots would then bleed through the skull forever.
+    gsap.from(dots, {
+      scale: 0,
+      opacity: 0,
+      duration: 0.35 * K,
+      ease: "back.out(2.2)",
+      stagger: 0.06 * K,
+      delay: 0.3 * K,
+      clearProps: "opacity,scale,transform",
+    });
   }
 
   // Already loaded before we attached the listener?
@@ -149,7 +156,39 @@ const CAMERA_PRESETS = {
 
 function orbitTo(viewId) {
   if (!viewerEl.value || !CAMERA_PRESETS[viewId]) return;
+  // model-viewer eases this natively (interpolation-decay on the element);
+  // under reduced motion skip the glide entirely.
   viewerEl.value.cameraOrbit = CAMERA_PRESETS[viewId];
+  if (K < 1) viewerEl.value.jumpCameraToGoal();
+}
+
+/* ── Keyboard navigation between hotspots ─────────────────────────────────
+ * Arrow keys cycle focus through the numbered dots (the primary interactive
+ * elements); Enter/Space activates the focused one natively (they're real
+ * <button>s); Escape closes the detail card.
+ *
+ * Bound on the dot buttons with .stop — NOT on <model-viewer> — because the
+ * component's own camera-controls also handle arrow keys (orbit nudges) via a
+ * shadow-DOM listener higher in the composed path. Stopping propagation at
+ * the button keeps "cycle hotspots" and "orbit camera" from firing together;
+ * arrows with the viewer itself focused still orbit as model-viewer intends.
+ */
+function onStageKeydown(e) {
+  if (e.key === "Escape") {
+    closePanel();
+    return;
+  }
+  const forward = e.key === "ArrowRight" || e.key === "ArrowDown";
+  const back = e.key === "ArrowLeft" || e.key === "ArrowUp";
+  if (!forward && !back) return;
+  e.preventDefault();
+  const dots = allRegions.value
+    .map((r) => hotspotEls.value[r.n])
+    .filter(Boolean);
+  if (!dots.length) return;
+  const i = dots.indexOf(document.activeElement);
+  const next = dots[(i + (forward ? 1 : -1) + dots.length) % dots.length];
+  next.focus();
 }
 </script>
 
@@ -179,8 +218,6 @@ function orbitTo(viewId) {
         camera-controls
         touch-action="pan-y"
         camera-orbit="0deg 75deg auto"
-        min-camera-orbit="auto auto auto"
-        max-camera-orbit="auto auto auto"
         interaction-prompt="auto"
         interpolation-decay="100"
         class="viewer"
@@ -198,6 +235,7 @@ function orbitTo(viewId) {
           :class="{ 'dot--on': activeRegion?.n === r.n }"
           :aria-label="`${r.n} — ${r.name}`"
           @click="selectRegion(r)"
+          @keydown.stop="onStageKeydown"
         >
           <span class="dot__num">{{ r.n }}</span>
           <span v-if="activeRegion?.n === r.n" class="dot__label">
@@ -254,6 +292,7 @@ function orbitTo(viewId) {
         >Orbit: click + drag · Zoom: scroll · Tap a numbered zone to learn
         more</span
       >
+      <span class="phreno3d__cite">{{ PHRENOLOGY_CITATION }}</span>
       <a href="/phrenology" class="phreno3d__link">← 2D version</a>
     </footer>
   </div>
@@ -328,6 +367,9 @@ function orbitTo(viewId) {
   background: transparent;
   transition: opacity 0.5s ease;
   --poster-color: transparent;
+  /* Hotspots whose data-normal faces away from the camera fade out entirely
+     instead of bleeding through the skull at reduced opacity. */
+  --min-hotspot-opacity: 0;
 }
 
 /* ── hotspots ── */
@@ -339,9 +381,9 @@ function orbitTo(viewId) {
   border: none;
   background: none;
   cursor: pointer;
-  /* Start hidden — GSAP animates in after model load */
-  opacity: 0;
-  transform: scale(0);
+  /* No base opacity/transform here: the viewer itself is opacity-0 until the
+     model loads (so the entrance gsap.from can't flash), and inline opacity
+     must never linger — see onModelReady. */
 }
 .dot__num {
   display: grid;
@@ -499,8 +541,33 @@ function orbitTo(viewId) {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   font-size: 0.65rem;
   opacity: 0.4;
+}
+.phreno3d__cite {
+  font-style: italic;
+  text-align: center;
+}
+
+/* ── narrow viewports: detail card becomes a bottom sheet ── */
+@media (max-width: 760px) {
+  .card {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    max-height: 55vh;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -12px 40px rgb(0 0 0 / 0.45);
+    padding: 1.5rem 1.5rem 2rem;
+  }
+  .phreno3d__foot {
+    flex-direction: column;
+    gap: 0.35rem;
+    text-align: center;
+  }
 }
 .phreno3d__link {
   color: var(--violet-soft);
