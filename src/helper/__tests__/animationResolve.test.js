@@ -3,6 +3,7 @@ import {
   resolveAnimationRecord,
   isConfigBearing,
   resolveAnimationConfig,
+  lottieAssetOk,
 } from "@/helper/animationResolve";
 
 /*
@@ -87,5 +88,36 @@ describe("resolveAnimationConfig", () => {
     const prop = { name: "X", id: "animationUnknown", title: "X" };
     expect(resolveAnimationConfig(prop, JSON_LIST, warn)).toBe(prop);
     expect(warn).toHaveBeenCalledOnce();
+  });
+});
+
+describe("lottieAssetOk", () => {
+  const res = (ok, type) => ({
+    ok,
+    headers: { get: (h) => (h === "content-type" ? type : null) },
+  });
+
+  it("accepts a real JSON asset", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(res(true, "application/json"));
+    expect(await lottieAssetOk("animationEye", fetchImpl)).toBe(true);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "/publicAssets/animations/animationEye.json",
+      { method: "HEAD" }
+    );
+  });
+
+  it("rejects the SPA rewrite (200 + text/html) production serves for misses", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(res(true, "text/html"));
+    expect(await lottieAssetOk("animationGhost", fetchImpl)).toBe(false);
+  });
+
+  it("rejects an honest 404 and network failure", async () => {
+    expect(
+      await lottieAssetOk("x", vi.fn().mockResolvedValue(res(false, null)))
+    ).toBe(false);
+    expect(
+      await lottieAssetOk("x", vi.fn().mockRejectedValue(new Error("net")))
+    ).toBe(false);
+    expect(await lottieAssetOk(undefined, vi.fn())).toBe(false);
   });
 });

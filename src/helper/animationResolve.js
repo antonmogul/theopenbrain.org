@@ -61,6 +61,26 @@ export function isConfigBearing(animation) {
 }
 
 /**
+ * Does the figure's Lottie asset actually exist? A resolved DB record is no
+ * guarantee: production serves the SPA with `serve -s`, which rewrites a
+ * MISSING /publicAssets/animations/<id>.json to index.html with HTTP 200 +
+ * text/html — lottie-web then throws an uncaught responseText error and the
+ * figure renders an empty stage. Checking status AND content-type catches
+ * both the honest-404 (vite preview) and the SPA-rewrite (production) cases.
+ */
+export async function lottieAssetOk(id, fetchImpl = fetch) {
+  if (!id) return false;
+  try {
+    const res = await fetchImpl(`/publicAssets/animations/${id}.json`, {
+      method: "HEAD",
+    });
+    return res.ok && (res.headers.get("content-type") || "").includes("json");
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Resolve the config object for a figure passed as a prop: the prop itself
  * when it is config-bearing (DB path), else the JSON record (legacy path),
  * else the bare prop — with a warning, since a config-less figure renders but

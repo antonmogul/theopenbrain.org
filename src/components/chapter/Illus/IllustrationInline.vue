@@ -14,9 +14,12 @@
 // FullScreenIllustration on `animationFull` paragraphs), so this wrapper renders
 // nothing for `scroll`/`skip`.
 
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useAnimations } from "@/composables/useAnimations";
-import { resolveAnimationRecord } from "@/helper/animationResolve";
+import {
+  resolveAnimationRecord,
+  lottieAssetOk,
+} from "@/helper/animationResolve";
 // Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
 import animationJSON from "@/assets/json_backend/animations.json";
 import { mobileMode } from "@/helper/illustrationMobile";
@@ -53,6 +56,27 @@ const animation = computed(() =>
 
 const mode = computed(() => mobileMode(animation.value));
 
+// Interactive figures mount a Lottie, so the asset must really exist — a DB
+// record whose /publicAssets/animations/<id>.json is missing would otherwise
+// render an empty stage (production's SPA rewrite even answers 200+HTML for
+// it, making lottie-web throw). null = still checking → render nothing yet.
+const assetOk = ref(null);
+watch(
+  () => (mode.value === "interactive" ? props.animationId : null),
+  async (id) => {
+    if (!id) return;
+    assetOk.value = null;
+    const ok = await lottieAssetOk(id);
+    assetOk.value = ok;
+    if (!ok) {
+      console.warn(
+        `[animations] "${id}" resolves but its Lottie asset is missing — skipping inline figure`
+      );
+    }
+  },
+  { immediate: true }
+);
+
 // Unique mount id so multiple inline figures don't collide on the global id
 // the desktop pane also uses. Threaded into IllustrationComp via `scopeId`.
 const scopeId = computed(() => `${props.animationId}--inline`);
@@ -75,10 +99,15 @@ const youtubeSrc = computed(() =>
 </script>
 
 <template>
+  <!-- Interactive figures collapse only on a CONFIRMED missing asset
+       (assetOk === false). While the check runs the figure renders with its
+       reserved empty stage, so slow connections see no layout pop-in. -->
   <figure
     v-if="
       animation &&
-      (mode === 'interactive' || mode === 'static' || mode === 'fullscreen')
+      (mode === 'static' ||
+        mode === 'fullscreen' ||
+        (mode === 'interactive' && assetOk !== false))
     "
     class="illu-inline my-12 font-mono text-small"
   >
@@ -101,7 +130,13 @@ const youtubeSrc = computed(() =>
     <!-- Interactive: render the live figure inline, scoped so it doesn't
          collide with the (hidden) desktop pane's global ids. -->
     <div v-if="mode === 'interactive'" class="illu-inline__stage">
-      <IllustrationComp :animation="animation" :scope-id="scopeId" />
+      <!-- Mount only once the asset check passes; the stage's min-height
+           reserves the space in the meantime. -->
+      <IllustrationComp
+        v-if="assetOk === true"
+        :animation="animation"
+        :scope-id="scopeId"
+      />
     </div>
 
     <!-- Static: plain image or embedded video, full width. -->
@@ -123,12 +158,15 @@ const youtubeSrc = computed(() =>
         "
         allowfullscreen
       ></iframe>
+      <!-- Same missing-file failure mode as the Lottie assets: hide the broken
+           image rather than showing the browser's broken-image glyph. -->
       <img
         v-else
         class="w-full h-auto"
         :src="posterSrc"
         :alt="title"
         loading="lazy"
+        @error="(e) => (e.target.style.display = 'none')"
       />
       <SourceElement v-if="animation.source" :source="animation.source" />
     </template>
