@@ -9,10 +9,18 @@
  * relations would return, so the transform later is near-identity.
  */
 
-// Accent purples pulled from the Figma exploration (the staggered folder stack).
-// Kept local to the mock so tweaking the demo palette needs no token changes.
-// Alternating purples, front (bottom) → back (top), matching the drawer look.
-const FOLDER_TINTS = ["#a78bfa", "#8b5cf6", "#c4b5fd", "#7c3aed"];
+// Folder tints consume the chapter colour ramp from brand.css (the ramp's own
+// comments name "folder mid-tones" as the intent) instead of the old hardcoded
+// Tailwind violets. The values resolve wherever the folder renders: under a
+// chapter route they follow that chapter's data-chapter ramp; on the unlisted
+// /case-cabinet route they fall back to the neutral :root ramp (Ch1 purple).
+// Alternating shades, front (bottom) → back (top), matching the drawer look.
+const FOLDER_TINTS = [
+  "rgb(var(--color-chapter-soft))",
+  "rgb(var(--color-chapter))",
+  "rgb(var(--color-chapter-pale))",
+  "rgb(var(--color-chapter-deep))",
+];
 
 /**
  * @typedef {Object} CaseNote

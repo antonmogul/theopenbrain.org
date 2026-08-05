@@ -2,33 +2,42 @@
 /*
  * CaseCabinetView — "The Case Cabinet" prototype (demo).
  *
- * A drawer of patient-case folders. Clicking one makes a single purple element
- * grow out of that exact folder's slot, tilt upright, and unfold into a two-leaf
- * spread (brain + numbered regions | case transcript). Close reverses it.
+ * A drawer of patient-case folders. Clicking one makes the folder itself grow
+ * out of its slot into a two-leaf spread (brain + numbered regions | case
+ * transcript). Close reverses it — same system, same maths.
  *
- * MORPH MODEL — one dedicated "flyer" element, animated with plain GSAP tweens.
- * We deliberately do NOT reparent or Flip a v-for node (that corrupts Vue's
- * virtual DOM and fights the scoped-CSS cascade). Instead:
- *   • The stack folders are static list items.
- *   • On click we read the clicked folder's screen rect, seed the flyer to that
- *     exact rect (position:fixed), then tween width/height/top/left/rotation to
- *     the centered open size. The flyer's content cross-lives inside it, so the
- *     same visible object grows and unfolds — no hand-off between two elements.
+ * MORPH MODEL — GSAP Flip on the REAL clicked v-for node, both directions.
+ * open() records the folder's drawer state, promotes it to `.folder--flying`
+ * (fixed position, open-card size) and Flip.from() animates the diff. close()
+ * records the open state, demotes the class, and Flip.from() animates it home.
+ * The teleported `.flyer` only carries the spread's CONTENTS (illustration,
+ * hinged notes page); it fades in over the arrived folder and out before the
+ * return flight, so one continuous element does all the travelling.
  *
  * Data comes from the mock seam `@/mocks/caseFiles` — swap for Supabase later.
- * Unlisted route (like /styleguide): open /cabinet directly.
+ * Unlisted route (like /styleguide): open /case-cabinet directly.
  */
 import { ref, onMounted, nextTick } from "vue";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { useCaseFiles } from "@/mocks/caseFiles";
 import { readSpeed, readScrub } from "@/helper/debugFlags";
+import { reducedMotionK } from "@/helper/motion";
 
 gsap.registerPlugin(Flip);
 
 const cases = ref([]);
 const openCase = ref(null); // the case object being shown, or null
 const animating = ref(false);
+/*
+ * .folder--flying (open-card geometry) is tracked separately from openCase:
+ * during close() the class must come off while the spread is still mounted, so
+ * Flip can diff "open card" → "drawer slot" and fly the folder home under the
+ * still-visible veil. returningId marks that homebound folder so CSS can keep
+ * it above the veil and exempt from the stack dimming until the flight lands.
+ */
+const flyingId = ref(null); // folder carrying .folder--flying
+const returningId = ref(null); // folder flying home during close()
 
 /*
  * ── Timeline scrubber (dev tool) ──────────────────────────────────────────
@@ -105,9 +114,8 @@ function resumeTimeline() {
   scrubbing.value = false;
   tl.play();
 }
-const stackEls = ref([]); // stack folder nodes (for entrance + rect capture)
-const flyerEl = ref(null); // the 3D stage (positioned/scaled onto the folder slot)
-const bookEl = ref(null); // preserve-3d book; rotates portrait→upright
+const stackEls = ref([]); // stack folder nodes (entrance stagger + Flip targets)
+const flyerEl = ref(null); // teleported spread contents (fades over the folder)
 const rightLeafEl = ref(null); // hinged cover that swings open
 
 const { fetchCases } = useCaseFiles();
@@ -128,82 +136,12 @@ function setStackRef(el, i) {
   if (el) stackEls.value[i] = el;
 }
 
-/*
- * Compute the transform that makes the fixed, full-size flyer *look like* the
- * small folder sitting in its stack slot. The flyer's layout box is always the
- * open size (960×640, centered). We translate+scale it down onto the folder's
- * on-screen rect; animating that transform back to identity is the morph.
- * Transforms don't trigger layout and don't collide with Vue's reactive :style,
- * which is why this is reliable where animating width/top was not.
- */
-/*
- * Seed the flyer so it starts as the FRONT FOLDER lying flat in the drawer, then
- * (in phase 1) it pivots up — rotating clockwise toward upright while shrinking —
- * like lifting a file out of the stack. To read as the landscape drawer folder,
- * the portrait leaf is seeded rotated -90° and scaled so its (rotated) width
- * spans the folder width; the pivot origin is the folder's bottom-left corner so
- * it swings up-and-right from where it sits. Phase 1 tweens rotation -90→0 (i.e.
- * clockwise to upright portrait) + scale down + move to center.
- */
-function drawerSeed(flyer, r) {
-  const s = leafSize(flyer);
-  /*
-   * The file is a rigid object: it ROTATES out of the drawer, it does not
-   * deform. So the seed uses a single UNIFORM scale plus a -90° rotation —
-   * never scaleX ≠ scaleY. (Matching the folder's box on both axes would mean
-   * scaling x1.92 by one axis and x0.47 by the other: the folder is aspect
-   * ~3.07, the leaf ~0.75. That stretch is what reads as "morphing" rather
-   * than rotating, and it distorts the tab and everything else inside.)
-   *
-   * Lying on its side (-90°) the portrait leaf presents its HEIGHT horizontally
-   * and its WIDTH vertically. We match the leaf's width to the folder's height,
-   * so the file spans the drawer slot's thickness and keeps its proportions.
-   * The overhang past the folder's width is correct: a portrait file really is
-   * longer than the drawer front it sits behind.
-   *
-   * Origin is "left top" to match the flyer's top-left anchor at viewport
-   * centre; rotating about that corner swings the body up-and-right out of the
-   * slot, so the pivot reads as lifting the file rather than sliding it.
-   */
-  // Lying at -90° the leaf's HEIGHT runs horizontally, so match that to the
-  // folder's width — the file spans the drawer front, and its (portrait) width
-  // becomes the visible depth, overhanging the slot as a real file would.
-  const scale = r.width / s.h;
-  // Rotating -90° about the top-left corner puts the box ABOVE that corner, so
-  // drop the anchor by the rotated height (s.w * scale) to land it in the slot.
-  return {
-    x: r.left - window.innerWidth / 2,
-    y: r.top - window.innerHeight / 2 + s.w * scale,
-    scaleX: scale,
-    scaleY: scale,
-    rotation: -90,
-    transformOrigin: "left top",
-  };
-}
-
 // Global slow-mo multiplier for tuning. 1 is ship speed; ?slow=N slows the whole
 // sequence by N without touching the individual beat durations, so the timings
-// that ship are the ones being judged.
-const SPEED = readSpeed(SEARCH);
-
-// Leaf layout size — read from offsetWidth/Height, which are TRANSFORM-INDEPENDENT
-// (getBoundingClientRect is not, so it gives wrong numbers mid-animation).
-function leafSize(flyer) {
-  return { w: flyer.offsetWidth, h: flyer.offsetHeight };
-}
-// The flyer (one leaf) is anchored top-left at viewport center, and every tween
-// uses transformOrigin "left top" (see drawerSeed), so centring means shifting
-// the top-left corner back by half the leaf's size.
-function portraitCenter(flyer) {
-  const s = leafSize(flyer);
-  return { x: -s.w / 2, y: -s.h / 2 };
-}
-// Open book, centered as two leaves straddling the spine at viewport center:
-// left leaf shifts a full width left; vertically centered.
-function openCenter(flyer) {
-  const s = leafSize(flyer);
-  return { x: -s.w, y: -s.h / 2 };
-}
+// that ship are the ones being judged. K additionally collapses everything to
+// ~0 under reduced motion (project convention, see PhrenologyView).
+const K = reducedMotionK();
+const SPEED = readSpeed(SEARCH) * K;
 
 /*
  * The flyer's layout box is ONE portrait leaf. It mounts hidden; we seed it onto
@@ -237,6 +175,7 @@ async function open(c, evt) {
   });
 
   openCase.value = c;
+  flyingId.value = c.id;
   await nextTick();
   const flyer = flyerEl.value;
   const right = rightLeafEl.value;
@@ -303,27 +242,61 @@ async function open(c, evt) {
     );
 }
 
+/*
+ * Mirror of open(): same Flip, opposite direction. We capture the folder's
+ * open-card state, demote it back to a stack item, and let Flip.from() animate
+ * the diff — the identical maths the outbound flight used, so the two read as
+ * one system. Flip's immediateRender holds the folder at the open position
+ * until its slot in the timeline, so nothing jumps when the class comes off.
+ */
 async function close() {
   if (!openCase.value || animating.value) return;
   animating.value = true;
   const flyer = flyerEl.value;
   const right = rightLeafEl.value;
-  const idx = cases.value.indexOf(openCase.value);
-  const r = stackEls.value[idx]?.getBoundingClientRect();
-  const pc = portraitCenter(flyer);
-  const seed = r ? drawerSeed(flyer, r) : { scaleX: 0.9, scaleY: 0.9 };
+  const c = openCase.value;
+  const folderNode = stackEls.value[cases.value.indexOf(c)];
+
+  // No node to fly home (shouldn't happen — openCase always comes from cases):
+  // just drop the spread rather than animating a detached ghost.
+  if (!folderNode) {
+    openCase.value = null;
+    flyingId.value = null;
+    animating.value = false;
+    return;
+  }
+
+  const state = Flip.getState(folderNode, {
+    props: "borderRadius,backgroundColor",
+  });
+  // Demote the folder to its stack layout. returningId keeps it above the veil
+  // and disables the hover transition so CSS doesn't fight Flip's per-tick
+  // positioning on the way home.
+  flyingId.value = null;
+  returningId.value = c.id;
+  await nextTick();
+
+  // Created here (immediateRender re-seeds the folder at the open card), played
+  // later in the timeline — after the cover has swung shut over it.
+  const flip = Flip.from(state, {
+    duration: 0.6 * SPEED,
+    ease: "power3.inOut",
+    absolute: true,
+    scale: false, // same as open(): tween the box, don't distort the tab
+  });
 
   const tl = trackTimeline(
     gsap.timeline({
       onComplete: () => {
         openCase.value = null;
+        returningId.value = null;
         animating.value = false;
       },
     }),
     "close"
   );
-  // Reverse the open: swing cover shut (returning to portrait center) → sink back
-  // down into the drawer slot behind the front files.
+  // Reverse the open, beat for beat: contents away → cover swings shut → the
+  // spread fades out over the folder → the folder Flips back into its slot.
   tl.to(flyer.querySelector(".flyer__close"), {
     autoAlpha: 0,
     duration: 0.15 * SPEED,
@@ -333,11 +306,8 @@ async function close() {
       { rotationY: -180, duration: 0.5 * SPEED, ease: "power2.inOut" },
       "<"
     )
-    .to(flyer, { x: pc.x, duration: 0.5 * SPEED, ease: "power2.inOut" }, "<")
-    // Skin fades back in as the file drops into the slot, so the hand-off back
-    // to the real folder is hidden the same way the outbound one is.
-    .to(flyer, { ...seed, duration: 0.5 * SPEED, ease: "power3.inOut" }, "<")
-    .to(flyer, { autoAlpha: 0, duration: 0.15 * SPEED }, "-=0.1");
+    .to(flyer, { autoAlpha: 0, duration: 0.2 * SPEED }, ">-" + 0.15 * SPEED)
+    .add(flip, ">-" + 0.05 * SPEED);
 }
 </script>
 
@@ -403,7 +373,8 @@ async function close() {
         class="folder"
         :class="{
           'folder--locked': !c.openable,
-          'folder--flying': openCase && openCase.id === c.id,
+          'folder--flying': flyingId === c.id,
+          'folder--returning': returningId === c.id,
         }"
         :style="{
           '--tint': c.tint,
@@ -432,7 +403,7 @@ async function close() {
         :style="{ '--tint': openCase.tint }"
       >
         <button class="flyer__close" @click="close">✕</button>
-        <div ref="bookEl" class="book">
+        <div class="book">
           <!-- LEFT half: the cover (front) + the file inside (revealed on open).
                This leaf never moves, so the tab lives here — pinned to its LEFT
                (outer) edge, the far side from the spine. -->
@@ -547,19 +518,23 @@ async function close() {
   height: 480px;
   transition: opacity 0.3s;
 }
-/* Dim the drawer behind the opened file — but never the flying folder itself,
-   which has left the stack visually and must stay at full strength. */
-.stack--dimmed .folder:not(.folder--flying) {
+/* Dim the drawer behind the opened file — but never the flying folder itself
+   (outbound or homebound), which has left the stack visually and must stay at
+   full strength. */
+.stack--dimmed .folder:not(.folder--flying):not(.folder--returning) {
   opacity: 0.25;
 }
+/* Open-card leaf dimensions, declared ONCE at :root because .folder (in .stack)
+   and .flyer (teleported to <body>) live in different subtrees and custom
+   properties don't cross between them. */
+:global(:root) {
+  --cc-leaf-w: min(480px, 46vw); /* one leaf = half the open landscape width */
+  --cc-leaf-h: min(640px, 61.33vw); /* portrait height */
+}
 .folder {
-  --tint: #8b5cf6;
+  --tint: rgb(var(--color-chapter));
   --depth: 0;
   --lip: 84px; /* vertical step between folders (how much of each shows) */
-  /* Open-card dimensions, mirrored from .flyer so .folder--flying can size
-     itself against them (custom properties don't cross to a different subtree). */
-  --leaf-w: min(480px, 46vw);
-  --leaf-h: min(640px, 61.33vw);
   position: absolute;
   left: 0;
   right: 0;
@@ -602,15 +577,23 @@ async function close() {
      it animates, so a CSS translate here would be overwritten mid-flight and
      the element would land off-screen. calc() puts the left leaf's right edge
      on the viewport's centre line (the spine). */
-  left: calc(50% - var(--leaf-w, min(480px, 46vw)));
-  top: calc(50% - var(--leaf-h, min(640px, 61.33vw)) / 2);
+  left: calc(50% - var(--cc-leaf-w));
+  top: calc(50% - var(--cc-leaf-h) / 2);
   right: auto;
   bottom: auto;
   transform: none;
-  width: var(--leaf-w, min(480px, 46vw));
-  height: var(--leaf-h, min(640px, 61.33vw));
+  width: var(--cc-leaf-w);
+  height: var(--cc-leaf-h);
   border-radius: 18px 0 0 18px;
   z-index: 210;
+}
+/* Homebound flight (close). Flip owns the geometry; this only (a) keeps the
+   folder above the veil — !important because the stacking z-index is set
+   inline per folder — and (b) kills the hover transition so CSS doesn't lerp
+   Flip's per-tick positioning on the way down. */
+.folder--returning {
+  z-index: 210 !important;
+  transition: none;
 }
 /* Its raised tab keeps riding the outer (left) edge as it flies. */
 .folder--flying::before {
@@ -656,16 +639,14 @@ async function close() {
    the file illustration and the hinged notes page. It must therefore align
    exactly with .folder--flying's open box, or you see two offset folders. */
 .flyer {
-  --tint: #8b5cf6;
-  --leaf-w: min(480px, 46vw); /* one leaf = half the open landscape width */
-  --leaf-h: min(640px, 61.33vw); /* portrait height */
+  --tint: rgb(var(--color-chapter));
   position: fixed;
   /* Same geometry as .folder--flying: left leaf's right edge on the centre line. */
-  top: calc(50% - var(--leaf-h) / 2);
-  left: calc(50% - var(--leaf-w));
+  top: calc(50% - var(--cc-leaf-h) / 2);
+  left: calc(50% - var(--cc-leaf-w));
   z-index: 200;
-  width: var(--leaf-w);
-  height: var(--leaf-h);
+  width: var(--cc-leaf-w);
+  height: var(--cc-leaf-h);
   perspective: 2000px;
   will-change: transform;
   /* Start hidden; open() seeds the transform onto the folder slot, THEN reveals,
@@ -683,7 +664,7 @@ async function close() {
 .flyer__close {
   position: absolute;
   top: 14px;
-  right: calc(-1 * var(--leaf-w) + 16px);
+  right: calc(-1 * var(--cc-leaf-w) + 16px);
   z-index: 20;
   display: grid;
   place-items: center;
@@ -697,15 +678,6 @@ async function close() {
   font-size: 0.9rem;
 }
 
-/*
- * Continuity skin — a pixel-copy of .folder painted over the flyer so the first
- * frames of the rise show the SAME object the user clicked. Kept in sync with
- * .folder / .folder::before by hand; if the folder's radius, tab size or shadow
- * changes, change it here too or the swap becomes visible again.
- *
- * It sits in the leaf's coordinate space, so it inherits the -90° seed rotation
- * and lies landscape over the drawer slot exactly like the folder does.
- */
 /* ---- the two leaves ---- */
 .leaf {
   padding: 2rem;
