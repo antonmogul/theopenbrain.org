@@ -85,27 +85,26 @@ function buildContent(paragraph, opts = {}) {
     blocks.push({ type: "text", content: paragraph.text });
   }
 
-  // Break section steps
-  if (paragraph.type === "breakSection" && paragraph.steps) {
+  // Break section (with or without steps)
+  if (paragraph.type === "breakSection") {
     blocks.push({
       type: "break_section",
       title: paragraph.title || "",
-      steps: paragraph.steps,
+      ...(paragraph.steps ? { steps: paragraph.steps } : {}),
     });
   }
 
-  // Break video
-  if (
-    paragraph.type === "breakVideo" ||
-    (paragraph.type && paragraph.type !== "breakSection")
-  ) {
-    if (!paragraph.text && paragraph.title) {
-      blocks.push({
-        type: "break_video",
-        title: paragraph.title,
-        videoSlug: paragraph.videoSlug || null,
-      });
-    }
+  // Break video — only when the type is explicitly "breakVideo" (the old
+  // catch-all `type !== "breakSection"` minted break_video blocks for
+  // unrelated typed paragraphs)
+  if (paragraph.type === "breakVideo") {
+    blocks.push({
+      type: "break_video",
+      title: paragraph.title || "",
+      videoSlug: paragraph.videoSlug || null,
+      // No text here: descriptive text already round-trips via the separate
+      // "text" block pushed above — one source of truth on the read side.
+    });
   }
 
   // Image
@@ -137,6 +136,21 @@ function buildContent(paragraph, opts = {}) {
 // using subsection_level (0=top, 1=subSection, 2=subSubSection) and
 // is_subsection_header to mark section boundaries.
 
+// Display flags stored in the content JSONB so useChapter.js can round-trip
+// them onto the animation object (OPENBRAIN-10): start/middel/end drive
+// StartEndIcon, transition marks scroll-transition figures. stage has no
+// consumer yet — carried anyway so re-seeding is lossless.
+function animationFlagsOf(animation) {
+  if (!animation) return null;
+  const flags = {};
+  if (animation.start) flags.start = true;
+  if (animation.middel) flags.middel = true;
+  if (animation.end) flags.end = true;
+  if (animation.transition) flags.transition = true;
+  if (animation.stage) flags.stage = animation.stage;
+  return Object.keys(flags).length > 0 ? flags : null;
+}
+
 function flattenParagraphs(items, level = 0) {
   const result = [];
 
@@ -144,12 +158,18 @@ function flattenParagraphs(items, level = 0) {
     // ── subSection array (level 1 nesting) ──
     if (item.subSection) {
       for (const sub of item.subSection) {
-        // SubSection header
+        // SubSection header — content carries the animation display flags
+        const headerContent = buildContent(
+          {},
+          { title: sub.title, headingLevel: 3 }
+        );
+        const subFlags = animationFlagsOf(sub.animation);
+        if (subFlags) headerContent.animationFlags = subFlags;
         result.push({
           id: sub.id,
           is_subsection_header: true,
           subsection_level: 1,
-          content: buildContent({}, { title: sub.title, headingLevel: 3 }),
+          content: headerContent,
           content_text: sub.title || "",
           animation: sub.animation || null,
         });
@@ -164,11 +184,14 @@ function flattenParagraphs(items, level = 0) {
     // ── subSubSection array (level 2 nesting) ──
     if (item.subSubSection) {
       for (const subsub of item.subSubSection) {
+        const subsubContent = buildContent(subsub);
+        const subsubFlags = animationFlagsOf(subsub.animation);
+        if (subsubFlags) subsubContent.animationFlags = subsubFlags;
         result.push({
           id: subsub.id,
           is_subsection_header: false,
           subsection_level: 2,
-          content: buildContent(subsub),
+          content: subsubContent,
           content_text: subsub.text
             ? subsub.text.replace(/<[^>]+>/g, "").slice(0, 200)
             : "",
@@ -185,11 +208,14 @@ function flattenParagraphs(items, level = 0) {
     }
 
     // ── Regular paragraph ──
+    const paraContent = buildContent(item);
+    const paraFlags = animationFlagsOf(item.animation);
+    if (paraFlags) paraContent.animationFlags = paraFlags;
     result.push({
       id: item.id,
       is_subsection_header: false,
       subsection_level: level,
-      content: buildContent(item),
+      content: paraContent,
       content_text: item.text
         ? item.text.replace(/<[^>]+>/g, "").slice(0, 200)
         : "",
@@ -399,6 +425,9 @@ async function migrate() {
       if (fp.animation?.name) {
         const key = animationNameToKey(fp.animation.name);
         paraAnimId = animLookup[key] || animLookup[key?.toLowerCase()] || null;
+        // Keep the real animation name here — the dashboard block editor uses
+        // animation_trigger as a display-label fallback. The transition flag
+        // travels in content.animationFlags instead (see animationFlagsOf).
         animTrigger = fp.animation.name;
         if (paraAnimId) linkedAnimations++;
       }

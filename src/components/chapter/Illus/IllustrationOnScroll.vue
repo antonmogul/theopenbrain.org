@@ -30,6 +30,8 @@
 import { ref, watch, onMounted, onUnmounted } from "vue";
 import { addH, removeH } from "@/helper/general";
 import { loadLottie } from "@/composables/useLottie";
+import { resolveAnimationConfig } from "@/helper/animationResolve";
+// Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
 import animationJSON from "@/assets/json_backend/animations.json";
 
 let lottie;
@@ -49,10 +51,11 @@ const activeState = ref({
   state: 0,
 });
 
+// DB-shaped props carry their config (loopSection etc.); Chapter 1's bare
+// stubs fall back to the JSON record — same pattern as IllustrationComp.
+const info = resolveAnimationConfig(props.animation, animationJSON.animations);
+
 const replay = () => {
-  const info = animationJSON.animations.find((x) => {
-    return x.id == props.animation.id;
-  });
   if (!info.loopSection) {
     animationLottie.goToAndPlay(0, true);
   } else {

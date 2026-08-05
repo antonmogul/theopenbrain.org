@@ -9,7 +9,9 @@ import { addH, removeH } from "@/helper/general";
 
 let lottie;
 
-import animationJSON from "@/assets/json_backend/animations.json";
+// (No animation-source lookup here: this component only builds asset paths
+// from the id of whatever animation object the parent passes — OPENBRAIN-10
+// audit found nothing else to resolve.)
 
 const props = defineProps({
   animation: Object,

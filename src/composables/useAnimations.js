@@ -4,6 +4,11 @@ import { clog, cgroup } from "@/helper/chapterDebug";
 
 // Module-level cache so multiple components share the same data
 const animationsCache = new Map();
+// In-flight dedup: the cache only fills once a fetch COMPLETES, so dozens of
+// figures mounting in the same tick (e.g. Chapter 1 mobile renders ~24 inline
+// wrappers) would each fire their own Supabase request trio. Everyone who
+// arrives while a fetch is running awaits that same promise instead.
+let inFlightFetch = null;
 
 /**
  * Composable to fetch animations from Supabase and transform them
@@ -30,6 +35,22 @@ export function useAnimations() {
       return { data: animations.value, error: null };
     }
 
+    // Join a fetch already in progress rather than duplicating it.
+    if (inFlightFetch) {
+      const result = await inFlightFetch;
+      if (result.data) animations.value = result.data;
+      return result;
+    }
+
+    inFlightFetch = doFetch();
+    try {
+      return await inFlightFetch;
+    } finally {
+      inFlightFetch = null;
+    }
+  }
+
+  async function doFetch() {
     loading.value = true;
     error.value = null;
 
@@ -139,7 +160,7 @@ export function useAnimations() {
       });
 
       animations.value = transformed;
-      animationsCache.set(cacheKey, transformed);
+      animationsCache.set("all", transformed);
       loading.value = false;
       return { data: transformed, error: null };
     } catch (err) {
