@@ -139,6 +139,21 @@ const routes = [
     name: "case-cabinet",
     component: () => import("../views/CaseCabinetView.vue"),
   },
+  {
+    // Phrenology skull prototype (History chapter, Widget 1). Placeholder SVG
+    // skull art until the Figma engravings are exported. Not linked in nav;
+    // open /phrenology directly.
+    path: "/phrenology",
+    name: "phrenology",
+    component: () => import("../views/PhrenologyView.vue"),
+  },
+  {
+    // 3D skull prototype (model-viewer). Companion to /phrenology (2D).
+    // Needs a skull.glb in public/publicAssets/models/. Not linked in nav.
+    path: "/phrenology-3d",
+    name: "phrenology-3d",
+    component: () => import("../views/Phrenology3DView.vue"),
+  },
 ];
 
 const router = createRouter({

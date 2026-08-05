@@ -64,18 +64,20 @@ const blocksToHtml = (blocks) => {
     return blocks
         .map((block) => {
             switch (block.type) {
-                case "heading":
+                case "heading": {
                     const level = block.level || 2;
                     return `<h${level}>${block.content || ""}</h${level}>`;
+                }
                 case "paragraph":
                     return `<p>${block.content || ""}</p>`;
-                case "list":
+                case "list": {
                     const items = (block.items || [])
                         .map((item) => `<li>${item}</li>`)
                         .join("");
                     return block.ordered
                         ? `<ol>${items}</ol>`
                         : `<ul>${items}</ul>`;
+                }
                 case "blockquote":
                     return `<blockquote><p>${block.content || ""}</p></blockquote>`;
                 case "code":

@@ -1,0 +1,11 @@
+dist/
+node_modules/
+coverage/
+package-lock.json
+scratchpad/
+.filmstrip/
+.playwright-mcp/
+New Design Ideas/
+public/publicAssets/
+docs/architecture/graph.json
+supabase/.temp/
