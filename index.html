@@ -7,6 +7,12 @@
       docs/audit-fixes/STATUS.md#task-4 for tightening plan).
       'unsafe-inline' in script-src is required by the pre-paint prefs script
       below; replace with a hash/nonce when moving to a host-header CSP.
+      'wasm-unsafe-eval' (script-src) + blob: (connect-src) exist for
+      model-viewer on the /phrenology-3d prototype and apply GLOBALLY — a
+      deliberate, accepted trade-off while the 3D route is evaluated
+      (OPENBRAIN-7). If the 2D phrenology view ships instead, remove both.
+      Note the GLB now uses KHR_mesh_quantization (no draco/meshopt decoder),
+      so no CDN decoder hosts are needed in this CSP.
       frame-ancestors/report-uri are not supported in <meta> — set those at the
       hosting layer.
     -->
