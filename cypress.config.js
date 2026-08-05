@@ -8,11 +8,7 @@ export default {
     video: false,
     screenshotOnRunFailure: false,
   },
-  component: {
-    devServer: {
-      framework: "vue",
-      bundler: "vite",
-    },
-    specPattern: "cypress/component/**/*.cy.{js,jsx,ts,tsx}",
-  },
+  // No component runner: cypress/component/ never existed and the scripts ran
+  // zero tests while CLAUDE.md claimed component coverage — Vitest
+  // (src/**/__tests__/) is the real unit layer (OPENBRAIN-9 §3).
 };
