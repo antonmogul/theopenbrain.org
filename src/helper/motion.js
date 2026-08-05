@@ -1,6 +1,7 @@
 /*
- * Reduced-motion duration multiplier — the project's `K` convention (see
- * PhrenologyView). Multiply every GSAP duration by K: 1 normally, ~0 when the
+ * Reduced-motion duration multiplier — the project's `K` convention, shared by
+ * the Case Cabinet and both Phrenology views.
+ * Multiply every GSAP duration by K: 1 normally, ~0 when the
  * user asked for reduced motion, so timelines still complete (callbacks,
  * onComplete state changes) instead of being skipped.
  *

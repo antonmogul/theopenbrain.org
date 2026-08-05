@@ -139,7 +139,7 @@ function setStackRef(el, i) {
 // Global slow-mo multiplier for tuning. 1 is ship speed; ?slow=N slows the whole
 // sequence by N without touching the individual beat durations, so the timings
 // that ship are the ones being judged. K additionally collapses everything to
-// ~0 under reduced motion (project convention, see PhrenologyView).
+// ~0 under reduced motion (shared convention — see src/helper/motion.js).
 const K = reducedMotionK();
 const SPEED = readSpeed(SEARCH) * K;
 
@@ -390,11 +390,11 @@ async function close() {
       </button>
     </div>
 
-    <!-- THE morphing element — a 3D book.
-         `.book` is the spine-centered 3D stage. `.cover` (left half) is always
-         visible = the closed portrait folder you see rising. `.leaf--right` is
-         hinged at the spine and starts folded shut over the cover (rotateY -180),
-         then swings open to reveal the two-leaf landscape spread. -->
+    <!-- The spread's CONTENTS (the real folder does the morphing — see the
+         MORPH MODEL header). `.book` is a preserve-3d stage: `.leaf--left`
+         carries the file (brain + regions); `.leaf--right-hinge` starts folded
+         shut over it (rotateY -180) and swings open at the spine to reveal the
+         two-leaf landscape spread. Fades in over the arrived folder. -->
     <Teleport to="body">
       <div
         v-if="openCase"
