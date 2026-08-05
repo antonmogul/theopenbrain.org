@@ -30,7 +30,12 @@ const supabaseKey =
 
 // Chapter 1 is the legacy local chapter; the catalog returns Supabase chapters.
 const chapters = computed(() => {
-  const ch1 = { id: "ch1", order_index: 1, title: "The Retina", slug: "the-retina" };
+  const ch1 = {
+    id: "ch1",
+    order_index: 1,
+    title: "The Retina",
+    slug: "the-retina",
+  };
   const supa = modules.value.filter((m) => m.order_index !== 1);
   return [ch1, ...supa].sort((a, b) => a.order_index - b.order_index);
 });
@@ -97,7 +102,12 @@ const continueChapter = computed(() => {
 const displayName = computed(() => profile.value?.full_name || "Reader");
 const initials = computed(() => {
   const n = displayName.value || user.value?.email || "?";
-  return n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return n
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 });
 
 function close() {
@@ -144,13 +154,27 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           <!-- Header -->
           <div class="drawer-head">
             <router-link :to="homeRoute" class="wordmark" @click="close">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
                 <circle cx="12" cy="12" r="9" />
-                <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
+                <path
+                  d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21"
+                />
               </svg>
               <span class="wordmark-text">the<br />open brain</span>
             </router-link>
-            <button class="close-btn" type="button" title="Close" @click="close">
+            <button
+              class="close-btn"
+              type="button"
+              title="Close"
+              @click="close"
+            >
               <CloseIcon :width="16" :height="16" />
             </button>
           </div>
@@ -161,13 +185,18 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
             <button
               class="continue-card"
               type="button"
-              @click="go(`/chapter/${continueChapter.mod.order_index}/${continueChapter.mod.slug}`)"
+              @click="
+                go(
+                  `/chapter/${continueChapter.mod.order_index}/${continueChapter.mod.slug}`
+                )
+              "
             >
               <span class="cover-mini" />
               <span class="continue-meta">
                 <span class="continue-ch">
-                  CH {{ String(continueChapter.mod.order_index).padStart(2, "0") }} ·
-                  {{ continueChapter.percent }}%
+                  CH
+                  {{ String(continueChapter.mod.order_index).padStart(2, "0") }}
+                  · {{ continueChapter.percent }}%
                 </span>
                 <span class="continue-title">Resume reading</span>
               </span>
@@ -186,17 +215,19 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               type="button"
               @click="go(`/chapter/${ch.order_index}/${ch.slug}`)"
             >
-              <span class="ch-num">{{ String(ch.order_index).padStart(2, "0") }}</span>
+              <span class="ch-num">{{
+                String(ch.order_index).padStart(2, "0")
+              }}</span>
               <span class="ch-title">{{ ch.title }}</span>
               <span
                 v-if="statusFor(ch) === 'done'"
                 class="ch-done"
                 aria-label="Completed"
-              >✓</span>
-              <span
-                v-else-if="statusFor(ch) === 'reading'"
-                class="ch-pct"
-              >{{ percentFor(ch) }}%</span>
+                >✓</span
+              >
+              <span v-else-if="statusFor(ch) === 'reading'" class="ch-pct"
+                >{{ percentFor(ch) }}%</span
+              >
             </button>
           </div>
 
@@ -486,7 +517,10 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   border-radius: 4px;
   color: rgb(var(--color-mute));
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 .auth-tab.active {
   background: rgb(var(--color-ink));

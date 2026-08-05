@@ -79,7 +79,8 @@ module.exports = {
            50vw, so if the var failed to resolve the split silently shifted by
            10vw and the two panes overlapped. See OPENBRAIN-4. */
         text: "var(--reader-prose-w, min(40vw, calc(780px + 6.875rem)))",
-        illus: "calc(100% - var(--reader-prose-w, min(40vw, calc(780px + 6.875rem))))",
+        illus:
+          "calc(100% - var(--reader-prose-w, min(40vw, calc(780px + 6.875rem))))",
         menu: "35vw",
         "1/8": " calc(100% / 8 * 1)",
         "2/8": " calc(100% / 8 * 2)",

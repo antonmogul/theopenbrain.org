@@ -69,7 +69,7 @@ function initializeAuth() {
   listenToStorageChanges((newSession) => {
     console.log(
       "useAuth: Storage changed, new session:",
-      newSession?.user?.email || "none",
+      newSession?.user?.email || "none"
     );
     session.value = newSession;
     user.value = newSession?.user ?? null;
@@ -119,7 +119,7 @@ export function useAuth() {
       if (result.data.user?.id && result.data.session?.access_token) {
         await fetchUserProfile(
           result.data.user.id,
-          result.data.session.access_token,
+          result.data.session.access_token
         );
       }
     }
@@ -137,7 +137,7 @@ export function useAuth() {
       if (result.data.user?.id && result.data.session?.access_token) {
         await fetchUserProfile(
           result.data.user.id,
-          result.data.session.access_token,
+          result.data.session.access_token
         );
       }
     }

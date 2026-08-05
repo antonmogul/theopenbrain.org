@@ -17,16 +17,16 @@
 
 <script>
 export default {
-  name: 'CloseIcon',
+  name: "CloseIcon",
   props: {
     width: {
       type: [Number, String],
-      default: 16
+      default: 16,
     },
     height: {
       type: [Number, String],
-      default: 16
-    }
-  }
-}
+      default: 16,
+    },
+  },
+};
 </script>

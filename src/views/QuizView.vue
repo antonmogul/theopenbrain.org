@@ -244,7 +244,11 @@ function handleGoToQuestion(index) {
           Previous
         </button>
 
-        <button @click="handleNext" class="nav-btn primary" data-testid="next-question">
+        <button
+          @click="handleNext"
+          class="nav-btn primary"
+          data-testid="next-question"
+        >
           {{ isLastQuestion ? "Submit Quiz" : "Next" }}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -264,7 +268,10 @@ function handleGoToQuestion(index) {
     </div>
 
     <!-- Results -->
-    <div v-else-if="quizState === 'results' && results" class="results-container">
+    <div
+      v-else-if="quizState === 'results' && results"
+      class="results-container"
+    >
       <QuizResults
         :score="results.score"
         :passed="results.passed"
@@ -289,17 +296,26 @@ function handleGoToQuestion(index) {
 
     <!-- Confirm Submit Modal -->
     <Teleport to="body">
-      <div v-if="showConfirmSubmit" class="modal-overlay" @click.self="handleBack">
+      <div
+        v-if="showConfirmSubmit"
+        class="modal-overlay"
+        @click.self="handleBack"
+      >
         <div class="confirm-modal">
           <h3>Submit Quiz?</h3>
           <p v-if="answeredCount < questions.length">
-            You have answered {{ answeredCount }} of {{ questions.length }} questions.
-            Unanswered questions will be marked as incorrect.
+            You have answered {{ answeredCount }} of
+            {{ questions.length }} questions. Unanswered questions will be
+            marked as incorrect.
           </p>
           <p v-else>Are you ready to submit your answers?</p>
           <div class="modal-actions">
             <button @click="handleBack" class="btn-secondary">Go Back</button>
-            <button @click="handleSubmitQuiz" class="btn-primary" data-testid="confirm-submit">
+            <button
+              @click="handleSubmitQuiz"
+              class="btn-primary"
+              data-testid="confirm-submit"
+            >
               Submit
             </button>
           </div>
@@ -378,7 +394,9 @@ function handleGoToQuestion(index) {
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-mute));
-  transition: border-color 0.12s ease, color 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .exit-btn:hover {
@@ -419,7 +437,9 @@ function handleGoToQuestion(index) {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .nav-btn:hover:not(:disabled) {
@@ -506,7 +526,10 @@ function handleGoToQuestion(index) {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .btn-primary {

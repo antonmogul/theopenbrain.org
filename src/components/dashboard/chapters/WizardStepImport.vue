@@ -5,23 +5,29 @@
  * Four import methods: paste text, upload markdown, upload DOCX, upload bibliography.
  * Also provides a "Download Template" link.
  */
-import { ref, computed, watch } from 'vue';
-import { useContentParser } from '@/composables/useContentParser';
-import { useBibParser } from '@/composables/useBibParser';
+import { ref, computed, watch } from "vue";
+import { useContentParser } from "@/composables/useContentParser";
+import { useBibParser } from "@/composables/useBibParser";
 
 const props = defineProps({
   sections: { type: Array, default: () => [] },
   references: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(['update:sections', 'update:references', 'parsed']);
+const emit = defineEmits(["update:sections", "update:references", "parsed"]);
 
-const activeTab = ref('paste');
-const pasteContent = ref('');
+const activeTab = ref("paste");
+const pasteContent = ref("");
 const importStatus = ref(null); // null | 'parsing' | 'success' | 'error'
-const importMessage = ref('');
+const importMessage = ref("");
 
-const { parseMarkdown, parseText, parseDocx, autoParse, parseError: contentError } = useContentParser();
+const {
+  parseMarkdown,
+  parseText,
+  parseDocx,
+  autoParse,
+  parseError: contentError,
+} = useContentParser();
 const { parseBibFile, parseError: bibError } = useBibParser();
 
 // File input refs
@@ -30,23 +36,23 @@ const docxFileInput = ref(null);
 const bibFileInput = ref(null);
 
 const tabs = [
-  { id: 'paste', label: 'Paste Text', icon: 'clipboard' },
-  { id: 'markdown', label: 'Upload .md', icon: 'file-text' },
-  { id: 'docx', label: 'Upload .docx', icon: 'file' },
-  { id: 'bibliography', label: 'Bibliography', icon: 'book-open' },
+  { id: "paste", label: "Paste Text", icon: "clipboard" },
+  { id: "markdown", label: "Upload .md", icon: "file-text" },
+  { id: "docx", label: "Upload .docx", icon: "file" },
+  { id: "bibliography", label: "Bibliography", icon: "book-open" },
 ];
 
 async function handlePaste() {
   if (!pasteContent.value.trim()) return;
-  importStatus.value = 'parsing';
+  importStatus.value = "parsing";
   try {
     const result = await autoParse(pasteContent.value);
-    emit('update:sections', result.sections);
-    emit('parsed', { type: 'paste', ...result });
-    importStatus.value = 'success';
+    emit("update:sections", result.sections);
+    emit("parsed", { type: "paste", ...result });
+    importStatus.value = "success";
     importMessage.value = `Detected ${result.sections.length} section(s)`;
   } catch (err) {
-    importStatus.value = 'error';
+    importStatus.value = "error";
     importMessage.value = err.message;
   }
 }
@@ -54,16 +60,16 @@ async function handlePaste() {
 async function handleMarkdownUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-  importStatus.value = 'parsing';
+  importStatus.value = "parsing";
   try {
     const content = await file.text();
     const result = await parseMarkdown(content);
-    emit('update:sections', result.sections);
-    emit('parsed', { type: 'markdown', filename: file.name, ...result });
-    importStatus.value = 'success';
+    emit("update:sections", result.sections);
+    emit("parsed", { type: "markdown", filename: file.name, ...result });
+    importStatus.value = "success";
     importMessage.value = `Parsed "${file.name}" — ${result.sections.length} section(s)`;
   } catch (err) {
-    importStatus.value = 'error';
+    importStatus.value = "error";
     importMessage.value = err.message;
   }
 }
@@ -71,15 +77,15 @@ async function handleMarkdownUpload(event) {
 async function handleDocxUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-  importStatus.value = 'parsing';
+  importStatus.value = "parsing";
   try {
     const result = await parseDocx(file);
-    emit('update:sections', result.sections);
-    emit('parsed', { type: 'docx', filename: file.name, ...result });
-    importStatus.value = 'success';
+    emit("update:sections", result.sections);
+    emit("parsed", { type: "docx", filename: file.name, ...result });
+    importStatus.value = "success";
     importMessage.value = `Converted "${file.name}" — ${result.sections.length} section(s)`;
   } catch (err) {
-    importStatus.value = 'error';
+    importStatus.value = "error";
     importMessage.value = err.message;
   }
 }
@@ -87,23 +93,27 @@ async function handleDocxUpload(event) {
 async function handleBibUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-  importStatus.value = 'parsing';
+  importStatus.value = "parsing";
   try {
     const refs = await parseBibFile(file);
-    emit('update:references', refs);
-    emit('parsed', { type: 'bibliography', filename: file.name, references: refs });
-    importStatus.value = 'success';
+    emit("update:references", refs);
+    emit("parsed", {
+      type: "bibliography",
+      filename: file.name,
+      references: refs,
+    });
+    importStatus.value = "success";
     importMessage.value = `Parsed ${refs.length} reference(s) from "${file.name}"`;
   } catch (err) {
-    importStatus.value = 'error';
+    importStatus.value = "error";
     importMessage.value = err.message;
   }
 }
 
 function downloadTemplate() {
-  const link = document.createElement('a');
-  link.href = '/templates/chapter-template.md';
-  link.download = 'chapter-template.md';
+  const link = document.createElement("a");
+  link.href = "/templates/chapter-template.md";
+  link.download = "chapter-template.md";
   link.click();
 }
 
@@ -118,14 +128,23 @@ defineExpose({ hasContent });
       <div class="step-header-row">
         <div>
           <h2 class="step-title">Import Content</h2>
-          <p class="step-description">Paste text, upload a file, or import a bibliography.</p>
+          <p class="step-description">
+            Paste text, upload a file, or import a bibliography.
+          </p>
         </div>
         <button class="template-btn" @click="downloadTemplate">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
           Download Template
         </button>
@@ -170,19 +189,28 @@ Citations use [^1] or [1] notation."
           :disabled="!pasteContent.trim() || importStatus === 'parsing'"
           @click="handlePaste"
         >
-          {{ importStatus === 'parsing' ? 'Parsing...' : 'Parse Content' }}
+          {{ importStatus === "parsing" ? "Parsing..." : "Parse Content" }}
         </button>
       </div>
 
       <!-- Upload Markdown -->
       <div v-if="activeTab === 'markdown'" class="upload-tab">
         <div class="upload-zone" @click="mdFileInput?.click()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="12" y1="18" x2="12" y2="12"/>
-            <line x1="9" y1="15" x2="15" y2="15"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="12" y1="18" x2="12" y2="12" />
+            <line x1="9" y1="15" x2="15" y2="15" />
           </svg>
           <p class="upload-text">Click to upload a Markdown file</p>
           <p class="upload-hint">.md files accepted</p>
@@ -199,13 +227,22 @@ Citations use [^1] or [1] notation."
       <!-- Upload DOCX -->
       <div v-if="activeTab === 'docx'" class="upload-tab">
         <div class="upload-zone" @click="docxFileInput?.click()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
           </svg>
           <p class="upload-text">Click to upload a Word document</p>
           <p class="upload-hint">.docx files accepted</p>
@@ -222,13 +259,25 @@ Citations use [^1] or [1] notation."
       <!-- Upload Bibliography -->
       <div v-if="activeTab === 'bibliography'" class="upload-tab">
         <div class="upload-zone" @click="bibFileInput?.click()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path
+              d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+            />
           </svg>
           <p class="upload-text">Click to upload a bibliography file</p>
-          <p class="upload-hint">.bib (BibTeX) or .ris (RIS) files — exported from Zotero, Mendeley, etc.</p>
+          <p class="upload-hint">
+            .bib (BibTeX) or .ris (RIS) files — exported from Zotero, Mendeley,
+            etc.
+          </p>
         </div>
         <input
           ref="bibFileInput"
@@ -242,8 +291,12 @@ Citations use [^1] or [1] notation."
 
     <!-- Import Status -->
     <div v-if="importStatus" class="import-status" :class="importStatus">
-      <span v-if="importStatus === 'parsing'" class="status-icon spinning">&#8987;</span>
-      <span v-else-if="importStatus === 'success'" class="status-icon">&#10003;</span>
+      <span v-if="importStatus === 'parsing'" class="status-icon spinning"
+        >&#8987;</span
+      >
+      <span v-else-if="importStatus === 'success'" class="status-icon"
+        >&#10003;</span
+      >
       <span v-else class="status-icon">&#10007;</span>
       {{ importMessage }}
     </div>
@@ -453,7 +506,11 @@ Citations use [^1] or [1] notation."
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

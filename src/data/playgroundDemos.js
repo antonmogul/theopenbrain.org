@@ -28,7 +28,8 @@ export const demoCategories = [
   {
     id: "neuro-viz",
     title: "Neuroscience Data Viz",
-    blurb: "Visualizations with a neuroscience feel — spikes, neurons, receptive fields.",
+    blurb:
+      "Visualizations with a neuroscience feel — spikes, neurons, receptive fields.",
     icon: "brain",
     demos: [
       {
@@ -345,7 +346,8 @@ else:
   {
     id: "games",
     title: "Fun & Games",
-    blurb: "Self-running games and simulations — sit back and watch the code play.",
+    blurb:
+      "Self-running games and simulations — sit back and watch the code play.",
     icon: "gamepad",
     demos: [
       {

@@ -39,7 +39,11 @@
       :paragraph-id="`section-title-${section.id}`"
       :is-creator="isCreator"
       tag="h2"
-      :class-name="store.imgActive ? 'opacity-0 T duration-500 z-40 subChapter' : 'T duration-500 z-40 subChapter'"
+      :class-name="
+        store.imgActive
+          ? 'opacity-0 T duration-500 z-40 subChapter'
+          : 'T duration-500 z-40 subChapter'
+      "
       @save="handleSectionTitleSave"
     />
     <h2
@@ -196,10 +200,14 @@ const handleSectionTitleSave = async ({ paragraphId, content }) => {
     await saveContent({
       paragraphId: props.section.id,
       content,
-      type: "section-title"
+      type: "section-title",
     });
   }
-  emit("save", { paragraphId: props.section.id, content, type: "section-title" });
+  emit("save", {
+    paragraphId: props.section.id,
+    content,
+    type: "section-title",
+  });
 };
 </script>
 

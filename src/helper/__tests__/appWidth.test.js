@@ -43,9 +43,9 @@ describe("syncAppWidth", () => {
 
   it("defaults to the real document", () => {
     expect(typeof syncAppWidth()).toBe("number");
-    expect(
-      document.documentElement.style.getPropertyValue("--app-w")
-    ).toMatch(/px$/);
+    expect(document.documentElement.style.getPropertyValue("--app-w")).toMatch(
+      /px$/
+    );
   });
 });
 

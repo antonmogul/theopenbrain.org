@@ -106,7 +106,9 @@ export function useStudentCourses() {
     if (!mostRecent && courses.value.length > 0) {
       const firstCourse = courses.value[0].course;
       if (firstCourse?.modules?.length > 0) {
-        const firstIncomplete = firstCourse.modules.find((m) => !m.is_completed);
+        const firstIncomplete = firstCourse.modules.find(
+          (m) => !m.is_completed
+        );
         mostRecent = {
           course: firstCourse,
           module: firstIncomplete || firstCourse.modules[0],

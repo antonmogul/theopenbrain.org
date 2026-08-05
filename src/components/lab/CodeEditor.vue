@@ -83,9 +83,14 @@ const languageLabel = computed(() => {
 </script>
 
 <template>
-  <div class="code-editor rounded-lg border border-gray-700 overflow-hidden" data-testid="code-editor">
+  <div
+    class="code-editor rounded-lg border border-gray-700 overflow-hidden"
+    data-testid="code-editor"
+  >
     <!-- Header bar with traffic lights -->
-    <div class="editor-header bg-gray-800 px-4 py-2 flex items-center justify-between">
+    <div
+      class="editor-header bg-gray-800 px-4 py-2 flex items-center justify-between"
+    >
       <div class="flex items-center gap-2">
         <!-- Traffic light dots -->
         <div class="flex gap-1.5">

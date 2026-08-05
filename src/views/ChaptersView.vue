@@ -125,7 +125,10 @@ const continueCard = computed(() => {
   let remaining = null;
   if (top.time_spent_seconds && percent > 5) {
     const totalSec = top.time_spent_seconds / (percent / 100);
-    remaining = Math.max(1, Math.round((totalSec - top.time_spent_seconds) / 60));
+    remaining = Math.max(
+      1,
+      Math.round((totalSec - top.time_spent_seconds) / 60)
+    );
   }
   return {
     module: mod,
@@ -180,7 +183,8 @@ function chapterNumberFor(mod) {
         <p class="eyebrow">Book · {{ modules.length }} chapters</p>
         <h1>Chapters</h1>
         <p class="lede">
-          An openly-published, interactive textbook — pick up where you left off.
+          An openly-published, interactive textbook — pick up where you left
+          off.
         </p>
         <p v-if="!isAuthenticated" class="signin-cta">
           <router-link to="/">Sign in</router-link> to track your progress.
@@ -209,8 +213,11 @@ function chapterNumberFor(mod) {
             />
           </div>
           <span class="continue-stat">
-            {{ continueCard.percent }}%<template v-if="continueCard.remainingMin">
-              · ~{{ continueCard.remainingMin }} min left</template>
+            {{ continueCard.percent }}%<template
+              v-if="continueCard.remainingMin"
+            >
+              · ~{{ continueCard.remainingMin }} min left</template
+            >
           </span>
         </div>
         <router-link
@@ -286,7 +293,10 @@ function chapterNumberFor(mod) {
               <router-link :to="readerRoute(mod)" class="card-action">
                 Read →
               </router-link>
-              <router-link :to="chapterRoute(mod)" class="card-action card-action--muted">
+              <router-link
+                :to="chapterRoute(mod)"
+                class="card-action card-action--muted"
+              >
                 Overview →
               </router-link>
             </div>

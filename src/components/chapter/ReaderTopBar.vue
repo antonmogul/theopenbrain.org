@@ -85,14 +85,29 @@ function onBackdropClick() {
     <div class="bar-row">
       <!-- Menu -->
       <button class="icon-btn" title="Menu" @click="store.activeMenu = true">
-        <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.4" fill="none">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          stroke="currentColor"
+          stroke-width="1.4"
+          fill="none"
+        >
           <path d="M2 4h10M2 7h10M2 10h10" />
         </svg>
       </button>
 
       <!-- Wordmark -->
       <router-link :to="homeRoute" class="wordmark" title="The Open Brain">
-        <svg class="wordmark-logo" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <svg
+          class="wordmark-logo"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
           <circle cx="12" cy="12" r="9" />
           <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
         </svg>
@@ -113,8 +128,15 @@ function onBackdropClick() {
         <svg
           class="chevron"
           :class="{ rotated: showDropdown }"
-          xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
         >
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
@@ -153,7 +175,11 @@ function onBackdropClick() {
     </Transition>
 
     <!-- Backdrop for dropdown -->
-    <div v-if="showDropdown" class="dropdown-backdrop" @click="onBackdropClick"></div>
+    <div
+      v-if="showDropdown"
+      class="dropdown-backdrop"
+      @click="onBackdropClick"
+    ></div>
   </div>
 </template>
 
@@ -314,7 +340,9 @@ function onBackdropClick() {
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .tool-btn:hover {

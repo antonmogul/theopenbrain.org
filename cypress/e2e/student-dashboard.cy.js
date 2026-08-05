@@ -5,7 +5,9 @@ describe("Student Dashboard", () => {
     // Mock authentication for student role
     cy.intercept("GET", "**/rest/v1/profiles*", {
       statusCode: 200,
-      body: [{ id: "test-user-id", role: "student", full_name: "Test Student" }],
+      body: [
+        { id: "test-user-id", role: "student", full_name: "Test Student" },
+      ],
     }).as("getProfile");
 
     // Mock course enrollments
@@ -147,9 +149,11 @@ describe("Student Dashboard", () => {
     cy.visit("/student");
     cy.wait("@getCourseEnrollments");
 
-    cy.get('[data-testid="course-card"]').first().within(() => {
-      cy.contains("Continue").click();
-    });
+    cy.get('[data-testid="course-card"]')
+      .first()
+      .within(() => {
+        cy.contains("Continue").click();
+      });
 
     cy.url().should("include", "/chapter");
   });
@@ -202,7 +206,9 @@ describe("Highlighting System", () => {
     // Mock authentication
     cy.intercept("GET", "**/rest/v1/profiles*", {
       statusCode: 200,
-      body: [{ id: "test-user-id", role: "student", full_name: "Test Student" }],
+      body: [
+        { id: "test-user-id", role: "student", full_name: "Test Student" },
+      ],
     }).as("getProfile");
 
     // Mock highlights fetch
@@ -357,7 +363,9 @@ describe("Notes System", () => {
     // Mock authentication
     cy.intercept("GET", "**/rest/v1/profiles*", {
       statusCode: 200,
-      body: [{ id: "test-user-id", role: "student", full_name: "Test Student" }],
+      body: [
+        { id: "test-user-id", role: "student", full_name: "Test Student" },
+      ],
     }).as("getProfile");
 
     // Mock notes
@@ -451,7 +459,9 @@ describe("Trending Highlights", () => {
     // Mock authentication
     cy.intercept("GET", "**/rest/v1/profiles*", {
       statusCode: 200,
-      body: [{ id: "test-user-id", role: "student", full_name: "Test Student" }],
+      body: [
+        { id: "test-user-id", role: "student", full_name: "Test Student" },
+      ],
     }).as("getProfile");
 
     // Mock trending highlights
@@ -460,7 +470,8 @@ describe("Trending Highlights", () => {
       body: [
         {
           id: "trending-1",
-          selected_text: "This is a trending highlight that many students found important",
+          selected_text:
+            "This is a trending highlight that many students found important",
           highlight_count: 25,
           paragraph_id: "para-1",
           last_highlighted_at: "2024-01-20T00:00:00Z",

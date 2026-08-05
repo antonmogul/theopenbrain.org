@@ -9,12 +9,12 @@ const supabaseKey =
 console.log("Supabase init - URL:", supabaseUrl);
 console.log(
   "Supabase init - Key prefix:",
-  supabaseKey?.substring(0, 20) + "...",
+  supabaseKey?.substring(0, 20) + "..."
 );
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error(
-    "Missing Supabase environment variables. Please check your .env.local file.",
+    "Missing Supabase environment variables. Please check your .env.local file."
   );
 }
 

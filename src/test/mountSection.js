@@ -6,8 +6,8 @@ import { mount } from "@vue/test-utils";
 // refs as props and emit action events — so a smoke mount just proves the
 // template compiles and renders its data without throwing.
 export function mountSection(Component, props = {}, global = {}) {
-    return mount(Component, {
-        props,
-        global: { stubs: { teleport: true }, ...global },
-    });
+  return mount(Component, {
+    props,
+    global: { stubs: { teleport: true }, ...global },
+  });
 }

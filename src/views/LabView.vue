@@ -197,7 +197,10 @@ const failedTestCount = computed(() => {
     </header>
 
     <!-- Loading state -->
-    <div v-if="loading" class="flex items-center justify-center h-[calc(100vh-64px)]">
+    <div
+      v-if="loading"
+      class="flex items-center justify-center h-[calc(100vh-64px)]"
+    >
       <div class="text-center">
         <svg
           class="animate-spin h-8 w-8 mx-auto mb-4 text-violet-500"
@@ -224,7 +227,10 @@ const failedTestCount = computed(() => {
     </div>
 
     <!-- Error state -->
-    <div v-else-if="error" class="flex items-center justify-center h-[calc(100vh-64px)]">
+    <div
+      v-else-if="error"
+      class="flex items-center justify-center h-[calc(100vh-64px)]"
+    >
       <div class="text-center max-w-md p-8">
         <p class="text-xl font-bold mb-4 text-red-400">Error loading lab</p>
         <p class="text-gray-400 mb-4">{{ error }}</p>
@@ -244,7 +250,9 @@ const failedTestCount = computed(() => {
         v-if="currentLab?.instructions"
         class="instructions bg-gray-900 rounded-lg p-6 mb-6 border border-gray-800"
       >
-        <h2 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+        <h2
+          class="text-lg font-semibold text-white mb-3 flex items-center gap-2"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -257,7 +265,9 @@ const failedTestCount = computed(() => {
             stroke-linejoin="round"
             class="text-violet-400"
           >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            ></path>
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="16" y1="13" x2="8" y2="13"></line>
             <line x1="16" y1="17" x2="8" y2="17"></line>
@@ -265,7 +275,9 @@ const failedTestCount = computed(() => {
           </svg>
           Instructions
         </h2>
-        <p class="text-gray-300 whitespace-pre-line">{{ currentLab.instructions }}</p>
+        <p class="text-gray-300 whitespace-pre-line">
+          {{ currentLab.instructions }}
+        </p>
       </div>
 
       <!-- Solution warning banner -->
@@ -286,7 +298,9 @@ const failedTestCount = computed(() => {
           stroke-linejoin="round"
           class="text-yellow-400 flex-shrink-0"
         >
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          ></path>
           <line x1="12" y1="9" x2="12" y2="13"></line>
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
         </svg>

@@ -58,7 +58,10 @@ const youtubeSrc = computed(() =>
 
 <template>
   <figure
-    v-if="animation && (mode === 'interactive' || mode === 'static' || mode === 'fullscreen')"
+    v-if="
+      animation &&
+      (mode === 'interactive' || mode === 'static' || mode === 'fullscreen')
+    "
     class="illu-inline my-12 font-mono text-small"
   >
     <figcaption
@@ -91,7 +94,15 @@ const youtubeSrc = computed(() =>
         :src="youtubeSrc"
         title="YouTube video player"
         frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allow="
+          accelerometer;
+          autoplay;
+          clipboard-write;
+          encrypted-media;
+          gyroscope;
+          picture-in-picture;
+          web-share;
+        "
         allowfullscreen
       ></iframe>
       <img

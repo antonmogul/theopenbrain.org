@@ -27,9 +27,7 @@ defineEmits(["flip"]);
     @click="$emit('flip')"
     data-testid="flashcard-card"
   >
-    <div class="card-counter">
-      {{ cardNumber }} / {{ totalCards }}
-    </div>
+    <div class="card-counter">{{ cardNumber }} / {{ totalCards }}</div>
 
     <div class="flashcard" :class="{ flipped: isFlipped }">
       <!-- Front -->

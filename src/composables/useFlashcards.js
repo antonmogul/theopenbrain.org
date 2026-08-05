@@ -397,16 +397,19 @@ export function useFlashcards() {
     );
 
     try {
-      await supabaseRest(`flashcard_sessions?id=eq.${currentSession.value.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          completed_at: endTime.toISOString(),
-          cards_reviewed:
-            sessionStats.value.correct + sessionStats.value.incorrect,
-          cards_correct: sessionStats.value.correct,
-          duration_seconds: sessionDuration,
-        }),
-      });
+      await supabaseRest(
+        `flashcard_sessions?id=eq.${currentSession.value.id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            completed_at: endTime.toISOString(),
+            cards_reviewed:
+              sessionStats.value.correct + sessionStats.value.incorrect,
+            cards_correct: sessionStats.value.correct,
+            duration_seconds: sessionDuration,
+          }),
+        }
+      );
 
       const summary = {
         ...sessionStats.value,

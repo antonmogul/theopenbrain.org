@@ -3,7 +3,11 @@ import { ref, computed, inject, onMounted } from "vue";
 import { HIGHLIGHT_COLORS, HIGHLIGHT_HEX } from "@/composables/useHighlights";
 import { useTrendingHighlights } from "@/composables/useTrendingHighlights";
 import { dateTime as formatDate } from "@/utils/format";
-import { EmptyState, LoadingState, Button } from "@/components/dashboard/shared";
+import {
+  EmptyState,
+  LoadingState,
+  Button,
+} from "@/components/dashboard/shared";
 
 defineProps({
   moduleId: {
@@ -63,7 +67,9 @@ onMounted(() => {
 
 // === Highlight helpers ===
 function scrollToHighlightInText(highlight) {
-  const el = document.querySelector(`[data-paragraph-id="${highlight.paragraph_id}"]`);
+  const el = document.querySelector(
+    `[data-paragraph-id="${highlight.paragraph_id}"]`
+  );
   if (el) {
     // Account for fixed top bar (~50px) + some breathing room
     const topBarOffset = 60;
@@ -111,7 +117,8 @@ function cancelEditNote() {
 }
 
 async function saveEditNote() {
-  if (!editNoteContent.value.trim() || !editingNoteId.value || !updateNote) return;
+  if (!editNoteContent.value.trim() || !editingNoteId.value || !updateNote)
+    return;
   try {
     await updateNote(editingNoteId.value, editNoteContent.value.trim());
     cancelEditNote();
@@ -137,7 +144,6 @@ async function executeDelete() {
     console.error("NotebookTab: Error deleting note:", e);
   }
 }
-
 </script>
 
 <template>
@@ -150,7 +156,9 @@ async function executeDelete() {
         @click="activeView = 'highlights'"
       >
         Highlights
-        <span v-if="highlights?.length" class="badge">{{ highlights.length }}</span>
+        <span v-if="highlights?.length" class="badge">{{
+          highlights.length
+        }}</span>
       </button>
       <button
         class="pill"
@@ -189,7 +197,10 @@ async function executeDelete() {
           @click="toggleColorFilter(c.value)"
           :title="c.name"
         >
-          <span class="color-dot" :style="{ backgroundColor: getColorBorder(c.value) }"></span>
+          <span
+            class="color-dot"
+            :style="{ backgroundColor: getColorBorder(c.value) }"
+          ></span>
         </button>
       </div>
 
@@ -215,9 +226,17 @@ async function executeDelete() {
             :style="{ backgroundColor: getColorBorder(h.color) }"
           ></div>
           <div class="item-body">
-            <p class="item-text">"{{ h.selected_text?.length > 120 ? h.selected_text.slice(0, 120) + '...' : h.selected_text }}"</p>
+            <p class="item-text">
+              "{{
+                h.selected_text?.length > 120
+                  ? h.selected_text.slice(0, 120) + "..."
+                  : h.selected_text
+              }}"
+            </p>
             <div v-if="h.tags?.length" class="tag-list">
-              <span v-for="tag in h.tags" :key="tag" class="tag-chip">{{ tag }}</span>
+              <span v-for="tag in h.tags" :key="tag" class="tag-chip">{{
+                tag
+              }}</span>
             </div>
             <span class="item-date">{{ formatDate(h.created_at) }}</span>
           </div>
@@ -230,7 +249,17 @@ async function executeDelete() {
       <!-- Add note button -->
       <div class="add-note-section">
         <button @click="startNewNote" class="add-note-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -248,13 +277,16 @@ async function executeDelete() {
           autofocus
         ></textarea>
         <div class="editor-actions">
-          <Button variant="outline" size="sm" @click="cancelNewNote">Cancel</Button>
+          <Button variant="outline" size="sm" @click="cancelNewNote"
+            >Cancel</Button
+          >
           <Button
             variant="solid"
             size="sm"
             :disabled="!newNoteContent.trim()"
             @click="saveNewNote"
-          >Save</Button>
+            >Save</Button
+          >
         </div>
       </div>
 
@@ -265,8 +297,12 @@ async function executeDelete() {
           <div v-if="deleteConfirmId === note.id" class="delete-confirm">
             <p>Delete this note?</p>
             <div class="confirm-actions">
-              <Button variant="outline" size="sm" @click="cancelDelete">Cancel</Button>
-              <Button variant="danger" size="sm" @click="executeDelete">Delete</Button>
+              <Button variant="outline" size="sm" @click="cancelDelete"
+                >Cancel</Button
+              >
+              <Button variant="danger" size="sm" @click="executeDelete"
+                >Delete</Button
+              >
             </div>
           </div>
 
@@ -275,17 +311,31 @@ async function executeDelete() {
             <div v-if="note.highlight" class="highlight-preview">
               <div
                 class="color-border-sm"
-                :style="{ backgroundColor: getColorBorder(note.highlight.color || 'yellow') }"
+                :style="{
+                  backgroundColor: getColorBorder(
+                    note.highlight.color || 'yellow'
+                  ),
+                }"
               ></div>
-              <span class="preview-text">"{{ note.highlight.selected_text }}"</span>
+              <span class="preview-text"
+                >"{{ note.highlight.selected_text }}"</span
+              >
             </div>
 
             <!-- Edit mode -->
             <div v-if="editingNoteId === note.id" class="note-editor inline">
-              <textarea v-model="editNoteContent" class="note-textarea" rows="4"></textarea>
+              <textarea
+                v-model="editNoteContent"
+                class="note-textarea"
+                rows="4"
+              ></textarea>
               <div class="editor-actions">
-                <Button variant="outline" size="sm" @click="cancelEditNote">Cancel</Button>
-                <Button variant="solid" size="sm" @click="saveEditNote">Save</Button>
+                <Button variant="outline" size="sm" @click="cancelEditNote"
+                  >Cancel</Button
+                >
+                <Button variant="solid" size="sm" @click="saveEditNote"
+                  >Save</Button
+                >
               </div>
             </div>
 
@@ -295,8 +345,15 @@ async function executeDelete() {
               <div class="note-footer">
                 <span class="item-date">{{ formatDate(note.created_at) }}</span>
                 <div class="note-actions">
-                  <button @click="startEditNote(note)" class="action-btn">Edit</button>
-                  <button @click="confirmDeleteNote(note.id)" class="action-btn danger">Delete</button>
+                  <button @click="startEditNote(note)" class="action-btn">
+                    Edit
+                  </button>
+                  <button
+                    @click="confirmDeleteNote(note.id)"
+                    class="action-btn danger"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </template>
@@ -308,7 +365,7 @@ async function executeDelete() {
       <EmptyState
         v-if="!isAddingNote && (!notes || notes.length === 0)"
         title="No notes yet"
-        message="Highlight text or click &quot;Add Note&quot; to get started"
+        message='Highlight text or click "Add Note" to get started'
       />
     </div>
 
@@ -332,13 +389,26 @@ async function executeDelete() {
           <p class="item-text">"{{ truncateText(item.selected_text, 100) }}"</p>
           <div class="trending-meta">
             <span class="people-count">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
               </svg>
-              {{ item.highlight_count }} {{ item.highlight_count === 1 ? "person" : "people" }}
+              {{ item.highlight_count }}
+              {{ item.highlight_count === 1 ? "person" : "people" }}
             </span>
-            <span class="time-ago">{{ formatRelativeTime(item.last_highlighted_at) }}</span>
+            <span class="time-ago">{{
+              formatRelativeTime(item.last_highlighted_at)
+            }}</span>
           </div>
         </div>
       </div>
@@ -376,7 +446,9 @@ async function executeDelete() {
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
   cursor: pointer;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -655,8 +727,12 @@ async function executeDelete() {
   transition: color 0.12s ease;
 }
 
-.action-btn:hover { color: rgb(var(--color-ink)); }
-.action-btn.danger:hover { color: rgb(var(--color-accent)); }
+.action-btn:hover {
+  color: rgb(var(--color-ink));
+}
+.action-btn.danger:hover {
+  color: rgb(var(--color-accent));
+}
 
 .delete-confirm {
   text-align: center;
@@ -706,7 +782,11 @@ async function executeDelete() {
   color: rgb(var(--color-accent));
 }
 
-.people-count svg { opacity: 0.8; }
+.people-count svg {
+  opacity: 0.8;
+}
 
-.time-ago { color: rgb(var(--color-mute)); }
+.time-ago {
+  color: rgb(var(--color-mute));
+}
 </style>

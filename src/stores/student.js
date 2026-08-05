@@ -36,9 +36,8 @@ export const useStudentStore = defineStore("student", () => {
   });
 
   const completedModulesCount = computed(() => {
-    return Object.values(readingProgress.value).filter(
-      (p) => p.is_completed
-    ).length;
+    return Object.values(readingProgress.value).filter((p) => p.is_completed)
+      .length;
   });
 
   // Actions

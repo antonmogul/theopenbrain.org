@@ -159,7 +159,10 @@ const formattedDuration = computed(() => {
 
       <div class="progress-bar-wrap">
         <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: progress.percentage + '%' }"></div>
+          <div
+            class="progress-fill"
+            :style="{ width: progress.percentage + '%' }"
+          ></div>
         </div>
       </div>
 
@@ -187,7 +190,10 @@ const formattedDuration = computed(() => {
     </div>
 
     <!-- Complete -->
-    <div v-else-if="viewState === 'complete' && sessionSummary" class="complete">
+    <div
+      v-else-if="viewState === 'complete' && sessionSummary"
+      class="complete"
+    >
       <FlashcardStats
         :stats="sessionSummary"
         @study-again="handleStudyAgain"
@@ -224,7 +230,9 @@ const formattedDuration = computed(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-text {
@@ -260,9 +268,15 @@ const formattedDuration = computed(() => {
   font-weight: 600;
 }
 
-.correct { color: #16a34a; }
-.incorrect { color: #dc2626; }
-.sep { color: #d1d5db; }
+.correct {
+  color: #16a34a;
+}
+.incorrect {
+  color: #dc2626;
+}
+.sep {
+  color: #d1d5db;
+}
 
 .progress-bar-wrap {
   margin-bottom: 0.9375rem;

@@ -79,15 +79,19 @@ const segmentOptions = [
       <h2 class="t-h2">Shared library</h2>
       <p class="t-body-sm col-note">
         The reusable, token-based components in
-        <code>dashboard/shared/**</code> — the design-system backbone used across
-        admin and reader surfaces. Each cell is a live instance.
+        <code>dashboard/shared/**</code> — the design-system backbone used
+        across admin and reader surfaces. Each cell is a live instance.
       </p>
     </header>
 
     <!-- Actions -->
     <p class="t-label cat-eyebrow">Actions</p>
     <div class="grid">
-      <Specimen name="Button" import-path="dashboard/shared/Button.vue" note="solid / md">
+      <Specimen
+        name="Button"
+        import-path="dashboard/shared/Button.vue"
+        note="solid / md"
+      >
         <Button variant="solid" size="md">Save changes</Button>
       </Specimen>
     </div>
@@ -96,22 +100,39 @@ const segmentOptions = [
     <p class="t-label cat-eyebrow">Containers</p>
     <div class="grid">
       <Specimen name="BaseCard" import-path="dashboard/shared/BaseCard.vue">
-        <BaseCard padding="md"><p class="t-body-sm">Card body content</p></BaseCard>
+        <BaseCard padding="md"
+          ><p class="t-body-sm">Card body content</p></BaseCard
+        >
       </Specimen>
-      <Specimen name="StatGrid" import-path="dashboard/shared/StatGrid.vue" note="3 columns">
+      <Specimen
+        name="StatGrid"
+        import-path="dashboard/shared/StatGrid.vue"
+        note="3 columns"
+      >
         <StatGrid :columns="3" bordered>
           <StatCard label="Modules" :value="8" />
           <StatCard label="Students" :value="1284" />
           <StatCard label="Avg score" value="82%" />
         </StatGrid>
       </Specimen>
-      <Specimen name="BaseModal" import-path="dashboard/shared/BaseModal.vue" note="teleported — click to open">
-        <Button variant="solid" size="sm" @click="modalOpen = true">Open modal</Button>
+      <Specimen
+        name="BaseModal"
+        import-path="dashboard/shared/BaseModal.vue"
+        note="teleported — click to open"
+      >
+        <Button variant="solid" size="sm" @click="modalOpen = true"
+          >Open modal</Button
+        >
         <BaseModal v-model="modalOpen" title="Edit module" size="md">
           <p class="t-body-sm">Modal body content.</p>
         </BaseModal>
       </Specimen>
-      <Specimen name="DashboardShell" import-path="dashboard/shared/DashboardShell.vue" note="full app shell" surface="muted">
+      <Specimen
+        name="DashboardShell"
+        import-path="dashboard/shared/DashboardShell.vue"
+        note="full app shell"
+        surface="muted"
+      >
         <DashboardRail
           :nav-items="navItems"
           v-model:active-section="railActive"
@@ -126,11 +147,27 @@ const segmentOptions = [
     <!-- Data display -->
     <p class="t-label cat-eyebrow">Data display</p>
     <div class="grid">
-      <Specimen name="SectionHeader" import-path="dashboard/shared/SectionHeader.vue">
-        <SectionHeader eyebrow="01" title="Your modules" subtitle="Everything you are building" />
+      <Specimen
+        name="SectionHeader"
+        import-path="dashboard/shared/SectionHeader.vue"
+      >
+        <SectionHeader
+          eyebrow="01"
+          title="Your modules"
+          subtitle="Everything you are building"
+        />
       </Specimen>
-      <Specimen name="StatCard" import-path="dashboard/shared/StatCard.vue" note="with delta">
-        <StatCard label="Active students" :value="1284" :delta="12" delta-label="vs last week" />
+      <Specimen
+        name="StatCard"
+        import-path="dashboard/shared/StatCard.vue"
+        note="with delta"
+      >
+        <StatCard
+          label="Active students"
+          :value="1284"
+          :delta="12"
+          delta-label="vs last week"
+        />
       </Specimen>
       <Specimen name="ListRow" import-path="dashboard/shared/ListRow.vue">
         <ListRow label="Email notifications" hint="Weekly digest of activity">
@@ -140,7 +177,10 @@ const segmentOptions = [
       <Specimen name="DataTable" import-path="dashboard/shared/DataTable.vue">
         <DataTable :columns="tableColumns" :data="tableData" row-key="id" />
       </Specimen>
-      <Specimen name="StatusBadge" import-path="dashboard/shared/StatusBadge.vue">
+      <Specimen
+        name="StatusBadge"
+        import-path="dashboard/shared/StatusBadge.vue"
+      >
         <div class="badge-row">
           <StatusBadge status="published" />
           <StatusBadge status="draft" />
@@ -152,17 +192,34 @@ const segmentOptions = [
     <!-- Inputs -->
     <p class="t-label cat-eyebrow">Inputs</p>
     <div class="grid">
-      <Specimen name="SearchInput" import-path="dashboard/shared/SearchInput.vue">
+      <Specimen
+        name="SearchInput"
+        import-path="dashboard/shared/SearchInput.vue"
+      >
         <SearchInput v-model="search" placeholder="Search modules…" />
       </Specimen>
-      <Specimen name="FilterChips" import-path="dashboard/shared/FilterChips.vue">
+      <Specimen
+        name="FilterChips"
+        import-path="dashboard/shared/FilterChips.vue"
+      >
         <FilterChips :options="filterOptions" v-model="filter" show-counts />
       </Specimen>
-      <Specimen name="SegmentedControl" import-path="dashboard/shared/SegmentedControl.vue">
-        <SegmentedControl v-model="segment" :options="segmentOptions" aria-label="View mode" />
+      <Specimen
+        name="SegmentedControl"
+        import-path="dashboard/shared/SegmentedControl.vue"
+      >
+        <SegmentedControl
+          v-model="segment"
+          :options="segmentOptions"
+          aria-label="View mode"
+        />
       </Specimen>
       <Specimen name="ToggleRow" import-path="dashboard/shared/ToggleRow.vue">
-        <ToggleRow label="Email notifications" hint="Send me a weekly digest" v-model:checked="toggle" />
+        <ToggleRow
+          label="Email notifications"
+          hint="Send me a weekly digest"
+          v-model:checked="toggle"
+        />
       </Specimen>
       <Specimen name="Switch" import-path="dashboard/shared/Switch.vue">
         <Switch v-model:checked="switchOn" />
@@ -178,16 +235,34 @@ const segmentOptions = [
     <p class="t-label cat-eyebrow">Feedback</p>
     <div class="grid">
       <Specimen name="EmptyState" import-path="dashboard/shared/EmptyState.vue">
-        <EmptyState title="No modules yet" message="Create your first module to get started." action-label="New module" />
+        <EmptyState
+          title="No modules yet"
+          message="Create your first module to get started."
+          action-label="New module"
+        />
       </Specimen>
-      <Specimen name="LoadingState" import-path="dashboard/shared/LoadingState.vue">
+      <Specimen
+        name="LoadingState"
+        import-path="dashboard/shared/LoadingState.vue"
+      >
         <LoadingState message="Loading modules…" size="md" />
       </Specimen>
       <Specimen name="ErrorState" import-path="dashboard/shared/ErrorState.vue">
-        <ErrorState title="Could not load data" message="Check your connection and retry." retry-label="Try again" show-retry />
+        <ErrorState
+          title="Could not load data"
+          message="Check your connection and retry."
+          retry-label="Try again"
+          show-retry
+        />
       </Specimen>
-      <Specimen name="ConfirmDialog" import-path="dashboard/shared/ConfirmDialog.vue" note="teleported — click to open">
-        <Button variant="ghost" size="sm" @click="confirmOpen = true">Open dialog</Button>
+      <Specimen
+        name="ConfirmDialog"
+        import-path="dashboard/shared/ConfirmDialog.vue"
+        note="teleported — click to open"
+      >
+        <Button variant="ghost" size="sm" @click="confirmOpen = true"
+          >Open dialog</Button
+        >
         <ConfirmDialog
           v-model="confirmOpen"
           title="Delete module?"
@@ -203,14 +278,23 @@ const segmentOptions = [
     <p class="t-label cat-eyebrow">Navigation</p>
     <div class="grid">
       <Specimen name="Pagination" import-path="dashboard/shared/Pagination.vue">
-        <Pagination :current-page="2" :total-pages="10" :total-items="195" :page-size="20" show-info />
+        <Pagination
+          :current-page="2"
+          :total-pages="10"
+          :total-items="195"
+          :page-size="20"
+          show-info
+        />
       </Specimen>
     </div>
 
     <!-- Misc -->
     <p class="t-label cat-eyebrow">Misc</p>
     <div class="grid">
-      <Specimen name="DashboardNavIcon" import-path="dashboard/shared/DashboardNavIcon.vue">
+      <Specimen
+        name="DashboardNavIcon"
+        import-path="dashboard/shared/DashboardNavIcon.vue"
+      >
         <div class="icon-row">
           <DashboardNavIcon name="grid" />
           <DashboardNavIcon name="notes" />

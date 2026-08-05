@@ -5,17 +5,22 @@
  * Route: /dashboard/chapter/new
  * Steps: 1) Title & Metadata → 2) Import Content → 3) Preview Structure → 4) Review & Create
  */
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
-import { createChapter, createSection, createParagraph, createReference } from '@/services/api/chapters';
-import { fetchChapters } from '@/services/api/chapters';
-import { fetchVersions, createVersion } from '@/services/api/versions';
-import WizardStepMeta from '@/components/dashboard/chapters/WizardStepMeta.vue';
-import WizardStepImport from '@/components/dashboard/chapters/WizardStepImport.vue';
-import WizardStepStructure from '@/components/dashboard/chapters/WizardStepStructure.vue';
-import WizardStepReview from '@/components/dashboard/chapters/WizardStepReview.vue';
-import '@/assets/styles/admin-theme.css';
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useAuth } from "@/composables/useAuth";
+import {
+  createChapter,
+  createSection,
+  createParagraph,
+  createReference,
+  fetchChapters,
+} from "@/services/api/chapters";
+import { fetchVersions, createVersion } from "@/services/api/versions";
+import WizardStepMeta from "@/components/dashboard/chapters/WizardStepMeta.vue";
+import WizardStepImport from "@/components/dashboard/chapters/WizardStepImport.vue";
+import WizardStepStructure from "@/components/dashboard/chapters/WizardStepStructure.vue";
+import WizardStepReview from "@/components/dashboard/chapters/WizardStepReview.vue";
+import "@/assets/styles/admin-theme.css";
 
 const router = useRouter();
 const { user, session } = useAuth();
@@ -23,17 +28,17 @@ const { user, session } = useAuth();
 // Wizard navigation
 const currentStep = ref(1);
 const steps = [
-  { number: 1, label: 'Details' },
-  { number: 2, label: 'Import' },
-  { number: 3, label: 'Structure' },
-  { number: 4, label: 'Review' },
+  { number: 1, label: "Details" },
+  { number: 2, label: "Import" },
+  { number: 3, label: "Structure" },
+  { number: 4, label: "Review" },
 ];
 
 // Step 1: Metadata
 const meta = ref({
-  title: '',
-  description: '',
-  slug: '',
+  title: "",
+  description: "",
+  slug: "",
   order_index: 0,
 });
 
@@ -54,7 +59,10 @@ async function initOrderIndex() {
   try {
     const chapters = await fetchChapters();
     // Chapter 1 is local (not in DB), so DB chapters start at order 2
-    const maxOrder = chapters.reduce((max, ch) => Math.max(max, ch.order_index), 1);
+    const maxOrder = chapters.reduce(
+      (max, ch) => Math.max(max, ch.order_index),
+      1
+    );
     meta.value.order_index = maxOrder + 1;
   } catch {
     meta.value.order_index = 3; // safe fallback
@@ -66,11 +74,16 @@ initOrderIndex();
 // Navigation
 const canGoNext = computed(() => {
   switch (currentStep.value) {
-    case 1: return meta.value.title.trim().length > 0;
-    case 2: return sections.value.length > 0;
-    case 3: return sections.value.length > 0;
-    case 4: return !creating.value;
-    default: return false;
+    case 1:
+      return meta.value.title.trim().length > 0;
+    case 2:
+      return sections.value.length > 0;
+    case 3:
+      return sections.value.length > 0;
+    case 4:
+      return !creating.value;
+    default:
+      return false;
   }
 });
 
@@ -114,14 +127,17 @@ async function handleCreate() {
     const versions = await fetchVersions();
     let contentVersionId;
 
-    const draftVersion = versions.find(v => v.status === 'draft');
+    const draftVersion = versions.find((v) => v.status === "draft");
     if (draftVersion) {
       contentVersionId = draftVersion.id;
     } else {
-      const newVersion = await createVersion({
-        version_number: `v${versions.length + 1}.0`,
-        release_notes: `Created for chapter: ${meta.value.title}`,
-      }, user.value?.id);
+      const newVersion = await createVersion(
+        {
+          version_number: `v${versions.length + 1}.0`,
+          release_notes: `Created for chapter: ${meta.value.title}`,
+        },
+        user.value?.id
+      );
       contentVersionId = newVersion.id;
     }
 
@@ -130,7 +146,7 @@ async function handleCreate() {
       title: meta.value.title,
       slug: meta.value.slug,
       order_index: meta.value.order_index,
-      status: 'draft',
+      status: "draft",
       content_version_id: contentVersionId,
       created_by: user.value?.id,
     });
@@ -146,7 +162,7 @@ async function handleCreate() {
 
       // Create paragraphs in parallel for each section
       await Promise.all(
-        section.paragraphs.map(para =>
+        section.paragraphs.map((para) =>
           createParagraph({
             section_id: createdSection.id,
             content: para.content,
@@ -162,7 +178,7 @@ async function handleCreate() {
     // 4. Create references if any
     if (references.value.length > 0) {
       await Promise.all(
-        references.value.map(ref =>
+        references.value.map((ref) =>
           createReference({
             module_id: chapter.id,
             number: ref.number,
@@ -183,8 +199,9 @@ async function handleCreate() {
 
     createdChapter.value = chapter;
   } catch (err) {
-    createError.value = err.message || 'Failed to create chapter. Please try again.';
-    console.error('Chapter creation error:', err);
+    createError.value =
+      err.message || "Failed to create chapter. Please try again.";
+    console.error("Chapter creation error:", err);
   } finally {
     creating.value = false;
   }
@@ -196,8 +213,15 @@ async function handleCreate() {
     <!-- Top Bar -->
     <div class="wizard-topbar">
       <button class="back-btn" @click="router.push('/dashboard')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <polyline points="15 18 9 12 15 6" />
         </svg>
         Dashboard
@@ -214,11 +238,13 @@ async function handleCreate() {
         :class="{
           active: currentStep === step.number,
           completed: currentStep > step.number,
-          clickable: step.number <= currentStep
+          clickable: step.number <= currentStep,
         }"
         @click="goToStep(step.number)"
       >
-        <span class="dot-number" v-if="currentStep <= step.number">{{ step.number }}</span>
+        <span class="dot-number" v-if="currentStep <= step.number">{{
+          step.number
+        }}</span>
         <span class="dot-check" v-else>&#10003;</span>
         <span class="dot-label">{{ step.label }}</span>
       </div>

@@ -197,7 +197,12 @@ async function switchView(idx) {
   gsap.set(overlayEl.value?.querySelectorAll("path") ?? [], { opacity: 1 });
   inTl.fromTo(
     skullEl.value,
-    { rotationY: -dir * MOTION.yawDeg, xPercent: -dir * 6, opacity: 0, scale: 0.92 },
+    {
+      rotationY: -dir * MOTION.yawDeg,
+      xPercent: -dir * 6,
+      opacity: 0,
+      scale: 0.92,
+    },
     {
       rotationY: 0,
       xPercent: 0,
@@ -229,13 +234,23 @@ async function selectRegion(region) {
     // Skull cedes ground; paper card slides in from the right.
     tl.to(
       stageEl.value,
-      { xPercent: -16, scale: 0.92, duration: MOTION.panel * K, ease: MOTION.easeIn },
+      {
+        xPercent: -16,
+        scale: 0.92,
+        duration: MOTION.panel * K,
+        ease: MOTION.easeIn,
+      },
       0
     );
     tl.fromTo(
       panelEl.value,
       { xPercent: 108, opacity: 0.4 },
-      { xPercent: 0, opacity: 1, duration: MOTION.panel * K, ease: MOTION.easeIn },
+      {
+        xPercent: 0,
+        opacity: 1,
+        duration: MOTION.panel * K,
+        ease: MOTION.easeIn,
+      },
       0.05
     );
   } else {
@@ -307,30 +322,69 @@ function closePanel(instant = false) {
             alt=""
             class="skull__lines"
           />
-          <svg v-else class="skull__svg" viewBox="0 0 400 480" aria-hidden="true">
+          <svg
+            v-else
+            class="skull__svg"
+            viewBox="0 0 400 480"
+            aria-hidden="true"
+          >
             <!-- ══ PLACEHOLDER ART — swap for Figma engravings ══ -->
             <g v-if="activeView.id === 'anterior'" class="bone">
-              <path d="M200 26 C120 26 66 94 66 180 C66 232 84 272 108 296 C116 304 120 314 120 326 L120 346 C120 372 138 388 158 394 L166 412 C172 426 182 434 200 434 C218 434 228 426 234 412 L242 394 C262 388 280 372 280 346 L280 326 C280 314 284 304 292 296 C316 272 334 232 334 180 C334 94 280 26 200 26 Z" />
-              <path d="M116 238 C112 262 126 280 150 282 C172 284 188 272 190 252 C192 234 178 224 156 224 C138 224 120 228 116 238 Z" class="bone--fill" />
-              <path d="M284 238 C288 262 274 280 250 282 C228 284 212 272 210 252 C208 234 222 224 244 224 C262 224 280 228 284 238 Z" class="bone--fill" />
-              <path d="M200 262 L186 306 C182 318 188 326 200 326 C212 326 218 318 214 306 Z" class="bone--fill" />
-              <path d="M158 394 C158 414 170 424 200 424 C230 424 242 414 242 394" />
-              <path d="M170 396 v22 M180 398 v24 M190 399 v25 M200 400 v24 M210 399 v25 M220 398 v24 M230 396 v22" class="bone--faint" />
-              <path d="M120 210 C150 196 180 192 200 192 C220 192 250 196 280 210" class="bone--faint" />
-              <path d="M200 30 q6 22 -4 44 q-6 22 4 44 q6 22 -2 40" class="bone--faint" />
+              <path
+                d="M200 26 C120 26 66 94 66 180 C66 232 84 272 108 296 C116 304 120 314 120 326 L120 346 C120 372 138 388 158 394 L166 412 C172 426 182 434 200 434 C218 434 228 426 234 412 L242 394 C262 388 280 372 280 346 L280 326 C280 314 284 304 292 296 C316 272 334 232 334 180 C334 94 280 26 200 26 Z"
+              />
+              <path
+                d="M116 238 C112 262 126 280 150 282 C172 284 188 272 190 252 C192 234 178 224 156 224 C138 224 120 228 116 238 Z"
+                class="bone--fill"
+              />
+              <path
+                d="M284 238 C288 262 274 280 250 282 C228 284 212 272 210 252 C208 234 222 224 244 224 C262 224 280 228 284 238 Z"
+                class="bone--fill"
+              />
+              <path
+                d="M200 262 L186 306 C182 318 188 326 200 326 C212 326 218 318 214 306 Z"
+                class="bone--fill"
+              />
+              <path
+                d="M158 394 C158 414 170 424 200 424 C230 424 242 414 242 394"
+              />
+              <path
+                d="M170 396 v22 M180 398 v24 M190 399 v25 M200 400 v24 M210 399 v25 M220 398 v24 M230 396 v22"
+                class="bone--faint"
+              />
+              <path
+                d="M120 210 C150 196 180 192 200 192 C220 192 250 196 280 210"
+                class="bone--faint"
+              />
+              <path
+                d="M200 30 q6 22 -4 44 q-6 22 4 44 q6 22 -2 40"
+                class="bone--faint"
+              />
             </g>
             <g v-else-if="activeView.id === 'lateral'" class="bone">
-              <path d="M84 250 C70 130 150 38 250 38 C330 38 366 104 366 184 C366 248 336 292 296 308" />
-              <path d="M84 250 C84 262 90 270 100 272 L112 274 C108 288 112 296 124 298 L134 300 C130 312 136 320 148 322 L160 324 L164 344 C166 356 176 362 190 362 L226 362 C246 362 258 352 260 336 L262 318 C280 316 292 308 296 308" />
-              <path d="M132 240 C128 258 140 270 158 270 C174 270 184 258 182 244 C180 232 166 226 152 228 C142 230 134 234 132 240 Z" class="bone--fill" />
+              <path
+                d="M84 250 C70 130 150 38 250 38 C330 38 366 104 366 184 C366 248 336 292 296 308"
+              />
+              <path
+                d="M84 250 C84 262 90 270 100 272 L112 274 C108 288 112 296 124 298 L134 300 C130 312 136 320 148 322 L160 324 L164 344 C166 356 176 362 190 362 L226 362 C246 362 258 352 260 336 L262 318 C280 316 292 308 296 308"
+              />
+              <path
+                d="M132 240 C128 258 140 270 158 270 C174 270 184 258 182 244 C180 232 166 226 152 228 C142 230 134 234 132 240 Z"
+                class="bone--fill"
+              />
               <path d="M182 262 C210 268 232 272 246 282" class="bone--faint" />
               <circle cx="246" cy="286" r="7" class="bone--fill" />
-              <path d="M172 344 v16 M182 346 v16 M192 347 v15 M202 347 v15 M212 346 v16 M222 344 v16" class="bone--faint" />
+              <path
+                d="M172 344 v16 M182 346 v16 M192 347 v15 M202 347 v15 M212 346 v16 M222 344 v16"
+                class="bone--faint"
+              />
               <path d="M250 40 q-8 32 4 64 q8 32 -4 64" class="bone--faint" />
               <path d="M310 78 q-22 44 -12 88" class="bone--faint" />
             </g>
             <g v-else class="bone">
-              <path d="M200 30 C118 30 70 100 70 190 C70 268 110 330 148 352 L148 380 C148 398 162 410 182 412 L218 412 C238 410 252 398 252 380 L252 352 C290 330 330 268 330 190 C330 100 282 30 200 30 Z" />
+              <path
+                d="M200 30 C118 30 70 100 70 190 C70 268 110 330 148 352 L148 380 C148 398 162 410 182 412 L218 412 C238 410 252 398 252 380 L252 352 C290 330 330 268 330 190 C330 100 282 30 200 30 Z"
+              />
               <path d="M200 34 C196 62 204 92 200 118" class="bone--faint" />
               <path d="M200 116 C180 152 150 174 122 186" class="bone--faint" />
               <path d="M200 116 C220 152 250 174 278 186" class="bone--faint" />
@@ -387,7 +441,10 @@ function closePanel(instant = false) {
             v-if="activeRegion"
             ref="pillEl"
             class="pill"
-            :style="{ left: activeRegion.x + 3.5 + '%', top: activeRegion.y + '%' }"
+            :style="{
+              left: activeRegion.x + 3.5 + '%',
+              top: activeRegion.y + '%',
+            }"
           >
             {{ activeRegion.name }}
           </span>
@@ -396,9 +453,12 @@ function closePanel(instant = false) {
 
       <!-- paper detail card (Figma frame 2) -->
       <aside v-if="activeRegion" ref="panelEl" class="card">
-        <button class="card__close" aria-label="Close" @click="closePanel()">✕</button>
+        <button class="card__close" aria-label="Close" @click="closePanel()">
+          ✕
+        </button>
         <span class="card__badge">
-          <i class="card__num">{{ activeRegion.n }}</i>{{ activeRegion.name }}
+          <i class="card__num">{{ activeRegion.n }}</i
+          >{{ activeRegion.name }}
         </span>
         <p class="card__text">{{ activeRegion.blurb }}</p>
         <p class="card__text card__text--mute">
@@ -466,7 +526,10 @@ function closePanel(instant = false) {
   color: var(--bone);
   opacity: 0.6;
   cursor: pointer;
-  transition: opacity 0.15s, background-color 0.2s, color 0.2s;
+  transition:
+    opacity 0.15s,
+    background-color 0.2s,
+    color 0.2s;
 }
 .tab:hover {
   opacity: 1;
@@ -543,7 +606,10 @@ function closePanel(instant = false) {
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 .dot:hover,
 .dot--on {

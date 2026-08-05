@@ -9,8 +9,9 @@ const TEXT = { preview: "preview", soon: "coming soon", beta: "beta" };
 </script>
 
 <template>
-  <span class="preview-tag">{{ bare ? "" : "· "
-  }}<slot>{{ TEXT[variant] || variant }}</slot></span>
+  <span class="preview-tag"
+    >{{ bare ? "" : "· " }}<slot>{{ TEXT[variant] || variant }}</slot></span
+  >
 </template>
 
 <style scoped>

@@ -53,7 +53,10 @@ module.exports = {
     },
     {
       /* Vitest specs use the globals-injected describe/it/expect. */
-      files: ["**/__tests__/**/*.{test,spec}.{js,ts}", "**/*.{test,spec}.{js,ts}"],
+      files: [
+        "**/__tests__/**/*.{test,spec}.{js,ts}",
+        "**/*.{test,spec}.{js,ts}",
+      ],
       globals: {
         describe: "readonly",
         it: "readonly",

@@ -29,7 +29,9 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
     <!-- EMAIL PREFERENCES (presentational) -->
     <section id="notifications" class="section">
       <header class="section-header">
-        <p class="eyebrow">02 · Email preferences <span class="soon">· preview</span></p>
+        <p class="eyebrow">
+          02 · Email preferences <span class="soon">· preview</span>
+        </p>
         <h2>When we'll write to you</h2>
         <p class="subtitle">
           We default to a quiet inbox. Turn things on as you need them.
@@ -69,19 +71,32 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
     <!-- DATA & PRIVACY (presentational) -->
     <section id="data" class="section">
       <header class="section-header">
-        <p class="eyebrow">03 · Data &amp; privacy <span class="soon">· preview</span></p>
+        <p class="eyebrow">
+          03 · Data &amp; privacy <span class="soon">· preview</span>
+        </p>
         <h2>Your reading footprint</h2>
         <p class="subtitle">
-          Open Brain stores your highlights, notes, and progress so you can
-          sync between devices. You can export or delete it at any time.
+          Open Brain stores your highlights, notes, and progress so you can sync
+          between devices. You can export or delete it at any time.
         </p>
       </header>
 
       <div class="stats-grid">
-        <div class="stat"><span class="stat-value">—</span><span class="stat-label">Highlights</span></div>
-        <div class="stat"><span class="stat-value">—</span><span class="stat-label">Notes</span></div>
-        <div class="stat"><span class="stat-value">—</span><span class="stat-label">Chapters started</span></div>
-        <div class="stat"><span class="stat-value">—</span><span class="stat-label">Storage used</span></div>
+        <div class="stat">
+          <span class="stat-value">—</span
+          ><span class="stat-label">Highlights</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">—</span><span class="stat-label">Notes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">—</span
+          ><span class="stat-label">Chapters started</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">—</span
+          ><span class="stat-label">Storage used</span>
+        </div>
       </div>
 
       <div class="stack">
@@ -104,7 +119,9 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 
       <div class="data-actions">
         <button class="btn" type="button" disabled>Download my data</button>
-        <button class="btn" type="button" disabled>Delete reading history</button>
+        <button class="btn" type="button" disabled>
+          Delete reading history
+        </button>
       </div>
     </section>
 

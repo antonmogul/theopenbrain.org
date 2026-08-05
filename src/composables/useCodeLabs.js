@@ -240,13 +240,9 @@ export function useCodeLabs() {
   }
 
   // Computed properties
-  const hasTestCases = computed(
-    () => currentLab.value?.test_cases?.length > 0
-  );
+  const hasTestCases = computed(() => currentLab.value?.test_cases?.length > 0);
 
-  const passedAllTests = computed(
-    () => executionResult.value?.passed === true
-  );
+  const passedAllTests = computed(() => executionResult.value?.passed === true);
 
   const bestScore = computed(() => {
     if (!submissions.value || submissions.value.length === 0) {

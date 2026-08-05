@@ -137,7 +137,6 @@ async function executeDelete() {
     console.error("ChatTab: Error deleting conversation:", e);
   }
 }
-
 </script>
 
 <template>
@@ -150,7 +149,17 @@ async function executeDelete() {
         :class="{ active: showHistory }"
         title="Conversation history"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
@@ -161,7 +170,17 @@ async function executeDelete() {
         class="header-btn new-btn"
         title="New conversation"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -187,13 +206,20 @@ async function executeDelete() {
           <div v-if="deleteConfirmId === conv.id" class="delete-confirm">
             <p>Delete this conversation?</p>
             <div class="confirm-actions">
-              <Button variant="ghost" size="sm" @click="cancelDelete">Cancel</Button>
-              <Button variant="danger" size="sm" @click="executeDelete">Delete</Button>
+              <Button variant="ghost" size="sm" @click="cancelDelete"
+                >Cancel</Button
+              >
+              <Button variant="danger" size="sm" @click="executeDelete"
+                >Delete</Button
+              >
             </div>
           </div>
 
           <template v-else>
-            <div class="item-content" @click="handleSelectConversation(conv.id)">
+            <div
+              class="item-content"
+              @click="handleSelectConversation(conv.id)"
+            >
               <span class="item-title">{{ conv.title }}</span>
               <span class="item-date">{{ formatDate(conv.updated_at) }}</span>
             </div>
@@ -202,9 +228,21 @@ async function executeDelete() {
               class="delete-btn"
               title="Delete conversation"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                ></path>
               </svg>
             </button>
           </template>
@@ -263,7 +301,10 @@ async function executeDelete() {
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .header-btn:hover {
@@ -314,8 +355,12 @@ async function executeDelete() {
   transition: background 0.12s ease;
 }
 
-.history-item:hover { background: rgb(var(--color-ink) / 0.04); }
-.history-item.active { background: rgb(var(--color-accent) / 0.08); }
+.history-item:hover {
+  background: rgb(var(--color-ink) / 0.04);
+}
+.history-item.active {
+  background: rgb(var(--color-accent) / 0.08);
+}
 
 .item-content {
   flex: 1;
@@ -354,11 +399,17 @@ async function executeDelete() {
   justify-content: center;
   color: rgb(var(--color-mute));
   opacity: 0;
-  transition: opacity 0.12s ease, color 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease;
 }
 
-.history-item:hover .delete-btn { opacity: 1; }
-.delete-btn:hover { color: rgb(var(--color-accent)); }
+.history-item:hover .delete-btn {
+  opacity: 1;
+}
+.delete-btn:hover {
+  color: rgb(var(--color-accent));
+}
 
 .delete-confirm {
   width: 100%;

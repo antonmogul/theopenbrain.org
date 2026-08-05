@@ -6,11 +6,41 @@ import { useCrudResource } from "./useCrudResource";
 // Available highlight colors. `hex` is the Tailwind -300 border/dot shade —
 // the single source for JS color lookups (e.g. NotebookTab border dots).
 export const HIGHLIGHT_COLORS = [
-  { value: "yellow", name: "Yellow", class: "bg-yellow-200", bgClass: "bg-yellow-300", hex: "#fcd34d" },
-  { value: "green", name: "Green", class: "bg-green-200", bgClass: "bg-green-300", hex: "#86efac" },
-  { value: "blue", name: "Blue", class: "bg-blue-200", bgClass: "bg-blue-300", hex: "#93c5fd" },
-  { value: "pink", name: "Pink", class: "bg-pink-200", bgClass: "bg-pink-300", hex: "#f9a8d4" },
-  { value: "purple", name: "Purple", class: "bg-purple-200", bgClass: "bg-purple-300", hex: "#c4b5fd" },
+  {
+    value: "yellow",
+    name: "Yellow",
+    class: "bg-yellow-200",
+    bgClass: "bg-yellow-300",
+    hex: "#fcd34d",
+  },
+  {
+    value: "green",
+    name: "Green",
+    class: "bg-green-200",
+    bgClass: "bg-green-300",
+    hex: "#86efac",
+  },
+  {
+    value: "blue",
+    name: "Blue",
+    class: "bg-blue-200",
+    bgClass: "bg-blue-300",
+    hex: "#93c5fd",
+  },
+  {
+    value: "pink",
+    name: "Pink",
+    class: "bg-pink-200",
+    bgClass: "bg-pink-300",
+    hex: "#f9a8d4",
+  },
+  {
+    value: "purple",
+    name: "Purple",
+    class: "bg-purple-200",
+    bgClass: "bg-purple-300",
+    hex: "#c4b5fd",
+  },
 ];
 
 // Map of highlight color value -> border/dot hex (the -300 shade).

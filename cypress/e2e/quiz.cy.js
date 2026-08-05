@@ -13,7 +13,9 @@ describe("Quiz Flow", () => {
     // Intercept profile requests (used by auth guard)
     cy.intercept("GET", "**/rest/v1/profiles*", {
       statusCode: 200,
-      body: [{ id: "test-user-id", role: "student", full_name: "Test Student" }],
+      body: [
+        { id: "test-user-id", role: "student", full_name: "Test Student" },
+      ],
     }).as("getProfile");
 
     // Set auth in localStorage
@@ -82,7 +84,9 @@ describe("Quiz Flow", () => {
 
       cy.intercept("GET", "**/rest/v1/profiles*", {
         statusCode: 200,
-        body: [{ id: "test-user-id", role: "student", full_name: "Test Student" }],
+        body: [
+          { id: "test-user-id", role: "student", full_name: "Test Student" },
+        ],
       }).as("getProfile");
 
       cy.visit("/student", {
@@ -113,9 +117,18 @@ describe("Quiz Flow", () => {
       }).as("getQuizzes");
 
       cy.intercept("GET", "**/rest/v1/modules*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/flashcards*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/quiz_attempts*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/student_courses*", { statusCode: 200, body: [] });
+      cy.intercept("GET", "**/rest/v1/flashcards*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/quiz_attempts*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/student_courses*", {
+        statusCode: 200,
+        body: [],
+      });
       cy.intercept("GET", "**/rest/v1/profiles*", {
         statusCode: 200,
         body: [{ id: "test-user-id", role: "student" }],
@@ -167,7 +180,12 @@ describe("Quiz Flow", () => {
                 id: "q1",
                 question_text: "What is the retina?",
                 question_type: "multiple_choice",
-                options: ["A layer of the eye", "A bone", "A muscle", "A nerve"],
+                options: [
+                  "A layer of the eye",
+                  "A bone",
+                  "A muscle",
+                  "A nerve",
+                ],
                 correct_answer: "A layer of the eye",
                 order_index: 1,
               },
@@ -446,8 +464,14 @@ describe("Quiz Flow", () => {
 
       cy.intercept("GET", "**/rest/v1/quizzes*", { statusCode: 200, body: [] });
       cy.intercept("GET", "**/rest/v1/modules*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/flashcards*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/student_courses*", { statusCode: 200, body: [] });
+      cy.intercept("GET", "**/rest/v1/flashcards*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/student_courses*", {
+        statusCode: 200,
+        body: [],
+      });
       cy.intercept("GET", "**/rest/v1/profiles*", {
         statusCode: 200,
         body: [{ id: "test-user-id", role: "student" }],
@@ -463,7 +487,9 @@ describe("Quiz Flow", () => {
       });
 
       // Check recent scores section
-      cy.contains("Recent Quiz Scores", { timeout: 10000 }).should("be.visible");
+      cy.contains("Recent Quiz Scores", { timeout: 10000 }).should(
+        "be.visible"
+      );
       cy.contains("80%").should("be.visible");
     });
 
@@ -488,8 +514,14 @@ describe("Quiz Flow", () => {
       }).as("getAttempts");
 
       cy.intercept("GET", "**/rest/v1/modules*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/flashcards*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/student_courses*", { statusCode: 200, body: [] });
+      cy.intercept("GET", "**/rest/v1/flashcards*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/student_courses*", {
+        statusCode: 200,
+        body: [],
+      });
       cy.intercept("GET", "**/rest/v1/profiles*", {
         statusCode: 200,
         body: [{ id: "test-user-id", role: "student" }],

@@ -62,7 +62,10 @@ export function chatTimestamp(dateString) {
   const date = new Date(dateString);
   const diff = Date.now() - date.getTime();
   if (diff < DAY) {
-    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   }
   if (diff < WEEK) {
     return date.toLocaleDateString("en-US", { weekday: "short" });

@@ -75,7 +75,9 @@ const performanceMessage = computed(() => {
           cy="64"
           r="56"
           fill="none"
-          :stroke="passed ? 'rgb(var(--color-complete))' : 'rgb(var(--color-accent))'"
+          :stroke="
+            passed ? 'rgb(var(--color-complete))' : 'rgb(var(--color-accent))'
+          "
           stroke-width="10"
           stroke-linecap="round"
           :stroke-dasharray="circumference"
@@ -175,7 +177,11 @@ const performanceMessage = computed(() => {
 
     <!-- Actions -->
     <div class="actions">
-      <button @click="$emit('review')" class="btn-secondary" data-testid="review-btn">
+      <button
+        @click="$emit('review')"
+        class="btn-secondary"
+        data-testid="review-btn"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -193,7 +199,11 @@ const performanceMessage = computed(() => {
         Review Answers
       </button>
 
-      <button @click="$emit('retry')" class="btn-outline" data-testid="retry-btn">
+      <button
+        @click="$emit('retry')"
+        class="btn-outline"
+        data-testid="retry-btn"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -211,7 +221,11 @@ const performanceMessage = computed(() => {
         Try Again
       </button>
 
-      <button @click="$emit('close')" class="btn-primary" data-testid="continue-btn">
+      <button
+        @click="$emit('close')"
+        class="btn-primary"
+        data-testid="continue-btn"
+      >
         Continue Learning
       </button>
     </div>
@@ -387,7 +401,10 @@ const performanceMessage = computed(() => {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .btn-primary {

@@ -23,9 +23,16 @@ const accentAttr = props.accent === "magenta" ? null : props.accent;
   <div class="shell" :data-accent="accentAttr">
     <div class="shell-layout">
       <DashboardRail
-        :nav-items="navItems" :active-section="activeSection" :display-name="displayName"
-        :email="email" :role="role" :back-label="backLabel" :back-to="backTo" :show-back="showBack"
-        @update:active-section="$emit('update:activeSection', $event)" @back="$emit('back')"
+        :nav-items="navItems"
+        :active-section="activeSection"
+        :display-name="displayName"
+        :email="email"
+        :role="role"
+        :back-label="backLabel"
+        :back-to="backTo"
+        :show-back="showBack"
+        @update:active-section="$emit('update:activeSection', $event)"
+        @back="$emit('back')"
       >
         <template v-if="$slots.user" #user><slot name="user" /></template>
         <template v-if="$slots.footer" #footer><slot name="footer" /></template>
@@ -36,12 +43,34 @@ const accentAttr = props.accent === "magenta" ? null : props.accent;
 </template>
 
 <style scoped>
-.shell { background: rgb(var(--color-bg)); color: rgb(var(--color-ink)); font-family: var(--font-body); min-height: 100vh; }
-.shell-layout {
-  display: grid; grid-template-columns: 1fr; max-width: 77.5rem; margin: 0 auto;
-  padding: 2.5rem 3rem 6rem; gap: 3rem;
+.shell {
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-body);
+  min-height: 100vh;
 }
-@media (min-width: 900px) { .shell-layout { grid-template-columns: 17.5rem 1fr; } }
-@media (max-width: 767px) { .shell-layout { padding: 1.5rem 1.125rem 5rem; } }
-.shell-content { display: flex; flex-direction: column; gap: 4rem; min-width: 0; }
+.shell-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 77.5rem;
+  margin: 0 auto;
+  padding: 2.5rem 3rem 6rem;
+  gap: 3rem;
+}
+@media (min-width: 900px) {
+  .shell-layout {
+    grid-template-columns: 17.5rem 1fr;
+  }
+}
+@media (max-width: 767px) {
+  .shell-layout {
+    padding: 1.5rem 1.125rem 5rem;
+  }
+}
+.shell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  min-width: 0;
+}
 </style>

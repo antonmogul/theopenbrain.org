@@ -80,8 +80,15 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           aria-label="Expand to full screen"
           @click="openFullscreen"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-               stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+          >
             <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
           </svg>
         </button>
@@ -120,8 +127,15 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               aria-label="Exit full screen"
               @click="closeFullscreen"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                   stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+              >
                 <path d="M5 1v4H1M9 1v4h4M5 13V9H1M9 13V9h4" />
               </svg>
             </button>
@@ -129,9 +143,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           <div class="fig-area fs-area">
             <div class="fig-placeholder">
               <span class="fig-type-chip">
-                <span aria-hidden="true">{{ type.glyph }}</span> {{ type.label }}
+                <span aria-hidden="true">{{ type.glyph }}</span>
+                {{ type.label }}
               </span>
-              <span class="fig-glyph fs-glyph" aria-hidden="true">{{ type.glyph }}</span>
+              <span class="fig-glyph fs-glyph" aria-hidden="true">{{
+                type.glyph
+              }}</span>
               <p class="fig-title fs-title">{{ title }}</p>
               <p v-if="caption" class="fig-caption">{{ caption }}</p>
               <p class="fig-status">Artwork pending</p>
@@ -207,7 +224,9 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   color: rgb(var(--color-ink));
   cursor: pointer;
   flex-shrink: 0;
-  transition: border-color 0.12s ease, background 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
 }
 .fig-fs-btn:hover {
   border-color: rgb(var(--color-ink));

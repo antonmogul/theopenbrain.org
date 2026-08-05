@@ -45,7 +45,9 @@ function blocksToHtml(blocks) {
         case "text":
           return `<p>${block.content || ""}</p>`;
         case "list": {
-          const items = (block.items || []).map((item) => `<li>${item}</li>`).join("");
+          const items = (block.items || [])
+            .map((item) => `<li>${item}</li>`)
+            .join("");
           return block.ordered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
         }
         case "blockquote":
@@ -69,19 +71,39 @@ function htmlToBlocks(html) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const tagName = node.tagName.toLowerCase();
       if (tagName.match(/^h[1-6]$/)) {
-        blocks.push({ type: "heading", level: parseInt(tagName[1]), content: node.textContent });
+        blocks.push({
+          type: "heading",
+          level: parseInt(tagName[1]),
+          content: node.textContent,
+        });
       } else if (tagName === "p") {
         blocks.push({ type: "paragraph", content: node.innerHTML });
       } else if (tagName === "ul") {
-        blocks.push({ type: "list", ordered: false, items: Array.from(node.querySelectorAll("li")).map((li) => li.textContent) });
+        blocks.push({
+          type: "list",
+          ordered: false,
+          items: Array.from(node.querySelectorAll("li")).map(
+            (li) => li.textContent
+          ),
+        });
       } else if (tagName === "ol") {
-        blocks.push({ type: "list", ordered: true, items: Array.from(node.querySelectorAll("li")).map((li) => li.textContent) });
+        blocks.push({
+          type: "list",
+          ordered: true,
+          items: Array.from(node.querySelectorAll("li")).map(
+            (li) => li.textContent
+          ),
+        });
       } else if (tagName === "blockquote") {
         blocks.push({ type: "blockquote", content: node.textContent });
       } else if (tagName === "pre") {
         blocks.push({ type: "code", content: node.textContent });
       } else if (tagName === "img") {
-        blocks.push({ type: "image", src: node.getAttribute("src"), alt: node.getAttribute("alt") || "" });
+        blocks.push({
+          type: "image",
+          src: node.getAttribute("src"),
+          alt: node.getAttribute("alt") || "",
+        });
       }
     }
   });
@@ -111,7 +133,9 @@ function buildFlatBlocks() {
       .filter((p) => p.section_id === section.id)
       .sort((a, b) => a.order_index - b.order_index);
     sectionParagraphs.forEach((p, paraIndex) => {
-      const wordCount = (p.content_text || "").split(/\s+/).filter(Boolean).length;
+      const wordCount = (p.content_text || "")
+        .split(/\s+/)
+        .filter(Boolean).length;
       const jsonBlocks = p.content?.blocks || [];
       const htmlContent = blocksToHtml(jsonBlocks);
       blocks.push({
@@ -132,7 +156,8 @@ function buildFlatBlocks() {
         animationTrigger: p.animation_trigger || null,
         animationTitle: p.animation_id
           ? props.mediaItems.find((m) => m.id === p.animation_id)?.title ||
-            props.mediaItems.find((m) => m.id === p.animation_id)?.animation_key ||
+            props.mediaItems.find((m) => m.id === p.animation_id)
+              ?.animation_key ||
             p.animation_trigger ||
             "Media"
           : null,
@@ -149,7 +174,9 @@ watch(
   () => {
     buildFlatBlocks();
     if (selectedBlock.value) {
-      const updated = flatBlocks.value.find((b) => b.id === selectedBlock.value.id);
+      const updated = flatBlocks.value.find(
+        (b) => b.id === selectedBlock.value.id
+      );
       if (updated) selectedBlock.value = updated;
     }
     setupScrollObserver();
@@ -177,7 +204,11 @@ function save() {
     .map((b) => b.content || b.items?.join(" ") || "")
     .join(" ")
     .replace(/<[^>]*>/g, "");
-  emit("save", { paragraphId: selectedBlock.value.id, content: { blocks }, contentText });
+  emit("save", {
+    paragraphId: selectedBlock.value.id,
+    content: { blocks },
+    contentText,
+  });
 }
 
 // --- drag & drop (reorder within a section; emit ordered ids to parent) ---
@@ -210,14 +241,19 @@ function handleDrop(e, targetBlock) {
     return;
   }
   const sectionBlocks = flatBlocks.value
-    .filter((b) => b.type === "paragraph" && b.sectionId === targetBlock.sectionId)
+    .filter(
+      (b) => b.type === "paragraph" && b.sectionId === targetBlock.sectionId
+    )
     .sort((a, b) => a.orderIndex - b.orderIndex);
   const draggedIndex = sectionBlocks.findIndex((b) => b.id === dragged.id);
   const targetIndex = sectionBlocks.findIndex((b) => b.id === targetBlock.id);
   if (draggedIndex !== targetIndex) {
     sectionBlocks.splice(draggedIndex, 1);
     sectionBlocks.splice(targetIndex, 0, dragged);
-    emit("reorder", { sectionId: targetBlock.sectionId, orderedIds: sectionBlocks.map((b) => b.id) });
+    emit("reorder", {
+      sectionId: targetBlock.sectionId,
+      orderedIds: sectionBlocks.map((b) => b.id),
+    });
   }
   draggedBlockId.value = null;
   dragOverBlockId.value = null;
@@ -254,9 +290,12 @@ onBeforeUnmount(() => scrollObserver?.disconnect());
 
 const chapterStats = computed(() => {
   const sections = props.sections.length;
-  const paragraphs = flatBlocks.value.filter((b) => b.type === "paragraph").length;
+  const paragraphs = flatBlocks.value.filter(
+    (b) => b.type === "paragraph"
+  ).length;
   const words = props.paragraphs.reduce(
-    (sum, p) => sum + (p.content_text || "").split(/\s+/).filter(Boolean).length,
+    (sum, p) =>
+      sum + (p.content_text || "").split(/\s+/).filter(Boolean).length,
     0
   );
   const readingTime = Math.ceil(words / 200);
@@ -289,21 +328,58 @@ const chapterStats = computed(() => {
           @dragend="handleDragEnd"
         >
           <template v-if="block.type === 'section'">
-            <svg class="block-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <svg
+              class="block-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path
+                d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+              ></path>
+            </svg>
             <span class="block-title">{{ block.title }}</span>
           </template>
           <template v-else>
-            <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"></circle><circle cx="15" cy="5" r="1.5"></circle><circle cx="9" cy="12" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="9" cy="19" r="1.5"></circle><circle cx="15" cy="19" r="1.5"></circle></svg>
+            <svg
+              class="drag-handle"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <circle cx="9" cy="5" r="1.5"></circle>
+              <circle cx="15" cy="5" r="1.5"></circle>
+              <circle cx="9" cy="12" r="1.5"></circle>
+              <circle cx="15" cy="12" r="1.5"></circle>
+              <circle cx="9" cy="19" r="1.5"></circle>
+              <circle cx="15" cy="19" r="1.5"></circle>
+            </svg>
             <span class="block-index">P{{ block.paraIndex + 1 }}</span>
-            <span class="block-preview">{{ block.preview || "Empty paragraph" }}</span>
+            <span class="block-preview">{{
+              block.preview || "Empty paragraph"
+            }}</span>
             <span
               v-if="block.animationId"
               class="media-badge"
               title="Click to remove media"
               @click.stop="emit('detach-media', block)"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              {{ block.animationTrigger || 'Media' }}
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              {{ block.animationTrigger || "Media" }}
               <span class="media-badge-x">&times;</span>
             </span>
             <button
@@ -313,9 +389,27 @@ const chapterStats = computed(() => {
               title="Attach animation or media"
               @click.stop="emit('attach-media', block)"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
             </button>
-            <svg v-if="selectedBlock?.id === block.id" class="selected-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18l6-6-6-6"></path></svg>
+            <svg
+              v-if="selectedBlock?.id === block.id"
+              class="selected-arrow"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
           </template>
         </div>
       </div>
@@ -339,12 +433,17 @@ const chapterStats = computed(() => {
               :key="block.id"
               :data-block-id="block.id"
               class="preview-block"
-              :class="{ section: block.type === 'section', paragraph: block.type === 'paragraph' }"
+              :class="{
+                section: block.type === 'section',
+                paragraph: block.type === 'paragraph',
+              }"
             >
               <template v-if="block.type === 'section'">
                 <div class="preview-section-header">
                   <div class="preview-section-meta">
-                    <span class="meta-badge section-badge">Section {{ block.sectionIndex + 1 }}</span>
+                    <span class="meta-badge section-badge"
+                      >Section {{ block.sectionIndex + 1 }}</span
+                    >
                     <span class="meta-slug">{{ block.slug }}</span>
                   </div>
                   <h5 class="preview-section-title">{{ block.title }}</h5>
@@ -355,9 +454,18 @@ const chapterStats = computed(() => {
                   <div class="preview-para-meta">
                     <span class="meta-index">P{{ block.paraIndex + 1 }}</span>
                     <span class="meta-words">{{ block.wordCount }} words</span>
-                    <span v-if="block.isSubsectionHeader" class="meta-badge subsection-badge">Subsection</span>
+                    <span
+                      v-if="block.isSubsectionHeader"
+                      class="meta-badge subsection-badge"
+                      >Subsection</span
+                    >
                   </div>
-                  <div class="preview-para-content" v-html="block.htmlContent || block.contentText || block.preview"></div>
+                  <div
+                    class="preview-para-content"
+                    v-html="
+                      block.htmlContent || block.contentText || block.preview
+                    "
+                  ></div>
                 </div>
               </template>
             </div>
@@ -367,15 +475,26 @@ const chapterStats = computed(() => {
 
       <div v-else class="editor-content">
         <div class="editor-head">
-          <Button variant="ghost" size="sm" @click="clearSelection">← Back to overview</Button>
-          <h4 class="editing-title">Editing: {{ selectedBlock.preview || "Paragraph" }}</h4>
+          <Button variant="ghost" size="sm" @click="clearSelection"
+            >← Back to overview</Button
+          >
+          <h4 class="editing-title">
+            Editing: {{ selectedBlock.preview || "Paragraph" }}
+          </h4>
         </div>
 
         <TipTapEditor v-model="editorContent" placeholder="Start writing..." />
 
         <div class="editor-footer">
-          <span v-if="saveStatus" class="save-status" :class="{ error: saveStatus.includes('Error') }">{{ saveStatus }}</span>
-          <Button variant="solid" size="sm" :loading="saving" @click="save">{{ saving ? "Saving…" : "Save" }}</Button>
+          <span
+            v-if="saveStatus"
+            class="save-status"
+            :class="{ error: saveStatus.includes('Error') }"
+            >{{ saveStatus }}</span
+          >
+          <Button variant="solid" size="sm" :loading="saving" @click="save">{{
+            saving ? "Saving…" : "Save"
+          }}</Button>
         </div>
       </div>
     </div>
@@ -383,97 +502,310 @@ const chapterStats = computed(() => {
 </template>
 
 <style scoped>
-.chapter-editor-layout { display: grid; grid-template-columns: 340px 1fr; min-height: 480px; }
-@media (max-width: 1100px) { .chapter-editor-layout { grid-template-columns: 1fr; } }
+.chapter-editor-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  min-height: 480px;
+}
+@media (max-width: 1100px) {
+  .chapter-editor-layout {
+    grid-template-columns: 1fr;
+  }
+}
 
-.blocks-sidebar { border-right: 1px solid rgb(var(--color-line)); }
-@media (max-width: 1100px) { .blocks-sidebar { border-right: 0; border-bottom: 1px solid rgb(var(--color-line)); } }
-.blocks-list { max-height: 600px; overflow-y: auto; padding: 8px; }
-.blocks-list::-webkit-scrollbar { width: 8px; }
-.blocks-list::-webkit-scrollbar-track { background: transparent; }
-.blocks-list::-webkit-scrollbar-thumb { background: rgb(var(--color-ink) / 0.15); border-radius: 999px; }
+.blocks-sidebar {
+  border-right: 1px solid rgb(var(--color-line));
+}
+@media (max-width: 1100px) {
+  .blocks-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid rgb(var(--color-line));
+  }
+}
+.blocks-list {
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 8px;
+}
+.blocks-list::-webkit-scrollbar {
+  width: 8px;
+}
+.blocks-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.blocks-list::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-ink) / 0.15);
+  border-radius: 999px;
+}
 
 .block-item {
-  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
-  border-radius: 4px; cursor: pointer; transition: background 0.12s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.12s ease;
 }
-.block-item.section { margin-top: 12px; }
-.block-item.section:first-child { margin-top: 0; }
-.block-item.paragraph:hover { background: rgb(var(--color-ink) / 0.04); }
-.block-item.selected { background: rgb(var(--color-accent) / 0.1); }
-.block-item.highlighted { background: rgb(var(--color-accent) / 0.05); }
-.block-item.drag-over { box-shadow: inset 0 2px 0 rgb(var(--color-accent)); }
+.block-item.section {
+  margin-top: 12px;
+}
+.block-item.section:first-child {
+  margin-top: 0;
+}
+.block-item.paragraph:hover {
+  background: rgb(var(--color-ink) / 0.04);
+}
+.block-item.selected {
+  background: rgb(var(--color-accent) / 0.1);
+}
+.block-item.highlighted {
+  background: rgb(var(--color-accent) / 0.05);
+}
+.block-item.drag-over {
+  box-shadow: inset 0 2px 0 rgb(var(--color-accent));
+}
 
-.block-icon { color: rgb(var(--color-accent)); flex: none; }
-.block-title { font-size: 0.875rem; font-weight: 500; color: rgb(var(--color-ink)); }
-.drag-handle { color: rgb(var(--color-mute)); flex: none; cursor: grab; }
-.drag-handle:active { cursor: grabbing; }
-.block-index { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); flex: none; }
-.block-preview {
-  font-size: 0.8125rem; color: rgb(var(--color-ink)); flex: 1; min-width: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.block-icon {
+  color: rgb(var(--color-accent));
+  flex: none;
 }
-.selected-arrow { color: rgb(var(--color-accent)); flex: none; }
+.block-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+}
+.drag-handle {
+  color: rgb(var(--color-mute));
+  flex: none;
+  cursor: grab;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.block-index {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+  flex: none;
+}
+.block-preview {
+  font-size: 0.8125rem;
+  color: rgb(var(--color-ink));
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.selected-arrow {
+  color: rgb(var(--color-accent));
+  flex: none;
+}
 
 .media-badge {
-  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
-  font-family: var(--font-mono); font-size: 0.625rem; border-radius: 999px;
-  background: rgb(var(--color-accent) / 0.12); color: rgb(var(--color-accent));
-  flex: none; cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  border-radius: 999px;
+  background: rgb(var(--color-accent) / 0.12);
+  color: rgb(var(--color-accent));
+  flex: none;
+  cursor: pointer;
 }
-.media-badge:hover { background: rgb(var(--color-accent) / 0.2); }
-.media-badge-x { font-size: 0.8125rem; line-height: 1; }
+.media-badge:hover {
+  background: rgb(var(--color-accent) / 0.2);
+}
+.media-badge-x {
+  font-size: 0.8125rem;
+  line-height: 1;
+}
 .attach-media-btn {
-  display: inline-flex; align-items: center; justify-content: center; padding: 4px;
-  border: 1px solid rgb(var(--color-line)); border-radius: 4px; background: transparent;
-  color: rgb(var(--color-mute)); cursor: pointer; flex: none; opacity: 0; transition: opacity 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  background: transparent;
+  color: rgb(var(--color-mute));
+  cursor: pointer;
+  flex: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
 }
-.block-item:hover .attach-media-btn { opacity: 1; }
-.attach-media-btn:hover { color: rgb(var(--color-accent)); border-color: rgb(var(--color-accent)); }
+.block-item:hover .attach-media-btn {
+  opacity: 1;
+}
+.attach-media-btn:hover {
+  color: rgb(var(--color-accent));
+  border-color: rgb(var(--color-accent));
+}
 
-.editor-panel { padding: 20px; min-width: 0; }
-.stats-panel { display: flex; flex-direction: column; gap: 20px; }
+.editor-panel {
+  padding: 20px;
+  min-width: 0;
+}
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-.content-preview { border: 1px solid rgb(var(--color-line)); border-radius: 4px; overflow: hidden; }
+.content-preview {
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  overflow: hidden;
+}
 .preview-title {
-  font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase;
-  letter-spacing: 0.08em; color: rgb(var(--color-mute)); margin: 0; padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-mute));
+  margin: 0;
+  padding: 12px 16px;
   border-bottom: 1px solid rgb(var(--color-line));
 }
-.preview-content { max-height: 480px; overflow-y: auto; padding: 16px; }
-.preview-content::-webkit-scrollbar { width: 8px; }
-.preview-content::-webkit-scrollbar-track { background: transparent; }
-.preview-content::-webkit-scrollbar-thumb { background: rgb(var(--color-ink) / 0.15); border-radius: 999px; }
+.preview-content {
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 16px;
+}
+.preview-content::-webkit-scrollbar {
+  width: 8px;
+}
+.preview-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.preview-content::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-ink) / 0.15);
+  border-radius: 999px;
+}
 
-.preview-block.paragraph { padding: 12px 0; border-bottom: 1px solid rgb(var(--color-line)); }
-.preview-block.paragraph:last-child { border-bottom: 0; }
-.preview-section-header { padding: 16px 0 8px; }
-.preview-block.section:first-child .preview-section-header { padding-top: 0; }
-.preview-section-meta { display: flex; align-items: center; gap: 10px; }
+.preview-block.paragraph {
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+.preview-block.paragraph:last-child {
+  border-bottom: 0;
+}
+.preview-section-header {
+  padding: 16px 0 8px;
+}
+.preview-block.section:first-child .preview-section-header {
+  padding-top: 0;
+}
+.preview-section-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .meta-badge {
-  font-family: var(--font-mono); font-size: 0.625rem; text-transform: uppercase;
-  letter-spacing: 0.08em; padding: 2px 8px; border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
 }
-.meta-badge.section-badge { background: rgb(var(--color-accent) / 0.12); color: rgb(var(--color-accent)); }
-.meta-badge.subsection-badge { background: rgb(var(--color-complete) / 0.14); color: rgb(var(--color-complete)); }
-.meta-slug { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); }
-.preview-section-title { font-family: var(--font-body); font-size: 1.0625rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 8px 0 0; }
-.preview-para-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.meta-index { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-accent)); }
-.meta-words { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); }
-.preview-para-content { font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-ink)); line-height: 1.6; }
-.preview-para-content :deep(h1), .preview-para-content :deep(h2), .preview-para-content :deep(h3) {
-  font-weight: 500; color: rgb(var(--color-ink)); margin: 8px 0;
+.meta-badge.section-badge {
+  background: rgb(var(--color-accent) / 0.12);
+  color: rgb(var(--color-accent));
 }
-.preview-para-content :deep(h1) { font-size: 1.1875rem; }
-.preview-para-content :deep(h2) { font-size: 1.0625rem; }
-.preview-para-content :deep(h3) { font-size: 0.9375rem; }
+.meta-badge.subsection-badge {
+  background: rgb(var(--color-complete) / 0.14);
+  color: rgb(var(--color-complete));
+}
+.meta-slug {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+}
+.preview-section-title {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 8px 0 0;
+}
+.preview-para-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.meta-index {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-accent));
+}
+.meta-words {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+}
+.preview-para-content {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: rgb(var(--color-ink));
+  line-height: 1.6;
+}
+.preview-para-content :deep(h1),
+.preview-para-content :deep(h2),
+.preview-para-content :deep(h3) {
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 8px 0;
+}
+.preview-para-content :deep(h1) {
+  font-size: 1.1875rem;
+}
+.preview-para-content :deep(h2) {
+  font-size: 1.0625rem;
+}
+.preview-para-content :deep(h3) {
+  font-size: 0.9375rem;
+}
 
-.editor-content { display: flex; flex-direction: column; gap: 16px; }
-.editor-head { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-.editing-title { font-family: var(--font-body); font-size: 1rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.editor-content :deep(.tiptap-editor) { border: 1px solid rgb(var(--color-line)); border-radius: 4px; min-height: 280px; }
-.editor-footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.save-status { font-family: var(--font-mono); font-size: 0.75rem; color: rgb(var(--color-complete)); }
-.save-status.error { color: rgb(var(--color-accent)); }
+.editor-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.editor-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.editing-title {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 0;
+}
+.editor-content :deep(.tiptap-editor) {
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  min-height: 280px;
+}
+.editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.save-status {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgb(var(--color-complete));
+}
+.save-status.error {
+  color: rgb(var(--color-accent));
+}
 </style>

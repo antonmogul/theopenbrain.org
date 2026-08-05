@@ -10,7 +10,7 @@ export function useTextSelection(containerSelector = "[data-paragraph-id]") {
 
   // Derived mode for the toolbar
   const toolbarMode = computed(() =>
-    activeHighlight.value ? "edit" : "create",
+    activeHighlight.value ? "edit" : "create"
   );
 
   // Get character offset within a container element
@@ -23,7 +23,7 @@ export function useTextSelection(containerSelector = "[data-paragraph-id]") {
       container,
       NodeFilter.SHOW_TEXT,
       null,
-      false,
+      false
     );
 
     let charCount = 0;
@@ -143,7 +143,7 @@ export function useTextSelection(containerSelector = "[data-paragraph-id]") {
         const startOffset = getTextOffset(
           paragraphEl,
           range.startContainer,
-          range.startOffset,
+          range.startOffset
         );
         const endOffset = startOffset + text.length;
 

@@ -69,7 +69,7 @@ watch(
     if (!isVisible) {
       resetPanels();
     }
-  },
+  }
 );
 
 watch(
@@ -83,7 +83,7 @@ watch(
       resetPanels();
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 function resetPanels() {
@@ -324,7 +324,8 @@ function onCancel() {
   display: flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 4px 20px rgb(var(--color-ink) / 0.18),
+  box-shadow:
+    0 4px 20px rgb(var(--color-ink) / 0.18),
     0 0 0 1px rgb(var(--color-line));
 }
 

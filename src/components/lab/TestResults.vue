@@ -63,15 +63,23 @@ const totalCount = computed(() => {
           stroke-linejoin="round"
           class="text-yellow-400"
         >
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          ></path>
           <line x1="12" y1="9" x2="12" y2="13"></line>
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
         </svg>
-        <span :class="passed ? 'text-green-300' : 'text-yellow-300'" class="font-medium">
+        <span
+          :class="passed ? 'text-green-300' : 'text-yellow-300'"
+          class="font-medium"
+        >
           {{ passed ? "All Tests Passed!" : "Some Tests Failed" }}
         </span>
       </div>
-      <span class="text-sm" :class="passed ? 'text-green-400' : 'text-yellow-400'">
+      <span
+        class="text-sm"
+        :class="passed ? 'text-green-400' : 'text-yellow-400'"
+      >
         {{ passedCount }}/{{ totalCount }} passed
       </span>
     </div>
@@ -121,12 +129,17 @@ const totalCount = computed(() => {
           <p class="text-gray-200 font-medium">{{ test.name }}</p>
 
           <!-- Show expected vs actual for failed tests -->
-          <div v-if="!test.passed && !test.error" class="mt-2 text-sm space-y-1">
+          <div
+            v-if="!test.passed && !test.error"
+            class="mt-2 text-sm space-y-1"
+          >
             <p class="text-gray-400">
-              Expected: <span class="text-green-400 font-mono">{{ test.expected }}</span>
+              Expected:
+              <span class="text-green-400 font-mono">{{ test.expected }}</span>
             </p>
             <p class="text-gray-400">
-              Actual: <span class="text-red-400 font-mono">{{ test.actual }}</span>
+              Actual:
+              <span class="text-red-400 font-mono">{{ test.actual }}</span>
             </p>
           </div>
 

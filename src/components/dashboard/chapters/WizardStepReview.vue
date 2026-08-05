@@ -5,7 +5,7 @@
  * Shows a summary and "Create Chapter" button.
  * Emits 'create' when the user confirms.
  */
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps({
   meta: { type: Object, required: true },
@@ -16,19 +16,22 @@ const props = defineProps({
   createdChapter: { type: Object, default: null },
 });
 
-const emit = defineEmits(['create']);
+const emit = defineEmits(["create"]);
 
 const paragraphCount = computed(() =>
   props.sections.reduce((sum, s) => sum + s.paragraphs.length, 0)
 );
 
 const wordCount = computed(() =>
-  props.sections.reduce((sum, s) =>
-    sum + s.paragraphs.reduce((pSum, p) => {
-      const text = p.content_text || '';
-      return pSum + text.split(/\s+/).filter(Boolean).length;
-    }, 0),
-  0)
+  props.sections.reduce(
+    (sum, s) =>
+      sum +
+      s.paragraphs.reduce((pSum, p) => {
+        const text = p.content_text || "";
+        return pSum + text.split(/\s+/).filter(Boolean).length;
+      }, 0),
+    0
+  )
 );
 </script>
 
@@ -59,7 +62,9 @@ const wordCount = computed(() =>
     <template v-else>
       <div class="step-header">
         <h2 class="step-title">Review & Create</h2>
-        <p class="step-description">Confirm the details below, then create your chapter.</p>
+        <p class="step-description">
+          Confirm the details below, then create your chapter.
+        </p>
       </div>
 
       <div class="review-card">
@@ -73,7 +78,9 @@ const wordCount = computed(() =>
         </div>
         <div class="review-row">
           <span class="review-label">Slug</span>
-          <span class="review-value mono">/chapter/{{ meta.order_index }}/{{ meta.slug }}</span>
+          <span class="review-value mono"
+            >/chapter/{{ meta.order_index }}/{{ meta.slug }}</span
+          >
         </div>
         <div class="review-row">
           <span class="review-label">Order</span>
@@ -92,7 +99,9 @@ const wordCount = computed(() =>
         </div>
         <div class="review-row">
           <span class="review-label">Words</span>
-          <span class="review-value mono">{{ wordCount.toLocaleString() }}</span>
+          <span class="review-value mono">{{
+            wordCount.toLocaleString()
+          }}</span>
         </div>
         <div v-if="references.length > 0" class="review-row">
           <span class="review-label">References</span>
@@ -110,9 +119,15 @@ const wordCount = computed(() =>
       <div class="sections-summary">
         <h3 class="summary-title">Sections</h3>
         <ol class="section-list">
-          <li v-for="section in sections" :key="section.order_index" class="section-item">
+          <li
+            v-for="section in sections"
+            :key="section.order_index"
+            class="section-item"
+          >
             <span class="section-name">{{ section.title }}</span>
-            <span class="section-meta">{{ section.paragraphs.length }} paragraphs</span>
+            <span class="section-meta"
+              >{{ section.paragraphs.length }} paragraphs</span
+            >
           </li>
         </ol>
       </div>
@@ -130,7 +145,7 @@ const wordCount = computed(() =>
           @click="emit('create')"
         >
           <span v-if="creating" class="spinner" />
-          {{ creating ? 'Creating Chapter...' : 'Create Chapter' }}
+          {{ creating ? "Creating Chapter..." : "Create Chapter" }}
         </button>
       </div>
     </template>
@@ -315,7 +330,9 @@ const wordCount = computed(() =>
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Success State */

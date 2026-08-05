@@ -5,8 +5,7 @@ import { authedRequest as supabaseRest } from "@/services/api/client";
 // AI API config — Anthropic Claude
 const AI_API_URL = "https://api.anthropic.com/v1/messages";
 const AI_API_KEY =
-  import.meta.env.VITE_ANTHROPIC_API_KEY ||
-  import.meta.env.VITE_AI_API_KEY;
+  import.meta.env.VITE_ANTHROPIC_API_KEY || import.meta.env.VITE_AI_API_KEY;
 
 // Base system prompt template — chapter context gets appended at conversation creation
 const BASE_SYSTEM_PROMPT = `You are the AI Tutor for The Open Brain.

@@ -144,8 +144,8 @@ const openInfo = () => {
                 (activeState.state === index && index === 0)
                   ? 'bg-violet text-white pointer-events-none'
                   : activeState.state === index
-                  ? 'border-violet text-black hover:text-violet  '
-                  : ' text-dark hover:text-violet hover:border-violet',
+                    ? 'border-violet text-black hover:text-violet  '
+                    : ' text-dark hover:text-violet hover:border-violet',
               ]"
               @click="
                 activeState.state !== index
@@ -166,8 +166,8 @@ const openInfo = () => {
                 activeState.toggle === true && activeState.state === index
                   ? 'bg-violet text-white pointer-events-none'
                   : activeState.state === index
-                  ? 'border-violet text-black  hover:text-violet '
-                  : 'bg-lighter text-dark hover:text-violet hover:border-violet',
+                    ? 'border-violet text-black  hover:text-violet '
+                    : 'bg-lighter text-dark hover:text-violet hover:border-violet',
                 ,
               ]"
               @click="

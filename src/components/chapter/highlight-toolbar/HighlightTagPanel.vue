@@ -42,7 +42,8 @@ defineEmits(["remove", "keydown"]);
   background: rgb(var(--color-paper));
   border-radius: 10px;
   padding: 10px 12px;
-  box-shadow: 0 4px 16px rgb(var(--color-ink) / 0.16),
+  box-shadow:
+    0 4px 16px rgb(var(--color-ink) / 0.16),
     0 0 0 1px rgb(var(--color-line));
 }
 

@@ -35,7 +35,7 @@ function findTextNodeAtOffset(container, targetOffset) {
     container,
     NodeFilter.SHOW_TEXT,
     null,
-    false,
+    false
   );
 
   let charCount = 0;
@@ -79,7 +79,7 @@ function getTextNodesInRange(container, startOffset, endOffset) {
     container,
     NodeFilter.SHOW_TEXT,
     null,
-    false,
+    false
   );
 
   const result = [];
@@ -119,7 +119,11 @@ function applyHighlightToDOM(paragraphEl, highlight) {
   const hoverColor = COLOR_HOVER_MAP[color] || COLOR_HOVER_MAP.yellow;
 
   try {
-    const textNodes = getTextNodesInRange(paragraphEl, start_offset, end_offset);
+    const textNodes = getTextNodesInRange(
+      paragraphEl,
+      start_offset,
+      end_offset
+    );
 
     for (const { node, sliceStart, sliceEnd } of textNodes) {
       // Split the text node to isolate the highlighted portion
@@ -139,7 +143,11 @@ function applyHighlightToDOM(paragraphEl, highlight) {
       mark.appendChild(targetNode);
     }
   } catch (e) {
-    console.warn("useHighlightRenderer: Could not apply highlight", id, e.message);
+    console.warn(
+      "useHighlightRenderer: Could not apply highlight",
+      id,
+      e.message
+    );
   }
 }
 
@@ -189,7 +197,7 @@ function createMarkElement(id, bgColor, hoverColor, highlight) {
             height: rect.height,
           },
         },
-      }),
+      })
     );
   });
 
@@ -208,7 +216,9 @@ function applyHighlightsToParagraph(paragraphEl, highlights) {
   if (!highlights || highlights.length === 0) return;
 
   // Sort by start_offset and apply in reverse so offsets stay valid
-  const sorted = [...highlights].sort((a, b) => a.start_offset - b.start_offset);
+  const sorted = [...highlights].sort(
+    (a, b) => a.start_offset - b.start_offset
+  );
   const reversed = sorted.reverse();
 
   for (const highlight of reversed) {
@@ -250,7 +260,7 @@ export function useHighlightRenderer(highlightsByParagraph) {
         renderAllHighlights();
       });
     },
-    { deep: true },
+    { deep: true }
   );
 
   return {

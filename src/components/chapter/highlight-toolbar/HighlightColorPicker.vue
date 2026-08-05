@@ -66,7 +66,9 @@ defineEmits(["pick"]);
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: transform 0.12s ease, border-color 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease;
   display: flex;
   align-items: center;
   justify-content: center;

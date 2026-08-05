@@ -4,8 +4,9 @@
  */
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-                    import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function getStorageKey() {
   const projectRef = supabaseUrl?.match(/https:\/\/([^.]+)/)?.[1];
@@ -65,9 +66,9 @@ export function listenToStorageChanges(callback) {
     }
   };
 
-  window.addEventListener('storage', handler);
+  window.addEventListener("storage", handler);
 
-  return () => window.removeEventListener('storage', handler);
+  return () => window.removeEventListener("storage", handler);
 }
 
 export async function fetchProfileREST(userId, accessToken) {
@@ -85,7 +86,9 @@ export async function fetchProfileREST(userId, accessToken) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Profile fetch failed: ${response.status} - ${errorText}`);
+      throw new Error(
+        `Profile fetch failed: ${response.status} - ${errorText}`
+      );
     }
 
     const profiles = await response.json();
@@ -100,19 +103,32 @@ export async function fetchProfileREST(userId, accessToken) {
 
 export async function signInREST(email, password) {
   try {
-    const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-      method: 'POST',
-      headers: {
-        'apikey': supabaseKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await fetch(
+      `${supabaseUrl}/auth/v1/token?grant_type=password`,
+      {
+        method: "POST",
+        headers: {
+          apikey: supabaseKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Login failed' } };
+      return {
+        data: null,
+        error: {
+          message:
+            data.error_description ||
+            data.msg ||
+            data.message ||
+            data.error ||
+            "Login failed",
+        },
+      };
     }
 
     // The response contains access_token, refresh_token, user, etc.
@@ -136,10 +152,10 @@ export async function signInREST(email, password) {
 export async function signUpREST(email, password, metadata = {}) {
   try {
     const response = await fetch(`${supabaseUrl}/auth/v1/signup`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'apikey': supabaseKey,
-        'Content-Type': 'application/json',
+        apikey: supabaseKey,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         email,
@@ -151,7 +167,17 @@ export async function signUpREST(email, password, metadata = {}) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Sign up failed' } };
+      return {
+        data: null,
+        error: {
+          message:
+            data.error_description ||
+            data.msg ||
+            data.message ||
+            data.error ||
+            "Sign up failed",
+        },
+      };
     }
 
     // If email confirmation is disabled, session will be returned
@@ -181,11 +207,11 @@ export async function signOutREST() {
 
     if (session?.access_token) {
       await fetch(`${supabaseUrl}/auth/v1/logout`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
+          apikey: supabaseKey,
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
         },
       });
     }
@@ -203,10 +229,10 @@ export async function signOutREST() {
 export async function resetPasswordREST(email) {
   try {
     const response = await fetch(`${supabaseUrl}/auth/v1/recover`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'apikey': supabaseKey,
-        'Content-Type': 'application/json',
+        apikey: supabaseKey,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ email }),
     });
@@ -214,7 +240,17 @@ export async function resetPasswordREST(email) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Password reset failed' } };
+      return {
+        data: null,
+        error: {
+          message:
+            data.error_description ||
+            data.msg ||
+            data.message ||
+            data.error ||
+            "Password reset failed",
+        },
+      };
     }
 
     return { data, error: null };
@@ -228,15 +264,15 @@ export async function updatePasswordREST(newPassword) {
     const session = getSessionFromStorage();
 
     if (!session?.access_token) {
-      return { data: null, error: { message: 'No active session' } };
+      return { data: null, error: { message: "No active session" } };
     }
 
     const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
+        apikey: supabaseKey,
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ password: newPassword }),
     });
@@ -244,7 +280,17 @@ export async function updatePasswordREST(newPassword) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { data: null, error: { message: data.error_description || data.msg || data.message || data.error || 'Password update failed' } };
+      return {
+        data: null,
+        error: {
+          message:
+            data.error_description ||
+            data.msg ||
+            data.message ||
+            data.error ||
+            "Password update failed",
+        },
+      };
     }
 
     return { data, error: null };

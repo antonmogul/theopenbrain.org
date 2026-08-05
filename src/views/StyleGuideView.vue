@@ -86,7 +86,9 @@ function select(id) {
       </nav>
 
       <div class="sg-foot">
-        <router-link to="/" class="t-label sg-foot-link">← Back to app</router-link>
+        <router-link to="/" class="t-label sg-foot-link"
+          >← Back to app</router-link
+        >
       </div>
     </aside>
 
@@ -162,7 +164,9 @@ function select(id) {
   font-size: 0.9375rem;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 .sg-nav-item:hover {
   background: rgb(var(--color-bg));

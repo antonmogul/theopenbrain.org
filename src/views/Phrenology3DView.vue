@@ -253,7 +253,10 @@ function orbitTo(viewId) {
     </div>
 
     <footer class="phreno3d__foot">
-      <span>Orbit: click + drag · Zoom: scroll · Tap a numbered zone to learn more</span>
+      <span
+        >Orbit: click + drag · Zoom: scroll · Tap a numbered zone to learn
+        more</span
+      >
       <a href="/phrenology" class="phreno3d__link">← 2D version</a>
     </footer>
   </div>
@@ -306,7 +309,9 @@ function orbitTo(viewId) {
   color: var(--bone);
   opacity: 0.6;
   cursor: pointer;
-  transition: opacity 0.15s, background-color 0.2s;
+  transition:
+    opacity 0.15s,
+    background-color 0.2s;
 }
 .quick-nav__btn:hover {
   opacity: 1;
@@ -352,7 +357,10 @@ function orbitTo(viewId) {
   color: var(--violet-soft);
   font-size: 0.65rem;
   font-family: var(--font-mono, monospace);
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   backdrop-filter: blur(4px);
 }
 .dot:hover .dot__num,

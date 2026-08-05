@@ -232,7 +232,9 @@ async function open(c, evt) {
   // The mount entrance (gsap.from opacity) can leave an inline opacity behind;
   // clear it so the flying folder is never animated out from under us.
   gsap.set(folderNode, { clearProps: "opacity" });
-  const state = Flip.getState(folderNode, { props: "borderRadius,backgroundColor" });
+  const state = Flip.getState(folderNode, {
+    props: "borderRadius,backgroundColor",
+  });
 
   openCase.value = c;
   await nextTick();
@@ -266,17 +268,37 @@ async function open(c, evt) {
     // 2) The spread's contents fade in over the arrived folder, then the cover
     //    swings open. The folder itself remains the card beneath.
     .to(flyer, { autoAlpha: 1, duration: 0.25 * SPEED }, ">-" + 0.15 * SPEED)
-    .to(right, { rotationY: 0, duration: 0.7 * SPEED, ease: "power2.inOut" }, ">-" + 0.1 * SPEED)
+    .to(
+      right,
+      { rotationY: 0, duration: 0.7 * SPEED, ease: "power2.inOut" },
+      ">-" + 0.1 * SPEED
+    )
     // 3) Reveal the file + notes as it finishes opening.
-    .to(flyer.querySelector(".flyer__close"), { autoAlpha: 1, duration: 0.2 * SPEED }, "-=" + 0.2 * SPEED)
+    .to(
+      flyer.querySelector(".flyer__close"),
+      { autoAlpha: 1, duration: 0.2 * SPEED },
+      "-=" + 0.2 * SPEED
+    )
     .from(
       flyer.querySelectorAll(".region-marker"),
-      { scale: 0, autoAlpha: 0, duration: 0.3 * SPEED, ease: "back.out(2)", stagger: 0.04 * SPEED },
+      {
+        scale: 0,
+        autoAlpha: 0,
+        duration: 0.3 * SPEED,
+        ease: "back.out(2)",
+        stagger: 0.04 * SPEED,
+      },
       "-=" + 0.3 * SPEED
     )
     .from(
       flyer.querySelectorAll(".note"),
-      { x: 20, autoAlpha: 0, duration: 0.3 * SPEED, ease: "power2.out", stagger: 0.07 * SPEED },
+      {
+        x: 20,
+        autoAlpha: 0,
+        duration: 0.3 * SPEED,
+        ease: "power2.out",
+        stagger: 0.07 * SPEED,
+      },
       "-=" + 0.3 * SPEED
     );
 }
@@ -302,8 +324,15 @@ async function close() {
   );
   // Reverse the open: swing cover shut (returning to portrait center) → sink back
   // down into the drawer slot behind the front files.
-  tl.to(flyer.querySelector(".flyer__close"), { autoAlpha: 0, duration: 0.15 * SPEED })
-    .to(right, { rotationY: -180, duration: 0.5 * SPEED, ease: "power2.inOut" }, "<")
+  tl.to(flyer.querySelector(".flyer__close"), {
+    autoAlpha: 0,
+    duration: 0.15 * SPEED,
+  })
+    .to(
+      right,
+      { rotationY: -180, duration: 0.5 * SPEED, ease: "power2.inOut" },
+      "<"
+    )
     .to(flyer, { x: pc.x, duration: 0.5 * SPEED, ease: "power2.inOut" }, "<")
     // Skin fades back in as the file drops into the slot, so the hand-off back
     // to the real folder is hidden the same way the outbound one is.
@@ -316,7 +345,9 @@ async function close() {
   <div class="cabinet">
     <header class="cabinet__head">
       <h1 class="t-h2">Case Cabinet</h1>
-      <p class="t-body cabinet__sub">Select a patient file to review the case.</p>
+      <p class="t-body cabinet__sub">
+        Select a patient file to review the case.
+      </p>
     </header>
 
     <!-- Backdrop + flyer are Teleported to <body> so they escape any ancestor
@@ -394,14 +425,21 @@ async function close() {
          hinged at the spine and starts folded shut over the cover (rotateY -180),
          then swings open to reveal the two-leaf landscape spread. -->
     <Teleport to="body">
-      <div v-if="openCase" ref="flyerEl" class="flyer" :style="{ '--tint': openCase.tint }">
+      <div
+        v-if="openCase"
+        ref="flyerEl"
+        class="flyer"
+        :style="{ '--tint': openCase.tint }"
+      >
         <button class="flyer__close" @click="close">✕</button>
         <div ref="bookEl" class="book">
           <!-- LEFT half: the cover (front) + the file inside (revealed on open).
                This leaf never moves, so the tab lives here — pinned to its LEFT
                (outer) edge, the far side from the spine. -->
           <div class="leaf leaf--left">
-            <span class="folder__tab folder__tab--side">{{ openCase.tab }}</span>
+            <span class="folder__tab folder__tab--side">{{
+              openCase.tab
+            }}</span>
             <!-- the file: brain illustration + regions -->
             <div class="illus">
               <img
@@ -410,7 +448,12 @@ async function close() {
                 alt="Brain illustration"
                 class="illus__img"
               />
-              <svg v-else viewBox="0 0 320 260" class="illus__svg" aria-hidden="true">
+              <svg
+                v-else
+                viewBox="0 0 320 260"
+                class="illus__svg"
+                aria-hidden="true"
+              >
                 <path
                   d="M60 150 q-30 -80 60 -110 q40 -20 90 0 q60 5 70 60 q30 30 -5 65 q5 40 -45 45 q-30 25 -70 5 q-50 15 -75 -20 q-40 -25 -20 -50 z"
                   fill="none"
@@ -447,10 +490,14 @@ async function close() {
             <div class="leaf leaf--right">
               <span class="leaf__index">{{ openCase.regions[0]?.n }}</span>
               <div v-for="(note, ni) in openCase.notes" :key="ni" class="note">
-                <span v-if="note.speaker" class="note__speaker">{{ note.speaker }}</span>
+                <span v-if="note.speaker" class="note__speaker">{{
+                  note.speaker
+                }}</span>
                 <div class="note__body">
                   <p v-if="note.text" class="note__text">{{ note.text }}</p>
-                  <p v-if="note.caption" class="note__caption">{{ note.caption }}</p>
+                  <p v-if="note.caption" class="note__caption">
+                    {{ note.caption }}
+                  </p>
                 </div>
               </div>
             </div>

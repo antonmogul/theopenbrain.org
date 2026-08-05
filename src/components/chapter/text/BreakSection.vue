@@ -33,7 +33,7 @@ const openInfo = () => {
     <div class="sticky flex top-0 h-screen w-full pl-24 py-10">
       <div class="w-full text-white">
         <div
-          class="flex flex-col justify-strat "
+          class="flex flex-col justify-strat"
           v-if="content.title === 'Blind spot' || 'Color blindness'"
         >
           <h4

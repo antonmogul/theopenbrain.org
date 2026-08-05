@@ -12,7 +12,10 @@ defineProps({
 </script>
 
 <template>
-  <div class="code-output rounded-lg border border-gray-700 overflow-hidden" data-testid="code-output">
+  <div
+    class="code-output rounded-lg border border-gray-700 overflow-hidden"
+    data-testid="code-output"
+  >
     <!-- Header -->
     <div class="output-header bg-gray-800 px-4 py-2 flex items-center gap-2">
       <svg
@@ -34,7 +37,9 @@ defineProps({
     </div>
 
     <!-- Content area -->
-    <div class="output-content bg-gray-900 p-4 min-h-[150px] max-h-[400px] overflow-y-auto">
+    <div
+      class="output-content bg-gray-900 p-4 min-h-[150px] max-h-[400px] overflow-y-auto"
+    >
       <!-- Loading state -->
       <div v-if="loading" class="flex items-center gap-3 text-gray-400">
         <svg
@@ -72,18 +77,34 @@ defineProps({
       <!-- Result display -->
       <div v-else class="space-y-4">
         <!-- Error display -->
-        <div v-if="result.error" class="error-output" data-testid="output-error">
+        <div
+          v-if="result.error"
+          class="error-output"
+          data-testid="output-error"
+        >
           <p class="text-red-400 font-medium mb-1">Error:</p>
-          <pre class="text-red-300 text-sm whitespace-pre-wrap font-mono">{{ result.error }}</pre>
+          <pre class="text-red-300 text-sm whitespace-pre-wrap font-mono">{{
+            result.error
+          }}</pre>
         </div>
 
         <!-- Standard output -->
-        <div v-if="result.output" class="stdout-output" data-testid="output-stdout">
-          <pre class="text-gray-100 text-sm whitespace-pre-wrap font-mono">{{ result.output }}</pre>
+        <div
+          v-if="result.output"
+          class="stdout-output"
+          data-testid="output-stdout"
+        >
+          <pre class="text-gray-100 text-sm whitespace-pre-wrap font-mono">{{
+            result.output
+          }}</pre>
         </div>
 
         <!-- Plot images -->
-        <div v-if="result.plots && result.plots.length > 0" class="plots-output space-y-4" data-testid="output-plots">
+        <div
+          v-if="result.plots && result.plots.length > 0"
+          class="plots-output space-y-4"
+          data-testid="output-plots"
+        >
           <img
             v-for="(plot, index) in result.plots"
             :key="index"
@@ -95,7 +116,11 @@ defineProps({
 
         <!-- No output message when code runs successfully but produces nothing -->
         <div
-          v-if="!result.error && !result.output && (!result.plots || result.plots.length === 0)"
+          v-if="
+            !result.error &&
+            !result.output &&
+            (!result.plots || result.plots.length === 0)
+          "
           class="text-gray-500 italic"
         >
           Code executed successfully (no output)

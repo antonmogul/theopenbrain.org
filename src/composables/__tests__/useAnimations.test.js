@@ -12,8 +12,10 @@ import { useAnimations } from "@/composables/useAnimations";
 function mockRest({ animations, states = [], variants = [] }) {
   apiRequest.mockImplementation((endpoint) => {
     if (endpoint.startsWith("animations?")) return Promise.resolve(animations);
-    if (endpoint.startsWith("animation_states?")) return Promise.resolve(states);
-    if (endpoint.startsWith("animation_variants?")) return Promise.resolve(variants);
+    if (endpoint.startsWith("animation_states?"))
+      return Promise.resolve(states);
+    if (endpoint.startsWith("animation_variants?"))
+      return Promise.resolve(variants);
     return Promise.resolve([]);
   });
 }
@@ -107,8 +109,19 @@ describe("useAnimations switch flag (CODE-FIX #3)", () => {
         },
       ],
       states: [
-        { animation_id: "a4", state_label: "Step 1", state_description: "Rod is in the dark", order_index: 0, is_highlight_state: false },
-        { animation_id: "a4", state_label: "Rhodopsin", order_index: 100, is_highlight_state: true },
+        {
+          animation_id: "a4",
+          state_label: "Step 1",
+          state_description: "Rod is in the dark",
+          order_index: 0,
+          is_highlight_state: false,
+        },
+        {
+          animation_id: "a4",
+          state_label: "Rhodopsin",
+          order_index: 100,
+          is_highlight_state: true,
+        },
       ],
     });
 

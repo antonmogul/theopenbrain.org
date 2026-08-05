@@ -38,7 +38,9 @@ describe("useHighlights", () => {
   });
 
   it("fetchHighlights appends paragraph filter and loads via shared scaffold", async () => {
-    authedRequest.mockResolvedValue([{ id: "h1", paragraph_id: "p1", start_offset: 0 }]);
+    authedRequest.mockResolvedValue([
+      { id: "h1", paragraph_id: "p1", start_offset: 0 },
+    ]);
     const { highlights, loading, fetchHighlights } = useHighlights();
 
     await fetchHighlights("p1");
@@ -132,7 +134,9 @@ describe("useHighlights", () => {
 
     await togglePublic("h1");
 
-    const patch = authedRequest.mock.calls.find((c) => c[0] === "highlights?id=eq.h1");
+    const patch = authedRequest.mock.calls.find(
+      (c) => c[0] === "highlights?id=eq.h1"
+    );
     expect(JSON.parse(patch[1].body)).toEqual({ is_public: true });
     expect(highlights.value[0].is_public).toBe(true);
   });

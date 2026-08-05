@@ -100,11 +100,21 @@ export function useChapter() {
           // Inline "(Figure N)" callout. Anchors to the left-column placeholder
           // via data-figure so it can later deep-link / scroll-sync.
           const n = block.number;
-          const label = n === undefined || n === null ? "Figure" : `Figure ${n}`;
+          const label =
+            n === undefined || n === null ? "Figure" : `Figure ${n}`;
           return `<span class="figure-ref" data-figure="${n ?? ""}">${label}</span>`;
         }
         // Chapter 1-specific types — metadata only, no HTML
-        if (["animation", "animation_full", "break_section", "break_video", "further_reading", "footnote"].includes(block.type)) {
+        if (
+          [
+            "animation",
+            "animation_full",
+            "break_section",
+            "break_video",
+            "further_reading",
+            "footnote",
+          ].includes(block.type)
+        ) {
           return "";
         }
         // Default: try to use content property
@@ -181,7 +191,9 @@ export function useChapter() {
         if (currentSubSection) {
           // Close any open subSubSection group before flushing its parent
           if (currentSubSubGroup) {
-            currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+            currentSubSection.paragraphs.push({
+              subSubSection: currentSubSubGroup,
+            });
             currentSubSubGroup = null;
           }
           result.push({ subSection: [currentSubSection] });
@@ -219,7 +231,9 @@ export function useChapter() {
       if (level === 1 && currentSubSection) {
         // Close subSubSection group if open
         if (currentSubSubGroup) {
-          currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+          currentSubSection.paragraphs.push({
+            subSubSection: currentSubSubGroup,
+          });
           currentSubSubGroup = null;
         }
         currentSubSection.paragraphs.push(transformParagraph(p));
@@ -230,7 +244,9 @@ export function useChapter() {
       // First, flush any open subSection
       if (currentSubSection) {
         if (currentSubSubGroup) {
-          currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+          currentSubSection.paragraphs.push({
+            subSubSection: currentSubSubGroup,
+          });
           currentSubSubGroup = null;
         }
         // Wrap as a subSection entry in parent
@@ -244,7 +260,9 @@ export function useChapter() {
     // Flush remaining
     if (currentSubSection) {
       if (currentSubSubGroup) {
-        currentSubSection.paragraphs.push({ subSubSection: currentSubSubGroup });
+        currentSubSection.paragraphs.push({
+          subSubSection: currentSubSubGroup,
+        });
       }
       result.push({ subSection: [currentSubSection] });
     }
@@ -288,24 +306,22 @@ export function useChapter() {
 
     // Sort sections by order_index
     const sortedSections = [...module.sections].sort(
-      (a, b) => a.order_index - b.order_index,
+      (a, b) => a.order_index - b.order_index
     );
 
     // Find special sections
     const introSection = sortedSections.find(
-      (s) => s.slug === "introduction" || s.order_index === 0,
+      (s) => s.slug === "introduction" || s.order_index === 0
     );
     const furtherReadingSection = sortedSections.find(
-      (s) => s.slug === "further-reading",
+      (s) => s.slug === "further-reading"
     );
-    const footnotesSection = sortedSections.find(
-      (s) => s.slug === "footnotes",
-    );
+    const footnotesSection = sortedSections.find((s) => s.slug === "footnotes");
     const mainSections = sortedSections.filter(
       (s) =>
         s !== introSection &&
         s !== furtherReadingSection &&
-        s !== footnotesSection,
+        s !== footnotesSection
     );
 
     // Transform intro section
@@ -331,7 +347,9 @@ export function useChapter() {
         : [];
 
       // Check if any paragraphs have subsection nesting
-      const hasNesting = sorted.some((p) => (p.subsection_level || 0) > 0 || p.is_subsection_header);
+      const hasNesting = sorted.some(
+        (p) => (p.subsection_level || 0) > 0 || p.is_subsection_header
+      );
 
       let paragraphs;
       if (hasNesting) {
@@ -361,8 +379,9 @@ export function useChapter() {
       paragraphs: [],
     };
     if (furtherReadingSection?.paragraphs) {
-      const frParas = [...furtherReadingSection.paragraphs]
-        .sort((a, b) => a.order_index - b.order_index);
+      const frParas = [...furtherReadingSection.paragraphs].sort(
+        (a, b) => a.order_index - b.order_index
+      );
       furtherReading = {
         id: furtherReadingSection.id,
         title: furtherReadingSection.title || "Further reading:",
@@ -385,8 +404,9 @@ export function useChapter() {
       notes: [],
     };
     if (footnotesSection?.paragraphs) {
-      const fnParas = [...footnotesSection.paragraphs]
-        .sort((a, b) => a.order_index - b.order_index);
+      const fnParas = [...footnotesSection.paragraphs].sort(
+        (a, b) => a.order_index - b.order_index
+      );
       footNotes = {
         id: footnotesSection.id,
         title: footnotesSection.title || "Footnotes",
@@ -408,9 +428,12 @@ export function useChapter() {
 
     console.log(
       "useChapter: Transformed -",
-      "intro:", transformed.intro.length,
-      "sections:", transformed.sections.length,
-      "footnotes:", transformed.footNotes.notes.length,
+      "intro:",
+      transformed.intro.length,
+      "sections:",
+      transformed.sections.length,
+      "footnotes:",
+      transformed.footNotes.notes.length
     );
 
     return transformed;
@@ -433,7 +456,7 @@ export function useChapter() {
 
       // Step 1: Get the module by slug
       const modules = await supabaseRest(
-        `modules?slug=eq.${encodeURIComponent(slug)}&select=id,title,slug,order_index,status`,
+        `modules?slug=eq.${encodeURIComponent(slug)}&select=id,title,slug,order_index,status`
       );
 
       console.log("useChapter: Module query result:", modules);
@@ -445,7 +468,7 @@ export function useChapter() {
 
       // Step 2: Get sections for this module (include animation fields for Chapter 1)
       const sectionsData = await supabaseRest(
-        `sections?module_id=eq.${moduleData.id}&select=id,title,slug,order_index,module_id,animation_id,animation_config&order=order_index.asc`,
+        `sections?module_id=eq.${moduleData.id}&select=id,title,slug,order_index,module_id,animation_id,animation_config&order=order_index.asc`
       );
 
       console.log("useChapter: Sections query result:", sectionsData?.length);
@@ -458,12 +481,12 @@ export function useChapter() {
         // Use 'in' filter for multiple IDs
         const idsParam = sectionIds.map((id) => `"${id}"`).join(",");
         paragraphsData = await supabaseRest(
-          `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,animation_id,animation_trigger,is_subsection_header,subsection_level,content_text,section_id&order=order_index.asc`,
+          `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,animation_id,animation_trigger,is_subsection_header,subsection_level,content_text,section_id&order=order_index.asc`
         );
 
         console.log(
           "useChapter: Paragraphs query result:",
-          paragraphsData?.length,
+          paragraphsData?.length
         );
       }
 
@@ -472,19 +495,15 @@ export function useChapter() {
       // left-column trigger id, so attach animation_key/title onto each row.
       const animationIds = [
         ...new Set(
-          (paragraphsData || [])
-            .map((p) => p.animation_id)
-            .filter(Boolean),
+          (paragraphsData || []).map((p) => p.animation_id).filter(Boolean)
         ),
       ];
       if (animationIds.length > 0) {
         const animIdsParam = animationIds.map((id) => `"${id}"`).join(",");
         const animRows = await supabaseRest(
-          `animations?id=in.(${animIdsParam})&select=id,animation_key,title`,
+          `animations?id=in.(${animIdsParam})&select=id,animation_key,title`
         );
-        const animById = new Map(
-          (animRows || []).map((a) => [a.id, a]),
-        );
+        const animById = new Map((animRows || []).map((a) => [a.id, a]));
         for (const p of paragraphsData) {
           const a = p.animation_id && animById.get(p.animation_id);
           if (a) {
@@ -500,7 +519,7 @@ export function useChapter() {
         sections: sectionsData?.map((section) => ({
           ...section,
           paragraphs: (paragraphsData || []).filter(
-            (p) => p.section_id === section.id,
+            (p) => p.section_id === section.id
           ),
         })),
       };
@@ -524,12 +543,20 @@ export function useChapter() {
       try {
         const t = transformedData.value;
         const sections = t?.sections || [];
-        let subSections = 0, figures = 0, transitions = 0;
+        let subSections = 0,
+          figures = 0,
+          transitions = 0;
         const walk = (nodes) => {
           for (const n of nodes || []) {
-            if (n.subSection) { subSections += n.subSection.length; n.subSection.forEach((s) => walk(s.paragraphs)); }
+            if (n.subSection) {
+              subSections += n.subSection.length;
+              n.subSection.forEach((s) => walk(s.paragraphs));
+            }
             if (n.subSubSection) walk(n.subSubSection);
-            if (n.animation) { figures++; if (n.animation.transition) transitions++; }
+            if (n.animation) {
+              figures++;
+              if (n.animation.transition) transitions++;
+            }
           }
         };
         sections.forEach((s) => walk(s.paragraphs));

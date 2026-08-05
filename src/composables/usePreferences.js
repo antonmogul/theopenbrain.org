@@ -148,19 +148,16 @@ async function syncToServer() {
   };
 
   try {
-    await fetch(
-      `${supabaseUrl}/rest/v1/user_preferences?on_conflict=user_id`,
-      {
-        method: "POST",
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${session.value.access_token}`,
-          "Content-Type": "application/json",
-          Prefer: "resolution=merge-duplicates,return=minimal",
-        },
-        body: JSON.stringify(payload),
+    await fetch(`${supabaseUrl}/rest/v1/user_preferences?on_conflict=user_id`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${session.value.access_token}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
       },
-    );
+      body: JSON.stringify(payload),
+    });
   } catch (err) {
     console.warn("usePreferences: sync failed", err);
   }
@@ -184,7 +181,7 @@ async function hydrateFromServer() {
           Authorization: `Bearer ${session.value.access_token}`,
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) return;
@@ -201,8 +198,7 @@ async function hydrateFromServer() {
       lineLength.value = row.line_length;
     if (row.reduce_motion && !dirty.has("reduceMotion"))
       reduceMotion.value = row.reduce_motion;
-    if (row.font_pair && !dirty.has("fontPair"))
-      fontPair.value = row.font_pair;
+    if (row.font_pair && !dirty.has("fontPair")) fontPair.value = row.font_pair;
   } catch (err) {
     console.warn("usePreferences: hydrate failed", err);
   }
@@ -272,7 +268,7 @@ function init() {
     (authed) => {
       if (authed) hydrateFromServer();
     },
-    { immediate: true },
+    { immediate: true }
   );
 }
 

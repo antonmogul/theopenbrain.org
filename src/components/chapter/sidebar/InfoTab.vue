@@ -79,7 +79,9 @@ const formattedWordCount = computed(() => {
   return String(w);
 });
 
-const highlightCount = computed(() => highlightsCtx?.highlights?.value?.length || 0);
+const highlightCount = computed(
+  () => highlightsCtx?.highlights?.value?.length || 0
+);
 const noteCount = computed(() => notesCtx?.notes?.value?.length || 0);
 const referencesList = computed(() => refsCtx?.references?.value || []);
 const referenceCount = computed(() => referencesList.value.length);
@@ -128,7 +130,18 @@ function scrollToCitation(number) {
         <span class="stat-text">{{ progressPercent }}% read</span>
       </div>
       <div class="stat">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="stat-icon"
+        >
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
@@ -164,7 +177,17 @@ function scrollToCitation(number) {
     <div class="toc">
       <button class="collapsible-heading" @click="tocOpen = !tocOpen">
         <span class="chevron" :class="{ open: tocOpen }">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </span>
@@ -189,7 +212,17 @@ function scrollToCitation(number) {
     <div v-if="referenceCount > 0" class="toc refs-section">
       <button class="collapsible-heading" @click="refsOpen = !refsOpen">
         <span class="chevron" :class="{ open: refsOpen }">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </span>
@@ -206,7 +239,12 @@ function scrollToCitation(number) {
           <span class="ref-number">{{ r.number }}.</span>
           <div class="ref-body">
             <span class="ref-text">
-              {{ r.authors }} ({{ r.year || 'n.d.' }}). {{ r.title }}<template v-if="r.journal">. <em>{{ r.journal }}</em></template><template v-if="r.volume">, {{ r.volume }}</template><template v-if="r.pages">, {{ r.pages }}</template>.
+              {{ r.authors }} ({{ r.year || "n.d." }}). {{ r.title
+              }}<template v-if="r.journal"
+                >. <em>{{ r.journal }}</em></template
+              ><template v-if="r.volume">, {{ r.volume }}</template
+              ><template v-if="r.pages">, {{ r.pages }}</template
+              >.
             </span>
             <a
               v-if="r.doi"

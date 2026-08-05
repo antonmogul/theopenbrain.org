@@ -23,8 +23,16 @@ const GROUPS = [
     title: "Semantic",
     note: "Accent + status colours. Accent is fixed to magenta (the brand primary).",
     swatches: [
-      { token: "--color-accent", name: "accent", use: "Brand primary / interactive" },
-      { token: "--color-complete", name: "complete", use: "Success / takeaway (teal)" },
+      {
+        token: "--color-accent",
+        name: "accent",
+        use: "Brand primary / interactive",
+      },
+      {
+        token: "--color-complete",
+        name: "complete",
+        use: "Success / takeaway (teal)",
+      },
       { token: "--color-warn", name: "warn", use: "Warning / caution (amber)" },
     ],
   },
@@ -55,10 +63,22 @@ const CHAPTERS = [
 ];
 
 const RAMP_STEPS = [
-  { token: "--color-chapter", label: "primary", use: "Section numbers, buttons, active states" },
-  { token: "--color-chapter-deep", label: "deep", use: "Hover / pressed, text on light tints" },
+  {
+    token: "--color-chapter",
+    label: "primary",
+    use: "Section numbers, buttons, active states",
+  },
+  {
+    token: "--color-chapter-deep",
+    label: "deep",
+    use: "Hover / pressed, text on light tints",
+  },
   { token: "--color-chapter-soft", label: "soft", use: "Fills, selected rows" },
-  { token: "--color-chapter-pale", label: "pale", use: "Highlight washes, backgrounds" },
+  {
+    token: "--color-chapter-pale",
+    label: "pale",
+    use: "Highlight washes, backgrounds",
+  },
 ];
 
 // Resolve each token's RGB triplet → hex, read live from the document root.
@@ -85,7 +105,8 @@ function tripletToHex(triplet) {
  */
 function readChapterRamps() {
   const probe = document.createElement("div");
-  probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none";
+  probe.style.cssText =
+    "position:absolute;visibility:hidden;pointer-events:none";
   document.body.appendChild(probe);
 
   const ramps = CHAPTERS.map((c) => {
@@ -124,8 +145,8 @@ onMounted(() => {
       <h2 class="t-h2">Colours</h2>
       <p class="t-body-sm sec-note">
         Tokens live in <code>brand.css</code> as space-separated RGB triplets so
-        Tailwind's <code>&lt;alpha-value&gt;</code> works. Swatches read live from
-        the CSS variables.
+        Tailwind's <code>&lt;alpha-value&gt;</code> works. Swatches read live
+        from the CSS variables.
       </p>
     </header>
 
@@ -184,7 +205,9 @@ onMounted(() => {
           <dl class="ramp-legend">
             <div v-for="s in c.steps" :key="s.token" class="ramp-legend-row">
               <dt class="t-label">{{ s.label }}</dt>
-              <dd><code class="swatch-hex">{{ s.hex || "…" }}</code></dd>
+              <dd>
+                <code class="swatch-hex">{{ s.hex || "…" }}</code>
+              </dd>
             </div>
           </dl>
         </div>

@@ -15,41 +15,41 @@ import { authedRequest as supabaseRest } from "@/services/api/client";
  * @param {import('vue').Ref} profile - the authenticated user's profile ref
  */
 export function useProfessorCollaboration(profile) {
-    // ---- state ----
-    const sharedCourses = ref([]);
-    const sharedCoursesLoading = ref(false);
-    const mySharedCourses = ref([]);
+  // ---- state ----
+  const sharedCourses = ref([]);
+  const sharedCoursesLoading = ref(false);
+  const mySharedCourses = ref([]);
 
-    // ---- fetch ----
-    async function fetchSharedCourses() {
-        sharedCoursesLoading.value = true;
+  // ---- fetch ----
+  async function fetchSharedCourses() {
+    sharedCoursesLoading.value = true;
 
-        try {
-            // Fetch courses marked as shared by other professors
-            // For now, we'll simulate this with courses that have visibility set
-            const data = await supabaseRest(
-                `courses?is_published=eq.true&professor_id=neq.${profile.value?.id}&select=*,profiles(full_name,institution)`
-            );
-            sharedCourses.value = data;
+    try {
+      // Fetch courses marked as shared by other professors
+      // For now, we'll simulate this with courses that have visibility set
+      const data = await supabaseRest(
+        `courses?is_published=eq.true&professor_id=neq.${profile.value?.id}&select=*,profiles(full_name,institution)`
+      );
+      sharedCourses.value = data;
 
-            // Fetch my courses that I've shared
-            const myCourses = await supabaseRest(
-                `courses?professor_id=eq.${profile.value?.id}&is_published=eq.true&select=*`
-            );
-            mySharedCourses.value = myCourses;
-        } catch (err) {
-            console.error("Error fetching shared courses:", err);
-        } finally {
-            sharedCoursesLoading.value = false;
-        }
+      // Fetch my courses that I've shared
+      const myCourses = await supabaseRest(
+        `courses?professor_id=eq.${profile.value?.id}&is_published=eq.true&select=*`
+      );
+      mySharedCourses.value = myCourses;
+    } catch (err) {
+      console.error("Error fetching shared courses:", err);
+    } finally {
+      sharedCoursesLoading.value = false;
     }
+  }
 
-    return {
-        // state
-        sharedCourses,
-        sharedCoursesLoading,
-        mySharedCourses,
-        // fetch
-        fetchSharedCourses,
-    };
+  return {
+    // state
+    sharedCourses,
+    sharedCoursesLoading,
+    mySharedCourses,
+    // fetch
+    fetchSharedCourses,
+  };
 }

@@ -73,7 +73,11 @@ function buildContent(paragraph, opts = {}) {
 
   // Title block (for subSections with titles)
   if (opts.title) {
-    blocks.push({ type: "heading", level: opts.headingLevel || 3, content: opts.title });
+    blocks.push({
+      type: "heading",
+      level: opts.headingLevel || 3,
+      content: opts.title,
+    });
   }
 
   // Main text content
@@ -83,11 +87,18 @@ function buildContent(paragraph, opts = {}) {
 
   // Break section steps
   if (paragraph.type === "breakSection" && paragraph.steps) {
-    blocks.push({ type: "break_section", title: paragraph.title || "", steps: paragraph.steps });
+    blocks.push({
+      type: "break_section",
+      title: paragraph.title || "",
+      steps: paragraph.steps,
+    });
   }
 
   // Break video
-  if (paragraph.type === "breakVideo" || (paragraph.type && paragraph.type !== "breakSection")) {
+  if (
+    paragraph.type === "breakVideo" ||
+    (paragraph.type && paragraph.type !== "breakSection")
+  ) {
     if (!paragraph.text && paragraph.title) {
       blocks.push({
         type: "break_video",
@@ -158,7 +169,9 @@ function flattenParagraphs(items, level = 0) {
           is_subsection_header: false,
           subsection_level: 2,
           content: buildContent(subsub),
-          content_text: subsub.text ? subsub.text.replace(/<[^>]+>/g, "").slice(0, 200) : "",
+          content_text: subsub.text
+            ? subsub.text.replace(/<[^>]+>/g, "").slice(0, 200)
+            : "",
           animation: subsub.animation || null,
         });
       }
@@ -177,7 +190,9 @@ function flattenParagraphs(items, level = 0) {
       is_subsection_header: false,
       subsection_level: level,
       content: buildContent(item),
-      content_text: item.text ? item.text.replace(/<[^>]+>/g, "").slice(0, 200) : "",
+      content_text: item.text
+        ? item.text.replace(/<[^>]+>/g, "").slice(0, 200)
+        : "",
       animation: item.animation || null,
       animationFull: item.animationFull || false,
       animationId: item.animationId || null,
@@ -261,9 +276,7 @@ async function migrate() {
       ")"
     );
     console.log("Delete it first if you want to re-import.");
-    console.log(
-      "  SQL: DELETE FROM modules WHERE slug = 'the-retina';"
-    );
+    console.log("  SQL: DELETE FROM modules WHERE slug = 'the-retina';");
     process.exit(0);
   }
 
@@ -301,7 +314,9 @@ async function migrate() {
     // Also index by lowercase for case-insensitive matching
     animLookup[a.animation_key.toLowerCase()] = a.id;
   }
-  console.log(`Loaded ${Object.keys(animLookup).length / 2} animation records for linking.\n`);
+  console.log(
+    `Loaded ${Object.keys(animLookup).length / 2} animation records for linking.\n`
+  );
 
   // 6. Build section list: intro + main sections
   const allSections = [];
@@ -448,7 +463,9 @@ async function migrate() {
         });
         totalParagraphs++;
       }
-      console.log(`  Section ${allSections.length}: "Further reading" -> ${frSection.id}`);
+      console.log(
+        `  Section ${allSections.length}: "Further reading" -> ${frSection.id}`
+      );
     }
   }
 
@@ -475,14 +492,19 @@ async function migrate() {
         await supabase.from("paragraphs").insert({
           section_id: fnSection.id,
           content: {
-            blocks: [{ type: "footnote", number: i + 1, content: fn.notes[i].text }],
+            blocks: [
+              { type: "footnote", number: i + 1, content: fn.notes[i].text },
+            ],
           },
-          content_text: fn.notes[i].text?.replace(/<[^>]+>/g, "").slice(0, 200) || "",
+          content_text:
+            fn.notes[i].text?.replace(/<[^>]+>/g, "").slice(0, 200) || "",
           order_index: i,
         });
         totalParagraphs++;
       }
-      console.log(`  Section ${allSections.length + 1}: "Footnotes" -> ${fnSection.id} (${fn.notes.length} notes)`);
+      console.log(
+        `  Section ${allSections.length + 1}: "Footnotes" -> ${fnSection.id} (${fn.notes.length} notes)`
+      );
     }
   }
 

@@ -39,7 +39,10 @@ await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 2 });
+const page = await browser.newPage({
+  viewport: VIEWPORT,
+  deviceScaleFactor: 2,
+});
 
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));

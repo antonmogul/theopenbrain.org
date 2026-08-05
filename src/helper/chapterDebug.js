@@ -44,10 +44,19 @@ export function clog(stage, msg, data) {
   const style = STYLE[stage] || "";
   if (data !== undefined) {
     // eslint-disable-next-line no-console
-    console.log(`%c${ICON[stage] || ""} ${stage}%c ${msg}`, style, "color:inherit", data);
+    console.log(
+      `%c${ICON[stage] || ""} ${stage}%c ${msg}`,
+      style,
+      "color:inherit",
+      data
+    );
   } else {
     // eslint-disable-next-line no-console
-    console.log(`%c${ICON[stage] || ""} ${stage}%c ${msg}`, style, "color:inherit");
+    console.log(
+      `%c${ICON[stage] || ""} ${stage}%c ${msg}`,
+      style,
+      "color:inherit"
+    );
   }
 }
 
@@ -56,7 +65,11 @@ export function cgroup(stage, title, fn) {
   if (!enabled()) return fn && fn();
   const style = STYLE[stage] || "";
   // eslint-disable-next-line no-console
-  console.groupCollapsed(`%c${ICON[stage] || ""} ${stage}%c ${title}`, style, "color:inherit");
+  console.groupCollapsed(
+    `%c${ICON[stage] || ""} ${stage}%c ${title}`,
+    style,
+    "color:inherit"
+  );
   try {
     fn && fn();
   } finally {

@@ -12,7 +12,9 @@ const tag = computed(() => props.as);
 
 <template>
   <component
-    :is="tag" class="base-card" :class="[`p-${padding}`, { interactive }]"
+    :is="tag"
+    class="base-card"
+    :class="[`p-${padding}`, { interactive }]"
     @click="interactive && $emit('click', $event)"
   >
     <div v-if="$slots.header" class="card-header"><slot name="header" /></div>
@@ -30,12 +32,32 @@ const tag = computed(() => props.as);
   text-align: left;
   transition: border-color 0.12s ease;
 }
-.p-none { padding: 0; }
-.p-sm { padding: 12px; }
-.p-md { padding: 20px; }
-.p-lg { padding: 28px; }
-.interactive { cursor: pointer; }
-.interactive:hover { border-color: rgb(var(--color-ink) / 0.35); }
-.card-header { border-bottom: 1px solid rgb(var(--color-line)); margin: -20px -20px 16px; padding: 16px 20px; }
-.card-footer { border-top: 1px solid rgb(var(--color-line)); margin: 16px -20px -20px; padding: 16px 20px; }
+.p-none {
+  padding: 0;
+}
+.p-sm {
+  padding: 12px;
+}
+.p-md {
+  padding: 20px;
+}
+.p-lg {
+  padding: 28px;
+}
+.interactive {
+  cursor: pointer;
+}
+.interactive:hover {
+  border-color: rgb(var(--color-ink) / 0.35);
+}
+.card-header {
+  border-bottom: 1px solid rgb(var(--color-line));
+  margin: -20px -20px 16px;
+  padding: 16px 20px;
+}
+.card-footer {
+  border-top: 1px solid rgb(var(--color-line));
+  margin: 16px -20px -20px;
+  padding: 16px 20px;
+}
 </style>

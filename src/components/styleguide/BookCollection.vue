@@ -35,10 +35,23 @@ import AITutorChat from "@/components/ai/AITutorChat.vue";
 const code = ref("print('hello')");
 
 // --- Sample data (from the verified catalog inventory) ---
-const flashcard = { front_text: "Photoreceptor", back_text: "A neuron that converts light into electrical signals." };
-const flashcardStats = { correct: 9, incorrect: 2, skipped: 1, duration: 185, totalCards: 12 };
+const flashcard = {
+  front_text: "Photoreceptor",
+  back_text: "A neuron that converts light into electrical signals.",
+};
+const flashcardStats = {
+  correct: 9,
+  incorrect: 2,
+  skipped: 1,
+  duration: 185,
+  totalCards: 12,
+};
 
-const question = { q: "Which cell detects light", a: ["Rod", "Astrocyte", "Microglia"], c: 0 };
+const question = {
+  q: "Which cell detects light",
+  a: ["Rod", "Astrocyte", "Microglia"],
+  c: 0,
+};
 const quiz = {
   title: "The Retina",
   description: "Test your understanding of retinal anatomy.",
@@ -46,7 +59,9 @@ const quiz = {
   time_limit_minutes: 10,
   passing_score: 70,
 };
-const progressQuestions = Array.from({ length: 8 }, (_, i) => ({ id: `q${i + 1}` }));
+const progressQuestions = Array.from({ length: 8 }, (_, i) => ({
+  id: `q${i + 1}`,
+}));
 const quizQuestion = {
   question_text: "Which cell first transduces light?",
   question_type: "multiple_choice",
@@ -55,18 +70,39 @@ const quizQuestion = {
   explanation: "Rods and cones are the photoreceptors.",
 };
 const reviewQuestions = [
-  { id: "q1", question_text: "Which cell first transduces light?", question_type: "multiple_choice", options: ["Rod", "Bipolar cell"], correct_answer: "Rod" },
+  {
+    id: "q1",
+    question_text: "Which cell first transduces light?",
+    question_type: "multiple_choice",
+    options: ["Rod", "Bipolar cell"],
+    correct_answer: "Rod",
+  },
 ];
 
-const studyStats = { timeSpentThisWeek: 5400, modulesCompleted: 3, highlightsMade: 24, notesTaken: 7 };
+const studyStats = {
+  timeSpentThisWeek: 5400,
+  modulesCompleted: 3,
+  highlightsMade: 24,
+  notesTaken: 7,
+};
 const codeResult = { output: "Hello, world!\n42", error: "", plots: [] };
 const testResults = [
   { name: "returns correct sum", passed: true },
   { name: "handles empty list", passed: false, expected: "0", actual: "None" },
 ];
 const messages = [
-  { id: "1", role: "user", content: "What is a rod cell?", created_at: "2026-06-30T12:00:00Z" },
-  { id: "2", role: "assistant", content: "A rod is a photoreceptor specialized for low-light vision.", created_at: "2026-06-30T12:00:05Z" },
+  {
+    id: "1",
+    role: "user",
+    content: "What is a rod cell?",
+    created_at: "2026-06-30T12:00:00Z",
+  },
+  {
+    id: "2",
+    role: "assistant",
+    content: "A rod is a photoreceptor specialized for low-light vision.",
+    created_at: "2026-06-30T12:00:05Z",
+  },
 ];
 </script>
 
@@ -76,8 +112,9 @@ const messages = [
       <p class="t-label col-eyebrow">Components · Book</p>
       <h2 class="t-h2">Reader &amp; learning</h2>
       <p class="t-body-sm col-note">
-        Components used in the reading experience — reader UI atoms plus the quiz,
-        flashcard, code-lab and AI-tutor features. Shown with sample content.
+        Components used in the reading experience — reader UI atoms plus the
+        quiz, flashcard, code-lab and AI-tutor features. Shown with sample
+        content.
       </p>
     </header>
 
@@ -87,7 +124,10 @@ const messages = [
       <Specimen name="ActionButton" import-path="UI/ActionButton.vue">
         <ActionButton text="Save" help="Saves your annotations" />
       </Specimen>
-      <Specimen name="FlashcardRating" import-path="flashcard/FlashcardRating.vue">
+      <Specimen
+        name="FlashcardRating"
+        import-path="flashcard/FlashcardRating.vue"
+      >
         <FlashcardRating :disabled="false" />
       </Specimen>
     </div>
@@ -95,11 +135,24 @@ const messages = [
     <!-- Inputs -->
     <p class="t-label cat-eyebrow">Inputs</p>
     <div class="grid">
-      <Specimen name="Question" import-path="quiz/Question.vue" note="legacy ch.1 quiz item">
+      <Specimen
+        name="Question"
+        import-path="quiz/Question.vue"
+        note="legacy ch.1 quiz item"
+      >
         <Question :question="question" :num="1" />
       </Specimen>
-      <Specimen name="QuizQuestion" import-path="quiz/QuizQuestion.vue" note="result shown">
-        <QuizQuestion :question="quizQuestion" selected-answer="Rod" :show-result="true" :question-number="1" />
+      <Specimen
+        name="QuizQuestion"
+        import-path="quiz/QuizQuestion.vue"
+        note="result shown"
+      >
+        <QuizQuestion
+          :question="quizQuestion"
+          selected-answer="Rod"
+          :show-result="true"
+          :question-number="1"
+        />
       </Specimen>
       <Specimen name="CodeEditor" import-path="lab/CodeEditor.vue">
         <CodeEditor v-model="code" language="python" :min-height="'180px'" />
@@ -116,9 +169,17 @@ const messages = [
         <StartEndIcon :paragraph="{ animation: { start: true } }" art="start" />
       </Specimen>
       <Specimen name="FlashcardCard" import-path="flashcard/FlashcardCard.vue">
-        <FlashcardCard :card="flashcard" :is-flipped="false" :card-number="1" :total-cards="12" />
+        <FlashcardCard
+          :card="flashcard"
+          :is-flipped="false"
+          :card-number="1"
+          :total-cards="12"
+        />
       </Specimen>
-      <Specimen name="FlashcardStats" import-path="flashcard/FlashcardStats.vue">
+      <Specimen
+        name="FlashcardStats"
+        import-path="flashcard/FlashcardStats.vue"
+      >
         <FlashcardStats :stats="flashcardStats" />
       </Specimen>
       <Specimen name="QuizIntro" import-path="quiz/QuizIntro.vue">
@@ -153,7 +214,14 @@ const messages = [
         />
       </Specimen>
       <Specimen name="QuizResults" import-path="quiz/QuizResults.vue">
-        <QuizResults :score="82" :passed="true" :correct-count="6" :total="8" :passing-score="70" :time-taken="240" />
+        <QuizResults
+          :score="82"
+          :passed="true"
+          :correct-count="6"
+          :total="8"
+          :passing-score="70"
+          :time-taken="240"
+        />
       </Specimen>
       <Specimen name="TestResults" import-path="lab/TestResults.vue">
         <TestResults :results="testResults" :passed="false" />

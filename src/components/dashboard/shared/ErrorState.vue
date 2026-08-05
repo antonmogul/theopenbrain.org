@@ -17,16 +17,44 @@ defineEmits(["retry"]);
     <p v-if="message" class="state-msg">{{ message }}</p>
     <div v-if="showRetry || $slots.action" class="state-action">
       <slot name="action">
-        <Button variant="outline" size="sm" @click="$emit('retry')">{{ retryLabel }}</Button>
+        <Button variant="outline" size="sm" @click="$emit('retry')">{{
+          retryLabel
+        }}</Button>
       </slot>
     </div>
   </div>
 </template>
 
 <style scoped>
-.state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 24px; gap: 8px; }
-.state-icon { color: rgb(var(--color-warn)); font-size: 1.5rem; margin-bottom: 4px; }
-.state-title { font-family: var(--font-body); font-size: 1.125rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.state-msg { font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-mute)); margin: 0; max-width: 26.25rem; line-height: 1.5; }
-.state-action { margin-top: 12px; }
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 8px;
+}
+.state-icon {
+  color: rgb(var(--color-warn));
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+.state-title {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 0;
+}
+.state-msg {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: rgb(var(--color-mute));
+  margin: 0;
+  max-width: 26.25rem;
+  line-height: 1.5;
+}
+.state-action {
+  margin-top: 12px;
+}
 </style>

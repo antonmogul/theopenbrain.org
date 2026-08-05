@@ -5,8 +5,8 @@
  * Collects chapter title, description, slug, and order_index.
  * Slug auto-generates from title but is editable.
  */
-import { computed, watch } from 'vue';
-import { toSlug } from '@/helper/general';
+import { computed, watch } from "vue";
+import { toSlug } from "@/helper/general";
 
 const props = defineProps({
   modelValue: {
@@ -19,15 +19,15 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 
 const meta = computed({
   get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val),
+  set: (val) => emit("update:modelValue", val),
 });
 
 function updateField(field, value) {
-  emit('update:modelValue', { ...props.modelValue, [field]: value });
+  emit("update:modelValue", { ...props.modelValue, [field]: value });
 }
 
 // Auto-generate slug when title changes (unless manually edited)
@@ -35,15 +35,15 @@ let slugManuallyEdited = false;
 
 function onTitleInput(e) {
   const title = e.target.value;
-  updateField('title', title);
+  updateField("title", title);
   if (!slugManuallyEdited) {
-    updateField('slug', toSlug(title));
+    updateField("slug", toSlug(title));
   }
 }
 
 function onSlugInput(e) {
   slugManuallyEdited = true;
-  updateField('slug', toSlug(e.target.value));
+  updateField("slug", toSlug(e.target.value));
 }
 
 const isValid = computed(() => {
@@ -57,7 +57,9 @@ defineExpose({ isValid });
   <div class="wizard-step-meta">
     <div class="step-header">
       <h2 class="step-title">Chapter Details</h2>
-      <p class="step-description">Set the title and basic information for your new chapter.</p>
+      <p class="step-description">
+        Set the title and basic information for your new chapter.
+      </p>
     </div>
 
     <div class="form-fields">
@@ -94,9 +96,7 @@ defineExpose({ isValid });
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="chapter-slug">
-            URL Slug
-          </label>
+          <label class="form-label" for="chapter-slug"> URL Slug </label>
           <div class="slug-preview">
             <span class="slug-prefix">/chapter/{{ meta.order_index }}/</span>
             <input
@@ -110,15 +110,15 @@ defineExpose({ isValid });
         </div>
 
         <div class="form-group form-group-narrow">
-          <label class="form-label" for="chapter-order">
-            Order
-          </label>
+          <label class="form-label" for="chapter-order"> Order </label>
           <input
             id="chapter-order"
             type="number"
             class="form-input"
             :value="meta.order_index"
-            @input="updateField('order_index', parseInt($event.target.value) || 0)"
+            @input="
+              updateField('order_index', parseInt($event.target.value) || 0)
+            "
             min="0"
           />
         </div>
