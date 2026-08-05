@@ -155,12 +155,21 @@ export function useChapter() {
     // *and* IllustrationInline for the same paragraph. Static fullscreen paragraphs carry
     // only animationFull.
     if (p.animation_id && p.animation_key && !para.animationFull) {
+      // Display flags (start/middel/end/stage) round-trip through the content
+      // JSONB — written by scripts/import-chapter-1-to-supabase.mjs.
+      const flags = p.content?.animationFlags || {};
+
       para.animation = {
         name: p.animation_key.replace(/^animation/, ""),
         id: p.animation_key,
         title: p.animation_title || "",
         // 'scroll' trigger → scroll-transition figure (matches Ch1 transition flag)
         transition: p.animation_trigger === "scroll",
+        // start/middel/end drive StartEndIcon.vue; stage positions the figure.
+        ...(flags.start ? { start: true } : {}),
+        ...(flags.middel ? { middel: true } : {}),
+        ...(flags.end ? { end: true } : {}),
+        ...(flags.stage ? { stage: flags.stage } : {}),
       };
     }
 
@@ -211,11 +220,18 @@ export function useChapter() {
         // Add animation from the section-header paragraph (keyed off the real
         // animation_key — see transformParagraph for the contract).
         if (p.animation_id && p.animation_key) {
+          // Same flags round-trip as transformParagraph above.
+          const flags = p.content?.animationFlags || {};
+
           currentSubSection.animation = {
             name: p.animation_key.replace(/^animation/, ""),
             id: p.animation_key,
             title: p.animation_title || "",
             transition: p.animation_trigger === "scroll",
+            ...(flags.start ? { start: true } : {}),
+            ...(flags.middel ? { middel: true } : {}),
+            ...(flags.end ? { end: true } : {}),
+            ...(flags.stage ? { stage: flags.stage } : {}),
           };
         }
         continue;

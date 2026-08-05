@@ -14,7 +14,10 @@
 // FullScreenIllustration on `animationFull` paragraphs), so this wrapper renders
 // nothing for `scroll`/`skip`.
 
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useAnimations } from "@/composables/useAnimations";
+import { resolveAnimationRecord } from "@/helper/animationResolve";
+// Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
 import animationJSON from "@/assets/json_backend/animations.json";
 import { mobileMode } from "@/helper/illustrationMobile";
 
@@ -27,10 +30,25 @@ const props = defineProps({
   animationId: { type: String, required: true },
 });
 
-// Resolve the full animation record (with its flags) from the Chapter-1 source
-// of truth. Chapter 1 is the hardcoded legacy chapter, so JSON is authoritative.
+// Resolve the full animation record (with its flags): Supabase first so
+// DB-backed chapters work, animations.json as the Chapter-1 fallback. The
+// computed re-runs once the fetch lands; until then the JSON answer (or
+// nothing, with a warning) renders.
+const { animations: dbAnimations, fetchAnimations } = useAnimations();
+const fetched = ref(false);
+onMounted(async () => {
+  await fetchAnimations();
+  fetched.value = true;
+});
 const animation = computed(() =>
-  animationJSON.animations.find((a) => a.id === props.animationId)
+  resolveAnimationRecord(
+    props.animationId,
+    dbAnimations.value,
+    animationJSON.animations,
+    // Warn only once the DB answer is in — before that a DB-only figure is
+    // legitimately unresolved and would produce a spurious warning.
+    fetched.value ? undefined : () => {}
+  )
 );
 
 const mode = computed(() => mobileMode(animation.value));

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, nextTick } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 let lottie;
 
@@ -8,7 +8,10 @@ import gsap from "gsap";
 
 import FullScreenIllustrationMultiple from "@/components/chapter/Illus/FullScreenIllustrationMultiple.vue";
 
-import animations from "@/assets/json_backend/animations.json";
+import { useAnimations } from "@/composables/useAnimations";
+import { resolveAnimationRecord } from "@/helper/animationResolve";
+// Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
+import animationsJSON from "@/assets/json_backend/animations.json";
 import FullScreenIllustrationLoop from "./FullScreenIllustrationLoop.vue";
 import FullScreenIllustrationSplit from "./FullScreenIllustrationSplit.vue";
 import SourceElement from "../../UI/SourceElement.vue";
@@ -22,22 +25,41 @@ const animation = ref(null);
 const totalFrames = ref(null);
 const containerScroll = ref();
 
-const thisAnimation = ref(
-  animations.animations.find((x) => x.id == props.paragraph.animationId)
-);
+// Resolved async in onMounted: Supabase record first, animations.json second
+// (Chapter 1). The template guards on it, so nothing renders — and a warning
+// fires — when neither source knows the id.
+const { animations: dbAnimations, fetchAnimations } = useAnimations();
+const thisAnimation = ref(null);
 
 const activeState = ref({
-  state: !thisAnimation.value?.multiple
-    ? 0
-    : Object.keys(thisAnimation.value.states)[0],
+  state: 0,
   toggle: false,
 });
 
 onMounted(async () => {
+  // Cheap when already cached by IllustrationsComp; on failure the resolver
+  // just sees an empty DB list and falls back to the JSON.
+  await fetchAnimations();
+  thisAnimation.value = resolveAnimationRecord(
+    props.paragraph.animationId,
+    dbAnimations.value,
+    animationsJSON.animations
+  );
+  if (!thisAnimation.value) return;
+
+  // The multiple-figure state keys only exist once the record is resolved.
+  if (thisAnimation.value.multiple && thisAnimation.value.states) {
+    activeState.value.state = Object.keys(thisAnimation.value.states)[0];
+  }
+
   if (props.paragraph.scroll) return;
+  // The container div is inside the v-if="thisAnimation" template guard, so it
+  // doesn't exist until the DOM catches up with the resolution above.
+  await nextTick();
   lottie = await loadLottie();
   const id = props.paragraph.animationId;
   var svgContainer = document.getElementById("container" + id);
+  if (!svgContainer) return;
   animation.value = lottie.loadAnimation({
     speed: 3,
     wrapper: svgContainer,
@@ -104,6 +126,7 @@ const openInfo = () => {
 
 <template>
   <div
+    v-if="thisAnimation"
     ref="containerScroll"
     class="w-screen border-y bg-light text-black border-black -translate-x-custom -ml-20 my-[0] text-small font-mono duration-300"
     :class="[
