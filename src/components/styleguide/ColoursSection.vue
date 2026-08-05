@@ -174,8 +174,9 @@ onMounted(() => {
       <p class="t-body-sm group-note">
         Each chapter carries its own identity colour, set via
         <code>data-chapter</code> on <code>&lt;html&gt;</code>. Four steps per
-        chapter: primary, deep, soft, pale. Not yet wired to the router — these
-        are the tokens only.
+        chapter: primary, deep, soft, pale. The router sets the attribute from
+        the chapter route's number; outside chapters 1–5 the neutral
+        <code>:root</code> ramp applies.
       </p>
 
       <div class="ramps">

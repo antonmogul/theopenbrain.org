@@ -121,11 +121,15 @@
  *   --color-chapter-pale   pale tint — highlight washes, large background areas
  *
  * :root holds a neutral default so any view rendered outside a chapter still
- * resolves. Set `data-chapter` on <html> to switch (see index.html pre-paint).
+ * resolves. The router sets `data-chapter` on <html> from the :number route
+ * param (src/router/index.js afterEach → src/helper/chapterTheme.js); it is
+ * cleared on non-chapter routes and for chapters outside the range below, so
+ * this neutral ramp is the fallback.
  *
- * NOT YET WIRED: nothing sets data-chapter yet and --color-accent is still
- * independent. Wiring these to the router (so chapter colour drives the accent)
- * is the next step — see the Chapter ramps group in the styleguide Colours panel.
+ * DECISION (OPENBRAIN-11): --color-accent stays independent of the chapter
+ * ramp. data-accent is a user preference owned by usePreferences/Settings —
+ * letting navigation drive it would silently override that choice. Components
+ * that want chapter identity use --color-chapter{,-deep,-soft,-pale} directly.
  */
 :root {
   --color-chapter: 124 59 238;
