@@ -8,22 +8,26 @@
 ## What We've Accomplished
 
 ### ✅ Database Schema
+
 - All 20+ tables created in Supabase
 - Indexes and relationships configured
 - Functions and triggers in place
 - RLS policies set up (temporarily permissive for development)
 
 ### ✅ Supabase Client Integration
+
 - Supabase JavaScript client installed and configured
 - Environment variables set up
 - Connection tested and verified
 
 ### ✅ Composables Created
+
 - `useAuth.js` - Authentication (sign up, sign in, sign out)
 - `useProfile.js` - User profile management
 - `useModules.js` - Content module operations
 
 ### ✅ Testing
+
 - Connection test component created
 - All tests passing:
   - ✅ Environment variables loaded
@@ -54,6 +58,7 @@
 **Goal:** Build login/signup interface for all three user roles
 
 **Tasks:**
+
 1. Create authentication components:
    - `LoginView.vue` - Sign in form
    - `SignUpView.vue` - Registration with role selection
@@ -78,7 +83,9 @@
 **Goal:** Build content editor for creators to create new chapters
 
 **Tasks:**
+
 1. Install TipTap:
+
    ```bash
    npm install @tiptap/vue-3 @tiptap/starter-kit @tiptap/extension-* --legacy-peer-deps
    ```
@@ -102,6 +109,7 @@
 **Goal:** Complete workflow for creating new chapters
 
 **Tasks:**
+
 1. Module creation form
 2. Section management
 3. Paragraph editor with structured content
@@ -117,6 +125,7 @@
 **Goal:** Migrate existing first chapter from JSON to database
 
 **Tasks:**
+
 1. Create migration script
 2. Convert JSON structure to database
 3. Map animations
@@ -129,21 +138,25 @@
 ## Quick Reference
 
 ### Environment Variables
+
 ```env
 VITE_SUPABASE_URL=https://ocenwbkdzmxhsvwlornp.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 ### Test Route
+
 - `/test-supabase` - Connection test page
 
 ### Key Files
+
 - `src/lib/supabase.js` - Supabase client
 - `src/composables/useAuth.js` - Authentication
 - `src/composables/useProfile.js` - User profiles
 - `src/composables/useModules.js` - Content modules
 
 ### Database
+
 - All tables created and ready
 - RLS policies: Temporarily permissive (for development)
 - **TODO:** Tighten RLS policies once authentication is working
@@ -153,14 +166,18 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ## Important Notes
 
 ### RLS Policies
+
 The current RLS policies are **permissive for development**. Before production:
+
 1. Remove "Temporary" policies
 2. Add proper role-based checks
 3. Test with authenticated users
 4. Ensure data security
 
 ### Next Immediate Step
+
 **Recommendation:** Start with Authentication UI
+
 - It's foundational for everything else
 - Needed before content creation
 - Relatively quick to implement (4-6 hours)
@@ -185,4 +202,3 @@ The current RLS policies are **permissive for development**. Before production:
 ---
 
 **🎉 Great progress! Ready to build the authentication UI next?**
-

@@ -7,19 +7,20 @@ transform code** (`_run_transform.mjs`). Not traced, not estimated.
 
 ## 1. Structural diff (text tree)
 
-| Dimension | Static | DB | Verdict |
-|---|:---:|:---:|---|
-| intro | 1 | 1 | ✅ match (dragon anim ✓) |
-| sections | 10 | 10 | ✅ match — same titles, same order |
-| section paragraphs (body text) | — | — | ✅ present, HTML renders |
-| animation objects in tree | 28 | 14 | ❌ **half lost** |
-| distinct animation ids in tree | 20 | 11 | ❌ **9 figures missing** |
-| furtherReading | present | built from `further-reading` section | ✅ (not deeply diffed) |
-| footNotes | present | built from `footnotes` section (106 footnote blocks) | ✅ |
+| Dimension                      | Static  |                          DB                          | Verdict                            |
+| ------------------------------ | :-----: | :--------------------------------------------------: | ---------------------------------- |
+| intro                          |    1    |                          1                           | ✅ match (dragon anim ✓)           |
+| sections                       |   10    |                          10                          | ✅ match — same titles, same order |
+| section paragraphs (body text) |    —    |                          —                           | ✅ present, HTML renders           |
+| animation objects in tree      |   28    |                          14                          | ❌ **half lost**                   |
+| distinct animation ids in tree |   20    |                          11                          | ❌ **9 figures missing**           |
+| furtherReading                 | present |         built from `further-reading` section         | ✅ (not deeply diffed)             |
+| footNotes                      | present | built from `footnotes` section (106 footnote blocks) | ✅                                 |
 
 **Body prose is faithful.** The divergence is entirely in the **illustration layer**.
 
 ### Block-type coverage gaps (minor)
+
 `contentBlocksToHTML` handles `citation_ref` and `figure_placeholder`, but **the DB
 Chapter-1 blocks contain neither** — so those code paths are dead for Ch1. No visible
 loss (static didn't use them either). Not a parity issue; noted for completeness.
@@ -34,10 +35,11 @@ level-1 subsection header except the last in a consecutive run.**
 When a new `is_subsection_header && level===1` row is seen, the code builds a fresh
 `currentSubSection` but **never pushes the previous `currentSubSection` into `result`
 (or a buffer).** It only closes an open subSubGroup, then overwrites the variable.
-Result: prior subSections — with their animation *and* their body/subSub children —
+Result: prior subSections — with their animation _and_ their body/subSub children —
 are silently discarded. Only the last one survives (flushed at loop end).
 
 ### Proof — Diseases section raw rows (ordered by `order_index`)
+
 ```
 ord lvl hdr  anim                                text
   0  0   0   animationNormalVision               "It is estimated…"
@@ -55,11 +57,13 @@ ord lvl hdr  anim                                text
  12  2   0   —                                   "Treatment strategies…"
  13  2   0   —                                   …  (→ subSubSection)
 ```
+
 Transformed output for this section: **`paragraphs[0]=NormalVision` + one
 `subSection[1]` + `subSubSection[4]`** — Cataracts / Glaucoma / DiabeticRetinopathy /
 AgeRelatedMacularDegeneration all gone.
 
 ### Animations dropped by this bug (8 confirmed)
+
 `EyeMovements, Cataracts, Glaucoma, DiabeticRetinopathy, AgeRelatedMacularDegeneration,
 RodVsConeCircuits, RetinitisPigmentosa, LightSensitiveGanglionCells`
 
@@ -75,18 +79,18 @@ level-2 rows under dropped amacrine-section headers, so they vanish with the par
 
 Matched on `id` (= `animation_key`).
 
-| Property | Static | DB | Verdict |
-|---|:---:|:---:|---|
-| config flags (fullscreen/loop/flip/split/isTransition/clickTriggered/highlight/…) | ✓ | ✓ | ✅ **mostly preserved** (in `config` JSONB) |
-| **`switch` flag** (on the 4 switch figures) | ✓ | **absent** | ❌ **missing** → wrong renderer (`IllustrationComp:128`) |
-| `infoText` (fullscreen panels) | full (≤1864 chars) | **truncated** (~99–118) | ❌ **content loss** |
-| `states[]` | 10 figures have them | **0** | ❌ **all lost** |
-| `statesHighlight[]` | 5 figures | **0** | ❌ **all lost** |
-| `switches[]` | 4 figures | **0** | ❌ **all lost** |
-| videoUrl / imageUrl / youtubeID | via config | mapped from DB cols | ✅ |
+| Property                                                                          |        Static        |           DB            | Verdict                                                  |
+| --------------------------------------------------------------------------------- | :------------------: | :---------------------: | -------------------------------------------------------- |
+| config flags (fullscreen/loop/flip/split/isTransition/clickTriggered/highlight/…) |          ✓           |            ✓            | ✅ **mostly preserved** (in `config` JSONB)              |
+| **`switch` flag** (on the 4 switch figures)                                       |          ✓           |       **absent**        | ❌ **missing** → wrong renderer (`IllustrationComp:128`) |
+| `infoText` (fullscreen panels)                                                    |  full (≤1864 chars)  | **truncated** (~99–118) | ❌ **content loss**                                      |
+| `states[]`                                                                        | 10 figures have them |          **0**          | ❌ **all lost**                                          |
+| `statesHighlight[]`                                                               |      5 figures       |          **0**          | ❌ **all lost**                                          |
+| `switches[]`                                                                      |      4 figures       |          **0**          | ❌ **all lost**                                          |
+| videoUrl / imageUrl / youtubeID                                                   |      via config      |   mapped from DB cols   | ✅                                                       |
 
 Root: `animation_states` (0 rows) and `animation_variants` (0 rows) are **empty**;
-`fetchAnimations` builds `states/statesHighlight/switches` *only* from those tables.
+`fetchAnimations` builds `states/statesHighlight/switches` _only_ from those tables.
 Separately, the DB `config` JSONB **omits `switch:true`** for switch figures and holds
 **truncated `infoText`** — both are DATA gaps in the `config` column itself, not
 table-emptiness. (Both surfaced by Codex review, verified against raw DB.)
@@ -119,6 +123,7 @@ resolution for the 14 surviving DB animations round-trips correctly.
 > intentional (section trigger uses `name`; mobile inline uses `id`).
 
 ### The real trigger-layer issues (verified)
+
 1. **Scroll-transition never fires** — tree `transition = animation_trigger==="scroll"`,
    and **no DB paragraph has `animation_trigger="scroll"`** → every surviving tree
    object has `transition:false`, so `IllustrationTransition` / `animationScrollAnchor`
@@ -138,7 +143,7 @@ resolution for the 14 surviving DB animations round-trips correctly.
 - `ChapterView.loadChapter()`:
   1. reads `localStorage.sections`; if `storedTitle !== incomingTitle` clears
      `sections`/`selection`/`comments`. For `the-retina`, `incomingTitle="The Retina"`,
-     so a stale *other* chapter is cleared but a stale **"The Retina"** LS copy is **kept**.
+     so a stale _other_ chapter is cleared but a stale **"The Retina"** LS copy is **kept**.
   2. sets `storeText.text = null`, awaits tick.
   3. `fetchChapter(slug)` → `updateText("*", data)` overwrites `text` with DB data
      **and writes it back to `localStorage.sections`.**
@@ -148,7 +153,7 @@ transient (replaced before paint by `showContent` gating on `chapterDataLoaded`)
 `source` (static) is only read for `animation.source` caption strings in a few Illus
 components, not for content. **Split-brain is NOT the active cause of the visible
 difference.** Residual risks (low): (a) a stale localStorage "The Retina" copy from a
-*previous app version* seeds `text` on first paint and is persisted back on every load
+_previous app version_ seeds `text` on first paint and is persisted back on every load
 — if that old copy predates the DB path it could shadow until the fetch resolves;
 (b) `updateText` persisting DB data into `localStorage.sections` means the DB's
 already-degraded tree gets cached client-side. Neither creates the missing figures —

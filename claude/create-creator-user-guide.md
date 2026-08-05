@@ -1,6 +1,7 @@
 # Create Creator User for Seeding
 
 ## Problem
+
 The seed script needs a creator profile, but profiles require an auth user first.
 
 ## Solution: Create Auth User + Profile
@@ -73,4 +74,3 @@ Now run the seed script - it will find the creator profile automatically.
 ## Alternative: Use Service Role Key
 
 If you have the service_role key, you can temporarily disable RLS or use the service_role key to run the seed script, which will work with the placeholder UUID.
-

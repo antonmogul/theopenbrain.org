@@ -20,7 +20,7 @@ From the retina, signals travel along the optic nerve to a small structure deep 
 
 From the LGN, signals proceed to **primary visual cortex (V1)**, located at the back of your head. V1 contains neurons that respond to oriented edges at specific locations—the basic building blocks of visual forms. These neurons are arranged in columns by orientation preference, creating a systematic map of edges across your visual field.
 
-Here's where things get interesting for designers: V1 neurons don't just detect edges; they detect edges *in context*. A neuron responding to a horizontal edge will fire differently depending on what surrounds that edge. This contextual processing is why visual illusions work and why the same color can appear dramatically different depending on its surroundings.
+Here's where things get interesting for designers: V1 neurons don't just detect edges; they detect edges _in context_. A neuron responding to a horizontal edge will fire differently depending on what surrounds that edge. This contextual processing is why visual illusions work and why the same color can appear dramatically different depending on its surroundings.
 
 ## Hierarchical Feature Detection
 
@@ -40,17 +40,17 @@ For interface design, this hierarchy means that **visual complexity is processed
 
 After initial processing, visual information diverges into two distinct pathways:
 
-**The ventral stream** (the "what" pathway) flows from V1 toward the temporal lobe. This pathway handles object recognition, face identification, and reading. It's slow, thorough, and concerned with *meaning*. Damage to ventral stream areas produces deficits like prosopagnosia (inability to recognize faces) while leaving spatial abilities intact.
+**The ventral stream** (the "what" pathway) flows from V1 toward the temporal lobe. This pathway handles object recognition, face identification, and reading. It's slow, thorough, and concerned with _meaning_. Damage to ventral stream areas produces deficits like prosopagnosia (inability to recognize faces) while leaving spatial abilities intact.
 
-**The dorsal stream** (the "where" pathway) flows from V1 toward the parietal lobe. This pathway handles spatial relationships, motion processing, and visually guided action. It's fast, automatic, and concerned with *location and movement*. Damage to dorsal stream areas impairs reaching and grasping while leaving object recognition intact.
+**The dorsal stream** (the "where" pathway) flows from V1 toward the parietal lobe. This pathway handles spatial relationships, motion processing, and visually guided action. It's fast, automatic, and concerned with _location and movement_. Damage to dorsal stream areas impairs reaching and grasping while leaving object recognition intact.
 
-These two streams operate somewhat independently, which has fascinating implications for design. Your ability to *reach* for a button (dorsal stream) and your ability to *recognize* that button (ventral stream) use different neural machinery. This is why users can sometimes accurately point to interface elements they cannot consciously identify, and why consistent positioning matters even more than consistent appearance.
+These two streams operate somewhat independently, which has fascinating implications for design. Your ability to _reach_ for a button (dorsal stream) and your ability to _recognize_ that button (ventral stream) use different neural machinery. This is why users can sometimes accurately point to interface elements they cannot consciously identify, and why consistent positioning matters even more than consistent appearance.
 
 ## The 150-Millisecond Window
 
 How long does all this processing take? From light hitting your retina to recognizing a familiar object takes approximately **150 milliseconds**. This timing is remarkably consistent across different objects and contexts.
 
-But recognition isn't the end of the story. *Conscious awareness* of that recognition takes another 100-200 milliseconds. And *response initiation*—deciding to click or tap—adds another 150-200 milliseconds on top of that.
+But recognition isn't the end of the story. _Conscious awareness_ of that recognition takes another 100-200 milliseconds. And _response initiation_—deciding to click or tap—adds another 150-200 milliseconds on top of that.
 
 This timeline creates concrete guidelines for interface design:
 
@@ -69,7 +69,7 @@ Consider saccades, the rapid eye movements you make 3-4 times per second. During
 
 Or consider your blind spot, where the optic nerve exits the retina. You have a significant gap in your visual field in each eye, yet you never notice it. Your brain interpolates, filling in the missing region with surrounding patterns.
 
-This constructive nature of vision means that designers are not arranging elements for users to "see"—they are providing raw materials for users' brains to *build* a perceptual experience. The construction process has biases, limitations, and shortcuts. Understanding these allows us to design interfaces that guide the construction process toward intended outcomes.
+This constructive nature of vision means that designers are not arranging elements for users to "see"—they are providing raw materials for users' brains to _build_ a perceptual experience. The construction process has biases, limitations, and shortcuts. Understanding these allows us to design interfaces that guide the construction process toward intended outcomes.
 
 ## Implications for Interface Design
 

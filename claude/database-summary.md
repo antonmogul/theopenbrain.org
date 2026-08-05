@@ -3,6 +3,7 @@
 ## Key Design Decisions
 
 ### 1. **Content Structure (Scalable & Safe)**
+
 - **Replaced HTML strings with JSONB**: Content stored as structured blocks instead of raw HTML
   - Prevents XSS vulnerabilities
   - Enables better search and parsing
@@ -14,35 +15,41 @@
   - Still supports subsections via `subsection_level` field
 
 ### 2. **Standardized Animations**
+
 - **Interaction types**: 9 standardized patterns (auto_loop, click_states, switch, etc.)
 - **Component mapping**: Each animation type maps to a Vue component
 - **Flexible config**: JSONB for animation-specific settings
 - **States & variants**: Separate tables for multi-state animations
 
 ### 3. **User Roles & Permissions**
+
 - **Three-tier auth**: Creator, Professor, Student
 - **Row-Level Security (RLS)**: Supabase handles permissions at database level
 - **Role-specific features**: Each role has appropriate access
 
 ### 4. **Course Curation System**
+
 - **Many-to-many**: Courses can include multiple modules
 - **Custom ordering**: Professors control module order in their courses
 - **Unique URLs**: Each course gets a published URL
 - **Enrollment tracking**: Students enrolled in courses
 
 ### 5. **Collaborative Features**
+
 - **Highlights**: Stored in database (replaces localStorage)
 - **Trending feed**: Aggregated highlights from all students
 - **Public/private**: Users control visibility
 - **Notes**: Standalone or attached to highlights
 
 ### 6. **Interactive Learning Tools**
+
 - **Quizzes**: Attached to sections/modules, with attempts tracking
 - **Flashcards**: Spaced repetition algorithm (SM-2)
 - **AI Tutor**: Conversation threads with context
 - **Python Labs**: Code execution with Git integration
 
 ### 7. **Analytics & Progress**
+
 - **Reading progress**: Track where students are in content
 - **Event tracking**: Detailed analytics for all interactions
 - **Time tracking**: Monitor engagement
@@ -87,38 +94,44 @@ courses
 
 ### Current → New Mapping
 
-| Current Pattern | New `interaction_type` | Component | Use Case |
-|----------------|----------------------|-----------|----------|
-| Auto-play loop | `auto_loop` | IllustrationComp | Decorative, continuous |
-| Click states | `click_states` | IllustrationComp | Anatomy exploration |
-| Switch variants | `switch` | IllustrationSwitch | Circuit comparisons |
-| Fullscreen states | `fullscreen_states` | FullScreenIllustrationLoop | Complex processes |
-| Scroll transition | `scroll_transition` | IllustrationTransition | Section transitions |
-| Scroll-linked | `scroll_linked` | FullScreenIllustrationSplit | Dual-panel scroll |
-| Video flip | `video_flip` | IllustrationFlip | Disease visualization |
-| Static image | `static_image` | IllustrationComp | Simple images |
-| YouTube embed | `youtube_embed` | IllustrationComp | External videos |
+| Current Pattern   | New `interaction_type` | Component                   | Use Case               |
+| ----------------- | ---------------------- | --------------------------- | ---------------------- |
+| Auto-play loop    | `auto_loop`            | IllustrationComp            | Decorative, continuous |
+| Click states      | `click_states`         | IllustrationComp            | Anatomy exploration    |
+| Switch variants   | `switch`               | IllustrationSwitch          | Circuit comparisons    |
+| Fullscreen states | `fullscreen_states`    | FullScreenIllustrationLoop  | Complex processes      |
+| Scroll transition | `scroll_transition`    | IllustrationTransition      | Section transitions    |
+| Scroll-linked     | `scroll_linked`        | FullScreenIllustrationSplit | Dual-panel scroll      |
+| Video flip        | `video_flip`           | IllustrationFlip            | Disease visualization  |
+| Static image      | `static_image`         | IllustrationComp            | Simple images          |
+| YouTube embed     | `youtube_embed`        | IllustrationComp            | External videos        |
 
 ## Content Migration Path
 
 ### From JSON to Database
 
 **Current structure (text.json):**
+
 ```json
 {
-  "sections": [{
-    "id": "uuid",
-    "title": "Section",
-    "paragraphs": [{
+  "sections": [
+    {
       "id": "uuid",
-      "text": "<p>HTML content</p>",
-      "animation": {"name": "animationEye"}
-    }]
-  }]
+      "title": "Section",
+      "paragraphs": [
+        {
+          "id": "uuid",
+          "text": "<p>HTML content</p>",
+          "animation": { "name": "animationEye" }
+        }
+      ]
+    }
+  ]
 }
 ```
 
 **New structure (database):**
+
 ```sql
 -- Module
 INSERT INTO modules (title, slug, content_version_id) VALUES (...);
@@ -155,4 +168,3 @@ INSERT INTO paragraphs (section_id, content, animation_id) VALUES (
 4. ⏭️ **Build TipTap editor integration**
 5. ⏭️ **Implement authentication**
 6. ⏭️ **Create first new chapter using new structure**
-

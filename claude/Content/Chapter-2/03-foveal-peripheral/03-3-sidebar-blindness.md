@@ -27,6 +27,7 @@ These characteristics mean that sidebar content, sitting in users' peripheral vi
 **Crowding** is particularly devastating for sidebar content. When objects in peripheral vision are close together, they cannot be individually perceived—the visual system averages them into a jumbled representation.
 
 Crowding increases with:
+
 - Distance from fixation (further = more crowding)
 - Proximity of elements (closer = more crowding)
 - Similarity of elements (more similar = more crowding)
@@ -69,7 +70,7 @@ Redesigning with left-side navigation (which receives more attention due to left
 
 ## When Peripheral Content Can Work
 
-Peripheral placement isn't always fatal. Content can succeed in sidebar positions when it leverages what peripheral vision *can* do:
+Peripheral placement isn't always fatal. Content can succeed in sidebar positions when it leverages what peripheral vision _can_ do:
 
 **Motion attracts attention**. Peripheral motion detection is strong. A subtle animation or state change in a sidebar element can capture attention and drive fixation—though overuse creates banner blindness for motion.
 

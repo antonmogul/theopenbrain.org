@@ -30,6 +30,7 @@ Dependency order: leaf primitives (PreviewTag, Switch, Button) → composites (S
 ## Task 1: PreviewTag + promote Switch/SegmentedControl/ToggleRow
 
 **Files:**
+
 - Create: `src/components/dashboard/shared/PreviewTag.vue`
 - Create: `src/components/dashboard/shared/Switch.vue`, `.../SegmentedControl.vue`, `.../ToggleRow.vue`
 - Create: `src/components/UI/Switch.vue`, `src/components/UI/SegmentedControl.vue` (re-export shims)
@@ -48,7 +49,9 @@ const TEXT = { preview: "preview", soon: "coming soon", beta: "beta" };
 </script>
 
 <template>
-  <span class="preview-tag">{{ bare ? "" : "· " }}<slot>{{ TEXT[variant] || variant }}</slot></span>
+  <span class="preview-tag"
+    >{{ bare ? "" : "· " }}<slot>{{ TEXT[variant] || variant }}</slot></span
+  >
 </template>
 
 <style scoped>
@@ -77,12 +80,15 @@ git mv src/components/settings/SettingsToggleRow.vue src/components/dashboard/sh
 - [ ] **Step 4: Create UI re-export shims**
 
 `src/components/UI/Switch.vue`:
+
 ```vue
 <script>
 export { default } from "@/components/dashboard/shared/Switch.vue";
 </script>
 ```
+
 `src/components/UI/SegmentedControl.vue`:
+
 ```vue
 <script>
 export { default } from "@/components/dashboard/shared/SegmentedControl.vue";
@@ -92,6 +98,7 @@ export { default } from "@/components/dashboard/shared/SegmentedControl.vue";
 - [ ] **Step 5: Update SettingsView + section components to the new import paths**
 
 These three files import the moved primitives. Update them:
+
 - `src/views/SettingsView.vue`: `import SegmentedControl from "@/components/settings/SegmentedControl.vue";` → `"@/components/dashboard/shared/SegmentedControl.vue"`; `import SettingsToggleRow from "@/components/settings/SettingsToggleRow.vue";` → `import ToggleRow from "@/components/dashboard/shared/ToggleRow.vue";` and rename all `<SettingsToggleRow` → `<ToggleRow` in its template.
 - Grep for other importers: `grep -rln "settings/SettingsSwitch\|settings/SegmentedControl\|settings/SettingsToggleRow" src/` and update each the same way.
 
@@ -101,6 +108,7 @@ These three files import the moved primitives. Update them:
 npm run lint
 grep -rn "SettingsSwitch\|settings/SegmentedControl\|SettingsToggleRow" src/ && echo "STALE IMPORTS REMAIN" || echo "clean"
 ```
+
 Expected: lint passes; grep prints `clean`.
 
 - [ ] **Step 7: Commit**
@@ -143,7 +151,7 @@ const tag = computed(() => props.as);
     :type="as === 'button' ? 'button' : undefined"
     class="btn"
     :class="[`v-${variant}`, `s-${size}`, { block, loading }]"
-    :disabled="as === 'button' ? (disabled || loading) : undefined"
+    :disabled="as === 'button' ? disabled || loading : undefined"
     :aria-disabled="disabled || loading"
     @click="$emit('click', $event)"
   >
@@ -167,30 +175,80 @@ const tag = computed(() => props.as);
   cursor: pointer;
   text-decoration: none;
   border: 1px solid transparent;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
-.btn.block { width: 100%; }
-.s-sm { font-size: 1rem; padding: 6px 12px; }
-.s-md { font-size: 1.1rem; padding: 9px 18px; }
-.s-lg { font-size: 1.3rem; padding: 12px 24px; }
+.btn.block {
+  width: 100%;
+}
+.s-sm {
+  font-size: 1rem;
+  padding: 6px 12px;
+}
+.s-md {
+  font-size: 1.1rem;
+  padding: 9px 18px;
+}
+.s-lg {
+  font-size: 1.3rem;
+  padding: 12px 24px;
+}
 
-.v-solid { background: rgb(var(--color-ink)); color: rgb(var(--color-paper)); border-color: rgb(var(--color-ink)); }
-.v-solid:hover { background: rgb(var(--color-ink) / 0.85); }
-.v-outline { background: transparent; color: rgb(var(--color-ink)); border-color: rgb(var(--color-ink) / 0.85); }
-.v-outline:hover { background: rgb(var(--color-ink)); color: rgb(var(--color-paper)); }
-.v-ghost { background: transparent; color: rgb(var(--color-ink)); }
-.v-ghost:hover { background: rgb(var(--color-ink) / 0.06); }
-.v-danger { background: transparent; color: rgb(var(--color-accent)); border-color: rgb(var(--color-accent)); }
-.v-danger:hover { background: rgb(var(--color-accent) / 0.08); }
+.v-solid {
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  border-color: rgb(var(--color-ink));
+}
+.v-solid:hover {
+  background: rgb(var(--color-ink) / 0.85);
+}
+.v-outline {
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border-color: rgb(var(--color-ink) / 0.85);
+}
+.v-outline:hover {
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+}
+.v-ghost {
+  background: transparent;
+  color: rgb(var(--color-ink));
+}
+.v-ghost:hover {
+  background: rgb(var(--color-ink) / 0.06);
+}
+.v-danger {
+  background: transparent;
+  color: rgb(var(--color-accent));
+  border-color: rgb(var(--color-accent));
+}
+.v-danger:hover {
+  background: rgb(var(--color-accent) / 0.08);
+}
 
-.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .spinner {
-  width: 13px; height: 13px; border-radius: 999px;
-  border: 2px solid currentColor; border-right-color: transparent;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
   animation: btn-spin 0.6s linear infinite;
 }
-@keyframes btn-spin { to { transform: rotate(360deg); } }
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>
 ```
 
@@ -199,6 +257,7 @@ const tag = computed(() => props.as);
 ```bash
 npm run lint
 ```
+
 Expected: pass.
 
 - [ ] **Step 3: Commit**
@@ -237,7 +296,9 @@ defineProps({
         </p>
         <h2>{{ title }}</h2>
       </div>
-      <div v-if="$slots.actions" class="header-actions"><slot name="actions" /></div>
+      <div v-if="$slots.actions" class="header-actions">
+        <slot name="actions" />
+      </div>
     </div>
     <p v-if="subtitle || $slots.default" class="subtitle">
       <slot>{{ subtitle }}</slot>
@@ -246,20 +307,45 @@ defineProps({
 </template>
 
 <style scoped>
-.section-header { margin-bottom: 28px; }
-.header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.header-actions { flex: none; display: flex; align-items: center; gap: 8px; padding-top: 4px; }
+.section-header {
+  margin-bottom: 28px;
+}
+.header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
 .eyebrow {
-  font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
-  letter-spacing: 0.12em; color: rgb(var(--color-mute)); margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-mute));
+  margin: 0 0 10px;
 }
 h2 {
-  font-family: var(--font-body); font-size: 3.2rem; font-weight: 500;
-  line-height: 1.1; letter-spacing: -0.012em; margin: 0;
+  font-family: var(--font-body);
+  font-size: 3.2rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  margin: 0;
 }
 .subtitle {
-  font-family: var(--font-body); font-size: 1.6rem; line-height: 1.5;
-  color: rgb(var(--color-mute)); margin: 8px 0 0; max-width: 64rem;
+  font-family: var(--font-body);
+  font-size: 1.6rem;
+  line-height: 1.5;
+  color: rgb(var(--color-mute));
+  margin: 8px 0 0;
+  max-width: 64rem;
 }
 </style>
 ```
@@ -294,7 +380,9 @@ const tag = computed(() => props.as);
 
 <template>
   <component
-    :is="tag" class="base-card" :class="[`p-${padding}`, { interactive }]"
+    :is="tag"
+    class="base-card"
+    :class="[`p-${padding}`, { interactive }]"
     @click="interactive && $emit('click', $event)"
   >
     <div v-if="$slots.header" class="card-header"><slot name="header" /></div>
@@ -312,14 +400,34 @@ const tag = computed(() => props.as);
   text-align: left;
   transition: border-color 0.12s ease;
 }
-.p-none { padding: 0; }
-.p-sm { padding: 12px; }
-.p-md { padding: 20px; }
-.p-lg { padding: 28px; }
-.interactive { cursor: pointer; }
-.interactive:hover { border-color: rgb(var(--color-ink) / 0.35); }
-.card-header { border-bottom: 1px solid rgb(var(--color-line)); margin: -20px -20px 16px; padding: 16px 20px; }
-.card-footer { border-top: 1px solid rgb(var(--color-line)); margin: 16px -20px -20px; padding: 16px 20px; }
+.p-none {
+  padding: 0;
+}
+.p-sm {
+  padding: 12px;
+}
+.p-md {
+  padding: 20px;
+}
+.p-lg {
+  padding: 28px;
+}
+.interactive {
+  cursor: pointer;
+}
+.interactive:hover {
+  border-color: rgb(var(--color-ink) / 0.35);
+}
+.card-header {
+  border-bottom: 1px solid rgb(var(--color-line));
+  margin: -20px -20px 16px;
+  padding: 16px 20px;
+}
+.card-footer {
+  border-top: 1px solid rgb(var(--color-line));
+  margin: 16px -20px -20px;
+  padding: 16px 20px;
+}
 </style>
 ```
 
@@ -340,15 +448,28 @@ defineProps({
 </template>
 
 <style scoped>
-.stat-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); }
-.stat-grid:not(.bordered) { gap: 16px; }
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+}
+.stat-grid:not(.bordered) {
+  gap: 16px;
+}
 .stat-grid.bordered {
   border-top: 1px solid rgb(var(--color-line));
   border-bottom: 1px solid rgb(var(--color-line));
 }
-.stat-grid.bordered :slotted(*) { border-right: 1px solid rgb(var(--color-line)); }
-.stat-grid.bordered :slotted(*:last-child) { border-right: 0; }
-@media (max-width: 767px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-grid.bordered :slotted(*) {
+  border-right: 1px solid rgb(var(--color-line));
+}
+.stat-grid.bordered :slotted(*:last-child) {
+  border-right: 0;
+}
+@media (max-width: 767px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 </style>
 ```
 
@@ -357,7 +478,9 @@ defineProps({
 ```bash
 git rm src/components/dashboard/shared/MetricCard.vue
 ```
+
 Create `src/components/dashboard/shared/StatCard.vue`:
+
 ```vue
 <script setup>
 // Big-number stat: value + mono uppercase label, optional delta + icon.
@@ -376,7 +499,9 @@ const props = defineProps({
 });
 const display = computed(() => {
   if (props.preview) return "—";
-  return typeof props.value === "number" ? props.value.toLocaleString() : props.value;
+  return typeof props.value === "number"
+    ? props.value.toLocaleString()
+    : props.value;
 });
 const deltaTone = computed(() => {
   if (props.tone !== "auto") return props.tone;
@@ -387,29 +512,60 @@ const deltaTone = computed(() => {
 
 <template>
   <div class="stat" :class="`pad`">
-    <span class="stat-value">{{ prefix }}{{ display }}{{ preview ? "" : suffix }}</span>
+    <span class="stat-value"
+      >{{ prefix }}{{ display }}{{ preview ? "" : suffix }}</span
+    >
     <span class="stat-label">{{ label }} <PreviewTag v-if="preview" /></span>
-    <span v-if="delta != null && !preview" class="stat-delta" :class="`t-${deltaTone}`">
+    <span
+      v-if="delta != null && !preview"
+      class="stat-delta"
+      :class="`t-${deltaTone}`"
+    >
       {{ delta >= 0 ? "+" : "" }}{{ delta }}% {{ deltaLabel }}
     </span>
   </div>
 </template>
 
 <style scoped>
-.stat.pad { padding: 20px 10px; }
+.stat.pad {
+  padding: 20px 10px;
+}
 .stat-value {
-  display: block; font-family: var(--font-body); font-size: 3.2rem;
-  font-weight: 500; line-height: 1; letter-spacing: -0.01em; color: rgb(var(--color-ink));
+  display: block;
+  font-family: var(--font-body);
+  font-size: 3.2rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: rgb(var(--color-ink));
 }
 .stat-label {
-  display: block; font-family: var(--font-mono); font-size: 1rem;
-  text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+  margin-top: 6px;
 }
-.stat-delta { display: block; font-family: var(--font-mono); font-size: 1.1rem; margin-top: 6px; }
-.t-complete { color: rgb(var(--color-complete)); }
-.t-warn { color: rgb(var(--color-warn)); }
-.t-accent { color: rgb(var(--color-accent)); }
-.t-mute { color: rgb(var(--color-mute)); }
+.stat-delta {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  margin-top: 6px;
+}
+.t-complete {
+  color: rgb(var(--color-complete));
+}
+.t-warn {
+  color: rgb(var(--color-warn));
+}
+.t-accent {
+  color: rgb(var(--color-accent));
+}
+.t-mute {
+  color: rgb(var(--color-mute));
+}
 </style>
 ```
 
@@ -430,13 +586,18 @@ defineEmits(["click"]);
 
 <template>
   <div
-    class="list-row" :class="{ interactive, divider }"
+    class="list-row"
+    :class="{ interactive, divider }"
     @click="interactive && $emit('click', $event)"
   >
     <div v-if="$slots.media" class="row-media"><slot name="media" /></div>
     <div class="row-text">
-      <div class="row-label"><slot name="label">{{ label }}</slot></div>
-      <div v-if="hint || $slots.hint" class="row-hint"><slot name="hint">{{ hint }}</slot></div>
+      <div class="row-label">
+        <slot name="label">{{ label }}</slot>
+      </div>
+      <div v-if="hint || $slots.hint" class="row-hint">
+        <slot name="hint">{{ hint }}</slot>
+      </div>
     </div>
     <div v-if="$slots.default || $slots.action" class="row-action">
       <slot name="action"><slot /></slot>
@@ -445,15 +606,43 @@ defineEmits(["click"]);
 </template>
 
 <style scoped>
-.list-row { display: flex; align-items: center; gap: 16px; padding: 14px 0; }
-.list-row.divider { border-bottom: 1px solid rgb(var(--color-line)); }
-.list-row.interactive { cursor: pointer; }
-.list-row.interactive:hover { background: rgb(var(--color-ink) / 0.03); }
-.row-media { flex: none; }
-.row-text { flex: 1; min-width: 0; }
-.row-label { font-family: var(--font-body); font-size: 1.5rem; color: rgb(var(--color-ink)); }
-.row-hint { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-mute)); margin-top: 2px; line-height: 1.45; }
-.row-action { flex: none; }
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+}
+.list-row.divider {
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+.list-row.interactive {
+  cursor: pointer;
+}
+.list-row.interactive:hover {
+  background: rgb(var(--color-ink) / 0.03);
+}
+.row-media {
+  flex: none;
+}
+.row-text {
+  flex: 1;
+  min-width: 0;
+}
+.row-label {
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  color: rgb(var(--color-ink));
+}
+.row-hint {
+  font-family: var(--font-body);
+  font-size: 1.3rem;
+  color: rgb(var(--color-mute));
+  margin-top: 2px;
+  line-height: 1.45;
+}
+.row-action {
+  flex: none;
+}
 </style>
 ```
 
@@ -496,28 +685,59 @@ defineProps({
 </template>
 
 <style scoped>
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field-label {
-  font-family: var(--font-mono); font-size: 1rem; text-transform: uppercase;
-  letter-spacing: 0.1em; color: rgb(var(--color-mute));
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-.req { color: rgb(var(--color-accent)); }
-.field-hint { font-family: var(--font-body); font-size: 1.3rem; color: rgb(var(--color-mute)); margin-top: 4px; line-height: 1.45; }
-.field-error { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-accent)); margin-top: 4px; }
+.field-label {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+}
+.req {
+  color: rgb(var(--color-accent));
+}
+.field-hint {
+  font-family: var(--font-body);
+  font-size: 1.3rem;
+  color: rgb(var(--color-mute));
+  margin-top: 4px;
+  line-height: 1.45;
+}
+.field-error {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-accent));
+  margin-top: 4px;
+}
 
 /* Style slotted native controls consistently (boxed token input). */
 .field :deep(input),
 .field :deep(select),
 .field :deep(textarea) {
-  width: 100%; border: 1px solid rgb(var(--color-line)); border-radius: 4px;
-  background: transparent; padding: 10px 12px;
-  font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-ink)); outline: none;
+  width: 100%;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  background: transparent;
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  color: rgb(var(--color-ink));
+  outline: none;
   transition: border-color 0.12s ease;
 }
 .field :deep(input:focus),
 .field :deep(select:focus),
-.field :deep(textarea:focus) { border-color: rgb(var(--color-ink)); }
-.field :deep(textarea) { line-height: 1.5; resize: vertical; }
+.field :deep(textarea:focus) {
+  border-color: rgb(var(--color-ink));
+}
+.field :deep(textarea) {
+  line-height: 1.5;
+  resize: vertical;
+}
 </style>
 ```
 
@@ -554,18 +774,50 @@ defineEmits(["action"]);
     <p v-if="message" class="state-msg">{{ message }}</p>
     <div v-if="$slots.action || actionLabel" class="state-action">
       <slot name="action">
-        <Button v-if="actionLabel" variant="outline" size="sm" @click="$emit('action')">{{ actionLabel }}</Button>
+        <Button
+          v-if="actionLabel"
+          variant="outline"
+          size="sm"
+          @click="$emit('action')"
+          >{{ actionLabel }}</Button
+        >
       </slot>
     </div>
   </div>
 </template>
 
 <style scoped>
-.state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 24px; gap: 8px; }
-.state-icon { color: rgb(var(--color-mute)); opacity: 0.6; margin-bottom: 8px; }
-.state-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42rem; line-height: 1.5; }
-.state-action { margin-top: 12px; }
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 8px;
+}
+.state-icon {
+  color: rgb(var(--color-mute));
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+.state-title {
+  font-family: var(--font-body);
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 0;
+}
+.state-msg {
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  color: rgb(var(--color-mute));
+  margin: 0;
+  max-width: 42rem;
+  line-height: 1.5;
+}
+.state-action {
+  margin-top: 12px;
+}
 </style>
 ```
 
@@ -588,14 +840,47 @@ defineProps({
 </template>
 
 <style scoped>
-.loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 48px 24px; }
-.loading.inline { padding: 0; }
-.spinner { border-radius: 999px; border: 2px solid rgb(var(--color-line)); border-top-color: rgb(var(--color-accent)); animation: ls-spin 0.7s linear infinite; }
-.s-sm .spinner { width: 16px; height: 16px; }
-.s-md .spinner { width: 22px; height: 22px; }
-.s-lg .spinner { width: 32px; height: 32px; border-width: 3px; }
-.loading-msg { font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-mute)); text-transform: uppercase; letter-spacing: 0.08em; }
-@keyframes ls-spin { to { transform: rotate(360deg); } }
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+}
+.loading.inline {
+  padding: 0;
+}
+.spinner {
+  border-radius: 999px;
+  border: 2px solid rgb(var(--color-line));
+  border-top-color: rgb(var(--color-accent));
+  animation: ls-spin 0.7s linear infinite;
+}
+.s-sm .spinner {
+  width: 16px;
+  height: 16px;
+}
+.s-md .spinner {
+  width: 22px;
+  height: 22px;
+}
+.s-lg .spinner {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+.loading-msg {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  color: rgb(var(--color-mute));
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+@keyframes ls-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>
 ```
 
@@ -620,18 +905,46 @@ defineEmits(["retry"]);
     <p v-if="message" class="state-msg">{{ message }}</p>
     <div v-if="showRetry || $slots.action" class="state-action">
       <slot name="action">
-        <Button variant="outline" size="sm" @click="$emit('retry')">{{ retryLabel }}</Button>
+        <Button variant="outline" size="sm" @click="$emit('retry')">{{
+          retryLabel
+        }}</Button>
       </slot>
     </div>
   </div>
 </template>
 
 <style scoped>
-.state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 24px; gap: 8px; }
-.state-icon { color: rgb(var(--color-warn)); font-size: 2.4rem; margin-bottom: 4px; }
-.state-title { font-family: var(--font-body); font-size: 1.8rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.state-msg { font-family: var(--font-body); font-size: 1.4rem; color: rgb(var(--color-mute)); margin: 0; max-width: 42rem; line-height: 1.5; }
-.state-action { margin-top: 12px; }
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 8px;
+}
+.state-icon {
+  color: rgb(var(--color-warn));
+  font-size: 2.4rem;
+  margin-bottom: 4px;
+}
+.state-title {
+  font-family: var(--font-body);
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 0;
+}
+.state-msg {
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  color: rgb(var(--color-mute));
+  margin: 0;
+  max-width: 42rem;
+  line-height: 1.5;
+}
+.state-action {
+  margin-top: 12px;
+}
 </style>
 ```
 
@@ -661,12 +974,24 @@ const props = defineProps({
 });
 // Map known domain statuses → variant + auto-label when `status` is given.
 const STATUS_MAP = {
-  published: "complete", active: "complete", completed: "complete", passed: "complete",
-  draft: "warn", pending: "warn", failed: "warn",
-  archived: "neutral", inactive: "neutral",
+  published: "complete",
+  active: "complete",
+  completed: "complete",
+  passed: "complete",
+  draft: "warn",
+  pending: "warn",
+  failed: "warn",
+  archived: "neutral",
+  inactive: "neutral",
 };
-const resolved = computed(() => (props.status ? STATUS_MAP[props.status.toLowerCase()] || "neutral" : props.variant));
-const autoLabel = computed(() => props.status.charAt(0).toUpperCase() + props.status.slice(1));
+const resolved = computed(() =>
+  props.status
+    ? STATUS_MAP[props.status.toLowerCase()] || "neutral"
+    : props.variant
+);
+const autoLabel = computed(
+  () => props.status.charAt(0).toUpperCase() + props.status.slice(1)
+);
 </script>
 
 <template>
@@ -678,18 +1003,50 @@ const autoLabel = computed(() => props.status.charAt(0).toUpperCase() + props.st
 
 <style scoped>
 .badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em;
-  border-radius: 999px; border: 1px solid transparent; white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
 }
-.s-sm { font-size: 1rem; padding: 3px 9px; }
-.s-md { font-size: 1.1rem; padding: 4px 11px; }
-.s-lg { font-size: 1.3rem; padding: 6px 14px; }
-.dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
-.v-neutral { color: rgb(var(--color-mute)); background: rgb(var(--color-mute) / 0.1); }
-.v-accent { color: rgb(var(--color-accent)); background: rgb(var(--color-accent) / 0.1); }
-.v-complete { color: rgb(var(--color-complete)); background: rgb(var(--color-complete) / 0.12); }
-.v-warn { color: rgb(var(--color-warn)); background: rgb(var(--color-warn) / 0.12); }
+.s-sm {
+  font-size: 1rem;
+  padding: 3px 9px;
+}
+.s-md {
+  font-size: 1.1rem;
+  padding: 4px 11px;
+}
+.s-lg {
+  font-size: 1.3rem;
+  padding: 6px 14px;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.v-neutral {
+  color: rgb(var(--color-mute));
+  background: rgb(var(--color-mute) / 0.1);
+}
+.v-accent {
+  color: rgb(var(--color-accent));
+  background: rgb(var(--color-accent) / 0.1);
+}
+.v-complete {
+  color: rgb(var(--color-complete));
+  background: rgb(var(--color-complete) / 0.12);
+}
+.v-warn {
+  color: rgb(var(--color-warn));
+  background: rgb(var(--color-warn) / 0.12);
+}
 </style>
 ```
 
@@ -705,7 +1062,9 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue"]);
 function isSelected(v) {
-  return props.multiple ? (props.modelValue || []).includes(v) : props.modelValue === v;
+  return props.multiple
+    ? (props.modelValue || []).includes(v)
+    : props.modelValue === v;
 }
 function select(v) {
   if (!props.multiple) return emit("update:modelValue", v);
@@ -718,26 +1077,56 @@ function select(v) {
 <template>
   <div class="chips">
     <button
-      v-for="o in options" :key="o.value" type="button"
-      class="chip" :class="{ on: isSelected(o.value) }" @click="select(o.value)"
+      v-for="o in options"
+      :key="o.value"
+      type="button"
+      class="chip"
+      :class="{ on: isSelected(o.value) }"
+      @click="select(o.value)"
     >
-      {{ o.label }}<span v-if="showCounts && o.count != null" class="chip-count">{{ o.count }}</span>
+      {{ o.label
+      }}<span v-if="showCounts && o.count != null" class="chip-count">{{
+        o.count
+      }}</span>
     </button>
   </div>
 </template>
 
 <style scoped>
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
-  border: 1px solid rgb(var(--color-line)); border-radius: 999px; background: transparent;
-  font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase;
-  letter-spacing: 0.06em; color: rgb(var(--color-mute)); cursor: pointer;
-  transition: border-color 0.12s ease, color 0.12s ease;
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
-.chip:hover { color: rgb(var(--color-ink)); }
-.chip.on { border-color: rgb(var(--color-accent)); color: rgb(var(--color-accent)); }
-.chip-count { font-size: 1rem; opacity: 0.7; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-mute));
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+.chip:hover {
+  color: rgb(var(--color-ink));
+}
+.chip.on {
+  border-color: rgb(var(--color-accent));
+  color: rgb(var(--color-accent));
+}
+.chip-count {
+  font-size: 1rem;
+  opacity: 0.7;
+}
 </style>
 ```
 
@@ -770,13 +1159,27 @@ const props = defineProps({
   closeOnEscape: { type: Boolean, default: true },
 });
 const emit = defineEmits(["update:modelValue", "close"]);
-const open = computed(() => (props.show !== undefined ? props.show : props.modelValue));
-function close() { emit("update:modelValue", false); emit("close"); }
-function handleBackdropClick() { if (props.closeOnBackdrop) close(); }
-function handleEscape(e) { if (e.key === "Escape" && props.closeOnEscape && open.value) close(); }
-watch(open, (v) => { document.body.style.overflow = v ? "hidden" : ""; });
+const open = computed(() =>
+  props.show !== undefined ? props.show : props.modelValue
+);
+function close() {
+  emit("update:modelValue", false);
+  emit("close");
+}
+function handleBackdropClick() {
+  if (props.closeOnBackdrop) close();
+}
+function handleEscape(e) {
+  if (e.key === "Escape" && props.closeOnEscape && open.value) close();
+}
+watch(open, (v) => {
+  document.body.style.overflow = v ? "hidden" : "";
+});
 onMounted(() => document.addEventListener("keydown", handleEscape));
-onUnmounted(() => { document.removeEventListener("keydown", handleEscape); document.body.style.overflow = ""; });
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleEscape);
+  document.body.style.overflow = "";
+});
 </script>
 
 <template>
@@ -787,11 +1190,22 @@ onUnmounted(() => { document.removeEventListener("keydown", handleEscape); docum
         <div class="modal-wrap">
           <div class="modal-panel" :class="`sz-${size}`" @click.stop>
             <div v-if="title || $slots.header" class="modal-header">
-              <slot name="header"><h3 class="modal-title">{{ title }}</h3></slot>
-              <button type="button" class="modal-close" aria-label="Close" @click="close">✕</button>
+              <slot name="header"
+                ><h3 class="modal-title">{{ title }}</h3></slot
+              >
+              <button
+                type="button"
+                class="modal-close"
+                aria-label="Close"
+                @click="close"
+              >
+                ✕
+              </button>
             </div>
             <div class="modal-body"><slot /></div>
-            <div v-if="$slots.footer" class="modal-footer"><slot name="footer" /></div>
+            <div v-if="$slots.footer" class="modal-footer">
+              <slot name="footer" />
+            </div>
           </div>
         </div>
       </div>
@@ -800,24 +1214,91 @@ onUnmounted(() => { document.removeEventListener("keydown", handleEscape); docum
 </template>
 
 <style scoped>
-.modal-root { position: fixed; inset: 0; z-index: 50; overflow-y: auto; }
-.modal-backdrop { position: fixed; inset: 0; background: rgb(var(--color-ink) / 0.4); }
-.modal-wrap { position: relative; display: flex; min-height: 100%; align-items: center; justify-content: center; padding: 16px; }
+.modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(var(--color-ink) / 0.4);
+}
+.modal-wrap {
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
 .modal-panel {
-  position: relative; width: 100%; background: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-line)); border-radius: 6px;
+  position: relative;
+  width: 100%;
+  background: rgb(var(--color-paper));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
   box-shadow: 0 20px 60px rgb(var(--color-ink) / 0.18);
 }
-.sz-sm { max-width: 28rem; } .sz-md { max-width: 36rem; } .sz-lg { max-width: 52rem; }
-.sz-xl { max-width: 72rem; } .sz-full { max-width: 96rem; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid rgb(var(--color-line)); }
-.modal-title { font-family: var(--font-body); font-size: 2rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
-.modal-close { border: 0; background: transparent; color: rgb(var(--color-mute)); font-size: 1.6rem; cursor: pointer; line-height: 1; }
-.modal-close:hover { color: rgb(var(--color-ink)); }
-.modal-body { padding: 22px; }
-.modal-footer { padding: 16px 22px; border-top: 1px solid rgb(var(--color-line)); display: flex; justify-content: flex-end; gap: 8px; }
-.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.18s ease; }
-.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
+.sz-sm {
+  max-width: 28rem;
+}
+.sz-md {
+  max-width: 36rem;
+}
+.sz-lg {
+  max-width: 52rem;
+}
+.sz-xl {
+  max-width: 72rem;
+}
+.sz-full {
+  max-width: 96rem;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid rgb(var(--color-line));
+}
+.modal-title {
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 0;
+}
+.modal-close {
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-mute));
+  font-size: 1.6rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close:hover {
+  color: rgb(var(--color-ink));
+}
+.modal-body {
+  padding: 22px;
+}
+.modal-footer {
+  padding: 16px 22px;
+  border-top: 1px solid rgb(var(--color-line));
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
 </style>
 ```
 
@@ -852,25 +1333,49 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:modelValue", "confirm", "cancel"]);
-const confirmVariant = computed(() => (props.variant === "info" ? "solid" : "danger"));
-function cancel() { emit("update:modelValue", false); emit("cancel"); }
+const confirmVariant = computed(() =>
+  props.variant === "info" ? "solid" : "danger"
+);
+function cancel() {
+  emit("update:modelValue", false);
+  emit("cancel");
+}
 </script>
 
 <template>
   <BaseModal
-    :model-value="show !== undefined ? show : modelValue" :title="title" size="sm"
-    @update:model-value="$emit('update:modelValue', $event)" @close="cancel"
+    :model-value="show !== undefined ? show : modelValue"
+    :title="title"
+    size="sm"
+    @update:model-value="$emit('update:modelValue', $event)"
+    @close="cancel"
   >
-    <p class="confirm-msg"><slot>{{ message }}</slot></p>
+    <p class="confirm-msg">
+      <slot>{{ message }}</slot>
+    </p>
     <template #footer>
-      <Button variant="ghost" size="sm" @click="cancel">{{ cancelLabel }}</Button>
-      <Button :variant="confirmVariant" size="sm" :loading="loading" @click="$emit('confirm')">{{ confirmLabel }}</Button>
+      <Button variant="ghost" size="sm" @click="cancel">{{
+        cancelLabel
+      }}</Button>
+      <Button
+        :variant="confirmVariant"
+        size="sm"
+        :loading="loading"
+        @click="$emit('confirm')"
+        >{{ confirmLabel }}</Button
+      >
     </template>
   </BaseModal>
 </template>
 
 <style scoped>
-.confirm-msg { font-family: var(--font-body); font-size: 1.5rem; line-height: 1.5; color: rgb(var(--color-ink)); margin: 0; }
+.confirm-msg {
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  line-height: 1.5;
+  color: rgb(var(--color-ink));
+  margin: 0;
+}
 </style>
 ```
 
@@ -901,7 +1406,12 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "search"]);
 const localValue = ref(props.modelValue);
 let debounceTimer = null;
-watch(() => props.modelValue, (v) => { localValue.value = v; });
+watch(
+  () => props.modelValue,
+  (v) => {
+    localValue.value = v;
+  }
+);
 function handleInput(e) {
   localValue.value = e.target.value;
   if (debounceTimer) clearTimeout(debounceTimer);
@@ -910,31 +1420,92 @@ function handleInput(e) {
     emit("search", localValue.value);
   }, props.debounce);
 }
-function clear() { localValue.value = ""; emit("update:modelValue", ""); emit("search", ""); }
+function clear() {
+  localValue.value = "";
+  emit("update:modelValue", "");
+  emit("search", "");
+}
 </script>
 
 <template>
   <div class="search">
-    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+    <svg
+      class="search-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
     </svg>
-    <input type="text" :value="localValue" :placeholder="placeholder" class="search-input" @input="handleInput" />
-    <button v-if="localValue" type="button" class="search-clear" aria-label="Clear" @click="clear">✕</button>
+    <input
+      type="text"
+      :value="localValue"
+      :placeholder="placeholder"
+      class="search-input"
+      @input="handleInput"
+    />
+    <button
+      v-if="localValue"
+      type="button"
+      class="search-clear"
+      aria-label="Clear"
+      @click="clear"
+    >
+      ✕
+    </button>
   </div>
 </template>
 
 <style scoped>
-.search { position: relative; display: flex; align-items: center; }
-.search-icon { position: absolute; left: 12px; color: rgb(var(--color-mute)); pointer-events: none; }
-.search-input {
-  width: 100%; border: 1px solid rgb(var(--color-line)); border-radius: 4px; background: transparent;
-  padding: 9px 34px 9px 36px; font-family: var(--font-body); font-size: 1.4rem;
-  color: rgb(var(--color-ink)); outline: none; transition: border-color 0.12s ease;
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
-.search-input::placeholder { color: rgb(var(--color-mute)); }
-.search-input:focus { border-color: rgb(var(--color-ink)); }
-.search-clear { position: absolute; right: 10px; border: 0; background: transparent; color: rgb(var(--color-mute)); cursor: pointer; font-size: 1.3rem; line-height: 1; }
-.search-clear:hover { color: rgb(var(--color-ink)); }
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: rgb(var(--color-mute));
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  background: transparent;
+  padding: 9px 34px 9px 36px;
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  color: rgb(var(--color-ink));
+  outline: none;
+  transition: border-color 0.12s ease;
+}
+.search-input::placeholder {
+  color: rgb(var(--color-mute));
+}
+.search-input:focus {
+  border-color: rgb(var(--color-ink));
+}
+.search-clear {
+  position: absolute;
+  right: 10px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-mute));
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.search-clear:hover {
+  color: rgb(var(--color-ink));
+}
 </style>
 ```
 
@@ -966,51 +1537,120 @@ const props = defineProps({
 });
 const emit = defineEmits(["page-change"]);
 const fromItem = computed(() => (props.currentPage - 1) * props.pageSize + 1);
-const toItem = computed(() => Math.min(props.currentPage * props.pageSize, props.totalItems));
+const toItem = computed(() =>
+  Math.min(props.currentPage * props.pageSize, props.totalItems)
+);
 const hasPrevious = computed(() => props.currentPage > 1);
 const hasNext = computed(() => props.currentPage < props.totalPages);
 const visiblePages = computed(() => {
-  const pages = []; const total = props.totalPages; const current = props.currentPage;
-  if (total <= 7) { for (let i = 1; i <= total; i++) pages.push(i); }
-  else {
+  const pages = [];
+  const total = props.totalPages;
+  const current = props.currentPage;
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+  } else {
     pages.push(1);
     if (current > 3) pages.push("…");
-    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+    for (
+      let i = Math.max(2, current - 1);
+      i <= Math.min(total - 1, current + 1);
+      i++
+    )
+      pages.push(i);
     if (current < total - 2) pages.push("…");
     pages.push(total);
   }
   return pages;
 });
-function goToPage(page) { if (page !== "…" && page !== props.currentPage) emit("page-change", page); }
+function goToPage(page) {
+  if (page !== "…" && page !== props.currentPage) emit("page-change", page);
+}
 </script>
 
 <template>
   <div class="pagination">
-    <div v-if="showInfo && totalItems > 0" class="page-info">Showing {{ fromItem }}–{{ toItem }} of {{ totalItems }}</div>
+    <div v-if="showInfo && totalItems > 0" class="page-info">
+      Showing {{ fromItem }}–{{ toItem }} of {{ totalItems }}
+    </div>
     <div v-else-if="showInfo" class="page-info">No results</div>
     <nav v-if="totalPages > 1" class="page-nav">
-      <button type="button" class="page-btn" :disabled="!hasPrevious" @click="goToPage(currentPage - 1)">‹</button>
+      <button
+        type="button"
+        class="page-btn"
+        :disabled="!hasPrevious"
+        @click="goToPage(currentPage - 1)"
+      >
+        ‹
+      </button>
       <template v-for="(page, i) in visiblePages" :key="i">
         <span v-if="page === '…'" class="page-ellipsis">…</span>
-        <button v-else type="button" class="page-btn" :class="{ current: page === currentPage }" @click="goToPage(page)">{{ page }}</button>
+        <button
+          v-else
+          type="button"
+          class="page-btn"
+          :class="{ current: page === currentPage }"
+          @click="goToPage(page)"
+        >
+          {{ page }}
+        </button>
       </template>
-      <button type="button" class="page-btn" :disabled="!hasNext" @click="goToPage(currentPage + 1)">›</button>
+      <button
+        type="button"
+        class="page-btn"
+        :disabled="!hasNext"
+        @click="goToPage(currentPage + 1)"
+      >
+        ›
+      </button>
     </nav>
   </div>
 </template>
 
 <style scoped>
-.pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.page-info { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgb(var(--color-mute)); }
-.page-nav { display: flex; align-items: center; gap: 4px; }
-.page-btn {
-  min-width: 32px; padding: 6px 10px; border: 1px solid transparent; border-radius: 999px;
-  background: transparent; font-family: var(--font-mono); font-size: 1.2rem; color: rgb(var(--color-ink)); cursor: pointer;
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
-.page-btn:hover:not(:disabled):not(.current) { background: rgb(var(--color-ink) / 0.06); }
-.page-btn.current { background: rgb(var(--color-ink)); color: rgb(var(--color-paper)); }
-.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.page-ellipsis { padding: 0 6px; color: rgb(var(--color-mute)); }
+.page-info {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-mute));
+}
+.page-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.page-btn {
+  min-width: 32px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+}
+.page-btn:hover:not(:disabled):not(.current) {
+  background: rgb(var(--color-ink) / 0.06);
+}
+.page-btn.current {
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+}
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.page-ellipsis {
+  padding: 0 6px;
+  color: rgb(var(--color-mute));
+}
 </style>
 ```
 
@@ -1088,9 +1728,16 @@ const props = defineProps({
 const emit = defineEmits(["update:activeSection", "back"]);
 const initials = computed(() => {
   const n = props.displayName || props.email || "?";
-  return n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return n
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 });
-const metaLine = computed(() => (props.role ? props.role.toUpperCase() : props.email));
+const metaLine = computed(() =>
+  props.role ? props.role.toUpperCase() : props.email
+);
 </script>
 
 <template>
@@ -1105,58 +1752,167 @@ const metaLine = computed(() => (props.role ? props.role.toUpperCase() : props.e
 
     <nav class="rail-nav">
       <button
-        v-for="item in navItems" :key="item.id" type="button"
-        class="rail-link" :class="{ active: activeSection === item.id }"
+        v-for="item in navItems"
+        :key="item.id"
+        type="button"
+        class="rail-link"
+        :class="{ active: activeSection === item.id }"
         @click="$emit('update:activeSection', item.id)"
       >
         <span class="rail-bar" />
-        <DashboardNavIcon v-if="item.icon" :name="item.icon" class="rail-icon" />
+        <DashboardNavIcon
+          v-if="item.icon"
+          :name="item.icon"
+          class="rail-icon"
+        />
         <span class="rail-label">{{ item.label }}</span>
         <span v-if="item.soon" class="rail-soon">· soon</span>
-        <span v-else-if="item.count != null" class="rail-count">{{ item.count }}</span>
+        <span v-else-if="item.count != null" class="rail-count">{{
+          item.count
+        }}</span>
       </button>
     </nav>
 
     <slot name="footer">
       <template v-if="showBack">
         <hr class="rail-rule" />
-        <router-link v-if="backTo" :to="backTo" class="rail-back">← {{ backLabel }}</router-link>
-        <button v-else type="button" class="rail-back" @click="$emit('back')">← {{ backLabel }}</button>
+        <router-link v-if="backTo" :to="backTo" class="rail-back"
+          >← {{ backLabel }}</router-link
+        >
+        <button v-else type="button" class="rail-back" @click="$emit('back')">
+          ← {{ backLabel }}
+        </button>
       </template>
     </slot>
   </aside>
 </template>
 
 <style scoped>
-.rail { align-self: start; display: flex; flex-direction: column; gap: 4px; }
-@media (min-width: 900px) { .rail { position: sticky; top: 4rem; } }
-.rail-user { margin-bottom: 18px; }
+.rail {
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+@media (min-width: 900px) {
+  .rail {
+    position: sticky;
+    top: 4rem;
+  }
+}
+.rail-user {
+  margin-bottom: 18px;
+}
 .rail-avatar {
-  width: 80px; height: 80px; border-radius: 999px; background: rgb(var(--color-accent));
-  color: rgb(var(--color-paper)); display: grid; place-items: center;
-  font-family: var(--font-mono); font-size: 2.6rem; font-weight: 600;
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-paper));
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 2.6rem;
+  font-weight: 600;
 }
-.rail-name { font-family: var(--font-body); font-size: 2.2rem; letter-spacing: -0.01em; margin-top: 14px; color: rgb(var(--color-ink)); }
-.rail-meta { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
-.rail-nav { display: flex; flex-direction: column; }
+.rail-name {
+  font-family: var(--font-body);
+  font-size: 2.2rem;
+  letter-spacing: -0.01em;
+  margin-top: 14px;
+  color: rgb(var(--color-ink));
+}
+.rail-meta {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.rail-nav {
+  display: flex;
+  flex-direction: column;
+}
 .rail-link {
-  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-  padding: 10px 0; border: 0; background: transparent; cursor: pointer; color: rgb(var(--color-mute));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: rgb(var(--color-mute));
 }
-.rail-bar { width: 4px; height: 16px; flex: none; background: transparent; transition: background 200ms ease; }
-.rail-icon { flex: none; opacity: 0.7; }
-.rail-label { font-family: var(--font-body); font-size: 1.5rem; font-weight: 400; flex: 1; }
-.rail-soon { font-family: var(--font-mono); font-size: 1rem; color: rgb(var(--color-mute) / 0.7); }
-.rail-count { font-family: var(--font-mono); font-size: 1.1rem; color: rgb(var(--color-mute)); }
-.rail-link:hover { color: rgb(var(--color-ink)); }
-.rail-link:hover .rail-icon { opacity: 1; }
-.rail-link.active { color: rgb(var(--color-ink)); }
-.rail-link.active .rail-bar { background: rgb(var(--color-accent)); }
-.rail-link.active .rail-icon { opacity: 1; }
-.rail-link.active .rail-label { font-weight: 500; }
-.rail-rule { border: 0; border-top: 1px solid rgb(var(--color-line)); margin: 20px 0 12px; width: 100%; }
-.rail-back { font-family: var(--font-mono); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgb(var(--color-ink)); text-decoration: none; background: transparent; border: 0; cursor: pointer; text-align: left; padding: 0; }
-.rail-back:hover { color: rgb(var(--color-accent)); }
+.rail-bar {
+  width: 4px;
+  height: 16px;
+  flex: none;
+  background: transparent;
+  transition: background 200ms ease;
+}
+.rail-icon {
+  flex: none;
+  opacity: 0.7;
+}
+.rail-label {
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  font-weight: 400;
+  flex: 1;
+}
+.rail-soon {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: rgb(var(--color-mute) / 0.7);
+}
+.rail-count {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgb(var(--color-mute));
+}
+.rail-link:hover {
+  color: rgb(var(--color-ink));
+}
+.rail-link:hover .rail-icon {
+  opacity: 1;
+}
+.rail-link.active {
+  color: rgb(var(--color-ink));
+}
+.rail-link.active .rail-bar {
+  background: rgb(var(--color-accent));
+}
+.rail-link.active .rail-icon {
+  opacity: 1;
+}
+.rail-link.active .rail-label {
+  font-weight: 500;
+}
+.rail-rule {
+  border: 0;
+  border-top: 1px solid rgb(var(--color-line));
+  margin: 20px 0 12px;
+  width: 100%;
+}
+.rail-back {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-ink));
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+.rail-back:hover {
+  color: rgb(var(--color-accent));
+}
 </style>
 ```
 
@@ -1199,9 +1955,16 @@ defineEmits(["update:activeSection", "back"]);
   <div class="shell" :data-accent="accent === 'magenta' ? null : accent">
     <div class="shell-layout">
       <DashboardRail
-        :nav-items="navItems" :active-section="activeSection" :display-name="displayName"
-        :email="email" :role="role" :back-label="backLabel" :back-to="backTo" :show-back="showBack"
-        @update:active-section="$emit('update:activeSection', $event)" @back="$emit('back')"
+        :nav-items="navItems"
+        :active-section="activeSection"
+        :display-name="displayName"
+        :email="email"
+        :role="role"
+        :back-label="backLabel"
+        :back-to="backTo"
+        :show-back="showBack"
+        @update:active-section="$emit('update:activeSection', $event)"
+        @back="$emit('back')"
       >
         <template v-if="$slots.user" #user><slot name="user" /></template>
         <template v-if="$slots.footer" #footer><slot name="footer" /></template>
@@ -1212,14 +1975,36 @@ defineEmits(["update:activeSection", "back"]);
 </template>
 
 <style scoped>
-.shell { background: rgb(var(--color-bg)); color: rgb(var(--color-ink)); font-family: var(--font-body); min-height: 100vh; }
-.shell-layout {
-  display: grid; grid-template-columns: 1fr; max-width: 124rem; margin: 0 auto;
-  padding: 4rem 4.8rem 9.6rem; gap: 4.8rem;
+.shell {
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-body);
+  min-height: 100vh;
 }
-@media (min-width: 900px) { .shell-layout { grid-template-columns: 28rem 1fr; } }
-@media (max-width: 767px) { .shell-layout { padding: 2.4rem 1.8rem 8rem; } }
-.shell-content { display: flex; flex-direction: column; gap: 6.4rem; min-width: 0; }
+.shell-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 124rem;
+  margin: 0 auto;
+  padding: 4rem 4.8rem 9.6rem;
+  gap: 4.8rem;
+}
+@media (min-width: 900px) {
+  .shell-layout {
+    grid-template-columns: 28rem 1fr;
+  }
+}
+@media (max-width: 767px) {
+  .shell-layout {
+    padding: 2.4rem 1.8rem 8rem;
+  }
+}
+.shell-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6.4rem;
+  min-width: 0;
+}
 </style>
 ```
 
@@ -1283,6 +2068,7 @@ export { default as MetricCard } from "./StatCard.vue";
 ```bash
 npm run build
 ```
+
 Expected: build succeeds (exit 0), no unresolved imports.
 
 - [ ] **Step 3: Import smoke check** — verify every barrel export resolves to a real `.vue`
@@ -1290,6 +2076,7 @@ Expected: build succeeds (exit 0), no unresolved imports.
 ```bash
 node -e "const fs=require('fs');const idx=fs.readFileSync('src/components/dashboard/shared/index.js','utf8');const files=[...idx.matchAll(/from \"\.\/(.+\.vue)\"/g)].map(m=>m[1]);const missing=files.filter(f=>!fs.existsSync('src/components/dashboard/shared/'+f));console.log(missing.length?('MISSING: '+missing.join(', ')):'all '+files.length+' barrel files exist')"
 ```
+
 Expected: `all N barrel files exist`.
 
 - [ ] **Step 4: Commit**

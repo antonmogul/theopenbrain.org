@@ -38,9 +38,11 @@ This spec frames the work as four parallel-ish tracks. Each track gets its own d
 ## Tracks
 
 ### Track 1 — Design tokens and typography
+
 **Spec:** `2026-05-11-design-tokens-and-typography.md`
 
 Replace the current palette (`magenta = purple`, `green = electric green`, generic grays) with the brief's token set:
+
 - Light theme: paper-warm bg `#f7f5f0`, paper `#ffffff`, ink `#0a0a0a`, mute `#6b6b66`
 - Dark theme: bg `#0e1313`, paper `#161c1c`, ink `#f3efe6`, mute α 0.55
 - Accents: magenta `#E91E8C` (primary), teal `#3DD9B5` (complete/takeaway), amber `#F4A621`, mono ink
@@ -49,6 +51,7 @@ Replace the current palette (`magenta = purple`, `green = electric green`, gener
 Adopt the brief's type scale, spacing scale (4/8/12/16/20/24/32/40/48/56/64/80/96/120), radius scale (0/2/6/12/pill).
 
 Wire fonts:
+
 - Default: Newsreader (serif display + body) + Inter Tight (sans UI) + JetBrains Mono (metadata/labels)
 - All five font pairs available as `data-fontpair` values: `newsreader` (default), `literata`, `georgia`, `sans`, `ibm-plex-legacy`
 - Theme: `data-theme` on `<html>` with `system` / `light` / `dark`; live `matchMedia` listener for system mode
@@ -56,13 +59,16 @@ Wire fonts:
 Migrate the existing custom Tailwind color names (`lightest`/`magenta`/`violet`/`green`/etc.) to new token-backed equivalents with aliases so existing components keep compiling during the migration. Audit and clean up over time.
 
 ### Track 2 — User typography & accent preferences + Settings page scaffold
+
 **Spec:** `2026-05-11-user-typography-preferences.md`
 
 The visible payoff of Track 1. Adds a Profile / Settings page (full-page route at `/profile` or `/settings`) with at minimum:
+
 - **Reading & display:** font pair (4 cards + IBM Plex legacy), reading size (compact/regular/comfortable), line length (tight/standard/wide), diagram toggles (auto-play step diagrams, reduce motion, inline captions)
 - **Theme & accents:** appearance (system/light/dark mini previews), accent color (magenta/teal/amber/mono swatches), highlighter palette toggles
 
 Persistence:
+
 - `localStorage` keys per the brief (`ob.theme`, `ob.fontPair`, `ob.typeSize`, `ob.accent`, `ob.lineLength`, `ob.reduceMotion`)
 - Server-side: extend the existing `profiles` table (or add a `user_preferences` table — TBD in Track 2 spec) with these fields, debounced sync 800ms
 - On login: pull preferences and merge into localStorage
@@ -70,9 +76,11 @@ Persistence:
 Email preferences, data & privacy, account sections (per brief) — scaffold the left-rail navigation but defer content to later tracks. This spec focuses on the Reading & Display + Theme & Accents sections only.
 
 ### Track 3 — Reader layout refinements
+
 **Spec:** `2026-05-11-reader-layout-refinements.md`
 
 The existing reader already has the right shape (`ChapterView` + `IllustrationsComp` sticky left + `TextComp` right + `ReaderTopBar` + `ReaderSidebar`). Tweaks per the brief:
+
 - Confirm 1.5fr / 1fr split proportions (left figure pane vs right prose); adjust whitespace, padding, sticky top offset relative to top bar
 - Confirm scroll-coupled figure swap behavior (`IntersectionObserver` on sections) and add bottom dot indicator showing which sections map to which figure
 - Add figure-picker dropdown + "● Tracking scroll" / pinned-figure state to the top of the sticky pane (some of this may already exist in `IllustrationOnScrollLinked` — audit before building)
@@ -82,11 +90,13 @@ The existing reader already has the right shape (`ChapterView` + `IllustrationsC
 Right-side `ReaderSidebar` with Info/Notebook/Chat tabs already maps to the brief's "floating panel" — keep as-is structurally, refresh visuals only.
 
 ### Track 4 — Chapter index + chapter overview pages
+
 **Spec:** `2026-05-11-chapter-index-and-overview.md`
 
 Two new routes:
 
 **`/chapters` — Chapter Index (functional)**
+
 - Hero: title block (left) + featured "Continue Reading" card (right) showing chapter cover, magenta progress bar, time-remaining estimate
 - 4-column responsive grid (3 at md, 2 at sm): cover art (3:4), "CHAPTER N" mono label, serif title, mono subtitle, magenta progress bar if started, "Reading" / "✓ Done" pill state
 - Pulls from Supabase chapters + per-user reading progress
@@ -94,6 +104,7 @@ Two new routes:
 - Anonymous users: existing `HomeView` (Matisse marketing) stays as `/`. Whether `/chapters` is publicly accessible (with progress fields hidden) or gated behind auth is a Track 4 decision — see open question 3.
 
 **`/chapter/:n` — Chapter Overview**
+
 - 320px left rail: cover, title, progress, primary CTAs (Continue / Start / Quiz)
 - Right column: sections list (each row: number, title, "X% · resume" or "no notes" / "N notes", figure count, minutes, completion check), figures grid, recent notes
 - This is a sibling of the existing `/chapter/:number/:slug` reader route — it's the entry point a user sees when they click into a chapter from the index, then they pick a section to read
@@ -101,9 +112,11 @@ Two new routes:
 Login: brief proposes a dedicated two-column page. **Decision:** stay with current `MenuAuth` modal for this round to keep scope tight; consider promoting to a page in a later phase.
 
 ### Track 5 — Mobile experience
+
 **Spec:** `2026-05-11-mobile-experience.md`
 
 Below 768px, branch to mobile layouts:
+
 - Replace `MediaQueryWarning` (the "use a bigger screen" warning) with actual mobile layouts
 - **Mobile reader:** single integrated stream — slim sticky app bar (menu + chapter title + progress dot), hero block, prose sections interleaved with inline-rendered diagrams (each with fullscreen-expand control), inline quiz/flashcard/lab checkpoints between sections
 - **Two-state bottom sheet** (peek 12% / expanded 90%) replaces the right-side floating panel for Notebook & Tools
@@ -126,6 +139,7 @@ Track 5 (mobile)                       ←  needs T1; absorbs T3 + T4 layouts at
 ```
 
 Order of execution:
+
 1. **Track 1 first.** Everything downstream consumes the tokens. Within Track 1, do the migration in two phases: first add the new tokens alongside the old ones with aliases pointing back at current values (no visual change), then in the final Track 1 commit flip the values to the new palette/fonts. This means the bulk of Track 1's diff can be code-reviewed without visual chaos.
 2. **Tracks 2, 3, 4 in parallel** once Track 1 is in. Different files, different concerns.
 3. **Track 5 last.** Needs the new component shapes to exist before mobile variants can branch off them. Track 5 is the one we should not start until the others are at least mostly done — mobile layouts that diverge from a moving target will need constant rework.
@@ -141,6 +155,7 @@ Order of execution:
 ## Deliverables per track
 
 Each track spec describes its own deliverables. At minimum each will produce:
+
 - A concrete list of files touched
 - New components / composables / Supabase migrations needed
 - Test plan (which Cypress specs exist and what gets added)

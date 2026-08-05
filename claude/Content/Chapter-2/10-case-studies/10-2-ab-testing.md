@@ -2,7 +2,7 @@
 
 ## When Data Doesn't Explain Why
 
-A/B testing is powerful: randomly assign users to variants, measure outcomes, choose the winner. But A/B tests often reveal *what* works without explaining *why*. This section explores how perceptual principles can enhance A/B testing—generating better hypotheses, interpreting unexpected results, and avoiding local maxima.
+A/B testing is powerful: randomly assign users to variants, measure outcomes, choose the winner. But A/B tests often reveal _what_ works without explaining _why_. This section explores how perceptual principles can enhance A/B testing—generating better hypotheses, interpreting unexpected results, and avoiding local maxima.
 
 ## The Limitations of Pure A/B Testing
 
@@ -12,6 +12,7 @@ Consider a successful test: changing a button from blue to orange increased conv
 
 **What we know**: Orange outperformed blue in this context
 **What we don't know**: Why orange outperformed—was it:
+
 - Attention (orange stands out more from the page)?
 - Association (orange feels more urgent)?
 - Contrast (orange has higher luminance contrast)?
@@ -31,6 +32,7 @@ Testing blue vs. orange vs. green finds the best color—but maybe the button's 
 ### Interaction Effects
 
 Individual variable testing misses interactions:
+
 - Button color might matter more on some backgrounds than others
 - Size changes might interact with position
 - Copy changes might interact with user segment
@@ -68,6 +70,7 @@ This prediction-before-testing forces explicit reasoning that can be validated o
 **Naive interpretation**: "Green is better. Use green buttons."
 
 **Perceptual analysis**:
+
 - The page had warm-toned product images (orange, browns)
 - Orange button had low color contrast with surrounding content
 - Green button had high color contrast (complementary to warm tones)
@@ -82,6 +85,7 @@ This prediction-before-testing forces explicit reasoning that can be validated o
 **Naive interpretation**: "Fewer fields is better. Minimize fields always."
 
 **Perceptual analysis**:
+
 - 8 scattered fields created high visual complexity and cognitive load
 - But the critical variable might be load, not quantity
 - 8 well-organized fields might outperform 4 disorganized fields
@@ -95,6 +99,7 @@ This prediction-before-testing forces explicit reasoning that can be validated o
 **Naive interpretation**: "Larger images convert better. Use larger images."
 
 **Perceptual analysis**:
+
 - Large images capture attention and establish page hierarchy
 - But: this product was visually appealing; large images showcased it
 - For less photogenic products, large images might hurt
@@ -109,6 +114,7 @@ This prediction-before-testing forces explicit reasoning that can be validated o
 **Problem**: Testing a button that's simultaneously larger, different color, and different text. Results can't attribute effect to specific changes.
 
 **Perceptual fix**: Understand what each change affects:
+
 - Size: Visual weight, attention capture
 - Color: Contrast, associations, aesthetic
 - Text: Comprehension, motivation

@@ -18,7 +18,7 @@ The application uses a **JSON-file-based data layer** with no backend database o
 ```
 src/assets/json_backend/
 ├── text.json           # 1,071 lines - Main educational content
-├── animations.json     # 441 lines - Animation configurations  
+├── animations.json     # 441 lines - Animation configurations
 ├── footnoets.json      # 325 lines - Footnotes (typo in filename)
 ├── menu.json           # 122 lines - Navigation structure
 ├── breakVideos.json    # 16 lines - Break video metadata
@@ -43,6 +43,7 @@ Total: 1,987 lines of JSON
 **Purpose:** Educational content about the retina
 
 **Structure:**
+
 ```json
 {
   "intro": [
@@ -92,17 +93,20 @@ Total: 1,987 lines of JSON
 **Issues:**
 
 #### a) **Deeply Nested Structure** (HIGH SEVERITY)
+
 ```
 sections → paragraphs → subSection → paragraphs → subSubSection → paragraphs
 ```
 
 **Problems:**
+
 - Difficult to query or search
 - Complex traversal logic (see `updateSectionsObj` in stores/index.js:244-285)
 - Hard to maintain and update
 - No maximum nesting level enforced
 
 **Code Example from stores/index.js:**
+
 ```javascript
 updateSectionsObj(sections, newString, id, sectionId) {
   let entries = Object.entries(sections);
@@ -130,8 +134,10 @@ updateSectionsObj(sections, newString, id, sectionId) {
 ```
 
 **Recommendation:**
+
 - **Flatten structure** - Use references instead of nesting
 - **Normalize data** - Separate entities (sections, paragraphs) into flat arrays
+
 ```json
 {
   "sections": { "sec-1": { "id": "sec-1", "paragraphIds": ["p-1", "p-2"] } },
@@ -142,6 +148,7 @@ updateSectionsObj(sections, newString, id, sectionId) {
 #### b) **HTML in JSON** (MEDIUM SEVERITY)
 
 Content includes raw HTML:
+
 ```json
 {
   "text": "...Alcmeon</span> (Greece, 5th century BCE), thought of the eye as a lantern, emitting an internally generated fire that was required for seeing<sup data-sup='1'>1</sup>."
@@ -149,14 +156,17 @@ Content includes raw HTML:
 ```
 
 **Issues:**
+
 - XSS risk if content ever becomes user-generated
 - Hard to parse/search/analyze
 - Difficult to apply different rendering (mobile, PDF, etc.)
 - Currently using `v-html` which bypasses Vue's XSS protection
 
 **Recommendation:**
+
 - **Use Markdown instead** - Safer, more portable
 - **Or structured content blocks:**
+
 ```json
 {
   "content": [
@@ -181,12 +191,14 @@ Content includes raw HTML:
 #### d) **UUIDs vs Semantic IDs** (LOW SEVERITY)
 
 Mix of UUIDs and semantic IDs:
+
 ```json
 "id": "638ccd51-c31a-4f74-b3a5-ab50f9f5dd6f"  // UUID
 "id": "accommodation"                          // Semantic
 ```
 
 **Recommendation:**
+
 - UUIDs for content pieces (good for collision-free)
 - Semantic IDs for animations/features (good for developer experience)
 - Be consistent
@@ -199,6 +211,7 @@ Mix of UUIDs and semantic IDs:
 **Purpose:** Animation configuration metadata
 
 **Structure:**
+
 ```json
 {
   "animations": [
@@ -217,6 +230,7 @@ Mix of UUIDs and semantic IDs:
 **Issues:**
 
 #### a) **States as Strings Array** (MEDIUM SEVERITY)
+
 ```json
 "states": [
   "Light shines into an eye, activating the retina",
@@ -227,6 +241,7 @@ Mix of UUIDs and semantic IDs:
 **Problem:** No structured data, just text descriptions
 
 **Recommendation:**
+
 ```json
 "states": [
   {
@@ -240,7 +255,9 @@ Mix of UUIDs and semantic IDs:
 ```
 
 #### b) **Boolean Flags** (LOW SEVERITY)
+
 Many boolean flags without clear semantics:
+
 - `fullscreen`
 - `clickTriggered`
 - `highlight`
@@ -258,6 +275,7 @@ Many boolean flags without clear semantics:
 **Issue:** Filename has typo: `footnoets` should be `footnotes`
 
 **Structure:**
+
 ```json
 {
   "1": {
@@ -270,18 +288,19 @@ Many boolean flags without clear semantics:
 **Issues:**
 
 #### a) **String Keys for Numbers** (LOW SEVERITY)
+
 ```json
 "1": { "id": "1" }
 ```
 
 Could be:
+
 ```json
-[
-  { "id": 1, "text": "..." }
-]
+[{ "id": 1, "text": "..." }]
 ```
 
 #### b) **Duplicate ID** (LOW SEVERITY)
+
 ```json
 "1": { "id": "1" }  // ID stored in both key and value
 ```
@@ -296,6 +315,7 @@ Could be:
 **Purpose:** Navigation structure
 
 **Structure:**
+
 ```json
 {
   "Part1": {
@@ -320,11 +340,13 @@ Could be:
 **Issues:**
 
 #### a) **Inconsistent Array Types** (MEDIUM SEVERITY)
+
 ```json
 "parts": ["String", { "object": "..." }, "String"]  // Mixed types!
 ```
 
 **Recommendation:** Use consistent structure:
+
 ```json
 "parts": [
   { "type": "text", "content": "Lorem ipsum..." },
@@ -333,6 +355,7 @@ Could be:
 ```
 
 #### b) **Non-sequential Indices** (LOW SEVERITY)
+
 ```json
 "Part1": { "index": 0 },
 "Part2": { "index": 2 }  // Where's index 1?
@@ -374,12 +397,14 @@ Could be:
 **Issues:**
 
 #### a) **Hardcoded Paths** (LOW SEVERITY)
+
 Paths are hardcoded strings. Could use Vite's import system for better optimization.
 
 **Recommendation:**
+
 ```javascript
 // Use dynamic imports or Vite glob imports
-const images = import.meta.glob('/publicAssets/images/*.jpg')
+const images = import.meta.glob("/publicAssets/images/*.jpg");
 ```
 
 ---
@@ -398,39 +423,42 @@ const images = import.meta.glob('/publicAssets/images/*.jpg')
 #### 1. **No Schema Validation** (HIGH SEVERITY)
 
 **Problem:** Data is stored and loaded with no validation
+
 ```javascript
 // stores/index.js
-text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText
+text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText;
 ```
 
 **Risk:**
+
 - Corrupted data crashes the app
 - No migration path for schema changes
 - User could manually edit localStorage and break things
 
 **Recommendation:**
+
 ```javascript
 function loadText() {
   try {
-    const stored = localStorage.getItem('sections');
+    const stored = localStorage.getItem("sections");
     if (!stored) return jsonText;
-    
+
     const parsed = JSON.parse(stored);
-    
+
     // Validate schema
     if (!isValidTextStructure(parsed)) {
-      console.warn('Invalid stored data, using default');
+      console.warn("Invalid stored data, using default");
       return jsonText;
     }
-    
+
     // Check version
     if (parsed.version !== CURRENT_VERSION) {
       return migrateData(parsed, CURRENT_VERSION);
     }
-    
+
     return parsed;
   } catch (e) {
-    console.error('Failed to load stored text:', e);
+    console.error("Failed to load stored text:", e);
     return jsonText;
   }
 }
@@ -441,12 +469,14 @@ function loadText() {
 **Problem:** If `text.json` structure changes, old localStorage data breaks
 
 **Example Scenario:**
+
 1. User highlights text in v0.1.20
 2. App updates to v0.2.0 with new JSON structure
 3. User's localStorage references old IDs that no longer exist
 4. App crashes or highlights disappear
 
 **Recommendation:**
+
 ```json
 {
   "version": "1.0.0",
@@ -457,16 +487,18 @@ function loadText() {
 #### 3. **LocalStorage Size Limits** (MEDIUM SEVERITY)
 
 **Issue:** text.json is 112KB, localStorage limit is ~5-10MB
+
 - If user highlights heavily, could hit limits
 - No error handling for quota exceeded
 
 **Recommendation:**
+
 ```javascript
 try {
-  localStorage.setItem('sections', JSON.stringify(data));
+  localStorage.setItem("sections", JSON.stringify(data));
 } catch (e) {
-  if (e.name === 'QuotaExceededError') {
-    alert('Storage limit reached. Please export your data.');
+  if (e.name === "QuotaExceededError") {
+    alert("Storage limit reached. Please export your data.");
     // Offer export or cleanup old data
   }
 }
@@ -475,16 +507,19 @@ try {
 #### 4. **Data Loss Risk** (HIGH SEVERITY)
 
 **Scenarios where user loses data:**
+
 1. Clear browser cache
 2. Switch browsers
 3. Use private/incognito mode
 4. Different device
 
 **Current Export/Import:**
+
 - Export: Downloads JSON file ✓
 - Import: Loads JSON file ✓
 
 **Missing:**
+
 - Auto-save to cloud
 - Cross-device sync
 - Recovery options
@@ -495,6 +530,7 @@ try {
 **Problem:** If `text.json` updates (new content added), how to merge with user's localStorage?
 
 **Example:**
+
 ```javascript
 // v0.1.20: text.json has sections 1-10
 // User highlights section 5
@@ -504,6 +540,7 @@ try {
 ```
 
 **Recommendation:**
+
 - Track content version alongside highlights
 - Only apply highlights if content hash matches
 - Or, store highlights as offsets/ranges, not by ID
@@ -534,6 +571,7 @@ try {
 No JSON Schema or TypeScript interfaces enforcing structure
 
 **Recommendation:**
+
 ```typescript
 // types/content.ts
 interface Section {
@@ -567,6 +605,7 @@ interface Paragraph {
 ### If This Were to Scale...
 
 **Needed:**
+
 1. **Backend API** - REST or GraphQL
 2. **Database** - PostgreSQL/MongoDB for content + user data
 3. **User Authentication** - To save data per user
@@ -582,6 +621,7 @@ interface Paragraph {
 ### Option 1: Markdown + Frontmatter (Recommended for this project)
 
 **Instead of:**
+
 ```json
 {
   "text": "<p>Content with <span id='foo'>HTML</span></p>"
@@ -589,6 +629,7 @@ interface Paragraph {
 ```
 
 **Use:**
+
 ```markdown
 ---
 id: "638ccd51-c31a-4f74-b3a5-ab50f9f5dd6f"
@@ -597,13 +638,14 @@ animation: "dragon"
 
 # The Retina
 
-Seeing starts in our eyes. Is this because something from the outside 
+Seeing starts in our eyes. Is this because something from the outside
 world passes into our eyes...
 
 ![Alcmeon](/images/Alcmaeon.jpg)
 ```
 
 **Benefits:**
+
 - Easier to edit
 - Safer (no XSS)
 - Portable (can export to PDF, etc.)
@@ -613,11 +655,13 @@ world passes into our eyes...
 ### Option 2: Headless CMS (For future scaling)
 
 **Options:**
+
 - **Strapi** - Self-hosted, free
 - **Sanity** - Hosted, generous free tier
 - **Contentful** - Hosted, good for structured content
 
 **Benefits:**
+
 - Non-technical content editing
 - Versioning built-in
 - API-first
@@ -629,16 +673,21 @@ world passes into our eyes...
 **Use case:** Keep it simple but with better querying
 
 ```javascript
-import Database from 'better-sqlite3';
+import Database from "better-sqlite3";
 
-const db = new Database('content.db');
+const db = new Database("content.db");
 
 // Query is now easy
-const section = db.prepare('SELECT * FROM sections WHERE id = ?').get(sectionId);
-const search = db.prepare('SELECT * FROM paragraphs WHERE text LIKE ?').all('%retina%');
+const section = db
+  .prepare("SELECT * FROM sections WHERE id = ?")
+  .get(sectionId);
+const search = db
+  .prepare("SELECT * FROM paragraphs WHERE text LIKE ?")
+  .all("%retina%");
 ```
 
 **Benefits:**
+
 - File-based (like JSON) but with SQL queries
 - Better for search and complex queries
 - Still works offline
@@ -651,6 +700,7 @@ const search = db.prepare('SELECT * FROM paragraphs WHERE text LIKE ?').all('%re
 ### 1. **XSS via v-html** (HIGH SEVERITY)
 
 **Current code:**
+
 ```vue
 <p v-html="paragraph.text" />
 ```
@@ -658,6 +708,7 @@ const search = db.prepare('SELECT * FROM paragraphs WHERE text LIKE ?').all('%re
 If `text.json` ever accepts user input (e.g., collaborative editing), this is an XSS vector.
 
 **Recommendation:**
+
 - Sanitize HTML with DOMPurify
 - Or switch to Markdown
 - Or use structured content (not HTML strings)
@@ -665,18 +716,20 @@ If `text.json` ever accepts user input (e.g., collaborative editing), this is an
 ### 2. **No Input Validation**
 
 User comments are stored directly:
+
 ```javascript
-this.comments[this.activeCom] = input;  // No sanitization
+this.comments[this.activeCom] = input; // No sanitization
 localStorage.setItem("comments", JSON.stringify(this.comments));
 ```
 
 **Recommendation:**
+
 ```javascript
 function sanitizeComment(input) {
   return input
     .trim()
-    .slice(0, 1000)  // Max length
-    .replace(/<script>/gi, '');  // Basic XSS prevention
+    .slice(0, 1000) // Max length
+    .replace(/<script>/gi, ""); // Basic XSS prevention
 }
 ```
 
@@ -689,24 +742,28 @@ User data is stored in plain text. Not a huge issue for this app, but worth noti
 ## Recommendations Summary
 
 ### Immediate (Do Now)
+
 1. ✅ **Fix typo:** Rename `footnoets.json` to `footnotes.json`
 2. ✅ **Add localStorage error handling** for quota exceeded
 3. ✅ **Add data versioning** to localStorage
 4. ✅ **Add try/catch** around JSON.parse()
 
 ### Short Term (Next Sprint)
+
 5. ✅ **Flatten text.json structure** - Use references instead of deep nesting
 6. ✅ **Add JSON Schema validation** for all data files
 7. ✅ **Sanitize user comments** before storing
 8. ✅ **Add migration system** for localStorage schema changes
 
 ### Medium Term (Next Quarter)
+
 9. ✅ **Convert to Markdown** instead of HTML in JSON
 10. ✅ **Add TypeScript interfaces** for all data structures
 11. ✅ **Implement conflict resolution** for content updates
 12. ✅ **Add data export versioning**
 
 ### Long Term (If Scaling)
+
 13. ✅ **Consider Headless CMS** (Strapi, Sanity)
 14. ✅ **Add backend API** for user data
 15. ✅ **Implement user authentication**
@@ -717,7 +774,7 @@ User data is stored in plain text. Not a huge issue for this app, but worth noti
 ## Estimated Refactoring Effort
 
 - **Immediate fixes:** 2-4 hours
-- **Short term improvements:** 8-16 hours  
+- **Short term improvements:** 8-16 hours
 - **Medium term (Markdown migration):** 20-30 hours
 - **Long term (CMS):** 80-120 hours
 
@@ -728,18 +785,21 @@ User data is stored in plain text. Not a huge issue for this app, but worth noti
 The JSON-based data layer is **functional for a single-user educational app** but has significant technical debt:
 
 **Biggest Issues:**
+
 1. **Deeply nested structure** - Hard to maintain and query
 2. **HTML in JSON** - Security and portability concerns
 3. **No data versioning** - Risk of breaking user data on updates
 4. **No validation** - Corrupted data can crash the app
 
 **Quick Wins:**
+
 1. Fix the `footnoets.json` typo
 2. Add localStorage error handling
 3. Add data versioning
 4. Flatten the JSON structure
 
 **Strategic Decision Needed:**
+
 - Stay with JSON files (simple, works for current scale)
 - Move to Markdown + Frontmatter (better DX, safer)
 - Adopt a Headless CMS (best for scaling, more complex)

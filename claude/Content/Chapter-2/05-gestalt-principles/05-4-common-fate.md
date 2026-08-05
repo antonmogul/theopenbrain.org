@@ -9,6 +9,7 @@ Watch a flock of birds or a school of fish: despite being distinct individuals, 
 Elements that move simultaneously in the same direction are perceived as grouped, even if they differ in other characteristics (color, shape, size) and are spatially separated.
 
 Common fate can override other grouping principles:
+
 - Dissimilar elements appear grouped when moving together
 - Spatially separated elements appear related when moving together
 - Even elements that would form different groups by proximity or similarity become grouped by shared motion
@@ -79,13 +80,14 @@ Parallax effects—where background and foreground move at different rates durin
 
 ## Implied Motion in Static Images
 
-Interestingly, the visual system also responds to *implied* motion in static images:
+Interestingly, the visual system also responds to _implied_ motion in static images:
 
 **Directional shapes**: Arrows, pointed shapes, and asymmetric forms imply motion direction
 **Blur effects**: Motion blur in static images triggers motion-sensitive processing
 **Action poses**: Figures caught mid-action create implied motion perception
 
 These effects can create pseudo-common-fate grouping even in static interfaces:
+
 - Icons with consistent directional implication feel related
 - Consistent action poses across imagery create unity
 - Aligned directional elements feel like they belong together

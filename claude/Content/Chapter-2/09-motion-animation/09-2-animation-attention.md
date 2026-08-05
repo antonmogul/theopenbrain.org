@@ -11,6 +11,7 @@ Effective interface animation serves specific purposes:
 ### Orienting Attention
 
 Motion guides users to what matters:
+
 - **Notifications**: Subtle motion draws attention to new information
 - **Error indicators**: Animation on problematic fields guides correction
 - **Call-to-action**: Motion on primary actions guides next steps
@@ -19,6 +20,7 @@ Motion guides users to what matters:
 ### Showing Relationships and Transitions
 
 Motion explains connections:
+
 - **Where did this come from?** Elements that animate from a source location maintain spatial relationships
 - **Where is this going?** Exit animations show destination relationships
 - **What belongs together?** Elements that move together are perceived as grouped (common fate)
@@ -27,6 +29,7 @@ Motion explains connections:
 ### Providing Feedback
 
 Motion confirms that actions had effect:
+
 - **Button press feedback**: Motion confirms the button was activated
 - **Successful submission**: Animation indicates action completed
 - **State updates**: Motion shows the system responded
@@ -35,6 +38,7 @@ Motion confirms that actions had effect:
 ### Creating Delight
 
 Motion can make interfaces feel polished and enjoyable:
+
 - **Micro-interactions**: Small, satisfying animations for common actions
 - **Personality**: Motion style contributes to brand character
 - **Surprise**: Unexpected animation moments create memorable experiences
@@ -56,6 +60,7 @@ Natural motion accelerates and decelerates rather than moving at constant speed:
 UI application: Almost never use linear timing. Ease-out for entrances (decelerating into final position), ease-in-out for moving elements, ease-in for exits (accelerating out of view).
 
 **Standard easings**:
+
 - `ease-out` for elements entering view
 - `ease-in-out` for elements moving within view
 - `ease-in` for elements exiting view
@@ -108,6 +113,7 @@ For transitions between unrelated content, fade out followed by fade in. The pau
 ### Duration Guidelines
 
 Material specifies duration based on complexity:
+
 - **Small/simple**: 100ms (icons, buttons)
 - **Medium/standard**: 200-300ms (cards, dialogs)
 - **Large/complex**: 300-500ms (full-screen transitions)
@@ -119,6 +125,7 @@ Smaller screens need shorter durations (less distance to cover).
 ### Animation That Obscures
 
 Animation that makes content harder to see or use:
+
 - Text animating while users try to read
 - Controls moving while users try to click
 - Information hidden behind ongoing animation
@@ -126,6 +133,7 @@ Animation that makes content harder to see or use:
 ### Delays That Frustrate
 
 Animation that slows task completion:
+
 - Forced waits for animation to complete
 - Transitions longer than necessary
 - Sequential animation that could be parallel
@@ -133,6 +141,7 @@ Animation that slows task completion:
 ### Motion Without Purpose
 
 Animation that doesn't serve any function:
+
 - Decorative movement that distracts
 - Constantly animated elements
 - Animation for animation's sake
@@ -140,6 +149,7 @@ Animation that doesn't serve any function:
 ### Inconsistent Motion Language
 
 Animation styles that don't cohere:
+
 - Different easings for similar actions
 - Inconsistent duration for comparable transitions
 - Mixed metaphors (some things slide, others fade, without logic)
@@ -148,16 +158,16 @@ Animation styles that don't cohere:
 
 Research and practice suggest timing ranges for different animation types:
 
-| Animation Type | Duration | Notes |
-|---------------|----------|-------|
-| Hover feedback | 50-100ms | Near-instantaneous response |
-| Button/control feedback | 100-150ms | Quick but visible |
-| State changes | 150-250ms | Noticeable transition |
-| Entry animations | 200-300ms | Time to register new element |
-| Exit animations | 150-200ms | Slightly faster than entry |
-| Page transitions | 200-400ms | Based on complexity |
-| Modal open | 200-300ms | Attention-drawing |
-| Modal close | 150-200ms | Get out of the way |
+| Animation Type          | Duration  | Notes                        |
+| ----------------------- | --------- | ---------------------------- |
+| Hover feedback          | 50-100ms  | Near-instantaneous response  |
+| Button/control feedback | 100-150ms | Quick but visible            |
+| State changes           | 150-250ms | Noticeable transition        |
+| Entry animations        | 200-300ms | Time to register new element |
+| Exit animations         | 150-200ms | Slightly faster than entry   |
+| Page transitions        | 200-400ms | Based on complexity          |
+| Modal open              | 200-300ms | Attention-drawing            |
+| Modal close             | 150-200ms | Get out of the way           |
 
 These are guidelines, not rules. Context matters: urgent actions need faster timing; relaxed browsing can use slower timing.
 
@@ -166,6 +176,7 @@ These are guidelines, not rules. Context matters: urgent actions need faster tim
 Consider a typical Material app flow: user taps a list item, which expands into a detail view.
 
 **Implementation**:
+
 1. List item (card) begins expanding immediately on tap (~0ms)
 2. Card grows toward full-screen dimensions (~300ms, ease-out)
 3. Card content fades in as card expands (~200ms, starting at 100ms)
@@ -173,12 +184,14 @@ Consider a typical Material app flow: user taps a list item, which expands into 
 5. Total transition: ~300ms
 
 **What this achieves**:
+
 - Immediate response confirms the tap
 - Container transform maintains object continuity
 - Easing provides natural deceleration
 - Duration is long enough to follow but short enough not to delay
 
 **Compare to poor implementation**:
+
 - 200ms delay before anything happens (feels unresponsive)
 - Abrupt cut to new page (no continuity)
 - Linear motion (feels mechanical)

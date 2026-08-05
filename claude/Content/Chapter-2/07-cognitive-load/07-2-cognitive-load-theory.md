@@ -13,11 +13,13 @@ Educational psychologist John Sweller developed cognitive load theory in the 198
 **Definition**: The inherent complexity of the task or information itself.
 
 Intrinsic load depends on:
+
 - The number of elements that must be processed simultaneously
 - The degree of interactivity among those elements
 - The learner's prior knowledge
 
 **Examples**:
+
 - Adding two single-digit numbers: low intrinsic load
 - Solving a multi-variable calculus problem: high intrinsic load
 - Booking a simple flight: moderate intrinsic load
@@ -30,11 +32,13 @@ Intrinsic load cannot be reduced without changing the task itself. Some tasks ar
 **Definition**: Load imposed by how information is presented or organized, rather than by the task itself.
 
 Extraneous load depends on:
+
 - Quality of instructional design or interface design
 - How well presentation matches cognitive architecture
 - Whether presentation helps or hinders task completion
 
 **Examples**:
+
 - Reading instructions while viewing a diagram on a separate page (high extraneous load—split attention)
 - Reading instructions integrated into the diagram (lower extraneous load)
 - Searching for relevant information amid cluttered interface (high extraneous load)
@@ -47,11 +51,13 @@ Extraneous load is the primary target for design optimization. **Good design min
 **Definition**: Load devoted to constructing mental models and schemas.
 
 Germane load is "productive" effort that contributes to learning and understanding:
+
 - Building mental models of how a system works
 - Acquiring schemas that reduce future load
 - Making connections between new and existing knowledge
 
 **Examples**:
+
 - Deliberately practicing a task to build automaticity
 - Studying worked examples to build problem-solving schemas
 - Exploring an interface to build a mental model of its organization
@@ -63,6 +69,7 @@ Germane load should be encouraged—it's productive investment that reduces futu
 Total cognitive load = Intrinsic + Extraneous + Germane
 
 Working memory has fixed capacity. If total load exceeds capacity, processing fails:
+
 - Learning doesn't occur
 - Tasks aren't completed
 - Users become frustrated and disengage
@@ -80,6 +87,7 @@ Cognitive load theory connects to the working memory / long-term memory interact
 **Schemas**: Organized knowledge structures in long-term memory that can be retrieved as single units
 
 The relationship matters because:
+
 - **Schemas reduce load**: A complex concept encoded as a schema retrieves as one chunk rather than multiple elements
 - **Expertise reduces load**: Experts have extensive schemas; the same task that overwhelms a novice is easy for them
 - **Automation reduces load**: Well-practiced operations become automatic, requiring minimal working memory
@@ -89,6 +97,7 @@ The relationship matters because:
 ### Split Attention Effect
 
 When users must integrate information from multiple sources:
+
 - Instructions in one location, controls in another
 - Labels separated from the fields they describe
 - Error messages distant from the problematic input
@@ -99,6 +108,7 @@ When users must integrate information from multiple sources:
 ### Redundancy Effect
 
 Presenting the same information multiple ways that don't aid understanding:
+
 - Reading identical text while hearing it read aloud
 - Detailed labels on self-explanatory icons
 - Verbose explanations of obvious interface elements
@@ -108,6 +118,7 @@ Presenting the same information multiple ways that don't aid understanding:
 ### Seductive Details Effect
 
 Interesting but irrelevant information that captures attention:
+
 - Decorative imagery unrelated to task
 - Engaging tangents in documentation
 - "Fun" interface elements that don't aid completion
@@ -117,6 +128,7 @@ Interesting but irrelevant information that captures attention:
 ### Search Load
 
 Requiring users to search for relevant information:
+
 - Poor information architecture
 - Hidden features and controls
 - Inconsistent placement across screens
@@ -126,6 +138,7 @@ Requiring users to search for relevant information:
 ### Decision Load
 
 Excessive options requiring evaluation:
+
 - Too many choices without clear recommendation
 - Features without hierarchy or emphasis
 - Equal visual weight on primary and tertiary actions
@@ -137,6 +150,7 @@ Excessive options requiring evaluation:
 ### Spatial Contiguity
 
 Place related information close together to reduce integration load:
+
 - Labels immediately adjacent to inputs
 - Error messages inline with problematic fields
 - Tooltips appearing near trigger elements
@@ -145,6 +159,7 @@ Place related information close together to reduce integration load:
 ### Temporal Contiguity
 
 Present related information simultaneously rather than sequentially:
+
 - Show instructions while task is being performed (not before)
 - Display feedback immediately after action (not on next screen)
 - Present context when relevant (not earlier "just in case")
@@ -152,6 +167,7 @@ Present related information simultaneously rather than sequentially:
 ### Segmenting
 
 Break complex tasks into manageable segments:
+
 - Multi-step wizards instead of single complex forms
 - Progressive disclosure of advanced options
 - Chunked content with clear section boundaries
@@ -159,6 +175,7 @@ Break complex tasks into manageable segments:
 ### Scaffolding
 
 Provide structure that reduces load without doing the work:
+
 - Templates for complex creation tasks
 - Constraints that prevent errors
 - Smart defaults that reduce decisions
@@ -167,6 +184,7 @@ Provide structure that reduces load without doing the work:
 ### Signaling
 
 Guide attention to relevant information:
+
 - Clear visual hierarchy
 - Headings and labels that preview content
 - Icons that aid recognition
@@ -179,6 +197,7 @@ When tasks are inherently complex, design can help manage (not eliminate) intrin
 ### Sequencing
 
 Present simple elements before complex ones:
+
 - Build from basics to advanced
 - Introduce concepts before requiring their application
 - Start with constrained tasks before opening full complexity
@@ -186,6 +205,7 @@ Present simple elements before complex ones:
 ### Pre-training
 
 Establish foundational knowledge before complex integration:
+
 - Introduce key concepts separately
 - Build vocabulary and conventions
 - Practice component skills before combining
@@ -193,6 +213,7 @@ Establish foundational knowledge before complex integration:
 ### Worked Examples
 
 Show completed examples that users can study:
+
 - Sample configurations to model
 - Templates demonstrating best practices
 - Step-by-step walkthroughs for complex tasks
@@ -202,12 +223,14 @@ Show completed examples that users can study:
 The same interface imposes different load on different users:
 
 **Novices**:
+
 - Limited schemas for the domain
 - Everything is novel, requiring full processing
 - High intrinsic load even for "simple" tasks
 - Benefit from explicit guidance and scaffolding
 
 **Experts**:
+
 - Rich schemas automate much processing
 - Recognition replaces analysis
 - Low intrinsic load for domain tasks
@@ -220,6 +243,7 @@ The same interface imposes different load on different users:
 **Before**: Insurance quote form presented 35 fields on a single page. Business and personal policies mixed. Optional fields visually identical to required. Error messages appeared at page top after submission.
 
 **Load analysis**:
+
 - High intrinsic load (insurance complexity)
 - High extraneous load (split attention, search, no chunking)
 - No germane load support (no learning about insurance)
@@ -227,6 +251,7 @@ The same interface imposes different load on different users:
 **After**: Multi-step wizard with 5 screens of 5-8 fields each. Clear section labels ("Your Information," "Coverage Needs"). Required fields clearly marked. Inline validation with errors at field. Progress indicator showing completion.
 
 **Load impact**:
+
 - Intrinsic load unchanged (same task)
 - Extraneous load dramatically reduced (spatial contiguity, segmenting, signaling)
 - Germane load supported (clear organization builds mental model)
@@ -238,12 +263,14 @@ The same interface imposes different load on different users:
 Use this checklist to audit interfaces for cognitive load:
 
 **Intrinsic load assessment**:
+
 - [ ] How many elements must be processed simultaneously?
 - [ ] How interdependent are decision elements?
 - [ ] What expertise does the task require?
 - [ ] Can task complexity be sequenced?
 
 **Extraneous load detection**:
+
 - [ ] Is information integrated or split?
 - [ ] Are there redundant elements adding noise?
 - [ ] How much search is required?
@@ -251,6 +278,7 @@ Use this checklist to audit interfaces for cognitive load:
 - [ ] How many decisions must be made without guidance?
 
 **Germane load support**:
+
 - [ ] Does the interface help users build mental models?
 - [ ] Are patterns consistent enough to become schemas?
 - [ ] Do users gain competence through use?

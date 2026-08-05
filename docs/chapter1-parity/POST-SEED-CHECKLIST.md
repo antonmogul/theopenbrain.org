@@ -11,7 +11,7 @@
 > editor (service_role) look fine while the app sees nothing.
 >
 > **Section 2 (runtime transform) COMPLETE.** Replaying the `useAnimations` transform
-> against the live API *with the anon key* gives **14/14 interactive figures carrying
+> against the live API _with the anon key_ gives **14/14 interactive figures carrying
 > data** (was 0/14 pre-fix). Per-figure states/highlight/switch counts all match the
 > static source table below.
 >
@@ -58,10 +58,12 @@ Run in the SQL editor. The expected numbers come from
 `src/assets/json_backend/animations.json` (the target).
 
 - [ ] **Tables are no longer empty:**
+
   ```sql
   SELECT (SELECT count(*) FROM animation_states)   AS states,
          (SELECT count(*) FROM animation_variants) AS variants;
   ```
+
   Expect **states = 93** (73 plain + 20 highlight, summed from the static source) and
   **variants = 8** (4 switch figures × 2). If either is 0, the seed didn't apply.
 
@@ -85,6 +87,7 @@ Run in the SQL editor. The expected numbers come from
       | animationRodVsConeCircuits | 0 | 0 | 2 |
 
       Query to verify states/highlight per key:
+
   ```sql
   SELECT a.animation_key,
          count(*) FILTER (WHERE s.is_highlight_state = false) AS states,
@@ -94,7 +97,9 @@ Run in the SQL editor. The expected numbers come from
   GROUP BY a.animation_key
   ORDER BY a.animation_key;
   ```
+
   And variants (switches):
+
   ```sql
   SELECT a.animation_key, count(*) AS variants
   FROM animations a JOIN animation_variants v ON v.animation_id = a.id
@@ -105,11 +110,13 @@ Run in the SQL editor. The expected numbers come from
         Photoreceptors as highlight. Confirm those show **highlight = 0** now.
 
 - [ ] **infoText repaired** (not truncated stubs):
+
   ```sql
   SELECT animation_key, length(config->>'infoText') AS len
   FROM animations
   WHERE animation_key IN ('animationPhototransduction','animationTheVisualCycle');
   ```
+
   Expect **Phototransduction len ≈ 1864** (was 99) and **TheVisualCycle ≈ 1342** (was 118).
 
 - [ ] **Scroll triggers set** on exactly the 2 intro paragraphs:
@@ -165,6 +172,7 @@ the seed** and should now work — this is what "parity" means to a user:
       (the `animationFull` dedup code fix; confirm it holds with real seeded data).
 
 ### Side-by-side (optional, strongest): DB vs static
+
 If you still have the static build, open the original static Chapter 1 next to the DB
 one and spot-check that a couple of interactive figures behave **identically** (same
 states, same order, same toggles). That's the definitive parity confirmation.

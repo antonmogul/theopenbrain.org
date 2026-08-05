@@ -76,6 +76,7 @@ Color constancy isn't perfect. It fails when:
 ### Colors Look Different on Different Screens
 
 Screens vary in:
+
 - White point (color temperature of "white")
 - Gamma (brightness curve)
 - Color gamut (range of displayable colors)
@@ -84,6 +85,7 @@ Screens vary in:
 The same hex color will appear different across devices. Color constancy helps somewhat—viewers adapt to device characteristics—but doesn't eliminate differences.
 
 **Implications for design**:
+
 - Don't rely on exact color matching across devices
 - Design color relationships (contrast, harmony) rather than exact colors
 - Test on multiple devices under multiple lighting conditions
@@ -104,6 +106,7 @@ These effects mean that a color choice made in isolation may appear different in
 ### Environment Lighting Matters
 
 Users view interfaces under varying conditions:
+
 - Bright daylight through windows
 - Warm incandescent indoor lighting
 - Cool fluorescent office lighting
@@ -112,6 +115,7 @@ Users view interfaces under varying conditions:
 Color constancy adapts to these conditions, but slowly. A design that looks balanced in one environment may appear color-cast in another.
 
 **Implications**:
+
 - Design neutral elements to be truly neutral (equal RGB values) so they remain neutral under any adaptation
 - Test designs under different lighting conditions
 - Consider providing light/dark themes for different ambient conditions
@@ -119,6 +123,7 @@ Color constancy adapts to these conditions, but slowly. A design that looks bala
 ### Color Matching Across Interface Elements
 
 If your interface includes:
+
 - User-uploaded photography
 - Brand colors in interface elements
 - Data visualization with color coding

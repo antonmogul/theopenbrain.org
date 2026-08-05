@@ -9,14 +9,17 @@ Building out the Creator Dashboard with 5 additional tabs beyond the existing Ch
 ## Tab 1: VERSIONS
 
 ### Purpose
+
 Manage content versions (v1.0, v1.1, etc.) - the versioning container that holds modules/chapters.
 
 ### Database Table: `content_versions`
+
 ```sql
 id, version_number, status, created_by, release_notes, created_at, published_at
 ```
 
 ### UI Layout
+
 ```
 +------------------------------------------------------------------+
 | VERSIONS                                           [+ New Version] |
@@ -38,6 +41,7 @@ id, version_number, status, created_by, release_notes, created_at, published_at
 ```
 
 ### Features
+
 - List all versions with status badges (draft/published/archived)
 - Expand to see modules in that version
 - Create new version (clone from existing or blank)
@@ -46,6 +50,7 @@ id, version_number, status, created_by, release_notes, created_at, published_at
 - View diff between versions (future)
 
 ### API Calls
+
 ```javascript
 // Fetch all versions with module counts
 GET /rest/v1/content_versions?select=*,modules(count)&order=created_at.desc
@@ -64,17 +69,20 @@ Body: { status: 'published', published_at: now() }
 ## Tab 2: MEDIA
 
 ### Purpose
+
 Manage all animations, images, videos, and Lottie files used in content.
 
 ### Database Table: `animations`
+
 ```sql
-id, animation_key, title, description, media_type, 
+id, animation_key, title, description, media_type,
 lottie_file_url, video_file_url, image_file_url, youtube_id,
 interaction_type, component_name, config, file_size_bytes,
 scientific_domain, load_priority, created_at, updated_at
 ```
 
 ### UI Layout
+
 ```
 +------------------------------------------------------------------+
 | MEDIA LIBRARY                    [Filter: All v] [+ Upload Media] |
@@ -124,6 +132,7 @@ MEDIA DETAIL PANEL (when selected):
 ```
 
 ### Features
+
 - Grid view of all media assets grouped by type
 - Filter by type (lottie/video/image/youtube)
 - Search by title/key
@@ -134,6 +143,7 @@ MEDIA DETAIL PANEL (when selected):
 - Delete unused assets
 
 ### API Calls
+
 ```javascript
 // Fetch all animations grouped by type
 GET /rest/v1/animations?select=*&order=media_type,title
@@ -154,15 +164,18 @@ supabase.storage.from('animations').upload(path, file)
 ## Tab 3: USERS
 
 ### Purpose
+
 View and manage all platform users (creators, professors, students).
 
 ### Database Table: `profiles`
+
 ```sql
 id, email, full_name, role, institution, created_at, updated_at,
 creator_bio, creator_website, professor_department, student_year, student_major
 ```
 
 ### UI Layout
+
 ```
 +------------------------------------------------------------------+
 | USERS                                      Total: 156 users       |
@@ -200,6 +213,7 @@ PAGINATION: [< Prev] Page 1 of 16 [Next >]
 ```
 
 ### Features
+
 - Summary cards showing user counts by role
 - Filterable/searchable user list
 - Role-based columns (show relevant fields per role)
@@ -209,6 +223,7 @@ PAGINATION: [< Prev] Page 1 of 16 [Next >]
 - Invite new users (send email invite)
 
 ### API Calls
+
 ```javascript
 // Fetch all profiles with pagination
 GET /rest/v1/profiles?select=*&order=created_at.desc&limit=20&offset=0
@@ -233,9 +248,11 @@ Body: { role, full_name, institution, ... }
 ## Tab 4: ANALYTICS
 
 ### Purpose
+
 Visualize platform usage, engagement metrics, and learning outcomes.
 
 ### Database Tables
+
 - `analytics_events` - detailed event tracking
 - `reading_progress` - student progress through content
 - `quiz_attempts` - quiz performance
@@ -243,6 +260,7 @@ Visualize platform usage, engagement metrics, and learning outcomes.
 - `ai_messages` - AI tutor usage
 
 ### UI Layout
+
 ```
 +------------------------------------------------------------------+
 | ANALYTICS                          [Last 7 days v] [Export CSV]   |
@@ -299,6 +317,7 @@ Visualize platform usage, engagement metrics, and learning outcomes.
 ```
 
 ### Features
+
 - **Overview Cards**: Active users, page views, avg time, quiz completion
 - **Time Series Chart**: Daily/weekly engagement trends
 - **Content Heatmap**: Most viewed chapters/sections
@@ -308,6 +327,7 @@ Visualize platform usage, engagement metrics, and learning outcomes.
 - **Export**: CSV download of analytics data
 
 ### Charts (using Chart.js or similar)
+
 1. Line chart: Daily active users over time
 2. Bar chart: Views per chapter
 3. Pie chart: User role distribution
@@ -315,6 +335,7 @@ Visualize platform usage, engagement metrics, and learning outcomes.
 5. Line chart: Quiz scores trend
 
 ### API Calls
+
 ```javascript
 // Get event counts by type for date range
 GET /rest/v1/analytics_events?select=event_type,created_at
@@ -339,15 +360,18 @@ GET /rest/v1/ai_messages?select=role,created_at&role=eq.user
 ## Tab 5: QUIZZES
 
 ### Purpose
+
 Create and manage quizzes attached to modules/sections.
 
 ### Database Tables
+
 - `quizzes` - quiz definitions
 - `quiz_questions` - questions within quizzes
 - `quiz_attempts` - student submissions
 - `quiz_answers` - individual answers
 
 ### UI Layout
+
 ```
 +------------------------------------------------------------------+
 | QUIZZES                                            [+ New Quiz]   |
@@ -404,6 +428,7 @@ QUIZ EDITOR (expanded or modal):
 ```
 
 ### Features
+
 - List all quizzes with stats (attempts, avg score, pass rate)
 - Create/edit quiz with inline question editor
 - Question types: Multiple choice, True/False, Short answer, Essay
@@ -413,6 +438,7 @@ QUIZ EDITOR (expanded or modal):
 - Export results to CSV
 
 ### API Calls
+
 ```javascript
 // Fetch all quizzes with stats
 GET /rest/v1/quizzes?select=*,
@@ -439,14 +465,17 @@ GET /rest/v1/quiz_attempts?quiz_id=eq.{id}&select=*,
 ## Tab 6: FLASHCARDS (Bonus)
 
 ### Purpose
+
 Create spaced-repetition flashcard decks for study.
 
 ### Database Tables
+
 - `flashcards` - card definitions
 - `flashcard_sessions` - study sessions
 - `flashcard_responses` - SM-2 algorithm tracking
 
 ### UI Layout (Brief)
+
 - Card deck list with card counts
 - Card editor (front/back with rich text)
 - Preview mode with flip animation
@@ -457,14 +486,16 @@ Create spaced-repetition flashcard decks for study.
 ## SQL Seed Scripts for Stub Data
 
 ### Versions Seed
+
 ```sql
 INSERT INTO content_versions (id, version_number, status, release_notes, created_at, published_at)
-VALUES 
+VALUES
   (gen_random_uuid(), '1.0', 'published', 'Initial release with Chapter 1: The Retina', NOW() - INTERVAL '30 days', NOW() - INTERVAL '25 days'),
   (gen_random_uuid(), '2.0', 'draft', 'Adding Chapter 2: Visual Perception and UX', NOW() - INTERVAL '5 days', NULL);
 ```
 
 ### Media/Animations Seed
+
 ```sql
 INSERT INTO animations (id, animation_key, title, description, media_type, interaction_type, scientific_domain, load_priority, file_size_bytes)
 VALUES
@@ -479,10 +510,11 @@ VALUES
 ```
 
 ### Analytics Events Seed
+
 ```sql
 -- Generate sample analytics events for the past 30 days
 INSERT INTO analytics_events (user_id, event_type, event_data, module_id, created_at)
-SELECT 
+SELECT
   (SELECT id FROM profiles WHERE role = 'student' ORDER BY RANDOM() LIMIT 1),
   (ARRAY['page_view', 'quiz_start', 'quiz_complete', 'highlight_create', 'ai_question'])[floor(random() * 5 + 1)],
   '{"source": "web"}'::jsonb,
@@ -492,7 +524,7 @@ FROM generate_series(1, 500);
 
 -- Generate reading progress entries
 INSERT INTO reading_progress (user_id, module_id, time_spent_seconds, scroll_position, is_completed, last_accessed_at)
-SELECT 
+SELECT
   p.id,
   m.id,
   floor(random() * 3600 + 120)::int,
@@ -506,6 +538,7 @@ ON CONFLICT (user_id, module_id, course_id) DO NOTHING;
 ```
 
 ### Quiz Seed
+
 ```sql
 -- Create sample quiz
 INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, created_by)
@@ -524,7 +557,7 @@ VALUES (
 -- Add questions
 INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, order_index)
 VALUES
-  ('a1b2c3d4-e5f6-7890-abcd-ef1234567890'::uuid, 
+  ('a1b2c3d4-e5f6-7890-abcd-ef1234567890'::uuid,
    'What percentage of the visual field does the fovea cover?',
    'multiple_choice',
    '["About 50%", "About 25%", "About 2%", "About 10%"]'::jsonb,
@@ -546,7 +579,7 @@ VALUES
 
 -- Generate sample quiz attempts
 INSERT INTO quiz_attempts (quiz_id, student_id, score, total_points, earned_points, started_at, completed_at, time_spent_seconds, status)
-SELECT 
+SELECT
   'a1b2c3d4-e5f6-7890-abcd-ef1234567890'::uuid,
   p.id,
   floor(random() * 40 + 60)::int,
@@ -562,9 +595,10 @@ LIMIT 25;
 ```
 
 ### Trending Highlights Seed
+
 ```sql
 INSERT INTO trending_highlights (paragraph_id, selected_text, start_offset, end_offset, highlight_count, last_highlighted_at)
-SELECT 
+SELECT
   p.id,
   LEFT(p.content_text, 100),
   0,
@@ -591,15 +625,19 @@ LIMIT 15;
 ## Technical Notes
 
 ### Chart Library
+
 Recommend **Chart.js** with **vue-chartjs** wrapper:
+
 ```bash
 npm install chart.js vue-chartjs
 ```
 
 ### Date Formatting
+
 Use **date-fns** (already likely in project) for consistent date formatting.
 
 ### Pagination Pattern
+
 ```javascript
 const page = ref(1);
 const perPage = 20;
@@ -611,6 +649,7 @@ GET /rest/v1/table?limit=${perPage}&offset=${offset.value}
 ```
 
 ### Shared Components Needed
+
 - `StatCard.vue` - metric display card
 - `DataTable.vue` - sortable/filterable table
 - `StatusBadge.vue` - draft/published/archived badges

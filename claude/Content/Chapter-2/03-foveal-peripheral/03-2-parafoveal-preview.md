@@ -63,7 +63,7 @@ But the 50-75 character guideline assumes typical reading conditions. For scanni
 Fully justified text—where both margins are aligned—creates variable word spacing. This variability degrades parafoveal preview:
 
 - Unusually wide spaces can be misidentified as word boundaries
-- Unusually tight spaces can merge adjacent words parafoveally  
+- Unusually tight spaces can merge adjacent words parafoveally
 - Variable spacing disrupts the saccade targeting that relies on predictable spacing patterns
 
 The result: justified text typically reduces reading speed and increases fixation counts compared to left-aligned (ragged-right) text. The aesthetic uniformity of justified margins comes at a measurable usability cost.

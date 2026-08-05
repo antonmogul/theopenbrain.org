@@ -3,16 +3,19 @@
 ## What's Been Set Up
 
 ### 1. Database Schema ✅
+
 - All 20+ tables created
 - Indexes and RLS policies configured
 - Functions and triggers in place
 
 ### 2. Supabase Client ✅
+
 - **File**: `src/lib/supabase.js`
 - Configured with environment variables
 - Auto-refresh tokens enabled
 
 ### 3. Composables Created ✅
+
 - **`useAuth.js`**: Authentication (sign up, sign in, sign out)
 - **`useProfile.js`**: User profile management
 - **`useModules.js`**: Content module operations
@@ -36,21 +39,21 @@ Create a simple test component or add to existing component:
 
 ```vue
 <script setup>
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/composables/useAuth'
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/composables/useAuth";
 
-const { user, isAuthenticated, signIn, signOut } = useAuth()
+const { user, isAuthenticated, signIn, signOut } = useAuth();
 
 // Test connection
 const testConnection = async () => {
-  const { data, error } = await supabase.from('profiles').select('count')
-  console.log('Connection test:', { data, error })
-}
+  const { data, error } = await supabase.from("profiles").select("count");
+  console.log("Connection test:", { data, error });
+};
 </script>
 
 <template>
   <div>
-    <p>User: {{ user?.email || 'Not logged in' }}</p>
+    <p>User: {{ user?.email || "Not logged in" }}</p>
     <button @click="testConnection">Test Connection</button>
   </div>
 </template>
@@ -61,32 +64,34 @@ const testConnection = async () => {
 When a user signs up, you need to create their profile. Add this to your sign-up flow:
 
 ```javascript
-import { useAuth } from '@/composables/useAuth'
-import { useProfile } from '@/composables/useProfile'
+import { useAuth } from "@/composables/useAuth";
+import { useProfile } from "@/composables/useProfile";
 
-const { signUp } = useAuth()
-const { createProfile } = useProfile()
+const { signUp } = useAuth();
+const { createProfile } = useProfile();
 
 const handleSignUp = async (email, password, role) => {
   // 1. Sign up user
-  const { data: authData, error: authError } = await signUp(email, password, { role })
-  
+  const { data: authData, error: authError } = await signUp(email, password, {
+    role,
+  });
+
   if (authError) {
-    console.error('Sign up error:', authError)
-    return
+    console.error("Sign up error:", authError);
+    return;
   }
 
   // 2. Create profile
   const { data: profileData, error: profileError } = await createProfile({
     role: role, // 'creator', 'professor', or 'student'
-    full_name: '', // Get from form
-    institution: '' // Get from form
-  })
+    full_name: "", // Get from form
+    institution: "", // Get from form
+  });
 
   if (profileError) {
-    console.error('Profile creation error:', profileError)
+    console.error("Profile creation error:", profileError);
   }
-}
+};
 ```
 
 ### Step 4: Set Up Authentication Triggers (Optional but Recommended)
@@ -119,16 +124,16 @@ CREATE TRIGGER on_auth_user_created
 
 ```vue
 <script setup>
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from "@/composables/useAuth";
 
-const { user, isAuthenticated, signIn, signOut, loading } = useAuth()
+const { user, isAuthenticated, signIn, signOut, loading } = useAuth();
 
 const handleSignIn = async () => {
-  const { data, error } = await signIn('user@example.com', 'password')
+  const { data, error } = await signIn("user@example.com", "password");
   if (error) {
-    console.error('Sign in error:', error)
+    console.error("Sign in error:", error);
   }
-}
+};
 </script>
 ```
 
@@ -136,14 +141,14 @@ const handleSignIn = async () => {
 
 ```vue
 <script setup>
-import { useModules } from '@/composables/useModules'
+import { useModules } from "@/composables/useModules";
 
-const { modules, loading, fetchModules } = useModules()
+const { modules, loading, fetchModules } = useModules();
 
 // Fetch all published modules
 onMounted(async () => {
-  await fetchModules(null, 'published')
-})
+  await fetchModules(null, "published");
+});
 </script>
 ```
 
@@ -151,9 +156,9 @@ onMounted(async () => {
 
 ```vue
 <script setup>
-import { useProfile } from '@/composables/useProfile'
+import { useProfile } from "@/composables/useProfile";
 
-const { profile, loading, fetchProfile, updateProfile } = useProfile()
+const { profile, loading, fetchProfile, updateProfile } = useProfile();
 
 // Profile is auto-fetched when user is available
 // Or manually fetch:
@@ -161,8 +166,8 @@ const { profile, loading, fetchProfile, updateProfile } = useProfile()
 
 // Update profile
 const updateName = async () => {
-  await updateProfile({ full_name: 'New Name' })
-}
+  await updateProfile({ full_name: "New Name" });
+};
 </script>
 ```
 
@@ -201,15 +206,18 @@ src/
 ## Troubleshooting
 
 ### "Missing Supabase environment variables"
+
 - Check `.env.local` exists
 - Verify variable names: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
 - Restart dev server after adding env vars
 
 ### "relation does not exist"
+
 - Make sure you ran the migration SQL
 - Check table names match exactly
 
 ### RLS Policy Errors
+
 - Verify user is authenticated
 - Check user role in profiles table
 - Review RLS policies in Supabase dashboard
@@ -217,4 +225,3 @@ src/
 ---
 
 **Ready to build!** 🚀
-

@@ -64,6 +64,7 @@ Create differential visual weight using:
 What happens when visual hierarchy is weak—when elements have similar visual weight? Users face **visual parsing paralysis**: uncertain where to look first, they make random or inefficient fixation choices.
 
 Signs of weak visual hierarchy:
+
 - Heat maps showing scattered fixation patterns without clear focus
 - Long time-to-first-click despite simple tasks
 - User comments like "I didn't know where to start" or "there's so much going on"
@@ -98,26 +99,31 @@ Trace the path you intend users to follow—entry point through primary content 
 Evaluate your design against these criteria:
 
 **Entry point clarity**
+
 - [ ] Is it clear where to look first?
 - [ ] Does the entry point match user expectations or deliberately guide them?
 - [ ] Is the entry point content meaningful and orientation-providing?
 
 **Priority differentiation**
+
 - [ ] Can you clearly identify primary, secondary, and tertiary content?
 - [ ] Does visual weight decrease from primary to tertiary?
 - [ ] Is the priority structure consistent throughout the design?
 
 **Scanning path logic**
+
 - [ ] Does the visual hierarchy guide users through content in logical order?
 - [ ] Can users find critical content within 3-4 fixations?
 - [ ] Does the scanning path align with task flow?
 
 **Distraction management**
+
 - [ ] Are there elements with high visual weight that shouldn't have it?
 - [ ] Do advertising or promotional elements compete with primary content?
 - [ ] Are decorative elements visually subordinate to functional ones?
 
 **Action visibility**
+
 - [ ] Are primary actions (CTAs) visually prominent?
 - [ ] Are secondary actions clearly subordinate to primary ones?
 - [ ] Can users easily distinguish actionable from static elements?
@@ -126,7 +132,8 @@ Evaluate your design against these criteria:
 
 **Before**: A SaaS dashboard displayed metrics, notifications, recent activity, and navigation with roughly equal visual weight. Users frequently missed important alerts mixed among less important updates. Navigation required extensive searching. The squint test showed a uniformly gray mass.
 
-**After**: 
+**After**:
+
 - Critical alerts received high visual weight: large, colored badges with generous whitespace isolation
 - Primary metrics displayed prominently at top with clear numerical hierarchy
 - Recent activity consolidated into a single scrollable region with reduced contrast

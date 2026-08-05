@@ -1,9 +1,10 @@
 # STATIC-SHAPE — Chapter 1 ("The Retina") source of truth
 
-Dump of the two static JSON files that define what Chapter 1 is *supposed* to look
+Dump of the two static JSON files that define what Chapter 1 is _supposed_ to look
 like. These are the target the Supabase-backed render path must reproduce.
 
 Sources:
+
 - `src/assets/json_backend/text.json` (1071 lines) — content tree
 - `src/assets/json_backend/animations.json` (441 lines) — illustration configs
 
@@ -13,14 +14,15 @@ Sources:
 
 Top-level keys: `intro`, `sections`, `furtherReading`, `footNotes`.
 
-| Key | Count | Notes |
-|-----|-------|-------|
-| `intro` | 1 | `{ id, title:"The Retina", animation:{name:"dragon"}, paragraphs:[…] }` |
-| `sections` | 10 | ordered content sections (see below) |
-| `furtherReading` | 1 obj | `{ title:"Further reading:", paragraphs:[{title, links[]}] }` |
-| `footNotes` | 1 obj | `{ title, animation:{name:"Placeholder"}, notes:[{text}] }` |
+| Key              | Count | Notes                                                                   |
+| ---------------- | ----- | ----------------------------------------------------------------------- |
+| `intro`          | 1     | `{ id, title:"The Retina", animation:{name:"dragon"}, paragraphs:[…] }` |
+| `sections`       | 10    | ordered content sections (see below)                                    |
+| `furtherReading` | 1 obj | `{ title:"Further reading:", paragraphs:[{title, links[]}] }`           |
+| `footNotes`      | 1 obj | `{ title, animation:{name:"Placeholder"}, notes:[{text}] }`             |
 
 ### Section titles (order preserved)
+
 0. Story of the eye
 1. Organization and cell types in the retina
 2. Photoreceptors and phototransduction
@@ -33,6 +35,7 @@ Top-level keys: `intro`, `sections`, `furtherReading`, `footNotes`.
 9. Looking forward
 
 ### Nesting shape
+
 ```
 sections[]            → { id, title, paragraphs[] }
   paragraphs[]        → { id, text, animation?, animationFull?, img?, … }
@@ -41,6 +44,7 @@ sections[]            → { id, title, paragraphs[] }
 ```
 
 ### Animation references embedded in the text tree (28 total)
+
 Each `animation` object has the contract `{ name, id?, transition?, placeholder?, isTransition? }`.
 The DOM trigger the left column listens for is `id="triggerAnimation" + animation.name`
 (section/subsection level) or `id="trigger" + animation.id` (subSubSection level).
@@ -50,7 +54,8 @@ where `activeAnimation = domId.replace("trigger","").toLowerCase()`.
 Distinct animation `id`s referenced in the tree: **20** (some appear multiple times,
 e.g. `RetinalCellTypes` ×6 for its click-state stops).
 
-Notable static-side quirks (present in the *original* JSON, carried for fidelity):
+Notable static-side quirks (present in the _original_ JSON, carried for fidelity):
+
 - `animationAnimationAccommodationVergence` — doubled "animation" prefix (static typo)
 - `animationanimationRodVsConeCircuits` — doubled prefix (static typo)
 - `dragon` and `Placeholder` refs have `name` only, no `id`.
@@ -69,29 +74,31 @@ Every entry: `{ id, title, …configFlags }` and, for interactive figures,
 `states[]` / `statesHighlight[]` / `switches[]`.
 
 ### The 14 animations that carry states / statesHighlight / switches
+
 **These are the interactive figures.** Their state arrays drive GSAP click-state
 stepping and Lottie highlight sync. Losing them = the figure renders but does nothing.
 
-| id | states | statesHighlight | switches |
-|----|:------:|:---------------:|:--------:|
-| animationEyeStructur | 11 | – | – |
-| animationPupillaryLightreflex | ✓ | – | – |
-| animationImpairedVision | ✓ | – | – |
-| animationPhototransduction | ✓ | ✓ | – |
-| animationTheVisualCycle | ✓ | ✓ | – |
-| animationSynapticArchitecture | ✓ | – | – |
-| animationPhotoreceptors | ✓ | ✓ | – |
-| animationRetinalCellTypes | ✓ | ✓ | – |
-| animationRetinalCellTypes2 | ✓ | ✓ | – |
-| animationRetinalCellTypes3 | ✓ | ✓ | – |
-| animationCenterSurroundReceptiveFields | – | – | ✓ |
-| animationDirectionSelectivity | – | – | ✓ |
-| animationObjectMotionSensitivity | – | – | ✓ |
-| animationRodVsConeCircuits | – | – | ✓ |
+| id                                     | states | statesHighlight | switches |
+| -------------------------------------- | :----: | :-------------: | :------: |
+| animationEyeStructur                   |   11   |        –        |    –     |
+| animationPupillaryLightreflex          |   ✓    |        –        |    –     |
+| animationImpairedVision                |   ✓    |        –        |    –     |
+| animationPhototransduction             |   ✓    |        ✓        |    –     |
+| animationTheVisualCycle                |   ✓    |        ✓        |    –     |
+| animationSynapticArchitecture          |   ✓    |        –        |    –     |
+| animationPhotoreceptors                |   ✓    |        ✓        |    –     |
+| animationRetinalCellTypes              |   ✓    |        ✓        |    –     |
+| animationRetinalCellTypes2             |   ✓    |        ✓        |    –     |
+| animationRetinalCellTypes3             |   ✓    |        ✓        |    –     |
+| animationCenterSurroundReceptiveFields |   –    |        –        |    ✓     |
+| animationDirectionSelectivity          |   –    |        –        |    ✓     |
+| animationObjectMotionSensitivity       |   –    |        –        |    ✓     |
+| animationRodVsConeCircuits             |   –    |        –        |    ✓     |
 
 Full expansion of every state/switch label is in `_static_anim_states.txt`.
 
 ### Config flags observed across the 32 entries
+
 `fullscreen, loop, flip, split, scroll, isTransition, clickTriggered, highlight,
 autoplay, blockSwitches, blockStates, hasTransition, hasSpeedControl, noBleed,
 illuImage, fullHeight, fullParagraph, icons, iconPraefix, legend, source, video,

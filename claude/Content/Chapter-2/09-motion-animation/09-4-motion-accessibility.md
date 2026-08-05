@@ -29,6 +29,7 @@ The vestibular system—inner ear structures that sense balance and spatial orie
 ### Parallax Scrolling
 
 Multiple elements moving at different rates during scroll:
+
 - Creates depth through differential motion
 - Can cause significant vestibular response
 - Particularly problematic at high speeds or with large differential
@@ -38,6 +39,7 @@ Multiple elements moving at different rates during scroll:
 ### Large-Scale Zooming
 
 Zoom animations, particularly full-page:
+
 - Simulates physical movement toward/away from content
 - Can trigger vestibular response
 - Particularly problematic with fast or large-scale zooms
@@ -47,6 +49,7 @@ Zoom animations, particularly full-page:
 ### Infinite Scrolling Effects
 
 Content that appears to scroll infinitely in one direction:
+
 - Creates sense of continuous motion without destination
 - Can cause spatial disorientation
 - Particularly problematic with smooth, endless motion
@@ -54,6 +57,7 @@ Content that appears to scroll infinitely in one direction:
 ### Auto-Playing Video
 
 Video content, especially:
+
 - Full-screen or large area
 - Motion-intensive content (action, sports, shaky-cam)
 - Video as background element
@@ -61,6 +65,7 @@ Video content, especially:
 ### Carousel and Slider Animation
 
 Auto-advancing content carousels:
+
 - Motion users didn't initiate
 - Particularly problematic with rapid advancement
 - Unexpected direction changes worse than consistent movement
@@ -68,6 +73,7 @@ Auto-advancing content carousels:
 ### Background Animation
 
 Constantly moving background elements:
+
 - Animated gradients
 - Particle effects
 - Moving patterns
@@ -93,12 +99,14 @@ CSS provides a mechanism for users to request reduced motion:
 **Respect the preference**: If users request reduced motion, respect it. Don't override or ignore.
 
 **Reduce, not eliminate**: "Reduced motion" doesn't mean "no motion." You can:
+
 - Shorten durations
 - Replace transforms with opacity changes
 - Use fade instead of slide
 - Eliminate non-essential animation while keeping essential feedback
 
 **Maintain functionality**: Reduced motion shouldn't break functionality:
+
 - Progress indicators should still indicate progress
 - State changes should still be visible
 - Feedback should still occur (perhaps through color/opacity rather than motion)
@@ -119,13 +127,21 @@ CSS provides a mechanism for users to request reduced motion:
 }
 
 @keyframes slideIn {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 ```
 
@@ -166,11 +182,13 @@ Approximately 1 in 4,000 people have photosensitive epilepsy. For them, certain 
 ### Testing and Prevention
 
 **Flash testing tools**:
+
 - PEAT (Photosensitive Epilepsy Analysis Tool)
 - Harding Test
 - Manual analysis of frame differences
 
 **Prevention**:
+
 - No flashing faster than 3 times per second
 - Reduce contrast of necessary flashes
 - Minimize flashing area
@@ -204,11 +222,13 @@ Reduced: Simple ease-out
 ### Provide User Control
 
 For decorative animation:
+
 - Pause button visible
 - Preference setting to disable
 - Respects system-level preferences
 
 For functional animation:
+
 - Reduced-motion version available
 - Duration preferences
 - Option to disable non-essential motion
@@ -232,22 +252,26 @@ Beyond ethical obligation:
 Use this checklist for motion accessibility:
 
 **Flash and seizure safety**:
+
 - [ ] No content flashes more than 3 times per second
 - [ ] Flash testing tools applied to dynamic content
 - [ ] Warning provided before potentially triggering content
 
 **Reduced motion support**:
+
 - [ ] prefers-reduced-motion media query implemented
 - [ ] All significant animations have reduced-motion alternatives
 - [ ] Functionality maintained in reduced-motion mode
 - [ ] Testing performed with reduced motion enabled
 
 **User control**:
+
 - [ ] Auto-playing content can be paused
 - [ ] Animation preferences available in settings
 - [ ] Motion-heavy features have static alternatives
 
 **Problematic patterns avoided or optional**:
+
 - [ ] Parallax scrolling optional or disabled in reduced motion
 - [ ] Large-scale zooming has alternatives
 - [ ] Background animation can be disabled
@@ -256,6 +280,7 @@ Use this checklist for motion accessibility:
 ## Summary
 
 Motion harms usability when:
+
 - Users have vestibular sensitivity or disorders
 - Animation triggers photosensitive epilepsy
 - Motion distracts from content and tasks
@@ -263,6 +288,7 @@ Motion harms usability when:
 - Users lack control over motion they didn't request
 
 Responsible motion design:
+
 1. Respects prefers-reduced-motion
 2. Meets WCAG requirements
 3. Provides user control

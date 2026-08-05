@@ -516,7 +516,11 @@ h4 {
 .highlighterIlluStroke > g > path,
 .highlighterIlluFill > path,
 .highlighterIlluStroke > path {
-  transition: fill 0.5s, fill-opacity 0.5s, stroke 0.5s, stroke-opacity 0.5s;
+  transition:
+    fill 0.5s,
+    fill-opacity 0.5s,
+    stroke 0.5s,
+    stroke-opacity 0.5s;
 }
 
 .highlighterIlluFill.highlightIllu > *,
@@ -581,7 +585,9 @@ h4 {
 .punktComment {
   position: absolute;
   left: -0.78125rem;
-  left: calc(50vw - min(calc(50vw + 0.46875rem), calc(780px + 6.875rem)) - 0.78125rem);
+  left: calc(
+    50vw - min(calc(50vw + 0.46875rem), calc(780px + 6.875rem)) - 0.78125rem
+  );
   width: 1.5625rem;
   height: 1.5625rem;
   border-radius: 50%;
@@ -631,7 +637,11 @@ mark[data-hl-id] {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s, fill 0s, fill-opacity 0s, stroke 0s,
+  transition:
+    opacity 0.3s,
+    fill 0s,
+    fill-opacity 0s,
+    stroke 0s,
     stroke-opacity 0s;
   fill: white;
 }
@@ -766,7 +776,6 @@ sup:hover {
   fill: rgb(var(--color-paper));
 }
 
-
 /* Citation reference superscripts (Supabase chapters) */
 .citation-ref {
   color: rgb(var(--color-accent));
@@ -782,8 +791,15 @@ sup:hover {
   animation: citationPulse 1.5s ease;
 }
 @keyframes citationPulse {
-  0%, 100% { background: transparent; }
-  20%, 60% { background: rgb(var(--color-accent) / 0.18); border-radius: 3px; }
+  0%,
+  100% {
+    background: transparent;
+  }
+  20%,
+  60% {
+    background: rgb(var(--color-accent) / 0.18);
+    border-radius: 3px;
+  }
 }
 
 /* Inline figure callouts — "(Figure N)" anchoring the left-column placeholder */
@@ -826,5 +842,7 @@ sup:hover {
 .ob-flash {
   box-shadow: 0 0 0 2px rgb(var(--color-accent) / 0.7);
   background: rgb(var(--color-accent) / 0.06);
-  transition: box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }

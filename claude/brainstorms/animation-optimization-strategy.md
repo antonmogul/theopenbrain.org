@@ -10,6 +10,7 @@
 The codebase appears to be **design/animation-first**, with animations exported directly from After Effects as Lottie files without considering file size or runtime alternatives. This is a common pattern when designers have full control and developers inherit the assets.
 
 **Evidence:**
+
 - `animationStart.json` is 18.7MB for what appears to be a simple loading animation (eye opening)
 - Total animation bundle: 29MB (64% is that single file)
 - Many animations could likely be recreated with simple CSS/GSAP
@@ -28,6 +29,7 @@ The codebase appears to be **design/animation-first**, with animations exported 
 6. **No automatic optimization** - Designers export at highest quality
 
 ### Result
+
 What could be a 50KB CSS animation becomes an 18MB Lottie file.
 
 ---
@@ -37,29 +39,39 @@ What could be a 50KB CSS animation becomes an 18MB Lottie file.
 ### Animations That Could Be Replaced with Code
 
 #### 1. **Loading Animation (animationStart.json - 18.7MB)**
+
 **Current:** Massive Lottie file  
 **Alternative:** CSS/GSAP eye blink
 
 ```javascript
 // GSAP version (< 1KB)
-gsap.timeline({ repeat: -1 })
-  .to('.eyelid-top', { 
-    scaleY: 0, 
-    transformOrigin: 'bottom',
+gsap
+  .timeline({ repeat: -1 })
+  .to(".eyelid-top", {
+    scaleY: 0,
+    transformOrigin: "bottom",
     duration: 0.3,
-    ease: 'power2.inOut'
+    ease: "power2.inOut",
   })
-  .to('.eyelid-bottom', { 
-    scaleY: 0, 
-    transformOrigin: 'top',
-    duration: 0.3,
-    ease: 'power2.inOut'
-  }, '<')
-  .to('.eyelid-top, .eyelid-bottom', { 
-    scaleY: 1, 
-    duration: 0.4,
-    ease: 'power2.inOut'
-  }, '+=0.5');
+  .to(
+    ".eyelid-bottom",
+    {
+      scaleY: 0,
+      transformOrigin: "top",
+      duration: 0.3,
+      ease: "power2.inOut",
+    },
+    "<"
+  )
+  .to(
+    ".eyelid-top, .eyelid-bottom",
+    {
+      scaleY: 1,
+      duration: 0.4,
+      ease: "power2.inOut",
+    },
+    "+=0.5"
+  );
 ```
 
 **Savings:** 18.7MB → ~1KB (18,699KB saved!)
@@ -67,13 +79,20 @@ gsap.timeline({ repeat: -1 })
 ---
 
 #### 2. **Simple Transitions**
+
 Animations like fades, slides, rotations could be pure CSS:
 
 ```css
 /* Instead of Lottie file */
 @keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animation-trigger.active {
@@ -84,20 +103,21 @@ Animations like fades, slides, rotations could be pure CSS:
 ---
 
 #### 3. **Scroll-Linked Animations**
+
 Current: Lottie JSON with scroll control  
 Alternative: GSAP ScrollTrigger with CSS transforms
 
 ```javascript
-gsap.to('.element', {
+gsap.to(".element", {
   scrollTrigger: {
-    trigger: '.section',
-    start: 'top center',
-    end: 'bottom center',
-    scrub: 1
+    trigger: ".section",
+    start: "top center",
+    end: "bottom center",
+    scrub: 1,
   },
   scale: 1.2,
   rotation: 360,
-  opacity: 1
+  opacity: 1,
 });
 ```
 
@@ -106,6 +126,7 @@ gsap.to('.element', {
 ---
 
 #### 4. **Text Highlights/Markers**
+
 Current: Complex Lottie highlighting  
 Alternative: CSS transitions + pseudo-elements
 
@@ -116,7 +137,7 @@ Alternative: CSS transitions + pseudo-elements
 }
 
 .highlight-marker::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -136,13 +157,13 @@ Alternative: CSS transitions + pseudo-elements
 
 ## Optimization Strategy Matrix
 
-| Animation Type | Current Size | Code Alternative | Savings | Complexity | Priority |
-|---------------|--------------|------------------|---------|------------|----------|
-| Loading (eye) | 18.7 MB | GSAP/CSS | 99.9% | LOW | 🔴 CRITICAL |
-| Simple transitions | 2-5 MB | CSS | 99.9% | LOW | 🔴 HIGH |
-| Scroll effects | 1-3 MB | GSAP ST | 99.9% | MEDIUM | 🟡 MEDIUM |
-| Complex scientific diagrams | Varies | Keep Lottie | - | - | - |
-| Interactive state machines | Varies | Keep Lottie | - | - | - |
+| Animation Type              | Current Size | Code Alternative | Savings | Complexity | Priority    |
+| --------------------------- | ------------ | ---------------- | ------- | ---------- | ----------- |
+| Loading (eye)               | 18.7 MB      | GSAP/CSS         | 99.9%   | LOW        | 🔴 CRITICAL |
+| Simple transitions          | 2-5 MB       | CSS              | 99.9%   | LOW        | 🔴 HIGH     |
+| Scroll effects              | 1-3 MB       | GSAP ST          | 99.9%   | MEDIUM     | 🟡 MEDIUM   |
+| Complex scientific diagrams | Varies       | Keep Lottie      | -       | -          | -           |
+| Interactive state machines  | Varies       | Keep Lottie      | -       | -          | -           |
 
 ---
 
@@ -164,19 +185,19 @@ Is the animation:
 1. **animationStart.json (18.7 MB)** 🔴
    - Simple loading animation
    - **REPLACE with code**
-   
+
 2. **animationLatteralOrganizationRight.json (4.7 MB)** 🟡
    - Need to review complexity
    - Potentially optimize or replace
-   
+
 3. **animationEyeStructurTransition.json (2.4 MB)** 🟡
    - Transition animation
    - Could be GSAP
-   
+
 4. **animationDragon.json (1.1 MB)** 🟢
    - Intro animation, probably artistic
    - Keep but optimize
-   
+
 5. **Others (< 1 MB each)** 🟢
    - Review individually
    - Many could be optimized
@@ -188,12 +209,14 @@ Is the animation:
 For animations that **must** remain Lottie:
 
 ### 1. **LottieFiles Optimizer**
+
 ```bash
 # Online tool: lottiefiles.com/tools/lottie-optimizer
 # Can reduce file size 30-70%
 ```
 
 ### 2. **Manual After Effects Optimization**
+
 - Remove hidden layers
 - Simplify paths (reduce anchor points)
 - Use shape layers instead of vector layers
@@ -201,18 +224,20 @@ For animations that **must** remain Lottie:
 - Lower precision (fewer decimal places)
 
 ### 3. **Runtime Optimization**
+
 ```javascript
 lottie.loadAnimation({
   rendererSettings: {
-    progressiveLoad: true,    // ✓ Already doing this
-    preserveAspectRatio: 'xMidYMid slice',
+    progressiveLoad: true, // ✓ Already doing this
+    preserveAspectRatio: "xMidYMid slice",
     clearCanvas: true,
-    hideOnTransparent: true
-  }
+    hideOnTransparent: true,
+  },
 });
 ```
 
 ### 4. **Compression**
+
 - Gzip/Brotli compression (done at server level)
 - Pre-compress Lottie files: `gzip animationStart.json`
 - Serve `.json.gz` files
@@ -222,6 +247,7 @@ lottie.loadAnimation({
 ## Hybrid Approach Recommendation
 
 ### Tier 1: Code-Based (Highest Performance)
+
 - Loading animations
 - Transitions
 - Simple UI effects
@@ -233,6 +259,7 @@ lottie.loadAnimation({
 ---
 
 ### Tier 2: Optimized Lottie (Complex Visuals)
+
 - Scientific diagrams (eye anatomy, cell structures)
 - Multi-state interactive animations
 - Complex illustrations that need design fidelity
@@ -242,6 +269,7 @@ lottie.loadAnimation({
 ---
 
 ### Tier 3: Video (Photorealistic Content)
+
 - Disease demonstrations
 - Real-world examples
 - Photo sequences
@@ -253,6 +281,7 @@ lottie.loadAnimation({
 ## Migration Path
 
 ### Phase 1: Quick Wins (Immediate)
+
 1. **Replace animationStart.json with GSAP** (saves 18.7MB)
 2. **Identify other simple animations** to replace
 3. **Compress existing Lottie files** with optimizer
@@ -264,6 +293,7 @@ lottie.loadAnimation({
 ---
 
 ### Phase 2: Systematic Audit (1-2 weeks)
+
 1. **Review all 35 Lottie files**
 2. **Categorize:** Keep, Optimize, or Replace
 3. **Create code alternatives** for simple ones
@@ -275,6 +305,7 @@ lottie.loadAnimation({
 ---
 
 ### Phase 3: Design Process Change (Ongoing)
+
 1. **Establish file size budgets** (e.g., <200KB per animation)
 2. **Create animation guidelines** for designers
 3. **Code-first for simple animations**
@@ -291,27 +322,27 @@ CREATE TABLE animations (
   id UUID PRIMARY KEY,
   animation_key TEXT UNIQUE,
   title TEXT,
-  
+
   -- Type determines rendering method
-  animation_type TEXT NOT NULL, 
+  animation_type TEXT NOT NULL,
   -- 'lottie', 'gsap', 'css', 'video', 'hybrid'
-  
+
   -- For Lottie
   lottie_file_url TEXT,
   lottie_file_size INTEGER, -- Track for budgets
-  
+
   -- For code-based
   gsap_config JSONB, -- GSAP timeline configuration
   css_class_name TEXT, -- CSS animation class
-  
+
   -- For hybrid (Lottie + code enhancements)
   base_animation_type TEXT,
   enhancement_config JSONB,
-  
+
   -- Metadata
   file_size_bytes INTEGER,
   load_priority TEXT, -- 'critical', 'high', 'low', 'lazy'
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
@@ -381,54 +412,53 @@ INSERT INTO animations VALUES (
 export class AnimationLoader {
   async load(animationConfig) {
     switch (animationConfig.animation_type) {
-      case 'lottie':
+      case "lottie":
         return this.loadLottie(animationConfig);
-      
-      case 'gsap':
+
+      case "gsap":
         return this.createGSAPAnimation(animationConfig);
-      
-      case 'css':
+
+      case "css":
         return this.applyCSSAnimation(animationConfig);
-      
-      case 'hybrid':
+
+      case "hybrid":
         return this.loadHybrid(animationConfig);
     }
   }
-  
+
   loadLottie(config) {
     return lottie.loadAnimation({
       path: config.lottie_file_url,
       // ...
     });
   }
-  
+
   createGSAPAnimation(config) {
     const timeline = gsap.timeline();
-    config.gsap_config.timeline.forEach(step => {
+    config.gsap_config.timeline.forEach((step) => {
       timeline.to(step.target, step.to, step.duration);
     });
     return timeline;
   }
-  
+
   applyCSSAnimation(config) {
-    document.querySelector(config.target)
-      .classList.add(config.css_class_name);
+    document.querySelector(config.target).classList.add(config.css_class_name);
   }
-  
+
   loadHybrid(config) {
     // Load Lottie base
     const lottieAnim = this.loadLottie(config);
-    
+
     // Add GSAP enhancement
     if (config.enhancement_config.scrollTrigger) {
       ScrollTrigger.create({
         ...config.enhancement_config.scrollTrigger,
         onUpdate: (self) => {
           lottieAnim.goToAndStop(self.progress * lottieAnim.totalFrames);
-        }
+        },
       });
     }
-    
+
     return lottieAnim;
   }
 }
@@ -439,6 +469,7 @@ export class AnimationLoader {
 ## Performance Budget
 
 ### Before Optimization
+
 ```
 Total Animation Assets: 29 MB
 ├─ animationStart.json: 18.7 MB (64%)
@@ -449,6 +480,7 @@ Load Time (3G): ~15+ seconds
 ```
 
 ### After Phase 1 (Replace animationStart)
+
 ```
 Total Animation Assets: ~10 MB
 ├─ animationStart (GSAP): ~1 KB
@@ -459,6 +491,7 @@ Load Time (3G): ~5-7 seconds
 ```
 
 ### After Phase 2 (Full Optimization)
+
 ```
 Total Animation Assets: ~4 MB
 ├─ Code-based animations: ~10 KB total
@@ -473,17 +506,20 @@ Load Time (3G): ~2-3 seconds
 ## Success Metrics
 
 ### File Size Targets
+
 - **Code-based animation:** < 5 KB each
 - **Simple Lottie:** < 200 KB each
 - **Complex Lottie:** < 500 KB each
 - **Total bundle:** < 5 MB
 
 ### Performance Targets
+
 - **Initial load:** < 2 MB
 - **Time to Interactive:** < 3 seconds
 - **Lazy load:** Non-critical animations
 
 ### Quality Targets
+
 - **Visual fidelity:** Indistinguishable from original
 - **Smooth 60fps:** All animations
 - **Accessibility:** All animations have reduced-motion alternatives
@@ -493,15 +529,19 @@ Load Time (3G): ~2-3 seconds
 ## Risks & Mitigation
 
 ### Risk 1: Loss of Design Fidelity
+
 **Mitigation:** Start with simple animations, designer approval process
 
 ### Risk 2: Increased Development Time
+
 **Mitigation:** Build reusable GSAP components, CSS utility classes
 
 ### Risk 3: Browser Compatibility
+
 **Mitigation:** GSAP has excellent browser support, test on target browsers
 
 ### Risk 4: Maintenance Complexity
+
 **Mitigation:** Good documentation, clear animation type system
 
 ---
@@ -519,11 +559,13 @@ Load Time (3G): ~2-3 seconds
 ## Resources
 
 ### Tools
+
 - **LottieFiles Optimizer:** https://lottiefiles.com/tools/lottie-optimizer
 - **GSAP ScrollTrigger:** https://greensock.com/scrolltrigger/
 - **Lottie Docs:** https://airbnb.io/lottie/
 
 ### Benchmarks
+
 - **Good Lottie size:** 50-200 KB
 - **Large Lottie size:** 500 KB - 1 MB
 - **Too large:** > 1 MB (optimize or replace)

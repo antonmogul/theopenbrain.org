@@ -5,12 +5,13 @@
 > [`docs/architecture/README.md`](../../architecture/README.md). Two
 > corrections were discovered during implementation and are NOT reflected in
 > the command examples below:
+>
 > - **madge has no `--config` flag** — the shipped scripts use
 >   `--webpack-config madge.webpack.cjs --extensions js,ts,vue` (and
 >   `madge.config.json` was removed as inert).
 > - **dependency-cruiser is pinned to `@16.10.4`, not `@18.0.0`** — `@18`
 >   requires Node ≥22 but the project runs Node 20.
-> Read the README for the authoritative commands.
+>   Read the README for the authoritative commands.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -47,9 +48,11 @@
 Prove madge resolves `@/` BEFORE building anything else. If this fails, every later artifact is wrong.
 
 **Files:**
+
 - Create: `madge.config.json`
 
 **Interfaces:**
+
 - Produces: `madge.config.json` consumed by all later madge invocations (Tasks 2, 4). Shape: `{ "fileExtensions": [...], "webpackConfig": "<path>", "detectiveOptions": {...} }`.
 
 - [ ] **Step 1: Create the madge config with the `@/` alias**
@@ -85,21 +88,27 @@ module.exports = {
 - [ ] **Step 3: Run madge against the canary file and verify the alias edge resolves**
 
 Run:
+
 ```bash
 npx -y madge@8.0.0 --config madge.config.json --json src/App.vue | npx -y json5 2>/dev/null || npx -y madge@8.0.0 --config madge.config.json --json src/App.vue
 ```
+
 Simpler, robust check:
+
 ```bash
 npx -y madge@8.0.0 --config madge.config.json --json src/App.vue
 ```
+
 Expected: JSON output where `"src/App.vue"` lists a dependency resolving into `src/stores` (e.g. `"src/stores/index.js"`). If instead you see an unresolved `"@/stores"` string or an empty dep array, the alias is NOT wired — STOP and fix `madge.webpack.cjs` before continuing.
 
 - [ ] **Step 4: Confirm no unresolved `@/` strings leak into output**
 
 Run:
+
 ```bash
 npx -y madge@8.0.0 --config madge.config.json --json src | grep -c '"@/' || echo "0 unresolved aliases — good"
 ```
+
 Expected: `0 unresolved aliases — good` (grep finds no literal `@/` keys; all resolved to real paths).
 
 - [ ] **Step 5: Commit**
@@ -117,10 +126,12 @@ Claude-Session: https://claude.ai/code/session_013mSvAAqWCV6tLgtMKKBdKv"
 ### Task 2: Generate orphan + cycle reports (the dead-code signal)
 
 **Files:**
+
 - Modify: `package.json` (`scripts` block)
 - Create: `docs/architecture/orphans.txt`, `docs/architecture/cycles.txt`
 
 **Interfaces:**
+
 - Consumes: `madge.config.json` (Task 1).
 - Produces: npm scripts `graph:orphans`, `graph:cycles`. Output text files under `docs/architecture/`.
 
@@ -136,21 +147,27 @@ In `package.json`, inside `"scripts"`, add (keep existing scripts intact):
 - [ ] **Step 2: Run the cycle report and capture it**
 
 Run:
+
 ```bash
 mkdir -p docs/architecture && npm run graph:cycles | tee docs/architecture/cycles.txt
 ```
+
 Expected: either "No circular dependency found!" or a numbered list of cycles. Either is a valid baseline — record whatever it reports.
 
 - [ ] **Step 3: Run the orphan report and capture it**
 
 Run:
+
 ```bash
 npm run graph:orphans | tee docs/architecture/orphans.txt
 ```
+
 Expected: a list of files nothing imports. Sanity-check: `src/main.js` should NOT appear (it's the entry point and IS referenced via index.html, though madge may still list it — note that in the README in Task 5). Pick one listed file and confirm by grep that nothing imports it:
+
 ```bash
 F=$(grep -m1 -v '^$' docs/architecture/orphans.txt); echo "checking: $F"; grep -rn "$(basename "$F" | sed 's/\.[^.]*$//')" src --include='*.vue' --include='*.js' | grep -v "$F" | head
 ```
+
 Expected: no import references (confirms it's a true orphan), OR references that are non-import mentions (note as a false positive).
 
 - [ ] **Step 4: Commit**
@@ -168,9 +185,11 @@ Claude-Session: https://claude.ai/code/session_013mSvAAqWCV6tLgtMKKBdKv"
 ### Task 3: dependency-cruiser config with layering rules
 
 **Files:**
+
 - Create: `.dependency-cruiser.cjs`
 
 **Interfaces:**
+
 - Produces: `.dependency-cruiser.cjs` consumed by `graph:check` (Task 4). Exports an object with `forbidden` rules array and `options.enhancedResolveOptions.alias`.
 
 - [ ] **Step 1: Create the dependency-cruiser config**
@@ -185,7 +204,8 @@ module.exports = {
     {
       name: "no-circular",
       severity: "error",
-      comment: "Circular dependencies make the module graph impossible to reason about.",
+      comment:
+        "Circular dependencies make the module graph impossible to reason about.",
       from: {},
       to: { circular: true },
     },
@@ -213,7 +233,8 @@ module.exports = {
     {
       name: "no-orphans",
       severity: "warn",
-      comment: "Unused module — candidate for removal. Entry points are allowlisted below.",
+      comment:
+        "Unused module — candidate for removal. Entry points are allowlisted below.",
       from: {
         orphan: true,
         pathNot: [
@@ -246,9 +267,11 @@ Note on `.vue`: dependency-cruiser 18 resolves `.vue` via `enhancedResolveOption
 - [ ] **Step 2: Validate the config parses and resolves the alias on the canary**
 
 Run:
+
 ```bash
 npx -y dependency-cruiser@18.0.0 --config .dependency-cruiser.cjs --output-type json src/App.vue
 ```
+
 Expected: JSON where `src/App.vue` has a `dependencies` entry resolving to `src/stores/index.js` (resolved, NOT `@/stores`). If unresolved, fix the `alias` path before continuing.
 
 - [ ] **Step 3: Commit**
@@ -266,10 +289,12 @@ Claude-Session: https://claude.ai/code/session_013mSvAAqWCV6tLgtMKKBdKv"
 ### Task 4: Wire `graph:check` + `graph:visual` scripts and capture baselines
 
 **Files:**
+
 - Modify: `package.json` (`scripts` block)
 - Create: `docs/architecture/violations.txt`, `docs/architecture/graph.json`
 
 **Interfaces:**
+
 - Consumes: `.dependency-cruiser.cjs` (Task 3), `madge.config.json` (Task 1).
 - Produces: npm scripts `graph:check`, `graph:visual`. Baseline artifacts under `docs/architecture/`.
 
@@ -287,29 +312,37 @@ Rationale for `graph.json` not `graph.svg`: graphviz `dot` is NOT installed, so 
 - [ ] **Step 2: Run the layering check and capture the baseline (do NOT fix violations now)**
 
 Run:
+
 ```bash
 npm run graph:check | tee docs/architecture/violations.txt; echo "exit: ${PIPESTATUS[0]}"
 ```
-Expected: either "no dependency violations found" (exit 0) OR a list of violations (exit non-zero). BOTH are acceptable — this records the *current* baseline. Do not change app code to make it pass; violations are recorded, not fixed, in this plan.
+
+Expected: either "no dependency violations found" (exit 0) OR a list of violations (exit non-zero). BOTH are acceptable — this records the _current_ baseline. Do not change app code to make it pass; violations are recorded, not fixed, in this plan.
 
 - [ ] **Step 3: Generate the JSON graph artifact**
 
 Run:
+
 ```bash
 npm run graph:visual && echo "nodes: $(grep -o '"src/' docs/architecture/graph.json | wc -l)"
 ```
+
 Expected: `docs/architecture/graph.json` exists and is non-empty; node count is in the low hundreds (≈267 max). Confirm the canary edge is present:
+
 ```bash
 grep -A2 '"src/App.vue"' docs/architecture/graph.json | grep stores && echo "CANARY OK: App.vue -> stores edge present"
 ```
+
 Expected: `CANARY OK: App.vue -> stores edge present`. If absent, the alias config regressed — stop and fix.
 
 - [ ] **Step 4: Confirm the app build is unaffected**
 
 Run:
+
 ```bash
 npm run build
 ```
+
 Expected: build succeeds (these config files are tooling-only and not imported by the app; the only `package.json` change is added scripts). If build fails, confirm you did not alter any existing script or the `dependencies` block.
 
 - [ ] **Step 5: Commit**
@@ -327,9 +360,11 @@ Claude-Session: https://claude.ai/code/session_013mSvAAqWCV6tLgtMKKBdKv"
 ### Task 5: Architecture README with usage + recorded baseline
 
 **Files:**
+
 - Create: `docs/architecture/README.md`
 
 **Interfaces:**
+
 - Consumes: the four npm scripts (Tasks 2, 4) and baseline artifacts (Tasks 2, 4).
 
 - [ ] **Step 1: Write the README**
@@ -344,19 +379,19 @@ Tools run via `npx` — nothing is added to `package.json` dependencies.
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm run graph:visual` | Writes the full edge list to `docs/architecture/graph.json`. |
-| `npm run graph:orphans` | Lists files nothing imports (dead-code candidates). |
-| `npm run graph:cycles` | Lists circular dependencies. |
-| `npm run graph:check` | Enforces layering rules; exits non-zero on violation. |
+| Command                 | What it does                                                 |
+| ----------------------- | ------------------------------------------------------------ |
+| `npm run graph:visual`  | Writes the full edge list to `docs/architecture/graph.json`. |
+| `npm run graph:orphans` | Lists files nothing imports (dead-code candidates).          |
+| `npm run graph:cycles`  | Lists circular dependencies.                                 |
+| `npm run graph:check`   | Enforces layering rules; exits non-zero on violation.        |
 
 ## Rendering a visual SVG (optional)
 
 Graphviz is not required for the JSON graph. To render an SVG:
 
 \`\`\`bash
-brew install graphviz   # one-time
+brew install graphviz # one-time
 npx -y madge@8.0.0 --config madge.config.json --image docs/architecture/graph.svg src
 \`\`\`
 
@@ -386,9 +421,11 @@ cleanup pass to track progress toward zero.
 - [ ] **Step 2: Verify no placeholders remain**
 
 Run:
+
 ```bash
 grep -n '<.*>' docs/architecture/README.md && echo "FIX: placeholders remain" || echo "no placeholders — good"
 ```
+
 Expected: `no placeholders — good` (all `<...>` replaced with real counts).
 
 - [ ] **Step 3: Commit**
@@ -406,6 +443,7 @@ Claude-Session: https://claude.ai/code/session_013mSvAAqWCV6tLgtMKKBdKv"
 ## Self-Review
 
 **Spec coverage:**
+
 - Alias-resolution config → Tasks 1, 3 ✓
 - madge report generator (graph.svg/orphans/cycles) → Tasks 2, 4 (graph.json substituted for graph.svg due to no graphviz; SVG path documented) ✓
 - dependency-cruiser ruleset (layering, no-cycle, no-orphan + entry allowlist) → Task 3 ✓

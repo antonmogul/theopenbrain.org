@@ -56,12 +56,14 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 **Score: 🟡 6/10**
 
 **Key Issues:**
+
 - Pinia 2.0.23 → 3.0.4 (major version behind)
 - @vueuse/core 9.12.0 → 14.0.0 (5 major versions behind)
 - Vite 3.0.9 → 5.x (2 major versions behind)
 - @formkit/auto-animate using pre-release beta version
 
 **Impact:**
+
 - Missing bug fixes and security patches
 - No access to new features and performance improvements
 - Potential breaking changes when updating
@@ -77,12 +79,14 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 **Score: 🟡 5/10**
 
 **Key Issues:**
+
 - `font-size: 62.5%` hack breaks accessibility
 - Magic numbers (780px, 11rem) scattered everywhere
 - Mixing Tailwind, custom CSS, and inline styles
 - Excessive custom classes that duplicate Tailwind utilities
 
 **Impact:**
+
 - Breaks user font preferences
 - Hard to maintain layout changes
 - Inconsistent developer experience
@@ -99,6 +103,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 **Score: 🟡 4/10**
 
 **Key Issues:**
+
 - Deeply nested JSON structure (sections → paragraphs → subSection → subSubSection)
 - HTML strings in JSON (XSS risk)
 - No schema validation or data versioning
@@ -106,6 +111,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 - Typo in filename (`footnoets.json`)
 
 **Impact:**
+
 - Fragile to structure changes
 - User data loss risk on updates
 - Hard to query and search
@@ -122,11 +128,13 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 **Score: 🟢 7/10**
 
 **Strengths:**
+
 - 81% use modern Composition API (`<script setup>`)
 - Logical directory structure
 - Good separation of UI/Navigation/Chapter components
 
 **Key Issues:**
+
 - No component documentation (JSDoc, prop types)
 - Complex components need splitting (IllustrationComp: 330 lines)
 - No composables (logic not reused)
@@ -134,6 +142,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 - Zero test coverage
 
 **Impact:**
+
 - Hard for new developers to understand
 - Difficult to test and refactor
 - Code duplication
@@ -149,6 +158,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 **Score: 🟡 5/10**
 
 **Key Issues:**
+
 - DOM manipulation in store actions (breaks separation of concerns)
 - No error handling on localStorage operations
 - Complex string manipulation in stores
@@ -156,6 +166,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 - No type safety
 
 **Impact:**
+
 - Hard to test
 - Crashes on invalid data
 - Maintenance challenges
@@ -172,18 +183,21 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 **Performance Score: 🔴 4/10**
 
 **Critical Security Issues:**
+
 - XSS vulnerabilities (v-html, localStorage)
 - No CSP headers
 - No input validation
 - Potential for data injection
 
 **Critical Performance Issues:**
+
 - 35MB initial payload (29MB animations + 6MB images)
 - No lazy loading
 - Unoptimized assets
 - 15+ second load time on slow connections
 
 **Impact:**
+
 - Vulnerable to attacks
 - Unusable on mobile/slow connections
 - High bandwidth costs
@@ -198,6 +212,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ## Quick Wins (High Impact, Low Effort)
 
 ### Week 1: Security Hardening (7 hours)
+
 1. Install DOMPurify and sanitize all v-html (3 hours)
 2. Add localStorage validation with try/catch (2 hours)
 3. Add Content Security Policy headers (1 hour)
@@ -208,6 +223,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ---
 
 ### Week 2: Performance Boost (11 hours)
+
 1. Lazy load animations (4 hours) → -29MB
 2. Optimize top 5 images (3 hours) → -9MB
 3. Add route-based code splitting (2 hours) → -30% bundle
@@ -218,6 +234,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ---
 
 ### Week 3: Foundation Improvements (8 hours)
+
 1. Fix `footnoets.json` typo (10 minutes)
 2. Remove 62.5% font-size hack (2 hours)
 3. Extract magic numbers to CSS variables (3 hours)
@@ -230,10 +247,11 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ## Recommended Roadmap
 
 ### Phase 1: Critical Fixes (4 weeks, 50 hours)
+
 **Focus:** Security and Performance
 
 - Week 1: Security hardening
-- Week 2: Performance optimization  
+- Week 2: Performance optimization
 - Week 3: CSS refactoring
 - Week 4: localStorage improvements
 
@@ -242,6 +260,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ---
 
 ### Phase 2: Foundation (8 weeks, 80 hours)
+
 **Focus:** Code Quality and Maintainability
 
 - Dependency updates (phased)
@@ -255,6 +274,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ---
 
 ### Phase 3: Scale Prep (12 weeks, 120 hours)
+
 **Focus:** Testing and Architecture
 
 - Comprehensive test suite
@@ -270,6 +290,7 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ## Metrics
 
 ### Current State
+
 - **Dependencies:** 12/12 outdated or problematic
 - **Security:** Multiple critical vulnerabilities
 - **Performance:** 35MB initial bundle, 15s load time
@@ -277,12 +298,14 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 - **Technical Debt:** High across all areas
 
 ### Target State (After Phase 1)
+
 - **Security:** All critical vulnerabilities fixed
 - **Performance:** <2MB bundle, <3s load time
 - **CSS:** Standardized, accessible
 - **Data:** Validated, versioned
 
 ### Long-term Vision (After Phase 3)
+
 - **Dependencies:** Up-to-date, automated updates
 - **Security:** Hardened, monitored
 - **Performance:** Optimized, monitored
@@ -296,16 +319,19 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ### Current Risks
 
 **High Risk:**
+
 - Security vulnerabilities could be exploited if content ever becomes user-editable
 - Performance issues limiting user base (desktop-only, fast internet required)
 - Data loss risk on updates due to lack of versioning
 
 **Medium Risk:**
+
 - Technical debt slowing feature development
 - Difficulty onboarding new developers
 - Dependency updates causing breaking changes
 
 **Low Risk:**
+
 - Current functionality breaking (app is stable)
 - Browser compatibility (modern browsers only)
 
@@ -314,12 +340,14 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 ## Cost-Benefit Analysis
 
 ### Investment Required
+
 - **Immediate (Phase 1):** 50 hours (~$5,000-10,000)
 - **Foundation (Phase 2):** 80 hours (~$8,000-16,000)
 - **Scale Prep (Phase 3):** 120 hours (~$12,000-24,000)
 - **Total:** 250 hours (~$25,000-50,000)
 
 ### Expected Benefits
+
 - **Security:** Eliminate vulnerabilities, protect users
 - **Performance:** 5x faster load time, mobile-friendly
 - **Scalability:** Support 10x more content/users
@@ -328,7 +356,9 @@ The application demonstrates **good architectural choices** (Vue 3 Composition A
 - **User Experience:** Significantly improved
 
 ### ROI
+
 If planning to scale beyond single chapter, investment pays for itself through:
+
 - Reduced maintenance costs
 - Faster feature development
 - Better user retention
@@ -340,18 +370,21 @@ If planning to scale beyond single chapter, investment pays for itself through:
 ## Recommendations by Stakeholder
 
 ### For Product Owner
+
 1. **Prioritize security fixes** - Protect users and brand
 2. **Optimize performance** - Expand accessible user base
 3. **Plan for scalability** - If multi-chapter roadmap exists
 4. **Consider CMS** - For non-technical content editing
 
-### For Engineering Manager  
+### For Engineering Manager
+
 1. **Allocate 1 sprint for critical fixes** (security + performance)
 2. **Plan technical debt sprints** - Regular code quality improvements
 3. **Establish coding standards** - Prevent future debt
 4. **Implement monitoring** - Track real performance metrics
 
 ### For Developer Team
+
 1. **Follow audit recommendations** by priority
 2. **Add tests as you refactor** - Don't skip testing
 3. **Document as you go** - JSDoc for new/changed components
@@ -364,7 +397,7 @@ If planning to scale beyond single chapter, investment pays for itself through:
 The Open Brain is a **well-intentioned project** with **good architectural foundations** but **significant technical debt** across all layers. The most critical issues are:
 
 1. **Security vulnerabilities** requiring immediate fixes
-2. **Performance problems** limiting user accessibility  
+2. **Performance problems** limiting user accessibility
 3. **Brittle data layer** risking user data loss
 4. **Lack of documentation and tests** hindering maintenance
 
@@ -403,4 +436,4 @@ The Open Brain is a **well-intentioned project** with **good architectural found
 
 ---
 
-*For questions or clarifications on this audit, please refer to the individual detailed reports in the `claude/audit/` directory.*
+_For questions or clarifications on this audit, please refer to the individual detailed reports in the `claude/audit/` directory._

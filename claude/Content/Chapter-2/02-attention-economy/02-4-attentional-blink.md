@@ -2,13 +2,13 @@
 
 ## The Blind Spot in Time
 
-You've just identified an important item in a rapid stream of information. Your brain locks onto it, processes it, commits it to working memory. But in doing so, something curious happens: for roughly 200-500 milliseconds afterward, your ability to identify a *second* important item plummets. It's as if attention itself needs a moment to recover—a phenomenon researchers call the **attentional blink**.
+You've just identified an important item in a rapid stream of information. Your brain locks onto it, processes it, commits it to working memory. But in doing so, something curious happens: for roughly 200-500 milliseconds afterward, your ability to identify a _second_ important item plummets. It's as if attention itself needs a moment to recover—a phenomenon researchers call the **attentional blink**.
 
 The effect is robust and reproducible. In typical experiments, participants watch letters appear rapidly at a single location—perhaps 10 items per second. They're asked to identify two targets (say, white letters among black letters). If the second target appears within about 200-500ms of the first, detection accuracy drops dramatically. Outside this window, detection returns to normal.
 
 ## The Consolidation Bottleneck
 
-The attentional blink reveals a fundamental bottleneck in conscious processing. When you identify something as important and commit it to working memory, that consolidation process temporarily consumes resources needed for processing subsequent items. The second target is still *seen*—it reaches visual cortex and generates neural activity—but it fails to achieve the conscious representation needed for report.
+The attentional blink reveals a fundamental bottleneck in conscious processing. When you identify something as important and commit it to working memory, that consolidation process temporarily consumes resources needed for processing subsequent items. The second target is still _seen_—it reaches visual cortex and generates neural activity—but it fails to achieve the conscious representation needed for report.
 
 Brain imaging studies confirm this interpretation. During the attentional blink, early visual processing of the second target is largely normal, but later processing stages—the activity patterns associated with conscious awareness and working memory encoding—are suppressed. The bottleneck isn't in perception but in the gateway to consciousness.
 
@@ -46,6 +46,7 @@ User research revealed consistent patterns: users noticed the first notification
 The timing was problematic: the second toast appeared while users were still processing the first. Even at 500ms intervals—within the late blink window where the effect is resolving—detection remained impaired enough that sequential notifications were frequently missed.
 
 The solution combined several approaches:
+
 - Batch related notifications into single, consolidated messages
 - Extend the interval between sequential notifications to 800ms minimum
 - Add a notification badge that accumulated count, providing a second opportunity to notice missed items
@@ -77,13 +78,13 @@ Several strategies help design around attentional blink effects:
 
 ## Timing Guidelines Summary
 
-| Interval between items | Effect | Design recommendation |
-|------------------------|--------|----------------------|
-| < 100ms | Lag-1 sparing | Items may be processed as single unit |
-| 100-200ms | Early blink | Second item likely missed |
-| 200-300ms | Peak blink | Second item very likely missed |
-| 300-500ms | Late blink | Second item may be missed |
-| 500-800ms | Blink resolving | Reduced but present risk |
-| > 800ms | Post-blink | Both items likely processed |
+| Interval between items | Effect          | Design recommendation                 |
+| ---------------------- | --------------- | ------------------------------------- |
+| < 100ms                | Lag-1 sparing   | Items may be processed as single unit |
+| 100-200ms              | Early blink     | Second item likely missed             |
+| 200-300ms              | Peak blink      | Second item very likely missed        |
+| 300-500ms              | Late blink      | Second item may be missed             |
+| 500-800ms              | Blink resolving | Reduced but present risk              |
+| > 800ms                | Post-blink      | Both items likely processed           |
 
 The attentional blink teaches us that attention isn't just about space—where users look—but also about time—when visual information can be effectively processed. Design for temporal spacing, and sequential information reaches awareness.

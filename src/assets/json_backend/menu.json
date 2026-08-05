@@ -55,10 +55,7 @@
       },
       {
         "title": "Retinal vision in the real world",
-        "parts": [
-          "Eye movements",
-          "Light adaptation"
-        ]
+        "parts": ["Eye movements", "Light adaptation"]
       },
       {
         "title": "Retinal development",

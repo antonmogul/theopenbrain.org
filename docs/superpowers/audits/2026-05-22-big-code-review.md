@@ -6,7 +6,7 @@
 
 ## TL;DR
 
-The 5-track design refresh shipped the *foundation* (tokens, settings, new pages, callouts). Creator + Professor dashboards intentionally keep their own visual identities — that's a design choice, not debt. The **Student dashboard does need migrating** to reader tokens since students see both surfaces as one product. The diagram system has multiple latent bugs and no creator-side authoring UI; it's display-only. Two critical bugs from my Track 3/4 work need immediate fixes.
+The 5-track design refresh shipped the _foundation_ (tokens, settings, new pages, callouts). Creator + Professor dashboards intentionally keep their own visual identities — that's a design choice, not debt. The **Student dashboard does need migrating** to reader tokens since students see both surfaces as one product. The diagram system has multiple latent bugs and no creator-side authoring UI; it's display-only. Two critical bugs from my Track 3/4 work need immediate fixes.
 
 ## 🚨 CRITICAL — fix immediately
 
@@ -22,7 +22,7 @@ The 5-track design refresh shipped the *foundation* (tokens, settings, new pages
 **Where:** `src/views/ChapterView.vue:394` (callout placement) + `src/components/chapter/TextComp.vue:282` (`position: absolute`)
 **Impact:** The new end-of-chapter callout is in the DOM but visually positioned ABOVE the chapter content because `<Text>` uses `position: absolute`.
 **Root cause:** `TextComp.vue` line 282 wraps the entire chapter prose in `class="absolute top-start ..."`. Anything that follows `<Text>` in the parent template lays out as if `<Text>` had zero height.
-**Fix:** Move the callout *inside* `TextComp.vue` at the end of its content, OR refactor `TextComp` to not be absolutely positioned (larger change, breaks other layout assumptions). Lower-risk path: move it inside TextComp.
+**Fix:** Move the callout _inside_ `TextComp.vue` at the end of its content, OR refactor `TextComp` to not be absolutely positioned (larger change, breaks other layout assumptions). Lower-risk path: move it inside TextComp.
 
 ### C3. `FullScreenIllustration` Lottie loads race with import
 
@@ -35,7 +35,7 @@ The 5-track design refresh shipped the *foundation* (tokens, settings, new pages
 
 ### H1. Student dashboard doesn't match the reader's token system
 
-**Scope corrected (2026-05-22 review):** Creator and Professor dashboards are *intentionally* on their own visual identities — they're workshop tools for a different audience and that visual distinction is deliberate. They are NOT debt. **Only Student dashboard is misaligned**, because students experience the reader AND the dashboard as one continuous product.
+**Scope corrected (2026-05-22 review):** Creator and Professor dashboards are _intentionally_ on their own visual identities — they're workshop tools for a different audience and that visual distinction is deliberate. They are NOT debt. **Only Student dashboard is misaligned**, because students experience the reader AND the dashboard as one continuous product.
 
 - `StudentDashboardView.vue` (1288 LOC): cool blue palette (`#3b82f6`, `#1f2937`) — should adopt tokens to match reader.
 - `DashboardView.vue` (Creator) — keeps legacy violet. **Intentional.**
@@ -50,14 +50,19 @@ The 5-track design refresh shipped the *foundation* (tokens, settings, new pages
 
 **Where:** `src/index.css:265-267`
 **Impact:** Every `<section>` in the app gets a viewport-height minimum. This is from the original chapter design where each section was its own scroll-paged unit. But:
+
 - My `SettingsView.vue` uses `<section>` for each card → every settings card is 900px tall, page is 5818px
 - My `EndOfChapterCallout.vue` uses `<section>` → forced to 900px
 - Any future component touching `<section>` inherits this
 
 **Fix:** Scope the rule to the chapter view only. E.g.:
+
 ```css
-.chapter-view section { min-height: 100vh; }
+.chapter-view section {
+  min-height: 100vh;
+}
 ```
+
 …or strip the rule entirely and add per-component `min-height` where needed. The latter is cleaner but riskier (might affect reader). Recommend scoping by adding a wrapping class on `ChapterView.vue`.
 
 ### H3. `section { padding-bottom: 24rem }` also bites
@@ -86,14 +91,17 @@ Same fix.
 The animations system has multiple data-level inconsistencies:
 
 **Orphan refs** — 8 animations declared in `animations.json` have no Lottie JSON file:
+
 ```
 animationCataracts, animationDirectionSelectivity, animationLatteralOrganization,
 animationNormalVision, animationObjectMotionSensitivity, animationONOFFLamina,
 animationRodVsConeCircuits, animationWavesOfActivity
 ```
+
 These will fail silently when triggered.
 
 **Orphan files** — 13 Lottie files exist but aren't in the JSON:
+
 ```
 animationCenterSurroundReceptiveFieldsSmalllight, ...WideLight,
 animationDirectionSelectivityNull, ...Prefered, animationEye,
@@ -102,6 +110,7 @@ animationObjectMotionSensitivityAsymmetricCenter, ...SymmetricCenter,
 animationRetinalCellTypes2, animationRodVsConeCircuitsDay, ...Night,
 animationStart
 ```
+
 Some are clearly multi-state variants for animations whose JSON entries have `states`/`switches`. Others (`animationStart`, `animationEye`) look like dropped references.
 
 **Filename typos in the wild:** "Latteral" (3 L's) vs "Lateral" — both appear, picking up the wrong file.
@@ -115,6 +124,7 @@ Some are clearly multi-state variants for animations whose JSON entries have `st
 The Creator-side chapter editor (`ChapterEditor.vue`, `BlockList.vue`) has no widget to attach a diagram to a paragraph. Animations bind to paragraphs via the DB `animation_id` column, but the UI doesn't expose it. Result: only Chapter 1 has interactive diagrams; new chapters cannot.
 
 This is the **single biggest authoring gap**. To author Chapter 2 with the same interactive depth as Chapter 1, a creator currently needs:
+
 1. SQL access to insert into `animations`, `animation_states`, `animation_variants` tables
 2. Lottie file dropped into `public/publicAssets/animations/`
 3. Manual `animation_id` set on the paragraph row
@@ -191,6 +201,7 @@ Track 5's "retire MediaQueryWarning behind feature flag" was scoped against a fi
 ## How I'd sequence this for one session
 
 If you want a tight, high-leverage cleanup session:
+
 - Fix C1, C2, C3, H2/H3, M3 — all the immediate bugs (~1 hour total)
 - Sweep H5 (`--violet` → `var(--color-accent)`) (~5 min)
 - Stop, push, then schedule a brainstorm on H1 (dashboard tokens) and M2 (diagram authoring) as separate larger pieces of work

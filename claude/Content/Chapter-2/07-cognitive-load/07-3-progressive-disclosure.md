@@ -13,6 +13,7 @@ Both applications have identical capabilities. But Approach B applies **progress
 ## The Principle
 
 Progressive disclosure presents information and options in layers:
+
 - **Layer 1**: Most frequently needed, most essential functionality
 - **Layer 2**: Less frequent but still common capabilities, accessed on demand
 - **Layer 3**: Advanced, specialized, or rarely-needed features, requiring deliberate exploration
@@ -46,6 +47,7 @@ Novices see simplified interfaces matching their needs. Experts can access advan
 Content organized into collapsible sections that expand on demand:
 
 **Use when**:
+
 - Content falls into clear categories
 - Users typically need only one section at a time
 - Information within sections is reasonably self-contained
@@ -57,6 +59,7 @@ Content organized into collapsible sections that expand on demand:
 Additional information available via hover, click, or tap but not displayed by default:
 
 **Use when**:
+
 - Some users need detailed information, others don't
 - Default view should remain scannable
 - Detail can be spatially associated with summary
@@ -68,6 +71,7 @@ Additional information available via hover, click, or tap but not displayed by d
 Complex tasks broken into sequential steps:
 
 **Use when**:
+
 - Task has logical sequence
 - Earlier decisions affect later options
 - Complete task would exceed working memory capacity
@@ -79,6 +83,7 @@ Complex tasks broken into sequential steps:
 Features introduced gradually as users demonstrate readiness:
 
 **Use when**:
+
 - Application has steep learning curve
 - Features build on each other
 - Novice users might be overwhelmed by full feature set
@@ -90,6 +95,7 @@ Features introduced gradually as users demonstrate readiness:
 Options appearing when they become relevant:
 
 **Use when**:
+
 - Options depend on current state or selection
 - Showing irrelevant options would cause confusion
 - Context strongly predicts which features users need
@@ -143,6 +149,7 @@ As users demonstrate expertise (using advanced features, completing power-user t
 **Challenge**: Tax preparation is complex, with thousands of possible fields, forms, and calculations. Different users need different portions—a simple W-2 filer vs. a self-employed homeowner with investments.
 
 **Progressive disclosure implementation**:
+
 - Interview-style flow asks questions to determine relevant sections
 - Only shows forms and fields relevant to user's situation
 - "More deductions" option reveals additional complexity
@@ -153,11 +160,13 @@ As users demonstrate expertise (using advanced features, completing power-user t
 ### Photoshop vs. Figma
 
 **Photoshop** (less progressive disclosure):
+
 - Most features visible in toolbars and menus
 - Dense interface rewards experts but intimidates beginners
 - Power users efficient; casual users overwhelmed
 
 **Figma** (more progressive disclosure):
+
 - Clean default interface with minimal visible controls
 - Features appear contextually (select shape → shape options appear)
 - Advanced features accessible but not cluttering default view
@@ -168,6 +177,7 @@ The different approaches reflect different user bases: Photoshop's professional 
 ### Mobile Apps Generally
 
 Mobile design forces progressive disclosure through screen constraints:
+
 - Limited space prevents showing everything simultaneously
 - Navigation depth replaces interface breadth
 - Gestures (swipe, long-press) reveal additional options

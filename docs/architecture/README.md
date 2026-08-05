@@ -5,12 +5,12 @@ Tools run via `npx` — nothing is added to `package.json` dependencies.
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm run graph:visual` | Writes the full edge list to `docs/architecture/graph.json`. |
-| `npm run graph:orphans` | Lists files nothing imports (dead-code candidates). |
-| `npm run graph:cycles` | Lists circular dependencies. |
-| `npm run graph:check` | Enforces layering rules; exits non-zero on violation. |
+| Command                 | What it does                                                 |
+| ----------------------- | ------------------------------------------------------------ |
+| `npm run graph:visual`  | Writes the full edge list to `docs/architecture/graph.json`. |
+| `npm run graph:orphans` | Lists files nothing imports (dead-code candidates).          |
+| `npm run graph:cycles`  | Lists circular dependencies.                                 |
+| `npm run graph:check`   | Enforces layering rules; exits non-zero on violation.        |
 
 ### Exact npm script implementations
 

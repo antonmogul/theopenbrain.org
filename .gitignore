@@ -53,3 +53,4 @@ supabase/.temp/
 /logged-in-auth-panel.png
 /test-chapter.md
 .filmstrip/
+.smoke/

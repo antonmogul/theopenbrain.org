@@ -11,7 +11,8 @@ This observation shaped decades of interface design, often distilled into rules 
 Miller's paper wasn't about the number 7 specifically. It was about the nature of human information processing capacity—and crucially, about **chunking** as a mechanism for transcending apparent limits.
 
 Miller observed:
-- Working memory has a fixed capacity in terms of *units* or *chunks*
+
+- Working memory has a fixed capacity in terms of _units_ or _chunks_
 - The informational content of each chunk can vary dramatically
 - Expertise and organization increase what fits in a single chunk
 - Recoding information into larger chunks extends functional capacity
@@ -35,16 +36,19 @@ A chunk is a meaningful unit—but what counts as "one chunk" depends on experie
 ### Examples of Chunking
 
 **Phone numbers**:
+
 - 10 random digits: 7204582931 (exceeds capacity)
 - Chunked: 720-458-2931 (3 chunks: area code, exchange, line)
 - Further chunked if familiar: "Denver number, local exchange, my aunt's house"
 
 **Chess positions**:
+
 - Novice: Each piece is a separate item (exceeds capacity quickly)
 - Expert: Pieces grouped into familiar patterns become single chunks
 - This explains why masters can remember positions from glances that overwhelm beginners
 
 **Sentences**:
+
 - "cat mat sat the on the" (6 words, hard to remember)
 - "the cat sat on the mat" (1 chunk—a meaningful sentence)
 
@@ -85,6 +89,7 @@ Working memory involves the prefrontal cortex maintaining active representations
 ### Form Design
 
 **Field grouping**: Group related fields to create chunks:
+
 - Name fields: first, middle, last (1 chunk: "name")
 - Address fields: street, city, state, zip (1 chunk: "address")
 - Payment fields: card number, expiration, CVV (1 chunk: "payment info")

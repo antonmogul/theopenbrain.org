@@ -78,11 +78,13 @@ To ensure users notice important changes, apply these principles:
 Visual transients aid change detection, but excess animation creates its own problems: cognitive overload, distraction, and accessibility issues for users with vestibular sensitivities. The goal isn't maximum animation but strategic use of animation where change detection matters.
 
 Reserve animated transitions for:
+
 - State changes users must notice (errors, confirmations, status updates)
 - Spatial relationships users need to understand (where did this element come from?)
 - Progress and completion (loading states, form progression)
 
 Skip animation for:
+
 - Routine interactions users will repeat frequently
 - Changes that don't require user awareness
 - Any context where users may have reduced-motion preferences
