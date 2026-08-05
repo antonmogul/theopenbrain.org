@@ -75,8 +75,11 @@ module.exports = {
         // on wide screens. Both widths derive from --reader-prose-w (brand.css,
         // = 40vw prose) so the figure pane fills the remaining ~60vw and the two
         // can never drift. Fallback keeps the old 50vw if the var is absent.
-        text: "var(--reader-prose-w, min(50vw, calc(780px + 6.875rem)))",
-        illus: "calc(100vw - var(--reader-prose-w, min(50vw, calc(780px + 6.875rem))))",
+        /* Fallbacks mirror --reader-prose-w exactly (40vw). They used to say
+           50vw, so if the var failed to resolve the split silently shifted by
+           10vw and the two panes overlapped. See OPENBRAIN-4. */
+        text: "var(--reader-prose-w, min(40vw, calc(780px + 6.875rem)))",
+        illus: "calc(100% - var(--reader-prose-w, min(40vw, calc(780px + 6.875rem))))",
         menu: "35vw",
         "1/8": " calc(100% / 8 * 1)",
         "2/8": " calc(100% / 8 * 2)",
@@ -88,6 +91,18 @@ module.exports = {
       },
       spacing: {
         text: "max(50vw, calc(100vw - 780px - 6.875rem))",
+      },
+      maxWidth: {
+        /* Prose-block maxima, clamped to the containing column.
+           These replace hardcoded max-w-[800px] / [780px] / [850px] in the
+           chapter text components. Those pixel caps never bound — the prose
+           column is --reader-prose-w (40vw) minus 110px padding, i.e. 466px at
+           1440px — so blocks overflowed their column rather than wrapping, and
+           captions/paragraphs/footnotes disagreed with each other. The min()
+           means a preference can only ever narrow the block. See OPENBRAIN-4. */
+        measure: "min(var(--reading-measure, 780px), 100%)",
+        "measure-wide": "min(calc(var(--reading-measure, 780px) + 70px), 100%)",
+        "measure-narrow": "min(400px, 100%)",
       },
       margin: {
         body: "1.375rem",

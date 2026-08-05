@@ -98,9 +98,29 @@
 }
 
 /* Prose width consumes the user's line-length preference.
-   Default `--reading-measure` (72ch in brand.css) ≈ today's 780px in IBM Plex. */
+   Default `--reading-measure` is 780px in brand.css (≈72ch in IBM Plex).
+
+   Clamped to 100% so the preference can only ever make the measure NARROWER
+   than the column that holds it. Without the clamp, --reading-measure (780px)
+   exceeds the actual prose column at every desktop width below ~2560px — the
+   column is --reader-prose-w (40vw) minus 110px of padding, i.e. 466px at
+   1440px — so the cap never bound and long content overflowed its container
+   instead of wrapping. See OPENBRAIN-4. */
 .prose-measure {
-  max-width: var(--reading-measure, 780px);
+  max-width: min(var(--reading-measure, 780px), 100%);
+}
+
+/* Long unbroken strings — bare citation URLs in the references list are the
+   real-world case — have no break opportunity, so they force their container
+   wider than the prose column and the whole PAGE scrolls horizontally. On
+   chapter 3 that was 256px of scroll from a handful of <li> URLs.
+   overflow-wrap only breaks a word when it would otherwise overflow, so normal
+   prose is unaffected. See OPENBRAIN-4. */
+.prose-measure,
+.prose-measure p,
+.prose-measure li,
+.prose-measure a {
+  overflow-wrap: break-word;
 }
 
 /* fonts */
@@ -780,8 +800,19 @@ sup:hover {
   text-decoration-color: rgb(var(--color-complete));
 }
 
+/* Full-bleed breakout: pull a block out of the right-pinned prose column so it
+   spans the window. Uses --app-w (the real content width, set from JS in
+   main.js) rather than vw units — 100vw includes the scrollbar gutter, so the
+   vw version shifted these blocks ~15px too far and the document scrolled
+   horizontally. Derived from --reader-prose-w so it can't drift from the
+   column it's breaking out of. See OPENBRAIN-4. */
 .-translate-x-custom {
-  transform: translateX(min(-50vw, calc(-100vw + 780px + 6.875rem - 1px)));
+  transform: translateX(
+    min(
+      calc(var(--app-w, 100vw) * -0.5),
+      calc(var(--app-w, 100vw) * -1 + 780px + 6.875rem - 1px)
+    )
+  );
 }
 
 @media (max-width: 1299px) {

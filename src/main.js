@@ -3,10 +3,14 @@ import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
 import { usePreferences } from "@/composables/usePreferences";
+import { observeAppWidth } from "@/helper/appWidth";
 
 import "@/index.css";
 
 usePreferences().init();
+
+// Publish the scrollbar-free content width as --app-w for full-bleed layout.
+observeAppWidth();
 
 const app = createApp(App);
 const pinia = createPinia();

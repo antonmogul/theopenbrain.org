@@ -256,7 +256,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     id="container"
-    class="absolute top-start z-40 w-full xl:w-[50vw] pointer-events-none font-sans"
+    class="absolute top-start z-40 w-full xl:w-text pointer-events-none font-sans"
   >
     <!-- Creator mode indicator -->
     <div
@@ -421,7 +421,12 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <div class="-ml-20 w-text">
+        <!-- End-of-chapter blocks sit edge-to-edge, cancelling the column's
+             left padding with -ml-20. Width must therefore be the parent's
+             content box PLUS that 50px, not w-text (the full column) — pairing
+             w-text with -ml-20 pushed this 50px past the right edge and gave
+             the document a horizontal scrollbar. See OPENBRAIN-4. -->
+        <div class="-ml-20 w-[calc(100%+3.125rem)]">
           <QuizSection />
           <!-- End-of-chapter callout slot — ChapterView fills this with
                EndOfChapterCallout. Inside TextComp so absolute positioning
@@ -443,6 +448,16 @@ onBeforeUnmount(() => {
 }
 
 .ml-text {
+  /* Full-bleed blocks inside the prose column deliberately break out of it
+     with -ml-20 / -translate-x-custom. Individually each is fine; collectively
+     they extended the document ~145px and gave every chapter a horizontal
+     scrollbar. Clip that overhang at the column instead of letting it grow the
+     page.
+
+     `clip`, not `hidden`: `hidden` would make this a scroll container and break
+     `position: sticky` on the figure pane and the scroll-linked animations.
+     See OPENBRAIN-4. */
+  overflow-x: clip;
   width: 100%;
   margin-left: 0;
   padding-left: 0.9375rem;
