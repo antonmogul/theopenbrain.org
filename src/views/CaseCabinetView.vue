@@ -22,6 +22,7 @@ import { ref, onMounted, nextTick } from "vue";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { useCaseFiles } from "@/mocks/caseFiles";
+import { readSpeed, readScrub } from "@/helper/debugFlags";
 
 gsap.registerPlugin(Flip);
 
@@ -32,10 +33,18 @@ const animating = ref(false);
 /*
  * ── Timeline scrubber (dev tool) ──────────────────────────────────────────
  * Holds the live open/close timeline so the on-screen scrubber can pause it and
- * step through frame by frame. Purely a tuning aid — `DEBUG_TIMELINE` gates the
- * whole panel, so flipping it to false ships the animation with no UI.
+ * step through frame by frame. Purely a tuning aid.
+ *
+ * Two separate gates, deliberately:
+ *   • DEBUG_TIMELINE — the visible on-screen scrubber panel. Off by default so
+ *     the animation is demo-ready; opt in with ?scrub=1 when tuning.
+ *   • EXPOSE_TIMELINE — the `window.__cc` handle that scripts/filmstrip.mjs
+ *     seeks to capture frames. Dev builds only, no visible UI, so the filmstrip
+ *     harness keeps working without a scrubber on screen.
  */
-const DEBUG_TIMELINE = true;
+const SEARCH = typeof window === "undefined" ? "" : window.location.search;
+const DEBUG_TIMELINE = readScrub(SEARCH);
+const EXPOSE_TIMELINE = import.meta.env.DEV;
 const activeTl = ref(null); // the GSAP timeline currently on screen
 const scrubValue = ref(0); // 0–1 progress, two-way bound to the range input
 const scrubbing = ref(false); // true once the user grabs the slider (pauses tl)
@@ -52,6 +61,10 @@ const TL_MARKERS = [
 
 // Mirror the timeline's own progress into the slider while it plays freely.
 function trackTimeline(tl, label) {
+  // Handle for scripts/filmstrip.mjs, which seeks this timeline to capture
+  // frames off-screen. Dev-only, and independent of the visible panel so the
+  // filmstrip can run against a demo-clean UI.
+  if (EXPOSE_TIMELINE) window.__cc = { tl, label };
   if (!DEBUG_TIMELINE) return tl;
   activeTl.value = tl;
   tlLabel.value = label;
@@ -168,8 +181,10 @@ function drawerSeed(flyer, r) {
   };
 }
 
-// Global slow-mo multiplier while we tune the motion. Set to 1 to ship.
-const SPEED = 3;
+// Global slow-mo multiplier for tuning. 1 is ship speed; ?slow=N slows the whole
+// sequence by N without touching the individual beat durations, so the timings
+// that ship are the ones being judged.
+const SPEED = readSpeed(SEARCH);
 
 // Leaf layout size — read from offsetWidth/Height, which are TRANSFORM-INDEPENDENT
 // (getBoundingClientRect is not, so it gives wrong numbers mid-animation).
