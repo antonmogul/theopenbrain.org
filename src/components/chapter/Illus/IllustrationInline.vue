@@ -99,15 +99,15 @@ const youtubeSrc = computed(() =>
 </script>
 
 <template>
-  <!-- Interactive figures additionally wait for the asset check (assetOk):
-       true renders, false/null renders nothing (missing asset or still
-       verifying — see the watch above). -->
+  <!-- Interactive figures collapse only on a CONFIRMED missing asset
+       (assetOk === false). While the check runs the figure renders with its
+       reserved empty stage, so slow connections see no layout pop-in. -->
   <figure
     v-if="
       animation &&
       (mode === 'static' ||
         mode === 'fullscreen' ||
-        (mode === 'interactive' && assetOk === true))
+        (mode === 'interactive' && assetOk !== false))
     "
     class="illu-inline my-12 font-mono text-small"
   >
@@ -130,7 +130,13 @@ const youtubeSrc = computed(() =>
     <!-- Interactive: render the live figure inline, scoped so it doesn't
          collide with the (hidden) desktop pane's global ids. -->
     <div v-if="mode === 'interactive'" class="illu-inline__stage">
-      <IllustrationComp :animation="animation" :scope-id="scopeId" />
+      <!-- Mount only once the asset check passes; the stage's min-height
+           reserves the space in the meantime. -->
+      <IllustrationComp
+        v-if="assetOk === true"
+        :animation="animation"
+        :scope-id="scopeId"
+      />
     </div>
 
     <!-- Static: plain image or embedded video, full width. -->
@@ -152,12 +158,15 @@ const youtubeSrc = computed(() =>
         "
         allowfullscreen
       ></iframe>
+      <!-- Same missing-file failure mode as the Lottie assets: hide the broken
+           image rather than showing the browser's broken-image glyph. -->
       <img
         v-else
         class="w-full h-auto"
         :src="posterSrc"
         :alt="title"
         loading="lazy"
+        @error="(e) => (e.target.style.display = 'none')"
       />
       <SourceElement v-if="animation.source" :source="animation.source" />
     </template>
