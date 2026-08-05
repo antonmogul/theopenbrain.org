@@ -102,8 +102,8 @@ function buildContent(paragraph, opts = {}) {
       type: "break_video",
       title: paragraph.title || "",
       videoSlug: paragraph.videoSlug || null,
-      // Some breakVideo entries carry descriptive text — keep it
-      ...(paragraph.text ? { text: paragraph.text } : {}),
+      // No text here: descriptive text already round-trips via the separate
+      // "text" block pushed above — one source of truth on the read side.
     });
   }
 
@@ -136,9 +136,10 @@ function buildContent(paragraph, opts = {}) {
 // using subsection_level (0=top, 1=subSection, 2=subSubSection) and
 // is_subsection_header to mark section boundaries.
 
-// Display flags (start/middel/end/transition/stage) the app's StartEndIcon and
-// figure layout need. Stored in the content JSONB so useChapter.js can
-// round-trip them back onto the animation object (OPENBRAIN-10).
+// Display flags stored in the content JSONB so useChapter.js can round-trip
+// them onto the animation object (OPENBRAIN-10): start/middel/end drive
+// StartEndIcon, transition marks scroll-transition figures. stage has no
+// consumer yet — carried anyway so re-seeding is lossless.
 function animationFlagsOf(animation) {
   if (!animation) return null;
   const flags = {};
@@ -424,9 +425,10 @@ async function migrate() {
       if (fp.animation?.name) {
         const key = animationNameToKey(fp.animation.name);
         paraAnimId = animLookup[key] || animLookup[key?.toLowerCase()] || null;
-        // Store "scroll" for transition figures so useChapter.js can
-        // reconstruct `transition: true` via `animation_trigger === "scroll"`.
-        animTrigger = fp.animation.transition ? "scroll" : fp.animation.name;
+        // Keep the real animation name here — the dashboard block editor uses
+        // animation_trigger as a display-label fallback. The transition flag
+        // travels in content.animationFlags instead (see animationFlagsOf).
+        animTrigger = fp.animation.name;
         if (paraAnimId) linkedAnimations++;
       }
 

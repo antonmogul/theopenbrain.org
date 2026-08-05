@@ -10,9 +10,10 @@
  *
  * Resolution is per-RECORD, not per-source: a figure missing from the DB still
  * resolves from the JSON even when other DB rows exist. The expensive failure
- * mode here is silence — an unresolvable figure renders nothing — so every
- * miss warns loudly instead (see docs/chapter1-parity/ for the debugging
- * session that silent-empty cost).
+ * mode here is silence — an unresolvable figure renders nothing — so a miss
+ * warns loudly by default (call sites may defer the warning until their async
+ * source has settled; see IllustrationInline). See docs/chapter1-parity/ for
+ * the debugging session that silent-empty cost.
  */
 
 /**

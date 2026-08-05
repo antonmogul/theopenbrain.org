@@ -163,9 +163,13 @@ export function useChapter() {
         name: p.animation_key.replace(/^animation/, ""),
         id: p.animation_key,
         title: p.animation_title || "",
-        // 'scroll' trigger → scroll-transition figure (matches Ch1 transition flag)
-        transition: p.animation_trigger === "scroll",
-        // start/middel/end drive StartEndIcon.vue; stage positions the figure.
+        // Transition figures: the flag round-trips via animationFlags; the
+        // legacy 'scroll' trigger value is kept as back-compat for rows seeded
+        // before the flags existed.
+        transition:
+          flags.transition === true || p.animation_trigger === "scroll",
+        // start/middel/end drive StartEndIcon.vue. stage has no consumer yet;
+        // carried so nothing is lost across a re-seed.
         ...(flags.start ? { start: true } : {}),
         ...(flags.middel ? { middel: true } : {}),
         ...(flags.end ? { end: true } : {}),
@@ -227,7 +231,9 @@ export function useChapter() {
             name: p.animation_key.replace(/^animation/, ""),
             id: p.animation_key,
             title: p.animation_title || "",
-            transition: p.animation_trigger === "scroll",
+            // Same flags round-trip + legacy back-compat as transformParagraph.
+            transition:
+              flags.transition === true || p.animation_trigger === "scroll",
             ...(flags.start ? { start: true } : {}),
             ...(flags.middel ? { middel: true } : {}),
             ...(flags.end ? { end: true } : {}),

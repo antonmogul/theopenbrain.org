@@ -33,7 +33,7 @@ const props = defineProps({
 // Resolve the full animation record (with its flags): Supabase first so
 // DB-backed chapters work, animations.json as the Chapter-1 fallback. The
 // computed re-runs once the fetch lands; until then the JSON answer (or
-// nothing, with a warning) renders.
+// nothing, silently — see the warn gate below) renders.
 const { animations: dbAnimations, fetchAnimations } = useAnimations();
 const fetched = ref(false);
 onMounted(async () => {

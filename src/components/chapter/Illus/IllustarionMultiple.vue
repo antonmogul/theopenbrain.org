@@ -9,8 +9,9 @@ import { addH, removeH } from "@/helper/general";
 
 let lottie;
 
-// (No animation-source lookup here: the parent passes the resolved record and
-// this component only builds asset paths from its id — OPENBRAIN-10 audit.)
+// (No animation-source lookup here: this component only builds asset paths
+// from the id of whatever animation object the parent passes — OPENBRAIN-10
+// audit found nothing else to resolve.)
 
 const props = defineProps({
   animation: Object,
