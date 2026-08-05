@@ -30,7 +30,9 @@ function onScroll() {
   activeId.value = current;
 }
 function goTo(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document
+    .getElementById(id)
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 onMounted(() => {
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -44,7 +46,12 @@ const displayName = computed(
 );
 const railInitials = computed(() => {
   const n = displayName.value || user.value?.email || "?";
-  return n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return n
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 });
 </script>
 
@@ -71,7 +78,9 @@ const railInitials = computed(() => {
           </button>
         </nav>
         <hr class="rail-rule" />
-        <router-link :to="homeRoute" class="rail-back">← Back to book</router-link>
+        <router-link :to="homeRoute" class="rail-back"
+          >← Back to book</router-link
+        >
       </aside>
 
       <!-- Content -->

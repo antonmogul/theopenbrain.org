@@ -5,14 +5,14 @@
  * Shows detected sections as a tree, allows renaming, reordering,
  * deleting sections, moving paragraphs, and previewing references.
  */
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps({
   sections: { type: Array, default: () => [] },
   references: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(['update:sections', 'update:references']);
+const emit = defineEmits(["update:sections", "update:references"]);
 
 // Stats
 const sectionCount = computed(() => props.sections.length);
@@ -22,12 +22,15 @@ const paragraphCount = computed(() =>
 );
 
 const wordCount = computed(() =>
-  props.sections.reduce((sum, s) =>
-    sum + s.paragraphs.reduce((pSum, p) => {
-      const text = p.content_text || '';
-      return pSum + text.split(/\s+/).filter(Boolean).length;
-    }, 0),
-  0)
+  props.sections.reduce(
+    (sum, s) =>
+      sum +
+      s.paragraphs.reduce((pSum, p) => {
+        const text = p.content_text || "";
+        return pSum + text.split(/\s+/).filter(Boolean).length;
+      }, 0),
+    0
+  )
 );
 
 const readingTime = computed(() => Math.ceil(wordCount.value / 200));
@@ -36,7 +39,7 @@ const readingTime = computed(() => Math.ceil(wordCount.value / 200));
 function renameSection(index, newTitle) {
   const updated = [...props.sections];
   updated[index] = { ...updated[index], title: newTitle };
-  emit('update:sections', updated);
+  emit("update:sections", updated);
 }
 
 function moveSection(index, direction) {
@@ -47,30 +50,36 @@ function moveSection(index, direction) {
   updated[index] = updated[newIndex];
   updated[newIndex] = temp;
   // Recalculate order_index
-  updated.forEach((s, i) => { s.order_index = i; });
-  emit('update:sections', updated);
+  updated.forEach((s, i) => {
+    s.order_index = i;
+  });
+  emit("update:sections", updated);
 }
 
 function deleteSection(index) {
   const updated = props.sections.filter((_, i) => i !== index);
-  updated.forEach((s, i) => { s.order_index = i; });
-  emit('update:sections', updated);
+  updated.forEach((s, i) => {
+    s.order_index = i;
+  });
+  emit("update:sections", updated);
 }
 
 function getBlockPreview(paragraph) {
-  if (!paragraph.content || !paragraph.content.blocks) return '';
+  if (!paragraph.content || !paragraph.content.blocks) return "";
   return paragraph.content.blocks
-    .map(block => {
-      if (block.type === 'heading') return `[H${block.level}] ${block.content}`;
-      if (block.type === 'text') return block.content;
-      if (block.type === 'list') return `[List: ${block.items?.length || 0} items]`;
-      if (block.type === 'blockquote') return `[Quote] ${block.content?.substring(0, 60)}...`;
-      if (block.type === 'code') return `[Code block]`;
-      if (block.type === 'image') return `[Image: ${block.alt || 'no alt'}]`;
-      if (block.type === 'citation_ref') return `[${block.number}]`;
-      return block.content || '';
+    .map((block) => {
+      if (block.type === "heading") return `[H${block.level}] ${block.content}`;
+      if (block.type === "text") return block.content;
+      if (block.type === "list")
+        return `[List: ${block.items?.length || 0} items]`;
+      if (block.type === "blockquote")
+        return `[Quote] ${block.content?.substring(0, 60)}...`;
+      if (block.type === "code") return `[Code block]`;
+      if (block.type === "image") return `[Image: ${block.alt || "no alt"}]`;
+      if (block.type === "citation_ref") return `[${block.number}]`;
+      return block.content || "";
     })
-    .join(' ')
+    .join(" ")
     .substring(0, 120);
 }
 </script>
@@ -79,7 +88,9 @@ function getBlockPreview(paragraph) {
   <div class="wizard-step-structure">
     <div class="step-header">
       <h2 class="step-title">Preview Structure</h2>
-      <p class="step-description">Review and adjust your chapter's sections and content.</p>
+      <p class="step-description">
+        Review and adjust your chapter's sections and content.
+      </p>
     </div>
 
     <!-- Stats Bar -->
@@ -128,7 +139,9 @@ function getBlockPreview(paragraph) {
             />
           </div>
           <div class="section-actions">
-            <span class="paragraph-count">{{ section.paragraphs.length }} paragraphs</span>
+            <span class="paragraph-count"
+              >{{ section.paragraphs.length }} paragraphs</span
+            >
             <button
               class="icon-btn"
               :disabled="sIndex === 0"
@@ -164,7 +177,9 @@ function getBlockPreview(paragraph) {
             :class="{ subsection: para.is_subsection_header }"
           >
             <span class="para-index">{{ pIndex + 1 }}</span>
-            <span class="para-text">{{ getBlockPreview(para) || '(empty)' }}</span>
+            <span class="para-text">{{
+              getBlockPreview(para) || "(empty)"
+            }}</span>
           </div>
         </div>
       </div>
@@ -179,9 +194,7 @@ function getBlockPreview(paragraph) {
           <span v-if="ref.year" class="ref-year">({{ ref.year }})</span>
           <span class="ref-title">{{ ref.title }}</span>
           <span v-if="ref.journal" class="ref-journal">{{ ref.journal }}</span>
-          <span v-if="ref.doi" class="ref-doi">
-            DOI: {{ ref.doi }}
-          </span>
+          <span v-if="ref.doi" class="ref-doi"> DOI: {{ ref.doi }} </span>
         </li>
       </ol>
     </div>

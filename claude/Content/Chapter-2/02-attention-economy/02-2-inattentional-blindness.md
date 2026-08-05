@@ -44,7 +44,7 @@ A project management application added a critical feature: automatic conflict de
 
 Despite being prominently colored and clearly worded, user research revealed most users never noticed the warning. They were focused on their editing task—reading content, making changes, checking formatting. The banner fell outside their attentional field.
 
-The solution required understanding inattentional blindness. The warning was redesigned to appear *within* the user's focus: as an inline highlight directly on the conflicting text, accompanied by a subtle animation that would trigger peripheral motion detection and draw gaze. Additionally, the save button changed state to indicate conflicts required resolution before saving—inserting the warning into the user's task flow rather than placing it outside attention.
+The solution required understanding inattentional blindness. The warning was redesigned to appear _within_ the user's focus: as an inline highlight directly on the conflicting text, accompanied by a subtle animation that would trigger peripheral motion detection and draw gaze. Additionally, the save button changed state to indicate conflicts required resolution before saving—inserting the warning into the user's task flow rather than placing it outside attention.
 
 Conflict awareness increased from roughly 15% to over 90%.
 

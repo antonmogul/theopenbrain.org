@@ -109,11 +109,16 @@ function closeDemo() {
 function demoModalTitle() {
   if (!activeDemo.value) return "";
   switch (activeDemo.value.type) {
-    case "quiz": return activeDemo.value.title || "Quiz";
-    case "flashcards": return "Flashcards";
-    case "lab": return activeDemo.value.title || "Code Lab";
-    case "explorer": return "Cone Spectral Sensitivity Explorer";
-    default: return "Demo";
+    case "quiz":
+      return activeDemo.value.title || "Quiz";
+    case "flashcards":
+      return "Flashcards";
+    case "lab":
+      return activeDemo.value.title || "Code Lab";
+    case "explorer":
+      return "Cone Spectral Sensitivity Explorer";
+    default:
+      return "Demo";
   }
 }
 </script>
@@ -132,9 +137,12 @@ function demoModalTitle() {
         <div class="tab-bar">
           <div ref="handleRef" class="drag-handle" title="Drag to move">
             <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-              <circle cx="2" cy="3" r="1" /><circle cx="8" cy="3" r="1" />
-              <circle cx="2" cy="7" r="1" /><circle cx="8" cy="7" r="1" />
-              <circle cx="2" cy="11" r="1" /><circle cx="8" cy="11" r="1" />
+              <circle cx="2" cy="3" r="1" />
+              <circle cx="8" cy="3" r="1" />
+              <circle cx="2" cy="7" r="1" />
+              <circle cx="8" cy="7" r="1" />
+              <circle cx="2" cy="11" r="1" />
+              <circle cx="8" cy="11" r="1" />
             </svg>
           </div>
           <button
@@ -160,10 +168,7 @@ function demoModalTitle() {
               v-else-if="activeTab === 'notebook'"
               :module-id="moduleId"
             />
-            <ChatTab
-              v-else-if="activeTab === 'chat'"
-              :module-id="moduleId"
-            />
+            <ChatTab v-else-if="activeTab === 'chat'" :module-id="moduleId" />
           </KeepAlive>
         </div>
 
@@ -183,10 +188,26 @@ function demoModalTitle() {
             <button
               v-if="demoItems.quizzes.length > 0"
               class="demo-btn"
-              @click="openDemo('quiz', demoItems.quizzes[0].id, demoItems.quizzes[0].title)"
+              @click="
+                openDemo(
+                  'quiz',
+                  demoItems.quizzes[0].id,
+                  demoItems.quizzes[0].title
+                )
+              "
               title="Take a quiz"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -200,7 +221,17 @@ function demoModalTitle() {
               @click="openDemo('flashcards', moduleId, 'Flashcards')"
               title="Study flashcards"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                 <path d="M7 8h10"></path>
                 <path d="M7 12h4"></path>
@@ -216,11 +247,21 @@ function demoModalTitle() {
               @click="openDemo('lab', lab.id, lab.title)"
               :title="lab.title"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <polyline points="16 18 22 12 16 6"></polyline>
                 <polyline points="8 6 2 12 8 18"></polyline>
               </svg>
-              <span>{{ lab.title || 'Code Lab' }}</span>
+              <span>{{ lab.title || "Code Lab" }}</span>
             </button>
 
             <!-- Cone Explorer button (always visible) -->
@@ -229,7 +270,17 @@ function demoModalTitle() {
               @click="openDemo('explorer', null, 'Cone Spectral Sensitivity')"
               title="Explore cone spectral sensitivity"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
               </svg>
               <span>Explorer</span>
@@ -241,11 +292,7 @@ function demoModalTitle() {
   </Teleport>
 
   <!-- Demo Modal -->
-  <DemoModal
-    :show="!!activeDemo"
-    :title="demoModalTitle()"
-    @close="closeDemo"
-  >
+  <DemoModal :show="!!activeDemo" :title="demoModalTitle()" @close="closeDemo">
     <QuizPanel
       v-if="activeDemo?.type === 'quiz'"
       :quiz-id="activeDemo.id"
@@ -287,7 +334,9 @@ export default {
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-ink) / 0.85);
   border-radius: 10px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -329,7 +378,9 @@ export default {
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
   cursor: pointer;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .tab-btn:hover {
@@ -350,7 +401,9 @@ export default {
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-mute));
-  transition: color 0.12s ease, background 0.12s ease;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease;
   flex-shrink: 0;
   border-left: 1px solid rgb(var(--color-line));
 }
@@ -416,7 +469,9 @@ export default {
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
   cursor: pointer;
-  transition: border-color 0.12s ease, color 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -437,10 +492,14 @@ export default {
 
 /* Panel entrance — scale-up fade, no backdrop (brief §6.5 modal feel) */
 .panel-enter-active {
-  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .panel-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 .panel-enter-from,
 .panel-leave-to {

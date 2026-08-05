@@ -51,7 +51,10 @@ Each paragraph stores content as JSONB with this structure:
 {
   "blocks": [
     { "type": "heading", "level": 2, "content": "Section Title" },
-    { "type": "text", "content": "Paragraph text with <strong>formatting</strong>..." },
+    {
+      "type": "text",
+      "content": "Paragraph text with <strong>formatting</strong>..."
+    },
     { "type": "animation", "description": "Animation marker" }
   ]
 }
@@ -76,7 +79,7 @@ Each paragraph stores content as JSONB with this structure:
     ├── [11] Looking Forward (3 paragraphs)
     ├── [12] Glossary (3 paragraphs)
     └── [13] Resources (3 paragraphs)
-    
+
     TOTAL: 77 paragraphs across 14 sections
 ```
 
@@ -110,11 +113,11 @@ Each paragraph stores content as JSONB with this structure:
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `src/composables/useChapter.js` | Fetches & transforms Supabase data |
-| `src/composables/useModules.js` | Raw Supabase queries |
-| `src/views/ChapterView.vue` | Route handler, loads chapter |
-| `src/components/chapter/TextComp.vue` | Renders content |
-| `supabase/migrations/20250101000000_initial_schema.sql` | DB schema |
-| `scripts/import-chapter-2-to-supabase.mjs` | Markdown → DB import |
+| File                                                    | Purpose                            |
+| ------------------------------------------------------- | ---------------------------------- |
+| `src/composables/useChapter.js`                         | Fetches & transforms Supabase data |
+| `src/composables/useModules.js`                         | Raw Supabase queries               |
+| `src/views/ChapterView.vue`                             | Route handler, loads chapter       |
+| `src/components/chapter/TextComp.vue`                   | Renders content                    |
+| `supabase/migrations/20250101000000_initial_schema.sql` | DB schema                          |
+| `scripts/import-chapter-2-to-supabase.mjs`              | Markdown → DB import               |

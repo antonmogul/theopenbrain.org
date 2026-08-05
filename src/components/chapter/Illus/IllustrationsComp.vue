@@ -32,25 +32,29 @@ const { animations: dbAnimations, fetchAnimations } = useAnimations();
 const animationList = computed(() => {
   if (dbAnimations.value && dbAnimations.value.length > 0) {
     // [4 MOUNT] which source is driving the figures + one-line inventory
-    cgroup("MOUNT", `source = SUPABASE (${dbAnimations.value.length} figures)`, () => {
-      clog("MOUNT", "renderer each figure will mount when active", {
-        list: dbAnimations.value.map((a) => ({
-          id: a.id,
-          renderer: a.placeholder
-            ? "Placeholder"
-            : a.fullscreen
-              ? "FullScreen"
-              : a.switch
-                ? "Switch"
-                : a.scroll
-                  ? "OnScroll"
-                  : a.isTransition
-                    ? "Transition"
-                    : "Inline",
-          states: a.states?.length || 0,
-        })),
-      });
-    });
+    cgroup(
+      "MOUNT",
+      `source = SUPABASE (${dbAnimations.value.length} figures)`,
+      () => {
+        clog("MOUNT", "renderer each figure will mount when active", {
+          list: dbAnimations.value.map((a) => ({
+            id: a.id,
+            renderer: a.placeholder
+              ? "Placeholder"
+              : a.fullscreen
+                ? "FullScreen"
+                : a.switch
+                  ? "Switch"
+                  : a.scroll
+                    ? "OnScroll"
+                    : a.isTransition
+                      ? "Transition"
+                      : "Inline",
+            states: a.states?.length || 0,
+          })),
+        });
+      }
+    );
     return dbAnimations.value;
   }
   clog("MOUNT", "source = STATIC JSON fallback (Supabase empty/failed)");
@@ -63,7 +67,10 @@ watch(activeAnimation, (id) => {
   if (!id) return;
   const a = animationList.value.find((x) => x.id.toLowerCase() === id);
   if (!a) {
-    clog("MOUNT", `active="${id}" but NO matching figure in list (key mismatch?)`);
+    clog(
+      "MOUNT",
+      `active="${id}" but NO matching figure in list (key mismatch?)`
+    );
     return;
   }
   const renderer = a.placeholder
@@ -91,14 +98,20 @@ onMounted(async () => {
   try {
     await fetchAnimations();
   } catch (err) {
-    console.warn("IllustrationsComp: Supabase fetch failed, using JSON fallback:", err);
+    console.warn(
+      "IllustrationsComp: Supabase fetch failed, using JSON fallback:",
+      err
+    );
   }
 
   let animationTriggers = document.getElementsByClassName("animationTrigger");
   // [3 SCROLL] how many GSAP scroll-triggers were wired up. Each corresponds to a
   // figure anchor in the DOM; if this is low, figures didn't emit their trigger class.
-  clog("SCROLL", `wiring ${animationTriggers.length} .animationTrigger + ` +
-    `${document.getElementsByClassName("animationScrollAnchor").length} .animationScrollAnchor`);
+  clog(
+    "SCROLL",
+    `wiring ${animationTriggers.length} .animationTrigger + ` +
+      `${document.getElementsByClassName("animationScrollAnchor").length} .animationScrollAnchor`
+  );
   for (let trigger of animationTriggers) {
     setTimeout(() => {
       ScrollTrigger.create({

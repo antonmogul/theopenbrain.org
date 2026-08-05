@@ -41,7 +41,14 @@ export default ({ mode }) => {
       },
     },
     plugins: [
-      vue(),
+      vue({
+        template: {
+          compilerOptions: {
+            // <model-viewer> is a web component (Google), not a Vue component.
+            isCustomElement: (tag) => tag === "model-viewer",
+          },
+        },
+      }),
       createHtmlPlugin({
         inject: {
           data: {

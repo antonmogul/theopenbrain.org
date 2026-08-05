@@ -43,7 +43,9 @@ function handleSort(column) {
   emit("sort", { key: sortKey.value, direction: sortDirection.value });
 }
 
-function handleRowClick(row) { emit("row-click", row); }
+function handleRowClick(row) {
+  emit("row-click", row);
+}
 
 function toggleRowSelection(row) {
   const key = row[props.rowKey];
@@ -58,8 +60,13 @@ function toggleAllSelection() {
   emit("select", Array.from(selectedRows.value));
 }
 
-const allSelected = computed(() => props.data.length > 0 && selectedRows.value.size === props.data.length);
-const someSelected = computed(() => selectedRows.value.size > 0 && selectedRows.value.size < props.data.length);
+const allSelected = computed(
+  () => props.data.length > 0 && selectedRows.value.size === props.data.length
+);
+const someSelected = computed(
+  () =>
+    selectedRows.value.size > 0 && selectedRows.value.size < props.data.length
+);
 </script>
 
 <template>
@@ -68,36 +75,68 @@ const someSelected = computed(() => selectedRows.value.size > 0 && selectedRows.
       <thead>
         <tr>
           <th v-if="selectable" class="check-col">
-            <input type="checkbox" :checked="allSelected" :indeterminate="someSelected" @change="toggleAllSelection" />
+            <input
+              type="checkbox"
+              :checked="allSelected"
+              :indeterminate="someSelected"
+              @change="toggleAllSelection"
+            />
           </th>
           <th
-            v-for="column in columns" :key="column.key"
-            :style="[column.width ? { width: column.width } : {}, column.align ? { textAlign: column.align } : {}]"
+            v-for="column in columns"
+            :key="column.key"
+            :style="[
+              column.width ? { width: column.width } : {},
+              column.align ? { textAlign: column.align } : {},
+            ]"
             :class="{ sortable: column.sortable }"
             @click="handleSort(column)"
           >
             <span class="th-inner">
-              <slot :name="`header-${column.key}`" :column="column">{{ column.label }}</slot>
-              <span v-if="column.sortable && sortKey === column.key" class="sort-caret">{{ sortDirection === "asc" ? "▲" : "▼" }}</span>
+              <slot :name="`header-${column.key}`" :column="column">{{
+                column.label
+              }}</slot>
+              <span
+                v-if="column.sortable && sortKey === column.key"
+                class="sort-caret"
+                >{{ sortDirection === "asc" ? "▲" : "▼" }}</span
+              >
             </span>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="(row, index) in sortedData" :key="row[rowKey]"
+          v-for="(row, index) in sortedData"
+          :key="row[rowKey]"
           :class="{ hoverable, striped: striped && index % 2 === 1 }"
           @click="handleRowClick(row)"
         >
           <td v-if="selectable" class="check-col" @click.stop>
-            <input type="checkbox" :checked="selectedRows.has(row[rowKey])" @change="toggleRowSelection(row)" />
+            <input
+              type="checkbox"
+              :checked="selectedRows.has(row[rowKey])"
+              @change="toggleRowSelection(row)"
+            />
           </td>
-          <td v-for="column in columns" :key="column.key" :style="column.align ? { textAlign: column.align } : {}">
-            <slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]">{{ row[column.key] }}</slot>
+          <td
+            v-for="column in columns"
+            :key="column.key"
+            :style="column.align ? { textAlign: column.align } : {}"
+          >
+            <slot
+              :name="`cell-${column.key}`"
+              :row="row"
+              :value="row[column.key]"
+              >{{ row[column.key] }}</slot
+            >
           </td>
         </tr>
         <tr v-if="data.length === 0">
-          <td :colspan="columns.length + (selectable ? 1 : 0)" class="empty-cell">
+          <td
+            :colspan="columns.length + (selectable ? 1 : 0)"
+            class="empty-cell"
+          >
             <slot name="empty"><EmptyState title="No data" /></slot>
           </td>
         </tr>
@@ -107,27 +146,71 @@ const someSelected = computed(() => selectedRows.value.size > 0 && selectedRows.
 </template>
 
 <style scoped>
-.table-wrap { overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; }
+.table-wrap {
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
 thead th {
-  text-align: left; font-family: var(--font-mono); font-size: 0.625rem;
-  text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute));
-  padding: 12px 16px; border-bottom: 1px solid rgb(var(--color-line)); white-space: nowrap;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(var(--color-line));
+  white-space: nowrap;
 }
-.data-table.dense thead th { padding: 8px 12px; }
-thead th.sortable { cursor: pointer; }
-thead th.sortable:hover { color: rgb(var(--color-ink)); }
-.th-inner { display: inline-flex; align-items: center; gap: 6px; }
-.sort-caret { font-size: 0.5rem; }
+.data-table.dense thead th {
+  padding: 8px 12px;
+}
+thead th.sortable {
+  cursor: pointer;
+}
+thead th.sortable:hover {
+  color: rgb(var(--color-ink));
+}
+.th-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sort-caret {
+  font-size: 0.5rem;
+}
 tbody td {
-  font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-ink));
-  padding: 14px 16px; border-bottom: 1px solid rgb(var(--color-line)); vertical-align: middle;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: rgb(var(--color-ink));
+  padding: 14px 16px;
+  border-bottom: 1px solid rgb(var(--color-line));
+  vertical-align: middle;
 }
-.data-table.dense tbody td { padding: 9px 12px; }
-tbody tr.hoverable { cursor: pointer; }
-tbody tr.hoverable:hover { background: rgb(var(--color-ink) / 0.03); }
-tbody tr.striped { background: rgb(var(--color-ink) / 0.02); }
-.check-col { width: 44px; }
-.empty-cell { padding: 0; border-bottom: 0; }
-input[type="checkbox"] { accent-color: rgb(var(--color-accent)); width: 15px; height: 15px; }
+.data-table.dense tbody td {
+  padding: 9px 12px;
+}
+tbody tr.hoverable {
+  cursor: pointer;
+}
+tbody tr.hoverable:hover {
+  background: rgb(var(--color-ink) / 0.03);
+}
+tbody tr.striped {
+  background: rgb(var(--color-ink) / 0.02);
+}
+.check-col {
+  width: 44px;
+}
+.empty-cell {
+  padding: 0;
+  border-bottom: 0;
+}
+input[type="checkbox"] {
+  accent-color: rgb(var(--color-accent));
+  width: 15px;
+  height: 15px;
+}
 </style>

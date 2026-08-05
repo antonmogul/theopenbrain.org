@@ -25,6 +25,7 @@ Visual cognition alternates between two modes:
 **Ambient processing** uses peripheral vision to monitor the environment, detect changes, and maintain situational awareness. It's fast, parallel, and operates largely without conscious attention.
 
 Interface design typically focuses on focal processing—optimizing for identification and interaction. But ambient processing matters too, particularly for:
+
 - Notification systems
 - Status indicators
 - Progress feedback
@@ -38,6 +39,7 @@ Effective notification systems leverage peripheral vision characteristics:
 ### Slack's Notification Approach
 
 Slack uses multiple peripheral-compatible signals for notifications:
+
 - **Red badge** on channel names provides color change detectable peripherally
 - **Bold text** for unread channels creates luminance change visible in ambient monitoring
 - **Menu bar badge** appears in truly peripheral location but uses high contrast
@@ -48,6 +50,7 @@ The combination ensures notifications can be noticed in ambient mode while users
 ### IDE Error Indicators
 
 Integrated development environments like VS Code place error indicators in two locations:
+
 - **Inline markers** (red squiggles under problematic code) appear in foveal vision during coding
 - **Margin markers** (red dots in the scrollbar region) provide peripheral awareness of errors elsewhere in the file
 
@@ -56,6 +59,7 @@ The margin markers leverage peripheral vision's ability to detect color presence
 ### Dashboard Status Indicators
 
 Effective status dashboards use peripheral-appropriate signals:
+
 - **Color states** (green/yellow/red) rather than text to indicate status
 - **Position consistency** so users know where to expect status information
 - **Size and isolation** to reduce crowding and enable peripheral detection
@@ -76,12 +80,14 @@ Motion is peripheral vision's most reliable attention trigger. Used thoughtfully
 ### The Animation Balance
 
 Motion attracts attention—but that's also its limitation. Overuse of peripheral motion creates:
+
 - **Distraction** from focal tasks
 - **Habituation** that renders motion ineffective
 - **Annoyance** and cognitive load
 - **Accessibility issues** for motion-sensitive users
 
 Guidelines for peripheral motion:
+
 - Reserve motion for genuinely important awareness needs
 - Keep motion subtle (gentle pulse rather than flashing)
 - Limit simultaneous motion sources
@@ -94,7 +100,8 @@ A document collaboration tool needed to communicate collaborator presence and ac
 
 **Initial design**: Text notifications ("Sarah is now viewing") appeared in the bottom corner. Result: Frequent interruption, user complaints, and eventual notification fatigue leading to ignoring all collaboration signals.
 
-**Revised design**: 
+**Revised design**:
+
 - Small avatar circles in the top margin, positioned consistently
 - Avatars gently pulse when first appearing (motion for initial awareness)
 - Active editors shown with subtle colored ring around avatar
@@ -112,7 +119,7 @@ Design effective peripheral awareness with these principles:
 
 **Isolate important signals**. Reduce crowding around peripheral indicators so they can be detected individually.
 
-**Use motion for transitions only**. Animate the *change* to new states but not the ongoing state. Continuous motion wastes its attention-capturing power.
+**Use motion for transitions only**. Animate the _change_ to new states but not the ongoing state. Continuous motion wastes its attention-capturing power.
 
 **Provide progressive detail**. Peripheral signals should trigger awareness; focal attention should reveal details. Design for this two-stage process.
 

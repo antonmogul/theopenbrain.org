@@ -106,18 +106,15 @@ async function handleSignOut() {
           <button class="btn-solid" type="button" @click="changePassword">
             {{ pwStatus === "saving" ? "Saving…" : "Save password" }}
           </button>
-          <span
-            v-if="pwStatus === 'done'"
-            class="pw-status ok"
-          >✓ Password updated</span>
-          <span
-            v-else-if="pwStatus === 'mismatch'"
-            class="pw-status warn"
-          >Passwords don't match</span>
-          <span
-            v-else-if="pwStatus === 'error'"
-            class="pw-status warn"
-          >Couldn't update — try again</span>
+          <span v-if="pwStatus === 'done'" class="pw-status ok"
+            >✓ Password updated</span
+          >
+          <span v-else-if="pwStatus === 'mismatch'" class="pw-status warn"
+            >Passwords don't match</span
+          >
+          <span v-else-if="pwStatus === 'error'" class="pw-status warn"
+            >Couldn't update — try again</span
+          >
         </div>
       </div>
 
@@ -277,7 +274,10 @@ async function handleSignOut() {
   cursor: pointer;
   border-radius: 999px;
   padding: 6px 14px;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 .btn {
   background: transparent;

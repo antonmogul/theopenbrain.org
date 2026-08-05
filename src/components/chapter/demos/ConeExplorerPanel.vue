@@ -206,8 +206,7 @@ const chartOptions = {
       bodyFont: { family: "IBM Plex Mono", size: 12 },
       callbacks: {
         title: (items) => `${items[0].label} nm`,
-        label: (item) =>
-          `${item.dataset.label}: ${item.parsed.y.toFixed(3)}`,
+        label: (item) => `${item.dataset.label}: ${item.parsed.y.toFixed(3)}`,
       },
     },
   },
@@ -367,10 +366,7 @@ const infoText = computed(() => {
     <!-- Color perception bar -->
     <div class="color-bar-section">
       <span class="color-bar-label">Perceived Color Spectrum</span>
-      <canvas
-        ref="colorBarCanvas"
-        class="color-bar"
-      ></canvas>
+      <canvas ref="colorBarCanvas" class="color-bar"></canvas>
       <div class="color-bar-axis">
         <span>380 nm</span>
         <span>480</span>
@@ -382,11 +378,7 @@ const infoText = computed(() => {
 
     <!-- Sliders -->
     <div class="sliders-section">
-      <div
-        v-for="(cone, idx) in cones"
-        :key="idx"
-        class="slider-row"
-      >
+      <div v-for="(cone, idx) in cones" :key="idx" class="slider-row">
         <span class="cone-dot" :style="{ background: cone.color }"></span>
         <span class="cone-name">{{ cone.name }}</span>
 
@@ -422,7 +414,18 @@ const infoText = computed(() => {
 
     <!-- Info panel -->
     <div class="info-panel">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="info-icon">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="info-icon"
+      >
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="12" y1="16" x2="12" y2="12"></line>
         <line x1="12" y1="8" x2="12.01" y2="8"></line>

@@ -234,7 +234,11 @@ const formattedDuration = computed(() => {
     <!-- Studying State -->
     <div v-else-if="viewState === 'studying'" class="study-container">
       <div class="study-header">
-        <button @click="confirmExit" class="exit-btn" title="Exit Study Session">
+        <button
+          @click="confirmExit"
+          class="exit-btn"
+          title="Exit Study Session"
+        >
           <CloseIcon :width="20" :height="20" />
         </button>
 
@@ -273,10 +277,7 @@ const formattedDuration = computed(() => {
       <!-- Rating (only show when flipped) -->
       <Transition name="fade">
         <div v-if="isFlipped" class="rating-area">
-          <FlashcardRating
-            @rate="rateAndMoveNext"
-            @skip="handleSkip"
-          />
+          <FlashcardRating @rate="rateAndMoveNext" @skip="handleSkip" />
         </div>
       </Transition>
 
@@ -288,7 +289,10 @@ const formattedDuration = computed(() => {
     </div>
 
     <!-- Complete State -->
-    <div v-else-if="viewState === 'complete' && sessionSummary" class="complete-container">
+    <div
+      v-else-if="viewState === 'complete' && sessionSummary"
+      class="complete-container"
+    >
       <FlashcardStats
         :stats="sessionSummary"
         @study-again="handleStudyAgain"
@@ -298,12 +302,18 @@ const formattedDuration = computed(() => {
 
     <!-- Exit Confirmation Modal -->
     <Teleport to="body">
-      <div v-if="showExitConfirm" class="modal-overlay" @click.self="cancelExit">
+      <div
+        v-if="showExitConfirm"
+        class="modal-overlay"
+        @click.self="cancelExit"
+      >
         <div class="confirm-modal">
           <h3>End Study Session?</h3>
           <p>Your progress will be saved.</p>
           <div class="modal-actions">
-            <button @click="cancelExit" class="btn-secondary">Continue Studying</button>
+            <button @click="cancelExit" class="btn-secondary">
+              Continue Studying
+            </button>
             <button @click="doExit" class="btn-primary">End Session</button>
           </div>
         </div>
@@ -384,7 +394,9 @@ const formattedDuration = computed(() => {
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-mute));
-  transition: border-color 0.12s ease, color 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .exit-btn:hover {
@@ -529,7 +541,10 @@ const formattedDuration = computed(() => {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .btn-primary {

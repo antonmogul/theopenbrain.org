@@ -136,11 +136,15 @@ function handleGoToQuestion(index) {
     <!-- Intro -->
     <div v-else-if="quizState === 'intro' && currentQuiz" class="intro">
       <h3 class="intro-title">{{ currentQuiz.title }}</h3>
-      <p v-if="currentQuiz.description" class="intro-desc">{{ currentQuiz.description }}</p>
+      <p v-if="currentQuiz.description" class="intro-desc">
+        {{ currentQuiz.description }}
+      </p>
 
       <div class="intro-meta">
         <span>{{ currentQuiz.quiz_questions?.length || 0 }} Questions</span>
-        <span v-if="currentQuiz.time_limit_minutes">{{ currentQuiz.time_limit_minutes }} min</span>
+        <span v-if="currentQuiz.time_limit_minutes"
+          >{{ currentQuiz.time_limit_minutes }} min</span
+        >
         <span>{{ currentQuiz.passing_score || 70 }}% to pass</span>
       </div>
 
@@ -175,7 +179,13 @@ function handleGoToQuestion(index) {
       </div>
 
       <div class="nav-row">
-        <button @click="previousQuestion" :disabled="isFirstQuestion" class="btn-secondary">Previous</button>
+        <button
+          @click="previousQuestion"
+          :disabled="isFirstQuestion"
+          class="btn-secondary"
+        >
+          Previous
+        </button>
         <button @click="handleNext" class="btn-primary">
           {{ isLastQuestion ? "Submit Quiz" : "Next" }}
         </button>
@@ -216,7 +226,11 @@ function handleGoToQuestion(index) {
     </div>
 
     <!-- Confirm Submit -->
-    <div v-if="showConfirmSubmit" class="confirm-overlay" @click.self="showConfirmSubmit = false">
+    <div
+      v-if="showConfirmSubmit"
+      class="confirm-overlay"
+      @click.self="showConfirmSubmit = false"
+    >
       <div class="confirm-box">
         <h3>Submit Quiz?</h3>
         <p v-if="answeredCount < questions.length">
@@ -225,7 +239,9 @@ function handleGoToQuestion(index) {
         </p>
         <p v-else>Ready to submit?</p>
         <div class="confirm-actions">
-          <button @click="showConfirmSubmit = false" class="btn-secondary">Go Back</button>
+          <button @click="showConfirmSubmit = false" class="btn-secondary">
+            Go Back
+          </button>
           <button @click="handleSubmitQuiz" class="btn-primary">Submit</button>
         </div>
       </div>
@@ -260,7 +276,9 @@ function handleGoToQuestion(index) {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-text {

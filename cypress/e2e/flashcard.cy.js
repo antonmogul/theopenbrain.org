@@ -42,11 +42,19 @@ describe("Flashcard Flow", () => {
       }).as("getResponses");
 
       cy.intercept("GET", "**/rest/v1/quizzes*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/quiz_attempts*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/student_courses*", { statusCode: 200, body: [] });
+      cy.intercept("GET", "**/rest/v1/quiz_attempts*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/student_courses*", {
+        statusCode: 200,
+        body: [],
+      });
       cy.intercept("GET", "**/rest/v1/profiles*", {
         statusCode: 200,
-        body: [{ id: "test-user-id", role: "student", full_name: "Test Student" }],
+        body: [
+          { id: "test-user-id", role: "student", full_name: "Test Student" },
+        ],
       });
 
       cy.visit("/student", {
@@ -67,7 +75,9 @@ describe("Flashcard Flow", () => {
     it("shows due cards count banner", () => {
       cy.intercept("GET", "**/rest/v1/modules*", {
         statusCode: 200,
-        body: [{ id: "module-1", title: "The Retina", flashcards: [{ count: 20 }] }],
+        body: [
+          { id: "module-1", title: "The Retina", flashcards: [{ count: 20 }] },
+        ],
       });
 
       cy.intercept("GET", "**/rest/v1/flashcards*", {
@@ -85,8 +95,14 @@ describe("Flashcard Flow", () => {
       }).as("getResponses");
 
       cy.intercept("GET", "**/rest/v1/quizzes*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/quiz_attempts*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/student_courses*", { statusCode: 200, body: [] });
+      cy.intercept("GET", "**/rest/v1/quiz_attempts*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/student_courses*", {
+        statusCode: 200,
+        body: [],
+      });
       cy.intercept("GET", "**/rest/v1/profiles*", {
         statusCode: 200,
         body: [{ id: "test-user-id", role: "student" }],
@@ -102,20 +118,36 @@ describe("Flashcard Flow", () => {
       });
 
       // Due cards banner should show (all cards are new/due)
-      cy.contains("cards due for review", { timeout: 10000 }).should("be.visible");
+      cy.contains("cards due for review", { timeout: 10000 }).should(
+        "be.visible"
+      );
     });
 
     it("navigates to flashcard study when clicking a deck", () => {
       cy.intercept("GET", "**/rest/v1/modules*", {
         statusCode: 200,
-        body: [{ id: "module-1", title: "The Retina", flashcards: [{ count: 20 }] }],
+        body: [
+          { id: "module-1", title: "The Retina", flashcards: [{ count: 20 }] },
+        ],
       }).as("getModules");
 
-      cy.intercept("GET", "**/rest/v1/flashcards*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/flashcard_responses*", { statusCode: 200, body: [] });
+      cy.intercept("GET", "**/rest/v1/flashcards*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/flashcard_responses*", {
+        statusCode: 200,
+        body: [],
+      });
       cy.intercept("GET", "**/rest/v1/quizzes*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/quiz_attempts*", { statusCode: 200, body: [] });
-      cy.intercept("GET", "**/rest/v1/student_courses*", { statusCode: 200, body: [] });
+      cy.intercept("GET", "**/rest/v1/quiz_attempts*", {
+        statusCode: 200,
+        body: [],
+      });
+      cy.intercept("GET", "**/rest/v1/student_courses*", {
+        statusCode: 200,
+        body: [],
+      });
       cy.intercept("GET", "**/rest/v1/profiles*", {
         statusCode: 200,
         body: [{ id: "test-user-id", role: "student" }],
@@ -160,7 +192,8 @@ describe("Flashcard Flow", () => {
             id: "fc-3",
             module_id: "module-1",
             front_content: "What do rod cells detect?",
-            back_content: "Rod cells detect light and dark, enabling night vision.",
+            back_content:
+              "Rod cells detect light and dark, enabling night vision.",
           },
         ],
       }).as("getFlashcards");
@@ -654,9 +687,7 @@ describe("Flashcard Flow", () => {
     const setupStatsIntercepts = () => {
       cy.intercept("GET", "**/rest/v1/flashcards?module_id=eq.module-1*", {
         statusCode: 200,
-        body: [
-          { id: "fc-1", front_content: "Q1", back_content: "A1" },
-        ],
+        body: [{ id: "fc-1", front_content: "Q1", back_content: "A1" }],
       }).as("getFlashcards");
 
       cy.intercept("GET", "**/rest/v1/flashcard_responses*", {

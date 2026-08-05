@@ -25,6 +25,7 @@ A revealing demonstration of motion processing: stare at a waterfall for 30 seco
 This occurs because motion-detecting neurons fatigue during prolonged viewing. When you look away, the fatigued downward-motion neurons are less active than the unfatigued upward-motion neurons, creating an imbalance perceived as upward motion.
 
 The motion aftereffect demonstrates:
+
 - Motion perception is constructed from neural population activity
 - Adaptation affects motion perception
 - Motion processing is separate from object processing
@@ -34,6 +35,7 @@ The motion aftereffect demonstrates:
 Humans have special sensitivity to **biological motion**—the characteristic patterns of living things moving. This can be demonstrated with "point-light" displays: videos showing only dots at major joint positions (shoulders, elbows, wrists, hips, knees, ankles).
 
 From these minimal displays, viewers can readily:
+
 - Recognize that a human is walking (not just "dots moving")
 - Determine the direction of walking
 - Identify the walker's gender
@@ -84,11 +86,13 @@ Dropping below 30fps creates visible stuttering. Maintaining 60fps is the common
 Motion captures attention automatically—an evolutionary adaptation for threat detection. This creates opportunities and risks:
 
 **Opportunities**:
+
 - Animated notifications attract attention to important information
 - Motion can guide users through interfaces
 - Transitions can communicate relationships and changes
 
 **Risks**:
+
 - Unnecessary motion distracts from primary content
 - Multiple motion sources compete for attention
 - Constant motion exhausts attention resources
@@ -129,6 +133,7 @@ These variations aren't edge cases—they represent significant user populations
 ## Connecting Sections
 
 This section's biological foundations set up the following sections on:
+
 - Animation as attention director (intentional motion use)
 - Perceived duration and loading states (motion's role in time perception)
 - When motion harms usability (accessibility and overuse)

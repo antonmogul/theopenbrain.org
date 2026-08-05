@@ -217,10 +217,7 @@ async function executeDelete() {
               <span>Recent Conversations</span>
             </div>
 
-            <div
-              v-if="conversations.length === 0"
-              class="history-empty"
-            >
+            <div v-if="conversations.length === 0" class="history-empty">
               No previous conversations
             </div>
 
@@ -250,7 +247,9 @@ async function executeDelete() {
                   @click="handleSelectConversation(conv.id)"
                 >
                   <span class="item-title">{{ conv.title }}</span>
-                  <span class="item-date">{{ formatDate(conv.updated_at) }}</span>
+                  <span class="item-date">{{
+                    formatDate(conv.updated_at)
+                  }}</span>
                 </div>
                 <button
                   @click.stop="confirmDelete(conv.id)"
@@ -299,11 +298,7 @@ async function executeDelete() {
 
     <!-- Backdrop -->
     <Transition name="fade">
-      <div
-        v-if="true"
-        class="sidebar-backdrop"
-        @click="$emit('close')"
-      ></div>
+      <div v-if="true" class="sidebar-backdrop" @click="$emit('close')"></div>
     </Transition>
   </Teleport>
 </template>

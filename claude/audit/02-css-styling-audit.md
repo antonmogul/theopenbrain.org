@@ -14,12 +14,14 @@ The project uses a **hybrid styling approach** combining Tailwind CSS utility cl
 ## Styling Architecture Overview
 
 ### Technology Stack
+
 - **Tailwind CSS 3.1.8** - Utility-first CSS framework
 - **Custom CSS** - Extensive custom classes in `src/index.css`
 - **Inline Styles** - Heavy use of dynamic inline styles in Vue components
 - **IBM Plex Fonts** - Custom font loading (Sans and Mono)
 
 ### File Structure
+
 ```
 src/
 ├── index.css           # Main custom CSS (8,693 bytes, ~270 lines)
@@ -37,11 +39,13 @@ public/publicAssets/fonts/
 ### 1. **Hybrid Styling Approach** (MEDIUM SEVERITY)
 
 **Problem:** The project mixes three different styling paradigms:
+
 - Tailwind utility classes: `class="w-full h-screen flex items-center"`
 - Custom CSS classes: `class="text-base P punktComment"`
 - Inline styles: `:style="'transform: translate(' + posAugeX + 'px)'"`
 
 **Example from TextComp.vue:**
+
 ```vue
 <!-- Mixing all three approaches -->
 <main
@@ -51,17 +55,20 @@ public/publicAssets/fonts/
 ```
 
 Where:
+
 - `ml-text` and `max-w-text` are custom classes
 - `w-full`, `text-left`, `pt-[20vh]`, etc. are Tailwind utilities
 - `pointer-events-auto` is Tailwind
 - `duration-300` is Tailwind
 
 **Impact:**
+
 - Difficult to maintain consistency
 - Harder for new developers to understand which approach to use
 - Potential for duplication
 
 **Recommendation:**
+
 - Choose a primary styling approach (prefer Tailwind utilities)
 - Move custom layout classes to Tailwind `@layer` directives
 - Reserve inline styles only for truly dynamic values (like animation transforms)
@@ -76,7 +83,7 @@ Where:
 /* src/index.css */
 html,
 body {
-  font-size: 62.5%;  /* Makes 1rem = 10px for easier math */
+  font-size: 62.5%; /* Makes 1rem = 10px for easier math */
   hyphens: auto;
   background: #f3f4f6;
 }
@@ -86,18 +93,19 @@ Then defines custom text size classes with rem values that assume 10px = 1rem:
 
 ```css
 .text-base {
-  font-size: 2rem;      /* Expects 20px */
-  line-height: 3.1rem;  /* Expects 31px */
+  font-size: 2rem; /* Expects 20px */
+  line-height: 3.1rem; /* Expects 31px */
   letter-spacing: 0.5px;
 }
 
 .text-h2 {
-  font-size: 4rem;      /* Expects 40px */
-  line-height: 5.8rem;  /* Expects 58px */
+  font-size: 4rem; /* Expects 40px */
+  line-height: 5.8rem; /* Expects 58px */
 }
 ```
 
 **Issues:**
+
 1. **Accessibility:** Breaks user's browser font size preferences
 2. **Browser Defaults:** Overwrites the standard 16px base font size
 3. **Third-party Components:** May break libraries expecting default rem values
@@ -109,26 +117,29 @@ The project has a media query that adjusts these further:
 ```css
 @media (max-width: 1600px) {
   .text-smaller {
-    font-size: 1.2rem;  /* 12px at 62.5% base */
+    font-size: 1.2rem; /* 12px at 62.5% base */
   }
   .text-base {
-    font-size: 1.9rem;  /* 19px at 62.5% base */
+    font-size: 1.9rem; /* 19px at 62.5% base */
   }
 }
 ```
 
 **Recommendation:**
+
 1. **Remove the 62.5% hack** and use standard 16px base
 2. **Recalculate all rem values** to be based on 16px
 3. **Use CSS custom properties** for consistent sizing:
+
 ```css
 :root {
-  --text-smaller: 1.1rem;   /* 17.6px */
-  --text-small: 1.35rem;    /* 21.6px */
-  --text-base: 2rem;        /* 32px */
+  --text-smaller: 1.1rem; /* 17.6px */
+  --text-small: 1.35rem; /* 21.6px */
+  --text-base: 2rem; /* 32px */
   /* etc */
 }
 ```
+
 4. **Leverage Tailwind's fontSize config** instead of custom classes
 
 ---
@@ -139,16 +150,18 @@ The project has a media query that adjusts these further:
 
 ```css
 .punkt {
-  left: -1.25rem;                                                    /* rem */
-  left: calc(50vw - min(calc(50vw + 0.75rem), calc(780px + 11rem)) - 1.25rem); /* vw, px, rem */
-  width: 2.5rem;                                                     /* rem */
-  height: 2.5rem;                                                    /* rem */
-  font-size: 1.5rem;                                                 /* rem */
-  line-height: 2.2rem;                                               /* rem */
+  left: -1.25rem; /* rem */
+  left: calc(
+    50vw - min(calc(50vw + 0.75rem), calc(780px + 11rem)) - 1.25rem
+  ); /* vw, px, rem */
+  width: 2.5rem; /* rem */
+  height: 2.5rem; /* rem */
+  font-size: 1.5rem; /* rem */
+  line-height: 2.2rem; /* rem */
 }
 
 section {
-  padding-bottom: 24rem;  /* 240px at 62.5% or 384px at 100%? */
+  padding-bottom: 24rem; /* 240px at 62.5% or 384px at 100%? */
 }
 
 h1 {
@@ -159,6 +172,7 @@ h1 {
 ```
 
 **Recommendation:**
+
 - Standardize on rem for spacing (not px)
 - Use Tailwind's spacing scale where possible
 - Document when and why px is used (e.g., precise borders)
@@ -191,22 +205,30 @@ width: {
 ```
 
 **Issues:**
+
 1. **780px** appears everywhere but is never defined as a variable
 2. **11rem** (110px at 62.5% base) is a mystery constant
 3. These calculations are duplicated across CSS and Tailwind config
 4. Extremely difficult to adjust the layout width
 
 **Recommendation:**
+
 ```css
 /* Define layout constants */
 :root {
   --content-max-width: 780px;
   --content-padding: 11rem;
   --split-point: 50vw;
-  
+
   /* Derived values */
-  --text-width: min(var(--split-point), calc(var(--content-max-width) + var(--content-padding)));
-  --illus-width: max(var(--split-point), calc(100vw - var(--content-max-width) - var(--content-padding)));
+  --text-width: min(
+    var(--split-point),
+    calc(var(--content-max-width) + var(--content-padding))
+  );
+  --illus-width: max(
+    var(--split-point),
+    calc(100vw - var(--content-max-width) - var(--content-padding))
+  );
 }
 ```
 
@@ -244,11 +266,15 @@ Then use these variables consistently everywhere.
 ```
 
 **Could be:** Tailwind utilities:
+
 ```html
-<div class="cursor-pointer h-10 w-10 border border-gray-800 bg-white fill-black rounded-full">
+<div
+  class="cursor-pointer h-10 w-10 border border-gray-800 bg-white fill-black rounded-full"
+></div>
 ```
 
 **Recommendation:**
+
 - Replace custom utility classes with Tailwind equivalents
 - Keep only classes that represent true components (`.punkt`, `.animationMarker`, etc.)
 
@@ -270,6 +296,7 @@ Then use these variables consistently everywhere.
 ```
 
 **Recommendation:**
+
 - Let **PostCSS Autoprefixer** handle this automatically
 - Remove manual prefixes
 - Verify `autoprefixer` is configured correctly in `postcss.config.js`
@@ -292,11 +319,13 @@ Then use these variables consistently everywhere.
 ```
 
 **Issues:**
+
 1. Applies to ALL elements (universal selector `*`)
 2. Hides scrollbars everywhere, even where they might be needed
 3. Accessibility concern - users may not know content is scrollable
 
 **Recommendation:**
+
 - Apply only to specific scrollable containers
 - Consider using `scrollbar-gutter: stable` instead
 - Ensure keyboard navigation still indicates scroll position
@@ -343,11 +372,13 @@ screens: {
 ```
 
 **Issues:**
+
 1. Missing breakpoints between 640px and 1300px (660px gap!)
 2. Non-standard naming (`s`, `m`, `l` instead of `sm`, `md`, `lg`, `xl`)
 3. The app basically doesn't support tablet sizes (768px-1299px)
 
 **Current Media Query Warning:**
+
 ```javascript
 // App.vue
 const isLargeScreen = useMediaQuery("(min-width: 1300px)");
@@ -356,6 +387,7 @@ const isLargeScreen = useMediaQuery("(min-width: 1300px)");
 Shows warning if < 1300px, so this is intentional but limits audience.
 
 **Recommendation:**
+
 - If desktop-only is intended, document this clearly
 - If tablet support is desired, add `md` breakpoint around 768px or 1024px
 - Consider progressive enhancement from mobile
@@ -374,6 +406,7 @@ Shows warning if < 1300px, so this is intentional but limits audience.
 This file includes 16 font weights/styles × 2 formats (woff, woff2) for both Sans and Mono.
 
 **Recommendation:**
+
 1. **Subset fonts** - Only load weights actually used
 2. **Use font-display: swap** - Prevent invisible text
 3. **Self-host via Fontsource** - Better caching
@@ -387,9 +420,9 @@ This file includes 16 font weights/styles × 2 formats (woff, woff2) for both Sa
 
 ```javascript
 // main.js
-import '@fontsource/ibm-plex-sans/400.css';
-import '@fontsource/ibm-plex-sans/600.css';
-import '@fontsource/ibm-plex-mono/400.css';
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource/ibm-plex-mono/400.css";
 ```
 
 ---
@@ -417,16 +450,18 @@ colors: {
 ```css
 /* index.css */
 :root {
-  --violet: rgb(151, 71, 255);  /* Duplicate! */
+  --violet: rgb(151, 71, 255); /* Duplicate! */
 }
 ```
 
 **Issues:**
+
 1. Violet/magenta defined in both Tailwind config and CSS variable
 2. Inconsistent naming (`violet` vs `magenta` for same color)
 3. Some colors in hex, some in rgb()
 
 **Recommendation:**
+
 1. Single source of truth - use Tailwind config
 2. Use CSS custom properties for dynamic values only
 3. Consistent color format (prefer hex for static colors)
@@ -437,6 +472,7 @@ colors: {
 ### 12. **CSS Custom Properties Usage** (OPPORTUNITY)
 
 **Currently only used for:**
+
 ```css
 :root {
   --violet: rgb(151, 71, 255);
@@ -444,6 +480,7 @@ colors: {
 ```
 
 **Recommendation:** Expand usage for:
+
 - Layout dimensions (the magic 780px, 11rem, etc.)
 - Spacing scales
 - Animation durations
@@ -454,16 +491,16 @@ colors: {
   /* Layout */
   --content-max-width: 780px;
   --content-padding: 11rem;
-  
+
   /* Colors */
   --color-primary: rgb(151, 71, 255);
   --color-text: #343434;
-  
+
   /* Animation */
   --duration-fast: 0.15s;
   --duration-normal: 0.3s;
   --duration-slow: 0.7s;
-  
+
   /* Z-index scale */
   --z-content: 10;
   --z-menu: 30;
@@ -477,12 +514,15 @@ colors: {
 ## Modern CSS Features Not Used
 
 ### 1. **Container Queries**
+
 The split-screen layout could benefit from container queries instead of viewport queries.
 
 ### 2. **CSS Grid**
+
 Layout is primarily flex-based. Grid could simplify some complex layouts.
 
 ### 3. **CSS Cascade Layers**
+
 Could help organize Tailwind, custom components, and utilities.
 
 ```css
@@ -490,6 +530,7 @@ Could help organize Tailwind, custom components, and utilities.
 ```
 
 ### 4. **Logical Properties**
+
 Using `margin-left` instead of `margin-inline-start`, limiting RTL support.
 
 ---
@@ -497,16 +538,19 @@ Using `margin-left` instead of `margin-inline-start`, limiting RTL support.
 ## Performance Issues
 
 ### 1. **Large CSS Bundle**
+
 - IBM Plex CSS: 194KB
 - Tailwind (generated): Unknown size
 - Custom CSS: ~9KB
 
 **Recommendation:**
+
 - Analyze final CSS bundle size with `vite build --mode production`
 - Use PurgeCSS (should be automatic with Tailwind)
 - Optimize font loading
 
 ### 2. **Unused Tailwind Classes**
+
 Ensure Tailwind's purge is configured correctly:
 
 ```javascript
@@ -514,11 +558,13 @@ Ensure Tailwind's purge is configured correctly:
 module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx,vue}"], // ✓ Good
   // ...
-}
+};
 ```
 
 ### 3. **Inline Styles in Loops**
+
 Example from TextComp.vue:
+
 ```vue
 <div
   :style="'transform: translate(' + posAugeX + 'px, ' + posAugeY / 2 + 'px);'"
@@ -527,6 +573,7 @@ Example from TextComp.vue:
 
 **Recommendation:**
 Use computed properties or `:style` object syntax:
+
 ```vue
 <div :style="{ transform: `translate(${posAugeX}px, ${posAugeY / 2}px)` }">
 ```
@@ -536,17 +583,20 @@ Use computed properties or `:style` object syntax:
 ## Recommendations Summary
 
 ### High Priority
+
 1. ✅ **Remove 62.5% font-size hack** - Breaks accessibility
 2. ✅ **Extract magic numbers to CSS variables** - 780px, 11rem, etc.
 3. ✅ **Optimize font loading** - Subset IBM Plex fonts
 
 ### Medium Priority
+
 4. ✅ **Standardize styling approach** - Choose Tailwind-first
 5. ✅ **Fix color duplication** - Single source of truth
 6. ✅ **Add intermediate breakpoints** - Support tablet sizes (if desired)
 7. ✅ **Reduce custom classes** - Use Tailwind utilities
 
 ### Low Priority
+
 8. ✅ **Remove manual vendor prefixes** - Let Autoprefixer handle it
 9. ✅ **Refine scrollbar hiding** - Target specific elements
 10. ✅ **Consider modern CSS features** - Container queries, grid, layers
@@ -564,9 +614,10 @@ Use computed properties or `:style` object syntax:
 
 ## Conclusion
 
-The styling system is functional but has **technical debt** from mixing paradigms and using outdated patterns (62.5% hack). The custom split-screen layout is well-executed but relies on magic numbers that should be extracted to variables. 
+The styling system is functional but has **technical debt** from mixing paradigms and using outdated patterns (62.5% hack). The custom split-screen layout is well-executed but relies on magic numbers that should be extracted to variables.
 
 **Biggest wins:**
+
 1. Remove font-size hack for accessibility
 2. Centralize magic numbers
 3. Optimize font loading

@@ -8,9 +8,9 @@ existing components onto it is the remaining work. Updated 2026-06-30.
 ## Direction (locked with stakeholder)
 
 - **Dark mode + font choice are retired.** Back to the originals: **IBM Plex,
-  light theme only.** The pref *machinery* (refs, watchers, localStorage +
+  light theme only.** The pref _machinery_ (refs, watchers, localStorage +
   Supabase sync) is kept intact in the background for possible future revival —
-  only the *applied value* is pinned and the UI controls are gone.
+  only the _applied value_ is pinned and the UI controls are gone.
 - **One unified type scale** for the whole app (book + admin) — not a book/admin
   split.
 - **Modular ratio: Perfect Fourth (1.333), base 20px.**
@@ -21,34 +21,37 @@ existing components onto it is the remaining work. Updated 2026-06-30.
 ## The system (what now exists)
 
 ### Tokens — `src/styles/brand.css` (single source of truth for sizes)
+
 A `--type-*` block defines size / line-height / letter-spacing for each role.
 The root font-size is the browser default (16px), so 1rem = 16px, and each
-token's rem is `px ÷ 16` (e.g. body = `1.25rem` = 20px). *(Historically the root
+token's rem is `px ÷ 16` (e.g. body = `1.25rem` = 20px). _(Historically the root
 used a `font-size: 62.5%` hack making 1rem = 10px; that was removed and all rem
-values recomputed ÷1.6 — see `docs/font-refactor/PLAN.md`.)*
+values recomputed ÷1.6 — see `docs/font-refactor/PLAN.md`.)_
 
 ### Role classes — `src/index.css` `@layer components`
+
 The public API. Components apply these, never raw Tailwind `text-*` or the legacy
 `.text-base` scale. The `t-` prefix is the collision firewall — Tailwind ships no
 `t-*` text utilities, so they can't be shadowed.
 
-| Class        | px            | Family | Weight | Role |
-| ------------ | ------------- | ------ | ------ | ---- |
-| `.t-display` | 112           | body   | 700    | Hero / cover |
-| `.t-h1`      | 84            | body   | 700    | Chapter title |
-| `.t-h2`      | 63            | body   | 600    | Section heading |
-| `.t-h3`      | 47            | body   | 600    | Subsection |
-| `.t-subhead` | 36            | body   | 600    | Subhead / lead-in |
-| `.t-body-lg` | 27            | body   | 400    | Standfirst / intro |
-| `.t-body`    | 20 ×reading-size | body| 400    | **Base reading** |
-| `.t-body-sm` | 17            | body   | 400    | Secondary / table cell |
-| `.t-caption` | 13            | mono   | 400    | Caption / footnote |
-| `.t-label`   | 11            | mono   | 500    | Eyebrow / badge (uppercase) |
+| Class        | px               | Family | Weight | Role                        |
+| ------------ | ---------------- | ------ | ------ | --------------------------- |
+| `.t-display` | 112              | body   | 700    | Hero / cover                |
+| `.t-h1`      | 84               | body   | 700    | Chapter title               |
+| `.t-h2`      | 63               | body   | 600    | Section heading             |
+| `.t-h3`      | 47               | body   | 600    | Subsection                  |
+| `.t-subhead` | 36               | body   | 600    | Subhead / lead-in           |
+| `.t-body-lg` | 27               | body   | 400    | Standfirst / intro          |
+| `.t-body`    | 20 ×reading-size | body   | 400    | **Base reading**            |
+| `.t-body-sm` | 17               | body   | 400    | Secondary / table cell      |
+| `.t-caption` | 13               | mono   | 400    | Caption / footnote          |
+| `.t-label`   | 11               | mono   | 500    | Eyebrow / badge (uppercase) |
 
 `.t-body` multiplies by `--reading-size` so the (now hidden) reading-size pref
 still scales body prose — and only body prose.
 
 ### Specimen page — `src/views/StyleGuideView.vue` at `/styleguide`
+
 Renders the scale, families, weights, and a legacy→new mapping table at true
 rendered size. Theme/font toggles removed (no longer meaningful).
 
@@ -58,6 +61,7 @@ accent magenta; `.t-h1`=84px, `.t-caption`=13px mono, `.t-label`=11px mono upper
 ---
 
 ## What was already done before this session
+
 - The theme / font-pair / accent **controls were already removed** from the live
   Settings UI (`SettingsPanels.vue:5` + `SettingsView.vue:4` note it). The control
   components (`ThemeCards.vue`, `FontPairPicker.vue`, `AccentSwatches.vue`) remain
@@ -65,9 +69,10 @@ accent magenta; `.t-h1`=84px, `.t-caption`=13px mono, `.t-label`=11px mono upper
   so the features are revivable.
 
 ## What this session changed
+
 - `usePreferences.js` — pinned `resolvedTheme()`→`light` and `applyFontPair()`→
   `ibm-plex-legacy` via `FORCE_LIGHT_THEME` / `FORCE_LEGACY_FONTPAIR` flags
-  (pinned at the *apply* layer so stale stored "dark" values don't leak through).
+  (pinned at the _apply_ layer so stale stored "dark" values don't leak through).
 - `index.html` pre-paint script — same pins, to avoid a first-paint flash.
 - `brand.css` — added the `--type-*` modular-scale token block.
 - `index.css` — added the `.t-*` role classes in `@layer components`.
@@ -104,6 +109,7 @@ Each step is independently shippable; verify against `/styleguide` + `npm run bu
    ad-hoc utility is ever needed — prefer the `.t-*` classes.
 
 ### Risks to verify each pass
+
 - `.t-body` must keep `× var(--reading-size)` or the (background) reading-size
   pref goes dead for prose.
 - Responsive: the legacy scale had 3 breakpoints; the `.t-*` roles are currently
@@ -115,6 +121,7 @@ Each step is independently shippable; verify against `/styleguide` + `npm run bu
 ---
 
 ## Files of record
+
 - `src/styles/brand.css` — `--type-*` tokens (sizes).
 - `src/index.css` — `.t-*` role classes; the root font-size (now browser default, 62.5% hack removed); legacy scale to retire.
 - `src/views/StyleGuideView.vue` — specimen (`/styleguide`).

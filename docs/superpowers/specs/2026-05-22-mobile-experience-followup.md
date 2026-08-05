@@ -17,6 +17,7 @@ The remaining mobile work the Track 5 spec called for. Each item needs real-devi
 ### D2. Mobile reader (single integrated stream)
 
 A `ChapterView`-mobile variant or in-place branch that:
+
 - Renders prose as a single column.
 - Inline-illustration wrapper around each `Illus/*` figure (uses D4 below).
 - Inline demo cards instead of `DemoModal` overlay.
@@ -37,6 +38,7 @@ Sub-work: triage which `Illus/*` components work inline and which need the fallb
 ### Already-deferred (from Track 3)
 
 These are independent of mobile but live in the same general "follow-up" bucket:
+
 - Figure-picker pin UI + scroll-tracking chip
 - `FigureNavDots` strip
 - `ReaderSidebar` and `DemoModal` visual refresh

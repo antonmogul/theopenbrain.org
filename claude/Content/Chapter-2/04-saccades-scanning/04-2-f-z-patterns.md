@@ -14,7 +14,7 @@ The F-pattern emerges under specific conditions:
 
 **Text-heavy pages**: The original research focused on content-heavy pages with substantial text blocks. The F-pattern describes how users scan text when they don't intend to read thoroughly.
 
-**Scanning rather than reading**: The F describes *scanning* behavior—quickly assessing content—not engaged reading. Users who commit to reading don't exhibit F-patterns; they read linearly.
+**Scanning rather than reading**: The F describes _scanning_ behavior—quickly assessing content—not engaged reading. Users who commit to reading don't exhibit F-patterns; they read linearly.
 
 **Low motivation**: F-patterns appear when users lack strong motivation to engage with content. They're looking for relevant sections, not absorbing information comprehensively.
 
@@ -27,6 +27,7 @@ Understanding these conditions reveals when F-patterns apply—and when they don
 For pages with less text and more visual elements—landing pages, marketing pages, imagery-heavy layouts—a different pattern often emerges: the **Z-pattern**.
 
 Users scan:
+
 1. Across the top (logo, navigation)
 2. Diagonally down to the center-left
 3. Across the bottom (call-to-action, footer content)
@@ -76,6 +77,7 @@ F and Z patterns assume left-to-right, top-to-bottom reading. Right-to-left read
 The widespread adoption of F-pattern design has led to a problematic phenomenon: designers structuring layouts for F-patterns regardless of context, treating the pattern as a design rule rather than a research observation.
 
 This cargo-culting manifests as:
+
 - Putting all important content in top-left regardless of information architecture
 - Assuming users will scan predictably regardless of design choices
 - Ignoring the role of visual hierarchy in shaping attention
@@ -112,24 +114,28 @@ These examples succeed not despite breaking default patterns but because they cr
 ## Practical Guidance
 
 **For text-heavy content** (articles, documentation):
+
 - Accept F-pattern scanning as baseline behavior
 - Front-load key information in headings and opening sentences
 - Use clear headings to create layer-cake scanning opportunities
 - Break up text with subheadings to maintain engagement
 
 **For visual content** (landing pages, marketing):
+
 - Design explicit visual hierarchy that guides attention intentionally
 - Use size, contrast, and whitespace to create fixation targets
 - Test whether your intended path matches actual scanning behavior
 - Don't default to Z-pattern assumptions—create the path you need
 
 **For task-focused interfaces** (applications, dashboards):
+
 - Recognize that task focus overrides default patterns
 - Place tools and information where task logic suggests
 - Build consistent visual patterns that experts will learn
 - Use familiar conventions to support efficient scanning
 
 **For all designs**:
+
 - Treat scanning patterns as descriptive, not prescriptive
 - Design visual hierarchy intentionally
 - Test with eye tracking or attention heuristics when possible

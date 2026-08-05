@@ -42,7 +42,9 @@ defineEmits(["update:modelValue"]);
   border-radius: 0.375rem;
   color: rgb(var(--color-mute));
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .segment:hover {

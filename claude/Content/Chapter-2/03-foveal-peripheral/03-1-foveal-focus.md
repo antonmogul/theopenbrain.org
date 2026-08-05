@@ -28,7 +28,7 @@ If peripheral vision is so degraded, why does the world seem uniformly sharp? Se
 
 ### Try This Experiment
 
-Keep your eyes fixed on this text while trying to read a line several inches above or below. You'll find you can detect that text *exists* but cannot resolve its letters. Now let your eyes briefly flick to that line and back. The instant your fovea lands on it, the text becomes legible.
+Keep your eyes fixed on this text while trying to read a line several inches above or below. You'll find you can detect that text _exists_ but cannot resolve its letters. Now let your eyes briefly flick to that line and back. The instant your fovea lands on it, the text becomes legible.
 
 This experiment reveals what interface design must accommodate: your users can only read, identify icons, or distinguish fine details in the tiny region where their gaze currently rests.
 
@@ -57,7 +57,7 @@ For interface design, this suggests:
 
 Beyond reading, foveal limitations affect every aspect of interface perception:
 
-**Icon identification requires foveal viewing**. Users cannot recognize icon details in peripheral vision. They can detect that an icon *exists* and roughly identify its location, but identification requires a direct fixation.
+**Icon identification requires foveal viewing**. Users cannot recognize icon details in peripheral vision. They can detect that an icon _exists_ and roughly identify its location, but identification requires a direct fixation.
 
 **Touch target placement must account for gaze guidance**. When users reach for a touch target, they typically fovea the target to guide their finger accurately. Targets that are difficult to fovea (small, crowded, in unexpected locations) suffer targeting accuracy problems.
 

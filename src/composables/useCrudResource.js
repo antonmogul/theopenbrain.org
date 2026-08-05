@@ -28,7 +28,12 @@ import { ref } from "vue";
  * @param {string}   [opts.logLabel] Prefix for console.error logs.
  * @param {*}        [opts.initial]  Initial list value (default []).
  */
-export function useCrudResource({ request, table, logLabel = "useCrudResource", initial = [] } = {}) {
+export function useCrudResource({
+  request,
+  table,
+  logLabel = "useCrudResource",
+  initial = [],
+} = {}) {
   const list = ref(initial);
   const loading = ref(false);
   const error = ref(null);

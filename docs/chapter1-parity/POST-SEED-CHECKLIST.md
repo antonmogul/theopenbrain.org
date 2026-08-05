@@ -1,5 +1,37 @@
 # Chapter 1 parity — post-seed verification checklist
 
+> **STATUS 2026-07-29 — Section 1 (DB data layer) COMPLETE.** Seeds applied to prod;
+> all counts verified and matching the static source of truth. One issue not
+> anticipated by this checklist was found and fixed: `animation_states` and
+> `animation_variants` had **RLS enabled with zero policies**, so the seeded rows
+> were invisible to the anon key — the app read empty arrays with no error, and
+> figures stayed inert even with correct data. Fixed in migration
+> `20260729000000_animation_child_tables_read_policy.sql`. **If figures are ever
+> inert again, check RLS policies before re-running seeds** — counts via the SQL
+> editor (service_role) look fine while the app sees nothing.
+>
+> **Section 2 (runtime transform) COMPLETE.** Replaying the `useAnimations` transform
+> against the live API _with the anon key_ gives **14/14 interactive figures carrying
+> data** (was 0/14 pre-fix). Per-figure states/highlight/switch counts all match the
+> static source table below.
+>
+> **Section 3 (rendered behaviour) VERIFIED on `/chapter/1/the-retina`:** EyeStructur
+> renders all 11 state labels and clicking one (Retina) highlights the label and lights
+> the corresponding layer — state-stepping works. CenterSurroundReceptiveFields renders
+> its 2 variant toggles ("Small light" / "Wide light") from `animation_variants` —
+> switch figures work. The `triggerAnimationEyeStructurTransition` scroll anchor is
+> present in the DOM (`animationScrollAnchor transition`), so the `animation_trigger`
+> rows are being read. Console clean of animation/data errors.
+>
+> **Section 4 (regression) COMPLETE:** `npm test` — 154/154 passing across 32 files.
+>
+> Not yet exercised by hand: highlight-sync on Phototransduction/TheVisualCycle
+> (data confirmed present: 11 and 5 highlight states, infoText 1864/1342 chars),
+> the other 3 switch figures, and the mobile no-double-render check.
+>
+> Unrelated pre-existing issue seen while testing: Vue Router logs "No match found"
+> for `/quiz` and `chapter/break/placeholder`.
+
 Run this **after** applying the two seed migrations (and the backup). It confirms the
 DB now matches the static source of truth and that Chapter 1 renders with full
 interactivity. Three layers: **DB data → runtime transform → rendered behaviour.**
@@ -26,10 +58,12 @@ Run in the SQL editor. The expected numbers come from
 `src/assets/json_backend/animations.json` (the target).
 
 - [ ] **Tables are no longer empty:**
+
   ```sql
   SELECT (SELECT count(*) FROM animation_states)   AS states,
          (SELECT count(*) FROM animation_variants) AS variants;
   ```
+
   Expect **states = 93** (73 plain + 20 highlight, summed from the static source) and
   **variants = 8** (4 switch figures × 2). If either is 0, the seed didn't apply.
 
@@ -53,6 +87,7 @@ Run in the SQL editor. The expected numbers come from
       | animationRodVsConeCircuits | 0 | 0 | 2 |
 
       Query to verify states/highlight per key:
+
   ```sql
   SELECT a.animation_key,
          count(*) FILTER (WHERE s.is_highlight_state = false) AS states,
@@ -62,7 +97,9 @@ Run in the SQL editor. The expected numbers come from
   GROUP BY a.animation_key
   ORDER BY a.animation_key;
   ```
+
   And variants (switches):
+
   ```sql
   SELECT a.animation_key, count(*) AS variants
   FROM animations a JOIN animation_variants v ON v.animation_id = a.id
@@ -73,11 +110,13 @@ Run in the SQL editor. The expected numbers come from
         Photoreceptors as highlight. Confirm those show **highlight = 0** now.
 
 - [ ] **infoText repaired** (not truncated stubs):
+
   ```sql
   SELECT animation_key, length(config->>'infoText') AS len
   FROM animations
   WHERE animation_key IN ('animationPhototransduction','animationTheVisualCycle');
   ```
+
   Expect **Phototransduction len ≈ 1864** (was 99) and **TheVisualCycle ≈ 1342** (was 118).
 
 - [ ] **Scroll triggers set** on exactly the 2 intro paragraphs:
@@ -133,6 +172,7 @@ the seed** and should now work — this is what "parity" means to a user:
       (the `animationFull` dedup code fix; confirm it holds with real seeded data).
 
 ### Side-by-side (optional, strongest): DB vs static
+
 If you still have the static build, open the original static Chapter 1 next to the DB
 one and spot-check that a couple of interactive figures behave **identically** (same
 states, same order, same toggles). That's the definitive parity confirmation.

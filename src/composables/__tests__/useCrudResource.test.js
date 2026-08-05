@@ -51,7 +51,10 @@ describe("useCrudResource", () => {
     expect(error.value).toBe("boom");
     expect(list.value).toEqual([]);
     expect(loading.value).toBe(false);
-    expect(console.error).toHaveBeenCalledWith("lbl: Error fetching:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "lbl: Error fetching:",
+      expect.any(Error)
+    );
   });
 
   it("removeById issues a DELETE on table?id=eq.<id> and drops the row locally", async () => {
@@ -76,6 +79,9 @@ describe("useCrudResource", () => {
 
     await expect(removeById("1")).rejects.toThrow("nope");
     expect(list.value).toEqual([{ id: "1" }]);
-    expect(console.error).toHaveBeenCalledWith("useNotes: Error deleting:", expect.any(Error));
+    expect(console.error).toHaveBeenCalledWith(
+      "useNotes: Error deleting:",
+      expect.any(Error)
+    );
   });
 });

@@ -9,6 +9,7 @@
 ## Overview
 
 This schema supports:
+
 - **Content Management**: Chapters, sections, paragraphs with versioning
 - **User Roles**: Creator, Professor, Student with row-level security
 - **Interactive Features**: Animations, highlights, notes, quizzes, flashcards
@@ -32,14 +33,14 @@ CREATE TABLE profiles (
   institution TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- Creator-specific fields
   creator_bio TEXT,
   creator_website TEXT,
-  
+
   -- Professor-specific fields
   professor_department TEXT,
-  
+
   -- Student-specific fields
   student_year INTEGER,
   student_major TEXT
@@ -62,7 +63,7 @@ CREATE TABLE content_versions (
   release_notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   published_at TIMESTAMPTZ,
-  
+
   UNIQUE(version_number)
 );
 
@@ -70,24 +71,24 @@ CREATE TABLE content_versions (
 CREATE TABLE modules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   content_version_id UUID NOT NULL REFERENCES content_versions(id) ON DELETE CASCADE,
-  
+
   -- Metadata
   title TEXT NOT NULL,
   slug TEXT NOT NULL, -- URL-friendly identifier
   description TEXT,
   order_index INTEGER NOT NULL, -- Display order within version
-  
+
   -- Configuration
   animation_config JSONB, -- Default animation settings
   layout_config JSONB, -- Split-screen, fullscreen, etc.
-  
+
   -- Status
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
-  
+
   created_by UUID NOT NULL REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(content_version_id, slug),
   UNIQUE(content_version_id, order_index)
 );
@@ -96,25 +97,25 @@ CREATE TABLE modules (
 CREATE TABLE sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
-  
+
   title TEXT NOT NULL,
   slug TEXT NOT NULL,
   order_index INTEGER NOT NULL,
-  
+
   -- Content
   introduction_text TEXT, -- Optional intro paragraph
-  
+
   -- Animation/Diagram configuration
   animation_id UUID REFERENCES animations(id), -- Optional linked animation
   animation_config JSONB, -- Override module defaults
-  
+
   -- Layout
   fullscreen BOOLEAN DEFAULT FALSE,
   split_screen BOOLEAN DEFAULT FALSE,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(module_id, slug),
   UNIQUE(module_id, order_index)
 );
@@ -123,25 +124,25 @@ CREATE TABLE sections (
 CREATE TABLE paragraphs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   section_id UUID NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
-  
+
   -- Content (stored as structured JSON to avoid HTML injection)
   content JSONB NOT NULL, -- Structured content blocks (see content structure below)
   content_text TEXT, -- Plain text for search (generated)
-  
+
   order_index INTEGER NOT NULL,
-  
+
   -- Interactive elements
   has_animation BOOLEAN DEFAULT FALSE,
   animation_id UUID REFERENCES animations(id),
   animation_trigger TEXT, -- 'scroll', 'click', 'auto'
-  
+
   -- Subsection support (nested content)
   is_subsection_header BOOLEAN DEFAULT FALSE,
   subsection_level INTEGER DEFAULT 0, -- 0 = paragraph, 1 = sub, 2 = sub-sub
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(section_id, order_index)
 );
 
@@ -169,15 +170,15 @@ CREATE INDEX idx_paragraphs_search ON paragraphs USING gin(to_tsvector('english'
 -- Standardized animation/diagram definitions
 CREATE TABLE animations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
+
   -- Identity
   animation_key TEXT NOT NULL UNIQUE, -- 'animationEyeStructur', etc.
   title TEXT NOT NULL,
   description TEXT,
-  
+
   -- Media type
   media_type TEXT NOT NULL CHECK (media_type IN ('lottie', 'video', 'image', 'youtube', 'gsap', 'css')),
-  
+
   -- File references
   lottie_file_url TEXT,
   video_file_url TEXT,
@@ -185,7 +186,7 @@ CREATE TABLE animations (
   youtube_id TEXT,
   gsap_config JSONB, -- For code-based animations
   css_class_name TEXT, -- For CSS animations
-  
+
   -- Interaction pattern (standardized)
   interaction_type TEXT NOT NULL CHECK (interaction_type IN (
     'auto_loop',
@@ -198,10 +199,10 @@ CREATE TABLE animations (
     'static_image',
     'youtube_embed'
   )),
-  
+
   -- Component mapping
   component_name TEXT NOT NULL, -- 'IllustrationComp', 'IllustrationSwitch', etc.
-  
+
   -- Configuration (flexible JSONB)
   config JSONB NOT NULL DEFAULT '{}',
   -- Example: {
@@ -211,12 +212,12 @@ CREATE TABLE animations (
   --   "fullscreen": false,
   --   "scrollTrigger": {"start": "top center", "end": "bottom center"}
   -- }
-  
+
   -- Metadata
   file_size_bytes INTEGER,
   scientific_domain TEXT, -- 'eye_anatomy', 'circuits', 'molecular', etc.
   load_priority TEXT DEFAULT 'high' CHECK (load_priority IN ('critical', 'high', 'low', 'lazy')),
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -225,18 +226,18 @@ CREATE TABLE animations (
 CREATE TABLE animation_states (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   animation_id UUID NOT NULL REFERENCES animations(id) ON DELETE CASCADE,
-  
+
   state_label TEXT NOT NULL,
   state_description TEXT,
   order_index INTEGER NOT NULL,
-  
+
   -- Highlighting
   is_highlight_state BOOLEAN DEFAULT FALSE,
   highlight_class_name TEXT,
   highlight_elements TEXT[], -- Array of element IDs to highlight
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(animation_id, state_label),
   UNIQUE(animation_id, order_index)
 );
@@ -245,14 +246,14 @@ CREATE TABLE animation_states (
 CREATE TABLE animation_variants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   animation_id UUID NOT NULL REFERENCES animations(id) ON DELETE CASCADE,
-  
+
   variant_label TEXT NOT NULL, -- 'Day', 'Night', 'Small light', etc.
   lottie_file_url TEXT,
   video_file_url TEXT,
   order_index INTEGER NOT NULL,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(animation_id, variant_label),
   UNIQUE(animation_id, order_index)
 );
@@ -271,23 +272,23 @@ CREATE TABLE highlights (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   paragraph_id UUID NOT NULL REFERENCES paragraphs(id) ON DELETE CASCADE,
-  
+
   -- Selection data
   start_offset INTEGER NOT NULL, -- Character offset in paragraph
   end_offset INTEGER NOT NULL,
   selected_text TEXT NOT NULL,
-  
+
   -- Metadata
   color TEXT DEFAULT 'yellow', -- Highlight color
   note TEXT, -- Optional note attached to highlight
-  
+
   -- Privacy
   is_public BOOLEAN DEFAULT FALSE, -- For trending feed
   is_shared BOOLEAN DEFAULT FALSE, -- Shared with class
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- Ensure valid selection
   CHECK (end_offset > start_offset)
 );
@@ -299,14 +300,14 @@ CREATE TABLE trending_highlights (
   selected_text TEXT NOT NULL,
   start_offset INTEGER NOT NULL,
   end_offset INTEGER NOT NULL,
-  
+
   -- Aggregation
   highlight_count INTEGER DEFAULT 1, -- Number of users who highlighted this
   last_highlighted_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   -- Cache refresh
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(paragraph_id, start_offset, end_offset)
 );
 
@@ -315,17 +316,17 @@ CREATE TABLE notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   highlight_id UUID REFERENCES highlights(id) ON DELETE CASCADE, -- Optional link
-  
+
   -- Note content
   content TEXT NOT NULL,
-  
+
   -- Context
   paragraph_id UUID REFERENCES paragraphs(id) ON DELETE CASCADE,
   section_id UUID REFERENCES sections(id) ON DELETE CASCADE,
-  
+
   -- Privacy
   is_public BOOLEAN DEFAULT FALSE,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -345,18 +346,18 @@ CREATE INDEX idx_notes_user ON notes(user_id);
 CREATE TABLE courses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   professor_id UUID NOT NULL REFERENCES profiles(id),
-  
+
   -- Course info
   title TEXT NOT NULL,
   description TEXT,
   course_code TEXT, -- 'BIO101', etc.
   semester TEXT, -- 'Fall 2024'
-  
+
   -- Publishing
   published_url TEXT UNIQUE, -- Generated unique URL slug
   is_published BOOLEAN DEFAULT FALSE,
   published_at TIMESTAMPTZ,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -366,16 +367,16 @@ CREATE TABLE course_modules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
-  
+
   -- Order within course
   order_index INTEGER NOT NULL,
-  
+
   -- Customization
   custom_title TEXT, -- Override module title for this course
   is_required BOOLEAN DEFAULT TRUE,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(course_id, module_id),
   UNIQUE(course_id, order_index)
 );
@@ -385,10 +386,10 @@ CREATE TABLE course_enrollments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  
+
   enrolled_at TIMESTAMPTZ DEFAULT NOW(),
   last_accessed_at TIMESTAMPTZ,
-  
+
   UNIQUE(course_id, student_id)
 );
 
@@ -406,26 +407,26 @@ CREATE INDEX idx_enrollments_student ON course_enrollments(student_id);
 -- Quizzes (attached to sections or modules)
 CREATE TABLE quizzes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
+
   -- Context
   module_id UUID REFERENCES modules(id) ON DELETE CASCADE,
   section_id UUID REFERENCES sections(id) ON DELETE CASCADE,
   course_id UUID REFERENCES courses(id) ON DELETE CASCADE, -- Course-specific quiz
-  
+
   -- Quiz info
   title TEXT NOT NULL,
   description TEXT,
   instructions TEXT,
-  
+
   -- Settings
   time_limit_minutes INTEGER, -- NULL = no limit
   passing_score INTEGER DEFAULT 70, -- Percentage
   allow_multiple_attempts BOOLEAN DEFAULT TRUE,
   show_correct_answers BOOLEAN DEFAULT TRUE,
-  
+
   -- Order
   order_index INTEGER,
-  
+
   created_by UUID NOT NULL REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -435,25 +436,25 @@ CREATE TABLE quizzes (
 CREATE TABLE quiz_questions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
-  
+
   -- Question
   question_text TEXT NOT NULL,
   question_type TEXT NOT NULL CHECK (question_type IN ('multiple_choice', 'true_false', 'short_answer', 'essay')),
-  
+
   -- Options (for multiple choice)
   options JSONB, -- [{"text": "Option A", "correct": true}, ...]
-  
+
   -- Answer (for short answer/essay)
   correct_answer TEXT,
   answer_keywords TEXT[], -- For auto-grading
-  
+
   -- Settings
   points INTEGER DEFAULT 1,
   order_index INTEGER NOT NULL,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(quiz_id, order_index)
 );
 
@@ -462,20 +463,20 @@ CREATE TABLE quiz_attempts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
   student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  
+
   -- Results
   score INTEGER, -- Percentage
   total_points INTEGER,
   earned_points INTEGER,
-  
+
   -- Timing
   started_at TIMESTAMPTZ DEFAULT NOW(),
   completed_at TIMESTAMPTZ,
   time_spent_seconds INTEGER,
-  
+
   -- Status
   status TEXT NOT NULL DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed', 'abandoned')),
-  
+
   UNIQUE(quiz_id, student_id, started_at) -- Allow multiple attempts
 );
 
@@ -484,38 +485,38 @@ CREATE TABLE quiz_answers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   attempt_id UUID NOT NULL REFERENCES quiz_attempts(id) ON DELETE CASCADE,
   question_id UUID NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,
-  
+
   -- Answer
   answer_text TEXT,
   selected_option_id INTEGER, -- For multiple choice
   is_correct BOOLEAN,
   points_earned INTEGER DEFAULT 0,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Flashcards
 CREATE TABLE flashcards (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
+
   -- Context
   module_id UUID REFERENCES modules(id) ON DELETE CASCADE,
   section_id UUID REFERENCES sections(id) ON DELETE CASCADE,
   course_id UUID REFERENCES courses(id) ON DELETE CASCADE,
-  
+
   -- Card content
   front_text TEXT NOT NULL,
   back_text TEXT NOT NULL,
   front_image_url TEXT,
   back_image_url TEXT,
-  
+
   -- Metadata
   tags TEXT[],
   difficulty INTEGER DEFAULT 1 CHECK (difficulty BETWEEN 1 AND 5),
-  
+
   -- Order
   order_index INTEGER,
-  
+
   created_by UUID NOT NULL REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -525,11 +526,11 @@ CREATE TABLE flashcards (
 CREATE TABLE flashcard_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  
+
   -- Session info
   card_ids UUID[] NOT NULL, -- Array of flashcard IDs in this session
   study_mode TEXT DEFAULT 'review' CHECK (study_mode IN ('review', 'learn', 'test')),
-  
+
   started_at TIMESTAMPTZ DEFAULT NOW(),
   completed_at TIMESTAMPTZ
 );
@@ -540,17 +541,17 @@ CREATE TABLE flashcard_responses (
   session_id UUID NOT NULL REFERENCES flashcard_sessions(id) ON DELETE CASCADE,
   flashcard_id UUID NOT NULL REFERENCES flashcards(id) ON DELETE CASCADE,
   student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  
+
   -- Response
   was_correct BOOLEAN NOT NULL,
   response_time_seconds INTEGER,
-  
+
   -- Spaced repetition (SM-2 algorithm)
   ease_factor DECIMAL(4,2) DEFAULT 2.5,
   interval_days INTEGER DEFAULT 1,
   repetitions INTEGER DEFAULT 0,
   next_review_date DATE,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -572,16 +573,16 @@ CREATE INDEX idx_flashcard_responses_next_review ON flashcard_responses(next_rev
 CREATE TABLE ai_conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  
+
   -- Context
   module_id UUID REFERENCES modules(id) ON DELETE CASCADE,
   section_id UUID REFERENCES sections(id) ON DELETE CASCADE,
   paragraph_id UUID REFERENCES paragraphs(id) ON DELETE CASCADE,
-  
+
   -- Conversation
   title TEXT, -- Auto-generated from first message
   is_active BOOLEAN DEFAULT TRUE,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -590,48 +591,48 @@ CREATE TABLE ai_conversations (
 CREATE TABLE ai_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id UUID NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
-  
+
   -- Message
   role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
   content TEXT NOT NULL,
-  
+
   -- Metadata
   tokens_used INTEGER, -- For cost tracking
   model_used TEXT, -- 'gpt-4', 'claude-3', etc.
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Python code labs
 CREATE TABLE code_labs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
+
   -- Context
   module_id UUID REFERENCES modules(id) ON DELETE CASCADE,
   section_id UUID REFERENCES sections(id) ON DELETE CASCADE,
-  
+
   -- Lab info
   title TEXT NOT NULL,
   description TEXT,
   instructions TEXT NOT NULL,
-  
+
   -- Code
   starter_code TEXT, -- Initial code provided
   solution_code TEXT, -- Hidden solution (for auto-grading)
   test_cases JSONB, -- Test cases for validation
-  
+
   -- Data
   dataset_url TEXT, -- Link to dataset file
   dataset_config JSONB, -- Dataset metadata
-  
+
   -- Settings
   allow_editing BOOLEAN DEFAULT TRUE,
   show_solution BOOLEAN DEFAULT FALSE,
   auto_grade BOOLEAN DEFAULT FALSE,
-  
+
   -- Order
   order_index INTEGER,
-  
+
   created_by UUID NOT NULL REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -642,21 +643,21 @@ CREATE TABLE code_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lab_id UUID NOT NULL REFERENCES code_labs(id) ON DELETE CASCADE,
   student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  
+
   -- Submission
   code TEXT NOT NULL,
   output TEXT, -- Execution output
   error_message TEXT,
-  
+
   -- Results
   test_results JSONB, -- Results of test cases
   passed BOOLEAN,
   score INTEGER, -- If auto-graded
-  
+
   -- Git integration
   git_repo_url TEXT, -- If cloned to Git
   git_commit_hash TEXT,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -678,21 +679,21 @@ CREATE TABLE reading_progress (
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
   course_id UUID REFERENCES courses(id) ON DELETE CASCADE, -- If reading via course
-  
+
   -- Progress
   last_section_id UUID REFERENCES sections(id),
   last_paragraph_id UUID REFERENCES paragraphs(id),
   scroll_position DECIMAL(5,2), -- Percentage (0-100)
   time_spent_seconds INTEGER DEFAULT 0,
-  
+
   -- Completion
   is_completed BOOLEAN DEFAULT FALSE,
   completed_at TIMESTAMPTZ,
-  
+
   -- Tracking
   last_accessed_at TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(user_id, module_id, course_id)
 );
 
@@ -700,20 +701,20 @@ CREATE TABLE reading_progress (
 CREATE TABLE analytics_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  
+
   -- Event
   event_type TEXT NOT NULL, -- 'page_view', 'animation_play', 'quiz_start', etc.
   event_data JSONB, -- Flexible event payload
-  
+
   -- Context
   module_id UUID REFERENCES modules(id) ON DELETE SET NULL,
   section_id UUID REFERENCES sections(id) ON DELETE SET NULL,
   course_id UUID REFERENCES courses(id) ON DELETE SET NULL,
-  
+
   -- Metadata
   user_agent TEXT,
   ip_address INET,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -730,6 +731,7 @@ CREATE INDEX idx_analytics_events_created ON analytics_events(created_at);
 ## Row-Level Security (RLS) Policies
 
 ### Profiles
+
 ```sql
 -- Users can read their own profile
 CREATE POLICY "Users can view own profile"
@@ -753,6 +755,7 @@ CREATE POLICY "Creators can view all profiles"
 ```
 
 ### Content (Modules, Sections, Paragraphs)
+
 ```sql
 -- Everyone can read published content
 CREATE POLICY "Anyone can read published content"
@@ -771,6 +774,7 @@ CREATE POLICY "Creators can manage content"
 ```
 
 ### Highlights & Notes
+
 ```sql
 -- Users can manage their own highlights
 CREATE POLICY "Users manage own highlights"
@@ -784,6 +788,7 @@ CREATE POLICY "Users can view public highlights"
 ```
 
 ### Courses
+
 ```sql
 -- Professors can manage their own courses
 CREATE POLICY "Professors manage own courses"
@@ -807,6 +812,7 @@ CREATE POLICY "Students can view published courses"
 ## Functions & Triggers
 
 ### Update timestamps
+
 ```sql
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -823,6 +829,7 @@ CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
 ```
 
 ### Trending highlights aggregation
+
 ```sql
 CREATE OR REPLACE FUNCTION update_trending_highlights()
 RETURNS TRIGGER AS $$
@@ -840,7 +847,7 @@ BEGIN
     highlight_count = trending_highlights.highlight_count + 1,
     last_highlighted_at = NOW(),
     updated_at = NOW();
-  
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -853,6 +860,7 @@ CREATE TRIGGER highlight_trending_update
 ```
 
 ### Generate course URL
+
 ```sql
 CREATE OR REPLACE FUNCTION generate_course_url()
 RETURNS TRIGGER AS $$
@@ -875,16 +883,19 @@ CREATE TRIGGER course_url_generation
 ## Migration Strategy
 
 ### Phase 1: Create new schema
+
 1. Run all CREATE TABLE statements
 2. Set up RLS policies
 3. Create functions and triggers
 
 ### Phase 2: Migrate existing content
+
 1. Import first chapter from JSON to database
 2. Map existing animations to new structure
 3. Preserve user highlights (if any) from localStorage
 
 ### Phase 3: Build new chapters
+
 1. Use new database structure from start
 2. Use TipTap editor for content creation
 3. Standardize animation interactions
@@ -908,4 +919,3 @@ CREATE TRIGGER course_url_generation
 - **Scalability**: Normalized structure supports large-scale content and users
 - **Performance**: Indexes on all foreign keys and frequently queried columns
 - **Security**: Row-level security ensures users only access appropriate data
-

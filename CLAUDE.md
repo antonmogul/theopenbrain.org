@@ -9,14 +9,17 @@ The Open Brain is an interactive educational web application built with Vue 3, f
 ## Development Commands
 
 ### Development Server
+
 ```bash
 npm start
 # or
 npm run watch:local
 ```
+
 Runs the development server with Vite in development mode.
 
 ### Build Commands
+
 ```bash
 npm run build              # Production build
 npm run build:dev          # Development build
@@ -27,6 +30,7 @@ npm run build:prod         # Production build (explicit)
 All builds automatically clear the `dist` directory before building (via `prebuild` script).
 
 ### Preview Builds
+
 ```bash
 npm run preview            # Preview production build on port 4173
 npm run serve:dev          # Build and preview development
@@ -35,6 +39,7 @@ npm run serve:prod         # Build and preview production
 ```
 
 ### Testing
+
 ```bash
 npm run test:unit          # Open Cypress component testing
 npm run test:unit:ci       # Run component tests in CI mode
@@ -43,17 +48,20 @@ npm run test:e2e:ci        # Run E2E tests in CI mode
 ```
 
 ### Linting
+
 ```bash
 npm run lint               # Run ESLint with auto-fix
 ```
 
 ### Deployment
+
 ```bash
 npm run deploy             # Runs deploy.sh script
 npm version <patch|minor|major>  # Bumps version and triggers deploy
 ```
 
 ### Clean Install
+
 ```bash
 npm run clean              # Clear cache, remove node_modules, reinstall with --legacy-peer-deps
 ```
@@ -61,6 +69,7 @@ npm run clean              # Clear cache, remove node_modules, reinstall with --
 ## Architecture
 
 ### Tech Stack
+
 - **Framework**: Vue 3 (Composition API with `<script setup>`)
 - **Build Tool**: Vite 3
 - **State Management**: Pinia
@@ -104,12 +113,14 @@ src/
 #### State Management (Pinia Stores)
 
 **useGeneral Store** (`src/stores/index.js`):
+
 - Manages UI state (menus, modals, navigation)
 - Tracks user visit status via localStorage
 - Handles scroll position preservation
 - Key state: `activeMenu`, `legendIsActive`, `savedPosition`, `progress`
 
 **useText Store** (`src/stores/index.js`):
+
 - Manages content from `assets/json_backend/text.json`
 - Handles text highlighting and user annotations
 - Syncs selections to localStorage
@@ -117,12 +128,15 @@ src/
 - Complex nested section/paragraph structure updating
 
 **useAnimation Store** (`src/stores/animation.js`):
+
 - Controls GSAP and Lottie animations
 
 **useCom Store** (`src/stores/comments.js`):
+
 - Manages user comments on highlighted text
 
 **usePreferences Composable** (`src/composables/usePreferences.js`):
+
 - Owns user-facing display prefs: `theme`, `accent`, `fontPair`, `readingSize`, `lineLength`, `reduceMotion`.
 - Module-scope refs (single source of truth, not a Pinia store).
 - localStorage keys are `ob.*` namespaced. Supabase `user_preferences` table syncs (debounced 800ms) when authenticated; LS-only when anonymous.
@@ -133,12 +147,14 @@ src/
 #### Routing
 
 Routes defined in `src/router/index.js`:
+
 - `/` → Redirects to `/chapter`
 - `/chapter/:chapter?` → Main chapter view (lazy loaded)
 - `/chapter/break/:video?` → Break video view (lazy loaded)
 - `/quiz` → Quiz view (lazy loaded)
 
 **Special routing behavior**:
+
 - Preserves scroll position when navigating from chapter view
 - Custom transition metadata for about page
 - Uses `useGeneral` store for route-based state management
@@ -146,10 +162,12 @@ Routes defined in `src/router/index.js`:
 #### Data Architecture
 
 **Chapter Data Sources**:
+
 - **Chapter 1 ("The Retina")**: Hardcoded legacy chapter stored in local JSON files. Content modifications are persisted to localStorage.
 - **Chapter 2+**: Dynamic chapters fetched from Supabase database. Content modifications are saved via Supabase REST API.
 
 Content is stored in JSON files under `src/assets/json_backend/`:
+
 - `text.json` - Main educational content for Chapter 1 (sections, paragraphs, nested subsections)
 - `animations.json` - Animation configurations
 - `menu.json` - Navigation structure
@@ -158,6 +176,7 @@ Content is stored in JSON files under `src/assets/json_backend/`:
 - `breakVideos.json` - Break video data
 
 The text content uses a deeply nested structure:
+
 ```
 sections → paragraphs → subSection → paragraphs → subSubSection
 ```
@@ -188,6 +207,7 @@ User modifications to text (highlights, comments) are stored in localStorage for
 CSS custom properties in `src/styles/brand.css` are the single source of truth for color, font roles, and reading-prefs CSS vars. Tailwind's `tailwind.config.js` consumes the same tokens via `rgb(var(--color-x) / <alpha-value>)`.
 
 Conventions:
+
 - **Theme** — `[data-theme="light|dark"]` on `<html>`. System mode resolved live via `matchMedia`.
 - **Accent** — `[data-accent="magenta|teal|amber|mono"]` on `<html>` overrides `--color-accent`.
 - **Font pair** — `[data-fontpair="ibm-plex-legacy|newsreader|literata|georgia|sans"]` on `<html>` overrides `--font-body`, `--font-ui`, `--font-mono`. Default `:root` binds these to IBM Plex (today's behavior); `data-fontpair="newsreader"` etc. swap them.
@@ -218,12 +238,14 @@ Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `ac
 ## Environment Variables
 
 Configured via Vite modes (development, staging, production):
+
 - `NODE_ENV` - Environment mode
 - `VITE_PAGE_TITLE` - Injected into HTML
 
 ## Version Management
 
 Version is defined in `package.json` and:
+
 - Exposed globally as `window.__VERSION__` via Vite config
 - Accessible in components via `app.config.globalProperties.$version`
 - Deployment triggered via `npm version` through `postversion` hook
@@ -234,6 +256,7 @@ Detailed project documentation, PRDs, phase specs, and roadmap are maintained in
 `/Users/antonmorrison/Documents/GitHub/Artificail-brain/Artificial-Brain/vault/02-projects/911/open-brain`
 
 Key documents include:
+
 - Phase PRDs (1-7) with feature specs and acceptance criteria
 - Database schema and Supabase table definitions
 - User role definitions (Creator, Professor, Student)

@@ -26,6 +26,7 @@ The decoy effect (also called the "asymmetric dominance effect" or "attraction e
 ### Before the Decoy
 
 Basic vs. Premium is a tradeoff:
+
 - Basic: Lower price, limited access
 - Premium: Higher price, unlimited access
 
@@ -34,6 +35,7 @@ Users must weigh their own price sensitivity against their access needs. No opti
 ### After the Decoy
 
 Standard vs. Premium is NOT a tradeoff:
+
 - Standard: $14 for 75 articles
 - Premium: $15 for unlimited
 
@@ -48,6 +50,7 @@ Psychologically, users can now make a "confident" choice: "Premium is obviously 
 The decoy effect was memorably demonstrated by Dan Ariely using The Economist's subscription options:
 
 **Original options**:
+
 - Web only: $59
 - Print only: $125
 - Web + Print: $125
@@ -113,6 +116,7 @@ The decoy effect raises genuine ethical questions:
 ### When Decoys Help
 
 Decoys can serve users by:
+
 - Clarifying value comparisons in complex decisions
 - Reducing decision paralysis through clearer relative evaluation
 - Highlighting genuinely better options users might have overlooked
@@ -122,6 +126,7 @@ Decoys can serve users by:
 ### When Decoys Manipulate
 
 Decoys manipulate when:
+
 - They obscure rather than clarify value
 - They push users toward options that don't serve their needs
 - They exploit comparison heuristics to extract more money
@@ -132,6 +137,7 @@ Decoys manipulate when:
 ### The Transparency Test
 
 Ask: If users understood how the decoy worked, would they:
+
 - Appreciate the clarification? (ethical)
 - Feel manipulated? (unethical)
 - Make different choices? (suggests manipulation)

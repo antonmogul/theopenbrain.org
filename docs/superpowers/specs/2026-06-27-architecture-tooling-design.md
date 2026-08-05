@@ -13,13 +13,14 @@ Stand up a **Vite-aware dependency-graph workflow** so we can:
 
 No permanent runtime dependency. Everything runs via `npx` plus config files committed to the repo.
 
-**Origin:** User initially considered installing `graphify` (a Python/`uv` semantic knowledge-graph tool). During brainstorming we determined that for the stated goal — *understand how files depend on each other in a Vue 3 + Vite app* — a Vite-aware import-graph tool (`madge` + `dependency-cruiser`) is higher signal-per-effort and resolves the `@/ → src/` alias correctly, which tree-sitter-based tools do not. `graphify` was set aside as overkill for a code-structure goal.
+**Origin:** User initially considered installing `graphify` (a Python/`uv` semantic knowledge-graph tool). During brainstorming we determined that for the stated goal — _understand how files depend on each other in a Vue 3 + Vite app_ — a Vite-aware import-graph tool (`madge` + `dependency-cruiser`) is higher signal-per-effort and resolves the `@/ → src/` alias correctly, which tree-sitter-based tools do not. `graphify` was set aside as overkill for a code-structure goal.
 
 ### Out of scope
+
 - Feeding docs/PDFs/vault content into a semantic graph.
 - Runtime profiling.
 - Adding anything to the npm `dependencies` block (the install is fragile — requires `--legacy-peer-deps`, lint already broken on missing prettier).
-- Tier-2 dead-code *removal* (this work only surfaces candidates; removal is a separate effort).
+- Tier-2 dead-code _removal_ (this work only surfaces candidates; removal is a separate effort).
 
 ## Components
 
@@ -35,7 +36,7 @@ Four small, independent pieces — each does one thing:
    - `components/` must not import from `views/`
    - no orphans — **except an allowlist of legitimate entry points** (`main.js`, router-lazy-loaded views, any `*.config.*`), otherwise the rule flags real entry points as false positives
    - no circular dependencies
-   Exits non-zero on violations so it can later gate CI.
+     Exits non-zero on violations so it can later gate CI.
 4. **`docs/architecture/README.md`** — how to regenerate the graph, how to read it, and the **current known violations recorded as a baseline** (so the starting state is documented, not silently accepted).
 
 ## Data Flow & Usage
@@ -55,7 +56,7 @@ src/**  ──▶  [alias config]  ──▶  madge        ──▶  graph.svg 
 - **Graphviz dependency:** madge SVG output needs `graphviz` (`dot`) locally. Detect whether `dot` is present; if not, fall back to madge JSON output / dependency-cruiser's built-in DOT, or document `brew install graphviz`.
 - **`.vue` parsing:** madge parses the `<script>` block of SFCs; dependency-cruiser needs `.vue` extension config. Both configured and verified against a known file (e.g. confirm `DashboardView.vue` imports appear).
 - **Noise:** exclude `node_modules`, `dist/`, and generated files from the start so the graph is signal-only.
-- **Alias-config validation gate:** first run validates the alias config against a file we *know* uses `@/` imports — if that edge is missing, the config is wrong; stop and fix before generating reports.
+- **Alias-config validation gate:** first run validates the alias config against a file we _know_ uses `@/` imports — if that edge is missing, the config is wrong; stop and fix before generating reports.
 
 ## Testing / Verification
 
@@ -63,7 +64,7 @@ Verification gate is "does it produce a correct graph," not a unit test (consist
 
 - `graph:visual` produces a non-empty SVG where a hand-checked `@/` import (verified against actual source) appears as an edge.
 - Orphan list sanity-checked against 1–2 files known to be used / unused.
-- `graph:check` runs and reports the *current* violation count, recorded as baseline. Zero violations is **not** required on day one.
+- `graph:check` runs and reports the _current_ violation count, recorded as baseline. Zero violations is **not** required on day one.
 - `npm run build` still passes (nothing added touches the build).
 
 ## Notes / Constraints carried from project memory

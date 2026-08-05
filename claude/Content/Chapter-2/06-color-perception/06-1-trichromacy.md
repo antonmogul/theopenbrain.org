@@ -14,7 +14,7 @@ As explored in Chapter 1, human color vision relies on three cone types:
 
 **L cones (Long wavelength)**: Peak sensitivity around 560nm, in the red-yellow range. Represent roughly 63% of cones.
 
-Notice that "red," "green," and "blue" cone labels are simplifications. L cones don't detect red exclusively—they respond to a broad range of wavelengths with peak sensitivity in yellow-green. Color perception emerges from *comparing* relative activation across cone types, not from individual cone responses.
+Notice that "red," "green," and "blue" cone labels are simplifications. L cones don't detect red exclusively—they respond to a broad range of wavelengths with peak sensitivity in yellow-green. Color perception emerges from _comparing_ relative activation across cone types, not from individual cone responses.
 
 ## How Three Channels Create Millions of Colors
 
@@ -25,7 +25,7 @@ The visual system distinguishes colors by comparing cone outputs:
 - **Purple light** activates L and S cones, M cones less
 - **White light** activates all three cone types roughly equally
 
-The brain doesn't perceive absolute cone activity—it perceives *ratios* of activity across cone types. This ratio-based processing enables fine color discrimination despite the coarse resolution of only three receptor types.
+The brain doesn't perceive absolute cone activity—it perceives _ratios_ of activity across cone types. This ratio-based processing enables fine color discrimination despite the coarse resolution of only three receptor types.
 
 Mathematically, this three-channel input creates a three-dimensional color space. Each point in this space corresponds to a unique combination of cone activations—a unique perceived color. The roughly 10 million colors humans can distinguish represent the perceptual resolution within this three-dimensional space.
 
@@ -120,6 +120,7 @@ Specific combinations to avoid or supplement:
 **Red/Brown**: Protanopia makes these nearly identical.
 
 Safe combinations that work across most deficiencies:
+
 - Blue/Orange
 - Blue/Yellow
 - Purple/Yellow
@@ -128,15 +129,18 @@ Safe combinations that work across most deficiencies:
 ## Testing Tools and Methods
 
 **Simulation software**:
+
 - Sim Daltonism (macOS): Free, shows all deficiency types
 - Color Oracle (cross-platform): Free, simulates three main types
 - Chrome DevTools: Built-in simulation in Rendering panel
 
 **Design tools**:
+
 - Figma: Plugins for color blindness simulation
 - Adobe: Color blindness proof tools in accessibility features
 
 **Contrast checkers**:
+
 - WebAIM Contrast Checker
 - Colour Contrast Analyser (TGA)
 

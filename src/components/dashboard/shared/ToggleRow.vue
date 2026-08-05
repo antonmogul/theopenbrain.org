@@ -17,9 +17,7 @@ defineEmits(["update:checked"]);
 <template>
   <div class="toggle-row">
     <div class="toggle-text">
-      <div class="toggle-label">
-        {{ label }} <PreviewTag v-if="preview" />
-      </div>
+      <div class="toggle-label">{{ label }} <PreviewTag v-if="preview" /></div>
       <div v-if="hint" class="toggle-hint">{{ hint }}</div>
     </div>
     <Switch

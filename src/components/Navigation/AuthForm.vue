@@ -60,7 +60,7 @@ watch(
     password.value = "";
     confirmPassword.value = "";
     authStore.clearMessages();
-  },
+  }
 );
 
 function resetFields() {
@@ -158,7 +158,11 @@ async function handleForgot() {
       >
         {{ authStore.authLoading ? "…" : "Login" }}
       </button>
-      <button class="auth-link" type="button" @click="emit('set-view', 'forgot')">
+      <button
+        class="auth-link"
+        type="button"
+        @click="emit('set-view', 'forgot')"
+      >
         Forgot password?
       </button>
     </form>
@@ -223,7 +227,11 @@ async function handleForgot() {
       >
         {{ authStore.authLoading ? "…" : "Send reset link" }}
       </button>
-      <button class="auth-link" type="button" @click="emit('set-view', 'login')">
+      <button
+        class="auth-link"
+        type="button"
+        @click="emit('set-view', 'login')"
+      >
         Back to login
       </button>
     </form>
@@ -252,7 +260,9 @@ async function handleForgot() {
           />
         </div>
         <div class="flex flex-col gap-2">
-          <label class="text-small uppercase font-mono text-light">Password</label>
+          <label class="text-small uppercase font-mono text-light"
+            >Password</label
+          >
           <input
             v-model="password"
             type="password"
@@ -317,7 +327,9 @@ async function handleForgot() {
           />
         </div>
         <div class="flex flex-col gap-2">
-          <label class="text-small uppercase font-mono text-light">Password</label>
+          <label class="text-small uppercase font-mono text-light"
+            >Password</label
+          >
           <input
             v-model="password"
             type="password"

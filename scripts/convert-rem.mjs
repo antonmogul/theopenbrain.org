@@ -79,7 +79,10 @@ function listCandidateFiles() {
   // directly in src/ (e.g. src/index.css — which holds the hack AND 152 rem
   // literals), so it would silently exclude them. "src" matches the whole tree;
   // we then filter by extension in JS. tailwind.config.js is added explicitly.
-  const out = execSync("git ls-files src tailwind.config.js", { cwd: ROOT, encoding: "utf8" });
+  const out = execSync("git ls-files src tailwind.config.js", {
+    cwd: ROOT,
+    encoding: "utf8",
+  });
   return out
     .split("\n")
     .filter(Boolean)
@@ -97,7 +100,9 @@ function convertToken(numStr) {
   // use it. Guard against scientific notation (would corrupt CSS) just in case.
   let s = converted.toString();
   if (/e/i.test(s)) {
-    throw new Error(`Refusing: ${numStr}rem produced exponential form "${s}". Handle manually.`);
+    throw new Error(
+      `Refusing: ${numStr}rem produced exponential form "${s}". Handle manually.`
+    );
   }
   if (s === "-0") s = "0";
   // Round-trip assertion: the machine-checked proof that old_px == new_px.
@@ -108,7 +113,7 @@ function convertToken(numStr) {
   const tol = 1e-9 * Math.max(1, Math.abs(value));
   if (Math.abs(back - value) > tol) {
     throw new Error(
-      `Round-trip failed for ${numStr}rem -> ${s}rem (back=${back}, expected ${value})`,
+      `Round-trip failed for ${numStr}rem -> ${s}rem (back=${back}, expected ${value})`
     );
   }
   return s;
@@ -123,7 +128,7 @@ function preScan(files) {
       if (m) {
         throw new Error(
           `Refusing to run: ${name} rem token found in ${relative(ROOT, f)}: "${m[0]}". ` +
-            `Handle this token manually before running the codemod.`,
+            `Handle this token manually before running the codemod.`
         );
       }
     }
@@ -133,7 +138,11 @@ function preScan(files) {
 // Escape control chars so a manifest field can never contain a literal
 // tab/newline (which would corrupt the TSV for a machine reader).
 function tsvField(s) {
-  return s.replace(/\\/g, "\\\\").replace(/\t/g, "\\t").replace(/\r/g, "\\r").replace(/\n/g, "\\n");
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/\t/g, "\\t")
+    .replace(/\r/g, "\\r")
+    .replace(/\n/g, "\\n");
 }
 
 // Pure, position-based conversion of one file's contents. Returns
@@ -145,10 +154,24 @@ function convertContent(rel, original) {
   let tokens = 0;
 
   const lineStarts = [];
-  { let acc = 0; for (const ln of original.split("\n")) { lineStarts.push(acc); acc += ln.length + 1; } }
+  {
+    let acc = 0;
+    for (const ln of original.split("\n")) {
+      lineStarts.push(acc);
+      acc += ln.length + 1;
+    }
+  }
   const lineOf = (idx) => {
-    let lo = 0, hi = lineStarts.length - 1, ans = 0;
-    while (lo <= hi) { const mid = (lo + hi) >> 1; if (lineStarts[mid] <= idx) { ans = mid; lo = mid + 1; } else hi = mid - 1; }
+    let lo = 0,
+      hi = lineStarts.length - 1,
+      ans = 0;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (lineStarts[mid] <= idx) {
+        ans = mid;
+        lo = mid + 1;
+      } else hi = mid - 1;
+    }
     return ans + 1;
   };
 
@@ -244,17 +267,27 @@ function runAudit(files) {
   const base = process.env.AUDIT_BASE || "main";
   let baseRef;
   try {
-    baseRef = execSync(`git rev-parse --verify ${base}`, { cwd: ROOT, encoding: "utf8" }).trim();
+    baseRef = execSync(`git rev-parse --verify ${base}`, {
+      cwd: ROOT,
+      encoding: "utf8",
+    }).trim();
   } catch {
-    console.error(`[audit] cannot resolve base ref "${base}". Set AUDIT_BASE to a valid ref.`);
+    console.error(
+      `[audit] cannot resolve base ref "${base}". Set AUDIT_BASE to a valid ref.`
+    );
     process.exit(1);
   }
 
   // Reconcile the scoped file set at BASE vs the current working tree, so
   // renamed/deleted/base-only and brand-new files can't slip through unaudited.
   const baseScoped = new Set(
-    execSync(`git ls-tree -r --name-only ${baseRef} -- src tailwind.config.js`, { cwd: ROOT, encoding: "utf8" })
-      .split("\n").filter(Boolean).filter((p) => p === "tailwind.config.js" || SCOPE_EXT.test(p)),
+    execSync(
+      `git ls-tree -r --name-only ${baseRef} -- src tailwind.config.js`,
+      { cwd: ROOT, encoding: "utf8" }
+    )
+      .split("\n")
+      .filter(Boolean)
+      .filter((p) => p === "tailwind.config.js" || SCOPE_EXT.test(p))
   );
   const currentScoped = new Set(files.map((f) => relative(ROOT, f)));
   const allPaths = new Set([...baseScoped, ...currentScoped]);
@@ -278,7 +311,9 @@ function runAudit(files) {
       // refactor, so flag ANY scoped base-only file — with or without rem —
       // rather than silently dropping it (Codex round-5 path-reconciliation).
       mismatches++;
-      problems.push(`DELETED / base-only scoped file (${baseToks.length} base rem token(s)): ${rel}`);
+      problems.push(
+        `DELETED / base-only scoped file (${baseToks.length} base rem token(s)): ${rel}`
+      );
       continue;
     }
 
@@ -287,11 +322,17 @@ function runAudit(files) {
     const removed = MANUAL_REMOVED_TOKENS[rel] || [];
     const baseProblems = [];
     const baseEffective = [...baseToks];
-    for (const { value, baseIndex } of [...removed].sort((a, b) => b.baseIndex - a.baseIndex)) {
+    for (const { value, baseIndex } of [...removed].sort(
+      (a, b) => b.baseIndex - a.baseIndex
+    )) {
       if (baseIndex < 0 || baseIndex >= baseEffective.length) {
-        baseProblems.push(`declared removed token ${value}rem expected at base-index ${baseIndex}, but base has ${baseEffective.length} token(s)`);
+        baseProblems.push(
+          `declared removed token ${value}rem expected at base-index ${baseIndex}, but base has ${baseEffective.length} token(s)`
+        );
       } else if (baseEffective[baseIndex] !== value) {
-        baseProblems.push(`declared removed token expected ${value}rem at base-index ${baseIndex}, base has ${baseEffective[baseIndex]}rem`);
+        baseProblems.push(
+          `declared removed token expected ${value}rem at base-index ${baseIndex}, base has ${baseEffective[baseIndex]}rem`
+        );
       } else {
         baseEffective.splice(baseIndex, 1);
       }
@@ -314,11 +355,17 @@ function runAudit(files) {
     const manualProblems = [];
     // Remove anchored manual tokens by EXACT index (validate value there), from
     // highest index down so earlier splices don't shift later anchors.
-    for (const { value, index } of [...manualAdded].sort((a, b) => b.index - a.index)) {
+    for (const { value, index } of [...manualAdded].sort(
+      (a, b) => b.index - a.index
+    )) {
       if (index < 0 || index >= curRemaining.length) {
-        manualProblems.push(`declared manual token ${value}rem expected at rem-index ${index}, but stream has only ${curRemaining.length} token(s)`);
+        manualProblems.push(
+          `declared manual token ${value}rem expected at rem-index ${index}, but stream has only ${curRemaining.length} token(s)`
+        );
       } else if (curRemaining[index] !== value) {
-        manualProblems.push(`declared manual token expected ${value}rem at rem-index ${index}, found ${curRemaining[index]}rem`);
+        manualProblems.push(
+          `declared manual token expected ${value}rem at rem-index ${index}, found ${curRemaining[index]}rem`
+        );
       } else {
         curRemaining.splice(index, 1);
       }
@@ -328,7 +375,10 @@ function runAudit(files) {
     let positional = expected.length === curRemaining.length;
     if (positional) {
       for (let i = 0; i < expected.length; i++) {
-        if (expected[i] !== curRemaining[i]) { positional = false; break; }
+        if (expected[i] !== curRemaining[i]) {
+          positional = false;
+          break;
+        }
       }
     }
 
@@ -339,24 +389,32 @@ function runAudit(files) {
         : "";
       problems.push(
         `TOKEN MISMATCH: ${rel}${newFileNote}\n` +
-          (baseProblems.length ? `    base-removal: ${baseProblems.join("; ")}\n` : "") +
-          (manualProblems.length ? `    manual-add: ${manualProblems.join("; ")}\n` : "") +
+          (baseProblems.length
+            ? `    base-removal: ${baseProblems.join("; ")}\n`
+            : "") +
+          (manualProblems.length
+            ? `    manual-add: ${manualProblems.join("; ")}\n`
+            : "") +
           `    base rem (${baseEffective.length} after declared removals): ${baseEffective.slice(0, 12).join(", ")}${baseEffective.length > 12 ? " …" : ""}\n` +
           `    expected  (${expected.length}, positional): ${expected.slice(0, 12).join(", ")}${expected.length > 12 ? " …" : ""}\n` +
-          `    actual    (${curRemaining.length}, manual removed): ${curRemaining.slice(0, 12).join(", ")}${curRemaining.length > 12 ? " …" : ""}`,
+          `    actual    (${curRemaining.length}, manual removed): ${curRemaining.slice(0, 12).join(", ")}${curRemaining.length > 12 ? " …" : ""}`
       );
     }
   }
 
   console.log(
-    `[audit] base=${base} (${baseRef.slice(0, 8)}), files with rem: ${filesWithRem}, base tokens: ${totalTokens}, mismatches: ${mismatches}`,
+    `[audit] base=${base} (${baseRef.slice(0, 8)}), files with rem: ${filesWithRem}, base tokens: ${totalTokens}, mismatches: ${mismatches}`
   );
   for (const p of problems) console.error(`[audit] ${p}`);
   if (mismatches > 0) {
-    console.error(`[audit] FAILED: ${mismatches} file(s) have rem tokens that are not a clean ÷1.6 conversion of ${base} (+ declared manual additions).`);
+    console.error(
+      `[audit] FAILED: ${mismatches} file(s) have rem tokens that are not a clean ÷1.6 conversion of ${base} (+ declared manual additions).`
+    );
     process.exit(1);
   }
-  console.log(`[audit] PASSED: every rem token is a correct ÷1.6 conversion of ${base} (manual additions accounted).`);
+  console.log(
+    `[audit] PASSED: every rem token is a correct ÷1.6 conversion of ${base} (manual additions accounted).`
+  );
 }
 
 function main() {
@@ -374,7 +432,7 @@ function main() {
   if (!idx.includes(HACK_MARKER)) {
     console.error(
       `Refusing to run (${MODE}): "${HACK_MARKER}" not found in src/index.css. ` +
-        `The tree looks already converted — running again would double-convert. Aborting.`,
+        `The tree looks already converted — running again would double-convert. Aborting.`
     );
     process.exit(1);
   }
@@ -389,7 +447,9 @@ function main() {
     const { converted, rows, tokens } = convertContent(rel, original);
     totalTokens += tokens;
     for (const r of rows) {
-      manifestRows.push(`${rel}\t${r.line}\t${tsvField(r.old)}\t${tsvField(r.new)}\t${tsvField(r.snippet)}`);
+      manifestRows.push(
+        `${rel}\t${r.line}\t${tsvField(r.old)}\t${tsvField(r.new)}\t${tsvField(r.snippet)}`
+      );
     }
     if (converted !== original) {
       filesChanged++;
@@ -402,10 +462,12 @@ function main() {
   if (MODE === "apply") writeFileSync(MANIFEST, manifestText);
 
   console.log(
-    `[${MODE}] files scanned: ${files.length}, files with rem: ${filesChanged}, tokens converted: ${totalTokens}`,
+    `[${MODE}] files scanned: ${files.length}, files with rem: ${filesChanged}, tokens converted: ${totalTokens}`
   );
   if (MODE === "check") {
-    console.log(`(dry run — nothing written) manifest preview: ${manifestRows.length} rows`);
+    console.log(
+      `(dry run — nothing written) manifest preview: ${manifestRows.length} rows`
+    );
     console.log(manifestRows.slice(0, 8).join("\n"));
   }
   if (MODE === "apply") {

@@ -3,6 +3,7 @@
 ## Overview
 
 You have:
+
 - ✅ **SQL seed script** (`supabase/migrations/20250109000000_seed_chapter_2.sql`) - Creates structure
 - ✅ **Full markdown content** (`claude/Content/Chapter-2/*.md`) - 38 markdown files
 - ✅ **Import script** (`scripts/import-chapter-2-to-supabase.mjs`) - Imports markdown to database
@@ -17,6 +18,7 @@ You have:
 4. Run it
 
 This creates:
+
 - Content version (v1.0)
 - Module: "Visual Perception and UX"
 - 14 sections (Introduction, 11 main sections, 2 appendices)
@@ -31,6 +33,7 @@ npm run import:chapter2
 ```
 
 This script will:
+
 - Read all 38 markdown files from `claude/Content/Chapter-2/`
 - Convert markdown to JSONB structured content blocks
 - Insert paragraphs into the correct sections
@@ -63,13 +66,15 @@ After import, we'll create a component to display Chapter 2 using the same style
 ## Troubleshooting
 
 ### "Module not found"
+
 - Run the seed script first (Step 1)
 
 ### "Section not found"
+
 - Check that seed script created all sections
 - Verify section slugs match the mapping in the import script
 
 ### Import errors
+
 - Check `.env.local` has correct Supabase credentials
 - Ensure RLS policies allow inserts (temporarily permissive for development)
-

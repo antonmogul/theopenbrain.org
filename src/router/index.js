@@ -131,6 +131,29 @@ const routes = [
     name: "styleguide",
     component: () => import("../views/StyleGuideView.vue"),
   },
+  {
+    // Case Cabinet prototype (History chapter). Reads mock data from
+    // src/mocks/caseFiles.js until the case_files tables exist. Not linked in
+    // nav; open /case-cabinet directly.
+    path: "/case-cabinet",
+    name: "case-cabinet",
+    component: () => import("../views/CaseCabinetView.vue"),
+  },
+  {
+    // Phrenology skull prototype (History chapter, Widget 1). Placeholder SVG
+    // skull art until the Figma engravings are exported. Not linked in nav;
+    // open /phrenology directly.
+    path: "/phrenology",
+    name: "phrenology",
+    component: () => import("../views/PhrenologyView.vue"),
+  },
+  {
+    // 3D skull prototype (model-viewer). Companion to /phrenology (2D).
+    // Needs a skull.glb in public/publicAssets/models/. Not linked in nav.
+    path: "/phrenology-3d",
+    name: "phrenology-3d",
+    component: () => import("../views/Phrenology3DView.vue"),
+  },
 ];
 
 const router = createRouter({
@@ -188,7 +211,8 @@ router.beforeEach(async (to, from) => {
         // Redirect /dashboard to the correct role-specific dashboard
         if (to.name === "dashboard" && devRoleOverride.value !== "creator") {
           if (devRoleOverride.value === "student") return { path: "/student" };
-          if (devRoleOverride.value === "professor") return { path: "/professor" };
+          if (devRoleOverride.value === "professor")
+            return { path: "/professor" };
         }
         // Check requiredRole guard
         if (to.meta.requiredRole) {
@@ -196,8 +220,10 @@ router.beforeEach(async (to, from) => {
             ? to.meta.requiredRole
             : [to.meta.requiredRole];
           if (!requiredRoles.includes(devRoleOverride.value)) {
-            if (devRoleOverride.value === "student") return { path: "/student" };
-            if (devRoleOverride.value === "professor") return { path: "/professor" };
+            if (devRoleOverride.value === "student")
+              return { path: "/student" };
+            if (devRoleOverride.value === "professor")
+              return { path: "/professor" };
             return { path: "/dashboard" };
           }
         }

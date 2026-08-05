@@ -86,7 +86,9 @@ function select(id) {
       </nav>
 
       <div class="sg-foot">
-        <router-link to="/" class="t-label sg-foot-link">← Back to app</router-link>
+        <router-link to="/" class="t-label sg-foot-link"
+          >← Back to app</router-link
+        >
       </div>
     </aside>
 
@@ -162,7 +164,9 @@ function select(id) {
   font-size: 0.9375rem;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 .sg-nav-item:hover {
   background: rgb(var(--color-bg));
@@ -205,6 +209,8 @@ function select(id) {
 .sg-content {
   padding: 2.5rem 2.5rem 5rem;
   max-width: 1200px;
-  overflow-x: hidden;
+  /* No overflow-x here: `hidden` on one axis forces the other to `auto`, which
+     turned this into a scroll container and broke page scrolling. Clip wide
+     children (specimen rows, swatch grids) at their own container instead. */
 }
 </style>

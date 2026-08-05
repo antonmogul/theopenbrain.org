@@ -154,7 +154,9 @@ const ratings = [
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .skip-btn:hover:not(:disabled) {
@@ -168,14 +170,26 @@ const ratings = [
 }
 
 /* SM-2 scale → token spectrum. Easy uses ink so white label stays legible. */
-.bg-red-500 { background-color: rgb(var(--color-accent)); }
-.bg-orange-500 { background-color: rgb(var(--color-warn)); color: #4a2c00; }
-.bg-green-500 { background-color: rgb(var(--color-complete)); color: #0a3d33; }
-.bg-blue-500 { background-color: rgb(var(--color-ink)); }
+.bg-red-500 {
+  background-color: rgb(var(--color-accent));
+}
+.bg-orange-500 {
+  background-color: rgb(var(--color-warn));
+  color: #4a2c00;
+}
+.bg-green-500 {
+  background-color: rgb(var(--color-complete));
+  color: #0a3d33;
+}
+.bg-blue-500 {
+  background-color: rgb(var(--color-ink));
+}
 .hover\:bg-red-600:hover,
 .hover\:bg-orange-600:hover,
 .hover\:bg-green-600:hover,
-.hover\:bg-blue-600:hover { opacity: 0.88; }
+.hover\:bg-blue-600:hover {
+  opacity: 0.88;
+}
 
 /* Responsive */
 @media (max-width: 480px) {

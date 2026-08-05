@@ -27,6 +27,7 @@ src/stores/
 ```
 
 **Store Usage:**
+
 - Used in **49 different locations** across components
 - Most accessed: `useGeneral` (heavily used for UI state)
 
@@ -41,38 +42,41 @@ src/stores/
 **Purpose:** Global UI state and navigation
 
 **State Properties:**
+
 ```javascript
 state: () => ({
-  activeMenu: false,           // Menu open/closed
-  activeAbout: false,          // About section active
-  hasBeenVisited: boolean,     // First visit tracking
-  superScriptActive: false,    // Footnote overlay active
-  animationActive: false,      // Animation playing
-  legendIsActive: false,       // Legend visible
-  startIsActive: true,         // Start screen visible
-  activeMenuIndex: null,       // Active menu item
-  activeSidebar: false,        // Sidebar visible
-  activeImportMenu: false,     // Import dialog visible
-  count: 0,                    // Generic counter (unused?)
-  imgActive: false,            // Image overlay active
-  currentSubChapter: null,     // Current scroll position
-  progress: 0,                 // Scroll progress (0-1)
-  isScrolling: false,          // Scroll in progress
-  isNextBack: false,           // Navigation direction
-  savedPosition: undefined,    // Saved scroll position
-  changedText: 0               // Text update counter
-})
+  activeMenu: false, // Menu open/closed
+  activeAbout: false, // About section active
+  hasBeenVisited: boolean, // First visit tracking
+  superScriptActive: false, // Footnote overlay active
+  animationActive: false, // Animation playing
+  legendIsActive: false, // Legend visible
+  startIsActive: true, // Start screen visible
+  activeMenuIndex: null, // Active menu item
+  activeSidebar: false, // Sidebar visible
+  activeImportMenu: false, // Import dialog visible
+  count: 0, // Generic counter (unused?)
+  imgActive: false, // Image overlay active
+  currentSubChapter: null, // Current scroll position
+  progress: 0, // Scroll progress (0-1)
+  isScrolling: false, // Scroll in progress
+  isNextBack: false, // Navigation direction
+  savedPosition: undefined, // Saved scroll position
+  changedText: 0, // Text update counter
+});
 ```
 
 **Issues:**
 
 #### a) **Too Many Flags** (MEDIUM SEVERITY)
+
 - 17 different boolean/state properties
 - Many are single-use flags for specific features
 - Naming inconsistencies: `activeMenu` vs `legendIsActive` vs `imgActive`
 
 **Recommendation:**
 Group related state:
+
 ```javascript
 state: () => ({
   ui: {
@@ -80,28 +84,29 @@ state: () => ({
       main: false,
       about: false,
       import: false,
-      activeIndex: null
+      activeIndex: null,
     },
     overlays: {
       footnotes: false,
       legend: false,
-      image: false
-    }
+      image: false,
+    },
   },
   navigation: {
     currentSubChapter: null,
     scrollProgress: 0,
     isScrolling: false,
-    savedPosition: null
+    savedPosition: null,
   },
   session: {
     hasBeenVisited: false,
-    visitTimestamp: null
-  }
-})
+    visitTimestamp: null,
+  },
+});
 ```
 
 #### b) **Generic Names** (LOW SEVERITY)
+
 ```javascript
 count: 0,  // What is this counting?
 changedText: 0  // Why track this?
@@ -110,15 +115,16 @@ changedText: 0  // Why track this?
 If unused, should be removed.
 
 #### c) **Visit Tracking Logic in State** (MEDIUM SEVERITY)
+
 ```javascript
 hasBeenVisited: localStorage.hasBeenVisited &&
-  Math.abs(localStorage?.hasBeenVisited - Date.now()) /
-    (24 * 60 * 60 * 1000) < 1
-    ? true
-    : false
+Math.abs(localStorage?.hasBeenVisited - Date.now()) / (24 * 60 * 60 * 1000) < 1
+  ? true
+  : false;
 ```
 
 Complex logic in state initialization. Should be in an action:
+
 ```javascript
 state: () => ({
   hasBeenVisited: false
@@ -137,6 +143,7 @@ actions: {
 ```
 
 #### d) **Actions Directly Mutate State** (LOW SEVERITY)
+
 ```javascript
 actions: {
   toggle(_target) {
@@ -156,28 +163,34 @@ While Pinia allows direct mutation, this pattern is error-prone.
 **Purpose:** Manage text content and user highlights
 
 **State Properties:**
+
 ```javascript
 state: () => ({
   text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText,
   source: jsonText,
-  selectionIds: localStorage.selection ? JSON.parse(localStorage.selection) : [],
-  currentId: null
-})
+  selectionIds: localStorage.selection
+    ? JSON.parse(localStorage.selection)
+    : [],
+  currentId: null,
+});
 ```
 
 **Issues:**
 
 #### a) **Direct localStorage Access in State** (HIGH SEVERITY)
+
 ```javascript
-text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText
+text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText;
 ```
 
 **Problems:**
+
 1. Synchronous localStorage reads block initialization
 2. No error handling - will crash if JSON is invalid
 3. Violates single responsibility - store shouldn't handle persistence
 
 **Recommendation:**
+
 ```javascript
 // composables/useLocalStorage.js
 export function useLocalStorage(key, defaultValue) {
@@ -190,7 +203,7 @@ export function useLocalStorage(key, defaultValue) {
       return defaultValue;
     }
   };
-  
+
   const set = (value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -198,28 +211,29 @@ export function useLocalStorage(key, defaultValue) {
       console.error(`Failed to save to localStorage key "${key}":`, e);
     }
   };
-  
+
   return { get, set };
 }
 
 // In store
-import { useLocalStorage } from '@/composables/useLocalStorage';
+import { useLocalStorage } from "@/composables/useLocalStorage";
 
-const storage = useLocalStorage('sections', jsonText);
+const storage = useLocalStorage("sections", jsonText);
 
 state: () => ({
   text: storage.get(),
   // ...
-})
+});
 ```
 
 #### b) **Complex String Manipulation** (HIGH SEVERITY)
+
 ```javascript
 addSelection(selection) {
   // ... 30+ lines of string manipulation
   let target = selection.anchorNode.parentElement.innerHTML;
   newString = add(_target, _selection, positionMark, lengthMark);
-  
+
   function add(init, str, index, length) {
     var result =
       init.slice(0, index) +
@@ -233,6 +247,7 @@ addSelection(selection) {
 ```
 
 **Problems:**
+
 1. Inserting HTML strings into DOM via string concatenation
 2. Prone to errors and XSS if content ever becomes user-generated
 3. Brittle - depends on exact HTML structure
@@ -240,19 +255,21 @@ addSelection(selection) {
 
 **Recommendation:**
 Use proper DOM APIs or a library like `Rangy` for text selection:
-```javascript
-import Rangy from 'rangy';
-import 'rangy/lib/rangy-classapplier';
 
-const highlighter = rangy.createClassApplier('markerComment', {
-  elementTagName: 'mark',
-  elementAttributes: { id: `highlight-${id}` }
+```javascript
+import Rangy from "rangy";
+import "rangy/lib/rangy-classapplier";
+
+const highlighter = rangy.createClassApplier("markerComment", {
+  elementTagName: "mark",
+  elementAttributes: { id: `highlight-${id}` },
 });
 
 highlighter.applyToSelection();
 ```
 
 #### c) **Deeply Nested Object Traversal** (HIGH SEVERITY)
+
 ```javascript
 updateSectionsObj(sections, newString, id, sectionId) {
   let entries = Object.entries(sections);
@@ -274,6 +291,7 @@ updateSectionsObj(sections, newString, id, sectionId) {
 ```
 
 **Problems:**
+
 1. O(n³) or worse complexity
 2. Hard to read and maintain
 3. Error-prone (easy to miss edge cases)
@@ -281,49 +299,53 @@ updateSectionsObj(sections, newString, id, sectionId) {
 
 **Recommendation:**
 Flatten data structure (see Data Layer Audit) or use recursive function:
+
 ```javascript
 function updateNode(node, id, newString) {
   if (node.id === id) {
     node.text = newString;
     return true;
   }
-  
+
   // Check children recursively
-  for (const child of (node.paragraphs || [])) {
+  for (const child of node.paragraphs || []) {
     if (updateNode(child, id, newString)) return true;
   }
-  
-  for (const sub of (node.subSection || [])) {
+
+  for (const sub of node.subSection || []) {
     if (updateNode(sub, id, newString)) return true;
   }
-  
+
   return false;
 }
 ```
 
 #### d) **Side Effects in Actions** (MEDIUM SEVERITY)
+
 ```javascript
 removeSelection(target) {
   // Direct DOM manipulation
   const parent = target.parentElement;
   const id = parent.id;
   let punkt = document.getElementById("punkt-" + markId);
-  
+
   // Update store state
   this.updateText("text", entries);
-  
+
   // Update localStorage
   localStorage.setItem("selection", JSON.stringify(_newSelection));
 }
 ```
 
 **Problems:**
+
 - Mixes DOM manipulation, state updates, and persistence
 - Hard to test
 - Side effects not obvious from function name
 
 **Recommendation:**
 Separate concerns:
+
 ```javascript
 // Store action - only update state
 removeSelection(highlightId) {
@@ -334,13 +356,13 @@ removeSelection(highlightId) {
 // Component - handle DOM and call action
 const removeHighlight = (element) => {
   const highlightId = extractIdFromElement(element);
-  
+
   // Update store
   textStore.removeSelection(highlightId);
-  
+
   // Persist to localStorage
   saveSelections(textStore.selectionIds);
-  
+
   // Update DOM
   removeMarkElement(element);
 };
@@ -355,13 +377,15 @@ const removeHighlight = (element) => {
 **Purpose:** Manage animation hover effects
 
 **State:**
+
 ```javascript
-state: () => ({ 
-  hoverActive: null 
-})
+state: () => ({
+  hoverActive: null,
+});
 ```
 
 **Actions (ALL PROBLEMATIC):**
+
 ```javascript
 enterHoverPoint(id) {
   this.hoverActive = id;
@@ -375,15 +399,17 @@ enterHoverPoint(id) {
 #### a) **Direct DOM Manipulation in Store** (HIGH SEVERITY)
 
 **Problem:**
+
 - Stores should manage **state**, not **DOM**
 - This breaks the Vue reactivity model
 - Hard to test (requires DOM)
 - Tightly couples store to specific DOM structure
 
 **Recommendation:**
+
 ```javascript
 // Store - only manage state
-state: () => ({ 
+state: () => ({
   hoveredElements: new Set()
 }),
 actions: {
@@ -397,7 +423,7 @@ actions: {
 
 // Component - handle DOM via Vue bindings
 <template>
-  <div 
+  <div
     :id="`highlight-${id}`"
     :class="{ hoverActive: animationStore.hoveredElements.has(id) }"
   >
@@ -405,6 +431,7 @@ actions: {
 ```
 
 #### b) **Assumes DOM Element Exists** (HIGH SEVERITY)
+
 ```javascript
 document.getElementById("highlight-" + id).classList.add("hoverActive");
 // What if this element doesn't exist? → Uncaught TypeError
@@ -417,6 +444,7 @@ document.getElementById("highlight-" + id).classList.add("hoverActive");
 Current store has single purpose: track hover state
 
 This could be:
+
 1. **Local component state** (if hover only affects one component)
 2. **CSS :hover** (if purely visual)
 3. **Component ref** (if parent needs to track)
@@ -432,31 +460,35 @@ Only use global store if hover state needs to be accessed by distant components.
 **Purpose:** Manage user comments on highlights
 
 **State:**
+
 ```javascript
 state: () => ({
   comments: localStorage.comments ? JSON.parse(localStorage.comments) : {},
   commentsId: [],
-  activeCom: null
-})
+  activeCom: null,
+});
 ```
 
 **Issues:**
 
 #### a) **Same localStorage Issues** (HIGH SEVERITY)
+
 ```javascript
-comments: localStorage.comments ? JSON.parse(localStorage.comments) : {}
+comments: localStorage.comments ? JSON.parse(localStorage.comments) : {};
 ```
 
 No error handling, synchronous read, etc. (Same as useText store)
 
 #### b) **Unused Property** (LOW SEVERITY)
+
 ```javascript
-commentsId: []  // Never populated or used
+commentsId: []; // Never populated or used
 ```
 
 Should be removed.
 
 #### c) **Action Mixes Concerns** (MEDIUM SEVERITY)
+
 ```javascript
 updateCom(input, event) {
   if (input.length !== 0) {
@@ -471,6 +503,7 @@ updateCom(input, event) {
 Mixes validation, state update, and persistence.
 
 **Recommendation:**
+
 ```javascript
 // Store - pure state management
 setComment(id, text) {
@@ -501,11 +534,12 @@ watch(
 
 **Recommendation:**
 Create Pinia plugin for auto-persistence:
+
 ```javascript
 // plugins/pinia-persist.js
 export function piniaPersistedState(context) {
   const { store } = context;
-  
+
   // Load from localStorage on init
   const key = `pinia-${store.$id}`;
   const saved = localStorage.getItem(key);
@@ -516,7 +550,7 @@ export function piniaPersistedState(context) {
       console.error(`Failed to restore store ${store.$id}:`, e);
     }
   }
-  
+
   // Save to localStorage on change
   store.$subscribe((mutation, state) => {
     try {
@@ -544,11 +578,16 @@ Or use existing plugin: `pinia-plugin-persistedstate`
 // Current - no types
 export const useGeneral = defineStore("main", {
   state: () => ({ activeMenu: false }),
-  actions: { toggle(_target) { this[_target] = !this[_target]; } }
+  actions: {
+    toggle(_target) {
+      this[_target] = !this[_target];
+    },
+  },
 });
 ```
 
 **Recommendation:**
+
 ```typescript
 // With TypeScript
 interface GeneralState {
@@ -560,13 +599,13 @@ interface GeneralState {
 export const useGeneral = defineStore("main", {
   state: (): GeneralState => ({
     activeMenu: false,
-    currentSubChapter: null
+    currentSubChapter: null,
   }),
   actions: {
     toggleMenu(): void {
       this.activeMenu = !this.activeMenu;
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -575,6 +614,7 @@ export const useGeneral = defineStore("main", {
 ### 3. **Router Injection Pattern** (INTERESTING)
 
 **Current Code:**
+
 ```javascript
 // main.js
 pinia.use(({ store }) => {
@@ -582,16 +622,18 @@ pinia.use(({ store }) => {
 });
 
 // In stores
-this.router.go();  // Trigger page reload
+this.router.go(); // Trigger page reload
 ```
 
 **Assessment:**
+
 - **Creative solution** to access router in stores
 - `markRaw()` prevents reactivity (good)
 - But stores calling `router.go()` is questionable pattern
 
 **Recommendation:**
 Stores should emit events or update state, components should handle routing:
+
 ```javascript
 // Store
 navigateRequested: false,
@@ -623,13 +665,14 @@ watch(
 Both `useText` and `useCom` manage user data that should be saved/loaded together.
 
 **Recommendation:**
+
 ```javascript
 // useUserData store
-export const useUserData = defineStore('userData', {
+export const useUserData = defineStore("userData", {
   state: () => ({
     highlights: {},
     comments: {},
-    selections: []
+    selections: [],
   }),
   actions: {
     save() {
@@ -640,13 +683,13 @@ export const useUserData = defineStore('userData', {
     },
     export() {
       return {
-        version: '1.0.0',
+        version: "1.0.0",
         highlights: this.highlights,
         comments: this.comments,
-        selections: this.selections
+        selections: this.selections,
       };
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -657,6 +700,7 @@ export const useUserData = defineStore('userData', {
 ### 1. **No Memoization** (LOW SEVERITY)
 
 Getters are minimal:
+
 ```javascript
 getters: {
   getactiveMenu: (state) => state.activeMenu,  // Unnecessary wrapper
@@ -667,12 +711,13 @@ getters: {
 Most getters are simple property access (not needed).
 
 **Missing useful getters:**
+
 ```javascript
 getters: {
   // Check if any menu is open
-  hasOpenMenu: (state) => 
+  hasOpenMenu: (state) =>
     state.activeMenu || state.activeAbout || state.activeImportMenu,
-  
+
   // Get current chapter from URL
   currentChapter: (state) => {
     if (!state.currentSubChapter) return null;
@@ -691,12 +736,13 @@ Large `text` object updates trigger full reactivity propagation.
 
 **Recommendation:**
 Use `shallowRef` for large objects that don't need deep reactivity:
+
 ```javascript
-import { shallowRef } from 'vue';
+import { shallowRef } from "vue";
 
 state: () => ({
-  text: shallowRef(jsonText)
-})
+  text: shallowRef(jsonText),
+});
 ```
 
 ---
@@ -706,28 +752,29 @@ state: () => ({
 ### Current State: **NO TESTS**
 
 **Recommendation:**
+
 ```javascript
 // stores/__tests__/useGeneral.spec.js
-import { setActivePinia, createPinia } from 'pinia';
-import { useGeneral } from '../index';
+import { setActivePinia, createPinia } from "pinia";
+import { useGeneral } from "../index";
 
-describe('useGeneral', () => {
+describe("useGeneral", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
   });
-  
-  it('toggles menu state', () => {
+
+  it("toggles menu state", () => {
     const store = useGeneral();
     expect(store.activeMenu).toBe(false);
-    
-    store.toggle('activeMenu');
+
+    store.toggle("activeMenu");
     expect(store.activeMenu).toBe(true);
   });
-  
-  it('tracks current subchapter', () => {
+
+  it("tracks current subchapter", () => {
     const store = useGeneral();
-    store.currentSubChapter = 'introduction';
-    expect(store.currentSubChapter).toBe('introduction');
+    store.currentSubChapter = "introduction";
+    expect(store.currentSubChapter).toBe("introduction");
   });
 });
 ```
@@ -801,7 +848,7 @@ describe('useGeneral', () => {
 
 ```typescript
 // stores/feature.ts
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
 interface FeatureState {
   items: Item[];
@@ -809,20 +856,20 @@ interface FeatureState {
   error: string | null;
 }
 
-export const useFeature = defineStore('feature', {
+export const useFeature = defineStore("feature", {
   // State
   state: (): FeatureState => ({
     items: [],
     loading: false,
-    error: null
+    error: null,
   }),
-  
+
   // Getters (computed)
   getters: {
-    activeItems: (state) => state.items.filter(item => item.active),
-    hasError: (state) => state.error !== null
+    activeItems: (state) => state.items.filter((item) => item.active),
+    hasError: (state) => state.error !== null,
   },
-  
+
   // Actions (methods)
   actions: {
     async fetchItems() {
@@ -837,18 +884,19 @@ export const useFeature = defineStore('feature', {
         this.loading = false;
       }
     },
-    
+
     updateItem(id: string, updates: Partial<Item>) {
-      const item = this.items.find(i => i.id === id);
+      const item = this.items.find((i) => i.id === id);
       if (item) {
         Object.assign(item, updates);
       }
-    }
-  }
+    },
+  },
 });
 ```
 
 **Key Principles:**
+
 1. ✅ State is typed
 2. ✅ Actions are pure (no DOM manipulation)
 3. ✅ Error handling included
@@ -876,22 +924,26 @@ export const useFeature = defineStore('feature', {
 The state management architecture has **good structure** but **poor implementation details**:
 
 **Strengths:**
+
 - Uses Pinia (modern, lightweight)
 - Logical store separation
 - Centralized state management
 
 **Critical Issues:**
+
 1. **DOM manipulation in stores** (useAnimation) - breaks separation of concerns
 2. **No error handling** - localStorage operations can crash
 3. **Complex string/object manipulation** - brittle and hard to maintain
 4. **No type safety** - prone to runtime errors
 
 **Quick Wins:**
+
 1. Remove DOM manipulation from useAnimation (2-3 hours)
 2. Add try/catch around JSON.parse (1 hour)
 3. Install pinia-plugin-persistedstate (2 hours)
 
 **Strategic Improvements:**
+
 - Add TypeScript for safety
 - Extract composables for reusable logic
 - Add comprehensive test coverage

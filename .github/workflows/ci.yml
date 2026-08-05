@@ -1,0 +1,87 @@
+# Quality gate for pull requests and the main branches.
+#
+# Deliberately scoped to things that are true today, so the gate stays green and
+# therefore stays meaningful. It runs: format check, lint, unit tests, build.
+#
+# It does NOT run Cypress E2E — those 3 specs need a seeded Supabase and would
+# fail on secrets, and a red-by-default pipeline is worse than none. Wiring them
+# up is tracked separately.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+# A new push to the same PR cancels the previous run.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # The dependency tree has known peer conflicts (the project's own
+      # `npm run clean` uses the same flag), so a plain `npm ci` fails.
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # Chromium only — the smoke test doesn't check cross-browser rendering,
+      # and pulling all three engines roughly triples this step.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Check formatting
+        run: npm run format:check
+
+      # 0 errors today. --max-warnings=130 against 123 actual: fails on any new
+      # error immediately, and on more than a handful of new warnings. Ratchet
+      # this down as the debt in OPENBRAIN-9 is paid off.
+      - name: Lint
+        run: npm run lint:ci
+
+      - name: Unit tests
+        run: npm run test:ci
+
+      # Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY as repository
+      # secrets to turn on the smoke test's chapter-content assertions. Without
+      # them the build still succeeds, but chapter routes render only the SPA
+      # shell, so the smoke test drops content checks and keeps structural ones.
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      # A production build that scrolls sideways or throws on load is the class
+      # of bug unit tests miss — see OPENBRAIN-4, where the reader scrolled
+      # horizontally at every desktop width and nothing caught it.
+      - name: Smoke test the production build
+        run: npm run test:smoke
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Upload smoke artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshots
+          path: .smoke/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -84,7 +84,9 @@ const failedTestCount = computed(() => {
       <div class="lab-toolbar">
         <div class="toolbar-left">
           <h3 class="lab-title">{{ currentLab?.title || "Lab" }}</h3>
-          <span v-if="currentLab?.difficulty" class="difficulty-badge">{{ currentLab.difficulty }}</span>
+          <span v-if="currentLab?.difficulty" class="difficulty-badge">{{
+            currentLab.difficulty
+          }}</span>
         </div>
         <div class="toolbar-right">
           <span
@@ -94,7 +96,13 @@ const failedTestCount = computed(() => {
           >
             Best: {{ bestScore }}%
           </span>
-          <button @click="handleReset" :disabled="executing" class="action-btn secondary">Reset</button>
+          <button
+            @click="handleReset"
+            :disabled="executing"
+            class="action-btn secondary"
+          >
+            Reset
+          </button>
           <button
             v-if="currentLab?.show_solution"
             @click="handleShowSolution"
@@ -149,8 +157,16 @@ const failedTestCount = computed(() => {
               :class="{ active: activeTab === 'tests' }"
             >
               Tests
-              <span v-if="executionResult?.testResults && failedTestCount > 0" class="badge fail">{{ failedTestCount }}</span>
-              <span v-else-if="executionResult?.testResults && passedAllTests" class="badge pass">&#10003;</span>
+              <span
+                v-if="executionResult?.testResults && failedTestCount > 0"
+                class="badge fail"
+                >{{ failedTestCount }}</span
+              >
+              <span
+                v-else-if="executionResult?.testResults && passedAllTests"
+                class="badge pass"
+                >&#10003;</span
+              >
             </button>
           </div>
 
@@ -202,7 +218,9 @@ const failedTestCount = computed(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-text {

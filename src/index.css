@@ -98,9 +98,29 @@
 }
 
 /* Prose width consumes the user's line-length preference.
-   Default `--reading-measure` (72ch in brand.css) ≈ today's 780px in IBM Plex. */
+   Default `--reading-measure` is 780px in brand.css (≈72ch in IBM Plex).
+
+   Clamped to 100% so the preference can only ever make the measure NARROWER
+   than the column that holds it. Without the clamp, --reading-measure (780px)
+   exceeds the actual prose column at every desktop width below ~2560px — the
+   column is --reader-prose-w (40vw) minus 110px of padding, i.e. 466px at
+   1440px — so the cap never bound and long content overflowed its container
+   instead of wrapping. See OPENBRAIN-4. */
 .prose-measure {
-  max-width: var(--reading-measure, 780px);
+  max-width: min(var(--reading-measure, 780px), 100%);
+}
+
+/* Long unbroken strings — bare citation URLs in the references list are the
+   real-world case — have no break opportunity, so they force their container
+   wider than the prose column and the whole PAGE scrolls horizontally. On
+   chapter 3 that was 256px of scroll from a handful of <li> URLs.
+   overflow-wrap only breaks a word when it would otherwise overflow, so normal
+   prose is unaffected. See OPENBRAIN-4. */
+.prose-measure,
+.prose-measure p,
+.prose-measure li,
+.prose-measure a {
+  overflow-wrap: break-word;
 }
 
 /* fonts */
@@ -496,7 +516,11 @@ h4 {
 .highlighterIlluStroke > g > path,
 .highlighterIlluFill > path,
 .highlighterIlluStroke > path {
-  transition: fill 0.5s, fill-opacity 0.5s, stroke 0.5s, stroke-opacity 0.5s;
+  transition:
+    fill 0.5s,
+    fill-opacity 0.5s,
+    stroke 0.5s,
+    stroke-opacity 0.5s;
 }
 
 .highlighterIlluFill.highlightIllu > *,
@@ -561,7 +585,9 @@ h4 {
 .punktComment {
   position: absolute;
   left: -0.78125rem;
-  left: calc(50vw - min(calc(50vw + 0.46875rem), calc(780px + 6.875rem)) - 0.78125rem);
+  left: calc(
+    50vw - min(calc(50vw + 0.46875rem), calc(780px + 6.875rem)) - 0.78125rem
+  );
   width: 1.5625rem;
   height: 1.5625rem;
   border-radius: 50%;
@@ -611,7 +637,11 @@ mark[data-hl-id] {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s, fill 0s, fill-opacity 0s, stroke 0s,
+  transition:
+    opacity 0.3s,
+    fill 0s,
+    fill-opacity 0s,
+    stroke 0s,
     stroke-opacity 0s;
   fill: white;
 }
@@ -746,7 +776,6 @@ sup:hover {
   fill: rgb(var(--color-paper));
 }
 
-
 /* Citation reference superscripts (Supabase chapters) */
 .citation-ref {
   color: rgb(var(--color-accent));
@@ -762,8 +791,15 @@ sup:hover {
   animation: citationPulse 1.5s ease;
 }
 @keyframes citationPulse {
-  0%, 100% { background: transparent; }
-  20%, 60% { background: rgb(var(--color-accent) / 0.18); border-radius: 3px; }
+  0%,
+  100% {
+    background: transparent;
+  }
+  20%,
+  60% {
+    background: rgb(var(--color-accent) / 0.18);
+    border-radius: 3px;
+  }
 }
 
 /* Inline figure callouts — "(Figure N)" anchoring the left-column placeholder */
@@ -780,8 +816,19 @@ sup:hover {
   text-decoration-color: rgb(var(--color-complete));
 }
 
+/* Full-bleed breakout: pull a block out of the right-pinned prose column so it
+   spans the window. Uses --app-w (the real content width, set from JS in
+   main.js) rather than vw units — 100vw includes the scrollbar gutter, so the
+   vw version shifted these blocks ~15px too far and the document scrolled
+   horizontally. Derived from --reader-prose-w so it can't drift from the
+   column it's breaking out of. See OPENBRAIN-4. */
 .-translate-x-custom {
-  transform: translateX(min(-50vw, calc(-100vw + 780px + 6.875rem - 1px)));
+  transform: translateX(
+    min(
+      calc(var(--app-w, 100vw) * -0.5),
+      calc(var(--app-w, 100vw) * -1 + 780px + 6.875rem - 1px)
+    )
+  );
 }
 
 @media (max-width: 1299px) {
@@ -795,5 +842,7 @@ sup:hover {
 .ob-flash {
   box-shadow: 0 0 0 2px rgb(var(--color-accent) / 0.7);
   background: rgb(var(--color-accent) / 0.06);
-  transition: box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }

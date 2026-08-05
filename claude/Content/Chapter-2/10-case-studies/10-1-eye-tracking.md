@@ -22,12 +22,14 @@ Today, eye-tracking data underlies many foundational UX principles—though the 
 Nielsen's landmark research confirmed a uncomfortable truth: users rarely read web content thoroughly.
 
 **Key findings**:
+
 - Users read only about 20-28% of words on average web pages
 - Reading depth decreases as page length increases
 - Users employ scanning strategies rather than linear reading
 - Only highly motivated users (specific tasks, high interest) read thoroughly
 
 **Implications**:
+
 - Don't write for thorough reading; write for scanning
 - Front-load important information
 - Use clear headings that convey content
@@ -38,17 +40,20 @@ Nielsen's landmark research confirmed a uncomfortable truth: users rarely read w
 Users systematically avoid areas associated with advertising:
 
 **Original findings (early 2000s)**:
+
 - Users avoided rectangular areas at common ad positions
 - Even relevant content in these positions was ignored
 - Banner blindness persisted regardless of ad content
 
 **Evolution**:
+
 - Users have learned new ad positions and formats
 - Banner blindness extends to sponsored content sections
 - Native advertising attempts to circumvent blindness
 - Users become suspicious of anything resembling ads
 
 **Current state**:
+
 - Approximately 30% of users employ ad blockers
 - Remaining users develop sophisticated avoidance strategies
 - Content in ad-like positions requires explicit differentiation
@@ -58,6 +63,7 @@ Users systematically avoid areas associated with advertising:
 Visual elements and text compete for attention:
 
 **Findings**:
+
 - Large images capture early fixations
 - Faces are particularly powerful attention attractors
 - Decorative images receive less sustained attention than informational images
@@ -65,6 +71,7 @@ Visual elements and text compete for attention:
 - Text adjacent to irrelevant images receives decreased attention
 
 **Implications**:
+
 - Use images purposefully, not decoratively
 - Ensure image-text relationships are meaningful
 - Leverage faces for attention but ensure relevant content follows
@@ -104,18 +111,21 @@ How users process pricing:
 Eye-tracking on mobile reveals different patterns:
 
 **Mobile characteristics**:
+
 - Narrower focus (less peripheral scanning)
 - More vertical scanning (content stacks vertically)
 - Faster initial scanning (mobile sessions often shorter)
 - More thumb-based targeting (eyes guide thumb)
 
 **Comparison**:
+
 - Desktop F-pattern vs. mobile vertical pattern
 - Desktop wider horizontal scanning vs. mobile narrow focus
 - Desktop more exploratory vs. mobile more goal-directed
 - Desktop longer sessions vs. mobile briefer, repeated visits
 
 **Design implications**:
+
 - Mobile design should be more focused, less exploratory
 - Critical content must be immediately visible on mobile
 - Mobile users are often task-focused; support task completion
@@ -128,12 +138,14 @@ Eye-tracking research has limitations that affect interpretation:
 ### Lab vs. Remote Testing
 
 **Lab testing**:
+
 - High accuracy; controlled conditions
 - Small sample sizes; potential observer effects
 - Users may behave differently when watched
 - Expensive equipment and facilities
 
 **Remote testing**:
+
 - Larger sample sizes; natural conditions
 - Lower accuracy; varied equipment
 - Users in actual contexts
@@ -166,6 +178,7 @@ Eye-tracking reveals where users look but requires complementary methods (interv
 ### Content Placement
 
 Based on eye-tracking evidence:
+
 - Place critical content where users actually look (top, center-left for Western layouts)
 - Don't assume sidebar content is seen
 - Position CTAs in high-fixation zones
@@ -188,6 +201,7 @@ Based on eye-tracking evidence:
 ### Testing Your Own Content
 
 If conducting eye-tracking research:
+
 - Use realistic tasks that match actual user goals
 - Include enough participants for statistical reliability (typically 30+)
 - Combine eye-tracking with comprehension measures
@@ -196,6 +210,7 @@ If conducting eye-tracking research:
 ### Applying Without Eye-Tracking
 
 If eye-tracking isn't available:
+
 - Use attention estimation tools (algorithms predicting fixation)
 - Apply the squint test for visual hierarchy
 - Conduct 5-second tests for first impressions

@@ -37,8 +37,12 @@ export function useAnimations() {
       // Fetch animations, states, and variants in parallel
       const [animRows, stateRows, variantRows] = await Promise.all([
         supabaseRest("animations?select=*&order=created_at"),
-        supabaseRest("animation_states?select=*&order=animation_id,order_index"),
-        supabaseRest("animation_variants?select=*&order=animation_id,order_index"),
+        supabaseRest(
+          "animation_states?select=*&order=animation_id,order_index"
+        ),
+        supabaseRest(
+          "animation_variants?select=*&order=animation_id,order_index"
+        ),
       ]);
 
       // Group states and variants by animation_id
@@ -50,7 +54,8 @@ export function useAnimations() {
 
       const variantsByAnim = {};
       for (const v of variantRows) {
-        if (!variantsByAnim[v.animation_id]) variantsByAnim[v.animation_id] = [];
+        if (!variantsByAnim[v.animation_id])
+          variantsByAnim[v.animation_id] = [];
         variantsByAnim[v.animation_id].push(v);
       }
 
@@ -120,7 +125,9 @@ export function useAnimations() {
       // [1 DATA] summary — how many figures actually got interactive data. If states
       // total is 0 here, the seed didn't apply (or the cache is stale).
       cgroup("DATA", `fetchAnimations → ${transformed.length} figures`, () => {
-        const withStates = transformed.filter((a) => a.states || a.statesHighlight);
+        const withStates = transformed.filter(
+          (a) => a.states || a.statesHighlight
+        );
         const withSwitch = transformed.filter((a) => a.switch);
         clog("DATA", "totals", {
           figures: transformed.length,

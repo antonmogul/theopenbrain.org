@@ -4,21 +4,23 @@
  * Handles all chapter/module related API operations.
  */
 
-import { get, post, patch, del, buildInFilter } from './client';
-import { READING_SPEED_WPM } from '@/constants/dashboard';
+import { get, post, patch, del, buildInFilter } from "./client";
+import { READING_SPEED_WPM } from "@/constants/dashboard";
 
 /**
  * Fetch all modules (chapters) with stats
  * @returns {Promise<Array>} Chapters with section/paragraph counts
  */
 export async function fetchChapters() {
-  const modules = await get('modules?select=id,title,slug,order_index,status,updated_at&order=order_index.asc');
+  const modules = await get(
+    "modules?select=id,title,slug,order_index,status,updated_at&order=order_index.asc"
+  );
 
   // Fetch stats for each module
   const chaptersWithStats = await Promise.all(
     modules.map(async (mod) => {
       const sections = await get(`sections?module_id=eq.${mod.id}&select=id`);
-      const sectionIds = sections.map(s => s.id);
+      const sectionIds = sections.map((s) => s.id);
 
       let paragraphCount = 0;
       let wordCount = 0;
@@ -29,7 +31,7 @@ export async function fetchChapters() {
         );
         paragraphCount = paragraphs.length;
         wordCount = paragraphs.reduce((sum, p) => {
-          const text = p.content_text || '';
+          const text = p.content_text || "";
           return sum + text.split(/\s+/).filter(Boolean).length;
         }, 0);
       }
@@ -63,7 +65,9 @@ export async function fetchChapter(chapterId) {
  * @returns {Promise<Array>} Sections
  */
 export async function fetchSections(moduleId) {
-  return get(`sections?module_id=eq.${moduleId}&select=id,title,slug,order_index&order=order_index.asc`);
+  return get(
+    `sections?module_id=eq.${moduleId}&select=id,title,slug,order_index&order=order_index.asc`
+  );
 }
 
 /**
@@ -86,7 +90,7 @@ export async function fetchParagraphs(sectionIds) {
  */
 export async function fetchChapterContent(moduleId) {
   const sections = await fetchSections(moduleId);
-  const sectionIds = sections.map(s => s.id);
+  const sectionIds = sections.map((s) => s.id);
   const paragraphs = await fetchParagraphs(sectionIds);
 
   return { sections, paragraphs };
@@ -98,11 +102,11 @@ export async function fetchChapterContent(moduleId) {
  * @returns {Promise<Object>} Created chapter
  */
 export async function createChapter(data) {
-  const [created] = await post('modules', {
+  const [created] = await post("modules", {
     title: data.title,
     slug: data.slug,
     order_index: data.order_index || 0,
-    status: data.status || 'draft',
+    status: data.status || "draft",
     content_version_id: data.content_version_id,
     created_by: data.created_by,
   });
@@ -179,7 +183,7 @@ export async function updateSection(sectionId, data) {
  * @returns {Promise<Object>} Created section
  */
 export async function createSection(data) {
-  const [created] = await post('sections', {
+  const [created] = await post("sections", {
     module_id: data.module_id,
     title: data.title,
     slug: data.slug,
@@ -195,10 +199,10 @@ export async function createSection(data) {
  * @returns {Promise<Object>} Created paragraph
  */
 export async function createParagraph(data) {
-  const [created] = await post('paragraphs', {
+  const [created] = await post("paragraphs", {
     section_id: data.section_id,
     content: data.content,
-    content_text: data.content_text || '',
+    content_text: data.content_text || "",
     order_index: data.order_index || 0,
     is_subsection_header: data.is_subsection_header || false,
     subsection_level: data.subsection_level || 0,
@@ -212,7 +216,7 @@ export async function createParagraph(data) {
  * @returns {Promise<Object>} Created reference
  */
 export async function createReference(data) {
-  const [created] = await post('references', {
+  const [created] = await post("references", {
     module_id: data.module_id,
     number: data.number,
     authors: data.authors,
@@ -223,7 +227,7 @@ export async function createReference(data) {
     pages: data.pages || null,
     doi: data.doi || null,
     url: data.url || null,
-    pub_type: data.pub_type || 'article',
+    pub_type: data.pub_type || "article",
     raw_text: data.raw_text || null,
   });
   return created;

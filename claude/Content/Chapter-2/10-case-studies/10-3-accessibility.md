@@ -13,6 +13,7 @@ Human perceptual systems vary continuously, not categorically:
 ### Vision
 
 From 20/20 to low vision to blindness:
+
 - **20/20**: Statistical norm for visual acuity
 - **Mild impairment**: Reading glasses, mild blur
 - **Moderate impairment**: Significant blur, difficulty with small text
@@ -24,6 +25,7 @@ Each point on the spectrum has different design needs. Design that only works fo
 ### Color Perception
 
 From trichromat to anomalous to dichromat:
+
 - **Normal trichromat**: Three cone types with typical sensitivity
 - **Anomalous trichromat**: Shifted cone sensitivity (most common color deficiency)
 - **Dichromat**: Missing cone type (more severe)
@@ -34,6 +36,7 @@ Color-dependent design fails progressively across this spectrum.
 ### Motion Sensitivity
 
 From typical to vestibular sensitive:
+
 - **Typical**: Standard motion processing, no discomfort
 - **Mild sensitivity**: Minor discomfort with aggressive motion
 - **Moderate sensitivity**: Significant discomfort, needs reduced motion
@@ -42,6 +45,7 @@ From typical to vestibular sensitive:
 ### Attention
 
 From typical to ADHD spectrum:
+
 - **Typical attention**: Standard focus duration and distractibility
 - **Attention challenges**: Difficulty with sustained focus
 - **ADHD**: Clinical attention differences requiring accommodation
@@ -54,6 +58,7 @@ Interface design affects attention differently across this spectrum.
 The "curb cut effect" refers to a pattern where accommodations for specific disabilities benefit everyone:
 
 **Curb cuts** (ramps at street corners): Designed for wheelchair users, also benefit:
+
 - Parents with strollers
 - Travelers with rolling luggage
 - Delivery workers with dollies
@@ -65,6 +70,7 @@ This pattern appears throughout accessible design.
 ### Digital Examples
 
 **Captions**: Designed for deaf users, also benefit:
+
 - Users in loud environments
 - Users in quiet environments where audio isn't possible
 - Non-native speakers
@@ -72,18 +78,21 @@ This pattern appears throughout accessible design.
 - SEO (text is searchable)
 
 **High contrast**: Designed for low vision, also benefit:
+
 - Users in bright sunlight
 - Users on low-quality displays
 - Users with temporary eye fatigue
 - Aging users with normal age-related vision changes
 
 **Keyboard navigation**: Designed for motor impairments, also benefit:
+
 - Power users preferring keyboard
 - Users with temporary hand injuries
 - Users in settings where mouse isn't available
 - Developers testing functionality
 
 **Simple language**: Designed for cognitive accessibility, also benefit:
+
 - Non-native speakers
 - Users reading quickly
 - Users under stress or fatigue
@@ -128,6 +137,7 @@ Accessible design supports diverse assistive technologies:
 ### Screen Readers
 
 Software that reads page content aloud:
+
 - JAWS, NVDA (Windows)
 - VoiceOver (Mac, iOS)
 - TalkBack (Android)
@@ -137,6 +147,7 @@ Design implications: Semantic HTML, proper heading structure, alt text, ARIA whe
 ### Screen Magnification
 
 Software that enlarges portion of screen:
+
 - ZoomText, MAGic (Windows)
 - Built-in magnification (all platforms)
 
@@ -145,6 +156,7 @@ Design implications: Layouts that work at high zoom, text that resizes, responsi
 ### Alternative Input
 
 Beyond keyboard and mouse:
+
 - Voice control (Dragon, Voice Control)
 - Switch access
 - Eye tracking
@@ -155,6 +167,7 @@ Design implications: Large tap targets, keyboard accessibility, focus visibility
 ### Reading and Cognitive Aids
 
 For cognitive and learning differences:
+
 - Text-to-speech
 - Reading guides
 - Customizable typography

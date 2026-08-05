@@ -24,7 +24,12 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 async function loadProgressAndNotes() {
-  if (!isAuthenticated.value || !moduleSummary.value || !session.value?.access_token) return;
+  if (
+    !isAuthenticated.value ||
+    !moduleSummary.value ||
+    !session.value?.access_token
+  )
+    return;
   const mid = moduleSummary.value.id;
   try {
     const [progressRes, notesRes] = await Promise.all([
@@ -85,7 +90,10 @@ function sectionMeta(section) {
     for (const p of list || []) {
       if (p.animation || p.animationFull || p.img) figures += 1;
       if (typeof p.text === "string") {
-        words += p.text.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+        words += p.text
+          .replace(/<[^>]+>/g, " ")
+          .split(/\s+/)
+          .filter(Boolean).length;
       }
       if (p.subSection) walk(p.subSection);
       if (p.subSubSection) walk(p.subSubSection);
@@ -183,7 +191,8 @@ function sectionTitleById(id) {
       </div>
 
       <p v-if="!isAuthenticated" class="signin-hint">
-        <router-link to="/">Sign in</router-link> to track progress and take notes.
+        <router-link to="/">Sign in</router-link> to track progress and take
+        notes.
       </p>
     </aside>
 
@@ -226,7 +235,9 @@ function sectionTitleById(id) {
         <ul class="notes-list">
           <li v-for="n in notes" :key="n.id">
             <p class="note-content">"{{ n.content }}"</p>
-            <span class="note-section">— {{ sectionTitleById(n.section_id) }}</span>
+            <span class="note-section"
+              >— {{ sectionTitleById(n.section_id) }}</span
+            >
           </li>
         </ul>
       </template>
@@ -380,7 +391,9 @@ function sectionTitleById(id) {
   color: rgb(var(--color-ink));
   background: transparent;
   border: 1px solid rgb(var(--color-ink) / 0.85);
-  transition: background 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .btn:hover {

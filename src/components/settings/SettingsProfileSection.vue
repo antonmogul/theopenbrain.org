@@ -292,7 +292,10 @@ textarea.input {
   letter-spacing: 0.08em;
   cursor: pointer;
   border-radius: 999px;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 .btn-solid {
   padding: 10px 18px;

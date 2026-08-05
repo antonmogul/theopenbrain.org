@@ -15,6 +15,7 @@
 ## Task 1: Git Housekeeping — Commit & Branch Cleanup
 
 **Files:**
+
 - Modify: `.gitignore`
 
 - [ ] **Step 1: Add screenshot exclusions to .gitignore**
@@ -90,6 +91,7 @@ Expected: clean working tree, only `dev` and `main` local branches, latest commi
 ## Task 2: Dev-Only Role Switcher
 
 **Files:**
+
 - Modify: `src/composables/useAuth.js`
 - Modify: `src/router/index.js`
 - Create: `src/components/dev/DevToolbar.vue`
@@ -117,14 +119,14 @@ Place this export right after the `initializeAuth()` call (around line 78), befo
 In `src/composables/useAuth.js`, replace the `userRole` computed (lines 83-87):
 
 ```js
-  const userRole = computed(() => {
-    // Dev override takes precedence (only in dev mode)
-    if (import.meta.env.DEV && devRoleOverride.value) {
-      return devRoleOverride.value;
-    }
-    // Primary source: profiles table. Fallback: user_metadata
-    return profile.value?.role ?? user.value?.user_metadata?.role ?? null;
-  });
+const userRole = computed(() => {
+  // Dev override takes precedence (only in dev mode)
+  if (import.meta.env.DEV && devRoleOverride.value) {
+    return devRoleOverride.value;
+  }
+  // Primary source: profiles table. Fallback: user_metadata
+  return profile.value?.role ?? user.value?.user_metadata?.role ?? null;
+});
 ```
 
 - [ ] **Step 3: Add setter functions to the composable return**
@@ -151,25 +153,25 @@ import { devRoleOverride } from "@/composables/useAuth";
 Then inside the `router.beforeEach` callback, right after the `if (to.meta.requiredRole || to.name === "dashboard") {` check (line 153), add a short-circuit before the `try` block:
 
 ```js
-      // Dev role override — skip REST fetch when active
-      if (import.meta.env.DEV && devRoleOverride?.value) {
-        const userRole = devRoleOverride.value;
-        if (to.name === "dashboard" && userRole !== "creator") {
-          if (userRole === "student") return { path: "/student" };
-          if (userRole === "professor") return { path: "/professor" };
-        }
-        if (to.meta.requiredRole) {
-          const requiredRoles = Array.isArray(to.meta.requiredRole)
-            ? to.meta.requiredRole
-            : [to.meta.requiredRole];
-          if (!requiredRoles.includes(userRole)) {
-            if (userRole === "student") return { path: "/student" };
-            if (userRole === "professor") return { path: "/professor" };
-            return { path: "/dashboard" };
-          }
-        }
-        return; // Allow navigation, skip REST fetch
-      }
+// Dev role override — skip REST fetch when active
+if (import.meta.env.DEV && devRoleOverride?.value) {
+  const userRole = devRoleOverride.value;
+  if (to.name === "dashboard" && userRole !== "creator") {
+    if (userRole === "student") return { path: "/student" };
+    if (userRole === "professor") return { path: "/professor" };
+  }
+  if (to.meta.requiredRole) {
+    const requiredRoles = Array.isArray(to.meta.requiredRole)
+      ? to.meta.requiredRole
+      : [to.meta.requiredRole];
+    if (!requiredRoles.includes(userRole)) {
+      if (userRole === "student") return { path: "/student" };
+      if (userRole === "professor") return { path: "/professor" };
+      return { path: "/dashboard" };
+    }
+  }
+  return; // Allow navigation, skip REST fetch
+}
 ```
 
 - [ ] **Step 5: Create DevToolbar.vue**
@@ -186,9 +188,18 @@ const roles = ["creator", "professor", "student"];
 </script>
 
 <template>
-  <div class="fixed bottom-6 right-6 z-[9999] bg-gray-900/90 backdrop-blur-sm text-white rounded-xl p-3 shadow-2xl border border-gray-700 font-sans">
-    <div class="text-[10px] uppercase tracking-widest text-yellow-400 font-bold mb-2 text-center">DEV ROLE</div>
-    <div v-if="!isAuthenticated" class="text-[11px] text-gray-400 text-center px-2">
+  <div
+    class="fixed bottom-6 right-6 z-[9999] bg-gray-900/90 backdrop-blur-sm text-white rounded-xl p-3 shadow-2xl border border-gray-700 font-sans"
+  >
+    <div
+      class="text-[10px] uppercase tracking-widest text-yellow-400 font-bold mb-2 text-center"
+    >
+      DEV ROLE
+    </div>
+    <div
+      v-if="!isAuthenticated"
+      class="text-[11px] text-gray-400 text-center px-2"
+    >
       Sign in first
     </div>
     <div v-else class="flex gap-1.5">
@@ -197,9 +208,11 @@ const roles = ["creator", "professor", "student"];
         :key="role"
         @click="setDevRole(role)"
         class="px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all capitalize"
-        :class="userRole === role
-          ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/30'
-          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+        :class="
+          userRole === role
+            ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/30'
+            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+        "
       >
         {{ role }}
       </button>
@@ -212,7 +225,10 @@ const roles = ["creator", "professor", "student"];
       </button>
     </div>
     <div class="text-[10px] text-gray-500 text-center mt-1.5">
-      Active: <span class="text-gray-300 font-medium capitalize">{{ userRole || 'none' }}</span>
+      Active:
+      <span class="text-gray-300 font-medium capitalize">{{
+        userRole || "none"
+      }}</span>
     </div>
   </div>
 </template>
@@ -226,14 +242,14 @@ In `src/App.vue`, add the conditional import in `<script setup>` (after existing
 import { defineAsyncComponent } from "vue";
 
 const DevToolbar = import.meta.env.DEV
-    ? defineAsyncComponent(() => import("./components/dev/DevToolbar.vue"))
-    : null;
+  ? defineAsyncComponent(() => import("./components/dev/DevToolbar.vue"))
+  : null;
 ```
 
 Then in the template, add it as the last child inside the `v-if="isLargeScreen"` div, right before the closing `</div>` (after `<BottomNav />`):
 
 ```html
-        <DevToolbar v-if="DevToolbar" />
+<DevToolbar v-if="DevToolbar" />
 ```
 
 - [ ] **Step 7: Verify**
@@ -261,6 +277,7 @@ git commit -m "feat: add dev-only role switcher for testing Creator/Professor/St
 ## Task 3: Run Supabase Migrations
 
 **Files:**
+
 - Read-only: `supabase/migrations/*.sql`
 
 This task requires user interaction with Supabase.
@@ -294,6 +311,7 @@ Load the app and navigate to `/chapter/1/the-retina`. Chapter 1 should load with
 ## Task 4: Navigation — Mini TOC + Sidebar Cleanup
 
 **Files:**
+
 - Create: `src/components/chapter/TableOfContents.vue`
 - Modify: `src/components/Navigation/MenuNav.vue`
 - Modify: `src/components/chapter/ReaderTopBar.vue`
@@ -350,9 +368,11 @@ function isActive(slug) {
       :key="section.slug"
       @click="scrollToSection(section.slug)"
       class="group relative w-3 h-3 rounded-full border-2 transition-all duration-200 cursor-pointer"
-      :class="isActive(section.slug)
-        ? 'bg-violet border-violet scale-125'
-        : 'bg-transparent border-gray-400 hover:border-violet hover:scale-110'"
+      :class="
+        isActive(section.slug)
+          ? 'bg-violet border-violet scale-125'
+          : 'bg-transparent border-gray-400 hover:border-violet hover:scale-110'
+      "
       :title="section.title"
     >
       <!-- Tooltip on hover -->
@@ -379,8 +399,8 @@ import TableOfContents from "@/components/chapter/TableOfContents.vue";
 Then in the template, add it inside `<template v-if="showContent">`, right after the `<ReaderTopBar>` block (around line 341):
 
 ```html
-            <!-- Mini TOC (desktop only) -->
-            <TableOfContents />
+<!-- Mini TOC (desktop only) -->
+<TableOfContents />
 ```
 
 - [ ] **Step 4: Fix MenuNav sidebar width**
@@ -414,35 +434,35 @@ The full `:class` binding becomes:
 In `src/components/Navigation/MenuNav.vue`, add a ref and fetch for all sections. After `const allModules = ref([]);` (line 17), add:
 
 ```js
-const allSections = ref({});  // { moduleId: [sections] }
+const allSections = ref({}); // { moduleId: [sections] }
 ```
 
 After the modules fetch succeeds (after line 41 `allModules.value = data || [];`), add:
 
 ```js
-            // Pre-fetch section titles for all modules
-            if (data.length > 0) {
-                const moduleIds = data.map((m) => `"${m.id}"`).join(",");
-                const secResponse = await fetch(
-                    `${url}/rest/v1/sections?module_id=in.(${moduleIds})&select=id,title,slug,module_id,order_index&order=order_index.asc`,
-                    {
-                        headers: {
-                            apikey: key,
-                            Authorization: `Bearer ${key}`,
-                            "Content-Type": "application/json",
-                        },
-                    },
-                );
-                if (secResponse.ok) {
-                    const secData = await secResponse.json();
-                    const grouped = {};
-                    for (const sec of secData) {
-                        if (!grouped[sec.module_id]) grouped[sec.module_id] = [];
-                        grouped[sec.module_id].push(sec);
-                    }
-                    allSections.value = grouped;
-                }
-            }
+// Pre-fetch section titles for all modules
+if (data.length > 0) {
+  const moduleIds = data.map((m) => `"${m.id}"`).join(",");
+  const secResponse = await fetch(
+    `${url}/rest/v1/sections?module_id=in.(${moduleIds})&select=id,title,slug,module_id,order_index&order=order_index.asc`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (secResponse.ok) {
+    const secData = await secResponse.json();
+    const grouped = {};
+    for (const sec of secData) {
+      if (!grouped[sec.module_id]) grouped[sec.module_id] = [];
+      grouped[sec.module_id].push(sec);
+    }
+    allSections.value = grouped;
+  }
+}
 ```
 
 - [ ] **Step 6: Update getSections to use pre-fetched data**
@@ -451,26 +471,26 @@ In `src/components/Navigation/MenuNav.vue`, replace the `getSections` function (
 
 ```js
 function getSections(chapter) {
-    if (chapter.number === 1) {
-        return menu.Part2?.parts || [];
-    }
-    // Use pre-fetched sections for all chapters
-    const preFetched = allSections.value[chapter.id];
-    if (preFetched && preFetched.length > 0) {
-        return preFetched.map((s) => ({
-            title: s.title,
-            id: toSlug(s.title),
-        }));
-    }
-    // Fallback: current chapter from textStore
-    if (String(chapter.number) === String(chapterNumber.value)) {
-        const sections = textStore.text?.sections || [];
-        return sections.map((s) => ({
-            title: s.title,
-            id: toSlug(s.title),
-        }));
-    }
-    return [];
+  if (chapter.number === 1) {
+    return menu.Part2?.parts || [];
+  }
+  // Use pre-fetched sections for all chapters
+  const preFetched = allSections.value[chapter.id];
+  if (preFetched && preFetched.length > 0) {
+    return preFetched.map((s) => ({
+      title: s.title,
+      id: toSlug(s.title),
+    }));
+  }
+  // Fallback: current chapter from textStore
+  if (String(chapter.number) === String(chapterNumber.value)) {
+    const sections = textStore.text?.sections || [];
+    return sections.map((s) => ({
+      title: s.title,
+      id: toSlug(s.title),
+    }));
+  }
+  return [];
 }
 ```
 
@@ -498,7 +518,7 @@ Add computed properties for prev/next:
 ```js
 const currentIndex = computed(() => {
   return props.allChapters.findIndex(
-    (c) => String(c.number) === String(props.chapterNumber),
+    (c) => String(c.number) === String(props.chapterNumber)
   );
 });
 
@@ -516,70 +536,106 @@ const nextChapter = computed(() => {
 In the template, update the `.breadcrumb-row` div to add prev/next arrows. Replace the breadcrumb-row contents (lines 64-99):
 
 ```html
-    <div class="breadcrumb-row">
-      <!-- Prev chapter -->
-      <button
-        v-if="prevChapter"
-        @click="emit('navigate-chapter', prevChapter)"
-        class="nav-arrow"
-        :title="'Previous: ' + prevChapter.title"
+<div class="breadcrumb-row">
+  <!-- Prev chapter -->
+  <button
+    v-if="prevChapter"
+    @click="emit('navigate-chapter', prevChapter)"
+    class="nav-arrow"
+    :title="'Previous: ' + prevChapter.title"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </button>
+  <div v-else class="nav-arrow-spacer"></div>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb" @click="toggleDropdown">
+    <span class="chapter-ref">Ch {{ chapterNumber }}</span>
+    <template v-if="currentSectionTitle">
+      <span class="sep">/</span>
+      <span class="section-name">{{ currentSectionTitle }}</span>
+    </template>
+    <svg
+      class="chevron"
+      :class="{ rotated: showDropdown }"
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <!-- Progress percentage -->
+    <span class="text-[12px] text-gray-400 font-mono tabular-nums"
+      >{{ Math.round(progressPercent) }}%</span
+    >
+
+    <!-- Next chapter -->
+    <button
+      v-if="nextChapter"
+      @click="emit('navigate-chapter', nextChapter)"
+      class="nav-arrow"
+      :title="'Next: ' + nextChapter.title"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      </button>
-      <div v-else class="nav-arrow-spacer"></div>
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
 
-      <!-- Breadcrumb -->
-      <div class="breadcrumb" @click="toggleDropdown">
-        <span class="chapter-ref">Ch {{ chapterNumber }}</span>
-        <template v-if="currentSectionTitle">
-          <span class="sep">/</span>
-          <span class="section-name">{{ currentSectionTitle }}</span>
-        </template>
-        <svg
-          class="chevron"
-          :class="{ rotated: showDropdown }"
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <!-- Progress percentage -->
-        <span class="text-[12px] text-gray-400 font-mono tabular-nums">{{ Math.round(progressPercent) }}%</span>
-
-        <!-- Next chapter -->
-        <button
-          v-if="nextChapter"
-          @click="emit('navigate-chapter', nextChapter)"
-          class="nav-arrow"
-          :title="'Next: ' + nextChapter.title"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
-
-        <!-- Sidebar toggle -->
-        <button
-          class="sidebar-toggle"
-          :class="{ active: sidebarOpen }"
-          @click="toggleSidebar()"
-          title="Toggle sidebar"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="15" y1="3" x2="15" y2="21"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
+    <!-- Sidebar toggle -->
+    <button
+      class="sidebar-toggle"
+      :class="{ active: sidebarOpen }"
+      @click="toggleSidebar()"
+      title="Toggle sidebar"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="15" y1="3" x2="15" y2="21"></line>
+      </svg>
+    </button>
+  </div>
+</div>
 ```
 
 Add these styles to the `<style scoped>` block:
@@ -630,55 +686,57 @@ Add a ref and fetch for all modules (after `const chapterDataLoaded = ref(false)
 const allChapters = ref([]);
 
 async function fetchAllChapters() {
-    try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
-        const response = await fetch(
-            `${supabaseUrl}/rest/v1/modules?select=id,title,slug,order_index&status=eq.published&order=order_index.asc`,
-            {
-                headers: {
-                    apikey: supabaseKey,
-                    Authorization: `Bearer ${supabaseKey}`,
-                    "Content-Type": "application/json",
-                },
-            },
-        );
-        if (response.ok) {
-            const data = await response.json();
-            allChapters.value = data.map((m) => ({
-                id: m.id,
-                number: m.order_index,
-                title: m.title,
-                slug: m.slug,
-            }));
-        }
-    } catch (err) {
-        console.error("ChapterView: Failed to fetch all chapters:", err);
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey =
+      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/modules?select=id,title,slug,order_index&status=eq.published&order=order_index.asc`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      allChapters.value = data.map((m) => ({
+        id: m.id,
+        number: m.order_index,
+        title: m.title,
+        slug: m.slug,
+      }));
     }
+  } catch (err) {
+    console.error("ChapterView: Failed to fetch all chapters:", err);
+  }
 }
 
 function handleNavigateChapter(chapter) {
-    router.push(`/chapter/${chapter.number}/${chapter.slug}`);
+  router.push(`/chapter/${chapter.number}/${chapter.slug}`);
 }
 ```
 
 Call `fetchAllChapters()` in the `onMounted` callback (add it to the beginning of onMounted, line 179):
 
 ```js
-    fetchAllChapters();
+fetchAllChapters();
 ```
 
 Update the `<ReaderTopBar>` in the template to pass the new props:
 
 ```html
-            <ReaderTopBar
-                v-if="isAuthenticated && isSupabaseChapter"
-                :chapter-title="chapterTitle"
-                :chapter-number="chapterNumber"
-                :sections="breadcrumbSections"
-                :all-chapters="allChapters"
-                @navigate-chapter="handleNavigateChapter"
-            />
+<ReaderTopBar
+  v-if="isAuthenticated && isSupabaseChapter"
+  :chapter-title="chapterTitle"
+  :chapter-number="chapterNumber"
+  :sections="breadcrumbSections"
+  :all-chapters="allChapters"
+  @navigate-chapter="handleNavigateChapter"
+/>
 ```
 
 - [ ] **Step 9: Commit**
@@ -693,6 +751,7 @@ git commit -m "feat: add mini TOC, improve sidebar navigation, add prev/next cha
 ## Task 5: Improved Media/Diagram Viewer
 
 **Files:**
+
 - Modify: `src/components/dashboard/media/MediaDetails.vue`
 - Create: `src/components/dashboard/media/MediaLightbox.vue`
 - Modify: `src/components/dashboard/media/MediaSection.vue`
@@ -703,7 +762,14 @@ Create `src/components/dashboard/media/MediaLightbox.vue`:
 
 ```vue
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+} from "vue";
 import { MEDIA_TYPES } from "@/constants/dashboard";
 
 const props = defineProps({
@@ -734,13 +800,17 @@ const isYoutube = computed(() => {
 const youtubeEmbedUrl = computed(() => {
   if (!isYoutube.value || !props.media?.file_path) return null;
   const match = props.media.file_path.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/,
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/
   );
   return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : null;
 });
 
 const imageUrl = computed(() => {
-  return props.media?.image_file_url || props.media?.file_path || props.media?.thumbnail_path;
+  return (
+    props.media?.image_file_url ||
+    props.media?.file_path ||
+    props.media?.thumbnail_path
+  );
 });
 
 async function loadLottie() {
@@ -774,10 +844,13 @@ function onKeydown(e) {
   if (e.key === "Escape") emit("close");
 }
 
-watch(() => props.visible, (v) => {
-  if (v && isLottie.value) loadLottie();
-  if (!v) destroyLottie();
-});
+watch(
+  () => props.visible,
+  (v) => {
+    if (v && isLottie.value) loadLottie();
+    if (!v) destroyLottie();
+  }
+);
 
 onMounted(() => {
   window.addEventListener("keydown", onKeydown);
@@ -793,27 +866,49 @@ onBeforeUnmount(() => {
 <template>
   <Teleport to="body">
     <Transition name="lightbox">
-      <div v-if="visible && media" class="fixed inset-0 z-[10000] flex items-center justify-center" @click.self="emit('close')">
+      <div
+        v-if="visible && media"
+        class="fixed inset-0 z-[10000] flex items-center justify-center"
+        @click.self="emit('close')"
+      >
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
 
-        <div class="relative z-10 w-[90vw] h-[85vh] flex items-center justify-center">
+        <div
+          class="relative z-10 w-[90vw] h-[85vh] flex items-center justify-center"
+        >
           <!-- Close button -->
           <button
             @click="emit('close')"
             class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-20"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
           <!-- Title -->
-          <div class="absolute top-4 left-4 text-white/70 text-sm font-medium z-20">
-            {{ media.title || 'Untitled' }}
+          <div
+            class="absolute top-4 left-4 text-white/70 text-sm font-medium z-20"
+          >
+            {{ media.title || "Untitled" }}
           </div>
 
           <!-- Lottie -->
-          <div v-if="isLottie" ref="lottieContainer" class="w-full h-full"></div>
+          <div
+            v-if="isLottie"
+            ref="lottieContainer"
+            class="w-full h-full"
+          ></div>
 
           <!-- Video -->
           <video
@@ -867,8 +962,8 @@ onBeforeUnmount(() => {
 In `src/components/dashboard/media/MediaDetails.vue`, add imports after the existing ones (line 9):
 
 ```js
-import { onBeforeUnmount, nextTick } from 'vue';
-import MediaLightbox from './MediaLightbox.vue';
+import { onBeforeUnmount, nextTick } from "vue";
+import MediaLightbox from "./MediaLightbox.vue";
 ```
 
 Add computed properties for media types (after `highlightStates` computed, line 85):
@@ -876,27 +971,31 @@ Add computed properties for media types (after `highlightStates` computed, line 
 ```js
 const isLottie = computed(() => {
   const t = props.media?.media_type || props.media?.animation_type;
-  return t === MEDIA_TYPES.LOTTIE || t === 'lottie';
+  return t === MEDIA_TYPES.LOTTIE || t === "lottie";
 });
 
 const isVideo = computed(() => {
   const t = props.media?.media_type || props.media?.animation_type;
-  return t === MEDIA_TYPES.VIDEO || t === 'video';
+  return t === MEDIA_TYPES.VIDEO || t === "video";
 });
 
 const isYoutube = computed(() => {
   const t = props.media?.media_type || props.media?.animation_type;
-  return t === MEDIA_TYPES.YOUTUBE || t === 'youtube';
+  return t === MEDIA_TYPES.YOUTUBE || t === "youtube";
 });
 
 const imageUrl = computed(() => {
-  return props.media?.image_file_url || props.media?.thumbnail_path || props.media?.file_path;
+  return (
+    props.media?.image_file_url ||
+    props.media?.thumbnail_path ||
+    props.media?.file_path
+  );
 });
 
 const youtubeEmbedUrl = computed(() => {
   if (!isYoutube.value || !props.media?.file_path) return null;
   const match = props.media.file_path.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/,
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/
   );
   return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 });
@@ -910,17 +1009,17 @@ async function loadLottiePreview() {
   await nextTick();
   if (!lottiePreview.value) return;
   try {
-    const lottie = (await import('lottie-web')).default;
+    const lottie = (await import("lottie-web")).default;
     destroyLottiePreview();
     lottieInstance = lottie.loadAnimation({
       container: lottiePreview.value,
-      renderer: 'svg',
+      renderer: "svg",
       loop: true,
       autoplay: true,
       path: props.media.lottie_file_url,
     });
   } catch (err) {
-    console.error('MediaDetails: Lottie error:', err);
+    console.error("MediaDetails: Lottie error:", err);
   }
 }
 
@@ -935,12 +1034,16 @@ function destroyLottiePreview() {
 const showLightbox = ref(false);
 
 // Re-load lottie when selected media changes
-watch(() => props.media?.id, async () => {
-  destroyLottiePreview();
-  if (isLottie.value) {
-    await loadLottiePreview();
-  }
-}, { immediate: true });
+watch(
+  () => props.media?.id,
+  async () => {
+    destroyLottiePreview();
+    if (isLottie.value) {
+      await loadLottiePreview();
+    }
+  },
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   destroyLottiePreview();
@@ -950,45 +1053,79 @@ onBeforeUnmount(() => {
 Replace the existing Preview section in the template (lines 104-116):
 
 ```html
-    <!-- Preview -->
-    <div class="aspect-video bg-gray-100 relative group">
-      <!-- Lottie preview -->
-      <div v-if="isLottie" ref="lottiePreview" class="w-full h-full"></div>
+<!-- Preview -->
+<div class="aspect-video bg-gray-100 relative group">
+  <!-- Lottie preview -->
+  <div v-if="isLottie" ref="lottiePreview" class="w-full h-full"></div>
 
-      <!-- Video preview -->
-      <video v-else-if="isVideo && media.file_path" :src="media.file_path" controls class="w-full h-full object-contain"></video>
+  <!-- Video preview -->
+  <video
+    v-else-if="isVideo && media.file_path"
+    :src="media.file_path"
+    controls
+    class="w-full h-full object-contain"
+  ></video>
 
-      <!-- YouTube embed -->
-      <iframe v-else-if="isYoutube && youtubeEmbedUrl" :src="youtubeEmbedUrl" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+  <!-- YouTube embed -->
+  <iframe
+    v-else-if="isYoutube && youtubeEmbedUrl"
+    :src="youtubeEmbedUrl"
+    class="w-full h-full"
+    frameborder="0"
+    allowfullscreen
+  ></iframe>
 
-      <!-- Image preview -->
-      <img v-else-if="imageUrl" :src="imageUrl" :alt="media.title" class="w-full h-full object-contain" />
+  <!-- Image preview -->
+  <img
+    v-else-if="imageUrl"
+    :src="imageUrl"
+    :alt="media.title"
+    class="w-full h-full object-contain"
+  />
 
-      <!-- Placeholder -->
-      <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      </div>
+  <!-- Placeholder -->
+  <div
+    v-else
+    class="w-full h-full flex items-center justify-center text-gray-400"
+  >
+    <svg
+      class="w-16 h-16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    </svg>
+  </div>
 
-      <!-- Expand button (overlay) -->
-      <button
-        @click="showLightbox = true"
-        class="absolute top-2 right-2 w-8 h-8 rounded-lg bg-black/50 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-        title="View fullscreen"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-        </svg>
-      </button>
-    </div>
+  <!-- Expand button (overlay) -->
+  <button
+    @click="showLightbox = true"
+    class="absolute top-2 right-2 w-8 h-8 rounded-lg bg-black/50 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+    title="View fullscreen"
+  >
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+      />
+    </svg>
+  </button>
+</div>
 
-    <!-- Lightbox -->
-    <MediaLightbox
-      :media="media"
-      :visible="showLightbox"
-      @close="showLightbox = false"
-    />
+<!-- Lightbox -->
+<MediaLightbox
+  :media="media"
+  :visible="showLightbox"
+  @close="showLightbox = false"
+/>
 ```
 
 - [ ] **Step 3: Improve MediaSection layout proportions**
@@ -996,34 +1133,37 @@ Replace the existing Preview section in the template (lines 104-116):
 In `src/components/dashboard/media/MediaSection.vue`, replace the main content grid (lines 212-238):
 
 ```html
-    <!-- Main content -->
-    <div v-else class="grid gap-6" :class="selectedItem ? 'lg:grid-cols-2' : ''">
-      <!-- Media grid -->
-      <div>
-        <div class="grid gap-4" :class="selectedItem ? 'sm:grid-cols-2' : 'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'">
-          <MediaCard
-            v-for="media in displayedItems"
-            :key="media.id"
-            :media="media"
-            :selected="selectedItem?.id === media.id"
-            @select="handleSelectMedia"
-            @delete="handleDeleteMedia"
-          />
-        </div>
-      </div>
-
-      <!-- Details panel -->
-      <div v-if="selectedItem">
-        <div class="sticky top-4">
-          <MediaDetails
-            :media="selectedItem"
-            @close="mediaStore.clearSelection()"
-            @edit="handleSelectMedia"
-            @delete="handleDeleteMedia"
-          />
-        </div>
-      </div>
+<!-- Main content -->
+<div v-else class="grid gap-6" :class="selectedItem ? 'lg:grid-cols-2' : ''">
+  <!-- Media grid -->
+  <div>
+    <div
+      class="grid gap-4"
+      :class="selectedItem ? 'sm:grid-cols-2' : 'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'"
+    >
+      <MediaCard
+        v-for="media in displayedItems"
+        :key="media.id"
+        :media="media"
+        :selected="selectedItem?.id === media.id"
+        @select="handleSelectMedia"
+        @delete="handleDeleteMedia"
+      />
     </div>
+  </div>
+
+  <!-- Details panel -->
+  <div v-if="selectedItem">
+    <div class="sticky top-4">
+      <MediaDetails
+        :media="selectedItem"
+        @close="mediaStore.clearSelection()"
+        @edit="handleSelectMedia"
+        @delete="handleDeleteMedia"
+      />
+    </div>
+  </div>
+</div>
 ```
 
 - [ ] **Step 4: Commit**
@@ -1038,6 +1178,7 @@ git commit -m "feat: add live Lottie/video preview and fullscreen lightbox to me
 ## Task 6: Responsive — Tailwind Config + Remove MediaQueryWarning
 
 **Files:**
+
 - Modify: `tailwind.config.js`
 - Modify: `src/App.vue`
 - Delete: `src/components/UI/MediaQueryWarning.vue`
@@ -1086,13 +1227,13 @@ Remove the `MediaQueryWarning` import (line 4):
 In the template, replace the `v-if="isLargeScreen"` / `v-else` pattern. Change lines 59-93 to:
 
 ```html
-    <div class="text-base cursor-default font-sans">
-        <OverlayInfo v-if="!store.hasBeenVisited" />
-        <div class="bg-img" />
-        <RouterView
-            v-slot="{ Component }"
-            class="z-0 duration-300"
-            :class="
+<div class="text-base cursor-default font-sans">
+  <OverlayInfo v-if="!store.hasBeenVisited" />
+  <div class="bg-img" />
+  <RouterView
+    v-slot="{ Component }"
+    class="z-0 duration-300"
+    :class="
                 store.activeAbout ||
                 store.activeMenu ||
                 authStore.activeAuth ||
@@ -1100,25 +1241,25 @@ In the template, replace the `v-if="isLargeScreen"` / `v-else` pattern. Change l
                     ? 'blur-md grayscale-0 pointer-events-none'
                     : ''
             "
-        >
-            <transition :name="route.meta?.transitionName || 'routeT'">
-                <component :is="Component" />
-            </transition>
-        </RouterView>
-        <MenuNav />
-        <MenuHome />
-        <MenuAbout v-if="route.name === 'chapter'" />
-        <MenuAuth
-            v-if="
+  >
+    <transition :name="route.meta?.transitionName || 'routeT'">
+      <component :is="Component" />
+    </transition>
+  </RouterView>
+  <MenuNav />
+  <MenuHome />
+  <MenuAbout v-if="route.name === 'chapter'" />
+  <MenuAuth
+    v-if="
                 route.name === 'home' ||
                 route.name === 'chapter' ||
                 route.name === 'dashboard' ||
                 route.name === 'editor'
             "
-        />
-        <BottomNav />
-        <DevToolbar v-if="DevToolbar" />
-    </div>
+  />
+  <BottomNav />
+  <DevToolbar v-if="DevToolbar" />
+</div>
 ```
 
 - [ ] **Step 3: Commit**
@@ -1134,6 +1275,7 @@ git commit -m "feat: update Tailwind breakpoints, remove MediaQueryWarning gate"
 ## Task 7: Responsive — Chapter View (TextComp + Illustrations)
 
 **Files:**
+
 - Modify: `src/components/chapter/TextComp.vue`
 - Modify: `src/components/chapter/Illus/IllustrationsComp.vue`
 - Modify: `src/views/ChapterView.vue`
@@ -1144,21 +1286,33 @@ git commit -m "feat: update Tailwind breakpoints, remove MediaQueryWarning gate"
 In `src/components/chapter/TextComp.vue`, update the outer container (line 282):
 
 Replace:
+
 ```html
-    class="absolute top-start z-40 w-[50vw] pointer-events-none font-sans"
+class="absolute top-start z-40 w-[50vw] pointer-events-none font-sans"
 ```
+
 With:
+
 ```html
-    class="xl:absolute xl:top-start z-40 w-full xl:w-[50vw] pointer-events-none font-sans"
+class="xl:absolute xl:top-start z-40 w-full xl:w-[50vw] pointer-events-none
+font-sans"
 ```
 
 Update the `<main>` element (line 300). Replace:
+
 ```html
-        class="text pointer-events-auto w-full text-left pt-[20vh] ml-text max-w-text z-30 border-l bg-white border-black tracking-wide pl-20 pr-24 duration-300 text-black"
+class="text pointer-events-auto w-full text-left pt-[20vh] ml-text max-w-text
+z-30 border-l bg-white border-black tracking-wide pl-20 pr-24 duration-300
+text-black"
 ```
+
 With:
+
 ```html
-        class="text pointer-events-auto w-full text-left pt-[10vh] xl:pt-[20vh] z-30 bg-white tracking-wide px-5 md:px-8 xl:pl-20 xl:pr-24 duration-300 text-black xl:ml-text xl:max-w-text xl:border-l xl:border-black md:max-w-[700px] md:mx-auto"
+class="text pointer-events-auto w-full text-left pt-[10vh] xl:pt-[20vh] z-30
+bg-white tracking-wide px-5 md:px-8 xl:pl-20 xl:pr-24 duration-300 text-black
+xl:ml-text xl:max-w-text xl:border-l xl:border-black md:max-w-[700px]
+md:mx-auto"
 ```
 
 Update the scoped styles (lines 450-458). Replace:
@@ -1193,12 +1347,16 @@ With:
 In `src/components/chapter/Illus/IllustrationsComp.vue`, update the container (line 118):
 
 Replace:
+
 ```html
-    class="fixed top-0 left-0 h-screen w-illus z-30 pointer-events-none font-mono"
+class="fixed top-0 left-0 h-screen w-illus z-30 pointer-events-none font-mono"
 ```
+
 With:
+
 ```html
-    class="hidden xl:fixed xl:block xl:top-0 xl:left-0 xl:h-screen xl:w-illus z-30 pointer-events-none font-mono"
+class="hidden xl:fixed xl:block xl:top-0 xl:left-0 xl:h-screen xl:w-illus z-30
+pointer-events-none font-mono"
 ```
 
 - [ ] **Step 3: Gate TableOfContents for desktop only**
@@ -1206,10 +1364,10 @@ With:
 In `src/views/ChapterView.vue`, update the TableOfContents rendering:
 
 ```html
-            <!-- Mini TOC (desktop only, hidden on mobile/tablet) -->
-            <div class="hidden xl:block">
-                <TableOfContents />
-            </div>
+<!-- Mini TOC (desktop only, hidden on mobile/tablet) -->
+<div class="hidden xl:block">
+  <TableOfContents />
+</div>
 ```
 
 - [ ] **Step 4: Fix global CSS calculations for mobile**
@@ -1374,6 +1532,7 @@ git commit -m "feat: make chapter view responsive — text stacks full width, il
 ## Task 8: Responsive — Navigation Components
 
 **Files:**
+
 - Modify: `src/components/Navigation/BottomNav.vue`
 - Modify: `src/components/Navigation/MenuAbout.vue`
 - Modify: `src/components/Navigation/MenuAuth.vue`
@@ -1386,30 +1545,30 @@ In `src/components/Navigation/BottomNav.vue`, update the button sizing. Replace 
 
 ```css
 .nav-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 9999px;
-    background-color: #222;
-    border: 1px solid #222;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: #222;
+  border: 1px solid #222;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 @media (min-width: 768px) {
-    .nav-icon {
-        width: 3rem;
-        height: 3rem;
-    }
+  .nav-icon {
+    width: 3rem;
+    height: 3rem;
+  }
 }
 
 @media (min-width: 1300px) {
-    .nav-icon {
-        width: 3.5rem;
-        height: 3.5rem;
-    }
+  .nav-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
 }
 ```
 
@@ -1417,16 +1576,16 @@ Update the `.nav-icon-svg` style:
 
 ```css
 .nav-icon-svg {
-    width: 1.2rem;
-    height: 1.2rem;
-    fill: white;
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: white;
 }
 
 @media (min-width: 1300px) {
-    .nav-icon-svg {
-        width: 1.5rem;
-        height: 1.5rem;
-    }
+  .nav-icon-svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 }
 ```
 
@@ -1441,19 +1600,22 @@ In `src/components/Navigation/MenuAbout.vue`, update the sidebar width (line 18)
 With:
 
 ```html
-:class="[store.activeAbout ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none ml-0' : 'w-[0]']"
+:class="[store.activeAbout ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none
+ml-0' : 'w-[0]']"
 ```
 
 Update the inner content width (line 20). Replace:
 
 ```html
-<div class="px-24 pt-12 pb-56 w-[50vw] max-w-[800px]">
+<div class="px-24 pt-12 pb-56 w-[50vw] max-w-[800px]"></div>
 ```
 
 With:
 
 ```html
-<div class="px-6 md:px-16 xl:px-24 pt-8 md:pt-12 pb-56 w-full max-w-[800px]">
+<div
+  class="px-6 md:px-16 xl:px-24 pt-8 md:pt-12 pb-56 w-full max-w-[800px]"
+></div>
 ```
 
 - [ ] **Step 3: Make MenuAuth responsive**
@@ -1467,19 +1629,22 @@ In `src/components/Navigation/MenuAuth.vue`, update line 157. Replace:
 With:
 
 ```html
-:class="[authStore.activeAuth ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none ml-0' : 'w-[0]']"
+:class="[authStore.activeAuth ? 'w-full md:max-w-[480px] xl:w-[50vw]
+xl:max-w-none ml-0' : 'w-[0]']"
 ```
 
 Also update the inner content width on line 159. Replace:
 
 ```html
-<div class="px-24 pt-12 pb-56 w-[50vw] max-w-[800px]">
+<div class="px-24 pt-12 pb-56 w-[50vw] max-w-[800px]"></div>
 ```
 
 With:
 
 ```html
-<div class="px-6 md:px-16 xl:px-24 pt-8 md:pt-12 pb-56 w-full max-w-[800px]">
+<div
+  class="px-6 md:px-16 xl:px-24 pt-8 md:pt-12 pb-56 w-full max-w-[800px]"
+></div>
 ```
 
 - [ ] **Step 4: Make ReaderTopBar responsive**
@@ -1527,8 +1692,8 @@ Update `.section-name` to be shorter on mobile:
 In `src/components/chapter/ReaderSidebar.vue`, the sidebar has `width: 400px; max-width: 100vw;` in scoped CSS (line 265-266). Replace:
 
 ```css
-  width: 400px;
-  max-width: 100vw;
+width: 400px;
+max-width: 100vw;
 ```
 
 With:
@@ -1560,6 +1725,7 @@ git commit -m "feat: make navigation components responsive for phone and tablet"
 ## Task 9: Responsive — Dashboard
 
 **Files:**
+
 - Modify: `src/views/DashboardView.vue`
 
 - [ ] **Step 1: Add mobile header and hamburger state**
@@ -1571,11 +1737,11 @@ In `src/views/DashboardView.vue`, add after existing refs (around line 76):
 const dashboardMenuOpen = ref(false);
 
 function toggleDashboardMenu() {
-    dashboardMenuOpen.value = !dashboardMenuOpen.value;
+  dashboardMenuOpen.value = !dashboardMenuOpen.value;
 }
 
 function closeDashboardMenu() {
-    dashboardMenuOpen.value = false;
+  dashboardMenuOpen.value = false;
 }
 ```
 
@@ -1585,14 +1751,29 @@ Find the `.dashboard-layout` container in the DashboardView template. Add a mobi
 
 ```html
 <!-- Mobile header (visible below md) -->
-<div class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-    <button @click="toggleDashboardMenu" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100">
-        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-    </button>
-    <span class="text-sm font-semibold text-gray-900">Dashboard</span>
-    <div class="w-10"></div>
+<div
+  class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between"
+>
+  <button
+    @click="toggleDashboardMenu"
+    class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100"
+  >
+    <svg
+      class="w-6 h-6 text-gray-600"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M4 6h16M4 12h16M4 18h16"
+      />
+    </svg>
+  </button>
+  <span class="text-sm font-semibold text-gray-900">Dashboard</span>
+  <div class="w-10"></div>
 </div>
 ```
 
@@ -1600,9 +1781,9 @@ Update the sidebar to be responsive. The sidebar should have these classes:
 
 ```html
 <aside
-    class="sidebar fixed inset-y-0 left-0 z-40 w-[300px] transform transition-transform duration-300 md:relative md:translate-x-0 md:w-[240px] xl:w-[300px]"
-    :class="dashboardMenuOpen ? 'translate-x-0' : '-translate-x-full'"
->
+  class="sidebar fixed inset-y-0 left-0 z-40 w-[300px] transform transition-transform duration-300 md:relative md:translate-x-0 md:w-[240px] xl:w-[300px]"
+  :class="dashboardMenuOpen ? 'translate-x-0' : '-translate-x-full'"
+></aside>
 ```
 
 Add a backdrop for mobile:
@@ -1610,16 +1791,16 @@ Add a backdrop for mobile:
 ```html
 <!-- Mobile sidebar backdrop -->
 <div
-    v-if="dashboardMenuOpen"
-    class="fixed inset-0 z-30 bg-black/30 md:hidden"
-    @click="closeDashboardMenu"
+  v-if="dashboardMenuOpen"
+  class="fixed inset-0 z-30 bg-black/30 md:hidden"
+  @click="closeDashboardMenu"
 ></div>
 ```
 
 Add top padding to main content for mobile header:
 
 ```html
-<main class="main-content flex-1 pt-16 md:pt-0">
+<main class="main-content flex-1 pt-16 md:pt-0"></main>
 ```
 
 - [ ] **Step 3: Commit**
@@ -1641,13 +1822,13 @@ npm start
 
 Test at these widths (use browser DevTools responsive mode):
 
-| Width | What to check |
-|-------|---------------|
-| 375px (iPhone SE) | Chapter text readable, full-width, no horizontal scroll, BottomNav small, MenuNav full-width overlay |
-| 768px (iPad) | Chapter text centered at ~700px, dashboard sidebar persistent at 240px, MenuNav 480px |
-| 1024px (laptop) | Similar to 768px but more breathing room |
-| 1300px (desktop threshold) | Illustrations appear, 50/50 split, mini TOC dots visible, full desktop experience |
-| 1920px (full HD) | Same as 1300px, extra space in illustration panel |
+| Width                      | What to check                                                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 375px (iPhone SE)          | Chapter text readable, full-width, no horizontal scroll, BottomNav small, MenuNav full-width overlay |
+| 768px (iPad)               | Chapter text centered at ~700px, dashboard sidebar persistent at 240px, MenuNav 480px                |
+| 1024px (laptop)            | Similar to 768px but more breathing room                                                             |
+| 1300px (desktop threshold) | Illustrations appear, 50/50 split, mini TOC dots visible, full desktop experience                    |
+| 1920px (full HD)           | Same as 1300px, extra space in illustration panel                                                    |
 
 - [ ] **Step 2: Test role switcher at each breakpoint**
 

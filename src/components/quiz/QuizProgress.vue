@@ -46,7 +46,9 @@ const formattedTime = computed(() => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 });
 
-const isTimeRunningLow = computed(() => props.timeRemaining > 0 && props.timeRemaining < 60);
+const isTimeRunningLow = computed(
+  () => props.timeRemaining > 0 && props.timeRemaining < 60
+);
 
 function isQuestionAnswered(questionId) {
   return questionId in props.answers;
@@ -62,14 +64,20 @@ function goToQuestion(index) {
     <div class="progress-header">
       <div class="progress-info">
         <span class="question-count">
-          Question <strong>{{ current }}</strong> of <strong>{{ total }}</strong>
+          Question <strong>{{ current }}</strong> of
+          <strong>{{ total }}</strong>
         </span>
         <span class="answered-count">
           {{ answeredCount }} / {{ total }} answered
         </span>
       </div>
 
-      <div v-if="formattedTime" class="timer" :class="{ 'time-low': isTimeRunningLow }" data-testid="quiz-timer">
+      <div
+        v-if="formattedTime"
+        class="timer"
+        :class="{ 'time-low': isTimeRunningLow }"
+        data-testid="quiz-timer"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -104,8 +112,8 @@ function goToQuestion(index) {
         @click="goToQuestion(index)"
         class="nav-dot"
         :class="{
-          'current': index === current - 1,
-          'answered': isQuestionAnswered(question.id),
+          current: index === current - 1,
+          answered: isQuestionAnswered(question.id),
         }"
         :title="`Question ${index + 1}`"
       >
@@ -171,8 +179,13 @@ function goToQuestion(index) {
 }
 
 @keyframes pulse-warning {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .time-value {
@@ -210,7 +223,10 @@ function goToQuestion(index) {
   font-size: 0.6875rem;
   color: rgb(var(--color-ink));
   cursor: pointer;
-  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease;
   display: flex;
   align-items: center;
   justify-content: center;

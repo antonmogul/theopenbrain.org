@@ -150,12 +150,14 @@ These logos work because closure is reliable for their target forms—but they r
 ## Design Guidelines
 
 **For closure**:
+
 - Provide sufficient cues for reliable completion
 - Test with users unfamiliar with the intended form
 - Consider cultural variation in form recognition
 - Don't rely on closure for critical information users must perceive
 
 **For continuity**:
+
 - Use consistent alignment to create visual flow
 - Connect related elements with visual lines (explicit or implied)
 - Break continuity deliberately to separate unrelated elements

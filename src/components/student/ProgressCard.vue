@@ -17,7 +17,9 @@ const hasContent = computed(() => {
 
 const module = computed(() => props.continueReading?.module || {});
 const course = computed(() => props.continueReading?.course || {});
-const scrollPosition = computed(() => props.continueReading?.scrollPosition || 0);
+const scrollPosition = computed(
+  () => props.continueReading?.scrollPosition || 0
+);
 
 function navigateToModule() {
   if (!module.value.slug) return;
@@ -70,7 +72,9 @@ function formatRelativeTime(date) {
             :style="{ width: scrollPosition + '%' }"
           ></div>
         </div>
-        <span class="progress-text">{{ Math.round(scrollPosition) }}% complete</span>
+        <span class="progress-text"
+          >{{ Math.round(scrollPosition) }}% complete</span
+        >
       </div>
     </div>
 

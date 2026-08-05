@@ -31,7 +31,9 @@ const activeDemo = computed(() => {
   return null;
 });
 
-const isDirty = computed(() => activeDemo.value && userCode.value !== activeDemo.value.code);
+const isDirty = computed(
+  () => activeDemo.value && userCode.value !== activeDemo.value.code
+);
 
 function selectDemo(categoryId, demoId) {
   activeCategoryId.value = categoryId;
@@ -107,36 +109,57 @@ function goHome() {
 <template>
   <div class="playground min-h-screen bg-gray-950 text-gray-100">
     <!-- Header -->
-    <header class="bg-gray-900 border-b border-gray-800 px-4 py-3 sticky top-0 z-20">
-      <div class="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
+    <header
+      class="bg-gray-900 border-b border-gray-800 px-4 py-3 sticky top-0 z-20"
+    >
+      <div
+        class="max-w-[1400px] mx-auto flex items-center justify-between gap-4"
+      >
         <div class="flex items-center gap-3 min-w-0">
           <button
             @click="goHome"
             class="p-2 rounded-lg hover:bg-gray-800 transition-colors flex-shrink-0"
             title="Home"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
           </button>
           <div class="min-w-0">
-            <h1 class="text-lg font-semibold text-white flex items-center gap-2">
+            <h1
+              class="text-lg font-semibold text-white flex items-center gap-2"
+            >
               Python Playground
-              <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300">
+              <span
+                class="text-xs font-mono px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300"
+              >
                 Pyodide · runs in your browser
               </span>
             </h1>
             <p class="text-sm text-gray-400 truncate">
-              Real CPython (NumPy + Matplotlib) compiled to WebAssembly — no server, no install.
+              Real CPython (NumPy + Matplotlib) compiled to WebAssembly — no
+              server, no install.
             </p>
           </div>
         </div>
 
         <div class="flex items-center gap-3 flex-shrink-0">
-          <span v-if="pyodideReady" class="hidden s:flex items-center gap-1.5 text-xs text-green-400">
-            <span class="w-2 h-2 rounded-full bg-green-400"></span> runtime ready
+          <span
+            v-if="pyodideReady"
+            class="hidden s:flex items-center gap-1.5 text-xs text-green-400"
+          >
+            <span class="w-2 h-2 rounded-full bg-green-400"></span> runtime
+            ready
           </span>
           <button
             @click="resetCode"
@@ -150,12 +173,36 @@ function goHome() {
             :disabled="executing || !userCode.trim()"
             class="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            <svg v-if="!executing" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <svg
+              v-if="!executing"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
-            <svg v-else class="animate-spin" width="16" height="16" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            <svg
+              v-else
+              class="animate-spin"
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              ></path>
             </svg>
             {{ executing ? "Running…" : "Run" }}
           </button>
@@ -163,11 +210,15 @@ function goHome() {
       </div>
     </header>
 
-    <main class="max-w-[1400px] mx-auto p-4 grid grid-cols-1 m:grid-cols-[260px_1fr] l:grid-cols-[260px_1fr_1fr] gap-4">
+    <main
+      class="max-w-[1400px] mx-auto p-4 grid grid-cols-1 m:grid-cols-[260px_1fr] l:grid-cols-[260px_1fr_1fr] gap-4"
+    >
       <!-- Sidebar: demo gallery -->
       <aside class="space-y-5">
         <div v-for="cat in categories" :key="cat.id">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 px-1">
+          <h2
+            class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 px-1"
+          >
             {{ cat.title }}
           </h2>
           <div class="space-y-1">
@@ -183,7 +234,9 @@ function goHome() {
               "
             >
               <span class="block text-sm font-medium">{{ demo.title }}</span>
-              <span class="block text-xs text-gray-500">{{ demo.difficulty }}</span>
+              <span class="block text-xs text-gray-500">{{
+                demo.difficulty
+              }}</span>
             </button>
           </div>
         </div>
@@ -192,17 +245,27 @@ function goHome() {
       <!-- Editor column -->
       <section class="min-w-0 space-y-4">
         <!-- Demo description -->
-        <div v-if="activeDemo" class="bg-gray-900 rounded-lg p-4 border border-gray-800">
+        <div
+          v-if="activeDemo"
+          class="bg-gray-900 rounded-lg p-4 border border-gray-800"
+        >
           <div class="flex items-start justify-between gap-3 mb-2">
-            <h3 class="text-base font-semibold text-white">{{ activeDemo.title }}</h3>
+            <h3 class="text-base font-semibold text-white">
+              {{ activeDemo.title }}
+            </h3>
             <div class="flex flex-wrap gap-1.5 justify-end">
-              <span v-for="tag in activeDemo.tags" :key="tag"
-                class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">
+              <span
+                v-for="tag in activeDemo.tags"
+                :key="tag"
+                class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-400"
+              >
                 {{ tag }}
               </span>
             </div>
           </div>
-          <p class="text-sm text-gray-400 leading-relaxed">{{ activeDemo.description }}</p>
+          <p class="text-sm text-gray-400 leading-relaxed">
+            {{ activeDemo.description }}
+          </p>
         </div>
 
         <!-- Upload panel (only for upload demos) -->
@@ -212,10 +275,14 @@ function goHome() {
         >
           <div class="flex items-center justify-between gap-3">
             <div class="min-w-0">
-              <p class="text-sm font-medium text-white mb-0.5">Upload a CSV file</p>
+              <p class="text-sm font-medium text-white mb-0.5">
+                Upload a CSV file
+              </p>
               <p class="text-xs text-gray-500 truncate">
                 <template v-if="uploadedFileName">
-                  Loaded <span class="text-violet-300">{{ uploadedFileName }}</span> — hit Run.
+                  Loaded
+                  <span class="text-violet-300">{{ uploadedFileName }}</span> —
+                  hit Run.
                 </template>
                 <template v-else>
                   No file yet — Run uses a bundled sample signal.
@@ -223,9 +290,16 @@ function goHome() {
               </p>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-              <label class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium cursor-pointer transition-colors">
+              <label
+                class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium cursor-pointer transition-colors"
+              >
                 Choose file
-                <input type="file" accept=".csv,text/csv,text/plain" class="hidden" @change="handleFile" />
+                <input
+                  type="file"
+                  accept=".csv,text/csv,text/plain"
+                  class="hidden"
+                  @change="handleFile"
+                />
               </label>
               <button
                 v-if="uploadedFileName"
@@ -238,7 +312,12 @@ function goHome() {
           </div>
         </div>
 
-        <CodeEditor v-model="userCode" language="python" min-height="440px" :readonly="executing" />
+        <CodeEditor
+          v-model="userCode"
+          language="python"
+          min-height="440px"
+          :readonly="executing"
+        />
       </section>
 
       <!-- Output column -->
@@ -248,20 +327,39 @@ function goHome() {
           v-if="booting"
           class="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4 flex items-center gap-3"
         >
-          <svg class="animate-spin h-5 w-5 text-violet-400" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          <svg
+            class="animate-spin h-5 w-5 text-violet-400"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            ></path>
           </svg>
           <p class="text-sm text-violet-200">
-            Downloading the Python runtime (~10&nbsp;MB, first run only). This is cached afterwards.
+            Downloading the Python runtime (~10&nbsp;MB, first run only). This
+            is cached afterwards.
           </p>
         </div>
 
-        <CodeOutput :result="executionResult" :loading="executing && !booting" />
+        <CodeOutput
+          :result="executionResult"
+          :loading="executing && !booting"
+        />
 
         <p class="text-xs text-gray-600 px-1">
-          Everything runs locally in a sandboxed WebAssembly interpreter — your code and any
-          uploaded data never leave the browser.
+          Everything runs locally in a sandboxed WebAssembly interpreter — your
+          code and any uploaded data never leave the browser.
         </p>
       </section>
     </main>

@@ -4,19 +4,21 @@
  * Handles all content version related API operations.
  */
 
-import { get, post, patch, del } from './client';
+import { get, post, patch, del } from "./client";
 
 /**
  * Fetch all content versions with module counts
  * @returns {Promise<Array>} Versions with module counts
  */
 export async function fetchVersions() {
-  const versions = await get('content_versions?select=*&order=created_at.desc');
+  const versions = await get("content_versions?select=*&order=created_at.desc");
 
   // Get module counts for each version
   const versionsWithCounts = await Promise.all(
     versions.map(async (version) => {
-      const modules = await get(`modules?content_version_id=eq.${version.id}&select=id`);
+      const modules = await get(
+        `modules?content_version_id=eq.${version.id}&select=id`
+      );
       return {
         ...version,
         moduleCount: modules.length,
@@ -44,10 +46,10 @@ export async function fetchVersion(versionId) {
  * @returns {Promise<Object>} Created version
  */
 export async function createVersion(data, createdBy) {
-  const [created] = await post('content_versions', {
+  const [created] = await post("content_versions", {
     version_number: data.version_number,
-    release_notes: data.release_notes || '',
-    status: 'draft',
+    release_notes: data.release_notes || "",
+    status: "draft",
     created_by: createdBy,
   });
   return created;
@@ -63,7 +65,7 @@ export async function updateVersion(versionId, data) {
   const updates = { ...data };
 
   // If publishing, set published_at timestamp
-  if (data.status === 'published') {
+  if (data.status === "published") {
     updates.published_at = new Date().toISOString();
   }
 
@@ -95,7 +97,9 @@ export async function deleteVersion(versionId) {
  * @returns {Promise<Array>} Modules
  */
 export async function fetchVersionModules(versionId) {
-  return get(`modules?content_version_id=eq.${versionId}&select=*&order=order_index.asc`);
+  return get(
+    `modules?content_version_id=eq.${versionId}&select=*&order=order_index.asc`
+  );
 }
 
 export default {

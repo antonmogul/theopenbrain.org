@@ -3,6 +3,7 @@
 ## Mermaid ER Diagram
 
 This diagram can be viewed in:
+
 - GitHub (renders automatically)
 - VS Code with Mermaid extension
 - Online at https://mermaid.live
@@ -21,47 +22,47 @@ erDiagram
     profiles ||--o{ code_submissions : "student submits"
     profiles ||--o{ reading_progress : "student tracks"
     profiles ||--o{ analytics_events : "user generates"
-    
+
     %% Content Structure
     content_versions ||--o{ modules : contains
     modules ||--o{ sections : contains
     sections ||--o{ paragraphs : contains
     sections }o--|| animations : "may have"
     paragraphs }o--o| animations : "may trigger"
-    
+
     %% Animations
     animations ||--o{ animation_states : "has states"
     animations ||--o{ animation_variants : "has variants"
-    
+
     %% Course Curation
     courses ||--o{ course_modules : contains
     courses ||--o{ course_enrollments : "has students"
     courses ||--o{ quizzes : "may have"
     course_modules }o--|| modules : references
-    
+
     %% User Interactions
     paragraphs ||--o{ highlights : "can be highlighted"
     highlights ||--o{ notes : "may have"
     paragraphs ||--o{ notes : "may have notes"
-    
+
     %% Quizzes
     quizzes ||--o{ quiz_questions : contains
     quizzes ||--o{ quiz_attempts : "receives attempts"
     quiz_attempts ||--o{ quiz_answers : contains
     quiz_questions ||--o{ quiz_answers : "answered in"
-    
+
     %% Flashcards
     flashcards ||--o{ flashcard_responses : "tracked in"
     flashcard_sessions ||--o{ flashcard_responses : contains
-    
+
     %% AI & Labs
     ai_conversations ||--o{ ai_messages : contains
     code_labs ||--o{ code_submissions : "receives submissions"
-    
+
     %% Analytics
     modules ||--o{ reading_progress : "tracked in"
     courses ||--o{ reading_progress : "tracked in"
-    
+
     %% Entity Definitions
     profiles {
         uuid id PK
@@ -72,7 +73,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     content_versions {
         uuid id PK
         text version_number UK "1.0, 1.1, 2.0"
@@ -82,7 +83,7 @@ erDiagram
         timestamptz created_at
         timestamptz published_at
     }
-    
+
     modules {
         uuid id PK
         uuid content_version_id FK
@@ -97,7 +98,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     sections {
         uuid id PK
         uuid module_id FK
@@ -112,7 +113,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     paragraphs {
         uuid id PK
         uuid section_id FK
@@ -127,7 +128,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     animations {
         uuid id PK
         text animation_key UK
@@ -149,7 +150,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     animation_states {
         uuid id PK
         uuid animation_id FK
@@ -161,7 +162,7 @@ erDiagram
         text_array highlight_elements
         timestamptz created_at
     }
-    
+
     animation_variants {
         uuid id PK
         uuid animation_id FK
@@ -171,7 +172,7 @@ erDiagram
         integer order_index
         timestamptz created_at
     }
-    
+
     courses {
         uuid id PK
         uuid professor_id FK
@@ -185,7 +186,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     course_modules {
         uuid id PK
         uuid course_id FK
@@ -195,7 +196,7 @@ erDiagram
         boolean is_required
         timestamptz created_at
     }
-    
+
     course_enrollments {
         uuid id PK
         uuid course_id FK
@@ -203,7 +204,7 @@ erDiagram
         timestamptz enrolled_at
         timestamptz last_accessed_at
     }
-    
+
     highlights {
         uuid id PK
         uuid user_id FK
@@ -218,7 +219,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     trending_highlights {
         uuid id PK
         uuid paragraph_id FK
@@ -229,7 +230,7 @@ erDiagram
         timestamptz last_highlighted_at
         timestamptz updated_at
     }
-    
+
     notes {
         uuid id PK
         uuid user_id FK
@@ -241,7 +242,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     quizzes {
         uuid id PK
         uuid module_id FK
@@ -259,7 +260,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     quiz_questions {
         uuid id PK
         uuid quiz_id FK
@@ -273,7 +274,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     quiz_attempts {
         uuid id PK
         uuid quiz_id FK
@@ -286,7 +287,7 @@ erDiagram
         integer time_spent_seconds
         text status "in_progress|completed|abandoned"
     }
-    
+
     quiz_answers {
         uuid id PK
         uuid attempt_id FK
@@ -297,7 +298,7 @@ erDiagram
         integer points_earned
         timestamptz created_at
     }
-    
+
     flashcards {
         uuid id PK
         uuid module_id FK
@@ -314,7 +315,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     flashcard_sessions {
         uuid id PK
         uuid student_id FK
@@ -323,7 +324,7 @@ erDiagram
         timestamptz started_at
         timestamptz completed_at
     }
-    
+
     flashcard_responses {
         uuid id PK
         uuid session_id FK
@@ -337,7 +338,7 @@ erDiagram
         date next_review_date
         timestamptz created_at
     }
-    
+
     ai_conversations {
         uuid id PK
         uuid user_id FK
@@ -349,7 +350,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     ai_messages {
         uuid id PK
         uuid conversation_id FK
@@ -359,7 +360,7 @@ erDiagram
         text model_used
         timestamptz created_at
     }
-    
+
     code_labs {
         uuid id PK
         uuid module_id FK
@@ -380,7 +381,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     code_submissions {
         uuid id PK
         uuid lab_id FK
@@ -396,7 +397,7 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
-    
+
     reading_progress {
         uuid id PK
         uuid user_id FK
@@ -411,7 +412,7 @@ erDiagram
         timestamptz last_accessed_at
         timestamptz created_at
     }
-    
+
     analytics_events {
         uuid id PK
         uuid user_id FK
@@ -490,6 +491,7 @@ erDiagram
 ## Key Relationships Summary
 
 ### Content Flow
+
 ```
 Creator → content_versions → modules → sections → paragraphs
                                                       ↓
@@ -497,6 +499,7 @@ Creator → content_versions → modules → sections → paragraphs
 ```
 
 ### Course Flow
+
 ```
 Professor → courses → course_modules → modules
                       ↓
@@ -504,6 +507,7 @@ Professor → courses → course_modules → modules
 ```
 
 ### Student Interactions
+
 ```
 Student → highlights → paragraphs
        → notes → paragraphs/highlights
@@ -516,18 +520,21 @@ Student → highlights → paragraphs
 ## Viewing the Diagram
 
 ### Option 1: Mermaid Live Editor
+
 1. Go to https://mermaid.live
 2. Paste the Mermaid code above
 3. View and export as PNG/SVG
 
 ### Option 2: VS Code
+
 1. Install "Markdown Preview Mermaid Support" extension
 2. Open this file in VS Code
 3. Preview the markdown
 
 ### Option 3: GitHub
+
 - If this file is in a GitHub repo, it will render automatically
 
 ### Option 4: dbdiagram.io
-- See the dbdiagram.io syntax file (created separately)
 
+- See the dbdiagram.io syntax file (created separately)

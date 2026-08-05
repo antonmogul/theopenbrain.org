@@ -76,6 +76,7 @@ Framing choices are unavoidable—all presentation involves framing. But some fr
 ### When Loss Framing Helps
 
 Loss framing can serve users by:
+
 - Motivating beneficial behavior (security warnings, health decisions)
 - Highlighting genuine risks users should consider
 - Creating appropriate urgency for time-sensitive decisions
@@ -86,6 +87,7 @@ Loss framing can serve users by:
 ### When Loss Framing Manipulates
 
 Loss framing becomes manipulation when:
+
 - It creates artificial urgency for decisions that shouldn't be urgent
 - It frames retained features as "losses" to pressure upgrades
 - It amplifies minor inconveniences into frightening losses
@@ -110,6 +112,7 @@ These patterns exploit loss aversion to prevent users from making choices they'v
 ### GDPR and Honest Communication
 
 European GDPR requirements push toward honest communication:
+
 - Consent must be freely given (not manipulated through framing)
 - Withdrawing consent must be as easy as giving it
 - Data processing must be transparently explained
@@ -145,12 +148,14 @@ To use framing ethically:
 ### Present Both Frames
 
 When possible, present information in both gain and loss terms:
+
 - "Save $50 annually (that's $50 less you'll pay)"
 - "Keep your data secure—avoid potential breaches"
 
 ### Use Loss Framing for Genuine Risks
 
 Reserve loss framing for situations where:
+
 - Loss is real, not manufactured
 - Users benefit from heightened awareness
 - The decision merits emotional weight
@@ -158,6 +163,7 @@ Reserve loss framing for situations where:
 ### Avoid Manufactured Urgency
 
 If a decision isn't genuinely urgent, don't frame it as urgent:
+
 - Remove fake countdown timers
 - Eliminate false scarcity signals
 - Let users make decisions at their own pace
@@ -165,6 +171,7 @@ If a decision isn't genuinely urgent, don't frame it as urgent:
 ### Simplify Exit Paths
 
 If users choose to leave, respect that choice:
+
 - Single confirmation, not guilt gauntlets
 - Clear, prominent cancellation options
 - No asymmetric visual framing against user intent

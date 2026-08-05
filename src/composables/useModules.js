@@ -23,7 +23,7 @@ export function useModules() {
             *,
             paragraphs (*)
           )
-        `,
+        `
         )
         .order("order_index", { ascending: true });
 
@@ -41,7 +41,7 @@ export function useModules() {
         "useModules: Query complete. Data:",
         data?.length,
         "Error:",
-        fetchError,
+        fetchError
       );
 
       if (fetchError) throw fetchError;
@@ -72,7 +72,7 @@ export function useModules() {
             *,
             paragraphs (*)
           )
-        `,
+        `
         )
         .eq("id", moduleId)
         .single();

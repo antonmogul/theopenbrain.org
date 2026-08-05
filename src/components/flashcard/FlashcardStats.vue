@@ -31,7 +31,9 @@ const performanceMessage = computed(() => {
   return "Don't give up!";
 });
 
-const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect);
+const cardsReviewed = computed(
+  () => props.stats.correct + props.stats.incorrect
+);
 </script>
 
 <template>
@@ -62,7 +64,10 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
         <span class="stat-label">Cards Reviewed</span>
       </div>
 
-      <div class="stat-card accuracy" :class="{ 'high': accuracy >= 75, 'low': accuracy < 50 }">
+      <div
+        class="stat-card accuracy"
+        :class="{ high: accuracy >= 75, low: accuracy < 50 }"
+      >
         <span class="stat-value">{{ accuracy }}%</span>
         <span class="stat-label">Accuracy</span>
       </div>
@@ -234,7 +239,10 @@ const cardsReviewed = computed(() => props.stats.correct + props.stats.incorrect
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .btn-primary {

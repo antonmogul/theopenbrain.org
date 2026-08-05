@@ -14,13 +14,26 @@ defineProps({
 </template>
 
 <style scoped>
-.stat-grid { display: grid; grid-template-columns: repeat(var(--cols), 1fr); }
-.stat-grid:not(.bordered) { gap: 16px; }
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+}
+.stat-grid:not(.bordered) {
+  gap: 16px;
+}
 .stat-grid.bordered {
   border-top: 1px solid rgb(var(--color-line));
   border-bottom: 1px solid rgb(var(--color-line));
 }
-.stat-grid.bordered :slotted(*) { border-right: 1px solid rgb(var(--color-line)); }
-.stat-grid.bordered :slotted(*:last-child) { border-right: 0; }
-@media (max-width: 767px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-grid.bordered :slotted(*) {
+  border-right: 1px solid rgb(var(--color-line));
+}
+.stat-grid.bordered :slotted(*:last-child) {
+  border-right: 0;
+}
+@media (max-width: 767px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 </style>

@@ -20,7 +20,8 @@ import AccentSwatches from "@/components/settings/AccentSwatches.vue";
       <p class="t-body-sm col-note">
         Controls for features that were removed — dark-mode theming, font-pair
         choice, and accent selection. The components remain on disk so the
-        features can be revived, but they are <strong>not mounted anywhere</strong>
+        features can be revived, but they are
+        <strong>not mounted anywhere</strong>
         in the live app. Shown here for the record only.
       </p>
     </header>
@@ -28,13 +29,25 @@ import AccentSwatches from "@/components/settings/AccentSwatches.vue";
     <div class="archived-banner t-label">Not in use — for reference</div>
 
     <div class="grid">
-      <Specimen name="ThemeCards" import-path="settings/ThemeCards.vue" note="dark mode — retired">
+      <Specimen
+        name="ThemeCards"
+        import-path="settings/ThemeCards.vue"
+        note="dark mode — retired"
+      >
         <ThemeCards />
       </Specimen>
-      <Specimen name="FontPairPicker" import-path="settings/FontPairPicker.vue" note="font choice — retired">
+      <Specimen
+        name="FontPairPicker"
+        import-path="settings/FontPairPicker.vue"
+        note="font choice — retired"
+      >
         <FontPairPicker />
       </Specimen>
-      <Specimen name="AccentSwatches" import-path="settings/AccentSwatches.vue" note="accent choice — retired">
+      <Specimen
+        name="AccentSwatches"
+        import-path="settings/AccentSwatches.vue"
+        note="accent choice — retired"
+      >
         <AccentSwatches />
       </Specimen>
     </div>

@@ -11,6 +11,7 @@ This chapter bridges neuroscience and user experience design, exploring how the 
 **Section Purpose:** Set the stage for why understanding visual neuroscience matters for UX practitioners. Establish the connection between biological visual processing and digital interface design.
 
 **AI Prompt:**
+
 ```
 Write an engaging introduction (800-1000 words) for a textbook chapter on Visual Perception and UX Design. The audience is UX designers and researchers who have just completed a chapter on retinal biology.
 
@@ -31,6 +32,7 @@ Tone: Accessible but rigorous. Use concrete examples. Avoid jargon without expla
 **Section Purpose:** Bridge the previous chapter on retinal processing to higher-level visual cognition. Explain the visual pathway and introduce the concept of hierarchical processing.
 
 **AI Prompt:**
+
 ```
 Write an educational section (1200-1500 words) titled "From Retina to Recognition" for a neuroscience-meets-UX textbook.
 
@@ -59,6 +61,7 @@ Audience: UX professionals with basic neuroscience literacy from previous chapte
 ### 2.1 Selective Attention and the Cocktail Party Effect
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on selective attention for a neuro-UX textbook.
 
@@ -76,6 +79,7 @@ Include a concrete example of an interface redesign that succeeded by understand
 ### 2.2 Inattentional Blindness
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on inattentional blindness for a neuro-UX textbook.
 
@@ -84,7 +88,7 @@ Cover:
 - Why focused attention creates functional blindness to unexpected stimuli
 - Neural explanation: attention as competitive suppression of unattended stimuli
 - Real-world consequences: radiologists missing tumors, drivers missing motorcycles
-- UX implications: 
+- UX implications:
   - Why users miss error messages, notifications, and new features
   - The danger of assuming users "see" everything on screen
   - Designing for distracted, task-focused users
@@ -95,6 +99,7 @@ Include 2-3 specific UX examples where inattentional blindness caused usability 
 ### 2.3 Change Blindness
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on change blindness for a neuro-UX textbook.
 
@@ -115,6 +120,7 @@ Provide specific guidelines for designing noticeable state changes without being
 ### 2.4 The Attentional Blink
 
 **AI Prompt:**
+
 ```
 Write a subsection (500-700 words) on the attentional blink for a neuro-UX textbook.
 
@@ -140,6 +146,7 @@ Include practical timing guidelines for sequential information presentation.
 ### 3.1 The 2° Window of Sharp Focus
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on foveal vision for a neuro-UX textbook.
 
@@ -160,6 +167,7 @@ Include a practical exercise: have readers hold their thumb at arm's length to u
 ### 3.2 Parafoveal Preview in Reading
 
 **AI Prompt:**
+
 ```
 Write a subsection (500-700 words) on parafoveal processing and reading for a neuro-UX textbook.
 
@@ -180,6 +188,7 @@ Connect to eye-tracking research on web reading patterns.
 ### 3.3 Why Users Miss Sidebar Content
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on peripheral vision limitations for a neuro-UX textbook.
 
@@ -201,6 +210,7 @@ Provide before/after examples of layouts improved by understanding peripheral li
 ### 3.4 Designing for Peripheral Awareness
 
 **AI Prompt:**
+
 ```
 Write a subsection (500-700 words) on leveraging peripheral vision in UX design.
 
@@ -227,6 +237,7 @@ Provide guidelines for designing effective peripheral visual cues.
 ### 4.1 How Eyes Actually Move Across Interfaces
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on eye movement basics for a neuro-UX textbook.
 
@@ -245,6 +256,7 @@ Include data from eye-tracking research on typical web browsing sessions.
 ### 4.2 F-Patterns, Z-Patterns — and When They Break Down
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on scanning patterns for a neuro-UX textbook.
 
@@ -267,6 +279,7 @@ Include examples of designs that successfully break default patterns.
 ### 4.3 Implications for Information Hierarchy
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on designing information hierarchy based on eye movement science.
 
@@ -294,6 +307,7 @@ Provide a checklist for evaluating visual hierarchy effectiveness.
 ### 5.1 Proximity and Similarity
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on proximity and similarity principles for a neuro-UX textbook.
 
@@ -316,6 +330,7 @@ Include visual examples showing grouping effects and their UI applications.
 ### 5.2 Closure and Continuity
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on closure and continuity principles for a neuro-UX textbook.
 
@@ -338,6 +353,7 @@ Include analysis of famous logos that leverage closure (IBM, WWF, FedEx arrow).
 ### 5.3 Figure-Ground Segregation
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on figure-ground perception for a neuro-UX textbook.
 
@@ -360,6 +376,7 @@ Discuss how Material Design elevation system maps to figure-ground perception.
 ### 5.4 Common Fate and Motion Perception
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on common fate and motion grouping for a neuro-UX textbook.
 
@@ -387,6 +404,7 @@ Provide guidelines for using motion to reinforce grouping without overwhelming u
 ### 6.1 Trichromacy and Color Deficiency
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on human color vision and deficiency for a neuro-UX textbook.
 
@@ -412,6 +430,7 @@ Include statistics on global color deficiency prevalence and its business implic
 ### 6.2 Opponent Processing Channels
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on opponent color processing for a neuro-UX textbook.
 
@@ -433,6 +452,7 @@ Explain how understanding opponent channels helps choose effective color palette
 ### 6.3 Color Constancy and Its Illusions
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on color constancy for a neuro-UX textbook.
 
@@ -454,6 +474,7 @@ Provide practical guidance for designing color schemes that remain recognizable 
 ### 6.4 Accessible Color Design
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on accessible color use in interface design.
 
@@ -482,6 +503,7 @@ Include a checklist for color accessibility review.
 ### 7.1 Miller's 7±2 and Chunking
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on working memory capacity for a neuro-UX textbook.
 
@@ -503,6 +525,7 @@ Caution against over-literal application (not "never have more than 7 menu items
 ### 7.2 Cognitive Load Theory
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on cognitive load theory for a neuro-UX textbook.
 
@@ -527,6 +550,7 @@ Include examples of high-load interfaces redesigned to reduce extraneous load.
 ### 7.3 Progressive Disclosure as Load Management
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on progressive disclosure for a neuro-UX textbook.
 
@@ -558,6 +582,7 @@ Provide guidelines for deciding what to hide and what to show.
 ### 8.1 Anchoring Effects in UI
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on anchoring bias in interface design for a neuro-UX textbook.
 
@@ -582,6 +607,7 @@ Include both ethical and dark pattern examples with analysis.
 ### 8.2 Framing and Loss Aversion
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on framing effects and loss aversion for a neuro-UX textbook.
 
@@ -606,6 +632,7 @@ Provide a framework for ethical framing decisions.
 ### 8.3 Default Bias and Choice Architecture
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on default effects and choice architecture for a neuro-UX textbook.
 
@@ -634,6 +661,7 @@ Include current legal landscape around manipulative defaults.
 ### 8.4 The Decoy Effect
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on the decoy effect for a neuro-UX textbook.
 
@@ -664,6 +692,7 @@ Provide criteria for distinguishing helpful vs manipulative use of decoy effects
 ### 9.1 Biological Motion Detection
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on motion detection for a neuro-UX textbook.
 
@@ -686,6 +715,7 @@ Connect to accessibility: vestibular disorders and motion sensitivity.
 ### 9.2 Animation as Attention Director
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on using animation effectively for a neuro-UX textbook.
 
@@ -712,6 +742,7 @@ Include timing guidelines (100-300ms for most UI transitions).
 ### 9.3 Perceived Duration and Loading States
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) on time perception and loading states for a neuro-UX textbook.
 
@@ -742,6 +773,7 @@ Provide a decision tree for choosing loading state treatments.
 ### 9.4 When Motion Harms Usability
 
 **AI Prompt:**
+
 ```
 Write a subsection (600-800 words) on problematic motion and accessibility for a neuro-UX textbook.
 
@@ -774,6 +806,7 @@ Include code examples for prefers-reduced-motion implementation.
 ### 10.1 Eye-Tracking Research Findings
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) summarizing key eye-tracking research for UX.
 
@@ -799,6 +832,7 @@ Provide actionable takeaways from the research for practitioners.
 ### 10.2 A/B Testing Through a Perceptual Lens
 
 **AI Prompt:**
+
 ```
 Write a subsection (700-900 words) on interpreting A/B tests using perceptual principles.
 
@@ -823,6 +857,7 @@ Provide a framework for perceptually-informed A/B test design.
 ### 10.3 Accessibility as Perceptual Accommodation
 
 **AI Prompt:**
+
 ```
 Write a subsection (800-1000 words) reframing accessibility through perceptual science.
 
@@ -853,6 +888,7 @@ Reframe accessibility as applied perceptual design rather than compliance checkb
 **Section Purpose:** Explore cutting-edge research and future directions at the intersection of neuroscience and UX.
 
 **AI Prompt:**
+
 ```
 Write a concluding section (1000-1200 words) on emerging trends in neuro-UX research.
 
@@ -888,6 +924,7 @@ End with concrete resources for continued learning.
 ## Appendix: Key Terms Glossary
 
 **AI Prompt:**
+
 ```
 Create a glossary (30-40 terms) of key neuroscience and perception terms used in this chapter.
 
@@ -910,6 +947,7 @@ Ensure definitions are practical and connect to UX applications where relevant.
 ## Appendix: Recommended Reading and Resources
 
 **AI Prompt:**
+
 ```
 Create an annotated reading list for a neuro-UX textbook chapter.
 

@@ -21,26 +21,57 @@ defineProps({
 </template>
 
 <style scoped>
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field-label {
-  font-family: var(--font-mono); font-size: 0.625rem; text-transform: uppercase;
-  letter-spacing: 0.1em; color: rgb(var(--color-mute));
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-.req { color: rgb(var(--color-accent)); }
-.field-hint { font-family: var(--font-body); font-size: 0.8125rem; color: rgb(var(--color-mute)); margin-top: 4px; line-height: 1.45; }
-.field-error { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-accent)); margin-top: 4px; }
+.field-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+}
+.req {
+  color: rgb(var(--color-accent));
+}
+.field-hint {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  color: rgb(var(--color-mute));
+  margin-top: 4px;
+  line-height: 1.45;
+}
+.field-error {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-accent));
+  margin-top: 4px;
+}
 
 /* Style slotted native controls consistently (boxed token input). */
 .field :deep(input),
 .field :deep(select),
 .field :deep(textarea) {
-  width: 100%; border: 1px solid rgb(var(--color-line)); border-radius: 4px;
-  background: transparent; padding: 10px 12px;
-  font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-ink)); outline: none;
+  width: 100%;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 4px;
+  background: transparent;
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: rgb(var(--color-ink));
+  outline: none;
   transition: border-color 0.12s ease;
 }
 .field :deep(input:focus),
 .field :deep(select:focus),
-.field :deep(textarea:focus) { border-color: rgb(var(--color-ink)); }
-.field :deep(textarea) { line-height: 1.5; resize: vertical; }
+.field :deep(textarea:focus) {
+  border-color: rgb(var(--color-ink));
+}
+.field :deep(textarea) {
+  line-height: 1.5;
+  resize: vertical;
+}
 </style>

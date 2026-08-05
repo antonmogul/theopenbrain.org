@@ -1,0 +1,18 @@
+# Build output
+dist/
+node_modules/
+coverage/
+
+# Scratch + captured artifacts, not application code
+scratchpad/
+.filmstrip/
+.playwright-mcp/
+
+# Design exploration mockups. Loose JSX that was never wired into the app and
+# doesn't parse under the app's (non-JSX) parser config — 11 parse errors.
+# Lint the app, not the sketchbook.
+New Design Ideas/
+
+# Generated
+public/publicAssets/
+supabase/.temp/

@@ -6,7 +6,7 @@ In the early twentieth century, a group of German psychologists noticed somethin
 
 These observations formed the foundation of **Gestalt psychology**, from the German word meaning "form" or "whole." The Gestalt psychologists—Max Wertheimer, Kurt Koffka, Wolfgang Köhler, and others—identified principles describing how perception organizes discrete elements into coherent groups.
 
-A century later, these principles remain fundamental to visual design. But neuroscience now explains *why* they work, transforming them from descriptive rules to grounded design tools.
+A century later, these principles remain fundamental to visual design. But neuroscience now explains _why_ they work, transforming them from descriptive rules to grounded design tools.
 
 ## Proximity: Close Things Belong Together
 
@@ -57,6 +57,7 @@ These numbers are starting points—actual values depend on overall design scale
 **Similarity** extends grouping beyond position: elements that share visual features are perceived as belonging together, even if they're spatially separated.
 
 Features that drive similarity grouping include:
+
 - **Color**: Same-colored elements group together
 - **Shape**: Circles group with circles, squares with squares
 - **Size**: Elements of similar size group together
@@ -98,6 +99,7 @@ Proximity and similarity interact in complex ways:
 ### Design Strategy: Align Principles When Possible
 
 The clearest designs align grouping principles rather than setting them in conflict. If elements should be perceived as grouped:
+
 - Place them close together (proximity)
 - Give them shared visual treatment (similarity)
 - Use consistent alignment (continuation)
@@ -143,7 +145,7 @@ Understanding the neural basis of Gestalt principles transforms how we apply the
 
 **They're not arbitrary conventions**—they're reflections of perceptual architecture. Proximity grouping works because of how receptive fields are structured. Similarity grouping works because of how features are processed. These principles work across cultures and contexts because they're grounded in universal visual neuroscience.
 
-**They predict failure modes**. When grouping principles conflict with intended relationships, users will misperceive structure. Understanding *why* principles work helps predict *when* they'll fail.
+**They predict failure modes**. When grouping principles conflict with intended relationships, users will misperceive structure. Understanding _why_ principles work helps predict _when_ they'll fail.
 
 **They guide resolution of design conflicts**. When design constraints create tension between grouping principles, understanding neural mechanisms helps evaluate which principle is more robust in context.
 

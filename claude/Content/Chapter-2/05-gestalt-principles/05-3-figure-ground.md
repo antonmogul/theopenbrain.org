@@ -2,7 +2,7 @@
 
 ## Perceiving Objects Against Backgrounds
 
-Before you can identify what something is, you must first determine that it *is*—that a region of the visual field constitutes an object rather than background. This fundamental operation, **figure-ground segregation**, happens so automatically that we rarely notice it. But understanding how it works reveals principles crucial for interface design.
+Before you can identify what something is, you must first determine that it _is_—that a region of the visual field constitutes an object rather than background. This fundamental operation, **figure-ground segregation**, happens so automatically that we rarely notice it. But understanding how it works reveals principles crucial for interface design.
 
 ## The Challenge of Figure-Ground
 
@@ -94,6 +94,7 @@ This isn't just an accessibility issue (though it's critically that too)—it's 
 WCAG accessibility guidelines specify contrast ratios (4.5:1 for normal text, 3:1 for large text), but these aren't arbitrary numbers—they correspond to figure-ground perception thresholds.
 
 At contrast ratios below guidelines:
+
 - Text-background boundaries become ambiguous
 - Figure-ground assignment becomes unreliable
 - Reading requires more effort as the visual system struggles to construct clear figures
@@ -105,16 +106,19 @@ Above guideline ratios, figure-ground assignment is rapid and reliable. Readers 
 Google's Material Design system provides an excellent case study in designed figure-ground relationships.
 
 **Base concepts**:
+
 - All elements exist on surfaces
 - Surfaces have "elevation" indicating their position in virtual z-space
 - Higher elevation = more important, more figure-like
 
 **Elevation indicators**:
+
 - Shadow intensity and spread increase with elevation
 - Higher elements cast larger shadows on elements below
 - Shadow direction and characteristics are consistent
 
 **Semantic use**:
+
 - Navigation bars at moderate elevation (persistent, important, but not dialog-level)
 - FABs (floating action buttons) at high elevation (primary actions, clearly figure)
 - Modal dialogs at highest elevation (demand immediate attention)
@@ -136,26 +140,31 @@ These transitions should be designed as figure-ground shifts. A hover effect tha
 ## Guidelines for Clear Figure-Ground
 
 **Establish clear figures**:
+
 - Give interactive elements sufficient contrast with background
 - Use shadows, borders, or color differentiation to separate content regions
 - Ensure text clearly emerges as figure from surrounding ground
 
 **Use depth intentionally**:
+
 - Higher elevation for more important or immediate elements
 - Lower elevation for background or supporting elements
 - Consistent depth hierarchy across the interface
 
 **Handle transitions clearly**:
+
 - Modal states should dramatically shift figure-ground (dim background, elevate dialog)
 - Focus and selection should increase figure prominence
 - State changes should communicate through figure-ground, not just detail changes
 
 **Test for clarity**:
+
 - Squint at designs to see if figures remain clearly separated
 - Check contrast ratios for accessibility and figure-ground reliability
 - Test with varied lighting conditions and displays
 
 **Avoid ambiguity**:
+
 - Don't create interfaces where figure-ground assignment is unstable
 - Avoid designs where users must determine what's interactive vs. decorative
 - Ensure key elements have clearly higher figure status than surroundings

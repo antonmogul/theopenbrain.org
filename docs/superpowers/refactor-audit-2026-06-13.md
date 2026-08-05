@@ -24,28 +24,28 @@ Tiers 1–2 alone remove ~3,200 LOC outright and relocate ~3,000 more out of the
 
 ## Prioritized table (ranked by leverage-to-risk)
 
-| Rank | Opportunity | Files (key cites) | Payoff | Effort | Risk |
-|---|---|---|---|---|---|
-| 1 | Delete 4 dead Navigation components | `Navigation/{MenuNav(356),MenuAbout(180),MenuHome(98),BottomNav(138)}.vue` | ~772 LOC; **verified zero imports** | S | low |
-| 2 | Delete orphan `NotesSidebar.vue`(699) + `NoteModal.vue`(279) | `chapter/NotesSidebar.vue`, `chapter/NoteModal.vue` | ~978 LOC; **verified zero imports**; superseded by `sidebar/NotebookTab.vue` | S | low |
-| 3 | Delete 4 zero-consumer API service modules | `services/api/{media,users,quizzes,analytics}.js` + barrel re-exports | ~797 LOC; **verified zero imports**, barrel `@/services/api` itself unimported | S | low |
-| 4 | Fix/strip broken helper + debug logs | `helper/marking.js`, `helper/sections.js`, `stores/index.js:64,70,77`, `TextComp.vue` (9 logs) | ~70 LOC + **fixes a latent bug** (see below) | S | low |
-| 5 | Centralize date/relative-time formatter | new `utils/format.js` ← 11 copies (Student/Professor/Dashboard views, ProgressCard, useTrendingHighlights, ChatTab, NotebookTab, AITutorSidebar, FlashcardDeck, CourseCard) | ~100 LOC → ~30; consistent phrasing | S | low |
-| 6 | Centralize highlight-color hex map | `useHighlights.js:11-17` (add `hex`); kill 5 inline maps (NotebookTab, HighlightToolbar, HighlightRenderer, useHighlightRenderer) | 5 maps → 1 source | S | low |
-| 7 | Prune dead store state/getters | `comments.js:6,22-24`; `stores/index.js:26,35,36` (`count`/`getactiveMenu`/`doubleCount`) | shrinks store surface (verified 0-use; KEEP `getCom()` — used by CommentComp) | S | low |
-| 8 | **Consolidate 15 `supabaseRest()` onto shared client** | `services/api/client.js:18-68` (0 consumers) + 15 copies | ~390 LOC; ends silent behavioral drift | L | med |
-| 9 | Extract `ChapterBlockEditor` from DashboardView | `DashboardView.vue` tmpl 2086-2204, logic 363-757/188-249/763-781, CSS 3042-3240 | ~800-900 LOC out of the 3,246 file in one move | L | med |
-| 10 | Move dashboard per-section fetch/CRUD into composables | `DashboardView.vue` 783-1500; `ProfessorDashboardView.vue` 174-470 | precondition that makes #11/#12 trivial; mechanical | M | low |
-| 11 | Split DashboardView remaining sections | `DashboardView.vue` analytics/quizzes/media/users/versions blocks | sheds >1,000 more LOC; parent → shell | L | med |
-| 12 | Split ProfessorDashboardView sections | `ProfessorDashboardView.vue` 917-1392 | ~400-500 LOC; reuses #11 pattern | M | med |
-| 13 | `withAsyncState()` for loading/error/data triple | 15 data composables (~28 try/catch scaffolds) | ~150-200 LOC; standardizes error handling | M | med |
-| 14 | Adopt `dashboard/shared` primitives in sidebar tabs | `NotebookTab.vue`, `ChatTab.vue:197-425` ← shared EmptyState/ConfirmDialog/Button/LoadingState | shrinks style blocks; unifies look | M | low |
-| 15 | Extract shared `CloseIcon` (14 inline copies) | NavDrawer, ReaderSidebar, AITutorSidebar, QuizView, FlashcardView, ChapterView, … | 14 copies → 1 (pattern: `DashboardNavIcon`) | M | low |
-| 16 | Split `QuizView` screens + trim CSS | `QuizView.vue` screens 184-360, style 381-724 (47%) | 724 → ~150; logic already in `useQuizzes` | M | low |
-| 17 | Tokenize `HighlightToolbar` | `HighlightToolbar.vue:510-797` (44 hardcoded hex) | **fixes a real theming bug** (toolbar ignores dark mode/accent) | M | med |
-| 18 | Split `HighlightToolbar.vue` (825) | panels 419-493, 6 toggle fns 109-186, style 499-824 | 825 → ~300; isolates riskiest selection code | M | med |
-| 19 | Dedup auth form (NavDrawer ↔ MenuAuth) | `NavDrawer.vue:111-419,634-726` vs `MenuAuth.vue:19-441` | ~200 LOC; unifies drifted validation | M | med |
-| 20 | Collapse CRUD composables via factory | `useHighlights`/`useNotes`/`useTrendingHighlights` | ~150-200 LOC — **only after** #5/#8/#13 | M | med |
+| Rank | Opportunity                                                  | Files (key cites)                                                                                                                                                           | Payoff                                                                         | Effort | Risk |
+| ---- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------ | ---- |
+| 1    | Delete 4 dead Navigation components                          | `Navigation/{MenuNav(356),MenuAbout(180),MenuHome(98),BottomNav(138)}.vue`                                                                                                  | ~772 LOC; **verified zero imports**                                            | S      | low  |
+| 2    | Delete orphan `NotesSidebar.vue`(699) + `NoteModal.vue`(279) | `chapter/NotesSidebar.vue`, `chapter/NoteModal.vue`                                                                                                                         | ~978 LOC; **verified zero imports**; superseded by `sidebar/NotebookTab.vue`   | S      | low  |
+| 3    | Delete 4 zero-consumer API service modules                   | `services/api/{media,users,quizzes,analytics}.js` + barrel re-exports                                                                                                       | ~797 LOC; **verified zero imports**, barrel `@/services/api` itself unimported | S      | low  |
+| 4    | Fix/strip broken helper + debug logs                         | `helper/marking.js`, `helper/sections.js`, `stores/index.js:64,70,77`, `TextComp.vue` (9 logs)                                                                              | ~70 LOC + **fixes a latent bug** (see below)                                   | S      | low  |
+| 5    | Centralize date/relative-time formatter                      | new `utils/format.js` ← 11 copies (Student/Professor/Dashboard views, ProgressCard, useTrendingHighlights, ChatTab, NotebookTab, AITutorSidebar, FlashcardDeck, CourseCard) | ~100 LOC → ~30; consistent phrasing                                            | S      | low  |
+| 6    | Centralize highlight-color hex map                           | `useHighlights.js:11-17` (add `hex`); kill 5 inline maps (NotebookTab, HighlightToolbar, HighlightRenderer, useHighlightRenderer)                                           | 5 maps → 1 source                                                              | S      | low  |
+| 7    | Prune dead store state/getters                               | `comments.js:6,22-24`; `stores/index.js:26,35,36` (`count`/`getactiveMenu`/`doubleCount`)                                                                                   | shrinks store surface (verified 0-use; KEEP `getCom()` — used by CommentComp)  | S      | low  |
+| 8    | **Consolidate 15 `supabaseRest()` onto shared client**       | `services/api/client.js:18-68` (0 consumers) + 15 copies                                                                                                                    | ~390 LOC; ends silent behavioral drift                                         | L      | med  |
+| 9    | Extract `ChapterBlockEditor` from DashboardView              | `DashboardView.vue` tmpl 2086-2204, logic 363-757/188-249/763-781, CSS 3042-3240                                                                                            | ~800-900 LOC out of the 3,246 file in one move                                 | L      | med  |
+| 10   | Move dashboard per-section fetch/CRUD into composables       | `DashboardView.vue` 783-1500; `ProfessorDashboardView.vue` 174-470                                                                                                          | precondition that makes #11/#12 trivial; mechanical                            | M      | low  |
+| 11   | Split DashboardView remaining sections                       | `DashboardView.vue` analytics/quizzes/media/users/versions blocks                                                                                                           | sheds >1,000 more LOC; parent → shell                                          | L      | med  |
+| 12   | Split ProfessorDashboardView sections                        | `ProfessorDashboardView.vue` 917-1392                                                                                                                                       | ~400-500 LOC; reuses #11 pattern                                               | M      | med  |
+| 13   | `withAsyncState()` for loading/error/data triple             | 15 data composables (~28 try/catch scaffolds)                                                                                                                               | ~150-200 LOC; standardizes error handling                                      | M      | med  |
+| 14   | Adopt `dashboard/shared` primitives in sidebar tabs          | `NotebookTab.vue`, `ChatTab.vue:197-425` ← shared EmptyState/ConfirmDialog/Button/LoadingState                                                                              | shrinks style blocks; unifies look                                             | M      | low  |
+| 15   | Extract shared `CloseIcon` (14 inline copies)                | NavDrawer, ReaderSidebar, AITutorSidebar, QuizView, FlashcardView, ChapterView, …                                                                                           | 14 copies → 1 (pattern: `DashboardNavIcon`)                                    | M      | low  |
+| 16   | Split `QuizView` screens + trim CSS                          | `QuizView.vue` screens 184-360, style 381-724 (47%)                                                                                                                         | 724 → ~150; logic already in `useQuizzes`                                      | M      | low  |
+| 17   | Tokenize `HighlightToolbar`                                  | `HighlightToolbar.vue:510-797` (44 hardcoded hex)                                                                                                                           | **fixes a real theming bug** (toolbar ignores dark mode/accent)                | M      | med  |
+| 18   | Split `HighlightToolbar.vue` (825)                           | panels 419-493, 6 toggle fns 109-186, style 499-824                                                                                                                         | 825 → ~300; isolates riskiest selection code                                   | M      | med  |
+| 19   | Dedup auth form (NavDrawer ↔ MenuAuth)                       | `NavDrawer.vue:111-419,634-726` vs `MenuAuth.vue:19-441`                                                                                                                    | ~200 LOC; unifies drifted validation                                           | M      | med  |
+| 20   | Collapse CRUD composables via factory                        | `useHighlights`/`useNotes`/`useTrendingHighlights`                                                                                                                          | ~150-200 LOC — **only after** #5/#8/#13                                        | M      | med  |
 
 ---
 
@@ -73,19 +73,19 @@ Pure deletions + single-source extractions. No behavior change; `npm run build` 
 
 ## Quantified size impact
 
-| Category | LOC | Confidence |
-|---|---|---|
-| Dead Navigation components (#1) | ~772 | verified |
-| Orphan NotesSidebar + NoteModal (#2) | ~978 | verified |
-| Dead API service modules (#3) | ~797 | verified |
-| Dead helpers + debug logs (#4) | ~70 | verified |
-| **Tier 1 dead-code subtotal** | **~2,617** | high |
-| supabaseRest dedup (#8) | ~390 | verified |
-| Date formatter (#5) + env-read folding | ~200 | high–med |
-| **DRY subtotal** | **~590** | high–med |
-| DashboardView splits (#9+#11) | ~1,800–1,900 *relocated* | high |
-| ProfessorDashboardView split (#12) | ~400–500 *relocated* | high |
-| QuizView/HighlightToolbar splits (#16,#18) | ~900 *relocated* | medium |
+| Category                                   | LOC                      | Confidence |
+| ------------------------------------------ | ------------------------ | ---------- |
+| Dead Navigation components (#1)            | ~772                     | verified   |
+| Orphan NotesSidebar + NoteModal (#2)       | ~978                     | verified   |
+| Dead API service modules (#3)              | ~797                     | verified   |
+| Dead helpers + debug logs (#4)             | ~70                      | verified   |
+| **Tier 1 dead-code subtotal**              | **~2,617**               | high       |
+| supabaseRest dedup (#8)                    | ~390                     | verified   |
+| Date formatter (#5) + env-read folding     | ~200                     | high–med   |
+| **DRY subtotal**                           | **~590**                 | high–med   |
+| DashboardView splits (#9+#11)              | ~1,800–1,900 _relocated_ | high       |
+| ProfessorDashboardView split (#12)         | ~400–500 _relocated_     | high       |
+| QuizView/HighlightToolbar splits (#16,#18) | ~900 _relocated_         | medium     |
 
 **Net deletions (code that disappears): ~3,200 LOC.** **Splits relocate ~3,000 more** out of the four biggest files — `DashboardView.vue` 3,246 → a few-hundred-line shell; `HighlightToolbar.vue` 825 → ~300; `QuizView.vue` 724 → ~150.
 

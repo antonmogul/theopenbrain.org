@@ -22,7 +22,9 @@ const MODULE_ID = "mod-1";
 function mockRest({ sections, paragraphs, animKeys = [] }) {
   apiRequest.mockImplementation((endpoint) => {
     if (endpoint.startsWith("modules?"))
-      return Promise.resolve([{ id: MODULE_ID, title: "The Retina", slug: "the-retina" }]);
+      return Promise.resolve([
+        { id: MODULE_ID, title: "The Retina", slug: "the-retina" },
+      ]);
     if (endpoint.startsWith("sections?")) return Promise.resolve(sections);
     if (endpoint.startsWith("paragraphs?")) return Promise.resolve(paragraphs);
     if (endpoint.startsWith("animations?")) return Promise.resolve(animKeys);
@@ -180,7 +182,12 @@ describe("useChapter transformParagraph fullscreen (CODE-FIX #4)", () => {
         animKey: "animationPhototransduction",
         row: {
           content: {
-            blocks: [{ type: "animation_full", animationId: "animationPhototransduction" }],
+            blocks: [
+              {
+                type: "animation_full",
+                animationId: "animationPhototransduction",
+              },
+            ],
           },
         },
       }),

@@ -57,7 +57,11 @@ export function useReadingProgress(initialModuleId = null, courseId = null) {
   }
 
   // Save progress to database
-  async function saveProgress(scrollPosition, sectionId = null, forceComplete = false) {
+  async function saveProgress(
+    scrollPosition,
+    sectionId = null,
+    forceComplete = false
+  ) {
     if (!user.value || !moduleId) return;
 
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -106,7 +110,8 @@ export function useReadingProgress(initialModuleId = null, courseId = null) {
 
   // Get current scroll percentage
   function getScrollPercent() {
-    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollHeight =
+      document.documentElement.scrollHeight - window.innerHeight;
     if (scrollHeight <= 0) return 100;
     return (window.scrollY / scrollHeight) * 100;
   }

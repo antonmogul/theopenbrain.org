@@ -58,24 +58,25 @@ onBeforeUnmount(() => {
 // Module name - for now hardcoded, could be fetched from Supabase later
 const moduleName = computed(() => {
   // Chapter 1 belongs to "Visual Perception and UX" module
-  if (route.params.number === '1' || route.params.slug === 'the-retina') {
-    return 'Visual Perception and UX';
+  if (route.params.number === "1" || route.params.slug === "the-retina") {
+    return "Visual Perception and UX";
   }
   // For other chapters, could fetch from module data
-  return textStore.text?.moduleName || 'Visual Perception and UX';
+  return textStore.text?.moduleName || "Visual Perception and UX";
 });
 
 // Get chapter title from store
 const chapterTitle = computed(() => {
-  return textStore.text?.intro?.[0]?.title || 'The Open Brain';
+  return textStore.text?.intro?.[0]?.title || "The Open Brain";
 });
 
 // Chapter cover image based on route
 const coverImage = computed(() => {
   const slug = route.params.slug;
-  if (slug === 'the-retina') return '/publicAssets/images/00-matisse-bg.jpg';
-  if (slug === 'visual-perception-ux') return '/publicAssets/images/marguerite.png';
-  return '/publicAssets/images/background.jpg';
+  if (slug === "the-retina") return "/publicAssets/images/00-matisse-bg.jpg";
+  if (slug === "visual-perception-ux")
+    return "/publicAssets/images/marguerite.png";
+  return "/publicAssets/images/background.jpg";
 });
 
 watchDebounced(

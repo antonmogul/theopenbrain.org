@@ -39,7 +39,6 @@ onMounted(async () => {
 function handleStart() {
   emit("start", props.moduleId);
 }
-
 </script>
 
 <template>
@@ -87,7 +86,9 @@ function handleStart() {
 
     <div v-if="lastSession" class="last-session">
       <span class="session-label">Last studied:</span>
-      <span class="session-date">{{ formatDate(lastSession.completed_at) }}</span>
+      <span class="session-date">{{
+        formatDate(lastSession.completed_at)
+      }}</span>
     </div>
 
     <button
@@ -105,7 +106,11 @@ function handleStart() {
       >
         <polygon points="5 3 19 12 5 21 5 3"></polygon>
       </svg>
-      {{ stats?.dueCards > 0 ? `Study ${stats.dueCards} Due Cards` : "Start Studying" }}
+      {{
+        stats?.dueCards > 0
+          ? `Study ${stats.dueCards} Due Cards`
+          : "Start Studying"
+      }}
     </button>
   </div>
 </template>
@@ -165,8 +170,13 @@ function handleStart() {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .deck-stats {

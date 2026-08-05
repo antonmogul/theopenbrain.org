@@ -20,7 +20,7 @@
         v-if="inlineImageActive"
         class="imgDesription break-before-all border-t border-black relative block px-4 py-2 pb-6 font-mono text-small w-full overflow-scroll"
       >
-        <span v-if="paragraph?.imgCap" class="max-w-[850px] block">
+        <span v-if="paragraph?.imgCap" class="max-w-measure-wide block">
           {{ paragraph?.imgCap }}
         </span>
       </div>

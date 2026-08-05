@@ -5,7 +5,7 @@
  * structured reference objects for the `references` table.
  */
 
-import { ref } from 'vue';
+import { ref } from "vue";
 
 /**
  * Parse a BibTeX file string into reference objects.
@@ -19,23 +19,28 @@ function parseBibTeX(content) {
 
   while ((match = entryRegex.exec(content)) !== null) {
     const entryType = match[1].toLowerCase();
-    if (entryType === 'comment' || entryType === 'string' || entryType === 'preamble') continue;
+    if (
+      entryType === "comment" ||
+      entryType === "string" ||
+      entryType === "preamble"
+    )
+      continue;
 
     const fieldsStr = match[3];
     const fields = parseBibTeXFields(fieldsStr);
 
     const pubType = mapBibTeXType(entryType);
-    const authors = formatBibTeXAuthors(fields.author || '');
+    const authors = formatBibTeXAuthors(fields.author || "");
 
     references.push({
-      authors: authors || 'Unknown',
-      title: cleanBibTeXValue(fields.title || ''),
-      journal: cleanBibTeXValue(fields.journal || fields.booktitle || ''),
+      authors: authors || "Unknown",
+      title: cleanBibTeXValue(fields.title || ""),
+      journal: cleanBibTeXValue(fields.journal || fields.booktitle || ""),
       year: parseInt(fields.year, 10) || null,
-      volume: cleanBibTeXValue(fields.volume || ''),
-      pages: cleanBibTeXValue(fields.pages || '').replace('--', '–'),
-      doi: cleanBibTeXValue(fields.doi || ''),
-      url: cleanBibTeXValue(fields.url || ''),
+      volume: cleanBibTeXValue(fields.volume || ""),
+      pages: cleanBibTeXValue(fields.pages || "").replace("--", "–"),
+      doi: cleanBibTeXValue(fields.doi || ""),
+      url: cleanBibTeXValue(fields.url || ""),
       pub_type: pubType,
       raw_text: buildRawText({ authors, ...fields }),
     });
@@ -50,11 +55,12 @@ function parseBibTeX(content) {
 function parseBibTeXFields(fieldsStr) {
   const fields = {};
   // Match: key = {value} or key = "value" or key = number
-  const fieldRegex = /(\w+)\s*=\s*(?:\{((?:[^{}]|\{[^{}]*\})*)\}|"([^"]*)"|(\d+))/g;
+  const fieldRegex =
+    /(\w+)\s*=\s*(?:\{((?:[^{}]|\{[^{}]*\})*)\}|"([^"]*)"|(\d+))/g;
   let m;
   while ((m = fieldRegex.exec(fieldsStr)) !== null) {
     const key = m[1].toLowerCase();
-    const value = m[2] ?? m[3] ?? m[4] ?? '';
+    const value = m[2] ?? m[3] ?? m[4] ?? "";
     fields[key] = value;
   }
   return fields;
@@ -64,20 +70,20 @@ function parseBibTeXFields(fieldsStr) {
  * Clean BibTeX values: remove braces, trim whitespace.
  */
 function cleanBibTeXValue(val) {
-  return val.replace(/[{}]/g, '').trim();
+  return val.replace(/[{}]/g, "").trim();
 }
 
 /**
  * Format BibTeX author strings: "Last, First and Last2, First2" → "Last, F. & Last2, F2."
  */
 function formatBibTeXAuthors(authorStr) {
-  if (!authorStr) return '';
+  if (!authorStr) return "";
   const cleaned = cleanBibTeXValue(authorStr);
   const authors = cleaned.split(/\s+and\s+/i);
   return authors
-    .map(a => a.trim())
+    .map((a) => a.trim())
     .filter(Boolean)
-    .join(' & ');
+    .join(" & ");
 }
 
 /**
@@ -85,20 +91,20 @@ function formatBibTeXAuthors(authorStr) {
  */
 function mapBibTeXType(type) {
   const map = {
-    article: 'article',
-    book: 'book',
-    inbook: 'chapter',
-    incollection: 'chapter',
-    inproceedings: 'article',
-    conference: 'article',
-    phdthesis: 'article',
-    mastersthesis: 'article',
-    misc: 'web',
-    online: 'web',
-    techreport: 'article',
-    unpublished: 'article',
+    article: "article",
+    book: "book",
+    inbook: "chapter",
+    incollection: "chapter",
+    inproceedings: "article",
+    conference: "article",
+    phdthesis: "article",
+    mastersthesis: "article",
+    misc: "web",
+    online: "web",
+    techreport: "article",
+    unpublished: "article",
   };
-  return map[type] || 'article';
+  return map[type] || "article";
 }
 
 /**
@@ -115,7 +121,7 @@ function parseRIS(content) {
 
     const fields = {};
     const authors = [];
-    const lines = entry.split('\n');
+    const lines = entry.split("\n");
 
     for (const line of lines) {
       const m = line.match(/^([A-Z][A-Z0-9])\s*-\s*(.*)/);
@@ -124,7 +130,7 @@ function parseRIS(content) {
       const tag = m[1].trim();
       const value = m[2].trim();
 
-      if (tag === 'AU' || tag === 'A1') {
+      if (tag === "AU" || tag === "A1") {
         authors.push(value);
       } else {
         fields[tag] = value;
@@ -134,21 +140,26 @@ function parseRIS(content) {
     // Skip entries without a type tag
     if (!fields.TY && authors.length === 0 && !fields.TI) continue;
 
-    const pubType = mapRISType(fields.TY || '');
-    const pages = [fields.SP, fields.EP].filter(Boolean).join('–');
-    const authorStr = authors.join(' & ');
+    const pubType = mapRISType(fields.TY || "");
+    const pages = [fields.SP, fields.EP].filter(Boolean).join("–");
+    const authorStr = authors.join(" & ");
 
     references.push({
-      authors: authorStr || 'Unknown',
-      title: fields.TI || fields.T1 || '',
-      journal: fields.JO || fields.JF || fields.T2 || '',
-      year: parseInt(fields.PY || fields.Y1 || '', 10) || null,
-      volume: fields.VL || '',
+      authors: authorStr || "Unknown",
+      title: fields.TI || fields.T1 || "",
+      journal: fields.JO || fields.JF || fields.T2 || "",
+      year: parseInt(fields.PY || fields.Y1 || "", 10) || null,
+      volume: fields.VL || "",
       pages,
-      doi: fields.DO || '',
-      url: fields.UR || '',
+      doi: fields.DO || "",
+      url: fields.UR || "",
       pub_type: pubType,
-      raw_text: buildRawText({ authors: authorStr, title: fields.TI, journal: fields.JO, year: fields.PY }),
+      raw_text: buildRawText({
+        authors: authorStr,
+        title: fields.TI,
+        journal: fields.JO,
+        year: fields.PY,
+      }),
     });
   }
 
@@ -160,16 +171,16 @@ function parseRIS(content) {
  */
 function mapRISType(type) {
   const map = {
-    JOUR: 'article',
-    BOOK: 'book',
-    CHAP: 'chapter',
-    CONF: 'article',
-    THES: 'article',
-    ELEC: 'web',
-    GEN: 'article',
-    RPRT: 'article',
+    JOUR: "article",
+    BOOK: "book",
+    CHAP: "chapter",
+    CONF: "article",
+    THES: "article",
+    ELEC: "web",
+    GEN: "article",
+    RPRT: "article",
   };
-  return map[type] || 'article';
+  return map[type] || "article";
 }
 
 /**
@@ -181,21 +192,21 @@ function buildRawText(fields) {
   if (fields.year) parts.push(`(${fields.year})`);
   if (fields.title) parts.push(cleanBibTeXValue(fields.title));
   if (fields.journal) parts.push(cleanBibTeXValue(fields.journal));
-  return parts.join('. ').replace(/\.\./g, '.') || '';
+  return parts.join(". ").replace(/\.\./g, ".") || "";
 }
 
 /**
  * Detect file format from content or extension.
  */
-function detectFormat(content, filename = '') {
-  const ext = filename.split('.').pop().toLowerCase();
-  if (ext === 'bib') return 'bibtex';
-  if (ext === 'ris') return 'ris';
+function detectFormat(content, filename = "") {
+  const ext = filename.split(".").pop().toLowerCase();
+  if (ext === "bib") return "bibtex";
+  if (ext === "ris") return "ris";
 
   // Heuristic: BibTeX starts with @
-  if (content.trim().startsWith('@')) return 'bibtex';
+  if (content.trim().startsWith("@")) return "bibtex";
   // RIS has TY  - as the first tag
-  if (/^TY\s*-/m.test(content)) return 'ris';
+  if (/^TY\s*-/m.test(content)) return "ris";
 
   return null;
 }
@@ -213,17 +224,19 @@ export function useBibParser() {
    * @param {string} filename - Original filename (for format detection)
    * @returns {Array} Parsed reference objects
    */
-  function parseBibliography(content, filename = '') {
+  function parseBibliography(content, filename = "") {
     parseError.value = null;
     try {
       const format = detectFormat(content, filename);
 
-      if (format === 'bibtex') {
+      if (format === "bibtex") {
         parsedReferences.value = parseBibTeX(content);
-      } else if (format === 'ris') {
+      } else if (format === "ris") {
         parsedReferences.value = parseRIS(content);
       } else {
-        throw new Error('Unrecognized bibliography format. Please use .bib (BibTeX) or .ris (RIS) files.');
+        throw new Error(
+          "Unrecognized bibliography format. Please use .bib (BibTeX) or .ris (RIS) files."
+        );
       }
 
       // Number references sequentially

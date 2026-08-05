@@ -11,18 +11,21 @@ The principles in this chapter represent our current understanding of visual per
 Consumer neuroscience applies brain imaging and physiological measurement to understand consumer behavior:
 
 **Methods used**:
+
 - fMRI measuring brain activity during product evaluation
 - EEG capturing real-time neural responses to marketing stimuli
 - Eye-tracking combined with neural measurement
 - Physiological measures (skin conductance, heart rate)
 
 **Applications**:
+
 - Ad effectiveness testing
 - Product design evaluation
 - Packaging optimization
 - Brand perception research
 
 **Ethical concerns**:
+
 - Privacy of neural data
 - Potential for manipulation
 - Informed consent complexities
@@ -35,16 +38,19 @@ The field raises genuine questions: Is understanding neural responses to design 
 Moving beyond traditional eye-tracking:
 
 **Real-time attention estimation**:
+
 - Webcam-based gaze estimation (no special hardware)
 - Attention prediction from design features
 - Machine learning models predicting fixation patterns
 
 **Applications**:
+
 - Design validation before user testing
 - Real-time attention feedback during design
 - Automated accessibility checking for visual attention
 
 **Limitations**:
+
 - Prediction accuracy below laboratory eye-tracking
 - Individual variation limits generalization
 - Attention prediction isn't comprehension prediction
@@ -54,16 +60,19 @@ Moving beyond traditional eye-tracking:
 Direct measurement of mental workload:
 
 **fNIRS (functional near-infrared spectroscopy)**:
+
 - Measures prefrontal cortex activity
 - Portable, relatively affordable
 - Indicates cognitive load during tasks
 
 **EEG patterns**:
+
 - Real-time mental workload estimation
 - Consumer-grade devices emerging
 - Potential for adaptive interfaces
 
 **Applications**:
+
 - Validating interface simplification
 - Detecting confusion or overload
 - Adaptive difficulty in learning systems
@@ -75,21 +84,25 @@ Direct measurement of mental workload:
 Attempting to infer emotional states:
 
 **Facial expression analysis**:
+
 - Computer vision detecting facial action units
 - Inferring emotional valence from expression
 - Real-time feedback during interaction
 
 **Voice analysis**:
+
 - Emotional tone from speech patterns
 - Stress and engagement detection
 - Conversation interface optimization
 
 **Physiological indicators**:
+
 - Heart rate variability
 - Skin conductance
 - Respiration patterns
 
 **Significant limitations**:
+
 - Cultural variation in expression
 - Context-dependence of emotion cues
 - Privacy and consent concerns
@@ -104,21 +117,25 @@ Emotion detection remains controversial and should be applied cautiously if at a
 Immersive technologies create new perceptual considerations:
 
 **Depth perception**:
+
 - Vergence-accommodation conflict in current VR
 - 3D UI design without depth cues from physical world
 - Spatial audio for navigation and attention
 
 **Motion and vestibular**:
+
 - Locomotion in VR triggers motion sickness
 - Comfort requires careful motion design
 - New animation principles for 3D space
 
 **Attention in 360°**:
+
 - Users can look anywhere; how to guide attention?
 - Peripheral cues when there is no peripheral boundary
 - Audio as attention director
 
 **Accessibility**:
+
 - VR excludes users with vestibular disorders
 - AR requires visual processing
 - New accessibility paradigms needed
@@ -128,16 +145,19 @@ Immersive technologies create new perceptual considerations:
 As computing becomes environmental:
 
 **Depth perception in interfaces**:
+
 - True 3D vs. 2D representations
 - Comfort distances for interaction
 - Visual fatigue at various depths
 
 **Environmental integration**:
+
 - Interfaces aware of physical surroundings
 - Context-dependent display
 - Perceptual competition with physical environment
 
 **Gesture and gaze interaction**:
+
 - Direct manipulation in space
 - Eye gaze as input modality
 - Motor control in 3D
@@ -147,16 +167,19 @@ As computing becomes environmental:
 Moving beyond visual:
 
 **Auditory attention**:
+
 - Cocktail party effect in voice UI
 - Auditory scene analysis
 - Attention capture through sound
 
 **Comprehension constraints**:
+
 - Working memory limits in audio
 - Serial nature of audio (vs. random-access visual)
 - Prosody and comprehension
 
 **Multimodal integration**:
+
 - Voice combined with visual
 - Reinforcement across modalities
 - Conflict when modalities disagree
@@ -166,11 +189,13 @@ Moving beyond visual:
 The far frontier:
 
 **Current state**:
+
 - Medical applications (paralysis, epilepsy)
 - Research applications (cognition studies)
 - Consumer devices (gaming, meditation feedback)
 
 **Future potential**:
+
 - Direct neural input bypassing motor system
 - Neural feedback for adaptive interfaces
 - Augmented perception through neural connection
@@ -184,11 +209,13 @@ The far frontier:
 AI systems trained on human visual behavior:
 
 **Applications**:
+
 - Predicting where users will look
 - Generating designs optimized for attention
 - Automated design critique
 
 **Concerns**:
+
 - Optimization for engagement vs. user welfare
 - Potential for manipulation at scale
 - Loss of intentional design craft
@@ -198,11 +225,13 @@ AI systems trained on human visual behavior:
 Interfaces adapting to individual perceptual patterns:
 
 **Possibilities**:
+
 - Contrast and color adjusted for individual vision
 - Motion reduced for sensitive users automatically
 - Complexity adapted to individual cognitive load
 
 **Challenges**:
+
 - Privacy of perceptual data
 - Accuracy of personalization
 - User control over adaptation
@@ -212,11 +241,13 @@ Interfaces adapting to individual perceptual patterns:
 AI systems optimizing for behavior change:
 
 **Legitimate uses**:
+
 - Health behavior improvement
 - Learning optimization
 - Accessibility enhancement
 
 **Concerning uses**:
+
 - Attention manipulation for engagement metrics
 - Persuasion without user awareness
 - Exploiting perceptual biases at scale
@@ -228,6 +259,7 @@ The ethical boundary: Is the AI working for the user or against them?
 ### Key Researchers and Labs
 
 **Academic research**:
+
 - MIT Media Lab (interaction, affective computing)
 - Stanford HCI Group (interaction paradigms)
 - CMU HCI Institute (interfaces and cognition)
@@ -235,6 +267,7 @@ The ethical boundary: Is the AI working for the user or against them?
 - Vision Science labs (Berkeley, NYU, UCL)
 
 **Industry research**:
+
 - Google UX Research
 - Microsoft Research (accessibility, interaction)
 - Meta Reality Labs (VR/AR perception)
@@ -243,6 +276,7 @@ The ethical boundary: Is the AI working for the user or against them?
 ### Conferences
 
 **Bridging neuroscience and design**:
+
 - CHI (ACM Conference on Human Factors)
 - UIST (User Interface Software and Technology)
 - Vision Sciences Society (perception research)
@@ -291,6 +325,7 @@ The best designers understand science and transcend it. They internalize princip
 ### Ethical Responsibility
 
 Throughout this chapter, ethical considerations have appeared:
+
 - Anchoring and framing can help or manipulate
 - Defaults can serve users or exploit them
 - Attention capture can inform or distract

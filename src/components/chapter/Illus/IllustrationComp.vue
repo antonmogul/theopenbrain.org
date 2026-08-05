@@ -118,7 +118,15 @@
             :src="`https://www.youtube.com/embed/${animation.youtubeID}`"
             title="YouTube video player"
             frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="
+              accelerometer;
+              autoplay;
+              clipboard-write;
+              encrypted-media;
+              gyroscope;
+              picture-in-picture;
+              web-share;
+            "
             allowfullscreen
           ></iframe>
         </div>
@@ -162,7 +170,9 @@ import { loadLottie } from "@/composables/useLottie";
 let lottie;
 
 // Detect reduced-motion preference
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
 import animationJSON from "@/assets/json_backend/animations.json";
 import PlayIcon from "@/icons/custom/PlayIcon.vue";
 import PauseIcon from "@/icons/custom/PauseIcon.vue";
@@ -186,13 +196,15 @@ let isPaused = ref(false);
 
 // Use the animation prop directly (it now contains all config from DB or JSON).
 // Fall back to JSON lookup for backward compatibility during transition.
-const info = props.animation.clickTriggered !== undefined ||
+const info =
+  props.animation.clickTriggered !== undefined ||
   props.animation.loop !== undefined ||
   props.animation.illuImage !== undefined ||
   props.animation.flip !== undefined ||
   props.animation.switch !== undefined
     ? props.animation
-    : animationJSON.animations.find((x) => x.id == props.animation.id) || props.animation;
+    : animationJSON.animations.find((x) => x.id == props.animation.id) ||
+      props.animation;
 
 const activeState = !info.blockStates
   ? ref({
@@ -294,7 +306,9 @@ onMounted(async () => {
   // Skip animations entirely for users with reduced-motion preference
   if (prefersReducedMotion) return;
 
-  let svgContainer = document.getElementById(props.scopeId || props.animation.id);
+  let svgContainer = document.getElementById(
+    props.scopeId || props.animation.id
+  );
   if (!svgContainer) return;
 
   lottie = await loadLottie();

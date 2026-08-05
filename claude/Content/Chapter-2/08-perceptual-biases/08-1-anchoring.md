@@ -19,6 +19,7 @@ Anchoring emerges from how the brain generates estimates:
 **Effort conservation**: Precise estimation is cognitively expensive. Anchors provide starting points that reduce estimation effort, even at the cost of accuracy.
 
 Research shows anchoring occurs even when:
+
 - The anchor is obviously random (wheel of fortune)
 - People are warned about anchoring
 - People are motivated to be accurate
@@ -75,6 +76,7 @@ Anchoring is a double-edged sword. It can be used to:
 ### The Ethics Line
 
 Consider these questions:
+
 - Is the anchor based on genuine value or artificially inflated?
 - Does the anchor help users make better decisions or worse ones?
 - Would users object if they understood the anchoring effect?
@@ -139,12 +141,14 @@ The key: defaults should reflect what most users would choose, not what most ben
 ## Guidelines for Ethical Anchoring
 
 **Do**:
+
 - Provide anchors that help users contextualize unfamiliar decisions
 - Use historical or personalized data as anchors when available
 - Set defaults that reflect what typical users would choose
 - Frame information honestly, even when reframing
 
 **Don't**:
+
 - Create artificial anchors designed to inflate perceived value
 - Use anchors to push users toward decisions that benefit you at their expense
 - Fabricate "original prices," "typical amounts," or other anchor data

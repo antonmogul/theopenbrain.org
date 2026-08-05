@@ -17,9 +17,16 @@ const props = defineProps({
 defineEmits(["update:activeSection", "back"]);
 const initials = computed(() => {
   const n = props.displayName || props.email || "?";
-  return n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return n
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 });
-const metaLine = computed(() => (props.role ? props.role.toUpperCase() : props.email));
+const metaLine = computed(() =>
+  props.role ? props.role.toUpperCase() : props.email
+);
 </script>
 
 <template>
@@ -34,56 +41,165 @@ const metaLine = computed(() => (props.role ? props.role.toUpperCase() : props.e
 
     <nav class="rail-nav">
       <button
-        v-for="item in navItems" :key="item.id" type="button"
-        class="rail-link" :class="{ active: activeSection === item.id }"
+        v-for="item in navItems"
+        :key="item.id"
+        type="button"
+        class="rail-link"
+        :class="{ active: activeSection === item.id }"
         @click="$emit('update:activeSection', item.id)"
       >
         <span class="rail-bar" />
-        <DashboardNavIcon v-if="item.icon" :name="item.icon" class="rail-icon" />
+        <DashboardNavIcon
+          v-if="item.icon"
+          :name="item.icon"
+          class="rail-icon"
+        />
         <span class="rail-label">{{ item.label }}</span>
         <span v-if="item.soon" class="rail-soon">· soon</span>
-        <span v-else-if="item.count != null" class="rail-count">{{ item.count }}</span>
+        <span v-else-if="item.count != null" class="rail-count">{{
+          item.count
+        }}</span>
       </button>
     </nav>
 
     <slot name="footer">
       <template v-if="showBack">
         <hr class="rail-rule" />
-        <router-link v-if="backTo" :to="backTo" class="rail-back">← {{ backLabel }}</router-link>
-        <button v-else type="button" class="rail-back" @click="$emit('back')">← {{ backLabel }}</button>
+        <router-link v-if="backTo" :to="backTo" class="rail-back"
+          >← {{ backLabel }}</router-link
+        >
+        <button v-else type="button" class="rail-back" @click="$emit('back')">
+          ← {{ backLabel }}
+        </button>
       </template>
     </slot>
   </aside>
 </template>
 
 <style scoped>
-.rail { align-self: start; display: flex; flex-direction: column; gap: 4px; }
-@media (min-width: 900px) { .rail { position: sticky; top: 2.5rem; } }
-.rail-user { margin-bottom: 18px; }
+.rail {
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+@media (min-width: 900px) {
+  .rail {
+    position: sticky;
+    top: 2.5rem;
+  }
+}
+.rail-user {
+  margin-bottom: 18px;
+}
 .rail-avatar {
-  width: 80px; height: 80px; border-radius: 999px; background: rgb(var(--color-accent));
-  color: rgb(var(--color-paper)); display: grid; place-items: center;
-  font-family: var(--font-mono); font-size: 1.625rem; font-weight: 600;
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-paper));
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 1.625rem;
+  font-weight: 600;
 }
-.rail-name { font-family: var(--font-body); font-size: 1.375rem; letter-spacing: -0.01em; margin-top: 14px; color: rgb(var(--color-ink)); }
-.rail-meta { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
-.rail-nav { display: flex; flex-direction: column; }
+.rail-name {
+  font-family: var(--font-body);
+  font-size: 1.375rem;
+  letter-spacing: -0.01em;
+  margin-top: 14px;
+  color: rgb(var(--color-ink));
+}
+.rail-meta {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.rail-nav {
+  display: flex;
+  flex-direction: column;
+}
 .rail-link {
-  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-  padding: 10px 0; border: 0; background: transparent; cursor: pointer; color: rgb(var(--color-mute));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: rgb(var(--color-mute));
 }
-.rail-bar { width: 4px; height: 16px; flex: none; background: transparent; transition: background 200ms ease; }
-.rail-icon { flex: none; opacity: 0.7; }
-.rail-label { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 400; flex: 1; }
-.rail-soon { font-family: var(--font-mono); font-size: 0.625rem; color: rgb(var(--color-mute) / 0.7); }
-.rail-count { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); }
-.rail-link:hover { color: rgb(var(--color-ink)); }
-.rail-link:hover .rail-icon { opacity: 1; }
-.rail-link.active { color: rgb(var(--color-ink)); }
-.rail-link.active .rail-bar { background: rgb(var(--color-accent)); }
-.rail-link.active .rail-icon { opacity: 1; }
-.rail-link.active .rail-label { font-weight: 500; }
-.rail-rule { border: 0; border-top: 1px solid rgb(var(--color-line)); margin: 20px 0 12px; width: 100%; }
-.rail-back { font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgb(var(--color-ink)); text-decoration: none; background: transparent; border: 0; cursor: pointer; text-align: left; padding: 0; }
-.rail-back:hover { color: rgb(var(--color-accent)); }
+.rail-bar {
+  width: 4px;
+  height: 16px;
+  flex: none;
+  background: transparent;
+  transition: background 200ms ease;
+}
+.rail-icon {
+  flex: none;
+  opacity: 0.7;
+}
+.rail-label {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  flex: 1;
+}
+.rail-soon {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: rgb(var(--color-mute) / 0.7);
+}
+.rail-count {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+}
+.rail-link:hover {
+  color: rgb(var(--color-ink));
+}
+.rail-link:hover .rail-icon {
+  opacity: 1;
+}
+.rail-link.active {
+  color: rgb(var(--color-ink));
+}
+.rail-link.active .rail-bar {
+  background: rgb(var(--color-accent));
+}
+.rail-link.active .rail-icon {
+  opacity: 1;
+}
+.rail-link.active .rail-label {
+  font-weight: 500;
+}
+.rail-rule {
+  border: 0;
+  border-top: 1px solid rgb(var(--color-line));
+  margin: 20px 0 12px;
+  width: 100%;
+}
+.rail-back {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--color-ink));
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+.rail-back:hover {
+  color: rgb(var(--color-accent));
+}
 </style>

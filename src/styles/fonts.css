@@ -13,16 +13,22 @@
   font-style: normal;
   font-weight: 200 800;
   font-display: swap;
-  src: url("/publicAssets/fonts/Newsreader/Newsreader-Variable.woff2") format("woff2-variations"),
-       url("/publicAssets/fonts/Newsreader/Newsreader-Variable.woff2") format("woff2");
+  src:
+    url("/publicAssets/fonts/Newsreader/Newsreader-Variable.woff2")
+      format("woff2-variations"),
+    url("/publicAssets/fonts/Newsreader/Newsreader-Variable.woff2")
+      format("woff2");
 }
 @font-face {
   font-family: "Newsreader";
   font-style: italic;
   font-weight: 200 800;
   font-display: swap;
-  src: url("/publicAssets/fonts/Newsreader/Newsreader-Italic-Variable.woff2") format("woff2-variations"),
-       url("/publicAssets/fonts/Newsreader/Newsreader-Italic-Variable.woff2") format("woff2");
+  src:
+    url("/publicAssets/fonts/Newsreader/Newsreader-Italic-Variable.woff2")
+      format("woff2-variations"),
+    url("/publicAssets/fonts/Newsreader/Newsreader-Italic-Variable.woff2")
+      format("woff2");
 }
 
 /* Inter Tight — sans UI */
@@ -31,8 +37,11 @@
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("/publicAssets/fonts/InterTight/InterTight-Variable.woff2") format("woff2-variations"),
-       url("/publicAssets/fonts/InterTight/InterTight-Variable.woff2") format("woff2");
+  src:
+    url("/publicAssets/fonts/InterTight/InterTight-Variable.woff2")
+      format("woff2-variations"),
+    url("/publicAssets/fonts/InterTight/InterTight-Variable.woff2")
+      format("woff2");
 }
 
 /* JetBrains Mono — code + metadata */
@@ -41,8 +50,11 @@
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;
-  src: url("/publicAssets/fonts/JetBrainsMono/JetBrainsMono-Variable.woff2") format("woff2-variations"),
-       url("/publicAssets/fonts/JetBrainsMono/JetBrainsMono-Variable.woff2") format("woff2");
+  src:
+    url("/publicAssets/fonts/JetBrainsMono/JetBrainsMono-Variable.woff2")
+      format("woff2-variations"),
+    url("/publicAssets/fonts/JetBrainsMono/JetBrainsMono-Variable.woff2")
+      format("woff2");
 }
 
 /* Literata — alternate serif body */
@@ -51,14 +63,19 @@
   font-style: normal;
   font-weight: 200 900;
   font-display: swap;
-  src: url("/publicAssets/fonts/Literata/Literata-Variable.woff2") format("woff2-variations"),
-       url("/publicAssets/fonts/Literata/Literata-Variable.woff2") format("woff2");
+  src:
+    url("/publicAssets/fonts/Literata/Literata-Variable.woff2")
+      format("woff2-variations"),
+    url("/publicAssets/fonts/Literata/Literata-Variable.woff2") format("woff2");
 }
 @font-face {
   font-family: "Literata";
   font-style: italic;
   font-weight: 200 900;
   font-display: swap;
-  src: url("/publicAssets/fonts/Literata/Literata-Italic-Variable.woff2") format("woff2-variations"),
-       url("/publicAssets/fonts/Literata/Literata-Italic-Variable.woff2") format("woff2");
+  src:
+    url("/publicAssets/fonts/Literata/Literata-Italic-Variable.woff2")
+      format("woff2-variations"),
+    url("/publicAssets/fonts/Literata/Literata-Italic-Variable.woff2")
+      format("woff2");
 }

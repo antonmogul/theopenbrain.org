@@ -30,8 +30,19 @@
         :paragraph-id="`subsection-title-${subSections.id}`"
         :is-creator="isCreator"
         tag="h3"
-        :class-name="subSections.animationAnchor ? 'subT pt-[100vh] animationScrollAnchor' : 'subT'"
-        @save="({ content }) => handleSave({ paragraphId: subSections.id, content, type: 'subsection-title' })"
+        :class-name="
+          subSections.animationAnchor
+            ? 'subT pt-[100vh] animationScrollAnchor'
+            : 'subT'
+        "
+        @save="
+          ({ content }) =>
+            handleSave({
+              paragraphId: subSections.id,
+              content,
+              type: 'subsection-title',
+            })
+        "
       />
       <h3
         v-else
@@ -91,7 +102,9 @@
 
             <!-- SubSection paragraph - editable for creators -->
             <EditableBlock
-              v-if="!subParagraph.subSubSection && !subParagraph.type && isCreator"
+              v-if="
+                !subParagraph.subSubSection && !subParagraph.type && isCreator
+              "
               :content="subParagraph.text"
               :paragraph-id="subParagraph.id"
               :is-creator="isCreator"

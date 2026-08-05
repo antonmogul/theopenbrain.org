@@ -12,17 +12,20 @@ Today the app jumps users straight from `HomeView` (anonymous marketing) into a 
 ## Scope
 
 In scope:
+
 - `/chapters` — functional chapter index. Featured "Continue Reading" card + responsive grid of all chapters, each showing cover art, title, progress, status pill.
 - `/chapter/:number` — chapter overview page. 320px left rail with cover/CTAs + right column with section list, figure grid, recent notes.
 - Wire navigation: clicking a chapter card on `/chapters` lands on `/chapter/:number`; clicking a section there lands on `/chapter/:number/:slug` (existing reader route).
 - Decide default route for logged-in users vs anonymous users.
 
 Out of scope:
+
 - Mobile variants → **Track 5** (stacked single-column index, condensed overview).
 - Editing chapter covers / order from a dashboard → existing Creator dashboard already covers this.
 - Login as its own page → stays as `MenuAuth` modal for this round (per umbrella spec).
 
 Explicitly deferred:
+
 - Search across chapters / sections.
 - Filters (status: not-started / in-progress / done).
 - Personalized recommendations beyond "Continue Reading."
@@ -41,15 +44,15 @@ Both decisions are reversible with single-line changes.
 
 ## Current state (as of 2026-05-22)
 
-| Piece | File | Status |
-|---|---|---|
-| `/` route | `router/index.js` → `HomeView` | Working (Matisse parallax cards). |
-| `/chapter/:number/:slug` (reader) | `router/index.js` → `ChapterView` | Working. |
-| `/chapter/:number` (overview) | — | **Missing.** Not registered. |
-| `/chapters` (index) | — | **Missing.** Not registered. |
-| Chapter data access | `useChapter` composable + Supabase `modules` table | Working — already paginates / lists modules in Creator dashboard. |
-| Per-user reading progress | `useReadingProgress` + Supabase `reading_progress` | Working. |
-| Cover images | `modules.cover_image_url` | Working (storage bucket already serves them). |
+| Piece                             | File                                               | Status                                                            |
+| --------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------- |
+| `/` route                         | `router/index.js` → `HomeView`                     | Working (Matisse parallax cards).                                 |
+| `/chapter/:number/:slug` (reader) | `router/index.js` → `ChapterView`                  | Working.                                                          |
+| `/chapter/:number` (overview)     | —                                                  | **Missing.** Not registered.                                      |
+| `/chapters` (index)               | —                                                  | **Missing.** Not registered.                                      |
+| Chapter data access               | `useChapter` composable + Supabase `modules` table | Working — already paginates / lists modules in Creator dashboard. |
+| Per-user reading progress         | `useReadingProgress` + Supabase `reading_progress` | Working.                                                          |
+| Cover images                      | `modules.cover_image_url`                          | Working (storage bucket already serves them).                     |
 
 ## Target deliverables
 
@@ -58,6 +61,7 @@ Both decisions are reversible with single-line changes.
 Component: new `src/views/ChaptersView.vue`.
 
 Layout:
+
 ```
 ┌─────────────────────────────────────────────┐
 │  Chapters                                   │ ← serif H1
@@ -88,16 +92,19 @@ Layout:
 ```
 
 Data:
+
 - All published chapters via `useChapter().fetchAllModules()` (or equivalent). Filter by `published = true`.
 - Per-user reading progress via `useReadingProgress().fetchAllForUser()` if signed in; else skip progress rendering.
 - "Continue Reading" = the chapter with the most recent `reading_progress.updated_at` that isn't 100% complete. If none, hide the featured card and let the grid carry the page.
 
 State pill logic:
+
 - 100% complete → "✓ Done" (teal, var(--color-complete))
 - 1–99% → "Reading" (accent, var(--color-accent))
 - 0% → no pill (just the title)
 
 Empty states:
+
 - Anonymous: show grid, hide all progress UI (no bars, no pills, no featured card). Optionally show a subtle CTA at top: "Sign in to track your progress."
 - Signed in, no progress: show grid, no featured card, no bars, no pills.
 
@@ -106,6 +113,7 @@ Empty states:
 Component: new `src/views/ChapterOverviewView.vue`.
 
 Layout:
+
 ```
 ┌─────────────────────┬──────────────────────────────┐
 │ [cover image]       │  Sections                    │
@@ -133,22 +141,26 @@ Layout:
 ```
 
 Data:
+
 - Chapter row + sections list from Supabase `modules` + `sections` (already fetched by `useChapter`).
 - Per-section progress via `reading_progress`. Per-section note/highlight counts via `useNotes` / `useHighlights` filtered by section.
 - Figure thumbnails: from `paragraphs` rows where `type = 'figure'` (or wherever the schema stores them — confirm during implementation). Render as a 4×N grid of thumbnails; clicking opens the figure in fullscreen mode that already exists for the reader.
 - Recent notes: top 3 notes for this chapter by `created_at desc`.
 
 Behavior:
+
 - Primary CTA: "Continue reading" — links to `/chapter/:n/:slug` of the section the user was last in. If no progress, label becomes "Start reading" and links to section 1.
 - "Start over" only shown if there's any progress; clicking it clears `reading_progress` for this chapter (after a confirmation), then routes to section 1.
 
 Empty states:
+
 - No sections (shouldn't happen, but): render the left rail + "This chapter is being prepared."
 - Anonymous user: render everything except progress bars / note counts / recent notes. Replace primary CTA with "Sign in to track progress, then read" → opens `MenuAuth`.
 
 ### D3. Default-route redirect for signed-in users
 
 In `router/index.js` `beforeEach`:
+
 - If `to.path === "/"` and `getSessionFromStorage()` returns a session → `return { path: "/chapters" }`.
 - Anonymous users keep landing on `HomeView`.
 
@@ -169,22 +181,26 @@ Just wire the link. Listed here so Track 3 doesn't need to keep a TODO for it.
 ## Files touched
 
 New:
+
 - `docs/superpowers/specs/2026-05-11-chapter-index-and-overview.md` (this file)
 - `src/views/ChaptersView.vue`
 - `src/views/ChapterOverviewView.vue`
 - `src/composables/useHomeRoute.js` (D4)
 
 Modified:
+
 - `src/router/index.js` — register both routes; add default-route redirect (D3); both routes are public (no `requiresAuth`).
 - `src/components/Navigation/MainNav.vue` — wordmark uses `useHomeRoute` (D4)
 - `src/components/Navigation/MenuHome.vue` — same as above if it has its own brand link (D4)
 
 Supabase:
+
 - No schema changes. All data needed already exists.
 
 ## Test plan
 
 Manual:
+
 1. **Anonymous index.** Open incognito, visit `/chapters`. Grid renders all published chapters. No progress bars, no pills, no featured card. Subtle sign-in CTA visible.
 2. **Anonymous overview.** Click into a chapter; lands on `/chapter/1`. Section list renders without progress UI. CTA reads "Sign in to track progress, then read"; clicking opens `MenuAuth`.
 3. **Anonymous default route.** Visit `/`. Lands on `HomeView` (Matisse cards). Unchanged behavior.
@@ -229,6 +245,7 @@ Cypress: defer to Track 4.1. Recommend `cypress/e2e/chapters-index.cy.js` coveri
 ## Definition of done
 
 Track 4 is done when:
+
 - A signed-in user lands on `/chapters` after sign-in and can navigate to any chapter's overview, then into the reader.
 - An anonymous user can browse the chapter index and overview without progress UI but can sign in inline.
 - The default-route redirect works without breaking dashboard/role-redirect logic.

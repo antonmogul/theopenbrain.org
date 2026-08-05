@@ -5,21 +5,91 @@
  * renders the roles at true size plus families, weights and the legacy mapping.
  */
 const scale = [
-  { cls: "t-display", role: "Display / hero", px: "112px", family: "body", sample: "16" },
-  { cls: "t-h1", role: "Chapter title (h1)", px: "84px", family: "body", sample: "The Retina" },
-  { cls: "t-h2", role: "Section heading (h2)", px: "63px", family: "body", sample: "How the eye sees" },
-  { cls: "t-h3", role: "Subsection (h3)", px: "47px", family: "body", sample: "Rods and cones" },
-  { cls: "t-subhead", role: "Subhead / lead-in", px: "36px", family: "body", sample: "A layered sheet of neurons" },
-  { cls: "t-body-lg", role: "Standfirst / intro", px: "27px", family: "body", sample: "Light enters the eye and lands on the retina, where the work of seeing begins." },
-  { cls: "t-body", role: "Body — base reading", px: "20px × reading-size", family: "body", sample: "The retina is not a passive screen. It is the first stage of vision, compressing and sharpening the signal before it ever reaches the brain." },
-  { cls: "t-body-sm", role: "Secondary / table cell", px: "17px", family: "body", sample: "Ada Lovelace · enrolled 3 Jun · 64% complete" },
-  { cls: "t-caption", role: "Caption / footnote (mono)", px: "13px", family: "mono", sample: "Figure 1 — a schematic cross-section of the retina." },
-  { cls: "t-label", role: "Label / eyebrow / badge (mono)", px: "11px", family: "mono", sample: "Chapter 01 · updated 2d ago" },
+  {
+    cls: "t-display",
+    role: "Display / hero",
+    px: "112px",
+    family: "body",
+    sample: "16",
+  },
+  {
+    cls: "t-h1",
+    role: "Chapter title (h1)",
+    px: "84px",
+    family: "body",
+    sample: "The Retina",
+  },
+  {
+    cls: "t-h2",
+    role: "Section heading (h2)",
+    px: "63px",
+    family: "body",
+    sample: "How the eye sees",
+  },
+  {
+    cls: "t-h3",
+    role: "Subsection (h3)",
+    px: "47px",
+    family: "body",
+    sample: "Rods and cones",
+  },
+  {
+    cls: "t-subhead",
+    role: "Subhead / lead-in",
+    px: "36px",
+    family: "body",
+    sample: "A layered sheet of neurons",
+  },
+  {
+    cls: "t-body-lg",
+    role: "Standfirst / intro",
+    px: "27px",
+    family: "body",
+    sample:
+      "Light enters the eye and lands on the retina, where the work of seeing begins.",
+  },
+  {
+    cls: "t-body",
+    role: "Body — base reading",
+    px: "20px × reading-size",
+    family: "body",
+    sample:
+      "The retina is not a passive screen. It is the first stage of vision, compressing and sharpening the signal before it ever reaches the brain.",
+  },
+  {
+    cls: "t-body-sm",
+    role: "Secondary / table cell",
+    px: "17px",
+    family: "body",
+    sample: "Ada Lovelace · enrolled 3 Jun · 64% complete",
+  },
+  {
+    cls: "t-caption",
+    role: "Caption / footnote (mono)",
+    px: "13px",
+    family: "mono",
+    sample: "Figure 1 — a schematic cross-section of the retina.",
+  },
+  {
+    cls: "t-label",
+    role: "Label / eyebrow / badge (mono)",
+    px: "11px",
+    family: "mono",
+    sample: "Chapter 01 · updated 2d ago",
+  },
 ];
 
 const families = [
-  { cls: "font-serif", token: "--font-body", desc: "Body / headings — IBM Plex Sans" },
-  { cls: "font-mono", token: "--font-mono", desc: "Captions, labels, code — IBM Plex Mono" },
+  {
+    cls: "font-serif",
+    token: "--font-body",
+    desc: "Body / headings — IBM Plex Sans",
+  },
+  {
+    cls: "font-mono",
+    token: "--font-mono",
+    desc: "Captions, labels, code — IBM Plex Mono",
+  },
 ];
 
 const weights = [
@@ -33,7 +103,11 @@ const legacy = [
   { cls: "text-biggest", maps: "→ t-display", px: "160px" },
   { cls: "text-h2", maps: "→ t-h2", px: "48px" },
   { cls: "text-h3", maps: "→ t-h3", px: "30px" },
-  { cls: "text-base", maps: "→ t-body  (⚠ collides w/ Tailwind name)", px: "20px" },
+  {
+    cls: "text-base",
+    maps: "→ t-body  (⚠ collides w/ Tailwind name)",
+    px: "20px",
+  },
   { cls: "text-medium", maps: "→ t-body-sm", px: "16px" },
   { cls: "text-small", maps: "→ t-caption", px: "13.5px" },
   { cls: "text-smaller", maps: "→ t-label", px: "11px" },
@@ -46,8 +120,8 @@ const legacy = [
       <p class="t-label sec-eyebrow">Foundations</p>
       <h2 class="t-h2">Typography</h2>
       <p class="t-body-sm sec-note">
-        One unified modular scale · Perfect Fourth (1.333) · base 20px · IBM Plex.
-        Apply the <code>.t-*</code> role classes — never raw Tailwind
+        One unified modular scale · Perfect Fourth (1.333) · base 20px · IBM
+        Plex. Apply the <code>.t-*</code> role classes — never raw Tailwind
         <code>text-*</code> or the legacy <code>.text-base</code> scale.
       </p>
     </header>

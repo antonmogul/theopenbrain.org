@@ -16,26 +16,26 @@ Deliberately NOT touched: B1 sanitizer, B4 font rip-out, any Chapter-1 rendering
 
 Chapter-render files (HIGH RISK — interact with `<mark>` highlight injection, do not touch mechanically):
 
-| File | count |
-|---|---|
-| src/components/chapter/TextComp.vue | 3 |
-| src/components/chapter/HighlightRenderer.vue | 2 |
-| src/components/chapter/text/SubSubSection.vue | 2 |
-| src/components/chapter/text/SectionComp.vue | 1 |
-| src/components/chapter/text/SubSection.vue | 1 |
-| src/components/chapter/text/BreakSection.vue | 1 |
-| src/components/chapter/text/BreakText.vue | 1 |
-| src/components/chapter/text/EditableBlock.vue | 1 |
-| src/components/chapter/text/FootNotes.vue | 1 |
-| src/components/chapter/text/FootNotesWindow.vue | 1 |
-| src/components/chapter/Illus/TextOverlay.vue | 1 |
+| File                                            | count |
+| ----------------------------------------------- | ----- |
+| src/components/chapter/TextComp.vue             | 3     |
+| src/components/chapter/HighlightRenderer.vue    | 2     |
+| src/components/chapter/text/SubSubSection.vue   | 2     |
+| src/components/chapter/text/SectionComp.vue     | 1     |
+| src/components/chapter/text/SubSection.vue      | 1     |
+| src/components/chapter/text/BreakSection.vue    | 1     |
+| src/components/chapter/text/BreakText.vue       | 1     |
+| src/components/chapter/text/EditableBlock.vue   | 1     |
+| src/components/chapter/text/FootNotes.vue       | 1     |
+| src/components/chapter/text/FootNotesWindow.vue | 1     |
+| src/components/chapter/Illus/TextOverlay.vue    | 1     |
 
 Lower-risk (non-chapter):
 
-| File | count | note |
-|---|---|---|
-| src/components/dashboard/chapters/ChapterBlockEditor.vue | 1 | previews `block.htmlContent` — user/DB-sourced, real stored-XSS surface for multi-user dashboard |
-| src/components/UI/ActionButton.vue | 1 | `help` prop — currently developer-supplied strings; low risk but trivially convertible |
+| File                                                     | count | note                                                                                             |
+| -------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------ |
+| src/components/dashboard/chapters/ChapterBlockEditor.vue | 1     | previews `block.htmlContent` — user/DB-sourced, real stored-XSS surface for multi-user dashboard |
+| src/components/UI/ActionButton.vue                       | 1     | `help` prop — currently developer-supplied strings; low risk but trivially convertible           |
 
 **Recommended approach (for Anton):** add `dompurify`, create one wrapper
 (`SafeHtml.vue` or a `vSafeHtml` directive) with an allowlist that includes
@@ -48,6 +48,7 @@ test highlight create/restore round-trip after each file.
 ## B2 — 29MB animations / code-splitting
 
 **Verified current state:**
+
 - `public/publicAssets/animations/` = 35 Lottie JSONs, ~29MB total.
 - They are **runtime-fetched, not bundled**: all players use
   `lottie.loadAnimation({ path: "/publicAssets/animations/<id>.json" })`
@@ -73,15 +74,15 @@ image sequence). Potential ~10-15MB further saving but not provably lossless.
 
 **Verified current state (files >1MB under public/ + src/assets):**
 
-| File | size |
-|---|---|
-| public/publicAssets/images/ramonYCajal.png | 6.6MB |
-| public/publicAssets/images/00-matisse-augen-cutout.png | 5.2MB |
-| public/publicAssets/images/9-1-glaucoma.jpg | 2.1MB |
-| public/publicAssets/images/marguerite.jpg | 2.0MB |
-| public/publicAssets/images/00-matisse-bg.jpg | 2.0MB |
+| File                                                    | size  |
+| ------------------------------------------------------- | ----- |
+| public/publicAssets/images/ramonYCajal.png              | 6.6MB |
+| public/publicAssets/images/00-matisse-augen-cutout.png  | 5.2MB |
+| public/publicAssets/images/9-1-glaucoma.jpg             | 2.1MB |
+| public/publicAssets/images/marguerite.jpg               | 2.0MB |
+| public/publicAssets/images/00-matisse-bg.jpg            | 2.0MB |
 | public/publicAssets/images/9-1-macular-degeneration.jpg | 1.1MB |
-| public/publicAssets/images/placeholders/monaLisa.webp | 1.0MB |
+| public/publicAssets/images/placeholders/monaLisa.webp   | 1.0MB |
 
 Plus ~6 files in 300KB–900KB range. `New Design Ideas/` uploads are reference
 material, not shipped — ignored.
@@ -91,6 +92,7 @@ material, not shipped — ignored.
 ## B4 — font-size: 62.5% hack (DIAGNOSIS ONLY — reserved for Anton)
 
 **Verified current state:**
+
 - `src/index.css:325` sets `font-size: 62.5%` (1rem = 10px).
 - 1,407 rem-valued tokens across 114 .vue/.css files under src/.
 - Two stylesheets explicitly document the 10px assumption:
@@ -99,6 +101,7 @@ material, not shipped — ignored.
   CSS vars — these assume the 10px root and must be recomputed together.
 
 **Recommended rip-out approach (NOT executed):**
+
 1. Codemod: for every `N rem` token in src/**/*.{vue,css}, replace with `N/1.6 rem`
    rounded to ≤4 decimals (e.g. `1.6rem` → `1rem`, `11rem` → `6.875rem`). Pure
    regex on `([0-9]*\.?[0-9]+)rem` is safe because rem appears only as a CSS length.
@@ -120,6 +123,7 @@ headers config in repo). index.html has one inline pre-paint `<script>` (theme/p
 # Work log
 
 Commits on `audit/mini-groundwork`:
+
 - a06e7cf — audit(diagnosis): this status doc (Task 1)
 - 5b91bb4 — audit(B3): image compression (Task 2)
 - 510dd9b — audit(B2): lossless Lottie recompression + manualChunks (Task 3)
@@ -130,6 +134,7 @@ Note: vitest prints unhandled-rejection stack noise on some suites — pre-exist
 on main baseline, all 30 files / 141 tests pass.
 
 **Reserved for Anton (untouched):**
+
 - B1 XSS sanitizer — approach in B1 section above (dompurify wrapper, allowlist
   must include the highlight system's `<mark>` markup; convert low-risk files first).
 - B4 62.5% font rip-out — codemod plan in B4 section above; needs visual QA.
@@ -147,18 +152,18 @@ chapters may reference these public URLs. Originals recoverable from git history
 Tools: `sips` (resize + JPEG re-encode q75, max edge 2000/2048px),
 `pngquant --quality=70-95 --speed 1`, `cwebp -q 80`.
 
-| File | before | after |
-|---|---|---|
-| ramonYCajal.png (3396px → 2048px) | 6.6MB | 1.1MB |
-| 00-matisse-augen-cutout.png (5174px → 2048px) | 5.2MB | 1.0MB |
-| 9-1-glaucoma.jpg (2192px → 2000px) | 2.1MB | 500KB |
-| marguerite.jpg (5473px → 2000px) | 2.0MB | 847KB |
-| 00-matisse-bg.jpg (5473px → 2000px) | 2.0MB | 847KB |
-| 9-1-macular-degeneration.jpg | 1.1MB | 595KB |
-| placeholders/monaLisa.webp (→1200px) | 1.0MB | 170KB |
-| marguerite.png | 891KB | 441KB |
-| breakVideos/dowling-and-werblin.png | 687KB | 233KB |
-| retinoRecipientRegions.png | 613KB | 66KB |
+| File                                          | before | after |
+| --------------------------------------------- | ------ | ----- |
+| ramonYCajal.png (3396px → 2048px)             | 6.6MB  | 1.1MB |
+| 00-matisse-augen-cutout.png (5174px → 2048px) | 5.2MB  | 1.0MB |
+| 9-1-glaucoma.jpg (2192px → 2000px)            | 2.1MB  | 500KB |
+| marguerite.jpg (5473px → 2000px)              | 2.0MB  | 847KB |
+| 00-matisse-bg.jpg (5473px → 2000px)           | 2.0MB  | 847KB |
+| 9-1-macular-degeneration.jpg                  | 1.1MB  | 595KB |
+| placeholders/monaLisa.webp (→1200px)          | 1.0MB  | 170KB |
+| marguerite.png                                | 891KB  | 441KB |
+| breakVideos/dowling-and-werblin.png           | 687KB  | 233KB |
+| retinoRecipientRegions.png                    | 613KB  | 66KB  |
 
 Total: ~22.2MB → ~5.8MB (−16.4MB).
 
@@ -200,6 +205,7 @@ paths referenced by CSS but not present in repo) — unrelated to this change,
 flagged for follow-up.
 
 Hardening plan (hosting layer, for Anton):
+
 - Move policy to a response header at the host/CDN; add `frame-ancestors 'none'`
   and `report-uri`/`report-to` (both unsupported in `<meta>`).
 - Replace `script-src 'unsafe-inline'` with the sha256 hash of the pre-paint
@@ -213,13 +219,14 @@ Verified: build exit 0, tests 141/141, app loads under CSP.
 ## Task 3 — B2 Lottie + code-splitting (done)
 
 **(a) Lottie optimization — lossless only.**
+
 - Confirmed: all Lottie JSONs are runtime-fetched
   (`lottie.loadAnimation({ path: "/publicAssets/animations/…" })`), never
   bundled, and load only when the owning component mounts. No bundling fix needed.
 - JSONs were already single-line minified; the weight is embedded `data:` frames.
   `animationStart.json`'s 137 frames are actually **JPEGs** (1920×1080, ~100KB each).
 - Applied **lossless** recompression to embedded frames: `jpegtran -optimize
-  -progressive -copy none` for JPEG frames, `oxipng -o4 --strip safe` for PNG
+-progressive -copy none` for JPEG frames, `oxipng -o4 --strip safe` for PNG
   frames. Pixel-identical output; new base64 substituted into the raw JSON text
   so everything else in each file is byte-identical (re-validated as JSON).
 - Results: animations dir 29MB → 23MB. Per file: animationStart 18.7→13.9MB

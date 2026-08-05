@@ -44,11 +44,7 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="demo-modal">
-      <div
-        v-if="show"
-        class="demo-backdrop"
-        @click="onBackdropClick"
-      >
+      <div v-if="show" class="demo-backdrop" @click="onBackdropClick">
         <div class="demo-panel">
           <header class="demo-header">
             <h2 class="demo-title">{{ title }}</h2>

@@ -27,7 +27,9 @@ const showTakeaways = computed(
   () => Array.isArray(props.keyTakeaways) && props.keyTakeaways.length > 0
 );
 
-const minutes = computed(() => Math.max(1, Math.round(props.timeSpentSeconds / 60)));
+const minutes = computed(() =>
+  Math.max(1, Math.round(props.timeSpentSeconds / 60))
+);
 
 const overviewRoute = computed(() => `/chapter/${props.chapterNumber}`);
 const quizRoute = computed(() =>
@@ -68,7 +70,9 @@ function goNext() {
       </div>
       <div class="stat">
         <span class="stat-value">{{ highlightCount }}</span>
-        <span class="stat-label">{{ highlightCount === 1 ? "highlight" : "highlights" }}</span>
+        <span class="stat-label">{{
+          highlightCount === 1 ? "highlight" : "highlights"
+        }}</span>
       </div>
       <div class="stat">
         <span class="stat-value">{{ Math.round(progressPercent) }}%</span>
@@ -213,7 +217,10 @@ function goNext() {
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .cta-primary {
@@ -252,7 +259,9 @@ function goNext() {
   padding: 1rem 1.25rem;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, transform 0.1s;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
 }
 
 .up-next:hover {

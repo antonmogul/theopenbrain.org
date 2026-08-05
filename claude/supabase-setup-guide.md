@@ -139,12 +139,12 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 Create `src/lib/supabase.js`:
 
 ```javascript
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 ```
 
 ---
@@ -201,17 +201,20 @@ supabase migration new migration_name
 ## Troubleshooting
 
 ### CLI Not Found
+
 ```bash
 # If supabase command not found, add to PATH or reinstall
 brew install supabase/tap/supabase
 ```
 
 ### Connection Issues
+
 - Check your project URL and API keys
 - Ensure project is not paused (free tier pauses after inactivity)
 - Check firewall/network settings
 
 ### Migration Errors
+
 - Check SQL syntax
 - Ensure tables don't already exist
 - Review error messages in Supabase dashboard
@@ -230,4 +233,3 @@ brew install supabase/tap/supabase
 ---
 
 **Ready to proceed?** Let me know when you've created your Supabase project, and I'll generate the migration SQL file for you!
-

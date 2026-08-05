@@ -64,9 +64,7 @@ const isAnswerCorrect = computed(() => {
 
 // Get option styling based on state
 function getOptionClass(option) {
-  const classes = [
-    "w-full text-left p-4 rounded-lg border-2 transition-all",
-  ];
+  const classes = ["w-full text-left p-4 rounded-lg border-2 transition-all"];
 
   if (props.showResult) {
     // Show correct answer
@@ -148,8 +146,7 @@ function getOptionClass(option) {
             </svg>
             <svg
               v-else-if="
-                selectedAnswer === option &&
-                option !== question.correct_answer
+                selectedAnswer === option && option !== question.correct_answer
               "
               class="text-red-500"
               data-testid="answer-incorrect"
@@ -188,10 +185,7 @@ function getOptionClass(option) {
       />
 
       <!-- Show correct answer if wrong -->
-      <p
-        v-if="showResult && !isAnswerCorrect"
-        class="correct-answer-hint"
-      >
+      <p v-if="showResult && !isAnswerCorrect" class="correct-answer-hint">
         Correct answer: <strong>{{ question.correct_answer }}</strong>
       </p>
     </div>
@@ -390,7 +384,9 @@ function getOptionClass(option) {
   padding: 0.625rem 0.75rem !important;
   border-radius: 4px !important;
   border-width: 1px !important;
-  transition: border-color 0.12s ease, background 0.12s ease !important;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease !important;
 }
 .border-gray-200 {
   border-color: rgb(var(--color-line));

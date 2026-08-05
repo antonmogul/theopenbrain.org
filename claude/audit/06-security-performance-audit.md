@@ -20,6 +20,7 @@ The application has **significant security vulnerabilities** related to XSS (via
 **Finding:** `v-html` used **11 times** across the codebase
 
 **Locations:**
+
 ```vue
 <!-- SectionComp.vue -->
 <p v-html="paragraph.text" />
@@ -32,6 +33,7 @@ The application has **significant security vulnerabilities** related to XSS (via
 ```
 
 **Vulnerability:**
+
 ```json
 // text.json
 {
@@ -43,6 +45,7 @@ This is rendered as raw HTML via `v-html`, bypassing Vue's XSS protection.
 
 **Attack Vector:**
 If `text.json` ever becomes editable (CMS, user contributions, etc.):
+
 ```json
 {
   "text": "Malicious content <script>alert(document.cookie)</script>"
@@ -53,21 +56,22 @@ If `text.json` ever becomes editable (CMS, user contributions, etc.):
 **Future Risk:** CRITICAL (if content becomes dynamic)
 
 **Recommendation:**
+
 ```bash
 npm install dompurify
 ```
 
 ```vue
 <script setup>
-import DOMPurify from 'dompurify';
-import { computed } from 'vue';
+import DOMPurify from "dompurify";
+import { computed } from "vue";
 
 const props = defineProps({ paragraph: Object });
 
 const sanitizedText = computed(() => {
   return DOMPurify.sanitize(props.paragraph.text, {
-    ALLOWED_TAGS: ['span', 'sup', 'mark'],
-    ALLOWED_ATTR: ['id', 'class', 'data-sup']
+    ALLOWED_TAGS: ["span", "sup", "mark"],
+    ALLOWED_ATTR: ["id", "class", "data-sup"],
   });
 });
 </script>
@@ -87,64 +91,77 @@ Replace HTML strings with Markdown or structured content (see Data Layer Audit).
 **Finding:** User data loaded from localStorage without validation
 
 **Vulnerable Code:**
+
 ```javascript
 // stores/index.js
-text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText
+text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText;
 ```
 
 **Attack Vector:**
+
 1. User opens DevTools Console
 2. Executes: `localStorage.setItem('sections', 'malicious payload')`
 3. Page reloads
 4. App crashes or executes malicious code
 
 **Proof of Concept:**
+
 ```javascript
 // Crash the app
-localStorage.setItem('sections', 'not valid json');
+localStorage.setItem("sections", "not valid json");
 // Page reload → JSON.parse() throws → app crashes
 
 // Inject malicious HTML
-localStorage.setItem('sections', JSON.stringify({
-  intro: [{
-    id: "fake",
-    paragraphs: [{
-      id: "fake",
-      text: "<img src=x onerror=alert('XSS')>"
-    }]
-  }]
-}));
+localStorage.setItem(
+  "sections",
+  JSON.stringify({
+    intro: [
+      {
+        id: "fake",
+        paragraphs: [
+          {
+            id: "fake",
+            text: "<img src=x onerror=alert('XSS')>",
+          },
+        ],
+      },
+    ],
+  })
+);
 // Combined with v-html → XSS executed
 ```
 
 **Recommendation:**
+
 ```javascript
 // composables/useLocalStorage.js
-import { z } from 'zod';
+import { z } from "zod";
 
 const sectionSchema = z.object({
   id: z.string().uuid(),
   title: z.string().optional(),
-  paragraphs: z.array(z.object({
-    id: z.string().uuid(),
-    text: z.string()
-  }))
+  paragraphs: z.array(
+    z.object({
+      id: z.string().uuid(),
+      text: z.string(),
+    })
+  ),
 });
 
 export function loadSections() {
   try {
-    const stored = localStorage.getItem('sections');
+    const stored = localStorage.getItem("sections");
     if (!stored) return defaultSections;
-    
+
     const parsed = JSON.parse(stored);
-    
+
     // Validate structure
     const validated = sectionSchema.parse(parsed);
-    
+
     return validated;
   } catch (e) {
-    console.error('Invalid stored sections:', e);
-    localStorage.removeItem('sections'); // Clear corrupted data
+    console.error("Invalid stored sections:", e);
+    localStorage.removeItem("sections"); // Clear corrupted data
     return defaultSections;
   }
 }
@@ -157,27 +174,29 @@ export function loadSections() {
 **Finding:** No CSP headers configured
 
 **Risk:**
+
 - XSS attacks easier to execute
 - No protection against inline scripts
 - External resource loading uncontrolled
 
 **Recommendation:**
+
 ```javascript
 // vite.config.js
 export default {
   server: {
     headers: {
-      'Content-Security-Policy': [
+      "Content-Security-Policy": [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline'", // Remove unsafe-inline eventually
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: https:",
         "font-src 'self'",
         "frame-src https://www.youtube.com", // For embedded videos
-      ].join('; ')
-    }
-  }
-}
+      ].join("; "),
+    },
+  },
+};
 ```
 
 For production, set via `.htaccess` or server config.
@@ -189,6 +208,7 @@ For production, set via `.htaccess` or server config.
 **Finding:** User comments stored without sanitization
 
 **Vulnerable Code:**
+
 ```javascript
 // stores/comments.js
 updateCom(input, event) {
@@ -198,6 +218,7 @@ updateCom(input, event) {
 ```
 
 **Attack Vector:**
+
 ```javascript
 // User enters in comment field:
 <script>alert('XSS')</script>
@@ -205,6 +226,7 @@ updateCom(input, event) {
 ```
 
 **Recommendation:**
+
 ```javascript
 import DOMPurify from 'dompurify';
 
@@ -213,15 +235,15 @@ updateCom(input) {
     ALLOWED_TAGS: [], // Strip all HTML
     ALLOWED_ATTR: []
   });
-  
+
   const trimmed = sanitized.trim().slice(0, 5000); // Max length
-  
+
   if (trimmed) {
     this.comments[this.activeCom] = trimmed;
   } else {
     delete this.comments[this.activeCom];
   }
-  
+
   localStorage.setItem("comments", JSON.stringify(this.comments));
 }
 ```
@@ -247,6 +269,7 @@ inject: {
 **Risk:** If sensitive data in env vars, it's exposed in client bundle
 
 **Recommendation:**
+
 - Only inject `VITE_*` prefixed variables (Vite's convention)
 - Never put API keys or secrets in client-side env vars
 - Use server-side proxy for API calls requiring secrets
@@ -263,21 +286,23 @@ localStorage.setItem("selection", JSON.stringify(this.selectionIds));
 ```
 
 **Risk:**
+
 - Performance degradation
 - Could exhaust quota
 - No throttling/debouncing
 
 **Recommendation:**
+
 ```javascript
-import { debounce } from 'lodash-es';
+import { debounce } from "lodash-es";
 
 // Debounce localStorage writes
 const saveSelections = debounce((selections) => {
   try {
-    localStorage.setItem('selection', JSON.stringify(selections));
+    localStorage.setItem("selection", JSON.stringify(selections));
   } catch (e) {
-    if (e.name === 'QuotaExceededError') {
-      console.error('Storage quota exceeded');
+    if (e.name === "QuotaExceededError") {
+      console.error("Storage quota exceeded");
       // Notify user or cleanup old data
     }
   }
@@ -289,12 +314,15 @@ const saveSelections = debounce((selections) => {
 ### Security Best Practices Missing
 
 #### 7. **No Subresource Integrity (SRI)**
+
 If loading external resources, use SRI hashes
 
 #### 8. **No HTTPS Enforcement**
+
 Should redirect HTTP → HTTPS in production
 
 #### 9. **No Security Headers**
+
 Missing: `X-Frame-Options`, `X-Content-Type-Options`, etc.
 
 ---
@@ -306,28 +334,30 @@ Missing: `X-Frame-Options`, `X-Content-Type-Options`, etc.
 #### 1. **Massive Animation Bundle** (CRITICAL - 29MB)
 
 **Finding:**
+
 ```bash
 public/publicAssets/animations/  →  29MB
 ```
 
 **Impact:**
+
 - **Initial page load:** Must download 29MB before app usable
 - **Mobile users:** Unusable on slow connections
 - **CDN costs:** Expensive bandwidth
 
 **Breakdown:**
+
 - 35 Lottie JSON files
 - Largest likely contain complex vector animations
 
 **Recommendation:**
 
 **Option A: Lazy Load Animations**
+
 ```javascript
 // Don't load all animations upfront
 const loadAnimation = async (animationId) => {
-  const module = await import(
-    `@/assets/animations/${animationId}.json`
-  );
+  const module = await import(`@/assets/animations/${animationId}.json`);
   return lottie.loadAnimation({
     animationData: module.default,
     // ...
@@ -336,6 +366,7 @@ const loadAnimation = async (animationId) => {
 ```
 
 **Option B: CDN Hosting**
+
 ```javascript
 // Host animations on CDN, load on demand
 const loadAnimation = (animationId) => {
@@ -347,6 +378,7 @@ const loadAnimation = (animationId) => {
 ```
 
 **Option C: Optimize Lottie Files**
+
 - Use Lottie compression tools
 - Remove unnecessary layers
 - Simplify paths
@@ -357,6 +389,7 @@ const loadAnimation = (animationId) => {
 #### 2. **Unoptimized Images** (HIGH)
 
 **Finding:**
+
 ```bash
 ramonYCajal.png     →  6.6MB  (!!)
 9-1-glaucoma.jpg    →  2.1MB
@@ -365,6 +398,7 @@ eyeDots.svg         →  280KB  (SVG shouldn't be this big)
 ```
 
 **Impact:**
+
 - Slow page loads
 - Poor LCP (Largest Contentful Paint)
 - Wasted bandwidth
@@ -372,6 +406,7 @@ eyeDots.svg         →  280KB  (SVG shouldn't be this big)
 **Recommendations:**
 
 **Immediate:**
+
 ```bash
 # Install image optimization tools
 npm install -D vite-plugin-imagemin
@@ -395,11 +430,12 @@ plugins: [
 ```
 
 **Manual Optimization:**
+
 ```bash
 # PNG optimization
 pngquant ramonYCajal.png --quality 65-80 --output ramonYCajal-optimized.png
 
-# JPG optimization  
+# JPG optimization
 convert 9-1-glaucoma.jpg -quality 80 9-1-glaucoma-optimized.jpg
 
 # SVG optimization
@@ -407,17 +443,19 @@ svgo eyeDots.svg -o eyeDots-optimized.svg
 ```
 
 **Expected Results:**
+
 - 6.6MB PNG → ~500KB (92% reduction)
 - 2.1MB JPG → ~200KB (90% reduction)
 - 280KB SVG → ~50KB (82% reduction)
 
 **Modern Formats:**
+
 ```html
 <!-- Use WebP/AVIF with fallbacks -->
 <picture>
-  <source srcset="/images/ramonYCajal.avif" type="image/avif">
-  <source srcset="/images/ramonYCajal.webp" type="image/webp">
-  <img src="/images/ramonYCajal.jpg" alt="...">
+  <source srcset="/images/ramonYCajal.avif" type="image/avif" />
+  <source srcset="/images/ramonYCajal.webp" type="image/webp" />
+  <img src="/images/ramonYCajal.jpg" alt="..." />
 </picture>
 ```
 
@@ -428,23 +466,26 @@ svgo eyeDots.svg -o eyeDots-optimized.svg
 **Finding:** Single bundle, no route-based splitting
 
 **Current:**
+
 ```javascript
 // All routes loaded upfront
 import HomeView from "@/views/HomeView.vue";
 ```
 
 **Better:**
+
 ```javascript
 // Lazy load routes
 const routes = [
   {
-    path: '/chapter/:chapter?',
-    component: () => import('../views/ChapterView.vue') // Lazy!
-  }
+    path: "/chapter/:chapter?",
+    component: () => import("../views/ChapterView.vue"), // Lazy!
+  },
 ];
 ```
 
 **Expected Impact:**
+
 - Initial bundle: -30-40%
 - Faster Time to Interactive
 
@@ -453,19 +494,28 @@ const routes = [
 #### 4. **Font Loading Performance** (MEDIUM)
 
 **Finding:**
+
 - 194KB `ibm-plex.css` loaded synchronously
 - Blocks rendering
 - Multiple font weights loaded (16+ variants)
 
 **Issues:**
+
 ```css
 /* src/ibm-plex.css - loads ALL weights */
-@font-face { font-family: 'IBM Plex Sans'; font-weight: 100; }
-@font-face { font-family: 'IBM Plex Sans'; font-weight: 200; }
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-weight: 100;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-weight: 200;
+}
 /* ... 14 more variants */
 ```
 
 **Recommendation:**
+
 ```javascript
 // Only load needed weights
 import '@fontsource/ibm-plex-sans/400.css';  // Regular
@@ -480,9 +530,16 @@ import '@fontsource/ibm-plex-mono/400.css';  // Mono Regular
 ```
 
 **Preload Critical Fonts:**
+
 ```html
 <!-- index.html -->
-<link rel="preload" href="/fonts/IBMPlexSans-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link
+  rel="preload"
+  href="/fonts/IBMPlexSans-Regular.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
 ```
 
 ---
@@ -490,6 +547,7 @@ import '@fontsource/ibm-plex-mono/400.css';  // Mono Regular
 #### 5. **No Bundle Analysis** (MEDIUM)
 
 **Recommendation:**
+
 ```bash
 npm install -D rollup-plugin-visualizer
 
@@ -517,20 +575,21 @@ This generates interactive bundle size visualization.
 **Finding:** No gzip/brotli compression configured
 
 **Recommendation:**
+
 ```javascript
 // vite.config.js
-import viteCompression from 'vite-plugin-compression';
+import viteCompression from "vite-plugin-compression";
 
 plugins: [
   viteCompression({
-    algorithm: 'brotliCompress',
-    ext: '.br'
+    algorithm: "brotliCompress",
+    ext: ".br",
   }),
   viteCompression({
-    algorithm: 'gzip',
-    ext: '.gz'
-  })
-]
+    algorithm: "gzip",
+    ext: ".gz",
+  }),
+];
 ```
 
 **Expected:** 60-80% reduction in transfer size
@@ -543,13 +602,14 @@ plugins: [
 
 ```javascript
 for (let trigger of document.querySelectorAll(".trigger")) {
-  ScrollTrigger.create({ /* ... */ });
+  ScrollTrigger.create({/* ... */});
 }
 ```
 
 **Issue:** Can create dozens of scroll listeners
 
 **Recommendation:**
+
 ```javascript
 // Use single ScrollTrigger with batch
 ScrollTrigger.batch(".trigger", {
@@ -563,12 +623,14 @@ ScrollTrigger.batch(".trigger", {
 ### Performance Metrics
 
 **Current (Estimated):**
+
 - **Initial Bundle:** ~35MB (animations + images + code)
 - **Time to Interactive:** 8-15 seconds (slow connection)
 - **LCP:** 4-6 seconds (large images)
 - **CLS:** Moderate (images without dimensions)
 
 **Target (After Optimization):**
+
 - **Initial Bundle:** <2MB
 - **Time to Interactive:** <3 seconds
 - **LCP:** <2.5 seconds
@@ -581,29 +643,36 @@ ScrollTrigger.batch(".trigger", {
 ### Issues Found
 
 #### 1. **Missing Image Alt Text**
+
 ```vue
-<img :src="imagePath" />  <!-- No alt! -->
+<img :src="imagePath" />
+<!-- No alt! -->
 ```
 
 **Recommendation:**
+
 ```vue
 <img :src="imagePath" :alt="imageDescription" />
 ```
 
 #### 2. **Color Contrast**
+
 Violet (#9747FF) on white may fail WCAG AA for small text
 
 **Check with:**
+
 ```bash
 npm install -D @axe-core/cli
 npx axe http://localhost:3000
 ```
 
 #### 3. **Keyboard Navigation**
+
 - Menu toggle works with keyboard? ✓ (uses button)
 - Animation controls accessible? (Needs testing)
 
 #### 4. **Screen Reader Support**
+
 - `<mark>` tags for highlights - good semantic HTML ✓
 - Animation state changes announced? (Needs aria-live)
 
@@ -626,6 +695,7 @@ npx axe http://localhost:3000
    - No funnel analysis (do users complete reading?)
 
 **Recommendation:**
+
 ```bash
 npm install web-vitals
 
@@ -693,6 +763,7 @@ getTTFB(sendToAnalytics);
 ## Performance Budget
 
 **Recommended Limits:**
+
 ```javascript
 // vite.config.js
 build: {
@@ -709,6 +780,7 @@ build: {
 ```
 
 **Budget:**
+
 - **HTML:** <10KB
 - **CSS:** <100KB
 - **JavaScript (initial):** <200KB
@@ -750,16 +822,19 @@ build: {
 ## Estimated Total Effort
 
 **Security:**
+
 - Immediate: 7 hours
 - Short-term: 8 hours
 - **Total: 15 hours**
 
 **Performance:**
+
 - Immediate: 11 hours
 - Short-term: 16 hours
 - **Total: 27 hours**
 
 **Monitoring:**
+
 - Medium-term: 8 hours
 
 **Grand Total: 50 hours**
@@ -771,18 +846,21 @@ build: {
 The application has **critical security and performance issues** that need immediate attention:
 
 **Security (HIGH RISK):**
+
 1. XSS via `v-html` (11 instances)
 2. localStorage injection (no validation)
 3. No input sanitization
 4. No CSP headers
 
 **Performance (HIGH IMPACT):**
+
 1. 29MB animation bundle
 2. 6.6MB single image
 3. No code splitting
 4. Unoptimized fonts (194KB)
 
 **Quick Wins (18 hours):**
+
 - Install DOMPurify + validate localStorage (5 hours)
 - Lazy load animations (4 hours)
 - Optimize top 5 images (3 hours)
@@ -792,6 +870,7 @@ The application has **critical security and performance issues** that need immed
 - Enable compression (1 hour)
 
 **Expected Impact:**
+
 - **Security:** From vulnerable to hardened
 - **Bundle Size:** 35MB → ~2MB (94% reduction)
 - **Page Load:** 15s → 3s (5x faster)

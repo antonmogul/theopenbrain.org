@@ -6,7 +6,9 @@
  */
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Session holder - will be set by useAuth composable
 let currentSession = null;
@@ -34,13 +36,22 @@ export function getSession() {
  * @returns {Promise<any>} Response data
  */
 export async function apiRequest(endpoint, options = {}) {
-  const { headers: optionHeaders, requireAuth = false, ...restOptions } = options;
+  const {
+    headers: optionHeaders,
+    requireAuth = false,
+    ...restOptions
+  } = options;
   const accessToken = currentSession?.access_token;
 
   // Opt-in auth guard (matches the inline copies that threw before a write
   // when no session was present). Off by default for public/read fetches.
-  if (requireAuth && !accessToken && options.method && options.method !== 'GET') {
-    throw new Error('No access token available');
+  if (
+    requireAuth &&
+    !accessToken &&
+    options.method &&
+    options.method !== "GET"
+  ) {
+    throw new Error("No access token available");
   }
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${endpoint}`, {
@@ -48,7 +59,7 @@ export async function apiRequest(endpoint, options = {}) {
     headers: {
       apikey: supabaseKey,
       Authorization: `Bearer ${accessToken || supabaseKey}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...optionHeaders,
     },
   });
@@ -88,7 +99,7 @@ export async function authedRequest(endpoint, options = {}) {
  * @returns {Promise<any>} Response data
  */
 export async function get(endpoint, options = {}) {
-  return apiRequest(endpoint, { method: 'GET', ...options });
+  return apiRequest(endpoint, { method: "GET", ...options });
 }
 
 /**
@@ -100,9 +111,9 @@ export async function get(endpoint, options = {}) {
  */
 export async function post(endpoint, data, options = {}) {
   return apiRequest(endpoint, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(data),
-    headers: { Prefer: 'return=representation' },
+    headers: { Prefer: "return=representation" },
     ...options,
   });
 }
@@ -116,9 +127,9 @@ export async function post(endpoint, data, options = {}) {
  */
 export async function patch(endpoint, data, options = {}) {
   return apiRequest(endpoint, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify(data),
-    headers: { Prefer: 'return=minimal' },
+    headers: { Prefer: "return=minimal" },
     ...options,
   });
 }
@@ -130,7 +141,7 @@ export async function patch(endpoint, data, options = {}) {
  * @returns {Promise<any>} Response data
  */
 export async function del(endpoint, options = {}) {
-  return apiRequest(endpoint, { method: 'DELETE', ...options });
+  return apiRequest(endpoint, { method: "DELETE", ...options });
 }
 
 /**
@@ -142,12 +153,12 @@ export function buildQuery(params) {
   const parts = [];
 
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       parts.push(`${key}=${encodeURIComponent(value)}`);
     }
   }
 
-  return parts.length > 0 ? `?${parts.join('&')}` : '';
+  return parts.length > 0 ? `?${parts.join("&")}` : "";
 }
 
 /**
@@ -156,7 +167,7 @@ export function buildQuery(params) {
  * @returns {string} Filter string like (id1,id2,id3)
  */
 export function buildInFilter(ids) {
-  return `(${ids.map(id => `"${id}"`).join(',')})`;
+  return `(${ids.map((id) => `"${id}"`).join(",")})`;
 }
 
 export default {

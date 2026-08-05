@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Open Brain is an innovative web platform that empowers professors to curate and customize digital textbooks while offering students an interactive learning experience. The platform seamlessly blends traditional textbook content with modern features, including AI-assisted learning, interactive code labs, and collaborative annotation tools. 
+Open Brain is an innovative web platform that empowers professors to curate and customize digital textbooks while offering students an interactive learning experience. The platform seamlessly blends traditional textbook content with modern features, including AI-assisted learning, interactive code labs, and collaborative annotation tools.
 
 The project will build upon the first version, currently live at [theopenbrain.org](http://theopenbrain.org). The existing codebase will serve as the foundation for this project.
 
@@ -23,28 +23,28 @@ The project will build upon the first version, currently live at [theopenbrain.o
 
 ### Authentication Roles
 
-| **Role** | **Can Do** | 
-|---|---|
-| Creator | • Author/update master chapters | 
-| • Define modules and metadata |  | 
-| • Configure AI boundaries |  | 
-| • Upload data sets and Python code |  | 
-| • View data for Professors use & students |  | 
-| • Release new versions (v1.0, v1.1…) |  | 
-| Professor | • Log in → View Creator’s modules | 
-| • Drag-select modules into “My Course” canvas |  | 
-| • Embed quizzes/flashcards via UI |  | 
-| • Publish a unique course URL |  | 
-| • View student analytics (reads, quiz scores, lab runs) |  | 
-| Student | • Log in → see full and “My Course” versions | 
-| • Highlight & take notes (trending feed) |  | 
-| • Use AI tutor inline for on-demand help |  | 
-| • Complete flashcards/quizzes |  | 
-| • Run & edit Python/data labs; “Clone to Git” |  | 
+| **Role**                                                | **Can Do**                                   |
+| ------------------------------------------------------- | -------------------------------------------- |
+| Creator                                                 | • Author/update master chapters              |
+| • Define modules and metadata                           |                                              |
+| • Configure AI boundaries                               |                                              |
+| • Upload data sets and Python code                      |                                              |
+| • View data for Professors use & students               |                                              |
+| • Release new versions (v1.0, v1.1…)                    |                                              |
+| Professor                                               | • Log in → View Creator’s modules            |
+| • Drag-select modules into “My Course” canvas           |                                              |
+| • Embed quizzes/flashcards via UI                       |                                              |
+| • Publish a unique course URL                           |                                              |
+| • View student analytics (reads, quiz scores, lab runs) |                                              |
+| Student                                                 | • Log in → see full and “My Course” versions |
+| • Highlight & take notes (trending feed)                |                                              |
+| • Use AI tutor inline for on-demand help                |                                              |
+| • Complete flashcards/quizzes                           |                                              |
+| • Run & edit Python/data labs; “Clone to Git”           |                                              |
 
 ## Project breakdown
 
-The project naturally divides into three distinct phases, each building upon the foundation laid by the previous phase. Throughout the development process, we will continuously improve and test the UX with real users whenever possible. 
+The project naturally divides into three distinct phases, each building upon the foundation laid by the previous phase. Throughout the development process, we will continuously improve and test the UX with real users whenever possible.
 
 <aside>
 

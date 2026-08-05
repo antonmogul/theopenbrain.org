@@ -15,7 +15,9 @@ describe("useTrendingHighlights", () => {
 
   it("fetchTrending queries via apiRequest (public, unauthed) with the limit", async () => {
     apiRequest.mockResolvedValue([{ id: "t1" }]);
-    const { trending, loading, fetchTrending } = useTrendingHighlights({ limit: 3 });
+    const { trending, loading, fetchTrending } = useTrendingHighlights({
+      limit: 3,
+    });
 
     await fetchTrending();
 

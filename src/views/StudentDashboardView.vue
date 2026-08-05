@@ -84,7 +84,8 @@ const navItems = [
 ];
 
 const displayName = computed(
-  () => profile.value?.full_name || user.value?.email?.split("@")[0] || "Student"
+  () =>
+    profile.value?.full_name || user.value?.email?.split("@")[0] || "Student"
 );
 
 onMounted(async () => {
@@ -158,10 +159,19 @@ function formatScore(score, total) {
         <BaseCard>
           <div class="card-head">
             <h3 class="card-title">Available quizzes</h3>
-            <Button variant="ghost" size="sm" @click="activeSection = 'quizzes'">View all</Button>
+            <Button variant="ghost" size="sm" @click="activeSection = 'quizzes'"
+              >View all</Button
+            >
           </div>
-          <LoadingState v-if="quizzesLoading" message="Loading quizzes…" size="sm" />
-          <EmptyState v-else-if="availableQuizzes.length === 0" title="No quizzes available" />
+          <LoadingState
+            v-if="quizzesLoading"
+            message="Loading quizzes…"
+            size="sm"
+          />
+          <EmptyState
+            v-else-if="availableQuizzes.length === 0"
+            title="No quizzes available"
+          />
           <div v-else>
             <ListRow
               v-for="quiz in availableQuizzes.slice(0, 3)"
@@ -179,13 +189,25 @@ function formatScore(score, total) {
         <BaseCard>
           <div class="card-head">
             <h3 class="card-title">Flashcards</h3>
-            <Button variant="ghost" size="sm" @click="activeSection = 'flashcards'">View all</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              @click="activeSection = 'flashcards'"
+              >View all</Button
+            >
           </div>
           <div v-if="dueCardsCount > 0" class="due-banner">
             <strong>{{ dueCardsCount }}</strong> cards due for review
           </div>
-          <LoadingState v-if="flashcardsLoading" message="Loading decks…" size="sm" />
-          <EmptyState v-else-if="flashcardDecks.length === 0" title="No decks available" />
+          <LoadingState
+            v-if="flashcardsLoading"
+            message="Loading decks…"
+            size="sm"
+          />
+          <EmptyState
+            v-else-if="flashcardDecks.length === 0"
+            title="No decks available"
+          />
           <div v-else>
             <ListRow
               v-for="deck in flashcardDecks.slice(0, 3)"
@@ -219,9 +241,15 @@ function formatScore(score, total) {
         <div>
           <div class="card-head">
             <h3 class="card-title">My courses</h3>
-            <Button variant="ghost" size="sm" @click="activeSection = 'courses'">View all</Button>
+            <Button variant="ghost" size="sm" @click="activeSection = 'courses'"
+              >View all</Button
+            >
           </div>
-          <LoadingState v-if="coursesLoading" message="Loading courses…" size="sm" />
+          <LoadingState
+            v-if="coursesLoading"
+            message="Loading courses…"
+            size="sm"
+          />
           <EmptyState
             v-else-if="courses.length === 0"
             title="No courses enrolled yet"
@@ -239,9 +267,17 @@ function formatScore(score, total) {
         <div>
           <div class="card-head">
             <h3 class="card-title">Recent highlights</h3>
-            <Button variant="ghost" size="sm" @click="activeSection = 'highlights'">View all</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              @click="activeSection = 'highlights'"
+              >View all</Button
+            >
           </div>
-          <EmptyState v-if="recentHighlights.length === 0" title="No highlights yet" />
+          <EmptyState
+            v-if="recentHighlights.length === 0"
+            title="No highlights yet"
+          />
           <div v-else class="stack">
             <BaseCard
               v-for="highlight in recentHighlights"
@@ -254,7 +290,9 @@ function formatScore(score, total) {
                 "{{ highlight.selected_text?.slice(0, 80)
                 }}{{ highlight.selected_text?.length > 80 ? "…" : "" }}"
               </p>
-              <span class="hl-date">{{ formatRelativeDate(highlight.created_at) }}</span>
+              <span class="hl-date">{{
+                formatRelativeDate(highlight.created_at)
+              }}</span>
             </BaseCard>
           </div>
           <TrendingHighlights class="mt-6" :limit="5" />
@@ -274,7 +312,11 @@ function formatScore(score, total) {
         @action="router.push(homeRoute)"
       />
       <div v-else class="card-grid">
-        <CourseCard v-for="enrollment in courses" :key="enrollment.id" :enrollment="enrollment" />
+        <CourseCard
+          v-for="enrollment in courses"
+          :key="enrollment.id"
+          :enrollment="enrollment"
+        />
       </div>
     </section>
 
@@ -288,13 +330,22 @@ function formatScore(score, total) {
         message="Quizzes will appear here when your courses have them."
       />
       <div v-else class="card-grid">
-        <QuizCard v-for="quiz in availableQuizzes" :key="quiz.id" :quiz="quiz" @start="startQuiz(quiz.id)" />
+        <QuizCard
+          v-for="quiz in availableQuizzes"
+          :key="quiz.id"
+          :quiz="quiz"
+          @start="startQuiz(quiz.id)"
+        />
       </div>
 
       <div v-if="recentAttempts.length > 0" class="mt-6">
         <h3 class="card-title">Recent attempts</h3>
         <div class="card-grid">
-          <BaseCard v-for="attempt in recentAttempts" :key="attempt.id" padding="md">
+          <BaseCard
+            v-for="attempt in recentAttempts"
+            :key="attempt.id"
+            padding="md"
+          >
             <div class="card-head">
               <span class="attempt-title">{{ attempt.quiz?.title }}</span>
               <StatusBadge :variant="attempt.passed ? 'complete' : 'warn'">
@@ -302,7 +353,9 @@ function formatScore(score, total) {
               </StatusBadge>
             </div>
             <div class="attempt-meta">
-              <span>{{ attempt.score }}/{{ attempt.total_questions }} correct</span>
+              <span
+                >{{ attempt.score }}/{{ attempt.total_questions }} correct</span
+              >
               <span>{{ formatRelativeDate(attempt.completed_at) }}</span>
             </div>
           </BaseCard>
@@ -334,7 +387,10 @@ function formatScore(score, total) {
 
     <!-- HIGHLIGHTS -->
     <section v-else-if="activeSection === 'highlights'" class="section">
-      <SectionHeader eyebrow="05 · Highlights" title="Everything you've marked" />
+      <SectionHeader
+        eyebrow="05 · Highlights"
+        title="Everything you've marked"
+      />
       <EmptyState
         v-if="recentHighlights.length === 0"
         title="No highlights yet"
@@ -349,8 +405,12 @@ function formatScore(score, total) {
         >
           <p class="hl-text">"{{ highlight.selected_text }}"</p>
           <div class="hl-meta">
-            <span class="hl-date">{{ formatRelativeDate(highlight.created_at) }}</span>
-            <StatusBadge v-if="highlight.note" variant="accent">Has note</StatusBadge>
+            <span class="hl-date">{{
+              formatRelativeDate(highlight.created_at)
+            }}</span>
+            <StatusBadge v-if="highlight.note" variant="accent"
+              >Has note</StatusBadge
+            >
           </div>
         </BaseCard>
       </div>
@@ -380,47 +440,148 @@ function formatScore(score, total) {
       <SectionHeader eyebrow="07 · Progress" title="Your reading footprint" />
       <StudyStats :stats="studentStore.studyStats" />
       <BaseCard class="mt-6">
-        <h3 class="card-title">Reading progress by module <PreviewTag variant="soon" /></h3>
-        <p class="muted">Detailed per-module progress tracking is coming soon.</p>
+        <h3 class="card-title">
+          Reading progress by module <PreviewTag variant="soon" />
+        </h3>
+        <p class="muted">
+          Detailed per-module progress tracking is coming soon.
+        </p>
       </BaseCard>
     </section>
 
     <!-- SETTINGS -->
     <section v-else-if="activeSection === 'settings'" class="section">
-      <SectionHeader eyebrow="08 · Settings" title="Your account & preferences" />
+      <SectionHeader
+        eyebrow="08 · Settings"
+        title="Your account & preferences"
+      />
       <SettingsPanels />
     </section>
   </DashboardShell>
 </template>
 
 <style scoped>
-.section { display: flex; flex-direction: column; gap: 24px; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-@media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
-.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.stack { display: flex; flex-direction: column; gap: 12px; }
-.mt-6 { margin-top: 24px; }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 1100px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mt-6 {
+  margin-top: 24px;
+}
 
-.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 12px; }
-.card-title { font-family: var(--font-body); font-size: 1.125rem; font-weight: 500; color: rgb(var(--color-ink)); margin: 0; }
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+.card-title {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: rgb(var(--color-ink));
+  margin: 0;
+}
 
-.chev { font-family: var(--font-mono); color: rgb(var(--color-mute)); font-size: 1rem; }
+.chev {
+  font-family: var(--font-mono);
+  color: rgb(var(--color-mute));
+  font-size: 1rem;
+}
 
 .due-banner {
-  background: rgb(var(--color-warn) / 0.12); color: rgb(var(--color-warn));
-  padding: 8px 12px; border-radius: 4px; font-family: var(--font-body); font-size: 0.8125rem; margin-bottom: 12px;
+  background: rgb(var(--color-warn) / 0.12);
+  color: rgb(var(--color-warn));
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  margin-bottom: 12px;
 }
-.due-banner.big { font-size: 0.9375rem; padding: 14px 18px; }
+.due-banner.big {
+  font-size: 0.9375rem;
+  padding: 14px 18px;
+}
 
-.hl-card { border-left: 4px solid rgb(var(--color-mark1)); }
-.hl-text { font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-ink)); font-style: italic; line-height: 1.5; margin: 0 0 8px; }
-.hl-meta { display: flex; align-items: center; gap: 12px; }
-.hl-date { font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); }
+.hl-card {
+  border-left: 4px solid rgb(var(--color-mark1));
+}
+.hl-text {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: rgb(var(--color-ink));
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+.hl-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hl-date {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+}
 
-.attempt-title { font-family: var(--font-body); font-size: 0.9375rem; color: rgb(var(--color-ink)); }
-.attempt-meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.6875rem; color: rgb(var(--color-mute)); margin-top: 8px; }
+.attempt-title {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: rgb(var(--color-ink));
+}
+.attempt-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+  margin-top: 8px;
+}
 
-.note-preview { font-family: var(--font-body); font-size: 0.75rem; font-style: italic; color: rgb(var(--color-mute)); padding: 8px; background: rgb(var(--color-mark1) / 0.18); border-radius: 4px; margin-bottom: 12px; }
-.note-content { font-family: var(--font-body); font-size: 0.9375rem; color: rgb(var(--color-ink)); line-height: 1.5; margin: 0 0 8px; }
-.muted { font-family: var(--font-body); font-size: 0.875rem; color: rgb(var(--color-mute)); margin: 8px 0 0; }
+.note-preview {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-style: italic;
+  color: rgb(var(--color-mute));
+  padding: 8px;
+  background: rgb(var(--color-mark1) / 0.18);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.note-content {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: rgb(var(--color-ink));
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+.muted {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: rgb(var(--color-mute));
+  margin: 8px 0 0;
+}
 </style>

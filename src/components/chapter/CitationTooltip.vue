@@ -174,7 +174,9 @@ onBeforeUnmount(() => {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
   font-family: "IBM Plex Sans", sans-serif;
   line-height: 1.5;
   pointer-events: auto;

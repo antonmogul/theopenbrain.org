@@ -29,15 +29,15 @@
  * @returns {Promise<any>} the fn's resolved value, or undefined on error
  */
 export async function withAsyncState({ loading, error }, logLabel, fn) {
-    loading.value = true;
-    error.value = null;
+  loading.value = true;
+  error.value = null;
 
-    try {
-        return await fn();
-    } catch (err) {
-        console.error(logLabel, err);
-        error.value = err.message;
-    } finally {
-        loading.value = false;
-    }
+  try {
+    return await fn();
+  } catch (err) {
+    console.error(logLabel, err);
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
 }

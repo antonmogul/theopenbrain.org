@@ -16,6 +16,7 @@ The project contains **48 Vue 3 components** organized in a logical directory st
 ### Total Components: 48
 
 **By Directory:**
+
 ```
 src/
 ├── components/ (48 total)
@@ -30,6 +31,7 @@ src/
 ```
 
 **API Usage:**
+
 - **Composition API (`<script setup>`):** 39 components (81%)
 - **Options API:** 2 components (4%)
 - **No script (icon components):** ~7 components (15%)
@@ -51,11 +53,13 @@ components/
 ```
 
 **Positives:**
+
 - Clear separation of concerns
 - Feature-based organization for `chapter/`
 - Reusable UI components isolated
 
 **Issues:**
+
 - No shared/common folder for truly generic components
 - Icon components mixed with regular components (should be separate)
 - Some components are overly specific (can't be reused)
@@ -69,7 +73,9 @@ components/
 **Issues:**
 
 #### a) **Too Many Responsibilities**
+
 This component handles:
+
 - Lottie animation loading and control
 - State management for animations
 - Multiple rendering modes (flip, switch, multiple, standard)
@@ -78,6 +84,7 @@ This component handles:
 - Event handling for mouse interactions
 
 **Recommendation:** Split into smaller components:
+
 ```
 IllustrationComp.vue (orchestrator)
 ├── LottieAnimation.vue (Lottie loading/control)
@@ -87,6 +94,7 @@ IllustrationComp.vue (orchestrator)
 ```
 
 #### b) **Complex Conditional Rendering**
+
 ```vue
 <template v-if="animation.illuImage">
   <div v-if="!animation.youtubeID">...</div>
@@ -102,6 +110,7 @@ IllustrationComp.vue (orchestrator)
 Too many nested conditions. Should use computed properties or separate component files.
 
 #### c) **Magic Numbers**
+
 ```javascript
 animationLottie.setSpeed(6);
 const pos = (totalFrames / 6) * (indexBefore + 1);
@@ -110,6 +119,7 @@ const pos = (totalFrames / 6) * (indexBefore + 1);
 What is `6`? Should be a named constant.
 
 #### d) **Direct DOM Manipulation**
+
 ```javascript
 let els = document.getElementsByClassName(state + "Highlight");
 for (let el of els) {
@@ -120,6 +130,7 @@ for (let el of els) {
 Should use Vue refs or template refs instead of raw DOM queries.
 
 #### e) **Tight Coupling to JSON Structure**
+
 ```javascript
 const info = animationJSON.animations.find((x) => {
   return x.id == props.animation.id;
@@ -135,6 +146,7 @@ Component directly imports and queries JSON file. Should receive all needed data
 **Issues:**
 
 #### a) **Too Many GSAP ScrollTriggers**
+
 ```javascript
 for (let trigger of document.querySelectorAll(".trigger")) {
   ScrollTrigger.create({
@@ -148,6 +160,7 @@ for (let trigger of document.querySelectorAll(".trigger")) {
 Creates many ScrollTrigger instances in loops. Should be componentized.
 
 #### b) **setInterval Anti-pattern**
+
 ```javascript
 let wait = setInterval(() => {
   const _text = document.getElementById("text");
@@ -161,6 +174,7 @@ let wait = setInterval(() => {
 Polling DOM with setInterval. Should use Vue's `onMounted` with `nextTick` or refs.
 
 #### c) **Perlin Noise in Component**
+
 ```javascript
 import Perlin from "@/helper/perlin.ts";
 const noise = new Perlin(seed);
@@ -170,6 +184,7 @@ const noise = new Perlin(seed);
 While creative, this logic should be extracted to a composable.
 
 #### d) **Complex CSS Calculations in Template**
+
 ```vue
 <div
   :style="
@@ -188,6 +203,7 @@ Should use computed properties for cleaner templates.
 **Issues:**
 
 #### a) **Deeply Nested Template**
+
 ```vue
 <section>
   <template v-for="paragraph in section['paragraphs']">
@@ -207,8 +223,9 @@ Should use computed properties for cleaner templates.
 Too much logic in template. Should use render functions or computed properties.
 
 #### b) **Array Indexing with Strings**
+
 ```javascript
-section['paragraphs'][0]?.animation?.transition
+section["paragraphs"][0]?.animation?.transition;
 ```
 
 Should use dot notation: `section.paragraphs[0]?.animation?.transition`
@@ -220,6 +237,7 @@ Should use dot notation: `section.paragraphs[0]?.animation?.transition`
 **Issues:**
 
 #### a) **Hardcoded Menu Index**
+
 ```vue
 <li v-if="index === 'Part2'">
 ```
@@ -227,6 +245,7 @@ Should use dot notation: `section.paragraphs[0]?.animation?.transition`
 Only renders "Part2" from menu.json. What about Part1, Part3, etc.?
 
 #### b) **Inline Event Handlers with Multiple Actions**
+
 ```vue
 @click="scrollToMenu(toSlug(part.title)), closeMenu()"
 ```
@@ -250,6 +269,7 @@ ChapterView.vue
 ```
 
 **Recommendation:**
+
 - Use `provide/inject` for deeply nested data
 - Or use Pinia stores directly in child components
 
@@ -262,13 +282,14 @@ ChapterView.vue
 ```vue
 <script setup>
 const props = defineProps({
-  animation: Object,  // What shape? What properties?
-  activeAnimation: String,  // What format? What values?
+  animation: Object, // What shape? What properties?
+  activeAnimation: String, // What format? What values?
 });
 </script>
 ```
 
 **Recommendation:**
+
 ```vue
 <script setup>
 /**
@@ -280,18 +301,19 @@ const props = defineProps({
   animation: {
     type: Object,
     required: true,
-    validator: (val) => val.id && val.title
+    validator: (val) => val.id && val.title,
   },
   /** ID of the currently active animation */
   activeAnimation: {
     type: String,
-    default: null
-  }
+    default: null,
+  },
 });
 </script>
 ```
 
 Or with TypeScript:
+
 ```typescript
 interface AnimationConfig {
   id: string;
@@ -314,14 +336,14 @@ const props = defineProps<{
 **Problem:** Mix of event naming styles
 
 ```vue
-@onClick="setState"          // camelCase with "on" prefix
-@click="playPause()"         // native event
+@onClick="setState" // camelCase with "on" prefix @click="playPause()" // native
+event
 ```
 
 **Recommendation:** Use consistent naming:
+
 ```vue
-@update:state="handleStateUpdate"
-@play-pause="handlePlayPause"
+@update:state="handleStateUpdate" @play-pause="handlePlayPause"
 ```
 
 ---
@@ -331,6 +353,7 @@ const props = defineProps<{
 **Problem:** No error handling for component failures
 
 If Lottie animation fails to load, entire app could break:
+
 ```javascript
 animationLottie = lottie.loadAnimation({
   path: `/publicAssets/animations/${props.animation.id}.json`,
@@ -339,23 +362,22 @@ animationLottie = lottie.loadAnimation({
 ```
 
 **Recommendation:**
+
 ```vue
 <script setup>
-import { onErrorCaptured } from 'vue';
+import { onErrorCaptured } from "vue";
 
 const error = ref(null);
 
 onErrorCaptured((err) => {
   error.value = err;
-  console.error('Animation failed to load:', err);
+  console.error("Animation failed to load:", err);
   return false; // Prevent error propagation
 });
 </script>
 
 <template>
-  <div v-if="error" class="error-state">
-    Failed to load animation
-  </div>
+  <div v-if="error" class="error-state">Failed to load animation</div>
   <div v-else>
     <!-- Normal rendering -->
   </div>
@@ -376,23 +398,25 @@ const store = useGeneral();
 ```
 
 **Issues:**
+
 - Hard to test in isolation
 - Hard to reuse outside this project
 - Tight coupling to specific store structure
 
 **Recommendation:**
+
 ```vue
 <script setup>
 // Option 1: Accept data via props
 const props = defineProps({
   isMenuActive: Boolean,
-  currentSubChapter: String
+  currentSubChapter: String,
 });
 
-const emit = defineEmits(['update:isMenuActive']);
+const emit = defineEmits(["update:isMenuActive"]);
 
 // Option 2: Use composable that wraps store
-import { useMenuState } from '@/composables/useMenuState';
+import { useMenuState } from "@/composables/useMenuState";
 const { isMenuActive, currentSubChapter, toggleMenu } = useMenuState();
 </script>
 ```
@@ -410,22 +434,23 @@ src/
 ```
 
 **Recommendation:**
+
 ```javascript
 // components/__tests__/IllustrationComp.spec.js
-import { mount } from '@vue/test-utils';
-import IllustrationComp from '../IllustrationComp.vue';
+import { mount } from "@vue/test-utils";
+import IllustrationComp from "../IllustrationComp.vue";
 
-describe('IllustrationComp', () => {
-  it('renders animation title', () => {
+describe("IllustrationComp", () => {
+  it("renders animation title", () => {
     const wrapper = mount(IllustrationComp, {
       props: {
         animation: {
-          id: 'test',
-          title: 'Test Animation'
-        }
-      }
+          id: "test",
+          title: "Test Animation",
+        },
+      },
     });
-    expect(wrapper.text()).toContain('Test Animation');
+    expect(wrapper.text()).toContain("Test Animation");
   });
 });
 ```
@@ -441,22 +466,23 @@ describe('IllustrationComp', () => {
 **Should Extract:**
 
 #### 1. **useAnimation.js** (Lottie Logic)
+
 ```javascript
 // composables/useAnimation.js
-import { ref, onMounted } from 'vue';
-import lottie from 'lottie-web';
+import { ref, onMounted } from "vue";
+import lottie from "lottie-web";
 
 export function useAnimation(containerId, config) {
   const animation = ref(null);
   const isPaused = ref(false);
-  
+
   const load = () => {
     animation.value = lottie.loadAnimation({
       container: document.getElementById(containerId),
-      ...config
+      ...config,
     });
   };
-  
+
   const playPause = () => {
     if (isPaused.value) {
       animation.value.play();
@@ -465,63 +491,65 @@ export function useAnimation(containerId, config) {
     }
     isPaused.value = !isPaused.value;
   };
-  
+
   onMounted(load);
-  
+
   return { animation, isPaused, playPause };
 }
 ```
 
 #### 2. **useScrollTrigger.js** (GSAP Logic)
+
 ```javascript
 // composables/useScrollTrigger.js
-import { onMounted, onBeforeUnmount } from 'vue';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { onMounted, onBeforeUnmount } from "vue";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export function useScrollTrigger(selector, config) {
   let trigger = null;
-  
+
   onMounted(() => {
     trigger = ScrollTrigger.create({
       trigger: selector,
-      ...config
+      ...config,
     });
   });
-  
+
   onBeforeUnmount(() => {
     trigger?.kill();
   });
-  
+
   return { trigger };
 }
 ```
 
 #### 3. **usePerlinNoise.js** (Eye Movement)
+
 ```javascript
 // composables/usePerlinNoise.js
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import Perlin from '@/helper/perlin.ts';
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import Perlin from "@/helper/perlin.ts";
 
 export function usePerlinNoise(speedX = 0.00006, speedY = 0.00005) {
   const x = ref(0);
   const y = ref(0);
   let interval = null;
-  
+
   onMounted(() => {
     const noise = new Perlin(Math.random());
     let timer = 0;
-    
+
     interval = setInterval(() => {
       timer += 15;
       x.value = noise.simplex2(timer * speedX, timer * speedX) * 20;
       y.value = noise.simplex2(timer * speedY, timer * speedY) * 15;
     }, 15);
   });
-  
+
   onBeforeUnmount(() => {
     clearInterval(interval);
   });
-  
+
   return { x, y };
 }
 ```
@@ -535,6 +563,7 @@ export function usePerlinNoise(speedX = 0.00006, speedY = 0.00005) {
 ### Current State: 29 Icon Components
 
 **Structure:**
+
 ```
 src/icons/
 ├── BiCheckCircle.vue
@@ -550,30 +579,29 @@ src/icons/
 **Issues:**
 
 #### a) **No Consistent Sizing Props**
+
 Some icons use hardcoded sizes, others accept props inconsistently.
 
 **Recommendation:**
+
 ```vue
 <!-- icons/BaseIcon.vue -->
 <script setup>
 const props = defineProps({
   size: { type: Number, default: 24 },
-  color: { type: String, default: 'currentColor' }
+  color: { type: String, default: "currentColor" },
 });
 </script>
 
 <template>
-  <svg 
-    :width="size" 
-    :height="size"
-    :fill="color"
-  >
+  <svg :width="size" :height="size" :fill="color">
     <slot />
   </svg>
 </template>
 ```
 
 #### b) **Could Use Icon Library**
+
 Consider using `@iconify/vue` or `unplugin-icons` instead of manual components.
 
 ---
@@ -581,6 +609,7 @@ Consider using `@iconify/vue` or `unplugin-icons` instead of manual components.
 ## Component Reusability Score
 
 ### Highly Reusable (8/48 - 17%)
+
 - `InteractionButton.vue`
 - `ActionButton.vue`
 - `StateElement.vue`
@@ -588,10 +617,12 @@ Consider using `@iconify/vue` or `unplugin-icons` instead of manual components.
 - Icon components
 
 ### Moderately Reusable (15/48 - 31%)
+
 - Most UI components
 - Some Illus components
 
 ### Not Reusable (25/48 - 52%)
+
 - Tightly coupled to this specific project's data structure
 - Hardcoded assumptions about JSON structure
 - Direct DOM manipulation specific to this layout
@@ -699,11 +730,13 @@ The component architecture shows **good adoption of Vue 3 best practices** (81% 
 5. **No tests** - Zero component test coverage
 
 **Quick Wins:**
+
 1. Add TypeScript prop definitions (2-4 hours, huge DX improvement)
 2. Extract Lottie logic to `useAnimation` composable (4-6 hours)
 3. Add JSDoc to top 10 most-used components (4-6 hours)
 
 **Strategic Improvements:**
+
 - Adopt TypeScript fully for type safety
 - Build comprehensive test suite
 - Refactor complex components into smaller, focused components

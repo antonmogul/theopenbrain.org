@@ -98,7 +98,12 @@ export function useQuizzes() {
 
       recentAttempts.value = (data || []).map((attempt) => ({
         ...attempt,
-        total_questions: attempt.score > 0 ? Math.round(attempt.score / 100 * (attempt.correct_count || 1)) || 1 : 1,
+        total_questions:
+          attempt.score > 0
+            ? Math.round(
+                (attempt.score / 100) * (attempt.correct_count || 1)
+              ) || 1
+            : 1,
       }));
 
       return recentAttempts.value;

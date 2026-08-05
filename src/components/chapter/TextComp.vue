@@ -36,7 +36,7 @@ const { isCreator, session } = useAuth();
 const triggers = ref(null);
 
 // Check if this is Chapter 1 (for conditional rendering of Chapter 1-specific elements)
-const isChapter1 = computed(() => route.params.number === '1');
+const isChapter1 = computed(() => route.params.number === "1");
 
 // Use computed property for reactivity - this will update when store changes
 const source = computed(() => {
@@ -58,7 +58,9 @@ const saveContent = async ({ paragraphId, content, type }) => {
   // For Supabase chapters, make API call
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const supabaseKey =
+      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      import.meta.env.VITE_SUPABASE_ANON_KEY;
     const accessToken = session.value?.access_token;
 
     if (!accessToken) {
@@ -73,10 +75,10 @@ const saveContent = async ({ paragraphId, content, type }) => {
         {
           method: "PATCH",
           headers: {
-            "apikey": supabaseKey,
-            "Authorization": `Bearer ${accessToken}`,
+            apikey: supabaseKey,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
-            "Prefer": "return=minimal",
+            Prefer: "return=minimal",
           },
           body: JSON.stringify({
             content: { text: content },
@@ -91,7 +93,6 @@ const saveContent = async ({ paragraphId, content, type }) => {
 
       // Update local store
       updateLocalContent(paragraphId, content, type);
-
     } else if (type === "section-title") {
       // Update section title
       const response = await fetch(
@@ -99,10 +100,10 @@ const saveContent = async ({ paragraphId, content, type }) => {
         {
           method: "PATCH",
           headers: {
-            "apikey": supabaseKey,
-            "Authorization": `Bearer ${accessToken}`,
+            apikey: supabaseKey,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
-            "Prefer": "return=minimal",
+            Prefer: "return=minimal",
           },
           body: JSON.stringify({
             title: content.replace(/<[^>]*>/g, ""), // Strip HTML for title
@@ -116,13 +117,11 @@ const saveContent = async ({ paragraphId, content, type }) => {
 
       // Update local store
       updateLocalContent(paragraphId, content, type);
-
     } else if (type === "intro") {
       // Update intro paragraph
       // For intro, we need to find and update the correct paragraph
       updateLocalContent(paragraphId, content, type);
     }
-
   } catch (error) {
     console.error("TextComp: Save error:", error);
     throw error;
@@ -256,16 +255,27 @@ onBeforeUnmount(() => {
 <template>
   <div
     id="container"
-    class="absolute top-start z-40 w-full xl:w-[50vw] pointer-events-none font-sans"
+    class="absolute top-start z-40 w-full xl:w-text pointer-events-none font-sans"
   >
     <!-- Creator mode indicator -->
     <div
       v-if="isCreator"
       class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] bg-violet-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg flex items-center gap-2"
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+        ></path>
+        <path
+          d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+        ></path>
       </svg>
       Edit Mode - Click any text to edit
     </div>
@@ -320,8 +330,19 @@ onBeforeUnmount(() => {
             :paragraph-id="`intro-title-${section.id}`"
             :is-creator="isCreator"
             tag="h1"
-            :class-name="store.imgActive ? 'opacity-0 z-40 text-black opacity-100 capitalize' : 'z-40 text-black opacity-100 capitalize'"
-            @save="({ content }) => saveContent({ paragraphId: section.id, content, type: 'intro-title' })"
+            :class-name="
+              store.imgActive
+                ? 'opacity-0 z-40 text-black opacity-100 capitalize'
+                : 'z-40 text-black opacity-100 capitalize'
+            "
+            @save="
+              ({ content }) =>
+                saveContent({
+                  paragraphId: section.id,
+                  content,
+                  type: 'intro-title',
+                })
+            "
           />
           <h1
             v-else
@@ -352,7 +373,10 @@ onBeforeUnmount(() => {
             id="triggerAnimationDragon"
             class="animationTrigger block noHighlight"
           >
-            <template v-for="paragraph in section.paragraphs" :key="paragraph.id">
+            <template
+              v-for="paragraph in section.paragraphs"
+              :key="paragraph.id"
+            >
               <EditableBlock
                 v-if="isCreator"
                 :content="paragraph.text"
@@ -360,7 +384,10 @@ onBeforeUnmount(() => {
                 :is-creator="isCreator"
                 tag="p"
                 class-name="P"
-                @save="({ paragraphId, content }) => saveContent({ paragraphId, content, type: 'intro' })"
+                @save="
+                  ({ paragraphId, content }) =>
+                    saveContent({ paragraphId, content, type: 'intro' })
+                "
               />
               <div
                 v-else
@@ -371,11 +398,11 @@ onBeforeUnmount(() => {
               />
             </template>
           </span>
-          <span
-            v-else
-            class="block noHighlight"
-          >
-            <template v-for="paragraph in section.paragraphs" :key="paragraph.id">
+          <span v-else class="block noHighlight">
+            <template
+              v-for="paragraph in section.paragraphs"
+              :key="paragraph.id"
+            >
               <!-- If paragraph contains a heading, render it without wrapping in <p> -->
               <template v-if="isCreator">
                 <EditableBlock
@@ -385,7 +412,10 @@ onBeforeUnmount(() => {
                   :is-creator="isCreator"
                   tag="p"
                   class-name="P text-black"
-                  @save="({ paragraphId, content }) => saveContent({ paragraphId, content, type: 'intro' })"
+                  @save="
+                    ({ paragraphId, content }) =>
+                      saveContent({ paragraphId, content, type: 'intro' })
+                  "
                 />
                 <EditableBlock
                   v-else
@@ -394,12 +424,26 @@ onBeforeUnmount(() => {
                   :is-creator="isCreator"
                   tag="div"
                   class-name=""
-                  @save="({ paragraphId, content }) => saveContent({ paragraphId, content, type: 'intro' })"
+                  @save="
+                    ({ paragraphId, content }) =>
+                      saveContent({ paragraphId, content, type: 'intro' })
+                  "
                 />
               </template>
               <template v-else>
-                <div v-if="paragraph.hasHeading" :id="paragraph.id" :data-paragraph-id="paragraph.id" v-html="paragraph.text" />
-                <div v-else :id="paragraph.id" :data-paragraph-id="paragraph.id" class="P text-black" v-html="paragraph.text" />
+                <div
+                  v-if="paragraph.hasHeading"
+                  :id="paragraph.id"
+                  :data-paragraph-id="paragraph.id"
+                  v-html="paragraph.text"
+                />
+                <div
+                  v-else
+                  :id="paragraph.id"
+                  :data-paragraph-id="paragraph.id"
+                  class="P text-black"
+                  v-html="paragraph.text"
+                />
               </template>
             </template>
           </span>
@@ -421,7 +465,12 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <div class="-ml-20 w-text">
+        <!-- End-of-chapter blocks sit edge-to-edge, cancelling the column's
+             left padding with -ml-20. Width must therefore be the parent's
+             content box PLUS that 50px, not w-text (the full column) — pairing
+             w-text with -ml-20 pushed this 50px past the right edge and gave
+             the document a horizontal scrollbar. See OPENBRAIN-4. -->
+        <div class="-ml-20 w-[calc(100%+3.125rem)]">
           <QuizSection />
           <!-- End-of-chapter callout slot — ChapterView fills this with
                EndOfChapterCallout. Inside TextComp so absolute positioning
@@ -443,6 +492,16 @@ onBeforeUnmount(() => {
 }
 
 .ml-text {
+  /* Full-bleed blocks inside the prose column deliberately break out of it
+     with -ml-20 / -translate-x-custom. Individually each is fine; collectively
+     they extended the document ~145px and gave every chapter a horizontal
+     scrollbar. Clip that overhang at the column instead of letting it grow the
+     page.
+
+     `clip`, not `hidden`: `hidden` would make this a scroll container and break
+     `position: sticky` on the figure pane and the scroll-linked animations.
+     See OPENBRAIN-4. */
+  overflow-x: clip;
   width: 100%;
   margin-left: 0;
   padding-left: 0.9375rem;

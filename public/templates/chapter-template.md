@@ -7,7 +7,7 @@
 
 Write your introduction paragraphs here. Each paragraph is separated by a blank line.
 
-This is a second paragraph. You can use **bold**, *italic*, and other markdown formatting.
+This is a second paragraph. You can use **bold**, _italic_, and other markdown formatting.
 
 ### Subsection Example
 

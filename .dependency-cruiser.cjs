@@ -7,7 +7,8 @@ module.exports = {
     {
       name: "no-circular",
       severity: "error",
-      comment: "Circular dependencies make the module graph impossible to reason about.",
+      comment:
+        "Circular dependencies make the module graph impossible to reason about.",
       from: {},
       to: { circular: true },
     },
@@ -35,7 +36,8 @@ module.exports = {
     {
       name: "no-orphans",
       severity: "warn",
-      comment: "Unused module — candidate for removal. Entry points are allowlisted below.",
+      comment:
+        "Unused module — candidate for removal. Entry points are allowlisted below.",
       from: {
         orphan: true,
         pathNot: [

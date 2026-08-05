@@ -15,7 +15,9 @@ const props = defineProps({
 });
 const display = computed(() => {
   if (props.preview) return "—";
-  return typeof props.value === "number" ? props.value.toLocaleString() : props.value;
+  return typeof props.value === "number"
+    ? props.value.toLocaleString()
+    : props.value;
 });
 const deltaTone = computed(() => {
   if (props.tone !== "auto") return props.tone;
@@ -26,27 +28,58 @@ const deltaTone = computed(() => {
 
 <template>
   <div class="stat pad">
-    <span class="stat-value">{{ prefix }}{{ display }}{{ preview ? "" : suffix }}</span>
+    <span class="stat-value"
+      >{{ prefix }}{{ display }}{{ preview ? "" : suffix }}</span
+    >
     <span class="stat-label">{{ label }} <PreviewTag v-if="preview" /></span>
-    <span v-if="delta != null && !preview" class="stat-delta" :class="`t-${deltaTone}`">
+    <span
+      v-if="delta != null && !preview"
+      class="stat-delta"
+      :class="`t-${deltaTone}`"
+    >
       {{ delta >= 0 ? "+" : "" }}{{ delta }}% {{ deltaLabel }}
     </span>
   </div>
 </template>
 
 <style scoped>
-.stat.pad { padding: 20px 10px; }
+.stat.pad {
+  padding: 20px 10px;
+}
 .stat-value {
-  display: block; font-family: var(--font-body); font-size: 2rem;
-  font-weight: 500; line-height: 1; letter-spacing: -0.01em; color: rgb(var(--color-ink));
+  display: block;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: rgb(var(--color-ink));
 }
 .stat-label {
-  display: block; font-family: var(--font-mono); font-size: 0.625rem;
-  text-transform: uppercase; letter-spacing: 0.1em; color: rgb(var(--color-mute)); margin-top: 6px;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+  margin-top: 6px;
 }
-.stat-delta { display: block; font-family: var(--font-mono); font-size: 0.6875rem; margin-top: 6px; }
-.t-complete { color: rgb(var(--color-complete)); }
-.t-warn { color: rgb(var(--color-warn)); }
-.t-accent { color: rgb(var(--color-accent)); }
-.t-mute { color: rgb(var(--color-mute)); }
+.stat-delta {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  margin-top: 6px;
+}
+.t-complete {
+  color: rgb(var(--color-complete));
+}
+.t-warn {
+  color: rgb(var(--color-warn));
+}
+.t-accent {
+  color: rgb(var(--color-accent));
+}
+.t-mute {
+  color: rgb(var(--color-mute));
+}
 </style>

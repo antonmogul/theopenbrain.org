@@ -8,6 +8,7 @@
 ## Purpose
 
 Replace the current ad-hoc palette and IBM-Plex-only type system with a token-driven design system that:
+
 - Centralizes all color/spacing/radius values as CSS custom properties.
 - Supports light / dark / system theme via `[data-theme]` on `<html>`.
 - Supports user-selectable accent color via `[data-accent]` on `<html>`.
@@ -19,6 +20,7 @@ Track 1 is the foundation every other track consumes. Nothing downstream renders
 ## Scope
 
 In scope:
+
 - A single `brand.css` file that owns every token.
 - Tailwind config wired to consume those tokens via `rgb(var(--token) / <alpha-value>)`.
 - `@font-face` declarations for the new font families (Newsreader, Inter Tight, JetBrains Mono).
@@ -29,33 +31,35 @@ In scope:
 - Migration of the existing custom Tailwind color names to point at the new tokens (`magenta` → accent, `green` → complete, `lightest`/`light`/`dark` → bg/mute/ink, etc.) so the existing 155 utility usages keep compiling.
 
 Out of scope (handled by other tracks):
+
 - The Settings page UI and the `usePreferences` composable → **Track 2**.
 - `user_preferences` Supabase migration → **Track 2**.
 - Reader layout that consumes `--reading-measure` → **Track 3**.
 - Mobile-specific token overrides → **Track 5**.
 
 Explicitly deferred:
+
 - Removing legacy aliases (`lightest`, `lighter`, `light`, `med`, `dark`, `darker`, `magenta`, `violet`, `green`, `lightDark`). They stay as aliases through Tracks 2–5; we audit and remove only when the consuming components are themselves being touched. No big-bang rename.
 
 ## Current state (as of 2026-05-22)
 
 What's already on `dev`:
 
-| Piece | File | Status |
-|---|---|---|
-| Token definitions | `src/styles/brand.css` | **Done.** RGB triplet channels; light + dark; magenta/teal/amber/mono accent variants; reduce-motion via `[data-reduce-motion]`; `--reading-size` and `--reading-measure`. |
-| Tailwind token wiring | `tailwind.config.js` | **Done.** Semantic names (`bg`, `paper`, `ink`, `mute`, `line`, `accent`, `complete`, `warn`) and legacy aliases all point at tokens. |
-| Light theme palette | `:root` in brand.css | **Done at target values** — paper-warm `#f7f5f0`, ink `#0a0a0a`, mute `#6b6b66`, line `#e5e5e0`. |
-| Dark theme palette | `[data-theme="dark"]` | **Done at target values** — bg `#0e1313`, paper `#161c1c`, ink `#f3efe6`. |
-| Accent variants | `[data-accent]` rules | **Done** — magenta (default in `:root`), teal, amber, mono. |
-| Highlighter palette | `--color-mark1..4` | **Done.** Note: current values are bold green/red/blue/yellow, not the umbrella's "yellow/pink/blue/green" — see Risk 3. |
-| Pre-paint script | `index.html` | **Done** for theme, accent, fontpair. Does NOT pre-apply `--reading-size` or `--reading-measure`. |
-| Legacy `--violet` alias | brand.css | **Done.** Routed to `rgb(var(--color-accent))` to keep existing `var(--violet)` usages in `index.css` working. |
-| `data-fontpair` font swap rules | brand.css | **NOT DONE.** No `[data-fontpair="newsreader"]` selector, no font swap. |
-| New font `@font-face` | (would live in a new file) | **NOT DONE.** Newsreader / Inter Tight / JetBrains Mono not loaded. |
-| IBM Plex Sans @font-face | `src/ibm-plex.css` (Mono only currently) | **Partial.** Only Mono is loaded; Sans is referenced in Tailwind but resolves via fallback. |
+| Piece                           | File                                     | Status                                                                                                                                                                     |
+| ------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Token definitions               | `src/styles/brand.css`                   | **Done.** RGB triplet channels; light + dark; magenta/teal/amber/mono accent variants; reduce-motion via `[data-reduce-motion]`; `--reading-size` and `--reading-measure`. |
+| Tailwind token wiring           | `tailwind.config.js`                     | **Done.** Semantic names (`bg`, `paper`, `ink`, `mute`, `line`, `accent`, `complete`, `warn`) and legacy aliases all point at tokens.                                      |
+| Light theme palette             | `:root` in brand.css                     | **Done at target values** — paper-warm `#f7f5f0`, ink `#0a0a0a`, mute `#6b6b66`, line `#e5e5e0`.                                                                           |
+| Dark theme palette              | `[data-theme="dark"]`                    | **Done at target values** — bg `#0e1313`, paper `#161c1c`, ink `#f3efe6`.                                                                                                  |
+| Accent variants                 | `[data-accent]` rules                    | **Done** — magenta (default in `:root`), teal, amber, mono.                                                                                                                |
+| Highlighter palette             | `--color-mark1..4`                       | **Done.** Note: current values are bold green/red/blue/yellow, not the umbrella's "yellow/pink/blue/green" — see Risk 3.                                                   |
+| Pre-paint script                | `index.html`                             | **Done** for theme, accent, fontpair. Does NOT pre-apply `--reading-size` or `--reading-measure`.                                                                          |
+| Legacy `--violet` alias         | brand.css                                | **Done.** Routed to `rgb(var(--color-accent))` to keep existing `var(--violet)` usages in `index.css` working.                                                             |
+| `data-fontpair` font swap rules | brand.css                                | **NOT DONE.** No `[data-fontpair="newsreader"]` selector, no font swap.                                                                                                    |
+| New font `@font-face`           | (would live in a new file)               | **NOT DONE.** Newsreader / Inter Tight / JetBrains Mono not loaded.                                                                                                        |
+| IBM Plex Sans @font-face        | `src/ibm-plex.css` (Mono only currently) | **Partial.** Only Mono is loaded; Sans is referenced in Tailwind but resolves via fallback.                                                                                |
 
-**Discrepancy to note:** `brand.css` opens with a comment claiming "Phase A: values intentionally mirror today's palette so visual diff = 0." This is no longer accurate — the values *are* the new target palette. The visual diff is already shipped for any component using `bg-magenta`/`bg-violet`/`bg-green`/`bg-lightest` etc. This spec ratifies that: we are not doing a two-phase color migration. Tokens shipped at target values from the start.
+**Discrepancy to note:** `brand.css` opens with a comment claiming "Phase A: values intentionally mirror today's palette so visual diff = 0." This is no longer accurate — the values _are_ the new target palette. The visual diff is already shipped for any component using `bg-magenta`/`bg-violet`/`bg-green`/`bg-lightest` etc. This spec ratifies that: we are not doing a two-phase color migration. Tokens shipped at target values from the start.
 
 ## Target deliverables (what "done" looks like)
 
@@ -75,7 +79,9 @@ Required additions to `brand.css`:
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
-[data-fontpair="ibm-plex-legacy"] { /* default — no override needed */ }
+[data-fontpair="ibm-plex-legacy"] {
+  /* default — no override needed */
+}
 
 [data-fontpair="newsreader"] {
   --font-body: "Newsreader", "Source Serif Pro", Georgia, serif;
@@ -98,13 +104,20 @@ Required additions to `brand.css`:
   --font-ui: "Inter Tight", "Inter", system-ui, sans-serif;
 }
 
-html { font-family: var(--font-body); }
-code, pre, .mono { font-family: var(--font-mono); }
+html {
+  font-family: var(--font-body);
+}
+code,
+pre,
+.mono {
+  font-family: var(--font-mono);
+}
 ```
 
 ### D2. New web fonts loaded
 
 New file `src/styles/fonts.css` (or extend `ibm-plex.css` — TBD by implementer):
+
 - `@font-face` for Newsreader (regular 400, italic 400, bold 700, italic-bold 700).
 - `@font-face` for Inter Tight (regular 400, medium 500, bold 700).
 - `@font-face` for JetBrains Mono (regular 400, bold 700).
@@ -148,6 +161,7 @@ Update the inline `<script>` to also set `--reading-size` and `--reading-measure
 ### D6. Risk audit pass
 
 A single pass across `src/**/*.{vue,js,css}` to identify the few load-bearing visual elements where the color shift from old-purple-magenta (~`#A75BFF`) to new-pink-magenta (`#E91E8C`) materially changes brand feel. Candidates to spot-check (not necessarily change):
+
 - `App.vue` global wordmark / brand color
 - `MenuHome.vue` hero treatment
 - `HomeView.vue` Matisse parallax cards (likely fine — uses image art, not the magenta token)
@@ -163,6 +177,7 @@ If any of these become visually wrong, the fix is either (a) add a `--violet-leg
 ## Files touched
 
 New:
+
 - `docs/superpowers/specs/2026-05-11-design-tokens-and-typography.md` (this file)
 - `src/styles/fonts.css` (or new `@font-face` block in `ibm-plex.css`)
 - `public/publicAssets/fonts/Newsreader/*.woff2` (subsetted)
@@ -170,6 +185,7 @@ New:
 - `public/publicAssets/fonts/JetBrainsMono/*.woff2` (subsetted)
 
 Modified:
+
 - `src/styles/brand.css` — add `--ob-serif/sans/mono`, `--font-body/ui/mono`, all `[data-fontpair]` rules; remove the inaccurate "Phase A mirrors today's palette" comment.
 - `src/index.css` — import `fonts.css`; remove duplicated font-size scale once `--font-body` drives `html` (optional cleanup).
 - `tailwind.config.js` — add `serif` to `fontFamily`; reference `--font-ui` / `--font-mono` / `--font-body` instead of hard-coded `IBM Plex Sans` / `IBM Plex Mono`.
@@ -177,6 +193,7 @@ Modified:
 - `CLAUDE.md` — design system section.
 
 Not touched:
+
 - `src/composables/usePreferences.js` (Track 2)
 - `src/views/SettingsView.vue` and `src/components/settings/*` (Track 2)
 - `supabase/migrations/20260521000000_create_user_preferences.sql` (Track 2)
@@ -187,6 +204,7 @@ Not touched:
 No existing Cypress specs cover token / theming.
 
 Manual verification before marking done:
+
 1. **Fresh-load smoke test.** Hard-reload `/` with empty `localStorage`. Confirm: paper-warm `#f7f5f0` background, IBM Plex Sans body (default `data-fontpair` = `ibm-plex-legacy`), magenta accent. No flash of wrong color or font.
 2. **Theme cycling.** From `/settings`, flip System → Light → Dark → System. Each click should re-render without reload; system mode should track OS preference (toggle OS dark mode and confirm live update).
 3. **Accent cycling.** From `/settings`, click each accent. Confirm: citation refs, animation triggers, the wordmark hover, and the `.highlightIllu *` SVG fills all pick up the new color within one frame.
@@ -198,6 +216,7 @@ Manual verification before marking done:
 9. **Visual diff on Chapter 1.** Open `/chapter/1/the-retina`, scroll the full chapter, eye-check that the magenta-color shift doesn't break any specific UI element (active animation states, highlights, citation refs, comment dots). Capture before/after screenshots and attach to the PR.
 
 Add (in this track or as a Track 1 follow-up):
+
 - `cypress/e2e/theming.cy.js` — automated checks for theme switching, accent switching, font-pair switching, persistence across reloads.
 
 ## Handover checklist
@@ -215,9 +234,9 @@ Add (in this track or as a Track 1 follow-up):
 
 ## Risks and call-outs
 
-1. **Magenta color shift is already live.** Anything using `bg-magenta` / `bg-violet` today already renders the new pink, not the old purple. Track 1's job is not to *introduce* the shift but to make sure no specific component looks wrong because of it. If this becomes a problem post-merge, the lowest-cost fix is per-component opt-in to a `--violet-legacy` token, not a global rollback.
+1. **Magenta color shift is already live.** Anything using `bg-magenta` / `bg-violet` today already renders the new pink, not the old purple. Track 1's job is not to _introduce_ the shift but to make sure no specific component looks wrong because of it. If this becomes a problem post-merge, the lowest-cost fix is per-component opt-in to a `--violet-legacy` token, not a global rollback.
 
-2. **Newsreader line metrics differ from IBM Plex Sans.** Switching the default body font (when we eventually do — currently default is `ibm-plex-legacy` so no change today) will visibly re-flow every chapter. This is a Track 2/3 visible payoff, not a Track 1 regression — but Track 1 is what *enables* it, so any line-height assumptions baked into `index.css` (`text-base` line-height `3.1rem`, etc.) may need a sweep when Newsreader becomes default. Out of scope here; flag for Track 3.
+2. **Newsreader line metrics differ from IBM Plex Sans.** Switching the default body font (when we eventually do — currently default is `ibm-plex-legacy` so no change today) will visibly re-flow every chapter. This is a Track 2/3 visible payoff, not a Track 1 regression — but Track 1 is what _enables_ it, so any line-height assumptions baked into `index.css` (`text-base` line-height `3.1rem`, etc.) may need a sweep when Newsreader becomes default. Out of scope here; flag for Track 3.
 
 3. **Highlighter palette mismatch.** Umbrella spec says "yellow / pink / blue / green". `brand.css` ships green / red / blue / yellow. Two options: (a) ratify the in-code values and update the umbrella spec, (b) update `brand.css` to match the umbrella. Pick during review. No load-bearing UI uses these yet (highlight components are wired but not styled to these tokens), so changing is cheap.
 
@@ -232,19 +251,20 @@ Add (in this track or as a Track 1 follow-up):
   - `--color-mark2`: pink (suggest `233 30 140` — same as accent magenta, or pick a softer pink — confirm during implementation)
   - `--color-mark3`: blue (keep current `16 23 226`)
   - `--color-mark4`: green (suggest `61 217 181` — teal complete, or pick a clearer highlighter-green)
-  No load-bearing UI uses these yet, so the change is safe.
+    No load-bearing UI uses these yet, so the change is safe.
 
 - **Q2. Self-host fonts in `public/publicAssets/fonts/`.** Consistent with IBM Plex layout; survives Vite rebuilds; no CDN dependency.
 
 - **Q3. Defer `cypress/e2e/theming.cy.js` to Track 1.1.** Keep this PR small. Track 1.1 = follow-up issue covering automated regression coverage for theme/accent/fontpair switching and persistence.
 
-- **Q4. Keep IBM Plex as default body font.** Track 1 makes Newsreader *loadable and selectable*. A subsequent, clearly-flagged commit (Track 1.2 or as part of Track 3) flips `usePreferences` default to `newsreader`. This isolates "fonts are wired" from "fonts are visibly different" as separate reviewable changes.
+- **Q4. Keep IBM Plex as default body font.** Track 1 makes Newsreader _loadable and selectable_. A subsequent, clearly-flagged commit (Track 1.2 or as part of Track 3) flips `usePreferences` default to `newsreader`. This isolates "fonts are wired" from "fonts are visibly different" as separate reviewable changes.
 
   Implementation implication: `:root` in `brand.css` should bind `--font-body` / `--font-ui` / `--font-mono` to **IBM Plex** (today's behavior). `[data-fontpair="newsreader"]` then explicitly overrides to Newsreader. The umbrella spec's framing of Newsreader-as-default-with-IBM-Plex-as-legacy is correct in spirit but flipped in the implementation for now.
 
 ## Definition of done
 
 Track 1 is done when:
+
 - A new contributor can land a new accent or a new font pair by editing `brand.css` only.
 - Every token in the umbrella spec exists as a CSS custom property.
 - The five `data-fontpair` values all swap fonts (even if some pairs are visually similar).

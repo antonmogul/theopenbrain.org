@@ -54,7 +54,9 @@ const options = [
   border-radius: 0.5rem;
   cursor: pointer;
   overflow: hidden;
-  transition: border-color 0.15s, transform 0.1s;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
   text-align: left;
 }
 

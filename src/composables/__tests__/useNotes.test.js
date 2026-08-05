@@ -82,7 +82,9 @@ describe("useNotes", () => {
 
     await updateNote("n1", "new");
 
-    const patch = authedRequest.mock.calls.find((c) => c[0] === "notes?id=eq.n1");
+    const patch = authedRequest.mock.calls.find(
+      (c) => c[0] === "notes?id=eq.n1"
+    );
     expect(patch[1].method).toBe("PATCH");
     const body = JSON.parse(patch[1].body);
     expect(body.content).toBe("new");
@@ -110,7 +112,9 @@ describe("useNotes", () => {
 
     await togglePublic("n1");
 
-    const patch = authedRequest.mock.calls.find((c) => c[0] === "notes?id=eq.n1");
+    const patch = authedRequest.mock.calls.find(
+      (c) => c[0] === "notes?id=eq.n1"
+    );
     const body = JSON.parse(patch[1].body);
     expect(body.is_public).toBe(true);
     expect(body.updated_at).toBeTruthy();
@@ -118,7 +122,8 @@ describe("useNotes", () => {
   });
 
   it("computed splits standalone vs highlight-linked notes", () => {
-    const { notes, totalNotes, notesWithHighlights, standaloneNotes } = useNotes();
+    const { notes, totalNotes, notesWithHighlights, standaloneNotes } =
+      useNotes();
     notes.value = [
       { id: "a", highlight_id: "h1" },
       { id: "b", highlight_id: null },

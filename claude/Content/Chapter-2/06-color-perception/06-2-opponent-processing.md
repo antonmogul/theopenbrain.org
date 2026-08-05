@@ -23,16 +23,19 @@ The resolution, confirmed by modern neuroscience: both theories are correct, des
 Cone outputs are combined into three channels in the retina:
 
 **Light-Dark (Luminance) Channel**
+
 - Computed from: L + M cone activity (adds L and M signals)
 - Encodes: Overall brightness, light intensity
 - Function: Provides luminance information for edges, motion, and form
 
 **Red-Green Channel**
+
 - Computed from: L - M cone activity (subtracts M from L)
 - Encodes: Red-green color axis
 - Function: When positive, signals reddishness; when negative, signals greenishness
 
 **Blue-Yellow Channel**
+
 - Computed from: S - (L + M) cone activity (S minus the sum of L and M)
 - Encodes: Blue-yellow color axis
 - Function: When positive, signals blueness; when negative, signals yellowishness
@@ -54,6 +57,7 @@ Opponent processing elegantly explains afterimages:
 When you stare at a red patch, the neurons encoding "red" in the red-green channel adapt—they fatigue from sustained activation. When you then look at a neutral surface, those red-signaling neurons are suppressed, shifting the channel's output toward its opposite: green. You perceive a green afterimage.
 
 The same applies to all opponent pairs:
+
 - Stare at green → see red afterimage
 - Stare at blue → see yellow afterimage
 - Stare at yellow → see blue afterimage
@@ -66,6 +70,7 @@ This adaptation occurs continuously during normal viewing, though usually below 
 ### High-Contrast Color Pairs
 
 Opponent pairs create high perceptual contrast:
+
 - Red-green (one pair)
 - Blue-yellow (one pair)
 - Black-white (luminance pair)
@@ -83,6 +88,7 @@ When saturated red and saturated blue are placed adjacent:
 The result: **chromatic vibration**. The boundary seems to shimmer or buzz. This occurs because luminance-based edge detection (primary edge system) doesn't receive strong signal, while color-based edge detection (weaker system) receives strong signal. The competition creates perceptual instability.
 
 Similar vibration occurs with:
+
 - Saturated red and saturated cyan
 - Saturated blue and saturated orange
 - Any isoluminant pair at high saturation
@@ -90,11 +96,13 @@ Similar vibration occurs with:
 ### Designing with Vibration Awareness
 
 Vibrating color pairs should generally be avoided for:
+
 - Text on background (readability suffers)
 - Extended viewing (causes visual fatigue)
 - Interfaces requiring focused attention
 
 However, vibrating combinations might be intentionally used for:
+
 - Attention capture (the vibration is eye-catching)
 - Warning signals (the discomfort signals danger)
 - Artistic effect (when appropriate to context)
@@ -108,6 +116,7 @@ The luminance channel (light-dark) is far more sensitive than color channels for
 This is why accessibility guidelines specify luminance contrast ratios: the eye's detail resolution depends on the luminance channel, not color channels.
 
 Effective text contrast ensures:
+
 - Strong luminance channel signal (light text on dark or vice versa)
 - Color contrast as supplement, not substitute
 
@@ -118,11 +127,13 @@ Understanding opponent channels guides palette selection:
 ### Complementary Colors
 
 Colors opposite in opponent space create maximum contrast:
+
 - Red ↔ Cyan (across red-green axis)
 - Blue ↔ Yellow (across blue-yellow axis)
 - Orange ↔ Teal
 
 Complementary pairs are effective for:
+
 - Highlighting differences
 - Creating visual energy
 - Ensuring distinguishability
@@ -132,10 +143,12 @@ But use carefully: high contrast can be overwhelming; vibration effects may occu
 ### Analogous Colors
 
 Colors adjacent in opponent space create harmony through similarity:
+
 - Red, orange, yellow (varying along same general direction)
 - Blue, teal, green (similar quadrant of color space)
 
 Analogous palettes are effective for:
+
 - Creating cohesion
 - Building color families
 - Establishing mood without conflict
@@ -143,6 +156,7 @@ Analogous palettes are effective for:
 ### Split-Complementary and Triadic
 
 More complex schemes balance contrast and harmony:
+
 - Split-complementary: A color plus two colors adjacent to its complement
 - Triadic: Three colors equally spaced around color space
 
@@ -151,6 +165,7 @@ These schemes provide multiple distinguishable colors while maintaining visual c
 ### Saturation and Value Variations
 
 Within a hue, vary saturation and value for differentiation:
+
 - Same hue at different saturations (vivid vs. muted)
 - Same hue at different values (light vs. dark)
 
@@ -159,21 +174,25 @@ These variations maintain color coherence while providing distinguishability—p
 ## Practical Guidelines
 
 **For text and detailed graphics**:
+
 - Prioritize luminance contrast
 - Don't rely on color contrast alone
 - Test with grayscale conversion to verify luminance
 
 **For color coding**:
+
 - Use opponent pairs for maximum distinction
 - Avoid isoluminant pairs that depend on color vision
 - Supplement with luminance differences
 
 **For visual comfort**:
+
 - Avoid extended viewing of vibrating pairs
 - Reduce saturation for large color areas
 - Use high saturation sparingly for emphasis
 
 **For color harmony**:
+
 - Use opponent relationships intentionally
 - Complementary for contrast and energy
 - Analogous for cohesion and calm

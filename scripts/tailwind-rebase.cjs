@@ -61,18 +61,24 @@ const FACTOR = 1.6;
 /** Divide a single rem literal string "Nrem" by 1.6, exactly. Returns "Mrem". */
 function convertRemLiteral(remStr) {
   const m = /^(-?\d*\.?\d+)rem$/.exec(remStr);
-  if (!m) throw new Error(`convertRemLiteral: not a bare rem literal: ${remStr}`);
+  if (!m)
+    throw new Error(`convertRemLiteral: not a bare rem literal: ${remStr}`);
   const value = parseFloat(m[1]);
   // ×0.625 is exact in IEEE-754 (0.625 = 5/8 = 5 / 2^3); avoids /1.6 rounding.
   const converted = value * 0.625;
   const out = converted.toString();
-  if (/e/i.test(out)) throw new Error(`convertRemLiteral: exponential form for ${remStr} → ${out}`);
+  if (/e/i.test(out))
+    throw new Error(
+      `convertRemLiteral: exponential form for ${remStr} → ${out}`
+    );
   // Round-trip proof: converted * 1.6 must equal the original within float noise,
   // magnitude-relative so large values aren't falsely rejected.
   const back = parseFloat(out) * FACTOR;
   const tol = 1e-9 * Math.max(1, Math.abs(value));
   if (Math.abs(back - value) > tol) {
-    throw new Error(`convertRemLiteral: round-trip failed for ${remStr}: ${out}rem → ${back} != ${value}`);
+    throw new Error(
+      `convertRemLiteral: round-trip failed for ${remStr}: ${out}rem → ${back} != ${value}`
+    );
   }
   return `${out}rem`;
 }
@@ -110,7 +116,8 @@ function rebaseFontSize(scale) {
     if (Array.isArray(v)) {
       const [size, opts] = v;
       const newOpts = {};
-      for (const [ok, ov] of Object.entries(opts || {})) newOpts[ok] = convertValue(ov);
+      for (const [ok, ov] of Object.entries(opts || {}))
+        newOpts[ok] = convertValue(ov);
       out[k] = [convertValue(size), newOpts];
     } else {
       out[k] = convertValue(v);
@@ -127,7 +134,9 @@ function rebaseFontSize(scale) {
 function resolveDefaultScale(name) {
   const scale = DEFAULT_THEME[name];
   if (!scale || typeof scale !== "object") {
-    throw new Error(`resolveDefaultScale: no resolved default scale for "${name}"`);
+    throw new Error(
+      `resolveDefaultScale: no resolved default scale for "${name}"`
+    );
   }
   return scale;
 }
@@ -163,16 +172,20 @@ if (require.main === module) {
     // corresponding default rem must be exactly 1.6× larger.
     let checked = 0;
     let failures = 0;
-    const remOf = (s) => (typeof s === "string" ? (s.match(/(-?\d*\.?\d+)rem/g) || []) : []);
+    const remOf = (s) =>
+      typeof s === "string" ? s.match(/(-?\d*\.?\d+)rem/g) || [] : [];
     const walk = (rebased, original) => {
       for (const k of Object.keys(rebased)) {
         const rv = rebased[k];
         const ov = original[k];
-        const flatten = (x) => (Array.isArray(x) ? [x[0], ...Object.values(x[1] || {})] : [x]);
+        const flatten = (x) =>
+          Array.isArray(x) ? [x[0], ...Object.values(x[1] || {})] : [x];
         const rTokens = flatten(rv).flatMap(remOf);
         const oTokens = flatten(ov).flatMap(remOf);
         if (rTokens.length !== oTokens.length) {
-          console.error(`AUDIT MISMATCH ${k}: token count ${rTokens.length} != ${oTokens.length}`);
+          console.error(
+            `AUDIT MISMATCH ${k}: token count ${rTokens.length} != ${oTokens.length}`
+          );
           failures++;
           continue;
         }
@@ -180,8 +193,13 @@ if (require.main === module) {
           checked++;
           const rebasedVal = parseFloat(rTokens[i]);
           const origVal = parseFloat(oTokens[i]);
-          if (Math.abs(rebasedVal * FACTOR - origVal) > 1e-9 * Math.max(1, Math.abs(origVal))) {
-            console.error(`AUDIT MISMATCH ${k}[${i}]: ${rebasedVal}rem × 1.6 = ${rebasedVal * FACTOR} != ${origVal}`);
+          if (
+            Math.abs(rebasedVal * FACTOR - origVal) >
+            1e-9 * Math.max(1, Math.abs(origVal))
+          ) {
+            console.error(
+              `AUDIT MISMATCH ${k}[${i}]: ${rebasedVal}rem × 1.6 = ${rebasedVal * FACTOR} != ${origVal}`
+            );
             failures++;
           }
         }
@@ -197,10 +215,14 @@ if (require.main === module) {
     };
     for (const name of Object.keys(scales)) walk(scales[name], originals[name]);
     if (failures) {
-      console.error(`\n✗ AUDIT FAILED: ${failures} mismatch(es) over ${checked} rem tokens`);
+      console.error(
+        `\n✗ AUDIT FAILED: ${failures} mismatch(es) over ${checked} rem tokens`
+      );
       process.exit(1);
     }
-    console.log(`✓ AUDIT PASSED: all ${checked} rebased rem tokens are exactly default ÷ 1.6`);
+    console.log(
+      `✓ AUDIT PASSED: all ${checked} rebased rem tokens are exactly default ÷ 1.6`
+    );
   } else {
     console.log(JSON.stringify(scales, null, 2));
   }

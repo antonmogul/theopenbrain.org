@@ -12,6 +12,7 @@ Today the app requires `>=1300px` viewport and shows a `MediaQueryWarning` "use 
 ## Scope
 
 In scope:
+
 - Define the viewport branch point (recommend `<768px` per the umbrella, with a `md`/`lg` middle band that uses the current desktop layout).
 - Mobile reader: single integrated stream with slim app bar, hero block, prose interleaved with inline-rendered diagrams.
 - Two-state bottom sheet (peek 12% / expanded 90%) replacing the right-side `ReaderSidebar` on mobile.
@@ -22,11 +23,13 @@ In scope:
 - Retire `MediaQueryWarning.vue` once mobile layouts are verified.
 
 Out of scope:
+
 - Native mobile apps (iOS/Android). Web only.
 - Rewriting `Illus/*` internals to render better on mobile — Track 5 wraps them, doesn't fix them. Components that genuinely don't work small show as fullscreen-by-default with a thumbnail preview.
 - Touch-gesture-driven scroll animations beyond what already works.
 
 Explicitly deferred:
+
 - Mobile dashboard / editor surfaces. Out of scope this round — these are creator/professor tools, fine on desktop.
 - Mobile-optimized AI tutor / chat UX beyond what the bottom sheet exposes.
 
@@ -39,14 +42,14 @@ This keeps the default zero-config (every illustration works on mobile somehow) 
 
 ## Current state (as of 2026-05-22)
 
-| Piece | File | Status |
-|---|---|---|
-| Viewport-blocking warning | `src/components/UI/MediaQueryWarning.vue` | Active. Blocks `<1300px`. |
-| Desktop reader | `ChapterView.vue` + `IllustrationsComp.vue` + `TextComp.vue` | Working. |
-| Right floating panel | `ReaderSidebar.vue` | Working. |
-| `BottomNav.vue` | `src/components/Navigation/BottomNav.vue` | Working on all viewports; serves well as the basis for mobile app bar. |
-| Tailwind breakpoints | `md: 768px` defined | Available. |
-| `useMediaQuery` composable | — | **Missing.** Need a small composable to drive mobile branching from JS (CSS-only branching for layout, JS for component selection). |
+| Piece                      | File                                                         | Status                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Viewport-blocking warning  | `src/components/UI/MediaQueryWarning.vue`                    | Active. Blocks `<1300px`.                                                                                                           |
+| Desktop reader             | `ChapterView.vue` + `IllustrationsComp.vue` + `TextComp.vue` | Working.                                                                                                                            |
+| Right floating panel       | `ReaderSidebar.vue`                                          | Working.                                                                                                                            |
+| `BottomNav.vue`            | `src/components/Navigation/BottomNav.vue`                    | Working on all viewports; serves well as the basis for mobile app bar.                                                              |
+| Tailwind breakpoints       | `md: 768px` defined                                          | Available.                                                                                                                          |
+| `useMediaQuery` composable | —                                                            | **Missing.** Need a small composable to drive mobile branching from JS (CSS-only branching for layout, JS for component selection). |
 
 ## Target deliverables
 
@@ -80,6 +83,7 @@ Lives in `src/composables/useMediaQuery.js`. Used by views to switch between des
 New file `src/views/ChapterViewMobile.vue` OR conditional rendering inside `ChapterView.vue` based on `useMediaQuery`. Recommendation: separate file. Cleaner than `v-if`-spaghetti in a 450-LOC desktop component.
 
 Structure:
+
 ```
 ┌─────────────────────────────┐
 │ ☰  Chapter 1 — Retina   ●  │ ← slim sticky app bar (menu, title, progress dot)
@@ -109,6 +113,7 @@ Structure:
 ```
 
 Behavior:
+
 - Single column. Prose, illustrations, demos all flow vertically.
 - Illustrations render via `IllustrationInline` (D4) — full-width, in-flow, with an expand button.
 - Demos (`DemoModal` on desktop) render inline as section-break cards. They don't dim/cover the page on mobile.
@@ -122,12 +127,14 @@ Routing: `/chapter/:number/:slug` still resolves to `ChapterView.vue`. If we go 
 Replaces `ReaderSidebar.vue` on mobile.
 
 States:
+
 - **Peek (12vh):** small handle + label "Notebook & tools" at the bottom of the viewport. Tap-up or swipe-up expands.
 - **Expanded (90vh):** full sheet covering all but the top 10%. Contains the same Info/Notebook/Chat tabs as desktop sidebar. Swipe-down or tap backdrop collapses.
 
 Component: new `src/components/chapter/BottomSheet.vue`. Wraps the same tab content (`InfoTab`, `NotebookTab`, `ChatTab`) used by `ReaderSidebar`. Different chrome, same content.
 
 Implementation notes:
+
 - No drag library — `touchstart`/`touchmove`/`touchend` enough.
 - Snap to peek or expanded based on velocity + position at touchend.
 - Backdrop fades in proportional to expansion.
@@ -171,6 +178,7 @@ Per-component `mobileFallback = 'fullscreen'` opts a component out of inline ren
 ### D5. Mobile chapter index
 
 If Track 4 shipped `ChaptersView.vue` with a responsive grid (4/3/2/1 cols by breakpoint), the mobile variant may already work — single column at small viewports. Confirm:
+
 - Featured "Continue Reading" card stacks above the grid (not floated right).
 - Grid is 1 col below 768px.
 - Spacing/typography read well on a 375px-wide viewport.
@@ -186,6 +194,7 @@ Same approach as D5 — CSS-only adaptation in the existing component unless tha
 ### D7. Mobile Settings
 
 `SettingsView.vue` already has a `@media (max-width: 767px)` block that reduces padding. Expand:
+
 - Theme cards: stay 3-up (already work).
 - Accent swatches: stay 4-up (current grid is fine).
 - Font picker: change from 5-col grid to 2-col stacked grid (already in D1 of Track 2's FontPairPicker).
@@ -203,6 +212,7 @@ Alternative: skip the feature flag, just delete it. Recommendation: feature flag
 ## Files touched
 
 New:
+
 - `docs/superpowers/specs/2026-05-11-mobile-experience.md` (this file)
 - `src/composables/useMediaQuery.js` (D1)
 - `src/views/ChapterViewMobile.vue` (D2) — or a major refactor of `ChapterView.vue` if going single-file
@@ -211,6 +221,7 @@ New:
 - `src/components/chapter/Illus/IllustrationInline.vue` (D4)
 
 Modified:
+
 - `src/views/ChapterView.vue` — branch on `useMediaQuery` (D2)
 - `src/views/ChaptersView.vue` — mobile-friendly styles (D5) [created in Track 4]
 - `src/views/ChapterOverviewView.vue` — mobile-friendly styles (D6) [created in Track 4]
@@ -270,6 +281,7 @@ Cypress: defer to Track 5.1. Mobile viewport tests are doable in Cypress but the
 ## Definition of done
 
 Track 5 is done when:
+
 - A user on iPhone Safari can read any chapter end-to-end, take notes, view illustrations, and navigate the index and overview — without any layout that requires horizontal scrolling or pinch-zoom.
 - The two-state bottom sheet replaces the desktop right-side sidebar cleanly.
 - `MediaQueryWarning` no longer triggers on supported mobile viewports.

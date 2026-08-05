@@ -13,14 +13,17 @@ The Web Content Accessibility Guidelines specify contrast requirements grounded 
 Contrast ratio measures the luminance difference between foreground and background:
 
 **Normal text (under 18pt / 14pt bold)**:
+
 - Level AA: 4.5:1 minimum
 - Level AAA: 7:1 minimum
 
 **Large text (18pt+ / 14pt+ bold)**:
+
 - Level AA: 3:1 minimum
 - Level AAA: 4.5:1 minimum
 
 **UI components and graphical objects**:
+
 - Level AA: 3:1 minimum for boundaries and active states
 
 ### Calculating Contrast Ratios
@@ -34,6 +37,7 @@ Relative luminance accounts for human visual sensitivity to different wavelength
 ### Why These Numbers?
 
 The 4.5:1 ratio isn't arbitrary. It represents:
+
 - Approximately 3 just-noticeable-differences (JNDs) in luminance perception
 - Sufficient contrast for users with 20/40 vision (common mild impairment)
 - A threshold that accommodates most (not extreme) color deficiency
@@ -42,12 +46,14 @@ The 4.5:1 ratio isn't arbitrary. It represents:
 ### Testing Contrast
 
 **Tools for contrast checking**:
+
 - WebAIM Contrast Checker (webaim.org/resources/contrastchecker/)
 - Colour Contrast Analyser (desktop app)
 - Browser DevTools (built-in accessibility panels)
 - Design tool plugins (Figma, Sketch accessibility plugins)
 
 **Testing process**:
+
 1. Identify all text-background combinations
 2. Identify all interactive element boundaries
 3. Check each against ratio requirements
@@ -82,6 +88,7 @@ Supplement color coding with:
 ### Testing Across Deficiency Types
 
 Test your design with simulation tools for:
+
 - Deuteranopia (red-green, most common)
 - Protanopia (red-green with red darkening)
 - Tritanopia (blue-yellow, rare but worth checking)
@@ -93,15 +100,18 @@ If design remains understandable across all simulations, it works for all color 
 Color meanings vary across cultures:
 
 **Red**:
+
 - Western: Danger, error, passion, importance
 - China: Luck, celebration, prosperity
 - South Africa: Mourning
 
 **White**:
+
 - Western: Purity, cleanliness, peace
 - Eastern Asia: Death, mourning
 
 **Green**:
+
 - Western: Nature, success, go
 - Some Middle Eastern cultures: Sacred, prosperity
 
@@ -140,6 +150,7 @@ Popular discourse includes many claims about color psychology. What does researc
 ### Practical Stance
 
 Color affects perception and emotion—but effects are:
+
 - Subtle compared to content and context
 - Variable across individuals and cultures
 - Influenced by many confounding factors
@@ -155,12 +166,14 @@ Effective interfaces create meaningful color vocabularies:
 Semantic color systems assign consistent meanings:
 
 **Functional colors**:
+
 - Error/danger: Often red, but always with icon and/or label
 - Warning/caution: Often yellow/amber, with icon
 - Success/confirmation: Often green, with icon
 - Information/neutral: Often blue, with context
 
 **State colors**:
+
 - Primary action: Highest saturation/prominence
 - Secondary action: Reduced prominence
 - Disabled: Reduced contrast, desaturated
@@ -170,6 +183,7 @@ Semantic color systems assign consistent meanings:
 ### Maintaining Semantic Consistency
 
 Once established, semantic colors must be consistent:
+
 - Red always means error/danger, never just decoration
 - Green always means success/positive, never just branding
 - Semantic colors shouldn't be used for non-semantic purposes
@@ -183,6 +197,7 @@ Dark themes introduce specific color challenges:
 ### Contrast in Dark Mode
 
 What works in light mode may fail in dark mode:
+
 - Light colors on dark need re-verification for contrast
 - Saturated colors may appear too bright/glaring on dark backgrounds
 - Shadows work differently (light mode uses dark shadows; dark mode may need light glows)
@@ -190,6 +205,7 @@ What works in light mode may fail in dark mode:
 ### Color Perception Differences
 
 In dark environments (where dark mode is used):
+
 - Pupil dilates, allowing more light in
 - Peripheral vision is more active
 - Color perception shifts slightly (Purkinje shift: blue appears brighter relative to red)
@@ -206,6 +222,7 @@ In dark environments (where dark mode is used):
 Use this checklist to evaluate color accessibility:
 
 **Contrast**
+
 - [ ] All normal text meets 4.5:1 ratio
 - [ ] All large text meets 3:1 ratio
 - [ ] All interactive element boundaries meet 3:1 ratio
@@ -213,24 +230,28 @@ Use this checklist to evaluate color accessibility:
 - [ ] Contrast verified in all states (hover, focus, disabled)
 
 **Color Independence**
+
 - [ ] No information conveyed by color alone
 - [ ] All color-coded elements have redundant indicators (icon, label, pattern)
 - [ ] Status messages include text, not just color
 - [ ] Form validation includes icons or text with color
 
 **Color Deficiency**
+
 - [ ] Design tested with deuteranopia simulation
 - [ ] Design tested with protanopia simulation
 - [ ] Design tested with tritanopia simulation
 - [ ] Color pairs checked for problematic combinations
 
 **Environmental Factors**
+
 - [ ] Tested on multiple display types
 - [ ] Tested under bright ambient lighting
 - [ ] Tested in dark ambient conditions
 - [ ] Dark mode contrast ratios verified (if applicable)
 
 **Documentation**
+
 - [ ] Color palette documented with accessibility notes
 - [ ] Semantic color meanings documented
 - [ ] Contrast ratios documented for key combinations

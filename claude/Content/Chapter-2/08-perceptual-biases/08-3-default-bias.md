@@ -39,6 +39,7 @@ These mechanisms compound: defaults are sticky not for one reason but for severa
 **Choice architecture** is the practice of designing contexts in which people make choices. The term, introduced by Thaler and Sunstein in "Nudge," emphasizes that there's no neutral presentation—every choice context influences decisions.
 
 Core elements of choice architecture:
+
 - **Defaults**: What happens if users make no active choice
 - **Option presentation**: Order, number, and framing of alternatives
 - **Feedback**: Information provided after choices
@@ -52,6 +53,7 @@ Defaults are the most powerful element. Choice architects—which includes every
 ### Mass Defaults
 
 Same default for everyone:
+
 - Newsletter signup: opt-in or opt-out
 - Privacy settings: public or private
 - Notification frequency: daily or weekly
@@ -61,6 +63,7 @@ Mass defaults are simple to implement but may not match individual user needs.
 ### Personalized Defaults
 
 Defaults based on user data:
+
 - Location set from IP address
 - Language set from browser settings
 - Recommendations based on past behavior
@@ -70,6 +73,7 @@ Personalized defaults can better serve individual users but require data and may
 ### Smart Defaults
 
 Defaults that predict user preferences:
+
 - Form fields pre-filled with likely values
 - Suggested responses based on context
 - Recommendations based on similar users
@@ -96,6 +100,7 @@ Auto-renewal is a default (continue subscription) vs. required action (renew):
 **For users**: May continue paying for unused services
 
 Regulatory attention increasingly requires:
+
 - Clear disclosure of auto-renewal terms
 - Easy cancellation mechanisms
 - Reminder notifications before renewal
@@ -121,6 +126,7 @@ These "green defaults" achieve environmental benefits without restricting choice
 ## Ethical Framework: Libertarian Paternalism
 
 Thaler and Sunstein advocate "libertarian paternalism":
+
 - **Libertarian**: Preserve freedom to choose; don't mandate outcomes
 - **Paternalism**: Use defaults and nudges to guide toward beneficial choices
 
@@ -169,6 +175,7 @@ If you could survey users about their preferences, your default should match the
 ### Make Changing Easy
 
 If defaults are unavoidable, make changing from default as easy as possible:
+
 - Clear presentation of alternatives
 - Minimal steps to change
 - No dark patterns discouraging change
@@ -176,6 +183,7 @@ If defaults are unavoidable, make changing from default as easy as possible:
 ### Consider Who Benefits
 
 Ask: Who benefits from this default?
+
 - **User and business aligned**: Good default
 - **User benefits, business neutral/costs**: Excellent default (user-centered)
 - **Business benefits, user neutral**: Acceptable if disclosed
@@ -184,6 +192,7 @@ Ask: Who benefits from this default?
 ### Disclose Important Defaults
 
 For consequential defaults (privacy, payments, commitments), make the default explicit:
+
 - "We've set your profile to private. Change in settings."
 - "Your subscription will auto-renew on [date]."
 - "We'll send weekly emails. Adjust frequency here."
@@ -191,6 +200,7 @@ For consequential defaults (privacy, payments, commitments), make the default ex
 ### Review and Reconsider
 
 Defaults set years ago may no longer serve users. Regular review ensures defaults remain appropriate:
+
 - Do users frequently change this default?
 - Has regulation or best practice evolved?
 - Does data suggest a different default would better serve users?

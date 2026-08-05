@@ -50,7 +50,7 @@ Analytics showed abysmal wishlist usage. The design team's first instinct was to
 
 The breakthrough came from understanding attention filtering. Users visiting product pages have a clear goal: evaluate the product and potentially purchase. Their attention system was filtering sidebar content as peripheral to this goal, regardless of visual prominence.
 
-The solution wasn't visual—it was positional and contextual. The wishlist functionality was moved to appear as a secondary action directly below "Add to Cart," within the primary action zone that users' attention naturally included. The button was actually *smaller* than before, but usage increased by 340%.
+The solution wasn't visual—it was positional and contextual. The wishlist functionality was moved to appear as a secondary action directly below "Add to Cart," within the primary action zone that users' attention naturally included. The button was actually _smaller_ than before, but usage increased by 340%.
 
 ## Practical Principles for Attention-Aware Design
 
