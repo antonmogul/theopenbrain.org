@@ -125,6 +125,10 @@ const IGNORED_ERRORS = [
   // the figure, but the browser still logs the probe's 404. Delete this line
   // when the assets ship.
   /404 \(Not Found\).*\/publicAssets\/animations\//i,
+  // Third-party noise from the YouTube embed's own player script (mobile
+  // inline figures render YT embeds): its permissions-policy probes are not
+  // ours to fix.
+  /Permissions policy violation.*youtube\.com/i,
 ];
 
 const isRealError = (text) => !IGNORED_ERRORS.some((re) => re.test(text));
