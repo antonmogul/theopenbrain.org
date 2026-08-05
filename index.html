@@ -38,6 +38,8 @@
       // Apply theme/accent/font-pair attributes and reading-size/line-length CSS
       // variables before CSS loads so first paint matches user prefs.
       // Maps must stay in sync with src/composables/usePreferences.js.
+      // data-chapter is deliberately NOT set here: it is route-derived, owned by
+      // the router afterEach hook (src/helper/chapterTheme.js) — don't add it.
       (function () {
         try {
           var d = document.documentElement;
