@@ -41,10 +41,11 @@ npm run serve:prod         # Build and preview production
 ### Testing
 
 ```bash
-npm run test:unit          # Open Cypress component testing
-npm run test:unit:ci       # Run component tests in CI mode
-npm run test:e2e           # Open Cypress E2E testing
-npm run test:e2e:ci        # Run E2E tests in CI mode
+npm test                   # Vitest unit suite (src/**/__tests__/) — the real one
+npm run test:watch         # Vitest in watch mode
+npm run test:smoke         # Browser smoke test against the preview build
+npm run test:e2e           # Open Cypress E2E testing (3 specs; needs seeded Supabase)
+npm run test:e2e:ci        # Run E2E tests in CI mode (excluded from CI today)
 ```
 
 ### Linting
@@ -76,7 +77,7 @@ npm run clean              # Clear cache, remove node_modules, reinstall with --
 - **Routing**: Vue Router 4
 - **Styling**: Tailwind CSS 3
 - **Animations**: GSAP, Lottie, @formkit/auto-animate
-- **Testing**: Cypress (E2E and component)
+- **Testing**: Vitest (unit, the real suite) + Cypress (3 E2E specs, not in CI) + browser smoke test
 
 ### Directory Structure
 

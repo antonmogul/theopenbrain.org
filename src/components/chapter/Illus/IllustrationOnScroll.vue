@@ -81,8 +81,6 @@ const setState = (index, state) => {
   animationLottie.playSegments([pos, posAfter], true);
 };
 
-const activeAnimation = ref(null);
-
 onMounted(async () => {
   lottie = await loadLottie();
   let svgContainer = document.getElementById(

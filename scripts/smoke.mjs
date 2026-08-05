@@ -118,8 +118,17 @@ const ROUTES = [
    list short and justified — every entry is a bug someone chose not to fix. */
 const IGNORED_ERRORS = [
   /favicon/i,
-  /404 \(Not Found\)/i, // known missing asset, tracked separately
-  /Failed to load resource/i,
+  // 404s are REAL failures again — the every-route font 404s were fixed by
+  // pruning dead @font-face rules (OPENBRAIN-9 §5). The ONE remaining
+  // exemption is the missing Lottie animation files (tracked in OPENBRAIN-9
+  // §4b): the app-side lottieAssetOk guard probes them with HEAD and skips
+  // the figure, but the browser still logs the probe's 404. Delete this line
+  // when the assets ship.
+  /404 \(Not Found\).*\/publicAssets\/animations\//i,
+  // Third-party noise from the YouTube embed's own player script (mobile
+  // inline figures render YT embeds): its permissions-policy probes are not
+  // ours to fix.
+  /Permissions policy violation.*youtube\.com/i,
 ];
 
 const isRealError = (text) => !IGNORED_ERRORS.some((re) => re.test(text));
@@ -151,7 +160,14 @@ async function main() {
 
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+      page.on(
+        "console",
+        (m) =>
+          m.type() === "error" &&
+          // Include the source URL: network-error texts alone don't say WHAT
+          // 404'd, and the ignore list below filters by path.
+          errors.push(`${m.text()} @ ${m.location()?.url || ""}`)
+      );
 
       try {
         const res = await page.goto(BASE + route.path, {

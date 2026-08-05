@@ -1,5 +1,8 @@
 <template>
-  <div :id="toSlug(animation.title)" ref="container" class="w-full h-full">
+  <!-- No template ref here: the scroll trigger uses the `container` PROP (the
+       outer scroll block passed by FullScreenIllustration); a same-named local
+       ref used to shadow it (vue/no-dupe-keys) and was never read. -->
+  <div :id="toSlug(animation.title)" class="w-full h-full">
     <h4 class="absolute">{{ animation.title }}</h4>
     <SourceElement :source="animation.sources?.[activeLayer]" />
     <div
@@ -38,7 +41,6 @@ const props = defineProps({
 });
 
 let animationLottieRight, animationLottieLeft;
-let container = ref();
 let progress = ref();
 let activeLayer = ref(null);
 
