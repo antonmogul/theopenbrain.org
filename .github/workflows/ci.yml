@@ -58,14 +58,24 @@ jobs:
       - name: Unit tests
         run: npm run test:ci
 
+      # Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY as repository
+      # secrets to turn on the smoke test's chapter-content assertions. Without
+      # them the build still succeeds, but chapter routes render only the SPA
+      # shell, so the smoke test drops content checks and keeps structural ones.
       - name: Build
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       # A production build that scrolls sideways or throws on load is the class
       # of bug unit tests miss — see OPENBRAIN-4, where the reader scrolled
       # horizontally at every desktop width and nothing caught it.
       - name: Smoke test the production build
         run: npm run test:smoke
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Upload smoke artifacts on failure
         if: failure()

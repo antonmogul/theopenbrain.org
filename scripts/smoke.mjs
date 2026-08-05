@@ -21,6 +21,7 @@
  */
 import { chromium } from "@playwright/test";
 import { mkdir, rm } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const args = process.argv.slice(2);
@@ -43,7 +44,39 @@ const WIDTHS = [390, 1280, 1440, 1920];
  * minText guards against a route rendering its chrome but no content — the
  * failure mode when a data fetch breaks. Numbers are deliberately generous so
  * this fails on "blank", not on "shorter than I expected".
+ *
+ * `needsData` marks routes whose content comes from Supabase. Without
+ * credentials the build still serves the SPA shell, but the chapter fetch
+ * returns index.html and the route renders ~319 chars of chrome. That is a
+ * missing secret, not a regression, so on an unconfigured runner those routes
+ * drop their content assertion and keep the structural ones (no horizontal
+ * scroll, no unexpected errors, HTTP < 400).
+ *
+ * Set VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY in the CI environment
+ * to turn the content checks back on — that is the stronger gate and worth
+ * doing before user testing.
  */
+function hasSupabaseCredentials() {
+  if (
+    process.env.VITE_SUPABASE_URL &&
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+  ) {
+    return true;
+  }
+  // Vite reads .env at build time, so the vars aren't in this process's env.
+  // Check the file directly rather than reporting a local run as degraded.
+  try {
+    const env = readFileSync(path.resolve(".env"), "utf8");
+    return (
+      /^VITE_SUPABASE_URL=.+/m.test(env) &&
+      /^VITE_SUPABASE_PUBLISHABLE_KEY=.+/m.test(env)
+    );
+  } catch {
+    return false;
+  }
+}
+
+const HAS_SUPABASE = hasSupabaseCredentials();
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
  * /styleguide and /case-cabinet are unlisted internal routes — a design
@@ -58,8 +91,14 @@ const ROUTES = [
     path: "/chapter/3/foundations-of-neuroscience",
     name: "chapter-3",
     minText: 2000,
+    needsData: true,
   },
-  { path: "/chapter/1/the-retina", name: "chapter-1", minText: 2000 },
+  {
+    path: "/chapter/1/the-retina",
+    name: "chapter-1",
+    minText: 2000,
+    needsData: true,
+  },
   { path: "/chapters", name: "chapters", minText: 50 },
   {
     path: "/styleguide",
@@ -89,9 +128,18 @@ async function main() {
   await rm(OUT, { recursive: true, force: true });
   await mkdir(OUT, { recursive: true });
 
+  if (!HAS_SUPABASE) {
+    console.warn(
+      "\n  ! No Supabase credentials — chapter CONTENT checks are skipped.\n" +
+        "    Structural checks (scroll, errors, status) still run.\n" +
+        "    Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY for the full gate.\n"
+    );
+  }
+
   const browser = await chromium.launch();
   const failures = [];
   let checks = 0;
+  let skippedContent = 0;
 
   for (const route of ROUTES) {
     for (const width of route.widths || WIDTHS) {
@@ -133,13 +181,24 @@ async function main() {
             `${label}: scrolls horizontally by ${result.maxScrollX}px`
           );
         }
-        if (result.textLength < route.minText) {
+        const checkContent = !route.needsData || HAS_SUPABASE;
+        if (!checkContent) skippedContent++;
+        if (checkContent && result.textLength < route.minText) {
           failures.push(
             `${label}: rendered ${result.textLength} chars, expected >= ${route.minText}`
           );
         }
 
-        const real = errors.filter(isRealError);
+        // Without credentials the chapter fetch gets index.html back and throws
+        // a JSON parse error. Expected on an unconfigured runner; still a real
+        // failure anywhere the keys exist.
+        const real = errors
+          .filter(isRealError)
+          .filter(
+            (e) =>
+              checkContent ||
+              !/Error fetching chapter|is not valid JSON/i.test(e)
+          );
         if (real.length) {
           failures.push(`${label}: ${real.length} console/page error(s)`);
           real
@@ -149,7 +208,7 @@ async function main() {
 
         const ok =
           result.maxScrollX <= 1 &&
-          result.textLength >= route.minText &&
+          (!checkContent || result.textLength >= route.minText) &&
           !real.length;
         if (!ok) {
           await page.screenshot({
@@ -173,6 +232,11 @@ async function main() {
   await browser.close();
 
   console.log(`\n${checks} checks across ${ROUTES.length} routes.`);
+  if (skippedContent) {
+    console.warn(
+      `  ! ${skippedContent} content assertion(s) skipped — no Supabase credentials.`
+    );
+  }
   if (failures.length) {
     console.error(`\n${failures.length} failure(s):`);
     failures.forEach((f) => console.error(`  ${f}`));
