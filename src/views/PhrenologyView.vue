@@ -564,8 +564,8 @@ function closePanel(instant = false) {
   width: 100%;
   border-radius: 3px;
   object-fit: cover;
-  /* Engravings are pale-on-dark; a bone-toned backing keeps them legible on
-     the paper card. */
+  /* The engraving strokes are pale, so they need a dark backing to stay
+     legible on the pale paper card. */
   background: #2b2a2e;
 }
 .card__cap {

@@ -10,20 +10,17 @@
  * This is the 3D counterpart to PhrenologyView.vue (the flat-engraving
  * version). Both share the same mock data from @/mocks/phrenology.js.
  *
- * GLB model: drop a skull.glb into public/publicAssets/models/skull.glb.
- * Until that file exists, a placeholder message is shown.
+ * GLB model: public/publicAssets/models/skull.glb ships with the app
+ * (quantized + webp, ~407 KB — see OPENBRAIN-7). The placeholder message
+ * only appears if it fails to load.
  *
  * Data seam: @/mocks/phrenology — swap for Supabase later.
  * Unlisted route: /phrenology-3d (not linked in nav).
  */
-import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import "@google/model-viewer";
 import gsap from "gsap";
-import {
-  PHRENOLOGY_VIEWS,
-  PHRENOLOGY_CITATION,
-  usePhrenology,
-} from "@/mocks/phrenology";
+import { PHRENOLOGY_CITATION, usePhrenology } from "@/mocks/phrenology";
 import { reducedMotionK } from "@/helper/motion";
 
 // Narrow viewports get the detail card as a bottom sheet (see the media query
@@ -169,6 +166,12 @@ function orbitTo(viewId) {
  * Arrow keys cycle focus through the numbered dots (the primary interactive
  * elements); Enter/Space activates the focused one natively (they're real
  * <button>s); Escape closes the detail card.
+ *
+ * Bound on the dot buttons with .stop — NOT on <model-viewer> — because the
+ * component's own camera-controls also handle arrow keys (orbit nudges) via a
+ * shadow-DOM listener higher in the composed path. Stopping propagation at
+ * the button keeps "cycle hotspots" and "orbit camera" from firing together;
+ * arrows with the viewer itself focused still orbit as model-viewer intends.
  */
 function onStageKeydown(e) {
   if (e.key === "Escape") {
@@ -219,7 +222,6 @@ function onStageKeydown(e) {
         interpolation-decay="100"
         class="viewer"
         :style="{ opacity: modelLoaded ? 1 : 0 }"
-        @keydown="onStageKeydown"
       >
         <!-- Hotspots pinned to the skull surface -->
         <button
@@ -233,6 +235,7 @@ function onStageKeydown(e) {
           :class="{ 'dot--on': activeRegion?.n === r.n }"
           :aria-label="`${r.n} — ${r.name}`"
           @click="selectRegion(r)"
+          @keydown.stop="onStageKeydown"
         >
           <span class="dot__num">{{ r.n }}</span>
           <span v-if="activeRegion?.n === r.n" class="dot__label">

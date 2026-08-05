@@ -7,8 +7,9 @@
  * Hotspot x/y are percentages of the skull stage box (2D flat widget).
  * pos/normal are model-viewer 3D hotspot coords (Phrenology3DView), HARVESTED
  * from the shipping skull.glb via positionAndNormalFromPoint raycasts (the 2D
- * design positions projected onto the mesh, midline faculties snapped to the
- * sagittal plane) — see OPENBRAIN-7. Re-harvest if the GLB is swapped.
+ * design positions projected onto the mesh, midline faculties pulled to the
+ * sagittal midline via a smallest-|x| scan — within a few mm of x=0) — see
+ * OPENBRAIN-7. Re-harvest if the GLB is swapped.
  */
 
 // Footer citation shown under the widget (both 2D and 3D views).
