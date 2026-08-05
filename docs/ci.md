@@ -6,7 +6,7 @@ and `dev`. Five gates, in order — the cheap ones fail first:
 | Gate   | Command                | Fails when                              |
 | ------ | ---------------------- | --------------------------------------- |
 | Format | `npm run format:check` | Any file isn't Prettier-formatted       |
-| Lint   | `npm run lint:ci`      | Any ESLint **error**, or >130 warnings  |
+| Lint   | `npm run lint:ci`      | Any ESLint **error**, or >120 warnings  |
 | Unit   | `npm run test:ci`      | Any Vitest failure                      |
 | Build  | `npm run build`        | The production build breaks             |
 | Smoke  | `npm run test:smoke`   | A real page is broken in a real browser |
@@ -49,13 +49,13 @@ would fail on missing secrets. A pipeline that is red by default gets ignored,
 which is worse than no pipeline. Wiring these up — with a seeded test project or
 mocked network — is tracked in OPENBRAIN-9.
 
-Note `npm run test:unit` (Cypress component testing) currently runs **nothing**:
-`cypress.config.js` declares a component runner but `cypress/component/` doesn't
-exist.
+Note: the Cypress component-testing scripts (`test:unit`/`test:unit:ci`) were
+DELETED in OPENBRAIN-9 — they ran zero tests (`cypress/component/` never
+existed). Vitest (`npm test`) is the unit layer.
 
 ## Warning ceiling
 
-`lint:ci` allows 130 warnings against 123 today. That is deliberate headroom, not
+`lint:ci` allows 120 warnings against 116 today (ratcheted from 130/123 in OPENBRAIN-9). That is deliberate headroom, not
 a target — it fails immediately on any new _error_ and on more than a handful of
 new warnings. The remaining warnings and the nine rules demoted in `.eslintrc.js`
 are a paydown list tracked in OPENBRAIN-9. **Lower the ceiling as they're fixed.**

@@ -77,7 +77,7 @@ npm run clean              # Clear cache, remove node_modules, reinstall with --
 - **Routing**: Vue Router 4
 - **Styling**: Tailwind CSS 3
 - **Animations**: GSAP, Lottie, @formkit/auto-animate
-- **Testing**: Cypress (E2E and component)
+- **Testing**: Vitest (unit, the real suite) + Cypress (3 E2E specs, not in CI) + browser smoke test
 
 ### Directory Structure
 
