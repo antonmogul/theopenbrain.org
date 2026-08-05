@@ -26,17 +26,14 @@
 import { ref, computed, onMounted, nextTick } from "vue";
 import gsap from "gsap";
 import { usePhrenology } from "@/mocks/phrenology";
+import { reducedMotionK } from "@/helper/motion";
 
 /* ── Motion recipe ──────────────────────────────────────────────────────────
  * All feel-tuning lives here. Durations in seconds, angles in degrees.
  * `K` collapses every duration to ~0 when the user asked for reduced motion
- * (project convention: data-reduce-motion="1" on <html>).
+ * (shared convention — see src/helper/motion.js).
  */
-const K =
-  document.documentElement.dataset.reduceMotion === "1" ||
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? 0.001
-    : 1;
+const K = reducedMotionK();
 
 const MOTION = {
   yawDeg: 55, // how far the skull turns while swapping views

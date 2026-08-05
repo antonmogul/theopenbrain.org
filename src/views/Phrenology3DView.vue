@@ -20,13 +20,10 @@ import { ref, computed, onMounted, nextTick, watch } from "vue";
 import "@google/model-viewer";
 import gsap from "gsap";
 import { PHRENOLOGY_VIEWS, usePhrenology } from "@/mocks/phrenology";
+import { reducedMotionK } from "@/helper/motion";
 
-/* ── Reduce-motion multiplier (project convention) ────────────────────────── */
-const K =
-  document.documentElement.dataset.reduceMotion === "1" ||
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? 0.001
-    : 1;
+/* ── Reduce-motion multiplier (shared convention, src/helper/motion.js) ───── */
+const K = reducedMotionK();
 
 const { fetchViews } = usePhrenology();
 
