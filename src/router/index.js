@@ -155,6 +155,14 @@ const routes = [
     name: "phrenology-3d",
     component: () => import("../views/Phrenology3DView.vue"),
   },
+  {
+    // Signal Detection Theory widget prototype (Attention chapter).
+    // OPENBRAIN-13: pilot for the widget hosting pattern. Not linked in nav;
+    // open /sdt directly.
+    path: "/sdt",
+    name: "sdt",
+    component: () => import("../views/SdtWidgetView.vue"),
+  },
 ];
 
 const router = createRouter({
