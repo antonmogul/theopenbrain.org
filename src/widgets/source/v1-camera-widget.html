@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<title>What V1 sees — The Open Brain</title>
+<style>
+  :root{
+    --linen:#E6E4DE;
+    --linen-2:#DEDBD3;
+    --well:#1B1E24;
+    --ink:#1B1E24;
+    --ink-2:#5B616B;
+    --hair:#C6C2B8;
+    --blue:#0072B2;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Source Serif 4", Georgia, serif;
+    --pad:10px;
+    --gap:10px;
+    --edge:12px;
+    --rail:clamp(242px, 32%, 306px);
+  }
+  *{box-sizing:border-box}
+  html{height:100%}
+  html,body{overscroll-behavior:none; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; position:fixed; inset:0;
+    height:100vh; height:100dvh;
+    background:var(--linen); color:var(--ink);
+    font-family:var(--mono); font-size:12.5px; line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; overflow:hidden;
+    -webkit-user-select:none; user-select:none;
+  }
+  body.jsvh{height:var(--vh)}
+  button,input{touch-action:manipulation}
+
+  /* ---------------- header ---------------- */
+  header{
+    display:flex; align-items:center; gap:11px;
+    padding:6px var(--edge);
+    padding-left:max(var(--edge), env(safe-area-inset-left));
+    padding-right:max(var(--edge), env(safe-area-inset-right));
+    border-bottom:1.5px solid var(--ink);
+  }
+  header h1{font-family:var(--serif); font-weight:600; font-size:18px; line-height:1.25; margin:0; letter-spacing:-.01em; white-space:nowrap}
+  header .sub{
+    display:flex; align-items:center; min-width:0; flex:0 0 auto;
+    padding-right:11px; border-right:1px solid var(--hair);
+    text-decoration:none;
+  }
+  header .sub:focus-visible{outline:2px solid var(--blue); outline-offset:3px}
+  .mark{height:44px; width:auto; max-width:100%; display:block; opacity:.92}
+  header .sub:hover .mark{opacity:1}
+  @media (max-width:620px){ header .sub{display:none} }
+  header .spacer{flex:1}
+  header .btns{display:flex; gap:5px; flex:0 0 auto}
+
+  .btn{
+    font-family:var(--mono); font-size:11px; padding:5px 9px; min-height:30px;
+    border:1.5px solid var(--ink); border-radius:2px; background:var(--linen); color:var(--ink);
+    cursor:pointer; white-space:nowrap;
+  }
+  .btn.ghost{background:transparent}
+  .btn:hover{background:var(--ink); color:var(--linen)}
+  .btn:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+  .btn[aria-pressed=false]{opacity:.55}
+  .sm{display:none}
+  @media (max-width:600px){ .lg{display:none} .sm{display:inline} }
+
+  /* ---------------- layout ---------------- */
+  .grid{
+    flex:1; min-height:0; display:grid;
+    grid-template-columns:minmax(0,1fr) var(--rail);
+    gap:var(--gap);
+    padding:var(--gap) var(--edge) var(--edge);
+    padding-left:max(var(--edge), env(safe-area-inset-left));
+    padding-right:max(var(--edge), env(safe-area-inset-right));
+    padding-bottom:max(var(--edge), env(safe-area-inset-bottom));
+  }
+  @media (orientation:portrait) and (max-width:760px){
+    .grid{grid-template-columns:1fr; grid-template-rows:minmax(130px,38%) minmax(0,1fr)}
+  }
+
+  /* ---------------- image well ---------------- */
+  .well{position:relative; min-height:0; min-width:0; background:var(--well); border:1.5px solid var(--ink); border-radius:3px; overflow:hidden}
+  .well > canvas{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block}
+  #overlay{touch-action:none; cursor:crosshair}
+
+  .curtain{
+    position:absolute; inset:0; z-index:4; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:11px; text-align:center;
+    padding:16px; color:#CFCCC4; background:linear-gradient(160deg,#1B1E24,#2A2F38);
+  }
+  .curtain .big{font-family:var(--serif); font-size:18px; color:#E7E4DC}
+  .curtain p{max-width:36ch; font-size:11.5px; color:#99A0AA; margin:0}
+  .btn.dark{background:#333A45; border-color:#5A626E; color:#E7E4DC}
+  .btn.dark:hover{background:#E7E4DC; color:#1B1E24}
+  .warn{color:#F0A868}
+  .hidden{display:none !important}
+
+  .about{
+    position:absolute; inset:0; z-index:5; overflow:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 16px 18px; background:rgba(20,23,28,.965); color:#DFDCD4;
+    -webkit-user-select:text; user-select:text;
+  }
+  .about h3{font-family:var(--serif); font-size:16px; margin:0 0 8px; font-weight:600; color:#F1EEE6}
+  .about .body{font-family:var(--serif); font-size:14px; line-height:1.55; max-width:62ch}
+  .about .body p{margin:.5em 0}
+  .about .body b{font-weight:600; color:#F1EEE6}
+  .about .close{position:sticky; top:0; float:right; margin-left:12px}
+
+  /* ---------------- control rail ---------------- */
+  .rail{
+    min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+    border:1.5px solid var(--ink); border-radius:3px; background:var(--linen-2);
+  }
+  .sec{border-bottom:1.5px solid var(--ink); padding:var(--pad)}
+  .sec:last-child{border-bottom:0}
+  .eyebrow{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); margin:0 0 8px}
+
+  .seg{display:flex; border:1.5px solid var(--ink); border-radius:2px; overflow:hidden}
+  .seg button{
+    flex:1; border:0; background:var(--linen-2); color:var(--ink);
+    font-family:var(--mono); font-size:12.5px; line-height:1.18; padding:6px 4px; min-height:36px;
+    cursor:pointer; border-right:1px solid var(--hair); white-space:normal;
+  }
+  .seg button:last-child{border-right:0}
+  .seg button[aria-pressed=true]{background:var(--ink); color:var(--linen)}
+  .seg button:focus-visible{outline:2px solid var(--blue); outline-offset:-3px}
+
+  .row{margin-bottom:8px}
+  .row:last-child{margin-bottom:0}
+  .lab{display:flex; justify-content:space-between; align-items:center; gap:6px}
+  .lab .name{font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .lab .right{display:flex; align-items:center; gap:7px; flex:0 0 auto}
+  .lab .val{font-size:12.5px; color:var(--blue); font-variant-numeric:tabular-nums; white-space:nowrap; min-width:40px; text-align:right}
+
+  /* orientation tick beside Sweep */
+  .glyph{width:24px; height:24px; display:block; flex:0 0 auto}
+  .glyph .ring{fill:none; stroke:var(--hair); stroke-width:1.4}
+  .glyph .tick{stroke:var(--ink); stroke-width:2.4; stroke-linecap:round}
+
+  .chip{
+    font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+    padding:3px 7px; min-height:25px; border:1px solid var(--ink-2); border-radius:2px;
+    background:transparent; color:var(--ink-2); cursor:pointer;
+  }
+  .chip[aria-pressed=true]{background:var(--ink); border-color:var(--ink); color:var(--linen)}
+  .chip:focus-visible{outline:2px solid var(--blue); outline-offset:1px}
+
+  input[type=range]{width:100%; -webkit-appearance:none; appearance:none; background:transparent; height:24px; margin:0; display:block}
+  input[type=range]::-webkit-slider-runnable-track{height:2px; background:var(--hair)}
+  input[type=range]::-moz-range-track{height:2px; background:var(--hair)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:17px; height:17px; border-radius:50%; background:var(--linen); border:1.5px solid var(--ink); margin-top:-7.5px}
+  input[type=range]::-moz-range-thumb{width:17px; height:17px; border-radius:50%; background:var(--linen); border:1.5px solid var(--ink)}
+  input[type=range]:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+
+  #wcv{width:100%; height:20px; display:block; margin-top:6px; border:1px solid var(--hair)}
+
+  /* ---------------- RF panels: rail placement (default) ---------------- */
+  #panels canvas{display:block; background:#12151A}
+  #panels .nums{display:grid; grid-template-columns:auto 1fr}
+  #panels .nums dt{white-space:nowrap}
+  #panels .nums dd{margin:0; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .pgrid{display:grid; grid-template-columns:1fr 1.4fr; gap:9px; align-items:end}
+  .pgrid > div{display:flex; flex-direction:column; justify-content:flex-end}
+  .rail #panels .pl{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); margin-bottom:5px; line-height:1.28}
+  .rail #panels .nums{gap:2px 10px; margin:11px 0 0; font-size:12px}
+  .rail #panels .nums dt{color:var(--ink-2)}
+  .rail #kcv{width:100%; aspect-ratio:1/1; border:1px solid var(--hair)}
+  .rail #tcv{width:100%; aspect-ratio:1.4/1; border:1px solid var(--hair)}
+
+  /* ---------------- RF panels: on-image placement (short screens) ------- */
+  .hud{
+    position:absolute; left:8px; bottom:8px; z-index:3; pointer-events:none;
+    display:none; max-width:calc(100% - 16px);
+    padding:6px 8px 7px;
+    background:rgba(17,20,25,.80); border:1px solid rgba(190,195,203,.30); border-radius:3px;
+    backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+  }
+  body.hudmode .hud{display:block}
+  body.hudmode #railSlot{display:none}
+  body.nopanels .hud, body.nopanels #railSlot{display:none}
+  .hud #panels{display:flex; gap:8px; align-items:flex-end}
+  .hud .pgrid{display:flex; gap:8px}
+  .hud #panels .pl{font-size:7px; letter-spacing:.03em; color:#868D98; margin-bottom:3px; line-height:1.2}
+  .hud #kcv{width:60px; height:60px; border:1px solid rgba(150,157,168,.35)}
+  .hud #tcv{width:96px; height:60px; border:1px solid rgba(150,157,168,.35)}
+  .hud #panels .nums{margin:0; gap:0 8px; font-size:9px; line-height:1.22; color:#CBC8C1; align-content:end}
+  .hud #panels .nums dt{color:#868D98}
+  @media (max-width:640px){ .hud .nums{display:none} }
+
+  /* short viewports: phone or small tablet in landscape */
+  @media (max-height:520px){
+    :root{--pad:7px; --gap:7px; --edge:9px; --rail:clamp(224px, 33%, 300px)}
+    header{padding-top:4px; padding-bottom:4px}
+    header h1{font-size:16px}
+    header .sub{padding-right:9px}
+    .mark{height:32px}
+    .btn{min-height:28px; padding:4px 8px}
+    .eyebrow{font-size:9.5px; margin-bottom:5px}
+    .row{margin-bottom:5px}
+    .seg button{min-height:32px; font-size:11.5px}
+    .lab .name, .lab .val{font-size:11.5px}
+    .chip{font-size:10px; min-height:23px}
+    .rail #panels .nums{font-size:11px; margin-top:8px}
+    input[type=range]{height:22px}
+  }
+  @media (max-height:380px){ .eyebrow{display:none} .lab .name, .lab .val{font-size:11px} }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="sub" href="https://www.theopenbrain.org" target="_blank" rel="noopener">
+    <img class="mark" alt="the open brain .org"
+         src="data:image/png;base64,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">
+  </a>
+  <h1>What V1 sees</h1>
+  <div class="spacer"></div>
+  <div class="btns">
+    <button class="btn ghost" id="btnAbout">About</button>
+    <button class="btn ghost" id="btnPanels" aria-pressed="true"><span class="lg">Panels</span><span class="sm">RF</span></button>
+    <button class="btn ghost hidden" id="btnFlip">Flip</button>
+    <button class="btn ghost" id="btnShot"><span class="lg">Save PNG</span><span class="sm">PNG</span></button>
+  </div>
+</header>
+
+<div class="grid">
+
+  <div class="well" id="well">
+    <canvas id="glcv"></canvas>
+    <canvas id="overlay"></canvas>
+    <div class="hud" id="hud"></div>
+
+    <div class="curtain" id="curtain">
+      <div class="big">Point a camera at the world</div>
+      <p>Video is filtered on this device only. Nothing is uploaded, recorded or sent anywhere.</p>
+      <div style="display:flex;gap:6px">
+        <button class="btn dark" id="btnStart">Start camera</button>
+        <button class="btn dark" id="btnDemoBig">Demo stimulus</button>
+      </div>
+      <p id="curtainMsg" class="warn hidden"></p>
+    </div>
+
+    <div class="about hidden" id="about">
+      <button class="btn dark close" id="btnCloseAbout">Close</button>
+      <h3>What you are looking at</h3>
+      <div class="body">
+        <p>Every pixel of this image is one model V1 neuron, and all of them share the receptive field drawn in the profile panel. So the picture is no longer an image — it is a <b>population response map</b>. Bright means "this neuron fired"; dark means "this neuron stayed silent".</p>
+        <p>Because the whole bank is tuned alike, only scene structure matching the preferred orientation, bar width and length survives. Hold a pen up and rotate it: it appears and vanishes as it passes through the bank's preferred orientation. That vanishing <em>is</em> orientation selectivity.</p>
+        <p>Each unit computes the local energy in a quadrature pair of oriented filters, so it signals <em>where</em> an oriented feature lies without caring which side is light and which is dark — the defining behaviour of a complex cell.</p>
+        <p><b>8 orientations</b> runs eight such banks in parallel and paints each pixel with the colour of whichever bank drives it best, the same convention used for orientation preference maps in imaging experiments.</p>
+        <p>The crosshair marks one recorded neuron. Tap or drag on the image to move the electrode; its orientation tuning curve is measured live from the current frame.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="sec">
+      <div class="seg" id="segSrc">
+        <button data-v="cam" aria-pressed="true">Camera</button><button data-v="demo">Demo</button><button data-v="img">Image</button>
+      </div>
+      <input type="file" id="fileImg" accept="image/*" class="hidden">
+    </div>
+
+    <div class="sec" id="railSlot">
+      <p class="eyebrow">Receptive field</p>
+      <div id="panels">
+        <div class="pgrid">
+          <div>
+            <div class="pl">Profile</div>
+            <canvas id="kcv"></canvas>
+          </div>
+          <div>
+            <div class="pl">Orientation energy in RF</div>
+            <canvas id="tcv"></canvas>
+          </div>
+        </div>
+        <dl class="nums">
+          <dt>orientation</dt><dd id="sOri">–</dd>
+          <dt>spatial freq</dt><dd id="sSf">–</dd>
+          <dt>bar period</dt><dd id="sPer">–</dd>
+          <dt>aspect</dt><dd id="sAsp">–</dd>
+          <dt>HWHM</dt><dd id="sHw">–</dd>
+          <dt>OSI</dt><dd id="sOsi">–</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="sec">
+      <p class="eyebrow">Tuning</p>
+      <div class="row">
+        <div class="seg" id="segMode">
+          <button data-v="single" aria-pressed="true">One orientation</button><button data-v="pop">8 orientations</button>
+        </div>
+        <canvas id="wcv" class="hidden"></canvas>
+      </div>
+      <div class="row" id="rowOri">
+        <div class="lab">
+          <span class="name">Orientation</span>
+          <span class="right">
+            <svg class="glyph" id="oriGlyph" viewBox="0 0 24 24" aria-hidden="true">
+              <circle class="ring" cx="12" cy="12" r="10"/>
+              <line class="tick" id="oriTick" x1="12" y1="3.4" x2="12" y2="20.6"/>
+            </svg>
+            <button class="chip" id="btnSweep" aria-pressed="false">Sweep</button>
+            <span class="val" id="vOri">90°</span>
+          </span>
+        </div>
+        <input type="range" id="rOri" min="0" max="179" step="1" value="90" aria-label="Orientation">
+      </div>
+      <div class="row">
+        <div class="lab"><span class="name">Spatial frequency</span><span class="val" id="vSf">24 cyc/width</span></div>
+        <input type="range" id="rSf" min="6" max="70" step="1" value="24" aria-label="Spatial frequency">
+      </div>
+      <div class="row">
+        <div class="lab"><span class="name">RF length</span><span class="val" id="vLen">0.60 cyc</span></div>
+        <input type="range" id="rLen" min="0.25" max="3" step="0.05" value="0.6" aria-label="Receptive field length">
+      </div>
+    </div>
+
+    <div class="sec">
+      <p class="eyebrow">Display</p>
+      <div class="row">
+        <div class="lab"><span class="name">Response gain</span><span class="val" id="vGain">4.0×</span></div>
+        <input type="range" id="rGain" min="0.5" max="16" step="0.1" value="4" aria-label="Response gain">
+      </div>
+      <div class="row">
+        <div class="lab"><span class="name">Blend original</span><span class="val" id="vBlend">0%</span></div>
+        <input type="range" id="rBlend" min="0" max="100" step="1" value="0" aria-label="Blend original image">
+      </div>
+    </div>
+  </div>
+</div>
+
+<video id="vid" playsinline webkit-playsinline muted autoplay class="hidden"></video>
+<canvas id="demoCv" width="640" height="480" class="hidden"></canvas>
+<canvas id="anaCv" class="hidden"></canvas>
+
+<script>
+"use strict";
+(function(){
+
+/* ---- viewport height that survives mobile browser chrome ---- */
+function setVH(){
+  const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  document.documentElement.style.setProperty('--vh', h+'px');
+  document.body.classList.add('jsvh');
+}
+setVH();
+window.addEventListener('resize', setVH);
+window.addEventListener('orientationchange', ()=> setTimeout(setVH, 300));
+if(window.visualViewport) window.visualViewport.addEventListener('resize', setVH);
+
+/* ---- parameters ---- */
+const P = { ori:90, sf:24, len:0.60, gain:4, blend:0, mode:'single', sweep:false };
+const NORI = 8;
+const BW = 1.4;
+
+let rfx=0.5, rfy=0.5;
+let source=null, srcReady=false, mirror=false;
+let stream=null, facing='user';
+let showPanels = true;
+const COARSE = window.matchMedia('(pointer:coarse)').matches;
+
+const $ = id => document.getElementById(id);
+const glcv=$('glcv'), overlay=$('overlay'), vid=$('vid');
+const demoCv=$('demoCv'), anaCv=$('anaCv');
+
+/* ---- the RF panels live in the rail, and move onto the image when the
+        viewport is too short to hold them (phone in landscape) ---- */
+const mqShort = window.matchMedia('(max-height: 460px)');
+function placePanels(){
+  const panels = $('panels');
+  if(mqShort.matches){
+    document.body.classList.add('hudmode');
+    if(panels.parentElement !== $('hud')) $('hud').appendChild(panels);
+  }else{
+    document.body.classList.remove('hudmode');
+    if(panels.parentElement !== $('railSlot')) $('railSlot').appendChild(panels);
+  }
+  requestAnimationFrame(()=>{ drawKernel(); drawTuning(); });
+}
+if(mqShort.addEventListener) mqShort.addEventListener('change', placePanels);
+else mqShort.addListener(placePanels);
+
+/* ======================================================================
+   WebGL
+   ==================================================================== */
+const gl = glcv.getContext('webgl2', {antialias:false, preserveDrawingBuffer:true, alpha:false});
+if(!gl){
+  $('curtainMsg').classList.remove('hidden');
+  $('curtainMsg').textContent = 'This browser has no WebGL2. Try a recent Chrome, Edge, Firefox or Safari.';
+}
+const HAS_FLOAT = gl ? !!gl.getExtension('EXT_color_buffer_float') : false;
+const ENC   = HAS_FLOAT ? 1.0 : 2.6;
+const IFMT  = HAS_FLOAT ? 0x881A : 0x8058;
+const ITYPE = HAS_FLOAT ? 0x140B : (gl ? gl.UNSIGNED_BYTE : 0);
+
+const VS = `#version 300 es
+in vec2 a_pos; out vec2 v_uv;
+void main(){ v_uv = a_pos*0.5+0.5; gl_Position = vec4(a_pos,0.0,1.0); }`;
+
+const COMMON = `
+precision highp float;
+uniform float u_enc;
+float dec(float x){ return (x-0.5)*2.0/u_enc; }
+float enc(float v){ return clamp(0.5 + 0.5*v*u_enc, 0.0, 1.0); }`;
+
+const FS_GRAY = `#version 300 es
+${COMMON}
+uniform sampler2D u_tex; uniform float u_mirror;
+in vec2 v_uv; out vec4 o;
+void main(){
+  vec2 uv = v_uv; if(u_mirror>0.5) uv.x = 1.0-uv.x;
+  float g = dot(texture(u_tex, uv).rgb, vec3(0.2126,0.7152,0.0722));
+  o = vec4(g,g,g,1.0);
+}`;
+
+const FS_P1 = `#version 300 es
+${COMMON}
+uniform sampler2D u_src;
+uniform vec2 u_texel, u_dir;
+uniform float u_freq, u_sigma, u_lod;
+uniform int u_radius;
+in vec2 v_uv; out vec4 o;
+void main(){
+  float e=0.0, d=0.0, n=0.0;
+  for(int i=-u_radius; i<=u_radius; i++){
+    float t=float(i);
+    float g=exp(-0.5*t*t/(u_sigma*u_sigma));
+    float ph=6.28318530718*u_freq*t;
+    float s=textureLod(u_src, v_uv + u_dir*u_texel*t, u_lod).r;
+    e+=g*cos(ph)*s; d+=g*sin(ph)*s; n+=g;
+  }
+  o = vec4(enc(e/n), enc(d/n), 0.0, 1.0);
+}`;
+
+const FS_P2 = `#version 300 es
+${COMMON}
+uniform sampler2D u_src, u_acc;
+uniform vec2 u_texel, u_dir;
+uniform float u_sigma, u_oriNorm;
+uniform int u_radius, u_accumulate;
+in vec2 v_uv; out vec4 o;
+void main(){
+  float e=0.0, d=0.0, n=0.0;
+  for(int i=-u_radius; i<=u_radius; i++){
+    float t=float(i);
+    float g=exp(-0.5*t*t/(u_sigma*u_sigma));
+    vec4 s=texture(u_src, v_uv + u_dir*u_texel*t);
+    e+=g*dec(s.r); d+=g*dec(s.g); n+=g;
+  }
+  e/=n; d/=n;
+  if(u_accumulate==0){ o = vec4(enc(e), enc(d), 0.0, 1.0); return; }
+  float r = sqrt(e*e+d*d);
+  vec4 a = texture(u_acc, v_uv);
+  o = (r > a.r) ? vec4(r, u_oriNorm, 0.0, 1.0) : a;
+}`;
+
+const MAPS = `
+vec3 viridis(float t){
+  t=clamp(t,0.0,1.0);
+  const vec3 c0=vec3(0.2777,0.0054,0.3341);
+  const vec3 c1=vec3(0.1051,1.4046,1.3846);
+  const vec3 c2=vec3(-0.3309,0.2148,0.0951);
+  const vec3 c3=vec3(-4.6342,-5.7991,-19.3324);
+  const vec3 c4=vec3(6.2283,14.1799,56.6906);
+  const vec3 c5=vec3(4.7764,-13.7451,-65.3530);
+  const vec3 c6=vec3(-5.4355,4.6459,26.3124);
+  return c0+t*(c1+t*(c2+t*(c3+t*(c4+t*(c5+t*c6)))));
+}
+vec3 hsv2rgb(vec3 c){
+  vec3 p = abs(fract(c.xxx+vec3(1.0,2.0/3.0,1.0/3.0))*6.0-3.0);
+  return c.z*mix(vec3(1.0), clamp(p-1.0,0.0,1.0), c.y);
+}`;
+
+const FS_SHOW = `#version 300 es
+${COMMON}
+${MAPS}
+uniform sampler2D u_eo, u_gray;
+uniform float u_gain, u_blend;
+in vec2 v_uv; out vec4 o;
+void main(){
+  vec4 t = texture(u_eo, v_uv);
+  float e=dec(t.r), d=dec(t.g);
+  vec3 col = viridis(clamp(sqrt(e*e+d*d)*u_gain, 0.0, 1.0));
+  o = vec4(mix(col, vec3(texture(u_gray, v_uv).r), u_blend), 1.0);
+}`;
+
+const FS_POP = `#version 300 es
+${COMMON}
+${MAPS}
+uniform sampler2D u_acc, u_gray;
+uniform float u_gain, u_blend;
+in vec2 v_uv; out vec4 o;
+void main(){
+  vec4 t = texture(u_acc, v_uv);
+  vec3 col = hsv2rgb(vec3(t.g, 0.85, clamp(t.r*u_gain, 0.0, 1.0)));
+  o = vec4(mix(col, vec3(texture(u_gray, v_uv).r), u_blend), 1.0);
+}`;
+
+function sh(type,src){
+  const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+  return s;
+}
+function prog(fs){
+  const p=gl.createProgram();
+  gl.attachShader(p, sh(gl.VERTEX_SHADER,VS));
+  gl.attachShader(p, sh(gl.FRAGMENT_SHADER,fs));
+  gl.bindAttribLocation(p,0,'a_pos');
+  gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
+  const u={}, n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);
+  for(let i=0;i<n;i++){ const inf=gl.getActiveUniform(p,i); u[inf.name]=gl.getUniformLocation(p,inf.name); }
+  return {p,u};
+}
+
+let PG={}, quad=null;
+if(gl){
+  PG.gray=prog(FS_GRAY); PG.p1=prog(FS_P1); PG.p2=prog(FS_P2);
+  PG.show=prog(FS_SHOW); PG.pop=prog(FS_POP);
+  quad=gl.createVertexArray(); gl.bindVertexArray(quad);
+  const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+}
+
+function makeTex(w,h,ifmt,type,mip){
+  const t=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.texImage2D(gl.TEXTURE_2D,0,ifmt,w,h,0,gl.RGBA,type,null);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER, mip?gl.LINEAR_MIPMAP_LINEAR:gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  return t;
+}
+function makeTarget(w,h,ifmt,type,mip){
+  const tex=makeTex(w,h,ifmt,type,mip), fbo=gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  return {tex,fbo,w,h};
+}
+
+let texSrc=null, TGray=null, TA=null, TB=null, TAccA=null, TAccB=null;
+let procW=0, procH=0;
+
+function allocProc(w,h){
+  procW=w; procH=h;
+  [TGray,TA,TB,TAccA,TAccB].forEach(t=>{ if(t){ gl.deleteTexture(t.tex); gl.deleteFramebuffer(t.fbo); } });
+  TGray=makeTarget(procW,procH,gl.RGBA8,gl.UNSIGNED_BYTE,true);
+  TA=makeTarget(procW,procH,IFMT,ITYPE,false);
+  TB=makeTarget(procW,procH,IFMT,ITYPE,false);
+  TAccA=makeTarget(procW,procH,IFMT,ITYPE,false);
+  TAccB=makeTarget(procW,procH,IFMT,ITYPE,false);
+  glcv.width=procW; glcv.height=procH;
+  overlay.width=procW; overlay.height=procH;
+  anaCv.width=procW; anaCv.height=procH;
+}
+
+function baseRes(){
+  if(COARSE) return 336;
+  const px = Math.max(screen.width, screen.height)*(window.devicePixelRatio||1);
+  return px >= 1800 ? 560 : 464;
+}
+let targetW=464, trims=0, srcAspect=4/3;
+
+function sizeFromSource(el){
+  const w = el.videoWidth || el.naturalWidth || el.width || 640;
+  const h = el.videoHeight || el.naturalHeight || el.height || 480;
+  return w/h;
+}
+function applySize(){
+  let w=targetW, h=Math.round(targetW/srcAspect);
+  const CAP=Math.round(targetW*1.5);
+  if(h>CAP){ h=CAP; w=Math.round(h*srcAspect); }
+  allocProc(Math.max(64,w), Math.max(64,h));
+}
+function setSource(kind, el){
+  source={kind,el}; srcReady=true;
+  $('curtain').classList.add('hidden');
+  mirror = (kind==='video' && facing==='user');
+  srcAspect = sizeFromSource(el);
+  applySize();
+  if(!texSrc) texSrc = makeTex(4,4,gl.RGBA8,gl.UNSIGNED_BYTE,false);
+  refresh();
+}
+vid.addEventListener('resize', ()=>{
+  if(!source || source.kind!=='video' || !vid.videoWidth) return;
+  const a = sizeFromSource(vid);
+  if(Math.abs(a-srcAspect) > 0.02){ srcAspect=a; applySize(); refresh(); }
+});
+
+async function startCamera(){
+  const msg=$('curtainMsg');
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    msg.classList.remove('hidden');
+    msg.textContent='This browser will not share a camera here. Camera access needs an HTTPS page — try the demo stimulus.';
+    $('curtain').classList.remove('hidden');
+    return;
+  }
+  try{
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:facing, width:{ideal:1280}, height:{ideal:720}}, audio:false
+    });
+    vid.srcObject=stream; vid.muted=true;
+    try{ await vid.play(); }catch(e){}
+    if(!vid.videoWidth) await new Promise(r=>{ vid.onloadedmetadata=r; });
+    msg.classList.add('hidden');
+    setSource('video', vid);
+    navigator.mediaDevices.enumerateDevices()
+      .then(ds=>{ if(ds.filter(d=>d.kind==='videoinput').length>1) $('btnFlip').classList.remove('hidden'); })
+      .catch(()=>{});
+  }catch(e){
+    msg.classList.remove('hidden');
+    msg.textContent='Camera not available ('+(e&&e.name?e.name:'unknown')+'). Use the demo stimulus or load an image.';
+    $('curtain').classList.remove('hidden');
+  }
+}
+
+const dctx=demoCv.getContext('2d');
+let gratingImg=null;
+function drawDemo(t){
+  const W=demoCv.width, H=demoCv.height;
+  dctx.fillStyle='#7c7c7c'; dctx.fillRect(0,0,W,H);
+  for(let i=0;i<14;i++){
+    const a=(i*37.7)%180, x=((i*97)%W), y=((i*61)%H);
+    dctx.save(); dctx.translate(x,y); dctx.rotate(-a*Math.PI/180);
+    dctx.fillStyle = i%2 ? '#e9e9e9' : '#1d1d1d';
+    dctx.fillRect(-45,-3.5,90,7); dctx.restore();
+  }
+  dctx.save(); dctx.translate(W*0.30,H*0.52); dctx.rotate(-t*0.35);
+  dctx.fillStyle='#f4f4f4'; dctx.fillRect(-130,-8,260,16); dctx.restore();
+  const R=92, cx=W*0.72, cy=H*0.32, per=26;
+  if(!gratingImg) gratingImg=dctx.createImageData(2*R,2*R);
+  const d=gratingImg.data, ang=0.6, ca=Math.cos(ang), sa=Math.sin(ang), ph=t*3.2;
+  for(let y=0;y<2*R;y++) for(let x=0;x<2*R;x++){
+    const i=(y*2*R+x)*4, dx=x-R, dy=y-R, inside=dx*dx+dy*dy<R*R;
+    const v = inside ? 128+118*Math.cos(2*Math.PI*(dx*ca+dy*sa)/per+ph) : 124;
+    d[i]=d[i+1]=d[i+2]=v; d[i+3]=inside?255:0;
+  }
+  dctx.putImageData(gratingImg, cx-R, cy-R);
+  dctx.save(); dctx.strokeStyle='#101010'; dctx.lineWidth=5;
+  for(let r=10;r<95;r+=18){ dctx.beginPath(); dctx.arc(W*0.76,H*0.78,r,0,6.284); dctx.stroke(); }
+  dctx.restore();
+  dctx.fillStyle='#111'; dctx.font='600 32px Georgia, serif'; dctx.fillText('V1',24,H-24);
+}
+function useDemo(){ drawDemo(0); facing='user'; setSource('canvas', demoCv); }
+
+$('fileImg').addEventListener('change', ev=>{
+  const f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  const img=new Image();
+  img.onload=()=>{ setSource('image',img); URL.revokeObjectURL(img.src); };
+  img.src=URL.createObjectURL(f);
+});
+
+/* ---- receptive-field geometry ---- */
+function geom(){
+  const eW=Math.max(96, Math.min(procW, Math.round(8*P.sf)));
+  const eH=Math.max(72, Math.round(eW*procH/procW));
+  const period=eW/P.sf, freq=1/period;
+  const delta=(Math.pow(2,BW)-1)/(Math.pow(2,BW)+1);
+  const su=(1.177/(2*Math.PI*delta))*period;
+  const sv=P.len*period;
+  return {
+    eW,eH,period,freq,su,sv,
+    ru: Math.min(44, Math.max(2, Math.ceil(2.6*su))),
+    rv: Math.min(COARSE?48:60, Math.max(1, Math.ceil(2.6*sv))),
+    lod: Math.max(0, Math.log2(procW/eW))
+  };
+}
+
+/* ======================================================================
+   render loop
+   ==================================================================== */
+function drawTo(target, program, set){
+  gl.bindFramebuffer(gl.FRAMEBUFFER, target?target.fbo:null);
+  gl.viewport(0,0, target?target.w:glcv.width, target?target.h:glcv.height);
+  gl.useProgram(program.p);
+  if(program.u.u_enc) gl.uniform1f(program.u.u_enc, ENC);
+  set(program.u);
+  gl.bindVertexArray(quad); gl.drawArrays(gl.TRIANGLES,0,3);
+}
+function bindTex(unit,tex,loc){
+  gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,tex); gl.uniform1i(loc,unit);
+}
+
+let lastT=performance.now(), tStart=lastT, fpsAcc=0, fpsN=0, lastAna=0;
+
+function frame(now){
+  requestAnimationFrame(frame);
+  if(!gl || !srcReady) return;
+
+  const dt=Math.min(0.1,(now-lastT)/1000); lastT=now;
+  if(P.sweep && P.mode==='single'){
+    P.ori=(P.ori+22*dt)%180;
+    $('rOri').value=Math.round(P.ori);
+    syncLabels(); drawKernel();
+  }
+
+  if(source.kind==='canvas') drawDemo((now-tStart)/1000);
+  const el=source.el;
+  if(source.kind==='video' && el.readyState<2) return;
+
+  gl.bindTexture(gl.TEXTURE_2D, texSrc);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE, el);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+
+  drawTo(TGray, PG.gray, u=>{ bindTex(0,texSrc,u.u_tex); gl.uniform1f(u.u_mirror, mirror?1:0); });
+  gl.bindTexture(gl.TEXTURE_2D, TGray.tex);
+  gl.generateMipmap(gl.TEXTURE_2D);
+
+  const G=geom();
+
+  function filterAt(oriDeg, t1, t2, accSrc, accumulate){
+    const th=oriDeg*Math.PI/180;
+    const bar=[Math.cos(th),Math.sin(th)], grad=[-Math.sin(th),Math.cos(th)];
+    gl.bindFramebuffer(gl.FRAMEBUFFER,t1.fbo); gl.viewport(0,0,t1.w,t1.h);
+    gl.useProgram(PG.p1.p);
+    const u1=PG.p1.u;
+    gl.uniform1f(u1.u_enc,ENC);
+    bindTex(0,TGray.tex,u1.u_src);
+    gl.uniform2f(u1.u_texel,1/G.eW,1/G.eH);
+    gl.uniform2f(u1.u_dir,grad[0],grad[1]);
+    gl.uniform1f(u1.u_freq,G.freq);
+    gl.uniform1f(u1.u_sigma,G.su);
+    gl.uniform1f(u1.u_lod,G.lod);
+    gl.uniform1i(u1.u_radius,G.ru);
+    gl.bindVertexArray(quad); gl.drawArrays(gl.TRIANGLES,0,3);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER,t2.fbo); gl.viewport(0,0,t2.w,t2.h);
+    gl.useProgram(PG.p2.p);
+    const u2=PG.p2.u;
+    gl.uniform1f(u2.u_enc,ENC);
+    bindTex(0,t1.tex,u2.u_src);
+    bindTex(1, accSrc?accSrc.tex:t1.tex, u2.u_acc);
+    gl.uniform2f(u2.u_texel,1/G.eW,1/G.eH);
+    gl.uniform2f(u2.u_dir,bar[0],bar[1]);
+    gl.uniform1f(u2.u_sigma,G.sv);
+    gl.uniform1i(u2.u_radius,G.rv);
+    gl.uniform1i(u2.u_accumulate, accumulate?1:0);
+    gl.uniform1f(u2.u_oriNorm, (oriDeg%180)/180);
+    gl.bindVertexArray(quad); gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+
+  if(P.mode==='single'){
+    filterAt(P.ori, TA, TB, null, false);
+    drawTo(null, PG.show, u=>{
+      bindTex(0,TB.tex,u.u_eo); bindTex(1,TGray.tex,u.u_gray);
+      gl.uniform1f(u.u_gain,P.gain); gl.uniform1f(u.u_blend,P.blend/100);
+    });
+  }else{
+    gl.bindFramebuffer(gl.FRAMEBUFFER,TAccA.fbo); gl.viewport(0,0,TAccA.w,TAccA.h);
+    gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT);
+    let src=TAccA, dst=TAccB;
+    for(let k=0;k<NORI;k++){
+      filterAt(k*180/NORI, TA, dst, src, true);
+      const tmp=src; src=dst; dst=tmp;
+    }
+    drawTo(null, PG.pop, u=>{
+      bindTex(0,src.tex,u.u_acc); bindTex(1,TGray.tex,u.u_gray);
+      gl.uniform1f(u.u_gain,P.gain); gl.uniform1f(u.u_blend,P.blend/100);
+    });
+  }
+
+  fpsAcc += 1/Math.max(dt,1e-4); fpsN++;
+  if(fpsN>=60){
+    const fps=fpsAcc/fpsN; fpsAcc=0; fpsN=0;
+    if(fps<22 && trims<3 && targetW>260){ trims++; targetW=Math.round(targetW*0.78); applySize(); }
+  }
+
+  if(showPanels && now-lastAna>150){ lastAna=now; measureTuning(); }
+  drawOverlay();
+}
+
+/* ---- live tuning at the recorded site ---- */
+const actx=anaCv.getContext('2d',{willReadFrequently:true});
+let tuning=null, tuningPeak=1;
+
+function measureTuning(){
+  if(!source) return;
+  const w=anaCv.width, h=anaCv.height;
+  if(!w||!h) return;
+  actx.save();
+  if(mirror){ actx.translate(w,0); actx.scale(-1,1); }
+  try{ actx.drawImage(source.el,0,0,w,h); }catch(e){ actx.restore(); return; }
+  actx.restore();
+
+  const G=geom(), s=G.eW/procW;
+  const su=G.su/s, sv=G.sv/s, freq=G.freq*s;
+  const Ru=Math.min(COARSE?22:28, Math.ceil(2.2*su));
+  const Rv=Math.min(COARSE?34:44, Math.ceil(2.2*sv));
+  const cx=Math.round(rfx*w), cy=Math.round(rfy*h);
+  const x0=Math.max(0,cx-Ru-Rv), x1=Math.min(w,cx+Ru+Rv+1);
+  const y0=Math.max(0,cy-Ru-Rv), y1=Math.min(h,cy+Ru+Rv+1);
+  if(x1-x0<4||y1-y0<4) return;
+  const img=actx.getImageData(x0,y0,x1-x0,y1-y0), D=img.data;
+  const IW=x1-x0, IH=y1-y0, K=COARSE?18:24;
+  const out=new Float32Array(K);
+  const gu=new Float32Array(2*Ru+1), ce=new Float32Array(2*Ru+1), co=new Float32Array(2*Ru+1);
+  for(let i=-Ru;i<=Ru;i++){
+    const g=Math.exp(-0.5*i*i/(su*su));
+    gu[i+Ru]=g; ce[i+Ru]=g*Math.cos(2*Math.PI*freq*i); co[i+Ru]=g*Math.sin(2*Math.PI*freq*i);
+  }
+  const gv=new Float32Array(2*Rv+1);
+  for(let j=-Rv;j<=Rv;j++) gv[j+Rv]=Math.exp(-0.5*j*j/(sv*sv));
+
+  for(let k=0;k<K;k++){
+    const th=k*Math.PI/K;
+    const bx=Math.cos(th), by=-Math.sin(th), gx=-Math.sin(th), gy=-Math.cos(th);
+    let e=0,o=0,n=0;
+    for(let j=-Rv;j<=Rv;j++){
+      const wv=gv[j+Rv], px=cx+bx*j, py=cy+by*j;
+      for(let i=-Ru;i<=Ru;i++){
+        const sx=Math.round(px+gx*i)-x0, sy=Math.round(py+gy*i)-y0;
+        if(sx<0||sy<0||sx>=IW||sy>=IH) continue;
+        const idx=(sy*IW+sx)*4;
+        const lum=(0.2126*D[idx]+0.7152*D[idx+1]+0.0722*D[idx+2])/255;
+        e+=wv*ce[i+Ru]*lum; o+=wv*co[i+Ru]*lum; n+=wv*gu[i+Ru];
+      }
+    }
+    if(n>0){ e/=n; o/=n; }
+    out[k]=Math.sqrt(e*e+o*o);
+  }
+  tuning=out;
+  let mx=0; for(let k=0;k<K;k++) if(out[k]>mx) mx=out[k];
+  tuningPeak=Math.max(1e-6,mx);
+  drawTuning();
+}
+
+/* ---- panel canvases ---- */
+function fit(cv){
+  const dpr=Math.min(2, window.devicePixelRatio||1);
+  const w=Math.max(24,Math.round(cv.clientWidth)), h=Math.max(20,Math.round(cv.clientHeight));
+  const W=Math.round(w*dpr), H=Math.round(h*dpr);
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  return {w,h,dpr};
+}
+
+function drawKernel(){
+  const c=$('kcv'); if(!c.clientWidth) return;
+  fit(c);
+  const x=c.getContext('2d'), N=c.width, M=c.height;
+  const img=x.createImageData(N,M), G=geom();
+  const half=Math.max(G.su*2.6,G.sv*2.6), sc=half/(Math.min(N,M)/2);
+  const th=P.ori*Math.PI/180, ca=Math.cos(th), sa=Math.sin(th);
+  for(let py=0;py<M;py++) for(let px=0;px<N;px++){
+    const X=(px-N/2)*sc, Y=-(py-M/2)*sc;
+    const v=X*ca+Y*sa, u=-X*sa+Y*ca;
+    const env=Math.exp(-0.5*(u*u/(G.su*G.su)+v*v/(G.sv*G.sv)));
+    const t=Math.max(-1,Math.min(1, env*Math.cos(2*Math.PI*G.freq*u)*1.15));
+    const tt=t*0.5+0.5;
+    let r,g,b;
+    if(tt<0.5){ const a=tt*2; r=(0.031+(0.086-0.031)*a)*255; g=(0.318+(0.094-0.318)*a)*255; b=(0.612+(0.110-0.612)*a)*255; }
+    else{ const a=(tt-0.5)*2; r=(0.086+(0.902-0.086)*a)*255; g=(0.094+(0.475-0.094)*a)*255; b=(0.110+(0.078-0.110)*a)*255; }
+    const i=(py*N+px)*4; img.data[i]=r; img.data[i+1]=g; img.data[i+2]=b; img.data[i+3]=255;
+  }
+  x.putImageData(img,0,0);
+}
+
+function drawTuning(){
+  const c=$('tcv'); if(!c.clientWidth) return;
+  const {w:W,h:H,dpr}=fit(c);
+  const x=c.getContext('2d');
+  x.setTransform(dpr,0,0,dpr,0,0);
+  x.fillStyle='#12151A'; x.fillRect(0,0,W,H);
+  const roomy = W >= 108;
+  const L = roomy ? 16 : 6, R=W-5, T=6, B=H-12;
+  x.strokeStyle='#3A414C'; x.lineWidth=1;
+  x.beginPath();
+  if(roomy){ x.moveTo(L,T); x.lineTo(L,B); }
+  x.moveTo(L,B); x.lineTo(R,B); x.stroke();
+  x.fillStyle='#7C838E'; x.font='7.5px ui-monospace, monospace';
+  [0,90,180].forEach(d=>{
+    const px=L+(R-L)*d/180;
+    x.beginPath(); x.moveTo(px,B); x.lineTo(px,B+2); x.stroke();
+    x.fillText(String(d), Math.min(W-13, Math.max(0, px-(d===0?1:(d===180?9:5)))), B+9);
+  });
+  if(roomy){ x.save(); x.translate(8,(T+B)/2); x.rotate(-Math.PI/2); x.fillText('response',-19,0); x.restore(); }
+
+  if(P.mode==='single'){
+    const mx=L+(R-L)*(P.ori%180)/180;
+    x.strokeStyle='#E69F00'; x.setLineDash([3,3]);
+    x.beginPath(); x.moveTo(mx,T); x.lineTo(mx,B); x.stroke(); x.setLineDash([]);
+  }
+  if(!tuning){ x.fillStyle='#5A626E'; x.fillText('no signal', L+4, (T+B)/2); return; }
+
+  const K=tuning.length;
+  x.strokeStyle='#4FC3E8'; x.lineWidth=1.5; x.beginPath();
+  for(let k=0;k<K;k++){
+    const px=L+(R-L)*(k/K), py=B-(B-T)*(tuning[k]/tuningPeak)*0.9;
+    k?x.lineTo(px,py):x.moveTo(px,py);
+  }
+  x.lineTo(R, B-(B-T)*(tuning[0]/tuningPeak)*0.9);
+  x.stroke();
+  let pk=0; for(let k=1;k<K;k++) if(tuning[k]>tuning[pk]) pk=k;
+  x.fillStyle='#4FC3E8'; x.beginPath(); x.arc(L+(R-L)*(pk/K), B-(B-T)*0.9, 2.4, 0, 6.284); x.fill();
+  const orth=tuning[(pk+Math.round(K/2))%K];
+  const osi=(tuning[pk]-orth)/Math.max(1e-9,tuning[pk]+orth);
+  $('sOsi').textContent = osi.toFixed(2)+' @ '+Math.round(pk*180/K)+'°';
+}
+
+function drawWheel(){
+  const c=$('wcv'); if(!c.clientWidth) return;
+  const {w:W,h:H,dpr}=fit(c);
+  const x=c.getContext('2d');
+  x.setTransform(1,0,0,1,0,0);
+  const img=x.createImageData(c.width,c.height);
+  for(let px=0;px<c.width;px++){
+    const [r,g,b]=hsv(px/c.width,0.85,1);
+    for(let py=0;py<c.height;py++){
+      const i=(py*c.width+px)*4; img.data[i]=r; img.data[i+1]=g; img.data[i+2]=b; img.data[i+3]=255;
+    }
+  }
+  x.putImageData(img,0,0);
+  x.setTransform(dpr,0,0,dpr,0,0);
+  x.fillStyle='rgba(20,23,28,.62)'; x.fillRect(0,H-9,W,9);
+  x.fillStyle='#EFECE4'; x.font='7.5px ui-monospace, monospace';
+  x.fillText('0°',2,H-2); x.fillText('90°',W*0.5-6,H-2); x.fillText('180°',W-19,H-2);
+}
+function hsv(h,s,v){
+  const i=Math.floor(h*6), f=h*6-i, p=v*(1-s), q=v*(1-f*s), t=v*(1-(1-f)*s);
+  let r,g,b;
+  switch(i%6){
+    case 0:r=v;g=t;b=p;break; case 1:r=q;g=v;b=p;break; case 2:r=p;g=v;b=t;break;
+    case 3:r=p;g=q;b=v;break; case 4:r=t;g=p;b=v;break; default:r=v;g=p;b=q;
+  }
+  return [r*255|0,g*255|0,b*255|0];
+}
+
+function drawOverlay(){
+  const x=overlay.getContext('2d');
+  x.clearRect(0,0,overlay.width,overlay.height);
+  const G=geom(), s=procW/G.eW;
+  const su=G.su*s, sv=G.sv*s;
+  const cx=rfx*overlay.width, cy=rfy*overlay.height;
+  if(P.mode==='single'){
+    x.save(); x.translate(cx,cy); x.rotate(-P.ori*Math.PI/180);
+    x.strokeStyle='rgba(255,255,255,.85)'; x.lineWidth=1.4;
+    x.beginPath(); x.ellipse(0,0,2*sv,2*su,0,0,6.284); x.stroke();
+    x.restore();
+  }
+  x.strokeStyle='rgba(255,255,255,.9)'; x.lineWidth=1.2;
+  x.beginPath(); x.moveTo(cx-7,cy); x.lineTo(cx+7,cy); x.moveTo(cx,cy-7); x.lineTo(cx,cy+7); x.stroke();
+}
+
+/* ---- readouts and wiring ---- */
+function syncLabels(){
+  const G=geom();
+  $('vOri').textContent=Math.round(P.ori)+'°';
+  $('vSf').textContent=P.sf+' cyc/width';
+  $('vLen').textContent=P.len.toFixed(2)+' cyc';
+  $('vGain').textContent=P.gain.toFixed(1)+'×';
+  $('vBlend').textContent=P.blend+'%';
+  // the tick shows the preferred bar; drawn vertical, so rotate by 90 − θ
+  $('oriTick').setAttribute('transform','rotate('+(90-P.ori)+' 12 12)');
+  $('sOri').textContent = P.mode==='single' ? Math.round(P.ori)+'°' : '8 channels';
+  $('sSf').textContent = P.sf+' cyc/width';
+  $('sPer').textContent = (procW ? (procW/P.sf).toFixed(1) : '–')+' px';
+  $('sAsp').textContent = (G.sv/G.su).toFixed(2)+' : 1';
+  $('sHw').textContent = (Math.atan(1.177/(2*Math.PI*P.len))*180/Math.PI).toFixed(1)+'°';
+}
+function refresh(){ syncLabels(); drawKernel(); drawTuning(); if(P.mode==='pop') drawWheel(); }
+
+function bindSlider(id,key,asInt){
+  const el=$(id);
+  el.addEventListener('input',()=>{ P[key]= asInt?parseInt(el.value,10):parseFloat(el.value); refresh(); });
+}
+bindSlider('rOri','ori'); bindSlider('rSf','sf'); bindSlider('rLen','len');
+bindSlider('rGain','gain'); bindSlider('rBlend','blend',true);
+
+function bindSeg(id,fn){
+  const seg=$(id);
+  seg.addEventListener('click',ev=>{
+    const b=ev.target.closest('button'); if(!b) return;
+    [...seg.children].forEach(c=>c.setAttribute('aria-pressed', c===b?'true':'false'));
+    fn(b.dataset.v);
+  });
+}
+bindSeg('segSrc', v=>{ v==='cam'?startCamera():(v==='demo'?useDemo():$('fileImg').click()); });
+bindSeg('segMode', v=>{
+  P.mode=v;
+  $('rowOri').classList.toggle('hidden', v==='pop');
+  $('wcv').classList.toggle('hidden', v!=='pop');
+  refresh();
+});
+
+$('btnSweep').addEventListener('click', e=>{
+  P.sweep=!P.sweep;
+  e.currentTarget.setAttribute('aria-pressed', P.sweep?'true':'false');
+});
+$('btnStart').addEventListener('click', startCamera);
+$('btnDemoBig').addEventListener('click', ()=>{
+  [...$('segSrc').children].forEach(c=>c.setAttribute('aria-pressed', c.dataset.v==='demo'?'true':'false'));
+  useDemo();
+});
+$('btnFlip').addEventListener('click', ()=>{ facing = facing==='user'?'environment':'user'; startCamera(); });
+$('btnAbout').addEventListener('click', ()=> $('about').classList.remove('hidden'));
+$('btnCloseAbout').addEventListener('click', ()=> $('about').classList.add('hidden'));
+$('btnPanels').addEventListener('click', e=>{
+  showPanels=!showPanels;
+  document.body.classList.toggle('nopanels', !showPanels);
+  e.currentTarget.setAttribute('aria-pressed', showPanels?'true':'false');
+  if(showPanels) requestAnimationFrame(refresh);
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') $('about').classList.add('hidden'); });
+
+$('btnShot').addEventListener('click', ()=>{
+  const out=document.createElement('canvas');
+  out.width=glcv.width; out.height=glcv.height;
+  const c=out.getContext('2d');
+  c.drawImage(glcv,0,0); c.drawImage(overlay,0,0);
+  const a=document.createElement('a');
+  a.download='v1-bank_'+(P.mode==='pop'?'8ori':'ori'+Math.round(P.ori))+'_sf'+P.sf+'.png';
+  a.href=out.toDataURL('image/png'); a.click();
+});
+
+let dragging=false;
+function movePt(ev){
+  const r=glcv.getBoundingClientRect();
+  const sc=Math.min(r.width/procW, r.height/procH);
+  const dw=procW*sc, dh=procH*sc;
+  const ox=r.left+(r.width-dw)/2, oy=r.top+(r.height-dh)/2;
+  rfx=Math.min(1,Math.max(0,(ev.clientX-ox)/dw));
+  rfy=Math.min(1,Math.max(0,(ev.clientY-oy)/dh));
+}
+overlay.addEventListener('pointerdown', e=>{ dragging=true; overlay.setPointerCapture(e.pointerId); movePt(e); e.preventDefault(); });
+overlay.addEventListener('pointermove', e=>{ if(dragging) movePt(e); });
+overlay.addEventListener('pointerup', ()=> dragging=false);
+overlay.addEventListener('pointercancel', ()=> dragging=false);
+
+if(window.ResizeObserver){
+  let pending=false;
+  const ro=new ResizeObserver(()=>{
+    if(pending) return; pending=true;
+    requestAnimationFrame(()=>{ pending=false; drawKernel(); drawTuning(); if(P.mode==='pop') drawWheel(); });
+  });
+  ro.observe($('well')); ro.observe(document.querySelector('.rail'));
+}
+window.addEventListener('orientationchange', ()=> setTimeout(()=>{ placePanels(); refresh(); }, 400));
+
+targetW=baseRes();
+srcAspect=4/3; applySize();
+placePanels();
+refresh();
+if(gl) requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

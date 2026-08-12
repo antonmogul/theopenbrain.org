@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Color vision — The Open Brain</title>
+<style>
+/* ============================================================
+   THE OPEN BRAIN — Color vision explorer
+   Design rule: the interface is achromatic. Every saturated
+   color on this page is a stimulus, never chrome. A colored
+   button next to a color demo biases the judgement you are
+   asking the reader to make.
+   ============================================================ */
+
+:root{
+  --ink:      #131417;
+  --panel:    #1a1c21;
+  --panel-2:  #212429;
+  --well:     #0d0e11;
+  --rule:     #31353d;
+  --rule-hi:  #464c56;
+  --text:     #e9eaee;
+  --dim:      #99a0ab;
+  --faint:    #6a717c;
+
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+
+  --gap: clamp(18px, 3vw, 34px);
+}
+
+*{box-sizing:border-box}
+
+.ob-color{
+  background:var(--ink);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  padding:clamp(20px,4vw,52px) clamp(16px,4vw,44px) 40px;
+  max-width:1180px;
+  margin:0 auto;
+  container-type:inline-size;
+}
+.ob-color :focus-visible{
+  outline:2px solid #fff;
+  outline-offset:2px;
+  border-radius:2px;
+}
+
+/* ---------- masthead ---------- */
+.ob-mast{border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:8px}
+.ob-logo{display:block;width:clamp(190px,26vw,250px);height:auto;margin:0 0 20px}
+.ob-kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 10px
+}
+.ob-title{
+  font-size:clamp(30px,5.2vw,50px);line-height:1.04;letter-spacing:-.025em;
+  font-weight:640;margin:0 0 12px
+}
+.ob-standfirst{color:var(--dim);margin:0;font-size:clamp(15px,1.7vw,18px)}
+
+/* ---------- section shell ---------- */
+.ob-sec{border-top:1px solid var(--rule);padding-top:26px;margin-top:var(--gap)}
+.ob-sec:first-of-type{border-top:none}
+.ob-sechead{display:flex;gap:14px;align-items:baseline;margin-bottom:6px;flex-wrap:wrap}
+.ob-num{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--faint);
+  border:1px solid var(--rule);border-radius:2px;padding:3px 7px;flex:none
+}
+.ob-h2{font-size:clamp(20px,2.6vw,26px);letter-spacing:-.015em;font-weight:620;margin:0}
+.ob-lede{color:var(--dim);margin:0 0 20px;font-size:16px}
+.ob-note{color:var(--faint);font-size:14px;margin:14px 0 0;line-height:1.6}
+.ob-note b{color:var(--dim);font-weight:600}
+
+/* ---------- panels ---------- */
+.ob-panel{
+  background:var(--panel);border:1px solid var(--rule);border-radius:5px;
+  padding:clamp(14px,2.2vw,22px)
+}
+.ob-well{background:var(--well);border:1px solid var(--rule);border-radius:4px}
+
+/* ---------- controls ---------- */
+.ob-ctl{margin:0 0 14px}
+.ob-ctl:last-child{margin-bottom:0}
+.ob-lab{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:7px
+}
+.ob-val{color:var(--text);letter-spacing:.04em;font-size:12px;font-variant-numeric:tabular-nums}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;background:transparent;
+  margin:0;height:22px;cursor:pointer;display:block
+}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--rule)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--rule)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+  background:#f2f3f5;border:2px solid var(--ink);margin-top:-5.5px;
+  box-shadow:0 0 0 1px var(--rule-hi)
+}
+input[type=range]::-moz-range-thumb{
+  width:17px;height:17px;border-radius:50%;background:#f2f3f5;
+  border:2px solid var(--ink);box-shadow:0 0 0 1px var(--rule-hi)
+}
+input[type=range].ob-spectrum::-webkit-slider-runnable-track{
+  height:22px;border-radius:3px;border:1px solid var(--rule);
+  background:linear-gradient(90deg,#4a00a0,#3000ff,#0080ff,#00ffd0,#00ff2a,#b6ff00,#ffe000,#ff8000,#ff0000,#7a0000)
+}
+input[type=range].ob-spectrum::-moz-range-track{
+  height:22px;border-radius:3px;border:1px solid var(--rule);
+  background:linear-gradient(90deg,#4a00a0,#3000ff,#0080ff,#00ffd0,#00ff2a,#b6ff00,#ffe000,#ff8000,#ff0000,#7a0000)
+}
+input[type=range].ob-spectrum::-webkit-slider-thumb{
+  width:8px;height:34px;border-radius:2px;background:#fff;border:1.5px solid #111;margin-top:-7px
+}
+input[type=range].ob-spectrum::-moz-range-thumb{
+  width:8px;height:34px;border-radius:2px;background:#fff;border:1.5px solid #111
+}
+
+.ob-btn{
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--panel-2);color:var(--dim);border:1px solid var(--rule);
+  border-radius:3px;padding:8px 13px;cursor:pointer;transition:.13s
+}
+.ob-btn:hover{border-color:var(--rule-hi);color:var(--text)}
+.ob-btn[aria-pressed=true],.ob-btn.on{background:#eceef1;color:#14161a;border-color:#eceef1}
+.ob-btnrow{display:flex;flex-wrap:wrap;gap:7px}
+
+canvas{display:block;max-width:100%}
+
+/* ---------- 1 · EM spectrum ---------- */
+.ob-em{width:100%;height:auto;display:block}
+.ob-em text{font-family:var(--sans);fill:var(--dim)}
+.ob-em .t-hd{font-size:20px;fill:var(--text);font-weight:600;letter-spacing:.01em}
+.ob-em .t-sm{font-size:18px;font-family:var(--mono)}
+.ob-em .t-sz{font-size:18px}
+.ob-em .t-ax{font-size:18px;fill:var(--faint)}
+.ob-em .t-vis{fill:var(--text);font-weight:600}
+
+/* ---------- 2 · wavelength ---------- */
+.ob-wl{display:grid;grid-template-columns:1fr 260px;gap:18px}
+.ob-swatch{
+  border:1px solid var(--rule);border-radius:4px;height:96px;
+  display:flex;align-items:flex-end;justify-content:flex-end;padding:9px
+}
+.ob-swatch span{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  background:rgba(0,0,0,.55);color:#fff;padding:3px 6px;border-radius:2px
+}
+.ob-readout{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.ob-cell{background:var(--panel-2);padding:10px 12px}
+.ob-cell dt{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 3px}
+.ob-cell dd{margin:0;font-family:var(--mono);font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.ob-cell dd small{font-size:11px;color:var(--dim);letter-spacing:.06em}
+
+.ob-cones{display:grid;gap:9px;margin-top:2px}
+.ob-cone{display:grid;grid-template-columns:26px 1fr 48px;align-items:center;gap:10px}
+.ob-cone i{font-family:var(--mono);font-style:normal;font-size:12px;color:var(--dim);letter-spacing:.08em}
+.ob-cone b{font-family:var(--mono);font-size:11.5px;font-weight:400;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.ob-bar{height:9px;background:var(--well);border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.ob-bar div{height:100%;background:#e9eaee;width:0;transition:width .05s linear}
+@media(prefers-reduced-motion:reduce){.ob-bar div{transition:none}}
+
+/* ---------- 3 · mixing ---------- */
+.ob-mix{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+.ob-mixout{
+  border:1px solid var(--rule);border-radius:4px;height:120px;margin-bottom:14px;
+  display:flex;align-items:flex-end;padding:10px
+}
+.ob-mixout span{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.55);color:#fff;padding:4px 7px;border-radius:2px;letter-spacing:.06em}
+.ob-match{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:6px}
+.ob-chip{border:1px solid var(--rule);border-radius:4px;height:62px;position:relative}
+.ob-chip em{
+  position:absolute;left:6px;bottom:5px;font-style:normal;font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  background:rgba(0,0,0,.6);color:#fff;padding:2px 5px;border-radius:2px
+}
+.ob-score{font-family:var(--mono);font-size:12px;color:var(--dim);margin:10px 0 0;font-variant-numeric:tabular-nums}
+
+/* ---------- 4 · deficiency ---------- */
+.ob-cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ob-fig figcaption{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin-top:8px
+}
+.ob-fig canvas{width:100%;height:auto;border:1px solid var(--rule);border-radius:4px;background:var(--well)}
+.ob-toolbar{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;margin-bottom:16px}
+.ob-toolgrp{flex:1 1 240px;min-width:200px}
+.ob-toolgrp > .ob-lab{margin-bottom:8px}
+
+.ob-foot{border-top:1px solid var(--rule);margin-top:var(--gap);padding-top:18px;color:var(--faint);font-size:12.5px}
+.ob-foot p{margin:0 0 6px}
+
+@container (max-width:820px){
+  .ob-wl,.ob-mix{grid-template-columns:1fr}
+  .ob-cmp{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  .ob-wl,.ob-mix{grid-template-columns:1fr}
+  .ob-cmp{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body style="margin:0;background:#131417">
+
+<div class="ob-color">
+
+  <header class="ob-mast">
+    <img class="ob-logo" alt="The Open Brain"
+         src="data:image/png;base64,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">
+    <h1 class="ob-title">Color vision starts in the retina</h1>
+    <p class="ob-standfirst">Light carries wavelength. Color is what a nervous system with three
+    pigment classes makes of it. Work down this page and the gap between those two statements
+    should become concrete.</p>
+  </header>
+
+  <!-- ============ 1 · EM SPECTRUM ============ -->
+  <section class="ob-sec">
+    <div class="ob-sechead"><span class="ob-num">01</span><h2 class="ob-h2">The sliver we can see</h2></div>
+    <p class="ob-lede">Visible light occupies roughly one part in 10<sup>15</sup> of the
+    electromagnetic spectrum — a band narrower than the width of the line drawn under it here.</p>
+
+    <div class="ob-panel">
+      <svg class="ob-em" viewBox="0 0 1200 474" role="img"
+           aria-label="The electromagnetic spectrum from radio to gamma rays, with the narrow visible band highlighted.">
+        <defs>
+          <linearGradient id="visgrad" x1="0" x2="1">
+            <stop offset="0"   stop-color="#6a00b0"/>
+            <stop offset="0.16" stop-color="#2000ff"/>
+            <stop offset="0.34" stop-color="#00b0ff"/>
+            <stop offset="0.5"  stop-color="#00ff40"/>
+            <stop offset="0.68" stop-color="#e8ff00"/>
+            <stop offset="0.84" stop-color="#ff9000"/>
+            <stop offset="1"    stop-color="#ff0000"/>
+          </linearGradient>
+          <linearGradient id="barfade" x1="0" x2="1">
+            <stop offset="0"    stop-color="#0d0e11"/>
+            <stop offset="0.42" stop-color="#1d1f24"/>
+            <stop offset="0.58" stop-color="#1d1f24"/>
+            <stop offset="1"    stop-color="#0d0e11"/>
+          </linearGradient>
+        </defs>
+
+        <!-- wave (path injected by JS) -->
+        <path id="emWave" fill="none" stroke="#e9eaee" stroke-width="2.6" stroke-linejoin="round"/>
+
+        <!-- row labels -->
+        <text class="t-ax" x="200" y="168" text-anchor="end">Radiation</text>
+        <text class="t-ax" x="200" y="198" text-anchor="end">Wavelength (m)</text>
+        <text class="t-ax" x="200" y="254" text-anchor="end">Size scale</text>
+        <text class="t-ax" x="200" y="337" text-anchor="end">Frequency (Hz)</text>
+
+        <g id="emCols"></g>
+
+        <!-- frequency bar -->
+        <rect x="218" y="306" width="962" height="50" fill="url(#barfade)" stroke="#31353d"/>
+        <rect id="visBand" y="306" height="50" fill="url(#visgrad)" stroke="#e9eaee" stroke-width="1.2"/>
+
+        <!-- zoom wedge opening the visible slice toward §02. Painted BEFORE the
+             ticks so it sits behind the frequency labels rather than over them. -->
+        <path id="emWedge" fill="#212429" stroke="#31353d" stroke-width="1"/>
+        <g id="emTicks"></g>
+        <text class="t-hd t-vis" x="618" y="462" text-anchor="middle">380 – 750 nm</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ 2 · WAVELENGTH ============ -->
+  <section class="ob-sec">
+    <div class="ob-sechead"><span class="ob-num">02</span><h2 class="ob-h2">One wavelength, three numbers</h2></div>
+    <p class="ob-lede">Drag through the visible band. The wave is drawn to scale in nanometres, so
+    you can see the period physically shorten. Watch the three bars at the right: whatever the
+    wavelength, the retina reports only how strongly each cone class was excited.</p>
+
+    <div class="ob-panel">
+      <div class="ob-ctl">
+        <div class="ob-lab"><span>Wavelength</span><span class="ob-val" id="wlVal">550 nm</span></div>
+        <input type="range" class="ob-spectrum" id="wlSlider" min="380" max="750" step="1" value="550"
+               aria-label="Wavelength in nanometres">
+      </div>
+
+      <div class="ob-wl">
+        <div>
+          <canvas id="waveCv" width="1400" height="300" class="ob-well"
+                  style="width:100%;height:auto" aria-label="Sine wave at the selected wavelength"></canvas>
+          <canvas id="coneCv" width="1400" height="360" class="ob-well"
+                  style="width:100%;height:auto;margin-top:12px"
+                  aria-label="Cone sensitivity curves with a marker at the selected wavelength"></canvas>
+        </div>
+
+        <div>
+          <div class="ob-swatch" id="wlSwatch"><span id="wlHex">#000000</span></div>
+          <dl class="ob-readout" style="margin:12px 0 16px">
+            <div class="ob-cell"><dt>Frequency</dt><dd id="wlFreq">545 <small>THz</small></dd></div>
+            <div class="ob-cell"><dt>Photon energy</dt><dd id="wlEv">2.25 <small>eV</small></dd></div>
+          </dl>
+
+          <div class="ob-lab" style="margin-bottom:10px"><span>Cone excitation</span><span class="ob-val" id="coneRatio">—</span></div>
+          <div class="ob-cones">
+            <div class="ob-cone"><i>L</i><div class="ob-bar"><div id="barL"></div></div><b id="numL">0.00</b></div>
+            <div class="ob-cone"><i>M</i><div class="ob-bar"><div id="barM"></div></div><b id="numM">0.00</b></div>
+            <div class="ob-cone"><i>S</i><div class="ob-bar"><div id="barS"></div></div><b id="numS">0.00</b></div>
+          </div>
+          <p class="ob-note" style="margin-top:14px">Whatever reaches the retina — a single
+          wavelength or a whole broadband spectrum — leaves it as just these three numbers.
+          Every color you have ever seen was reconstructed from a triplet like this one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3 · MIXING ============ -->
+  <section class="ob-sec">
+    <div class="ob-sechead"><span class="ob-num">03</span><h2 class="ob-h2">Three lights are enough</h2></div>
+    <p class="ob-lede">Three overlapping projector beams. Because the eye only ever reports an
+    L/M/S triplet, three independent primaries are sufficient to cover the spectrum of
+    color a trichromat can experience — which is why screens have exactly three kinds of subpixel, and
+    why the number three is a fact about your retina rather than about light.</p>
+
+    <div class="ob-panel">
+      <div class="ob-mix">
+        <div>
+          <canvas id="mixCv" width="900" height="640" class="ob-well" style="width:100%;height:auto"
+                  aria-label="Three overlapping red, green and blue light beams"></canvas>
+        </div>
+        <div>
+          <div class="ob-mixout" id="mixOut"><span id="mixTxt">rgb(0, 0, 0)</span></div>
+
+          <div class="ob-ctl">
+            <div class="ob-lab"><span>Long / red beam</span><span class="ob-val" id="vR">180</span></div>
+            <input type="range" id="sR" min="0" max="255" value="180" aria-label="Red beam intensity">
+          </div>
+          <div class="ob-ctl">
+            <div class="ob-lab"><span>Medium / green beam</span><span class="ob-val" id="vG">180</span></div>
+            <input type="range" id="sG" min="0" max="255" value="180" aria-label="Green beam intensity">
+          </div>
+          <div class="ob-ctl">
+            <div class="ob-lab"><span>Short / blue beam</span><span class="ob-val" id="vB">180</span></div>
+            <input type="range" id="sB" min="0" max="255" value="180" aria-label="Blue beam intensity">
+          </div>
+
+          <div class="ob-lab" style="margin-top:20px"><span>Matching task</span></div>
+          <div class="ob-match">
+            <div class="ob-chip" id="tgtChip"><em>Target</em></div>
+            <div class="ob-chip" id="usrChip"><em>Yours</em></div>
+          </div>
+          <p class="ob-score" id="mixScore">Distance to target: —</p>
+          <div class="ob-btnrow" style="margin-top:10px">
+            <button class="ob-btn" id="newTarget">New target</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 · DEFICIENCY ============ -->
+  <section class="ob-sec">
+    <div class="ob-sechead"><span class="ob-num">04</span><h2 class="ob-h2">Losing a channel</h2></div>
+    <p class="ob-lede">Remove one cone class and the three-dimensional color space collapses to a
+    plane. Wavelengths a trichromat tells apart now fall on only two types of cones, and
+    some wavelengths become perceptually indistinguishable.</p>
+
+    <div class="ob-panel">
+      <div class="ob-toolbar">
+        <div class="ob-toolgrp">
+          <div class="ob-lab"><span>Scene</span></div>
+          <div class="ob-btnrow" id="sceneBtns"></div>
+        </div>
+        <div class="ob-toolgrp">
+          <div class="ob-lab"><span>Condition</span></div>
+          <div class="ob-btnrow" id="cbBtns"></div>
+        </div>
+        <div class="ob-toolgrp" style="flex:1 1 220px">
+          <div class="ob-lab"><span>Severity</span><span class="ob-val" id="cbIntVal">100%</span></div>
+          <input type="range" id="cbInt" min="0" max="100" value="100" aria-label="Severity of the simulated deficiency">
+        </div>
+      </div>
+
+      <div class="ob-cmp">
+        <figure class="ob-fig" style="margin:0">
+          <canvas id="origCv" width="560" height="560"></canvas>
+          <figcaption>Normal trichromat</figcaption>
+        </figure>
+        <figure class="ob-fig" style="margin:0">
+          <canvas id="simCv" width="560" height="560"></canvas>
+          <figcaption id="simCap">Protanopia — no L cones</figcaption>
+        </figure>
+      </div>
+
+      <div class="ob-btnrow" style="margin-top:14px">
+        <button class="ob-btn" id="reshuffleBtn" hidden>New plate</button>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="ob-sec">
+    <div class="ob-sechead"><h2 class="ob-h2">Notes</h2></div>
+    <p class="ob-note"><b>Section 02.</b> Cone curves are the Stockman &amp; Sharpe 2° fundamentals in
+    linear energy units, each normalised to unit peak and tabulated every 2 nm. Peaks fall at 570,
+    543 and 442 nm for L, M and S.</p>
+    <p class="ob-note"><b>Section 04.</b> This is a pedagogical example only. Do not use it as a
+    replacement for a proper clinical test.</p>
+  </section>
+
+  <footer class="ob-foot">
+    <p>This color vision explorer was adapted for The Open Brain from a teaching notebook designed
+    by Erica Cianfarano.</p>
+    <p>Cone fundamentals: Stockman &amp; Sharpe (2000), <i>Vision Research</i> 40, 1711–1737, via the
+    CVRL database. Dichromacy simulated after Viénot, Brettel &amp; Mollon (1999). Wavelength-to-RGB
+    after Bruton's approximation.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= shared color utilities ================= */
+
+// sRGB transfer function, both directions. Everything physical happens in linear light.
+var LIN = new Float32Array(256);
+for (var i=0;i<256;i++){
+  var c = i/255;
+  LIN[i] = c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+}
+function encode(v){
+  if (v<=0) return 0; if (v>=1) return 255;
+  var s = v <= 0.0031308 ? v*12.92 : 1.055*Math.pow(v,1/2.4)-0.055;
+  return Math.max(0, Math.min(255, Math.round(s*255)));
+}
+function hex(r,g,b){
+  return '#'+[r,g,b].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('');
+}
+
+// Bruton's wavelength -> RGB approximation, including the intensity roll-off at the
+// spectrum ends that the original notebook declared but never applied.
+function wavelengthRGB(w){
+  var R=0,G=0,B=0;
+  if (w>=380 && w<440){ R=-(w-440)/60; B=1; }
+  else if (w<490){ G=(w-440)/50; B=1; }
+  else if (w<510){ G=1; B=-(w-510)/20; }
+  else if (w<580){ R=(w-510)/70; G=1; }
+  else if (w<645){ R=1; G=-(w-645)/65; }
+  else if (w<=750){ R=1; }
+  var f=1;
+  if (w>=380 && w<420) f = 0.3 + 0.7*(w-380)/40;
+  else if (w>700) f = 0.3 + 0.7*(750-w)/50;
+  var g=0.8;
+  return [ Math.round(255*Math.pow(R*f,g)),
+           Math.round(255*Math.pow(G*f,g)),
+           Math.round(255*Math.pow(B*f,g)) ];
+}
+
+/* --- Stockman & Sharpe (2000) 2-deg cone fundamentals ------------------
+     Linear energy units, each curve normalised to unit peak, tabulated every
+     2 nm from 380 to 750 nm. Source: CVRL database (cvrl.org). Values below
+     390 nm are log-linearly extrapolated from the 390-400 nm slope, since the
+     published table begins at 390 nm. Linear interpolation between the 2 nm
+     samples departs from the native 1 nm data by at most 0.0023.
+  --------------------------------------------------------------------- */
+  var CONE_LO=380, CONE_STEP=2;
+  var CONE_PEAK={ L:570, M:543, S:442 };
+  var CONE_TAB={
+    L:[0.0001,0.0001,0.0001,0.0002,0.0003,0.0004,0.0006,0.0009,0.0013,0.0018,0.0024,0.0032,0.0042,0.0055,0.007,0.0087,0.0105,0.0124,0.0144,0.0164,0.0184,0.0203,0.022,0.0239,0.026,0.0282,0.0305,0.0329,0.0354,0.0379,0.0403,0.0423,0.044,0.0459,0.0478,0.0499,0.0519,0.0541,0.0568,0.0602,0.0647,0.0704,0.0771,0.0844,0.0919,0.0995,0.1071,0.1148,0.1229,0.1313,0.1401,0.1494,0.159,0.1689,0.1795,0.1916,0.2062,0.2234,0.243,0.2648,0.289,0.3155,0.3444,0.3755,0.4087,0.4437,0.4801,0.5175,0.5555,0.593,0.6286,0.6609,0.6905,0.7187,0.7456,0.7706,0.7933,0.8148,0.8369,0.8597,0.881,0.8991,0.9133,0.9239,0.932,0.9402,0.9504,0.961,0.9697,0.9761,0.9814,0.987,0.9922,0.9964,0.999,1,0.9991,0.9955,0.9881,0.9783,0.9694,0.9636,0.9587,0.9516,0.941,0.9277,0.9124,0.8952,0.8762,0.8557,0.834,0.8115,0.7877,0.762,0.7345,0.7057,0.6762,0.6461,0.6153,0.5845,0.5542,0.5248,0.4952,0.4643,0.4323,0.4007,0.3704,0.3416,0.3145,0.2892,0.2658,0.2441,0.2234,0.2033,0.1837,0.1651,0.1479,0.1321,0.1177,0.1047,0.093,0.0824,0.0729,0.0644,0.0567,0.0499,0.0438,0.0383,0.0335,0.0292,0.0254,0.022,0.0191,0.0164,0.0141,0.0122,0.0105,0.0091,0.0079,0.0068,0.0059,0.0051,0.0044,0.0038,0.0033,0.0028,0.0024,0.0021,0.0018,0.0015,0.0013,0.0011,0.001,0.0009,0.0007,0.0006,0.0006,0.0005,0.0004,0.0004,0.0003,0.0003,0.0002,0.0002,0.0002,0.0002],
+    M:[0.0001,0.0001,0.0001,0.0002,0.0003,0.0004,0.0005,0.0008,0.0012,0.0016,0.0023,0.0031,0.0041,0.0054,0.0069,0.0088,0.0109,0.0133,0.0159,0.0187,0.0217,0.0247,0.0279,0.0313,0.0352,0.0395,0.0442,0.0492,0.0545,0.0597,0.0648,0.0694,0.0737,0.0781,0.0826,0.0871,0.0913,0.0957,0.101,0.1078,0.1163,0.1266,0.1383,0.1508,0.1635,0.1759,0.1879,0.1996,0.2113,0.2233,0.2358,0.2485,0.2616,0.2746,0.2881,0.3036,0.3226,0.3448,0.3699,0.3975,0.4278,0.4609,0.4968,0.5349,0.5746,0.6155,0.6569,0.6984,0.7398,0.78,0.8166,0.8476,0.8737,0.8969,0.9178,0.9357,0.9503,0.9628,0.9749,0.9864,0.9952,0.9996,0.9992,0.9941,0.9859,0.9772,0.9699,0.9618,0.9502,0.9347,0.9177,0.9009,0.883,0.8626,0.8391,0.8135,0.7862,0.7564,0.7234,0.6882,0.6533,0.6202,0.5884,0.5568,0.5249,0.4926,0.4599,0.4273,0.3954,0.3644,0.3344,0.3056,0.2781,0.2521,0.2278,0.2053,0.1844,0.1653,0.1476,0.1314,0.1166,0.1032,0.0911,0.0803,0.0707,0.0621,0.0544,0.0476,0.0416,0.0362,0.0314,0.0271,0.0234,0.0203,0.0177,0.0154,0.0134,0.0115,0.0099,0.0085,0.0073,0.0063,0.0054,0.0046,0.004,0.0034,0.003,0.0026,0.0022,0.0019,0.0016,0.0014,0.0012,0.001,0.0009,0.0008,0.0007,0.0006,0.0005,0.0004,0.0004,0.0003,0.0003,0.0002,0.0002,0.0002,0.0002,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0,0,0,0,0,0,0,0,0,0,0,0],
+    S:[0.0016,0.0023,0.0033,0.0047,0.0067,0.0095,0.0138,0.0199,0.0285,0.0404,0.0566,0.0781,0.1059,0.1408,0.1833,0.233,0.2887,0.3494,0.4141,0.4804,0.5436,0.5993,0.6496,0.7002,0.7527,0.8026,0.8454,0.8841,0.9238,0.9629,0.991,1,0.9956,0.9874,0.9763,0.9554,0.9208,0.88,0.842,0.8109,0.7867,0.7684,0.7498,0.7244,0.6896,0.6464,0.5966,0.5434,0.4896,0.438,0.3903,0.3476,0.3087,0.2726,0.2399,0.2119,0.1887,0.1692,0.1524,0.1372,0.1228,0.1089,0.0954,0.0825,0.0708,0.0608,0.0528,0.0459,0.0398,0.0342,0.0292,0.0249,0.0211,0.0178,0.015,0.0126,0.0106,0.0089,0.0074,0.0061,0.0051,0.0042,0.0035,0.0029,0.0024,0.002,0.0016,0.0013,0.0011,0.0009,0.0007,0.0006,0.0005,0.0004,0.0003,0.0003,0.0002,0.0002,0.0002,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+  };
+  function coneSens(k, w){
+    var a=CONE_TAB[k], t=(w-CONE_LO)/CONE_STEP;
+    if (t<=0) return a[0];
+    if (t>=a.length-1) return a[a.length-1];
+    var i=Math.floor(t);
+    return a[i] + (a[i+1]-a[i])*(t-i);
+  }
+
+/* ================= 01 · EM spectrum ================= */
+(function emSpectrum(){
+  var svg = document.querySelector('.ob-em');
+  if (!svg) return;
+
+  // compressing sine, drawn left (radio) to right (gamma)
+  var x0=218, x1=1180, yc=68, amp=50, d=[];
+  for (var x=x0; x<=x1; x+=1.6){
+    var t=(x-x0)/(x1-x0);
+    var phase = 2*Math.PI * (1.1*t + 13*Math.pow(t,2.35));
+    var a = amp*(0.42+0.58*Math.pow(1-t,0.35));
+    d.push((x===x0?'M':'L')+x.toFixed(1)+' '+(yc - a*Math.sin(phase)).toFixed(1));
+  }
+  document.getElementById('emWave').setAttribute('d', d.join(' '));
+
+  var bands = [
+    {n:'Radio',     wl:'10³',   sz:'Buildings'},
+    {n:'Microwave', wl:'10⁻²',  sz:'Humans'},
+    {n:'Infrared',  wl:'10⁻⁵',  sz:'Needle point'},
+    {n:'Visible',   wl:'0.5×10⁻⁶', sz:'Protozoans'},
+    {n:'Ultraviolet',wl:'10⁻⁸', sz:'Molecules'},
+    {n:'X-ray',     wl:'10⁻¹⁰', sz:'Atoms'},
+    {n:'Gamma ray', wl:'10⁻¹²', sz:'Atomic nuclei'}
+  ];
+  var L=218, W=962, step=W/bands.length, g=document.getElementById('emCols'), NS='http://www.w3.org/2000/svg';
+  function txt(x,y,cls,s){
+    var t=document.createElementNS(NS,'text');
+    t.setAttribute('x',x); t.setAttribute('y',y);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('class',cls);
+    t.textContent=s; g.appendChild(t); return t;
+  }
+  bands.forEach(function(b,i){
+    var cx = L + step*(i+0.5);
+    var head = txt(cx,168,'t-hd',b.n);
+    if (b.n==='Visible') head.setAttribute('class','t-hd t-vis');
+    txt(cx,198,'t-sm',b.wl);
+    txt(cx,254,'t-sz',b.sz);
+    if (i){
+      var ln=document.createElementNS(NS,'line');
+      ln.setAttribute('x1',L+step*i); ln.setAttribute('x2',L+step*i);
+      ln.setAttribute('y1',144); ln.setAttribute('y2',272);
+      ln.setAttribute('stroke','#31353d'); g.appendChild(ln);
+    }
+  });
+
+  // visible band on the frequency bar, sitting under the "Visible" column
+  var vb=document.getElementById('visBand'),
+      vx=L+step*3+step*0.18, vw=step*0.64;
+  vb.setAttribute('x',vx); vb.setAttribute('width',vw);
+
+  var tg=document.getElementById('emTicks');
+  ['10⁴','10⁸','10¹²','10¹⁵','10¹⁶','10¹⁸','10²⁰'].forEach(function(s,i){
+    var cx=L+step*(i+0.5);
+    var t=document.createElementNS(NS,'text');
+    t.setAttribute('x',cx); t.setAttribute('y',392); t.setAttribute('text-anchor','middle');
+    t.setAttribute('class','t-sm'); t.textContent=s; tg.appendChild(t);
+    var ln=document.createElementNS(NS,'line');
+    ln.setAttribute('x1',cx); ln.setAttribute('x2',cx);
+    ln.setAttribute('y1',356); ln.setAttribute('y2',366);
+    ln.setAttribute('stroke','#6a717c'); tg.appendChild(ln);
+  });
+
+  // wedge that opens the visible slice out toward section 02
+  document.getElementById('emWedge').setAttribute('d',
+    'M'+vx+' 357 L'+(vx+vw)+' 357 L 900 440 L 336 440 Z');
+})();
+
+/* ================= 02 · wavelength explorer ================= */
+(function wavelength(){
+  var sl=document.getElementById('wlSlider');
+  if (!sl) return;
+  var waveCv=document.getElementById('waveCv'), wctx=waveCv.getContext('2d');
+  var coneCv=document.getElementById('coneCv'), cctx=coneCv.getContext('2d');
+
+  function drawWave(w, rgb){
+    var W=waveCv.width, H=waveCv.height, ctx=wctx;
+    ctx.clearRect(0,0,W,H);
+    var padL=54, padR=26, padT=34, padB=58;
+    var span=1600;                        // nm across the plot — fixed, so period is honest
+    var x0=padL, x1=W-padR, yc=(padT+H-padB)/2, amp=(H-padT-padB)/2 - 6;
+
+    // baseline
+    ctx.strokeStyle='#31353d'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x0,yc); ctx.lineTo(x1,yc); ctx.stroke();
+
+    // nm ruler
+    ctx.fillStyle='#6a717c'; ctx.font='400 17px ui-monospace, Menlo, monospace';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    for (var nm=0; nm<=span; nm+=400){
+      var px=x0+(nm/span)*(x1-x0);
+      ctx.strokeStyle='#282c33'; ctx.beginPath();
+      ctx.moveTo(px,padT); ctx.lineTo(px,H-padB); ctx.stroke();
+      var last = (nm===span);
+      ctx.textAlign = last ? 'right' : 'center';        // keeps the unit on-canvas
+      ctx.fillText(nm+(last?' nm':''), px, H-padB+10);
+    }
+    ctx.textAlign='center';
+
+    // the wave itself
+    ctx.strokeStyle='rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')';
+    ctx.lineWidth=3; ctx.lineJoin='round'; ctx.beginPath();
+    for (var px2=x0; px2<=x1; px2+=1){
+      var nmPos=(px2-x0)/(x1-x0)*span;
+      var y=yc-amp*Math.sin(2*Math.PI*nmPos/w);
+      if (px2===x0) ctx.moveTo(px2,y); else ctx.lineTo(px2,y);
+    }
+    ctx.stroke();
+
+    // bracket marking exactly one period
+    var pxPerNm=(x1-x0)/span, bx0=x0, bx1=x0+w*pxPerNm, by=padT+12;
+    ctx.strokeStyle='#99a0ab'; ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(bx0,by+9); ctx.lineTo(bx0,by); ctx.lineTo(bx1,by); ctx.lineTo(bx1,by+9);
+    ctx.stroke();
+    ctx.fillStyle='#e9eaee'; ctx.font='400 18px ui-monospace, Menlo, monospace';
+    ctx.textBaseline='bottom';
+    ctx.fillText('one wavelength = '+w+' nm', (bx0+bx1)/2, by-6);
+  }
+
+  function drawCones(w){
+    var W=coneCv.width, H=coneCv.height, ctx=cctx;
+    ctx.clearRect(0,0,W,H);
+    var padL=54, padR=26, padT=26, padB=52;
+    var x0=padL, x1=W-padR, y0=padT, y1=H-padB;
+    var lo=380, hi=750;
+    function X(nm){ return x0+(nm-lo)/(hi-lo)*(x1-x0); }
+    function Y(v){ return y1-v*(y1-y0); }
+
+    // spectrum strip under the axis, so the curves sit on real hues
+    for (var px=x0; px<=x1; px++){
+      var nm=lo+(px-x0)/(x1-x0)*(hi-lo), c=wavelengthRGB(nm);
+      ctx.fillStyle='rgb('+c[0]+','+c[1]+','+c[2]+')';
+      ctx.fillRect(px, y1+6, 1, 13);
+    }
+    ctx.strokeStyle='#31353d'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x1,y1); ctx.stroke();
+
+    ctx.fillStyle='#6a717c'; ctx.font='400 17px ui-monospace, Menlo, monospace';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    for (var t=400; t<=750; t+=50) ctx.fillText(t, X(t), y1+24);
+
+    ['S','M','L'].forEach(function(k){
+      ctx.strokeStyle='#c8ccd3'; ctx.lineWidth=2.5; ctx.beginPath();
+      for (var nm2=lo; nm2<=hi; nm2+=1){
+        var v=coneSens(k,nm2), px2=X(nm2), py=Y(v);
+        if (nm2===lo) ctx.moveTo(px2,py); else ctx.lineTo(px2,py);
+      }
+      ctx.stroke();
+      ctx.fillStyle='#e9eaee'; ctx.font='400 19px ui-monospace, Menlo, monospace';
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.fillText(k, X(CONE_PEAK[k]), Y(1)-8);
+    });
+
+    // marker at the selected wavelength
+    var mx=X(w);
+    ctx.strokeStyle='#ffffff'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(mx,y0-6); ctx.lineTo(mx,y1+20); ctx.stroke();
+    ctx.setLineDash([]);
+    ['S','M','L'].forEach(function(k){
+      var py=Y(coneSens(k,w));
+      ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(mx,py,5,0,7); ctx.fill();
+      ctx.fillStyle='#14161a'; ctx.beginPath(); ctx.arc(mx,py,2,0,7); ctx.fill();
+    });
+  }
+
+  function update(){
+    var w=+sl.value, rgb=wavelengthRGB(w);
+    document.getElementById('wlVal').textContent=w+' nm';
+    var sw=document.getElementById('wlSwatch');
+    sw.style.background='rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')';
+    document.getElementById('wlHex').textContent=hex(rgb[0],rgb[1],rgb[2]);
+
+    var thz=299792458/(w*1e-9)/1e12;
+    document.getElementById('wlFreq').innerHTML=thz.toFixed(0)+' <small>THz</small>';
+    document.getElementById('wlEv').innerHTML=(1239.84/w).toFixed(2)+' <small>eV</small>';
+
+    var L=coneSens('L',w), M=coneSens('M',w), S=coneSens('S',w);
+    document.getElementById('barL').style.width=(L*100).toFixed(1)+'%';
+    document.getElementById('barM').style.width=(M*100).toFixed(1)+'%';
+    document.getElementById('barS').style.width=(S*100).toFixed(1)+'%';
+    document.getElementById('numL').textContent=L.toFixed(2);
+    document.getElementById('numM').textContent=M.toFixed(2);
+    document.getElementById('numS').textContent=S.toFixed(2);
+    var sum=L+M+S;
+    document.getElementById('coneRatio').textContent = sum<0.0005 ? 'below threshold'
+      : (L/sum*100).toFixed(0)+' : '+(M/sum*100).toFixed(0)+' : '+(S/sum*100).toFixed(0);
+
+    drawWave(w,rgb); drawCones(w);
+  }
+  sl.addEventListener('input',update);
+  update();
+})();
+
+/* ================= 03 · additive mixing ================= */
+(function mixing(){
+  var cv=document.getElementById('mixCv');
+  if (!cv) return;
+  var ctx=cv.getContext('2d');
+  var sR=document.getElementById('sR'), sG=document.getElementById('sG'), sB=document.getElementById('sB');
+  var target=[0,0,0];
+
+  function beams(r,g,b){
+    var W=cv.width, H=cv.height;
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    var rad=Math.min(W,H)*0.30, cx=W/2, cy=H/2, off=rad*0.62;
+    var spots=[
+      {c:[r,0,0], x:cx,          y:cy-off},
+      {c:[0,g,0], x:cx-off*0.87, y:cy+off*0.5},
+      {c:[0,0,b], x:cx+off*0.87, y:cy+off*0.5}
+    ];
+    spots.forEach(function(s){
+      var gr=ctx.createRadialGradient(s.x,s.y,rad*0.55,s.x,s.y,rad);
+      gr.addColorStop(0,'rgb('+s.c[0]+','+s.c[1]+','+s.c[2]+')');
+      gr.addColorStop(0.82,'rgb('+s.c[0]+','+s.c[1]+','+s.c[2]+')');
+      gr.addColorStop(1,'rgb(0,0,0)');
+      ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(s.x,s.y,rad,0,7); ctx.fill();
+    });
+    ctx.globalCompositeOperation='source-over';
+  }
+
+  function paintChip(el,c){ el.style.background='rgb('+c[0]+','+c[1]+','+c[2]+')'; }
+
+  function update(){
+    var r=+sR.value, g=+sG.value, b=+sB.value;
+    document.getElementById('vR').textContent=r;
+    document.getElementById('vG').textContent=g;
+    document.getElementById('vB').textContent=b;
+    var out=document.getElementById('mixOut');
+    out.style.background='rgb('+r+','+g+','+b+')';
+    document.getElementById('mixTxt').textContent='rgb('+r+', '+g+', '+b+')  '+hex(r,g,b);
+    beams(r,g,b);
+    paintChip(document.getElementById('usrChip'),[r,g,b]);
+    var d=Math.sqrt(Math.pow(target[0]-r,2)+Math.pow(target[1]-g,2)+Math.pow(target[2]-b,2));
+    var verdict = d<12 ? ' — matched' : d<35 ? ' — very close' : d<80 ? ' — getting there' : '';
+    document.getElementById('mixScore').textContent='Distance to target: '+d.toFixed(1)+verdict;
+  }
+  function newTarget(){
+    target=[0,1,2].map(function(){ return Math.floor(Math.random()*256); });
+    paintChip(document.getElementById('tgtChip'),target);
+    update();
+  }
+  [sR,sG,sB].forEach(function(s){ s.addEventListener('input',update); });
+  document.getElementById('newTarget').addEventListener('click',newTarget);
+  newTarget();
+})();
+
+/* ================= 04 · dichromacy simulation ================= */
+(function deficiency(){
+  var origCv=document.getElementById('origCv');
+  if (!origCv) return;
+  var simCv=document.getElementById('simCv');
+  var octx=origCv.getContext('2d', {willReadFrequently:true});
+  var sctx=simCv.getContext('2d');
+  var N=origCv.width;
+
+  /* --- scene painters (all procedural: no external assets, no licensing) --- */
+  var plateAnswer=null;   // digit last drawn; kept so a reveal control can be restored
+
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+
+  function sceneSpectrum(ctx){
+    ctx.fillStyle='#0d0e11'; ctx.fillRect(0,0,N,N);
+    var m=34, w=N-2*m, top=52, h=N-top-64;
+    for (var i=0;i<w;i++){
+      var nm=380+(i/w)*370, c=wavelengthRGB(nm);
+      ctx.fillStyle='rgb('+c[0]+','+c[1]+','+c[2]+')';
+      ctx.fillRect(m+i, top, 1, h);
+    }
+    ctx.fillStyle='#99a0ab'; ctx.font='400 13px ui-monospace, Menlo, monospace';
+    ctx.textAlign='center';
+    ctx.fillText('380 nm', m+30, N-30);
+    ctx.fillText('750 nm', N-m-30, N-30);
+    ctx.fillText('THE VISIBLE SPECTRUM', N/2, 32);
+  }
+
+  function sceneWheel(ctx){
+    ctx.fillStyle='#0d0e11'; ctx.fillRect(0,0,N,N);
+    var cx=N/2, cy=N*0.44, R=N*0.33;
+    for (var a=0;a<360;a+=0.5){
+      ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,R,(a-0.6)*Math.PI/180,(a+0.6)*Math.PI/180);
+      ctx.closePath();
+      ctx.fillStyle='hsl('+a+',95%,52%)'; ctx.fill();
+    }
+    ctx.fillStyle='#0d0e11'; ctx.beginPath(); ctx.arc(cx,cy,R*0.42,0,7); ctx.fill();
+    var names=[0,40,60,120,180,210,275,320];
+    var sw=(N-60)/names.length;
+    names.forEach(function(h,i){
+      ctx.fillStyle='hsl('+h+',95%,52%)';
+      ctx.fillRect(30+i*sw+2, N-96, sw-4, 54);
+    });
+    ctx.fillStyle='#99a0ab'; ctx.font='400 13px ui-monospace, Menlo, monospace';
+    ctx.textAlign='center'; ctx.fillText('WHICH HUES STAY DISTINCT?', N/2, N-22);
+  }
+
+  function sceneFruit(ctx){
+    ctx.fillStyle='#1b2a12'; ctx.fillRect(0,0,N,N);
+    var i;
+    for (i=0;i<340;i++){                       // foliage
+      var x=rnd(-20,N+20), y=rnd(-20,N+20), rx=rnd(24,64), ry=rnd(10,26), rot=rnd(0,Math.PI);
+      var g=rnd(70,140), r=rnd(28,74), b=rnd(20,52);
+      ctx.save(); ctx.translate(x,y); ctx.rotate(rot);
+      ctx.fillStyle='rgb('+(r|0)+','+(g|0)+','+(b|0)+')';
+      ctx.beginPath(); ctx.ellipse(0,0,rx,ry,0,0,7); ctx.fill();
+      ctx.restore();
+    }
+    for (i=0;i<26;i++){                        // ripe fruit
+      var fx=rnd(40,N-40), fy=rnd(40,N-40), fr=rnd(11,19);
+      var fr_r=rnd(178,232), fg=rnd(28,86), fb=rnd(24,54);
+      ctx.fillStyle='rgb('+(fr_r|0)+','+(fg|0)+','+(fb|0)+')';
+      ctx.beginPath(); ctx.arc(fx,fy,fr,0,7); ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.22)';
+      ctx.beginPath(); ctx.arc(fx-fr*0.3,fy-fr*0.34,fr*0.28,0,7); ctx.fill();
+    }
+    ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(0,N-38,N,38);
+    ctx.fillStyle='#c8ccd3'; ctx.font='400 13px ui-monospace, Menlo, monospace';
+    ctx.textAlign='center'; ctx.fillText('COUNT THE RIPE FRUIT', N/2, N-14);
+  }
+
+  // --- luminance-matched swatch generation -------------------------------
+  // HSL "lightness" is not luminance: an olive green and an orange at the same
+  // HSL L differ in relative luminance by ~65%, which would hand the figure to a
+  // dichromat for free. Build the hue, then rescale in LINEAR light to hit an
+  // exact target Y so the only cue separating figure from ground is chromatic.
+  function hsl2lin(h,s,l){
+    h/=360;
+    function f(p,q,t){
+      if(t<0)t+=1; if(t>1)t-=1;
+      if(t<1/6) return p+(q-p)*6*t;
+      if(t<1/2) return q;
+      if(t<2/3) return p+(q-p)*(2/3-t)*6;
+      return p;
+    }
+    var q = l<0.5 ? l*(1+s) : l+s-l*s, p = 2*l-q;
+    return [f(p,q,h+1/3), f(p,q,h), f(p,q,h-1/3)].map(function(c){
+      return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+    });
+  }
+  function swatchAtY(h, s, targetY){
+    var c = hsl2lin(h, s, 0.5);
+    var y = 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2];
+    var k = targetY / y;
+    c = [c[0]*k, c[1]*k, c[2]*k];
+    var peak = Math.max(c[0], c[1], c[2]);
+    if (peak > 1){ c = [c[0]/peak, c[1]/peak, c[2]/peak]; }   // rare; keeps hue
+    return 'rgb('+encode(c[0])+','+encode(c[1])+','+encode(c[2])+')';
+  }
+
+  // Pseudoisochromatic plate, generated fresh each time. Dots are packed
+  // largest-first so small ones can backfill the gaps (~74% coverage; uniform
+  // rejection sampling only reaches ~47% and looks visibly sparse).
+  function scenePlate(ctx){
+    var digits='2468357';
+    var d = digits[Math.floor(Math.random()*digits.length)];
+    plateAnswer = d;
+
+    var mask=document.createElement('canvas'); mask.width=mask.height=N;
+    var mc=mask.getContext('2d', {willReadFrequently:true});
+    mc.fillStyle='#000'; mc.fillRect(0,0,N,N);
+    mc.fillStyle='#fff';
+    mc.font='700 '+Math.round(N*0.64)+'px ui-sans-serif, Helvetica, Arial, sans-serif';
+    mc.textAlign='center'; mc.textBaseline='middle';
+    mc.fillText(d, N/2, N/2+N*0.02);
+    var md=mc.getImageData(0,0,N,N).data;
+
+    ctx.fillStyle='#0d0e11'; ctx.fillRect(0,0,N,N);
+
+    var R=N/2-6, RMAX=17, cell=Math.ceil(RMAX*2)+2, grid={}, dots=[];
+    var PASSES=[1,.84,.7,.59,.49,.41,.34,.29,.24,.20,.17,.14];
+    PASSES.forEach(function(f){
+      var rlo=RMAX*f*0.78, rhi=RMAX*f;
+      for (var t=0;t<10000;t++){
+        var r=rlo+Math.random()*(rhi-rlo);
+        var ang=Math.random()*Math.PI*2, rad=Math.sqrt(Math.random())*(R-r);
+        var x=N/2+Math.cos(ang)*rad, y=N/2+Math.sin(ang)*rad;
+        var ok=true, gx=(x/cell)|0, gy=(y/cell)|0;
+        for (var a=-2;a<=2 && ok;a++) for (var b=-2;b<=2 && ok;b++){
+          var bucket=grid[(gx+a)+':'+(gy+b)];
+          if (!bucket) continue;
+          for (var i=0;i<bucket.length;i++){
+            var o=bucket[i], dx=o.x-x, dy=o.y-y, mm=o.r+r+0.45;
+            if (dx*dx+dy*dy < mm*mm){ ok=false; break; }
+          }
+        }
+        if (!ok) continue;
+        var idx=(((y|0)*N)+(x|0))*4;
+        var kk=gx+':'+gy;
+        (grid[kk]=grid[kk]||[]).push({x:x,y:y,r:r});
+        dots.push({x:x,y:y,r:r,fig: md[idx] > 128});
+      }
+    });
+
+    // Confusion pair. These hue/saturation ranges were chosen by searching for
+    // the pair that minimises figure-ground separation AFTER protan and deutan
+    // simulation while staying far apart for a trichromat. A more obvious
+    // salmon-on-green pair leaks about twice as much signal to deuteranopes.
+    dots.forEach(function(o){
+      var tY = rnd(0.11, 0.30);                  // identical range for both sets
+      var h  = o.fig ? rnd(30, 46)     : rnd(98, 116);
+      var s  = o.fig ? rnd(0.40, 0.55) : rnd(0.34, 0.48);
+      ctx.fillStyle = swatchAtY(h, s, tY);
+      ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,7); ctx.fill();
+    });
+  }
+
+  var SCENES=[
+    {id:'plate',    label:'Ishihara plate', draw:scenePlate,    plate:true},
+    {id:'fruit',    label:'Fruit in leaves',draw:sceneFruit},
+    {id:'wheel',    label:'Hue circle',     draw:sceneWheel},
+    {id:'spectrum', label:'Spectrum',       draw:sceneSpectrum}
+  ];
+
+  var MODES=[
+    {id:'protan', label:'Protanopia', cap:'Protanopia — no L cones'},
+    {id:'deutan', label:'Deuteranopia',cap:'Deuteranopia — no M cones'},
+    {id:'tritan', label:'Tritanopia', cap:'Tritanopia — no S cones'},
+    {id:'achroma',label:'Achromatopsia',cap:'Achromatopsia — no functioning cones'}
+  ];
+
+  /* --- Viénot, Brettel & Mollon (1999) dichromat projection ---
+     linear sRGB -> LMS -> project onto the surviving plane -> back.  */
+  var RGB2LMS=[17.8824,43.5161,4.11935, 3.45565,27.1554,3.86714, 0.0299566,0.184309,1.46709];
+  var LMS2RGB=[0.080944,-0.130504,0.116721, -0.010248,0.054019,-0.113614, -0.000365,-0.004120,0.693513];
+
+  function simulate(src, mode, amount){
+    var s=src.data, out=sctx.createImageData(N,N), o=out.data;
+    for (var i=0;i<s.length;i+=4){
+      var r=LIN[s[i]], g=LIN[s[i+1]], b=LIN[s[i+2]];
+      var nr,ng,nb;
+      if (mode==='achroma'){
+        var y=0.2126*r+0.7152*g+0.0722*b;
+        nr=ng=nb=y;
+      } else {
+        var L=RGB2LMS[0]*r+RGB2LMS[1]*g+RGB2LMS[2]*b;
+        var M=RGB2LMS[3]*r+RGB2LMS[4]*g+RGB2LMS[5]*b;
+        var S=RGB2LMS[6]*r+RGB2LMS[7]*g+RGB2LMS[8]*b;
+        if      (mode==='protan') L =  2.02344*M - 2.52581*S;
+        else if (mode==='deutan') M =  0.494207*L + 1.24827*S;
+        else                      S = -0.395913*L + 0.801109*M;
+        nr=LMS2RGB[0]*L+LMS2RGB[1]*M+LMS2RGB[2]*S;
+        ng=LMS2RGB[3]*L+LMS2RGB[4]*M+LMS2RGB[5]*S;
+        nb=LMS2RGB[6]*L+LMS2RGB[7]*M+LMS2RGB[8]*S;
+      }
+      // blend in linear light so partial severity stays photometrically sane
+      o[i]   = encode(r+(nr-r)*amount);
+      o[i+1] = encode(g+(ng-g)*amount);
+      o[i+2] = encode(b+(nb-b)*amount);
+      o[i+3] = s[i+3];
+    }
+    return out;
+  }
+
+  /* --- wiring --- */
+  var scene=SCENES[0], mode=MODES[0], srcData=null;
+  var sceneBtns=document.getElementById('sceneBtns'), cbBtns=document.getElementById('cbBtns');
+  var intSl=document.getElementById('cbInt');
+  var reshuffleBtn=document.getElementById('reshuffleBtn');
+
+  SCENES.forEach(function(s){
+    var b=document.createElement('button');
+    b.className='ob-btn'; b.textContent=s.label; b.setAttribute('aria-pressed', s===scene);
+    b.addEventListener('click', function(){
+      scene=s; redrawScene();
+      [].forEach.call(sceneBtns.children,function(c){ c.setAttribute('aria-pressed', c===b); });
+    });
+    sceneBtns.appendChild(b);
+  });
+  MODES.forEach(function(m){
+    var b=document.createElement('button');
+    b.className='ob-btn'; b.textContent=m.label; b.setAttribute('aria-pressed', m===mode);
+    b.addEventListener('click', function(){
+      mode=m; document.getElementById('simCap').textContent=m.cap; applySim();
+      [].forEach.call(cbBtns.children,function(c){ c.setAttribute('aria-pressed', c===b); });
+    });
+    cbBtns.appendChild(b);
+  });
+
+  function redrawScene(){
+    scene.draw(octx);
+    srcData=octx.getImageData(0,0,N,N);
+    var isPlate=!!scene.plate;
+    reshuffleBtn.hidden=!isPlate;
+    applySim();
+  }
+  // ~300k pixels per repaint, so coalesce slider events into one frame
+  var pending=false;
+  function applySim(){
+    if (!srcData || pending) return;
+    pending=true;
+    requestAnimationFrame(function(){
+      pending=false;
+      sctx.putImageData(simulate(srcData, mode.id, +intSl.value/100), 0, 0);
+    });
+  }
+
+  intSl.addEventListener('input', function(){
+    document.getElementById('cbIntVal').textContent=intSl.value+'%';
+    applySim();
+  });
+  reshuffleBtn.addEventListener('click', redrawScene);
+
+  document.getElementById('simCap').textContent=mode.cap;
+  redrawScene();
+})();
+
+})();
+</script>
+</body>
+</html>
