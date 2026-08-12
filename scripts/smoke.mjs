@@ -112,6 +112,12 @@ const ROUTES = [
     minText: 50,
     widths: [1280, 1440, 1920],
   },
+  {
+    path: "/sdt",
+    name: "sdt-widget",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
 ];
 
 /* Noise that predates this harness and isn't what we're gating on. Keep this

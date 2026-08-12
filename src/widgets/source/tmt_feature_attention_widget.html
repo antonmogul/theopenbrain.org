@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --bg: #1a1c20;
+    --panel-bg: #22252b;
+    --magenta: #e8408c;
+    --grey-blue: #6f8299;
+    --neutral: #9aa0aa;
+    --text: #d8dade;
+    --dim-text: #8890a0;
+    --line: #3a3d44;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    color: var(--text);
+    padding: 36px 40px;
+    width: 560px;
+  }
+  .title { font-size: 15px; margin-bottom: 4px; }
+  .subtitle { font-size: 11.5px; color: var(--dim-text); margin-bottom: 24px; line-height: 1.5; }
+
+  .toggle {
+    display: flex;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 22px;
+  }
+  .toggle button {
+    flex: 1;
+    background: var(--panel-bg);
+    color: var(--dim-text);
+    border: none;
+    border-right: 1px solid var(--line);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 11px 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .toggle button:last-child { border-right: none; }
+  .toggle button:hover { background: #2a2e35; }
+  .toggle button.active {
+    background: var(--magenta);
+    color: #1a1c20;
+    font-weight: 700;
+  }
+
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px 22px 24px 22px;
+  }
+  .panel-sublabel {
+    font-size: 11.5px;
+    color: var(--dim-text);
+    text-align: center;
+    margin-bottom: 6px;
+    min-height: 32px;
+    line-height: 1.4;
+    transition: opacity 0.15s;
+  }
+  .schematic { width: 100%; height: 170px; display: block; }
+  .raster-area {
+    margin-top: 24px;
+    background: #16181c;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 8px 6px 8px;
+  }
+  .raster-svg { display: block; width: 100%; }
+  .axis-label {
+    font-size: 9.5px;
+    color: var(--dim-text);
+    text-align: center;
+    margin-top: 8px;
+  }
+  .fade { transition: opacity 0.18s ease; }
+</style>
+</head>
+<body>
+
+<div class="title">Feature-based attention modulates responses to a fixed, unattended stimulus</div>
+<div class="subtitle">single-unit spike train, one trial per condition &middot; differences exaggerated for legibility, not to scale &middot; adapted from Treue &amp; Martinez-Trujillo (1999), Fig. 2</div>
+
+<div class="toggle">
+  <button id="btn-fixation" class="active" onclick="setCondition('fixation')">Attend fixation</button>
+  <button id="btn-preferred" onclick="setCondition('preferred')">Attend preferred direction</button>
+  <button id="btn-null" onclick="setCondition('null')">Attend null direction</button>
+</div>
+
+<div class="panel">
+  <div class="panel-sublabel fade" id="sublabel">neither stimulus behaviourally relevant</div>
+
+  <svg class="schematic fade" viewBox="0 0 350 170" id="schematic">
+    
+<circle cx="175" cy="85" r="16" fill="none" stroke="#e8408c" stroke-width="2" opacity="0.85"/>
+<line x1="169" y1="85" x2="181" y2="85" stroke="#d8dade" stroke-width="2"/>
+<line x1="175" y1="79" x2="175" y2="91" stroke="#d8dade" stroke-width="2"/>
+<circle cx="90" cy="85" r="42" fill="none" stroke="#8890a0" stroke-width="1.5" stroke-dasharray="4,3"/>
+<circle cx="90" cy="85" r="5" fill="#6f8299"/>
+<line x1="90" y1="85" x2="90" y2="55" stroke="#6f8299" stroke-width="2.5" marker-end="url(#arrowGrey)"/>
+<circle cx="260" cy="85" r="5" fill="#9aa0aa" opacity="0.55"/>
+<text x="90" y="145" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">RF stimulus</text>
+<text x="90" y="157" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">(pref. direction, fixed)</text>
+
+    <defs>
+      <marker id="arrowGrey" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#6f8299"/>
+      </marker>
+      <marker id="arrowMag" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#e8408c"/>
+      </marker>
+      <marker id="arrowBlue" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#5b6b80"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <div class="raster-area">
+    <svg class="raster-svg fade" viewBox="0 0 300 70" id="raster">
+      <line x1="12.3" y1="2" x2="12.3" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="16.5" y1="2" x2="16.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="19.9" y1="2" x2="19.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="24.9" y1="2" x2="24.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="34.7" y1="2" x2="34.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="52.7" y1="2" x2="52.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="60.4" y1="2" x2="60.4" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="76.7" y1="2" x2="76.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="87.0" y1="2" x2="87.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="94.2" y1="2" x2="94.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="97.5" y1="2" x2="97.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="133.1" y1="2" x2="133.1" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="136.5" y1="2" x2="136.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="140.2" y1="2" x2="140.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="152.2" y1="2" x2="152.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="158.1" y1="2" x2="158.1" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="167.0" y1="2" x2="167.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="174.8" y1="2" x2="174.8" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="182.8" y1="2" x2="182.8" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="186.9" y1="2" x2="186.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="193.7" y1="2" x2="193.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="204.9" y1="2" x2="204.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="209.0" y1="2" x2="209.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="233.2" y1="2" x2="233.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="237.9" y1="2" x2="237.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="247.2" y1="2" x2="247.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="270.5" y1="2" x2="270.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="282.0" y1="2" x2="282.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="286.9" y1="2" x2="286.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="291.3" y1="2" x2="291.3" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="8" y1="70" x2="292" y2="70" stroke="#3a3d44" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="axis-label">response to RF stimulus</div>
+</div>
+
+<script>
+const schematics = {
+  fixation: `
+<circle cx="175" cy="85" r="16" fill="none" stroke="#e8408c" stroke-width="2" opacity="0.85"/>
+<line x1="169" y1="85" x2="181" y2="85" stroke="#d8dade" stroke-width="2"/>
+<line x1="175" y1="79" x2="175" y2="91" stroke="#d8dade" stroke-width="2"/>
+<circle cx="90" cy="85" r="42" fill="none" stroke="#8890a0" stroke-width="1.5" stroke-dasharray="4,3"/>
+<circle cx="90" cy="85" r="5" fill="#6f8299"/>
+<line x1="90" y1="85" x2="90" y2="55" stroke="#6f8299" stroke-width="2.5" marker-end="url(#arrowGrey)"/>
+<circle cx="260" cy="85" r="5" fill="#9aa0aa" opacity="0.55"/>
+<text x="90" y="145" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">RF stimulus</text>
+<text x="90" y="157" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">(pref. direction, fixed)</text>
+`,
+  preferred: `
+<line x1="169" y1="85" x2="181" y2="85" stroke="#8890a0" stroke-width="1.5" opacity="0.6"/>
+<line x1="175" y1="79" x2="175" y2="91" stroke="#8890a0" stroke-width="1.5" opacity="0.6"/>
+<circle cx="90" cy="85" r="42" fill="none" stroke="#8890a0" stroke-width="1.5" stroke-dasharray="4,3"/>
+<circle cx="90" cy="85" r="5" fill="#6f8299"/>
+<line x1="90" y1="85" x2="90" y2="55" stroke="#6f8299" stroke-width="2.5" marker-end="url(#arrowGrey)"/>
+<circle cx="260" cy="85" r="18" fill="none" stroke="#e8408c" stroke-width="2" opacity="0.9"/>
+<circle cx="260" cy="85" r="5" fill="#e8408c"/>
+<line x1="260" y1="85" x2="260" y2="55" stroke="#e8408c" stroke-width="2.5" marker-end="url(#arrowMag)"/>
+<text x="90" y="145" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">RF stimulus</text>
+<text x="90" y="157" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">(pref. direction, fixed)</text>
+<text x="260" y="145" font-size="9.5" fill="#e8408c" text-anchor="middle" font-family="monospace" opacity="0.9">attended</text>
+<text x="260" y="157" font-size="9.5" fill="#e8408c" text-anchor="middle" font-family="monospace" opacity="0.9">(same direction)</text>
+`,
+  null: `
+<line x1="169" y1="85" x2="181" y2="85" stroke="#8890a0" stroke-width="1.5" opacity="0.6"/>
+<line x1="175" y1="79" x2="175" y2="91" stroke="#8890a0" stroke-width="1.5" opacity="0.6"/>
+<circle cx="90" cy="85" r="42" fill="none" stroke="#8890a0" stroke-width="1.5" stroke-dasharray="4,3"/>
+<circle cx="90" cy="85" r="5" fill="#6f8299"/>
+<line x1="90" y1="85" x2="90" y2="55" stroke="#6f8299" stroke-width="2.5" marker-end="url(#arrowGrey)"/>
+<circle cx="260" cy="85" r="18" fill="none" stroke="#e8408c" stroke-width="2" opacity="0.9"/>
+<circle cx="260" cy="85" r="5" fill="#5b6b80"/>
+<line x1="260" y1="85" x2="260" y2="115" stroke="#5b6b80" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+<text x="90" y="145" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">RF stimulus</text>
+<text x="90" y="157" font-size="9.5" fill="#8890a0" text-anchor="middle" font-family="monospace">(pref. direction, fixed)</text>
+<text x="260" y="145" font-size="9.5" fill="#e8408c" text-anchor="middle" font-family="monospace" opacity="0.9">attended</text>
+<text x="260" y="157" font-size="9.5" fill="#e8408c" text-anchor="middle" font-family="monospace" opacity="0.9">(opposite direction)</text>
+`
+};
+const rasters = {
+  fixation: `<line x1="12.3" y1="2" x2="12.3" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="16.5" y1="2" x2="16.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="19.9" y1="2" x2="19.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="24.9" y1="2" x2="24.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="34.7" y1="2" x2="34.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="52.7" y1="2" x2="52.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="60.4" y1="2" x2="60.4" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="76.7" y1="2" x2="76.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="87.0" y1="2" x2="87.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="94.2" y1="2" x2="94.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="97.5" y1="2" x2="97.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="133.1" y1="2" x2="133.1" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="136.5" y1="2" x2="136.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="140.2" y1="2" x2="140.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="152.2" y1="2" x2="152.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="158.1" y1="2" x2="158.1" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="167.0" y1="2" x2="167.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="174.8" y1="2" x2="174.8" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="182.8" y1="2" x2="182.8" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="186.9" y1="2" x2="186.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="193.7" y1="2" x2="193.7" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="204.9" y1="2" x2="204.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="209.0" y1="2" x2="209.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="233.2" y1="2" x2="233.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="237.9" y1="2" x2="237.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="247.2" y1="2" x2="247.2" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="270.5" y1="2" x2="270.5" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="282.0" y1="2" x2="282.0" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="286.9" y1="2" x2="286.9" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="291.3" y1="2" x2="291.3" y2="66" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="8" y1="70" x2="292" y2="70" stroke="#3a3d44" stroke-width="1"/>`,
+  preferred: `<line x1="8.2" y1="2" x2="8.2" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="12.7" y1="2" x2="12.7" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="19.0" y1="2" x2="19.0" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="27.9" y1="2" x2="27.9" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="32.7" y1="2" x2="32.7" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="36.7" y1="2" x2="36.7" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="41.5" y1="2" x2="41.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="45.2" y1="2" x2="45.2" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="51.8" y1="2" x2="51.8" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="58.5" y1="2" x2="58.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="62.2" y1="2" x2="62.2" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="67.6" y1="2" x2="67.6" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="73.2" y1="2" x2="73.2" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="78.0" y1="2" x2="78.0" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="81.4" y1="2" x2="81.4" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="84.6" y1="2" x2="84.6" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="90.1" y1="2" x2="90.1" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="94.4" y1="2" x2="94.4" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="98.6" y1="2" x2="98.6" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="102.5" y1="2" x2="102.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="113.6" y1="2" x2="113.6" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="117.8" y1="2" x2="117.8" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="121.7" y1="2" x2="121.7" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="127.5" y1="2" x2="127.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="135.1" y1="2" x2="135.1" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="141.5" y1="2" x2="141.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="145.4" y1="2" x2="145.4" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="166.8" y1="2" x2="166.8" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="170.5" y1="2" x2="170.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="173.5" y1="2" x2="173.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="178.8" y1="2" x2="178.8" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="182.5" y1="2" x2="182.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="186.8" y1="2" x2="186.8" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="190.8" y1="2" x2="190.8" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="194.6" y1="2" x2="194.6" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="204.3" y1="2" x2="204.3" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="208.1" y1="2" x2="208.1" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="212.6" y1="2" x2="212.6" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="215.9" y1="2" x2="215.9" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="225.6" y1="2" x2="225.6" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="229.1" y1="2" x2="229.1" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="234.4" y1="2" x2="234.4" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="240.3" y1="2" x2="240.3" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="248.4" y1="2" x2="248.4" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="254.1" y1="2" x2="254.1" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="259.3" y1="2" x2="259.3" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="266.5" y1="2" x2="266.5" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="275.1" y1="2" x2="275.1" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="280.1" y1="2" x2="280.1" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="286.4" y1="2" x2="286.4" y2="66" stroke="#e8408c" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="8" y1="70" x2="292" y2="70" stroke="#3a3d44" stroke-width="1"/>`,
+  null: `<line x1="29.4" y1="2" x2="29.4" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="107.9" y1="2" x2="107.9" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="116.6" y1="2" x2="116.6" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="126.5" y1="2" x2="126.5" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="163.1" y1="2" x2="163.1" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="170.7" y1="2" x2="170.7" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="180.9" y1="2" x2="180.9" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="185.5" y1="2" x2="185.5" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="189.6" y1="2" x2="189.6" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="202.6" y1="2" x2="202.6" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="207.8" y1="2" x2="207.8" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="217.3" y1="2" x2="217.3" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="233.3" y1="2" x2="233.3" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="255.4" y1="2" x2="255.4" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="263.7" y1="2" x2="263.7" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="267.9" y1="2" x2="267.9" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="291.8" y1="2" x2="291.8" y2="66" stroke="#5b6b80" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="8" y1="70" x2="292" y2="70" stroke="#3a3d44" stroke-width="1"/>`
+};
+const sublabels = {
+  fixation: "neither stimulus behaviourally relevant",
+  preferred: "attended target is outside the RF, moving in the cell's preferred direction",
+  null: "attended target is outside the RF, moving in the cell's anti-preferred direction"
+};
+
+function setCondition(cond) {
+  document.querySelectorAll('.toggle button').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + cond).classList.add('active');
+
+  const schematicEl = document.getElementById('schematic');
+  const rasterEl = document.getElementById('raster');
+  const sublabelEl = document.getElementById('sublabel');
+
+  [schematicEl, rasterEl, sublabelEl].forEach(el => el.style.opacity = 0);
+
+  setTimeout(() => {
+    // remove old dynamic content (keep defs in schematic)
+    const defs = schematicEl.querySelector('defs');
+    schematicEl.innerHTML = schematics[cond] + (defs ? defs.outerHTML : '');
+    rasterEl.innerHTML = rasters[cond];
+    sublabelEl.textContent = sublabels[cond];
+    [schematicEl, rasterEl, sublabelEl].forEach(el => el.style.opacity = 1);
+  }, 180);
+}
+</script>
+
+</body>
+</html>

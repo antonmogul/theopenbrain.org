@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Posner Spatial Cueing Task</title>
+<style>
+  :root {
+    --border: #d1d1d1;
+    --radius: 8px;
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    --text-muted: #888888;
+    --surface-1: #f0f0f0;
+    --bg-page: #fafafa;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 2rem 1rem;
+  }
+  .widget-container {
+    max-width: 680px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: var(--surface-1); }
+  button:disabled { opacity: 0.5; cursor: default; }
+</style>
+</head>
+<body>
+<div class="widget-container">
+
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Interactive Posner spatial cueing task with four possible locations. Run a block of practice trials and see your own reaction time cost and benefit for valid versus invalid cues. A cancel button is available at any time.</h2>
+
+<p style="font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:1rem;">Watch the dot at center. It will briefly grow a small tail pointing toward one of the four corners — that's the cue. Shortly after, a faint gray dot will appear in one of the four boxes. Press <strong style="font-weight:500;">spacebar</strong> (or tap the button below) the instant you see it, no matter which box it's in. The gap between cue and target varies from trial to trial, so don't try to anticipate it — wait until you actually see the dot. The first 20 trials are always valid; invalid trials can appear after that. 50 trials total, run automatically.</p>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:1.25rem;">The cue-target gap is always under 180 milliseconds — too brief for your eyes to move there. Any speed difference you feel reflects covert attention, not gaze.</p>
+
+<div style="position:relative; width:100%; height:300px; margin-bottom:0.5rem;">
+  <div id="c-box-tl" style="position:absolute; top:0; left:0; width:64px;height:64px;border:2px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;"></div>
+  <div id="c-box-tr" style="position:absolute; top:0; right:0; width:64px;height:64px;border:2px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;"></div>
+  <div id="c-box-bl" style="position:absolute; bottom:0; left:0; width:64px;height:64px;border:2px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;"></div>
+  <div id="c-box-br" style="position:absolute; bottom:0; right:0; width:64px;height:64px;border:2px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;"></div>
+  <div style="position:absolute; left:50%; top:50%; width:0; height:0;">
+    <div id="c-fixation" style="width:10px;height:10px;border-radius:50%;background:#d64545;position:absolute;left:0;top:0;transform:translate(-50%,-50%);"></div>
+    <div id="c-tail" style="height:3px;width:0;background:#d64545;position:absolute;left:0;top:0;transform-origin:left center;transform:rotate(0deg);transition:width .04s linear;"></div>
+  </div>
+</div>
+
+<p id="c-status" style="text-align:center;color:var(--text-secondary);font-size:14px;min-height:20px;margin:0.75rem 0;">Ready when you are</p>
+<p id="c-feedback" style="text-align:center;color:var(--text-primary);font-size:14px;min-height:20px;margin:0 0 1rem;"></p>
+
+<div style="display:flex; justify-content:center; gap:12px; margin-bottom:1.5rem;">
+  <button id="c-start">Start block (50 trials)</button>
+  <button id="c-respond" style="display:none;">Tap when you see the dot</button>
+  <button id="c-cancel" style="display:none;">Cancel</button>
+</div>
+
+<div id="c-results" style="display:none;">
+  <div style="position:relative; height:220px;">
+    <canvas id="c-chart" role="img" aria-label="Bar chart of your own average reaction time for valid versus invalid cue trials"></canvas>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+  var boxes = {
+    tl: document.getElementById('c-box-tl'),
+    tr: document.getElementById('c-box-tr'),
+    bl: document.getElementById('c-box-bl'),
+    br: document.getElementById('c-box-br')
+  };
+  var angles = { tl: -135, tr: -45, bl: 135, br: 45 };
+  var keys = ['tl', 'tr', 'bl', 'br'];
+
+  var cTail = document.getElementById('c-tail');
+  var cStatus = document.getElementById('c-status');
+  var cFeedback = document.getElementById('c-feedback');
+  var cStart = document.getElementById('c-start');
+  var cRespond = document.getElementById('c-respond');
+  var cCancel = document.getElementById('c-cancel');
+  var cResults = document.getElementById('c-results');
+
+  var NUM_TRIALS = 50;
+  var MIN_VALID_ONLY = 20;
+  var MIN_PLAUSIBLE_RT = 130;
+  var trials = [];
+  var targetVisible = false;
+  var targetOnsetTime = 0;
+  var currentIsValid = false;
+  var missTimeoutId = null;
+  var awaitingResponse = false;
+  var currentSession = 0;
+
+  function cResetBoxes(){
+    keys.forEach(function(k){ boxes[k].innerHTML = ''; });
+    cTail.style.width = '0';
+  }
+
+  function startBlock(){
+    currentSession++;
+    var session = currentSession;
+    trials = [];
+    cStart.style.display = 'none';
+    cRespond.style.display = 'inline-block';
+    cCancel.style.display = 'inline-block';
+    cResults.style.display = 'none';
+    cFeedback.textContent = '';
+    cStatus.textContent = 'Get ready';
+    cResetBoxes();
+    setTimeout(function(){ runTrial(0, session); }, 800);
+  }
+
+  function cancelBlock(){
+    currentSession++;
+    awaitingResponse = false;
+    cResetBoxes();
+    cStatus.textContent = 'Cancelled';
+    cFeedback.textContent = '';
+    cRespond.style.display = 'none';
+    cCancel.style.display = 'none';
+    cStart.style.display = 'inline-block';
+    cStart.textContent = 'Start block (50 trials)';
+  }
+
+  function runTrial(i, session){
+    if(session !== currentSession) return;
+    if(i >= NUM_TRIALS){ finishBlock(session); return; }
+    cStatus.textContent = 'Trial ' + (i + 1) + ' of ' + NUM_TRIALS;
+    cResetBoxes();
+    targetVisible = false;
+    awaitingResponse = true;
+
+    var cueKey = keys[Math.floor(Math.random() * 4)];
+    currentIsValid = (i < MIN_VALID_ONLY) ? true : (Math.random() < 0.8);
+    var targetKey;
+    if(currentIsValid){
+      targetKey = cueKey;
+    } else {
+      var others = keys.filter(function(k){ return k !== cueKey; });
+      targetKey = others[Math.floor(Math.random() * others.length)];
+    }
+
+    var fixationDelay = 500 + Math.random() * 500;
+    var soa = 70 + Math.random() * 110;
+    setTimeout(function(){
+      if(session !== currentSession) return;
+      cTail.style.transform = 'rotate(' + angles[cueKey] + 'deg)';
+      cTail.style.width = '20px';
+      setTimeout(function(){
+        if(session !== currentSession) return;
+        cTail.style.width = '0';
+        boxes[targetKey].innerHTML = '<div style="width:6px;height:6px;border-radius:50%;background:#888780;opacity:0.3;"></div>';
+        targetVisible = true;
+        targetOnsetTime = performance.now();
+        missTimeoutId = setTimeout(function(){
+          if(session !== currentSession) return;
+          if(awaitingResponse){
+            awaitingResponse = false;
+            trials.push({ valid: currentIsValid, rt: null });
+            cFeedback.textContent = 'Missed that one — moving on.';
+            setTimeout(function(){ runTrial(i + 1, session); }, 400);
+          }
+        }, 1200);
+      }, soa);
+    }, fixationDelay);
+  }
+
+  function handleResponse(){
+    if(!awaitingResponse) return;
+    if(!targetVisible) return;
+    var session = currentSession;
+    var rt = Math.round(performance.now() - targetOnsetTime);
+    if(rt < MIN_PLAUSIBLE_RT){
+      cFeedback.textContent = 'Too fast to be a real response — wait until you actually see it.';
+      return;
+    }
+    clearTimeout(missTimeoutId);
+    awaitingResponse = false;
+    var idx = trials.length;
+    trials.push({ valid: currentIsValid, rt: rt });
+    cFeedback.textContent = (currentIsValid ? 'Valid' : 'Invalid') + ' — ' + rt + 'ms';
+    cResetBoxes();
+    setTimeout(function(){ runTrial(idx + 1, session); }, 400);
+  }
+
+  document.addEventListener('keydown', function(e){
+    if(e.code === 'Space'){
+      e.preventDefault();
+      handleResponse();
+    }
+  });
+  cRespond.addEventListener('click', handleResponse);
+  cStart.addEventListener('click', startBlock);
+  cCancel.addEventListener('click', cancelBlock);
+
+  function finishBlock(session){
+    if(session !== currentSession) return;
+    cStatus.textContent = 'Block complete';
+    cRespond.style.display = 'none';
+    cCancel.style.display = 'none';
+    cStart.style.display = 'inline-block';
+    cStart.textContent = 'Run again';
+    showResults();
+  }
+
+  var cChartInstance = null;
+  function showResults(){
+    var validRts = trials.filter(function(t){ return t.valid && t.rt !== null; }).map(function(t){ return t.rt; });
+    var invalidRts = trials.filter(function(t){ return !t.valid && t.rt !== null; }).map(function(t){ return t.rt; });
+    var avg = function(arr){ return arr.length ? Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length) : 0; };
+    var validAvg = avg(validRts);
+    var invalidAvg = avg(invalidRts);
+
+    cResults.style.display = 'block';
+
+    var ctx = document.getElementById('c-chart');
+    if(cChartInstance) cChartInstance.destroy();
+    cChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Valid cue (n=' + validRts.length + ')', 'Invalid cue (n=' + invalidRts.length + ')'],
+        datasets: [{
+          data: [validAvg, invalidAvg],
+          backgroundColor: ['#2a78d6', '#eb6834'],
+          borderRadius: 4,
+          barThickness: 60
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Your average reaction time (ms)' } }
+        }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

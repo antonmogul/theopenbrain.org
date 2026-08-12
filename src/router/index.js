@@ -155,6 +155,79 @@ const routes = [
     name: "phrenology-3d",
     component: () => import("../views/Phrenology3DView.vue"),
   },
+  {
+    // Signal Detection Theory widget prototype (Attention chapter).
+    // OPENBRAIN-13: pilot for the widget hosting pattern. Not linked in nav;
+    // open /sdt directly.
+    path: "/sdt",
+    name: "sdt",
+    component: () => import("../views/SdtWidgetView.vue"),
+  },
+  {
+    // Biased Competition widget (Attention chapter). OPENBRAIN-13: second
+    // widget port. Not linked in nav; open /biased-competition directly.
+    path: "/biased-competition",
+    name: "biased-competition",
+    component: () => import("../views/BiasedCompetitionView.vue"),
+  },
+  {
+    // Contrast Response Gain widget (Attention chapter). OPENBRAIN-13: third
+    // widget port. Not linked in nav; open /contrast-response directly.
+    path: "/contrast-response",
+    name: "contrast-response",
+    component: () => import("../views/ContrastResponseGainView.vue"),
+  },
+  {
+    // Posner Spatial Cueing Task widget (Attention chapter). OPENBRAIN-13:
+    // fourth widget port. Not linked in nav; open /posner-cueing directly.
+    path: "/posner-cueing",
+    name: "posner-cueing",
+    component: () => import("../views/PosnerCueingView.vue"),
+  },
+  {
+    // TMT Feature Attention widget (Attention chapter). OPENBRAIN-13:
+    // fifth widget port. Not linked in nav; open /feature-attention directly.
+    path: "/feature-attention",
+    name: "feature-attention",
+    component: () => import("../views/TmtFeatureAttentionView.vue"),
+  },
+  {
+    // Color Vision Explorer (Retina chapter). OPENBRAIN-14: first Stuart
+    // widget port. Not linked in nav; open /color-vision directly.
+    path: "/color-vision",
+    name: "color-vision",
+    component: () => import("../views/ColorVisionView.vue"),
+  },
+  {
+    // Visual Pathway Lesions (Retina chapter). OPENBRAIN-14: second Stuart
+    // widget port. Not linked in nav; open /visual-pathway directly.
+    path: "/visual-pathway",
+    name: "visual-pathway",
+    component: () => import("../views/VisualPathwayLesionsView.vue"),
+  },
+  {
+    // Direction Selectivity (Retina chapter). OPENBRAIN-14: third Stuart
+    // widget port. Pyodide-powered. Not linked in nav; open /direction-selectivity directly.
+    path: "/direction-selectivity",
+    name: "direction-selectivity",
+    component: () => import("../views/DirectionSelectivityView.vue"),
+  },
+  {
+    // V1 Camera — "What V1 sees" (V1 chapter). OPENBRAIN-14: fourth Stuart
+    // widget port. WebGL2 Gabor filter bank. Not linked in nav; open
+    // /v1-camera directly.
+    path: "/v1-camera",
+    name: "v1-camera",
+    component: () => import("../views/V1CameraView.vue"),
+  },
+  {
+    // Widget library — browsable gallery of every interactive widget from
+    // all chapters. Not linked in main nav; open /widgets directly.
+    // Share this URL with authors (Stuart, Arjun) and design (Sonia).
+    path: "/widgets",
+    name: "widgets",
+    component: () => import("../views/WidgetLibraryView.vue"),
+  },
 ];
 
 const router = createRouter({

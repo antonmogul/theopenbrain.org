@@ -1,0 +1,274 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Contrast Gain vs. Response Gain</title>
+<style>
+  :root{
+    --bg:#242424;
+    --panel:#2c2c2c;
+    --ink:#e8e8e8;
+    --dim:#8a8a8a;
+    --line:#3a3a3a;
+    --unatt:#6f9099;       /* cool grey-blue — unattended */
+    --unatt-dim:#3d4f53;
+    --att:#e6178c;         /* hot magenta — attended */
+    --att-dim:#7a1450;
+    --crit:#f4f4f4;
+    --band:#3a3a3a;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:22px}
+  .head{display:flex;align-items:baseline;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .head h1{font-size:15px;font-weight:600;letter-spacing:.02em;margin:0}
+  .head .sub{font-size:12px;color:var(--dim)}
+
+  .stage{display:grid;grid-template-columns:1fr 260px;gap:0;
+    border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--panel)}
+  .cell{padding:18px}
+  .cell + .cell{border-left:1px solid var(--line)}
+  .cell h2{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--dim);
+    text-transform:uppercase;letter-spacing:.12em;margin:0 0 12px}
+
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  text{font-family:var(--mono)}
+  .axis-label{fill:var(--dim);font-size:10px}
+  .axis-title{fill:var(--dim);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+  .grid-line{stroke:var(--line);stroke-width:1}
+  .dyn-band{fill:var(--band);opacity:.35}
+
+  .curve-unatt{fill:none;stroke:var(--unatt);stroke-width:2.25}
+  .curve-att{fill:none;stroke:var(--att);stroke-width:2.25}
+  .curve-pct{fill:none;stroke:var(--att);stroke-width:1.5;stroke-dasharray:5 4;opacity:.85}
+  .peak-line{stroke:var(--crit);stroke-width:1;stroke-dasharray:2 3;opacity:.6}
+  .peak-dot{fill:var(--crit);stroke:var(--bg);stroke-width:1.5}
+  .peak-label{fill:var(--crit);font-size:10px}
+
+  /* toggle */
+  .toggle{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .toggle button{flex:1;background:transparent;border:0;color:var(--dim);font-family:var(--sans);
+    font-size:11.5px;padding:9px 6px;cursor:pointer;line-height:1.3;transition:background .12s,color .12s}
+  .toggle button + button{border-left:1px solid var(--line)}
+  .toggle button.active{background:var(--att-dim);color:var(--ink)}
+  .toggle button:hover:not(.active){background:#333}
+
+  /* slider */
+  .slider-row{display:flex;align-items:center;gap:10px;margin-top:2px}
+  input[type=range]{-webkit-appearance:none;flex:1;height:3px;background:var(--line);
+    border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+    border-radius:50%;background:var(--att);cursor:grab;border:2px solid var(--bg);
+    box-shadow:0 0 0 1px var(--att)}
+  input[type=range]::-webkit-slider-thumb:active{cursor:grabbing}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:var(--att);cursor:grab;border:2px solid var(--bg);box-shadow:0 0 0 1px var(--att)}
+  .slider-val{font-family:var(--mono);font-size:12px;color:var(--att);min-width:44px;text-align:right}
+
+  .reads{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+  .r + .r{margin-top:10px}
+  .rk{font-family:var(--mono);font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+  .rv{font-family:var(--mono);font-size:14px;color:var(--ink);margin-top:2px}
+  .rv.att{color:var(--att)}
+
+  .note{margin-top:16px;font-size:12px;line-height:1.5;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:12px}
+  .note strong{color:var(--ink);font-weight:600}
+
+  .key{display:flex;gap:22px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--dim)}
+  .key .k{display:flex;align-items:center;gap:7px}
+  .swatch{width:16px;height:2.25px;border-radius:1px}
+  .swatch.dash{background:none;border-top:2px dashed var(--att);height:0;opacity:.85}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Contrast Gain vs. Response Gain</h1>
+    <div class="sub">Reynolds, Pasternak &amp; Desimone (2000), Fig. 1 — two models of how attention modulates the contrast&ndash;response function</div>
+  </div>
+
+  <div class="stage">
+    <div class="cell">
+      <h2>Contrast&ndash;Response Function</h2>
+      <svg id="chart" viewBox="0 0 620 380"></svg>
+    </div>
+
+    <div class="cell">
+      <h2>Model</h2>
+      <div class="toggle" id="modelToggle">
+        <button data-mode="shift" class="active">Contrast gain<br>(shift)</button>
+        <button data-mode="scale">Response gain<br>(scale)</button>
+      </div>
+
+      <h2 style="margin-top:20px">Attention Strength</h2>
+      <div class="slider-row">
+        <input type="range" id="strength" min="1.0" max="2.2" step="0.01" value="1.51">
+        <div class="slider-val" id="strengthVal">1.51×</div>
+      </div>
+
+      <div class="reads">
+        <div class="r">
+          <div class="rk">Peak effect location</div>
+          <div class="rv att" id="peakLoc">—</div>
+        </div>
+        <div class="r">
+          <div class="rk">Peak % increase</div>
+          <div class="rv att" id="peakVal">—</div>
+        </div>
+      </div>
+
+      <div class="note" id="modelNote"></div>
+    </div>
+  </div>
+
+  <div class="key">
+    <div class="k"><span class="swatch" style="background:var(--unatt)"></span>Unattended</div>
+    <div class="k"><span class="swatch" style="background:var(--att)"></span>Attended</div>
+    <div class="k"><span class="swatch dash"></span>% increase (right axis)</div>
+    <div class="k"><span class="swatch" style="background:var(--band);opacity:.6"></span>Dynamic range</div>
+  </div>
+</div>
+
+<script>
+// ---- Naka–Rushton contrast–response function (hypothetical V4 neuron, schematic) ----
+const RMAX = 40, BASE = 3, C50 = 20, N = 2.2;
+function naka(c){ const cn = Math.pow(c, N), c50n = Math.pow(C50, N);
+  return BASE + (RMAX - BASE) * cn / (cn + c50n); }
+
+// dynamic-range band: contrast at which response is 10%/90% of the way from BASE to RMAX
+function invNaka(p){ return C50 * Math.pow(p/(1-p), 1/N); }
+const bandLo = invNaka(0.10), bandHi = invNaka(0.90);
+
+let mode = 'shift';
+let strength = 1.51;
+
+const els = {
+  chart: document.getElementById('chart'),
+  toggle: document.getElementById('modelToggle'),
+  strength: document.getElementById('strength'),
+  strengthVal: document.getElementById('strengthVal'),
+  peakLoc: document.getElementById('peakLoc'),
+  peakVal: document.getElementById('peakVal'),
+  note: document.getElementById('modelNote'),
+};
+
+els.toggle.addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  mode = btn.dataset.mode;
+  [...els.toggle.children].forEach(b=>b.classList.toggle('active', b===btn));
+  render();
+});
+els.strength.addEventListener('input', e=>{
+  strength = parseFloat(e.target.value);
+  els.strengthVal.textContent = strength.toFixed(2)+'×';
+  render();
+});
+
+// ---- geometry ----
+const W=620, H=380, ML=50, MR=50, MT=20, MB=40;
+const PW = W-ML-MR, PH = H-MT-MB;
+const xMin=0, xMax=2; // log10(contrast), contrast 1–100%
+function xPix(logc){ return ML + (logc-xMin)/(xMax-xMin)*PW; }
+function yPixL(r, rMax){ return MT + PH - (r/rMax)*PH; }
+function yPixR(p, pMax){ return MT + PH - (p/pMax)*PH; }
+function niceCeil(v, step){ return Math.max(step, Math.ceil(v/step)*step); }
+
+function computeAttended(c){
+  if(mode==='shift'){
+    return naka(c*strength);
+  } else {
+    return BASE + strength*(naka(c)-BASE);
+  }
+}
+
+function render(){
+  const N_PTS = 160;
+  const cs=[], base=[], att=[], pct=[];
+  for(let i=0;i<=N_PTS;i++){
+    const logc = xMin + (xMax-xMin)*i/N_PTS;
+    const c = Math.pow(10, logc);
+    const b = naka(c);
+    const a = computeAttended(c);
+    cs.push(c); base.push(b); att.push(a);
+    pct.push( (a-b)/b*100 );
+  }
+
+  const rMax = niceCeil(Math.max(...base, ...att)*1.12, 10);
+  const pMaxRaw = Math.max(...pct);
+  const pMax = niceCeil(pMaxRaw*1.15, mode==='shift'?5:25);
+
+  // find peak of pct curve
+  let peakI=0; for(let i=1;i<pct.length;i++) if(pct[i]>pct[peakI]) peakI=i;
+  const peakC = cs[peakI], peakP = pct[peakI];
+  const isInterior = peakI>3 && peakI<N_PTS-3; // not hugging the right edge
+
+  // ---- build SVG ----
+  let svg = '';
+  // dynamic-range shaded band
+  const xBandLo = xPix(Math.log10(bandLo)), xBandHi = xPix(Math.log10(bandHi));
+  svg += `<rect class="dyn-band" x="${xBandLo}" y="${MT}" width="${xBandHi-xBandLo}" height="${PH}"/>`;
+
+  // gridlines + x labels (contrast %)
+  [1,3,10,30,100].forEach(c=>{
+    const x = xPix(Math.log10(c));
+    svg += `<line class="grid-line" x1="${x}" y1="${MT}" x2="${x}" y2="${MT+PH}"/>`;
+    svg += `<text class="axis-label" x="${x}" y="${MT+PH+16}" text-anchor="middle">${c}</text>`;
+  });
+  svg += `<text class="axis-title" x="${ML+PW/2}" y="${H-4}" text-anchor="middle">Contrast (%)</text>`;
+
+  // y-left ticks (spikes/s)
+  for(let v=0; v<=rMax; v+=rMax/4){
+    const y = yPixL(v, rMax);
+    svg += `<line class="grid-line" x1="${ML}" y1="${y}" x2="${ML+PW}" y2="${y}" opacity="${v===0?1:0.4}"/>`;
+    svg += `<text class="axis-label" x="${ML-8}" y="${y+3}" text-anchor="end">${Math.round(v)}</text>`;
+  }
+  svg += `<text class="axis-title" transform="translate(14,${MT+PH/2}) rotate(-90)" text-anchor="middle">Spikes/s</text>`;
+
+  // y-right ticks (% increase)
+  for(let v=0; v<=pMax; v+=pMax/4){
+    const y = yPixR(v, pMax);
+    svg += `<text class="axis-label" x="${ML+PW+8}" y="${y+3}" text-anchor="start">${Math.round(v)}</text>`;
+  }
+  svg += `<text class="axis-title" transform="translate(${W-12},${MT+PH/2}) rotate(90)" text-anchor="middle">% increase</text>`;
+
+  // curves
+  function path(vals, ypix, extra){
+    let d='';
+    vals.forEach((v,i)=>{ const x=xPix(xMin+(xMax-xMin)*i/N_PTS); const y=ypix(v);
+      d += (i===0?'M':'L')+x.toFixed(1)+' '+y.toFixed(1)+' '; });
+    return `<path class="${extra}" d="${d}"/>`;
+  }
+  svg += path(base, v=>yPixL(v,rMax), 'curve-unatt');
+  svg += path(att,  v=>yPixL(v,rMax), 'curve-att');
+  svg += path(pct,  v=>yPixR(v,pMax), 'curve-pct');
+
+  // peak marker
+  const px = xPix(Math.log10(peakC)), py = yPixR(peakP, pMax);
+  svg += `<line class="peak-line" x1="${px}" y1="${MT}" x2="${px}" y2="${MT+PH}"/>`;
+  svg += `<circle class="peak-dot" cx="${px}" cy="${py}" r="4"/>`;
+  const labelAnchor = px > ML+PW-90 ? 'end' : 'start';
+  const labelX = px > ML+PW-90 ? px-8 : px+8;
+  svg += `<text class="peak-label" x="${labelX}" y="${py-8}" text-anchor="${labelAnchor}">${peakC.toFixed(0)}%, +${peakP.toFixed(0)}%</text>`;
+
+  els.chart.innerHTML = svg;
+
+  // readouts
+  if(isInterior){
+    els.peakLoc.textContent = peakC.toFixed(0)+'% contrast';
+    els.peakVal.textContent = '+'+peakP.toFixed(0)+'%';
+  } else {
+    els.peakLoc.textContent = 'high contrast (no interior peak)';
+    els.peakVal.textContent = '+'+peakP.toFixed(0)+'% and still rising';
+  }
+
+  if(mode==='shift'){
+    els.note.innerHTML = `<strong>Contrast gain:</strong> attention multiplies effective contrast by ${strength.toFixed(2)}×, shifting the curve leftward. The % increase is largest for stimuli near the low-to-mid end of the dynamic range and falls off at high contrast, where both curves have already saturated.`;
+  } else {
+    els.note.innerHTML = `<strong>Response gain:</strong> attention multiplies the response above baseline by ${strength.toFixed(2)}×, stretching the curve vertically. The % increase grows monotonically with contrast and is largest for the strongest stimuli — the opposite diagnostic signature from contrast gain.`;
+  }
+}
+
+render();
+</script>

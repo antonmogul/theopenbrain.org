@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RetINaBox &mdash; interactive retinal circuit</title>
+<style>
+/* ===========================================================================
+   RetINaBox, web edition.
+   Artwork, palette and layout follow the desktop application:
+   GUI/Graphics/*.svg, GUI/styles.py, GUI/interaction_manager.py
+   =========================================================================== */
+:root{
+  --blue:#1A83C9; --red:#CD1916; --orange:#E94D15;
+  --lightGreen:#3D783F; --darkGreen:#1D341E; --black:#000000;
+  --darkBrown:#593B25; --lightBrown:#B67E54; --yellow:#DEB33D;
+  --gray:#BDBFB6; --lightGray:#E0E0E0; --lighterGray:#F2F2F2; --white:#F5F3F3;
+  --line:#CCCCCC;
+  --font:'Asap','Asap Condensed',ui-sans-serif,system-ui,'Segoe UI',Roboto,Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+
+.rb{
+  font-family:var(--font); color:var(--black); background:var(--white);
+  border:1px solid var(--line); border-radius:8px;
+  max-width:1180px; margin:0 auto; overflow:hidden; line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+}
+.rb button,.rb select,.rb input{font-family:inherit;color:inherit}
+.rb :focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+/* ---------- title bar ---------- */
+.rb-bar{
+  display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;
+  background:var(--lighterGray);border-bottom:1px solid var(--line);
+}
+.rb-bar .rb-logo{width:26px;height:26px;flex:none}
+.rb-bar h1{font-size:1rem;font-weight:700;margin:0;letter-spacing:.01em}
+.rb-bar h1 i{font-style:normal}
+.rb-bar .rb-sp{flex:1}
+.rb-bar select{
+  font-size:.82rem;padding:.28rem .4rem;border:1px solid var(--gray);
+  border-radius:4px;background:#fff;max-width:230px;
+}
+
+/* ---------- three panels, as in the desktop app ---------- */
+.rb-panels{display:grid;grid-template-columns:250px 320px minmax(0,1fr);gap:0}
+@media (max-width:1000px){.rb-panels{grid-template-columns:250px minmax(0,1fr)}}
+@media (max-width:700px){.rb-panels{grid-template-columns:1fr}}
+
+.rb-panel{padding:.7rem .8rem 1rem;border-right:1px solid var(--line);min-width:0}
+.rb-panel:last-child{border-right:0}
+@media (max-width:1000px){
+  .rb-panel:nth-child(2){border-right:0}
+  .rb-panel:nth-child(3){grid-column:1 / -1;border-top:1px solid var(--line)}
+}
+@media (max-width:700px){
+  .rb-panel{border-right:0;border-top:1px solid var(--line)}
+  .rb-panel:first-child{border-top:0}
+  .rb-panel:nth-child(3){grid-column:auto}
+}
+.rb-title{
+  text-align:center;font-size:.82rem;color:#444;margin:0 0 .6rem;
+  padding-bottom:.35rem;border-bottom:1px solid var(--line);
+}
+
+/* ---------- legends ---------- */
+.rb-leg{
+  display:flex;flex-wrap:wrap;gap:.45rem .6rem;justify-content:center;
+  font-size:.7rem;color:#333;margin-bottom:.5rem;
+}
+.rb-leg span{display:inline-flex;align-items:center;gap:.25rem}
+.rb-leg .sw{width:12px;height:12px;border-radius:50%;display:block}
+.rb-leg .bar{width:20px;height:3px;border-radius:2px;display:block}
+.rb-leg svg{width:13px;height:15px;display:block}
+
+/* ---------- stimulus lamps ---------- */
+.rb-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;
+  background:var(--lighterGray);border:1px solid var(--gray);border-radius:5px;
+  padding:.5rem;margin:0 auto .7rem;width:max-content;
+}
+.rb-lamp{
+  background:none;border:0;padding:2px 4px 0;cursor:pointer;border-radius:4px;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+.rb-lamp:hover{background:var(--lightGray)}
+.rb-lamp svg{width:34px;height:40px;display:block}
+.rb-lamp b{font-weight:400;font-size:.66rem;color:#555}
+
+/* ---------- controls ---------- */
+.rb-btnrow{display:flex;gap:.4rem;margin-bottom:.5rem}
+.rb-btn{
+  flex:1;padding:.32rem .4rem;font-size:.78rem;cursor:pointer;
+  background:var(--lighterGray);border:1px solid var(--gray);border-radius:5px;
+}
+.rb-btn:hover{background:var(--lightGray)}
+.rb-run{
+  width:100%;padding:.45rem;font-size:.84rem;font-weight:600;color:#fff;cursor:pointer;
+  background:var(--blue);border:0;border-radius:5px;margin-bottom:.7rem;
+}
+.rb-run:hover{filter:brightness(1.08)}
+.rb-run.is-on{background:var(--lightBrown);color:#2E1D0E}
+
+.rb-opt{display:flex;align-items:center;gap:.5rem;font-size:.78rem;margin-bottom:.4rem;flex-wrap:wrap}
+/* display:flex beats the UA rule for [hidden], so restore it explicitly */
+.rb-opt[hidden]{display:none}
+.rb-opt > b{font-weight:400;color:#333;min-width:62px}
+.rb-radio{display:inline-flex;align-items:center;gap:.25rem;cursor:pointer}
+.rb-radio input{margin:0;accent-color:var(--darkBrown)}
+.rb-num{width:52px;padding:.18rem .25rem;font-size:.8rem;border:1px solid var(--gray);border-radius:3px;background:#fff}
+
+/* ---------- neuron widget ---------- */
+.rb-neuron{
+  background:var(--lighterGray);border:1px solid var(--lightGray);border-radius:5px;
+  padding:.3rem;margin-bottom:.35rem;
+}
+.rb-neuron svg{width:100%;height:auto;display:block}
+.rb-dot{cursor:pointer}
+.rb-dot:hover .rb-dot-c{stroke:var(--black);stroke-width:2}
+.rb-sep{border:0;border-top:1px solid var(--line);margin:.7rem 0}
+
+/* ---------- scope ---------- */
+.rb-scope{width:100%}
+.rb-scope canvas{display:block;width:100%;height:auto}
+
+/* ---------- delay dialog ---------- */
+.rb-modal{
+  position:absolute;inset:0;background:rgba(0,0,0,.35);
+  display:flex;align-items:center;justify-content:center;padding:1rem;z-index:20;
+}
+.rb-modal[hidden]{display:none}
+.rb-sheet{
+  background:var(--white);border:1px solid var(--gray);border-radius:6px;
+  padding:.8rem;max-width:430px;width:100%;max-height:100%;overflow:auto;
+  box-shadow:0 8px 30px rgba(0,0,0,.3);
+}
+.rb-sheet h2{font-size:.9rem;margin:0 0 .6rem;text-align:center;font-weight:700}
+.rb-units{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+.rb-unit{
+  border:1px solid var(--lightGray);border-radius:5px;background:var(--lighterGray);
+  padding:.4rem .3rem;text-align:center;
+}
+.rb-pm{
+  width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;
+  font-size:1rem;font-weight:700;color:#fff;background:var(--gray);line-height:1;
+}
+.rb-pm[data-state="excitatory"]{background:var(--red)}
+.rb-pm[data-state="inhibitory"]{background:var(--blue)}
+.rb-unit label{display:block;font-size:.62rem;color:#555;margin:.3rem 0 .1rem}
+.rb-unit input[type=range]{width:100%;margin:0;accent-color:var(--darkBrown)}
+.rb-unit input[type=range]:disabled{opacity:.4}
+.rb-unit small{font-size:.58rem;color:#666;display:block}
+.rb-close{
+  width:100%;margin-top:.6rem;padding:.35rem;font-size:.8rem;cursor:pointer;
+  background:var(--darkBrown);color:#fff;border:0;border-radius:5px;
+}
+
+.rb-foot{
+  padding:.5rem .8rem .7rem;border-top:1px solid var(--line);
+  background:var(--lighterGray);font-size:.7rem;color:#555;
+}
+.rb-foot a{color:var(--darkBrown)}
+
+
+/* ---------- tabs ---------- */
+.rb-tabs{display:flex;gap:2px;padding:.35rem .8rem 0;background:var(--lighterGray);
+  border-bottom:1px solid var(--line)}
+.rb-tab{padding:.35rem .8rem;font-size:.8rem;cursor:pointer;background:var(--lightGray);
+  border:1px solid var(--line);border-bottom:0;border-radius:5px 5px 0 0;position:relative;top:1px}
+.rb-tab[aria-selected="true"]{background:var(--white);font-weight:600}
+.rb-mode[hidden]{display:none}
+
+/* ---------- code breaker ---------- */
+.rb-cb{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:.8rem;padding:.8rem}
+@media (max-width:860px){.rb-cb{grid-template-columns:1fr}}
+.rb-box{border:1px solid var(--gray);border-radius:5px;padding:.6rem;background:var(--white)}
+.rb-box > h3{font-size:.78rem;margin:-.95rem 0 .5rem .3rem;padding:0 .3rem;
+  background:var(--white);display:inline-block;color:#444;font-weight:600}
+.rb-code{display:flex;flex-wrap:wrap;gap:.3rem}
+.rb-tok{width:74px;display:flex;flex-direction:column;align-items:center;gap:.25rem}
+.rb-tok.sp{width:26px}
+.rb-tok .pat{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:4px;
+  background:var(--lightGray);border:1px solid #ddd;border-radius:3px}
+.rb-tok .pat i{width:11px;height:11px;border-radius:2px;background:var(--white);
+  border:1px solid var(--gray);display:block}
+.rb-tok .pat i.on{background:var(--yellow);border-color:var(--darkBrown)}
+.rb-tok select{width:56px;font-size:.75rem;padding:.1rem;border:1px solid var(--gray);
+  border-radius:3px;background:var(--white)}
+.rb-tok select.ok{border-color:var(--lightGreen);background:#E8F2E8}
+.rb-tok select.no{border-color:var(--red);background:#FBEAEA}
+.rb-tok b{font-size:1rem;padding-top:.6rem}
+.rb-cipher{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:.6rem}
+.rb-cipher figure{margin:0;text-align:center;font-size:.72rem}
+.rb-cipher .pat{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:4px;
+  background:var(--lightGray);border:1px solid #ddd;border-radius:3px;margin-bottom:.25rem}
+.rb-cipher .pat i{width:13px;height:13px;border-radius:2px;background:var(--white);
+  border:1px solid var(--gray);display:block}
+.rb-cipher .pat i.on{background:var(--yellow);border-color:var(--darkBrown)}
+table.rb-book{border-collapse:collapse;width:100%;font-size:.76rem}
+table.rb-book th,table.rb-book td{border:1px solid var(--gray);padding:.2rem;text-align:center}
+table.rb-book th{background:var(--lightGray);font-weight:600}
+table.rb-book td:last-child{font-weight:700}
+.rb-result{font-size:.8rem;text-align:center;margin:.5rem 0 0;min-height:1.2em}
+
+/* ---------- document viewers ---------- */
+.rb-doc{padding:.6rem .8rem .8rem}
+.rb-docbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
+.rb-docbar h3{font-size:.85rem;margin:0;font-weight:700}
+.rb-docbar .sp{flex:1}
+.rb-docbar a{
+  font-size:.76rem;padding:.28rem .6rem;border-radius:5px;text-decoration:none;
+  border:1px solid var(--gray);background:var(--lighterGray);color:var(--black);
+}
+.rb-docbar a:hover{background:var(--lightGray)}
+.rb-docbar a.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.rb-frame{
+  position:relative;border:1px solid var(--gray);border-radius:5px;overflow:hidden;
+  background:var(--lighterGray);height:78vh;min-height:460px;
+}
+.rb-frame iframe{width:100%;height:100%;border:0;display:block;background:#fff}
+.rb-frame .note{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:1.5rem;font-size:.8rem;color:#555;pointer-events:none;
+}
+.rb-dochint{font-size:.7rem;color:#666;margin:.4rem 0 0}
+.rb-dochint a{color:var(--darkBrown)}
+
+/* ---------- discovery mode ---------- */
+.rb-dm{padding:.8rem}
+.rb-dmbar{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;background:var(--darkGreen);
+  color:#fff;border-radius:5px;padding:.4rem .7rem;font-size:.78rem;margin-bottom:.7rem}
+.rb-dmbar select{font-size:.78rem;padding:.15rem .3rem;border-radius:3px;border:1px solid #555}
+.rb-dmbar .val{font-family:ui-monospace,monospace;font-size:.95rem;color:#7CFF9B;font-weight:700}
+.rb-dmbar button{padding:.25rem .7rem;font-size:.78rem;border:0;border-radius:4px;
+  background:var(--gray);cursor:pointer;font-weight:600}
+.rb-dmbar button:disabled{opacity:.5;cursor:default}
+.rb-dmtop{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.7rem}
+@media (max-width:760px){.rb-dmtop,.rb-dmphases{grid-template-columns:1fr!important}}
+.rb-dmphases{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.rb-phase{border:1px solid var(--gray);border-radius:5px;padding:.6rem;background:var(--lighterGray)}
+.rb-phase > h3{font-size:.8rem;margin:0 0 .5rem;font-weight:700}
+.rb-phase .rb-neuron{max-width:320px;margin-left:auto;margin-right:auto}
+.rb-phase[data-locked="1"]{opacity:.45;pointer-events:none}
+.rb-dmgrid{display:grid;grid-template-columns:repeat(3,44px);gap:5px;justify-content:center;
+  margin-bottom:.5rem}
+.rb-dmgrid button{height:44px;border:1px solid var(--gray);border-radius:4px;cursor:pointer;
+  background:var(--white);font-size:.8rem}
+.rb-dmgrid button[aria-pressed="true"]{background:var(--yellow);border-color:var(--darkBrown);font-weight:700}
+.rb-dmtest{width:100%;margin-top:.5rem;padding:.35rem;font-size:.8rem;cursor:pointer;
+  background:var(--darkBrown);color:#fff;border:0;border-radius:4px}
+.rb-dmnote{font-size:.74rem;margin:.4rem 0 0;min-height:1.1em}
+.rb-ok{color:var(--lightGreen);font-weight:600}
+.rb-no{color:var(--red);font-weight:600}
+
+@media (prefers-reduced-motion:reduce){ .rb *{transition:none!important} }
+</style>
+</head>
+<body style="margin:0;padding:16px;background:#fff">
+
+<div class="rb" id="rb" style="position:relative">
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="led-unselected" viewBox="0 0 88 104" fill="none"><path d="M44 1C63.33 1 79 16.67 79 36V91H9V36C9 16.67 24.67 1 44 1Z" stroke="black" stroke-opacity="0.34" stroke-width="2"/>
+<path d="M1 97C1 93.6863 3.68629 91 7 91H81C84.3137 91 87 93.6863 87 97C87 100.314 84.3137 103 81 103H7C3.68629 103 1 100.314 1 97Z" stroke="black" stroke-opacity="0.34" stroke-width="2"/></symbol><symbol id="led-selected" viewBox="0 0 88 104" fill="none"><path d="M44 1C63.33 1 79 16.67 79 36V91H9V36C9 16.67 24.67 1 44 1Z" fill="#808080" fill-opacity="0.25"/>
+<path d="M79 91V92H80V91H79ZM9 91H8V92H9V91ZM44 1V2C62.7777 2 78 17.2223 78 36H79H80C80 16.1177 63.8823 0 44 0V1ZM79 36H78V91H79H80V36H79ZM79 91V90H9V91V92H79V91ZM9 91H10V36H9H8V91H9ZM9 36H10C10 17.2223 25.2223 2 44 2V1V0C24.1177 0 8 16.1177 8 36H9Z" fill="black"/>
+<path d="M1 97C1 93.6863 3.68629 91 7 91H81C84.3137 91 87 93.6863 87 97C87 100.314 84.3137 103 81 103H7C3.68629 103 1 100.314 1 97Z" fill="#808080" fill-opacity="0.25" stroke="black" stroke-width="2"/></symbol><symbol id="led-on" viewBox="0 0 88 104" fill="none"><path d="M44 1C63.33 1 79 16.67 79 36V91H9V36C9 16.67 24.67 1 44 1Z" fill="#FDFF6E"/>
+<path d="M79 91V92H80V91H79ZM9 91H8V92H9V91ZM44 1V2C62.7777 2 78 17.2223 78 36H79H80C80 16.1177 63.8823 0 44 0V1ZM79 36H78V91H79H80V36H79ZM79 91V90H9V91V92H79V91ZM9 91H10V36H9H8V91H9ZM9 36H10C10 17.2223 25.2223 2 44 2V1V0C24.1177 0 8 16.1177 8 36H9Z" fill="black"/>
+<path d="M1 97C1 93.6863 3.68629 91 7 91H81C84.3137 91 87 93.6863 87 97C87 100.314 84.3137 103 81 103H7C3.68629 103 1 100.314 1 97Z" fill="#FDFF6E" stroke="black" stroke-width="2"/></symbol><symbol id="rgc-art-1" viewBox="0 0 376 336" fill="none"><path d="M182.765 261.894C194.968 262.107 204.688 272.173 204.475 284.376C204.262 296.58 194.197 306.3 181.993 306.087C169.79 305.874 160.07 295.808 160.283 283.605C160.496 271.402 170.561 261.681 182.765 261.894Z" fill="#3D783F" stroke="#3D783F"/>
+<path d="M181.597 328.8L181.985 306.587" stroke="#3D783F" stroke-width="2" stroke-miterlimit="10"/>
+<path d="M203.17 329.224L180.573 328.829" stroke="#3D783F" stroke-width="2" stroke-miterlimit="10"/>
+<g opacity="0.41">
+<path d="M223.953 291.836C218.517 285.672 214.297 280.886 210.055 276.076C205.964 271.437 201.853 266.774 196.611 260.83L169.509 261.042L142.407 261.254C142.407 261.254 150.689 270.863 155.996 277.019C161.302 283.176 169.584 292.785 169.584 292.785L196.769 292.31L223.953 291.836Z" fill="#3D783F"/>
+<path d="M155.996 277.019C150.689 270.863 142.407 261.254 142.407 261.254L169.509 261.042M155.996 277.019C161.302 283.176 169.584 292.785 169.584 292.785L196.769 292.31M155.996 277.019L210.055 276.076M210.055 276.076C214.297 280.886 218.517 285.672 223.953 291.836L196.769 292.31M210.055 276.076C205.964 271.437 201.853 266.774 196.611 260.83L169.509 261.042M196.769 292.31L169.509 261.042" stroke="black" stroke-width="0.5" stroke-dasharray="2 2"/>
+</g>
+<path d="M239.417 37.9739L195.907 260.82" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M121.391 37.5336L169.92 261.774" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M2.37418 37.6108L142.407 261.254" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M120.317 176.574L169.961 292.778" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M239.817 175.488L196.457 292.316" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M359.316 174.402L223.453 291.844" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M60.5959 107.105L155.667 276.025" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M180.037 105.02L183.022 276.048" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M297.595 104.969L210.158 275.074" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<g opacity="0.41">
+<path d="M359.429 174.968C335.735 147.607 317.34 126.366 298.849 105.014C281.017 84.4215 263.095 63.7264 240.245 37.34L120.92 37.2321L1.59567 37.1243C1.59567 37.1243 37.6882 79.7672 60.8146 107.091C83.9411 134.414 120.034 177.057 120.034 177.057L239.731 176.013L359.429 174.968Z" fill="#3D783F"/>
+<path d="M60.8146 107.091C37.6882 79.7672 1.59567 37.1243 1.59567 37.1243L120.92 37.2321M60.8146 107.091C83.9411 134.414 120.034 177.057 120.034 177.057L239.731 176.013M60.8146 107.091L298.849 105.014M298.849 105.014C317.34 126.366 335.735 147.607 359.429 174.968L239.731 176.013M298.849 105.014C281.017 84.4215 263.095 63.7264 240.245 37.34L120.92 37.2321M239.731 176.013L120.92 37.2321" stroke="black" stroke-dasharray="2 2"/>
+</g>
+<path d="M7.36 335.08C6.72 335.08 6.25333 335 5.96 334.84C5.66667 334.653 5.52 334.4 5.52 334.08V308.32C5.52 307.44 5.96 307 6.84 307H14.72C17.8667 307 20.2133 307.667 21.76 309C23.3067 310.333 24.08 312.293 24.08 314.88C24.08 316.053 23.88 317.093 23.48 318C23.1067 318.907 22.5467 319.667 21.8 320.28C21.08 320.867 20.1867 321.28 19.12 321.52V321.68C19.84 321.893 20.4533 322.347 20.96 323.04C21.4933 323.733 21.96 324.6 22.36 325.64L25.52 333.56C25.6 333.72 25.6533 333.88 25.68 334.04C25.7067 334.173 25.72 334.28 25.72 334.36C25.72 334.6 25.5733 334.787 25.28 334.92C24.9867 335.027 24.5067 335.08 23.84 335.08H23.08C22.6267 335.08 22.24 335.013 21.92 334.88C21.6 334.747 21.3733 334.547 21.24 334.28L18.04 326.08C17.7467 325.36 17.4133 324.787 17.04 324.36C16.6667 323.907 16.1867 323.587 15.6 323.4C15.0133 323.213 14.2667 323.12 13.36 323.12H9.88V334.08C9.88 334.4 9.73333 334.653 9.44 334.84C9.17333 335 8.69333 335.08 8 335.08H7.36ZM9.88 319.56H14.8C16.5333 319.56 17.7733 319.227 18.52 318.56C19.2933 317.867 19.68 316.76 19.68 315.24C19.68 313.64 19.2933 312.48 18.52 311.76C17.7733 311.04 16.5333 310.68 14.8 310.68H9.88V319.56ZM41.1434 335.28C36.7168 335.28 33.4501 334.12 31.3434 331.8C29.2368 329.48 28.1834 325.867 28.1834 320.96C28.1834 316.187 29.2768 312.627 31.4634 310.28C33.6768 307.907 36.9301 306.72 41.2234 306.72C41.9168 306.72 42.5834 306.76 43.2234 306.84C43.8901 306.92 44.5168 307.027 45.1034 307.16C45.7168 307.293 46.2768 307.453 46.7834 307.64C47.2901 307.8 47.7301 307.987 48.1034 308.2C48.3968 308.387 48.6368 308.573 48.8234 308.76C49.0101 308.947 49.1034 309.133 49.1034 309.32C49.1034 309.507 49.0501 309.747 48.9434 310.04C48.8368 310.307 48.7034 310.587 48.5434 310.88C48.3834 311.147 48.2101 311.373 48.0234 311.56C47.8368 311.72 47.6501 311.8 47.4634 311.8C47.2501 311.8 46.9701 311.733 46.6234 311.6C46.3034 311.467 45.8901 311.307 45.3834 311.12C44.9034 310.933 44.3168 310.773 43.6234 310.64C42.9568 310.507 42.1701 310.44 41.2634 310.44C38.3034 310.44 36.1168 311.293 34.7034 313C33.2901 314.68 32.5834 317.347 32.5834 321C32.5834 323.48 32.8901 325.507 33.5034 327.08C34.1168 328.627 35.0634 329.773 36.3434 330.52C37.6234 331.24 39.2234 331.6 41.1434 331.6C41.8634 331.6 42.5701 331.547 43.2634 331.44C43.9834 331.333 44.6234 331.187 45.1834 331C45.7701 330.787 46.2101 330.56 46.5034 330.32L45.6234 332.68V323.08H40.5434C39.9301 323.08 39.6234 322.6 39.6234 321.64V320.88C39.6234 319.92 39.9301 319.44 40.5434 319.44H48.5034C49.3834 319.44 49.8234 319.88 49.8234 320.76V331.96C49.8234 332.36 49.7434 332.667 49.5834 332.88C49.4501 333.093 49.2234 333.28 48.9034 333.44C48.2634 333.813 47.5301 334.133 46.7034 334.4C45.8768 334.667 44.9968 334.88 44.0634 335.04C43.1301 335.2 42.1568 335.28 41.1434 335.28ZM68.0184 335.28C63.5918 335.28 60.3251 334.12 58.2184 331.8C56.1118 329.48 55.0584 325.867 55.0584 320.96C55.0584 316.187 56.1518 312.627 58.3384 310.28C60.5518 307.907 63.8051 306.72 68.0984 306.72C69.0051 306.72 69.8851 306.787 70.7384 306.92C71.6184 307.053 72.4184 307.227 73.1384 307.44C73.8851 307.653 74.4984 307.907 74.9784 308.2C75.2718 308.387 75.5118 308.573 75.6984 308.76C75.8851 308.947 75.9784 309.133 75.9784 309.32C75.9784 309.507 75.9251 309.747 75.8184 310.04C75.7384 310.307 75.6318 310.587 75.4984 310.88C75.3651 311.147 75.2051 311.373 75.0184 311.56C74.8584 311.72 74.6851 311.8 74.4984 311.8C74.2584 311.8 73.8718 311.68 73.3384 311.44C72.8051 311.2 72.1118 310.973 71.2584 310.76C70.4051 310.547 69.3651 310.44 68.1384 310.44C66.1651 310.44 64.5384 310.813 63.2584 311.56C61.9784 312.28 61.0184 313.427 60.3784 315C59.7651 316.547 59.4584 318.547 59.4584 321C59.4584 323.4 59.7651 325.387 60.3784 326.96C60.9918 328.507 61.9384 329.667 63.2184 330.44C64.4984 331.213 66.0984 331.6 68.0184 331.6C69.0318 331.6 69.9384 331.507 70.7384 331.32C71.5384 331.133 72.2318 330.933 72.8184 330.72C73.4318 330.507 73.9251 330.307 74.2984 330.12C74.6718 329.933 74.9384 329.84 75.0984 329.84C75.2851 329.84 75.4584 329.947 75.6184 330.16C75.8051 330.347 75.9651 330.573 76.0984 330.84C76.2318 331.107 76.3251 331.373 76.3784 331.64C76.4318 331.907 76.4584 332.093 76.4584 332.2C76.4584 332.52 76.3384 332.787 76.0984 333C75.8851 333.213 75.5518 333.453 75.0984 333.72C74.5651 334.013 73.9251 334.28 73.1784 334.52C72.4318 334.733 71.6184 334.907 70.7384 335.04C69.8584 335.2 68.9518 335.28 68.0184 335.28ZM90.1134 335C89.5001 335 89.1934 334.52 89.1934 333.56V333.04C89.1934 332.08 89.5001 331.6 90.1134 331.6H96.5934V309.4L98.2334 310.8L90.2734 312.12C89.9534 312.147 89.7001 312.067 89.5134 311.88C89.3534 311.667 89.2334 311.387 89.1534 311.04C89.1001 310.693 89.0734 310.387 89.0734 310.12C89.0734 309.693 89.1401 309.4 89.2734 309.24C89.4068 309.053 89.6068 308.933 89.8734 308.88L99.3534 306.88C99.6468 306.88 99.9401 306.973 100.233 307.16C100.553 307.347 100.713 307.573 100.713 307.84V331.6H106.673C107.287 331.6 107.593 332.08 107.593 333.04V333.56C107.593 334.52 107.287 335 106.673 335H90.1134Z" fill="black"/>
+<path d="M18.4 15C18.1333 15 18 14.8 18 14.4V14.16C18 13.76 18.1333 13.56 18.4 13.56H21.88V2.08L22.56 2.66L18.44 3.36C18.32 3.37333 18.22 3.34 18.14 3.26C18.0733 3.18 18.02 3.07333 17.98 2.94C17.9533 2.79333 17.94 2.66 17.94 2.54C17.94 2.34 17.9667 2.20667 18.02 2.14C18.0867 2.06 18.18 2.00667 18.3 1.98L22.94 0.96C23.0867 0.96 23.2267 0.999999 23.36 1.08C23.4933 1.16 23.56 1.26 23.56 1.38V13.56H26.72C26.9867 13.56 27.12 13.76 27.12 14.16V14.4C27.12 14.8 26.9867 15 26.72 15H18.4Z" fill="black"/>
+<path d="M134.34 15C134.26 15 134.193 14.9533 134.14 14.86C134.1 14.7667 134.067 14.6533 134.04 14.52C134.027 14.3733 134.02 14.24 134.02 14.12C134.02 14.0533 134.027 13.9867 134.04 13.92C134.053 13.8533 134.073 13.8067 134.1 13.78L139.82 6.6C139.993 6.38667 140.133 6.17333 140.24 5.96C140.36 5.73333 140.453 5.50667 140.52 5.28C140.587 5.05333 140.62 4.82667 140.62 4.6C140.62 3.89333 140.4 3.34 139.96 2.94C139.52 2.52667 138.933 2.32 138.2 2.32C137.573 2.32 137.047 2.4 136.62 2.56C136.193 2.70667 135.853 2.85333 135.6 3C135.36 3.14667 135.18 3.22 135.06 3.22C134.993 3.22 134.913 3.16667 134.82 3.06C134.727 2.95333 134.647 2.83333 134.58 2.7C134.513 2.55333 134.48 2.43333 134.48 2.34C134.48 2.22 134.587 2.08 134.8 1.92C135.027 1.74667 135.327 1.58667 135.7 1.44C136.073 1.28 136.487 1.14667 136.94 1.04C137.393 0.933333 137.86 0.879999 138.34 0.879999C139.513 0.879999 140.467 1.20667 141.2 1.86C141.933 2.5 142.3 3.37333 142.3 4.48C142.3 4.86667 142.247 5.24667 142.14 5.62C142.047 5.99333 141.907 6.36 141.72 6.72C141.533 7.06667 141.307 7.40667 141.04 7.74L136.36 13.56H142.06C142.327 13.56 142.46 13.76 142.46 14.16V14.4C142.46 14.8 142.327 15 142.06 15H134.34Z" fill="black"/>
+<path d="M76.52 88.04C76.3067 88.04 76.1533 88 76.06 87.92C75.9667 87.84 75.92 87.7333 75.92 87.6V84.66H69.76C69.6933 84.66 69.6267 84.6 69.56 84.48C69.4933 84.36 69.44 84.22 69.4 84.06C69.3733 83.9 69.36 83.76 69.36 83.64C69.36 83.5867 69.36 83.54 69.36 83.5C69.3733 83.46 69.3867 83.4333 69.4 83.42L75.98 74.24C76.0467 74.1467 76.14 74.08 76.26 74.04C76.3933 73.9867 76.5267 73.96 76.66 73.96H76.98C77.1933 73.96 77.3467 74 77.44 74.08C77.5333 74.1467 77.58 74.2533 77.58 74.4V83.22H78.92C79.1867 83.22 79.32 83.42 79.32 83.82V84.06C79.32 84.2733 79.2867 84.4267 79.22 84.52C79.1667 84.6133 79.0667 84.66 78.92 84.66H77.58V87.6C77.58 87.7333 77.5333 87.84 77.44 87.92C77.3467 88 77.1933 88.04 76.98 88.04H76.52ZM70.94 83.78L70.64 83.22H75.92V78.38C75.92 78.1533 75.9267 77.8933 75.94 77.6C75.9533 77.3067 75.98 77.0533 76.02 76.84L75.32 76.5L76.34 76.24L70.94 83.78Z" fill="black"/>
+<path d="M120.8 153.04C120.507 153.04 120.287 153.02 120.14 152.98C120.007 152.927 119.94 152.84 119.94 152.72C119.94 152.68 119.947 152.64 119.96 152.6C119.987 152.547 120.007 152.493 120.02 152.44L126.1 139.82L126.5 140.44H119.5C119.233 140.44 119.1 140.24 119.1 139.84V139.6C119.1 139.2 119.233 139 119.5 139H127.28C127.4 139 127.5 139.06 127.58 139.18C127.66 139.287 127.713 139.42 127.74 139.58C127.78 139.74 127.8 139.887 127.8 140.02C127.8 140.06 127.793 140.1 127.78 140.14C127.78 140.18 127.773 140.213 127.76 140.24L121.84 152.72C121.813 152.787 121.76 152.847 121.68 152.9C121.6 152.94 121.507 152.973 121.4 153C121.293 153.027 121.173 153.04 121.04 153.04H120.8Z" fill="black"/>
+<path d="M247.34 153.12C246.54 153.12 245.813 152.98 245.16 152.7C244.507 152.42 243.987 151.987 243.6 151.4C243.213 150.813 243.02 150.067 243.02 149.16C243.02 148.387 243.133 147.76 243.36 147.28C243.587 146.8 243.887 146.407 244.26 146.1C244.647 145.793 245.06 145.52 245.5 145.28L246.86 145.84C246.473 146.04 246.12 146.28 245.8 146.56C245.48 146.827 245.22 147.153 245.02 147.54C244.833 147.927 244.74 148.4 244.74 148.96C244.74 149.56 244.853 150.067 245.08 150.48C245.32 150.88 245.64 151.18 246.04 151.38C246.44 151.58 246.873 151.68 247.34 151.68C247.82 151.68 248.253 151.58 248.64 151.38C249.04 151.18 249.36 150.88 249.6 150.48C249.84 150.067 249.96 149.56 249.96 148.96C249.96 148.44 249.84 148.02 249.6 147.7C249.373 147.367 249.073 147.1 248.7 146.9C248.327 146.687 247.913 146.5 247.46 146.34C247.007 146.18 246.547 146.013 246.08 145.84C245.627 145.653 245.213 145.42 244.84 145.14C244.467 144.86 244.16 144.5 243.92 144.06C243.693 143.607 243.58 143.033 243.58 142.34C243.58 141.58 243.747 140.947 244.08 140.44C244.427 139.92 244.887 139.533 245.46 139.28C246.047 139.013 246.687 138.88 247.38 138.88C248.087 138.88 248.727 139.013 249.3 139.28C249.887 139.533 250.353 139.92 250.7 140.44C251.047 140.947 251.22 141.58 251.22 142.34C251.22 142.9 251.12 143.387 250.92 143.8C250.72 144.213 250.453 144.56 250.12 144.84C249.787 145.12 249.413 145.34 249 145.5L247.52 145C247.893 144.8 248.227 144.58 248.52 144.34C248.827 144.087 249.073 143.8 249.26 143.48C249.447 143.147 249.54 142.767 249.54 142.34C249.54 141.633 249.327 141.12 248.9 140.8C248.473 140.48 247.967 140.32 247.38 140.32C246.793 140.32 246.293 140.48 245.88 140.8C245.467 141.12 245.26 141.633 245.26 142.34C245.26 142.833 245.373 143.233 245.6 143.54C245.84 143.847 246.147 144.093 246.52 144.28C246.907 144.467 247.327 144.64 247.78 144.8C248.247 144.947 248.707 145.113 249.16 145.3C249.613 145.487 250.027 145.733 250.4 146.04C250.787 146.333 251.093 146.72 251.32 147.2C251.56 147.68 251.68 148.3 251.68 149.06C251.68 149.753 251.567 150.353 251.34 150.86C251.113 151.367 250.8 151.787 250.4 152.12C250.013 152.453 249.553 152.707 249.02 152.88C248.5 153.04 247.94 153.12 247.34 153.12Z" fill="black"/>
+<path d="M371.34 141.96C372.047 141.96 372.667 142.073 373.2 142.3C373.733 142.527 374.173 142.86 374.52 143.3C374.88 143.727 375.147 144.253 375.32 144.88C375.507 145.493 375.6 146.2 375.6 147C375.6 147.96 375.473 148.853 375.22 149.68C374.967 150.507 374.633 151.26 374.22 151.94C373.807 152.607 373.353 153.2 372.86 153.72C372.367 154.24 371.873 154.68 371.38 155.04C370.887 155.387 370.44 155.653 370.04 155.84C369.64 156.013 369.327 156.1 369.1 156.1C368.993 156.1 368.9 156.06 368.82 155.98C368.74 155.887 368.667 155.78 368.6 155.66C368.547 155.54 368.507 155.42 368.48 155.3C368.453 155.18 368.44 155.093 368.44 155.04C368.44 155.013 368.447 154.98 368.46 154.94C368.487 154.887 368.533 154.847 368.6 154.82C369.547 154.393 370.353 153.9 371.02 153.34C371.7 152.767 372.253 152.14 372.68 151.46C373.107 150.767 373.42 150.033 373.62 149.26C373.82 148.473 373.92 147.667 373.92 146.84C373.92 146.133 373.84 145.56 373.68 145.12C373.52 144.667 373.307 144.32 373.04 144.08C372.787 143.827 372.5 143.653 372.18 143.56C371.873 143.453 371.56 143.4 371.24 143.4C370.88 143.4 370.507 143.493 370.12 143.68C369.733 143.867 369.4 144.153 369.12 144.54C368.853 144.927 368.72 145.427 368.72 146.04C368.72 146.693 368.847 147.22 369.1 147.62C369.353 148.007 369.68 148.287 370.08 148.46C370.48 148.633 370.9 148.72 371.34 148.72C371.927 148.72 372.453 148.633 372.92 148.46C373.4 148.273 373.773 148.093 374.04 147.92L373.74 149.38C373.433 149.58 373.04 149.76 372.56 149.92C372.093 150.08 371.52 150.16 370.84 150.16C370.307 150.16 369.807 150.067 369.34 149.88C368.887 149.693 368.487 149.427 368.14 149.08C367.793 148.72 367.52 148.293 367.32 147.8C367.12 147.293 367.02 146.733 367.02 146.12C367.02 145.48 367.127 144.907 367.34 144.4C367.567 143.893 367.873 143.46 368.26 143.1C368.66 142.727 369.12 142.447 369.64 142.26C370.173 142.06 370.74 141.96 371.34 141.96Z" fill="black"/>
+<path d="M193.64 88.12C192.907 88.12 192.253 88.0533 191.68 87.92C191.12 87.7867 190.68 87.6267 190.36 87.44C190.053 87.2533 189.9 87.08 189.9 86.92C189.9 86.8267 189.927 86.7267 189.98 86.62C190.033 86.5 190.093 86.3867 190.16 86.28C190.24 86.1733 190.32 86.0867 190.4 86.02C190.48 85.9533 190.547 85.92 190.6 85.92C190.733 85.92 190.92 85.9867 191.16 86.12C191.413 86.24 191.74 86.3667 192.14 86.5C192.553 86.62 193.047 86.68 193.62 86.68C194.647 86.68 195.42 86.4333 195.94 85.94C196.46 85.4467 196.72 84.7133 196.72 83.74C196.72 82.8467 196.413 82.1667 195.8 81.7C195.187 81.2333 194.293 81 193.12 81H191.42C191.207 81 191.053 80.9533 190.96 80.86C190.88 80.7667 190.847 80.6133 190.86 80.4L191.2 74.6C191.213 74.3867 191.267 74.2333 191.36 74.14C191.467 74.0467 191.627 74 191.84 74H197.16C197.427 74 197.56 74.2 197.56 74.6V74.84C197.56 75.24 197.427 75.44 197.16 75.44H192.12L192.86 74.74L192.52 80.26L191.86 79.56H193.6C194.147 79.56 194.7 79.6267 195.26 79.76C195.82 79.8933 196.34 80.12 196.82 80.44C197.313 80.7467 197.707 81.1733 198 81.72C198.293 82.2533 198.44 82.9267 198.44 83.74C198.44 84.42 198.327 85.0333 198.1 85.58C197.887 86.1133 197.573 86.5733 197.16 86.96C196.747 87.3333 196.24 87.62 195.64 87.82C195.053 88.02 194.387 88.12 193.64 88.12Z" fill="black"/>
+<path d="M314.36 88.1C313.653 88.1 313.033 87.9867 312.5 87.76C311.967 87.5333 311.52 87.2067 311.16 86.78C310.813 86.34 310.547 85.8133 310.36 85.2C310.187 84.5733 310.1 83.86 310.1 83.06C310.1 82.1 310.227 81.2067 310.48 80.38C310.733 79.5533 311.067 78.8067 311.48 78.14C311.893 77.46 312.347 76.86 312.84 76.34C313.333 75.82 313.827 75.3867 314.32 75.04C314.813 74.68 315.26 74.4133 315.66 74.24C316.06 74.0533 316.373 73.96 316.6 73.96C316.707 73.96 316.8 74.0067 316.88 74.1C316.96 74.18 317.027 74.28 317.08 74.4C317.147 74.52 317.193 74.64 317.22 74.76C317.247 74.8667 317.26 74.9533 317.26 75.02C317.26 75.0467 317.247 75.0867 317.22 75.14C317.207 75.18 317.167 75.2133 317.1 75.24C316.153 75.6533 315.34 76.1467 314.66 76.72C313.993 77.2933 313.447 77.9267 313.02 78.62C312.593 79.3 312.28 80.0333 312.08 80.82C311.88 81.5933 311.78 82.3933 311.78 83.22C311.78 83.9133 311.86 84.4867 312.02 84.94C312.18 85.3933 312.387 85.7467 312.64 86C312.907 86.24 313.193 86.4133 313.5 86.52C313.82 86.6133 314.14 86.66 314.46 86.66C314.82 86.66 315.193 86.5667 315.58 86.38C315.967 86.1933 316.293 85.9067 316.56 85.52C316.84 85.1333 316.98 84.6333 316.98 84.02C316.98 83.3667 316.853 82.8467 316.6 82.46C316.347 82.06 316.02 81.7733 315.62 81.6C315.22 81.4267 314.8 81.34 314.36 81.34C313.773 81.34 313.24 81.4333 312.76 81.62C312.293 81.7933 311.927 81.9667 311.66 82.14L311.96 80.68C312.267 80.48 312.653 80.3 313.12 80.14C313.6 79.98 314.18 79.9 314.86 79.9C315.393 79.9 315.887 79.9933 316.34 80.18C316.807 80.3667 317.213 80.64 317.56 81C317.907 81.3467 318.18 81.7733 318.38 82.28C318.58 82.7733 318.68 83.3267 318.68 83.94C318.68 84.58 318.567 85.1533 318.34 85.66C318.127 86.1667 317.82 86.6067 317.42 86.98C317.033 87.34 316.573 87.62 316.04 87.82C315.52 88.0067 314.96 88.1 314.36 88.1Z" fill="black"/>
+<path d="M253.66 15.12C253.087 15.12 252.567 15.08 252.1 15C251.633 14.9333 251.233 14.84 250.9 14.72C250.567 14.6 250.307 14.4733 250.12 14.34C249.947 14.1933 249.86 14.06 249.86 13.94C249.86 13.8067 249.893 13.6667 249.96 13.52C250.027 13.3733 250.107 13.2467 250.2 13.14C250.293 13.0333 250.373 12.98 250.44 12.98C250.56 12.98 250.747 13.04 251 13.16C251.267 13.2667 251.607 13.38 252.02 13.5C252.433 13.62 252.927 13.68 253.5 13.68C254.167 13.68 254.72 13.58 255.16 13.38C255.613 13.1667 255.953 12.8533 256.18 12.44C256.407 12.0267 256.52 11.52 256.52 10.92C256.52 9.89333 256.24 9.2 255.68 8.84C255.12 8.46667 254.387 8.28 253.48 8.28H252.62C252.353 8.28 252.22 8.08 252.22 7.68V7.46C252.22 7.24667 252.253 7.09333 252.32 7C252.387 6.90667 252.487 6.86 252.62 6.86H253.4C253.813 6.86 254.18 6.8 254.5 6.68C254.833 6.56 255.113 6.38667 255.34 6.16C255.58 5.93333 255.76 5.66 255.88 5.34C256 5.00667 256.06 4.64 256.06 4.24C256.06 3.98667 255.993 3.71333 255.86 3.42C255.74 3.11333 255.507 2.85333 255.16 2.64C254.827 2.42667 254.333 2.32 253.68 2.32C253.08 2.32 252.587 2.37333 252.2 2.48C251.813 2.58667 251.513 2.7 251.3 2.82C251.087 2.92667 250.92 2.98 250.8 2.98C250.733 2.98 250.653 2.93333 250.56 2.84C250.467 2.73333 250.387 2.61333 250.32 2.48C250.267 2.34667 250.24 2.23333 250.24 2.14C250.24 2.02 250.353 1.88667 250.58 1.74C250.807 1.59333 251.093 1.45333 251.44 1.32C251.8 1.18667 252.18 1.08 252.58 0.999999C252.98 0.919999 253.36 0.879999 253.72 0.879999C254.907 0.879999 255.867 1.16 256.6 1.72C257.347 2.28 257.72 3.13333 257.72 4.28C257.72 4.78667 257.62 5.24 257.42 5.64C257.233 6.02667 256.987 6.36 256.68 6.64C256.373 6.90667 256.047 7.12 255.7 7.28V7.36C256.1 7.46667 256.493 7.67333 256.88 7.98C257.267 8.28667 257.587 8.68667 257.84 9.18C258.093 9.67333 258.22 10.26 258.22 10.94C258.22 11.8067 258.033 12.5533 257.66 13.18C257.3 13.8067 256.78 14.2867 256.1 14.62C255.42 14.9533 254.607 15.12 253.66 15.12Z" fill="black"/></symbol><symbol id="rgc-art-2" viewBox="0 0 376 336" fill="none"><path d="M181.985 306.587C194.465 306.805 204.758 296.865 204.976 284.385C205.194 271.906 195.253 261.612 182.774 261.394C170.294 261.177 160.001 271.117 159.783 283.596C159.565 296.076 169.505 306.369 181.985 306.587Z" fill="#DEB33D"/>
+<path d="M181.597 328.8L181.985 306.587" stroke="#DEB33D" stroke-width="2" stroke-miterlimit="10"/>
+<path d="M203.17 329.224L180.573 328.829" stroke="#DEB33D" stroke-width="2" stroke-miterlimit="10"/>
+<g opacity="0.41">
+<path d="M223.953 291.836C218.517 285.672 214.297 280.886 210.055 276.076C205.964 271.437 201.853 266.774 196.611 260.83L169.509 261.042L142.407 261.254C142.407 261.254 150.689 270.863 155.996 277.019C161.302 283.176 169.584 292.785 169.584 292.785L196.769 292.31L223.953 291.836Z" fill="#DEB33D"/>
+<path d="M155.996 277.019C150.689 270.863 142.407 261.254 142.407 261.254L169.509 261.042M155.996 277.019C161.302 283.176 169.584 292.785 169.584 292.785L196.769 292.31M155.996 277.019L210.055 276.076M210.055 276.076C214.297 280.886 218.517 285.672 223.953 291.836L196.769 292.31M210.055 276.076C205.964 271.437 201.853 266.774 196.611 260.83L169.509 261.042M196.769 292.31L169.509 261.042" stroke="black" stroke-width="0.5" stroke-dasharray="2 2"/>
+</g>
+<path d="M239.417 37.9739L195.907 260.82" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M121.391 37.5336L169.92 261.774" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M2.37418 37.6108L142.407 261.254" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M120.317 176.574L169.961 292.778" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M239.817 175.488L196.457 292.316" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M359.316 174.402L223.453 291.844" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M60.5959 107.105L155.667 276.025" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M180.037 105.02L183.022 276.048" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M297.595 104.969L210.158 275.074" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<g opacity="0.41">
+<path d="M359.429 174.968C335.735 147.607 317.34 126.366 298.849 105.014C281.017 84.4215 263.095 63.7264 240.245 37.34L120.92 37.2321L1.59567 37.1243C1.59567 37.1243 37.6882 79.7672 60.8146 107.091C83.9411 134.414 120.034 177.057 120.034 177.057L239.731 176.013L359.429 174.968Z" fill="#DEB33D"/>
+<path d="M60.8146 107.091C37.6882 79.7672 1.59567 37.1243 1.59567 37.1243L120.92 37.2321M60.8146 107.091C83.9411 134.414 120.034 177.057 120.034 177.057L239.731 176.013M60.8146 107.091L298.849 105.014M298.849 105.014C317.34 126.366 335.735 147.607 359.429 174.968L239.731 176.013M298.849 105.014C281.017 84.4215 263.095 63.7264 240.245 37.34L120.92 37.2321M239.731 176.013L120.92 37.2321" stroke="black" stroke-dasharray="2 2"/>
+</g>
+<path d="M7.36 335.08C6.72 335.08 6.25333 335 5.96 334.84C5.66667 334.653 5.52 334.4 5.52 334.08V308.32C5.52 307.44 5.96 307 6.84 307H14.72C17.8667 307 20.2133 307.667 21.76 309C23.3067 310.333 24.08 312.293 24.08 314.88C24.08 316.053 23.88 317.093 23.48 318C23.1067 318.907 22.5467 319.667 21.8 320.28C21.08 320.867 20.1867 321.28 19.12 321.52V321.68C19.84 321.893 20.4533 322.347 20.96 323.04C21.4933 323.733 21.96 324.6 22.36 325.64L25.52 333.56C25.6 333.72 25.6533 333.88 25.68 334.04C25.7067 334.173 25.72 334.28 25.72 334.36C25.72 334.6 25.5733 334.787 25.28 334.92C24.9867 335.027 24.5067 335.08 23.84 335.08H23.08C22.6267 335.08 22.24 335.013 21.92 334.88C21.6 334.747 21.3733 334.547 21.24 334.28L18.04 326.08C17.7467 325.36 17.4133 324.787 17.04 324.36C16.6667 323.907 16.1867 323.587 15.6 323.4C15.0133 323.213 14.2667 323.12 13.36 323.12H9.88V334.08C9.88 334.4 9.73333 334.653 9.44 334.84C9.17333 335 8.69333 335.08 8 335.08H7.36ZM9.88 319.56H14.8C16.5333 319.56 17.7733 319.227 18.52 318.56C19.2933 317.867 19.68 316.76 19.68 315.24C19.68 313.64 19.2933 312.48 18.52 311.76C17.7733 311.04 16.5333 310.68 14.8 310.68H9.88V319.56ZM41.1434 335.28C36.7168 335.28 33.4501 334.12 31.3434 331.8C29.2368 329.48 28.1834 325.867 28.1834 320.96C28.1834 316.187 29.2768 312.627 31.4634 310.28C33.6768 307.907 36.9301 306.72 41.2234 306.72C41.9168 306.72 42.5834 306.76 43.2234 306.84C43.8901 306.92 44.5168 307.027 45.1034 307.16C45.7168 307.293 46.2768 307.453 46.7834 307.64C47.2901 307.8 47.7301 307.987 48.1034 308.2C48.3968 308.387 48.6368 308.573 48.8234 308.76C49.0101 308.947 49.1034 309.133 49.1034 309.32C49.1034 309.507 49.0501 309.747 48.9434 310.04C48.8368 310.307 48.7034 310.587 48.5434 310.88C48.3834 311.147 48.2101 311.373 48.0234 311.56C47.8368 311.72 47.6501 311.8 47.4634 311.8C47.2501 311.8 46.9701 311.733 46.6234 311.6C46.3034 311.467 45.8901 311.307 45.3834 311.12C44.9034 310.933 44.3168 310.773 43.6234 310.64C42.9568 310.507 42.1701 310.44 41.2634 310.44C38.3034 310.44 36.1168 311.293 34.7034 313C33.2901 314.68 32.5834 317.347 32.5834 321C32.5834 323.48 32.8901 325.507 33.5034 327.08C34.1168 328.627 35.0634 329.773 36.3434 330.52C37.6234 331.24 39.2234 331.6 41.1434 331.6C41.8634 331.6 42.5701 331.547 43.2634 331.44C43.9834 331.333 44.6234 331.187 45.1834 331C45.7701 330.787 46.2101 330.56 46.5034 330.32L45.6234 332.68V323.08H40.5434C39.9301 323.08 39.6234 322.6 39.6234 321.64V320.88C39.6234 319.92 39.9301 319.44 40.5434 319.44H48.5034C49.3834 319.44 49.8234 319.88 49.8234 320.76V331.96C49.8234 332.36 49.7434 332.667 49.5834 332.88C49.4501 333.093 49.2234 333.28 48.9034 333.44C48.2634 333.813 47.5301 334.133 46.7034 334.4C45.8768 334.667 44.9968 334.88 44.0634 335.04C43.1301 335.2 42.1568 335.28 41.1434 335.28ZM68.0184 335.28C63.5918 335.28 60.3251 334.12 58.2184 331.8C56.1118 329.48 55.0584 325.867 55.0584 320.96C55.0584 316.187 56.1518 312.627 58.3384 310.28C60.5518 307.907 63.8051 306.72 68.0984 306.72C69.0051 306.72 69.8851 306.787 70.7384 306.92C71.6184 307.053 72.4184 307.227 73.1384 307.44C73.8851 307.653 74.4984 307.907 74.9784 308.2C75.2718 308.387 75.5118 308.573 75.6984 308.76C75.8851 308.947 75.9784 309.133 75.9784 309.32C75.9784 309.507 75.9251 309.747 75.8184 310.04C75.7384 310.307 75.6318 310.587 75.4984 310.88C75.3651 311.147 75.2051 311.373 75.0184 311.56C74.8584 311.72 74.6851 311.8 74.4984 311.8C74.2584 311.8 73.8718 311.68 73.3384 311.44C72.8051 311.2 72.1118 310.973 71.2584 310.76C70.4051 310.547 69.3651 310.44 68.1384 310.44C66.1651 310.44 64.5384 310.813 63.2584 311.56C61.9784 312.28 61.0184 313.427 60.3784 315C59.7651 316.547 59.4584 318.547 59.4584 321C59.4584 323.4 59.7651 325.387 60.3784 326.96C60.9918 328.507 61.9384 329.667 63.2184 330.44C64.4984 331.213 66.0984 331.6 68.0184 331.6C69.0318 331.6 69.9384 331.507 70.7384 331.32C71.5384 331.133 72.2318 330.933 72.8184 330.72C73.4318 330.507 73.9251 330.307 74.2984 330.12C74.6718 329.933 74.9384 329.84 75.0984 329.84C75.2851 329.84 75.4584 329.947 75.6184 330.16C75.8051 330.347 75.9651 330.573 76.0984 330.84C76.2318 331.107 76.3251 331.373 76.3784 331.64C76.4318 331.907 76.4584 332.093 76.4584 332.2C76.4584 332.52 76.3384 332.787 76.0984 333C75.8851 333.213 75.5518 333.453 75.0984 333.72C74.5651 334.013 73.9251 334.28 73.1784 334.52C72.4318 334.733 71.6184 334.907 70.7384 335.04C69.8584 335.2 68.9518 335.28 68.0184 335.28ZM89.8734 335C89.6868 335 89.5401 334.88 89.4334 334.64C89.3268 334.373 89.2468 334.067 89.1934 333.72C89.1401 333.347 89.1134 333.013 89.1134 332.72C89.1134 332.587 89.1268 332.467 89.1534 332.36C89.1801 332.227 89.2201 332.133 89.2734 332.08L100.353 318.28C100.673 317.88 100.94 317.467 101.153 317.04C101.393 316.587 101.58 316.133 101.713 315.68C101.847 315.227 101.913 314.773 101.913 314.32C101.913 313.013 101.5 312 100.673 311.28C99.8734 310.533 98.8201 310.16 97.5134 310.16C96.3668 310.16 95.3934 310.307 94.5934 310.6C93.7934 310.893 93.1534 311.187 92.6734 311.48C92.1934 311.773 91.8334 311.92 91.5934 311.92C91.3801 311.92 91.1534 311.8 90.9134 311.56C90.6734 311.293 90.4734 310.987 90.3134 310.64C90.1801 310.293 90.1134 310 90.1134 309.76C90.1134 309.493 90.3268 309.187 90.7534 308.84C91.2068 308.493 91.8068 308.16 92.5534 307.84C93.3268 307.52 94.1668 307.253 95.0734 307.04C96.0068 306.827 96.9401 306.72 97.8734 306.72C100.353 306.72 102.327 307.4 103.793 308.76C105.287 310.093 106.033 311.88 106.033 314.12C106.033 314.92 105.927 315.693 105.713 316.44C105.527 317.187 105.247 317.92 104.873 318.64C104.5 319.333 104.06 320 103.553 320.64L94.7134 331.6H105.473C106.087 331.6 106.393 332.08 106.393 333.04V333.56C106.393 334.52 106.087 335 105.473 335H89.8734Z" fill="black"/>
+<path d="M18.4 15C18.1333 15 18 14.8 18 14.4V14.16C18 13.76 18.1333 13.56 18.4 13.56H21.88V2.08L22.56 2.66L18.44 3.36C18.32 3.37333 18.22 3.34 18.14 3.26C18.0733 3.18 18.02 3.07333 17.98 2.94C17.9533 2.79333 17.94 2.66 17.94 2.54C17.94 2.34 17.9667 2.20667 18.02 2.14C18.0867 2.06 18.18 2.00667 18.3 1.98L22.94 0.96C23.0867 0.96 23.2267 0.999999 23.36 1.08C23.4933 1.16 23.56 1.26 23.56 1.38V13.56H26.72C26.9867 13.56 27.12 13.76 27.12 14.16V14.4C27.12 14.8 26.9867 15 26.72 15H18.4Z" fill="black"/>
+<path d="M134.34 15C134.26 15 134.193 14.9533 134.14 14.86C134.1 14.7667 134.067 14.6533 134.04 14.52C134.027 14.3733 134.02 14.24 134.02 14.12C134.02 14.0533 134.027 13.9867 134.04 13.92C134.053 13.8533 134.073 13.8067 134.1 13.78L139.82 6.6C139.993 6.38667 140.133 6.17333 140.24 5.96C140.36 5.73333 140.453 5.50667 140.52 5.28C140.587 5.05333 140.62 4.82667 140.62 4.6C140.62 3.89333 140.4 3.34 139.96 2.94C139.52 2.52667 138.933 2.32 138.2 2.32C137.573 2.32 137.047 2.4 136.62 2.56C136.193 2.70667 135.853 2.85333 135.6 3C135.36 3.14667 135.18 3.22 135.06 3.22C134.993 3.22 134.913 3.16667 134.82 3.06C134.727 2.95333 134.647 2.83333 134.58 2.7C134.513 2.55333 134.48 2.43333 134.48 2.34C134.48 2.22 134.587 2.08 134.8 1.92C135.027 1.74667 135.327 1.58667 135.7 1.44C136.073 1.28 136.487 1.14667 136.94 1.04C137.393 0.933333 137.86 0.879999 138.34 0.879999C139.513 0.879999 140.467 1.20667 141.2 1.86C141.933 2.5 142.3 3.37333 142.3 4.48C142.3 4.86667 142.247 5.24667 142.14 5.62C142.047 5.99333 141.907 6.36 141.72 6.72C141.533 7.06667 141.307 7.40667 141.04 7.74L136.36 13.56H142.06C142.327 13.56 142.46 13.76 142.46 14.16V14.4C142.46 14.8 142.327 15 142.06 15H134.34Z" fill="black"/>
+<path d="M76.52 88.04C76.3067 88.04 76.1533 88 76.06 87.92C75.9667 87.84 75.92 87.7333 75.92 87.6V84.66H69.76C69.6933 84.66 69.6267 84.6 69.56 84.48C69.4933 84.36 69.44 84.22 69.4 84.06C69.3733 83.9 69.36 83.76 69.36 83.64C69.36 83.5867 69.36 83.54 69.36 83.5C69.3733 83.46 69.3867 83.4333 69.4 83.42L75.98 74.24C76.0467 74.1467 76.14 74.08 76.26 74.04C76.3933 73.9867 76.5267 73.96 76.66 73.96H76.98C77.1933 73.96 77.3467 74 77.44 74.08C77.5333 74.1467 77.58 74.2533 77.58 74.4V83.22H78.92C79.1867 83.22 79.32 83.42 79.32 83.82V84.06C79.32 84.2733 79.2867 84.4267 79.22 84.52C79.1667 84.6133 79.0667 84.66 78.92 84.66H77.58V87.6C77.58 87.7333 77.5333 87.84 77.44 87.92C77.3467 88 77.1933 88.04 76.98 88.04H76.52ZM70.94 83.78L70.64 83.22H75.92V78.38C75.92 78.1533 75.9267 77.8933 75.94 77.6C75.9533 77.3067 75.98 77.0533 76.02 76.84L75.32 76.5L76.34 76.24L70.94 83.78Z" fill="black"/>
+<path d="M120.8 153.04C120.507 153.04 120.287 153.02 120.14 152.98C120.007 152.927 119.94 152.84 119.94 152.72C119.94 152.68 119.947 152.64 119.96 152.6C119.987 152.547 120.007 152.493 120.02 152.44L126.1 139.82L126.5 140.44H119.5C119.233 140.44 119.1 140.24 119.1 139.84V139.6C119.1 139.2 119.233 139 119.5 139H127.28C127.4 139 127.5 139.06 127.58 139.18C127.66 139.287 127.713 139.42 127.74 139.58C127.78 139.74 127.8 139.887 127.8 140.02C127.8 140.06 127.793 140.1 127.78 140.14C127.78 140.18 127.773 140.213 127.76 140.24L121.84 152.72C121.813 152.787 121.76 152.847 121.68 152.9C121.6 152.94 121.507 152.973 121.4 153C121.293 153.027 121.173 153.04 121.04 153.04H120.8Z" fill="black"/>
+<path d="M247.34 153.12C246.54 153.12 245.813 152.98 245.16 152.7C244.507 152.42 243.987 151.987 243.6 151.4C243.213 150.813 243.02 150.067 243.02 149.16C243.02 148.387 243.133 147.76 243.36 147.28C243.587 146.8 243.887 146.407 244.26 146.1C244.647 145.793 245.06 145.52 245.5 145.28L246.86 145.84C246.473 146.04 246.12 146.28 245.8 146.56C245.48 146.827 245.22 147.153 245.02 147.54C244.833 147.927 244.74 148.4 244.74 148.96C244.74 149.56 244.853 150.067 245.08 150.48C245.32 150.88 245.64 151.18 246.04 151.38C246.44 151.58 246.873 151.68 247.34 151.68C247.82 151.68 248.253 151.58 248.64 151.38C249.04 151.18 249.36 150.88 249.6 150.48C249.84 150.067 249.96 149.56 249.96 148.96C249.96 148.44 249.84 148.02 249.6 147.7C249.373 147.367 249.073 147.1 248.7 146.9C248.327 146.687 247.913 146.5 247.46 146.34C247.007 146.18 246.547 146.013 246.08 145.84C245.627 145.653 245.213 145.42 244.84 145.14C244.467 144.86 244.16 144.5 243.92 144.06C243.693 143.607 243.58 143.033 243.58 142.34C243.58 141.58 243.747 140.947 244.08 140.44C244.427 139.92 244.887 139.533 245.46 139.28C246.047 139.013 246.687 138.88 247.38 138.88C248.087 138.88 248.727 139.013 249.3 139.28C249.887 139.533 250.353 139.92 250.7 140.44C251.047 140.947 251.22 141.58 251.22 142.34C251.22 142.9 251.12 143.387 250.92 143.8C250.72 144.213 250.453 144.56 250.12 144.84C249.787 145.12 249.413 145.34 249 145.5L247.52 145C247.893 144.8 248.227 144.58 248.52 144.34C248.827 144.087 249.073 143.8 249.26 143.48C249.447 143.147 249.54 142.767 249.54 142.34C249.54 141.633 249.327 141.12 248.9 140.8C248.473 140.48 247.967 140.32 247.38 140.32C246.793 140.32 246.293 140.48 245.88 140.8C245.467 141.12 245.26 141.633 245.26 142.34C245.26 142.833 245.373 143.233 245.6 143.54C245.84 143.847 246.147 144.093 246.52 144.28C246.907 144.467 247.327 144.64 247.78 144.8C248.247 144.947 248.707 145.113 249.16 145.3C249.613 145.487 250.027 145.733 250.4 146.04C250.787 146.333 251.093 146.72 251.32 147.2C251.56 147.68 251.68 148.3 251.68 149.06C251.68 149.753 251.567 150.353 251.34 150.86C251.113 151.367 250.8 151.787 250.4 152.12C250.013 152.453 249.553 152.707 249.02 152.88C248.5 153.04 247.94 153.12 247.34 153.12Z" fill="black"/>
+<path d="M371.34 141.96C372.047 141.96 372.667 142.073 373.2 142.3C373.733 142.527 374.173 142.86 374.52 143.3C374.88 143.727 375.147 144.253 375.32 144.88C375.507 145.493 375.6 146.2 375.6 147C375.6 147.96 375.473 148.853 375.22 149.68C374.967 150.507 374.633 151.26 374.22 151.94C373.807 152.607 373.353 153.2 372.86 153.72C372.367 154.24 371.873 154.68 371.38 155.04C370.887 155.387 370.44 155.653 370.04 155.84C369.64 156.013 369.327 156.1 369.1 156.1C368.993 156.1 368.9 156.06 368.82 155.98C368.74 155.887 368.667 155.78 368.6 155.66C368.547 155.54 368.507 155.42 368.48 155.3C368.453 155.18 368.44 155.093 368.44 155.04C368.44 155.013 368.447 154.98 368.46 154.94C368.487 154.887 368.533 154.847 368.6 154.82C369.547 154.393 370.353 153.9 371.02 153.34C371.7 152.767 372.253 152.14 372.68 151.46C373.107 150.767 373.42 150.033 373.62 149.26C373.82 148.473 373.92 147.667 373.92 146.84C373.92 146.133 373.84 145.56 373.68 145.12C373.52 144.667 373.307 144.32 373.04 144.08C372.787 143.827 372.5 143.653 372.18 143.56C371.873 143.453 371.56 143.4 371.24 143.4C370.88 143.4 370.507 143.493 370.12 143.68C369.733 143.867 369.4 144.153 369.12 144.54C368.853 144.927 368.72 145.427 368.72 146.04C368.72 146.693 368.847 147.22 369.1 147.62C369.353 148.007 369.68 148.287 370.08 148.46C370.48 148.633 370.9 148.72 371.34 148.72C371.927 148.72 372.453 148.633 372.92 148.46C373.4 148.273 373.773 148.093 374.04 147.92L373.74 149.38C373.433 149.58 373.04 149.76 372.56 149.92C372.093 150.08 371.52 150.16 370.84 150.16C370.307 150.16 369.807 150.067 369.34 149.88C368.887 149.693 368.487 149.427 368.14 149.08C367.793 148.72 367.52 148.293 367.32 147.8C367.12 147.293 367.02 146.733 367.02 146.12C367.02 145.48 367.127 144.907 367.34 144.4C367.567 143.893 367.873 143.46 368.26 143.1C368.66 142.727 369.12 142.447 369.64 142.26C370.173 142.06 370.74 141.96 371.34 141.96Z" fill="black"/>
+<path d="M193.64 88.12C192.907 88.12 192.253 88.0533 191.68 87.92C191.12 87.7867 190.68 87.6267 190.36 87.44C190.053 87.2533 189.9 87.08 189.9 86.92C189.9 86.8267 189.927 86.7267 189.98 86.62C190.033 86.5 190.093 86.3867 190.16 86.28C190.24 86.1733 190.32 86.0867 190.4 86.02C190.48 85.9533 190.547 85.92 190.6 85.92C190.733 85.92 190.92 85.9867 191.16 86.12C191.413 86.24 191.74 86.3667 192.14 86.5C192.553 86.62 193.047 86.68 193.62 86.68C194.647 86.68 195.42 86.4333 195.94 85.94C196.46 85.4467 196.72 84.7133 196.72 83.74C196.72 82.8467 196.413 82.1667 195.8 81.7C195.187 81.2333 194.293 81 193.12 81H191.42C191.207 81 191.053 80.9533 190.96 80.86C190.88 80.7667 190.847 80.6133 190.86 80.4L191.2 74.6C191.213 74.3867 191.267 74.2333 191.36 74.14C191.467 74.0467 191.627 74 191.84 74H197.16C197.427 74 197.56 74.2 197.56 74.6V74.84C197.56 75.24 197.427 75.44 197.16 75.44H192.12L192.86 74.74L192.52 80.26L191.86 79.56H193.6C194.147 79.56 194.7 79.6267 195.26 79.76C195.82 79.8933 196.34 80.12 196.82 80.44C197.313 80.7467 197.707 81.1733 198 81.72C198.293 82.2533 198.44 82.9267 198.44 83.74C198.44 84.42 198.327 85.0333 198.1 85.58C197.887 86.1133 197.573 86.5733 197.16 86.96C196.747 87.3333 196.24 87.62 195.64 87.82C195.053 88.02 194.387 88.12 193.64 88.12Z" fill="black"/>
+<path d="M314.36 88.1C313.653 88.1 313.033 87.9867 312.5 87.76C311.967 87.5333 311.52 87.2067 311.16 86.78C310.813 86.34 310.547 85.8133 310.36 85.2C310.187 84.5733 310.1 83.86 310.1 83.06C310.1 82.1 310.227 81.2067 310.48 80.38C310.733 79.5533 311.067 78.8067 311.48 78.14C311.893 77.46 312.347 76.86 312.84 76.34C313.333 75.82 313.827 75.3867 314.32 75.04C314.813 74.68 315.26 74.4133 315.66 74.24C316.06 74.0533 316.373 73.96 316.6 73.96C316.707 73.96 316.8 74.0067 316.88 74.1C316.96 74.18 317.027 74.28 317.08 74.4C317.147 74.52 317.193 74.64 317.22 74.76C317.247 74.8667 317.26 74.9533 317.26 75.02C317.26 75.0467 317.247 75.0867 317.22 75.14C317.207 75.18 317.167 75.2133 317.1 75.24C316.153 75.6533 315.34 76.1467 314.66 76.72C313.993 77.2933 313.447 77.9267 313.02 78.62C312.593 79.3 312.28 80.0333 312.08 80.82C311.88 81.5933 311.78 82.3933 311.78 83.22C311.78 83.9133 311.86 84.4867 312.02 84.94C312.18 85.3933 312.387 85.7467 312.64 86C312.907 86.24 313.193 86.4133 313.5 86.52C313.82 86.6133 314.14 86.66 314.46 86.66C314.82 86.66 315.193 86.5667 315.58 86.38C315.967 86.1933 316.293 85.9067 316.56 85.52C316.84 85.1333 316.98 84.6333 316.98 84.02C316.98 83.3667 316.853 82.8467 316.6 82.46C316.347 82.06 316.02 81.7733 315.62 81.6C315.22 81.4267 314.8 81.34 314.36 81.34C313.773 81.34 313.24 81.4333 312.76 81.62C312.293 81.7933 311.927 81.9667 311.66 82.14L311.96 80.68C312.267 80.48 312.653 80.3 313.12 80.14C313.6 79.98 314.18 79.9 314.86 79.9C315.393 79.9 315.887 79.9933 316.34 80.18C316.807 80.3667 317.213 80.64 317.56 81C317.907 81.3467 318.18 81.7733 318.38 82.28C318.58 82.7733 318.68 83.3267 318.68 83.94C318.68 84.58 318.567 85.1533 318.34 85.66C318.127 86.1667 317.82 86.6067 317.42 86.98C317.033 87.34 316.573 87.62 316.04 87.82C315.52 88.0067 314.96 88.1 314.36 88.1Z" fill="black"/>
+<path d="M253.66 15.12C253.087 15.12 252.567 15.08 252.1 15C251.633 14.9333 251.233 14.84 250.9 14.72C250.567 14.6 250.307 14.4733 250.12 14.34C249.947 14.1933 249.86 14.06 249.86 13.94C249.86 13.8067 249.893 13.6667 249.96 13.52C250.027 13.3733 250.107 13.2467 250.2 13.14C250.293 13.0333 250.373 12.98 250.44 12.98C250.56 12.98 250.747 13.04 251 13.16C251.267 13.2667 251.607 13.38 252.02 13.5C252.433 13.62 252.927 13.68 253.5 13.68C254.167 13.68 254.72 13.58 255.16 13.38C255.613 13.1667 255.953 12.8533 256.18 12.44C256.407 12.0267 256.52 11.52 256.52 10.92C256.52 9.89333 256.24 9.2 255.68 8.84C255.12 8.46667 254.387 8.28 253.48 8.28H252.62C252.353 8.28 252.22 8.08 252.22 7.68V7.46C252.22 7.24667 252.253 7.09333 252.32 7C252.387 6.90667 252.487 6.86 252.62 6.86H253.4C253.813 6.86 254.18 6.8 254.5 6.68C254.833 6.56 255.113 6.38667 255.34 6.16C255.58 5.93333 255.76 5.66 255.88 5.34C256 5.00667 256.06 4.64 256.06 4.24C256.06 3.98667 255.993 3.71333 255.86 3.42C255.74 3.11333 255.507 2.85333 255.16 2.64C254.827 2.42667 254.333 2.32 253.68 2.32C253.08 2.32 252.587 2.37333 252.2 2.48C251.813 2.58667 251.513 2.7 251.3 2.82C251.087 2.92667 250.92 2.98 250.8 2.98C250.733 2.98 250.653 2.93333 250.56 2.84C250.467 2.73333 250.387 2.61333 250.32 2.48C250.267 2.34667 250.24 2.23333 250.24 2.14C250.24 2.02 250.353 1.88667 250.58 1.74C250.807 1.59333 251.093 1.45333 251.44 1.32C251.8 1.18667 252.18 1.08 252.58 0.999999C252.98 0.919999 253.36 0.879999 253.72 0.879999C254.907 0.879999 255.867 1.16 256.6 1.72C257.347 2.28 257.72 3.13333 257.72 4.28C257.72 4.78667 257.62 5.24 257.42 5.64C257.233 6.02667 256.987 6.36 256.68 6.64C256.373 6.90667 256.047 7.12 255.7 7.28V7.36C256.1 7.46667 256.493 7.67333 256.88 7.98C257.267 8.28667 257.587 8.68667 257.84 9.18C258.093 9.67333 258.22 10.26 258.22 10.94C258.22 11.8067 258.033 12.5533 257.66 13.18C257.3 13.8067 256.78 14.2867 256.1 14.62C255.42 14.9533 254.607 15.12 253.66 15.12Z" fill="black"/></symbol><symbol id="rgc-art-M" viewBox="0 0 404 352" fill="none"><rect width="404" height="352" fill="#D9D9D9" fill-opacity="0.33"/>
+<path d="M201.765 272.894C213.968 273.107 223.688 283.173 223.475 295.376C223.262 307.58 213.197 317.3 200.993 317.087C188.79 316.874 179.07 306.808 179.283 294.605C179.496 282.402 189.562 272.681 201.765 272.894Z" fill="#3D783F" fill-opacity="0.71" stroke="#3D783F"/>
+<path d="M200.597 339.8L200.985 317.587" stroke="#3D783F" stroke-width="2" stroke-miterlimit="10"/>
+<path d="M222.17 340.224L199.573 339.829" stroke="#3D783F" stroke-width="2" stroke-miterlimit="10"/>
+<g opacity="0.41">
+<path d="M242.953 302.836C237.517 296.672 233.297 291.886 229.055 287.076C224.964 282.437 220.853 277.774 215.611 271.83L188.509 272.042L161.407 272.254C161.407 272.254 169.689 281.863 174.996 288.019C180.302 294.176 188.584 303.785 188.584 303.785L215.769 303.31L242.953 302.836Z" fill="#3D783F"/>
+<path d="M174.996 288.019C169.689 281.863 161.407 272.254 161.407 272.254L188.509 272.042M174.996 288.019C180.302 294.176 188.584 303.785 188.584 303.785L215.769 303.31M174.996 288.019L229.055 287.076M229.055 287.076C233.297 291.886 237.517 296.672 242.953 302.836L215.769 303.31M229.055 287.076C224.964 282.437 220.853 277.774 215.611 271.83L188.509 272.042M215.769 303.31L188.509 272.042" stroke="black" stroke-width="0.5" stroke-dasharray="2 2"/>
+</g>
+<path d="M258.417 48.9739L214.907 271.82" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M140.391 48.5336L188.92 272.774" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M21.3742 48.6108L161.407 272.254" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M139.317 187.574L188.961 303.778" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M258.817 186.488L215.457 303.316" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M378.316 185.402L242.453 302.844" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M79.5959 118.105L174.667 287.025" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M199.037 116.02L202.022 287.048" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<path d="M316.595 115.969L229.158 286.074" stroke="black" stroke-opacity="0.9" stroke-width="0.4" stroke-miterlimit="10" stroke-dasharray="1 1"/>
+<g opacity="0.41">
+<path d="M378.429 185.968C354.735 158.607 336.34 137.366 317.849 116.014C300.017 95.4215 282.095 74.7264 259.245 48.34L139.92 48.2321L20.5957 48.1243C20.5957 48.1243 56.6882 90.7672 79.8146 118.091C102.941 145.414 139.034 188.057 139.034 188.057L258.731 187.013L378.429 185.968Z" fill="#3D783F"/>
+<path d="M79.8146 118.091C56.6882 90.7672 20.5957 48.1243 20.5957 48.1243L139.92 48.2321M79.8146 118.091C102.941 145.414 139.034 188.057 139.034 188.057L258.731 187.013M79.8146 118.091L317.849 116.014M317.849 116.014C336.34 137.366 354.735 158.607 378.429 185.968L258.731 187.013M317.849 116.014C300.017 95.4215 282.095 74.7264 259.245 48.34L139.92 48.2321M258.731 187.013L139.92 48.2321" stroke="black" stroke-dasharray="2 2"/>
+</g>
+<path d="M37.4 26C37.1333 26 37 25.8 37 25.4V25.16C37 24.76 37.1333 24.56 37.4 24.56H40.88V13.08L41.56 13.66L37.44 14.36C37.32 14.3733 37.22 14.34 37.14 14.26C37.0733 14.18 37.02 14.0733 36.98 13.94C36.9533 13.7933 36.94 13.66 36.94 13.54C36.94 13.34 36.9667 13.2067 37.02 13.14C37.0867 13.06 37.18 13.0067 37.3 12.98L41.94 11.96C42.0867 11.96 42.2267 12 42.36 12.08C42.4933 12.16 42.56 12.26 42.56 12.38V24.56H45.72C45.9867 24.56 46.12 24.76 46.12 25.16V25.4C46.12 25.8 45.9867 26 45.72 26H37.4Z" fill="black"/>
+<path d="M153.34 26C153.26 26 153.193 25.9533 153.14 25.86C153.1 25.7667 153.067 25.6533 153.04 25.52C153.027 25.3733 153.02 25.24 153.02 25.12C153.02 25.0533 153.027 24.9867 153.04 24.92C153.053 24.8533 153.073 24.8067 153.1 24.78L158.82 17.6C158.993 17.3867 159.133 17.1733 159.24 16.96C159.36 16.7333 159.453 16.5067 159.52 16.28C159.587 16.0533 159.62 15.8267 159.62 15.6C159.62 14.8933 159.4 14.34 158.96 13.94C158.52 13.5267 157.933 13.32 157.2 13.32C156.573 13.32 156.047 13.4 155.62 13.56C155.193 13.7067 154.853 13.8533 154.6 14C154.36 14.1467 154.18 14.22 154.06 14.22C153.993 14.22 153.913 14.1667 153.82 14.06C153.727 13.9533 153.647 13.8333 153.58 13.7C153.513 13.5533 153.48 13.4333 153.48 13.34C153.48 13.22 153.587 13.08 153.8 12.92C154.027 12.7467 154.327 12.5867 154.7 12.44C155.073 12.28 155.487 12.1467 155.94 12.04C156.393 11.9333 156.86 11.88 157.34 11.88C158.513 11.88 159.467 12.2067 160.2 12.86C160.933 13.5 161.3 14.3733 161.3 15.48C161.3 15.8667 161.247 16.2467 161.14 16.62C161.047 16.9933 160.907 17.36 160.72 17.72C160.533 18.0667 160.307 18.4067 160.04 18.74L155.36 24.56H161.06C161.327 24.56 161.46 24.76 161.46 25.16V25.4C161.46 25.8 161.327 26 161.06 26H153.34Z" fill="black"/>
+<path d="M95.52 99.04C95.3067 99.04 95.1533 99 95.06 98.92C94.9667 98.84 94.92 98.7333 94.92 98.6V95.66H88.76C88.6933 95.66 88.6267 95.6 88.56 95.48C88.4933 95.36 88.44 95.22 88.4 95.06C88.3733 94.9 88.36 94.76 88.36 94.64C88.36 94.5867 88.36 94.54 88.36 94.5C88.3733 94.46 88.3867 94.4333 88.4 94.42L94.98 85.24C95.0467 85.1467 95.14 85.08 95.26 85.04C95.3933 84.9867 95.5267 84.96 95.66 84.96H95.98C96.1933 84.96 96.3467 85 96.44 85.08C96.5333 85.1467 96.58 85.2533 96.58 85.4V94.22H97.92C98.1867 94.22 98.32 94.42 98.32 94.82V95.06C98.32 95.2733 98.2867 95.4267 98.22 95.52C98.1667 95.6133 98.0667 95.66 97.92 95.66H96.58V98.6C96.58 98.7333 96.5333 98.84 96.44 98.92C96.3467 99 96.1933 99.04 95.98 99.04H95.52ZM89.94 94.78L89.64 94.22H94.92V89.38C94.92 89.1533 94.9267 88.8933 94.94 88.6C94.9533 88.3067 94.98 88.0533 95.02 87.84L94.32 87.5L95.34 87.24L89.94 94.78Z" fill="black"/>
+<path d="M139.8 164.04C139.507 164.04 139.287 164.02 139.14 163.98C139.007 163.927 138.94 163.84 138.94 163.72C138.94 163.68 138.947 163.64 138.96 163.6C138.987 163.547 139.007 163.493 139.02 163.44L145.1 150.82L145.5 151.44H138.5C138.233 151.44 138.1 151.24 138.1 150.84V150.6C138.1 150.2 138.233 150 138.5 150H146.28C146.4 150 146.5 150.06 146.58 150.18C146.66 150.287 146.713 150.42 146.74 150.58C146.78 150.74 146.8 150.887 146.8 151.02C146.8 151.06 146.793 151.1 146.78 151.14C146.78 151.18 146.773 151.213 146.76 151.24L140.84 163.72C140.813 163.787 140.76 163.847 140.68 163.9C140.6 163.94 140.507 163.973 140.4 164C140.293 164.027 140.173 164.04 140.04 164.04H139.8Z" fill="black"/>
+<path d="M266.34 164.12C265.54 164.12 264.813 163.98 264.16 163.7C263.507 163.42 262.987 162.987 262.6 162.4C262.213 161.813 262.02 161.067 262.02 160.16C262.02 159.387 262.133 158.76 262.36 158.28C262.587 157.8 262.887 157.407 263.26 157.1C263.647 156.793 264.06 156.52 264.5 156.28L265.86 156.84C265.473 157.04 265.12 157.28 264.8 157.56C264.48 157.827 264.22 158.153 264.02 158.54C263.833 158.927 263.74 159.4 263.74 159.96C263.74 160.56 263.853 161.067 264.08 161.48C264.32 161.88 264.64 162.18 265.04 162.38C265.44 162.58 265.873 162.68 266.34 162.68C266.82 162.68 267.253 162.58 267.64 162.38C268.04 162.18 268.36 161.88 268.6 161.48C268.84 161.067 268.96 160.56 268.96 159.96C268.96 159.44 268.84 159.02 268.6 158.7C268.373 158.367 268.073 158.1 267.7 157.9C267.327 157.687 266.913 157.5 266.46 157.34C266.007 157.18 265.547 157.013 265.08 156.84C264.627 156.653 264.213 156.42 263.84 156.14C263.467 155.86 263.16 155.5 262.92 155.06C262.693 154.607 262.58 154.033 262.58 153.34C262.58 152.58 262.747 151.947 263.08 151.44C263.427 150.92 263.887 150.533 264.46 150.28C265.047 150.013 265.687 149.88 266.38 149.88C267.087 149.88 267.727 150.013 268.3 150.28C268.887 150.533 269.353 150.92 269.7 151.44C270.047 151.947 270.22 152.58 270.22 153.34C270.22 153.9 270.12 154.387 269.92 154.8C269.72 155.213 269.453 155.56 269.12 155.84C268.787 156.12 268.413 156.34 268 156.5L266.52 156C266.893 155.8 267.227 155.58 267.52 155.34C267.827 155.087 268.073 154.8 268.26 154.48C268.447 154.147 268.54 153.767 268.54 153.34C268.54 152.633 268.327 152.12 267.9 151.8C267.473 151.48 266.967 151.32 266.38 151.32C265.793 151.32 265.293 151.48 264.88 151.8C264.467 152.12 264.26 152.633 264.26 153.34C264.26 153.833 264.373 154.233 264.6 154.54C264.84 154.847 265.147 155.093 265.52 155.28C265.907 155.467 266.327 155.64 266.78 155.8C267.247 155.947 267.707 156.113 268.16 156.3C268.613 156.487 269.027 156.733 269.4 157.04C269.787 157.333 270.093 157.72 270.32 158.2C270.56 158.68 270.68 159.3 270.68 160.06C270.68 160.753 270.567 161.353 270.34 161.86C270.113 162.367 269.8 162.787 269.4 163.12C269.013 163.453 268.553 163.707 268.02 163.88C267.5 164.04 266.94 164.12 266.34 164.12Z" fill="black"/>
+<path d="M390.34 152.96C391.047 152.96 391.667 153.073 392.2 153.3C392.733 153.527 393.173 153.86 393.52 154.3C393.88 154.727 394.147 155.253 394.32 155.88C394.507 156.493 394.6 157.2 394.6 158C394.6 158.96 394.473 159.853 394.22 160.68C393.967 161.507 393.633 162.26 393.22 162.94C392.807 163.607 392.353 164.2 391.86 164.72C391.367 165.24 390.873 165.68 390.38 166.04C389.887 166.387 389.44 166.653 389.04 166.84C388.64 167.013 388.327 167.1 388.1 167.1C387.993 167.1 387.9 167.06 387.82 166.98C387.74 166.887 387.667 166.78 387.6 166.66C387.547 166.54 387.507 166.42 387.48 166.3C387.453 166.18 387.44 166.093 387.44 166.04C387.44 166.013 387.447 165.98 387.46 165.94C387.487 165.887 387.533 165.847 387.6 165.82C388.547 165.393 389.353 164.9 390.02 164.34C390.7 163.767 391.253 163.14 391.68 162.46C392.107 161.767 392.42 161.033 392.62 160.26C392.82 159.473 392.92 158.667 392.92 157.84C392.92 157.133 392.84 156.56 392.68 156.12C392.52 155.667 392.307 155.32 392.04 155.08C391.787 154.827 391.5 154.653 391.18 154.56C390.873 154.453 390.56 154.4 390.24 154.4C389.88 154.4 389.507 154.493 389.12 154.68C388.733 154.867 388.4 155.153 388.12 155.54C387.853 155.927 387.72 156.427 387.72 157.04C387.72 157.693 387.847 158.22 388.1 158.62C388.353 159.007 388.68 159.287 389.08 159.46C389.48 159.633 389.9 159.72 390.34 159.72C390.927 159.72 391.453 159.633 391.92 159.46C392.4 159.273 392.773 159.093 393.04 158.92L392.74 160.38C392.433 160.58 392.04 160.76 391.56 160.92C391.093 161.08 390.52 161.16 389.84 161.16C389.307 161.16 388.807 161.067 388.34 160.88C387.887 160.693 387.487 160.427 387.14 160.08C386.793 159.72 386.52 159.293 386.32 158.8C386.12 158.293 386.02 157.733 386.02 157.12C386.02 156.48 386.127 155.907 386.34 155.4C386.567 154.893 386.873 154.46 387.26 154.1C387.66 153.727 388.12 153.447 388.64 153.26C389.173 153.06 389.74 152.96 390.34 152.96Z" fill="black"/>
+<path d="M212.64 99.12C211.907 99.12 211.253 99.0533 210.68 98.92C210.12 98.7867 209.68 98.6267 209.36 98.44C209.053 98.2533 208.9 98.08 208.9 97.92C208.9 97.8267 208.927 97.7267 208.98 97.62C209.033 97.5 209.093 97.3867 209.16 97.28C209.24 97.1733 209.32 97.0867 209.4 97.02C209.48 96.9533 209.547 96.92 209.6 96.92C209.733 96.92 209.92 96.9867 210.16 97.12C210.413 97.24 210.74 97.3667 211.14 97.5C211.553 97.62 212.047 97.68 212.62 97.68C213.647 97.68 214.42 97.4333 214.94 96.94C215.46 96.4467 215.72 95.7133 215.72 94.74C215.72 93.8467 215.413 93.1667 214.8 92.7C214.187 92.2333 213.293 92 212.12 92H210.42C210.207 92 210.053 91.9533 209.96 91.86C209.88 91.7667 209.847 91.6133 209.86 91.4L210.2 85.6C210.213 85.3867 210.267 85.2333 210.36 85.14C210.467 85.0467 210.627 85 210.84 85H216.16C216.427 85 216.56 85.2 216.56 85.6V85.84C216.56 86.24 216.427 86.44 216.16 86.44H211.12L211.86 85.74L211.52 91.26L210.86 90.56H212.6C213.147 90.56 213.7 90.6267 214.26 90.76C214.82 90.8933 215.34 91.12 215.82 91.44C216.313 91.7467 216.707 92.1733 217 92.72C217.293 93.2533 217.44 93.9267 217.44 94.74C217.44 95.42 217.327 96.0333 217.1 96.58C216.887 97.1133 216.573 97.5733 216.16 97.96C215.747 98.3333 215.24 98.62 214.64 98.82C214.053 99.02 213.387 99.12 212.64 99.12Z" fill="black"/>
+<path d="M333.36 99.1C332.653 99.1 332.033 98.9867 331.5 98.76C330.967 98.5333 330.52 98.2067 330.16 97.78C329.813 97.34 329.547 96.8133 329.36 96.2C329.187 95.5733 329.1 94.86 329.1 94.06C329.1 93.1 329.227 92.2067 329.48 91.38C329.733 90.5533 330.067 89.8067 330.48 89.14C330.893 88.46 331.347 87.86 331.84 87.34C332.333 86.82 332.827 86.3867 333.32 86.04C333.813 85.68 334.26 85.4133 334.66 85.24C335.06 85.0533 335.373 84.96 335.6 84.96C335.707 84.96 335.8 85.0067 335.88 85.1C335.96 85.18 336.027 85.28 336.08 85.4C336.147 85.52 336.193 85.64 336.22 85.76C336.247 85.8667 336.26 85.9533 336.26 86.02C336.26 86.0467 336.247 86.0867 336.22 86.14C336.207 86.18 336.167 86.2133 336.1 86.24C335.153 86.6533 334.34 87.1467 333.66 87.72C332.993 88.2933 332.447 88.9267 332.02 89.62C331.593 90.3 331.28 91.0333 331.08 91.82C330.88 92.5933 330.78 93.3933 330.78 94.22C330.78 94.9133 330.86 95.4867 331.02 95.94C331.18 96.3933 331.387 96.7467 331.64 97C331.907 97.24 332.193 97.4133 332.5 97.52C332.82 97.6133 333.14 97.66 333.46 97.66C333.82 97.66 334.193 97.5667 334.58 97.38C334.967 97.1933 335.293 96.9067 335.56 96.52C335.84 96.1333 335.98 95.6333 335.98 95.02C335.98 94.3667 335.853 93.8467 335.6 93.46C335.347 93.06 335.02 92.7733 334.62 92.6C334.22 92.4267 333.8 92.34 333.36 92.34C332.773 92.34 332.24 92.4333 331.76 92.62C331.293 92.7933 330.927 92.9667 330.66 93.14L330.96 91.68C331.267 91.48 331.653 91.3 332.12 91.14C332.6 90.98 333.18 90.9 333.86 90.9C334.393 90.9 334.887 90.9933 335.34 91.18C335.807 91.3667 336.213 91.64 336.56 92C336.907 92.3467 337.18 92.7733 337.38 93.28C337.58 93.7733 337.68 94.3267 337.68 94.94C337.68 95.58 337.567 96.1533 337.34 96.66C337.127 97.1667 336.82 97.6067 336.42 97.98C336.033 98.34 335.573 98.62 335.04 98.82C334.52 99.0067 333.96 99.1 333.36 99.1Z" fill="black"/>
+<path d="M272.66 26.12C272.087 26.12 271.567 26.08 271.1 26C270.633 25.9333 270.233 25.84 269.9 25.72C269.567 25.6 269.307 25.4733 269.12 25.34C268.947 25.1933 268.86 25.06 268.86 24.94C268.86 24.8067 268.893 24.6667 268.96 24.52C269.027 24.3733 269.107 24.2467 269.2 24.14C269.293 24.0333 269.373 23.98 269.44 23.98C269.56 23.98 269.747 24.04 270 24.16C270.267 24.2667 270.607 24.38 271.02 24.5C271.433 24.62 271.927 24.68 272.5 24.68C273.167 24.68 273.72 24.58 274.16 24.38C274.613 24.1667 274.953 23.8533 275.18 23.44C275.407 23.0267 275.52 22.52 275.52 21.92C275.52 20.8933 275.24 20.2 274.68 19.84C274.12 19.4667 273.387 19.28 272.48 19.28H271.62C271.353 19.28 271.22 19.08 271.22 18.68V18.46C271.22 18.2467 271.253 18.0933 271.32 18C271.387 17.9067 271.487 17.86 271.62 17.86H272.4C272.813 17.86 273.18 17.8 273.5 17.68C273.833 17.56 274.113 17.3867 274.34 17.16C274.58 16.9333 274.76 16.66 274.88 16.34C275 16.0067 275.06 15.64 275.06 15.24C275.06 14.9867 274.993 14.7133 274.86 14.42C274.74 14.1133 274.507 13.8533 274.16 13.64C273.827 13.4267 273.333 13.32 272.68 13.32C272.08 13.32 271.587 13.3733 271.2 13.48C270.813 13.5867 270.513 13.7 270.3 13.82C270.087 13.9267 269.92 13.98 269.8 13.98C269.733 13.98 269.653 13.9333 269.56 13.84C269.467 13.7333 269.387 13.6133 269.32 13.48C269.267 13.3467 269.24 13.2333 269.24 13.14C269.24 13.02 269.353 12.8867 269.58 12.74C269.807 12.5933 270.093 12.4533 270.44 12.32C270.8 12.1867 271.18 12.08 271.58 12C271.98 11.92 272.36 11.88 272.72 11.88C273.907 11.88 274.867 12.16 275.6 12.72C276.347 13.28 276.72 14.1333 276.72 15.28C276.72 15.7867 276.62 16.24 276.42 16.64C276.233 17.0267 275.987 17.36 275.68 17.64C275.373 17.9067 275.047 18.12 274.7 18.28V18.36C275.1 18.4667 275.493 18.6733 275.88 18.98C276.267 19.2867 276.587 19.6867 276.84 20.18C277.093 20.6733 277.22 21.26 277.22 21.94C277.22 22.8067 277.033 23.5533 276.66 24.18C276.3 24.8067 275.78 25.2867 275.1 25.62C274.42 25.9533 273.607 26.12 272.66 26.12Z" fill="black"/></symbol><symbol id="rb-logo" viewBox="0 0 138 138" fill="none"><rect width="138" height="138" fill="white"/>
+<rect x="3.5" y="3.5" width="131" height="131" fill="#F6F6F6" stroke="#AEAEAE" stroke-width="7"/>
+<ellipse cx="44.6617" cy="44.9013" rx="44.6617" ry="44.9013" transform="matrix(0.999438 -0.0335164 0.0331593 0.99945 23 24.9938)" fill="#C9C9C9"/>
+<ellipse cx="69.2563" cy="68.505" rx="23.4285" ry="23.5545" fill="black"/>
+<ellipse cx="57.8058" cy="60.8317" rx="4.80585" ry="4.83168" fill="white"/></symbol></defs></svg>
+
+  <div class="rb-bar">
+    <svg class="rb-logo" aria-hidden="true"><use href="#rb-logo"/></svg>
+    <h1>Ret<i>IN</i>aBox</h1>
+    <div class="rb-sp"></div>
+    <button type="button" class="rb-btn" id="rb-load" style="flex:0 0 auto">Load a circuit</button>
+    <select id="rb-preset" aria-label="Circuit to load"></select>
+  </div>
+
+  <div class="rb-tabs" role="tablist">
+    <button type="button" class="rb-tab" role="tab" data-mode="lab" aria-selected="true">RetINaBox Lab</button>
+    <button type="button" class="rb-tab" role="tab" data-mode="cb"  aria-selected="false">Code Breaker</button>
+    <button type="button" class="rb-tab" role="tab" data-mode="dm"  aria-selected="false">Discovery Mode</button>
+    <button type="button" class="rb-tab" role="tab" data-mode="lp"  aria-selected="false">Lesson Plans</button>
+    <button type="button" class="rb-tab" role="tab" data-mode="sl"  aria-selected="false">Teaching Slides</button>
+  </div>
+
+  <div class="rb-mode" id="rb-mode-lab">
+  <div class="rb-panels">
+
+    <!-- ============ Visual Stimulus Controller ============ -->
+    <section class="rb-panel">
+      <p class="rb-title">Visual Stimulus Controller</p>
+
+      <div class="rb-leg">
+        <span>Unselected:<svg viewBox="0 0 88 104"><use href="#led-unselected"/></svg></span>
+        <span>Selected:<svg viewBox="0 0 88 104"><use href="#led-selected"/></svg></span>
+        <span>Active:<svg viewBox="0 0 88 104"><use href="#led-on"/></svg></span>
+      </div>
+
+      <div class="rb-grid" id="rb-lamps" role="group" aria-label="Stimulus LED array"></div>
+
+      <div class="rb-btnrow">
+        <button type="button" class="rb-btn" id="rb-all">Select all</button>
+        <button type="button" class="rb-btn" id="rb-none">Clear all</button>
+      </div>
+      <button type="button" class="rb-run" id="rb-run">Activate stimulus LEDs</button>
+
+      <div class="rb-opt">
+        <b>Mode:</b>
+        <label class="rb-radio"><input type="radio" name="rb-mode" value="Static" checked> Static</label>
+        <label class="rb-radio"><input type="radio" name="rb-mode" value="Motion"> Motion</label>
+      </div>
+      <div class="rb-opt" id="rb-dir-row" hidden>
+        <b>Direction:</b>
+        <label class="rb-radio"><input type="radio" name="rb-dir" value="Left"> Left</label>
+        <label class="rb-radio"><input type="radio" name="rb-dir" value="Right" checked> Right</label>
+      </div>
+      <div class="rb-opt" id="rb-speed-row" hidden>
+        <b>Speed:</b>
+        <input type="range" id="rb-speed" min="0" max="2" step="1" value="1"
+               style="flex:1;min-width:90px;accent-color:var(--darkBrown)">
+        <span id="rb-speed-lbl" style="font-size:.74rem;color:#555;min-width:48px">Medium</span>
+      </div>
+    </section>
+
+    <!-- ============ Connectivity Manager ============ -->
+    <section class="rb-panel">
+      <p class="rb-title">Connectivity Manager</p>
+
+      <div class="rb-leg">
+        <span>Silent:<i class="sw" style="background:var(--gray)"></i></span>
+        <span>Excitatory:<i class="sw" style="background:var(--red)"></i></span>
+        <span>Inhibitory:<i class="sw" style="background:var(--blue)"></i></span>
+        <span>Delay:<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="none" stroke="#333"/><path d="M12 5l6 12H6z" fill="#000"/></svg></span>
+      </div>
+
+      <div id="rb-neurons"></div>
+    </section>
+
+    <!-- ============ Signal Monitor ============ -->
+    <section class="rb-panel">
+      <p class="rb-title">Signal Monitor</p>
+      <div class="rb-leg">
+        <span><i class="bar" style="background:var(--red)"></i>Excitatory</span>
+        <span><i class="bar" style="background:var(--blue)"></i>Inhibitory</span>
+      </div>
+      <div class="rb-scope">
+        <canvas id="rb-canvas" role="img"
+          aria-label="Rolling ten second recording of photoreceptor input, synaptic drive and ganglion cell output"></canvas>
+      </div>
+    </section>
+  </div>
+
+  </div><!-- /lab -->
+
+  <!-- ================= Code Breaker ================= -->
+  <div class="rb-mode" id="rb-mode-cb" hidden>
+    <div style="padding:.6rem .8rem 0"><label style="font-size:.8rem">Challenge:
+      <select id="cb-sel" style="font-size:.8rem;padding:.2rem;border:1px solid var(--gray);border-radius:4px"></select>
+    </label></div>
+    <div class="rb-cb">
+      <div class="rb-box"><h3>Secret Code</h3><div class="rb-code" id="cb-code"></div></div>
+      <div>
+        <div class="rb-box"><h3>Cipher</h3>
+          <div class="rb-cipher" id="cb-pref"></div>
+          <table class="rb-book"><thead><tr><th>RGC1</th><th>RGC2</th><th>Letter</th></tr></thead>
+            <tbody id="cb-book"></tbody></table>
+        </div>
+        <button type="button" class="rb-dmtest" id="cb-check">Check Answers</button>
+        <p class="rb-result" id="cb-result"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Discovery Mode ================= -->
+  <div class="rb-mode" id="rb-mode-dm" hidden>
+    <div class="rb-dm">
+      <div class="rb-dmbar">
+        <span>Current Challenge:</span><select id="dm-sel"></select>
+        <button type="button" id="dm-start">Start Challenge</button>
+        <span>Points: <b class="val" id="dm-points">100</b></span>
+        <span>Timer: <b class="val" id="dm-timer">00:00</b></span>
+      </div>
+
+      <div class="rb-dmtop">
+        <div class="rb-box"><h3>Instructions</h3>
+          <p style="font-size:.76rem;margin:0">1. Select and start a challenge from the menu above.<br>
+          2. Complete phases 1 and 2.<br><br>
+          Tip: watch the live RGC response to guide your progress.</p></div>
+        <div class="rb-box"><h3>Live RGC Response</h3>
+          <canvas id="dm-canvas" style="width:100%;height:auto;display:block"
+            role="img" aria-label="Live RGC response"></canvas></div>
+      </div>
+
+      <div class="rb-dmphases">
+        <div class="rb-phase" id="dm-p1" data-locked="1">
+          <h3>Phase 1: Discover the Preferred Stimulus</h3>
+          <div class="rb-dmgrid" id="dm-grid"></div>
+          <div class="rb-opt"><b>Motion:</b>
+            <select id="dm-motion"><option>Static</option><option>Moving</option></select></div>
+          <div class="rb-opt"><b>Speed:</b><select id="dm-speed" disabled><option>---</option></select></div>
+          <div class="rb-opt"><b>Direction:</b><select id="dm-dir" disabled><option>---</option></select></div>
+          <button type="button" class="rb-dmtest" id="dm-t1">Test Stimulus</button>
+          <p class="rb-dmnote" id="dm-n1"></p>
+        </div>
+
+        <div class="rb-phase" id="dm-p2" data-locked="1">
+          <h3>Phase 2: Discover the Circuit Connectivity</h3>
+          <div class="rb-leg">
+            <span>Silent:<i class="sw" style="background:var(--gray)"></i></span>
+            <span>Excitatory:<i class="sw" style="background:var(--red)"></i></span>
+            <span>Inhibitory:<i class="sw" style="background:var(--blue)"></i></span>
+          </div>
+          <div class="rb-neuron"><svg viewBox="0 0 376 336" role="img" aria-label="Your circuit">
+            <use href="#rgc-art-M"/><g class="rb-conn" id="dm-dots"></g></svg></div>
+          <div class="rb-opt"><b>Threshold:</b>
+            <input class="rb-num" type="number" min="0" max="9" value="1" id="dm-thr">
+            <button type="button" class="rb-btn" style="flex:0 0 auto;padding:.2rem .5rem" id="dm-delays">Delays&hellip;</button></div>
+          <div class="rb-opt"><b>Type:</b>
+            <label class="rb-radio"><input type="radio" name="dm-pol" value="ON" checked> ON</label>
+            <label class="rb-radio"><input type="radio" name="dm-pol" value="OFF"> OFF</label></div>
+          <button type="button" class="rb-dmtest" id="dm-t2">Test Connectivity</button>
+          <p class="rb-dmnote" id="dm-n2"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Lesson Plans ================= -->
+  <div class="rb-mode rb-doc" id="rb-mode-lp" hidden>
+    <div class="rb-docbar">
+      <h3>RetINaBox Lesson Plans</h3><div class="sp"></div>
+      <a class="primary" id="lp-new" target="_blank" rel="noopener">Open in new tab</a>
+      <a id="lp-gh" target="_blank" rel="noopener">View on GitHub</a>
+    </div>
+    <div class="rb-frame" id="lp-frame"><p class="note">Loading&hellip;</p></div>
+    <p class="rb-dochint">Four lessons plus full solutions. Open it in a new tab to keep it
+      beside the GUI while you work, or if it does not display here.</p>
+  </div>
+
+  <!-- ================= Teaching Slides ================= -->
+  <div class="rb-mode rb-doc" id="rb-mode-sl" hidden>
+    <div class="rb-docbar">
+      <h3>RetINaBox Teaching Slides</h3><div class="sp"></div>
+      <a class="primary" id="sl-new" target="_blank" rel="noopener">Open in new tab</a>
+      <a id="sl-gh" target="_blank" rel="noopener">View on GitHub</a>
+    </div>
+    <div class="rb-frame" id="sl-frame"><p class="note">Loading&hellip;</p></div>
+    <p class="rb-dochint">Slide deck for the four lessons. Open it in a new tab to keep it
+      beside the GUI while you work, or if it does not display here.</p>
+  </div>
+
+  <!-- delay / connectivity dialog, mirrors GridPopupDialog -->
+  <div class="rb-modal" id="rb-modal" hidden role="dialog" aria-modal="true" aria-labelledby="rb-modal-h">
+    <div class="rb-sheet">
+      <h2 id="rb-modal-h">RGC Connectivity</h2>
+      <div class="rb-units" id="rb-units"></div>
+      <button type="button" class="rb-close" id="rb-modal-x">Done</button>
+    </div>
+  </div>
+
+  <div class="rb-foot">
+    Web edition of <b>RetINaBox</b> (Trenholm Lab). Artwork and circuit model from the
+    desktop application &mdash; hardware build files, lesson plans and source:
+    <a href="https://github.com/Trenholm-Lab/RetINaBox">github.com/Trenholm-Lab/RetINaBox</a>.
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/*===MODEL-START===*/
+/* ============================================================================
+   MODEL — port of GUI/gpio_manager.py (GPIOWorker) and GUI/data_manager.py
+
+   THE ONE CHANGE FROM THE PHYSICAL BOX
+   ------------------------------------
+   Hardware chain:  stimulus generator -> GPIO write -> LED -> photon
+                    -> photodiode -> GPIO read -> 9 channel values -> RGCs
+   Here:            stimulus generator -> writeChannels() -> 9 channel values -> RGCs
+
+   `channels` holds exactly what read_photodiodes() returned: nine values,
+   1 = lit, 0 = dark, row-major. Everything downstream is unchanged, so a build
+   with real hardware only needs writeChannels() swapped for a device read.
+   The desktop app already fell through to this when no Pi was attached
+   (read_photodiodes -> `return np.array(data_manager.activated_stim_states)`).
+   ========================================================================== */
+var DT_MS=25, DUR_S=10, NBUF=Math.round(DUR_S*1000/DT_MS);
+var SPEED_MS=[500,300,100];
+var DELAY_MS={None:0, short:100, medium:300, long:500};
+var DELAY_KEYS=['None','short','medium','long'];
+var STATES=['off','excitatory','inhibitory'];
+
+function grid(v){ return [[v,v,v],[v,v,v],[v,v,v]]; }
+function blankConn(){
+  var a=[],r,c;
+  for(r=0;r<3;r++){ a.push([]); for(c=0;c<3;c++) a[r].push({state:'off',delay:'None'}); }
+  return a;
+}
+function createModel(){
+  return {
+    selected:grid(false), activated:grid(false),
+    mode:'Static', speed:1, direction:'Right', running:false,
+    rgc:[{polarity:'ON',threshold:1,conn:blankConn()},
+         {polarity:'ON',threshold:1,conn:blankConn()}],
+    channels:new Float32Array(9),
+    hist:new Float32Array(NBUF*9), head:NBUF-1,
+    contrib:[new Float32Array(NBUF*9), new Float32Array(NBUF*9)],
+    sum:[new Float32Array(NBUF), new Float32Array(NBUF)],
+    spike:[new Uint8Array(NBUF), new Uint8Array(NBUF)],
+    lit:new Uint8Array(NBUF*9),
+    motionAcc:0
+  };
+}
+function clearTraces(M){
+  M.hist.fill(0); M.lit.fill(0); M.head=NBUF-1; M.motionAcc=0;
+  for(var k=0;k<2;k++){ M.contrib[k].fill(0); M.sum[k].fill(0); M.spike[k].fill(0); }
+}
+function nextCoord(r,c,dir){
+  if(dir==='Up')   return [(r+2)%3,c];
+  if(dir==='Down') return [(r+1)%3,c];
+  if(dir==='Left') return [r,(c+2)%3];
+  return [r,(c+1)%3];
+}
+function armStimulus(M){
+  for(var r=0;r<3;r++) for(var c=0;c<3;c++)
+    M.activated[r][c] = M.running ? M.selected[r][c] : false;
+  M.motionAcc=0;
+}
+function stepMotion(M){
+  var next=[],r,c,i,p;
+  for(r=0;r<3;r++) for(c=0;c<3;c++) if(M.activated[r][c]){
+    M.activated[r][c]=false; next.push(nextCoord(r,c,M.direction));
+  }
+  for(i=0;i<next.length;i++){ p=next[i]; M.activated[p[0]][p[1]]=true; }
+}
+function writeChannels(M){        /* replaces write_stim_leds + read_photodiodes */
+  for(var r=0;r<3;r++) for(var c=0;c<3;c++)
+    M.channels[r*3+c] = M.activated[r][c] ? 1 : 0;
+}
+function channelAt(M,back,ch){    /* = photodiode_buffer[-1-delay_steps] */
+  var i=(M.head-back)%NBUF; if(i<0) i+=NBUF;
+  return M.hist[i*9+ch];
+}
+function tick(M){
+  if(M.running && M.mode==='Motion'){
+    var iv=SPEED_MS[M.speed];
+    M.motionAcc+=DT_MS;
+    while(M.motionAcc>=iv){ stepMotion(M); M.motionAcc-=iv; }
+  }
+  writeChannels(M);
+  M.head=(M.head+1)%NBUF;
+  M.hist.set(M.channels, M.head*9);
+  for(var i=0;i<9;i++) M.lit[M.head*9+i]=M.channels[i]>0.5?1:0;
+
+  for(var k=0;k<2;k++){
+    var g=M.rgc[k], s=0, base=M.head*9;
+    for(var ch=0;ch<9;ch++){
+      var cell=g.conn[(ch/3)|0][ch%3], x=0;
+      if(cell.state!=='off'){
+        var v=channelAt(M, Math.round(DELAY_MS[cell.delay]/DT_MS), ch);
+        if(g.polarity==='OFF') v=1-v;
+        x=(cell.state==='excitatory'?1:-1)*v;
+      }
+      M.contrib[k][base+ch]=x; s+=x;
+    }
+    M.sum[k][M.head]=s;
+    M.spike[k][M.head]=(s>=g.threshold)?1:0;
+  }
+}
+/*===MODEL-END===*/
+
+/* ============================================================================
+   PRESETS — new; the repository ships an empty custom_presets/
+   ========================================================================== */
+function conn(spec, d){
+  d = d || '000000000';
+  var a=blankConn();
+  for(var ch=0;ch<9;ch++){
+    var s=spec[ch];
+    var st = s==='e'?'excitatory' : s==='i'?'inhibitory' : 'off';
+    /* ConnectivityUnit.update_state: a silent input carries no delay */
+    a[(ch/3)|0][ch%3]={ state:st, delay: st==='off' ? 'None' : DELAY_KEYS[+d[ch]] };
+  }
+  return a;
+}
+var PRESETS=[
+  {id:'on-center', name:'ON cell', apply:function(M){
+    M.rgc[0]={polarity:'ON',threshold:1,conn:conn('....e....')};
+    M.rgc[1]={polarity:'ON',threshold:1,conn:blankConn()};
+    M.selected=grid(false); M.selected[1][1]=true; M.mode='Static';
+  }},
+  {id:'off-center', name:'OFF cell', apply:function(M){
+    M.rgc[0]={polarity:'OFF',threshold:1,conn:conn('....e....')};
+    M.rgc[1]={polarity:'ON',threshold:1,conn:blankConn()};
+    M.selected=grid(false); M.selected[1][1]=true; M.mode='Static';
+  }},
+  {id:'parallel', name:'ON and OFF in parallel', apply:function(M){
+    M.rgc[0]={polarity:'ON', threshold:1,conn:conn('....e....')};
+    M.rgc[1]={polarity:'OFF',threshold:1,conn:conn('....e....')};
+    M.selected=grid(false); M.selected[1][1]=true; M.mode='Static';
+  }},
+  {id:'center-surround', name:'Centre\u2013surround', apply:function(M){
+    M.rgc[0]={polarity:'ON',threshold:1,conn:conn('iiiieiiii')};
+    M.rgc[1]={polarity:'ON',threshold:1,conn:blankConn()};
+    M.selected=grid(false); M.selected[1][1]=true; M.mode='Static';
+  }},
+  {id:'center-surround-sizes', name:'Centre\u2013surround, small and large', apply:function(M){
+    /* Lesson 1 Activity 4: same centre, different spot-size preference.
+       RGC1 takes the single centre lamp; RGC2 takes lamps 2,4,5,6,8. */
+    M.rgc[0]={polarity:'ON',threshold:1,conn:conn('iiiieiiii')};
+    M.rgc[1]={polarity:'ON',threshold:5,conn:conn('ieieeeiei')};
+    M.selected=grid(false); M.selected[1][1]=true; M.mode='Static';
+  }},
+  {id:'direction-selective', name:'Direction-selective cell', apply:function(M){
+    /* excitation from the middle column, inhibition from the left column
+       arriving 300 ms later = one stimulus step at Medium (Barlow\u2013Levick) */
+    M.rgc[0]={polarity:'ON',threshold:1,conn:conn('ie.ie.ie.','202202202')};
+    M.rgc[1]={polarity:'ON',threshold:1,conn:blankConn()};
+    M.selected=grid(false);
+    M.selected[0][0]=M.selected[1][0]=M.selected[2][0]=true;
+    M.mode='Motion'; M.speed=1; M.direction='Right';
+  }},
+  {id:'ds-pair', name:'Direction-selective pair (left and right)', apply:function(M){
+    /* Lesson 3 Activities 1-2, and the Block Breaker setup: RGC1 prefers
+       leftward motion, RGC2 prefers rightward. Mirror-image wiring. */
+    M.rgc[0]={polarity:'ON',threshold:6,conn:conn('ieeieeiee','202202202')};
+    M.rgc[1]={polarity:'ON',threshold:6,conn:conn('eeieeieei','202202202')};
+    M.selected=grid(false);
+    M.selected[0][0]=M.selected[1][0]=M.selected[2][0]=true;
+    M.mode='Motion'; M.speed=1; M.direction='Right';
+  }}
+];
+
+/* ============================================================================
+   VIEW
+   ========================================================================== */
+var COL={red:'#CD1916',blue:'#1A83C9',yellow:'#DEB33D',green:'#3D783F',
+         gray:'#BDBFB6',lightGray:'#E0E0E0',black:'#000000',line:'#CCCCCC'};
+/* The desktop app crossed these: RGC_1.svg is green but graphing_manager.py
+   gave RGC 1 the yellow trace. Traces now follow the somas. */
+var RGC_TRACE=[COL.green, COL.yellow];
+
+/* interaction_manager.py :: NeuronWidget.circle_positions, in the SVG's own
+   376x336 coordinate space, with radius min(35,35)/3 */
+var DOTS=[[12,38],[127,38],[241,38],[65,105],[179,105],[295,105],
+          [120,172],[239,172],[353,172]];
+var DOT_R=35/3;
+
+var M=createModel();
+var root=document.getElementById('rb');
+var elLamps=document.getElementById('rb-lamps');
+var elNeurons=document.getElementById('rb-neurons');
+var elRun=document.getElementById('rb-run');
+var canvas=document.getElementById('rb-canvas');
+var ctx=canvas.getContext('2d');
+var lampUses=[], dotEls=[[],[]];
+
+/* ---------- stimulus lamps ---------- */
+(function(){
+  for(var r=0;r<3;r++) for(var c=0;c<3;c++){
+    var b=document.createElement('button');
+    b.type='button'; b.className='rb-lamp';
+    b.setAttribute('aria-pressed','false');
+    b.setAttribute('aria-label','LED '+(r*3+c+1));
+    b.innerHTML='<svg viewBox="0 0 88 104"><use href="#led-unselected"/></svg><b>'+(r*3+c+1)+'</b>';
+    (function(r,c){
+      b.addEventListener('click',function(){
+        M.selected[r][c]=!M.selected[r][c];
+        if(M.running) armStimulus(M);
+        syncStim();
+      });
+    })(r,c);
+    elLamps.appendChild(b);
+    lampUses.push(b.querySelector('use'));
+  }
+})();
+
+/* ---------- neuron widgets ---------- */
+(function(){
+  for(var k=0;k<2;k++){
+    var wrap=document.createElement('div');
+
+    var art='<div class="rb-neuron"><svg viewBox="0 0 376 336" role="img" aria-label="RGC '+(k+1)+
+            ' dendritic field">'+
+            '<use href="#rgc-art-'+(k+1)+'"/><g class="rb-conn"></g></svg></div>';
+
+    var ctrl=
+      '<div class="rb-opt"><b>Threshold:</b>'+
+        '<input class="rb-num" type="number" min="0" max="9" step="1" value="1" id="rb-thr-'+k+'">'+
+        '<button type="button" class="rb-btn" style="flex:0 0 auto;padding:.2rem .5rem" '+
+          'id="rb-delays-'+k+'">Delays\u2026</button></div>'+
+      '<div class="rb-opt"><b>Type:</b>'+
+        '<label class="rb-radio"><input type="radio" name="rb-pol-'+k+'" value="ON" checked> ON</label>'+
+        '<label class="rb-radio"><input type="radio" name="rb-pol-'+k+'" value="OFF"> OFF</label></div>';
+
+    wrap.innerHTML = art + ctrl + (k===0 ? '<hr class="rb-sep">' : '');
+    elNeurons.appendChild(wrap);
+
+    /* connectivity dots, drawn over the artwork exactly as paintEvent does */
+    var g=wrap.querySelector('.rb-conn'), ns='http://www.w3.org/2000/svg';
+    for(var ch=0;ch<9;ch++){
+      var grp=document.createElementNS(ns,'g');
+      grp.setAttribute('class','rb-dot');
+      grp.setAttribute('tabindex','0');
+      grp.setAttribute('role','button');
+      var ci=document.createElementNS(ns,'circle');
+      ci.setAttribute('class','rb-dot-c');
+      ci.setAttribute('cx',DOTS[ch][0]); ci.setAttribute('cy',DOTS[ch][1]);
+      ci.setAttribute('r',DOT_R); ci.setAttribute('fill',COL.gray);
+      var tri=document.createElementNS(ns,'path');
+      tri.setAttribute('class','rb-dot-t');
+      tri.setAttribute('d','M'+DOTS[ch][0]+' '+(DOTS[ch][1]-6)+
+                        'l6.5 11h-13z');
+      tri.setAttribute('fill',COL.black);
+      grp.appendChild(ci); grp.appendChild(tri);
+      (function(k,ch,grp){
+        function cycle(){
+          var cell=M.rgc[k].conn[(ch/3)|0][ch%3];
+          cell.state=STATES[(STATES.indexOf(cell.state)+1)%3];
+          if(cell.state==='off') cell.delay='None';   /* ConnectivityUnit.update_state */
+          syncNeurons();
+        }
+        grp.addEventListener('click',cycle);
+        grp.addEventListener('keydown',function(e){
+          if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cycle(); }
+        });
+      })(k,ch,grp);
+      g.appendChild(grp); dotEls[k].push(grp);
+    }
+
+    (function(k,wrap){
+      wrap.querySelector('#rb-thr-'+k).addEventListener('change',function(e){
+        var v=Math.max(0,Math.min(9,Math.round(+e.target.value||0)));
+        e.target.value=v; M.rgc[k].threshold=v;
+      });
+      [].forEach.call(wrap.querySelectorAll('input[name="rb-pol-'+k+'"]'),function(r){
+        r.addEventListener('change',function(){ if(r.checked) M.rgc[k].polarity=r.value; });
+      });
+      wrap.querySelector('#rb-delays-'+k).addEventListener('click',function(){ openModal(k); });
+    })(k,wrap);
+  }
+})();
+
+/* ---------- connectivity dialog (GridPopupDialog + ConnectivityUnit) ---------- */
+var modal=document.getElementById('rb-modal'), units=document.getElementById('rb-units');
+function openModal(k){
+  openModalFor('RGC '+(k+1), M.rgc[k].conn, syncNeurons);
+}
+function openModalFor(title, connObj, onChange){
+  document.getElementById('rb-modal-h').textContent=title+' Connectivity';
+  units.innerHTML='';
+  for(var ch=0;ch<9;ch++){
+    var cell=connObj[(ch/3)|0][ch%3];
+    var u=document.createElement('div'); u.className='rb-unit';
+    u.innerHTML=
+      '<button type="button" class="rb-pm" data-state="'+cell.state+'">'+
+        (cell.state==='excitatory'?'+':cell.state==='inhibitory'?'\u2212':'')+'</button>'+
+      '<label>Delay</label>'+
+      '<input type="range" min="0" max="3" step="1" value="'+DELAY_KEYS.indexOf(cell.delay)+'"'+
+        (cell.state==='off'?' disabled':'')+'>'+
+      '<small>'+DELAY_MS[cell.delay]+' ms</small>';
+    (function(ch,u){
+      var cellRef=connObj[(ch/3)|0][ch%3];
+      var btn=u.querySelector('.rb-pm'), sl=u.querySelector('input'), lab=u.querySelector('small');
+      btn.addEventListener('click',function(){
+        cellRef.state=STATES[(STATES.indexOf(cellRef.state)+1)%3];
+        btn.dataset.state=cellRef.state;
+        btn.textContent=cellRef.state==='excitatory'?'+':cellRef.state==='inhibitory'?'\u2212':'';
+        if(cellRef.state==='off'){ cellRef.delay='None'; sl.value=0; sl.disabled=true; }
+        else sl.disabled=false;
+        lab.textContent=DELAY_MS[cellRef.delay]+' ms';
+        onChange();
+      });
+      sl.addEventListener('input',function(){
+        cellRef.delay=DELAY_KEYS[+sl.value];
+        lab.textContent=DELAY_MS[cellRef.delay]+' ms';
+        onChange();
+      });
+    })(ch,u);
+    units.appendChild(u);
+  }
+  modal.hidden=false;
+}
+document.getElementById('rb-modal-x').addEventListener('click',function(){ modal.hidden=true; });
+modal.addEventListener('click',function(e){ if(e.target===modal) modal.hidden=true; });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') modal.hidden=true; });
+
+/* ---------- presets ---------- */
+(function(){
+  var sel=document.getElementById('rb-preset');
+  PRESETS.forEach(function(p){
+    var o=document.createElement('option'); o.value=p.id; o.textContent=p.name; sel.appendChild(o);
+  });
+  /* the dropdown only chooses; the button applies it */
+  document.getElementById('rb-load').addEventListener('click',function(){
+    if(sel.value) loadPreset(sel.value);
+  });
+})();
+function loadPreset(id){
+  var p=null; PRESETS.forEach(function(q){ if(q.id===id) p=q; });
+  if(!p) return false;
+  p.apply(M); M.running=true; armStimulus(M); clearTraces(M);
+  document.getElementById('rb-preset').value=id;
+  syncAll(); return true;
+}
+
+/* ---------- control wiring ---------- */
+[].forEach.call(document.querySelectorAll('input[name="rb-mode"]'),function(r){
+  r.addEventListener('change',function(){
+    if(!r.checked) return;
+    M.mode=r.value; if(M.running) armStimulus(M); syncStim();
+  });
+});
+[].forEach.call(document.querySelectorAll('input[name="rb-dir"]'),function(r){
+  r.addEventListener('change',function(){ if(r.checked){ M.direction=r.value; syncStim(); } });
+});
+document.getElementById('rb-speed').addEventListener('input',function(e){
+  M.speed=+e.target.value; syncStim();
+});
+document.getElementById('rb-all').addEventListener('click',function(){
+  M.selected=grid(true); if(M.running) armStimulus(M); syncStim();
+});
+document.getElementById('rb-none').addEventListener('click',function(){
+  M.selected=grid(false); if(M.running) armStimulus(M); syncStim();
+});
+elRun.addEventListener('click',function(){
+  M.running=!M.running; armStimulus(M); syncStim();
+});
+
+/* ---------- sync ---------- */
+var SPEED_NAME=['Slow','Medium','Fast'];
+function syncStim(){
+  document.getElementById('rb-dir-row').hidden   = (M.mode!=='Motion');
+  document.getElementById('rb-speed-row').hidden = (M.mode!=='Motion');
+  document.getElementById('rb-speed-lbl').textContent=SPEED_NAME[M.speed];
+  document.getElementById('rb-speed').value=M.speed;
+  elRun.textContent = M.running ? 'Deactivate stimulus LEDs' : 'Activate stimulus LEDs';
+  elRun.classList.toggle('is-on', M.running);
+  [].forEach.call(document.querySelectorAll('input[name="rb-mode"]'),function(r){
+    r.checked=(r.value===M.mode); });
+  [].forEach.call(document.querySelectorAll('input[name="rb-dir"]'),function(r){
+    r.checked=(r.value===M.direction); });
+  for(var r2=0;r2<3;r2++) for(var c=0;c<3;c++)
+    elLamps.children[r2*3+c].setAttribute('aria-pressed',String(M.selected[r2][c]));
+}
+function syncNeurons(){
+  for(var k=0;k<2;k++){
+    for(var ch=0;ch<9;ch++){
+      var cell=M.rgc[k].conn[(ch/3)|0][ch%3], grp=dotEls[k][ch];
+      grp.querySelector('.rb-dot-c').setAttribute('fill',
+        cell.state==='excitatory'?COL.red : cell.state==='inhibitory'?COL.blue : COL.gray);
+      grp.querySelector('.rb-dot-t').style.display = (cell.delay!=='None') ? '' : 'none';
+      grp.setAttribute('aria-label','Input '+(ch+1)+': '+cell.state+
+        ', delay '+DELAY_MS[cell.delay]+' ms');
+    }
+    root.querySelector('#rb-thr-'+k).value=M.rgc[k].threshold;
+    [].forEach.call(root.querySelectorAll('input[name="rb-pol-'+k+'"]'),function(r){
+      r.checked=(r.value===M.rgc[k].polarity); });
+  }
+}
+function syncAll(){ syncStim(); syncNeurons(); }
+
+/* ---------- live lamp state ---------- */
+function paintLamps(){
+  for(var r=0;r<3;r++) for(var c=0;c<3;c++){
+    var i=r*3+c;
+    var href = M.activated[r][c] ? '#led-on'
+             : M.selected[r][c]  ? '#led-selected' : '#led-unselected';
+    if(lampUses[i].getAttribute('href')!==href) lampUses[i].setAttribute('href',href);
+  }
+}
+
+/* ============================================================================
+   SIGNAL MONITOR
+   Mirrors graphing_manager.py: each photoreceptor is a horizontal trace at a
+   fixed height, grey by default, red while it drives the cell and blue while it
+   inhibits it. Input lamps on the right, RGC output row beneath, 1 s scale bar.
+   ========================================================================== */
+var ROW=13, RGC_GAP=14, RGC_ROW=15, AX=44, TITLE=18, PAD=8;
+var LEFT=64, RIGHT=74;
+var BLOCK=TITLE+9*ROW+RGC_GAP+RGC_ROW+AX;
+var CH=PAD+BLOCK*2+PAD, CW=600, dpr=1, FONT='10px sans-serif';
+
+function resize(){
+  var w=canvas.parentNode.clientWidth; if(w<300) w=300;
+  CW=w; dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=Math.round(CW*dpr); canvas.height=Math.round(CH*dpr);
+  canvas.style.height=CH+'px';
+  FONT='10px '+getComputedStyle(root).fontFamily;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',resize);
+
+function drawRGC(k,top){
+  var w=CW-LEFT-RIGHT, i, j, y;
+  ctx.font=FONT; ctx.textBaseline='middle';
+
+  ctx.textAlign='center'; ctx.fillStyle='#333';
+  ctx.fillText('RGC '+(k+1), LEFT+w/2, top+8);
+
+  var plotTop=top+TITLE;
+
+  /* nine photoreceptor traces */
+  for(j=0;j<9;j++){
+    y=plotTop+j*ROW+ROW/2;
+    ctx.textAlign='right'; ctx.fillStyle='#555';
+    ctx.fillText(String(j+1), LEFT-6, y);
+
+    ctx.strokeStyle=COL.gray; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(LEFT,y); ctx.lineTo(LEFT+w,y); ctx.stroke();
+
+    for(var pass=0;pass<2;pass++){
+      ctx.strokeStyle=pass?COL.blue:COL.red; ctx.lineWidth=3;
+      ctx.beginPath();
+      var run=false;
+      for(i=0;i<NBUF;i++){
+        var v=M.contrib[k][(((M.head+1+i)%NBUF)*9)+j];
+        var hit=pass?(v<-0.5):(v>0.5);
+        var x=LEFT+(i/(NBUF-1))*w;
+        if(hit&&!run){ ctx.moveTo(x,y); run=true; }
+        else if(hit){ ctx.lineTo(x,y); }
+        else run=false;
+      }
+      ctx.stroke();
+    }
+
+    /* photoreceptor input lamp */
+    var lit=M.lit[M.head*9+j]===1;
+    ctx.beginPath(); ctx.arc(LEFT+w+12,y,4.5,0,6.2832);
+    ctx.fillStyle=lit?'#FDFF6E':'#fff'; ctx.fill();
+    ctx.strokeStyle='#666'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  /* rotated axis captions */
+  ctx.save();
+  ctx.translate(14, plotTop+9*ROW/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillStyle='#555';
+  ctx.fillText('Photoreceptor Output', 0, 0);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(CW-10, plotTop+9*ROW/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillStyle='#555';
+  ctx.fillText('Photoreceptor Input', 0, 0);
+  ctx.restore();
+
+  /* RGC output row */
+  var ry=plotTop+9*ROW+RGC_GAP+RGC_ROW/2;
+  ctx.textAlign='right'; ctx.fillStyle='#555';
+  ctx.fillText('RGC '+(k+1), LEFT-6, ry);
+  ctx.strokeStyle=COL.gray; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(LEFT,ry); ctx.lineTo(LEFT+w,ry); ctx.stroke();
+  ctx.strokeStyle=RGC_TRACE[k]; ctx.lineWidth=4;
+  ctx.beginPath();
+  var run2=false;
+  for(i=0;i<NBUF;i++){
+    var sp=M.spike[k][(M.head+1+i)%NBUF];
+    var x2=LEFT+(i/(NBUF-1))*w;
+    if(sp&&!run2){ ctx.moveTo(x2,ry); run2=true; }
+    else if(sp){ ctx.lineTo(x2,ry); }
+    else run2=false;
+  }
+  ctx.stroke();
+
+  /* time axis with 1 s scale bar */
+  var ay=ry+RGC_ROW/2+9;
+  ctx.strokeStyle='#999'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(LEFT,ay+.5); ctx.lineTo(LEFT+w,ay+.5); ctx.stroke();
+  for(i=0;i<=DUR_S*2;i++){
+    var tx=LEFT+(i/(DUR_S*2))*w;
+    ctx.beginPath(); ctx.moveTo(tx+.5,ay); ctx.lineTo(tx+.5,ay+(i%2?3:5)); ctx.stroke();
+  }
+  ctx.fillStyle='#555'; ctx.textAlign='center';
+  ctx.fillText('Time', LEFT+w/2, ay+15);
+
+  var sb=w/DUR_S, sx=LEFT+w-sb;
+  ctx.strokeStyle='#333'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(sx,ay+13); ctx.lineTo(LEFT+w,ay+13); ctx.stroke();
+  ctx.fillStyle='#333'; ctx.textAlign='center';
+  ctx.fillText('1 sec', sx+sb/2, ay+21);
+}
+
+function draw(){
+  ctx.clearRect(0,0,CW,CH);
+  drawRGC(0,PAD);
+  drawRGC(1,PAD+BLOCK);
+}
+
+/* ---------- clock: fixed 25 ms steps ---------- */
+var last=0, acc=0;
+function frame(now){
+  if(!last) last=now;
+  acc+=now-last; last=now;
+  if(acc>500) acc=500;
+  while(acc>=DT_MS){ tick(M); tick(DM.model); acc-=DT_MS; }
+  if(currentMode==='lab'){ paintLamps(); draw(); }
+  else if(currentMode==='dm'){ dmDraw(); }
+  requestAnimationFrame(frame);
+}
+
+
+/* ============================================================================
+   CHALLENGE DATA
+   ---------------------------------------------------------------------------
+   AUTHORED FOR THE WEB EDITION. The desktop app reads these from
+   GUI/.default_code/.default_{codeBreaker,discoveryMode}_challenges.json,
+   which is absent from the public repository. The schema below is exactly what
+   code_breaker.py and discovery_mode.py expect, so dropping the real files in
+   (see RetINaBox.loadChallenges) replaces these with no code changes.
+   ========================================================================== */
+/* Discovery Mode challenges below are the real ones, transcribed from
+   "Lesson 4 Solutions: Discovery Mode" in RetINaBox_LessonPlans.pdf. Each has two
+   accepted answers, the ON circuit and the OFF circuit; the direction-selective
+   pair has one per consistent speed/delay pairing, per the lesson plan's note.
+   Code Breaker challenges come from "Lesson 1 Solutions: Codebreaking" in the same
+   PDF: the published cipher, receptive fields and secret messages. Each stimulus
+   pattern is generated from that wiring and checked to decode to its own letter. */
+var CB_DEFAULT = {
+  "Challenge 1": {
+    RetinaBox_output:["E", "R", "D", "A"],
+    RGC_1_pref_stim:[0,1,1,0,1,1,0,0,0], RGC_2_pref_stim:[0,0,0,0,0,0,1,0,0],
+    Solution_string:"Dear reader, dread red area.",
+    stim_codes:{
+      "E":[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1],[0,0,0,0,0,0,0,1,0],[0,0,0,0,0,1,0,0,0],[0,0,0,0,1,0,0,0,0],[0,0,0,1,0,0,0,0,0]],
+      "R":[[0,1,1,0,1,1,0,0,0],[0,1,1,0,1,1,0,0,0],[0,1,1,0,1,1,0,0,0],[0,1,1,0,1,1,0,0,0],[0,1,1,0,1,1,0,0,0],[0,1,1,0,1,1,0,0,0]],
+      "D":[[0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,1,0,0],[0,0,0,0,1,0,1,0,0],[0,0,1,0,0,0,1,0,0],[0,1,0,0,0,0,1,0,0]],
+      "A":[[0,1,1,0,1,1,1,0,0],[0,1,1,0,1,1,1,0,0],[0,1,1,0,1,1,1,0,0],[0,1,1,0,1,1,1,0,0],[0,1,1,0,1,1,1,0,0]]
+    }
+  },
+  "Challenge 2": {
+    RetinaBox_output:["A", "E", "R", "T"],
+    RGC_1_pref_stim:[0,0,1,0,0,0,0,0,0], RGC_2_pref_stim:[0,0,0,0,1,1,0,1,1],
+    Solution_string:"A rare rat ate a tree.",
+    stim_codes:{
+      "A":[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1],[0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,0,0,0]],
+      "E":[[0,0,1,0,0,0,0,0,0],[0,0,1,0,0,0,0,0,1],[0,0,1,0,0,0,0,1,0],[0,0,1,0,0,1,0,0,0]],
+      "R":[[0,0,0,0,1,1,0,1,1],[0,0,0,0,1,1,0,1,1],[0,0,0,0,1,1,0,1,1],[0,0,0,0,1,1,0,1,1]],
+      "T":[[0,0,1,0,1,1,0,1,1],[0,0,1,0,1,1,0,1,1],[0,0,1,0,1,1,0,1,1]]
+    }
+  },
+  "Challenge 3": {
+    RetinaBox_output:["A", "I", "D", "M"],
+    RGC_1_pref_stim:[0,0,0,1,1,0,1,1,0], RGC_2_pref_stim:[0,0,0,0,1,1,0,1,1],
+    Solution_string:"Mamma Mia! I am mad.",
+    stim_codes:{
+      "A":[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1],[0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,1,0,0],[0,0,0,0,0,1,0,0,0]],
+      "I":[[0,0,0,1,1,0,1,1,0],[0,0,0,1,1,0,1,1,1]],
+      "D":[[0,0,0,0,1,1,0,1,1]],
+      "M":[[0,0,0,1,1,1,1,1,1],[0,0,0,1,1,1,1,1,1],[0,0,0,1,1,1,1,1,1],[0,0,0,1,1,1,1,1,1],[0,0,0,1,1,1,1,1,1],[0,0,0,1,1,1,1,1,1]]
+    }
+  },
+  "Challenge 4": {
+    RetinaBox_output:["H", "T", "E", "A"],
+    RGC_1_pref_stim:[0,0,0,0,1,0,0,0,0], RGC_2_pref_stim:[0,0,0,0,0,1,0,0,0],
+    Solution_string:"He ate the hat.",
+    stim_codes:{
+      "H":[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1],[0,0,0,0,0,0,0,1,0]],
+      "T":[[0,0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0,0]],
+      "E":[[0,0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0,0]],
+      "A":[[0,0,0,0,1,1,0,0,0],[0,0,0,0,1,1,0,0,0]]
+    }
+  },
+  "Challenge 5": {
+    RetinaBox_output:["A", "B", "C", "KE"],
+    RGC_1_pref_stim:[0,0,0,0,1,1,0,1,1], RGC_2_pref_stim:[0,1,0,0,0,0,0,0,0],
+    Solution_string:"Bake a cake.",
+    stim_codes:{
+      "A":[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,1],[0,0,0,0,0,0,0,1,0]],
+      "B":[[0,0,0,0,1,1,0,1,1]],
+      "C":[[0,1,0,0,0,0,0,0,0]],
+      "KE":[[0,1,0,0,1,1,0,1,1],[0,1,0,0,1,1,0,1,1]]
+    }
+  },
+  "Challenge 6": {
+    RetinaBox_output:["A", "P", "C", "K"],
+    RGC_1_pref_stim:[1,0,0,0,0,0,0,0,0], RGC_2_pref_stim:[0,0,0,0,0,0,0,0,1],
+    Solution_string:"Pack a cap.",
+    stim_codes:{
+      "A":[[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,1,0,0]],
+      "P":[[1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0]],
+      "C":[[0,0,0,0,0,0,0,0,1],[0,0,0,0,0,0,0,0,1]],
+      "K":[[1,0,0,0,0,0,0,0,1]]
+    }
+  }
+};
+
+var DM_DEFAULT = {
+    "Easy 1": [
+      {stim_array:[0,0,0,1,0,0,0,0,0], motion_type:"Static", direction:"", speed:"", threshold:1, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[0,0,0,1,0,0,0,0,0], motion_type:"Static", direction:"", speed:"", threshold:8, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Easy 2": [
+      {stim_array:[1,0,0,0,1,0,0,0,1], motion_type:"Static", direction:"", speed:"", threshold:3, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"}]},
+      {stim_array:[1,0,0,0,1,0,0,0,1], motion_type:"Static", direction:"", speed:"", threshold:6, polarity:"OFF",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"}]}
+    ],
+    "Easy 3": [
+      {stim_array:[0,0,0,1,1,1,0,0,0], motion_type:"Static", direction:"", speed:"", threshold:3, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[0,0,0,1,1,1,0,0,0], motion_type:"Static", direction:"", speed:"", threshold:6, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Easy 4": [
+      {stim_array:[0,0,1,0,0,0,0,0,0], motion_type:"Static", direction:"", speed:"", threshold:1, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[0,0,1,0,0,0,0,0,0], motion_type:"Static", direction:"", speed:"", threshold:8, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Easy 5": [
+      {stim_array:[0,0,1,0,0,1,0,0,1], motion_type:"Static", direction:"", speed:"", threshold:3, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"}]},
+      {stim_array:[0,0,1,0,0,1,0,0,1], motion_type:"Static", direction:"", speed:"", threshold:6, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"}]}
+    ],
+    "Easy 6": [
+      {stim_array:[0,0,1,0,1,0,1,0,0], motion_type:"Static", direction:"", speed:"", threshold:3, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[0,0,1,0,1,0,1,0,0], motion_type:"Static", direction:"", speed:"", threshold:6, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Easy 7": [
+      {stim_array:[1,0,0,1,0,0,1,0,0], motion_type:"Static", direction:"", speed:"", threshold:3, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[1,0,0,1,0,0,1,0,0], motion_type:"Static", direction:"", speed:"", threshold:6, polarity:"OFF",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Medium 1": [
+      {stim_array:[1,1,1,1,0,1,1,1,1], motion_type:"Static", direction:"", speed:"", threshold:8, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]},
+      {stim_array:[1,1,1,1,0,1,1,1,1], motion_type:"Static", direction:"", speed:"", threshold:1, polarity:"OFF",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]}
+    ],
+    "Medium 2": [
+      {stim_array:[1,1,1,0,1,0,0,1,0], motion_type:"Static", direction:"", speed:"", threshold:5, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[1,1,1,0,1,0,0,1,0], motion_type:"Static", direction:"", speed:"", threshold:4, polarity:"OFF",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Medium 3": [
+      {stim_array:[1,0,1,0,1,0,1,0,1], motion_type:"Static", direction:"", speed:"", threshold:5, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"}]},
+      {stim_array:[1,0,1,0,1,0,1,0,1], motion_type:"Static", direction:"", speed:"", threshold:4, polarity:"OFF",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"}]}
+    ],
+    "Medium 4": [
+      {stim_array:[0,1,0,1,1,1,0,1,0], motion_type:"Static", direction:"", speed:"", threshold:5, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[0,1,0,1,1,1,0,1,0], motion_type:"Static", direction:"", speed:"", threshold:4, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Medium 5": [
+      {stim_array:[0,0,0,1,1,0,1,1,0], motion_type:"Static", direction:"", speed:"", threshold:4, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[0,0,0,1,1,0,1,1,0], motion_type:"Static", direction:"", speed:"", threshold:5, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Medium 6": [
+      {stim_array:[1,1,1,1,0,0,1,1,1], motion_type:"Static", direction:"", speed:"", threshold:7, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]},
+      {stim_array:[1,1,1,1,0,0,1,1,1], motion_type:"Static", direction:"", speed:"", threshold:2, polarity:"OFF",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]}
+    ],
+    "Hard 1": [
+      {stim_array:[1,0,0,1,1,0,1,1,1], motion_type:"Static", direction:"", speed:"", threshold:6, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"}]},
+      {stim_array:[1,0,0,1,1,0,1,1,1], motion_type:"Static", direction:"", speed:"", threshold:3, polarity:"OFF",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"inhibitory",delay:"None"}]}
+    ],
+    "Hard 2": [
+      {stim_array:[1,0,0,1,0,0,1,0,0], motion_type:"Moving", direction:"Right", speed:"Slow", threshold:6, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"long"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"long"},{state:"excitatory",delay:"long"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"long"},{state:"excitatory",delay:"long"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"long"}]},
+      {stim_array:[1,0,0,1,0,0,1,0,0], motion_type:"Moving", direction:"Right", speed:"Medium", threshold:6, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"medium"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"medium"},{state:"excitatory",delay:"medium"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"medium"},{state:"excitatory",delay:"medium"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"medium"}]},
+      {stim_array:[1,0,0,1,0,0,1,0,0], motion_type:"Moving", direction:"Right", speed:"Fast", threshold:6, polarity:"ON",
+       connectivity:[{state:"excitatory",delay:"short"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"short"},{state:"excitatory",delay:"short"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"short"},{state:"excitatory",delay:"short"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"short"}]}
+    ],
+    "Hard 3": [
+      {stim_array:[0,1,0,1,0,1,0,1,0], motion_type:"Static", direction:"", speed:"", threshold:4, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"}]},
+      {stim_array:[0,1,0,1,0,1,0,1,0], motion_type:"Static", direction:"", speed:"", threshold:5, polarity:"OFF",
+       connectivity:[{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"},{state:"inhibitory",delay:"None"},{state:"excitatory",delay:"None"}]}
+    ],
+    "Hard 4": [
+      {stim_array:[0,1,0,0,1,0,0,1,0], motion_type:"Moving", direction:"Left", speed:"Slow", threshold:6, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"long"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"long"},{state:"inhibitory",delay:"long"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"long"},{state:"inhibitory",delay:"long"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"long"}]},
+      {stim_array:[0,1,0,0,1,0,0,1,0], motion_type:"Moving", direction:"Left", speed:"Medium", threshold:6, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"medium"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"medium"},{state:"inhibitory",delay:"medium"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"medium"},{state:"inhibitory",delay:"medium"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"medium"}]},
+      {stim_array:[0,1,0,0,1,0,0,1,0], motion_type:"Moving", direction:"Left", speed:"Fast", threshold:6, polarity:"ON",
+       connectivity:[{state:"inhibitory",delay:"short"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"short"},{state:"inhibitory",delay:"short"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"short"},{state:"inhibitory",delay:"short"},{state:"excitatory",delay:"None"},{state:"excitatory",delay:"short"}]}
+    ]
+  };
+
+var CB_DATA = CB_DEFAULT, DM_DATA = DM_DEFAULT;
+
+/* ============================================================================
+   TABS
+   ========================================================================== */
+/* ---------------------------------------------------------------------------
+   Reference documents. raw.githubusercontent.com cannot be framed -- it returns
+   x-frame-options: deny, a sandbox CSP and content-type application/octet-stream
+   -- so the PDFs are pulled through jsDelivr, which serves the same repo files
+   with a real application/pdf type and no frame blocking. Some browsers (notably
+   iOS) never render PDFs inline, hence the always-visible "Open in new tab".
+   --------------------------------------------------------------------------- */
+var REPO='Trenholm-Lab/RetINaBox', BRANCH='main';
+var DOCS={
+  lp:{file:'Lesson Plans/RetINaBox_LessonPlans.pdf',   frame:'lp-frame', a:'lp-new', gh:'lp-gh'},
+  sl:{file:'Lesson Plans/RetINaBox_TeachingSlides.pdf',frame:'sl-frame', a:'sl-new', gh:'sl-gh'}
+};
+function cdnURL(f){
+  return 'https://cdn.jsdelivr.net/gh/'+REPO+'@'+BRANCH+'/'+
+         f.split('/').map(encodeURIComponent).join('/');
+}
+function ghURL(f){
+  return 'https://github.com/'+REPO+'/blob/'+BRANCH+'/'+
+         f.split('/').map(encodeURIComponent).join('/');
+}
+function mountDoc(key){
+  var d=DOCS[key], box=document.getElementById(d.frame);
+  document.getElementById(d.a).href  = d.url || cdnURL(d.file);
+  document.getElementById(d.gh).href = d.gh_url || ghURL(d.file);
+  if(box.dataset.mounted) return;
+  box.dataset.mounted='1';
+
+  var note=box.querySelector('.note'), settled=false;
+  var f=document.createElement('iframe');
+  f.title=(key==='lp'?'RetINaBox lesson plans':'RetINaBox teaching slides');
+
+  /* the frame paints over the overlay, so the overlay has to be taken out
+     once the document is up -- otherwise it sits on top of the PDF forever */
+  var giveUp=setTimeout(function(){
+    if(settled || !note) return;
+    note.textContent='This browser may not show PDFs inline. Use "Open in new tab".';
+  }, 8000);
+  f.addEventListener('load', function(){
+    settled=true; clearTimeout(giveUp);
+    if(note && note.parentNode) note.parentNode.removeChild(note);
+  });
+
+  f.src=(d.url || cdnURL(d.file))+'#view=FitH';
+  box.appendChild(f);
+}
+
+var currentMode='lab';
+[].forEach.call(document.querySelectorAll('.rb-tab'),function(t){
+  t.addEventListener('click',function(){
+    currentMode=t.dataset.mode;
+    [].forEach.call(document.querySelectorAll('.rb-tab'),function(o){
+      o.setAttribute('aria-selected', String(o===t)); });
+    ['lab','cb','dm','lp','sl'].forEach(function(m){
+      document.getElementById('rb-mode-'+m).hidden = (m!==currentMode); });
+    if(currentMode==='dm'){ dmResize(); }
+    if(currentMode==='lab'){ resize(); }
+    if(currentMode==='lp'||currentMode==='sl'){ mountDoc(currentMode); }
+  });
+});
+
+/* ============================================================================
+   CODE BREAKER  (code_breaker.py)
+   ========================================================================== */
+function pat3(arr, cls){
+  var h='<div class="pat">';
+  for(var i=0;i<9;i++) h+='<i class="'+(arr[i]?'on':'')+'"></i>';
+  return h+'</div>';
+}
+/* parse_solution_string: longest tokens first, so multi-character letters win */
+function cbTokens(str, letters){
+  var sorted=letters.slice().sort(function(a,b){return b.length-a.length;});
+  var out=[], i=0;
+  while(i<str.length){
+    if(str[i]===' '){ out.push(' '); i++; continue; }
+    var matched=false;
+    for(var j=0;j<sorted.length;j++){
+      var L=sorted[j];
+      if(L.length>1 && str.substr(i,L.length).toUpperCase()===L.toUpperCase()){
+        out.push(L.toUpperCase()); i+=L.length; matched=true; break;
+      }
+    }
+    if(!matched){
+      var up=str[i].toUpperCase();
+      out.push(letters.some(function(L){return L.toUpperCase()===up;}) ? up : str[i]);
+      i++;
+    }
+  }
+  return out;
+}
+var cbSel=document.getElementById('cb-sel');
+function cbBuildMenu(){
+  cbSel.innerHTML='';
+  Object.keys(CB_DATA).forEach(function(k){
+    var o=document.createElement('option'); o.value=k; o.textContent=k; cbSel.appendChild(o);
+  });
+}
+function cbLoad(name){
+  var d=CB_DATA[name]; if(!d) return;
+  var letters=d.RetinaBox_output;
+  var pool=JSON.parse(JSON.stringify(d.stim_codes));
+  var toks=cbTokens(d.Solution_string, letters);
+  var code=document.getElementById('cb-code'); code.innerHTML='';
+  toks.forEach(function(tk){
+    var el=document.createElement('div');
+    var isLetter=letters.some(function(L){return L.toUpperCase()===tk.toUpperCase();});
+    if(tk===' '){ el.className='rb-tok sp'; el.innerHTML='&nbsp;'; }
+    else if(isLetter){
+      var up=tk.toUpperCase();
+      var arr=(pool[up]&&pool[up].length)?pool[up].shift():[0,0,0,0,0,0,0,0,0];
+      el.className='rb-tok'; el.dataset.answer=up;
+      var opts='<option value=""></option>'+letters.map(function(L){
+        return '<option>'+L+'</option>'; }).join('');
+      el.innerHTML=pat3(arr)+'<select aria-label="Letter for this pattern">'+opts+'</select>';
+    } else { el.className='rb-tok'; el.innerHTML='<b>'+tk+'</b>'; }
+    code.appendChild(el);
+  });
+  var pref=document.getElementById('cb-pref');
+  pref.innerHTML='<figure>'+pat3(d.RGC_1_pref_stim)+'RGC 1</figure>'+
+                 '<figure>'+pat3(d.RGC_2_pref_stim)+'RGC 2</figure>';
+  var rows=[['0','0',letters[0]],['1','0',letters[1]],['0','1',letters[2]],['1','1',letters[3]]];
+  document.getElementById('cb-book').innerHTML=rows.map(function(r){
+    return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'; }).join('');
+  document.getElementById('cb-result').textContent='';
+}
+cbSel.addEventListener('change',function(){ cbLoad(cbSel.value); });
+document.getElementById('cb-check').addEventListener('click',function(){
+  var toks=document.querySelectorAll('#cb-code .rb-tok[data-answer]');
+  var right=0;
+  [].forEach.call(toks,function(el){
+    var sel=el.querySelector('select'), ok=(sel.value===el.dataset.answer);
+    sel.className = sel.value ? (ok?'ok':'no') : '';
+    if(ok) right++;
+  });
+  var res=document.getElementById('cb-result');
+  res.textContent='Correct letters: '+right+' / '+toks.length;
+  res.className='rb-result '+(right===toks.length?'rb-ok':'rb-no');
+});
+
+/* ============================================================================
+   DISCOVERY MODE  (discovery_mode.py)
+   ========================================================================== */
+var DM = {
+  model:createModel(), challenge:null, points:100, t0:0, timer:null,
+  stim:[0,0,0,0,0,0,0,0,0], user:blankConn(), dots:[]
+};
+var dmSel=document.getElementById('dm-sel');
+function dmBuildMenu(){
+  dmSel.innerHTML='';
+  Object.keys(DM_DATA).forEach(function(k){
+    var o=document.createElement('option'); o.value=k; o.textContent=k; dmSel.appendChild(o);
+  });
+}
+function dmDifficulty(n){
+  return /^Easy/.test(n)?'easy' : /^Hard/.test(n)?'hard' : 'medium';
+}
+/* discovery_mode.py: 5 points for every difficulty */
+function dmDeduction(){ return 5; }
+
+/* Phase 1 grid */
+(function(){
+  var g=document.getElementById('dm-grid');
+  for(var i=0;i<9;i++){
+    var b=document.createElement('button');
+    b.type='button'; b.textContent=String(i+1); b.setAttribute('aria-pressed','false');
+    (function(i,b){
+      b.addEventListener('click',function(){
+        DM.stim[i]=DM.stim[i]?0:1;
+        b.setAttribute('aria-pressed',String(!!DM.stim[i]));
+        dmApplyStim();
+      });
+    })(i,b);
+    g.appendChild(b);
+  }
+})();
+/* Phase 2 dots over RGC_M */
+(function(){
+  var g=document.getElementById('dm-dots'), ns='http://www.w3.org/2000/svg';
+  for(var ch=0;ch<9;ch++){
+    var grp=document.createElementNS(ns,'g');
+    grp.setAttribute('class','rb-dot'); grp.setAttribute('tabindex','0'); grp.setAttribute('role','button');
+    var ci=document.createElementNS(ns,'circle');
+    ci.setAttribute('class','rb-dot-c');
+    ci.setAttribute('cx',DOTS[ch][0]); ci.setAttribute('cy',DOTS[ch][1]);
+    ci.setAttribute('r',DOT_R); ci.setAttribute('fill',COL.gray);
+    var tri=document.createElementNS(ns,'path');
+    tri.setAttribute('class','rb-dot-t');
+    tri.setAttribute('d','M'+DOTS[ch][0]+' '+(DOTS[ch][1]-6)+'l6.5 11h-13z');
+    tri.setAttribute('fill',COL.black); tri.style.display='none';
+    grp.appendChild(ci); grp.appendChild(tri);
+    (function(ch,grp){
+      function cycle(){
+        var c=DM.user[(ch/3)|0][ch%3];
+        c.state=STATES[(STATES.indexOf(c.state)+1)%3];
+        if(c.state==='off') c.delay='None';
+        dmSyncDots();
+      }
+      grp.addEventListener('click',cycle);
+      grp.addEventListener('keydown',function(e){
+        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cycle(); } });
+    })(ch,grp);
+    g.appendChild(grp); DM.dots.push(grp);
+  }
+})();
+function dmSyncDots(){
+  for(var ch=0;ch<9;ch++){
+    var c=DM.user[(ch/3)|0][ch%3], grp=DM.dots[ch];
+    grp.querySelector('.rb-dot-c').setAttribute('fill',
+      c.state==='excitatory'?COL.red : c.state==='inhibitory'?COL.blue : COL.gray);
+    grp.querySelector('.rb-dot-t').style.display=(c.delay!=='None')?'':'none';
+  }
+}
+document.getElementById('dm-delays').addEventListener('click',function(){
+  openModalFor('Your circuit', DM.user, dmSyncDots);
+});
+
+/* motion controls mirror on_motion_type_changed */
+var dmMotion=document.getElementById('dm-motion'),
+    dmSpeed=document.getElementById('dm-speed'),
+    dmDir=document.getElementById('dm-dir');
+function fill(sel,items){ sel.innerHTML=items.map(function(i){return '<option>'+i+'</option>';}).join(''); }
+dmMotion.addEventListener('change',function(){
+  if(dmMotion.value==='Static'){
+    fill(dmSpeed,['---']); fill(dmDir,['---']);
+    dmSpeed.disabled=dmDir.disabled=true;
+  } else {
+    fill(dmSpeed,['Slow','Medium','Fast']); dmSpeed.value='Slow';
+    fill(dmDir,['Left','Right']); dmDir.value='Right';
+    dmSpeed.disabled=dmDir.disabled=false;
+  }
+  dmApplyStim();
+});
+dmSpeed.addEventListener('change',dmApplyStim);
+dmDir.addEventListener('change',dmApplyStim);
+
+/* The student's own stimulus drives the hidden cell, so the live trace is a
+   real probe. (The desktop app held all LEDs on in experiment mode.) */
+function dmApplyStim(){
+  var M2=DM.model;
+  for(var r=0;r<3;r++) for(var c=0;c<3;c++) M2.selected[r][c]=!!DM.stim[r*3+c];
+  M2.mode = (dmMotion.value==='Moving') ? 'Motion' : 'Static';
+  M2.speed = {Slow:0,Medium:1,Fast:2}[dmSpeed.value] || 0;
+  M2.direction = (dmDir.value==='Left'||dmDir.value==='Right') ? dmDir.value : 'Right';
+  M2.running = !!DM.challenge;
+  armStimulus(M2);
+}
+function dmSolutions(name){
+  var d=DM_DATA[name];
+  return Object.prototype.toString.call(d)==='[object Array]' ? d : [d];
+}
+function dmLoadHidden(name){
+  var sol=dmSolutions(name)[0], M2=DM.model;
+  var flat=sol.connectivity, cn=blankConn();
+  for(var ch=0;ch<9;ch++) cn[(ch/3)|0][ch%3]={state:flat[ch].state, delay:flat[ch].delay};
+  M2.rgc[0]={polarity:sol.polarity||'ON', threshold:sol.threshold, conn:cn};
+  M2.rgc[1]={polarity:'ON', threshold:1, conn:blankConn()};
+  clearTraces(M2);
+}
+document.getElementById('dm-start').addEventListener('click',function(){
+  DM.challenge=dmSel.value;
+  dmLoadHidden(DM.challenge);
+  dmApplyStim();
+  document.getElementById('dm-p1').dataset.locked='0';
+  document.getElementById('dm-p2').dataset.locked='1';
+  document.getElementById('dm-n1').textContent='';
+  document.getElementById('dm-n2').textContent='';
+  this.disabled=true; this.textContent='Challenge Running';
+  DM.t0=Date.now();
+  if(DM.timer) clearInterval(DM.timer);
+  DM.timer=setInterval(function(){
+    var e=Math.floor((Date.now()-DM.t0)/1000);
+    document.getElementById('dm-timer').textContent=
+      String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
+  },250);
+});
+dmSel.addEventListener('change',function(){
+  DM.challenge=null;
+  if(DM.timer){ clearInterval(DM.timer); DM.timer=null; }
+  document.getElementById('dm-timer').textContent='00:00';
+  document.getElementById('dm-p1').dataset.locked='1';
+  document.getElementById('dm-p2').dataset.locked='1';
+  var b=document.getElementById('dm-start'); b.disabled=false; b.textContent='Start Challenge';
+  DM.stim=[0,0,0,0,0,0,0,0,0];
+  [].forEach.call(document.querySelectorAll('#dm-grid button'),function(x){
+    x.setAttribute('aria-pressed','false'); });
+  DM.user=blankConn(); dmSyncDots();
+  dmMotion.value='Static'; fill(dmSpeed,['---']); fill(dmDir,['---']);
+  dmSpeed.disabled=dmDir.disabled=true;
+  document.getElementById('dm-n1').textContent='';
+  document.getElementById('dm-n2').textContent='';
+  clearTraces(DM.model); dmApplyStim();
+});
+function dmLose(note){
+  DM.points=Math.max(0, DM.points-dmDeduction());
+  document.getElementById('dm-points').textContent=DM.points;
+  note.textContent='Not yet — you lost '+dmDeduction()+' points. Try again.';
+  note.className='rb-dmnote rb-no';
+}
+document.getElementById('dm-t1').addEventListener('click',function(){
+  var note=document.getElementById('dm-n1');
+  if(!DM.challenge) return;
+  if(DM.stim.every(function(v){return !v;})){
+    note.textContent='Select at least one stimulus position.'; note.className='rb-dmnote'; return;
+  }
+  var uMot=dmMotion.value.toLowerCase(), uSpd=dmSpeed.value.toLowerCase(), uDir=dmDir.value.toLowerCase();
+  var hit=dmSolutions(DM.challenge).some(function(k){
+    var kd=k.direction===''?'---':k.direction.toLowerCase();
+    var ks=k.speed===''?'---':k.speed.toLowerCase();
+    return k.stim_array.every(function(v,i){return !!v===!!DM.stim[i];}) &&
+           k.motion_type.toLowerCase()===uMot && kd===uDir && ks===uSpd;
+  });
+  if(hit){
+    note.textContent='Correct stimulus. Proceed to Phase 2.'; note.className='rb-dmnote rb-ok';
+    document.getElementById('dm-p1').dataset.locked='1';
+    document.getElementById('dm-p2').dataset.locked='0';
+  } else dmLose(note);
+});
+document.getElementById('dm-t2').addEventListener('click',function(){
+  var note=document.getElementById('dm-n2');
+  if(!DM.challenge) return;
+  var flat=[];
+  for(var ch=0;ch<9;ch++) flat.push(DM.user[(ch/3)|0][ch%3]);
+  if(flat.every(function(c){return c.state==='off';})){
+    note.textContent='Configure at least one photoreceptor.'; note.className='rb-dmnote'; return;
+  }
+  var uThr=+document.getElementById('dm-thr').value;
+  var uPol=document.querySelector('input[name="dm-pol"]:checked').value;
+  var uMot=dmMotion.value.toLowerCase(), uSpd=dmSpeed.value.toLowerCase(),
+      uDir=dmDir.value.toLowerCase();
+  var hit=dmSolutions(DM.challenge).some(function(k){
+    var kd=k.direction===''?'---':k.direction.toLowerCase();
+    var ks=k.speed===''?'---':k.speed.toLowerCase();
+    return k.connectivity.every(function(c,i){
+             return c.state===flat[i].state && c.delay===flat[i].delay; }) &&
+           k.threshold===uThr && (k.polarity||'ON')===uPol &&
+           k.stim_array.every(function(v,i){return !!v===!!DM.stim[i];}) &&
+           k.motion_type.toLowerCase()===uMot && kd===uDir && ks===uSpd;
+  });
+  if(hit){
+    note.textContent='Correct connectivity. Challenge completed.'; note.className='rb-dmnote rb-ok';
+    document.getElementById('dm-p2').dataset.locked='1';
+    if(DM.timer){ clearInterval(DM.timer); DM.timer=null; }
+    var b=document.getElementById('dm-start'); b.disabled=false; b.textContent='Start Challenge';
+    DM.challenge=null;
+  } else dmLose(note);
+});
+
+/* live RGC trace */
+var dmCanvas=document.getElementById('dm-canvas'), dmCtx=dmCanvas.getContext('2d');
+var DMH=76, DMW=400;
+function dmResize(){
+  var w=dmCanvas.parentNode.clientWidth; if(w<200) w=200;
+  DMW=w; var d=Math.min(window.devicePixelRatio||1,2);
+  dmCanvas.width=Math.round(DMW*d); dmCanvas.height=Math.round(DMH*d);
+  dmCanvas.style.height=DMH+'px';
+  dmCtx.setTransform(d,0,0,d,0,0);
+}
+window.addEventListener('resize',dmResize);
+function dmDraw(){
+  var M2=DM.model, L=48, w=DMW-L-10, y=DMH/2+4;
+  dmCtx.clearRect(0,0,DMW,DMH);
+  dmCtx.font=FONT; dmCtx.textBaseline='middle'; dmCtx.textAlign='right';
+  dmCtx.fillStyle='#555'; dmCtx.fillText('RGC 1', L-5, y);
+  dmCtx.strokeStyle=COL.gray; dmCtx.lineWidth=2;
+  dmCtx.beginPath(); dmCtx.moveTo(L,y); dmCtx.lineTo(L+w,y); dmCtx.stroke();
+  if(DM.challenge){
+    dmCtx.strokeStyle=COL.green; dmCtx.lineWidth=6;
+    dmCtx.beginPath();
+    var run=false;
+    for(var i=0;i<NBUF;i++){
+      var sp=M2.spike[0][(M2.head+1+i)%NBUF], x=L+(i/(NBUF-1))*w;
+      if(sp&&!run){ dmCtx.moveTo(x,y); run=true; } else if(sp){ dmCtx.lineTo(x,y); } else run=false;
+    }
+    dmCtx.stroke();
+  }
+  dmCtx.strokeStyle='#999'; dmCtx.lineWidth=1;
+  dmCtx.beginPath(); dmCtx.moveTo(L,DMH-12.5); dmCtx.lineTo(L+w,DMH-12.5); dmCtx.stroke();
+  dmCtx.textAlign='center'; dmCtx.fillStyle='#555';
+  dmCtx.fillText('10 s', L+w/2, DMH-5);
+}
+
+cbBuildMenu(); cbLoad(Object.keys(CB_DATA)[0]);
+dmBuildMenu(); dmSyncDots(); dmResize();
+
+/* ---------- boot + host API ---------- */
+function readHash(){
+  var q={};
+  (location.hash||'').replace(/^#/,'').split('&').forEach(function(kv){
+    var p=kv.split('='); if(p[0]) q[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||'');
+  });
+  return q;
+}
+resize();
+var q=readHash();
+if(q.preset && loadPreset(q.preset)){
+  /* deep-linked figures keep running unless told otherwise */
+  if(q.running==='0'){ M.running=false; armStimulus(M); syncStim(); }
+} else {
+  /* Clean start, matching DataManager.__init__: nothing wired, nothing
+     selected, stimulus off. The reader builds the first circuit themselves. */
+  M.running=false; M.mode='Static'; M.selected=grid(false);
+  armStimulus(M); clearTraces(M); syncAll();
+}
+requestAnimationFrame(frame);
+
+window.RetINaBox={
+  presets:PRESETS.map(function(p){return {id:p.id,name:p.name};}),
+  load:loadPreset,
+  start:function(){ M.running=true;  armStimulus(M); syncStim(); },
+  stop: function(){ M.running=false; armStimulus(M); syncStim(); },
+  reset:function(){ clearTraces(M); },
+  /* Drop in the desktop app's real challenge files:
+     RetINaBox.loadChallenges({codeBreaker: <json>, discoveryMode: <json>}) */
+  loadChallenges:function(o){
+    if(o && o.codeBreaker){ CB_DATA=o.codeBreaker; cbBuildMenu(); cbLoad(Object.keys(CB_DATA)[0]); }
+    if(o && o.discoveryMode){ DM_DATA=o.discoveryMode; dmBuildMenu(); dmSel.dispatchEvent(new Event('change')); }
+  },
+  /* Point the viewers elsewhere, e.g. copies hosted on theopenbrain.org:
+     RetINaBox.setDocs({lp:{url:'/docs/lessons.pdf'}, sl:{url:'/docs/slides.pdf'}}) */
+  setDocs:function(o){
+    ['lp','sl'].forEach(function(k){
+      if(o && o[k]){
+        if(o[k].url) DOCS[k].url = o[k].url;
+        if(o[k].gh_url) DOCS[k].gh_url = o[k].gh_url;
+        var b=document.getElementById(DOCS[k].frame);
+        /* rebuild the loading overlay too, or an overridden doc loses it */
+        b.innerHTML='<p class="note">Loading\u2026</p>';
+        delete b.dataset.mounted;
+        if(currentMode===k) mountDoc(k);
+      }
+    });
+  },
+  showTab:function(m){ var t=document.querySelector('.rb-tab[data-mode="'+m+'"]'); if(t) t.click(); },
+  getState:function(){
+    return JSON.parse(JSON.stringify({selected:M.selected,mode:M.mode,speed:M.speed,
+      direction:M.direction,running:M.running,rgc:M.rgc}));
+  },
+  setState:function(s){
+    if(!s) return;
+    ['selected','mode','speed','direction','running'].forEach(function(kk){
+      if(kk in s) M[kk]=JSON.parse(JSON.stringify(s[kk]));
+    });
+    if(s.rgc) M.rgc=JSON.parse(JSON.stringify(s.rgc));
+    armStimulus(M); clearTraces(M); syncAll();
+  }
+};
+})();
+</script>
+</body>
+</html>
