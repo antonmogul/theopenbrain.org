@@ -228,6 +228,14 @@ const routes = [
     name: "widgets",
     component: () => import("../views/WidgetLibraryView.vue"),
   },
+  {
+    // RetINaBox — interactive retinal circuit simulator (Retina chapter).
+    // OPENBRAIN-14: fifth Stuart widget port (merges both variants).
+    // Not linked in nav; open /retinabox directly.
+    path: "/retinabox",
+    name: "retinabox",
+    component: () => import("../views/RetINaBoxView.vue"),
+  },
 ];
 
 const router = createRouter({
