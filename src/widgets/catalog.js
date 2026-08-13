@@ -9,11 +9,15 @@
  * The WidgetLibraryView reads this catalog to render the browsable gallery.
  * Individual chapter views will also use it to embed the right widget.
  *
- * Hosting: widgets are loaded via iframe srcdoc (the HTML is imported as a
- * raw string at build time). This preserves the author's original maths and
- * interaction verbatim — no accidental breakage from a Vue rewrite. Widgets
- * that have been rewritten as Vue SFCs (like SDT) get a `vuePath` field
- * instead of (or in addition to) `srcFile`.
+ * Hosting: a widget with a `vuePath` has been rewritten as a Vue SFC and is
+ * the canonical version — it consumes brand.css design tokens, so it inherits
+ * the reader's theme and accent. The library shows that Vue route by default.
+ *
+ * `srcHtml` keeps the author's original HTML (imported as a raw string at
+ * build time) so the library can render it side by side as the "Original"
+ * view. That comparison is the point: authors verify their maths and
+ * interaction survived the port. Widgets with no `vuePath` yet fall back to
+ * rendering the original alone.
  *
  * To add a widget: drop the HTML into src/widgets/source/ and add an entry
  * here. The library page will pick it up automatically.
@@ -42,8 +46,9 @@ import visualLesionsHtml from "./source/visual-pathway-lesions-widget.html?raw";
  * @property {string}  desc        One-sentence description
  * @property {string}  chapter     Chapter this belongs to
  * @property {string}  author      Original author name
- * @property {string}  [srcHtml]   Raw HTML string (iframe srcdoc)
- * @property {string}  [vuePath]   Route path if a Vue SFC rewrite exists
+ * @property {string}  [srcHtml]   Author's original HTML (iframe srcdoc)
+ * @property {string}  [vuePath]   Route of the Vue SFC port; when present this
+ *                                 is the canonical version the library shows
  * @property {string}  [height]    Suggested iframe height (CSS value)
  * @property {string[]} [deps]     External dependencies (for documentation)
  */
@@ -58,6 +63,7 @@ export const WIDGETS = [
     chapter: "The Retina",
     author: "Stuart Trenholm",
     srcHtml: retinaboxHtml,
+    vuePath: "/retinabox",
     height: "820px",
     deps: [],
   },
@@ -68,6 +74,10 @@ export const WIDGETS = [
     chapter: "The Retina",
     author: "Stuart Trenholm",
     srcHtml: retinaboxAppHtml,
+    // Both RetINaBox variants were merged into the one Vue port, so this entry
+    // shares /retinabox. Kept as its own row because the original compact HTML
+    // is a distinct artefact the author may still want to compare against.
+    vuePath: "/retinabox",
     height: "780px",
     deps: [],
   },
@@ -78,6 +88,7 @@ export const WIDGETS = [
     chapter: "The Retina",
     author: "Stuart Trenholm",
     srcHtml: dirSelectHtml,
+    vuePath: "/direction-selectivity",
     height: "900px",
     deps: ["Google Fonts (IBM Plex)"],
   },
@@ -88,6 +99,7 @@ export const WIDGETS = [
     chapter: "The Retina",
     author: "Stuart Trenholm",
     srcHtml: colorVisionHtml,
+    vuePath: "/color-vision",
     height: "1200px",
     deps: [],
   },
@@ -100,6 +112,7 @@ export const WIDGETS = [
     chapter: "Visual Cortex (V1)",
     author: "Stuart Trenholm",
     srcHtml: v1CameraHtml,
+    vuePath: "/v1-camera",
     height: "700px",
     deps: [],
   },
@@ -110,6 +123,7 @@ export const WIDGETS = [
     chapter: "Visual Cortex (V1)",
     author: "Stuart Trenholm",
     srcHtml: visualLesionsHtml,
+    vuePath: "/visual-pathway",
     height: "1000px",
     deps: [],
   },
@@ -133,6 +147,7 @@ export const WIDGETS = [
     chapter: "Attention & Working Memory",
     author: "Arjun Krishnaswamy",
     srcHtml: posnerHtml,
+    vuePath: "/posner-cueing",
     height: "680px",
     deps: ["Chart.js (CDN)"],
   },
@@ -143,6 +158,7 @@ export const WIDGETS = [
     chapter: "Attention & Working Memory",
     author: "Arjun Krishnaswamy",
     srcHtml: biasedCompHtml,
+    vuePath: "/biased-competition",
     height: "600px",
     deps: [],
   },
@@ -153,6 +169,7 @@ export const WIDGETS = [
     chapter: "Attention & Working Memory",
     author: "Arjun Krishnaswamy",
     srcHtml: contrastGainHtml,
+    vuePath: "/contrast-response",
     height: "600px",
     deps: [],
   },
@@ -163,6 +180,7 @@ export const WIDGETS = [
     chapter: "Attention & Working Memory",
     author: "Arjun Krishnaswamy",
     srcHtml: tmtHtml,
+    vuePath: "/feature-attention",
     height: "700px",
     deps: [],
   },

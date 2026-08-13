@@ -17,12 +17,19 @@
       and used regardless).
       Note the GLB now uses KHR_mesh_quantization (no draco/meshopt decoder),
       so no CDN decoder hosts are needed in this CSP.
+      cdn.jsdelivr.net (script-src + connect-src) is required by Pyodide, which
+      src/composables/usePyodide.js loads at runtime for the
+      /direction-selectivity widget (OPENBRAIN-14). Pyodide fetches its own
+      wasm/data payload from the same origin after the loader script runs,
+      hence both directives. 'wasm-unsafe-eval' above is also load-bearing for
+      Pyodide, not just model-viewer. To drop the CDN, self-host the Pyodide
+      distribution under public/ and point CDN_BASE at it.
       frame-ancestors/report-uri are not supported in <meta> — set those at the
       hosting layer.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com; media-src 'self' blob: https://*.supabase.co; connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co; font-src 'self' data:; worker-src 'self' blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com; media-src 'self' blob: https://*.supabase.co; connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net; font-src 'self' data:; worker-src 'self' blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'"
     />
     <link
       rel="apple-touch-icon"

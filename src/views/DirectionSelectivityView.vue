@@ -152,11 +152,17 @@ onMounted(async () => {
         different directions is shown for 4 direction selective ganglion cells
         with different preferred firing directions.
       </p>
-      <div id="rasters">
-        <div v-if="status === 'loading'" class="ds-boot">
-          <span class="ds-dotpulse"></span>Starting Python&hellip;
-        </div>
+      <!--
+        The boot spinner is a SIBLING of #rasters, never a child. Python writes
+        its figures by clearing #rasters with innerHTML, which would destroy any
+        Vue-owned node inside it behind Vue's back — Vue then patches against a
+        detached parent and throws "insertBefore of null". Keeping the two
+        owners on separate elements is what makes that unrepresentable.
+      -->
+      <div v-if="status === 'loading'" class="ds-boot">
+        <span class="ds-dotpulse"></span>Starting Python&hellip;
       </div>
+      <div id="rasters"></div>
       <p class="ds-caption">
         Rows are cells, columns are directions of motion; the tinted panel marks
         each cell&rsquo;s strongest direction. The circular plots on the right
@@ -185,11 +191,11 @@ onMounted(async () => {
       </p>
       <div class="ds-tuning-row">
         <div class="ds-tuning-plot">
-          <div id="tuning">
-            <div v-if="status === 'loading'" class="ds-boot">
-              <span class="ds-dotpulse"></span>Starting Python&hellip;
-            </div>
+          <!-- Sibling, not child — see the #rasters note above. -->
+          <div v-if="status === 'loading'" class="ds-boot">
+            <span class="ds-dotpulse"></span>Starting Python&hellip;
           </div>
+          <div id="tuning"></div>
         </div>
         <aside class="ds-readout">
           <div class="ds-ro-dial">

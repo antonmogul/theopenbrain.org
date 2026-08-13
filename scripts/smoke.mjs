@@ -112,11 +112,103 @@ const ROUTES = [
     minText: 50,
     widths: [1280, 1440, 1920],
   },
+  /*
+   * Interactive widgets (OPENBRAIN-13/14). Every widget route in the catalog
+   * gets a check: these are the pages shown to the authors, and ~15k lines of
+   * them shipped with only /sdt guarded. The CSP bug that blocked Pyodide on
+   * /direction-selectivity survived precisely because nothing loaded that
+   * route in a browser — this list closes that gap.
+   *
+   * Desktop widths only, matching the other internal routes: the widgets are
+   * built desktop-first and several (V1 camera, RetINaBox) have fixed-pixel
+   * control panels that overflow at 390px by design.
+   *
+   * minText is deliberately low. Most of these are canvas/SVG-driven, so text
+   * length measures "the chrome rendered", not "the science is right". The
+   * error and overflow assertions are what actually gate these routes.
+   */
   {
     path: "/sdt",
     name: "sdt-widget",
     minText: 50,
     widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/biased-competition",
+    name: "widget-biased-competition",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/contrast-response",
+    name: "widget-contrast-response",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/posner-cueing",
+    name: "widget-posner-cueing",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/feature-attention",
+    name: "widget-feature-attention",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/color-vision",
+    name: "widget-color-vision",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/visual-pathway",
+    name: "widget-visual-pathway",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    /*
+     * Pyodide loads from the jsDelivr CDN, so this route needs network and is
+     * slower than the rest. It is also the canary for the CSP allowance in
+     * index.html: if script-src stops permitting cdn.jsdelivr.net, the console
+     * logs a CSP violation and this check fails — which is the point.
+     */
+    path: "/direction-selectivity",
+    name: "widget-direction-selectivity",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+    slow: true,
+  },
+  {
+    /*
+     * Requests camera access. Headless Chromium denies it silently rather than
+     * prompting, so this asserts the widget renders its chrome and fails
+     * gracefully without a camera — not that the video pipeline works.
+     */
+    path: "/v1-camera",
+    name: "widget-v1-camera",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/retinabox",
+    name: "widget-retinabox",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    /*
+     * The library itself. Renders the active widget's Vue port in a nested
+     * iframe, so this also catches a catalog entry pointing at a dead route.
+     */
+    path: "/widgets",
+    name: "widget-library",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+    slow: true,
   },
 ];
 
@@ -176,15 +268,21 @@ async function main() {
       );
 
       try {
+        /*
+         * `slow` routes pull a large runtime over the network before they
+         * finish rendering (Pyodide on /direction-selectivity; a nested widget
+         * iframe on /widgets). They get a longer navigation budget and a
+         * longer settle so a cold CDN reads as slow, not as broken.
+         */
         const res = await page.goto(BASE + route.path, {
           waitUntil: "networkidle",
-          timeout: 30_000,
+          timeout: route.slow ? 90_000 : 30_000,
         });
         if (res && res.status() >= 400) {
           failures.push(`${label}: HTTP ${res.status()}`);
         }
         // Let route transitions and entrance animations settle.
-        await page.waitForTimeout(2500);
+        await page.waitForTimeout(route.slow ? 20_000 : 2500);
 
         const result = await page.evaluate(() => {
           const before = window.scrollX;
