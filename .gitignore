@@ -54,3 +54,6 @@ supabase/.temp/
 /test-chapter.md
 .filmstrip/
 .smoke/
+
+*storybook.log
+storybook-static
