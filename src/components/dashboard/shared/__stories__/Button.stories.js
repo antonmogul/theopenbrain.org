@@ -8,7 +8,7 @@
 import Button from "../Button.vue";
 
 export default {
-  title: "Shared/Button",
+  title: "Foundations/Button",
   component: Button,
   tags: ["autodocs"],
   argTypes: {
