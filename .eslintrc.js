@@ -19,6 +19,7 @@ module.exports = {
     "eslint:recommended",
     "@vue/eslint-config-prettier",
     "plugin:import/recommended",
+    "plugin:storybook/recommended",
   ],
   rules: {
     "no-unused-vars": "warn",

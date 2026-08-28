@@ -1,12 +1,16 @@
-import { fileURLToPath, URL } from "node:url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 
-const path = require("path");
-
 import { createHtmlPlugin } from "vite-plugin-html";
 import pkg from "./package.json";
+
+// This config is ESM, so __dirname doesn't exist. It was previously reached
+// via a bare require("path") — which happened to work under Vite 3's CJS
+// interop but is not something an ESM config should rely on.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
