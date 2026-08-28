@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useHomeRoute } from "@/composables/useHomeRoute";
@@ -16,6 +16,10 @@ const props = defineProps({
   sections: {
     type: Array,
     default: () => [],
+  },
+  progressPercent: {
+    type: Number,
+    default: 0,
   },
 });
 
@@ -43,8 +47,8 @@ function isPanelTabActive(key) {
 }
 
 const showDropdown = ref(false);
-
-const progressPercent = computed(() => store.progress * 100);
+const sectionButtonRef = ref(null);
+const dropdownRef = ref(null);
 
 // Find the current active section title
 const currentSectionTitle = computed(() => {
@@ -61,20 +65,37 @@ function scrollToSection(slug) {
   showDropdown.value = false;
 }
 
-function toggleDropdown() {
+async function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
+  if (showDropdown.value) {
+    await nextTick();
+    dropdownRef.value?.querySelector("button")?.focus();
+  }
 }
 
 // Close dropdown on outside click
 function onBackdropClick() {
   showDropdown.value = false;
 }
+
+function onDropdownKeydown(event) {
+  if (event.key !== "Escape") return;
+  showDropdown.value = false;
+  sectionButtonRef.value?.focus();
+}
 </script>
 
 <template>
   <div class="reader-top-bar" data-testid="reader-top-bar">
     <!-- Progress bar (kept along the top edge) -->
-    <div class="progress-track">
+    <div
+      class="progress-track"
+      role="progressbar"
+      aria-label="Chapter reading progress"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      :aria-valuenow="Math.round(progressPercent)"
+    >
       <div
         class="progress-fill"
         :style="{ width: progressPercent + '%' }"
@@ -84,7 +105,12 @@ function onBackdropClick() {
     <!-- Single app-bar row (prototype AppBar) -->
     <div class="bar-row">
       <!-- Menu -->
-      <button class="icon-btn" title="Menu" @click="store.activeMenu = true">
+      <button
+        type="button"
+        class="icon-btn"
+        aria-label="Open chapter menu"
+        @click="store.activeMenu = true"
+      >
         <svg
           width="14"
           height="14"
@@ -120,8 +146,13 @@ function onBackdropClick() {
       <span class="chapter-eyebrow">Ch {{ chapterNumber }}</span>
       <button
         v-if="currentSectionTitle"
+        ref="sectionButtonRef"
+        type="button"
         class="section-jump"
         :class="{ open: showDropdown }"
+        aria-haspopup="true"
+        :aria-expanded="showDropdown"
+        aria-controls="reader-section-menu"
         @click="toggleDropdown"
       >
         <span class="section-name">{{ currentSectionTitle }}</span>
@@ -151,6 +182,9 @@ function onBackdropClick() {
           :key="t.key"
           class="tool-btn"
           :class="{ active: isPanelTabActive(t.key) }"
+          type="button"
+          aria-controls="reader-sidebar"
+          :aria-expanded="isPanelTabActive(t.key)"
           @click="toggleSidebar(t.key)"
         >
           {{ t.label }}
@@ -160,18 +194,29 @@ function onBackdropClick() {
 
     <!-- Section dropdown -->
     <Transition name="dropdown">
-      <div v-if="showDropdown" class="section-dropdown">
+      <nav
+        v-if="showDropdown"
+        id="reader-section-menu"
+        ref="dropdownRef"
+        class="section-dropdown"
+        aria-label="Chapter sections"
+        @keydown="onDropdownKeydown"
+      >
         <button
           v-for="(section, idx) in sections"
           :key="section.slug"
           class="dropdown-item"
           :class="{ active: store.currentSubChapter === section.slug }"
+          type="button"
+          :aria-current="
+            store.currentSubChapter === section.slug ? 'location' : undefined
+          "
           @click="scrollToSection(section.slug)"
         >
           <span class="dropdown-num">{{ idx + 1 }}</span>
           <span class="dropdown-title">{{ section.title }}</span>
         </button>
-      </div>
+      </nav>
     </Transition>
 
     <!-- Backdrop for dropdown -->
@@ -221,8 +266,8 @@ function onBackdropClick() {
 }
 
 .icon-btn {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   border: 1px solid rgb(var(--color-line));
   border-radius: 6px;
   background: transparent;
@@ -285,7 +330,8 @@ function onBackdropClick() {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px 6px;
+  min-height: 44px;
+  padding: 4px 8px;
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
@@ -330,6 +376,7 @@ function onBackdropClick() {
 }
 
 .tool-btn {
+  min-height: 44px;
   padding: 5px 10px;
   background: transparent;
   border: 1px solid transparent;
@@ -376,6 +423,7 @@ function onBackdropClick() {
   align-items: baseline;
   gap: 10px;
   width: 100%;
+  min-height: 44px;
   padding: 10px 12px;
   background: none;
   border: none;
@@ -432,5 +480,59 @@ function onBackdropClick() {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+.icon-btn:focus-visible,
+.section-jump:focus-visible,
+.tool-btn:focus-visible,
+.dropdown-item:focus-visible {
+  outline: 3px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .bar-row {
+    gap: 8px;
+    padding: 4px 8px;
+  }
+
+  .wordmark-text,
+  .divider {
+    display: none;
+  }
+
+  .section-name {
+    max-width: 22vw;
+  }
+}
+
+@media (max-width: 640px) {
+  .wordmark,
+  .chapter-eyebrow {
+    display: none;
+  }
+
+  .tool-buttons {
+    gap: 2px;
+  }
+
+  .tool-btn {
+    padding-inline: 7px;
+    letter-spacing: 0.03em;
+  }
+
+  .section-jump {
+    flex: 1;
+  }
+
+  .section-name {
+    max-width: none;
+  }
+
+  .section-dropdown {
+    left: 8px;
+    right: 8px;
+    max-width: none;
+  }
 }
 </style>

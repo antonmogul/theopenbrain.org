@@ -465,12 +465,10 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <!-- End-of-chapter blocks sit edge-to-edge, cancelling the column's
-             left padding with -ml-20. Width must therefore be the parent's
-             content box PLUS that 50px, not w-text (the full column) — pairing
-             w-text with -ml-20 pushed this 50px past the right edge and gave
-             the document a horizontal scrollbar. See OPENBRAIN-4. -->
-        <div class="-ml-20 w-[calc(100%+3.125rem)]">
+        <!-- End-of-chapter blocks only cancel the wide desktop column's left
+             padding. On mobile/tablet they remain within the centered prose
+             shell so they cannot introduce horizontal overflow. -->
+        <div class="chapter-end-blocks">
           <QuizSection />
           <!-- End-of-chapter callout slot — ChapterView fills this with
                EndOfChapterCallout. Inside TextComp so absolute positioning
@@ -507,6 +505,12 @@ onBeforeUnmount(() => {
   padding-left: 0.9375rem;
   padding-right: 0.9375rem;
 }
+
+.chapter-end-blocks {
+  width: 100%;
+  margin-left: 0;
+}
+
 @media (min-width: 768px) {
   .ml-text {
     max-width: 700px;
@@ -527,6 +531,11 @@ onBeforeUnmount(() => {
     max-width: unset;
     padding-left: 3.125rem;
     padding-right: 3.75rem;
+  }
+
+  .chapter-end-blocks {
+    width: calc(100% + 3.125rem);
+    margin-left: -3.125rem;
   }
 }
 </style>

@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from "vue";
-import { useRouter } from "vue-router";
 
 const props = defineProps({
   continueReading: {
@@ -8,8 +7,6 @@ const props = defineProps({
     default: null,
   },
 });
-
-const router = useRouter();
 
 const hasContent = computed(() => {
   return props.continueReading?.module;
@@ -21,17 +18,17 @@ const scrollPosition = computed(
   () => props.continueReading?.scrollPosition || 0
 );
 
-function navigateToModule() {
-  if (!module.value.slug) return;
-
-  router.push({
+const continueRoute = computed(() => {
+  if (!module.value.slug) return null;
+  return {
     name: "chapter",
     params: {
       number: module.value.order_index || 1,
       slug: module.value.slug,
     },
-  });
-}
+    query: { resume: "1" },
+  };
+});
 
 function formatRelativeTime(date) {
   if (!date) return "";
@@ -52,7 +49,12 @@ function formatRelativeTime(date) {
 </script>
 
 <template>
-  <div class="progress-card" v-if="hasContent" @click="navigateToModule">
+  <router-link
+    v-if="hasContent"
+    class="progress-card"
+    :to="continueRoute"
+    :aria-label="`Continue reading ${module.title} at ${Math.round(scrollPosition)} percent`"
+  >
     <div class="card-content">
       <div class="card-header">
         <span class="card-label">Continue Reading</span>
@@ -66,7 +68,14 @@ function formatRelativeTime(date) {
 
       <!-- Progress indicator -->
       <div class="progress-section">
-        <div class="progress-bar">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          aria-label="Reading progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="Math.round(scrollPosition)"
+        >
           <div
             class="progress-fill"
             :style="{ width: scrollPosition + '%' }"
@@ -93,7 +102,7 @@ function formatRelativeTime(date) {
         <polyline points="9 18 15 12 9 6"></polyline>
       </svg>
     </div>
-  </div>
+  </router-link>
 
   <!-- Empty state -->
   <div class="progress-card empty" v-else>
@@ -129,11 +138,18 @@ function formatRelativeTime(date) {
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 1.25rem;
+  color: inherit;
+  text-decoration: none;
 }
 
 .progress-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 24px rgba(59, 130, 246, 0.3);
+}
+
+.progress-card:focus-visible {
+  outline: 3px solid rgb(var(--color-ink));
+  outline-offset: 3px;
 }
 
 .progress-card.empty {
@@ -163,15 +179,15 @@ function formatRelativeTime(date) {
 
 .card-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.46875rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: var(--type-label-size);
+  color: rgba(255, 255, 255, 0.92);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .last-accessed {
-  font-size: 0.46875rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--type-label-size);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .module-title {
@@ -184,8 +200,8 @@ function formatRelativeTime(date) {
 }
 
 .course-name {
-  font-size: 0.5859375rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: var(--type-caption-size);
+  color: rgba(255, 255, 255, 0.92);
   margin: 0 0 0.625rem 0;
 }
 
@@ -211,8 +227,8 @@ function formatRelativeTime(date) {
 }
 
 .progress-text {
-  font-size: 0.546875rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--type-label-size);
+  color: white;
   white-space: nowrap;
 }
 
@@ -246,14 +262,14 @@ function formatRelativeTime(date) {
 
 .empty-content h3 {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.703125rem;
+  font-size: var(--type-body-sm-size);
   font-weight: 600;
   color: #6b7280;
   margin: 0 0 0.3125rem 0;
 }
 
 .empty-content p {
-  font-size: 0.546875rem;
+  font-size: var(--type-caption-size);
   margin: 0;
 }
 </style>

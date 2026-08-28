@@ -3,9 +3,9 @@ import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import ReaderTopBar from "../ReaderTopBar.vue";
 
 const SECTIONS = [
-  { slug: "from-light-to-signal", title: "From light to signal" },
-  { slug: "retinal-circuits", title: "Retinal circuits" },
-  { slug: "direction-selectivity", title: "Direction selectivity" },
+  { slug: "introduction", title: "Introduction" },
+  { slug: "the-nervous-system", title: "The nervous system" },
+  { slug: "cells-of-the-brain", title: "Cells of the brain" },
 ];
 
 export default {
@@ -14,19 +14,19 @@ export default {
   tags: ["autodocs"],
   parameters: { layout: "fullscreen" },
   args: {
-    chapterNumber: "01",
-    chapterTitle: "The Retina",
+    chapterNumber: "03",
+    chapterTitle: "Foundations of Neuroscience",
     sections: SECTIONS,
-    progress: 0.42,
-    currentSection: "retinal-circuits",
+    progressPercent: 42,
+    currentSection: "the-nervous-system",
   },
   argTypes: {
     chapterNumber: { control: "text" },
     chapterTitle: { control: "text" },
     sections: { control: "object" },
-    progress: {
-      control: { type: "range", min: 0, max: 1, step: 0.01 },
-      description: "Story-only control for the useGeneral reader state.",
+    progressPercent: {
+      control: { type: "range", min: 0, max: 100, step: 1 },
+      description: "Whole-document reading progress shown in the top bar.",
     },
     currentSection: {
       control: "select",
@@ -40,7 +40,6 @@ export default {
       const store = useGeneral();
       store.$patch({
         activeMenu: false,
-        progress: args.progress,
         currentSubChapter: args.currentSection,
       });
       useReaderSidebar().close();
@@ -52,17 +51,24 @@ export default {
           :chapter-number="args.chapterNumber"
           :chapter-title="args.chapterTitle"
           :sections="args.sections"
+          :progress-percent="args.progressPercent"
         />
       </div>`,
   }),
 };
 
-export const InProgress = {};
+export const Desktop = {};
 
 export const OpeningFrame = {
-  args: { progress: 0, currentSection: null },
+  args: { progressPercent: 0, currentSection: null },
 };
 
 export const NearlyComplete = {
-  args: { progress: 0.94, currentSection: "direction-selectivity" },
+  args: { progressPercent: 94, currentSection: "cells-of-the-brain" },
+};
+
+export const Mobile = {
+  parameters: {
+    viewport: { defaultViewport: "mobile1" },
+  },
 };

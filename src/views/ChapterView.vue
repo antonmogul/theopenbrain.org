@@ -32,6 +32,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
+import { scrollTopForReadingPercent } from "@/helper/readingProgress";
 
 const route = useRoute();
 const store = useGeneral();
@@ -74,7 +75,11 @@ const { renderAllHighlights } = useHighlightRenderer(highlightsByParagraph);
 const {
   initForModule: initReadingProgress,
   progress: readingProgress,
+  scrollPercent: readingScrollPercent,
   timeSpent: readingTimeSpent,
+  saveError: readingSaveError,
+  retrySave: retryReadingProgressSave,
+  stopTracking: stopReadingProgress,
 } = useReadingProgress();
 
 // References for Supabase chapters (citations system)
@@ -104,6 +109,10 @@ provide("notes", {
 provide("references", {
   references,
   getReference,
+});
+provide("readingProgress", {
+  progress: readingScrollPercent,
+  timeSpent: readingTimeSpent,
 });
 
 // Extract route params
@@ -148,13 +157,17 @@ const currentModuleMeta = computed(() =>
   currentModuleId.value ? findById(currentModuleId.value) : null
 );
 
-const calloutProgressPercent = computed(
-  () => readingProgress.value?.scroll_position || 0
-);
-const calloutTimeSpent = computed(
-  () =>
-    (readingProgress.value?.time_spent_seconds || 0) +
-    (readingTimeSpent.value || 0)
+const calloutProgressPercent = computed(() => readingScrollPercent.value);
+const calloutTimeSpent = computed(() => readingTimeSpent.value || 0);
+
+watch(
+  readingScrollPercent,
+  (percent) => {
+    // Keep legacy reader consumers on the same document-level percentage as
+    // persistence, the dashboard and the Continue Reading card.
+    store.progress = percent / 100;
+  },
+  { immediate: true }
 );
 
 // Track if chapter data is loaded
@@ -162,6 +175,50 @@ const chapterDataLoaded = ref(false);
 
 // All chapters load from Supabase
 const { fetchChapter, transformedData, loading, error } = useChapter();
+
+function nextAnimationFrame() {
+  return new Promise((resolve) => requestAnimationFrame(resolve));
+}
+
+async function settleChapterContent() {
+  await nextTick();
+  if (document.fonts?.ready) {
+    await document.fonts.ready.catch(() => {});
+  }
+  await nextAnimationFrame();
+  await nextAnimationFrame();
+}
+
+async function restorePersistedReadingPosition() {
+  if (route.query.resume !== "1") return;
+
+  const percent = readingProgress.value?.scroll_position;
+  if (!Number.isFinite(Number(percent)) || Number(percent) <= 0) return;
+
+  await settleChapterContent();
+  window.scrollTo({
+    top: scrollTopForReadingPercent(
+      percent,
+      document.documentElement.scrollHeight,
+      window.innerHeight
+    ),
+    behavior: "auto",
+  });
+}
+
+async function initializeChapterExperience() {
+  if (!currentModuleId.value) return;
+
+  await initReadingProgress(currentModuleId.value);
+
+  if (isAuthenticated.value) {
+    await fetchHighlights();
+    await fetchNotes();
+    await restorePersistedReadingPosition();
+    await nextTick();
+    renderAllHighlights();
+  }
+}
 
 // Load chapter data from Supabase by slug
 async function loadChapter() {
@@ -219,32 +276,26 @@ onMounted(async () => {
   if (currentModuleId.value) {
     fetchRefs(currentModuleId.value);
   }
-  // Fetch highlights and start tracking for authenticated users on Supabase chapters
-  if (isAuthenticated.value && currentModuleId.value) {
-    await fetchHighlights();
-    await fetchNotes();
-    initReadingProgress(currentModuleId.value);
-    // Render highlights after DOM has updated with chapter content
-    await nextTick();
-    renderAllHighlights();
+  // Track live progress for every reader; authenticated readers also hydrate
+  // persistence, highlights and notes.
+  if (currentModuleId.value) {
+    await initializeChapterExperience();
   }
 });
 
 watch(
   () => [route.params.number, route.params.slug],
   async () => {
+    // Finalize the previous module while its document is still mounted. Saving
+    // after loadChapter() would measure the new chapter against the old ID.
+    await stopReadingProgress();
     await loadChapter();
     // Fetch references for Supabase chapters
     if (currentModuleId.value) {
       fetchRefs(currentModuleId.value);
     }
-    // Re-fetch highlights when chapter changes
-    if (isAuthenticated.value && currentModuleId.value) {
-      await fetchHighlights();
-      await fetchNotes();
-      initReadingProgress(currentModuleId.value);
-      await nextTick();
-      renderAllHighlights();
+    if (currentModuleId.value) {
+      await initializeChapterExperience();
     }
   }
 );
@@ -374,7 +425,13 @@ async function handleDeleteHighlight(highlightId) {
         :chapter-title="chapterTitle"
         :chapter-number="chapterNumber"
         :sections="breadcrumbSections"
+        :progress-percent="readingScrollPercent"
       />
+
+      <div v-if="readingSaveError" class="save-error" role="alert">
+        <span>{{ readingSaveError }}</span>
+        <button type="button" @click="retryReadingProgressSave">Retry</button>
+      </div>
 
       <div
         :class="
@@ -503,6 +560,51 @@ export default {
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.save-error {
+  position: fixed;
+  z-index: 210;
+  top: calc(var(--reader-topbar-h) + 0.75rem);
+  right: 1rem;
+  max-width: min(26rem, calc(100vw - 2rem));
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgb(var(--color-warn));
+  border-radius: 6px;
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  box-shadow: 0 8px 24px rgb(var(--color-ink) / 0.14);
+  font-family: var(--font-ui);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-lh);
+}
+
+.save-error button {
+  min-height: 44px;
+  padding: 0 0.875rem;
+  border: 1px solid rgb(var(--color-ink));
+  border-radius: 4px;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .student-tools-toggle {
+    min-height: 44px;
+    right: 0.75rem;
+    bottom: 0.75rem;
+  }
+
+  .save-error {
+    left: 0.75rem;
+    right: 0.75rem;
+  }
 }
 
 .student-tools-toggle:hover {

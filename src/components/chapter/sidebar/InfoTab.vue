@@ -2,7 +2,6 @@
 import { computed, inject, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useGeneral, useText } from "@/stores";
-import { useReadingProgress } from "@/composables/useReadingProgress";
 import { toSlug } from "@/helper/general.js";
 
 const route = useRoute();
@@ -16,16 +15,18 @@ const chapterTitle = computed(() => textStore.text?.intro?.[0]?.title || "");
 const highlightsCtx = inject("highlights", null);
 const notesCtx = inject("notes", null);
 const refsCtx = inject("references", null);
+const readingProgressCtx = inject("readingProgress", null);
 
 // Collapsible section state
 const tocOpen = ref(true);
 const refsOpen = ref(true);
 
-// Reading progress from composable (already initialized by ChapterView)
-const { timeSpent } = useReadingProgress();
-
-// Progress percentage from GSAP ScrollTrigger (0-1 float in store)
-const progressPercent = computed(() => Math.round(store.progress * 100));
+// ChapterView owns the single progress tracker. Fall back to the legacy store
+// only when this tab is rendered in isolation (for example, in Storybook).
+const progressPercent = computed(() =>
+  Math.round(readingProgressCtx?.progress?.value ?? store.progress * 100)
+);
+const timeSpent = computed(() => readingProgressCtx?.timeSpent?.value || 0);
 
 // Format time spent as "X min" or "X hr Y min"
 const formattedTime = computed(() => {
@@ -121,7 +122,14 @@ function scrollToCitation(number) {
     <!-- Reading progress -->
     <div class="reading-stats">
       <div class="stat">
-        <div class="stat-bar-track">
+        <div
+          class="stat-bar-track"
+          role="progressbar"
+          aria-label="Chapter reading progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="progressPercent"
+        >
           <div
             class="stat-bar-fill"
             :style="{ width: progressPercent + '%' }"
