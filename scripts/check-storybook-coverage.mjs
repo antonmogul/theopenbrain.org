@@ -4,6 +4,16 @@ import process from "node:process";
 
 const root = process.cwd();
 const sourceRoot = path.join(root, "src");
+const exclusions = new Map([
+  [
+    "src/components/UI/SegmentedControl.vue",
+    "Re-export-only compatibility shim; the canonical dashboard/shared/SegmentedControl.vue implementation is directly covered.",
+  ],
+  [
+    "src/components/UI/Switch.vue",
+    "Re-export-only compatibility shim; the canonical dashboard/shared/Switch.vue implementation is directly covered.",
+  ],
+]);
 
 async function walk(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -55,13 +65,26 @@ for (const story of stories) {
   }
 }
 
-const missing = components.filter((component) => !covered.has(component));
 const relative = (file) => path.relative(root, file);
+const excluded = components.filter(
+  (component) => !covered.has(component) && exclusions.has(relative(component))
+);
+const missing = components.filter(
+  (component) => !covered.has(component) && !exclusions.has(relative(component))
+);
 
 console.log(
   `Storybook Vue coverage: ${components.length - missing.length}/${components.length}`
 );
+console.log(`Direct/grouped imports: ${covered.size}`);
+console.log(`Documented compatibility shims: ${excluded.length}`);
 console.log(`Story files: ${stories.length}`);
+
+for (const component of excluded) {
+  console.log(
+    `- ${relative(component)}: ${exclusions.get(relative(component))}`
+  );
+}
 
 if (missing.length) {
   console.error(
@@ -70,5 +93,5 @@ if (missing.length) {
   for (const file of missing) console.error(`- ${relative(file)}`);
   process.exitCode = 1;
 } else {
-  console.log("Every Vue component/view is represented in Storybook.");
+  console.log("Every Vue component/view is represented or explicitly mapped.");
 }

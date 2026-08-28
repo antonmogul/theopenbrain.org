@@ -6,11 +6,19 @@ import Specimen from "../Specimen.vue";
 import TypeSection from "../TypeSection.vue";
 
 export default { title: "Foundations/Styleguide Collections" };
-export const Colours = { component: ColoursSection };
-export const Type = { component: TypeSection };
-export const ReaderComponents = { component: BookCollection };
-export const SharedComponents = { component: SharedCollection };
-export const ArchivedControls = { component: ArchivedCollection };
+
+const renderComponent = (StoryComponent) => ({
+  render: () => ({
+    components: { StoryComponent },
+    template: "<StoryComponent />",
+  }),
+});
+
+export const Colours = renderComponent(ColoursSection);
+export const Type = renderComponent(TypeSection);
+export const ReaderComponents = renderComponent(BookCollection);
+export const SharedComponents = renderComponent(SharedCollection);
+export const ArchivedControls = renderComponent(ArchivedCollection);
 export const SpecimenFrame = {
   render: () => ({
     components: { Specimen },

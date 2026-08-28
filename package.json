@@ -37,6 +37,7 @@
     "build-storybook": "storybook build",
     "storybook:coverage:admin": "node scripts/check-storybook-admin-coverage.mjs",
     "storybook:coverage:student-views": "node scripts/check-storybook-student-views.mjs",
+    "storybook:smoke:all": "node scripts/storybook-all-smoke.mjs",
     "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs"
   },
   "dependencies": {

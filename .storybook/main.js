@@ -45,6 +45,14 @@ const config = {
         find: "@/composables/useAuth",
         replacement: path.resolve(__dirname, "./mocks/auth.js"),
       },
+      {
+        find: /^\.\/useAuth$/,
+        replacement: path.resolve(__dirname, "./mocks/auth.js"),
+      },
+      {
+        find: "@/composables/usePyodide",
+        replacement: path.resolve(__dirname, "./mocks/pyodide.js"),
+      },
       { find: "@", replacement: path.resolve(__dirname, "../src") },
       ...currentAliases.filter(({ find }) => find !== "@"),
     ];

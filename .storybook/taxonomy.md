@@ -52,13 +52,21 @@ existing `__tests__/` convention:
 
 ## Coverage
 
-The app currently has 137 Vue components. Storybook has 11 story files: eight
-component stories plus the colour, typography, and widget-catalog references.
-The separate `/styleguide` route catalogues 43 components.
+The catalog now reconciles all 200 Vue files in `src`: 198 are directly or
+group-imported by stories, and two legacy re-export-only compatibility shims map
+to their directly covered canonical implementations. There are 37 story files
+across Foundations, Student, Chapter, Widgets, Admin, full-page views, the app
+shell, and the complete icon gallery.
 
-The migration target is Foundations and Student first (highest reuse, most
-churn), then Chapter and Admin. Widgets last — they are full-page views and need
-a different story shape than a component does.
+`npm run storybook:coverage` scans the source tree and fails when a Vue file has
+neither a story import nor a documented compatibility mapping. This is a CI
+gate, so the catalog cannot silently fall behind as components are added.
+
+Grouped catalog stories are deliberate for tightly related primitives, icons,
+chapter text blocks, illustrations, and route-level views: comparison in one
+canvas is more useful than one near-empty navigation entry per file. High-risk
+components also carry loading, empty, error, long-content, mobile, and
+interactive variants.
 
 Widget catalog links use `VITE_STORYBOOK_APP_BASE_URL` so a hosted Storybook can
 target its matching app deployment. Local builds default to
