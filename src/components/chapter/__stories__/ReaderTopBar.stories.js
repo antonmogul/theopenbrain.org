@@ -18,6 +18,7 @@ export default {
     chapterTitle: "Foundations of Neuroscience",
     sections: SECTIONS,
     progressPercent: 42,
+    isAuthenticated: true,
     currentSection: "the-nervous-system",
   },
   argTypes: {
@@ -28,6 +29,7 @@ export default {
       control: { type: "range", min: 0, max: 100, step: 1 },
       description: "Whole-document reading progress shown in the top bar.",
     },
+    isAuthenticated: { control: "boolean" },
     currentSection: {
       control: "select",
       options: [null, ...SECTIONS.map(({ slug }) => slug)],
@@ -52,6 +54,7 @@ export default {
           :chapter-title="args.chapterTitle"
           :sections="args.sections"
           :progress-percent="args.progressPercent"
+          :is-authenticated="args.isAuthenticated"
         />
       </div>`,
   }),

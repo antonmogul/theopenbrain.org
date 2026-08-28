@@ -14,7 +14,7 @@ const continueReading = {
     slug: "foundations-of-neuroscience",
     order_index: 2,
   },
-  course: { title: "The Open Brain" },
+  course: { id: "course-1", title: "The Open Brain" },
   scrollPosition: 42.4,
   lastAccessedAt: new Date(),
 };
@@ -30,7 +30,7 @@ describe("ProgressCard", () => {
     expect(link.props("to")).toEqual({
       name: "chapter",
       params: { number: 2, slug: "foundations-of-neuroscience" },
-      query: { resume: "1" },
+      query: { resume: "1", courseId: "course-1" },
     });
     expect(wrapper.get("a").attributes("aria-label")).toContain(
       "at 42 percent"

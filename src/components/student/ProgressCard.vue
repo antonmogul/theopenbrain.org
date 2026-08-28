@@ -20,13 +20,15 @@ const scrollPosition = computed(
 
 const continueRoute = computed(() => {
   if (!module.value.slug) return null;
+  const query = { resume: "1" };
+  if (course.value.id) query.courseId = course.value.id;
   return {
     name: "chapter",
     params: {
-      number: module.value.order_index || 1,
+      number: module.value.courseModuleOrder || module.value.order_index || 1,
       slug: module.value.slug,
     },
-    query: { resume: "1" },
+    query,
   };
 });
 

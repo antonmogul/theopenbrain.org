@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
+import { ref, onBeforeUnmount, nextTick, watch } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useDraggablePanel } from "@/composables/useDraggablePanel";
 import { useAuth } from "@/composables/useAuth";
@@ -28,6 +28,7 @@ const props = defineProps({
 const { isOpen, activeTab, close, setTab } = useReaderSidebar();
 const { session } = useAuth();
 let panelTrigger = null;
+let demoRequestGeneration = 0;
 
 // Floating-panel drag: the handle scopes dragging to the grip only, so tabs
 // and content stay clickable. Position persists + clamps (brief §6.7).
@@ -54,6 +55,7 @@ watch(isOpen, async (open) => {
     const activeIndex = tabs.findIndex((tab) => tab.key === activeTab.value);
     tabRefs.value[Math.max(0, activeIndex)]?.focus();
   } else {
+    activeDemo.value = null;
     await nextTick();
     if (panelTrigger?.isConnected) panelTrigger.focus();
     panelTrigger = null;
@@ -89,8 +91,9 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-async function fetchDemoItems() {
-  if (!props.moduleId || !supabaseUrl) return;
+async function fetchDemoItems(moduleId = props.moduleId) {
+  if (!moduleId || !supabaseUrl) return;
+  const generation = ++demoRequestGeneration;
   demosLoading.value = true;
 
   const accessToken = session.value?.access_token || supabaseKey;
@@ -103,33 +106,39 @@ async function fetchDemoItems() {
   try {
     const [quizRes, labRes] = await Promise.all([
       fetch(
-        `${supabaseUrl}/rest/v1/quizzes?module_id=eq.${props.moduleId}&select=id,title&limit=3`,
+        `${supabaseUrl}/rest/v1/quizzes?module_id=eq.${moduleId}&select=id,title&limit=3`,
         { headers }
       ),
       fetch(
-        `${supabaseUrl}/rest/v1/code_labs?module_id=eq.${props.moduleId}&select=id,title&order=order_index`,
+        `${supabaseUrl}/rest/v1/code_labs?module_id=eq.${moduleId}&select=id,title&order=order_index`,
         { headers }
       ),
     ]);
 
-    if (quizRes.ok) {
-      demoItems.value.quizzes = await quizRes.json();
+    const quizzes = quizRes.ok ? await quizRes.json() : [];
+    const labs = labRes.ok ? await labRes.json() : [];
+    if (generation !== demoRequestGeneration || moduleId !== props.moduleId) {
+      return;
     }
-    if (labRes.ok) {
-      demoItems.value.labs = await labRes.json();
-    }
+    demoItems.value = { quizzes, labs };
   } catch (e) {
     console.error("ReaderSidebar: Error fetching demo items:", e);
   } finally {
-    demosLoading.value = false;
+    if (generation === demoRequestGeneration) demosLoading.value = false;
   }
 }
 
-onMounted(() => {
-  if (props.isAuthenticated && props.moduleId) {
-    fetchDemoItems();
-  }
-});
+watch(
+  () => [props.moduleId, props.isAuthenticated],
+  ([moduleId, authenticated]) => {
+    demoRequestGeneration += 1;
+    activeDemo.value = null;
+    demoItems.value = { quizzes: [], labs: [] };
+    demosLoading.value = false;
+    if (authenticated && moduleId) fetchDemoItems(moduleId);
+  },
+  { immediate: true }
+);
 
 function openDemo(type, id, title) {
   activeDemo.value = { type, id, title };

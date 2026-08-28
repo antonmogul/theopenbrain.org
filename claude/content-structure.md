@@ -21,14 +21,14 @@ content_versions (versioning container)
           │ 1:many
           ▼
 ┌─────────────────────┐
-│      modules        │  (e.g., "Visual Perception and UX")
+│      modules        │  (e.g., "Foundations of Neuroscience")
 │  - slug             │
 │  - order_index      │
 └─────────┬───────────┘
           │ 1:many
           ▼
 ┌─────────────────────┐
-│      sections       │  (e.g., "Gestalt Principles")
+│      sections       │  (e.g., "Where is my mind?")
 │  - order_index      │
 │  - module_id (FK)   │
 └─────────┬───────────┘
@@ -60,28 +60,25 @@ Each paragraph stores content as JSONB with this structure:
 }
 ```
 
-## Chapter 2: Visual Perception and UX
+## Current authored chapter: Foundations of Neuroscience
 
 ```
-📚 Visual Perception and UX (module)
+📚 Foundations of Neuroscience (module)
     │
-    ├── [0] Introduction (6 paragraphs)
-    ├── [1] From Retina to Recognition (5 paragraphs)
-    ├── [2] Attention Economy (12 paragraphs)
-    ├── [3] Foveal vs Peripheral (6 paragraphs)
-    ├── [4] Saccades & Scanning (5 paragraphs)
-    ├── [5] Gestalt Principles (6 paragraphs)
-    ├── [6] Color Perception (6 paragraphs)
-    ├── [7] Cognitive Load (5 paragraphs)
-    ├── [8] Perceptual Biases (6 paragraphs)
-    ├── [9] Motion & Animation (6 paragraphs)
-    ├── [10] Case Studies (5 paragraphs)
-    ├── [11] Looking Forward (3 paragraphs)
-    ├── [12] Glossary (3 paragraphs)
-    └── [13] Resources (3 paragraphs)
-
-    TOTAL: 77 paragraphs across 14 sections
+    ├── [0] Introduction
+    ├── [1] Where is my mind?
+    ├── [2] Do different parts of the brain do different things?
+    ├── [3] What's the basic functional unit of the brain?
+    ├── [4] How do neurons communicate?
+    ├── [5] Closing words
+    ├── Supporting historical boxes
+    └── References
 ```
+
+The temporary `visual-perception-ux` module is retired. Its source under
+`claude/Content/Chapter-2/` is historical only and must not be imported or
+seeded. The removal migration is
+`supabase/migrations/20260828000000_remove_temporary_visual_perception_ux.sql`.
 
 ## Data Flow: Supabase → App
 
@@ -89,7 +86,7 @@ Each paragraph stores content as JSONB with this structure:
 1. ChapterView.vue
    │
    ├── Route: /chapter/:number/:slug
-   │   e.g., /chapter/2/visual-perception-ux
+   │   e.g., /chapter/3/foundations-of-neuroscience
    │
    └── Calls useChapter().fetchChapter(slug)
 
@@ -113,11 +110,12 @@ Each paragraph stores content as JSONB with this structure:
 
 ## Key Files
 
-| File                                                    | Purpose                            |
-| ------------------------------------------------------- | ---------------------------------- |
-| `src/composables/useChapter.js`                         | Fetches & transforms Supabase data |
-| `src/composables/useModules.js`                         | Raw Supabase queries               |
-| `src/views/ChapterView.vue`                             | Route handler, loads chapter       |
-| `src/components/chapter/TextComp.vue`                   | Renders content                    |
-| `supabase/migrations/20250101000000_initial_schema.sql` | DB schema                          |
-| `scripts/import-chapter-2-to-supabase.mjs`              | Markdown → DB import               |
+| File                                                                    | Purpose                            |
+| ----------------------------------------------------------------------- | ---------------------------------- |
+| `src/composables/useChapter.js`                                         | Fetches & transforms Supabase data |
+| `src/composables/useModules.js`                                         | Raw Supabase queries               |
+| `src/views/ChapterView.vue`                                             | Route handler, loads chapter       |
+| `src/components/chapter/TextComp.vue`                                   | Renders content                    |
+| `supabase/migrations/20250101000000_initial_schema.sql`                 | DB schema                          |
+| `supabase/migrations/20260605000000_seed_chapter_foundations.sql`       | Foundations chapter seed, part 1   |
+| `supabase/migrations/20260605000001_seed_chapter_foundations_part2.sql` | Foundations chapter seed, part 2   |

@@ -71,4 +71,35 @@ describe("ReaderTopBar accessibility", () => {
       wrapper.get('[role="progressbar"]').attributes("aria-valuenow")
     ).toBe("42");
   });
+
+  it("does not expose unavailable student tools to anonymous readers", () => {
+    const wrapper = mount(ReaderTopBar, {
+      props: { isAuthenticated: false },
+      global: { stubs: { RouterLink: true } },
+    });
+    expect(wrapper.find(".tool-buttons").exists()).toBe(false);
+  });
+
+  it("returns focus to the disclosure after a section is selected", async () => {
+    const target = document.createElement("div");
+    target.id = "introduction";
+    target.scrollIntoView = vi.fn();
+    document.body.appendChild(target);
+    const wrapper = mount(ReaderTopBar, {
+      props: {
+        isAuthenticated: true,
+        sections: [{ title: "Introduction", slug: "introduction" }],
+      },
+      attachTo: document.body,
+      global: {
+        stubs: { RouterLink: true, Transition: false },
+      },
+    });
+    const disclosure = wrapper.get(".section-jump");
+    await disclosure.trigger("click");
+    await wrapper.get(".dropdown-item").trigger("click");
+    expect(document.activeElement).toBe(disclosure.element);
+    wrapper.unmount();
+    target.remove();
+  });
 });

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch, provide } from "vue";
+import { computed, onMounted, onBeforeUnmount, ref, provide } from "vue";
 import { useRoute } from "vue-router";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -34,6 +34,10 @@ const textStore = useText();
 const { isCreator, session } = useAuth();
 
 const triggers = ref(null);
+const ownedScrollTriggers = [];
+const markerListeners = [];
+let waitInterval = null;
+let triggerSetupTimeout = null;
 
 // Check if this is Chapter 1 (for conditional rendering of Chapter 1-specific elements)
 const isChapter1 = computed(() => route.params.number === "1");
@@ -180,59 +184,71 @@ const posAugeY = ref(0);
 let intervalRandom;
 
 onMounted(() => {
-  let wait = setInterval(() => {
+  waitInterval = setInterval(() => {
     const _text = document.getElementById("text");
-    const container = document.getElementById("container");
     if (_text) {
-      clearInterval(wait);
+      clearInterval(waitInterval);
+      waitInterval = null;
       const illuHighlights = document.getElementsByClassName("animationMarker");
 
       for (const highlight of illuHighlights) {
-        highlight.addEventListener("mouseover", (event) => addH(event));
-        highlight.addEventListener("mouseleave", (event) => removeH(event));
+        const onMouseOver = (event) => addH(event);
+        const onMouseLeave = (event) => removeH(event);
+        highlight.addEventListener("mouseover", onMouseOver);
+        highlight.addEventListener("mouseleave", onMouseLeave);
+        markerListeners.push({ highlight, onMouseOver, onMouseLeave });
       }
 
-      setTimeout(() => {
-        for (let trigger of document.querySelectorAll(".trigger")) {
+      triggerSetupTimeout = setTimeout(() => {
+        const sectionTriggers = Array.isArray(triggers.value)
+          ? triggers.value
+          : triggers.value
+            ? [triggers.value]
+            : [];
+
+        for (const [index, trigger] of sectionTriggers.entries()) {
+          ownedScrollTriggers.push(
+            ScrollTrigger.create({
+              id: `scrollTriggerText-${route.params.slug || "chapter"}-${index}`,
+              trigger: trigger,
+              start: "top top",
+              end: "bottom top",
+              srub: 0,
+              markers: false,
+              onToggle: (self) => {
+                if (
+                  self.trigger.id == "the-eye-and-retina-1" &&
+                  !self.isActive &&
+                  self.direction === -1
+                ) {
+                  store.currentSubChapter = null;
+                }
+                if (!self.isActive) return;
+                store.currentSubChapter = self.trigger.id;
+              },
+              onUpdate: (self) => {
+                store.progress = self.progress;
+              },
+            })
+          );
+        }
+        ownedScrollTriggers.push(
           ScrollTrigger.create({
-            id: "scrollTriggerText",
-            trigger: trigger,
-            start: "top top",
+            id: `scrollTriggerAll-${route.params.slug || "chapter"}`,
+            trigger: "#scroller",
+            start: "-=" + (window.innerHeight / 3) * 2 + " +=0",
             end: "bottom top",
             srub: 0,
             markers: false,
-            onToggle: (self) => {
-              if (
-                self.trigger.id == "the-eye-and-retina-1" &&
-                !self.isActive &&
-                self.direction === -1
-              ) {
-                store.currentSubChapter = null;
-              }
-              if (!self.isActive) return;
-              store.currentSubChapter = self.trigger.id;
+            onUpdate: () => {
+              store.activeMenu = false;
+              store.superScriptActive = false;
             },
-            onUpdate: (self) => {
-              store.progress = self.progress;
-            },
-          });
-        }
-        ScrollTrigger.create({
-          id: "scrollTriggerAll",
-          trigger: "#scroller",
-          start: "-=" + (window.innerHeight / 3) * 2 + " +=0",
-          end: "bottom top",
-          srub: 0,
-          markers: false,
-          onToggle: (self) => {},
-          onUpdate: (self) => {
-            store.activeMenu = false;
-            store.superScriptActive = false;
-          },
-        });
+          })
+        );
       }, 10);
     }
-  }, 1);
+  }, 10);
   let timer = 0;
   intervalRandom = setInterval(() => {
     timer = timer + 15;
@@ -246,9 +262,16 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  if (waitInterval !== null) clearInterval(waitInterval);
+  if (triggerSetupTimeout !== null) clearTimeout(triggerSetupTimeout);
   clearInterval(intervalRandom);
-  ScrollTrigger.getById("scrollTriggerText")?.kill();
-  ScrollTrigger.getById("scrollTriggerAll")?.kill();
+  for (const trigger of ownedScrollTriggers.splice(0)) trigger.kill();
+  for (const { highlight, onMouseOver, onMouseLeave } of markerListeners.splice(
+    0
+  )) {
+    highlight.removeEventListener("mouseover", onMouseOver);
+    highlight.removeEventListener("mouseleave", onMouseLeave);
+  }
 });
 </script>
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onUnmounted, nextTick } from "vue";
+import { ref, watch, onBeforeUnmount, nextTick } from "vue";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const props = defineProps({
@@ -76,9 +76,11 @@ watch(
   { immediate: true }
 );
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   document.body.style.overflow = previousBodyOverflow;
   window.removeEventListener("keydown", onKeydown);
+  if (triggerElement?.isConnected) triggerElement.focus();
+  triggerElement = null;
 });
 </script>
 

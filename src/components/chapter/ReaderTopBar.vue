@@ -21,6 +21,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  isAuthenticated: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const store = useGeneral();
@@ -57,12 +61,18 @@ const currentSectionTitle = computed(() => {
   return match?.title || null;
 });
 
-function scrollToSection(slug) {
+async function closeDropdown({ restoreFocus = true } = {}) {
+  showDropdown.value = false;
+  await nextTick();
+  if (restoreFocus) sectionButtonRef.value?.focus();
+}
+
+async function scrollToSection(slug) {
   const el = document.querySelector("#" + slug);
   if (el) {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
-  showDropdown.value = false;
+  await closeDropdown();
 }
 
 async function toggleDropdown() {
@@ -75,13 +85,12 @@ async function toggleDropdown() {
 
 // Close dropdown on outside click
 function onBackdropClick() {
-  showDropdown.value = false;
+  closeDropdown();
 }
 
 function onDropdownKeydown(event) {
   if (event.key !== "Escape") return;
-  showDropdown.value = false;
-  sectionButtonRef.value?.focus();
+  closeDropdown();
 }
 </script>
 
@@ -176,7 +185,7 @@ function onDropdownKeydown(event) {
       <div class="spacer"></div>
 
       <!-- Panel tool buttons -->
-      <div class="tool-buttons">
+      <div v-if="isAuthenticated" class="tool-buttons">
         <button
           v-for="t in panelTabs"
           :key="t.key"
@@ -184,7 +193,7 @@ function onDropdownKeydown(event) {
           :class="{ active: isPanelTabActive(t.key) }"
           type="button"
           aria-controls="reader-sidebar"
-          :aria-expanded="isPanelTabActive(t.key)"
+          :aria-expanded="sidebarOpen"
           @click="toggleSidebar(t.key)"
         >
           {{ t.label }}

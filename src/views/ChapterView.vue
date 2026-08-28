@@ -78,6 +78,8 @@ const {
   scrollPercent: readingScrollPercent,
   timeSpent: readingTimeSpent,
   saveError: readingSaveError,
+  identityVersion: readingIdentityVersion,
+  readyIdentityVersion: readyReadingIdentityVersion,
   retrySave: retryReadingProgressSave,
   stopTracking: stopReadingProgress,
 } = useReadingProgress();
@@ -115,9 +117,14 @@ provide("readingProgress", {
   timeSpent: readingTimeSpent,
 });
 
-// Extract route params
-const chapterNumber = route.params.number;
-const chapterSlug = route.params.slug;
+// Route params remain reactive when Vue Router reuses this view instance for
+// chapter-to-chapter navigation.
+const chapterNumber = computed(() => route.params.number);
+const chapterSlug = computed(() => route.params.slug);
+const courseId = computed(() => {
+  const value = route.query.courseId;
+  return Array.isArray(value) ? value[0] || null : value || null;
+});
 
 // Computed module ID — all chapters now load from Supabase
 const currentModuleId = computed(() => {
@@ -180,22 +187,62 @@ function nextAnimationFrame() {
   return new Promise((resolve) => requestAnimationFrame(resolve));
 }
 
+function waitForImage(image, timeoutMs = 4000) {
+  if (image.complete) {
+    return image.decode?.().catch(() => {}) || Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    let timeout;
+    const finish = () => {
+      clearTimeout(timeout);
+      image.removeEventListener("load", finish);
+      image.removeEventListener("error", finish);
+      resolve();
+    };
+
+    image.addEventListener("load", finish, { once: true });
+    image.addEventListener("error", finish, { once: true });
+    timeout = setTimeout(finish, timeoutMs);
+  });
+}
+
 async function settleChapterContent() {
   await nextTick();
   if (document.fonts?.ready) {
     await document.fonts.ready.catch(() => {});
   }
-  await nextAnimationFrame();
-  await nextAnimationFrame();
+
+  const reader = document.querySelector(".chapter-reader");
+  const images = Array.from(reader?.querySelectorAll("img") || []);
+  await Promise.all(images.map((image) => waitForImage(image)));
+
+  // Fonts and images can trigger more than one layout pass. Require the
+  // document height to be stable across consecutive frames before converting
+  // a persisted percentage back into a pixel offset.
+  let previousHeight = -1;
+  let stableFrames = 0;
+  for (let frame = 0; frame < 30 && stableFrames < 3; frame += 1) {
+    await nextAnimationFrame();
+    const height = document.documentElement.scrollHeight;
+    stableFrames = height === previousHeight ? stableFrames + 1 : 0;
+    previousHeight = height;
+  }
 }
 
-async function restorePersistedReadingPosition() {
+async function restorePersistedReadingPosition(expectedModuleId) {
   if (route.query.resume !== "1") return;
 
   const percent = readingProgress.value?.scroll_position;
   if (!Number.isFinite(Number(percent)) || Number(percent) <= 0) return;
 
   await settleChapterContent();
+  if (
+    currentModuleId.value !== expectedModuleId ||
+    route.query.resume !== "1"
+  ) {
+    return;
+  }
   window.scrollTo({
     top: scrollTopForReadingPercent(
       percent,
@@ -207,18 +254,64 @@ async function restorePersistedReadingPosition() {
 }
 
 async function initializeChapterExperience() {
-  if (!currentModuleId.value) return;
+  const moduleId = currentModuleId.value;
+  if (!moduleId) return;
 
-  await initReadingProgress(currentModuleId.value);
-
-  if (isAuthenticated.value) {
-    await fetchHighlights();
-    await fetchNotes();
-    await restorePersistedReadingPosition();
-    await nextTick();
-    renderAllHighlights();
-  }
+  await initReadingProgress(moduleId, courseId.value);
 }
+
+function clearUserReaderState() {
+  highlights.value = [];
+  notes.value = [];
+  clearSelection();
+}
+
+let hydrationRun = 0;
+async function hydrateAuthenticatedReader(identity) {
+  const run = ++hydrationRun;
+  const moduleId = currentModuleId.value;
+  if (!isAuthenticated.value || !moduleId) return;
+
+  await fetchHighlights();
+  if (
+    run !== hydrationRun ||
+    readingIdentityVersion.value !== identity ||
+    currentModuleId.value !== moduleId ||
+    !isAuthenticated.value
+  )
+    return;
+  await fetchNotes();
+  if (
+    run !== hydrationRun ||
+    readingIdentityVersion.value !== identity ||
+    currentModuleId.value !== moduleId ||
+    !isAuthenticated.value
+  )
+    return;
+  await restorePersistedReadingPosition(moduleId);
+  await nextTick();
+  if (
+    run !== hydrationRun ||
+    readingIdentityVersion.value !== identity ||
+    currentModuleId.value !== moduleId ||
+    !isAuthenticated.value
+  )
+    return;
+  renderAllHighlights();
+}
+
+watch(readingIdentityVersion, () => {
+  hydrationRun += 1;
+  clearUserReaderState();
+});
+
+watch(
+  [readyReadingIdentityVersion, readingIdentityVersion, isAuthenticated],
+  ([readyIdentity, identity, authenticated]) => {
+    if (!authenticated || readyIdentity !== identity) return;
+    void hydrateAuthenticatedReader(identity);
+  }
+);
 
 // Load chapter data from Supabase by slug
 async function loadChapter() {
@@ -228,7 +321,7 @@ async function loadChapter() {
   console.log("ChapterView: Loading chapter:", currentNumber, currentSlug);
   chapterDataLoaded.value = false;
 
-  if (!currentSlug) return;
+  if (!currentSlug) return false;
 
   // Clear stale localStorage data from previous chapter
   const storedData = localStorage.getItem("sections")
@@ -254,9 +347,12 @@ async function loadChapter() {
     storeText.updateText("*", data);
     await nextTick();
     chapterDataLoaded.value = true;
+    return true;
   } else if (fetchError) {
     console.error("ChapterView: Failed to load chapter:", fetchError);
   }
+
+  return false;
 }
 
 // Computed property to determine if content should be shown
@@ -270,10 +366,14 @@ const showContent = computed(() => {
 });
 
 const chapterNotFound = computed(() => error.value?.includes("not found"));
+let chapterExperienceGeneration = 0;
 
 // Load chapter on mount and when route changes
 onMounted(async () => {
-  await loadChapter();
+  const generation = ++chapterExperienceGeneration;
+  const loaded = await loadChapter();
+  if (generation !== chapterExperienceGeneration) return;
+  if (!loaded) return;
   // Fetch references for Supabase chapters (available for all users)
   if (currentModuleId.value) {
     fetchRefs(currentModuleId.value);
@@ -286,12 +386,23 @@ onMounted(async () => {
 });
 
 watch(
-  () => [route.params.number, route.params.slug],
+  () => [route.params.number, route.params.slug, route.query.courseId],
   async () => {
+    const generation = ++chapterExperienceGeneration;
+    clearUserReaderState();
+    void fetchRefs(null);
     // Finalize the previous module while its document is still mounted. Saving
     // after loadChapter() would measure the new chapter against the old ID.
     await stopReadingProgress();
-    await loadChapter();
+    if (generation !== chapterExperienceGeneration) return;
+    const loaded = await loadChapter();
+    if (generation !== chapterExperienceGeneration) return;
+    // A missing/failed destination has no module to hydrate. useChapter also
+    // clears its old refs, so the preceding module cannot leak into this path.
+    if (!loaded) {
+      await initReadingProgress(null, null);
+      return;
+    }
     // Fetch references for Supabase chapters
     if (currentModuleId.value) {
       fetchRefs(currentModuleId.value);
@@ -439,6 +550,7 @@ async function handleDeleteHighlight(highlightId) {
         :chapter-number="chapterNumber"
         :sections="breadcrumbSections"
         :progress-percent="readingScrollPercent"
+        :is-authenticated="isAuthenticated"
       />
 
       <div v-if="readingSaveError" class="save-error" role="alert">

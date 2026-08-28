@@ -45,4 +45,18 @@ describe("DemoModal accessibility", () => {
     expect(wrapper.emitted("close")).toHaveLength(1);
     wrapper.unmount();
   });
+
+  it("restores the trigger when an open modal is unmounted", async () => {
+    const trigger = document.createElement("button");
+    document.body.appendChild(trigger);
+    trigger.focus();
+    const wrapper = mount(DemoModal, {
+      props: { show: true, title: "Quiz" },
+      attachTo: document.body,
+      global: { stubs: { Transition: false } },
+    });
+    await flushPromises();
+    wrapper.unmount();
+    expect(document.activeElement).toBe(trigger);
+  });
 });

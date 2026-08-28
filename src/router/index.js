@@ -243,11 +243,25 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     const store = useGeneral();
-    if (savedPosition || store.savedPosition) {
-      return savedPosition || store.savedPosition;
-    } else {
+
+    // Continue Reading is restored by ChapterView only after the chapter's
+    // fonts and images have settled. Do not race it with browser/store offsets.
+    if (to.name === "chapter" && to.query.resume === "1") {
+      store.savedPosition = undefined;
       return { top: 0 };
     }
+
+    if (savedPosition) return savedPosition;
+
+    // The legacy store position is a one-shot return target. It must never be
+    // applied globally to a different chapter or unrelated route.
+    const pendingPosition = store.savedPosition;
+    store.savedPosition = undefined;
+    if (pendingPosition?.route === to.fullPath) {
+      return pendingPosition.position;
+    }
+
+    return { top: 0 };
   },
 });
 
@@ -262,8 +276,10 @@ router.beforeEach(async (to, from) => {
 
   // Handle scroll position for chapter view
   if (from.name === "chapter") {
-    let scrollOffset = { top: window.scrollY };
-    store.savedPosition = scrollOffset;
+    store.savedPosition = {
+      route: from.fullPath,
+      position: { top: window.scrollY },
+    };
   }
 
   // Handle transitions
