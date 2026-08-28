@@ -33,6 +33,7 @@
     "smoke": "node scripts/smoke.mjs",
     "test:smoke": "start-server-and-test preview http://localhost:4173 smoke",
     "storybook": "storybook dev -p 6006",
+    "storybook:coverage": "node scripts/check-storybook-coverage.mjs",
     "build-storybook": "storybook build"
   },
   "dependencies": {

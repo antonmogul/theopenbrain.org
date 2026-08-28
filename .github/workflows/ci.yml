@@ -72,6 +72,9 @@ jobs:
 
       # Storybook is part of the frontend delivery surface, not optional docs.
       # Its Vite graph is different from the app build, so both must compile.
+      - name: Check Storybook component coverage
+        run: npm run storybook:coverage
+
       - name: Build Storybook
         run: npm run build-storybook
 
