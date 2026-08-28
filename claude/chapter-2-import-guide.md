@@ -1,5 +1,9 @@
 # Chapter 2 Import Guide
 
+> **Archived and decommissioned.** The temporary `visual-perception-ux`
+> module and its import tooling have been removed. The commands below are
+> retained only as historical implementation notes and must not be run.
+
 ## Overview
 
 You have:

@@ -463,7 +463,7 @@ export function useChapter() {
 
   /**
    * Fetch chapter by slug - using direct REST API
-   * @param {string} slug - The chapter slug (e.g., 'visual-perception-ux')
+   * @param {string} slug - The chapter slug (e.g., 'foundations-of-neuroscience')
    */
   async function fetchChapter(slug) {
     loading.value = true;

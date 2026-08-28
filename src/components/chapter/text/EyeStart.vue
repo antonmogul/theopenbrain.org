@@ -55,14 +55,13 @@ onBeforeUnmount(() => {
   window.removeEventListener("scroll", onScroll);
 });
 
-// Module name - for now hardcoded, could be fetched from Supabase later
+// Module name comes from the loaded Supabase chapter. The Retina predates the
+// dynamic metadata shape, so retain only its legacy label as a fallback.
 const moduleName = computed(() => {
-  // Chapter 1 belongs to "Visual Perception and UX" module
   if (route.params.number === "1" || route.params.slug === "the-retina") {
-    return "Visual Perception and UX";
+    return "The Retina";
   }
-  // For other chapters, could fetch from module data
-  return textStore.text?.moduleName || "Visual Perception and UX";
+  return textStore.text?.moduleName || "The Open Brain";
 });
 
 // Get chapter title from store
@@ -74,8 +73,6 @@ const chapterTitle = computed(() => {
 const coverImage = computed(() => {
   const slug = route.params.slug;
   if (slug === "the-retina") return "/publicAssets/images/00-matisse-bg.jpg";
-  if (slug === "visual-perception-ux")
-    return "/publicAssets/images/marguerite.png";
   return "/publicAssets/images/background.jpg";
 });
 

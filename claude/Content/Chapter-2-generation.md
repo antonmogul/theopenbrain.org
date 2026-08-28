@@ -1,5 +1,8 @@
 # Chapter 2: Visual Perception and UX
 
+> **Archived historical source.** The `visual-perception-ux` module is retired.
+> Do not generate, import, or seed this material into Supabase.
+
 ## Overview
 
 This chapter bridges neuroscience and user experience design, exploring how the brain's visual processing systems shape interface design principles. Each section includes an AI prompt to generate detailed educational content.

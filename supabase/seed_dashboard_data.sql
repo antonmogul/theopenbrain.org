@@ -36,17 +36,6 @@ WHERE NOT EXISTS (SELECT 1 FROM content_versions WHERE version_number = '1.1');
 
 INSERT INTO content_versions (id, version_number, status, release_notes, created_at, published_at, created_by)
 SELECT
-  'a0000001-0001-0001-0001-000000000003'::uuid,
-  '2.0',
-  'published',
-  'Major update: Added Chapter 2 on Visual Perception and UX. New interactive animations for Gestalt principles.',
-  NOW() - INTERVAL '20 days',
-  NOW() - INTERVAL '15 days',
-  (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1)
-WHERE NOT EXISTS (SELECT 1 FROM content_versions WHERE version_number = '2.0');
-
-INSERT INTO content_versions (id, version_number, status, release_notes, created_at, published_at, created_by)
-SELECT
   'a0000001-0001-0001-0001-000000000004'::uuid,
   '2.1',
   'draft',
@@ -388,87 +377,6 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 
--- Quiz 2: Visual Perception Quiz
-INSERT INTO quizzes (id, module_id, title, description, time_limit_minutes, passing_score, allow_multiple_attempts, show_correct_answers, created_by, created_at)
-SELECT
-  'c0000001-0001-0001-0001-000000000002'::uuid,
-  (SELECT id FROM modules WHERE slug = 'visual-perception-ux' LIMIT 1),
-  'Visual Perception & UX Principles',
-  'Assess your knowledge of Gestalt principles, attention, and how visual perception applies to user experience design.',
-  20,
-  70,
-  true,
-  true,
-  (SELECT id FROM profiles WHERE role = 'creator' LIMIT 1),
-  NOW() - INTERVAL '15 days'
-WHERE NOT EXISTS (SELECT 1 FROM quizzes WHERE id = 'c0000001-0001-0001-0001-000000000002'::uuid);
-
--- Quiz 2 Questions
-INSERT INTO quiz_questions (id, quiz_id, question_text, question_type, options, correct_answer, points, order_index)
-VALUES
-  (
-    'd0000001-0001-0001-0001-000000000010'::uuid,
-    'c0000001-0001-0001-0001-000000000002'::uuid,
-    'Which Gestalt principle states that elements close together are perceived as a group?',
-    'multiple_choice',
-    '["Similarity", "Proximity", "Closure", "Continuity"]'::jsonb,
-    'Proximity',
-    1,
-    1
-  ),
-  (
-    'd0000001-0001-0001-0001-000000000011'::uuid,
-    'c0000001-0001-0001-0001-000000000002'::uuid,
-    'Change blindness can occur even when people are actively watching a scene.',
-    'true_false',
-    NULL,
-    'true',
-    1,
-    2
-  ),
-  (
-    'd0000001-0001-0001-0001-000000000012'::uuid,
-    'c0000001-0001-0001-0001-000000000002'::uuid,
-    'The cocktail party effect demonstrates which type of attention?',
-    'multiple_choice',
-    '["Divided attention", "Selective attention", "Sustained attention", "Alternating attention"]'::jsonb,
-    'Selective attention',
-    1,
-    3
-  ),
-  (
-    'd0000001-0001-0001-0001-000000000013'::uuid,
-    'c0000001-0001-0001-0001-000000000002'::uuid,
-    'Describe how the Gestalt principle of closure can be applied in UI design. Give a specific example.',
-    'short_answer',
-    NULL,
-    'incomplete shapes, icons, logos, mental completion',
-    3,
-    4
-  ),
-  (
-    'd0000001-0001-0001-0001-000000000014'::uuid,
-    'c0000001-0001-0001-0001-000000000002'::uuid,
-    'What percentage of the visual field does the fovea (area of sharpest vision) cover?',
-    'multiple_choice',
-    '["About 2%", "About 10%", "About 25%", "About 50%"]'::jsonb,
-    'About 2%',
-    1,
-    5
-  ),
-  (
-    'd0000001-0001-0001-0001-000000000015'::uuid,
-    'c0000001-0001-0001-0001-000000000002'::uuid,
-    'Inattentional blindness is the same phenomenon as change blindness.',
-    'true_false',
-    NULL,
-    'false',
-    1,
-    6
-  )
-ON CONFLICT (id) DO NOTHING;
-
-
 -- =============================================================
 -- 4. ANALYTICS EVENTS (Last 30 days of activity)
 -- =============================================================
@@ -571,27 +479,6 @@ CROSS JOIN (
 ) attempts
 WHERE p.role = 'student'
 LIMIT 35;
-
--- Generate quiz attempts for Quiz 2
-INSERT INTO quiz_attempts (id, quiz_id, student_id, score, total_points, started_at, completed_at, time_spent_seconds, status)
-SELECT
-  gen_random_uuid(),
-  'c0000001-0001-0001-0001-000000000002'::uuid,
-  p.id,
-  floor(random() * 4 + 4)::int, -- score between 4-8
-  8, -- total points
-  ts,
-  ts + (floor(random() * 900 + 400) * INTERVAL '1 second'),
-  floor(random() * 900 + 400)::int,
-  'completed'
-FROM profiles p
-CROSS JOIN (
-  SELECT NOW() - (random() * INTERVAL '15 days') as ts
-  FROM generate_series(1, 2)
-) attempts
-WHERE p.role = 'student'
-LIMIT 20;
-
 
 -- =============================================================
 -- 7. TRENDING HIGHLIGHTS

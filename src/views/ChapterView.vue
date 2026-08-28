@@ -269,6 +269,8 @@ const showContent = computed(() => {
   );
 });
 
+const chapterNotFound = computed(() => error.value?.includes("not found"));
+
 // Load chapter on mount and when route changes
 onMounted(async () => {
   await loadChapter();
@@ -404,10 +406,21 @@ async function handleDeleteHighlight(highlightId) {
     >
       <div class="text-center max-w-md p-8">
         <p class="text-xl font-bold mb-4">
-          Error loading Chapter {{ chapterNumber }}
+          {{
+            chapterNotFound
+              ? "Chapter not found"
+              : `Error loading Chapter ${chapterNumber}`
+          }}
         </p>
         <p class="text-gray-600 mb-4">{{ error }}</p>
-        <p class="text-sm text-gray-500">
+        <RouterLink
+          v-if="chapterNotFound"
+          to="/chapters"
+          class="text-sm underline underline-offset-4"
+        >
+          Browse available chapters
+        </RouterLink>
+        <p v-else class="text-sm text-gray-500">
           Make sure:
           <br />1. The seed script has been run in Supabase <br />2. RLS
           policies allow reads (run the RLS fix script) <br />3. Your Supabase

@@ -80,6 +80,23 @@ async function transform(paragraphs) {
   return transformedData.value.sections.find((s) => s.id === SECTION_ID);
 }
 
+describe("useChapter missing chapter", () => {
+  it("returns a controlled not-found error for a retired slug", async () => {
+    apiRequest.mockResolvedValue([]);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { fetchChapter, error } = useChapter();
+    const result = await fetchChapter("visual-perception-ux");
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBeInstanceOf(Error);
+    expect(error.value).toBe(
+      'Chapter with slug "visual-perception-ux" not found'
+    );
+  });
+});
+
 describe("useChapter reconstructNesting flush (CODE-FIX #1)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
