@@ -41,6 +41,10 @@ const config = {
         find: "@/lib/supabase",
         replacement: path.resolve(__dirname, "./mocks/supabase.js"),
       },
+      {
+        find: "@/composables/useAuth",
+        replacement: path.resolve(__dirname, "./mocks/auth.js"),
+      },
       { find: "@", replacement: path.resolve(__dirname, "../src") },
       ...currentAliases.filter(({ find }) => find !== "@"),
     ];
