@@ -53,6 +53,10 @@ const config = {
         find: "@/composables/usePyodide",
         replacement: path.resolve(__dirname, "./mocks/pyodide.js"),
       },
+      {
+        find: "@/services/pythonRunner",
+        replacement: path.resolve(__dirname, "./mocks/python-runner.js"),
+      },
       { find: "@", replacement: path.resolve(__dirname, "../src") },
       ...currentAliases.filter(({ find }) => find !== "@"),
     ];
