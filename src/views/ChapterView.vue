@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, watch, computed, ref, nextTick, provide } from "vue";
-import { useRoute } from "vue-router";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
 import EyeStart from "@/components/chapter/text/EyeStart.vue";
@@ -32,7 +32,10 @@ import { useAuth } from "@/composables/useAuth";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
-import { scrollTopForReadingPercent } from "@/helper/readingProgress";
+import {
+  restoreAfterLayout,
+  scrollTopForReadingPercent,
+} from "@/helper/readingProgress";
 
 const route = useRoute();
 const store = useGeneral();
@@ -230,26 +233,32 @@ async function settleChapterContent() {
   }
 }
 
-async function restorePersistedReadingPosition(expectedModuleId) {
+async function restorePersistedReadingPosition({
+  moduleId: expectedModuleId,
+  courseId: expectedCourseId,
+  identity: expectedIdentity,
+}) {
   if (route.query.resume !== "1") return;
 
   const percent = readingProgress.value?.scroll_position;
   if (!Number.isFinite(Number(percent)) || Number(percent) <= 0) return;
 
-  await settleChapterContent();
-  if (
-    currentModuleId.value !== expectedModuleId ||
-    route.query.resume !== "1"
-  ) {
-    return;
-  }
-  window.scrollTo({
-    top: scrollTopForReadingPercent(
-      percent,
-      document.documentElement.scrollHeight,
-      window.innerHeight
-    ),
-    behavior: "auto",
+  await restoreAfterLayout({
+    waitForLayout: settleChapterContent,
+    isCurrent: () =>
+      currentModuleId.value === expectedModuleId &&
+      courseId.value === expectedCourseId &&
+      readingIdentityVersion.value === expectedIdentity &&
+      route.query.resume === "1",
+    restore: () =>
+      window.scrollTo({
+        top: scrollTopForReadingPercent(
+          percent,
+          document.documentElement.scrollHeight,
+          window.innerHeight
+        ),
+        behavior: "auto",
+      }),
   });
 }
 
@@ -270,6 +279,7 @@ let hydrationRun = 0;
 async function hydrateAuthenticatedReader(identity) {
   const run = ++hydrationRun;
   const moduleId = currentModuleId.value;
+  const expectedCourseId = courseId.value;
   if (!isAuthenticated.value || !moduleId) return;
 
   await fetchHighlights();
@@ -288,7 +298,11 @@ async function hydrateAuthenticatedReader(identity) {
     !isAuthenticated.value
   )
     return;
-  await restorePersistedReadingPosition(moduleId);
+  await restorePersistedReadingPosition({
+    moduleId,
+    courseId: expectedCourseId,
+    identity,
+  });
   await nextTick();
   if (
     run !== hydrationRun ||
@@ -412,6 +426,13 @@ watch(
     }
   }
 );
+
+// Vue keeps the chapter DOM mounted while this guard runs, so the final
+// percentage is measured against the document the user actually read. Awaiting
+// also ensures navigation cannot tear it down before the save is queued.
+onBeforeRouteLeave(async () => {
+  await stopReadingProgress();
+});
 
 // === Phase 3A: Highlighting System Handlers ===
 

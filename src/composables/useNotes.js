@@ -30,7 +30,8 @@ export function useNotes(options = {}) {
     }
 
     // Build query with joined highlight data
-    let query = `notes?user_id=eq.${user.value.id}&select=*,highlight:highlights(id,selected_text,color,paragraph_id)&order=created_at.desc`;
+    const userId = user.value.id;
+    let query = `notes?user_id=eq.${userId}&select=*,highlight:highlights(id,selected_text,color,paragraph_id)&order=created_at.desc`;
 
     // Apply filters
     const targetSectionId = filters.sectionId || sectionId;
@@ -42,7 +43,9 @@ export function useNotes(options = {}) {
       query += `&highlight_id=eq.${filters.highlightId}`;
     }
 
-    await runFetch(query);
+    await runFetch(query, {
+      shouldCommit: () => user.value?.id === userId,
+    });
   }
 
   // Create a new note

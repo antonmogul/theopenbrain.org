@@ -4,10 +4,13 @@ import { shallowMount, flushPromises } from "@vue/test-utils";
 const { stubComponent } = vi.hoisted(() => ({
   stubComponent: { template: "<div />" },
 }));
-const { testInitForModule, testStopTracking } = vi.hoisted(() => ({
-  testInitForModule: vi.fn(),
-  testStopTracking: vi.fn(),
-}));
+const { testInitForModule, testStopTracking, testLeaveState } = vi.hoisted(
+  () => ({
+    testInitForModule: vi.fn(),
+    testStopTracking: vi.fn(),
+    testLeaveState: { guard: null },
+  })
+);
 vi.mock("@/components/chapter/TextComp.vue", () => ({
   default: stubComponent,
 }));
@@ -51,6 +54,9 @@ vi.mock("vue-router", async () => {
   });
   return {
     useRoute: () => route,
+    onBeforeRouteLeave: (guard) => {
+      testLeaveState.guard = guard;
+    },
     testRoute: route,
   };
 });
@@ -240,6 +246,42 @@ describe("ChapterView route changes", () => {
     wrapper.unmount();
     log.mockRestore();
     error.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("finalizes progress before reader-to-chapter-list navigation removes the DOM", async () => {
+    const storage = new Map();
+    vi.stubGlobal("localStorage", {
+      getItem: (key) => storage.get(key) ?? null,
+      setItem: (key, value) => storage.set(key, String(value)),
+      removeItem: (key) => storage.delete(key),
+      clear: () => storage.clear(),
+    });
+    testRoute.params.number = "1";
+    testRoute.params.slug = "the-retina";
+    testRoute.query = {};
+    testInitForModule.mockClear();
+    testStopTracking.mockClear();
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const wrapper = shallowMount(ChapterView, {
+      global: { stubs: { RouterLink: stubComponent } },
+    });
+    await flushPromises();
+
+    testStopTracking.mockImplementationOnce(async () => {
+      expect(wrapper.find(".chapter-reader").exists()).toBe(true);
+    });
+    await testLeaveState.guard(
+      { path: "/chapters" },
+      { path: "/chapters/1/the-retina" }
+    );
+
+    expect(testStopTracking).toHaveBeenCalledTimes(1);
+    expect(wrapper.find(".chapter-reader").exists()).toBe(true);
+
+    wrapper.unmount();
+    log.mockRestore();
     vi.unstubAllGlobals();
   });
 });

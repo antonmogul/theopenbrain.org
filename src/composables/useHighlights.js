@@ -74,7 +74,8 @@ export function useHighlights(options = {}) {
       return;
     }
 
-    let query = `highlights?user_id=eq.${user.value.id}&select=*&order=created_at.desc`;
+    const userId = user.value.id;
+    let query = `highlights?user_id=eq.${userId}&select=*&order=created_at.desc`;
 
     // Filter by paragraph if specified
     const targetParagraphId = filterParagraphId || paragraphId;
@@ -82,7 +83,9 @@ export function useHighlights(options = {}) {
       query += `&paragraph_id=eq.${targetParagraphId}`;
     }
 
-    await runFetch(query);
+    await runFetch(query, {
+      shouldCommit: () => user.value?.id === userId,
+    });
   }
 
   // Fetch highlights for multiple paragraphs (batch)
@@ -92,10 +95,13 @@ export function useHighlights(options = {}) {
       return;
     }
 
+    const userId = user.value.id;
     const idsParam = paragraphIds.map((id) => `"${id}"`).join(",");
-    const query = `highlights?user_id=eq.${user.value.id}&paragraph_id=in.(${idsParam})&select=*&order=start_offset.asc`;
+    const query = `highlights?user_id=eq.${userId}&paragraph_id=in.(${idsParam})&select=*&order=start_offset.asc`;
 
-    await runFetch(query);
+    await runFetch(query, {
+      shouldCommit: () => user.value?.id === userId,
+    });
   }
 
   // Get highlights grouped by paragraph

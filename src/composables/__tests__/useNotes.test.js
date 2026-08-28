@@ -33,6 +33,34 @@ describe("useNotes", () => {
     expect(notes.value).toEqual([{ id: "n1" }]);
   });
 
+  it("does not let a deferred fetch from the previous account overwrite the current account", async () => {
+    let resolveA;
+    let resolveB;
+    const responseA = new Promise((resolve) => {
+      resolveA = resolve;
+    });
+    const responseB = new Promise((resolve) => {
+      resolveB = resolve;
+    });
+    authedRequest.mockImplementation((query) =>
+      query.includes("user_id=eq.user-a") ? responseA : responseB
+    );
+
+    user.value = { id: "user-a" };
+    const { notes, fetchNotes } = useNotes();
+    const fetchA = fetchNotes();
+
+    user.value = { id: "user-b" };
+    const fetchB = fetchNotes();
+    resolveB([{ id: "note-b" }]);
+    await fetchB;
+    expect(notes.value).toEqual([{ id: "note-b" }]);
+
+    resolveA([{ id: "note-a" }]);
+    await fetchA;
+    expect(notes.value).toEqual([{ id: "note-b" }]);
+  });
+
   it("createNote POSTs payload and prepends to local state", async () => {
     authedRequest.mockResolvedValue([{ id: "n-new", content: "hi" }]);
     const { notes, createNote } = useNotes();

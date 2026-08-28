@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useAuth } from "./useAuth";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { readingPercentForScroll } from "@/helper/readingProgress";
@@ -402,7 +402,10 @@ export function useReadingProgress(
     }
   });
 
-  onUnmounted(() => {
+  // Capture the final geometry before Vue removes the chapter DOM. A route
+  // leave guard awaits this save when ChapterView owns the navigation, while
+  // this hook remains the fallback for direct component teardown.
+  onBeforeUnmount(() => {
     mounted = false;
     void stopTracking();
   });
