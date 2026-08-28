@@ -33,7 +33,9 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          # Storybook 10 needs Node 20.19+. Keep CI on the same patch release
+          # as .nvmrc so local and hosted builds exercise one runtime.
+          node-version: 20.20.0
           cache: npm
 
       # The dependency tree has known peer conflicts (the project's own
@@ -67,6 +69,11 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      # Storybook is part of the frontend delivery surface, not optional docs.
+      # Its Vite graph is different from the app build, so both must compile.
+      - name: Build Storybook
+        run: npm run build-storybook
 
       # A production build that scrolls sideways or throws on load is the class
       # of bug unit tests miss — see OPENBRAIN-4, where the reader scrolled

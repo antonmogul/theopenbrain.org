@@ -22,10 +22,28 @@ const config = {
   framework: "@storybook/vue3-vite",
   async viteFinal(cfg) {
     cfg.resolve = cfg.resolve || {};
-    cfg.resolve.alias = {
-      ...(cfg.resolve.alias || {}),
-      "@": path.resolve(__dirname, "../src"),
-    };
+    const currentAliases = Array.isArray(cfg.resolve.alias)
+      ? cfg.resolve.alias
+      : Object.entries(cfg.resolve.alias || {}).map(([find, replacement]) => ({
+          find,
+          replacement,
+        }));
+
+    // Storybook must never initialize a real Supabase client or send writes.
+    // Exact aliases come before the broad @ alias and provide configurable,
+    // deterministic seams for stories that mount data-aware components.
+    cfg.resolve.alias = [
+      {
+        find: "@/services/api/client",
+        replacement: path.resolve(__dirname, "./mocks/api-client.js"),
+      },
+      {
+        find: "@/lib/supabase",
+        replacement: path.resolve(__dirname, "./mocks/supabase.js"),
+      },
+      { find: "@", replacement: path.resolve(__dirname, "../src") },
+      ...currentAliases.filter(({ find }) => find !== "@"),
+    ];
     return cfg;
   },
 };

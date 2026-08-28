@@ -19,7 +19,11 @@
  * does not imply dark is live in the app.
  */
 import { createRouter, createMemoryHistory } from "vue-router";
+import { createPinia } from "pinia";
 import { setup } from "@storybook/vue3-vite";
+import { configureApiMock } from "./mocks/api-client";
+import { installSupabaseFetchMock } from "./mocks/fetch";
+import { configureSupabaseMock } from "./mocks/supabase";
 
 import "@/index.css";
 
@@ -35,6 +39,7 @@ import "@/index.css";
  * `to` resolves rather than warning about an unmatched path.
  */
 setup((app) => {
+  app.use(createPinia());
   app.use(
     createRouter({
       history: createMemoryHistory(),
@@ -48,6 +53,11 @@ setup((app) => {
     })
   );
 });
+
+// Components that still call fetch directly get the same protection as those
+// using the API/Supabase aliases. Only Supabase-shaped URLs are intercepted;
+// fonts and Storybook's own assets continue through the browser normally.
+installSupabaseFetchMock();
 
 /** Mirrors the accent options in usePreferences.js. */
 const ACCENTS = ["magenta", "teal", "amber", "mono"];
@@ -76,6 +86,19 @@ export const globalTypes = {
       dynamicTitle: true,
     },
   },
+  reduceMotion: {
+    description: "Disable motion for deterministic review and screenshots",
+    defaultValue: true,
+    toolbar: {
+      title: "Motion",
+      icon: "accessibility",
+      items: [
+        { value: true, title: "Reduced (Storybook default)" },
+        { value: false, title: "App motion" },
+      ],
+      dynamicTitle: true,
+    },
+  },
 };
 
 /**
@@ -84,17 +107,25 @@ export const globalTypes = {
  * here is sufficient to theme every story.
  */
 const withDesignTokens = (story, context) => {
-  const { theme, accent } = context.globals;
+  const { theme, accent, reduceMotion } = context.globals;
   const root = document.documentElement;
-  root.setAttribute("data-theme", theme);
-  root.setAttribute("data-accent", accent);
+  root.setAttribute("data-theme", theme || "light");
+  root.setAttribute("data-accent", accent || "magenta");
   // The app pins the legacy IBM Plex pairing; match it so type in Storybook
   // matches type in the app.
   root.setAttribute("data-fontpair", "ibm-plex-legacy");
+  root.setAttribute("data-reduce-motion", reduceMotion === false ? "0" : "1");
   // Paint the Storybook canvas with the token background, otherwise stories
   // sit on Storybook's own white and dark-mode inspection is meaningless.
   document.body.style.background = "rgb(var(--color-bg))";
   document.body.style.color = "rgb(var(--color-ink))";
+  return story();
+};
+
+/** Reset data fixtures for every story so navigation cannot leak state. */
+const withDeterministicData = (story, context) => {
+  configureApiMock(context.parameters.api ?? {});
+  configureSupabaseMock(context.parameters.supabase ?? {});
   return story();
 };
 
@@ -111,7 +142,12 @@ const withDesignTokens = (story, context) => {
  */
 /** @type {import('@storybook/vue3-vite').Preview} */
 const preview = {
-  decorators: [withDesignTokens],
+  decorators: [withDeterministicData, withDesignTokens],
+  initialGlobals: {
+    theme: "light",
+    accent: "magenta",
+    reduceMotion: true,
+  },
   parameters: {
     options: {
       storySort: {
