@@ -7,12 +7,8 @@ export function configureSupabaseFetchMock(nextFixtures = {}) {
   fixtures = { ...nextFixtures };
 }
 
-function resolveFixture(input) {
-  const url = String(typeof input === "string" ? input : input?.url);
-  const key = Object.keys(fixtures).find((candidate) =>
-    url.includes(candidate)
-  );
-  return key ? fixtures[key] : [];
+export function configureFetchMock(nextFixtures = {}) {
+  fixtures = { ...nextFixtures };
 }
 
 function isSupabaseRequest(input) {
@@ -29,16 +25,28 @@ export function installSupabaseFetchMock() {
   globalThis.fetch = async (input, init) => {
     if (!isSupabaseRequest(input)) return nativeFetch(input, init);
 
+    const url = String(typeof input === "string" ? input : input?.url);
     const method = (init?.method || "GET").toUpperCase();
+    const key = Object.keys(fixtures).find(
+      (candidate) => candidate === url || url.includes(candidate)
+    );
+    const configured = key ? fixtures[key] : undefined;
+    const resolved =
+      typeof configured === "function"
+        ? await configured(url, init)
+        : configured;
+    const status = resolved?.status || 200;
     const body =
-      method === "GET" || method === "HEAD"
-        ? resolveFixture(input)
-        : { success: true };
+      resolved?.body ?? resolved ?? (method === "GET" ? [] : { success: true });
     return new Response(JSON.stringify(body), {
-      status: 200,
+      status,
       headers: {
         "Content-Type": "application/json",
-        "Content-Range": `0-${Math.max(0, body.length - 1)}/${body.length || 0}`,
+        ...(Array.isArray(body)
+          ? {
+              "Content-Range": `0-${Math.max(0, body.length - 1)}/${body.length || 0}`,
+            }
+          : {}),
       },
     });
   };

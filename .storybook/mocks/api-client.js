@@ -37,7 +37,7 @@ export function getSession() {
 }
 
 export async function apiRequest(endpoint, options = {}) {
-  return structuredClone(resolveFixture(endpoint, options));
+  return structuredClone(await resolveFixture(endpoint, options));
 }
 
 export const authedRequest = apiRequest;

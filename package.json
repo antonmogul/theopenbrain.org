@@ -36,7 +36,8 @@
     "storybook:coverage": "node scripts/check-storybook-coverage.mjs",
     "build-storybook": "storybook build",
     "storybook:coverage:admin": "node scripts/check-storybook-admin-coverage.mjs",
-    "storybook:coverage:student-views": "node scripts/check-storybook-student-views.mjs"
+    "storybook:coverage:student-views": "node scripts/check-storybook-student-views.mjs",
+    "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs"
   },
   "dependencies": {
     "@formkit/auto-animate": "^1.0.0-beta.3",

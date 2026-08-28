@@ -22,10 +22,7 @@ import { createRouter, createMemoryHistory } from "vue-router";
 import { createPinia, setActivePinia } from "pinia";
 import { setup } from "@storybook/vue3-vite";
 import { configureApiMock } from "./mocks/api-client";
-import {
-  configureSupabaseFetchMock,
-  installSupabaseFetchMock,
-} from "./mocks/fetch";
+import { configureFetchMock, installSupabaseFetchMock } from "./mocks/fetch";
 import { configureSupabaseMock } from "./mocks/supabase";
 import { configureAuthMock } from "./mocks/auth";
 
@@ -34,9 +31,6 @@ import "@/index.css";
 // CommentComp still reads its legacy Pinia store at module evaluation time,
 // before Storybook creates the Vue app. Activate the catalog Pinia here so
 // importing the full reader view is safe as well as installing it below.
-const storybookPinia = createPinia();
-setActivePinia(storybookPinia);
-
 /*
  * Many components call useRouter() or render <router-link> (the chapter
  * callouts, nav, anything with a CTA). Storybook has no router, so those
@@ -48,6 +42,9 @@ setActivePinia(storybookPinia);
  * navigate the Storybook shell away from itself. The catch-all route means any
  * `to` resolves rather than warning about an unmatched path.
  */
+const storybookPinia = createPinia();
+setActivePinia(storybookPinia);
+
 setup((app) => {
   app.use(storybookPinia);
   app.use(
@@ -170,9 +167,21 @@ const withDesignTokens = (story, context) => {
 /** Reset data fixtures for every story so navigation cannot leak state. */
 const withDeterministicData = (story, context) => {
   configureApiMock(context.parameters.api ?? {});
-  configureSupabaseFetchMock(context.parameters.api ?? {});
+  configureFetchMock({
+    ...(context.parameters.api ?? {}),
+    ...(context.parameters.fetch ?? {}),
+  });
   configureSupabaseMock(context.parameters.supabase ?? {});
-  configureAuthMock(context.parameters.auth ?? {});
+  const auth = context.parameters.auth;
+  configureAuthMock(
+    auth
+      ? {
+          ...auth,
+          authenticated: auth.authenticated !== false,
+          userId: auth.userId || auth.id,
+        }
+      : {}
+  );
   return story();
 };
 
