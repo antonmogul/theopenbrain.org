@@ -9,3 +9,14 @@ New Design Ideas/
 public/publicAssets/
 docs/architecture/graph.json
 supabase/.temp/
+
+# The authors' original widget HTML, preserved byte-for-byte. The widget
+# library renders these as the "Original" view precisely so Stuart and Arjun
+# can confirm their maths and interaction survived the Vue port — reformatting
+# them would rewrite the artefact that view exists to show unchanged. The Vue
+# ports in src/views/ are the code we own, and those ARE formatted.
+src/widgets/source/
+
+# Agent tooling scratch (untracked; listed so local `prettier --check .`
+# matches what CI sees).
+.superpowers/

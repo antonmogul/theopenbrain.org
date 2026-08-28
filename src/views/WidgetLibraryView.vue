@@ -7,10 +7,16 @@
  * selected widget in a live iframe. Authors, professors, and the design
  * team can browse everything in one place without hunting through chapters.
  *
- * Hosting: widgets render via iframe srcdoc. This preserves the author's
- * original HTML/JS verbatim — no risk of breaking scientific maths or
- * interaction by wrapping in Vue. Widgets that also have a Vue SFC rewrite
- * (like SDT) show a "Vue version" link.
+ * Hosting: a widget with a `vuePath` shows its Vue port by default — that is
+ * the version that ships, and the one that inherits brand.css theming. The
+ * author's original HTML stays one click away under the "Original" tab so
+ * they can check the port preserved their maths and interaction. Widgets with
+ * no port yet (normalization model) render the original alone, with no tabs.
+ *
+ * The Vue port renders in an <iframe src> rather than inline because these
+ * views own the full viewport (their own headers, backgrounds, and layout).
+ * Nesting one directly inside this page's grid would let its styles fight the
+ * library chrome; the iframe gives it the clean viewport it was built for.
  *
  * Route: /widgets (unlisted, direct access only — same as /styleguide).
  */
@@ -24,10 +30,26 @@ const activeWidget = computed(() =>
   WIDGETS.find((w) => w.id === activeId.value)
 );
 
-const iframeRef = ref(null);
+// "vue" | "original" — which version of the active widget to render.
+const viewMode = ref("vue");
 
-// Scroll content pane to top when switching widgets.
+// A widget can only offer the comparison if both versions exist.
+const hasVue = computed(() => Boolean(activeWidget.value?.vuePath));
+const hasOriginal = computed(() => Boolean(activeWidget.value?.srcHtml));
+const canCompare = computed(() => hasVue.value && hasOriginal.value);
+
+// The mode actually rendered. Guards the case where viewMode says "vue" but
+// this widget has no port (or vice versa), so we never render a blank frame.
+const resolvedMode = computed(() => {
+  if (viewMode.value === "vue" && hasVue.value) return "vue";
+  if (hasOriginal.value) return "original";
+  return hasVue.value ? "vue" : "none";
+});
+
+// Scroll content pane to top when switching widgets, and reset to the Vue
+// port — the canonical version — so each widget opens on its best foot.
 watch(activeId, async () => {
+  viewMode.value = "vue";
   await nextTick();
   document.querySelector(".wl-content")?.scrollTo?.({ top: 0 });
 });
@@ -105,12 +127,16 @@ const totalCount = WIDGETS.length;
             <span class="wl-author t-caption"
               >by {{ activeWidget.author }}</span
             >
+            <span v-if="!hasVue" class="wl-badge-pending t-caption">
+              Not yet ported
+            </span>
             <router-link
-              v-if="activeWidget.vuePath"
+              v-if="hasVue"
               :to="activeWidget.vuePath"
               class="wl-vue-link t-caption"
+              title="Open the Vue version full-screen, outside the library"
             >
-              Vue version →
+              Open full-screen →
             </router-link>
           </div>
           <h1 class="wl-title">{{ activeWidget.title }}</h1>
@@ -121,16 +147,56 @@ const totalCount = WIDGETS.length;
           </div>
         </div>
 
-        <!-- Widget iframe -->
+        <!-- Version switcher: only meaningful when both versions exist -->
+        <div v-if="canCompare" class="wl-tabs" role="tablist">
+          <button
+            class="wl-tab"
+            :class="{ 'is-active': resolvedMode === 'vue' }"
+            role="tab"
+            :aria-selected="resolvedMode === 'vue'"
+            @click="viewMode = 'vue'"
+          >
+            Vue port
+          </button>
+          <button
+            class="wl-tab"
+            :class="{ 'is-active': resolvedMode === 'original' }"
+            role="tab"
+            :aria-selected="resolvedMode === 'original'"
+            @click="viewMode = 'original'"
+          >
+            Original
+          </button>
+          <span class="wl-tab-hint t-caption">
+            {{
+              resolvedMode === "vue"
+                ? "Themed, responsive, ships in the book"
+                : "The author's original file, unchanged"
+            }}
+          </span>
+        </div>
+
+        <!-- Widget frame. Keyed on id + mode so switching either one forces a
+             clean remount rather than reusing a stale document. -->
         <div class="wl-frame-wrap">
           <iframe
+            v-if="resolvedMode === 'vue'"
             ref="iframeRef"
-            :key="activeWidget.id"
+            :key="activeWidget.id + '-vue'"
+            :src="activeWidget.vuePath"
+            :style="{ height: activeWidget.height ?? '600px' }"
+            class="wl-frame"
+            :title="activeWidget.title + ' (Vue port)'"
+          />
+          <iframe
+            v-else-if="resolvedMode === 'original'"
+            ref="iframeRef"
+            :key="activeWidget.id + '-original'"
             :srcdoc="activeWidget.srcHtml"
             :style="{ height: activeWidget.height ?? '600px' }"
             class="wl-frame"
             sandbox="allow-scripts allow-same-origin"
-            :title="activeWidget.title"
+            :title="activeWidget.title + ' (original)'"
           />
         </div>
       </template>
@@ -284,6 +350,12 @@ const totalCount = WIDGETS.length;
 .wl-vue-link:hover {
   text-decoration: underline;
 }
+.wl-badge-pending {
+  color: rgb(var(--color-mute));
+  border: 1px dashed rgb(var(--color-line));
+  border-radius: 999px;
+  padding: 0.0625rem 0.5rem;
+}
 
 .wl-title {
   font-size: 1.5rem;
@@ -303,6 +375,41 @@ const totalCount = WIDGETS.length;
 .wl-deps-label {
   font-weight: 500;
   color: rgb(var(--color-ink));
+}
+
+/* ── Version tabs ────────────────────────────────────────────────────── */
+.wl-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+.wl-tab {
+  padding: 0.3125rem 0.75rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  background: transparent;
+  color: rgb(var(--color-mute));
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+.wl-tab:hover {
+  color: rgb(var(--color-ink));
+}
+.wl-tab.is-active {
+  background: rgb(var(--color-accent) / 0.12);
+  border-color: rgb(var(--color-accent) / 0.4);
+  color: rgb(var(--color-accent));
+}
+.wl-tab-hint {
+  color: rgb(var(--color-mute));
+  margin-left: 0.25rem;
 }
 
 /* ── Iframe ──────────────────────────────────────────────────────────── */
