@@ -7,17 +7,25 @@ import { fetchReferences } from "@/services/api/chapters";
 export function useReferences() {
   const references = ref([]);
   const loading = ref(false);
+  let fetchGeneration = 0;
 
   async function fetchRefs(moduleId) {
-    if (!moduleId) return;
+    const generation = ++fetchGeneration;
+    references.value = [];
+    if (!moduleId) {
+      loading.value = false;
+      return;
+    }
     loading.value = true;
     try {
-      references.value = await fetchReferences(moduleId);
+      const nextReferences = await fetchReferences(moduleId);
+      if (generation === fetchGeneration) references.value = nextReferences;
     } catch (err) {
+      if (generation !== fetchGeneration) return;
       console.error("useReferences: Failed to fetch references:", err);
       references.value = [];
     } finally {
-      loading.value = false;
+      if (generation === fetchGeneration) loading.value = false;
     }
   }
 

@@ -72,7 +72,7 @@ defineExpose({ isValid });
           id="chapter-title"
           type="text"
           class="form-input"
-          placeholder="e.g. Visual Perception and UX"
+          placeholder="e.g. Foundations of Neuroscience"
           :value="meta.title"
           @input="onTitleInput"
           autofocus

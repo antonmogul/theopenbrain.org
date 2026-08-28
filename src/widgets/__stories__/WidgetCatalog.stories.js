@@ -15,6 +15,14 @@
  */
 import { WIDGETS, widgetsByChapter } from "@/widgets/catalog";
 
+const APP_BASE_URL =
+  import.meta.env.VITE_STORYBOOK_APP_BASE_URL || "http://localhost:4173";
+
+function appUrl(path) {
+  const base = APP_BASE_URL.endsWith("/") ? APP_BASE_URL : `${APP_BASE_URL}/`;
+  return new URL(path.replace(/^\//, ""), base).href;
+}
+
 export default {
   title: "Widgets/Catalog",
   tags: ["autodocs"],
@@ -31,7 +39,7 @@ export default {
 };
 
 const table = (groups) => ({
-  data: () => ({ groups }),
+  data: () => ({ groups, appUrl }),
   template: `
     <div style="font-family:var(--font-body); color:rgb(var(--color-ink)); max-width:900px;">
       <section v-for="g in groups" :key="g.chapter" style="margin-bottom:32px;">
@@ -49,7 +57,7 @@ const table = (groups) => ({
             </div>
           </div>
           <div style="width:180px; flex-shrink:0; font-family:var(--font-mono); font-size:11px;">
-            <a v-if="w.vuePath" :href="w.vuePath" target="_blank" rel="noreferrer"
+            <a v-if="w.vuePath" :href="appUrl(w.vuePath)" target="_blank" rel="noreferrer"
                style="color:rgb(var(--color-accent)); text-decoration:none;">
               {{ w.vuePath }} ↗
             </a>

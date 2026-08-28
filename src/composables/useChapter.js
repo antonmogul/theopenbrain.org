@@ -11,6 +11,7 @@ export function useChapter() {
   const transformedData = ref(null);
   const loading = ref(false);
   const error = ref(null);
+  let fetchGeneration = 0;
 
   /**
    * Convert JSONB content blocks to HTML text
@@ -463,11 +464,17 @@ export function useChapter() {
 
   /**
    * Fetch chapter by slug - using direct REST API
-   * @param {string} slug - The chapter slug (e.g., 'visual-perception-ux')
+   * @param {string} slug - The chapter slug (e.g., 'foundations-of-neuroscience')
    */
   async function fetchChapter(slug) {
+    const generation = ++fetchGeneration;
     loading.value = true;
     error.value = null;
+    // A route change must never expose the preceding chapter while the next
+    // request is pending (or after it fails). ChapterView keys all of its
+    // reader-specific initialization from transformedData.moduleId.
+    chapterData.value = null;
+    transformedData.value = null;
 
     try {
       if (!slug) {
@@ -481,6 +488,10 @@ export function useChapter() {
         `modules?slug=eq.${encodeURIComponent(slug)}&select=id,title,slug,order_index,status`
       );
 
+      if (generation !== fetchGeneration) {
+        return { data: null, error: null, stale: true };
+      }
+
       console.log("useChapter: Module query result:", modules);
 
       const moduleData = modules?.[0];
@@ -492,6 +503,10 @@ export function useChapter() {
       const sectionsData = await supabaseRest(
         `sections?module_id=eq.${moduleData.id}&select=id,title,slug,order_index,module_id,animation_id,animation_config&order=order_index.asc`
       );
+
+      if (generation !== fetchGeneration) {
+        return { data: null, error: null, stale: true };
+      }
 
       console.log("useChapter: Sections query result:", sectionsData?.length);
 
@@ -505,6 +520,10 @@ export function useChapter() {
         paragraphsData = await supabaseRest(
           `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,animation_id,animation_trigger,is_subsection_header,subsection_level,content_text,section_id&order=order_index.asc`
         );
+
+        if (generation !== fetchGeneration) {
+          return { data: null, error: null, stale: true };
+        }
 
         console.log(
           "useChapter: Paragraphs query result:",
@@ -525,6 +544,9 @@ export function useChapter() {
         const animRows = await supabaseRest(
           `animations?id=in.(${animIdsParam})&select=id,animation_key,title`
         );
+        if (generation !== fetchGeneration) {
+          return { data: null, error: null, stale: true };
+        }
         const animById = new Map((animRows || []).map((a) => [a.id, a]));
         for (const p of paragraphsData) {
           const a = p.animation_id && animById.get(p.animation_id);
@@ -597,11 +619,18 @@ export function useChapter() {
 
       return { data: transformedData.value, error: null };
     } catch (err) {
+      if (generation !== fetchGeneration) {
+        return { data: null, error: null, stale: true };
+      }
       console.error("useChapter: Error fetching chapter:", err);
+      chapterData.value = null;
+      transformedData.value = null;
       error.value = err.message;
       return { data: null, error: err };
     } finally {
-      loading.value = false;
+      if (generation === fetchGeneration) {
+        loading.value = false;
+      }
     }
   }
 

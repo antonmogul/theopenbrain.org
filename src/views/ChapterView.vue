@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, watch, computed, ref, nextTick, provide } from "vue";
-import { useRoute } from "vue-router";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
 import EyeStart from "@/components/chapter/text/EyeStart.vue";
@@ -32,6 +32,10 @@ import { useAuth } from "@/composables/useAuth";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
+import {
+  restoreAfterLayout,
+  scrollTopForReadingPercent,
+} from "@/helper/readingProgress";
 
 const route = useRoute();
 const store = useGeneral();
@@ -74,7 +78,13 @@ const { renderAllHighlights } = useHighlightRenderer(highlightsByParagraph);
 const {
   initForModule: initReadingProgress,
   progress: readingProgress,
+  scrollPercent: readingScrollPercent,
   timeSpent: readingTimeSpent,
+  saveError: readingSaveError,
+  identityVersion: readingIdentityVersion,
+  readyIdentityVersion: readyReadingIdentityVersion,
+  retrySave: retryReadingProgressSave,
+  stopTracking: stopReadingProgress,
 } = useReadingProgress();
 
 // References for Supabase chapters (citations system)
@@ -105,10 +115,19 @@ provide("references", {
   references,
   getReference,
 });
+provide("readingProgress", {
+  progress: readingScrollPercent,
+  timeSpent: readingTimeSpent,
+});
 
-// Extract route params
-const chapterNumber = route.params.number;
-const chapterSlug = route.params.slug;
+// Route params remain reactive when Vue Router reuses this view instance for
+// chapter-to-chapter navigation.
+const chapterNumber = computed(() => route.params.number);
+const chapterSlug = computed(() => route.params.slug);
+const courseId = computed(() => {
+  const value = route.query.courseId;
+  return Array.isArray(value) ? value[0] || null : value || null;
+});
 
 // Computed module ID — all chapters now load from Supabase
 const currentModuleId = computed(() => {
@@ -148,13 +167,17 @@ const currentModuleMeta = computed(() =>
   currentModuleId.value ? findById(currentModuleId.value) : null
 );
 
-const calloutProgressPercent = computed(
-  () => readingProgress.value?.scroll_position || 0
-);
-const calloutTimeSpent = computed(
-  () =>
-    (readingProgress.value?.time_spent_seconds || 0) +
-    (readingTimeSpent.value || 0)
+const calloutProgressPercent = computed(() => readingScrollPercent.value);
+const calloutTimeSpent = computed(() => readingTimeSpent.value || 0);
+
+watch(
+  readingScrollPercent,
+  (percent) => {
+    // Keep legacy reader consumers on the same document-level percentage as
+    // persistence, the dashboard and the Continue Reading card.
+    store.progress = percent / 100;
+  },
+  { immediate: true }
 );
 
 // Track if chapter data is loaded
@@ -162,6 +185,147 @@ const chapterDataLoaded = ref(false);
 
 // All chapters load from Supabase
 const { fetchChapter, transformedData, loading, error } = useChapter();
+
+function nextAnimationFrame() {
+  return new Promise((resolve) => requestAnimationFrame(resolve));
+}
+
+function waitForImage(image, timeoutMs = 4000) {
+  if (image.complete) {
+    return image.decode?.().catch(() => {}) || Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    let timeout;
+    const finish = () => {
+      clearTimeout(timeout);
+      image.removeEventListener("load", finish);
+      image.removeEventListener("error", finish);
+      resolve();
+    };
+
+    image.addEventListener("load", finish, { once: true });
+    image.addEventListener("error", finish, { once: true });
+    timeout = setTimeout(finish, timeoutMs);
+  });
+}
+
+async function settleChapterContent() {
+  await nextTick();
+  if (document.fonts?.ready) {
+    await document.fonts.ready.catch(() => {});
+  }
+
+  const reader = document.querySelector(".chapter-reader");
+  const images = Array.from(reader?.querySelectorAll("img") || []);
+  await Promise.all(images.map((image) => waitForImage(image)));
+
+  // Fonts and images can trigger more than one layout pass. Require the
+  // document height to be stable across consecutive frames before converting
+  // a persisted percentage back into a pixel offset.
+  let previousHeight = -1;
+  let stableFrames = 0;
+  for (let frame = 0; frame < 30 && stableFrames < 3; frame += 1) {
+    await nextAnimationFrame();
+    const height = document.documentElement.scrollHeight;
+    stableFrames = height === previousHeight ? stableFrames + 1 : 0;
+    previousHeight = height;
+  }
+}
+
+async function restorePersistedReadingPosition({
+  moduleId: expectedModuleId,
+  courseId: expectedCourseId,
+  identity: expectedIdentity,
+}) {
+  if (route.query.resume !== "1") return;
+
+  const percent = readingProgress.value?.scroll_position;
+  if (!Number.isFinite(Number(percent)) || Number(percent) <= 0) return;
+
+  await restoreAfterLayout({
+    waitForLayout: settleChapterContent,
+    isCurrent: () =>
+      currentModuleId.value === expectedModuleId &&
+      courseId.value === expectedCourseId &&
+      readingIdentityVersion.value === expectedIdentity &&
+      route.query.resume === "1",
+    restore: () =>
+      window.scrollTo({
+        top: scrollTopForReadingPercent(
+          percent,
+          document.documentElement.scrollHeight,
+          window.innerHeight
+        ),
+        behavior: "auto",
+      }),
+  });
+}
+
+async function initializeChapterExperience() {
+  const moduleId = currentModuleId.value;
+  if (!moduleId) return;
+
+  await initReadingProgress(moduleId, courseId.value);
+}
+
+function clearUserReaderState() {
+  highlights.value = [];
+  notes.value = [];
+  clearSelection();
+}
+
+let hydrationRun = 0;
+async function hydrateAuthenticatedReader(identity) {
+  const run = ++hydrationRun;
+  const moduleId = currentModuleId.value;
+  const expectedCourseId = courseId.value;
+  if (!isAuthenticated.value || !moduleId) return;
+
+  await fetchHighlights();
+  if (
+    run !== hydrationRun ||
+    readingIdentityVersion.value !== identity ||
+    currentModuleId.value !== moduleId ||
+    !isAuthenticated.value
+  )
+    return;
+  await fetchNotes();
+  if (
+    run !== hydrationRun ||
+    readingIdentityVersion.value !== identity ||
+    currentModuleId.value !== moduleId ||
+    !isAuthenticated.value
+  )
+    return;
+  await restorePersistedReadingPosition({
+    moduleId,
+    courseId: expectedCourseId,
+    identity,
+  });
+  await nextTick();
+  if (
+    run !== hydrationRun ||
+    readingIdentityVersion.value !== identity ||
+    currentModuleId.value !== moduleId ||
+    !isAuthenticated.value
+  )
+    return;
+  renderAllHighlights();
+}
+
+watch(readingIdentityVersion, () => {
+  hydrationRun += 1;
+  clearUserReaderState();
+});
+
+watch(
+  [readyReadingIdentityVersion, readingIdentityVersion, isAuthenticated],
+  ([readyIdentity, identity, authenticated]) => {
+    if (!authenticated || readyIdentity !== identity) return;
+    void hydrateAuthenticatedReader(identity);
+  }
+);
 
 // Load chapter data from Supabase by slug
 async function loadChapter() {
@@ -171,7 +335,7 @@ async function loadChapter() {
   console.log("ChapterView: Loading chapter:", currentNumber, currentSlug);
   chapterDataLoaded.value = false;
 
-  if (!currentSlug) return;
+  if (!currentSlug) return false;
 
   // Clear stale localStorage data from previous chapter
   const storedData = localStorage.getItem("sections")
@@ -197,9 +361,12 @@ async function loadChapter() {
     storeText.updateText("*", data);
     await nextTick();
     chapterDataLoaded.value = true;
+    return true;
   } else if (fetchError) {
     console.error("ChapterView: Failed to load chapter:", fetchError);
   }
+
+  return false;
 }
 
 // Computed property to determine if content should be shown
@@ -212,42 +379,60 @@ const showContent = computed(() => {
   );
 });
 
+const chapterNotFound = computed(() => error.value?.includes("not found"));
+let chapterExperienceGeneration = 0;
+
 // Load chapter on mount and when route changes
 onMounted(async () => {
-  await loadChapter();
+  const generation = ++chapterExperienceGeneration;
+  const loaded = await loadChapter();
+  if (generation !== chapterExperienceGeneration) return;
+  if (!loaded) return;
   // Fetch references for Supabase chapters (available for all users)
   if (currentModuleId.value) {
     fetchRefs(currentModuleId.value);
   }
-  // Fetch highlights and start tracking for authenticated users on Supabase chapters
-  if (isAuthenticated.value && currentModuleId.value) {
-    await fetchHighlights();
-    await fetchNotes();
-    initReadingProgress(currentModuleId.value);
-    // Render highlights after DOM has updated with chapter content
-    await nextTick();
-    renderAllHighlights();
+  // Track live progress for every reader; authenticated readers also hydrate
+  // persistence, highlights and notes.
+  if (currentModuleId.value) {
+    await initializeChapterExperience();
   }
 });
 
 watch(
-  () => [route.params.number, route.params.slug],
+  () => [route.params.number, route.params.slug, route.query.courseId],
   async () => {
-    await loadChapter();
+    const generation = ++chapterExperienceGeneration;
+    clearUserReaderState();
+    void fetchRefs(null);
+    // Finalize the previous module while its document is still mounted. Saving
+    // after loadChapter() would measure the new chapter against the old ID.
+    await stopReadingProgress();
+    if (generation !== chapterExperienceGeneration) return;
+    const loaded = await loadChapter();
+    if (generation !== chapterExperienceGeneration) return;
+    // A missing/failed destination has no module to hydrate. useChapter also
+    // clears its old refs, so the preceding module cannot leak into this path.
+    if (!loaded) {
+      await initReadingProgress(null, null);
+      return;
+    }
     // Fetch references for Supabase chapters
     if (currentModuleId.value) {
       fetchRefs(currentModuleId.value);
     }
-    // Re-fetch highlights when chapter changes
-    if (isAuthenticated.value && currentModuleId.value) {
-      await fetchHighlights();
-      await fetchNotes();
-      initReadingProgress(currentModuleId.value);
-      await nextTick();
-      renderAllHighlights();
+    if (currentModuleId.value) {
+      await initializeChapterExperience();
     }
   }
 );
+
+// Vue keeps the chapter DOM mounted while this guard runs, so the final
+// percentage is measured against the document the user actually read. Awaiting
+// also ensures navigation cannot tear it down before the save is queued.
+onBeforeRouteLeave(async () => {
+  await stopReadingProgress();
+});
 
 // === Phase 3A: Highlighting System Handlers ===
 
@@ -353,10 +538,21 @@ async function handleDeleteHighlight(highlightId) {
     >
       <div class="text-center max-w-md p-8">
         <p class="text-xl font-bold mb-4">
-          Error loading Chapter {{ chapterNumber }}
+          {{
+            chapterNotFound
+              ? "Chapter not found"
+              : `Error loading Chapter ${chapterNumber}`
+          }}
         </p>
         <p class="text-gray-600 mb-4">{{ error }}</p>
-        <p class="text-sm text-gray-500">
+        <RouterLink
+          v-if="chapterNotFound"
+          to="/chapters"
+          class="text-sm underline underline-offset-4"
+        >
+          Browse available chapters
+        </RouterLink>
+        <p v-else class="text-sm text-gray-500">
           Make sure:
           <br />1. The seed script has been run in Supabase <br />2. RLS
           policies allow reads (run the RLS fix script) <br />3. Your Supabase
@@ -374,7 +570,14 @@ async function handleDeleteHighlight(highlightId) {
         :chapter-title="chapterTitle"
         :chapter-number="chapterNumber"
         :sections="breadcrumbSections"
+        :progress-percent="readingScrollPercent"
+        :is-authenticated="isAuthenticated"
       />
+
+      <div v-if="readingSaveError" class="save-error" role="alert">
+        <span>{{ readingSaveError }}</span>
+        <button type="button" @click="retryReadingProgressSave">Retry</button>
+      </div>
 
       <div
         :class="
@@ -503,6 +706,51 @@ export default {
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.save-error {
+  position: fixed;
+  z-index: 210;
+  top: calc(var(--reader-topbar-h) + 0.75rem);
+  right: 1rem;
+  max-width: min(26rem, calc(100vw - 2rem));
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgb(var(--color-warn));
+  border-radius: 6px;
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  box-shadow: 0 8px 24px rgb(var(--color-ink) / 0.14);
+  font-family: var(--font-ui);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-lh);
+}
+
+.save-error button {
+  min-height: 44px;
+  padding: 0 0.875rem;
+  border: 1px solid rgb(var(--color-ink));
+  border-radius: 4px;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .student-tools-toggle {
+    min-height: 44px;
+    right: 0.75rem;
+    bottom: 0.75rem;
+  }
+
+  .save-error {
+    left: 0.75rem;
+    right: 0.75rem;
+  }
 }
 
 .student-tools-toggle:hover {

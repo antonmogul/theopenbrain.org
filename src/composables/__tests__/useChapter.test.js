@@ -80,6 +80,42 @@ async function transform(paragraphs) {
   return transformedData.value.sections.find((s) => s.id === SECTION_ID);
 }
 
+describe("useChapter missing chapter", () => {
+  it("returns a controlled not-found error for a retired slug", async () => {
+    apiRequest.mockResolvedValue([]);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { fetchChapter, error } = useChapter();
+    const result = await fetchChapter("visual-perception-ux");
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBeInstanceOf(Error);
+    expect(error.value).toBe(
+      'Chapter with slug "visual-perception-ux" not found'
+    );
+  });
+
+  it("clears a previously loaded chapter when the next route slug is missing", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    mockRest({ sections: mainSection(), paragraphs: [para(1, 0)] });
+    const { fetchChapter, chapterData, transformedData } = useChapter();
+
+    await fetchChapter("the-retina");
+    expect(chapterData.value?.id).toBe(MODULE_ID);
+    expect(transformedData.value?.moduleId).toBe(MODULE_ID);
+
+    apiRequest.mockResolvedValue([]);
+    const result = await fetchChapter("visual-perception-ux");
+
+    expect(result.data).toBeNull();
+    expect(chapterData.value).toBeNull();
+    expect(transformedData.value).toBeNull();
+  });
+});
+
 describe("useChapter reconstructNesting flush (CODE-FIX #1)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

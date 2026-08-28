@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onBeforeUnmount, nextTick, watch } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useDraggablePanel } from "@/composables/useDraggablePanel";
 import { useAuth } from "@/composables/useAuth";
@@ -27,6 +27,8 @@ const props = defineProps({
 
 const { isOpen, activeTab, close, setTab } = useReaderSidebar();
 const { session } = useAuth();
+let panelTrigger = null;
+let demoRequestGeneration = 0;
 
 // Floating-panel drag: the handle scopes dragging to the grip only, so tabs
 // and content stay clickable. Position persists + clamps (brief §6.7).
@@ -44,6 +46,40 @@ const tabs = [
   { key: "notebook", label: "Notebook" },
   { key: "chat", label: "Chat" },
 ];
+const tabRefs = ref([]);
+
+watch(isOpen, async (open) => {
+  if (open) {
+    panelTrigger = document.activeElement;
+    await nextTick();
+    const activeIndex = tabs.findIndex((tab) => tab.key === activeTab.value);
+    tabRefs.value[Math.max(0, activeIndex)]?.focus();
+  } else {
+    activeDemo.value = null;
+    await nextTick();
+    if (panelTrigger?.isConnected) panelTrigger.focus();
+    panelTrigger = null;
+  }
+});
+
+onBeforeUnmount(() => {
+  if (panelTrigger?.isConnected) panelTrigger.focus();
+});
+
+async function onTabKeydown(event, index) {
+  let nextIndex = index;
+  if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+  else if (event.key === "ArrowLeft") {
+    nextIndex = (index - 1 + tabs.length) % tabs.length;
+  } else if (event.key === "Home") nextIndex = 0;
+  else if (event.key === "End") nextIndex = tabs.length - 1;
+  else return;
+
+  event.preventDefault();
+  setTab(tabs[nextIndex].key);
+  await nextTick();
+  tabRefs.value[nextIndex]?.focus();
+}
 
 // --- Demos state ---
 const activeDemo = ref(null); // null | { type: 'quiz'|'flashcards'|'lab', id?, title? }
@@ -55,8 +91,9 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-async function fetchDemoItems() {
-  if (!props.moduleId || !supabaseUrl) return;
+async function fetchDemoItems(moduleId = props.moduleId) {
+  if (!moduleId || !supabaseUrl) return;
+  const generation = ++demoRequestGeneration;
   demosLoading.value = true;
 
   const accessToken = session.value?.access_token || supabaseKey;
@@ -69,33 +106,39 @@ async function fetchDemoItems() {
   try {
     const [quizRes, labRes] = await Promise.all([
       fetch(
-        `${supabaseUrl}/rest/v1/quizzes?module_id=eq.${props.moduleId}&select=id,title&limit=3`,
+        `${supabaseUrl}/rest/v1/quizzes?module_id=eq.${moduleId}&select=id,title&limit=3`,
         { headers }
       ),
       fetch(
-        `${supabaseUrl}/rest/v1/code_labs?module_id=eq.${props.moduleId}&select=id,title&order=order_index`,
+        `${supabaseUrl}/rest/v1/code_labs?module_id=eq.${moduleId}&select=id,title&order=order_index`,
         { headers }
       ),
     ]);
 
-    if (quizRes.ok) {
-      demoItems.value.quizzes = await quizRes.json();
+    const quizzes = quizRes.ok ? await quizRes.json() : [];
+    const labs = labRes.ok ? await labRes.json() : [];
+    if (generation !== demoRequestGeneration || moduleId !== props.moduleId) {
+      return;
     }
-    if (labRes.ok) {
-      demoItems.value.labs = await labRes.json();
-    }
+    demoItems.value = { quizzes, labs };
   } catch (e) {
     console.error("ReaderSidebar: Error fetching demo items:", e);
   } finally {
-    demosLoading.value = false;
+    if (generation === demoRequestGeneration) demosLoading.value = false;
   }
 }
 
-onMounted(() => {
-  if (props.isAuthenticated && props.moduleId) {
-    fetchDemoItems();
-  }
-});
+watch(
+  () => [props.moduleId, props.isAuthenticated],
+  ([moduleId, authenticated]) => {
+    demoRequestGeneration += 1;
+    activeDemo.value = null;
+    demoItems.value = { quizzes: [], labs: [] };
+    demosLoading.value = false;
+    if (authenticated && moduleId) fetchDemoItems(moduleId);
+  },
+  { immediate: true }
+);
 
 function openDemo(type, id, title) {
   activeDemo.value = { type, id, title };
@@ -128,14 +171,22 @@ function demoModalTitle() {
     <Transition name="panel">
       <aside
         v-if="isOpen"
+        id="reader-sidebar"
         ref="panelRef"
         class="toolkit-panel"
         data-testid="reader-sidebar"
+        aria-label="Student tools"
         :style="{ left: `${panelX}px`, top: `${panelY}px` }"
+        @keydown.esc.stop="close"
       >
         <!-- Drag handle + tab bar -->
-        <div class="tab-bar">
-          <div ref="handleRef" class="drag-handle" title="Drag to move">
+        <div class="tab-bar" role="tablist" aria-label="Student tools">
+          <div
+            ref="handleRef"
+            class="drag-handle"
+            title="Drag to move"
+            aria-hidden="true"
+          >
             <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
               <circle cx="2" cy="3" r="1" />
               <circle cx="8" cy="3" r="1" />
@@ -146,22 +197,41 @@ function demoModalTitle() {
             </svg>
           </div>
           <button
-            v-for="tab in tabs"
+            v-for="(tab, index) in tabs"
             :key="tab.key"
+            ref="tabRefs"
             class="tab-btn"
             :class="{ active: activeTab === tab.key }"
+            type="button"
+            role="tab"
+            :id="`reader-tab-${tab.key}`"
+            aria-controls="reader-tabpanel"
+            :aria-selected="activeTab === tab.key"
+            :tabindex="activeTab === tab.key ? 0 : -1"
             @click="setTab(tab.key)"
+            @keydown="onTabKeydown($event, index)"
           >
             {{ tab.label }}
           </button>
 
-          <button class="close-btn" @click="close" title="Close toolkit">
+          <button
+            type="button"
+            class="close-btn"
+            aria-label="Close student tools"
+            @click="close"
+          >
             <CloseIcon :width="16" :height="16" />
           </button>
         </div>
 
         <!-- Tab content with KeepAlive for ChatTab -->
-        <div class="tab-content">
+        <div
+          id="reader-tabpanel"
+          class="tab-content"
+          role="tabpanel"
+          :aria-labelledby="`reader-tab-${activeTab}`"
+          tabindex="0"
+        >
           <KeepAlive include="ChatTab">
             <InfoTab v-if="activeTab === 'info'" />
             <NotebookTab
@@ -188,6 +258,7 @@ function demoModalTitle() {
             <button
               v-if="demoItems.quizzes.length > 0"
               class="demo-btn"
+              type="button"
               @click="
                 openDemo(
                   'quiz',
@@ -218,6 +289,7 @@ function demoModalTitle() {
             <!-- Flashcards button -->
             <button
               class="demo-btn"
+              type="button"
               @click="openDemo('flashcards', moduleId, 'Flashcards')"
               title="Study flashcards"
             >
@@ -244,6 +316,7 @@ function demoModalTitle() {
               v-for="lab in demoItems.labs"
               :key="lab.id"
               class="demo-btn"
+              type="button"
               @click="openDemo('lab', lab.id, lab.title)"
               :title="lab.title"
             >
@@ -267,6 +340,7 @@ function demoModalTitle() {
             <!-- Cone Explorer button (always visible) -->
             <button
               class="demo-btn"
+              type="button"
               @click="openDemo('explorer', null, 'Cone Spectral Sensitivity')"
               title="Explore cone spectral sensitivity"
             >
@@ -368,6 +442,7 @@ export default {
 
 .tab-btn {
   flex: 1;
+  min-height: 44px;
   padding: 12px 8px;
   background: none;
   border: none;
@@ -393,7 +468,8 @@ export default {
 }
 
 .close-btn {
-  width: 36px;
+  width: 44px;
+  min-height: 44px;
   border: none;
   background: none;
   cursor: pointer;
@@ -459,6 +535,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 44px;
   padding: 0.5rem 0.625rem;
   background: transparent;
   border: 1px solid rgb(var(--color-line));
@@ -490,6 +567,14 @@ export default {
   color: rgb(var(--color-ink));
 }
 
+.tab-btn:focus-visible,
+.close-btn:focus-visible,
+.demo-btn:focus-visible,
+.tab-content:focus-visible {
+  outline: 3px solid rgb(var(--color-accent));
+  outline-offset: -3px;
+}
+
 /* Panel entrance — scale-up fade, no backdrop (brief §6.5 modal feel) */
 .panel-enter-active {
   transition:
@@ -515,6 +600,30 @@ export default {
   .panel-enter-from,
   .panel-leave-to {
     transform: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .toolkit-panel {
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    height: min(75dvh, 620px);
+    max-height: calc(100dvh - var(--reader-topbar-h));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .drag-handle {
+    display: none;
+  }
+
+  .demos-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

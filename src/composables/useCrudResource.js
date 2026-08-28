@@ -37,6 +37,7 @@ export function useCrudResource({
   const list = ref(initial);
   const loading = ref(false);
   const error = ref(null);
+  let fetchVersion = 0;
 
   /**
    * Run a read query and load the result into `list`.
@@ -44,19 +45,25 @@ export function useCrudResource({
    * message on `error`, and resets the list to [].
    * @param {string} query PostgREST query string.
    */
-  async function runFetch(query) {
+  async function runFetch(query, { shouldCommit } = {}) {
+    const version = ++fetchVersion;
+    const isLatest = () => version === fetchVersion;
+    const canCommit = () => isLatest() && (!shouldCommit || shouldCommit());
     loading.value = true;
     error.value = null;
 
     try {
       const data = await request(query);
-      list.value = data || [];
+      if (canCommit()) list.value = data || [];
     } catch (e) {
-      console.error(`${logLabel}: Error fetching:`, e);
-      error.value = e.message;
-      list.value = [];
+      if (canCommit()) {
+        console.error(`${logLabel}: Error fetching:`, e);
+        error.value = e.message;
+        list.value = [];
+      }
     } finally {
-      loading.value = false;
+      // An older request must not make a newer request appear finished.
+      if (isLatest()) loading.value = false;
     }
   }
 

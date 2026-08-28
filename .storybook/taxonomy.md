@@ -52,7 +52,14 @@ existing `__tests__/` convention:
 
 ## Coverage
 
-`/styleguide` catalogues 43 of 137 components. The migration target is
-Foundations and Student first (highest reuse, most churn), then Chapter and
-Admin. Widgets last — they are full-page views and need a different story
-shape than a component does.
+The app currently has 137 Vue components. Storybook has 11 story files: eight
+component stories plus the colour, typography, and widget-catalog references.
+The separate `/styleguide` route catalogues 43 components.
+
+The migration target is Foundations and Student first (highest reuse, most
+churn), then Chapter and Admin. Widgets last — they are full-page views and need
+a different story shape than a component does.
+
+Widget catalog links use `VITE_STORYBOOK_APP_BASE_URL` so a hosted Storybook can
+target its matching app deployment. Local builds default to
+`http://localhost:4173` (`npm run preview`).

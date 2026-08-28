@@ -63,6 +63,34 @@ describe("useHighlights", () => {
     );
   });
 
+  it("does not let a deferred fetch from the previous account overwrite the current account", async () => {
+    let resolveA;
+    let resolveB;
+    const responseA = new Promise((resolve) => {
+      resolveA = resolve;
+    });
+    const responseB = new Promise((resolve) => {
+      resolveB = resolve;
+    });
+    authedRequest.mockImplementation((query) =>
+      query.includes("user_id=eq.user-a") ? responseA : responseB
+    );
+
+    user.value = { id: "user-a" };
+    const { highlights, fetchHighlights } = useHighlights();
+    const fetchA = fetchHighlights();
+
+    user.value = { id: "user-b" };
+    const fetchB = fetchHighlights();
+    resolveB([{ id: "highlight-b" }]);
+    await fetchB;
+    expect(highlights.value).toEqual([{ id: "highlight-b" }]);
+
+    resolveA([{ id: "highlight-a" }]);
+    await fetchA;
+    expect(highlights.value).toEqual([{ id: "highlight-b" }]);
+  });
+
   it("createHighlight POSTs snake_case payload and appends to local state", async () => {
     authedRequest.mockResolvedValue([{ id: "new", color: "green" }]);
     const { highlights, createHighlight } = useHighlights();
