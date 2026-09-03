@@ -1,4 +1,5 @@
 import { computed, provide, ref } from "vue";
+import animationData from "@/assets/json_backend/animations.json";
 import { useGeneral, useText } from "@/stores";
 
 export const retinaChapter = {
@@ -169,24 +170,41 @@ export const lab = {
   test_cases: [{ name: "peaks at one", expected: 1 }],
 };
 
+/**
+ * Frame options may be plain data or a function of the story's args, so a
+ * control can drive fixture state (reading progress, highlight lists, the
+ * chapter itself) that a component receives through the store or
+ * provide/inject rather than through props.
+ */
+const resolveOption = (value, args) =>
+  typeof value === "function" ? value(args) : value;
+
 export function chapterFrame(Component, options = {}) {
   return (args = {}) => ({
     components: { StoryComponent: Component },
     setup() {
       const textStore = useText();
       const general = useGeneral();
-      textStore.$patch({ text: options.chapter || retinaChapter });
+      textStore.$patch({
+        text: resolveOption(options.chapter, args) || retinaChapter,
+      });
       general.$patch({
         progress: 0.62,
         currentSubChapter: "photoreceptors",
         activeImportMenu: true,
-        ...(options.general || {}),
+        ...(resolveOption(options.general, args) || {}),
       });
 
       if (options.provideReaderData) {
-        const highlightState = ref(options.highlights || highlights);
-        const noteState = ref(options.notes || notes);
-        const referenceState = ref(options.references || references);
+        const highlightState = ref(
+          resolveOption(options.highlights, args) || highlights
+        );
+        const noteState = ref(resolveOption(options.notes, args) || notes);
+        const referenceState = ref(
+          resolveOption(options.references, args) || references
+        );
+        const readingProgress =
+          resolveOption(options.readingProgress, args) || {};
         provide("highlights", {
           highlights: highlightState,
           highlightsByParagraph: computed(() => ({})),
@@ -208,8 +226,8 @@ export function chapterFrame(Component, options = {}) {
             referenceState.value.find((item) => item.number === number),
         });
         provide("readingProgress", {
-          progress: ref(62),
-          timeSpent: ref(1840),
+          progress: ref(readingProgress.progress ?? 62),
+          timeSpent: ref(readingProgress.timeSpent ?? 1840),
         });
       }
 
@@ -227,3 +245,113 @@ export const fullHeightFrame = {
   padding: "32px",
   background: "rgb(var(--color-bg))",
 };
+
+/*
+ * Frames shared by the per-component chapter stories. Each wraps chapterFrame
+ * with the surroundings a component expects in the reader, so a story file
+ * only has to say which one it lives in. Pass `template` to override.
+ */
+
+/** The prose column at reading width on the paper background. */
+export function proseFrame(Component, options = {}) {
+  return chapterFrame(Component, {
+    ...options,
+    template:
+      options.template ||
+      `<div style="max-width:760px;min-height:320px;margin:0 auto;padding:48px 64px;background:rgb(var(--color-paper));font:18px/1.65 var(--font-body);"><StoryComponent v-bind="args" /></div>`,
+  });
+}
+
+/** The figure pane: a positioned, clipped stage on the app background. */
+export function illustrationFrame(Component, options = {}) {
+  return chapterFrame(Component, {
+    ...options,
+    template:
+      options.template ||
+      `<div style="position:relative;min-height:720px;overflow:hidden;background:rgb(var(--color-bg));"><StoryComponent v-bind="args" /></div>`,
+  });
+}
+
+/** A demo panel as DemoModal hosts it. */
+export function modalFrame(Component, options = {}) {
+  return chapterFrame(Component, {
+    ...options,
+    template:
+      options.template ||
+      `<div style="min-height:680px;padding:40px;background:rgb(var(--color-bg));"><StoryComponent v-bind="args" /></div>`,
+  });
+}
+
+/** The reader sidebar's panel width and height. */
+export function sidebarFrame(Component, options = {}) {
+  return chapterFrame(Component, {
+    ...options,
+    template:
+      options.template ||
+      `<div style="width:min(420px,100%);height:640px;overflow:auto;border:1px solid rgb(var(--color-line));background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
+  });
+}
+
+/* Paragraph shapes the text renderers expect (see useChapter's transform). */
+
+export const imageParagraph = {
+  id: "retinal-layers-image",
+  img: "blind-spot",
+  imgCap:
+    "The optic disc contains no photoreceptors, producing a blind spot in each eye's visual field.",
+};
+
+export const subsectionParagraph = {
+  id: "parallel-pathways",
+  subSection: [
+    {
+      id: "on-off-pathways",
+      title: "ON and OFF pathways",
+      paragraphs: [
+        {
+          id: "on-off-1",
+          text: "ON bipolar cells signal light increments; OFF bipolar cells signal light decrements.",
+        },
+      ],
+    },
+  ],
+};
+
+export const subSubParagraph = {
+  id: "ganglion-types",
+  subSubSection: [
+    {
+      id: "midget-pathway",
+      title: "Midget pathway",
+      text: "Midget ganglion cells support high-acuity and red-green opponent signals near the fovea.",
+    },
+    {
+      id: "parasol-pathway",
+      title: "Parasol pathway",
+      paragraphs: [
+        {
+          id: "parasol-1",
+          text: "Parasol ganglion cells pool over wider areas and respond strongly to temporal contrast.",
+        },
+      ],
+    },
+  ],
+};
+
+export const footNotes = {
+  title: "Notes",
+  notes: [
+    { number: 1, text: "Rods are absent from the centre of the fovea." },
+    {
+      number: 2,
+      text: "The optic disc is the exit point for ganglion-cell axons.",
+    },
+  ],
+};
+
+/* Chapter 1 figure records from animations.json, for the Illus stories. */
+
+export const animationRecords = animationData.animations;
+export const animationIds = animationRecords.map((animation) => animation.id);
+export const animationById = (id) =>
+  animationRecords.find((animation) => animation.id === id);
