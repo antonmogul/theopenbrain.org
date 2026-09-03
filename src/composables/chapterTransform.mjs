@@ -47,6 +47,20 @@ export function extractChapter1Meta(blocks) {
       if (block.caption) meta.imgCap = block.caption;
       if (block.closed) meta.imgClosed = block.closed;
     }
+    if (block.type === "widget" && block.widgetId) {
+      // Author-placed interactive (OPENBRAIN-21). Same paragraph shape as
+      // src/widgets/placements.js produces, so the reader has one branch.
+      meta.type = "widget";
+      meta.widget = {
+        placementId: block.placementId || block.widgetId,
+        widgetId: block.widgetId,
+        kind: block.kind === "inline" ? "inline" : "breakout",
+        title: block.title || "",
+        blurb: block.blurb || "",
+        credit: block.credit || "",
+        route: block.route || "",
+      };
+    }
     if (block.type === "further_reading") {
       meta._isFurtherReading = true;
       meta.title = block.title;
@@ -113,6 +127,7 @@ export function contentBlocksToHTML(blocks) {
           "break_video",
           "further_reading",
           "footnote",
+          "widget",
         ].includes(block.type)
       ) {
         return "";
@@ -373,7 +388,12 @@ export function transformModuleToChapterFormat(module) {
     ? [
         {
           id: introSection.id,
-          title: introSection.title,
+          // The reader prints this as the chapter's h1, so it must be the
+          // chapter's name. Chapter 1 named its intro section after the
+          // chapter; Foundations calls its intro "Introduction", which read
+          // as the chapter title. The section's own title is kept alongside.
+          title: module.title || introSection.title,
+          sectionTitle: introSection.title,
           animation: introSection.animation_config || undefined,
           paragraphs: introSection.paragraphs
             ? introSection.paragraphs
@@ -390,7 +410,13 @@ export function transformModuleToChapterFormat(module) {
 
     const sectionObj = {
       id: section.id,
+      // Stable handle for widget placements (sections.slug is unique per
+      // module); titles get edited, slugs do not.
+      slug: section.slug,
       title: section.title,
+      // Foundations seeds its sidebars as sections slugged box-*; the reader
+      // letters those as breakout boxes instead of numbering them.
+      kind: section.slug?.startsWith("box-") ? "box" : "section",
       paragraphs,
     };
 
@@ -450,6 +476,8 @@ export function transformModuleToChapterFormat(module) {
 
   const transformed = {
     moduleId: module.id,
+    title: module.title || "",
+    slug: module.slug || "",
     intro,
     sections,
     furtherReading,
