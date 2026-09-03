@@ -1,38 +1,12 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useGeneral } from "@/stores";
 import { applyChapterAttr } from "@/helper/chapterTheme";
+import { getSessionFromStorage } from "@/utils/authHelpers";
+import { apiRequest } from "@/services/api/client";
+import { createAuthGuard } from "./guards";
 import HomeView from "@/views/HomeView.vue";
 
-// Helper to get session from localStorage (bypasses supabase-js client issues)
-function getSessionFromStorage() {
-  try {
-    const projectRef = import.meta.env.VITE_SUPABASE_URL?.match(
-      /https:\/\/([^.]+)/
-    )?.[1];
-    const storageKey = `sb-${projectRef}-auth-token`;
-    const sessionData = localStorage.getItem(storageKey);
-
-    if (!sessionData) {
-      return null;
-    }
-
-    const session = JSON.parse(sessionData);
-
-    // Check if session is expired
-    if (session.expires_at && session.expires_at * 1000 < Date.now()) {
-      console.log("Router: Session expired");
-      localStorage.removeItem(storageKey);
-      return null;
-    }
-
-    return session;
-  } catch (err) {
-    console.error("Router: Error reading session:", err);
-    return null;
-  }
-}
-
-const routes = [
+export const routes = [
   {
     path: "/",
     name: "home",
@@ -238,157 +212,103 @@ const routes = [
   },
 ];
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
-  scrollBehavior(to, from, savedPosition) {
+/*
+ * Role lookup for the auth guard. Goes through the shared REST client so a
+ * non-2xx response throws — the guard turns a throw (or an empty result) into
+ * a fail-closed redirect. The bearer token is passed explicitly rather than
+ * relying on the client's session holder, which is only populated once
+ * useAuth has been imported and is not guaranteed on the first navigation of
+ * a hard refresh.
+ */
+async function fetchRoleForSession(session) {
+  const userId = encodeURIComponent(session.user.id);
+  const profiles = await apiRequest(`profiles?id=eq.${userId}&select=role`, {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+  return Array.isArray(profiles) ? (profiles[0]?.role ?? null) : null;
+}
+
+/*
+ * DEV-only role override (useAuth().devRoleOverride). Imported lazily so the
+ * composable's module-load side effects stay out of the router's import graph
+ * in production, where import.meta.env.DEV is statically false.
+ */
+async function getDevRoleOverride() {
+  const { useAuth } = await import("@/composables/useAuth");
+  return useAuth().devRoleOverride.value ?? null;
+}
+
+export const authGuard = createAuthGuard({
+  getSession: getSessionFromStorage,
+  fetchRole: fetchRoleForSession,
+  isDev: import.meta.env.DEV,
+  getDevRoleOverride,
+});
+
+/**
+ * Build the app router. The history is injectable so tests can drive the real
+ * route table and guard registrations with createMemoryHistory().
+ */
+export function createAppRouter({
+  history = createWebHistory(import.meta.env.BASE_URL),
+} = {}) {
+  const router = createRouter({
+    history,
+    routes,
+    scrollBehavior(to, from, savedPosition) {
+      const store = useGeneral();
+
+      // Continue Reading is restored by ChapterView only after the chapter's
+      // fonts and images have settled. Do not race it with browser/store offsets.
+      if (to.name === "chapter" && to.query.resume === "1") {
+        store.savedPosition = undefined;
+        return { top: 0 };
+      }
+
+      if (savedPosition) return savedPosition;
+
+      // The legacy store position is a one-shot return target. It must never be
+      // applied globally to a different chapter or unrelated route.
+      const pendingPosition = store.savedPosition;
+      store.savedPosition = undefined;
+      if (pendingPosition?.route === to.fullPath) {
+        return pendingPosition.position;
+      }
+
+      return { top: 0 };
+    },
+  });
+
+  // Auth/role boundary first. When it redirects, Vue Router re-runs every
+  // beforeEach against the redirect target with the same `from`, so the
+  // scroll-memory guard below still sees the chapter it is leaving.
+  router.beforeEach(authGuard);
+
+  router.beforeEach((to, from) => {
     const store = useGeneral();
 
-    // Continue Reading is restored by ChapterView only after the chapter's
-    // fonts and images have settled. Do not race it with browser/store offsets.
-    if (to.name === "chapter" && to.query.resume === "1") {
-      store.savedPosition = undefined;
-      return { top: 0 };
+    // Handle scroll position for chapter view
+    if (from.name === "chapter") {
+      store.savedPosition = {
+        route: from.fullPath,
+        position: { top: window.scrollY },
+      };
     }
 
-    if (savedPosition) return savedPosition;
-
-    // The legacy store position is a one-shot return target. It must never be
-    // applied globally to a different chapter or unrelated route.
-    const pendingPosition = store.savedPosition;
-    store.savedPosition = undefined;
-    if (pendingPosition?.route === to.fullPath) {
-      return pendingPosition.position;
+    if (to.name == "home" && from.name == "chapter") {
+      store.activeMenu = true;
     }
+  });
 
-    return { top: 0 };
-  },
-});
+  // Chapter colour ramps: brand.css switches on data-chapter on <html>. Runs
+  // afterEach (not beforeEach) so a guard redirect can't leave a stale value.
+  router.afterEach((to) => {
+    applyChapterAttr(to.params.number);
+  });
 
-router.beforeEach(async (to, from) => {
-  const store = useGeneral();
+  return router;
+}
 
-  // Default-route redirect: signed-in users land on the chapter library, not
-  // the anonymous marketing home. Anonymous users keep HomeView at /.
-  if (to.path === "/" && getSessionFromStorage()) {
-    return { path: "/chapters" };
-  }
-
-  // Handle scroll position for chapter view
-  if (from.name === "chapter") {
-    store.savedPosition = {
-      route: from.fullPath,
-      position: { top: window.scrollY },
-    };
-  }
-
-  // Handle transitions
-  if (from.name === "about") {
-    to.meta = { ...to.meta, transitionName: "aboutLeave" };
-  }
-  if (to.name === "about") {
-    to.meta = { ...to.meta, transitionName: "aboutTo" };
-  }
-  if (to.name == "home" && from.name == "chapter") {
-    store.activeMenu = true;
-  }
-
-  // Auth guard for protected routes
-  if (to.meta.requiresAuth) {
-    const session = getSessionFromStorage();
-
-    if (!session) {
-      return { path: "/" };
-    }
-
-    // Dev mode: role override bypass
-    if (import.meta.env.DEV) {
-      const { useAuth } = await import("@/composables/useAuth");
-      const { devRoleOverride } = useAuth();
-      if (devRoleOverride.value) {
-        // Redirect /dashboard to the correct role-specific dashboard
-        if (to.name === "dashboard" && devRoleOverride.value !== "creator") {
-          if (devRoleOverride.value === "student") return { path: "/student" };
-          if (devRoleOverride.value === "professor")
-            return { path: "/professor" };
-        }
-        // Check requiredRole guard
-        if (to.meta.requiredRole) {
-          const requiredRoles = Array.isArray(to.meta.requiredRole)
-            ? to.meta.requiredRole
-            : [to.meta.requiredRole];
-          if (!requiredRoles.includes(devRoleOverride.value)) {
-            if (devRoleOverride.value === "student")
-              return { path: "/student" };
-            if (devRoleOverride.value === "professor")
-              return { path: "/professor" };
-            return { path: "/dashboard" };
-          }
-        }
-        return;
-      }
-    }
-
-    // Role-based route protection and dashboard redirection
-    const userId = session.user?.id;
-
-    if (to.meta.requiredRole || to.name === "dashboard") {
-      if (!userId) {
-        return { path: "/" };
-      }
-
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey =
-          import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-          import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-        const response = await fetch(
-          `${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=role`,
-          {
-            headers: {
-              apikey: supabaseKey,
-              Authorization: `Bearer ${session.access_token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.ok) {
-          const profiles = await response.json();
-          const userRole = profiles[0]?.role;
-
-          // Redirect /dashboard to the correct role-specific dashboard
-          if (to.name === "dashboard" && userRole !== "creator") {
-            if (userRole === "student") return { path: "/student" };
-            if (userRole === "professor") return { path: "/professor" };
-          }
-
-          // Check requiredRole guard
-          if (to.meta.requiredRole) {
-            const requiredRoles = Array.isArray(to.meta.requiredRole)
-              ? to.meta.requiredRole
-              : [to.meta.requiredRole];
-
-            if (!requiredRoles.includes(userRole)) {
-              // Redirect to the user's own dashboard instead of generic /dashboard
-              if (userRole === "student") return { path: "/student" };
-              if (userRole === "professor") return { path: "/professor" };
-              return { path: "/dashboard" };
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Router: Error checking role:", err);
-      }
-    }
-  }
-});
-
-// Chapter colour ramps: brand.css switches on data-chapter on <html>. Runs
-// afterEach (not beforeEach) so a guard redirect can't leave a stale value.
-router.afterEach((to) => {
-  applyChapterAttr(to.params.number);
-});
+const router = createAppRouter();
 
 export default router;
