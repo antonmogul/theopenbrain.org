@@ -6,6 +6,7 @@
  * to regress and impossible to see from a single default render.
  */
 import QuizProgress from "../QuizProgress.vue";
+import { quizQuestions } from "@/stories/openBrainFixtures";
 
 const QUESTIONS = Array.from({ length: 8 }, (_, i) => ({
   id: `q${i + 1}`,
@@ -75,5 +76,21 @@ export const Complete = {
     showQuestionNav: true,
     answers: Object.fromEntries(QUESTIONS.map((q) => [q.id, "a"])),
     timeRemaining: 120,
+  },
+};
+
+/**
+ * The shared Foundations fixture on its last question with under a minute
+ * left — the scenario the old Student/Quizzes catalog carried.
+ */
+export const FoundationsLastQuestion = {
+  args: {
+    current: 2,
+    total: 2,
+    timeRemaining: 54,
+    answeredCount: 1,
+    showQuestionNav: true,
+    questions: quizQuestions,
+    answers: { "question-1": "Rods and cones" },
   },
 };
