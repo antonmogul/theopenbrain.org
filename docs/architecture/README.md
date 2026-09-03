@@ -15,7 +15,7 @@ Tools run via `npx` — nothing is added to `package.json` dependencies.
 ### Exact npm script implementations
 
 ```bash
-# graph:visual — full edge list as JSON (273 nodes)
+# graph:visual — full edge list as JSON (377 nodes)
 npx -y madge@8.0.0 --webpack-config madge.webpack.cjs --extensions js,ts,vue --json src > docs/architecture/graph.json
 
 # graph:orphans — files nothing imports
@@ -47,14 +47,19 @@ Note: `dot` (graphviz) is NOT installed by default; the SVG step will fail witho
 
 Rules are defined in `.dependency-cruiser.cjs` at the repo root.
 
-## Baseline (captured 2026-06-27)
+## Baseline (re-captured 2026-09-02)
 
-- Circular dependencies: **0**
-- Orphan modules: **58** (see `orphans.txt`)
-- Layering violations: **0** (see `violations.txt`)
+- Circular dependencies: **0** (see `cycles.txt`)
+- Orphan modules (madge): **94** (see `orphans.txt`) — mostly `__tests__`
+  and `__stories__` files, which nothing imports by design
+- Layering violations: **0 errors, 3 warnings** (see `violations.txt`) — the
+  warnings are dependency-cruiser's own `no-orphans` rule
 
-These are recorded, not yet fixed. Re-run the commands above after each
-cleanup pass to track progress toward zero.
+`graph:check` runs in CI (`.github/workflows/ci.yml`, step "Check module
+graph") and fails the pipeline only on rule **errors**; the orphan warnings are
+recorded, not enforced. The previous baseline (2026-06-27) was 0 / 58 / 0 over
+273 madge nodes. Re-run the commands above after each cleanup pass and commit
+the refreshed artifacts alongside the code.
 
 ## Artifact formats and gotchas
 
@@ -78,8 +83,8 @@ Consumers parsing these files as raw lists should skip those header lines.
 
 ### Node counts: madge vs. dependency-cruiser
 
-madge reports **273 nodes** in `graph.json`; dependency-cruiser cruises
-**242 modules**. This is not a contradiction — the two tools apply different
+madge reports **377 nodes** in `graph.json`; dependency-cruiser cruises
+**391 modules**. This is not a contradiction — the two tools apply different
 filters and inclusion heuristics. Both counts are correct for their
 respective tools.
 
@@ -88,5 +93,5 @@ respective tools.
 - `src/main.js` may appear in orphan output because it is referenced from
   `index.html`, not imported by JS — it is allowlisted in `.dependency-cruiser.cjs`.
 - The `@/ → src/` alias is configured in `madge.webpack.cjs` and via
-  `tsconfig.json` paths for dependency-cruiser; 150 of ~267 files rely on the alias.
+  `tsconfig.json` paths for dependency-cruiser; most files rely on the alias.
 - `dependency-cruiser` is pinned to `@16.10.4` for Node 20 compatibility.

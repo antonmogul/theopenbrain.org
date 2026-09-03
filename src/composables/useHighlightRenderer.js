@@ -27,35 +27,6 @@ const COLOR_HOVER_MAP = {
 };
 
 /**
- * Given a container element and a character offset, find the text node
- * and local offset within that node.
- */
-function findTextNodeAtOffset(container, targetOffset) {
-  const walker = document.createTreeWalker(
-    container,
-    NodeFilter.SHOW_TEXT,
-    null,
-    false
-  );
-
-  let charCount = 0;
-
-  while (walker.nextNode()) {
-    const node = walker.currentNode;
-    const nodeLength = node.textContent.length;
-
-    if (charCount + nodeLength >= targetOffset) {
-      return { node, offset: targetOffset - charCount };
-    }
-    charCount += nodeLength;
-  }
-
-  // Fallback: return last text node at its end
-  const lastNode = walker.currentNode || container;
-  return { node: lastNode, offset: lastNode.textContent?.length || 0 };
-}
-
-/**
  * Remove all existing highlight marks from a paragraph element.
  */
 function clearHighlightMarks(paragraphEl) {

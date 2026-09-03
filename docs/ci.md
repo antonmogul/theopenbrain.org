@@ -1,20 +1,22 @@
 # CI
 
 `.github/workflows/ci.yml` runs on every pull request and on pushes to `main`
-and `dev`. Five gates, in order — the cheap ones fail first:
+and `dev`. The gates run in this order — the cheap ones fail first — followed by
+the Storybook steps (component coverage, static build, per-story smoke):
 
-| Gate   | Command                | Fails when                              |
-| ------ | ---------------------- | --------------------------------------- |
-| Format | `npm run format:check` | Any file isn't Prettier-formatted       |
-| Lint   | `npm run lint:ci`      | Any ESLint **error**, or >120 warnings  |
-| Unit   | `npm run test:ci`      | Any Vitest failure                      |
-| Build  | `npm run build`        | The production build breaks             |
-| Smoke  | `npm run test:smoke`   | A real page is broken in a real browser |
+| Gate   | Command                | Fails when                                                                                |
+| ------ | ---------------------- | ----------------------------------------------------------------------------------------- |
+| Format | `npm run format:check` | Any file isn't Prettier-formatted                                                         |
+| Lint   | `npm run lint:ci`      | Any ESLint **error**, or >21 warnings                                                     |
+| Graph  | `npm run graph:check`  | A layering rule error (cycle, or views/ imported from stores/, composables/, components/) |
+| Unit   | `npm run test:ci`      | Any Vitest failure                                                                        |
+| Build  | `npm run build`        | The production build breaks                                                               |
+| Smoke  | `npm run test:smoke`   | A real page is broken in a real browser                                                   |
 
 Run the whole thing locally before pushing:
 
 ```bash
-npm run format:check && npm run lint:ci && npm run test:ci && npm run build && npm run test:smoke
+npm run format:check && npm run lint:ci && npm run graph:check && npm run test:ci && npm run build && npm run test:smoke
 ```
 
 `npm run format` and `npm run lint` (with `--fix`) fix most things automatically.
@@ -44,10 +46,22 @@ they get a mobile layout.
 
 ## What CI does not run
 
-**Cypress E2E.** The three specs in `cypress/e2e/` need a seeded Supabase and
-would fail on missing secrets. A pipeline that is red by default gets ignored,
-which is worse than no pipeline. Wiring these up — with a seeded test project or
-mocked network — is tracked in OPENBRAIN-9.
+**Cypress E2E.** The three specs in `cypress/e2e/` do **not** need Supabase or
+secrets: every request is `cy.intercept`-stubbed and a mock session is written
+to localStorage before each visit, so `npm run test:e2e:ci` only needs the
+preview server. Run against the production build on 2026-09-02 they scored
+**11 of 49**:
+
+| Spec                      | Passing | Failing | Why                                                                                                                                                            |
+| ------------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `flashcard.cy.js`         | 10      | 10      | Study-session flows pass (auth mock works). Deck list, loading text, "Question"/"Answer" labels and `flashcard-card` on the intro path no longer match the UI. |
+| `quiz.cy.js`              | 1       | 10      | Timer passes. Quiz cards, intro text ("10 minutes"), question text, "Recent Quiz Scores" and "Best: 80%" are not rendered by the current dashboard/quiz views. |
+| `student-dashboard.cy.js` | 0       | 18      | Waits on `course_enrollments` / `reading_progress` / trending requests the dashboard never makes; `notes-toggle`, `highlight-yellow` test ids do not exist.    |
+
+That is spec drift — the UI moved and the specs did not — so the suite is red by
+default and stays out of CI until the specs are rewritten against the current
+views (tracked separately). Running it locally: `npm run build`, then
+`npm run test:e2e:ci`.
 
 Note: the Cypress component-testing scripts (`test:unit`/`test:unit:ci`) were
 DELETED in OPENBRAIN-9 — they ran zero tests (`cypress/component/` never
@@ -55,10 +69,14 @@ existed). Vitest (`npm test`) is the unit layer.
 
 ## Warning ceiling
 
-`lint:ci` allows 120 warnings against 116 today (ratcheted from 130/123 in OPENBRAIN-9). That is deliberate headroom, not
-a target — it fails immediately on any new _error_ and on more than a handful of
-new warnings. The remaining warnings and the nine rules demoted in `.eslintrc.js`
-are a paydown list tracked in OPENBRAIN-9. **Lower the ceiling as they're fixed.**
+`lint:ci` allows 21 warnings against 16 today (OPENBRAIN-23 took it from
+120/107; OPENBRAIN-9 from 130/123). That is deliberate headroom, not a target —
+it fails immediately on any new _error_ and on more than a handful of new
+warnings. What is left: 12 `no-unused-vars` in `src/components/chapter/text/`
+(under active rework), 3 in `ConeExplorerPanel.vue` (an unfinished colour
+weighting), and 1 `vue/require-toggle-inside-transition` in `AITutorSidebar`.
+The rules demoted in `.eslintrc.js` each carry their current count. **Lower the
+ceiling in `package.json` as they're fixed.**
 
 ## Deployment
 

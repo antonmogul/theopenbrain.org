@@ -1,6 +1,5 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
-import { useRoute } from "vue-router";
 
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -18,7 +17,6 @@ import IllustrationTransition from "@/components/chapter/Illus/IllustrationTrans
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 gsap.registerPlugin(ScrollTrigger);
 
-const route = useRoute();
 const activeAnimation = ref(null);
 const store = useGeneral();
 const progress = ref(0);
@@ -142,7 +140,6 @@ onMounted(async () => {
             clog("SCROLL", `⏹ left: ${self.trigger.id}`);
           }
         },
-        onUpdate: (self) => {},
       });
     }, 500);
   }
@@ -157,7 +154,6 @@ onMounted(async () => {
       end: "bottom " + window.innerHeight / 2,
       scrub: 1,
       markers: false,
-      onToggle: (self) => {},
       onUpdate: (self) => {
         progress.value = self.progress;
       },

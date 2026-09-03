@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- legacy name; renaming touches 4 importing files -->
 <script setup>
 /*
  * Specimen — frames one live component demo in the catalog: a labelled stage

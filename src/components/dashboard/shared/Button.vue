@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- legacy name; renaming touches 15 importing files plus the shared index -->
 <script setup>
 // One pill button covering the variants scattered across SettingsProfileSection/
 // SettingsAccountSection. Mono uppercase, token-based.

@@ -36,9 +36,6 @@ import {
   BaseModal,
   Button,
   SearchInput,
-  FilterChips,
-  SegmentedControl,
-  FormField,
 } from "@/components/dashboard/shared";
 
 // Wizard step components
@@ -62,18 +59,7 @@ import {
 
 const router = useRouter();
 const route = useRoute();
-const {
-  user,
-  profile,
-  loading,
-  profileLoading,
-  isAuthenticated,
-  userRole,
-  isCreator,
-  isProfessor,
-  isStudent,
-  signOut,
-} = useAuth();
+const { user, profile, loading, profileLoading, isAuthenticated } = useAuth();
 
 // Current active section in sidebar
 const activeSection = ref("dashboard");
@@ -142,7 +128,6 @@ const {
   versionsError,
   showNewVersionModal,
   newVersionForm,
-  editingVersion,
   fetchVersions,
   createVersion,
   updateVersionStatus,
@@ -159,7 +144,6 @@ const {
   mediaFilter,
   mediaSearch,
   selectedMedia,
-  showMediaUploadModal,
   filteredMedia,
   mediaByType,
   fetchMedia,
@@ -237,14 +221,11 @@ const {
   usersFilter,
   usersSearch,
   usersPage,
-  usersPerPage,
   usersTotalCount,
   selectedUser,
   userRoleBreakdown,
   usersTotalPages,
   fetchUsers,
-  nextUsersPage,
-  prevUsersPage,
   selectUser,
   updateUserRole,
 } = useDashboardUsers();
@@ -280,7 +261,6 @@ const {
   questionForm,
   fetchQuizzes,
   openQuizEditor,
-  fetchQuizQuestions,
   closeQuizEditor,
   saveQuiz,
   deleteQuiz,
@@ -432,25 +412,10 @@ async function onBlockReorder({ orderedIds }) {
 
 // ============ UTILITIES ============
 
-// Get current date formatted
-const currentDate = computed(() => {
-  const options = { weekday: "long", month: "short", day: "numeric" };
-  return new Date().toLocaleDateString("en-US", options).toUpperCase();
-});
-
 // User display name
 const displayName = computed(() => {
   return profile.value?.full_name || user.value?.email?.split("@")[0] || "User";
 });
-
-const handleLogout = async () => {
-  await signOut();
-  router.push("/");
-};
-
-const goToBook = () => {
-  router.push("/chapter/1/the-retina");
-};
 
 const setActiveSection = (sectionId) => {
   activeSection.value = sectionId;

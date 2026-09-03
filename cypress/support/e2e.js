@@ -5,7 +5,7 @@
 // import './commands'
 
 // Prevent Cypress from failing on uncaught exceptions from the app
-Cypress.on("uncaught:exception", (err, runnable) => {
+Cypress.on("uncaught:exception", (err) => {
   // Returning false here prevents Cypress from failing the test
   console.log("Uncaught exception:", err.message);
   return false;

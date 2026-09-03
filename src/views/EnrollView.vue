@@ -6,7 +6,7 @@ import { authedRequest as supabaseRest } from "@/services/api/client";
 
 const route = useRoute();
 const router = useRouter();
-const { user, profile, isAuthenticated } = useAuth();
+const { profile } = useAuth();
 
 const courseId = route.params.courseId;
 const course = ref(null);

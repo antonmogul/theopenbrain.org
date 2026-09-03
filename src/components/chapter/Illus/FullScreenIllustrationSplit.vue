@@ -87,7 +87,6 @@ onMounted(async () => {
       end: "bottom " + window.innerHeight,
       scrub: true,
       markers: false,
-      onToggle: (self) => {},
       onUpdate: (self) => {
         progress.value = self.progress;
       },
@@ -97,7 +96,7 @@ onMounted(async () => {
 
 watch(
   () => progress.value,
-  (newP, olP) => {
+  (newP) => {
     const map = (value, x1, y1, x2, y2) =>
       ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
 

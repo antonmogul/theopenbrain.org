@@ -3,7 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
 
-const props = defineProps({
+defineProps({
   target: String,
   pos: String,
   text: String,

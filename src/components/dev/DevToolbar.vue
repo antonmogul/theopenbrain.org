@@ -1,7 +1,7 @@
 <script setup>
 import { useAuth } from "@/composables/useAuth";
 
-const { devRoleOverride, userRole, isAuthenticated, user } = useAuth();
+const { devRoleOverride, isAuthenticated, user } = useAuth();
 
 const roles = ["creator", "professor", "student"];
 

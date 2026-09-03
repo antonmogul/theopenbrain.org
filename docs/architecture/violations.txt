@@ -1,7 +1,11 @@
 
-> theopenbrain.org@0.1.18 graph:check
+> theopenbrain.org@0.1.20 graph:check
 > npx -y dependency-cruiser@16.10.4 --config .dependency-cruiser.cjs --output-type err src
 
 
-✔ no dependency violations found (242 modules, 461 dependencies cruised)
+  warn no-orphans: src/helper/retinabox.js
+  warn no-orphans: src/components/styleguide/__stories__/Typography.stories.js
+  warn no-orphans: src/components/styleguide/__stories__/Colours.stories.js
+
+x 3 dependency violations (0 errors, 3 warnings). 391 modules, 843 dependencies cruised.
 

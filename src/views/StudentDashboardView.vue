@@ -38,7 +38,7 @@ import QuizCard from "@/components/quiz/QuizCard.vue";
 import FlashcardDeck from "@/components/flashcard/FlashcardDeck.vue";
 
 const router = useRouter();
-const { user, profile, signOut } = useAuth();
+const { user, profile } = useAuth();
 const studentStore = useStudentStore();
 const homeRoute = useHomeRoute();
 
@@ -113,11 +113,6 @@ async function loadQuizzesAndFlashcards() {
 
 function onNav(id) {
   activeSection.value = id;
-}
-
-async function handleSignOut() {
-  await signOut();
-  router.push({ name: "home" });
 }
 
 function startQuiz(quizId) {

@@ -23,7 +23,7 @@
 <script setup>
 import { toSlug } from "@/helper/general";
 
-const props = defineProps({
+defineProps({
   states: Object,
   activeState: Number,
   praefix: String,

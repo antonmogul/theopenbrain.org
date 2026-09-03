@@ -22,7 +22,6 @@ const notesCtx = inject("notes", null);
 
 const highlights = highlightsCtx?.highlights;
 const notes = notesCtx?.notes;
-const fetchNotes = notesCtx?.fetchNotes;
 const createNote = notesCtx?.createNote;
 const updateNote = notesCtx?.updateNote;
 const deleteNote = notesCtx?.deleteNote;

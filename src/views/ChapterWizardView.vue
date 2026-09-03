@@ -23,7 +23,7 @@ import WizardStepReview from "@/components/dashboard/chapters/WizardStepReview.v
 import "@/assets/styles/admin-theme.css";
 
 const router = useRouter();
-const { user, session } = useAuth();
+const { user } = useAuth();
 
 // Wizard navigation
 const currentStep = ref(1);

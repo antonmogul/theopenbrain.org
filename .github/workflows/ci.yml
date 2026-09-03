@@ -3,9 +3,16 @@
 # Deliberately scoped to things that are true today, so the gate stays green and
 # therefore stays meaningful. It runs: format check, lint, unit tests, build.
 #
-# It does NOT run Cypress E2E — those 3 specs need a seeded Supabase and would
-# fail on secrets, and a red-by-default pipeline is worse than none. Wiring them
-# up is tracked separately.
+# It does NOT run Cypress E2E. The 3 specs in cypress/e2e/ are fully
+# cy.intercept-stubbed and set a mock session in localStorage, so they need no
+# Supabase or secrets — only the preview server. Run against the production
+# build on 2026-09-02 (`npm run test:e2e:ci`): 11 of 49 tests pass
+# (flashcard 10/20, quiz 1/11, student-dashboard 0/18). The auth mock works —
+# whole flashcard study sessions pass — but the rest assert UI text, test ids
+# and endpoints the current app no longer renders or calls ("Recent Quiz
+# Scores", "Quiz Complete", notes-toggle, course_enrollments…). That is spec
+# drift, not infrastructure; a red-by-default pipeline is worse than none.
+# Bringing the specs back in line with the UI is tracked separately.
 name: CI
 
 on:
@@ -51,11 +58,19 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      # 0 errors today. --max-warnings=130 against 123 actual: fails on any new
-      # error immediately, and on more than a handful of new warnings. Ratchet
-      # this down as the debt in OPENBRAIN-9 is paid off.
+      # 0 errors today. --max-warnings=21 against 16 actual (OPENBRAIN-23 took
+      # it from 120/107): fails on any new error immediately, and on more than
+      # a handful of new warnings. Ratchet it down in package.json as the
+      # remaining debt listed in .eslintrc.js is paid off.
       - name: Lint
         run: npm run lint:ci
+
+      # Layering rules from .dependency-cruiser.cjs: no cycles, and stores/,
+      # composables/, components/ never import from views/. Exits non-zero only
+      # on rule errors; orphan modules are reported as warnings and do not fail
+      # the step. Baseline and refresh commands: docs/architecture/README.md.
+      - name: Check module graph
+        run: npm run graph:check
 
       - name: Unit tests
         run: npm run test:ci

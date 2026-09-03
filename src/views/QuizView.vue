@@ -13,7 +13,7 @@ import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const route = useRoute();
 const router = useRouter();
-const { user, isAuthenticated } = useAuth();
+const { isAuthenticated } = useAuth();
 
 const {
   currentQuiz,
@@ -24,8 +24,6 @@ const {
   loading,
   error,
   timeRemaining,
-  formattedTimeRemaining,
-  isTimeRunningLow,
   progress,
   isLastQuestion,
   isFirstQuestion,

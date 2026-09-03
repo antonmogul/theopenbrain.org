@@ -2,15 +2,12 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCodeLabs } from "@/composables/useCodeLabs";
-import { useAuth } from "@/composables/useAuth";
 import CodeEditor from "@/components/lab/CodeEditor.vue";
 import CodeOutput from "@/components/lab/CodeOutput.vue";
 import TestResults from "@/components/lab/TestResults.vue";
 
 const route = useRoute();
 const router = useRouter();
-
-const { isAuthenticated } = useAuth();
 
 const {
   currentLab,

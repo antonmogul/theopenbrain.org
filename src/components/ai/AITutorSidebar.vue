@@ -20,7 +20,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close"]);
+defineEmits(["close"]);
 
 const {
   conversations,
@@ -29,7 +29,6 @@ const {
   loading,
   streaming,
   error,
-  visibleMessages,
   fetchConversations,
   createConversation,
   loadConversation,

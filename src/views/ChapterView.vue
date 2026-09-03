@@ -43,7 +43,7 @@ const storeText = useText();
 const commentStore = useCom();
 
 // Phase 3A: Authentication and highlighting composables
-const { user, isAuthenticated } = useAuth();
+const { isAuthenticated } = useAuth();
 const { toggle: toggleStudentTools, isOpen: studentToolsOpen } =
   useReaderSidebar();
 
@@ -60,7 +60,6 @@ const {
 // Highlights management
 const {
   highlights,
-  loading: highlightsLoading,
   highlightsByParagraph,
   fetchHighlights,
   createHighlight,
@@ -88,12 +87,7 @@ const {
 } = useReadingProgress();
 
 // References for Supabase chapters (citations system)
-const {
-  references,
-  loading: referencesLoading,
-  fetchRefs,
-  getReference,
-} = useReferences();
+const { references, fetchRefs, getReference } = useReferences();
 
 // Provide highlights and notes to sidebar tabs (avoids duplicate API calls)
 provide("highlights", {

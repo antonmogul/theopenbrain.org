@@ -8,8 +8,6 @@ import {
   resetPasswordREST,
   updatePasswordREST,
   listenToStorageChanges,
-  saveSessionToStorage,
-  clearSessionFromStorage,
 } from "@/utils/authHelpers";
 import { setSession as setApiSession } from "@/services/api/client";
 

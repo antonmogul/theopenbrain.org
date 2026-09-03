@@ -2,31 +2,6 @@
 // These tests validate the quiz taking flow for students
 
 describe("Quiz Flow", () => {
-  // Auth setup helper - sets up intercepts and auth before each test
-  const setupAuth = () => {
-    const mockSession = {
-      access_token: "mock-token",
-      user: { id: "test-user-id", email: "test@example.com" },
-      expires_at: Math.floor(Date.now() / 1000) + 3600,
-    };
-
-    // Intercept profile requests (used by auth guard)
-    cy.intercept("GET", "**/rest/v1/profiles*", {
-      statusCode: 200,
-      body: [
-        { id: "test-user-id", role: "student", full_name: "Test Student" },
-      ],
-    }).as("getProfile");
-
-    // Set auth in localStorage
-    cy.window().then((win) => {
-      win.localStorage.setItem(
-        "sb-ocenwbkdzmxhsvwlornp-auth-token",
-        JSON.stringify(mockSession)
-      );
-    });
-  };
-
   describe("Quiz List", () => {
     it("displays available quizzes on student dashboard", () => {
       // Set up intercepts BEFORE visiting

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- legacy name; renaming touches 3 importing files plus the shared index -->
 <script setup>
 // Pill toggle matching the prototype Switch (profile.jsx): 44×24, magenta-on,
 // sliding 18px thumb, role=switch for a11y. v-model:checked.

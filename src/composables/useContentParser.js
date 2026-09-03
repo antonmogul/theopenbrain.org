@@ -120,7 +120,7 @@ function parseMarkdownTokens(tokens) {
           break;
         }
         // H3+ — subsection headers within current section
-        const { blocks, citationRefs } = textToBlocks(token.text);
+        const { citationRefs } = textToBlocks(token.text);
         citationRefs.forEach((r) => allCitationRefs.add(r));
         addParagraph(
           {
