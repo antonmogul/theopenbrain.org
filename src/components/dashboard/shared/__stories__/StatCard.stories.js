@@ -1,7 +1,7 @@
 /*
- * Admin/StatCard — a single dashboard metric with optional delta.
+ * Dashboard/StatCard — a single dashboard metric with optional delta.
  *
- * Filed under Admin rather than Foundations: it is generic-looking but knows
+ * Filed under Dashboard rather than Foundations: it is generic-looking but knows
  * about deltas and a preview state, and the dashboards are its only consumer.
  * See .storybook/taxonomy.md — when torn, prefer the domain group.
  *
@@ -13,7 +13,7 @@
 import StatCard from "../StatCard.vue";
 
 export default {
-  title: "Admin/StatCard",
+  title: "Dashboard/StatCard",
   component: StatCard,
   tags: ["autodocs"],
   argTypes: {
