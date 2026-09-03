@@ -207,7 +207,18 @@ const preview = {
   parameters: {
     options: {
       storySort: {
-        order: ["Foundations", "Student", "Chapter", "Widgets", "Admin", "*"],
+        // Mirrors .storybook/taxonomy.md; "*" catches anything mis-titled so
+        // it is visible at the bottom rather than hidden.
+        order: [
+          "Foundations",
+          "Chapter",
+          "Student",
+          "Dashboard",
+          "Widgets",
+          "Views",
+          "Legacy",
+          "*",
+        ],
         method: "alphabetical",
       },
     },

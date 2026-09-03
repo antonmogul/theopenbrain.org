@@ -3,7 +3,20 @@
     <div
       class="w-full absolute p-56 z-50 top-0 left-0 gap-4 flex h-screen justify-center items-start duration-300 object-fitt"
     >
-      <div class="m-0 w-video h-full object-contain">
+      <!-- Unknown key: say so instead of pointing a <video> at a 404 (found
+           via a Storybook story that mounted /chapter/break/introduction). -->
+      <div
+        v-if="!info"
+        class="m-0 w-video h-full flex flex-col items-start justify-center gap-3 font-mono text-small"
+        data-testid="break-not-found"
+      >
+        <p class="font-semibold">Break video not found</p>
+        <p>There is no break video called “{{ route.params.video }}”.</p>
+        <RouterLink to="/chapters" class="underline underline-offset-4">
+          Back to the chapters
+        </RouterLink>
+      </div>
+      <div v-else class="m-0 w-video h-full object-contain">
         <video
           class="lazy h-full w-full bg-black object-contain"
           autoplay

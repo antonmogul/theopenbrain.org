@@ -7,5 +7,5 @@
   warn no-orphans: src/components/styleguide/__stories__/Typography.stories.js
   warn no-orphans: src/components/styleguide/__stories__/Colours.stories.js
 
-x 3 dependency violations (0 errors, 3 warnings). 391 modules, 843 dependencies cruised.
+x 3 dependency violations (0 errors, 3 warnings). 544 modules, 993 dependencies cruised.
 

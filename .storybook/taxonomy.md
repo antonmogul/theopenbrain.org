@@ -2,19 +2,21 @@
 
 The left nav is built from each story's `title` string, so the taxonomy is a
 naming convention, not config. Renaming a group later churns every file in it —
-which is why this is written down before the catalog is filled in.
+which is why this is written down.
 
-## The five top-level groups
+## The seven top-level groups
 
 Ordered as they appear in the sidebar (see `storySort` in `preview.js`).
 
-| Group           | What belongs here                                                                                                                                                                                    | Source                                                                           |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **Foundations** | Design tokens and primitives with no domain meaning: colour, typography, spacing, icons, and the generic controls (Button, Switch, FormField, Badge). If it could ship in any product, it goes here. | `components/dashboard/shared/`, `styles/brand.css`                               |
-| **Student**     | What a learner touches outside the chapter text: flashcards, quizzes, the AI tutor, code labs.                                                                                                       | `components/flashcard/`, `components/quiz/`, `components/ai/`, `components/lab/` |
-| **Chapter**     | The reading experience itself: text rendering, highlighting, illustrations, footnotes, the reader sidebar.                                                                                           | `components/chapter/`                                                            |
-| **Widgets**     | Interactive science: the ported author widgets and the diagram system.                                                                                                                               | `views/*View.vue` (widget routes), `widgets/`                                    |
-| **Admin**       | Creator and professor dashboards: sections, tables, editors, wizards.                                                                                                                                | `components/dashboard/sections/`, `components/dashboard/chapters/`               |
+| Group           | What belongs here                                                                                                                                                                                                                                                                                                               | Source                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Foundations** | Design tokens and primitives with no domain meaning: colour, typography, icons, the generic controls (Button, Switch, FormField, Badge) under `Foundations/Forms`, the app navigation shell, the reading-preference pickers, and the styleguide sections that render the tokens. If it could ship in any product, it goes here. | `components/dashboard/shared/`, `components/Navigation/`, `components/settings/`, `components/styleguide/`, `styles/brand.css` |
+| **Chapter**     | The reading experience itself: text rendering, highlighting, illustrations, footnotes, demos, the reader sidebar.                                                                                                                                                                                                               | `components/chapter/`                                                                                                          |
+| **Student**     | What a learner touches outside the chapter text: flashcards, quizzes, the AI tutor, code labs, the student dashboard cards.                                                                                                                                                                                                     | `components/flashcard/`, `components/quiz/`, `components/ai/`, `components/lab/`, `components/student/`                        |
+| **Dashboard**   | Creator and professor tooling: the dashboard rail and shell, stat tiles, sections, the chapter wizard and block editor, the TipTap editor, the dev toolbar.                                                                                                                                                                     | `components/dashboard/sections/`, `components/dashboard/chapters/`, `components/Editor/`, `components/dev/`                    |
+| **Widgets**     | Interactive science as components: the widget catalog gallery and the diagram system. The widget _pages_ live under Views.                                                                                                                                                                                                      | `widgets/`                                                                                                                     |
+| **Views**       | Full-page routes mounted in `ViewStoryShell`, grouped by audience: `Views/Student`, `Views/Admin`, `Views/Widgets`, `Views/Foundations`.                                                                                                                                                                                        | `views/*View.vue`                                                                                                              |
+| **Legacy**      | The pre-2026 reader controls in `components/UI/` that still ship but are being migrated to `dashboard/shared/`. Kept visible so the migration stays honest; nothing new goes here.                                                                                                                                              | `components/UI/`                                                                                                               |
 
 ## Naming
 
@@ -22,11 +24,13 @@ Ordered as they appear in the sidebar (see `storySort` in `preview.js`).
 big enough to need one. Use the component's real name — the nav should be
 greppable back to a file.
 
-    Foundations/Button
+    Foundations/Forms/Button
     Foundations/Colours
     Student/Flashcards/FlashcardCard
     Chapter/Highlighting/HighlightToolbar
-    Admin/StatCard
+    Dashboard/StatCard
+    Views/Student/StudentDashboardView
+    Legacy/PointComp
 
 ## Where the line falls
 
@@ -44,29 +48,32 @@ more expensive mistake.
 
 ## Story file placement
 
-Stories live in a `__stories__/` directory beside the component, matching the
-existing `__tests__/` convention:
+One story file per component or view, beside it, matching the existing
+`__tests__/` convention:
 
     src/components/flashcard/FlashcardCard.vue
     src/components/flashcard/__stories__/FlashcardCard.stories.js
 
+Each file exports a `Default` story plus one named export per state worth
+seeing (loading, empty, error, long content, mobile, open, creator mode…), and
+declares `args` / `argTypes` for the component's real props so the Controls
+panel is useful. Props that cannot be controlled (functions, DOM elements,
+store-driven state) are documented in `argTypes` with `control: false` or a
+"story-only" note.
+
+The only grouped files left are reference galleries where side-by-side
+comparison is the point: `Icons`, `Colours`, `Typography`, `WidgetCatalog`.
+
 ## Coverage
 
-The catalog now reconciles all 200 Vue files in `src`: 198 are directly or
-group-imported by stories, and two legacy re-export-only compatibility shims map
-to their directly covered canonical implementations. There are 37 story files
-across Foundations, Student, Chapter, Widgets, Admin, full-page views, the app
-shell, and the complete icon gallery.
-
 `npm run storybook:coverage` scans the source tree and fails when a Vue file has
-neither a story import nor a documented compatibility mapping. This is a CI
-gate, so the catalog cannot silently fall behind as components are added.
-
-Grouped catalog stories are deliberate for tightly related primitives, icons,
-chapter text blocks, illustrations, and route-level views: comparison in one
-canvas is more useful than one near-empty navigation entry per file. High-risk
-components also carry loading, empty, error, long-content, mobile, and
-interactive variants.
+neither a story import nor a documented compatibility mapping (the two
+re-export shims in `components/UI/`). `storybook:coverage:admin` and
+`storybook:coverage:student-views` check their areas; the chapter area is
+pinned by `.storybook/reports/chapter-components.json` and its test. All are CI
+gates. `storybook:smoke:ci` then mounts every story in Chromium with external
+requests blocked, so a story that fetches, throws or renders nothing fails the
+build.
 
 Widget catalog links use `VITE_STORYBOOK_APP_BASE_URL` so a hosted Storybook can
 target its matching app deployment. Local builds default to

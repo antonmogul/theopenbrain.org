@@ -1,7 +1,7 @@
 import DevToolbar from "../DevToolbar.vue";
 
 export default {
-  title: "Admin/Developer/DevToolbar",
+  title: "Dashboard/Developer/DevToolbar",
   component: DevToolbar,
   parameters: { layout: "fullscreen" },
 };

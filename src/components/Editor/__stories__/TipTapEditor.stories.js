@@ -1,7 +1,7 @@
 import TipTapEditor from "../TipTapEditor.vue";
 
 export default {
-  title: "Admin/Editor/TipTapEditor",
+  title: "Dashboard/Editor/TipTapEditor",
   component: TipTapEditor,
   parameters: { layout: "padded" },
 };
