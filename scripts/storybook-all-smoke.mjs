@@ -10,11 +10,11 @@ const stories = Object.values(index.entries || {})
   .sort();
 const expectedConsoleErrors = new Map([
   [
-    "chapter-demos-componentcatalog--lab-error",
+    "chapter-demos-labpanel--load-error",
     [/useCodeLabs: Error loading lab: Error: Lab not found/],
   ],
   [
-    "chapter-demos-componentcatalog--quiz-error",
+    "chapter-demos-quizpanel--load-error",
     [
       /useQuizzes: Error fetching quiz: Error: Quiz unavailable in this preview/,
       /QuizPanel: Error loading quiz: Error: Quiz unavailable in this preview/,

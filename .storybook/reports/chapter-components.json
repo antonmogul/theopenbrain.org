@@ -15,8 +15,8 @@
   "components": [
     {
       "source": "src/components/chapter/CitationTooltip.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "CitationTooltip"
+      "storyFile": "src/components/chapter/__stories__/CitationTooltip.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/EndOfChapterCallout.vue",
@@ -25,93 +25,93 @@
     },
     {
       "source": "src/components/chapter/ExportField.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "ImportChapterJson"
+      "storyFile": "src/components/chapter/__stories__/ExportField.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/HighlightRenderer.vue",
-      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
-      "story": "HighlightRenderer"
+      "storyFile": "src/components/chapter/__stories__/HighlightRenderer.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/HighlightToolbar.vue",
-      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
-      "story": "HighlightToolbarCreate"
+      "storyFile": "src/components/chapter/__stories__/HighlightToolbar.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/FullScreenIllustration.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "FullScreenPhototransduction"
+      "storyFile": "src/components/chapter/Illus/__stories__/FullScreenIllustration.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/FullScreenIllustrationLoop.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "FullScreenLoop"
+      "storyFile": "src/components/chapter/Illus/__stories__/FullScreenIllustrationLoop.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/FullScreenIllustrationMultiple.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "FullScreenMultipleState"
+      "storyFile": "src/components/chapter/Illus/__stories__/FullScreenIllustrationMultiple.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/FullScreenIllustrationSplit.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "FullScreenSplit"
+      "storyFile": "src/components/chapter/Illus/__stories__/FullScreenIllustrationSplit.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustarionMultiple.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "MultipleStateMount"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustarionMultiple.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationComp.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "IllustrationCompEyeStructure"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationComp.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationFlip.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "FlipCardVision"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationFlip.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationInline.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "InlineEyeStructure"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationInline.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationOnScroll.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "ScrollLinkedLateralOrganization"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationOnScroll.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationPlaceholder.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "PlaceholderManuscript"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationPlaceholder.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationSwitch.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "SwitchCentreSurround"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationSwitch.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationTransition.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "TransitionEyeStructure"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationTransition.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationsComp.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "IllustrationOrchestratorEmptyCanvas"
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationsComp.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/Illus/TextOverlay.vue",
-      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
-      "story": "TextOverlayOpen"
+      "storyFile": "src/components/chapter/Illus/__stories__/TextOverlay.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/ReaderSidebar.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "ReaderSidebarInfo"
+      "storyFile": "src/components/chapter/__stories__/ReaderSidebar.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/ReaderTopBar.vue",
@@ -120,163 +120,163 @@
     },
     {
       "source": "src/components/chapter/TextComp.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "TextCompLongChapter"
+      "storyFile": "src/components/chapter/__stories__/TextComp.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/TrendingHighlights.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "TrendingHighlightsPopulated"
+      "storyFile": "src/components/chapter/__stories__/TrendingHighlights.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/demos/ConeExplorerPanel.vue",
-      "storyFile": "src/components/chapter/demos/__stories__/DemoCatalog.stories.js",
-      "story": "ConeExplorerInteractive"
+      "storyFile": "src/components/chapter/demos/__stories__/ConeExplorerPanel.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/demos/DemoModal.vue",
-      "storyFile": "src/components/chapter/demos/__stories__/DemoCatalog.stories.js",
-      "story": "DemoModal"
+      "storyFile": "src/components/chapter/demos/__stories__/DemoModal.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/demos/FlashcardPanel.vue",
-      "storyFile": "src/components/chapter/demos/__stories__/DemoCatalog.stories.js",
-      "story": "FlashcardsStudying"
+      "storyFile": "src/components/chapter/demos/__stories__/FlashcardPanel.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/demos/LabPanel.vue",
-      "storyFile": "src/components/chapter/demos/__stories__/DemoCatalog.stories.js",
-      "story": "LabReadyToRun"
+      "storyFile": "src/components/chapter/demos/__stories__/LabPanel.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/demos/QuizPanel.vue",
-      "storyFile": "src/components/chapter/demos/__stories__/DemoCatalog.stories.js",
-      "story": "QuizIntro"
+      "storyFile": "src/components/chapter/demos/__stories__/QuizPanel.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/highlight-toolbar/HighlightActionBar.vue",
-      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
-      "story": "ActionBarOverflow"
+      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightActionBar.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/highlight-toolbar/HighlightColorPicker.vue",
-      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
-      "story": "ColorPickerActiveBlue"
+      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightColorPicker.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/highlight-toolbar/HighlightDeleteConfirm.vue",
-      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
-      "story": "DeleteConfirmation"
+      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightDeleteConfirm.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/highlight-toolbar/HighlightNotePanel.vue",
-      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
-      "story": "NotePanelLongNote"
+      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightNotePanel.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/highlight-toolbar/HighlightTagPanel.vue",
-      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
-      "story": "TagPanelPopulated"
+      "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightTagPanel.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/sidebar/ChatTab.vue",
-      "storyFile": "src/components/chapter/sidebar/__stories__/SidebarTabsCatalog.stories.js",
-      "story": "ChatFirstUse"
+      "storyFile": "src/components/chapter/sidebar/__stories__/ChatTab.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/sidebar/InfoTab.vue",
-      "storyFile": "src/components/chapter/sidebar/__stories__/SidebarTabsCatalog.stories.js",
-      "story": "InfoWithReadingStats"
+      "storyFile": "src/components/chapter/sidebar/__stories__/InfoTab.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/sidebar/NotebookTab.vue",
-      "storyFile": "src/components/chapter/sidebar/__stories__/SidebarTabsCatalog.stories.js",
-      "story": "NotebookWithAnnotations"
+      "storyFile": "src/components/chapter/sidebar/__stories__/NotebookTab.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/BreakImages.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "BreakVideo"
+      "storyFile": "src/components/chapter/text/__stories__/BreakImages.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/BreakSection.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "BreakSectionBlindSpot"
+      "storyFile": "src/components/chapter/text/__stories__/BreakSection.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/BreakText.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "BreakText"
+      "storyFile": "src/components/chapter/text/__stories__/BreakText.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/CommentComp.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "CommentOverlay"
+      "storyFile": "src/components/chapter/text/__stories__/CommentComp.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/DownloadSection.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "DownloadSection"
+      "storyFile": "src/components/chapter/text/__stories__/DownloadSection.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/EditableBlock.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "EditableBlockCreator"
+      "storyFile": "src/components/chapter/text/__stories__/EditableBlock.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/EyeStart.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "ChapterCover"
+      "storyFile": "src/components/chapter/text/__stories__/EyeStart.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/FootNotes.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "FootnotesList"
+      "storyFile": "src/components/chapter/text/__stories__/FootNotes.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/FootNotesWindow.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "FootnotesWindowOpen"
+      "storyFile": "src/components/chapter/text/__stories__/FootNotesWindow.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/FurtherReading.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "FurtherReading"
+      "storyFile": "src/components/chapter/text/__stories__/FurtherReading.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/HoverImg.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "HoverImage"
+      "storyFile": "src/components/chapter/text/__stories__/HoverImg.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/InlineImages.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "InlineImageWithCaption"
+      "storyFile": "src/components/chapter/text/__stories__/InlineImages.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/InlineImages_openClose.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "InlineImageCollapsed"
+      "storyFile": "src/components/chapter/text/__stories__/InlineImages_openClose.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/QuizSection.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "QuizSection"
+      "storyFile": "src/components/chapter/text/__stories__/QuizSection.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/SectionComp.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "Section"
+      "storyFile": "src/components/chapter/text/__stories__/SectionComp.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/SubSection.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "SubSection"
+      "storyFile": "src/components/chapter/text/__stories__/SubSection.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/SubSubSection.vue",
-      "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
-      "story": "SubSubSection"
+      "storyFile": "src/components/chapter/text/__stories__/SubSubSection.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/text/WidgetBreakout.vue",
