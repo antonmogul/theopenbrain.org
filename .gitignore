@@ -57,3 +57,6 @@ supabase/.temp/
 
 *storybook.log
 storybook-static
+
+# Claude Code agent worktrees (local only)
+.claude/worktrees/

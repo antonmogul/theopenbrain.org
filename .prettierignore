@@ -20,3 +20,6 @@ src/widgets/source/
 # Agent tooling scratch (untracked; listed so local `prettier --check .`
 # matches what CI sees).
 .superpowers/
+
+# Claude Code agent worktrees (local only)
+.claude/worktrees/
