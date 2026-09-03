@@ -11,53 +11,34 @@
  * them into paragraphs with subsection_level markers stored in content JSONB.
  *
  * Run: node scripts/import-chapter-1-to-supabase.mjs
+ *
+ * The flatten / row-building helpers are exported (pure, no I/O) so the
+ * round-trip test, the parity checker and the repair-migration generator use
+ * the exact same logic the importer writes with. The CLI only runs when this
+ * file is the entry point (see the import.meta.url guard at the bottom).
  */
 
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createClient } from "@supabase/supabase-js";
-import * as dotenv from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables
-const envLocalPath = path.join(__dirname, "../.env.local");
-const envPath = path.join(__dirname, "../.env");
-if (fs.existsSync(envLocalPath)) {
-  dotenv.config({ path: envLocalPath });
-} else if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath });
-} else {
-  console.error("No .env.local or .env file found");
-  process.exit(1);
-}
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error("Missing Supabase environment variables");
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// ─── Load source data ────────────────────────────────────────────────
-const textJsonPath = path.join(
+export const TEXT_JSON_PATH = path.join(
   __dirname,
   "../src/assets/json_backend/text.json"
 );
-const textData = JSON.parse(fs.readFileSync(textJsonPath, "utf-8"));
+
+/** Load the static Chapter 1 source (text.json). */
+export function loadTextJson() {
+  return JSON.parse(fs.readFileSync(TEXT_JSON_PATH, "utf-8"));
+}
 
 // ─── Animation key lookup ────────────────────────────────────────────
 // Maps the animation "name" used in text.json to the animation_key in DB.
 // text.json uses short names like "EyeStructur" while DB keys are "animationEyeStructur".
-function animationNameToKey(name) {
+export function animationNameToKey(name) {
   if (!name) return null;
   // Some names already start with "animation"
   if (name.startsWith("animation")) return name;
@@ -65,10 +46,15 @@ function animationNameToKey(name) {
   return "animation" + name.charAt(0).toUpperCase() + name.slice(1);
 }
 
+// content_text is the plain-text search column: tags stripped, first 200 chars.
+export function plainText(html) {
+  return html ? html.replace(/<[^>]+>/g, "").slice(0, 200) : "";
+}
+
 // ─── Build content JSONB from a paragraph ────────────────────────────
 // The paragraphs table stores content as JSONB with a { blocks: [...] } structure.
 // For Chapter 1, the HTML text is stored as a single block.
-function buildContent(paragraph, opts = {}) {
+export function buildContent(paragraph, opts = {}) {
   const blocks = [];
 
   // Title block (for subSections with titles)
@@ -140,7 +126,7 @@ function buildContent(paragraph, opts = {}) {
 // them onto the animation object (OPENBRAIN-10): start/middel/end drive
 // StartEndIcon, transition marks scroll-transition figures. stage has no
 // consumer yet — carried anyway so re-seeding is lossless.
-function animationFlagsOf(animation) {
+export function animationFlagsOf(animation) {
   if (!animation) return null;
   const flags = {};
   if (animation.start) flags.start = true;
@@ -151,7 +137,69 @@ function animationFlagsOf(animation) {
   return Object.keys(flags).length > 0 ? flags : null;
 }
 
-function flattenParagraphs(items, level = 0) {
+/** Build one flat row for a leaf paragraph-like object at the given level. */
+function leafRow(item, level, opts = {}) {
+  const content = buildContent(item, opts);
+  const flags = animationFlagsOf(item.animation);
+  if (flags) content.animationFlags = flags;
+  return {
+    id: item.id,
+    is_subsection_header: false,
+    subsection_level: level,
+    content,
+    content_text: plainText(item.text),
+    animation: item.animation || null,
+    animationFull: item.animationFull || false,
+    animationId: item.animationId || null,
+  };
+}
+
+/**
+ * Flatten a subSubSection entry whose prose lives in `paragraphs[]`
+ * (e.g. { animation?, title?, paragraphs: [{ text, animation?, img? }, …] }).
+ *
+ * Emits one level-2 row per nested paragraph via the regular paragraph path
+ * (so text, animation, img, animationFull, break types and nested
+ * { paragraphs } wrappers all round-trip exactly like top-level paragraphs).
+ * The group's OWN attributes are folded into the FIRST row, because the
+ * reader (reconstructNesting → SubSubSection.vue) renders level-2 rows as
+ * sibling subSubSection items and has no separate slot for a group:
+ *   - `animation` → the first row's animation (+ display flags), unless that
+ *     paragraph carries its own. This is what puts the trigger id on the
+ *     first paragraph's div, mirroring text.json where the group div is the
+ *     trigger.
+ *   - `title` (untyped group) → a level-4 `heading` block at the front of the
+ *     first row. contentBlocksToHTML renders it inline as
+ *     <h4 class="text-black">…</h4> before the paragraph text — the only
+ *     heading representation the current reader renders at level 2.
+ *   - `type`/`title`/`videoSlug`/`steps`/`img` (typed group) → the same
+ *     break_video / break_section / image blocks buildContent emits for a
+ *     single typed entry.
+ */
+function flattenSubSubGroup(subsub) {
+  const rows = flattenParagraphs(subsub.paragraphs, 2);
+  if (rows.length === 0) return rows;
+
+  const first = rows[0];
+  const own = buildContent(subsub, {
+    title: subsub.type ? undefined : subsub.title,
+    headingLevel: 4,
+  });
+  if (own.blocks.length > 0) {
+    first.content.blocks = [...own.blocks, ...first.content.blocks];
+  }
+  if (!first.content_text) {
+    first.content_text = plainText(subsub.text) || subsub.title || "";
+  }
+  if (subsub.animation && !first.animation) {
+    first.animation = subsub.animation;
+    const flags = animationFlagsOf(subsub.animation);
+    if (flags) first.content.animationFlags = flags;
+  }
+  return rows;
+}
+
+export function flattenParagraphs(items, level = 0) {
   const result = [];
 
   for (const item of items) {
@@ -184,19 +232,16 @@ function flattenParagraphs(items, level = 0) {
     // ── subSubSection array (level 2 nesting) ──
     if (item.subSubSection) {
       for (const subsub of item.subSubSection) {
-        const subsubContent = buildContent(subsub);
-        const subsubFlags = animationFlagsOf(subsub.animation);
-        if (subsubFlags) subsubContent.animationFlags = subsubFlags;
-        result.push({
-          id: subsub.id,
-          is_subsection_header: false,
-          subsection_level: 2,
-          content: subsubContent,
-          content_text: subsub.text
-            ? subsub.text.replace(/<[^>]+>/g, "").slice(0, 200)
-            : "",
-          animation: subsub.animation || null,
-        });
+        if (Array.isArray(subsub.paragraphs) && subsub.paragraphs.length > 0) {
+          // Group entry: prose lives in nested paragraphs[] (OPENBRAIN-22).
+          // The old code called buildContent(subsub) here, which only reads
+          // subsub.text, and so wrote an EMPTY level-2 row and dropped every
+          // nested paragraph.
+          result.push(...flattenSubSubGroup(subsub));
+          continue;
+        }
+        // Leaf entry: { id, text, animation?, img?, type? … }
+        result.push(leafRow(subsub, 2));
       }
       continue;
     }
@@ -208,28 +253,69 @@ function flattenParagraphs(items, level = 0) {
     }
 
     // ── Regular paragraph ──
-    const paraContent = buildContent(item);
-    const paraFlags = animationFlagsOf(item.animation);
-    if (paraFlags) paraContent.animationFlags = paraFlags;
-    result.push({
-      id: item.id,
-      is_subsection_header: false,
-      subsection_level: level,
-      content: paraContent,
-      content_text: item.text
-        ? item.text.replace(/<[^>]+>/g, "").slice(0, 200)
-        : "",
-      animation: item.animation || null,
-      animationFull: item.animationFull || false,
-      animationId: item.animationId || null,
-    });
+    result.push(leafRow(item, level));
   }
 
   return result;
 }
 
+/**
+ * Resolve the animation FK + trigger for one flat row, given the
+ * animation_key → UUID lookup (both exact and lowercased keys are indexed).
+ */
+export function resolveRowAnimation(fp, animLookup) {
+  let animationId = null;
+  let animationTrigger = null;
+
+  if (fp.animation?.name) {
+    const key = animationNameToKey(fp.animation.name);
+    animationId = animLookup[key] || animLookup[key?.toLowerCase()] || null;
+    // Keep the real animation name here — the dashboard block editor uses
+    // animation_trigger as a display-label fallback. The transition flag
+    // travels in content.animationFlags instead (see animationFlagsOf).
+    animationTrigger = fp.animation.name;
+  }
+
+  // For animationFull paragraphs, resolve via animationId field
+  if (fp.animationFull && fp.animationId) {
+    const key = fp.animationId;
+    animationId = animLookup[key] || animLookup[key?.toLowerCase()] || null;
+    animationTrigger = key.replace("animation", "");
+  }
+
+  return { animationId, animationTrigger };
+}
+
+/**
+ * The `paragraphs` row payload for one flat row (everything except
+ * section_id / order_index, which the caller owns).
+ */
+export function buildParagraphRow(fp, animLookup) {
+  const { animationId, animationTrigger } = resolveRowAnimation(fp, animLookup);
+  return {
+    content: fp.content,
+    content_text: fp.content_text || null,
+    has_animation: !!(animationId || fp.animationFull),
+    animation_id: animationId,
+    animation_trigger: animationTrigger,
+    is_subsection_header: fp.is_subsection_header || false,
+    subsection_level: fp.subsection_level || 0,
+  };
+}
+
+/** Build an animation_key → UUID lookup (exact + lowercase) from DB rows. */
+export function buildAnimLookup(animRows) {
+  const animLookup = {};
+  for (const a of animRows || []) {
+    animLookup[a.animation_key] = a.id;
+    // Also index by lowercase for case-insensitive matching
+    animLookup[a.animation_key.toLowerCase()] = a.id;
+  }
+  return animLookup;
+}
+
 // ─── Main migration ──────────────────────────────────────────────────
-async function migrate() {
+async function migrate(supabase, textData) {
   console.log("Starting Chapter 1 migration...\n");
 
   // 1. Get or create content version
@@ -334,12 +420,7 @@ async function migrate() {
     .from("animations")
     .select("id, animation_key");
 
-  const animLookup = {};
-  for (const a of animRows || []) {
-    animLookup[a.animation_key] = a.id;
-    // Also index by lowercase for case-insensitive matching
-    animLookup[a.animation_key.toLowerCase()] = a.id;
-  }
+  const animLookup = buildAnimLookup(animRows);
   console.log(
     `Loaded ${Object.keys(animLookup).length / 2} animation records for linking.\n`
   );
@@ -416,40 +497,13 @@ async function migrate() {
     const flatParas = flattenParagraphs(sec.sourceParagraphs);
 
     for (let pi = 0; pi < flatParas.length; pi++) {
-      const fp = flatParas[pi];
-
-      // Resolve animation_id for this paragraph
-      let paraAnimId = null;
-      let animTrigger = null;
-
-      if (fp.animation?.name) {
-        const key = animationNameToKey(fp.animation.name);
-        paraAnimId = animLookup[key] || animLookup[key?.toLowerCase()] || null;
-        // Keep the real animation name here — the dashboard block editor uses
-        // animation_trigger as a display-label fallback. The transition flag
-        // travels in content.animationFlags instead (see animationFlagsOf).
-        animTrigger = fp.animation.name;
-        if (paraAnimId) linkedAnimations++;
-      }
-
-      // For animationFull paragraphs, resolve via animationId field
-      if (fp.animationFull && fp.animationId) {
-        const key = fp.animationId;
-        paraAnimId = animLookup[key] || animLookup[key?.toLowerCase()] || null;
-        animTrigger = key.replace("animation", "");
-        if (paraAnimId) linkedAnimations++;
-      }
+      const row = buildParagraphRow(flatParas[pi], animLookup);
+      if (row.animation_id) linkedAnimations++;
 
       const { error: pErr } = await supabase.from("paragraphs").insert({
         section_id: sectionRow.id,
-        content: fp.content,
-        content_text: fp.content_text || null,
         order_index: pi,
-        has_animation: !!(paraAnimId || fp.animationFull),
-        animation_id: paraAnimId,
-        animation_trigger: animTrigger,
-        is_subsection_header: fp.is_subsection_header || false,
-        subsection_level: fp.subsection_level || 0,
+        ...row,
       });
 
       if (pErr) {
@@ -525,8 +579,7 @@ async function migrate() {
               { type: "footnote", number: i + 1, content: fn.notes[i].text },
             ],
           },
-          content_text:
-            fn.notes[i].text?.replace(/<[^>]+>/g, "").slice(0, 200) || "",
+          content_text: plainText(fn.notes[i].text),
           order_index: i,
         });
         totalParagraphs++;
@@ -544,7 +597,45 @@ async function migrate() {
   console.log(`Animations linked: ${linkedAnimations}`);
 }
 
-migrate().catch((err) => {
-  console.error("Migration failed:", err);
-  process.exit(1);
-});
+// ─── CLI entry ───────────────────────────────────────────────────────
+// Env + Supabase client are only set up when run directly, so importing the
+// pure helpers above (tests, parity checker, repair generator) has no side
+// effects and needs no credentials.
+async function main() {
+  const dotenv = await import("dotenv");
+  const { createClient } = await import("@supabase/supabase-js");
+
+  const envLocalPath = path.join(__dirname, "../.env.local");
+  const envPath = path.join(__dirname, "../.env");
+  if (fs.existsSync(envLocalPath)) {
+    dotenv.config({ path: envLocalPath });
+  } else if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  } else {
+    console.error("No .env.local or .env file found");
+    process.exit(1);
+  }
+
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseKey =
+    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("Missing Supabase environment variables");
+    process.exit(1);
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  await migrate(supabase, loadTextJson());
+}
+
+const isCli = process.argv[1] && path.resolve(process.argv[1]) === __filename;
+
+if (isCli) {
+  main().catch((err) => {
+    console.error("Migration failed:", err);
+    process.exit(1);
+  });
+}

@@ -31,6 +31,7 @@
     "format:check": "prettier --check .",
     "test:ci": "vitest run --reporter=default",
     "smoke": "node scripts/smoke.mjs",
+    "parity:chapter1": "node scripts/check-chapter1-text-parity.mjs",
     "test:smoke": "start-server-and-test preview http://localhost:4173 smoke",
     "storybook": "storybook dev -p 6006",
     "storybook:coverage": "node scripts/check-storybook-coverage.mjs",
