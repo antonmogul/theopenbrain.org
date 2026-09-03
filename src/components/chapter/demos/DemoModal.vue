@@ -5,6 +5,9 @@ import CloseIcon from "@/icons/custom/CloseIcon.vue";
 const props = defineProps({
   show: { type: Boolean, default: false },
   title: { type: String, default: "" },
+  /* Full-viewport panel for content that brings its own page layout, such as
+     an embedded widget view (see WidgetBreakout). */
+  wide: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["close"]);
@@ -91,6 +94,7 @@ onBeforeUnmount(() => {
         <div
           ref="panelRef"
           class="demo-panel"
+          :class="{ 'demo-panel--wide': wide }"
           role="dialog"
           aria-modal="true"
           aria-labelledby="demo-modal-title"
@@ -188,6 +192,17 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   padding: 32px;
   font-size: 16px;
+}
+
+/* Wide: let the slot content own the width; widget views carry their own
+   max-width and padding. */
+.demo-panel--wide {
+  max-width: none;
+}
+
+.demo-panel--wide .demo-body {
+  padding: 0;
+  background: rgb(var(--color-bg));
 }
 
 /* Transition */

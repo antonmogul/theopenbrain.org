@@ -98,6 +98,12 @@ const ROUTES = [
     name: "chapter-1",
     minText: 2000,
     needsData: true,
+    /*
+     * The three client-placed interactives (OPENBRAIN-21) must be in the
+     * prose. Their anchors depend on chapter content, so this is a data
+     * assertion and is skipped without credentials like minText.
+     */
+    expectCount: { selector: "[data-widget-breakout]", min: 3 },
   },
   { path: "/chapters", name: "chapters", minText: 50 },
   {
@@ -284,7 +290,7 @@ async function main() {
         // Let route transitions and entrance animations settle.
         await page.waitForTimeout(route.slow ? 20_000 : 2500);
 
-        const result = await page.evaluate(() => {
+        const result = await page.evaluate((countSelector) => {
           const before = window.scrollX;
           window.scrollTo(9999, 0);
           const maxScrollX = window.scrollX;
@@ -292,8 +298,11 @@ async function main() {
           return {
             maxScrollX,
             textLength: document.body.innerText.trim().length,
+            count: countSelector
+              ? document.querySelectorAll(countSelector).length
+              : null,
           };
-        });
+        }, route.expectCount?.selector || null);
 
         // 1px of slack absorbs sub-pixel rounding at fractional widths.
         if (result.maxScrollX > 1) {
@@ -306,6 +315,15 @@ async function main() {
         if (checkContent && result.textLength < route.minText) {
           failures.push(
             `${label}: rendered ${result.textLength} chars, expected >= ${route.minText}`
+          );
+        }
+        const countOk =
+          !checkContent ||
+          !route.expectCount ||
+          result.count >= route.expectCount.min;
+        if (!countOk) {
+          failures.push(
+            `${label}: found ${result.count} × ${route.expectCount.selector}, expected >= ${route.expectCount.min}`
           );
         }
 
@@ -329,6 +347,7 @@ async function main() {
         const ok =
           result.maxScrollX <= 1 &&
           (!checkContent || result.textLength >= route.minText) &&
+          countOk &&
           !real.length;
         if (!ok) {
           await page.screenshot({

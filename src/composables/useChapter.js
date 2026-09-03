@@ -1,6 +1,10 @@
 import { ref } from "vue";
 import { apiRequest as supabaseRest } from "@/services/api/client";
 import { clog, cgroup } from "@/helper/chapterDebug";
+import {
+  applyWidgetPlacements,
+  placementsForChapter,
+} from "@/widgets/placements";
 
 /**
  * Generic composable to fetch and transform any chapter from Supabase
@@ -46,6 +50,20 @@ export function useChapter() {
         meta.img = block.src;
         if (block.caption) meta.imgCap = block.caption;
         if (block.closed) meta.imgClosed = block.closed;
+      }
+      if (block.type === "widget" && block.widgetId) {
+        // Author-placed interactive (OPENBRAIN-21). Same paragraph shape as
+        // src/widgets/placements.js produces, so the reader has one branch.
+        meta.type = "widget";
+        meta.widget = {
+          placementId: block.placementId || block.widgetId,
+          widgetId: block.widgetId,
+          kind: block.kind === "inline" ? "inline" : "breakout",
+          title: block.title || "",
+          blurb: block.blurb || "",
+          credit: block.credit || "",
+          route: block.route || "",
+        };
       }
       if (block.type === "further_reading") {
         meta._isFurtherReading = true;
@@ -114,6 +132,7 @@ export function useChapter() {
             "break_video",
             "further_reading",
             "footnote",
+            "widget",
           ].includes(block.type)
         ) {
           return "";
@@ -383,6 +402,9 @@ export function useChapter() {
 
       const sectionObj = {
         id: section.id,
+        // Stable handle for widget placements (sections.slug is unique per
+        // module); titles get edited, slugs do not.
+        slug: section.slug,
         title: section.title,
         paragraphs,
       };
@@ -448,6 +470,22 @@ export function useChapter() {
       furtherReading,
       footNotes,
     };
+
+    // Splice interactive widgets into the prose (OPENBRAIN-21). Code-side
+    // placements only fill gaps: a `{ type: "widget" }` block authored in the
+    // DB reaches here via transformParagraph and the matching placement is
+    // skipped. Unresolved anchors are a content drift signal, not an error —
+    // the chapter still renders.
+    const placed = applyWidgetPlacements(
+      transformed,
+      placementsForChapter(module.slug)
+    );
+    if (placed.unresolved.length) {
+      console.warn(
+        "useChapter: widget placements could not be anchored -",
+        placed.unresolved.join(", ")
+      );
+    }
 
     console.log(
       "useChapter: Transformed -",

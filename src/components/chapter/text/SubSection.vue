@@ -100,9 +100,14 @@
               class="transition left-0 w-full h-[50vh] bg-green-"
             />
 
+            <!-- Interactive widget placed in the prose (OPENBRAIN-21) -->
+            <WidgetBreakout
+              v-if="subParagraph.type === 'widget'"
+              :placement="subParagraph.widget"
+            />
             <!-- SubSection paragraph - editable for creators -->
             <EditableBlock
-              v-if="
+              v-else-if="
                 !subParagraph.subSubSection && !subParagraph.type && isCreator
               "
               :content="subParagraph.text"
@@ -178,6 +183,7 @@ import SubSubSection from "./SubSubSection.vue";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import EditableBlock from "./EditableBlock.vue";
+import WidgetBreakout from "./WidgetBreakout.vue";
 
 import { toSlug } from "@/helper/general.js";
 import InlineImages from "./InlineImages.vue";
@@ -189,7 +195,7 @@ import { useMediaQuery } from "@/composables/useMediaQuery";
 // Below the desktop pane's breakpoint, render trigger figures inline.
 const isMobile = useMediaQuery("(max-width: 1299px)");
 
-const props = defineProps({
+defineProps({
   paragraph: Object,
   index: Number,
   isCreator: {

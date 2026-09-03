@@ -23,9 +23,14 @@
             subSubSection.type != 'breakSection'
           "
         >
+          <!-- Interactive widget placed in the prose (OPENBRAIN-21) -->
+          <WidgetBreakout
+            v-if="subSubSection.type === 'widget'"
+            :placement="subSubSection.widget"
+          />
           <!-- Inline editing for sub-sub-section text -->
           <EditableBlock
-            v-if="isCreator"
+            v-else-if="isCreator"
             :content="subSubSection.text"
             :paragraph-id="subSubSection.id"
             :is-creator="isCreator"
@@ -146,11 +151,11 @@ import IllustrationInline from "../Illus/IllustrationInline.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
-import BreakText from "./BreakText.vue";
 import InlineImages from "./InlineImages.vue";
 import EditableBlock from "./EditableBlock.vue";
+import WidgetBreakout from "./WidgetBreakout.vue";
 
-const props = defineProps({
+defineProps({
   subParagraph: Object,
   chapterIndex: Number,
   subIndex: Number,

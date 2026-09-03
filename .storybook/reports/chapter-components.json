@@ -1,8 +1,8 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 53,
-  "coveredCount": 53,
+  "sourceCount": 54,
+  "coveredCount": 54,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
@@ -10,7 +10,7 @@
     "Highlighting": 7,
     "Demos": 5,
     "Illustrations": 14,
-    "Text": 17
+    "Text": 18
   },
   "components": [
     {
@@ -38,27 +38,6 @@
       "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
       "story": "HighlightToolbarCreate"
     },
-    {
-      "source": "src/components/chapter/ReaderSidebar.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "ReaderSidebarInfo"
-    },
-    {
-      "source": "src/components/chapter/ReaderTopBar.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderTopBar.stories.js",
-      "story": "Desktop"
-    },
-    {
-      "source": "src/components/chapter/TextComp.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "TextCompLongChapter"
-    },
-    {
-      "source": "src/components/chapter/TrendingHighlights.vue",
-      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
-      "story": "TrendingHighlightsPopulated"
-    },
-
     {
       "source": "src/components/chapter/Illus/FullScreenIllustration.vue",
       "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
@@ -129,7 +108,26 @@
       "storyFile": "src/components/chapter/Illus/__stories__/IllustrationCatalog.stories.js",
       "story": "TextOverlayOpen"
     },
-
+    {
+      "source": "src/components/chapter/ReaderSidebar.vue",
+      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
+      "story": "ReaderSidebarInfo"
+    },
+    {
+      "source": "src/components/chapter/ReaderTopBar.vue",
+      "storyFile": "src/components/chapter/__stories__/ReaderTopBar.stories.js",
+      "story": "Desktop"
+    },
+    {
+      "source": "src/components/chapter/TextComp.vue",
+      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
+      "story": "TextCompLongChapter"
+    },
+    {
+      "source": "src/components/chapter/TrendingHighlights.vue",
+      "storyFile": "src/components/chapter/__stories__/ReaderShellCatalog.stories.js",
+      "story": "TrendingHighlightsPopulated"
+    },
     {
       "source": "src/components/chapter/demos/ConeExplorerPanel.vue",
       "storyFile": "src/components/chapter/demos/__stories__/DemoCatalog.stories.js",
@@ -155,7 +153,6 @@
       "storyFile": "src/components/chapter/demos/__stories__/DemoCatalog.stories.js",
       "story": "QuizIntro"
     },
-
     {
       "source": "src/components/chapter/highlight-toolbar/HighlightActionBar.vue",
       "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
@@ -181,7 +178,6 @@
       "storyFile": "src/components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js",
       "story": "TagPanelPopulated"
     },
-
     {
       "source": "src/components/chapter/sidebar/ChatTab.vue",
       "storyFile": "src/components/chapter/sidebar/__stories__/SidebarTabsCatalog.stories.js",
@@ -197,7 +193,6 @@
       "storyFile": "src/components/chapter/sidebar/__stories__/SidebarTabsCatalog.stories.js",
       "story": "NotebookWithAnnotations"
     },
-
     {
       "source": "src/components/chapter/text/BreakImages.vue",
       "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
@@ -282,6 +277,11 @@
       "source": "src/components/chapter/text/SubSubSection.vue",
       "storyFile": "src/components/chapter/text/__stories__/TextCatalog.stories.js",
       "story": "SubSubSection"
+    },
+    {
+      "source": "src/components/chapter/text/WidgetBreakout.vue",
+      "storyFile": "src/components/chapter/text/__stories__/WidgetBreakout.stories.js",
+      "story": "BreakoutCard"
     }
   ]
 }

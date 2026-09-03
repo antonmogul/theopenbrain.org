@@ -85,9 +85,14 @@
             paragraph?.type != 'breakVideo' && paragraph.type != 'breakSection'
           "
         >
+          <!-- Interactive widget placed in the prose (OPENBRAIN-21) -->
+          <WidgetBreakout
+            v-if="paragraph.type === 'widget'"
+            :placement="paragraph.widget"
+          />
           <!-- section paragraph - editable for creators -->
           <EditableBlock
-            v-if="!paragraph.subSection && isCreator"
+            v-else-if="!paragraph.subSection && isCreator"
             :content="paragraph.text"
             :paragraph-id="paragraph.id"
             :is-creator="isCreator"
@@ -164,6 +169,7 @@ import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import EditableBlock from "./EditableBlock.vue";
+import WidgetBreakout from "./WidgetBreakout.vue";
 
 const store = useGeneral();
 
