@@ -3,7 +3,7 @@
 > npx -y madge@8.0.0 --webpack-config madge.webpack.cjs --extensions js,ts,vue --circular src
 
 - Finding files
-Processed 377 files (441ms) (30 warnings)
+Processed 528 files (550ms) (31 warnings)
 
 ✔ No circular dependency found!
 
