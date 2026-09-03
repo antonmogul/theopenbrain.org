@@ -371,7 +371,12 @@ export function useChapter() {
       ? [
           {
             id: introSection.id,
-            title: introSection.title,
+            // The reader prints this as the chapter's h1, so it must be the
+            // chapter's name. Chapter 1 named its intro section after the
+            // chapter; Foundations calls its intro "Introduction", which read
+            // as the chapter title. The section's own title is kept alongside.
+            title: module.title || introSection.title,
+            sectionTitle: introSection.title,
             animation: introSection.animation_config || undefined,
             paragraphs: introSection.paragraphs
               ? introSection.paragraphs
@@ -406,6 +411,9 @@ export function useChapter() {
         // module); titles get edited, slugs do not.
         slug: section.slug,
         title: section.title,
+        // Foundations seeds its sidebars as sections slugged box-*; the reader
+        // letters those as breakout boxes instead of numbering them.
+        kind: section.slug?.startsWith("box-") ? "box" : "section",
         paragraphs,
       };
 
@@ -465,6 +473,8 @@ export function useChapter() {
 
     const transformed = {
       moduleId: module.id,
+      title: module.title || "",
+      slug: module.slug || "",
       intro,
       sections,
       furtherReading,

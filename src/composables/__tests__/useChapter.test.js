@@ -242,3 +242,63 @@ describe("useChapter transformParagraph fullscreen (CODE-FIX #4)", () => {
     expect(p.animation.id).toBe("animationEyeStructur");
   });
 });
+
+describe("useChapter transform: chapter identity and box sections", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  async function load(sections) {
+    mockRest({ sections, paragraphs: [] });
+    const { fetchChapter, transformedData } = useChapter();
+    await fetchChapter("the-retina");
+    return transformedData.value;
+  }
+
+  it("carries the module title and slug on the transformed chapter", async () => {
+    const t = await load([
+      {
+        id: "intro",
+        title: "Introduction",
+        slug: "introduction",
+        order_index: 0,
+      },
+      ...mainSection(),
+    ]);
+    expect(t.title).toBe("The Retina");
+    expect(t.slug).toBe("the-retina");
+  });
+
+  it("names the hero after the module, keeping the intro section's own title alongside", async () => {
+    const t = await load([
+      {
+        id: "intro",
+        title: "Introduction",
+        slug: "introduction",
+        order_index: 0,
+      },
+      ...mainSection(),
+    ]);
+    expect(t.intro[0].title).toBe("The Retina");
+    expect(t.intro[0].sectionTitle).toBe("Introduction");
+  });
+
+  it("marks sections slugged box-* as breakout boxes and the rest as sections", async () => {
+    const t = await load([
+      {
+        id: "s1",
+        title: "Where is my mind?",
+        slug: "where-is-my-mind",
+        order_index: 1,
+      },
+      {
+        id: "b1",
+        title: "Descartes and dualism",
+        slug: "box-descartes",
+        order_index: 2,
+      },
+    ]);
+    expect(t.sections.map((s) => [s.slug, s.kind])).toEqual([
+      ["where-is-my-mind", "section"],
+      ["box-descartes", "box"],
+    ]);
+  });
+});

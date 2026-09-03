@@ -28,9 +28,13 @@
 
     <h2
       class="TN border border-black bg-white rounded-full absolute -translate-x-[5.40625rem] -translate-y-[0.5rem] w-28 h-28 flex items-center justify-center"
+      :class="{ 'TN--box': section.kind === 'box' }"
     >
-      {{ index + 1 }}
+      {{ label || index + 1 }}
     </h2>
+    <!-- Breakout boxes (sections slugged box-*) are lettered, not numbered,
+         and announce themselves so they read as asides to the main thread. -->
+    <p v-if="section.kind === 'box'" class="section-kicker">Breakout box</p>
 
     <!-- Section title - editable for creators -->
     <EditableBlock
@@ -181,6 +185,10 @@ const isMobile = useMediaQuery("(max-width: 1299px)");
 const props = defineProps({
   section: Object,
   index: Number,
+  /* Marker text for the round section badge: "1", "2", … for sections,
+     "A", "B", … for breakout boxes (TextComp computes both). Falls back to
+     index + 1 so older callers keep numbering. */
+  label: { type: String, default: "" },
   isCreator: {
     type: Boolean,
     default: false,
@@ -217,4 +225,20 @@ const handleSectionTitleSave = async ({ paragraphId, content }) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.TN--box {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  letter-spacing: 0.04em;
+  background: rgb(var(--color-chapter-pale, var(--color-paper)));
+}
+
+.section-kicker {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-mute));
+}
+</style>

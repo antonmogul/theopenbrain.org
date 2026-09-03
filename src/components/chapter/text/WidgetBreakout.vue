@@ -99,6 +99,33 @@ onBeforeUnmount(() => {
 const inlineMounted = computed(
   () => kind.value === "inline" && nearViewport.value && !modalOpen.value
 );
+
+/* Full-bleed inline stage: at desktop widths the stage spans the window
+   (see the CSS), which means sliding it left by exactly the card's distance
+   from the window edge. That distance depends on the reader's column
+   margins and paddings, so measure it instead of restating those numbers. */
+const stageOffset = ref(0);
+function measureStageOffset() {
+  if (kind.value !== "inline" || !rootEl.value) return;
+  const rect = rootEl.value.getBoundingClientRect();
+  // clientLeft is the card's left border, which the stage sits inside.
+  stageOffset.value = Math.max(
+    0,
+    Math.round(rect.left + window.scrollX + rootEl.value.clientLeft)
+  );
+}
+const stageStyle = computed(() =>
+  kind.value === "inline" ? { "--wb-offset": `${stageOffset.value}px` } : null
+);
+
+onMounted(() => {
+  if (kind.value !== "inline") return;
+  measureStageOffset();
+  window.addEventListener("resize", measureStageOffset);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", measureStageOffset);
+});
 const headingId = computed(
   () => `widget-breakout-${props.placement?.placementId || widgetId.value}`
 );
@@ -125,7 +152,7 @@ const headingId = computed(
     </header>
 
     <!-- inline: the widget lives here once it is near the viewport -->
-    <div v-if="kind === 'inline'" class="wb-stage">
+    <div v-if="kind === 'inline'" class="wb-stage" :style="stageStyle">
       <component :is="Widget" v-if="inlineMounted && Widget" />
       <div v-else-if="!embeddable" class="wb-missing">
         This interactive is not available in the reader yet.
@@ -174,6 +201,12 @@ const headingId = computed(
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
   overflow: hidden;
+}
+
+/* Inline stages break out of the prose column at desktop widths (below), so
+   the card must not clip them. */
+.wb--inline {
+  overflow: visible;
 }
 
 .wb-head {
@@ -225,6 +258,29 @@ const headingId = computed(
   /* Widget views bring their own page padding; keep ours minimal. */
   padding: 0.5rem;
   container-type: inline-size;
+}
+
+/*
+ * Full-bleed inline stage. The widget views size their layout from the
+ * viewport (their own @media rules), so inside a ~460–580px prose column a
+ * 1180px-wide tool like RetINaBox overflows. At the reader's desktop
+ * breakpoint the stage takes the real content width (--app-w, scrollbar
+ * excluded — see helper/appWidth.js and OPENBRAIN-4) and slides left by the
+ * card's measured distance from the window edge (--wb-offset, set from the
+ * script), landing on x = 0 whatever the column's margins happen to be. The
+ * card's header and footer stay in the column; only the stage spans the
+ * window, painting over the fixed illustration pane the way a break in the
+ * reading flow should. A transform keeps the document's scrollable width
+ * unchanged, so the no-horizontal-scroll smoke check still holds.
+ */
+@media (min-width: 1300px) {
+  .wb--inline .wb-stage {
+    width: var(--app-w, 100vw);
+    transform: translateX(calc(-1 * var(--wb-offset, 0px)));
+    padding: 1.5rem clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid rgb(var(--color-line));
+    border-bottom: 1px solid rgb(var(--color-line));
+  }
 }
 
 .wb-stage-placeholder {
