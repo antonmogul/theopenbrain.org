@@ -23,3 +23,8 @@ src/widgets/source/
 
 # Claude Code agent worktrees (local only)
 .claude/worktrees/
+
+# Chapter manuscripts converted from the authors' DOCX (scripts/seed/
+# docx-to-markdown.mjs). The seed generator reads them verbatim, so the
+# committed text must be byte-for-byte what the SQL was generated from.
+content/
