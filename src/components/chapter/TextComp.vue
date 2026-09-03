@@ -47,6 +47,28 @@ const source = computed(() => {
   return textStore.text;
 });
 
+/*
+ * Section badge labels. Main sections count 1, 2, 3 … ; breakout boxes
+ * (sections the transform marked kind: "box", i.e. slugged box-*) letter
+ * A, B, C … so the History chapter reads as five sections plus asides rather
+ * than fourteen numbered chapters. Keyed by section id (falls back to title
+ * for fixture data without ids).
+ */
+const sectionLabels = computed(() => {
+  const labels = {};
+  let number = 0;
+  let box = 0;
+  for (const section of source.value?.sections || []) {
+    const key = section.id || section.title;
+    if (section.kind === "box") {
+      labels[key] = String.fromCharCode(65 + (box++ % 26));
+    } else {
+      labels[key] = String(++number);
+    }
+  }
+  return labels;
+});
+
 // Save content to Supabase
 const saveContent = async ({ paragraphId, content, type }) => {
   // Get current chapter slug
@@ -483,6 +505,7 @@ onBeforeUnmount(() => {
           <Section
             :section="section"
             :index="index"
+            :label="sectionLabels[section.id || section.title]"
             :is-creator="isCreator"
             @save="saveContent"
           />

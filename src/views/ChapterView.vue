@@ -337,13 +337,17 @@ async function loadChapter() {
 
   if (!currentSlug) return false;
 
-  // Clear stale localStorage data from previous chapter
-  const storedData = localStorage.getItem("sections")
-    ? JSON.parse(localStorage.getItem("sections"))
-    : null;
-  const storedTitle = storedData?.intro?.[0]?.title;
-  const incomingTitle = currentSlug === "the-retina" ? "The Retina" : null;
-  if (storedTitle && storedTitle !== incomingTitle) {
+  // Clear stale localStorage data from a previous chapter: selections and
+  // comments are keyed to that chapter's paragraph ids. The cached chapter
+  // carries its module slug (useChapter); caches from before it did are
+  // cleared unconditionally.
+  let storedData = null;
+  try {
+    storedData = JSON.parse(localStorage.getItem("sections") || "null");
+  } catch {
+    storedData = null;
+  }
+  if (storedData && storedData.slug !== currentSlug) {
     localStorage.removeItem("sections");
     localStorage.removeItem("selection");
     localStorage.removeItem("comments");
@@ -359,6 +363,9 @@ async function loadChapter() {
 
   if (data) {
     storeText.updateText("*", data);
+    if (typeof document !== "undefined" && data.title) {
+      document.title = `The Open Brain – ${data.title}`;
+    }
     await nextTick();
     chapterDataLoaded.value = true;
     return true;

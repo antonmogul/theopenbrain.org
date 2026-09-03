@@ -24,7 +24,7 @@ describe("chapter Storybook coverage report", () => {
     const sourceFiles = vueFiles(chapterRoot).sort();
     const reportedFiles = report.components.map(({ source }) => source).sort();
 
-    expect(sourceFiles).toHaveLength(53);
+    expect(sourceFiles).toHaveLength(54);
     expect(report.sourceCount).toBe(sourceFiles.length);
     expect(report.coveredCount).toBe(report.components.length);
     expect(report.excludedCount).toBe(report.excluded.length);
