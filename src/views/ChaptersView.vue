@@ -1,11 +1,19 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useAuth } from "@/composables/useAuth";
+import { ROLE_UNAVAILABLE_QUERY } from "@/router/guards";
 
 const router = useRouter();
+const route = useRoute();
 const { user, session, isAuthenticated } = useAuth();
+
+// The auth guard lands here with ?auth=role-unavailable when a role-gated
+// route had to fail closed (profile lookup errored or returned nothing).
+const roleUnavailable = computed(
+  () => route.query.auth === ROLE_UNAVAILABLE_QUERY
+);
 const { fetchCatalog, modules, loading } = useChapterCatalog();
 
 // Progress rows keyed by module_id for the current user
@@ -188,6 +196,10 @@ function chapterNumberFor(mod) {
         </p>
         <p v-if="!isAuthenticated" class="signin-cta">
           <router-link to="/">Sign in</router-link> to track your progress.
+        </p>
+        <p v-if="roleUnavailable" class="auth-notice" role="status">
+          We couldn't confirm your account role, so that page stayed closed.
+          Reload to try again.
         </p>
       </div>
 
@@ -385,6 +397,14 @@ function chapterNumberFor(mod) {
 .signin-cta a {
   color: rgb(var(--color-accent));
   text-decoration: underline;
+}
+
+/* One-line notice for the guard's fail-closed landing (see router/guards.js) */
+.auth-notice {
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgb(var(--color-warn));
 }
 
 /* Featured "continue reading" card — dark band (prototype IndexScreen A) */
