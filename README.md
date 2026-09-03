@@ -6,7 +6,7 @@ Readers get chapters with interactive Lottie/GSAP figures, highlighting and note
 
 ## Where it runs
 
-- This fork deploys from `main` on Railway (`railway.json`); the deployment URL is not recorded in the repo.
+- This fork deploys from `main` on Railway (`railway.json`) to https://theopenbrainorg-production.up.railway.app (the live release used for client review).
 - The original 2023 single-chapter site by Jonas von Arb (the `upstream` remote) is at theopenbrain.org.
 
 ## Quick start
