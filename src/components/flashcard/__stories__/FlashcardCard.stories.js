@@ -5,7 +5,9 @@
  * faces get their own story: a flipped card is otherwise only reachable by
  * clicking, which docs and a11y checks don't do.
  */
+import { ref } from "vue";
 import FlashcardCard from "../FlashcardCard.vue";
+import { flashcardFixture } from "@/stories/openBrainFixtures";
 
 /*
  * The component reads front_text || front_content || front (and the same for
@@ -67,4 +69,28 @@ export const LongContent = {
         "Starburst amacrine cells release GABA onto direction-selective ganglion cells asymmetrically. Their dendrites are themselves directionally tuned, responding most strongly to motion outward from the soma. The null-direction input arrives with a delay that coincides with the excitatory input, producing the inhibition that suppresses the response to null-direction motion.",
     },
   },
+};
+
+/**
+ * Click to flip. The deck owns `isFlipped`, so the story holds it locally the
+ * way FlashcardView does — the scenario the old Student/Flashcards catalog
+ * carried, on the shared Foundations fixture.
+ */
+export const Interactive = {
+  args: { card: flashcardFixture },
+  render: (args) => ({
+    components: { FlashcardCard },
+    setup() {
+      const flipped = ref(args.isFlipped);
+      return { args, flipped };
+    },
+    template: `
+      <div style="max-width:560px;">
+        <FlashcardCard
+          v-bind="args"
+          :is-flipped="flipped"
+          @flip="flipped = !flipped"
+        />
+      </div>`,
+  }),
 };

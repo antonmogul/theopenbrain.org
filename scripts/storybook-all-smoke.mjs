@@ -73,7 +73,7 @@ async function worker() {
         .first()
         .waitFor({ state: "attached", timeout: 15_000 });
       await page.waitForTimeout(350);
-      if (id === "widgets-full-page-views--python-playground") {
+      if (id === "views-widgets-pythonplaygroundview--deterministic-run") {
         await page.getByRole("button", { name: "Run", exact: true }).click();
         await page.getByText("Storybook Python preview completed.").waitFor({
           state: "visible",
