@@ -253,7 +253,8 @@ describe("Highlighting System", () => {
 
   it("shows highlight toolbar on text selection", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500); // Wait for page to load
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     // Find a paragraph and select text
     cy.get("[data-paragraph-id]")
@@ -284,7 +285,8 @@ describe("Highlighting System", () => {
 
   it("displays 5 color options in highlight toolbar", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500);
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     // Select text to show toolbar
     cy.get("[data-paragraph-id]")
@@ -311,7 +313,8 @@ describe("Highlighting System", () => {
 
   it("creates a highlight with selected color", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500);
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     // Select text
     cy.get("[data-paragraph-id]")
@@ -338,7 +341,8 @@ describe("Highlighting System", () => {
 
   it("has add note button in highlight toolbar", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500);
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     cy.get("[data-paragraph-id]")
       .first()
@@ -413,7 +417,8 @@ describe("Notes System", () => {
 
   it("opens notes sidebar when toggle is clicked", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500);
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     // Look for notes toggle button (if it exists in chapter view)
     cy.get('[data-testid="notes-toggle"]').then(($btn) => {
@@ -426,7 +431,8 @@ describe("Notes System", () => {
 
   it("displays add note button in notes sidebar", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500);
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     cy.get('[data-testid="notes-toggle"]').then(($btn) => {
       if ($btn.length) {
@@ -438,7 +444,8 @@ describe("Notes System", () => {
 
   it("creates a new note", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500);
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     cy.get('[data-testid="notes-toggle"]').then(($btn) => {
       if ($btn.length) {
@@ -553,7 +560,8 @@ describe("Trending Highlights", () => {
 
   it("scrolls to highlight when trending item is clicked", () => {
     cy.visit("/chapter/1/the-retina");
-    cy.wait(500);
+    // Assertion-based "page loaded": the reader has rendered its paragraphs.
+    cy.get("[data-paragraph-id]").should("exist");
 
     // If trending highlights component is present in chapter view
     cy.get('[data-testid="trending-item"]').then(($items) => {

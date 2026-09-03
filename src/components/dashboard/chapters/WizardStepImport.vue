@@ -5,7 +5,7 @@
  * Four import methods: paste text, upload markdown, upload DOCX, upload bibliography.
  * Also provides a "Download Template" link.
  */
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { useContentParser } from "@/composables/useContentParser";
 import { useBibParser } from "@/composables/useBibParser";
 
@@ -21,14 +21,8 @@ const pasteContent = ref("");
 const importStatus = ref(null); // null | 'parsing' | 'success' | 'error'
 const importMessage = ref("");
 
-const {
-  parseMarkdown,
-  parseText,
-  parseDocx,
-  autoParse,
-  parseError: contentError,
-} = useContentParser();
-const { parseBibFile, parseError: bibError } = useBibParser();
+const { parseMarkdown, parseDocx, autoParse } = useContentParser();
+const { parseBibFile } = useBibParser();
 
 // File input refs
 const mdFileInput = ref(null);

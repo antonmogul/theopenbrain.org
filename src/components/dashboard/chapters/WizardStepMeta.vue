@@ -5,7 +5,7 @@
  * Collects chapter title, description, slug, and order_index.
  * Slug auto-generates from title but is editable.
  */
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { toSlug } from "@/helper/general";
 
 const props = defineProps({

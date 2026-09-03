@@ -28,7 +28,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["retry", "review", "close"]);
+defineEmits(["retry", "review", "close"]);
 
 // Calculate stroke dasharray for circular progress
 const circumference = 2 * Math.PI * 56; // radius = 56

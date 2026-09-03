@@ -193,6 +193,7 @@ function onStageKeydown(e) {
 </script>
 
 <template>
+  <!-- eslint-disable vue/no-deprecated-slot-attribute -- `slot` here is <model-viewer>'s hotspot API (a native web-component slot), not the removed Vue 2 slot syntax -->
   <div class="phreno3d">
     <header class="phreno3d__chrome">
       <span class="phreno3d__eyebrow">Phrenology · 3D</span>

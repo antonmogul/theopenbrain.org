@@ -1,6 +1,6 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 
-export function useTextSelection(containerSelector = "[data-paragraph-id]") {
+export function useTextSelection() {
   const selection = ref(null);
   const toolbarPosition = ref({ x: 0, y: 0 });
   const showToolbar = ref(false);

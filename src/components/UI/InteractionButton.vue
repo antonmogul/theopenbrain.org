@@ -4,7 +4,7 @@ import OpenEye from "@/icons/custom/OpenEye.vue";
 import ClosedEye from "@/icons/custom/ClosedEye.vue";
 const store = useGeneral();
 
-const props = defineProps({
+defineProps({
   target: String,
   pos: String,
   text: String,

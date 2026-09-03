@@ -14,9 +14,7 @@ const router = useRouter();
 const { isAuthenticated } = useAuth();
 
 const {
-  flashcards,
   currentCard,
-  currentCardIndex,
   isFlipped,
   loading,
   error,

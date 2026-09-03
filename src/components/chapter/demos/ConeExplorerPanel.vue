@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { Line } from "vue-chartjs";
 import {
   Chart as ChartJS,
@@ -22,7 +22,7 @@ ChartJS.register(
   Legend
 );
 
-const emit = defineEmits(["close"]);
+defineEmits(["close"]);
 
 // --- Cone parameters ---
 const cones = ref([

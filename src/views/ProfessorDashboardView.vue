@@ -7,7 +7,6 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter } from "vue-router";
-import { relativeLong as formatDate } from "@/utils/format";
 import { useProfessorDashboardStats } from "@/composables/useProfessorDashboardStats";
 import { useProfessorCourses } from "@/composables/useProfessorCourses";
 import { useProfessorLibrary } from "@/composables/useProfessorLibrary";
@@ -36,15 +35,8 @@ import {
 } from "@/components/dashboard/shared";
 
 const router = useRouter();
-const {
-  user,
-  profile,
-  loading,
-  profileLoading,
-  isAuthenticated,
-  isProfessor,
-  signOut,
-} = useAuth();
+const { user, profile, loading, profileLoading, isAuthenticated, signOut } =
+  useAuth();
 
 // Current active section in sidebar
 const activeSection = ref("dashboard");
@@ -102,7 +94,6 @@ const {
   expandedModuleId,
   moduleSections,
   fetchModules,
-  fetchModuleSections,
   toggleModuleExpand,
   toggleModuleSelection,
   addModulesToCourse,
@@ -111,7 +102,6 @@ const {
 // ============ STUDENTS SECTION STATE ============
 // State + fetch + filteredStudents extracted to useProfessorStudents (#12).
 const {
-  students,
   studentsLoading,
   studentsError,
   studentSearch,

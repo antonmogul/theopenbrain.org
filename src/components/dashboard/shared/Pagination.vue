@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- legacy name; renaming touches 2 importing files plus the shared index -->
 <script setup>
 // Page controls + "showing X–Y of N". Window logic preserved from original; token chrome.
 import { computed } from "vue";

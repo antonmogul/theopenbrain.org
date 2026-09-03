@@ -18,7 +18,7 @@ export const useCom = defineStore("comments", {
     getCom() {
       return this.comments[this.activeCom];
     },
-    updateCom(input, event) {
+    updateCom(input) {
       if (input.length !== 0) {
         this.comments[this.activeCom] = input;
       } else {

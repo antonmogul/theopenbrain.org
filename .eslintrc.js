@@ -22,6 +22,10 @@ module.exports = {
     "plugin:storybook/recommended",
   ],
   rules: {
+    /* 15 today (OPENBRAIN-23 paid 92 down): 12 in src/components/chapter/text/,
+       which is under active rework and was left alone, and 3 in
+       ConeExplorerPanel where an unused `wavelengthToRGB` result marks an
+       unfinished "true colour" weighting — a design call, not a lint fix. */
     "no-unused-vars": "warn",
     /* Formatting is auto-fixed by `npm run format`; surfacing it as an error
        would fail CI on whitespace and train people to ignore the gate. */
@@ -31,25 +35,26 @@ module.exports = {
      * Below: pre-existing violations demoted to warnings so the CI gate can go
      * green today and start catching NEW problems. Each is real and tracked in
      * OPENBRAIN-9 — this is a paydown list, not a permanent exemption.
+     * `lint:ci` allows 21 warnings against 16 actual (2026-09-02); lower the
+     * ceiling in package.json as the rest are paid off.
      */
 
     /* 5 single-word components (Button, Switch, Question, Pagination,
-       Specimen). Renaming means touching every import; pure churn to do
-       alongside a demo. */
+       Specimen) carry a file-level disable with the import count that a rename
+       would touch. Kept at warn so any NEW single-word component still shows
+       up in `lint:ci` output. */
     "vue/multi-word-component-names": "warn",
 
-    /* 2 genuine prop/ref name collisions. In IllustrationOnScroll the
-       `activeAnimation` prop is fully shadowed by a ref, so a prop the parent
-       passes is unreachable. Fixing changes animation behaviour, so it wants
-       its own change with visual verification — not a drive-by. */
-    "vue/no-dupe-keys": "warn",
-
-    /* Phrenology3DView uses the deprecated `slot` attribute for model-viewer
-       hotspots — that is model-viewer's documented API, so this may end up
-       permanently disabled for that file rather than "fixed". */
+    /* Phrenology3DView uses the `slot` attribute for <model-viewer> hotspots —
+       that is the web component's documented API (a native slot, not Vue 2
+       slot syntax), so the file carries a template-level disable. Kept at warn
+       so any other use of the removed Vue 2 syntax still surfaces. */
     "vue/no-deprecated-slot-attribute": "warn",
 
-    /* One <transition> without v-if/v-show in AITutorSidebar. */
+    /* One <transition> without v-if/v-show in AITutorSidebar. The parent
+       mounts the whole component, so the <Transition> never animates today;
+       the real fix (toggle inside, or `appear`) changes how the sidebar
+       enters and wants a visual check, not a drive-by. */
     "vue/require-toggle-inside-transition": "warn",
   },
   settings: {
@@ -72,8 +77,10 @@ module.exports = {
       extends: ["plugin:cypress/recommended"],
       env: { "cypress/globals": true },
       rules: {
-        /* The existing specs lean on cy.wait() for timing. Worth replacing with
-           real assertions, but that's test-suite work, not a lint gate. */
+        /* 0 today — the eight cy.wait(500) sleeps in student-dashboard.cy.js
+           became assertion-based waits in OPENBRAIN-23. Kept at warn so a new
+           sleep is visible in lint output without failing the gate; the specs
+           themselves are not run in CI (see ci.yml). */
         "cypress/no-unnecessary-waiting": "warn",
       },
     },

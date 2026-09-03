@@ -141,11 +141,8 @@ import { loadLottie } from "@/composables/useLottie";
 import { toCamelCase } from "@/helper/general";
 
 let lottie;
-import ReplayIcon from "../../../icons/custom/ReplayIcon.vue";
 import PauseIcon from "../../../icons/custom/PauseIcon.vue";
-import NextIcon from "../../../icons/custom/NextIcon.vue";
 import PlayIcon from "../../../icons/custom/PlayIcon.vue";
-import OpenArrowIcon from "../../../icons/custom/OpenArrowIcon.vue";
 import DownArrow from "../../../icons/custom/DownArrow.vue";
 
 const props = defineProps({

@@ -1,11 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useAuth } from "@/composables/useAuth";
 import { ROLE_UNAVAILABLE_QUERY } from "@/router/guards";
 
-const router = useRouter();
 const route = useRoute();
 const { user, session, isAuthenticated } = useAuth();
 

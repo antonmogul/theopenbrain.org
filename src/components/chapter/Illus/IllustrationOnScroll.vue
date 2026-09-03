@@ -16,7 +16,7 @@
               ? 'italic font-semibold'
               : 'blur-xs opacity-30'
           "
-          @click="setState(index, state)"
+          @click="setState(index)"
         >
           {{ state }}
         </p>
@@ -65,7 +65,7 @@ const replay = () => {
 
 watch(
   () => props.progress,
-  (newP, olP) => {
+  (newP) => {
     const map = (value, x1, y1, x2, y2) =>
       ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
     let totalFrames = animationLottie.totalFrames;
@@ -73,7 +73,7 @@ watch(
   }
 );
 
-const setState = (index, state) => {
+const setState = (index) => {
   const totalFrames = animationLottie.totalFrames;
   const pos = totalFrames.value * index;
   const posAfter = totalFrames.value * (index + 1);

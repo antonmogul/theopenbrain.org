@@ -1,38 +1,67 @@
 
-> theopenbrain.org@0.1.18 graph:orphans
+> theopenbrain.org@0.1.20 graph:orphans
 > npx -y madge@8.0.0 --webpack-config madge.webpack.cjs --extensions js,ts,vue --orphans src
 
 - Finding files
-Processed 273 files (442ms) (17 warnings)
+Processed 377 files (440ms) (30 warnings)
 
+__stories__/App.stories.js
+__tests__/readingProgressMigration.test.js
+__tests__/uxChapterRemoval.test.js
+components/Editor/__stories__/TipTapEditor.stories.js
+components/Navigation/__stories__/Navigation.stories.js
 components/Navigation/__tests__/AuthForm.smoke.test.js
-components/UI/ActionButton.vue
-components/UI/InteractionButton.vue
-components/UI/OpenCloseButtonLink.vue
-components/UI/OverlayInfo.vue
-components/UI/PointComp.vue
 components/UI/SegmentedControl.vue
 components/UI/Switch.vue
-components/ai/AITutorSidebar.vue
-components/chapter/ExportField.vue
-components/chapter/HighlightRenderer.vue
+components/UI/__stories__/LegacyUI.stories.js
+components/ai/__stories__/AICatalog.stories.js
+components/chapter/Illus/__stories__/IllustrationCatalog.stories.js
+components/chapter/Illus/__tests__/FullScreenIllustration.smoke.test.js
+components/chapter/__stories__/EndOfChapterCallout.stories.js
+components/chapter/__stories__/ReaderShellCatalog.stories.js
+components/chapter/__stories__/ReaderTopBar.stories.js
+components/chapter/__tests__/DemoModal.accessibility.test.js
 components/chapter/__tests__/HighlightActionBar.smoke.test.js
 components/chapter/__tests__/HighlightColorPicker.smoke.test.js
 components/chapter/__tests__/HighlightDeleteConfirm.smoke.test.js
 components/chapter/__tests__/HighlightNotePanel.smoke.test.js
 components/chapter/__tests__/HighlightTagPanel.smoke.test.js
-components/chapter/text/InlineImages_openClose.vue
+components/chapter/__tests__/ReaderSidebar.route-change.test.js
+components/chapter/__tests__/ReaderTopBar.accessibility.test.js
+components/chapter/__tests__/storybookCoverage.test.js
+components/chapter/demos/__stories__/DemoCatalog.stories.js
+components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js
+components/chapter/sidebar/__stories__/SidebarTabsCatalog.stories.js
+components/chapter/text/__stories__/TextCatalog.stories.js
+components/dashboard/chapters/__stories__/ChapterAdmin.stories.js
+components/dashboard/sections/__stories__/AdminSections.stories.js
 components/dashboard/sections/__tests__/AnalyticsSection.smoke.test.js
 components/dashboard/sections/__tests__/MediaSection.smoke.test.js
 components/dashboard/sections/__tests__/QuizzesSection.smoke.test.js
 components/dashboard/sections/__tests__/UsersSection.smoke.test.js
 components/dashboard/sections/__tests__/VersionsSection.smoke.test.js
-components/dev/DevToolbar.vue
+components/dashboard/shared/__stories__/Button.stories.js
+components/dashboard/shared/__stories__/FormField.stories.js
+components/dashboard/shared/__stories__/SharedCatalog.stories.js
+components/dashboard/shared/__stories__/StatCard.stories.js
+components/dashboard/shared/__stories__/StatusBadge.stories.js
+components/dev/__stories__/DevToolbar.stories.js
+components/flashcard/__stories__/FlashcardCard.stories.js
+components/flashcard/__stories__/FlashcardCatalog.stories.js
+components/lab/__stories__/LabCatalog.stories.js
+components/quiz/__stories__/QuizCatalog.stories.js
+components/quiz/__stories__/QuizProgress.stories.js
 components/quiz/__tests__/QuizIntro.smoke.test.js
 components/quiz/__tests__/QuizReview.smoke.test.js
-components/settings/AccentSwatches.vue
-components/settings/FontPairPicker.vue
-components/settings/ThemeCards.vue
+components/settings/__stories__/Settings.stories.js
+components/student/__stories__/StudentCatalog.stories.js
+components/student/__tests__/ProgressCard.smoke.test.js
+components/styleguide/__stories__/Collections.stories.js
+components/styleguide/__stories__/Colours.stories.js
+components/styleguide/__stories__/Typography.stories.js
+composables/__tests__/useAnimations.dedup.test.js
+composables/__tests__/useAnimations.test.js
+composables/__tests__/useChapter.test.js
 composables/__tests__/useCrudResource.test.js
 composables/__tests__/useDashboardAnalytics.test.js
 composables/__tests__/useDashboardMedia.test.js
@@ -47,20 +76,27 @@ composables/__tests__/useProfessorCourses.test.js
 composables/__tests__/useProfessorDashboardStats.test.js
 composables/__tests__/useProfessorLibrary.test.js
 composables/__tests__/useProfessorStudents.test.js
+composables/__tests__/useReadingProgress.test.js
+composables/__tests__/useReferences.test.js
 composables/__tests__/useTrendingHighlights.test.js
 composables/__tests__/useVersions.test.js
 composables/__tests__/withAsyncState.test.js
 composables/useModules.js
-icons/MaterialSymbolsPlayArrow.vue
-icons/MaterialSymbolsRepeat.vue
-icons/TeenyiconsEyeClosedOutline.vue
-icons/TeenyiconsEyeOutline.vue
-icons/custom/Brain.vue
-icons/custom/IIcon.vue
-icons/custom/Speed1Icon.vue
-icons/custom/Speed2Icon.vue
-icons/custom/UserIcon.vue
+helper/__tests__/animationResolve.test.js
+helper/__tests__/appWidth.test.js
+helper/__tests__/chapterTheme.test.js
+helper/__tests__/debugFlags.test.js
+helper/__tests__/motion.test.js
+helper/__tests__/readingProgress.test.js
+helper/__tests__/sdt.test.js
+icons/__stories__/Icons.stories.js
 main.js
+mocks/__tests__/phrenology.test.js
 services/api/index.js
-views/ChapterWizardView.vue
+views/__stories__/AdminViews.stories.js
+views/__stories__/FoundationViews.stories.js
+views/__stories__/StudentViews.stories.js
+views/__stories__/WidgetViews.stories.js
+views/__tests__/ChapterView.route-change.test.js
+widgets/__stories__/WidgetCatalog.stories.js
 

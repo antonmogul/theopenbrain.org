@@ -1,14 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useChapter } from "@/composables/useChapter";
 import { useAuth } from "@/composables/useAuth";
 
 const route = useRoute();
-const router = useRouter();
 const { isAuthenticated, user, session } = useAuth();
-const { fetchCatalog, modules, findByNumber } = useChapterCatalog();
+const { fetchCatalog, findByNumber } = useChapterCatalog();
 const { fetchChapter, transformedData } = useChapter();
 
 const chapterNumber = computed(() => Number(route.params.number));

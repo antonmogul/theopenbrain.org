@@ -1,15 +1,24 @@
 {
+  "../.storybook/reports/chapter-components.json": [],
   "App.vue": [
     "components/Navigation/MenuAuth.vue",
     "components/Navigation/NavDrawer.vue",
     "stores/index.js"
   ],
+  "__stories__/App.stories.js": [
+    "App.vue"
+  ],
+  "__tests__/readingProgressMigration.test.js": [],
+  "__tests__/uxChapterRemoval.test.js": [],
   "assets/json_backend/animations.json": [],
   "assets/json_backend/breakVideos.json": [],
   "assets/json_backend/infosImages.json": [],
   "assets/json_backend/text.json": [],
   "assets/styles/admin-theme.css": [],
   "components/Editor/TipTapEditor.vue": [],
+  "components/Editor/__stories__/TipTapEditor.stories.js": [
+    "components/Editor/TipTapEditor.vue"
+  ],
   "components/Navigation/AuthForm.vue": [
     "composables/useAuth.js",
     "stores/auth.js"
@@ -32,6 +41,14 @@
     "stores/auth.js",
     "stores/index.js"
   ],
+  "components/Navigation/__stories__/Navigation.stories.js": [
+    "components/Navigation/AuthForm.vue",
+    "components/Navigation/MenuAuth.vue",
+    "components/Navigation/MenuTutorial.vue",
+    "components/Navigation/NavDrawer.vue",
+    "stores/auth.js",
+    "stores/index.js"
+  ],
   "components/Navigation/__tests__/AuthForm.smoke.test.js": [
     "components/Navigation/AuthForm.vue"
   ],
@@ -43,8 +60,6 @@
   ],
   "components/UI/LegendElement.vue": [
     "helper/general.js",
-    "icons/custom/LegendIcion1.vue",
-    "icons/custom/LegendIcion2.vue",
     "icons/custom/PlusIcon.vue",
     "stores/index.js"
   ],
@@ -70,12 +85,30 @@
   "components/UI/Switch.vue": [
     "components/dashboard/shared/Switch.vue"
   ],
+  "components/UI/__stories__/LegacyUI.stories.js": [
+    "components/UI/ActionButton.vue",
+    "components/UI/InteractionButton.vue",
+    "components/UI/LegendElement.vue",
+    "components/UI/OpenCloseButtonLink.vue",
+    "components/UI/OverlayInfo.vue",
+    "components/UI/PointComp.vue",
+    "components/UI/PointsComp.vue",
+    "components/UI/SourceElement.vue",
+    "components/UI/StartEndIcon.vue",
+    "components/UI/StateElement.vue",
+    "components/UI/StateElementBlock.vue"
+  ],
   "components/ai/AITutorChat.vue": [],
   "components/ai/AITutorSidebar.vue": [
     "components/ai/AITutorChat.vue",
     "composables/useAITutor.js",
     "icons/custom/CloseIcon.vue",
     "utils/format.js"
+  ],
+  "components/ai/__stories__/AICatalog.stories.js": [
+    "components/ai/AITutorChat.vue",
+    "components/ai/AITutorSidebar.vue",
+    "stories/openBrainFixtures.js"
   ],
   "components/chapter/CitationTooltip.vue": [],
   "components/chapter/EndOfChapterCallout.vue": [],
@@ -99,18 +132,17 @@
     "components/chapter/Illus/FullScreenIllustrationMultiple.vue",
     "components/chapter/Illus/FullScreenIllustrationSplit.vue",
     "components/chapter/Illus/TextOverlay.vue",
+    "composables/useAnimations.js",
     "composables/useLottie.js",
+    "helper/animationResolve.js",
     "helper/general.js"
   ],
   "components/chapter/Illus/FullScreenIllustrationLoop.vue": [
     "composables/useLottie.js",
     "helper/general.js",
     "icons/custom/DownArrow.vue",
-    "icons/custom/NextIcon.vue",
-    "icons/custom/OpenArrowIcon.vue",
     "icons/custom/PauseIcon.vue",
-    "icons/custom/PlayIcon.vue",
-    "icons/custom/ReplayIcon.vue"
+    "icons/custom/PlayIcon.vue"
   ],
   "components/chapter/Illus/FullScreenIllustrationMultiple.vue": [
     "composables/useLottie.js",
@@ -122,7 +154,6 @@
     "helper/general.js"
   ],
   "components/chapter/Illus/IllustarionMultiple.vue": [
-    "assets/json_backend/animations.json",
     "composables/useLottie.js",
     "helper/general.js"
   ],
@@ -135,6 +166,8 @@
     "components/chapter/Illus/IllustrationFlip.vue",
     "components/chapter/Illus/IllustrationSwitch.vue",
     "composables/useLottie.js",
+    "helper/animationResolve.js",
+    "helper/chapterDebug.js",
     "helper/general.js",
     "icons/custom/PauseIcon.vue",
     "icons/custom/PlayIcon.vue"
@@ -149,11 +182,14 @@
     "components/UI/SourceElement.vue",
     "components/chapter/Illus/FullScreenIllustration.vue",
     "components/chapter/Illus/IllustrationComp.vue",
+    "composables/useAnimations.js",
+    "helper/animationResolve.js",
     "helper/illustrationMobile.js"
   ],
   "components/chapter/Illus/IllustrationOnScroll.vue": [
     "assets/json_backend/animations.json",
     "composables/useLottie.js",
+    "helper/animationResolve.js",
     "helper/general.js"
   ],
   "components/chapter/Illus/IllustrationPlaceholder.vue": [],
@@ -162,6 +198,7 @@
     "components/UI/StateElement.vue",
     "components/UI/StateElementBlock.vue",
     "composables/useLottie.js",
+    "helper/chapterDebug.js",
     "stores/index.js"
   ],
   "components/chapter/Illus/IllustrationTransition.vue": [
@@ -174,12 +211,34 @@
     "components/chapter/Illus/IllustrationPlaceholder.vue",
     "components/chapter/Illus/IllustrationTransition.vue",
     "composables/useAnimations.js",
+    "helper/chapterDebug.js",
     "stores/index.js"
   ],
   "components/chapter/Illus/TextOverlay.vue": [
     "helper/general.js",
     "icons/custom/PlayIcon.vue",
     "icons/custom/PlusIcon.vue"
+  ],
+  "components/chapter/Illus/__stories__/IllustrationCatalog.stories.js": [
+    "assets/json_backend/animations.json",
+    "components/chapter/Illus/FullScreenIllustration.vue",
+    "components/chapter/Illus/FullScreenIllustrationLoop.vue",
+    "components/chapter/Illus/FullScreenIllustrationMultiple.vue",
+    "components/chapter/Illus/FullScreenIllustrationSplit.vue",
+    "components/chapter/Illus/IllustarionMultiple.vue",
+    "components/chapter/Illus/IllustrationComp.vue",
+    "components/chapter/Illus/IllustrationFlip.vue",
+    "components/chapter/Illus/IllustrationInline.vue",
+    "components/chapter/Illus/IllustrationOnScroll.vue",
+    "components/chapter/Illus/IllustrationPlaceholder.vue",
+    "components/chapter/Illus/IllustrationSwitch.vue",
+    "components/chapter/Illus/IllustrationTransition.vue",
+    "components/chapter/Illus/IllustrationsComp.vue",
+    "components/chapter/Illus/TextOverlay.vue",
+    "components/chapter/__stories__/chapterFixtures.js"
+  ],
+  "components/chapter/Illus/__tests__/FullScreenIllustration.smoke.test.js": [
+    "components/chapter/Illus/FullScreenIllustration.vue"
   ],
   "components/chapter/ReaderSidebar.vue": [
     "components/chapter/demos/ConeExplorerPanel.vue",
@@ -217,6 +276,29 @@
   "components/chapter/TrendingHighlights.vue": [
     "composables/useTrendingHighlights.js"
   ],
+  "components/chapter/__stories__/EndOfChapterCallout.stories.js": [
+    "components/chapter/EndOfChapterCallout.vue"
+  ],
+  "components/chapter/__stories__/ReaderShellCatalog.stories.js": [
+    "components/chapter/CitationTooltip.vue",
+    "components/chapter/ExportField.vue",
+    "components/chapter/ReaderSidebar.vue",
+    "components/chapter/TextComp.vue",
+    "components/chapter/TrendingHighlights.vue",
+    "components/chapter/__stories__/chapterFixtures.js",
+    "composables/useReaderSidebar.js"
+  ],
+  "components/chapter/__stories__/ReaderTopBar.stories.js": [
+    "components/chapter/ReaderTopBar.vue",
+    "composables/useReaderSidebar.js",
+    "stores/index.js"
+  ],
+  "components/chapter/__stories__/chapterFixtures.js": [
+    "stores/index.js"
+  ],
+  "components/chapter/__tests__/DemoModal.accessibility.test.js": [
+    "components/chapter/demos/DemoModal.vue"
+  ],
   "components/chapter/__tests__/HighlightActionBar.smoke.test.js": [
     "components/chapter/highlight-toolbar/HighlightActionBar.vue"
   ],
@@ -232,6 +314,15 @@
   ],
   "components/chapter/__tests__/HighlightTagPanel.smoke.test.js": [
     "components/chapter/highlight-toolbar/HighlightTagPanel.vue"
+  ],
+  "components/chapter/__tests__/ReaderSidebar.route-change.test.js": [
+    "components/chapter/ReaderSidebar.vue"
+  ],
+  "components/chapter/__tests__/ReaderTopBar.accessibility.test.js": [
+    "components/chapter/ReaderTopBar.vue"
+  ],
+  "components/chapter/__tests__/storybookCoverage.test.js": [
+    "../.storybook/reports/chapter-components.json"
   ],
   "components/chapter/demos/ConeExplorerPanel.vue": [],
   "components/chapter/demos/DemoModal.vue": [
@@ -255,6 +346,14 @@
     "components/quiz/QuizResults.vue",
     "composables/useQuizzes.js"
   ],
+  "components/chapter/demos/__stories__/DemoCatalog.stories.js": [
+    "components/chapter/__stories__/chapterFixtures.js",
+    "components/chapter/demos/ConeExplorerPanel.vue",
+    "components/chapter/demos/DemoModal.vue",
+    "components/chapter/demos/FlashcardPanel.vue",
+    "components/chapter/demos/LabPanel.vue",
+    "components/chapter/demos/QuizPanel.vue"
+  ],
   "components/chapter/highlight-toolbar/HighlightActionBar.vue": [],
   "components/chapter/highlight-toolbar/HighlightColorPicker.vue": [
     "composables/useHighlights.js"
@@ -262,6 +361,16 @@
   "components/chapter/highlight-toolbar/HighlightDeleteConfirm.vue": [],
   "components/chapter/highlight-toolbar/HighlightNotePanel.vue": [],
   "components/chapter/highlight-toolbar/HighlightTagPanel.vue": [],
+  "components/chapter/highlight-toolbar/__stories__/HighlightingCatalog.stories.js": [
+    "components/chapter/HighlightRenderer.vue",
+    "components/chapter/HighlightToolbar.vue",
+    "components/chapter/__stories__/chapterFixtures.js",
+    "components/chapter/highlight-toolbar/HighlightActionBar.vue",
+    "components/chapter/highlight-toolbar/HighlightColorPicker.vue",
+    "components/chapter/highlight-toolbar/HighlightDeleteConfirm.vue",
+    "components/chapter/highlight-toolbar/HighlightNotePanel.vue",
+    "components/chapter/highlight-toolbar/HighlightTagPanel.vue"
+  ],
   "components/chapter/sidebar/ChatTab.vue": [
     "components/ai/AITutorChat.vue",
     "components/dashboard/shared/index.js",
@@ -270,7 +379,6 @@
     "utils/format.js"
   ],
   "components/chapter/sidebar/InfoTab.vue": [
-    "composables/useReadingProgress.js",
     "helper/general.js",
     "stores/index.js"
   ],
@@ -279,6 +387,12 @@
     "composables/useHighlights.js",
     "composables/useTrendingHighlights.js",
     "utils/format.js"
+  ],
+  "components/chapter/sidebar/__stories__/SidebarTabsCatalog.stories.js": [
+    "components/chapter/__stories__/chapterFixtures.js",
+    "components/chapter/sidebar/ChatTab.vue",
+    "components/chapter/sidebar/InfoTab.vue",
+    "components/chapter/sidebar/NotebookTab.vue"
   ],
   "components/chapter/text/BreakImages.vue": [
     "assets/json_backend/breakVideos.json",
@@ -357,6 +471,27 @@
     "components/chapter/text/InlineImages.vue",
     "composables/useMediaQuery.js"
   ],
+  "components/chapter/text/__stories__/TextCatalog.stories.js": [
+    "components/chapter/__stories__/chapterFixtures.js",
+    "components/chapter/text/BreakImages.vue",
+    "components/chapter/text/BreakSection.vue",
+    "components/chapter/text/BreakText.vue",
+    "components/chapter/text/CommentComp.vue",
+    "components/chapter/text/DownloadSection.vue",
+    "components/chapter/text/EditableBlock.vue",
+    "components/chapter/text/EyeStart.vue",
+    "components/chapter/text/FootNotes.vue",
+    "components/chapter/text/FootNotesWindow.vue",
+    "components/chapter/text/FurtherReading.vue",
+    "components/chapter/text/HoverImg.vue",
+    "components/chapter/text/InlineImages.vue",
+    "components/chapter/text/InlineImages_openClose.vue",
+    "components/chapter/text/QuizSection.vue",
+    "components/chapter/text/SectionComp.vue",
+    "components/chapter/text/SubSection.vue",
+    "components/chapter/text/SubSubSection.vue",
+    "stores/comments.js"
+  ],
   "components/dashboard/chapters/ChapterBlockEditor.vue": [
     "components/Editor/TipTapEditor.vue",
     "components/dashboard/shared/index.js"
@@ -370,6 +505,13 @@
   ],
   "components/dashboard/chapters/WizardStepReview.vue": [],
   "components/dashboard/chapters/WizardStepStructure.vue": [],
+  "components/dashboard/chapters/__stories__/ChapterAdmin.stories.js": [
+    "components/dashboard/chapters/ChapterBlockEditor.vue",
+    "components/dashboard/chapters/WizardStepImport.vue",
+    "components/dashboard/chapters/WizardStepMeta.vue",
+    "components/dashboard/chapters/WizardStepReview.vue",
+    "components/dashboard/chapters/WizardStepStructure.vue"
+  ],
   "components/dashboard/sections/AnalyticsSection.vue": [
     "components/dashboard/shared/index.js"
   ],
@@ -386,6 +528,13 @@
   "components/dashboard/sections/VersionsSection.vue": [
     "components/dashboard/shared/index.js",
     "utils/format.js"
+  ],
+  "components/dashboard/sections/__stories__/AdminSections.stories.js": [
+    "components/dashboard/sections/AnalyticsSection.vue",
+    "components/dashboard/sections/MediaSection.vue",
+    "components/dashboard/sections/QuizzesSection.vue",
+    "components/dashboard/sections/UsersSection.vue",
+    "components/dashboard/sections/VersionsSection.vue"
   ],
   "components/dashboard/sections/__tests__/AnalyticsSection.smoke.test.js": [
     "components/dashboard/sections/AnalyticsSection.vue",
@@ -451,6 +600,41 @@
     "components/dashboard/shared/PreviewTag.vue",
     "components/dashboard/shared/Switch.vue"
   ],
+  "components/dashboard/shared/__stories__/Button.stories.js": [
+    "components/dashboard/shared/Button.vue"
+  ],
+  "components/dashboard/shared/__stories__/FormField.stories.js": [
+    "components/dashboard/shared/FormField.vue"
+  ],
+  "components/dashboard/shared/__stories__/SharedCatalog.stories.js": [
+    "components/dashboard/shared/BaseCard.vue",
+    "components/dashboard/shared/BaseModal.vue",
+    "components/dashboard/shared/ConfirmDialog.vue",
+    "components/dashboard/shared/DashboardNavIcon.vue",
+    "components/dashboard/shared/DashboardRail.vue",
+    "components/dashboard/shared/DashboardShell.vue",
+    "components/dashboard/shared/DataTable.vue",
+    "components/dashboard/shared/EmptyState.vue",
+    "components/dashboard/shared/ErrorState.vue",
+    "components/dashboard/shared/FilterChips.vue",
+    "components/dashboard/shared/ListRow.vue",
+    "components/dashboard/shared/LoadingState.vue",
+    "components/dashboard/shared/Pagination.vue",
+    "components/dashboard/shared/PreviewTag.vue",
+    "components/dashboard/shared/SearchInput.vue",
+    "components/dashboard/shared/SectionHeader.vue",
+    "components/dashboard/shared/SegmentedControl.vue",
+    "components/dashboard/shared/StatCard.vue",
+    "components/dashboard/shared/StatGrid.vue",
+    "components/dashboard/shared/Switch.vue",
+    "components/dashboard/shared/ToggleRow.vue"
+  ],
+  "components/dashboard/shared/__stories__/StatCard.stories.js": [
+    "components/dashboard/shared/StatCard.vue"
+  ],
+  "components/dashboard/shared/__stories__/StatusBadge.stories.js": [
+    "components/dashboard/shared/StatusBadge.vue"
+  ],
   "components/dashboard/shared/index.js": [
     "components/dashboard/shared/BaseCard.vue",
     "components/dashboard/shared/BaseModal.vue",
@@ -480,6 +664,9 @@
   "components/dev/DevToolbar.vue": [
     "composables/useAuth.js"
   ],
+  "components/dev/__stories__/DevToolbar.stories.js": [
+    "components/dev/DevToolbar.vue"
+  ],
   "components/flashcard/FlashcardCard.vue": [],
   "components/flashcard/FlashcardDeck.vue": [
     "composables/useFlashcards.js",
@@ -487,9 +674,25 @@
   ],
   "components/flashcard/FlashcardRating.vue": [],
   "components/flashcard/FlashcardStats.vue": [],
+  "components/flashcard/__stories__/FlashcardCard.stories.js": [
+    "components/flashcard/FlashcardCard.vue"
+  ],
+  "components/flashcard/__stories__/FlashcardCatalog.stories.js": [
+    "components/flashcard/FlashcardCard.vue",
+    "components/flashcard/FlashcardDeck.vue",
+    "components/flashcard/FlashcardRating.vue",
+    "components/flashcard/FlashcardStats.vue",
+    "stories/openBrainFixtures.js"
+  ],
   "components/lab/CodeEditor.vue": [],
   "components/lab/CodeOutput.vue": [],
   "components/lab/TestResults.vue": [],
+  "components/lab/__stories__/LabCatalog.stories.js": [
+    "components/lab/CodeEditor.vue",
+    "components/lab/CodeOutput.vue",
+    "components/lab/TestResults.vue"
+  ],
+  "components/quiz/Question.vue": [],
   "components/quiz/QuizCard.vue": [
     "composables/useQuizzes.js"
   ],
@@ -499,6 +702,19 @@
   "components/quiz/QuizResults.vue": [],
   "components/quiz/QuizReview.vue": [
     "components/quiz/QuizQuestion.vue"
+  ],
+  "components/quiz/__stories__/QuizCatalog.stories.js": [
+    "components/quiz/Question.vue",
+    "components/quiz/QuizCard.vue",
+    "components/quiz/QuizIntro.vue",
+    "components/quiz/QuizProgress.vue",
+    "components/quiz/QuizQuestion.vue",
+    "components/quiz/QuizResults.vue",
+    "components/quiz/QuizReview.vue",
+    "stories/openBrainFixtures.js"
+  ],
+  "components/quiz/__stories__/QuizProgress.stories.js": [
+    "components/quiz/QuizProgress.vue"
   ],
   "components/quiz/__tests__/QuizIntro.smoke.test.js": [
     "components/quiz/QuizIntro.vue"
@@ -527,11 +743,104 @@
   "components/settings/ThemeCards.vue": [
     "composables/usePreferences.js"
   ],
+  "components/settings/__stories__/Settings.stories.js": [
+    "components/settings/AccentSwatches.vue",
+    "components/settings/FontPairPicker.vue",
+    "components/settings/SettingsAccountSection.vue",
+    "components/settings/SettingsPanels.vue",
+    "components/settings/SettingsProfileSection.vue",
+    "components/settings/ThemeCards.vue"
+  ],
   "components/student/CourseCard.vue": [
     "utils/format.js"
   ],
   "components/student/ProgressCard.vue": [],
   "components/student/StudyStats.vue": [],
+  "components/student/__stories__/StudentCatalog.stories.js": [
+    "components/student/CourseCard.vue",
+    "components/student/ProgressCard.vue",
+    "components/student/StudyStats.vue",
+    "stories/openBrainFixtures.js"
+  ],
+  "components/student/__tests__/ProgressCard.smoke.test.js": [
+    "components/student/ProgressCard.vue"
+  ],
+  "components/styleguide/ArchivedCollection.vue": [
+    "components/settings/AccentSwatches.vue",
+    "components/settings/FontPairPicker.vue",
+    "components/settings/ThemeCards.vue",
+    "components/styleguide/Specimen.vue"
+  ],
+  "components/styleguide/BookCollection.vue": [
+    "components/UI/ActionButton.vue",
+    "components/UI/SourceElement.vue",
+    "components/UI/StartEndIcon.vue",
+    "components/ai/AITutorChat.vue",
+    "components/flashcard/FlashcardCard.vue",
+    "components/flashcard/FlashcardRating.vue",
+    "components/flashcard/FlashcardStats.vue",
+    "components/lab/CodeEditor.vue",
+    "components/lab/CodeOutput.vue",
+    "components/lab/TestResults.vue",
+    "components/quiz/Question.vue",
+    "components/quiz/QuizIntro.vue",
+    "components/quiz/QuizProgress.vue",
+    "components/quiz/QuizQuestion.vue",
+    "components/quiz/QuizResults.vue",
+    "components/quiz/QuizReview.vue",
+    "components/student/StudyStats.vue",
+    "components/styleguide/Specimen.vue"
+  ],
+  "components/styleguide/ColoursSection.vue": [],
+  "components/styleguide/SharedCollection.vue": [
+    "components/dashboard/shared/BaseCard.vue",
+    "components/dashboard/shared/BaseModal.vue",
+    "components/dashboard/shared/Button.vue",
+    "components/dashboard/shared/ConfirmDialog.vue",
+    "components/dashboard/shared/DashboardNavIcon.vue",
+    "components/dashboard/shared/DashboardRail.vue",
+    "components/dashboard/shared/DataTable.vue",
+    "components/dashboard/shared/EmptyState.vue",
+    "components/dashboard/shared/ErrorState.vue",
+    "components/dashboard/shared/FilterChips.vue",
+    "components/dashboard/shared/FormField.vue",
+    "components/dashboard/shared/ListRow.vue",
+    "components/dashboard/shared/LoadingState.vue",
+    "components/dashboard/shared/Pagination.vue",
+    "components/dashboard/shared/PreviewTag.vue",
+    "components/dashboard/shared/SearchInput.vue",
+    "components/dashboard/shared/SectionHeader.vue",
+    "components/dashboard/shared/SegmentedControl.vue",
+    "components/dashboard/shared/StatCard.vue",
+    "components/dashboard/shared/StatGrid.vue",
+    "components/dashboard/shared/StatusBadge.vue",
+    "components/dashboard/shared/Switch.vue",
+    "components/dashboard/shared/ToggleRow.vue",
+    "components/styleguide/Specimen.vue"
+  ],
+  "components/styleguide/Specimen.vue": [],
+  "components/styleguide/TypeSection.vue": [],
+  "components/styleguide/__stories__/Collections.stories.js": [
+    "components/styleguide/ArchivedCollection.vue",
+    "components/styleguide/BookCollection.vue",
+    "components/styleguide/ColoursSection.vue",
+    "components/styleguide/SharedCollection.vue",
+    "components/styleguide/Specimen.vue",
+    "components/styleguide/TypeSection.vue"
+  ],
+  "components/styleguide/__stories__/Colours.stories.js": [],
+  "components/styleguide/__stories__/Typography.stories.js": [],
+  "composables/__tests__/useAnimations.dedup.test.js": [
+    "composables/useAnimations.js"
+  ],
+  "composables/__tests__/useAnimations.test.js": [
+    "composables/useAnimations.js",
+    "services/api/client.js"
+  ],
+  "composables/__tests__/useChapter.test.js": [
+    "composables/useChapter.js",
+    "services/api/client.js"
+  ],
   "composables/__tests__/useCrudResource.test.js": [
     "composables/useCrudResource.js"
   ],
@@ -587,6 +896,12 @@
     "composables/useProfessorStudents.js",
     "services/api/client.js"
   ],
+  "composables/__tests__/useReadingProgress.test.js": [
+    "composables/useReadingProgress.js"
+  ],
+  "composables/__tests__/useReferences.test.js": [
+    "composables/useReferences.js"
+  ],
   "composables/__tests__/useTrendingHighlights.test.js": [
     "composables/useTrendingHighlights.js",
     "services/api/client.js"
@@ -603,6 +918,7 @@
     "services/api/client.js"
   ],
   "composables/useAnimations.js": [
+    "helper/chapterDebug.js",
     "services/api/client.js"
   ],
   "composables/useAuth.js": [
@@ -611,6 +927,7 @@
   ],
   "composables/useBibParser.js": [],
   "composables/useChapter.js": [
+    "helper/chapterDebug.js",
     "services/api/client.js"
   ],
   "composables/useChapterCatalog.js": [],
@@ -689,6 +1006,7 @@
     "composables/useAuth.js",
     "lib/supabase.js"
   ],
+  "composables/usePyodide.js": [],
   "composables/useQuizzes.js": [
     "composables/useAuth.js",
     "services/api/client.js"
@@ -696,6 +1014,7 @@
   "composables/useReaderSidebar.js": [],
   "composables/useReadingProgress.js": [
     "composables/useAuth.js",
+    "helper/readingProgress.js",
     "services/api/client.js"
   ],
   "composables/useReferences.js": [
@@ -717,17 +1036,84 @@
   ],
   "composables/withAsyncState.js": [],
   "constants/dashboard.js": [],
+  "data/playgroundDemos.js": [],
+  "helper/__tests__/animationResolve.test.js": [
+    "helper/animationResolve.js"
+  ],
+  "helper/__tests__/appWidth.test.js": [
+    "helper/appWidth.js"
+  ],
+  "helper/__tests__/chapterTheme.test.js": [
+    "helper/chapterTheme.js"
+  ],
+  "helper/__tests__/debugFlags.test.js": [
+    "helper/debugFlags.js"
+  ],
+  "helper/__tests__/motion.test.js": [
+    "helper/motion.js"
+  ],
+  "helper/__tests__/readingProgress.test.js": [
+    "helper/readingProgress.js"
+  ],
+  "helper/__tests__/sdt.test.js": [
+    "helper/sdt.js"
+  ],
+  "helper/animationResolve.js": [],
+  "helper/appWidth.js": [],
+  "helper/chapterDebug.js": [],
+  "helper/chapterTheme.js": [],
+  "helper/colorVision.js": [],
+  "helper/contrastResponse.js": [],
+  "helper/debugFlags.js": [],
   "helper/general.js": [
     "stores/index.js"
   ],
   "helper/illustrationMobile.js": [],
+  "helper/motion.js": [],
   "helper/perlin.ts": [],
+  "helper/readingProgress.js": [],
+  "helper/retinabox.js": [],
+  "helper/sdt.js": [],
+  "helper/v1Camera.js": [],
+  "helper/visualPathway.js": [],
   "icons/BiCheckCircle.vue": [],
   "icons/BiUpload.vue": [],
   "icons/MaterialSymbolsPlayArrow.vue": [],
   "icons/MaterialSymbolsRepeat.vue": [],
   "icons/TeenyiconsEyeClosedOutline.vue": [],
   "icons/TeenyiconsEyeOutline.vue": [],
+  "icons/__stories__/Icons.stories.js": [
+    "icons/BiCheckCircle.vue",
+    "icons/BiUpload.vue",
+    "icons/MaterialSymbolsPlayArrow.vue",
+    "icons/MaterialSymbolsRepeat.vue",
+    "icons/TeenyiconsEyeClosedOutline.vue",
+    "icons/TeenyiconsEyeOutline.vue",
+    "icons/custom/Brain.vue",
+    "icons/custom/CloseArrowIcon.vue",
+    "icons/custom/CloseIcon.vue",
+    "icons/custom/ClosedEye.vue",
+    "icons/custom/DownArrow.vue",
+    "icons/custom/FIcon.vue",
+    "icons/custom/FileIcon.vue",
+    "icons/custom/FileIconHover.vue",
+    "icons/custom/FilesIcon.vue",
+    "icons/custom/FilesIconHover.vue",
+    "icons/custom/FlipIcon.vue",
+    "icons/custom/IIcon.vue",
+    "icons/custom/LegendIcion1.vue",
+    "icons/custom/LegendIcion2.vue",
+    "icons/custom/NextIcon.vue",
+    "icons/custom/OpenArrowIcon.vue",
+    "icons/custom/OpenEye.vue",
+    "icons/custom/PauseIcon.vue",
+    "icons/custom/PlayIcon.vue",
+    "icons/custom/PlusIcon.vue",
+    "icons/custom/ReplayIcon.vue",
+    "icons/custom/Speed1Icon.vue",
+    "icons/custom/Speed2Icon.vue",
+    "icons/custom/UserIcon.vue"
+  ],
   "icons/custom/Brain.vue": [],
   "icons/custom/CloseArrowIcon.vue": [],
   "icons/custom/CloseIcon.vue": [],
@@ -757,26 +1143,49 @@
   "main.js": [
     "App.vue",
     "composables/usePreferences.js",
+    "helper/appWidth.js",
     "index.css",
     "router/index.js"
   ],
+  "mocks/__tests__/phrenology.test.js": [
+    "mocks/phrenology.js"
+  ],
+  "mocks/caseFiles.js": [],
+  "mocks/phrenology.js": [],
   "router/index.js": [
     "composables/useAuth.js",
+    "helper/chapterTheme.js",
     "stores/index.js",
+    "views/BiasedCompetitionView.vue",
     "views/BreakView.vue",
+    "views/CaseCabinetView.vue",
     "views/ChapterOverviewView.vue",
     "views/ChapterView.vue",
     "views/ChaptersView.vue",
+    "views/ColorVisionView.vue",
+    "views/ContrastResponseGainView.vue",
     "views/DashboardView.vue",
+    "views/DirectionSelectivityView.vue",
     "views/EditorView.vue",
     "views/EnrollView.vue",
     "views/FlashcardView.vue",
     "views/HomeView.vue",
     "views/LabView.vue",
+    "views/Phrenology3DView.vue",
+    "views/PhrenologyView.vue",
+    "views/PosnerCueingView.vue",
     "views/ProfessorDashboardView.vue",
+    "views/PythonPlaygroundView.vue",
     "views/QuizView.vue",
+    "views/RetINaBoxView.vue",
+    "views/SdtWidgetView.vue",
     "views/SettingsView.vue",
-    "views/StudentDashboardView.vue"
+    "views/StudentDashboardView.vue",
+    "views/StyleGuideView.vue",
+    "views/TmtFeatureAttentionView.vue",
+    "views/V1CameraView.vue",
+    "views/VisualPathwayLesionsView.vue",
+    "views/WidgetLibraryView.vue"
   ],
   "services/api/chapters.js": [
     "constants/dashboard.js",
@@ -804,12 +1213,20 @@
     "composables/useAuth.js",
     "services/api/client.js"
   ],
+  "stories/ViewStoryShell.vue": [],
+  "stories/openBrainFixtures.js": [],
   "test/mountSection.js": [],
   "utils/authHelpers.js": [],
   "utils/format.js": [],
+  "views/BiasedCompetitionView.vue": [],
   "views/BreakView.vue": [
     "assets/json_backend/breakVideos.json",
     "icons/custom/PlusIcon.vue"
+  ],
+  "views/CaseCabinetView.vue": [
+    "helper/debugFlags.js",
+    "helper/motion.js",
+    "mocks/caseFiles.js"
   ],
   "views/ChapterOverviewView.vue": [
     "composables/useAuth.js",
@@ -839,6 +1256,7 @@
     "composables/useReferences.js",
     "composables/useTextSelection.js",
     "helper/general.js",
+    "helper/readingProgress.js",
     "icons/custom/CloseIcon.vue",
     "stores/index.js"
   ],
@@ -855,6 +1273,12 @@
   "views/ChaptersView.vue": [
     "composables/useAuth.js",
     "composables/useChapterCatalog.js"
+  ],
+  "views/ColorVisionView.vue": [
+    "helper/colorVision.js"
+  ],
+  "views/ContrastResponseGainView.vue": [
+    "helper/contrastResponse.js"
   ],
   "views/DashboardView.vue": [
     "components/dashboard/chapters/ChapterBlockEditor.vue",
@@ -878,6 +1302,9 @@
     "services/api/client.js",
     "services/api/versions.js",
     "utils/format.js"
+  ],
+  "views/DirectionSelectivityView.vue": [
+    "composables/usePyodide.js"
   ],
   "views/EditorView.vue": [
     "components/Editor/TipTapEditor.vue",
@@ -905,9 +1332,17 @@
     "components/lab/CodeEditor.vue",
     "components/lab/CodeOutput.vue",
     "components/lab/TestResults.vue",
-    "composables/useAuth.js",
     "composables/useCodeLabs.js"
   ],
+  "views/Phrenology3DView.vue": [
+    "helper/motion.js",
+    "mocks/phrenology.js"
+  ],
+  "views/PhrenologyView.vue": [
+    "helper/motion.js",
+    "mocks/phrenology.js"
+  ],
+  "views/PosnerCueingView.vue": [],
   "views/ProfessorDashboardView.vue": [
     "components/dashboard/shared/index.js",
     "composables/useAuth.js",
@@ -917,8 +1352,13 @@
     "composables/useProfessorCourses.js",
     "composables/useProfessorDashboardStats.js",
     "composables/useProfessorLibrary.js",
-    "composables/useProfessorStudents.js",
-    "utils/format.js"
+    "composables/useProfessorStudents.js"
+  ],
+  "views/PythonPlaygroundView.vue": [
+    "components/lab/CodeEditor.vue",
+    "components/lab/CodeOutput.vue",
+    "data/playgroundDemos.js",
+    "services/pythonRunner.js"
   ],
   "views/QuizView.vue": [
     "components/quiz/QuizIntro.vue",
@@ -929,6 +1369,12 @@
     "composables/useAuth.js",
     "composables/useQuizzes.js",
     "icons/custom/CloseIcon.vue"
+  ],
+  "views/RetINaBoxView.vue": [
+    "helper/retinabox.js"
+  ],
+  "views/SdtWidgetView.vue": [
+    "helper/sdt.js"
   ],
   "views/SettingsView.vue": [
     "components/settings/SettingsPanels.vue",
@@ -954,5 +1400,74 @@
     "composables/useStudentCourses.js",
     "stores/student.js",
     "utils/format.js"
-  ]
+  ],
+  "views/StyleGuideView.vue": [
+    "components/styleguide/ArchivedCollection.vue",
+    "components/styleguide/BookCollection.vue",
+    "components/styleguide/ColoursSection.vue",
+    "components/styleguide/SharedCollection.vue",
+    "components/styleguide/TypeSection.vue"
+  ],
+  "views/TmtFeatureAttentionView.vue": [],
+  "views/V1CameraView.vue": [
+    "helper/v1Camera.js"
+  ],
+  "views/VisualPathwayLesionsView.vue": [
+    "helper/visualPathway.js"
+  ],
+  "views/WidgetLibraryView.vue": [
+    "widgets/catalog.js"
+  ],
+  "views/__stories__/AdminViews.stories.js": [
+    "stories/ViewStoryShell.vue",
+    "stories/openBrainFixtures.js",
+    "views/ChapterWizardView.vue",
+    "views/DashboardView.vue",
+    "views/EditorView.vue",
+    "views/ProfessorDashboardView.vue",
+    "views/SettingsView.vue"
+  ],
+  "views/__stories__/FoundationViews.stories.js": [
+    "stories/ViewStoryShell.vue",
+    "views/HomeView.vue",
+    "views/StyleGuideView.vue"
+  ],
+  "views/__stories__/StudentViews.stories.js": [
+    "stories/ViewStoryShell.vue",
+    "stories/openBrainFixtures.js",
+    "views/BreakView.vue",
+    "views/ChapterOverviewView.vue",
+    "views/ChapterView.vue",
+    "views/ChaptersView.vue",
+    "views/EnrollView.vue",
+    "views/FlashcardView.vue",
+    "views/LabView.vue",
+    "views/QuizView.vue",
+    "views/StudentDashboardView.vue"
+  ],
+  "views/__stories__/WidgetViews.stories.js": [
+    "stories/ViewStoryShell.vue",
+    "views/BiasedCompetitionView.vue",
+    "views/CaseCabinetView.vue",
+    "views/ColorVisionView.vue",
+    "views/ContrastResponseGainView.vue",
+    "views/DirectionSelectivityView.vue",
+    "views/Phrenology3DView.vue",
+    "views/PhrenologyView.vue",
+    "views/PosnerCueingView.vue",
+    "views/PythonPlaygroundView.vue",
+    "views/RetINaBoxView.vue",
+    "views/SdtWidgetView.vue",
+    "views/TmtFeatureAttentionView.vue",
+    "views/V1CameraView.vue",
+    "views/VisualPathwayLesionsView.vue",
+    "views/WidgetLibraryView.vue"
+  ],
+  "views/__tests__/ChapterView.route-change.test.js": [
+    "views/ChapterView.vue"
+  ],
+  "widgets/__stories__/WidgetCatalog.stories.js": [
+    "widgets/catalog.js"
+  ],
+  "widgets/catalog.js": []
 }

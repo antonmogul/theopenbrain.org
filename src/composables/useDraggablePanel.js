@@ -1,4 +1,4 @@
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { watch, onMounted, onBeforeUnmount } from "vue";
 import { useDraggable } from "@vueuse/core";
 
 /**
