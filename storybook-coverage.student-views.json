@@ -1,0 +1,21 @@
+{
+  "name": "Student components and full-page views",
+  "componentRoots": [
+    "src/components/ai",
+    "src/components/flashcard",
+    "src/components/lab",
+    "src/components/quiz",
+    "src/components/student",
+    "src/components/styleguide"
+  ],
+  "viewRoot": "src/views",
+  "storyRoots": ["src/components", "src/views"],
+  "expected": {
+    "components": 25,
+    "views": 31,
+    "total": 56,
+    "excluded": 0
+  },
+  "coverageRule": "Every scoped .vue basename must be directly imported by at least one .stories.js file.",
+  "excluded": []
+}

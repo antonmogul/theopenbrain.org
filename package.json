@@ -33,7 +33,13 @@
     "smoke": "node scripts/smoke.mjs",
     "test:smoke": "start-server-and-test preview http://localhost:4173 smoke",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "storybook:coverage": "node scripts/check-storybook-coverage.mjs",
+    "build-storybook": "storybook build",
+    "storybook:coverage:admin": "node scripts/check-storybook-admin-coverage.mjs",
+    "storybook:coverage:student-views": "node scripts/check-storybook-student-views.mjs",
+    "storybook:smoke:all": "node scripts/storybook-all-smoke.mjs",
+    "storybook:smoke:ci": "start-server-and-test 'serve storybook-static -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 storybook:smoke:all",
+    "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs"
   },
   "dependencies": {
     "@formkit/auto-animate": "^1.0.0-beta.3",
