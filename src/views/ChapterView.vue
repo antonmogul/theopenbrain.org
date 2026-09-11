@@ -185,8 +185,12 @@ const { fetchChapter, chapterData, transformedData, loading, error } =
 // Chapter colour ramp from the module row itself (OPENBRAIN-30): the router
 // paints from the public catalog, which excludes drafts, and the module's
 // own `ramp` column beats the slug fallback once the migration is applied.
+// Guarded by the route slug: this view is reused across reader routes, and
+// a fetch started for the previous chapter can resolve after the route has
+// changed but before the next fetch begins — it must not repaint the old
+// chapter's colour over the router's cleared/destination ramp.
 watch(chapterData, (module) => {
-  if (module) applyChapterRamp(module);
+  if (module && module.slug === route.params.slug) applyChapterRamp(module);
 });
 
 function nextAnimationFrame() {
