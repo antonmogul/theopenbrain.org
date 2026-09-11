@@ -39,9 +39,11 @@ export function useChapter() {
 
       console.log("useChapter: Fetching chapter by slug:", slug);
 
-      // Step 1: Get the module by slug
+      // Step 1: Get the module by slug. `select=*` so columns from later
+      // migrations (`ramp`, OPENBRAIN-30) arrive when present without a
+      // 400 from PostgREST while production lacks them; one small row.
       const modules = await supabaseRest(
-        `modules?slug=eq.${encodeURIComponent(slug)}&select=id,title,slug,order_index,status`
+        `modules?slug=eq.${encodeURIComponent(slug)}&select=*`
       );
 
       if (generation !== fetchGeneration) {
