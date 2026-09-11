@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useGeneral } from "@/stores";
-import { applyChapterAttr } from "@/helper/chapterTheme";
+import { applyChapterRamp, clearChapterRamp } from "@/helper/chapterTheme";
+import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { getSessionFromStorage } from "@/utils/authHelpers";
 import { apiRequest } from "@/services/api/client";
 import { createAuthGuard } from "./guards";
@@ -302,8 +303,22 @@ export function createAppRouter({
 
   // Chapter colour ramps: brand.css switches on data-chapter on <html>. Runs
   // afterEach (not beforeEach) so a guard redirect can't leave a stale value.
+  // The ramp is a property of the module (subject), not of the route number
+  // (OPENBRAIN-30), so it is resolved through the catalog. Drafts are not in
+  // the public catalog; ChapterView applies the ramp again from the module
+  // row it loads, which also lets the DB `ramp` column win.
   router.afterEach((to) => {
-    applyChapterAttr(to.params.number);
+    if (to.name !== "chapter" && to.name !== "chapter-overview") {
+      clearChapterRamp();
+      return;
+    }
+    const { fetchCatalog, findByNumber } = useChapterCatalog();
+    fetchCatalog().then(() => {
+      // The catalog fetch is async: only paint if we are still on this route.
+      if (router.currentRoute.value.fullPath !== to.fullPath) return;
+      const module = findByNumber(to.params.number);
+      if (module) applyChapterRamp(module);
+    });
   });
 
   return router;

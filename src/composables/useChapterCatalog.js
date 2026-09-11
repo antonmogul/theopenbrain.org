@@ -15,8 +15,26 @@ async function rest(endpoint) {
       "Content-Type": "application/json",
     },
   });
-  if (!res.ok) throw new Error(`Supabase REST ${res.status}`);
+  if (!res.ok) {
+    const err = new Error(`Supabase REST ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
   return res.json();
+}
+
+/*
+ * `select=*` on purpose (OPENBRAIN-30): columns added by later migrations
+ * (`ramp`, `key_takeaways`, a future `cover_image_url`) arrive automatically
+ * once applied, and PostgREST never answers 400 for a column production does
+ * not have yet — a named select would have to probe and retry, and the failed
+ * probe logs a console error on every chapter load. The table holds a handful
+ * of small rows, so the extra fields cost nothing. Consumers must treat every
+ * optional field as possibly absent (the reader falls back to a slug map for
+ * the ramp).
+ */
+function fetchModuleRows() {
+  return rest("modules?status=eq.published&select=*&order=order_index.asc");
 }
 
 // Module-scope state — one fetch per session, shared across consumers.
@@ -29,15 +47,10 @@ async function fetchCatalog() {
   if (loaded.value) return modules.value;
   if (fetchPromise) return fetchPromise;
   loading.value = true;
-  // NOTE: key_takeaways is added by migration 20260522000000_modules_add_key_takeaways.sql.
-  // Re-add `,key_takeaways` to the select once that migration is applied to prod.
-  // cover_image_url does not exist on modules either — covers are currently
-  // hard-coded per-slug in EyeStart.vue. When a real cover column is added,
-  // re-add it here and the views will pick it up automatically (they already
-  // fall back to the gradient placeholder when the field is missing).
-  fetchPromise = rest(
-    "modules?status=eq.published&select=id,title,slug,order_index&order=order_index.asc"
-  )
+  // cover_image_url does not exist on modules yet — covers are hard-coded
+  // per-slug in EyeStart.vue. When the column is added the views pick it up
+  // through select=* (they already fall back to the gradient placeholder).
+  fetchPromise = fetchModuleRows()
     .then((rows) => {
       modules.value = rows || [];
       loaded.value = true;

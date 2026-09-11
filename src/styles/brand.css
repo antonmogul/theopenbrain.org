@@ -28,6 +28,12 @@
   --color-mark3: 16 23 226; /* #1017E2 — blue */
   --color-mark4: 61 217 181; /* #3DD9B5 — green/teal */
 
+  /* Secondary support colours shared across all chapters (Assets Library
+     support/yellow, support/pink). A chapter never uses its own ramp as a
+     support colour. The five ramp mains complete the support set. */
+  --color-support-yellow: 251 235 0; /* #FBEB00 */
+  --color-support-pink: 242 0 255; /* #F200FF */
+
   /* Type controls (user-tunable from Settings) */
   --reading-size: 1;
   --reading-measure: 780px;
@@ -131,51 +137,59 @@
  * letting navigation drive it would silently override that choice. Components
  * that want chapter identity use --color-chapter{,-deep,-soft,-pale} directly.
  */
+/*
+ * Ramps are keyed by SUBJECT, not by chapter number (OPENBRAIN-30). The keys
+ * and values mirror the Figma Assets Library variables
+ * (file WNnPvBkixODGsiYmIZKSWw, "book colors"):
+ *   book/<key>/main → --color-chapter, /dark → -deep, /medium → -soft,
+ *   /light → -pale. Figma's values win; our token names stay.
+ * Keep in sync with RAMPS in src/helper/chapterTheme.js.
+ */
 :root {
-  --color-chapter: 124 59 238;
-  --color-chapter-deep: 107 0 236;
-  --color-chapter-soft: 178 138 246;
-  --color-chapter-pale: 213 197 245;
+  --color-chapter: 141 76 246;
+  --color-chapter-deep: 118 21 245;
+  --color-chapter-soft: 191 151 252;
+  --color-chapter-pale: 220 205 249;
 }
 
-/* Ch 1 — Fundamentals (purple) */
-[data-chapter="1"] {
-  --color-chapter: 124 59 238; /* #7C3BEE */
-  --color-chapter-deep: 107 0 236; /* #6B00EC */
-  --color-chapter-soft: 178 138 246; /* #B28AF6 */
-  --color-chapter-pale: 213 197 245; /* #D5C5F5 */
+/* book/fund — Fundamentals (purple) */
+[data-chapter="fund"] {
+  --color-chapter: 141 76 246; /* #8D4CF6 */
+  --color-chapter-deep: 118 21 245; /* #7615F5 */
+  --color-chapter-soft: 191 151 252; /* #BF97FC */
+  --color-chapter-pale: 220 205 249; /* #DCCDF9 */
 }
 
-/* Ch 2 — Perception (teal) */
-[data-chapter="2"] {
-  --color-chapter: 87 208 178; /* #57D0B2 */
-  --color-chapter-deep: 61 168 156; /* #3DA89C */
-  --color-chapter-soft: 102 228 198; /* #66E4C6 */
-  --color-chapter-pale: 161 246 228; /* #A1F6E4 */
+/* book/perc — Perception (teal) */
+[data-chapter="perc"] {
+  --color-chapter: 57 216 186; /* #39D8BA */
+  --color-chapter-deep: 8 175 163; /* #08AFA3 */
+  --color-chapter-soft: 75 234 204; /* #4BEACC */
+  --color-chapter-pale: 155 249 231; /* #9BF9E7 */
 }
 
-/* Ch 3 — Movement (blue) */
-[data-chapter="3"] {
-  --color-chapter: 44 95 234; /* #2C5FEA */
-  --color-chapter-deep: 35 80 183; /* #2350B7 */
-  --color-chapter-soft: 96 152 232; /* #6098E8 */
-  --color-chapter-pale: 149 181 233; /* #95B5E9 */
+/* book/move — Movement (blue) */
+[data-chapter="move"] {
+  --color-chapter: 26 114 242; /* #1A72F2 */
+  --color-chapter-deep: 14 97 196; /* #0E61C4 */
+  --color-chapter-soft: 94 167 239; /* #5EA7EF */
+  --color-chapter-pale: 154 192 239; /* #9AC0EF */
 }
 
-/* Ch 4 — Learning, Cognition & Memory (red) */
-[data-chapter="4"] {
-  --color-chapter: 239 64 75; /* #EF404B */
-  --color-chapter-deep: 173 35 41; /* #AD2329 */
-  --color-chapter-soft: 238 109 128; /* #EE6D80 */
-  --color-chapter-pale: 248 194 204; /* #F8C2CC */
+/* book/lear — Learning, Cognition & Memory (red) */
+[data-chapter="lear"] {
+  --color-chapter: 255 51 81; /* #FF3351 */
+  --color-chapter-deep: 193 6 42; /* #C1062A */
+  --color-chapter-soft: 252 112 138; /* #FC708A */
+  --color-chapter-pale: 255 199 210; /* #FFC7D2 */
 }
 
-/* Ch 5 — Development & Degeneration (amber) */
-[data-chapter="5"] {
-  --color-chapter: 233 183 72; /* #E9B748 */
-  --color-chapter-deep: 187 136 43; /* #BB882B */
-  --color-chapter-soft: 250 213 132; /* #FAD584 */
-  --color-chapter-pale: 252 228 182; /* #FCE4B6 */
+/* book/deve — Development & Degeneration (amber) */
+[data-chapter="deve"] {
+  --color-chapter: 242 187 64; /* #F2BB40 */
+  --color-chapter-deep: 201 143 27; /* #C98F1B */
+  --color-chapter-soft: 255 215 136; /* #FFD788 */
+  --color-chapter-pale: 255 230 187; /* #FFE6BB */
 }
 
 /* Font pairs (default IBM Plex inherited from :root) */

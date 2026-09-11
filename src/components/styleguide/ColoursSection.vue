@@ -49,17 +49,18 @@ const GROUPS = [
 ];
 
 /*
- * Chapter ramps. Each chapter owns an identity colour with four steps. Unlike
- * the groups above these live under [data-chapter="n"] rather than :root, so
- * they're resolved off a detached probe element carrying that attribute (see
- * readChapterRamps) instead of from the document root.
+ * Chapter ramps. Each subject owns an identity colour with four steps. Unlike
+ * the groups above these live under [data-chapter="<key>"] rather than :root,
+ * so they're resolved off a detached probe element carrying that attribute
+ * (see readChapterRamps) instead of from the document root. Keys and values
+ * mirror the Figma Assets Library variables book/<key>/{main,dark,medium,light}.
  */
 const CHAPTERS = [
-  { n: 1, name: "Fundamentals" },
-  { n: 2, name: "Perception" },
-  { n: 3, name: "Movement" },
-  { n: 4, name: "Learning, Cognition & Memory" },
-  { n: 5, name: "Development & Degeneration" },
+  { key: "fund", n: 1, name: "Fundamentals" },
+  { key: "perc", n: 2, name: "Perception" },
+  { key: "move", n: 3, name: "Movement" },
+  { key: "lear", n: 4, name: "Learning, Cognition & Memory" },
+  { key: "deve", n: 5, name: "Development & Degeneration" },
 ];
 
 const RAMP_STEPS = [
@@ -110,7 +111,7 @@ function readChapterRamps() {
   document.body.appendChild(probe);
 
   const ramps = CHAPTERS.map((c) => {
-    probe.dataset.chapter = String(c.n);
+    probe.dataset.chapter = c.key;
     const cs = getComputedStyle(probe);
     return {
       ...c,
@@ -172,11 +173,12 @@ onMounted(() => {
     <section class="group">
       <p class="t-label group-eyebrow">Chapter ramps</p>
       <p class="t-body-sm group-note">
-        Each chapter carries its own identity colour, set via
-        <code>data-chapter</code> on <code>&lt;html&gt;</code>. Four steps per
-        chapter: primary, deep, soft, pale. The router sets the attribute from
-        the chapter route's number; outside chapters 1–5 the neutral
-        <code>:root</code> ramp applies.
+        Each chapter carries the identity colour of its subject, set via
+        <code>data-chapter="&lt;key&gt;"</code> on <code>&lt;html&gt;</code>.
+        Four steps per ramp: primary, deep, soft, pale — the Figma Assets
+        Library's main, dark, medium, light. The ramp comes from the module row
+        (<code>modules.ramp</code>, slug fallback), never from the chapter
+        number; outside a chapter the neutral <code>:root</code> ramp applies.
       </p>
 
       <div class="ramps">
@@ -185,12 +187,12 @@ onMounted(() => {
              every ramp would fall back to the :root default. -->
         <div
           v-for="c in chapterRamps"
-          :key="c.n"
+          :key="c.key"
           class="ramp"
-          :data-chapter="c.n"
+          :data-chapter="c.key"
         >
           <p class="t-label ramp-head">
-            <span class="ramp-num">Chapter {{ c.n }}</span>
+            <span class="ramp-num">book/{{ c.key }}</span>
             <span class="ramp-name">{{ c.name }}</span>
           </p>
           <div class="ramp-bar">

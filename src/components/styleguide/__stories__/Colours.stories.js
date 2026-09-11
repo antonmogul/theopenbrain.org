@@ -88,15 +88,50 @@ export const Highlighters = {
 };
 
 /**
- * The per-chapter ramp. `data-chapter` on a wrapper swaps these, which is how
- * each chapter gets its own identity colour without touching component CSS.
+ * The chapter ramps. `data-chapter="<key>"` on a wrapper swaps these, which is
+ * how each chapter gets its subject's identity colour without touching
+ * component CSS. Keys and values mirror the Figma Assets Library variables
+ * `book/<key>/{main,dark,medium,light}` (OPENBRAIN-30).
  */
-export const ChapterRamp = {
+export const ChapterRamps = {
+  render: () => ({
+    data: () => ({
+      ramps: [
+        ["fund", "Fundamentals"],
+        ["perc", "Perception"],
+        ["move", "Movement"],
+        ["lear", "Learning, Cognition & Memory"],
+        ["deve", "Development & Degeneration"],
+      ],
+      steps: [
+        ["--color-chapter", "main"],
+        ["--color-chapter-deep", "dark"],
+        ["--color-chapter-soft", "medium"],
+        ["--color-chapter-pale", "light"],
+      ],
+    }),
+    template: `
+      <div style="display:grid; gap:18px;">
+        <div v-for="[key, name] in ramps" :key="key" :data-chapter="key"
+             style="display:flex; gap:12px; align-items:center;">
+          <div style="width:190px; font-family:var(--font-mono); font-size:11px; line-height:1.5;">
+            <div style="color:rgb(var(--color-ink));">{{ name }}</div>
+            <div style="color:rgb(var(--color-mute));">data-chapter="{{ key }}" · book/{{ key }}</div>
+          </div>
+          <figure v-for="[token, figmaName] in steps" :key="token" style="margin:0;">
+            <div :style="{ background: 'rgb(var(' + token + '))', width: '84px', height: '56px', border: '1px solid rgb(var(--color-line))' }" />
+            <figcaption style="margin-top:4px; font-family:var(--font-mono); font-size:10px; color:rgb(var(--color-mute));">{{ figmaName }}</figcaption>
+          </figure>
+        </div>
+      </div>`,
+  }),
+};
+
+/** Secondary support colours shared across all chapters (Assets Library). */
+export const SupportColours = {
   render: () =>
     swatchRow([
-      { name: "--color-chapter", label: "Chapter" },
-      { name: "--color-chapter-deep", label: "Chapter deep" },
-      { name: "--color-chapter-soft", label: "Chapter soft" },
-      { name: "--color-chapter-pale", label: "Chapter pale" },
+      { name: "--color-support-yellow", label: "Support yellow" },
+      { name: "--color-support-pink", label: "Support pink" },
     ]),
 };

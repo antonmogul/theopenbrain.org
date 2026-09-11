@@ -32,6 +32,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
+import { applyChapterRamp } from "@/helper/chapterTheme";
 import {
   restoreAfterLayout,
   scrollTopForReadingPercent,
@@ -178,7 +179,15 @@ watch(
 const chapterDataLoaded = ref(false);
 
 // All chapters load from Supabase
-const { fetchChapter, transformedData, loading, error } = useChapter();
+const { fetchChapter, chapterData, transformedData, loading, error } =
+  useChapter();
+
+// Chapter colour ramp from the module row itself (OPENBRAIN-30): the router
+// paints from the public catalog, which excludes drafts, and the module's
+// own `ramp` column beats the slug fallback once the migration is applied.
+watch(chapterData, (module) => {
+  if (module) applyChapterRamp(module);
+});
 
 function nextAnimationFrame() {
   return new Promise((resolve) => requestAnimationFrame(resolve));
