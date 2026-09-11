@@ -3,6 +3,7 @@ import {
   rampForModule,
   applyChapterRamp,
   clearChapterRamp,
+  moduleForRoute,
   isRamp,
   RAMPS,
   RAMP_BY_SLUG,
@@ -58,6 +59,51 @@ describe("rampForModule", () => {
     for (const ramp of Object.values(RAMP_BY_SLUG)) {
       expect(isRamp(ramp)).toBe(true);
     }
+  });
+});
+
+describe("moduleForRoute", () => {
+  const retina = { slug: "the-retina", order_index: 1 };
+  const foundations = { slug: "foundations-of-neuroscience", order_index: 3 };
+  const catalog = {
+    findBySlug: (s) => [retina, foundations].find((m) => m.slug === s) || null,
+    findByNumber: (n) =>
+      [retina, foundations].find((m) => m.order_index === Number(n)) || null,
+  };
+
+  it("resolves the reader route by slug, never by number", () => {
+    // Stale URL: number says Foundations, slug says Retina. The content loads
+    // by slug, so the colour must follow the slug.
+    const route = {
+      name: "chapter",
+      params: { number: "3", slug: "the-retina" },
+    };
+    expect(moduleForRoute(route, catalog)).toBe(retina);
+  });
+
+  it("resolves the overview route (no slug) by number", () => {
+    const route = { name: "chapter-overview", params: { number: "3" } };
+    expect(moduleForRoute(route, catalog)).toBe(foundations);
+  });
+
+  it("returns null for unknown slugs/numbers and non-chapter routes", () => {
+    expect(
+      moduleForRoute(
+        { name: "chapter", params: { number: "9", slug: "stress" } },
+        catalog
+      )
+    ).toBe(null);
+    expect(
+      moduleForRoute(
+        { name: "chapter-overview", params: { number: "9" } },
+        catalog
+      )
+    ).toBe(null);
+    expect(moduleForRoute({ name: "chapters", params: {} }, catalog)).toBe(
+      null
+    );
+    expect(moduleForRoute(null, catalog)).toBe(null);
+    expect(moduleForRoute({ name: "chapter", params: {} }, null)).toBe(null);
   });
 });
 

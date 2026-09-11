@@ -78,6 +78,10 @@ function findById(id) {
   return modules.value.find((m) => m.id === id) || null;
 }
 
+function findBySlug(slug) {
+  return modules.value.find((m) => m.slug === slug) || null;
+}
+
 function nextAfter(id) {
   const idx = modules.value.findIndex((m) => m.id === id);
   if (idx < 0 || idx === modules.value.length - 1) return null;
@@ -92,6 +96,7 @@ export function useChapterCatalog() {
     fetchCatalog,
     findByNumber,
     findById,
+    findBySlug,
     nextAfter,
   };
 }

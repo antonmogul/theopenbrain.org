@@ -63,7 +63,29 @@ export function applyChapterRamp(module, el = document.documentElement) {
   return value;
 }
 
-/** Clear the ramp (non-chapter routes). */
+/** Clear the ramp (non-chapter routes, and on entry to any chapter route). */
 export function clearChapterRamp(el = document.documentElement) {
   el.removeAttribute("data-chapter");
+}
+
+/**
+ * Pick the catalog module a route refers to. The reader route carries a slug
+ * and loads its content by slug, so the ramp must resolve by slug too —
+ * resolving by :number there would let a stale or hand-edited URL paint one
+ * module's colour over another's content (last response wins). Only the
+ * overview route, which has no slug, resolves by number.
+ */
+export function moduleForRoute(route, catalog) {
+  if (!route || !catalog) return null;
+  const params = route.params || {};
+  if (route.name === "chapter") {
+    return (params.slug && catalog.findBySlug?.(params.slug)) || null;
+  }
+  if (route.name === "chapter-overview") {
+    return (
+      (params.number !== undefined && catalog.findByNumber?.(params.number)) ||
+      null
+    );
+  }
+  return null;
 }

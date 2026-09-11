@@ -13,7 +13,9 @@ alter table public.modules
 do $$
 begin
   if not exists (
-    select 1 from pg_constraint where conname = 'modules_ramp_check'
+    select 1 from pg_constraint
+    where conname = 'modules_ramp_check'
+      and conrelid = 'public.modules'::regclass
   ) then
     alter table public.modules
       add constraint modules_ramp_check
