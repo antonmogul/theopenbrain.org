@@ -106,8 +106,13 @@ const saveContent = async ({ paragraphId, content, type }) => {
             "Content-Type": "application/json",
             Prefer: "return=minimal",
           },
+          // The reader renders `content.blocks` (chapterTransform), so the
+          // edit is stored as one "text" block holding the edited HTML —
+          // `{ text }` was written before and never read back. Structured
+          // blocks (citation_ref, footnote…) are flattened into that HTML,
+          // which is what the editor edits anyway.
           body: JSON.stringify({
-            content: { text: content },
+            content: { blocks: [{ type: "text", content }] },
             content_text: content.replace(/<[^>]*>/g, ""), // Strip HTML for search
           }),
         }
@@ -377,7 +382,7 @@ onBeforeUnmount(() => {
           <!-- Intro title - editable for creators -->
           <EditableBlock
             v-if="isCreator"
-            :content="section.title"
+            :content="section.sectionTitle || section.title"
             :paragraph-id="`intro-title-${section.id}`"
             :is-creator="isCreator"
             tag="h1"
