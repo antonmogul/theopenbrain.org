@@ -1,5 +1,12 @@
 import { ref } from "vue";
 import { apiRequest as supabaseRest } from "@/services/api/client";
+import { useAuth } from "@/composables/useAuth";
+
+/* Drafts render only for creators (the dev role override counts in DEV). */
+function canPreviewDrafts() {
+  const { isCreator } = useAuth();
+  return Boolean(isCreator.value);
+}
 import { clog, cgroup } from "@/helper/chapterDebug";
 import { transformModuleToChapterFormat } from "./chapterTransform.mjs";
 import {
@@ -55,6 +62,15 @@ export function useChapter() {
       const moduleData = modules?.[0];
       if (!moduleData) {
         throw new Error(`Chapter with slug "${slug}" not found`);
+      }
+      // Unpublished chapters are for creators only (OPENBRAIN-33). The public
+      // catalog already hides them; this closes the direct-URL path. Same
+      // error as a missing slug so the reader's not-found state applies and
+      // the URL does not reveal that a draft exists.
+      if (moduleData.status && moduleData.status !== "published") {
+        if (!canPreviewDrafts()) {
+          throw new Error(`Chapter with slug "${slug}" not found`);
+        }
       }
 
       // Step 2: Get sections for this module (include animation fields for Chapter 1)

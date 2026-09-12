@@ -1,4 +1,4 @@
-Processed 526 files (611ms) (31 warnings)
+Processed 532 files (574ms) (31 warnings)
 
 __stories__/App.stories.js
 __tests__/genChapterFromMarkdown.test.js
@@ -42,8 +42,6 @@ components/chapter/Illus/__stories__/TextOverlay.stories.js
 components/chapter/Illus/__tests__/FullScreenIllustration.smoke.test.js
 components/chapter/__stories__/CitationTooltip.stories.js
 components/chapter/__stories__/EndOfChapterCallout.stories.js
-components/chapter/__stories__/ExportField.stories.js
-components/chapter/__stories__/HighlightRenderer.stories.js
 components/chapter/__stories__/HighlightToolbar.stories.js
 components/chapter/__stories__/ReaderSidebar.stories.js
 components/chapter/__stories__/ReaderTopBar.stories.js
@@ -68,6 +66,10 @@ components/chapter/highlight-toolbar/__stories__/HighlightColorPicker.stories.js
 components/chapter/highlight-toolbar/__stories__/HighlightDeleteConfirm.stories.js
 components/chapter/highlight-toolbar/__stories__/HighlightNotePanel.stories.js
 components/chapter/highlight-toolbar/__stories__/HighlightTagPanel.stories.js
+components/chapter/opener/__stories__/ChapterOpener.stories.js
+components/chapter/opener/__stories__/OpenerHero.stories.js
+components/chapter/opener/__stories__/OpenerToc.stories.js
+components/chapter/opener/__tests__/ChapterOpener.lifecycle.test.js
 components/chapter/sidebar/__stories__/ChatTab.stories.js
 components/chapter/sidebar/__stories__/InfoTab.stories.js
 components/chapter/sidebar/__stories__/NotebookTab.stories.js
@@ -77,7 +79,6 @@ components/chapter/text/__stories__/BreakText.stories.js
 components/chapter/text/__stories__/CommentComp.stories.js
 components/chapter/text/__stories__/DownloadSection.stories.js
 components/chapter/text/__stories__/EditableBlock.stories.js
-components/chapter/text/__stories__/EyeStart.stories.js
 components/chapter/text/__stories__/FootNotes.stories.js
 components/chapter/text/__stories__/FootNotesWindow.stories.js
 components/chapter/text/__stories__/FurtherReading.stories.js
@@ -167,6 +168,7 @@ composables/__tests__/importChapter1Flatten.test.js
 composables/__tests__/useAnimations.dedup.test.js
 composables/__tests__/useAnimations.test.js
 composables/__tests__/useChapter.test.js
+composables/__tests__/useChapterOutline.test.js
 composables/__tests__/useCrudResource.test.js
 composables/__tests__/useDashboardAnalytics.test.js
 composables/__tests__/useDashboardMedia.test.js
@@ -189,6 +191,8 @@ composables/__tests__/withAsyncState.test.js
 composables/useModules.js
 helper/__tests__/animationResolve.test.js
 helper/__tests__/appWidth.test.js
+helper/__tests__/chapterAuthors.test.js
+helper/__tests__/chapterCover.test.js
 helper/__tests__/chapterTheme.test.js
 helper/__tests__/debugFlags.test.js
 helper/__tests__/motion.test.js

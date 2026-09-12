@@ -10,6 +10,13 @@ vi.mock("@/services/api/client", () => ({
   apiRequest: vi.fn(),
 }));
 
+// Draft gating (OPENBRAIN-33): the composable asks useAuth whether the
+// reader is a creator. Hoisted so the mock factory can reference it.
+const { creatorFlag } = vi.hoisted(() => ({ creatorFlag: { value: false } }));
+vi.mock("@/composables/useAuth", () => ({
+  useAuth: () => ({ isCreator: creatorFlag }),
+}));
+
 import { apiRequest } from "@/services/api/client";
 import { useChapter } from "@/composables/useChapter";
 
@@ -300,5 +307,65 @@ describe("useChapter transform: chapter identity and box sections", () => {
       ["where-is-my-mind", "section"],
       ["box-descartes", "box"],
     ]);
+  });
+});
+
+/*
+ * OPENBRAIN-33: unpublished modules are creator-only. The public catalog
+ * already filters status=published; this closes the direct-URL path with the
+ * same "not found" error a missing slug produces, so the URL does not reveal
+ * that a draft exists.
+ */
+describe("useChapter draft gating", () => {
+  function mockModule(status) {
+    apiRequest.mockImplementation((endpoint) => {
+      if (endpoint.startsWith("modules?"))
+        return Promise.resolve([
+          { id: MODULE_ID, title: "Draft", slug: "draft-chapter", status },
+        ]);
+      if (endpoint.startsWith("sections?"))
+        return Promise.resolve([
+          { id: SECTION_ID, title: "Main", slug: "main", order_index: 1 },
+        ]);
+      if (endpoint.startsWith("paragraphs?")) return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+  }
+
+  beforeEach(() => {
+    creatorFlag.value = false;
+  });
+
+  it("hides a draft from non-creators as not found", async () => {
+    mockModule("draft");
+    const { fetchChapter, transformedData } = useChapter();
+    const { data, error } = await fetchChapter("draft-chapter");
+    expect(data).toBeNull();
+    expect(String(error?.message)).toContain("not found");
+    expect(transformedData.value).toBeNull();
+  });
+
+  it("renders a draft for creators", async () => {
+    creatorFlag.value = true;
+    mockModule("draft");
+    const { fetchChapter } = useChapter();
+    const { data, error } = await fetchChapter("draft-chapter");
+    expect(error).toBeNull();
+    expect(data?.moduleId).toBe(MODULE_ID);
+  });
+
+  it("renders a published chapter for everyone", async () => {
+    mockModule("published");
+    const { fetchChapter } = useChapter();
+    const { data, error } = await fetchChapter("draft-chapter");
+    expect(error).toBeNull();
+    expect(data?.moduleId).toBe(MODULE_ID);
+  });
+
+  it("does not gate legacy rows without a status", async () => {
+    mockModule(undefined);
+    const { fetchChapter } = useChapter();
+    const { error } = await fetchChapter("draft-chapter");
+    expect(error).toBeNull();
   });
 });

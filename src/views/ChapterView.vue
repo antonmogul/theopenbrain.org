@@ -614,7 +614,10 @@ async function handleDeleteHighlight(highlightId) {
       <!-- Dark opener: cover, title, numbered TOC (OPENBRAIN-32). Publishes
            its height as --opener-h so the text column starts below it. -->
       <ChapterOpener :module="chapterData" :text="storeText.text" />
-      <Text :key="`chapter-${chapterNumber}-${chapterSlug || 'default'}`">
+      <Text
+        :key="`chapter-${chapterNumber}-${chapterSlug || 'default'}`"
+        :module="chapterData"
+      >
         <!-- End-of-chapter callout slot (Track 3) — rendered inside
                      TextComp so absolute positioning doesn't pull it to the
                      top of the document. -->
