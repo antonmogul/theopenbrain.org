@@ -15,7 +15,9 @@ OPENBRAIN-30 … 35 on 2026-09-11/12.
 - **Chapter ramp is the accent inside a chapter.** Ramps are subjects, not
   positions in the book: Foundations = `fund`, The Retina = `perc`,
   Attention = `lear`. Values come from the Figma Assets Library variables.
-  The magenta `--color-accent` is not used inside chapters.
+  The ramp is the chapter's _identity_ colour (opener title, TOC numbers,
+  section badges); the magenta `--color-accent` remains the _interaction_
+  accent inside chapters too (breakout cards, highlight tools, links).
 - **Original 50/50 split** between figure pane and prose
   (`--reader-prose-w: min(50vw, calc(780px + 6.875rem))` — 50vw, capped at
   the legacy 890px measure above ~1780px wide). The scroll-trigger markers
@@ -33,5 +35,8 @@ OPENBRAIN-30 … 35 on 2026-09-11/12.
 - Strict 50/50 at every width, or keep the 890px prose cap.
 - What counts as an activity beyond widgets (quizzes/flashcards tables exist,
   empty).
-- Inline widget stages are clipped by the prose column (OPENBRAIN-37); the
-  Attention placements are breakout cards until that lands.
+- Inline widget stages: the stage's geometry escapes the prose column (it
+  measures full-width at x = 0) but the column's `overflow-x: clip` clips its
+  paint, so everything left of the divider is invisible (OPENBRAIN-37,
+  verified with `elementFromPoint`). The Attention placements are breakout
+  cards until that lands.

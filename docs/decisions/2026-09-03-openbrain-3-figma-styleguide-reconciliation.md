@@ -1,5 +1,9 @@
 # OPENBRAIN-3 — Figma styleguide vs `/styleguide`: what to reconcile, and which way
 
+> **Superseded in part (2026-09-11).** Two premises below turned out wrong: the ramps are now keyed by
+> _subject_ (`fund`/`perc`/`move`/`lear`/`deve`), not by chapter number, and the Figma Assets Library
+> _does_ define colour variables — see the addendum at the end. The body is kept as written for the record.
+
 **Date:** 2026-09-03 · **Status:** decided · **Ticket:** OPENBRAIN-3 ("Add styleguide to the Figma file")
 
 ## The question
