@@ -10,6 +10,33 @@ vi.mock("@/services/api/client", () => ({
   apiRequest: vi.fn(),
 }));
 
+// Draft gating (OPENBRAIN-33): the composable asks useAuth whether the
+// reader is a creator. Hoisted so the mock factory can reference it.
+const { creatorFlag, authState } = vi.hoisted(() => ({
+  creatorFlag: { value: false },
+  authState: { isAuthenticated: false, profileLoading: false, loading: false },
+}));
+vi.mock("@/composables/useAuth", () => ({
+  useAuth: () => ({
+    isCreator: creatorFlag,
+    isAuthenticated: {
+      get value() {
+        return authState.isAuthenticated;
+      },
+    },
+    profileLoading: {
+      get value() {
+        return authState.profileLoading;
+      },
+    },
+    loading: {
+      get value() {
+        return authState.loading;
+      },
+    },
+  }),
+}));
+
 import { apiRequest } from "@/services/api/client";
 import { useChapter } from "@/composables/useChapter";
 
@@ -23,7 +50,12 @@ function mockRest({ sections, paragraphs, animKeys = [] }) {
   apiRequest.mockImplementation((endpoint) => {
     if (endpoint.startsWith("modules?"))
       return Promise.resolve([
-        { id: MODULE_ID, title: "The Retina", slug: "the-retina" },
+        {
+          id: MODULE_ID,
+          title: "The Retina",
+          slug: "the-retina",
+          status: "published",
+        },
       ]);
     if (endpoint.startsWith("sections?")) return Promise.resolve(sections);
     if (endpoint.startsWith("paragraphs?")) return Promise.resolve(paragraphs);
@@ -300,5 +332,86 @@ describe("useChapter transform: chapter identity and box sections", () => {
       ["where-is-my-mind", "section"],
       ["box-descartes", "box"],
     ]);
+  });
+});
+
+/*
+ * OPENBRAIN-33: unpublished modules are creator-only. The public catalog
+ * already filters status=published; this closes the direct-URL path with the
+ * same "not found" error a missing slug produces, so the URL does not reveal
+ * that a draft exists.
+ */
+describe("useChapter draft gating", () => {
+  function mockModule(status) {
+    apiRequest.mockImplementation((endpoint) => {
+      if (endpoint.startsWith("modules?"))
+        return Promise.resolve([
+          { id: MODULE_ID, title: "Draft", slug: "draft-chapter", status },
+        ]);
+      if (endpoint.startsWith("sections?"))
+        return Promise.resolve([
+          { id: SECTION_ID, title: "Main", slug: "main", order_index: 1 },
+        ]);
+      if (endpoint.startsWith("paragraphs?")) return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+  }
+
+  beforeEach(() => {
+    creatorFlag.value = false;
+  });
+
+  it("hides a draft from non-creators as not found", async () => {
+    mockModule("draft");
+    const { fetchChapter, transformedData } = useChapter();
+    const { data, error } = await fetchChapter("draft-chapter");
+    expect(data).toBeNull();
+    expect(String(error?.message)).toContain("not found");
+    expect(transformedData.value).toBeNull();
+  });
+
+  it("renders a draft for creators", async () => {
+    creatorFlag.value = true;
+    mockModule("draft");
+    const { fetchChapter } = useChapter();
+    const { data, error } = await fetchChapter("draft-chapter");
+    expect(error).toBeNull();
+    expect(data?.moduleId).toBe(MODULE_ID);
+  });
+
+  it("renders a published chapter for everyone", async () => {
+    mockModule("published");
+    const { fetchChapter } = useChapter();
+    const { data, error } = await fetchChapter("draft-chapter");
+    expect(error).toBeNull();
+    expect(data?.moduleId).toBe(MODULE_ID);
+  });
+
+  it("treats a missing or blank status as unpublished (no bypass)", async () => {
+    for (const status of [undefined, null, ""]) {
+      mockModule(status);
+      const { fetchChapter } = useChapter();
+      const { data, error } = await fetchChapter("draft-chapter");
+      expect(data).toBeNull();
+      expect(String(error?.message)).toContain("not found");
+    }
+  });
+
+  it("waits for the profile to load before deciding, so a creator on a direct load is not refused", async () => {
+    // Session present, profile still loading, role unknown → the gate must
+    // wait, not answer "not found" from the pre-hydration false.
+    creatorFlag.value = false;
+    authState.isAuthenticated = true;
+    authState.profileLoading = true;
+    setTimeout(() => {
+      creatorFlag.value = true;
+      authState.profileLoading = false;
+    }, 20);
+    mockModule("draft");
+    const { fetchChapter } = useChapter();
+    const { data, error } = await fetchChapter("draft-chapter");
+    expect(error).toBeNull();
+    expect(data?.moduleId).toBe(MODULE_ID);
+    authState.isAuthenticated = false;
   });
 });

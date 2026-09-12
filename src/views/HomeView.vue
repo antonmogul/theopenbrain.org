@@ -3,9 +3,23 @@
 // truth — see ChaptersView), so this page is the "what is this" entry point:
 // hero + mission, how-it-works, a browse CTA, and the open-access / funding /
 // credits footer. Copy mirrors the About drawer (MenuAbout.vue).
+import { computed } from "vue";
 import { useGeneral } from "@/stores/index";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
+import { useChapterCatalog } from "@/composables/useChapterCatalog";
+
+// The CTA counts the published chapters instead of hardcoding "two" —
+// the literal went stale the moment a chapter shipped (OPENBRAIN-33).
+const { modules: catalogModules, fetchCatalog } = useChapterCatalog();
+fetchCatalog();
+const WORDS = ["one", "two", "three", "four", "five", "six", "seven"];
+const chapterCountCopy = computed(() => {
+  const n = catalogModules.value.length;
+  if (!n) return "Pick a chapter and dive in.";
+  const word = WORDS[n - 1] || String(n);
+  return `${word.charAt(0).toUpperCase()}${word.slice(1)} chapter${n === 1 ? "" : "s"} live now. Pick one and dive in.`;
+});
 
 const store = useGeneral();
 const authStore = useAuthStore();
@@ -106,8 +120,7 @@ const features = [
     <section class="cta">
       <h2 class="cta-head">Start reading</h2>
       <p class="cta-body">
-        Two chapters live now, with a history of neuroscience just landed. Pick
-        one and dive in.
+        {{ chapterCountCopy }}
       </p>
       <router-link to="/chapters" class="btn btn--solid btn--lg">
         Browse all chapters

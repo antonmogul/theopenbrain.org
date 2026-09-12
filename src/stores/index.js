@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import jsonText from "@/assets/json_backend/text.json";
 import { useAnimation } from "./animation";
 import { useCom } from "./comments";
 
@@ -48,10 +47,25 @@ export const useGeneral = defineStore("main", {
   },
 });
 
+/*
+ * The chapter tree the reader renders. Starts empty: ChapterView replaces it
+ * wholesale with the Supabase-transformed chapter via updateText("*", …).
+ * The Chapter 1 JSON used to be the initial value (112 KB in the bundle for
+ * a state that was always overwritten) — OPENBRAIN-33 dropped it; the file
+ * remains only as the importer script's source.
+ */
+function readCachedText() {
+  try {
+    const raw = localStorage.getItem("sections");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const useText = defineStore("text", {
   state: () => ({
-    text: localStorage.sections ? JSON.parse(localStorage.sections) : jsonText,
-    source: jsonText,
+    text: readCachedText(),
     currentId: null,
   }),
   getters: {},

@@ -1,5 +1,33 @@
 import { ref } from "vue";
 import { apiRequest as supabaseRest } from "@/services/api/client";
+import { useAuth } from "@/composables/useAuth";
+
+/*
+ * Drafts render only for creators (the dev role override counts in DEV).
+ *
+ * The role comes from the profiles row, which useAuth fetches after the
+ * session is restored — on a direct load it can still be in flight when the
+ * chapter request starts. Wait for it (bounded) rather than answer from the
+ * pre-hydration `false`, which would refuse a legitimate creator for good.
+ *
+ * This is a UX gate, not the security boundary: whatever the client decides,
+ * Supabase RLS is what actually stops a non-creator reading draft rows over
+ * REST (tracked separately, OPENBRAIN-38).
+ */
+const PROFILE_WAIT_MS = 5000;
+
+async function canPreviewDrafts() {
+  const { isCreator, isAuthenticated, profileLoading, loading } = useAuth();
+  if (isCreator.value) return true;
+  const settling = () =>
+    Boolean(loading?.value) ||
+    (Boolean(isAuthenticated?.value) && Boolean(profileLoading?.value));
+  const deadline = Date.now() + PROFILE_WAIT_MS;
+  while (settling() && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 25));
+  }
+  return Boolean(isCreator.value);
+}
 import { clog, cgroup } from "@/helper/chapterDebug";
 import { transformModuleToChapterFormat } from "./chapterTransform.mjs";
 import {
@@ -55,6 +83,20 @@ export function useChapter() {
       const moduleData = modules?.[0];
       if (!moduleData) {
         throw new Error(`Chapter with slug "${slug}" not found`);
+      }
+      // Unpublished chapters are for creators only (OPENBRAIN-33). The public
+      // catalog already hides them; this closes the direct-URL path. Same
+      // error as a missing slug so the reader's not-found state applies and
+      // the URL does not reveal that a draft exists. Anything that is not
+      // exactly "published" (draft, archived, missing, blank) is unpublished.
+      if (moduleData.status !== "published") {
+        const allowed = await canPreviewDrafts();
+        if (generation !== fetchGeneration) {
+          return { data: null, error: null, stale: true };
+        }
+        if (!allowed) {
+          throw new Error(`Chapter with slug "${slug}" not found`);
+        }
       }
 
       // Step 2: Get sections for this module (include animation fields for Chapter 1)

@@ -6,6 +6,7 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 import { toSlug, addH, removeH } from "@/helper/general";
 import { markersEnabled } from "@/helper/debugFlags";
 import { sectionLabelMap } from "@/composables/useChapterOutline";
+import { authorsForModule } from "@/helper/chapterAuthors";
 
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
@@ -43,8 +44,21 @@ const markerListeners = [];
 let waitInterval = null;
 let triggerSetupTimeout = null;
 
-// Check if this is Chapter 1 (for conditional rendering of Chapter 1-specific elements)
-const isChapter1 = computed(() => route.params.number === "1");
+// The module row (authors, slug) — every chapter is a Supabase chapter now;
+// the old `isChapter1` route check is gone (OPENBRAIN-33).
+const props = defineProps({
+  module: { type: Object, default: null },
+});
+const authors = computed(() => authorsForModule(props.module));
+
+// The intro's scroll-trigger id derives from its animation config
+// (sections.animation_config.name, e.g. "dragon" → triggerAnimationDragon)
+// instead of a hardcoded Retina-only span.
+const introTriggerId = (section) => {
+  const name = section?.animation?.name;
+  if (!name) return null;
+  return `triggerAnimation${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+};
 
 // Use computed property for reactivity - this will update when store changes
 const source = computed(() => {
@@ -62,19 +76,9 @@ const source = computed(() => {
 // (useChapterOutline, OPENBRAIN-32) so the prose and the contents agree.
 const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 
-// Save content to Supabase
+// Save content to Supabase. Every chapter, The Retina included, lives in
+// Supabase now (OPENBRAIN-33 removed the localStorage-only branch).
 const saveContent = async ({ paragraphId, content, type }) => {
-  // Get current chapter slug
-  const chapterSlug = route.params.slug;
-
-  // For Chapter 1 (JSON-based), update localStorage
-  if (chapterSlug === "the-retina") {
-    // Update the store directly for Chapter 1
-    updateLocalContent(paragraphId, content, type);
-    return;
-  }
-
-  // For Supabase chapters, make API call
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey =
@@ -87,7 +91,10 @@ const saveContent = async ({ paragraphId, content, type }) => {
       return;
     }
 
-    if (type === "paragraph") {
+    // Intro paragraphs are ordinary paragraph rows and the intro title is the
+    // intro section's title, so both persist through the same PATCHes
+    // (they used to update the local store only — OPENBRAIN-33).
+    if (type === "paragraph" || type === "intro") {
       // Update paragraph content
       const response = await fetch(
         `${supabaseUrl}/rest/v1/paragraphs?id=eq.${paragraphId}`,
@@ -99,8 +106,13 @@ const saveContent = async ({ paragraphId, content, type }) => {
             "Content-Type": "application/json",
             Prefer: "return=minimal",
           },
+          // The reader renders `content.blocks` (chapterTransform), so the
+          // edit is stored as one "text" block holding the edited HTML —
+          // `{ text }` was written before and never read back. Structured
+          // blocks (citation_ref, footnote…) are flattened into that HTML,
+          // which is what the editor edits anyway.
           body: JSON.stringify({
-            content: { text: content },
+            content: { blocks: [{ type: "text", content }] },
             content_text: content.replace(/<[^>]*>/g, ""), // Strip HTML for search
           }),
         }
@@ -112,7 +124,7 @@ const saveContent = async ({ paragraphId, content, type }) => {
 
       // Update local store
       updateLocalContent(paragraphId, content, type);
-    } else if (type === "section-title") {
+    } else if (type === "section-title" || type === "intro-title") {
       // Update section title
       const response = await fetch(
         `${supabaseUrl}/rest/v1/sections?id=eq.${paragraphId}`,
@@ -135,10 +147,6 @@ const saveContent = async ({ paragraphId, content, type }) => {
       }
 
       // Update local store
-      updateLocalContent(paragraphId, content, type);
-    } else if (type === "intro") {
-      // Update intro paragraph
-      // For intro, we need to find and update the correct paragraph
       updateLocalContent(paragraphId, content, type);
     }
   } catch (error) {
@@ -179,11 +187,20 @@ const updateLocalContent = (paragraphId, content, type) => {
         }
       }
     }
-  } else if (type === "section-title") {
+  } else if (type === "section-title" || type === "intro-title") {
+    const plain = content.replace(/<[^>]*>/g, "");
     // Find and update section title
     for (const section of source.value.sections || []) {
       if (section.id === paragraphId) {
-        section.title = content.replace(/<[^>]*>/g, "");
+        section.title = plain;
+        return;
+      }
+    }
+    // The intro section keeps its own title in sectionTitle (title is the
+    // module name for legacy consumers).
+    for (const intro of source.value.intro || []) {
+      if (intro.id === paragraphId) {
+        intro.sectionTitle = plain;
         return;
       }
     }
@@ -365,7 +382,7 @@ onBeforeUnmount(() => {
           <!-- Intro title - editable for creators -->
           <EditableBlock
             v-if="isCreator"
-            :content="section.title"
+            :content="section.sectionTitle || section.title"
             :paragraph-id="`intro-title-${section.id}`"
             :is-creator="isCreator"
             tag="h1"
@@ -387,33 +404,30 @@ onBeforeUnmount(() => {
                the intro prints its own section heading ("Introduction"). -->
           <h1
             v-else
-            :id="
-              isChapter1 ? 'the-eye-and-retina-intro' : `${section.id}-heading`
-            "
+            :id="`${section.id}-heading`"
             :class="store.imgActive ? 'opacity-0' : ''"
             class="z-40 text-black opacity-100 capitalize"
           >
             {{ section.sectionTitle || section.title }}
           </h1>
 
-          <!-- Author information - only show for Chapter 1 -->
-          <span v-if="isChapter1" class="font-mono text-small">
-            <p class="font-semibold">Arjun Krishnaswamy</p>
-            <p class="pb-5">
-              Department of Physiology, McGill University, Montreal, Canada
-            </p>
-            <p class="font-semibold">Stuart Trenholm</p>
-            <p>
-              Montreal Neurological Institute, McGill University, Montreal,
-              Canada
-            </p>
+          <!-- Authors: chapter data (modules.authors / slug map), not a
+               Retina-only block (OPENBRAIN-33). -->
+          <span v-if="authors.length" class="font-mono text-small">
+            <template v-for="(author, i) in authors" :key="author.name">
+              <p class="font-semibold">{{ author.name }}</p>
+              <p :class="i < authors.length - 1 ? 'pb-5' : ''">
+                {{ author.affiliation }}
+              </p>
+            </template>
           </span>
-          <br v-if="isChapter1" />
+          <br v-if="authors.length" />
 
-          <!-- Intro paragraphs -->
+          <!-- Intro paragraphs. A section with an intro animation (Retina's
+               "dragon") wraps them in that animation's scroll trigger. -->
           <span
-            v-if="isChapter1"
-            id="triggerAnimationDragon"
+            v-if="introTriggerId(section)"
+            :id="introTriggerId(section)"
             class="animationTrigger block noHighlight"
           >
             <template

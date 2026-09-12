@@ -28,17 +28,12 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Chapter 1 is the legacy local chapter; the catalog returns Supabase chapters.
-const chapters = computed(() => {
-  const ch1 = {
-    id: "ch1",
-    order_index: 1,
-    title: "The Retina",
-    slug: "the-retina",
-  };
-  const supa = modules.value.filter((m) => m.order_index !== 1);
-  return [ch1, ...supa].sort((a, b) => a.order_index - b.order_index);
-});
+// Every chapter, The Retina included, comes from the Supabase catalog
+// (OPENBRAIN-33 removed the synthetic local "Chapter 1" entry that used to
+// shadow the real module row).
+const chapters = computed(() =>
+  [...modules.value].sort((a, b) => a.order_index - b.order_index)
+);
 
 // All-chapter reading progress keyed by module_id (mirrors ChaptersView).
 const progressByModule = ref({});

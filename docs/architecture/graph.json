@@ -19,7 +19,6 @@
   "assets/json_backend/animations.json": [],
   "assets/json_backend/breakVideos.json": [],
   "assets/json_backend/infosImages.json": [],
-  "assets/json_backend/text.json": [],
   "assets/styles/admin-theme.css": [],
   "components/Editor/TipTapEditor.vue": [],
   "components/Editor/__stories__/TipTapEditor.stories.js": [
@@ -148,11 +147,6 @@
   ],
   "components/chapter/CitationTooltip.vue": [],
   "components/chapter/EndOfChapterCallout.vue": [],
-  "components/chapter/ExportField.vue": [
-    "icons/BiUpload.vue",
-    "stores/index.js"
-  ],
-  "components/chapter/HighlightRenderer.vue": [],
   "components/chapter/HighlightToolbar.vue": [
     "components/chapter/highlight-toolbar/HighlightActionBar.vue",
     "components/chapter/highlight-toolbar/HighlightColorPicker.vue",
@@ -343,6 +337,7 @@
     "components/chapter/text/QuizSection.vue",
     "components/chapter/text/SectionComp.vue",
     "composables/useAuth.js",
+    "composables/useChapterOutline.js",
     "helper/debugFlags.js",
     "helper/general.js",
     "helper/perlin.ts",
@@ -357,14 +352,6 @@
   ],
   "components/chapter/__stories__/EndOfChapterCallout.stories.js": [
     "components/chapter/EndOfChapterCallout.vue"
-  ],
-  "components/chapter/__stories__/ExportField.stories.js": [
-    "components/chapter/ExportField.vue",
-    "components/chapter/__stories__/chapterFixtures.js"
-  ],
-  "components/chapter/__stories__/HighlightRenderer.stories.js": [
-    "components/chapter/HighlightRenderer.vue",
-    "components/chapter/__stories__/chapterFixtures.js"
   ],
   "components/chapter/__stories__/HighlightToolbar.stories.js": [
     "components/chapter/HighlightToolbar.vue",
@@ -490,6 +477,28 @@
     "components/chapter/__stories__/chapterFixtures.js",
     "components/chapter/highlight-toolbar/HighlightTagPanel.vue"
   ],
+  "components/chapter/opener/ChapterOpener.vue": [
+    "components/chapter/opener/OpenerHero.vue",
+    "components/chapter/opener/OpenerToc.vue",
+    "composables/useChapterOutline.js",
+    "helper/chapterCover.js"
+  ],
+  "components/chapter/opener/OpenerHero.vue": [
+    "composables/useReaderSidebar.js"
+  ],
+  "components/chapter/opener/OpenerToc.vue": [],
+  "components/chapter/opener/__stories__/ChapterOpener.stories.js": [
+    "components/chapter/opener/ChapterOpener.vue"
+  ],
+  "components/chapter/opener/__stories__/OpenerHero.stories.js": [
+    "components/chapter/opener/OpenerHero.vue"
+  ],
+  "components/chapter/opener/__stories__/OpenerToc.stories.js": [
+    "components/chapter/opener/OpenerToc.vue"
+  ],
+  "components/chapter/opener/__tests__/ChapterOpener.lifecycle.test.js": [
+    "components/chapter/opener/ChapterOpener.vue"
+  ],
   "components/chapter/sidebar/ChatTab.vue": [
     "components/ai/AITutorChat.vue",
     "components/dashboard/shared/index.js",
@@ -541,10 +550,6 @@
   ],
   "components/chapter/text/EditableBlock.vue": [
     "icons/custom/CloseIcon.vue"
-  ],
-  "components/chapter/text/EyeStart.vue": [
-    "icons/custom/DownArrow.vue",
-    "stores/index.js"
   ],
   "components/chapter/text/FootNotes.vue": [
     "helper/debugFlags.js"
@@ -626,10 +631,6 @@
   "components/chapter/text/__stories__/EditableBlock.stories.js": [
     "components/chapter/__stories__/chapterFixtures.js",
     "components/chapter/text/EditableBlock.vue"
-  ],
-  "components/chapter/text/__stories__/EyeStart.stories.js": [
-    "components/chapter/__stories__/chapterFixtures.js",
-    "components/chapter/text/EyeStart.vue"
   ],
   "components/chapter/text/__stories__/FootNotes.stories.js": [
     "components/chapter/__stories__/chapterFixtures.js",
@@ -1143,6 +1144,9 @@
     "composables/useChapter.js",
     "services/api/client.js"
   ],
+  "composables/__tests__/useChapterOutline.test.js": [
+    "composables/useChapterOutline.js"
+  ],
   "composables/__tests__/useCrudResource.test.js": [
     "composables/useCrudResource.js"
   ],
@@ -1236,6 +1240,9 @@
     "widgets/placements.js"
   ],
   "composables/useChapterCatalog.js": [],
+  "composables/useChapterOutline.js": [
+    "helper/general.js"
+  ],
   "composables/useCodeLabs.js": [
     "composables/useAuth.js",
     "services/api/client.js",
@@ -1348,6 +1355,12 @@
   "helper/__tests__/appWidth.test.js": [
     "helper/appWidth.js"
   ],
+  "helper/__tests__/chapterAuthors.test.js": [
+    "helper/chapterAuthors.js"
+  ],
+  "helper/__tests__/chapterCover.test.js": [
+    "helper/chapterCover.js"
+  ],
   "helper/__tests__/chapterTheme.test.js": [
     "helper/chapterTheme.js"
   ],
@@ -1365,6 +1378,8 @@
   ],
   "helper/animationResolve.js": [],
   "helper/appWidth.js": [],
+  "helper/chapterAuthors.js": [],
+  "helper/chapterCover.js": [],
   "helper/chapterDebug.js": [],
   "helper/chapterTheme.js": [],
   "helper/colorVision.js": [],
@@ -1523,7 +1538,6 @@
   "stores/auth.js": [],
   "stores/comments.js": [],
   "stores/index.js": [
-    "assets/json_backend/text.json",
     "stores/animation.js",
     "stores/comments.js"
   ],
@@ -1549,7 +1563,8 @@
   "views/ChapterOverviewView.vue": [
     "composables/useAuth.js",
     "composables/useChapter.js",
-    "composables/useChapterCatalog.js"
+    "composables/useChapterCatalog.js",
+    "composables/useChapterOutline.js"
   ],
   "views/ChapterView.vue": [
     "components/Navigation/MenuTutorial.vue",
@@ -1560,8 +1575,8 @@
     "components/chapter/ReaderSidebar.vue",
     "components/chapter/ReaderTopBar.vue",
     "components/chapter/TextComp.vue",
+    "components/chapter/opener/ChapterOpener.vue",
     "components/chapter/text/CommentComp.vue",
-    "components/chapter/text/EyeStart.vue",
     "components/chapter/text/FootNotesWindow.vue",
     "composables/useAuth.js",
     "composables/useChapter.js",
@@ -1645,6 +1660,7 @@
   ],
   "views/HomeView.vue": [
     "composables/useAuth.js",
+    "composables/useChapterCatalog.js",
     "stores/auth.js",
     "stores/index.js"
   ],
