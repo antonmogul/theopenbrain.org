@@ -68,3 +68,19 @@ originate in Figma.
 MCP client (a JSON parse error on the node's payload), so the comparison above
 used `get_screenshot` at full resolution plus `get_variable_defs`. Retry the
 structured calls on a child frame before scripting the variable export.
+
+## Addendum — 2026-09-11 (OPENBRAIN-30/36)
+
+The premise that Figma has no colour variables was wrong: the **Assets
+Library** file (`WNnPvBkixODGsiYmIZKSWw`, node `3:37` "book colors") defines
+them — `book/{fund,perc,move,lear,deve}/{main,dark,medium,light}` plus
+`support/yellow` and `support/pink`. The chapters file's styleguide page was
+the wrong place to look.
+
+So for colour the direction is Figma → code: `brand.css` now carries the
+Assets Library values under `[data-chapter="fund|perc|move|lear|deve"]` (our
+token names, her values), and the ramp is keyed by **subject** from the module
+row (`modules.ramp`, slug fallback), never by the chapter's route number. The
+variable-export generator proposed above is dropped; the two are kept in step
+by hand at each change. Everything else in this decision (typography, reading
+preferences, dark mode retired) stands.

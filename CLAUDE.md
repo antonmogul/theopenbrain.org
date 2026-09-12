@@ -168,7 +168,7 @@ Other top-level folders: `supabase/migrations/` (schema + seeds), `scripts/` (sm
 **Pinia stores**
 
 - **useGeneral** (`src/stores/index.js`): UI state (menus, modals, navigation), first-visit flag in localStorage, one-shot scroll-position return target (`savedPosition`), progress.
-- **useText** (`src/stores/index.js`): the chapter tree the reader renders. Initial state is `assets/json_backend/text.json` (or its localStorage `sections` mirror); `ChapterView` replaces it wholesale with the Supabase-transformed chapter via `updateText("*", data)`.
+- **useText** (`src/stores/index.js`): the chapter tree the reader renders. Starts from the localStorage `sections` mirror or `null` (the Chapter 1 JSON is no longer bundled as a seed); `ChapterView` replaces it wholesale with the Supabase-transformed chapter via `updateText("*", data)`.
 - **useAnimation** (`src/stores/animation.js`): GSAP/Lottie animation state.
 - **useCom** (`src/stores/comments.js`): comments on highlighted text.
 - **useAuthStore** (`src/stores/auth.js`): auth _modal_ UI state only (`activeAuth`, `authView`, error/success messages). It does not hold the session.
@@ -221,7 +221,7 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 - Attention chapter widgets: `/sdt`, `/biased-competition`, `/contrast-response`, `/posner-cueing`, `/feature-attention`
 - Retina/V1 chapter widgets: `/color-vision`, `/visual-pathway`, `/direction-selectivity` (Pyodide), `/v1-camera` (WebGL2), `/retinabox`
 
-Every widget is registered in `src/widgets/catalog.js`; the library renders the Vue port next to the author's original HTML from `src/widgets/source/` (kept byte-for-byte, excluded from Prettier).
+Every widget is registered in `src/widgets/catalog.js`; the library renders the Vue port next to the author's original HTML from `src/widgets/source/` (kept byte-for-byte, excluded from Prettier). **To put a widget inside a chapter**, add a placement to `src/widgets/placements.js` (chapter slug + section slug + text anchors, `kind: "breakout"` card or `"inline"` stage) and a lazy loader to `src/widgets/embeds.js`; a DB-authored `{ type: "widget" }` paragraph block wins over a code placement for the same widget.
 
 **`router.beforeEach`** (in order):
 
@@ -230,7 +230,7 @@ Every widget is registered in `src/widgets/catalog.js`; the library renders the 
 3. Legacy `about` transition metadata.
 4. If `to.meta.requiresAuth`: read the session from localStorage (`sb-<ref>-auth-token`, expired sessions are dropped); no session → `/`. In DEV only, `useAuth().devRoleOverride` short-circuits the role check. Otherwise, for `requiredRole` routes and `/dashboard`, fetch `profiles?id=eq.<uid>&select=role` over REST with the session token and redirect to the user's own dashboard on mismatch. A failed profile fetch is logged and the navigation proceeds.
 
-**`router.afterEach`** sets `data-chapter` on `<html>` (`applyChapterAttr`) so `brand.css` can switch chapter colour ramps.
+**`router.afterEach`** clears `data-chapter` on `<html>` and, on chapter routes, sets it from the module's **subject ramp** (`applyChapterRamp` in `src/helper/chapterTheme.js`: `modules.ramp` → slug map → neutral). `ChapterView` re-applies it from the loaded module row (drafts are not in the public catalog). Ramps are subjects (`fund`, `perc`, `move`, `lear`, `deve`), never the route number.
 
 #### Data Architecture
 
@@ -240,7 +240,7 @@ Every widget is registered in `src/widgets/catalog.js`; the library renders the 
 sections → paragraphs → subSection → paragraphs → subSubSection
 ```
 
-`reconstructNesting` rebuilds `subSection` / `subSubSection` from `subsection_level` / `is_subsection_header`, and `mergeConsecutiveSubSections` folds consecutive subsection headers into one wrapper. `ChapterView` pushes the result into `useText`.
+`reconstructNesting` rebuilds `subSection` / `subSubSection` from `subsection_level` / `is_subsection_header`, and `mergeConsecutiveSubSections` folds consecutive subsection headers into one wrapper. `ChapterView` pushes the result into `useText`. Unpublished modules (`status !== "published"`) throw the same not-found as a missing slug unless the reader is a creator (client gate; RLS hardening is OPENBRAIN-38). Every chapter opens with `ChapterOpener` (cover + dark title/TOC block, built from `useChapterOutline`), which publishes its height as `--opener-h`; reading progress is measured over the body below it.
 
 Live modules today (`/chapter/<number>/<slug>`):
 
@@ -252,14 +252,14 @@ Schema and seeds live in `supabase/migrations/` (initial schema, RLS fixes, refe
 
 **Legacy JSON under `src/assets/json_backend/`**
 
-- `text.json` — Chapter 1 source of truth for the importer, and the initial state of `useText` before a chapter loads.
+- `text.json` — Chapter 1 source of truth for `scripts/import-chapter-1-to-supabase.mjs` only; it is no longer bundled into the app.
 - `animations.json` — per-record fallback for figures. `src/helper/animationResolve.js` resolves an animation key DB-first, then from this JSON, and warns loudly when neither has it; `lottieAssetOk` HEAD-checks `/publicAssets/animations/<id>.json` because `serve -s` rewrites missing files to `index.html`. The `Illus/*` components import it directly.
 - `breakVideos.json`, `infosImages.json` — still imported by `BreakImages`, `BreakView`, `HoverImg`.
-- `menu.json`, `footnoets.json` — no longer imported by anything in `src/`.
+- `menu.json`, `footnoets.json` — deleted (OPENBRAIN-33).
 
 **Adding a chapter**: use the Chapter Wizard at `/dashboard?section=chapter-wizard` (creator role). It takes metadata, then markdown or DOCX content plus an optional `.bib`/`.ris` bibliography (`useContentParser`, `useBibParser`), lets you fix the section structure, and writes modules/sections/paragraphs/references through the REST client. The expected heading structure is documented in `public/templates/chapter-template.md` (H2 = section, H3 = subsection, H4 = sub-subsection).
 
-**User data**: highlights (`highlights` table), notes, reading progress, quiz/flashcard results, preferences and enrolments are all per-user Supabase rows. The `useText` localStorage `sections` mirror and the JSON import/export in `ExportField.vue` are legacy Chapter 1 behaviours that still exist.
+**User data**: highlights (`highlights` table), notes, reading progress, quiz/flashcard results, preferences and enrolments are all per-user Supabase rows. The `useText` localStorage `sections` mirror is a legacy Chapter 1 behaviour that still exists (the chapter-switch stale-clear check reads it); the JSON import/export UI was removed.
 
 #### Vite Configuration
 
@@ -274,7 +274,7 @@ Schema and seeds live in `supabase/migrations/` (initial schema, RLS fixes, refe
 
 - **Tailwind Configuration** (`tailwind.config.js`):
   - Breakpoints: `xs` 480px, `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1300px, `2xl` 1500px. The reader switches to the pinned two-column (text + figure pane) layout at `xl`; between `md` and `xl` the figure pane is hidden.
-  - `width: text` / `width: illus` derive from `--reader-prose-w` in `brand.css` (40vw prose, figure pane fills the rest) so the two panes cannot drift.
+  - `width: text` / `width: illus` derive from `--reader-prose-w` in `brand.css` (50vw prose, capped at the legacy 890px measure; figure pane fills the rest) so the two panes cannot drift. Everything that used to hardcode the old 50vw maths (trigger markers, full-bleed blocks) derives from that token.
   - Colours and fonts come from the tokens below, not from literal values.
 
 #### Design System (Tokens & Typography)
@@ -283,6 +283,7 @@ CSS custom properties in `src/styles/brand.css` are the single source of truth f
 
 Conventions:
 
+- **Chapter ramp** — `[data-chapter="fund|perc|move|lear|deve"]` on `<html>` switches `--color-chapter{,-deep,-soft,-pale}`. Keys and values mirror the Figma Assets Library variables `book/<key>/{main,dark,medium,light}` (`WNnPvBkixODGsiYmIZKSWw`, node 3:37); the router sets the key from the module's subject ramp, never from the chapter number. Inside a chapter the ramp is the accent; the global `--color-accent` (magenta) is for dashboards.
 - **Theme** — `[data-theme="light|dark"]` on `<html>`. System mode resolved live via `matchMedia`.
 - **Accent** — `[data-accent="magenta|teal|amber|mono"]` on `<html>` overrides `--color-accent`.
 - **Font pair** — `[data-fontpair="ibm-plex-legacy|newsreader|literata|georgia|sans"]` on `<html>` overrides `--font-body`, `--font-ui`, `--font-mono`. Default `:root` binds these to IBM Plex (today's behavior); `data-fontpair="newsreader"` etc. swap them.
