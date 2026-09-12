@@ -1,8 +1,8 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 54,
-  "coveredCount": 54,
+  "sourceCount": 53,
+  "coveredCount": 53,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
@@ -10,7 +10,7 @@
     "Highlighting": 7,
     "Demos": 5,
     "Illustrations": 14,
-    "Text": 18
+    "Text": 17
   },
   "components": [
     {
@@ -251,11 +251,6 @@
     {
       "source": "src/components/chapter/text/InlineImages.vue",
       "storyFile": "src/components/chapter/text/__stories__/InlineImages.stories.js",
-      "story": "Default"
-    },
-    {
-      "source": "src/components/chapter/text/InlineImages_openClose.vue",
-      "storyFile": "src/components/chapter/text/__stories__/InlineImages_openClose.stories.js",
       "story": "Default"
     },
     {

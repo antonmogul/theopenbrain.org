@@ -37,3 +37,24 @@ export function readScrub(search = "") {
   if (!params.has("scrub")) return false;
   return params.get("scrub") !== "0";
 }
+
+/*
+ * Whether the reader's scroll-trigger markers render (OPENBRAIN-31). These
+ * are the black start/end dots per animation trigger and the viewport-centre
+ * dash, useful when tuning where a figure fires. They used to render always
+ * and, once the pane split moved, sat visibly in the middle of the figure
+ * pane. Same contract as readScrub: `?markers` / `?markers=1` on, `?markers=0`
+ * off, absent → off.
+ */
+export function readMarkers(search = "") {
+  const params = new URLSearchParams(search);
+  if (!params.has("markers")) return false;
+  return params.get("markers") !== "0";
+}
+
+/* Convenience for components: read the flag from the live URL, false during
+ * SSR/tests where there is no window. */
+export function markersEnabled() {
+  if (typeof window === "undefined" || !window.location) return false;
+  return readMarkers(window.location.search);
+}

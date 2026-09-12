@@ -102,9 +102,9 @@
 
    Clamped to 100% so the preference can only ever make the measure NARROWER
    than the column that holds it. Without the clamp, --reading-measure (780px)
-   exceeds the actual prose column at every desktop width below ~2560px — the
-   column is --reader-prose-w (40vw) minus 110px of padding, i.e. 466px at
-   1440px — so the cap never bound and long content overflowed its container
+   exceeds the actual prose column at most desktop widths — the column is
+   --reader-prose-w (50vw, capped at 890px) minus 110px of padding, i.e. 610px
+   at 1440px — so the cap never bound and long content overflowed its container
    instead of wrapping. See OPENBRAIN-4. */
 .prose-measure {
   max-width: min(var(--reading-measure, 780px), 100%);
@@ -702,6 +702,11 @@ sup:hover {
   transition: none !important;
 }
 
+/* Scroll-trigger markers — dev aids only (OPENBRAIN-31). They mark where each
+   animation trigger starts/ends and the viewport centre it fires against, and
+   they only render with ?markers=1 (see debugFlags.readMarkers). They sit on
+   the figure/prose divider, so their x derives from --reader-prose-w; the old
+   hardcoded 50vw formula left them floating mid-pane once the split moved. */
 .marker-start,
 .marker-end {
   width: 0.625rem;
@@ -711,7 +716,7 @@ sup:hover {
   background: #000;
   border-radius: 999999%;
   position: absolute;
-  left: calc(100vw - min(50vw, calc(780px + 6.875rem)) - 0.3125rem);
+  left: calc(100vw - var(--reader-prose-w) - 0.3125rem);
 }
 .marker-end {
   margin-top: -0.3125rem;
@@ -724,7 +729,7 @@ sup:hover {
   height: 1.2px;
   background: #000;
   position: fixed;
-  left: calc(100vw - min(50vw, calc(780px + 6.875rem)) - 0.3125rem);
+  left: calc(100vw - var(--reader-prose-w) - 0.3125rem);
   top: 50vh;
 }
 

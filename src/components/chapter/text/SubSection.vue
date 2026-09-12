@@ -81,7 +81,7 @@
             "
           >
             <div
-              v-if="subParagraph?.animation?.transition"
+              v-if="showMarkers && subParagraph?.animation?.transition"
               class="marker-start"
             />
             <div
@@ -179,7 +179,11 @@
 
 <script setup>
 import { inject } from "vue";
+import { markersEnabled } from "@/helper/debugFlags";
 import SubSubSection from "./SubSubSection.vue";
+
+// Scroll-trigger markers render only with ?markers=1 (OPENBRAIN-31).
+const showMarkers = markersEnabled();
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import EditableBlock from "./EditableBlock.vue";

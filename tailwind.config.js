@@ -71,16 +71,14 @@ module.exports = {
         body: "calc(100vh - 1.375rem)",
       },
       width: {
-        // Reader split (Track 3 D1): figure pane is the protagonist at ~1.5:1
-        // on wide screens. Both widths derive from --reader-prose-w (brand.css,
-        // = 40vw prose) so the figure pane fills the remaining ~60vw and the two
-        // can never drift. Fallback keeps the old 50vw if the var is absent.
-        /* Fallbacks mirror --reader-prose-w exactly (40vw). They used to say
-           50vw, so if the var failed to resolve the split silently shifted by
-           10vw and the two panes overlapped. See OPENBRAIN-4. */
-        text: "var(--reader-prose-w, min(40vw, calc(780px + 6.875rem)))",
+        // Reader split: 50/50 (OPENBRAIN-31). Both widths derive from
+        // --reader-prose-w (brand.css) so the figure pane fills exactly what
+        // the prose column leaves and the two can never drift.
+        /* Fallbacks must mirror --reader-prose-w exactly. When they disagreed
+           (OPENBRAIN-4) the split silently shifted and the panes overlapped. */
+        text: "var(--reader-prose-w, min(50vw, calc(780px + 6.875rem)))",
         illus:
-          "calc(100% - var(--reader-prose-w, min(40vw, calc(780px + 6.875rem))))",
+          "calc(100% - var(--reader-prose-w, min(50vw, calc(780px + 6.875rem))))",
         menu: "35vw",
         "1/8": " calc(100% / 8 * 1)",
         "2/8": " calc(100% / 8 * 2)",
@@ -91,14 +89,18 @@ module.exports = {
         "7/8": " calc(100% / 8 * 7)",
       },
       spacing: {
-        text: "max(50vw, calc(100vw - 780px - 6.875rem))",
+        // Left edge of the prose column (= figure pane width). Used for fixed
+        // elements that sit on the divider (left-text). Derived from the same
+        // token as the widths so it lands on the divider at every width.
+        text: "calc(100vw - var(--reader-prose-w, min(50vw, calc(780px + 6.875rem))))",
       },
       maxWidth: {
         /* Prose-block maxima, clamped to the containing column.
            These replace hardcoded max-w-[800px] / [780px] / [850px] in the
            chapter text components. Those pixel caps never bound — the prose
-           column is --reader-prose-w (40vw) minus 110px padding, i.e. 466px at
-           1440px — so blocks overflowed their column rather than wrapping, and
+           column is --reader-prose-w (50vw, capped at 890px) minus 110px
+           padding, i.e. 610px at 1440px — so blocks overflowed their column
+           rather than wrapping, and
            captions/paragraphs/footnotes disagreed with each other. The min()
            means a preference can only ever narrow the block. See OPENBRAIN-4. */
         measure: "min(var(--reading-measure, 780px), 100%)",

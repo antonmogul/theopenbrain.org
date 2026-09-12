@@ -307,16 +307,17 @@ onMounted(async () => {
   hyphens: none;
 }
 
+/* Figure pane width and 5/8 + 3/8 of the prose column, derived from the
+   shared split token (OPENBRAIN-31) instead of re-spelling the 50vw maths. */
 .block-1 {
-  width: max(50vw, calc(100vw - 780px - 6.875rem));
+  width: calc(100vw - var(--reader-prose-w));
 }
 .block-2 {
-  width: min(calc(50vw / 8 * 5), calc((780px + 6.875rem) / 8 * 5));
+  width: calc(var(--reader-prose-w) / 8 * 5);
   overflow: hidden;
 }
 .block-3 {
-  /* width: calc(780px + 6.875rem); */
-  width: min(calc(50vw / 8 * 3), calc((780px + 6.875rem) / 8 * 3));
+  width: calc(var(--reader-prose-w) / 8 * 3);
   overflow: hidden;
 }
 </style>

@@ -3,7 +3,7 @@
     id="footnotes"
     class="w-full p-20 bg-white border-t border-black font-mono text-small"
   >
-    <div class="marker-start" />
+    <div v-if="showMarkers" class="marker-start" />
     <span
       id="triggerAnimationPlaceholder"
       class="animationTrigger block noHighlight"
@@ -20,14 +20,19 @@
         </li>
       </ol>
     </span>
-    <div class="marker-end" />
+    <div v-if="showMarkers" class="marker-end" />
   </div>
 </template>
 
 <script setup>
+import { markersEnabled } from "@/helper/debugFlags";
+
 defineProps({
   content: Object,
 });
+
+// Scroll-trigger markers render only with ?markers=1 (OPENBRAIN-31).
+const showMarkers = markersEnabled();
 </script>
 
 <style scoped></style>

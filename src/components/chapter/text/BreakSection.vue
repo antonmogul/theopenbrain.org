@@ -116,7 +116,9 @@ const openInfo = () => {
 }
 @media (min-width: 1300px) {
   .-translate-x-custom {
-    transform: translateX(min(-50vw, calc(-100vw + 780px + 6.875rem - 1px)));
+    /* Pull the break out of the prose column by exactly the figure-pane
+       width, derived from the split token (OPENBRAIN-31). */
+    transform: translateX(calc(-1 * (100vw - var(--reader-prose-w)) + 1px));
   }
 }
 </style>
