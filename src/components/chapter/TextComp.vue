@@ -91,7 +91,10 @@ const saveContent = async ({ paragraphId, content, type }) => {
       return;
     }
 
-    if (type === "paragraph") {
+    // Intro paragraphs are ordinary paragraph rows and the intro title is the
+    // intro section's title, so both persist through the same PATCHes
+    // (they used to update the local store only — OPENBRAIN-33).
+    if (type === "paragraph" || type === "intro") {
       // Update paragraph content
       const response = await fetch(
         `${supabaseUrl}/rest/v1/paragraphs?id=eq.${paragraphId}`,
@@ -116,7 +119,7 @@ const saveContent = async ({ paragraphId, content, type }) => {
 
       // Update local store
       updateLocalContent(paragraphId, content, type);
-    } else if (type === "section-title") {
+    } else if (type === "section-title" || type === "intro-title") {
       // Update section title
       const response = await fetch(
         `${supabaseUrl}/rest/v1/sections?id=eq.${paragraphId}`,
@@ -139,10 +142,6 @@ const saveContent = async ({ paragraphId, content, type }) => {
       }
 
       // Update local store
-      updateLocalContent(paragraphId, content, type);
-    } else if (type === "intro") {
-      // Update intro paragraph
-      // For intro, we need to find and update the correct paragraph
       updateLocalContent(paragraphId, content, type);
     }
   } catch (error) {
@@ -183,11 +182,20 @@ const updateLocalContent = (paragraphId, content, type) => {
         }
       }
     }
-  } else if (type === "section-title") {
+  } else if (type === "section-title" || type === "intro-title") {
+    const plain = content.replace(/<[^>]*>/g, "");
     // Find and update section title
     for (const section of source.value.sections || []) {
       if (section.id === paragraphId) {
-        section.title = content.replace(/<[^>]*>/g, "");
+        section.title = plain;
+        return;
+      }
+    }
+    // The intro section keeps its own title in sectionTitle (title is the
+    // module name for legacy consumers).
+    for (const intro of source.value.intro || []) {
+      if (intro.id === paragraphId) {
+        intro.sectionTitle = plain;
         return;
       }
     }
