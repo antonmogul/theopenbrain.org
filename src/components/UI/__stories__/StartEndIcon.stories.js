@@ -28,7 +28,7 @@ export default {
     template: `
       <div style="min-height:48px; display:flex; align-items:center; gap:12px;">
         <span style="font-family:var(--font-mono); font-size:12px;">{{ args.art }}</span>
-        <StartEndIcon :paragraph="args.paragraph" :art="args.art" />
+        <StartEndIcon :paragraph="args.paragraph" :art="args.art" :show="true" />
       </div>`,
   }),
 };
@@ -59,8 +59,8 @@ export const Markers = {
     }),
     template: `
       <div style="display:flex; gap:40px;">
-        <div>Start <StartEndIcon :paragraph="start" art="start" /></div>
-        <div>End <StartEndIcon :paragraph="end" art="end" /></div>
+        <div>Start <StartEndIcon :paragraph="start" art="start" :show="true" /></div>
+        <div>End <StartEndIcon :paragraph="end" art="end" :show="true" /></div>
       </div>`,
   }),
 };

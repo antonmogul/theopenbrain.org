@@ -104,6 +104,13 @@ const ROUTES = [
      * assertion and is skipped without credentials like minText.
      */
     expectCount: { selector: "[data-widget-breakout]", min: 3 },
+    /*
+     * The scroll-trigger markers are dev chrome behind ?markers=1
+     * (OPENBRAIN-31). Without the flag none may render — they were the
+     * "dots in the middle of the page" readers saw. Structural, so it runs
+     * with or without credentials.
+     */
+    expectAbsent: ".marker-start, .marker-end, .marker-center",
   },
   { path: "/chapters", name: "chapters", minText: 50 },
   {
@@ -290,24 +297,36 @@ async function main() {
         // Let route transitions and entrance animations settle.
         await page.waitForTimeout(route.slow ? 20_000 : 2500);
 
-        const result = await page.evaluate((countSelector) => {
-          const before = window.scrollX;
-          window.scrollTo(9999, 0);
-          const maxScrollX = window.scrollX;
-          window.scrollTo(before, 0);
-          return {
-            maxScrollX,
-            textLength: document.body.innerText.trim().length,
-            count: countSelector
-              ? document.querySelectorAll(countSelector).length
-              : null,
-          };
-        }, route.expectCount?.selector || null);
+        const result = await page.evaluate(
+          ([countSelector, absentSelector]) => {
+            const before = window.scrollX;
+            window.scrollTo(9999, 0);
+            const maxScrollX = window.scrollX;
+            window.scrollTo(before, 0);
+            return {
+              maxScrollX,
+              textLength: document.body.innerText.trim().length,
+              count: countSelector
+                ? document.querySelectorAll(countSelector).length
+                : null,
+              absent: absentSelector
+                ? document.querySelectorAll(absentSelector).length
+                : null,
+            };
+          },
+          [route.expectCount?.selector || null, route.expectAbsent || null]
+        );
 
         // 1px of slack absorbs sub-pixel rounding at fractional widths.
         if (result.maxScrollX > 1) {
           failures.push(
             `${label}: scrolls horizontally by ${result.maxScrollX}px`
+          );
+        }
+        // Structural: things that must never be in the DOM (dev-only chrome).
+        if (route.expectAbsent && result.absent > 0) {
+          failures.push(
+            `${label}: found ${result.absent} × ${route.expectAbsent}, expected none`
           );
         }
         const checkContent = !route.needsData || HAS_SUPABASE;
@@ -344,10 +363,12 @@ async function main() {
             .forEach((e) => failures.push(`    ${e.slice(0, 160)}`));
         }
 
+        const absentOk = !route.expectAbsent || result.absent === 0;
         const ok =
           result.maxScrollX <= 1 &&
           (!checkContent || result.textLength >= route.minText) &&
           countOk &&
+          absentOk &&
           !real.length;
         if (!ok) {
           await page.screenshot({

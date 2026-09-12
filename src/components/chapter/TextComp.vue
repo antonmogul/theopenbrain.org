@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { toSlug, addH, removeH } from "@/helper/general";
+import { markersEnabled } from "@/helper/debugFlags";
 
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
@@ -27,6 +28,8 @@ const noise = new Perlin(seed);
 gsap.registerPlugin(ScrollTrigger);
 
 const route = useRoute();
+// Scroll-trigger markers render only with ?markers=1 (OPENBRAIN-31).
+const showMarkers = markersEnabled();
 const store = useGeneral();
 const textStore = useText();
 
@@ -326,7 +329,8 @@ onBeforeUnmount(() => {
     </div>
 
     <HoverImg />
-    <div class="marker-center" />
+    <!-- Viewport-centre trigger line: dev chrome behind ?markers=1 (OPENBRAIN-31) -->
+    <div v-if="showMarkers" class="marker-center" />
     <div id="scroller" class="pointer-events-none w-full">
       <main
         id="text"
@@ -570,7 +574,8 @@ onBeforeUnmount(() => {
   .ml-text {
     /* Prose column width + right-pinned offset both derive from the shared
        --reader-prose-w token (brand.css) so the figure pane and prose can't
-       drift. Track 3 D1: prose = 40vw, figure pane fills the remaining ~60vw. */
+       drift. OPENBRAIN-31: 50/50 — prose = 50vw (capped at 890px), the figure
+       pane fills the rest. */
     width: var(--reader-prose-w);
     margin-left: calc(100vw - var(--reader-prose-w));
     margin-right: 0;

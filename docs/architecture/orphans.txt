@@ -1,9 +1,4 @@
-
-> theopenbrain.org@0.1.20 graph:orphans
-> npx -y madge@8.0.0 --webpack-config madge.webpack.cjs --extensions js,ts,vue --orphans src
-
-- Finding files
-Processed 528 files (533ms) (31 warnings)
+Processed 526 files (611ms) (31 warnings)
 
 __stories__/App.stories.js
 __tests__/genChapterFromMarkdown.test.js
@@ -88,7 +83,6 @@ components/chapter/text/__stories__/FootNotesWindow.stories.js
 components/chapter/text/__stories__/FurtherReading.stories.js
 components/chapter/text/__stories__/HoverImg.stories.js
 components/chapter/text/__stories__/InlineImages.stories.js
-components/chapter/text/__stories__/InlineImages_openClose.stories.js
 components/chapter/text/__stories__/QuizSection.stories.js
 components/chapter/text/__stories__/SectionComp.stories.js
 components/chapter/text/__stories__/SubSection.stories.js

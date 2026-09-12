@@ -1,5 +1,28 @@
 import { describe, it, expect } from "vitest";
-import { readSpeed, readScrub } from "@/helper/debugFlags";
+import { readSpeed, readScrub, readMarkers } from "@/helper/debugFlags";
+
+/*
+ * readMarkers gates the reader's scroll-trigger markers (OPENBRAIN-31). The
+ * regression to defend: with no param the markers must NOT render — they were
+ * the "dots in the middle of the page" readers saw in production.
+ */
+describe("readMarkers", () => {
+  it("is off by default and on unrelated params", () => {
+    expect(readMarkers("")).toBe(false);
+    expect(readMarkers("?slow=3&scrub=1")).toBe(false);
+    expect(readMarkers(undefined)).toBe(false);
+  });
+
+  it("turns on for ?markers and ?markers=1", () => {
+    expect(readMarkers("?markers")).toBe(true);
+    expect(readMarkers("?markers=1")).toBe(true);
+    expect(readMarkers("?resume=1&markers=true")).toBe(true);
+  });
+
+  it("treats ?markers=0 as an explicit opt-out", () => {
+    expect(readMarkers("?markers=0")).toBe(false);
+  });
+});
 
 /*
  * These gates replaced two hardcoded constants in CaseCabinetView that shipped at

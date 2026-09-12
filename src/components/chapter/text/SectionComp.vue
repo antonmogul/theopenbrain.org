@@ -2,8 +2,9 @@
   <!-- section -->
   <section :id="section.id" class="overflow-y-visible">
     <!-- section titel -->
+    <!-- Trigger markers are dev chrome (?markers=1), see OPENBRAIN-31 -->
     <div
-      v-if="section['paragraphs'][0]?.animation?.transition"
+      v-if="showMarkers && section['paragraphs'][0]?.animation?.transition"
       class="marker-start"
     />
     <div
@@ -22,7 +23,7 @@
       class="transition left-0 w-full h-[200vh]"
     ></div>
     <div
-      v-if="section['paragraphs'][0]?.animation?.transition"
+      v-if="showMarkers && section['paragraphs'][0]?.animation?.transition"
       class="marker-end"
     />
 
@@ -163,7 +164,11 @@
 
 <script setup>
 import { inject } from "vue";
+import { markersEnabled } from "@/helper/debugFlags";
 import BreakImages from "./BreakImages.vue";
+
+// Scroll-trigger markers render only with ?markers=1 (OPENBRAIN-31).
+const showMarkers = markersEnabled();
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 import IllustrationInline from "@/components/chapter/Illus/IllustrationInline.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";

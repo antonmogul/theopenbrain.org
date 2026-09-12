@@ -81,11 +81,16 @@
   --type-label-lh: 1.3;
   --type-label-ls: 0.06em;
 
-  /* Reader layout (Track 3 D1). Single source of truth for the desktop split:
-     the prose column is --reader-prose-w pinned right, the figure pane fills the
-     rest → ~1.5:1 (figure : prose) at 40vw prose. --reader-topbar-h lets the
-     sticky figure pane start below the fixed top bar instead of behind it. */
-  --reader-prose-w: min(40vw, calc(780px + 6.875rem));
+  /* Reader layout. Single source of truth for the desktop split: the prose
+     column is --reader-prose-w pinned right, the figure pane fills the rest.
+     OPENBRAIN-31 restores the original 50/50 split (Sonia's chapter frames are
+     864 + 864 on a 1728 canvas): prose = 50vw, capped at the legacy 890px
+     measure so very wide windows keep a readable column. Every legacy rule
+     that used to spell out min(50vw, calc(780px + 6.875rem)) must derive from
+     this token instead — the scroll-trigger markers drifted into the middle of
+     the figure pane when the two disagreed. --reader-topbar-h lets the sticky
+     figure pane start below the fixed top bar instead of behind it. */
+  --reader-prose-w: min(50vw, calc(780px + 6.875rem));
   /* Matches the rendered app-bar height (progress track + bar-row content).
      Keep in sync if the bar's padding / button size changes. */
   --reader-topbar-h: 4rem;

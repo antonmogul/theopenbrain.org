@@ -102,9 +102,9 @@
 
    Clamped to 100% so the preference can only ever make the measure NARROWER
    than the column that holds it. Without the clamp, --reading-measure (780px)
-   exceeds the actual prose column at every desktop width below ~2560px — the
-   column is --reader-prose-w (40vw) minus 110px of padding, i.e. 466px at
-   1440px — so the cap never bound and long content overflowed its container
+   exceeds the actual prose column at most desktop widths — the column is
+   --reader-prose-w (50vw, capped at 890px) minus 110px of padding, i.e. 610px
+   at 1440px — so the cap never bound and long content overflowed its container
    instead of wrapping. See OPENBRAIN-4. */
 .prose-measure {
   max-width: min(var(--reading-measure, 780px), 100%);
@@ -584,10 +584,12 @@ h4 {
 .punkt,
 .punktComment {
   position: absolute;
-  left: -0.78125rem;
-  left: calc(
-    50vw - min(calc(50vw + 0.46875rem), calc(780px + 6.875rem)) - 0.78125rem
-  );
+  /* Annotation dot just outside its block's left edge. The legacy rule
+     re-derived this from 50vw and the 890px cap (and drifted inside the
+     column above ~1780px); a fixed offset is what it resolved to at every
+     width that matters and cannot disagree with --reader-prose-w
+     (OPENBRAIN-31). */
+  left: -1.25rem;
   width: 1.5625rem;
   height: 1.5625rem;
   border-radius: 50%;
@@ -702,6 +704,11 @@ sup:hover {
   transition: none !important;
 }
 
+/* Scroll-trigger markers — dev aids only (OPENBRAIN-31). They mark where each
+   animation trigger starts/ends and the viewport centre it fires against, and
+   they only render with ?markers=1 (see debugFlags.readMarkers). They sit on
+   the figure/prose divider, so their x derives from --reader-prose-w; the old
+   hardcoded 50vw formula left them floating mid-pane once the split moved. */
 .marker-start,
 .marker-end {
   width: 0.625rem;
@@ -711,7 +718,7 @@ sup:hover {
   background: #000;
   border-radius: 999999%;
   position: absolute;
-  left: calc(100vw - min(50vw, calc(780px + 6.875rem)) - 0.3125rem);
+  left: calc(100vw - var(--reader-prose-w) - 0.3125rem);
 }
 .marker-end {
   margin-top: -0.3125rem;
@@ -724,7 +731,7 @@ sup:hover {
   height: 1.2px;
   background: #000;
   position: fixed;
-  left: calc(100vw - min(50vw, calc(780px + 6.875rem)) - 0.3125rem);
+  left: calc(100vw - var(--reader-prose-w) - 0.3125rem);
   top: 50vh;
 }
 
@@ -820,15 +827,16 @@ sup:hover {
    spans the window. Uses --app-w (the real content width, set from JS in
    main.js) rather than vw units — 100vw includes the scrollbar gutter, so the
    vw version shifted these blocks ~15px too far and the document scrolled
-   horizontally. Derived from --reader-prose-w so it can't drift from the
-   column it's breaking out of. See OPENBRAIN-4. */
+   horizontally. See OPENBRAIN-4.
+
+   OPENBRAIN-31: the prose column's left edge is calc(100vw - var(--reader-prose-w))
+   (TextComp .ml-text), so the exact pull-back is that same distance, in the
+   same vw units. Halving --app-w instead landed the block g/2 short of the
+   window edge whenever a scrollbar gutter g existed, and the duplicated
+   890px arithmetic could drift from the token. The block's WIDTH still comes
+   from --app-w (scrollbar excluded) so it cannot grow the page. */
 .-translate-x-custom {
-  transform: translateX(
-    min(
-      calc(var(--app-w, 100vw) * -0.5),
-      calc(var(--app-w, 100vw) * -1 + 780px + 6.875rem - 1px)
-    )
-  );
+  transform: translateX(calc(-1 * (100vw - var(--reader-prose-w))));
 }
 
 @media (max-width: 1299px) {
