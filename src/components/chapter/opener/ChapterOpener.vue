@@ -11,6 +11,8 @@
  * which .top-start consumes (fallback 100vh = the old hero-only height).
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { gsap } from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
 import OpenerHero from "./OpenerHero.vue";
 import OpenerToc from "./OpenerToc.vue";
 import { buildOutline } from "@/composables/useChapterOutline";
@@ -30,13 +32,22 @@ const subtitle = computed(() => props.module?.description || "");
 const cover = computed(() => coverForModule(props.module));
 const outline = computed(() => buildOutline(props.text));
 
+gsap.registerPlugin(ScrollTrigger);
+
 const rootEl = ref(null);
 let observer = null;
+let publishedHeight = null;
 
 function publishHeight() {
   if (!rootEl.value) return;
   const h = Math.round(rootEl.value.getBoundingClientRect().height);
+  if (h === publishedHeight) return;
+  publishedHeight = h;
   document.documentElement.style.setProperty("--opener-h", `${h}px`);
+  // The text column moves by the height delta, so every ScrollTrigger the
+  // figure pane and the prose registered against the old geometry must
+  // re-measure — otherwise figures fire off by the TOC height.
+  ScrollTrigger.refresh();
 }
 
 onMounted(() => {
@@ -50,6 +61,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   observer?.disconnect();
   window.removeEventListener("resize", publishHeight);
+  publishedHeight = null;
   document.documentElement.style.removeProperty("--opener-h");
 });
 // The outline arrives after the module (two fetches); re-measure when it lands.

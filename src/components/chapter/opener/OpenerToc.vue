@@ -53,9 +53,9 @@ function go(anchor, event) {
             :href="entry.anchor"
             @click="go(entry.anchor, $event)"
           >
-            <span class="opener-toc__num" aria-hidden="true">{{
-              entry.label
-            }}</span>
+            <!-- The number is part of the accessible name ("1 Story of the eye")
+                 so repeated titles stay distinguishable. -->
+            <span class="opener-toc__num">{{ entry.label }}</span>
             <span class="opener-toc__label">{{ entry.title }}</span>
           </a>
           <ol v-if="entry.subsections.length" class="opener-toc__subs">

@@ -387,7 +387,9 @@ onBeforeUnmount(() => {
                the intro prints its own section heading ("Introduction"). -->
           <h1
             v-else
-            :id="isChapter1 ? 'the-eye-and-retina-intro' : section.id"
+            :id="
+              isChapter1 ? 'the-eye-and-retina-intro' : `${section.id}-heading`
+            "
             :class="store.imgActive ? 'opacity-0' : ''"
             class="z-40 text-black opacity-100 capitalize"
           >

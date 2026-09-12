@@ -17,7 +17,7 @@ vi.mock("@/components/chapter/TextComp.vue", () => ({
 vi.mock("@/components/chapter/Illus/IllustrationsComp.vue", () => ({
   default: stubComponent,
 }));
-vi.mock("@/components/chapter/text/EyeStart.vue", () => ({
+vi.mock("@/components/chapter/opener/ChapterOpener.vue", () => ({
   default: stubComponent,
 }));
 vi.mock("@/icons/custom/CloseIcon.vue", () => ({ default: stubComponent }));

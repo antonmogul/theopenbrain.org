@@ -36,6 +36,7 @@ import { applyChapterRamp } from "@/helper/chapterTheme";
 import {
   restoreAfterLayout,
   scrollTopForReadingPercent,
+  readingOffset,
 } from "@/helper/readingProgress";
 
 const route = useRoute();
@@ -263,10 +264,13 @@ async function restorePersistedReadingPosition({
       route.query.resume === "1",
     restore: () =>
       window.scrollTo({
+        // Percent is over the reading body; the opener height is added back
+        // so the restore lands in the prose (OPENBRAIN-32).
         top: scrollTopForReadingPercent(
           percent,
           document.documentElement.scrollHeight,
-          window.innerHeight
+          window.innerHeight,
+          readingOffset()
         ),
         behavior: "auto",
       }),

@@ -392,6 +392,13 @@ input {
   min-height: 100vh;
 }
 
+/* Anchor targets (sections, subsection spans, intro heading) land below the
+   fixed top bar when reached from the opener's TOC or a hash (OPENBRAIN-32). */
+.chapter-reader section,
+.chapter-reader main#text [id] {
+  scroll-margin-top: calc(var(--reader-topbar-h, 4rem) + 1rem);
+}
+
 section p:first-of-type {
   /* padding-top: 1.875rem; */
 }
