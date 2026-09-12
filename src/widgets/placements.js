@@ -23,6 +23,11 @@
  * Anchor semantics (tried in order; the first that resolves wins):
  *   { after: { textIncludes } }   — right after the paragraph whose rendered
  *                                    text contains the string (any nesting depth)
+ *   { before: { textIncludes } }  — right before that paragraph; the fallback
+ *                                    of choice when the widget's own passage
+ *                                    may be reworded, because it stays ahead
+ *                                    of the next topic (endOfSection would
+ *                                    drop it behind later widgets)
  *   { beforeSubSection: title }   — at the end of the subsection that precedes
  *                                    the named one, i.e. visually just above its
  *                                    heading; if it is the first subsection, in
@@ -127,6 +132,8 @@ export const WIDGET_PLACEMENTS = [
     // "The spatial cueing paradigm introduced by Michael Posner in 1980…"
     anchors: [
       { after: { textIncludes: "Michael Posner in 1980" } },
+      { after: { textIncludes: "spatial cueing paradigm" } },
+      { before: { textIncludes: "Posner's original measurements" } },
       { endOfSection: true },
     ],
     title: "Run the Posner cueing task",
@@ -143,9 +150,14 @@ export const WIDGET_PLACEMENTS = [
     kind: "breakout",
     // After the response-gain paragraph so both gain types are introduced
     // before the model that lets you switch between them.
+    // Fallbacks stay ahead of the next topic (biased competition) rather than
+    // dropping to the end of the section behind the normalization block.
     anchors: [
       { after: { textIncludes: "Response gain increases" } },
       { after: { textIncludes: "Contrast gain causes" } },
+      { before: { textIncludes: "Attention biases competition" } },
+      { before: { textIncludes: "feature-similarity gain principle" } },
+      { before: { textIncludes: "Normalization model:" } },
       { endOfSection: true },
     ],
     title: "Contrast gain or response gain?",
@@ -166,6 +178,9 @@ export const WIDGET_PLACEMENTS = [
           textIncludes: "Attention biases competition between two stimuli",
         },
       },
+      { after: { textIncludes: "biases competition" } },
+      { before: { textIncludes: "feature-similarity gain principle" } },
+      { before: { textIncludes: "Normalization model:" } },
       { endOfSection: true },
     ],
     title: "Two stimuli, one receptive field",
@@ -182,6 +197,8 @@ export const WIDGET_PLACEMENTS = [
     kind: "breakout",
     anchors: [
       { after: { textIncludes: "feature-similarity gain principle" } },
+      { after: { textIncludes: "Treue and Martinez-Trujillo" } },
+      { before: { textIncludes: "Normalization model:" } },
       { endOfSection: true },
     ],
     title: "Feature-based attention",
@@ -284,7 +301,7 @@ function hasWidget(chapter, widgetId) {
   return false;
 }
 
-function resolveAfterText(section, needle) {
+function findParagraphByText(section, needle) {
   const target = needle.toLowerCase();
   for (const list of paragraphLists(section)) {
     const idx = list.findIndex(
@@ -294,9 +311,23 @@ function resolveAfterText(section, needle) {
         typeof p.text === "string" &&
         stripTags(p.text).toLowerCase().includes(target)
     );
-    if (idx !== -1) return { list, index: idx + 1 };
+    if (idx !== -1) return { list, index: idx };
   }
   return null;
+}
+
+function resolveAfterText(section, needle) {
+  const hit = findParagraphByText(section, needle);
+  return hit ? { list: hit.list, index: hit.index + 1 } : null;
+}
+
+/* Insert just before the paragraph containing the needle. Used as the
+   fallback for a placement whose own passage may be reworded: landing before
+   the NEXT topic keeps it in the right region, whereas endOfSection would
+   drop it behind everything else in the section (including DB-authored
+   widget blocks) and silently reverse the reading order. */
+function resolveBeforeText(section, needle) {
+  return findParagraphByText(section, needle);
 }
 
 function resolveBeforeSubSection(section, title) {
@@ -323,6 +354,9 @@ function resolveAnchor(section, anchor) {
   if (!anchor || !section) return null;
   if (anchor.after?.textIncludes) {
     return resolveAfterText(section, anchor.after.textIncludes);
+  }
+  if (anchor.before?.textIncludes) {
+    return resolveBeforeText(section, anchor.before.textIncludes);
   }
   if (anchor.beforeSubSection) {
     return resolveBeforeSubSection(section, anchor.beforeSubSection);

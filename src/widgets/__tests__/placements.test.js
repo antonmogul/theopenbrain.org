@@ -363,6 +363,13 @@ function attentionSections() {
                   text: "The spatial cueing paradigm introduced by Michael Posner in 1980 became a major tool",
                 },
                 { id: "a3", text: "While Posner's original measurements" },
+                // DB-authored block from the OPENBRAIN-26 seed
+                {
+                  id: "db-sdt",
+                  type: "widget",
+                  text: "",
+                  widget: { widgetId: "sdt", kind: "breakout" },
+                },
               ],
             },
           ],
@@ -386,6 +393,14 @@ function attentionSections() {
           text: "This push-pull pattern led Treue and Martinez-Trujillo to propose the feature-similarity gain principle",
         },
         { id: "b6", text: "Normalization model: are the many forms" },
+        { id: "b7", text: "Reynolds and Heeger (2009) proposed" },
+        // DB-authored block from the OPENBRAIN-26 seed, last in the section
+        {
+          id: "db-normalization",
+          type: "widget",
+          text: "",
+          widget: { widgetId: "normalization-model", kind: "breakout" },
+        },
       ],
     },
   ];
@@ -412,6 +427,7 @@ describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () =
       "a2",
       "widget-attention-posner-cueing",
       "a3",
+      "db-sdt",
     ]);
     // Gain model after response gain; biased competition after its
     // paragraph; feature attention after the gain principle.
@@ -425,10 +441,31 @@ describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () =
       "b5",
       "widget-attention-feature-attention",
       "b6",
+      "b7",
+      "db-normalization",
     ]);
   });
 
-  it("does not place SDT or the normalization model (DB-authored blocks)", () => {
+  it("skips a config placement for a widget the DB already carries (hasWidget)", () => {
+    const chapter = chapterWith(...attentionSections());
+    const result = applyWidgetPlacements(chapter, [
+      ...placementsForChapter("attention-and-working-memory"),
+      {
+        id: "cfg-sdt",
+        widgetId: "sdt",
+        chapterSlug: "attention-and-working-memory",
+        sectionSlug: "attention-is-measured-behaviorally",
+        anchors: [{ endOfSection: true }],
+      },
+    ]);
+    expect(result.skipped).toEqual(["cfg-sdt"]);
+    expect(result.unresolved).toEqual([]);
+    // Still exactly one SDT block, the DB one.
+    const all = JSON.stringify(chapter);
+    expect(all.match(/"widgetId":"sdt"/g)).toHaveLength(1);
+  });
+
+  it("does not configure SDT or the normalization model (DB-authored blocks)", () => {
     const ids = placementsForChapter("attention-and-working-memory").map(
       (p) => p.widgetId
     );
@@ -436,17 +473,45 @@ describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () =
     expect(ids).not.toContain("normalization-model");
   });
 
-  it("falls back to the end of the section if a passage is reworded", () => {
+  it("keeps a reworded passage's widget ahead of the next topic, never behind the normalization block", () => {
     const sections = attentionSections();
-    sections[1].paragraphs[4].text = "reworded";
+    // Reword the gain paragraphs AND the biased-competition paragraph: the
+    // gain widget must still land before "feature-similarity"/"Normalization
+    // model:", i.e. ahead of the DB normalization block.
+    sections[1].paragraphs[1].text = "reworded";
+    sections[1].paragraphs[2].text = "reworded";
+    sections[1].paragraphs[3].text = "reworded";
     const chapter = chapterWith(...sections);
     const result = applyWidgetPlacements(
       chapter,
       placementsForChapter("attention-and-working-memory")
     );
     expect(result.unresolved).toEqual([]);
-    expect(ids(chapter.sections[1].paragraphs).at(-1)).toBe(
-      "widget-attention-feature-attention"
+    const order = ids(chapter.sections[1].paragraphs);
+    const gain = order.indexOf("widget-attention-contrast-response-gain");
+    const biased = order.indexOf("widget-attention-biased-competition");
+    const feature = order.indexOf("widget-attention-feature-attention");
+    const norm = order.indexOf("db-normalization");
+    expect(gain).toBeGreaterThan(-1);
+    expect(gain).toBeLessThan(biased);
+    expect(biased).toBeLessThan(feature);
+    expect(feature).toBeLessThan(norm);
+  });
+
+  it("falls back to the end of the section only when nothing in it matches", () => {
+    const sections = attentionSections();
+    sections[1].paragraphs = [{ id: "only", text: "nothing recognisable" }];
+    const chapter = chapterWith(...sections);
+    const result = applyWidgetPlacements(
+      chapter,
+      placementsForChapter("attention-and-working-memory")
     );
+    expect(result.unresolved).toEqual([]);
+    expect(ids(chapter.sections[1].paragraphs)).toEqual([
+      "only",
+      "widget-attention-contrast-response-gain",
+      "widget-attention-biased-competition",
+      "widget-attention-feature-attention",
+    ]);
   });
 });
