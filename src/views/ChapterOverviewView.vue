@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useChapter } from "@/composables/useChapter";
 import { useAuth } from "@/composables/useAuth";
+import { sectionStats } from "@/composables/useChapterOutline";
 
 const route = useRoute();
 const { isAuthenticated, user, session } = useAuth();
@@ -78,31 +79,10 @@ const overallPercent = computed(() =>
 );
 const isComplete = computed(() => progressRow.value?.is_completed === true);
 
-// Per-section figure count (paragraphs carrying an animation/illustration) and a
-// reading-time estimate from word count (~200 wpm). Honest derivations from the
-// chapter data — no fabricated demo numbers.
-function sectionMeta(section) {
-  const paras = section?.paragraphs || [];
-  let figures = 0;
-  let words = 0;
-  const walk = (list) => {
-    for (const p of list || []) {
-      if (p.animation || p.animationFull || p.img) figures += 1;
-      if (typeof p.text === "string") {
-        words += p.text
-          .replace(/<[^>]+>/g, " ")
-          .split(/\s+/)
-          .filter(Boolean).length;
-      }
-      if (p.subSection) walk(p.subSection);
-      if (p.subSubSection) walk(p.subSubSection);
-      if (p.paragraphs) walk(p.paragraphs);
-    }
-  };
-  walk(paras);
-  const mins = Math.max(1, Math.round(words / 200));
-  return { figures, mins };
-}
+// Per-section figure count and reading-time estimate — shared with the
+// chapter opener's outline (useChapterOutline, OPENBRAIN-32) so both views
+// derive from the same walk of the chapter data.
+const sectionMeta = sectionStats;
 
 // All interactive/static figures across the chapter, for the "Figures" grid.
 const chapterFigures = computed(() => {

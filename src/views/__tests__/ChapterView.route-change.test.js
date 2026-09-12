@@ -17,7 +17,7 @@ vi.mock("@/components/chapter/TextComp.vue", () => ({
 vi.mock("@/components/chapter/Illus/IllustrationsComp.vue", () => ({
   default: stubComponent,
 }));
-vi.mock("@/components/chapter/text/EyeStart.vue", () => ({
+vi.mock("@/components/chapter/opener/ChapterOpener.vue", () => ({
   default: stubComponent,
 }));
 vi.mock("@/icons/custom/CloseIcon.vue", () => ({ default: stubComponent }));
@@ -84,6 +84,9 @@ vi.mock("@/stores", async () => {
 vi.mock("@/composables/useChapter", async () => {
   const { ref } = await vi.importActual("vue");
   const transformedData = ref(null);
+  // The module row (title/slug/ramp) the real composable exposes alongside
+  // the transformed chapter; ChapterView reads it for the title and ramp.
+  const chapterData = ref(null);
   const loading = ref(false);
   const error = ref(null);
   const fetchChapter = vi.fn(async (slug) => {
@@ -103,7 +106,13 @@ vi.mock("@/composables/useChapter", async () => {
     return { data: null, error: new Error(error.value) };
   });
   return {
-    useChapter: () => ({ fetchChapter, transformedData, loading, error }),
+    useChapter: () => ({
+      fetchChapter,
+      chapterData,
+      transformedData,
+      loading,
+      error,
+    }),
   };
 });
 

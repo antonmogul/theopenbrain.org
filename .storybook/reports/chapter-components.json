@@ -1,16 +1,16 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 53,
-  "coveredCount": 53,
+  "sourceCount": 55,
+  "coveredCount": 55,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 10,
+    "ReaderShell": 13,
     "Highlighting": 7,
     "Demos": 5,
     "Illustrations": 14,
-    "Text": 17
+    "Text": 16
   },
   "components": [
     {
@@ -179,6 +179,21 @@
       "story": "Default"
     },
     {
+      "source": "src/components/chapter/opener/ChapterOpener.vue",
+      "storyFile": "src/components/chapter/opener/__stories__/ChapterOpener.stories.js",
+      "story": "Retina"
+    },
+    {
+      "source": "src/components/chapter/opener/OpenerHero.vue",
+      "storyFile": "src/components/chapter/opener/__stories__/OpenerHero.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/opener/OpenerToc.vue",
+      "storyFile": "src/components/chapter/opener/__stories__/OpenerToc.stories.js",
+      "story": "Attention"
+    },
+    {
       "source": "src/components/chapter/sidebar/ChatTab.vue",
       "storyFile": "src/components/chapter/sidebar/__stories__/ChatTab.stories.js",
       "story": "Default"
@@ -221,11 +236,6 @@
     {
       "source": "src/components/chapter/text/EditableBlock.vue",
       "storyFile": "src/components/chapter/text/__stories__/EditableBlock.stories.js",
-      "story": "Default"
-    },
-    {
-      "source": "src/components/chapter/text/EyeStart.vue",
-      "storyFile": "src/components/chapter/text/__stories__/EyeStart.stories.js",
       "story": "Default"
     },
     {

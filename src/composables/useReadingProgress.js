@@ -1,7 +1,10 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useAuth } from "./useAuth";
 import { authedRequest as supabaseRest } from "@/services/api/client";
-import { readingPercentForScroll } from "@/helper/readingProgress";
+import {
+  readingPercentForScroll,
+  readingOffset,
+} from "@/helper/readingProgress";
 
 const SAVE_ERROR_MESSAGE =
   "Your reading position could not be saved. Check your connection and try again.";
@@ -329,10 +332,13 @@ export function useReadingProgress(
   }
 
   function getScrollPercent() {
+    // Measured over the reading body: the opener above the prose is excluded
+    // via --opener-h (OPENBRAIN-32).
     return readingPercentForScroll(
       window.scrollY,
       document.documentElement.scrollHeight,
-      window.innerHeight
+      window.innerHeight,
+      readingOffset()
     );
   }
 

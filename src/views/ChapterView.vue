@@ -3,7 +3,7 @@ import { onMounted, watch, computed, ref, nextTick, provide } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
-import EyeStart from "@/components/chapter/text/EyeStart.vue";
+import ChapterOpener from "@/components/chapter/opener/ChapterOpener.vue";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 import { useGeneral, useText, useCom } from "@/stores";
@@ -36,6 +36,7 @@ import { applyChapterRamp } from "@/helper/chapterTheme";
 import {
   restoreAfterLayout,
   scrollTopForReadingPercent,
+  readingOffset,
 } from "@/helper/readingProgress";
 
 const route = useRoute();
@@ -140,8 +141,12 @@ const breadcrumbSections = computed(() => {
   }));
 });
 
-// Chapter title for ReaderTopBar
-const chapterTitle = computed(() => storeText.text?.intro?.[0]?.title || "");
+// Chapter title for ReaderTopBar / callout: the module's own title. The
+// intro section's title used to double as the chapter h1; the opener now
+// prints the chapter title, so the intro heading is the section's own.
+const chapterTitle = computed(
+  () => chapterData.value?.title || storeText.text?.intro?.[0]?.title || ""
+);
 
 // Chapter catalog — used to look up next chapter for the end-of-chapter callout
 const { fetchCatalog, nextAfter, findById } = useChapterCatalog();
@@ -259,10 +264,13 @@ async function restorePersistedReadingPosition({
       route.query.resume === "1",
     restore: () =>
       window.scrollTo({
+        // Percent is over the reading body; the opener height is added back
+        // so the restore lands in the prose (OPENBRAIN-32).
         top: scrollTopForReadingPercent(
           percent,
           document.documentElement.scrollHeight,
-          window.innerHeight
+          window.innerHeight,
+          readingOffset()
         ),
         behavior: "auto",
       }),
@@ -603,7 +611,9 @@ async function handleDeleteHighlight(highlightId) {
       ></div>
       <!-- text -->
       <Illustration />
-      <EyeStart />
+      <!-- Dark opener: cover, title, numbered TOC (OPENBRAIN-32). Publishes
+           its height as --opener-h so the text column starts below it. -->
+      <ChapterOpener :module="chapterData" :text="storeText.text" />
       <Text :key="`chapter-${chapterNumber}-${chapterSlug || 'default'}`">
         <!-- End-of-chapter callout slot (Track 3) — rendered inside
                      TextComp so absolute positioning doesn't pull it to the

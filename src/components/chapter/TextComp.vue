@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { toSlug, addH, removeH } from "@/helper/general";
 import { markersEnabled } from "@/helper/debugFlags";
+import { sectionLabelMap } from "@/composables/useChapterOutline";
 
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
@@ -57,20 +58,9 @@ const source = computed(() => {
  * than fourteen numbered chapters. Keyed by section id (falls back to title
  * for fixture data without ids).
  */
-const sectionLabels = computed(() => {
-  const labels = {};
-  let number = 0;
-  let box = 0;
-  for (const section of source.value?.sections || []) {
-    const key = section.id || section.title;
-    if (section.kind === "box") {
-      labels[key] = String.fromCharCode(65 + (box++ % 26));
-    } else {
-      labels[key] = String(++number);
-    }
-  }
-  return labels;
-});
+// One source for section numbering/lettering, shared with the opener's TOC
+// (useChapterOutline, OPENBRAIN-32) so the prose and the contents agree.
+const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 
 // Save content to Supabase
 const saveContent = async ({ paragraphId, content, type }) => {
@@ -393,13 +383,17 @@ onBeforeUnmount(() => {
                 })
             "
           />
+          <!-- The chapter title now lives in the opener (OPENBRAIN-32), so
+               the intro prints its own section heading ("Introduction"). -->
           <h1
             v-else
-            :id="isChapter1 ? 'the-eye-and-retina-intro' : section.id"
+            :id="
+              isChapter1 ? 'the-eye-and-retina-intro' : `${section.id}-heading`
+            "
             :class="store.imgActive ? 'opacity-0' : ''"
             class="z-40 text-black opacity-100 capitalize"
           >
-            {{ section.title }}
+            {{ section.sectionTitle || section.title }}
           </h1>
 
           <!-- Author information - only show for Chapter 1 -->
@@ -536,7 +530,10 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .top-start {
-  top: calc(100vh);
+  /* Start below the chapter opener (hero + title/TOC). ChapterOpener
+     publishes its measured height as --opener-h (OPENBRAIN-32); the
+     fallback is the old hero-only height. */
+  top: var(--opener-h, 100vh);
 }
 
 .ml-text {
