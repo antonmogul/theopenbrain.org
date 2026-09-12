@@ -51,6 +51,41 @@ export const InlineStage = {
   render: proseFrame(WidgetBreakoutComponent),
 };
 
+/* Attention (OPENBRAIN-34): shipped as breakout cards until inline stages
+   stop being clipped by the prose column (OPENBRAIN-37). */
+export const AttentionBreakout = {
+  args: {
+    placement: {
+      placementId: "attention-posner-cueing",
+      widgetId: "posner-cueing",
+      kind: "breakout",
+      title: "Run the Posner cueing task",
+      blurb:
+        "Valid, invalid and neutral cues, your own reaction times: see why a cue at the target's location speeds detection and an invalid one slows it.",
+      credit: "Interactive by Arjun Krishnaswamy",
+      route: "/posner-cueing",
+    },
+  },
+  render: proseFrame(WidgetBreakoutComponent),
+};
+
+/* Foundations (OPENBRAIN-35): an in-house prototype, no author HTML. */
+export const FoundationsBreakout = {
+  args: {
+    placement: {
+      placementId: "foundations-case-cabinet",
+      widgetId: "case-cabinet",
+      kind: "breakout",
+      title: "Case cabinet — patients who taught us where the mind lives",
+      blurb:
+        "Open the folders of R.W., H.M., S.B. and P.G.: four clinical cases, each a lesion or a surgery that revealed what a region of the brain does.",
+      credit: "Interactive by The Open Brain",
+      route: "/case-cabinet",
+    },
+  },
+  render: proseFrame(WidgetBreakoutComponent),
+};
+
 export const UnavailableWidget = {
   args: {
     placement: {
