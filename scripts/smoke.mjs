@@ -363,10 +363,12 @@ async function main() {
             .forEach((e) => failures.push(`    ${e.slice(0, 160)}`));
         }
 
+        const absentOk = !route.expectAbsent || result.absent === 0;
         const ok =
           result.maxScrollX <= 1 &&
           (!checkContent || result.textLength >= route.minText) &&
           countOk &&
+          absentOk &&
           !real.length;
         if (!ok) {
           await page.screenshot({

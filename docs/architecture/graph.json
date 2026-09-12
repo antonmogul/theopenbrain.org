@@ -87,7 +87,9 @@
     "components/dashboard/shared/SegmentedControl.vue"
   ],
   "components/UI/SourceElement.vue": [],
-  "components/UI/StartEndIcon.vue": [],
+  "components/UI/StartEndIcon.vue": [
+    "helper/debugFlags.js"
+  ],
   "components/UI/StateElement.vue": [
     "helper/general.js"
   ],
@@ -341,6 +343,7 @@
     "components/chapter/text/QuizSection.vue",
     "components/chapter/text/SectionComp.vue",
     "composables/useAuth.js",
+    "helper/debugFlags.js",
     "helper/general.js",
     "helper/perlin.ts",
     "stores/index.js"
@@ -543,7 +546,9 @@
     "icons/custom/DownArrow.vue",
     "stores/index.js"
   ],
-  "components/chapter/text/FootNotes.vue": [],
+  "components/chapter/text/FootNotes.vue": [
+    "helper/debugFlags.js"
+  ],
   "components/chapter/text/FootNotesWindow.vue": [
     "icons/custom/PlusIcon.vue",
     "stores/index.js"
@@ -553,10 +558,6 @@
     "assets/json_backend/infosImages.json"
   ],
   "components/chapter/text/InlineImages.vue": [],
-  "components/chapter/text/InlineImages_openClose.vue": [
-    "icons/custom/CloseArrowIcon.vue",
-    "icons/custom/OpenArrowIcon.vue"
-  ],
   "components/chapter/text/QuizSection.vue": [],
   "components/chapter/text/SectionComp.vue": [
     "components/UI/StartEndIcon.vue",
@@ -569,6 +570,7 @@
     "components/chapter/text/SubSection.vue",
     "components/chapter/text/WidgetBreakout.vue",
     "composables/useMediaQuery.js",
+    "helper/debugFlags.js",
     "stores/index.js"
   ],
   "components/chapter/text/SubSection.vue": [
@@ -582,6 +584,7 @@
     "components/chapter/text/SubSubSection.vue",
     "components/chapter/text/WidgetBreakout.vue",
     "composables/useMediaQuery.js",
+    "helper/debugFlags.js",
     "helper/general.js"
   ],
   "components/chapter/text/SubSubSection.vue": [
@@ -648,10 +651,6 @@
   "components/chapter/text/__stories__/InlineImages.stories.js": [
     "components/chapter/__stories__/chapterFixtures.js",
     "components/chapter/text/InlineImages.vue"
-  ],
-  "components/chapter/text/__stories__/InlineImages_openClose.stories.js": [
-    "components/chapter/__stories__/chapterFixtures.js",
-    "components/chapter/text/InlineImages_openClose.vue"
   ],
   "components/chapter/text/__stories__/QuizSection.stories.js": [
     "components/chapter/__stories__/chapterFixtures.js",
@@ -1469,6 +1468,7 @@
   "router/guards.js": [],
   "router/index.js": [
     "composables/useAuth.js",
+    "composables/useChapterCatalog.js",
     "helper/chapterTheme.js",
     "router/guards.js",
     "services/api/client.js",
@@ -1573,6 +1573,7 @@
     "composables/useReadingProgress.js",
     "composables/useReferences.js",
     "composables/useTextSelection.js",
+    "helper/chapterTheme.js",
     "helper/general.js",
     "helper/readingProgress.js",
     "icons/custom/CloseIcon.vue",

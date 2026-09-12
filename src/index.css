@@ -584,10 +584,12 @@ h4 {
 .punkt,
 .punktComment {
   position: absolute;
-  left: -0.78125rem;
-  left: calc(
-    50vw - min(calc(50vw + 0.46875rem), calc(780px + 6.875rem)) - 0.78125rem
-  );
+  /* Annotation dot just outside its block's left edge. The legacy rule
+     re-derived this from 50vw and the 890px cap (and drifted inside the
+     column above ~1780px); a fixed offset is what it resolved to at every
+     width that matters and cannot disagree with --reader-prose-w
+     (OPENBRAIN-31). */
+  left: -1.25rem;
   width: 1.5625rem;
   height: 1.5625rem;
   border-radius: 50%;
@@ -825,8 +827,13 @@ sup:hover {
    spans the window. Uses --app-w (the real content width, set from JS in
    main.js) rather than vw units — 100vw includes the scrollbar gutter, so the
    vw version shifted these blocks ~15px too far and the document scrolled
-   horizontally. Derived from --reader-prose-w so it can't drift from the
-   column it's breaking out of. See OPENBRAIN-4. */
+   horizontally. See OPENBRAIN-4.
+
+   Deliberately NOT written as var(--app-w) - var(--reader-prose-w): the token
+   is in vw units (scrollbar included) while --app-w excludes the scrollbar, so
+   mixing them would reintroduce the ~15px overshoot this rule exists to
+   avoid. It mirrors the token's 50vw / 890px cap arithmetic instead — keep
+   the two in step if the cap ever changes (OPENBRAIN-31). */
 .-translate-x-custom {
   transform: translateX(
     min(
