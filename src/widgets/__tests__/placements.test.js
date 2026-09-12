@@ -89,6 +89,7 @@ describe("widgetParagraph", () => {
       text: "",
       widget: {
         placementId: "x",
+        placedBy: "config",
         widgetId: "color-vision",
         kind: "inline",
         title: "T",
@@ -368,7 +369,11 @@ function attentionSections() {
                   id: "db-sdt",
                   type: "widget",
                   text: "",
-                  widget: { widgetId: "sdt", kind: "breakout" },
+                  widget: {
+                    placementId: "sdt",
+                    widgetId: "sdt",
+                    kind: "breakout",
+                  },
                 },
               ],
             },
@@ -399,7 +404,11 @@ function attentionSections() {
           id: "db-normalization",
           type: "widget",
           text: "",
-          widget: { widgetId: "normalization-model", kind: "breakout" },
+          widget: {
+            placementId: "normalization-model",
+            widgetId: "normalization-model",
+            kind: "breakout",
+          },
         },
       ],
     },
@@ -513,5 +522,43 @@ describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () =
       "widget-attention-biased-competition",
       "widget-attention-feature-attention",
     ]);
+  });
+});
+
+describe("endOfSection and trailing widget blocks (OPENBRAIN-34, Codex pass 2)", () => {
+  it("lands ahead of a DB-authored block at the tail even when every text anchor drifted", () => {
+    const sections = attentionSections();
+    // Reword every prose paragraph in the neural-correlates section but keep
+    // the seed's normalization block at its tail.
+    sections[1].paragraphs = sections[1].paragraphs.map((p) =>
+      p.type === "widget" ? p : { id: p.id, text: "reworded" }
+    );
+    const chapter = chapterWith(...sections);
+    const result = applyWidgetPlacements(
+      chapter,
+      placementsForChapter("attention-and-working-memory")
+    );
+    expect(result.unresolved).toEqual([]);
+    const order = ids(chapter.sections[1].paragraphs);
+    expect(order.slice(-4)).toEqual([
+      "widget-attention-contrast-response-gain",
+      "widget-attention-biased-competition",
+      "widget-attention-feature-attention",
+      "db-normalization",
+    ]);
+  });
+
+  it("still appends to the very end when the section has no trailing widget", () => {
+    const chapter = chapterWith(circuitSection());
+    applyWidgetPlacements(chapter, [
+      {
+        id: "end",
+        widgetId: "sdt",
+        chapterSlug: "the-retina",
+        sectionSlug: SECTION_SLUG,
+        anchors: [{ endOfSection: true }],
+      },
+    ]);
+    expect(chapter.sections[0].paragraphs.at(-1).id).toBe("widget-end");
   });
 });

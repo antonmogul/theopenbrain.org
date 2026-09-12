@@ -32,7 +32,8 @@
  *                                    the named one, i.e. visually just above its
  *                                    heading; if it is the first subsection, in
  *                                    the parent list before the group
- *   { endOfSection: true }        — last paragraph of the section
+ *   { endOfSection: true }        — after the section's last prose paragraph;
+ *                                    widget blocks already at the tail stay last
  *
  * Two placements resolving to the same anchor land in array order.
  */
@@ -234,6 +235,9 @@ export function widgetParagraph(placement) {
     text: "",
     widget: {
       placementId: placement.id,
+      // Marks paragraphs this config produced; DB-authored blocks (which the
+      // transform also gives a placementId) never carry it.
+      placedBy: "config",
       widgetId: placement.widgetId,
       kind: placement.kind || "breakout",
       title: placement.title || "",
@@ -362,7 +366,22 @@ function resolveAnchor(section, anchor) {
     return resolveBeforeSubSection(section, anchor.beforeSubSection);
   }
   if (anchor.endOfSection) {
-    return { list: section.paragraphs, index: section.paragraphs.length };
+    // "End of the section" means after its last piece of prose or after the
+    // last widget placed by this config, but ahead of DB-authored widget
+    // blocks sitting at the tail (only config placements carry placedBy). A placement
+    // whose every text anchor drifted therefore lands before the seed's
+    // trailing block instead of silently reversing the reading order, while
+    // successive endOfSection placements still keep their declaration order.
+    const list = section.paragraphs;
+    let index = list.length;
+    while (
+      index > 0 &&
+      list[index - 1]?.type === "widget" &&
+      list[index - 1]?.widget?.placedBy !== "config"
+    ) {
+      index -= 1;
+    }
+    return { list, index };
   }
   return null;
 }
