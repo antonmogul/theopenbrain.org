@@ -336,3 +336,117 @@ describe("WIDGET_PLACEMENTS (the real config)", () => {
     }
   });
 });
+
+/* Attention & Working Memory (OPENBRAIN-34): two sections shaped like the
+   transform's output for the seeded draft, trimmed to the anchor passages.
+   Fresh per test — applyWidgetPlacements mutates in place. */
+function attentionSections() {
+  return [
+    {
+      id: "att-s2",
+      slug: "attention-is-measured-behaviorally",
+      title: "Attention is measured behaviorally",
+      paragraphs: [
+        {
+          subSection: [
+            {
+              id: "att-sub-cocktail",
+              title: "The cocktail party problem",
+              paragraphs: [{ id: "a1", text: "Cherry's dichotic listening" }],
+            },
+            {
+              id: "att-sub-sdt",
+              title: "Signal detection theory",
+              paragraphs: [
+                {
+                  id: "a2",
+                  text: "The spatial cueing paradigm introduced by Michael Posner in 1980 became a major tool",
+                },
+                { id: "a3", text: "While Posner's original measurements" },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "att-s3",
+      slug: "neural-correlates-of-visual-attention",
+      title: "Neural Correlates of Visual Attention.",
+      paragraphs: [
+        { id: "b1", text: "Many studies indicate that covertly attending" },
+        { id: "b2", text: "Contrast gain causes left-ward shifts" },
+        { id: "b3", text: "Response gain increases a neural responses across" },
+        {
+          id: "b4",
+          text: "Attention biases competition between two stimuli residing in the same receptive field.",
+        },
+        {
+          id: "b5",
+          text: "This push-pull pattern led Treue and Martinez-Trujillo to propose the feature-similarity gain principle",
+        },
+        { id: "b6", text: "Normalization model: are the many forms" },
+      ],
+    },
+  ];
+}
+
+describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () => {
+  it("places the four route-only widgets at their passages, in reading order", () => {
+    const chapter = chapterWith(...attentionSections());
+    const result = applyWidgetPlacements(
+      chapter,
+      placementsForChapter("attention-and-working-memory")
+    );
+    expect(result.unresolved).toEqual([]);
+    expect(result.skipped).toEqual([]);
+    expect(result.applied).toEqual([
+      "attention-posner-cueing",
+      "attention-contrast-response-gain",
+      "attention-biased-competition",
+      "attention-feature-attention",
+    ]);
+    // Posner right after the paradigm paragraph, inside the SDT subsection.
+    const sdt = chapter.sections[0].paragraphs[0].subSection[1];
+    expect(ids(sdt.paragraphs)).toEqual([
+      "a2",
+      "widget-attention-posner-cueing",
+      "a3",
+    ]);
+    // Gain model after response gain; biased competition after its
+    // paragraph; feature attention after the gain principle.
+    expect(ids(chapter.sections[1].paragraphs)).toEqual([
+      "b1",
+      "b2",
+      "b3",
+      "widget-attention-contrast-response-gain",
+      "b4",
+      "widget-attention-biased-competition",
+      "b5",
+      "widget-attention-feature-attention",
+      "b6",
+    ]);
+  });
+
+  it("does not place SDT or the normalization model (DB-authored blocks)", () => {
+    const ids = placementsForChapter("attention-and-working-memory").map(
+      (p) => p.widgetId
+    );
+    expect(ids).not.toContain("sdt");
+    expect(ids).not.toContain("normalization-model");
+  });
+
+  it("falls back to the end of the section if a passage is reworded", () => {
+    const sections = attentionSections();
+    sections[1].paragraphs[4].text = "reworded";
+    const chapter = chapterWith(...sections);
+    const result = applyWidgetPlacements(
+      chapter,
+      placementsForChapter("attention-and-working-memory")
+    );
+    expect(result.unresolved).toEqual([]);
+    expect(ids(chapter.sections[1].paragraphs).at(-1)).toBe(
+      "widget-attention-feature-attention"
+    );
+  });
+});
