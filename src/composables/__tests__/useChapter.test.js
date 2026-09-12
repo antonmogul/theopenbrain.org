@@ -415,3 +415,44 @@ describe("useChapter draft gating", () => {
     authState.isAuthenticated = false;
   });
 });
+
+/*
+ * OPENBRAIN-35: markdown bold that leaked through an import must render as
+ * bold, not as literal asterisks. Single asterisks are prose, not emphasis.
+ */
+import {
+  markdownBoldToHtml,
+  contentBlocksToHTML,
+} from "@/composables/chapterTransform.mjs";
+
+describe("markdownBoldToHtml", () => {
+  it("converts balanced ** pairs to <strong>", () => {
+    expect(markdownBoldToHtml("and **defended by** Ramón y Cajal")).toBe(
+      "and <strong>defended by</strong> Ramón y Cajal"
+    );
+    expect(markdownBoldToHtml("**A** then **B**")).toBe(
+      "<strong>A</strong> then <strong>B</strong>"
+    );
+  });
+
+  it("drops unbalanced or empty markers (import residue) and leaves single asterisks alone", () => {
+    expect(markdownBoldToHtml("p < 0.05 * 2")).toBe("p < 0.05 * 2");
+    expect(markdownBoldToHtml("a ** b")).toBe("a b");
+    expect(
+      markdownBoldToHtml("and **defended by Ramón y Cajal during the century.”")
+    ).toBe("and defended by Ramón y Cajal during the century.”");
+    expect(markdownBoldToHtml("(i.e., ****in Eccles’ model")).toBe(
+      "(i.e., in Eccles’ model"
+    );
+    expect(markdownBoldToHtml("plain")).toBe("plain");
+    expect(markdownBoldToHtml(null)).toBe("");
+  });
+
+  it("is applied to text blocks by contentBlocksToHTML", () => {
+    const { text } = contentBlocksToHTML([
+      { type: "text", content: "the **neuron doctrine** held" },
+    ]);
+    expect(text).toContain("<strong>neuron doctrine</strong>");
+    expect(text).not.toContain("**");
+  });
+});

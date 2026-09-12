@@ -23,6 +23,9 @@ export const WIDGET_EMBEDS = {
   "contrast-response-gain": () =>
     import("@/views/ContrastResponseGainView.vue"),
   "tmt-feature-attention": () => import("@/views/TmtFeatureAttentionView.vue"),
+  // Foundations (History) prototypes — OPENBRAIN-35
+  "case-cabinet": () => import("@/views/CaseCabinetView.vue"),
+  phrenology: () => import("@/views/PhrenologyView.vue"),
 };
 
 /** @param {string} widgetId */

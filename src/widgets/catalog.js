@@ -194,6 +194,30 @@ export const WIDGETS = [
     height: "700px",
     deps: [],
   },
+
+  // ── Foundations of Neuroscience (History) — in-house prototypes ────────
+  // Built in Vue from the start (OPENBRAIN-2/5/7), so there is no author
+  // HTML to show alongside; the gallery renders the Vue route only.
+  {
+    id: "case-cabinet",
+    title: "Case cabinet — patients who taught us where the mind lives",
+    desc: "Open the folders of R.W., H.M., S.B. and P.G.: four clinical cases, each a lesion or a surgery that revealed what a region of the brain does.",
+    chapter: "Foundations of Neuroscience",
+    author: "The Open Brain (prototype)",
+    vuePath: "/case-cabinet",
+    height: "760px",
+    deps: ["gsap/Flip"],
+  },
+  {
+    id: "phrenology",
+    title: "Phrenology — the skull that mapped the mind",
+    desc: "Gall's 27 faculties pinned to the skull. Explore the 2D map here; the 3D skull with the same hotspots lives at /phrenology-3d.",
+    chapter: "Foundations of Neuroscience",
+    author: "The Open Brain (prototype)",
+    vuePath: "/phrenology",
+    height: "720px",
+    deps: [],
+  },
 ];
 
 /**

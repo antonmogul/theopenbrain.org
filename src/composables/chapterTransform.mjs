@@ -75,6 +75,24 @@ export function extractChapter1Meta(blocks) {
   return meta;
 }
 
+/*
+ * Markdown bold that leaked through an import (`**defended by** …` renders
+ * literally in Foundations, OPENBRAIN-35). Balanced `**…**` pairs on one
+ * line become <strong>; any `**` run left over (an unclosed marker, an empty
+ * `****`) is markdown residue with no meaning to a reader and is dropped.
+ * Single asterisks are left alone because they appear in prose
+ * ("p < 0.05 * 2") far more often than as emphasis. Migration
+ * 20260911000300 rewrites the affected rows; this keeps the reader correct
+ * before it is applied and for any future import that slips.
+ */
+export function markdownBoldToHtml(html) {
+  if (typeof html !== "string" || !html.includes("**")) return html || "";
+  return html
+    .replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*{2,}/g, "")
+    .replace(/ {2,}/g, " ");
+}
+
 export function contentBlocksToHTML(blocks) {
   if (!blocks || !Array.isArray(blocks)) {
     return { text: "", hasHeading: false };
@@ -91,7 +109,7 @@ export function contentBlocksToHTML(blocks) {
         return `<h${level} class="text-black">${block.content || ""}</h${level}>`;
       }
       if (block.type === "text" || block.type === "paragraph") {
-        return block.content || "";
+        return markdownBoldToHtml(block.content || "");
       }
       if (block.type === "code") {
         return `<pre><code>${block.content || ""}</code></pre>`;

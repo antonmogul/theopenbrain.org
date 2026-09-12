@@ -208,6 +208,48 @@ export const WIDGET_PLACEMENTS = [
     credit: "Interactive by Arjun Krishnaswamy",
     route: "/feature-attention",
   },
+
+  // ── Foundations of Neuroscience (History) — in-house prototypes (OPENBRAIN-35)
+  {
+    id: "foundations-phrenology",
+    widgetId: "phrenology",
+    chapterSlug: "foundations-of-neuroscience",
+    sectionSlug: "do-different-parts",
+    kind: "breakout",
+    // After the paragraph on phrenology's popularity (Gall's faculties are
+    // introduced just before it); fall back to the end of the section.
+    anchors: [
+      { after: { textIncludes: "Phrenology became wildly popular" } },
+      { after: { textIncludes: "phrenolog" } },
+      { after: { textIncludes: "Gall" } },
+      { endOfSection: true },
+    ],
+    title: "Phrenology — the skull that mapped the mind",
+    blurb:
+      "Gall pinned 27 faculties to bumps on the skull. Explore the map, then see why localisation survived even though phrenology did not.",
+    credit: "Interactive by The Open Brain",
+    route: "/phrenology",
+  },
+  {
+    id: "foundations-case-cabinet",
+    widgetId: "case-cabinet",
+    chapterSlug: "foundations-of-neuroscience",
+    sectionSlug: "box-psychosurgery",
+    kind: "breakout",
+    // Closes the psychosurgery box: the cabinet's folders are patients whose
+    // lesions and surgeries (H.M.'s among them) taught the field what a
+    // region does. After the lobotomy-era paragraph; else end of the box.
+    anchors: [
+      { after: { textIncludes: "tens of thousands" } },
+      { after: { textIncludes: "Freeman" } },
+      { endOfSection: true },
+    ],
+    title: "Case cabinet — patients who taught us where the mind lives",
+    blurb:
+      "Open the folders of R.W., H.M., S.B. and P.G.: four clinical cases, each a lesion or a surgery that revealed what a region of the brain does.",
+    credit: "Interactive by The Open Brain",
+    route: "/case-cabinet",
+  },
 ];
 
 /**
