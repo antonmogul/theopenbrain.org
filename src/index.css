@@ -829,18 +829,14 @@ sup:hover {
    vw version shifted these blocks ~15px too far and the document scrolled
    horizontally. See OPENBRAIN-4.
 
-   Deliberately NOT written as var(--app-w) - var(--reader-prose-w): the token
-   is in vw units (scrollbar included) while --app-w excludes the scrollbar, so
-   mixing them would reintroduce the ~15px overshoot this rule exists to
-   avoid. It mirrors the token's 50vw / 890px cap arithmetic instead — keep
-   the two in step if the cap ever changes (OPENBRAIN-31). */
+   OPENBRAIN-31: the prose column's left edge is calc(100vw - var(--reader-prose-w))
+   (TextComp .ml-text), so the exact pull-back is that same distance, in the
+   same vw units. Halving --app-w instead landed the block g/2 short of the
+   window edge whenever a scrollbar gutter g existed, and the duplicated
+   890px arithmetic could drift from the token. The block's WIDTH still comes
+   from --app-w (scrollbar excluded) so it cannot grow the page. */
 .-translate-x-custom {
-  transform: translateX(
-    min(
-      calc(var(--app-w, 100vw) * -0.5),
-      calc(var(--app-w, 100vw) * -1 + 780px + 6.875rem - 1px)
-    )
-  );
+  transform: translateX(calc(-1 * (100vw - var(--reader-prose-w))));
 }
 
 @media (max-width: 1299px) {
