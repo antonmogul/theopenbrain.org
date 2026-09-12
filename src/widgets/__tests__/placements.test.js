@@ -562,3 +562,80 @@ describe("endOfSection and trailing widget blocks (OPENBRAIN-34, Codex pass 2)",
     expect(chapter.sections[0].paragraphs.at(-1).id).toBe("widget-end");
   });
 });
+
+/* Foundations (History) — OPENBRAIN-35: the two in-house prototypes. */
+function foundationsSections() {
+  return [
+    {
+      id: "f-s2",
+      slug: "do-different-parts",
+      title: "Do different parts of the brain do different things?",
+      paragraphs: [
+        { id: "g1", text: "Franz Joseph Gall proposed" },
+        {
+          id: "g2",
+          text: "Phrenology became wildly popular, and phrenological societies",
+        },
+        { id: "g3", text: "Flourens argued" },
+      ],
+    },
+    {
+      id: "f-box",
+      slug: "box-psychosurgery",
+      kind: "box",
+      title: "The doctor with an icepick: A brief history of psychosurgeries",
+      paragraphs: [
+        { id: "h1", text: "The first ‘psychosurgeries’ were performed" },
+        {
+          id: "h2",
+          text: "The procedure then took off thanks to American physician Walter Freeman",
+        },
+        {
+          id: "h3",
+          text: "Over a 20-year period, lobotomies were performed on tens of thousands",
+        },
+      ],
+    },
+  ];
+}
+
+describe("WIDGET_PLACEMENTS — Foundations prototypes (OPENBRAIN-35)", () => {
+  it("places phrenology after the popularity paragraph and the cabinet at the end of the psychosurgery box", () => {
+    const chapter = chapterWith(...foundationsSections());
+    const result = applyWidgetPlacements(
+      chapter,
+      placementsForChapter("foundations-of-neuroscience")
+    );
+    expect(result.unresolved).toEqual([]);
+    expect(result.applied).toEqual([
+      "foundations-phrenology",
+      "foundations-case-cabinet",
+    ]);
+    expect(ids(chapter.sections[0].paragraphs)).toEqual([
+      "g1",
+      "g2",
+      "widget-foundations-phrenology",
+      "g3",
+    ]);
+    expect(ids(chapter.sections[1].paragraphs).at(-1)).toBe(
+      "widget-foundations-case-cabinet"
+    );
+  });
+
+  it("falls back to the end of each section when the passages are reworded", () => {
+    const sections = foundationsSections();
+    for (const s of sections) for (const p of s.paragraphs) p.text = "reworded";
+    const chapter = chapterWith(...sections);
+    const result = applyWidgetPlacements(
+      chapter,
+      placementsForChapter("foundations-of-neuroscience")
+    );
+    expect(result.unresolved).toEqual([]);
+    expect(ids(chapter.sections[0].paragraphs).at(-1)).toBe(
+      "widget-foundations-phrenology"
+    );
+    expect(ids(chapter.sections[1].paragraphs).at(-1)).toBe(
+      "widget-foundations-case-cabinet"
+    );
+  });
+});
