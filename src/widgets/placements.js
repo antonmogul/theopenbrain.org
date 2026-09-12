@@ -23,11 +23,17 @@
  * Anchor semantics (tried in order; the first that resolves wins):
  *   { after: { textIncludes } }   — right after the paragraph whose rendered
  *                                    text contains the string (any nesting depth)
+ *   { before: { textIncludes } }  — right before that paragraph; the fallback
+ *                                    of choice when the widget's own passage
+ *                                    may be reworded, because it stays ahead
+ *                                    of the next topic (endOfSection would
+ *                                    drop it behind later widgets)
  *   { beforeSubSection: title }   — at the end of the subsection that precedes
  *                                    the named one, i.e. visually just above its
  *                                    heading; if it is the first subsection, in
  *                                    the parent list before the group
- *   { endOfSection: true }        — last paragraph of the section
+ *   { endOfSection: true }        — after the section's last prose paragraph;
+ *                                    widget blocks already at the tail stay last
  *
  * Two placements resolving to the same anchor land in array order.
  */
@@ -111,6 +117,97 @@ export const WIDGET_PLACEMENTS = [
     credit: "Interactive by Stuart Trenholm",
     route: "/retinabox",
   },
+
+  // ── Attention & Working Memory — Arjun Krishnaswamy's widgets (OPENBRAIN-34)
+  // Sonia's frame (1495:34228) shows these in the figure pane, i.e. inline.
+  // They ship as breakout cards for now because inline stages are clipped
+  // by the prose column (OPENBRAIN-37); flip `kind` to "inline" once that
+  // lands. SDT and the normalization model are DB-authored widget blocks
+  // from the OPENBRAIN-26 seed and are not placed here.
+  {
+    id: "attention-posner-cueing",
+    widgetId: "posner-cueing",
+    chapterSlug: "attention-and-working-memory",
+    sectionSlug: "attention-is-measured-behaviorally",
+    kind: "breakout",
+    // "The spatial cueing paradigm introduced by Michael Posner in 1980…"
+    anchors: [
+      { after: { textIncludes: "Michael Posner in 1980" } },
+      { after: { textIncludes: "spatial cueing paradigm" } },
+      { before: { textIncludes: "Posner's original measurements" } },
+      { endOfSection: true },
+    ],
+    title: "Run the Posner cueing task",
+    blurb:
+      "Valid, invalid and neutral cues, your own reaction times: see why a cue at the target's location speeds detection and an invalid one slows it.",
+    credit: "Interactive by Arjun Krishnaswamy",
+    route: "/posner-cueing",
+  },
+  {
+    id: "attention-contrast-response-gain",
+    widgetId: "contrast-response-gain",
+    chapterSlug: "attention-and-working-memory",
+    sectionSlug: "neural-correlates-of-visual-attention",
+    kind: "breakout",
+    // After the response-gain paragraph so both gain types are introduced
+    // before the model that lets you switch between them.
+    // Fallbacks stay ahead of the next topic (biased competition) rather than
+    // dropping to the end of the section behind the normalization block.
+    anchors: [
+      { after: { textIncludes: "Response gain increases" } },
+      { after: { textIncludes: "Contrast gain causes" } },
+      { before: { textIncludes: "Attention biases competition" } },
+      { before: { textIncludes: "feature-similarity gain principle" } },
+      { before: { textIncludes: "Normalization model:" } },
+      { endOfSection: true },
+    ],
+    title: "Contrast gain or response gain?",
+    blurb:
+      "Slide attention onto a neuron's receptive field and watch its contrast-response curve shift left or stretch up — the two signatures the chapter just described.",
+    credit: "Interactive by Arjun Krishnaswamy",
+    route: "/contrast-response",
+  },
+  {
+    id: "attention-biased-competition",
+    widgetId: "biased-competition",
+    chapterSlug: "attention-and-working-memory",
+    sectionSlug: "neural-correlates-of-visual-attention",
+    kind: "breakout",
+    anchors: [
+      {
+        after: {
+          textIncludes: "Attention biases competition between two stimuli",
+        },
+      },
+      { after: { textIncludes: "biases competition" } },
+      { before: { textIncludes: "feature-similarity gain principle" } },
+      { before: { textIncludes: "Normalization model:" } },
+      { endOfSection: true },
+    ],
+    title: "Two stimuli, one receptive field",
+    blurb:
+      "Put a preferred and a non-preferred stimulus in the same receptive field and attend to either: the biased competition model shows which one wins the neuron's response.",
+    credit: "Interactive by Arjun Krishnaswamy",
+    route: "/biased-competition",
+  },
+  {
+    id: "attention-feature-attention",
+    widgetId: "tmt-feature-attention",
+    chapterSlug: "attention-and-working-memory",
+    sectionSlug: "neural-correlates-of-visual-attention",
+    kind: "breakout",
+    anchors: [
+      { after: { textIncludes: "feature-similarity gain principle" } },
+      { after: { textIncludes: "Treue and Martinez-Trujillo" } },
+      { before: { textIncludes: "Normalization model:" } },
+      { endOfSection: true },
+    ],
+    title: "Feature-based attention",
+    blurb:
+      "Attend to a colour or a direction rather than a place: the feature-similarity gain principle multiplies a neuron's response by how well the attended feature matches its tuning.",
+    credit: "Interactive by Arjun Krishnaswamy",
+    route: "/feature-attention",
+  },
 ];
 
 /**
@@ -138,6 +235,9 @@ export function widgetParagraph(placement) {
     text: "",
     widget: {
       placementId: placement.id,
+      // Marks paragraphs this config produced; DB-authored blocks (which the
+      // transform also gives a placementId) never carry it.
+      placedBy: "config",
       widgetId: placement.widgetId,
       kind: placement.kind || "breakout",
       title: placement.title || "",
@@ -205,7 +305,7 @@ function hasWidget(chapter, widgetId) {
   return false;
 }
 
-function resolveAfterText(section, needle) {
+function findParagraphByText(section, needle) {
   const target = needle.toLowerCase();
   for (const list of paragraphLists(section)) {
     const idx = list.findIndex(
@@ -215,9 +315,23 @@ function resolveAfterText(section, needle) {
         typeof p.text === "string" &&
         stripTags(p.text).toLowerCase().includes(target)
     );
-    if (idx !== -1) return { list, index: idx + 1 };
+    if (idx !== -1) return { list, index: idx };
   }
   return null;
+}
+
+function resolveAfterText(section, needle) {
+  const hit = findParagraphByText(section, needle);
+  return hit ? { list: hit.list, index: hit.index + 1 } : null;
+}
+
+/* Insert just before the paragraph containing the needle. Used as the
+   fallback for a placement whose own passage may be reworded: landing before
+   the NEXT topic keeps it in the right region, whereas endOfSection would
+   drop it behind everything else in the section (including DB-authored
+   widget blocks) and silently reverse the reading order. */
+function resolveBeforeText(section, needle) {
+  return findParagraphByText(section, needle);
 }
 
 function resolveBeforeSubSection(section, title) {
@@ -245,11 +359,29 @@ function resolveAnchor(section, anchor) {
   if (anchor.after?.textIncludes) {
     return resolveAfterText(section, anchor.after.textIncludes);
   }
+  if (anchor.before?.textIncludes) {
+    return resolveBeforeText(section, anchor.before.textIncludes);
+  }
   if (anchor.beforeSubSection) {
     return resolveBeforeSubSection(section, anchor.beforeSubSection);
   }
   if (anchor.endOfSection) {
-    return { list: section.paragraphs, index: section.paragraphs.length };
+    // "End of the section" means after its last piece of prose or after the
+    // last widget placed by this config, but ahead of DB-authored widget
+    // blocks sitting at the tail (only config placements carry placedBy). A placement
+    // whose every text anchor drifted therefore lands before the seed's
+    // trailing block instead of silently reversing the reading order, while
+    // successive endOfSection placements still keep their declaration order.
+    const list = section.paragraphs;
+    let index = list.length;
+    while (
+      index > 0 &&
+      list[index - 1]?.type === "widget" &&
+      list[index - 1]?.widget?.placedBy !== "config"
+    ) {
+      index -= 1;
+    }
+    return { list, index };
   }
   return null;
 }
