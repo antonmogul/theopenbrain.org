@@ -33,7 +33,9 @@ describe("OPENBRAIN-17 temporary chapter retirement", () => {
       expect(existsSync(resolve(root, path)), path).toBe(false);
     }
 
-    expect(read("src/components/chapter/text/EyeStart.vue")).not.toContain(
+    // The per-slug cover map moved from EyeStart.vue to the cover helper
+    // when the chapter opener replaced the hero (OPENBRAIN-32).
+    expect(read("src/helper/chapterCover.js")).not.toContain(
       "visual-perception-ux"
     );
     expect(

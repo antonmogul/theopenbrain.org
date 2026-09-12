@@ -34,6 +34,11 @@
   --color-support-yellow: 251 235 0; /* #FBEB00 */
   --color-support-pink: 242 0 255; /* #F200FF */
 
+  /* Dark surface for the chapter opener (hero + title/TOC block). Figma
+     gray/100 in the chapter frames; deliberately not --color-ink so text
+     on it keeps contrast. */
+  --color-dark-surface: 28 28 28; /* #1C1C1C */
+
   /* Type controls (user-tunable from Settings) */
   --reading-size: 1;
   --reading-measure: 780px;
