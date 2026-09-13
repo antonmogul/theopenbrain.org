@@ -215,6 +215,21 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     const slot = wrapper.find(".wb-slot");
     expect(slot.classes()).toContain("wb-slot--vacated");
     expect(slot.attributes("style")).toMatch(/height: \d+px/);
+    // Geometry: fake rects (happy-dom lays nothing out) and let a resize
+    // drive one sync — the slot takes the stage's height and the stage
+    // sits at the slot's offset from the layer; ScrollTrigger re-measures.
+    layer.getBoundingClientRect = () => ({ top: 100, height: 0 });
+    slot.element.getBoundingClientRect = () => ({ top: 1000, height: 0 });
+    stage.getBoundingClientRect = () => ({ top: 0, height: 300 });
+    window.dispatchEvent(new Event("resize"));
+    await flushPromises();
+    expect(slot.attributes("style")).toBe("height: 300px;");
+    expect(stage.style.top).toBe("900px");
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    // Same height again: no second refresh.
+    window.dispatchEvent(new Event("resize"));
+    await flushPromises();
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
     // The widget still mounts, in the teleported stage, and the modal still
     // takes over from it.
     await vi.waitFor(() =>
@@ -259,6 +274,21 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     expect(wrapper.find(".wb-slot .wb-stage").exists()).toBe(true);
     expect(wrapper.find(".wb-stage--floating").exists()).toBe(false);
     wrapper.unmount();
+  });
+
+  it("does not measure or refresh after unmount, even with a sync pending", async () => {
+    const layer = addStageLayer();
+    desktop.matches = true;
+    const wrapper = mountBreakout(inline);
+    await flushPromises();
+    const stage = layer.querySelector(".wb-stage");
+    stage.getBoundingClientRect = () => ({ top: 0, height: 480 });
+    // Queue a sync (microtask) and unmount before it runs.
+    window.dispatchEvent(new Event("resize"));
+    wrapper.unmount();
+    await flushPromises();
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(layer.children).toHaveLength(0);
   });
 
   it("never teleports a breakout card", async () => {

@@ -315,28 +315,47 @@ async function main() {
             ? route.expectStage
             : null;
         const result = await page.evaluate(
-          ([countSelector, absentSelector, stage]) => {
-            const before = window.scrollX;
-            window.scrollTo(9999, 0);
-            const maxScrollX = window.scrollX;
-            window.scrollTo(before, 0);
+          async ([countSelector, absentSelector, stage]) => {
+            const measureScrollX = () => {
+              const before = window.scrollX;
+              window.scrollTo(9999, window.scrollY);
+              const max = window.scrollX;
+              window.scrollTo(before, window.scrollY);
+              return max;
+            };
+            let maxScrollX = measureScrollX();
             let stageResult = null;
             if (stage) {
               const el = document.querySelector(stage.selector);
               if (el) {
-                // Bring the stage on screen (this also lets it mount), then
-                // hit-test a point inside its left half: with the clip bug
-                // elementFromPoint returned <html> there.
+                // Bring the stage on screen so the lazy widget mounts, wait
+                // for it (the placeholder must be gone), then hit-test a
+                // point in its left half: with the clip bug elementFromPoint
+                // returned <html> there. The horizontal-scroll measurement is
+                // repeated with the real widget in the DOM.
                 el.scrollIntoView({ block: "center", behavior: "instant" });
+                const started = Date.now();
+                while (
+                  el.querySelector(".wb-stage-placeholder") &&
+                  Date.now() - started < 15000
+                ) {
+                  await new Promise((r) => setTimeout(r, 200));
+                }
+                maxScrollX = Math.max(maxScrollX, measureScrollX());
                 const rect = el.getBoundingClientRect();
-                const y = rect.top + rect.height / 2;
+                const y = Math.min(
+                  rect.top + rect.height / 2,
+                  window.innerHeight / 2
+                );
                 const hit = document.elementFromPoint(stage.probeX, y);
                 stageResult = {
                   found: true,
+                  mounted: !el.querySelector(".wb-stage-placeholder"),
                   left: Math.round(rect.left),
                   width: Math.round(rect.width),
                   clientWidth: document.documentElement.clientWidth,
-                  hitInside: !!hit && el.contains(hit),
+                  // A widget descendant, not the stage shell itself.
+                  hitInside: !!hit && hit !== el && el.contains(hit),
                 };
               } else {
                 stageResult = { found: false };
@@ -400,10 +419,10 @@ async function main() {
           } else {
             const wideEnough =
               st.width >= stageCheck.minWidthRatio * st.clientWidth;
-            if (!wideEnough || st.left > 1 || !st.hitInside) {
+            if (!wideEnough || st.left > 1 || !st.hitInside || !st.mounted) {
               stageOk = false;
               failures.push(
-                `${label}: inline stage left=${st.left} width=${st.width}/${st.clientWidth} hit-inside=${st.hitInside}`
+                `${label}: inline stage mounted=${st.mounted} left=${st.left} width=${st.width}/${st.clientWidth} hit-inside=${st.hitInside}`
               );
             }
           }

@@ -98,6 +98,10 @@ onMounted(() => {
         nearViewport.value = true;
         observer?.disconnect();
         observer = null;
+        // Re-measure right before the reader reaches the stage: a
+        // position-only reflow above it (same #container height) is not
+        // something the ResizeObserver can see.
+        scheduleSync();
       }
     },
     { rootMargin: "150% 0px" }
@@ -141,6 +145,7 @@ const stageStyle = computed(() =>
 let mql = null;
 let resizeObserver = null;
 let syncPending = false;
+let unmounted = false;
 
 function syncStage() {
   if (!teleported.value || !slotEl.value || !stageEl.value || !layer.value)
@@ -153,7 +158,13 @@ function syncStage() {
     slotHeight.value = h;
     // The prose below the slot moves by the difference; scroll-linked
     // figures and section triggers must re-measure (same as ChapterOpener).
-    nextTick(() => ScrollTrigger.refresh());
+    // The refresh can itself move things (pinned figures), so measure once
+    // more after it. Converges: the second pass finds the same height.
+    nextTick(() => {
+      if (unmounted) return;
+      ScrollTrigger.refresh();
+      scheduleSync();
+    });
   }
 }
 /* Coalesce bursts (ResizeObserver + resize event) into one measurement per
@@ -165,7 +176,7 @@ function scheduleSync() {
   syncPending = true;
   Promise.resolve().then(() => {
     syncPending = false;
-    syncStage();
+    if (!unmounted) syncStage();
   });
 }
 
@@ -187,7 +198,9 @@ onMounted(() => {
   if (typeof window.matchMedia === "function") {
     mql = window.matchMedia(STAGE_DESKTOP_QUERY);
     wide.value = mql.matches;
-    mql.addEventListener?.("change", onMediaChange);
+    // Safari < 14 only has the legacy addListener API.
+    if (mql.addEventListener) mql.addEventListener("change", onMediaChange);
+    else mql.addListener?.(onMediaChange);
   }
   window.addEventListener("resize", scheduleSync);
 });
@@ -200,7 +213,10 @@ watch(teleported, async () => {
   scheduleSync();
 });
 onBeforeUnmount(() => {
-  mql?.removeEventListener?.("change", onMediaChange);
+  unmounted = true;
+  if (mql?.removeEventListener)
+    mql.removeEventListener("change", onMediaChange);
+  else mql?.removeListener?.(onMediaChange);
   window.removeEventListener("resize", scheduleSync);
   resizeObserver?.disconnect();
   resizeObserver = null;
@@ -378,6 +394,10 @@ const headingId = computed(
   margin: 0;
   padding: 1.5rem clamp(1rem, 4vw, 4rem);
   pointer-events: auto;
+  /* A widget wider than the window must not grow the document again;
+     vertical overflow stays visible (clip + visible is a valid pair). */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .wb-slot--vacated {
