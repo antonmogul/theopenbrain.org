@@ -347,15 +347,29 @@ async function main() {
                   rect.top + rect.height / 2,
                   window.innerHeight / 2
                 );
+                const clientWidth = document.documentElement.clientWidth;
+                // At the fixed probe the stage shell itself counts: with the
+                // clip bug elementFromPoint returned <html> there, and the
+                // widget's own centred card can start further in on wide
+                // screens. A second probe at a quarter of the width must hit
+                // a real widget descendant, so a painted-but-empty stage
+                // cannot pass.
                 const hit = document.elementFromPoint(stage.probeX, y);
+                const hitControl = document.elementFromPoint(
+                  Math.round(clientWidth * 0.25),
+                  y
+                );
                 stageResult = {
                   found: true,
                   mounted: !el.querySelector(".wb-stage-placeholder"),
                   left: Math.round(rect.left),
                   width: Math.round(rect.width),
-                  clientWidth: document.documentElement.clientWidth,
-                  // A widget descendant, not the stage shell itself.
-                  hitInside: !!hit && hit !== el && el.contains(hit),
+                  clientWidth,
+                  hitInside: !!hit && el.contains(hit),
+                  hitWidget:
+                    !!hitControl &&
+                    hitControl !== el &&
+                    el.contains(hitControl),
                 };
               } else {
                 stageResult = { found: false };
@@ -419,10 +433,16 @@ async function main() {
           } else {
             const wideEnough =
               st.width >= stageCheck.minWidthRatio * st.clientWidth;
-            if (!wideEnough || st.left > 1 || !st.hitInside || !st.mounted) {
+            if (
+              !wideEnough ||
+              st.left > 1 ||
+              !st.hitInside ||
+              !st.hitWidget ||
+              !st.mounted
+            ) {
               stageOk = false;
               failures.push(
-                `${label}: inline stage mounted=${st.mounted} left=${st.left} width=${st.width}/${st.clientWidth} hit-inside=${st.hitInside}`
+                `${label}: inline stage mounted=${st.mounted} left=${st.left} width=${st.width}/${st.clientWidth} hit-inside=${st.hitInside} hit-widget=${st.hitWidget}`
               );
             }
           }
