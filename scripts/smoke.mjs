@@ -111,6 +111,19 @@ const ROUTES = [
      * with or without credentials.
      */
     expectAbsent: ".marker-start, .marker-end, .marker-center",
+    /*
+     * The inline RetINaBox stage must be VISIBLE full-bleed, not just laid
+     * out full-bleed: its DOM width was already the window's while the
+     * prose column's overflow clip hid everything left of the divider
+     * (OPENBRAIN-37). Desktop widths only, and a data assertion (the stage
+     * exists only once the chapter content places it).
+     */
+    expectStage: {
+      selector: '[data-widget-stage="retinabox"]',
+      minWidthRatio: 0.95,
+      probeX: 300,
+      minWidth: 1300,
+    },
   },
   { path: "/chapters", name: "chapters", minText: 50 },
   {
@@ -297,12 +310,71 @@ async function main() {
         // Let route transitions and entrance animations settle.
         await page.waitForTimeout(route.slow ? 20_000 : 2500);
 
+        const stageCheck =
+          route.expectStage && width >= (route.expectStage.minWidth || 0)
+            ? route.expectStage
+            : null;
         const result = await page.evaluate(
-          ([countSelector, absentSelector]) => {
-            const before = window.scrollX;
-            window.scrollTo(9999, 0);
-            const maxScrollX = window.scrollX;
-            window.scrollTo(before, 0);
+          async ([countSelector, absentSelector, stage]) => {
+            const measureScrollX = () => {
+              const before = window.scrollX;
+              window.scrollTo(9999, window.scrollY);
+              const max = window.scrollX;
+              window.scrollTo(before, window.scrollY);
+              return max;
+            };
+            let maxScrollX = measureScrollX();
+            let stageResult = null;
+            if (stage) {
+              const el = document.querySelector(stage.selector);
+              if (el) {
+                // Bring the stage on screen so the lazy widget mounts, wait
+                // for it (the placeholder must be gone), then hit-test a
+                // point in its left half: with the clip bug elementFromPoint
+                // returned <html> there. The horizontal-scroll measurement is
+                // repeated with the real widget in the DOM.
+                el.scrollIntoView({ block: "center", behavior: "instant" });
+                const started = Date.now();
+                while (
+                  el.querySelector(".wb-stage-placeholder") &&
+                  Date.now() - started < 15000
+                ) {
+                  await new Promise((r) => setTimeout(r, 200));
+                }
+                maxScrollX = Math.max(maxScrollX, measureScrollX());
+                const rect = el.getBoundingClientRect();
+                const y = Math.min(
+                  rect.top + rect.height / 2,
+                  window.innerHeight / 2
+                );
+                const clientWidth = document.documentElement.clientWidth;
+                // At the fixed probe the stage shell itself counts: with the
+                // clip bug elementFromPoint returned <html> there, and the
+                // widget's own centred card can start further in on wide
+                // screens. A second probe at a quarter of the width must hit
+                // a real widget descendant, so a painted-but-empty stage
+                // cannot pass.
+                const hit = document.elementFromPoint(stage.probeX, y);
+                const hitControl = document.elementFromPoint(
+                  Math.round(clientWidth * 0.25),
+                  y
+                );
+                stageResult = {
+                  found: true,
+                  mounted: !el.querySelector(".wb-stage-placeholder"),
+                  left: Math.round(rect.left),
+                  width: Math.round(rect.width),
+                  clientWidth,
+                  hitInside: !!hit && el.contains(hit),
+                  hitWidget:
+                    !!hitControl &&
+                    hitControl !== el &&
+                    el.contains(hitControl),
+                };
+              } else {
+                stageResult = { found: false };
+              }
+            }
             return {
               maxScrollX,
               textLength: document.body.innerText.trim().length,
@@ -312,9 +384,14 @@ async function main() {
               absent: absentSelector
                 ? document.querySelectorAll(absentSelector).length
                 : null,
+              stage: stageResult,
             };
           },
-          [route.expectCount?.selector || null, route.expectAbsent || null]
+          [
+            route.expectCount?.selector || null,
+            route.expectAbsent || null,
+            stageCheck,
+          ]
         );
 
         // 1px of slack absorbs sub-pixel rounding at fractional widths.
@@ -345,6 +422,31 @@ async function main() {
             `${label}: found ${result.count} × ${route.expectCount.selector}, expected >= ${route.expectCount.min}`
           );
         }
+        // Inline stage visibility (OPENBRAIN-37): full content width, at
+        // x = 0, and hit-testable well left of the prose divider.
+        let stageOk = true;
+        if (checkContent && stageCheck && result.stage) {
+          const st = result.stage;
+          if (!st.found) {
+            stageOk = false;
+            failures.push(`${label}: ${stageCheck.selector} not in the DOM`);
+          } else {
+            const wideEnough =
+              st.width >= stageCheck.minWidthRatio * st.clientWidth;
+            if (
+              !wideEnough ||
+              st.left > 1 ||
+              !st.hitInside ||
+              !st.hitWidget ||
+              !st.mounted
+            ) {
+              stageOk = false;
+              failures.push(
+                `${label}: inline stage mounted=${st.mounted} left=${st.left} width=${st.width}/${st.clientWidth} hit-inside=${st.hitInside} hit-widget=${st.hitWidget}`
+              );
+            }
+          }
+        }
 
         // Without credentials the chapter fetch gets index.html back and throws
         // a JSON parse error. Expected on an unconfigured runner; still a real
@@ -369,6 +471,7 @@ async function main() {
           (!checkContent || result.textLength >= route.minText) &&
           countOk &&
           absentOk &&
+          stageOk &&
           !real.length;
         if (!ok) {
           await page.screenshot({

@@ -1,5 +1,6 @@
 import WidgetBreakoutComponent from "../WidgetBreakout.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
+import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 
 export default {
   title: "Chapter/Text/WidgetBreakout",
@@ -51,8 +52,36 @@ export const InlineStage = {
   render: proseFrame(WidgetBreakoutComponent),
 };
 
-/* Attention (OPENBRAIN-34): shipped as breakout cards until inline stages
-   stop being clipped by the prose column (OPENBRAIN-37). */
+/*
+ * The reader's geometry around an inline stage (OPENBRAIN-37): a right-pinned
+ * prose column that clips its horizontal overflow, a full-width stage layer
+ * beside it, and the card inside the column. At ≥1300px the stage teleports
+ * into the layer and spans the frame; below that it stays in the column.
+ * Resize the canvas across 1300px to watch it move.
+ */
+const readerFrame = (Component) =>
+  chapterFrame(Component, {
+    template: `
+      <div style="position:relative;min-height:640px;background:rgb(var(--color-bg));">
+        <div style="position:absolute;inset:0 auto 0 0;width:calc(100% - var(--reader-prose-w));display:grid;place-items:center;font-family:var(--font-mono);font-size:12px;color:rgb(var(--color-mute));">
+          figure pane
+        </div>
+        <div id="${STAGE_LAYER_ID}" style="position:absolute;top:0;left:0;width:100%;height:0;overflow:visible;pointer-events:none;z-index:45;"></div>
+        <div style="position:relative;margin-left:calc(100% - var(--reader-prose-w));width:var(--reader-prose-w);overflow-x:clip;padding:40px 3.75rem 40px 3.125rem;border-left:1px solid rgb(var(--color-ink));background:rgb(var(--color-paper));font-family:var(--font-body);color:rgb(var(--color-ink));">
+          <p style="line-height:1.6;margin:0 0 1rem;">Amacrine cells shape the timing and selectivity of ganglion-cell responses; the circuit below lets you wire one yourself.</p>
+          <StoryComponent v-bind="args" />
+          <p style="line-height:1.6;margin:1rem 0 0;">Rod and cone pathways: the two photoreceptor classes feed the inner retina through distinct bipolar cells.</p>
+        </div>
+      </div>`,
+  });
+
+export const InlineStageFullBleed = {
+  args: InlineStage.args,
+  render: readerFrame(WidgetBreakoutComponent),
+};
+
+/* Attention (OPENBRAIN-34). Placed inline since OPENBRAIN-37; this is the
+   card as it looks in the modal-only breakout form for comparison. */
 export const AttentionBreakout = {
   args: {
     placement: {

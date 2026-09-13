@@ -3,6 +3,7 @@ import { computed, onMounted, onBeforeUnmount, ref, provide } from "vue";
 import { useRoute } from "vue-router";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 import { toSlug, addH, removeH } from "@/helper/general";
 import { markersEnabled } from "@/helper/debugFlags";
 import { sectionLabelMap } from "@/composables/useChapterOutline";
@@ -338,6 +339,10 @@ onBeforeUnmount(() => {
     <HoverImg />
     <!-- Viewport-centre trigger line: dev chrome behind ?markers=1 (OPENBRAIN-31) -->
     <div v-if="showMarkers" class="marker-center" />
+    <!-- Full-bleed stage layer: inline widget stages teleport here at desktop
+         widths because main#text clips its horizontal overflow (OPENBRAIN-37).
+         Zero height; each stage is absolutely positioned at its slot's offset. -->
+    <div :id="STAGE_LAYER_ID" class="reader-stage-layer" />
     <div id="scroller" class="pointer-events-none w-full">
       <main
         id="text"
@@ -570,6 +575,22 @@ onBeforeUnmount(() => {
 .chapter-end-blocks {
   width: 100%;
   margin-left: 0;
+}
+
+.reader-stage-layer {
+  /* #container is `absolute` and as tall as the prose column, so stages
+     positioned from this layer scroll with the text. Width is the real
+     content width (helper/appWidth.js), never 100vw, so a stage can't grow
+     the page. Above the fixed figure pane (xl:z-30) within #container's
+     z-40 context. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--app-w, 100vw);
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 45;
 }
 
 @media (min-width: 768px) {

@@ -6,10 +6,20 @@
  *   breakout  a card (title, blurb, credit) with "Open interactive", which
  *             mounts the widget full-screen in DemoModal. Nothing heavy loads
  *             until the reader asks for it.
- *   inline    the widget mounts directly in the prose column once the card
+ *   inline    the widget mounts in the flow of the text once the card
  *             scrolls near the viewport, with a "Full screen" escape hatch to
  *             the same modal. Used where the author wants the tool in the
  *             flow of the text (RetINaBox at the end of Circuit computations).
+ *
+ * Inline stages are full-bleed at desktop widths. The prose column clips its
+ * horizontal overflow (TextComp .ml-text, OPENBRAIN-4), which also clips a
+ * transformed descendant, so a stage that merely slid left was invisible
+ * left of the divider (OPENBRAIN-37). Instead the stage is Teleported out of
+ * the column into `#reader-stage-layer`, a full-width absolutely positioned
+ * layer TextComp renders beside the column, and pinned at the vertical
+ * position of a same-height slot the card leaves behind. Below the desktop
+ * breakpoint, or wherever the layer does not exist (Storybook, tests), the
+ * stage stays in flow inside the card.
  *
  * The widget views are unchanged, self-styled pages (their own masthead and
  * responsive CSS); this component only decides when and where to mount them.
@@ -19,11 +29,15 @@
 import {
   computed,
   defineAsyncComponent,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
+  watch,
 } from "vue";
+import ScrollTrigger from "gsap/ScrollTrigger";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
+import { STAGE_DESKTOP_QUERY, STAGE_LAYER_ID } from "@/helper/stageLayer";
 import { WIDGET_EMBEDS, hasEmbed } from "@/widgets/embeds";
 
 const props = defineProps({
@@ -84,6 +98,10 @@ onMounted(() => {
         nearViewport.value = true;
         observer?.disconnect();
         observer = null;
+        // Re-measure right before the reader reaches the stage: a
+        // position-only reflow above it (same #container height) is not
+        // something the ResizeObserver can see.
+        scheduleSync();
       }
     },
     { rootMargin: "150% 0px" }
@@ -100,32 +118,110 @@ const inlineMounted = computed(
   () => kind.value === "inline" && nearViewport.value && !modalOpen.value
 );
 
-/* Full-bleed inline stage: at desktop widths the stage spans the window
-   (see the CSS), which means sliding it left by exactly the card's distance
-   from the window edge. That distance depends on the reader's column
-   margins and paddings, so measure it instead of restating those numbers. */
-const stageOffset = ref(0);
-function measureStageOffset() {
-  if (kind.value !== "inline" || !rootEl.value) return;
-  const rect = rootEl.value.getBoundingClientRect();
-  // clientLeft is the card's left border, which the stage sits inside.
-  stageOffset.value = Math.max(
-    0,
-    Math.round(rect.left + window.scrollX + rootEl.value.clientLeft)
-  );
-}
-const stageStyle = computed(() =>
-  kind.value === "inline" ? { "--wb-offset": `${stageOffset.value}px` } : null
+/*
+ * Full-bleed inline stage (OPENBRAIN-37). `layer` is TextComp's
+ * #reader-stage-layer; `wide` tracks the reader's desktop breakpoint. When
+ * both hold, the stage teleports into the layer, absolutely positioned at
+ * the slot's offset from the layer, and the slot takes the stage's height so
+ * the prose flows around it exactly as if it were still in place.
+ */
+const layer = ref(null);
+const wide = ref(false);
+const slotEl = ref(null);
+const stageEl = ref(null);
+const stageTop = ref(0);
+const slotHeight = ref(0);
+
+const teleported = computed(
+  () => kind.value === "inline" && wide.value && !!layer.value
 );
+const slotStyle = computed(() =>
+  teleported.value ? { height: `${slotHeight.value}px` } : null
+);
+const stageStyle = computed(() =>
+  teleported.value ? { top: `${stageTop.value}px` } : null
+);
+
+let mql = null;
+let resizeObserver = null;
+let syncPending = false;
+let unmounted = false;
+
+function syncStage() {
+  if (!teleported.value || !slotEl.value || !stageEl.value || !layer.value)
+    return;
+  const slotRect = slotEl.value.getBoundingClientRect();
+  const layerRect = layer.value.getBoundingClientRect();
+  stageTop.value = Math.round(slotRect.top - layerRect.top);
+  const h = Math.round(stageEl.value.getBoundingClientRect().height);
+  if (h !== slotHeight.value) {
+    slotHeight.value = h;
+    // The prose below the slot moves by the difference; scroll-linked
+    // figures and section triggers must re-measure (same as ChapterOpener).
+    // The refresh can itself move things (pinned figures), so measure once
+    // more after it. Converges: the second pass finds the same height.
+    nextTick(() => {
+      if (unmounted) return;
+      ScrollTrigger.refresh();
+      scheduleSync();
+    });
+  }
+}
+/* Coalesce bursts (ResizeObserver + resize event) into one measurement per
+   task. A microtask, not requestAnimationFrame: rAF is paused in background
+   tabs and never fires in some embedded browsers, and the observers already
+   deliver after layout so measuring synchronously is safe. */
+function scheduleSync() {
+  if (syncPending) return;
+  syncPending = true;
+  Promise.resolve().then(() => {
+    syncPending = false;
+    if (!unmounted) syncStage();
+  });
+}
+
+function observeStage() {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+  if (!teleported.value || typeof ResizeObserver !== "function") return;
+  resizeObserver = new ResizeObserver(scheduleSync);
+  if (stageEl.value) resizeObserver.observe(stageEl.value);
+  // The layer's parent (#container) is as tall as the prose column: any
+  // content change above the slot changes it, and moves the slot.
+  if (layer.value?.parentElement)
+    resizeObserver.observe(layer.value.parentElement);
+}
 
 onMounted(() => {
   if (kind.value !== "inline") return;
-  measureStageOffset();
-  window.addEventListener("resize", measureStageOffset);
+  layer.value = document.getElementById(STAGE_LAYER_ID);
+  if (typeof window.matchMedia === "function") {
+    mql = window.matchMedia(STAGE_DESKTOP_QUERY);
+    wide.value = mql.matches;
+    // Safari < 14 only has the legacy addListener API.
+    if (mql.addEventListener) mql.addEventListener("change", onMediaChange);
+    else mql.addListener?.(onMediaChange);
+  }
+  window.addEventListener("resize", scheduleSync);
+});
+function onMediaChange(e) {
+  wide.value = e.matches;
+}
+watch(teleported, async () => {
+  await nextTick();
+  observeStage();
+  scheduleSync();
 });
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", measureStageOffset);
+  unmounted = true;
+  if (mql?.removeEventListener)
+    mql.removeEventListener("change", onMediaChange);
+  else mql?.removeListener?.(onMediaChange);
+  window.removeEventListener("resize", scheduleSync);
+  resizeObserver?.disconnect();
+  resizeObserver = null;
 });
+
 const headingId = computed(
   () => `widget-breakout-${props.placement?.placementId || widgetId.value}`
 );
@@ -151,13 +247,32 @@ const headingId = computed(
       <p v-if="placement.blurb" class="wb-blurb">{{ placement.blurb }}</p>
     </header>
 
-    <!-- inline: the widget lives here once it is near the viewport -->
-    <div v-if="kind === 'inline'" class="wb-stage" :style="stageStyle">
-      <component :is="Widget" v-if="inlineMounted && Widget" />
-      <div v-else-if="!embeddable" class="wb-missing">
-        This interactive is not available in the reader yet.
-      </div>
-      <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
+    <!-- inline: the widget lives here once it is near the viewport. At
+         desktop widths the stage teleports into TextComp's stage layer and
+         this slot keeps its height (see the notes at the top). -->
+    <div
+      v-if="kind === 'inline'"
+      ref="slotEl"
+      class="wb-slot"
+      :class="{ 'wb-slot--vacated': teleported }"
+      :style="slotStyle"
+    >
+      <Teleport :to="layer" :disabled="!teleported">
+        <div
+          ref="stageEl"
+          class="wb-stage"
+          :class="{ 'wb-stage--floating': teleported }"
+          :style="stageStyle"
+          :data-widget-stage="widgetId"
+          :aria-labelledby="headingId"
+        >
+          <component :is="Widget" v-if="inlineMounted && Widget" />
+          <div v-else-if="!embeddable" class="wb-missing">
+            This interactive is not available in the reader yet.
+          </div>
+          <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
+        </div>
+      </Teleport>
     </div>
 
     <footer class="wb-foot">
@@ -261,26 +376,32 @@ const headingId = computed(
 }
 
 /*
- * Full-bleed inline stage. The widget views size their layout from the
- * viewport (their own @media rules), so inside a ~460–580px prose column a
- * 1180px-wide tool like RetINaBox overflows. At the reader's desktop
- * breakpoint the stage takes the real content width (--app-w, scrollbar
- * excluded — see helper/appWidth.js and OPENBRAIN-4) and slides left by the
- * card's measured distance from the window edge (--wb-offset, set from the
- * script), landing on x = 0 whatever the column's margins happen to be. The
- * card's header and footer stay in the column; only the stage spans the
- * window, painting over the fixed illustration pane the way a break in the
- * reading flow should. A transform keeps the document's scrollable width
- * unchanged, so the no-horizontal-scroll smoke check still holds.
+ * Full-bleed inline stage (OPENBRAIN-37). The widget views size their layout
+ * from the viewport (their own @media rules), so inside a ~460–580px prose
+ * column a 1180px-wide tool like RetINaBox overflows. At the reader's
+ * desktop breakpoint the stage is teleported into #reader-stage-layer (a
+ * full-width layer beside the clipped prose column, see TextComp) and
+ * absolutely positioned at the slot's offset, so it spans the real content
+ * width (--app-w, scrollbar excluded — helper/appWidth.js, OPENBRAIN-4) and
+ * paints over the fixed illustration pane the way a break in the reading
+ * flow should. Nothing is transformed and nothing leaves the layer's box,
+ * so the document's scrollable width is unchanged.
  */
-@media (min-width: 1300px) {
-  .wb--inline .wb-stage {
-    width: var(--app-w, 100vw);
-    transform: translateX(calc(-1 * var(--wb-offset, 0px)));
-    padding: 1.5rem clamp(1rem, 4vw, 4rem);
-    border-top: 1px solid rgb(var(--color-line));
-    border-bottom: 1px solid rgb(var(--color-line));
-  }
+.wb-stage--floating {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 1.5rem clamp(1rem, 4vw, 4rem);
+  pointer-events: auto;
+  /* A widget wider than the window must not grow the document again;
+     vertical overflow stays visible (clip + visible is a valid pair). */
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.wb-slot--vacated {
+  margin-top: 0.75rem;
 }
 
 .wb-stage-placeholder {
