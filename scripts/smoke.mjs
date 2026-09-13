@@ -111,6 +111,19 @@ const ROUTES = [
      * with or without credentials.
      */
     expectAbsent: ".marker-start, .marker-end, .marker-center",
+    /*
+     * The inline RetINaBox stage must be VISIBLE full-bleed, not just laid
+     * out full-bleed: its DOM width was already the window's while the
+     * prose column's overflow clip hid everything left of the divider
+     * (OPENBRAIN-37). Desktop widths only, and a data assertion (the stage
+     * exists only once the chapter content places it).
+     */
+    expectStage: {
+      selector: '[data-widget-stage="retinabox"]',
+      minWidthRatio: 0.95,
+      probeX: 300,
+      minWidth: 1300,
+    },
   },
   { path: "/chapters", name: "chapters", minText: 50 },
   {
@@ -297,12 +310,38 @@ async function main() {
         // Let route transitions and entrance animations settle.
         await page.waitForTimeout(route.slow ? 20_000 : 2500);
 
+        const stageCheck =
+          route.expectStage && width >= (route.expectStage.minWidth || 0)
+            ? route.expectStage
+            : null;
         const result = await page.evaluate(
-          ([countSelector, absentSelector]) => {
+          ([countSelector, absentSelector, stage]) => {
             const before = window.scrollX;
             window.scrollTo(9999, 0);
             const maxScrollX = window.scrollX;
             window.scrollTo(before, 0);
+            let stageResult = null;
+            if (stage) {
+              const el = document.querySelector(stage.selector);
+              if (el) {
+                // Bring the stage on screen (this also lets it mount), then
+                // hit-test a point inside its left half: with the clip bug
+                // elementFromPoint returned <html> there.
+                el.scrollIntoView({ block: "center", behavior: "instant" });
+                const rect = el.getBoundingClientRect();
+                const y = rect.top + rect.height / 2;
+                const hit = document.elementFromPoint(stage.probeX, y);
+                stageResult = {
+                  found: true,
+                  left: Math.round(rect.left),
+                  width: Math.round(rect.width),
+                  clientWidth: document.documentElement.clientWidth,
+                  hitInside: !!hit && el.contains(hit),
+                };
+              } else {
+                stageResult = { found: false };
+              }
+            }
             return {
               maxScrollX,
               textLength: document.body.innerText.trim().length,
@@ -312,9 +351,14 @@ async function main() {
               absent: absentSelector
                 ? document.querySelectorAll(absentSelector).length
                 : null,
+              stage: stageResult,
             };
           },
-          [route.expectCount?.selector || null, route.expectAbsent || null]
+          [
+            route.expectCount?.selector || null,
+            route.expectAbsent || null,
+            stageCheck,
+          ]
         );
 
         // 1px of slack absorbs sub-pixel rounding at fractional widths.
@@ -345,6 +389,25 @@ async function main() {
             `${label}: found ${result.count} × ${route.expectCount.selector}, expected >= ${route.expectCount.min}`
           );
         }
+        // Inline stage visibility (OPENBRAIN-37): full content width, at
+        // x = 0, and hit-testable well left of the prose divider.
+        let stageOk = true;
+        if (checkContent && stageCheck && result.stage) {
+          const st = result.stage;
+          if (!st.found) {
+            stageOk = false;
+            failures.push(`${label}: ${stageCheck.selector} not in the DOM`);
+          } else {
+            const wideEnough =
+              st.width >= stageCheck.minWidthRatio * st.clientWidth;
+            if (!wideEnough || st.left > 1 || !st.hitInside) {
+              stageOk = false;
+              failures.push(
+                `${label}: inline stage left=${st.left} width=${st.width}/${st.clientWidth} hit-inside=${st.hitInside}`
+              );
+            }
+          }
+        }
 
         // Without credentials the chapter fetch gets index.html back and throws
         // a JSON parse error. Expected on an unconfigured runner; still a real
@@ -369,6 +432,7 @@ async function main() {
           (!checkContent || result.textLength >= route.minText) &&
           countOk &&
           absentOk &&
+          stageOk &&
           !real.length;
         if (!ok) {
           await page.screenshot({

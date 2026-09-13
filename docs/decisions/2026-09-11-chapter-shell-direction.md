@@ -35,8 +35,11 @@ OPENBRAIN-30 … 35 on 2026-09-11/12.
 - Strict 50/50 at every width, or keep the 890px prose cap.
 - What counts as an activity beyond widgets (quizzes/flashcards tables exist,
   empty).
-- Inline widget stages: the stage's geometry escapes the prose column (it
+- ~~Inline widget stages: the stage's geometry escapes the prose column (it
   measures full-width at x = 0) but the column's `overflow-x: clip` clips its
   paint, so everything left of the divider is invisible (OPENBRAIN-37,
   verified with `elementFromPoint`). The Attention placements are breakout
-  cards until that lands.
+  cards until that lands.~~ Resolved 2026-09-13 (OPENBRAIN-37): inline stages
+  teleport into `#reader-stage-layer`, a full-width layer beside the clipped
+  column, and hold their slot with a same-height placeholder. The Attention
+  placements are inline.

@@ -221,7 +221,7 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 - Attention chapter widgets: `/sdt`, `/biased-competition`, `/contrast-response`, `/posner-cueing`, `/feature-attention`
 - Retina/V1 chapter widgets: `/color-vision`, `/visual-pathway`, `/direction-selectivity` (Pyodide), `/v1-camera` (WebGL2), `/retinabox`
 
-Every widget is registered in `src/widgets/catalog.js`; the library renders the Vue port next to the author's original HTML from `src/widgets/source/` (kept byte-for-byte, excluded from Prettier). **To put a widget inside a chapter**, add a placement to `src/widgets/placements.js` (chapter slug + section slug + text anchors, `kind: "breakout"` card or `"inline"` stage) and a lazy loader to `src/widgets/embeds.js`; a DB-authored `{ type: "widget" }` paragraph block wins over a code placement for the same widget.
+Every widget is registered in `src/widgets/catalog.js`; the library renders the Vue port next to the author's original HTML from `src/widgets/source/` (kept byte-for-byte, excluded from Prettier). **To put a widget inside a chapter**, add a placement to `src/widgets/placements.js` (chapter slug + section slug + text anchors, `kind: "breakout"` card or `"inline"` stage) and a lazy loader to `src/widgets/embeds.js`; a DB-authored `{ type: "widget" }` paragraph block wins over a code placement for the same widget. At desktop widths an inline stage is Teleported out of the prose column (which clips horizontal overflow) into TextComp's `#reader-stage-layer` (`src/helper/stageLayer.js`) so it can paint full-bleed; the card keeps a same-height slot in the flow (OPENBRAIN-37).
 
 **`router.beforeEach`** (in order):
 

@@ -120,16 +120,16 @@ export const WIDGET_PLACEMENTS = [
 
   // ── Attention & Working Memory — Arjun Krishnaswamy's widgets (OPENBRAIN-34)
   // Sonia's frame (1495:34228) shows these in the figure pane, i.e. inline.
-  // They ship as breakout cards for now because inline stages are clipped
-  // by the prose column (OPENBRAIN-37); flip `kind` to "inline" once that
-  // lands. SDT and the normalization model are DB-authored widget blocks
-  // from the OPENBRAIN-26 seed and are not placed here.
+  // Shipped as breakout cards in OPENBRAIN-34 while inline stages were
+  // clipped by the prose column; inline since OPENBRAIN-37 fixed that.
+  // SDT and the normalization model are DB-authored widget blocks from the
+  // OPENBRAIN-26 seed and are not placed here.
   {
     id: "attention-posner-cueing",
     widgetId: "posner-cueing",
     chapterSlug: "attention-and-working-memory",
     sectionSlug: "attention-is-measured-behaviorally",
-    kind: "breakout",
+    kind: "inline",
     // "The spatial cueing paradigm introduced by Michael Posner in 1980…"
     anchors: [
       { after: { textIncludes: "Michael Posner in 1980" } },
@@ -148,7 +148,7 @@ export const WIDGET_PLACEMENTS = [
     widgetId: "contrast-response-gain",
     chapterSlug: "attention-and-working-memory",
     sectionSlug: "neural-correlates-of-visual-attention",
-    kind: "breakout",
+    kind: "inline",
     // After the response-gain paragraph so both gain types are introduced
     // before the model that lets you switch between them.
     // Fallbacks stay ahead of the next topic (biased competition) rather than
@@ -172,7 +172,7 @@ export const WIDGET_PLACEMENTS = [
     widgetId: "biased-competition",
     chapterSlug: "attention-and-working-memory",
     sectionSlug: "neural-correlates-of-visual-attention",
-    kind: "breakout",
+    kind: "inline",
     anchors: [
       {
         after: {
@@ -195,7 +195,7 @@ export const WIDGET_PLACEMENTS = [
     widgetId: "tmt-feature-attention",
     chapterSlug: "attention-and-working-memory",
     sectionSlug: "neural-correlates-of-visual-attention",
-    kind: "breakout",
+    kind: "inline",
     anchors: [
       { after: { textIncludes: "feature-similarity gain principle" } },
       { after: { textIncludes: "Treue and Martinez-Trujillo" } },
