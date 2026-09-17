@@ -5,7 +5,10 @@
 // (figure label + name on the left, a fullscreen-expand button on the right) and
 // the diagram area below. While a chapter's figures have no real artwork yet,
 // the diagram area shows a labelled placeholder ("Artwork pending"). The shell
-// is what every real diagram will eventually slot into.
+// is what every real diagram slots into: once the row carries artwork
+// (config.images, or image_file_url for a single image; see
+// helper/figureCycle.js) the same frame shows it, cycling through a set when
+// there are several (OPENBRAIN-41). IllustrationsComp routes both states here.
 //
 // Expected props on `animation` (spread from animations.config in useAnimations.js):
 //   placeholder: true        — routes IllustrationsComp here
@@ -14,7 +17,10 @@
 //   title: "Edwin Smith papyrus"  — diagram name in the toolbar + frame
 //   description / caption    — optional supporting line
 //   note                     — optional production note (what art to source)
+//   images: [{ src, caption?, alt? }]  — real artwork; replaces the placeholder
 import { ref, computed, onBeforeUnmount } from "vue";
+import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
+import { figureImages } from "@/helper/figureCycle";
 
 const props = defineProps({
   animation: { type: Object, required: true },
@@ -44,6 +50,7 @@ const figureLabel = computed(() => {
 });
 
 const title = computed(() => props.animation.title || "Untitled figure");
+const images = computed(() => figureImages(props.animation));
 const caption = computed(
   () => props.animation.caption || props.animation.description || ""
 );
@@ -94,9 +101,16 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
         </button>
       </header>
 
-      <!-- Diagram area (placeholder until real artwork lands) -->
-      <div class="fig-area">
-        <div class="fig-placeholder">
+      <!-- Diagram area: the artwork, or a placeholder until it lands -->
+      <div class="fig-area" :class="{ 'fig-area--art': images.length }">
+        <FigureImages
+          v-if="images.length"
+          :images="images"
+          :caption="caption"
+          :label="figureLabel"
+          :title="title"
+        />
+        <div v-else class="fig-placeholder">
           <span class="fig-type-chip">
             <span aria-hidden="true">{{ type.glyph }}</span> {{ type.label }}
           </span>
@@ -140,8 +154,19 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               </svg>
             </button>
           </header>
-          <div class="fig-area fs-area">
-            <div class="fig-placeholder">
+          <div
+            class="fig-area fs-area"
+            :class="{ 'fig-area--art': images.length }"
+          >
+            <FigureImages
+              v-if="images.length"
+              :images="images"
+              :caption="caption"
+              :label="figureLabel"
+              :title="title"
+              large
+            />
+            <div v-else class="fig-placeholder">
               <span class="fig-type-chip">
                 <span aria-hidden="true">{{ type.glyph }}</span>
                 {{ type.label }}
@@ -241,6 +266,10 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
+}
+/* With artwork the viewer owns the whole area (image, caption, controls). */
+.fig-area--art {
+  align-items: stretch;
 }
 .fig-placeholder {
   display: flex;

@@ -15,6 +15,7 @@ import Illustration from "@/components/chapter/Illus/IllustrationComp.vue";
 import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScroll.vue";
 import IllustrationTransition from "@/components/chapter/Illus/IllustrationTransition.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
+import { usesFigureShell } from "@/helper/figureCycle";
 gsap.registerPlugin(ScrollTrigger);
 
 const activeAnimation = ref(null);
@@ -37,7 +38,7 @@ const animationList = computed(() => {
         clog("MOUNT", "renderer each figure will mount when active", {
           list: dbAnimations.value.map((a) => ({
             id: a.id,
-            renderer: a.placeholder
+            renderer: usesFigureShell(a)
               ? "Placeholder"
               : a.fullscreen
                 ? "FullScreen"
@@ -71,7 +72,7 @@ watch(activeAnimation, (id) => {
     );
     return;
   }
-  const renderer = a.placeholder
+  const renderer = usesFigureShell(a)
     ? "IllustrationPlaceholder"
     : a.fullscreen
       ? "FullScreenIllustration"
@@ -193,8 +194,8 @@ onBeforeUnmount(() => {
     class="hidden xl:block xl:fixed xl:left-0 xl:w-illus xl:z-30 pointer-events-none font-mono xl:top-[var(--reader-topbar-h)] xl:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
   >
     <template v-for="animation in animationList" :key="animation.id">
-      <!-- Typed figure/box placeholder (no artwork yet) -->
-      <template v-if="animation.placeholder">
+      <!-- Figure shell: image artwork, or the typed placeholder until it lands -->
+      <template v-if="usesFigureShell(animation)">
         <transition name="fade" mode="out-in">
           <IllustrationPlaceholder
             v-if="activeAnimation === animation.id.toLowerCase()"
@@ -205,7 +206,7 @@ onBeforeUnmount(() => {
       </template>
       <template
         v-if="
-          !animation.placeholder &&
+          !usesFigureShell(animation) &&
           !animation.fullscreen &&
           !animation.scroll &&
           !animation.isTransition
