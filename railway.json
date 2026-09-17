@@ -2,10 +2,10 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "npm run build"
+    "buildCommand": "npm run build && (npm run build-storybook -- -o dist/storybook || echo 'Storybook build failed: deploying the app without /storybook')"
   },
   "deploy": {
-    "startCommand": "serve -s dist -l $PORT",
+    "startCommand": "serve dist -l $PORT",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

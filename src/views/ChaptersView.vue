@@ -315,10 +315,38 @@ function chapterNumberFor(mod) {
         </div>
       </li>
     </ul>
+
+    <!-- Signed-in users land here (the guard skips the home page and its
+         footer), so the team's Storybook link lives here too. Plain anchor:
+         Storybook is a static build served beside the app. -->
+    <p class="library-foot">
+      <a href="/storybook/index.html" target="_blank" rel="noopener"
+        >Storybook</a
+      >
+      <span aria-hidden="true">·</span>
+      <router-link to="/styleguide">Styleguide</router-link>
+    </p>
   </main>
 </template>
 
 <style scoped>
+.library-foot {
+  display: flex;
+  gap: 0.5rem;
+  margin: 3rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-mute));
+}
+.library-foot a {
+  color: inherit;
+}
+.library-foot a:hover,
+.library-foot a:focus-visible {
+  color: rgb(var(--color-accent));
+}
+
 /* Chapter index — matches prototype IndexScreen (New Design Ideas/components/
    prototype.jsx). Editorial grid: serif titles, mono metadata, hairline rules,
    sharp 4px/0 radii, magenta progress. --ob-* tokens map to live --color-*. */
