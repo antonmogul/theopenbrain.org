@@ -475,6 +475,7 @@ async function executeDelete() {
 .view-content {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px 18px;
 }
 

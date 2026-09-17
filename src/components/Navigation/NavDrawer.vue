@@ -405,6 +405,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   flex-direction: column;
   gap: 4px;
   overflow: auto;
+  overscroll-behavior: contain;
   flex: 1;
 }
 .chapter-row {

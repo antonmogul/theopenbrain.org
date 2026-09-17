@@ -421,8 +421,18 @@ section p.breakSectionTitle {
 * {
   -ms-overflow-style: none;
   scrollbar-width: none;
-  overscroll-behavior: none;
   box-sizing: border-box;
+}
+
+/* No rubber-band / pull-to-refresh on the document itself. This used to sit
+   on `*`, which made every overflow-hidden box (the opener hero, figures,
+   breakout cards) a wheel and keyboard dead zone: a scroll container with
+   overscroll-behavior: none never hands the scroll on to the page, even when
+   it has nothing to scroll itself (OPENBRAIN-39). Overlay panels that really
+   scroll opt in to `contain` where they are defined. */
+html,
+body {
+  overscroll-behavior: none;
 }
 
 .chapter-reader section {

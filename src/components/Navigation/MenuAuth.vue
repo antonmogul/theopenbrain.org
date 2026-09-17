@@ -75,7 +75,7 @@ const viewTitle = computed(() => {
 
     <!-- Auth Panel -->
     <div
-      class="fixed h-screen bg-dark text-white overflow-y-scroll overflow-x-hidden scrollbar top-0 left-0 z-[56] text-medium duration-300 border-r border-violet/90"
+      class="fixed h-screen bg-dark text-white overflow-y-scroll overflow-x-hidden overscroll-contain scrollbar top-0 left-0 z-[56] text-medium duration-300 border-r border-violet/90"
       :class="[
         authStore.activeAuth
           ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none ml-0'
