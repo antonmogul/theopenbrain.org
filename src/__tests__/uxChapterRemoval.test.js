@@ -53,7 +53,7 @@ describe("OPENBRAIN-17 temporary chapter retirement", () => {
     expect(foundations).toContain("'foundations-of-neuroscience'");
     expect(foundations).toContain("WHERE version_number = '1.0'");
     expect(read("scripts/smoke.mjs")).toContain(
-      'path: "/chapter/3/foundations-of-neuroscience"'
+      'path: "/chapter/1/foundations-of-neuroscience"'
     );
   });
 });

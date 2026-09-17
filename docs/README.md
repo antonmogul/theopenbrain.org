@@ -4,12 +4,13 @@ Two kinds of files live here. **Current reference docs** describe how the repo w
 
 ## Current reference docs
 
-| Path                                 | What it is                                                                                                                     | Last commit |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `ci.md`                              | The CI gates and how to run them locally. Predates the Storybook coverage/build/smoke steps now in `.github/workflows/ci.yml`. | 2026-08-05  |
-| `architecture/README.md`             | Dependency-graph tooling: `npm run graph:visual`, `graph:orphans`, `graph:cycles`, `graph:check` and the layering rules.       | 2026-08-05  |
-| `storybook/student-view-coverage.md` | Storybook coverage table for student components and full-page views.                                                           | 2026-08-28  |
-| `typography-normalization.md`        | Typography tokens and role classes, plus the migration plan for components (updated 2026-06-30).                               | 2026-08-05  |
+| Path                                 | What it is                                                                                                                                   | Last commit |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `production-sql.md`                  | How migrations reach production (`supabase db push`), the applied-state ledger with how each file was verified, and the SQL-editor fallback. | 2026-09-17  |
+| `ci.md`                              | The CI gates and how to run them locally. Predates the Storybook coverage/build/smoke steps now in `.github/workflows/ci.yml`.               | 2026-08-05  |
+| `architecture/README.md`             | Dependency-graph tooling: `npm run graph:visual`, `graph:orphans`, `graph:cycles`, `graph:check` and the layering rules.                     | 2026-08-05  |
+| `storybook/student-view-coverage.md` | Storybook coverage table for student components and full-page views.                                                                         | 2026-08-28  |
+| `typography-normalization.md`        | Typography tokens and role classes, plus the migration plan for components (updated 2026-06-30).                                             | 2026-08-05  |
 
 Generated outputs, regenerate rather than edit: `architecture/graph.json` (`npm run graph:visual`, Prettier-ignored), `architecture/orphans.txt` (`npm run graph:orphans`), `architecture/cycles.txt` (`npm run graph:cycles`), `architecture/violations.txt` (`npm run graph:check`).
 

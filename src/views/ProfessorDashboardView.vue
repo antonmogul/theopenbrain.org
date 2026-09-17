@@ -285,15 +285,13 @@ onMounted(() => {
     :email="user?.email"
     role="Professor"
     accent="amber"
-    :back-to="'/chapter/1/the-retina'"
+    :back-to="'/chapters'"
     back-label="Back to book"
     @update:active-section="(id) => (activeSection = id)"
   >
     <template #footer>
       <hr class="rail-rule" />
-      <router-link to="/chapter/1/the-retina" class="rail-back"
-        >← Back to book</router-link
-      >
+      <router-link to="/chapters" class="rail-back">← Back to book</router-link>
       <button type="button" class="rail-back" @click="handleLogout">
         Sign out
       </button>

@@ -746,7 +746,7 @@ onMounted(() => {
     :email="user?.email"
     role="Creator"
     accent="magenta"
-    :back-to="'/chapter/1/the-retina'"
+    :back-to="'/chapters'"
     back-label="Read book"
     @update:active-section="setActiveSection"
   >

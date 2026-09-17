@@ -96,7 +96,9 @@ npm run deploy             # deploy.sh: git push --follow-tags
 npm version <patch|minor|major>  # Bumps version, then postversion runs deploy
 ```
 
-Railway builds and serves `main` (`railway.json`: `npm run build`, then `serve -s dist -l $PORT`). There is no separate deploy step beyond pushing.
+Railway builds and serves `main` (`railway.json`). The build is `npm run build`, then Storybook into `dist/storybook` (non-fatal: a failed Storybook build still deploys the app). The start command is `serve dist -l $PORT` **without `-s`**: the SPA fallback, the `/storybook` redirect, `cleanUrls: false` (Storybook's `iframe.html` needs it) and the cache headers all live in `public/serve.json`. `-s` would put its catch-all rewrite ahead of that file and serve the app shell for `/storybook/`. Storybook is linked with plain `<a href="/storybook/index.html">` (nav drawer, home footer, `/chapters`), never a `router-link`.
+
+**The database is not part of the deploy.** Migrations reach production with `supabase db push` (the CLI is linked to project `ocenwbkdzmxhsvwlornp`); see `docs/production-sql.md` for the workflow and the applied-state ledger. Check `supabase migration list` before assuming a migration is live.
 
 ### Clean Install
 
@@ -244,9 +246,11 @@ sections → paragraphs → subSection → paragraphs → subSubSection
 
 Live modules today (`/chapter/<number>/<slug>`):
 
-- `the-retina` — chapter 1, imported from `text.json` by `scripts/import-chapter-1-to-supabase.mjs`; figures/animation states seeded by the `2026*_seed_chapter1_*` migrations.
-- `visual-perception-ux` — chapter 2, a temporary demo module. `supabase/migrations/20260828000000_remove_temporary_visual_perception_ux.sql` deletes it; check the project's applied migrations before assuming it is gone.
-- `foundations-of-neuroscience` — chapter 3, the "History" chapter, seeded by the `20260605*_seed_chapter_foundations*` migrations (generated with `scripts/import_foundations_chapter.py`).
+- `foundations-of-neuroscience` — chapter 1, the "History" chapter, seeded by the `20260605*_seed_chapter_foundations*` migrations (generated with `scripts/import_foundations_chapter.py`).
+- `the-retina` — chapter 2, imported from `text.json` by `scripts/import-chapter-1-to-supabase.mjs`; figures/animation states seeded by the `2026*_seed_chapter1_*` migrations. Files, scripts and docs named "chapter1" refer to this chapter: it was chapter 1 until the book was reordered on 2026-09-17.
+- `attention-and-working-memory` — chapter 3, `status = 'draft'` (creator-only in the reader), seeded by `20260903000100_seed_chapter_attention_draft.sql`.
+
+The chapter number is `modules.order_index` and is display-only: the reader resolves by slug, so never hard-code `/chapter/<n>/<slug>` in app code (link to `/chapters`, or build the path from the module row). `modules` has `UNIQUE(content_version_id, order_index)`, so renumbering needs the park-then-assign pattern in `20260917000000_reorder_chapters_history_first.sql`.
 
 Schema and seeds live in `supabase/migrations/` (initial schema, RLS fixes, references, highlight tags, user preferences, profiles, animation tables, reading-progress hardening). `supabase/seeds/professor_test_data.sql` and `supabase/seed_dashboard_data.sql` are dev fixtures.
 

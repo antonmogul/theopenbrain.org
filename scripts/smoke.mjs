@@ -16,7 +16,7 @@
  * Usage:
  *   npm run test:smoke
  *   node scripts/smoke.mjs --base http://localhost:4173
- *   node scripts/smoke.mjs --only chapter-1,chapters   (route names, for a quick loop)
+ *   node scripts/smoke.mjs --only retina,chapters   (route names, for a quick loop)
  *
  * Failure screenshots land in .smoke/ (git-ignored, uploaded by CI).
  */
@@ -90,14 +90,14 @@ const HAS_SUPABASE = hasSupabaseCredentials();
 const ROUTES = [
   { path: "/", name: "home", minText: 50 },
   {
-    path: "/chapter/3/foundations-of-neuroscience",
-    name: "chapter-3",
+    path: "/chapter/1/foundations-of-neuroscience",
+    name: "foundations",
     minText: 2000,
     needsData: true,
   },
   {
-    path: "/chapter/1/the-retina",
-    name: "chapter-1",
+    path: "/chapter/2/the-retina",
+    name: "retina",
     minText: 2000,
     needsData: true,
     /*
