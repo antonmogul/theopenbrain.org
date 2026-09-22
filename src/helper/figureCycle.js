@@ -50,19 +50,21 @@ export function stepIndex(index, count, direction = 1) {
  * milliseconds. `image` is { src, caption, alt }; `sharedCaption` is the
  * figure-level caption shown when the image has none of its own.
  *
- * TODO(Anton): this is the reading-pace decision for cycling figures, and the
- * two figures pull in opposite directions. Figure 6 has ten plates, each with
- * its own 300-600 character caption a student should be able to finish;
- * Figure 7 has four plates under one short legend, where a slow cycle just
- * feels stuck. A flat number is wrong for one of them. Options: scale with the
- * caption length (roughly 15-20 characters per second is comfortable reading),
- * clamp to a floor and ceiling, or return Infinity to make a figure
- * manual-only. The viewer already pauses on hover/focus, stops auto-advancing
- * for good once the reader uses the arrows, and never auto-advances under
- * reduce-motion, so this only sets the untouched, default pace.
+ * Scales with caption length: ~18 characters per second is comfortable reading
+ * pace. Clamped to a 4–12 s window so short-legend figures (like Fig 7's four
+ * Vesalius plates) feel brisk while long-caption figures (like Fig 6's ten
+ * cell-doctrine plates at 300–600 chars each) give the reader time to finish.
+ * The viewer already pauses on hover/focus, stops auto-advancing for good once
+ * the reader uses the arrows, and never auto-advances under reduce-motion, so
+ * this only sets the untouched, default pace.
  */
+const CHARS_PER_SECOND = 18;
+const FLOOR_MS = 4000;
+const CEILING_MS = 12000;
+
 export function slideDurationMs(image, sharedCaption = "") {
   const text = image?.caption || sharedCaption || "";
-  void text;
-  return 7000;
+  if (!text) return FLOOR_MS;
+  const reading = (text.length / CHARS_PER_SECOND) * 1000;
+  return Math.max(FLOOR_MS, Math.min(CEILING_MS, reading));
 }

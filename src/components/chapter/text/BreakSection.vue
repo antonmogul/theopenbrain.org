@@ -55,7 +55,9 @@ const openInfo = () => {
               :id="'info-' + toSlug(content.title)"
               class="flex justify-between w-full h-auto max-h-[80vh] overflow-scroll pb-2 overscroll-auto pr-32"
             >
-              <div class="flex flex-col justify-start gap-16 w-[800px]">
+              <div
+                class="flex flex-col justify-start gap-16 w-full max-w-[800px]"
+              >
                 <p class=" " v-html="content.text" />
                 <div v-if="content.steps" class="">
                   <p class="font-semibold">Directions:</p>

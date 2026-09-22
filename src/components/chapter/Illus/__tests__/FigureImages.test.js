@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import FigureImages from "../FigureImages.vue";
+import { slideDurationMs } from "@/helper/figureCycle";
 
 const SET = [
   { src: "/one.jpg", caption: "First plate", alt: "" },
@@ -46,8 +47,12 @@ describe("FigureImages", () => {
 
   it("auto-advances until the reader takes over, then stays put", async () => {
     const w = mountSet();
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(w.find(".figimg-count").text()).not.toBe("1 / 3");
+    // One slide's worth of the slowest pace slideDurationMs allows; a large
+    // round number can land on a full lap and read "1 / 3" again.
+    await vi.advanceTimersByTimeAsync(
+      slideDurationMs(SET[0], "Shared legend") + 100
+    );
+    expect(w.find(".figimg-count").text()).toBe("2 / 3");
 
     await w.find('[aria-label="Next image"]').trigger("click");
     const after = w.find(".figimg-count").text();

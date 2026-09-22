@@ -18,9 +18,9 @@ export default {
   },
   render: () => ({
     components: { ChapterOverviewView, ViewStoryShell },
-    template: `<ViewStoryShell label="ChapterOverviewView" path="/chapter/3"><ChapterOverviewView /></ViewStoryShell>`,
+    template: `<ViewStoryShell label="ChapterOverviewView" path="/chapter/1"><ChapterOverviewView /></ViewStoryShell>`,
   }),
 };
 
-/** Chapter 3, Foundations of Neuroscience. */
+/** Chapter 1, Foundations of Neuroscience. */
 export const Default = {};
