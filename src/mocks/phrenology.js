@@ -5,16 +5,20 @@
  * hotspots from the Spurzheim/Fowler phrenology chart. Swap for Supabase later.
  *
  * Hotspot x/y are percentages of the skull stage box (2D flat widget).
- * pos/normal are model-viewer 3D hotspot coords (Phrenology3DView), HARVESTED
+ * pos/normal are the retired model-viewer hotspot coords (the 3D view now
+ * places its markers from the Figma region maps, helper/phrenologyMaps), HARVESTED
  * from the shipping skull.glb via positionAndNormalFromPoint raycasts (the 2D
  * design positions projected onto the mesh, midline faculties pulled to the
  * sagittal midline via a smallest-|x| scan — within a few mm of x=0) — see
  * OPENBRAIN-7. Re-harvest if the GLB is swapped.
  */
 
-// Footer citation shown under the widget (both 2D and 3D views).
+// Footer line under the widget (both 2D and 3D views). It used to quote the
+// Penfield & Perot (1963) paper, which is the Case Cabinet's source, not this
+// widget's. Until the authors name the chart the Figma map was drawn from,
+// this says only what the map is.
 export const PHRENOLOGY_CITATION =
-  "Excerpts from: The Brain's Record of Auditory and Visual Experience — a final summary and discussion.";
+  "Faculty map after the phrenological charts of Gall and Spurzheim, early 19th century.";
 
 export const PHRENOLOGY_VIEWS = [
   {
