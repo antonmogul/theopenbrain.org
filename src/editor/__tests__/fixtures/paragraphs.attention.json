@@ -1,0 +1,115 @@
+[
+  {
+    "id": "f604e5ec-2b83-4669-bf7f-d49883dc64da",
+    "chapter": "attention-and-working-memory",
+    "content": {
+      "blocks": [
+        {
+          "type": "figure_placeholder",
+          "number": 1,
+          "caption": "The guru and princes by Nandalal Bose"
+        },
+        {
+          "type": "text",
+          "content": ". The guru and princes by Nandalal Bose"
+        }
+      ]
+    }
+  },
+  {
+    "id": "9a0fba1c-8faa-44a2-b319-d0b6bdbc5400",
+    "chapter": "attention-and-working-memory",
+    "content": {
+      "blocks": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "The cocktail party problem"
+        }
+      ]
+    }
+  },
+  {
+    "id": "3c12087f-2a29-496e-b38f-e2745a83849c",
+    "chapter": "attention-and-working-memory",
+    "content": {
+      "blocks": [
+        {
+          "kind": "breakout",
+          "type": "widget",
+          "blurb": "Drag the criterion, adjust d′, and watch the ROC curve respond. Demonstrates how sensitivity and bias are independent.",
+          "route": "/sdt",
+          "title": "Signal Detection Theory",
+          "credit": "Arjun Krishnaswamy",
+          "widgetId": "sdt",
+          "placementId": "attention-sdt"
+        }
+      ]
+    }
+  },
+  {
+    "id": "7cbb3835-3861-4051-ad8a-92e6e0590e85",
+    "chapter": "attention-and-working-memory",
+    "content": {
+      "blocks": [
+        {
+          "type": "figure_placeholder",
+          "number": 3,
+          "caption": "Posner Invalid Cueing task"
+        },
+        {
+          "type": "text",
+          "content": ". Posner Invalid Cueing task"
+        }
+      ]
+    }
+  },
+  {
+    "id": "7d3a0e23-b3b1-4d60-a388-0651640a64df",
+    "chapter": "attention-and-working-memory",
+    "content": {
+      "blocks": [
+        {
+          "kind": "breakout",
+          "type": "widget",
+          "blurb": "Interactive normalization model showing how attention modulates neural responses through divisive normalisation — the unifying computation.",
+          "route": "",
+          "title": "Normalization model of attention",
+          "credit": "Arjun Krishnaswamy",
+          "widgetId": "normalization-model",
+          "placementId": "attention-normalization-model"
+        }
+      ]
+    }
+  },
+  {
+    "id": "43616330-e952-4f56-9f97-8acf731a43f9",
+    "chapter": "attention-and-working-memory",
+    "content": {
+      "blocks": [
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "One stimulus"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cb345d3a-3684-4722-a722-73c4e62cba0b",
+    "chapter": "attention-and-working-memory",
+    "content": {
+      "blocks": [
+        {
+          "type": "figure_placeholder",
+          "number": 7,
+          "caption": "Just a brain cartoon with these centers labelled and arrows with flow and known computations"
+        },
+        {
+          "type": "text",
+          "content": ". Just a brain cartoon with these centers labelled and arrows with flow and known computations"
+        }
+      ]
+    }
+  }
+]

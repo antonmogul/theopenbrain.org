@@ -15,7 +15,7 @@ import { useRouter, useRoute } from "vue-router";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
 import { attemptPercent } from "@/utils/quizLabels";
-import { dashboardLockReason, withBlocks } from "@/editor/editability";
+import { dashboardLockReason, withBlocks } from "@/editor/editability.mjs";
 import ChapterBlockEditor from "@/components/dashboard/chapters/ChapterBlockEditor.vue";
 import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
