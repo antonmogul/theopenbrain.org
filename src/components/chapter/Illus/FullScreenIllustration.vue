@@ -259,5 +259,3 @@ const openInfo = () => {
     </div>
   </div>
 </template>
-
-<style scoped></style>

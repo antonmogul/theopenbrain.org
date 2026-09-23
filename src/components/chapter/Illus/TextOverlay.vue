@@ -7,7 +7,7 @@
     />
     <div
       :id="'info-' + toSlug(animation?.title)"
-      class="flex overflow-y-scroll overflow-x-visible flex-col text-base w-text h-[80vh] pb-2 overscroll-auto pr-32"
+      class="flex overflow-y-scroll overflow-x-visible flex-col text-base w-full max-w-text h-[80vh] pb-2 overscroll-auto pr-12"
     >
       <div class="flex flex-col justify-start gap-16 w-full pt-2">
         <p class=" " v-html="animation?.infoText" />
