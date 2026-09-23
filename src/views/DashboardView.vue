@@ -712,6 +712,11 @@ async function handleWizardCreate() {
 // Watch for section changes to fetch data
 watch(activeSection, (newSection) => {
   switch (newSection) {
+    case "dashboard":
+      // Opened on another section first (?section=, /editor), so the
+      // overview's data was never fetched.
+      if (dashboardLoading.value) fetchDashboardData();
+      break;
     case "chapters":
       if (chapters.value.length === 0) fetchAllChapters();
       // Figure badges and the remove prompt name figures by their media title.
