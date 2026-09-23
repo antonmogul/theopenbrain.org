@@ -21,6 +21,8 @@ defineProps({
   quizzesError: { type: [String, null], default: null },
   editingQuiz: { type: [Object, null], default: null },
   editingQuestion: { type: [Object, null], default: null },
+  // Chapters a quiz can be attached to ({ id, title, order_index }).
+  chapters: { type: Array, default: () => [] },
 });
 
 const showQuizEditor = defineModel("showQuizEditor", {
@@ -102,6 +104,35 @@ defineEmits([
             rows="2"
           ></textarea>
         </FormField>
+        <div class="grid-2">
+          <FormField
+            label="Chapter"
+            hint="Students find a quiz through its chapter."
+          >
+            <select v-model="quizForm.module_id">
+              <option :value="null">Not attached</option>
+              <option v-for="c in chapters" :key="c.id" :value="c.id">
+                {{ c.order_index }}. {{ c.title }}
+              </option>
+            </select>
+          </FormField>
+          <FormField label="Visible to students">
+            <label class="check-row">
+              <input type="checkbox" v-model="quizForm.is_published" />
+              <span>{{
+                quizForm.is_published ? "Visible" : "Hidden (draft)"
+              }}</span>
+            </label>
+          </FormField>
+        </div>
+        <p
+          v-if="quizForm.is_published && !quizForm.module_id"
+          class="form-note"
+          role="note"
+        >
+          Visible, but not attached to a chapter, so students still won't find
+          it.
+        </p>
         <div class="grid-2">
           <FormField label="Time limit (min)">
             <input
@@ -304,10 +335,13 @@ defineEmits([
         <div class="card-head">
           <div>
             <h3 class="card-title sm">{{ quiz.title }}</h3>
-            <span v-if="quiz.modules" class="muted-mono">{{
-              quiz.modules.title
+            <span class="muted-mono">{{
+              quiz.modules ? quiz.modules.title : "Not attached to a chapter"
             }}</span>
           </div>
+          <StatusBadge :variant="quiz.is_published ? 'complete' : 'neutral'">{{
+            quiz.is_published ? "Visible" : "Hidden"
+          }}</StatusBadge>
           <div class="btn-row">
             <Button
               variant="outline"
@@ -352,5 +386,15 @@ defineEmits([
 </template>
 
 <style scoped>
+.form-note {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: rgb(var(--color-ink));
+  background: rgb(var(--color-warn) / 0.14);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
 @import "@/styles/dashboard-sections.css";
 </style>

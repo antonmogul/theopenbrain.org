@@ -23,6 +23,8 @@ defineProps({
   filteredMedia: { type: Array, default: () => [] },
   mediaByType: { type: Object, default: () => ({}) },
   formatFileSize: { type: Function, required: true },
+  // { places: [{ chapter, where }], states, variants, inUse } | { error } | null
+  mediaUsage: { type: [Object, null], default: null },
 });
 
 const mediaSearch = defineModel("mediaSearch", { type: String, default: "" });
@@ -76,7 +78,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <svg
@@ -112,7 +118,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <svg
@@ -162,7 +172,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <img
@@ -208,7 +222,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <svg
@@ -297,6 +315,41 @@ defineEmits(["fetch", "filter", "select", "delete"]);
               selectedMedia.scientific_domain || "-"
             }}</span>
           </div>
+          <div class="kv-row kv-full usage">
+            <span class="kv-key">Used in</span>
+            <p v-if="!mediaUsage" class="kv-val muted">Checking…</p>
+            <p v-else-if="mediaUsage.error" class="kv-val muted">
+              Couldn't check: {{ mediaUsage.error }}
+            </p>
+            <template v-else>
+              <ul v-if="mediaUsage.places.length" class="usage-list">
+                <li v-for="(p, i) in mediaUsage.places" :key="i">
+                  <strong>{{ p.chapter }}</strong> · {{ p.where }}
+                </li>
+              </ul>
+              <p v-else class="kv-val muted">
+                No paragraph or section shows it directly.
+                <template v-if="!mediaUsage.inUse">
+                  Figures can still load it by its key ({{
+                    selectedMedia.animation_key
+                  }}) from code, for example as a transition, so check before
+                  deleting.
+                </template>
+              </p>
+              <p
+                v-if="mediaUsage.states || mediaUsage.variants"
+                class="kv-val muted"
+              >
+                Carries {{ mediaUsage.states }} figure state{{
+                  mediaUsage.states === 1 ? "" : "s"
+                }}<template v-if="mediaUsage.variants">
+                  and {{ mediaUsage.variants }} variant{{
+                    mediaUsage.variants === 1 ? "" : "s"
+                  }}</template
+                >, which would be deleted with it.
+              </p>
+            </template>
+          </div>
           <div v-if="selectedMedia.description" class="kv-row kv-full">
             <span class="kv-key">Description</span>
             <p class="kv-val">{{ selectedMedia.description }}</p>
@@ -311,6 +364,12 @@ defineEmits(["fetch", "filter", "select", "delete"]);
           v-if="selectedMedia"
           variant="danger"
           size="sm"
+          :disabled="!mediaUsage || !!mediaUsage.error || mediaUsage.inUse"
+          :title="
+            mediaUsage?.inUse
+              ? 'In use: remove it from its figures first.'
+              : 'Delete this unused asset'
+          "
           @click="$emit('delete', selectedMedia.id)"
           >Delete asset</Button
         >
@@ -320,5 +379,20 @@ defineEmits(["fetch", "filter", "select", "delete"]);
 </template>
 
 <style scoped>
+.usage-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 2px;
+  font-size: 0.8125rem;
+}
+.usage .muted {
+  color: rgb(var(--color-mute));
+}
+.media-card:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+
 @import "@/styles/dashboard-sections.css";
 </style>
