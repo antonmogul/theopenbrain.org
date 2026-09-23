@@ -149,6 +149,7 @@ const {
   mediaFilter,
   mediaSearch,
   selectedMedia,
+  mediaUsage,
   filteredMedia,
   mediaByType,
   fetchMedia,
@@ -1427,6 +1428,7 @@ onMounted(() => {
       :filtered-media="filteredMedia"
       :media-by-type="mediaByType"
       :format-file-size="formatFileSize"
+      :media-usage="mediaUsage"
       v-model:media-search="mediaSearch"
       v-model:selected-media="selectedMedia"
       @fetch="fetchMedia"
