@@ -32,7 +32,9 @@ jobs:
   quality:
     name: Lint, test, build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Typical run is ~10.5 min; 15 cancelled a green run during the final smoke
+    # step (PR #53, 23 Sep 2026).
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v5
