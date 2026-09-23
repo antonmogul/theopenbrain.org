@@ -753,6 +753,31 @@ async function handleWizardCreate() {
   }
 }
 
+// The address bar follows the section (OPENBRAIN-53), so Back/Forward, reload
+// and shared links land where you were. Overview is the bare /dashboard.
+watch(activeSection, (section) => {
+  const wanted = section === "dashboard" ? undefined : section;
+  if (route.query.section !== wanted) {
+    const query = { ...route.query };
+    if (wanted) query.section = wanted;
+    else delete query.section;
+    router.push({ query });
+  }
+  // Each section starts at its top, not at the last section's scroll offset.
+  window.scrollTo({ top: 0 });
+});
+
+watch(
+  () => route.query.section,
+  (section) => {
+    const target = section || "dashboard";
+    if (target === activeSection.value) return;
+    if (target === "chapter-wizard") startChapterWizard();
+    else if (creatorNavItems.some((i) => i.id === target))
+      activeSection.value = target;
+  }
+);
+
 // Watch for section changes to fetch data
 watch(activeSection, (newSection) => {
   switch (newSection) {
