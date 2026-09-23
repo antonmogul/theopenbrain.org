@@ -16,6 +16,7 @@ const { stubView } = vi.hoisted(() => ({
 vi.mock("@/views/HomeView.vue", () => ({ default: stubView }));
 vi.mock("@/views/ChaptersView.vue", () => ({ default: stubView }));
 vi.mock("@/views/EditorView.vue", () => ({ default: stubView }));
+vi.mock("@/views/DashboardView.vue", () => ({ default: stubView }));
 
 vi.mock("@/stores", async () => {
   const { reactive } = await vi.importActual("vue");
@@ -114,13 +115,15 @@ describe("router wiring", () => {
     warn.mockRestore();
   });
 
-  it("lets a creator onto /editor", async () => {
+  it("passes a creator through /editor to Dashboard → Chapters", async () => {
     getSessionFromStorage.mockReturnValue(SESSION);
     apiRequest.mockResolvedValue([{ role: "creator" }]);
 
     const router = makeRouter();
     await router.push("/editor");
 
-    expect(router.currentRoute.value.path).toBe("/editor");
+    expect(router.currentRoute.value.fullPath).toBe(
+      "/dashboard?section=chapters"
+    );
   });
 });

@@ -6,7 +6,9 @@
 //   @save     { paragraphId, content: { blocks }, contentText }  -> parent PATCHes + refreshes
 //   @reorder  { sectionId, orderedIds: string[] }                -> parent PATCHes order_index + refreshes
 //   @attach-media  block   -> parent opens the media picker for this block
-//   @detach-media  block   -> parent clears the block's media
+//   @detach-media  block   -> parent asks, then clears the block's media
+// `readonly` (the default until the creator clicks Edit) turns off selection,
+// drag-reorder and attach/detach, so browsing a live chapter can't change it.
 // Props are the already-fetched content; the parent re-passes them after a refresh.
 import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
@@ -18,6 +20,7 @@ const props = defineProps({
   mediaItems: { type: Array, default: () => [] },
   saving: { type: Boolean, default: false },
   saveStatus: { type: String, default: "" },
+  readonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(["save", "reorder", "attach-media", "detach-media"]);
 
@@ -186,6 +189,7 @@ watch(
 
 // --- selection ---
 function selectBlock(block) {
+  if (props.readonly) return;
   if (block.type === "section") return; // sections not editable
   selectedBlock.value = block;
   const blocks = block.content?.blocks || [];
@@ -195,6 +199,13 @@ function clearSelection() {
   selectedBlock.value = null;
   editorContent.value = "";
 }
+
+watch(
+  () => props.readonly,
+  (ro) => {
+    if (ro) clearSelection();
+  }
+);
 
 // --- save (emit to parent) ---
 function save() {
@@ -213,7 +224,7 @@ function save() {
 
 // --- drag & drop (reorder within a section; emit ordered ids to parent) ---
 function handleDragStart(e, block) {
-  if (block.type === "section") return;
+  if (props.readonly || block.type === "section") return;
   draggedBlockId.value = block.id;
   e.dataTransfer.effectAllowed = "move";
 }
@@ -304,7 +315,7 @@ const chapterStats = computed(() => {
 </script>
 
 <template>
-  <div class="chapter-editor-layout">
+  <div class="chapter-editor-layout" :class="{ 'is-readonly': readonly }">
     <!-- Left: block list -->
     <div class="blocks-sidebar">
       <div class="blocks-list">
@@ -319,7 +330,7 @@ const chapterStats = computed(() => {
             highlighted: highlightedBlockId === block.id && !selectedBlock,
             'drag-over': dragOverBlockId === block.id,
           }"
-          :draggable="block.type === 'paragraph'"
+          :draggable="!readonly && block.type === 'paragraph'"
           @click="selectBlock(block)"
           @dragstart="handleDragStart($event, block)"
           @dragover="handleDragOver($event, block)"
@@ -346,6 +357,7 @@ const chapterStats = computed(() => {
           </template>
           <template v-else>
             <svg
+              v-if="!readonly"
               class="drag-handle"
               width="14"
               height="14"
@@ -361,13 +373,13 @@ const chapterStats = computed(() => {
             </svg>
             <span class="block-index">P{{ block.paraIndex + 1 }}</span>
             <span class="block-preview">{{
-              block.preview || "Empty paragraph"
+              block.preview ||
+              (block.animationId ? "Figure" : "Empty paragraph")
             }}</span>
             <span
               v-if="block.animationId"
               class="media-badge"
-              title="Click to remove media"
-              @click.stop="emit('detach-media', block)"
+              :title="block.animationTitle"
             >
               <svg
                 width="12"
@@ -379,11 +391,19 @@ const chapterStats = computed(() => {
               >
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
               </svg>
-              {{ block.animationTrigger || "Media" }}
-              <span class="media-badge-x">&times;</span>
+              <span class="media-badge-label">{{ block.animationTitle }}</span>
+              <button
+                v-if="!readonly"
+                type="button"
+                class="media-badge-x"
+                :aria-label="`Remove ${block.animationTitle} from P${block.paraIndex + 1}`"
+                @click.stop="emit('detach-media', block)"
+              >
+                &times;
+              </button>
             </span>
             <button
-              v-else
+              v-else-if="!readonly"
               type="button"
               class="attach-media-btn"
               title="Attach animation or media"
@@ -502,6 +522,9 @@ const chapterStats = computed(() => {
 </template>
 
 <style scoped>
+.chapter-editor-layout.is-readonly .block-item {
+  cursor: default;
+}
 .chapter-editor-layout {
   display: grid;
   grid-template-columns: 340px 1fr;
@@ -614,14 +637,36 @@ const chapterStats = computed(() => {
   background: rgb(var(--color-accent) / 0.12);
   color: rgb(var(--color-accent));
   flex: none;
-  cursor: pointer;
 }
-.media-badge:hover {
-  background: rgb(var(--color-accent) / 0.2);
+.media-badge-label {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .media-badge-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
   font-size: 0.8125rem;
   line-height: 1;
+  cursor: pointer;
+}
+.media-badge-x:hover,
+.media-badge-x:focus-visible {
+  background: rgb(var(--color-accent) / 0.2);
+}
+.media-badge-x:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 1px;
 }
 .attach-media-btn {
   display: inline-flex;

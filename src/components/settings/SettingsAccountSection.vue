@@ -6,6 +6,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
+import { isBetaHidden } from "@/constants/beta";
 
 const router = useRouter();
 const { signOut, updatePassword } = useAuth();
@@ -39,7 +40,12 @@ async function changePassword() {
   }, 1800);
 }
 
-// Presentational rows (no backend in this reskin).
+// Presentational rows (no backend in this reskin). Hidden for the beta along
+// with the danger zone, so every control on the page does what it says.
+const showExtras = !isBetaHidden("settings.account-extras");
+// Section numbers follow what's shown: Profile, [Email, Data,] Account.
+const eyebrowNumber = isBetaHidden("settings.notifications") ? "02" : "04";
+
 const presentationalRows = [
   {
     label: "Two-factor authentication",
@@ -67,8 +73,8 @@ async function handleSignOut() {
 <template>
   <section id="account" class="section">
     <header class="section-header">
-      <p class="eyebrow">06 · Account</p>
-      <h2>Sign-in &amp; subscription</h2>
+      <p class="eyebrow">{{ eyebrowNumber }} · Account</p>
+      <h2>{{ showExtras ? "Sign-in & subscription" : "Sign-in" }}</h2>
     </header>
 
     <div class="rows-card">
@@ -119,17 +125,19 @@ async function handleSignOut() {
       </div>
 
       <!-- Presentational rows -->
-      <div v-for="r in presentationalRows" :key="r.label" class="row">
-        <div class="row-text">
-          <div class="row-label">{{ r.label }}</div>
-          <div class="row-hint">{{ r.hint }}</div>
+      <template v-if="showExtras">
+        <div v-for="r in presentationalRows" :key="r.label" class="row">
+          <div class="row-text">
+            <div class="row-label">{{ r.label }}</div>
+            <div class="row-hint">{{ r.hint }}</div>
+          </div>
+          <button class="btn" type="button" disabled>{{ r.action }}</button>
         </div>
-        <button class="btn" type="button" disabled>{{ r.action }}</button>
-      </div>
+      </template>
     </div>
 
     <!-- Danger zone (presentational delete) -->
-    <div class="danger-zone">
+    <div v-if="showExtras" class="danger-zone">
       <p class="danger-eyebrow">● Danger zone</p>
       <div class="danger-row">
         <div>

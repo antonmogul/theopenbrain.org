@@ -9,9 +9,10 @@ export const useAuthStore = defineStore("auth", {
     authSuccess: null,
   }),
   actions: {
-    openAuth() {
+    // "Sign in" buttons open the login form; Register is one link away in it.
+    openAuth(view = "login") {
       this.activeAuth = true;
-      this.authView = "register";
+      this.authView = view;
       this.authError = null;
       this.authSuccess = null;
     },

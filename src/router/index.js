@@ -28,10 +28,15 @@ export const routes = [
     meta: { requiresAuth: true },
   },
   {
+    // The old flat block editor (382 blocks titled "Paragraph 1", "Paragraph
+    // 2"…, chapters interleaved). Dashboard → Chapters → Edit chapter replaces
+    // it (OPENBRAIN-50). beforeEnter runs after the global role guard, so the
+    // route keeps its creator gate; EditorView stays until it is retired.
     path: "/editor",
     name: "editor",
     component: () => import("../views/EditorView.vue"),
     meta: { requiresAuth: true, requiredRole: "creator" },
+    beforeEnter: () => ({ path: "/dashboard", query: { section: "chapters" } }),
   },
   {
     path: "/dashboard/chapter/new",

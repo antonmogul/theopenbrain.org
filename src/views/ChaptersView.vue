@@ -3,9 +3,11 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useAuth } from "@/composables/useAuth";
+import { useAuthStore } from "@/stores/auth";
 import { ROLE_UNAVAILABLE_QUERY } from "@/router/guards";
 
 const route = useRoute();
+const authStore = useAuthStore();
 const { user, session, isAuthenticated } = useAuth();
 
 // The auth guard lands here with ?auth=role-unavailable when a role-gated
@@ -194,7 +196,8 @@ function chapterNumberFor(mod) {
           off.
         </p>
         <p v-if="!isAuthenticated" class="signin-cta">
-          <router-link to="/">Sign in</router-link> to track your progress.
+          <button type="button" @click="authStore.openAuth()">Sign in</button>
+          to track your progress.
         </p>
         <p v-if="roleUnavailable" class="auth-notice" role="status">
           We couldn't confirm your account role, so that page stayed closed.
@@ -421,7 +424,15 @@ function chapterNumberFor(mod) {
   color: rgb(var(--color-mute));
 }
 
-.signin-cta a {
+.signin-cta button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+.signin-cta a,
+.signin-cta button {
   color: rgb(var(--color-accent));
   text-decoration: underline;
 }

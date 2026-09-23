@@ -7,6 +7,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useProfile } from "@/composables/useProfile";
 import { useHomeRoute } from "@/composables/useHomeRoute";
 import SettingsPanels from "@/components/settings/SettingsPanels.vue";
+import { isBetaHidden } from "@/constants/beta";
 
 const { user, profile } = useAuth();
 const { profile: liveProfile } = useProfile();
@@ -18,7 +19,7 @@ const SECTIONS = [
   { id: "notifications", label: "Email preferences" },
   { id: "data", label: "Data & privacy" },
   { id: "account", label: "Account" },
-];
+].filter((s) => !isBetaHidden(`settings.${s.id}`));
 const activeId = ref("profile");
 
 function onScroll() {
