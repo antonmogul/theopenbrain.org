@@ -63,7 +63,7 @@ async function worker() {
 
     try {
       const response = await page.goto(
-        `${baseUrl}/iframe?id=${id}&viewMode=story`,
+        `${baseUrl}/iframe.html?id=${id}&viewMode=story`,
         { waitUntil: "domcontentloaded", timeout: 30_000 }
       );
       await page

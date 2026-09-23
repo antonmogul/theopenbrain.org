@@ -326,6 +326,7 @@ async function executeDelete() {
   border-bottom: 1px solid rgb(var(--color-line));
   max-height: 250px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .history-label {

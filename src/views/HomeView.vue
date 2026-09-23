@@ -174,7 +174,11 @@ const features = [
         </div>
       </div>
       <p class="foot-legal">
-        An open access project · Montreal Neurological Institute
+        An open access project · Montreal Neurological Institute ·
+        <!-- Plain anchor: Storybook is a static build beside the app. -->
+        <a href="/storybook/index.html" target="_blank" rel="noopener"
+          >Storybook</a
+        >
       </p>
     </footer>
   </main>
@@ -399,6 +403,13 @@ const features = [
   letter-spacing: 0.06em;
   color: rgb(var(--color-mute));
   margin: 0;
+}
+.foot-legal a {
+  color: inherit;
+}
+.foot-legal a:hover,
+.foot-legal a:focus-visible {
+  color: rgb(var(--color-accent));
 }
 
 /* ── Role tag (signed-in pill) ── */

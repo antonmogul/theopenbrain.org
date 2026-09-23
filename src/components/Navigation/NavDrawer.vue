@@ -277,6 +277,20 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               />
             </div>
           </template>
+
+          <!-- Team links. A plain anchor, not a router-link: Storybook is a
+               static build served beside the app (dist/storybook, see
+               railway.json and public/serve.json), so it needs a real page
+               load. The explicit file keeps its relative assets resolving. -->
+          <p class="team-links">
+            <a href="/storybook/index.html" target="_blank" rel="noopener"
+              >Storybook</a
+            >
+            <span aria-hidden="true">·</span>
+            <router-link to="/styleguide" @click="close"
+              >Styleguide</router-link
+            >
+          </p>
         </aside>
       </div>
     </Transition>
@@ -405,6 +419,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   flex-direction: column;
   gap: 4px;
   overflow: auto;
+  overscroll-behavior: contain;
   flex: 1;
 }
 .chapter-row {
@@ -470,6 +485,26 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   text-decoration: none;
 }
 .user-sub:hover {
+  color: rgb(var(--color-accent));
+}
+
+/* Team links (Storybook · Styleguide): quiet, last thing in the drawer. */
+.team-links {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-mute));
+}
+.team-links a {
+  color: inherit;
+  text-decoration: none;
+}
+.team-links a:hover,
+.team-links a:focus-visible {
   color: rgb(var(--color-accent));
 }
 

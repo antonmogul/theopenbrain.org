@@ -16,6 +16,7 @@
  * Usage:
  *   npm run test:smoke
  *   node scripts/smoke.mjs --base http://localhost:4173
+ *   node scripts/smoke.mjs --only retina,chapters   (route names, for a quick loop)
  *
  * Failure screenshots land in .smoke/ (git-ignored, uploaded by CI).
  */
@@ -32,6 +33,7 @@ const flag = (name, fallback) => {
 
 const BASE = flag("base", "http://localhost:4173").replace(/\/$/, "");
 const OUT = path.resolve(flag("out", ".smoke"));
+const ONLY = (flag("only", "") || "").split(",").filter(Boolean);
 
 /*
  * Widths chosen to cover the breakpoint ladder: below md, the 768–1299 band
@@ -88,14 +90,14 @@ const HAS_SUPABASE = hasSupabaseCredentials();
 const ROUTES = [
   { path: "/", name: "home", minText: 50 },
   {
-    path: "/chapter/3/foundations-of-neuroscience",
-    name: "chapter-3",
+    path: "/chapter/1/foundations-of-neuroscience",
+    name: "foundations",
     minText: 2000,
     needsData: true,
   },
   {
-    path: "/chapter/1/the-retina",
-    name: "chapter-1",
+    path: "/chapter/2/the-retina",
+    name: "retina",
     minText: 2000,
     needsData: true,
     /*
@@ -275,6 +277,7 @@ async function main() {
   let skippedContent = 0;
 
   for (const route of ROUTES) {
+    if (ONLY.length && !ONLY.includes(route.name)) continue;
     for (const width of route.widths || WIDTHS) {
       checks++;
       const label = `${route.name} @ ${width}`;
@@ -375,8 +378,34 @@ async function main() {
                 stageResult = { found: false };
               }
             }
+            /*
+             * Wheel dead zones (OPENBRAIN-39): a scroll container — and
+             * overflow:hidden makes one — with overscroll-behavior:none never
+             * hands the wheel on to the page, even with nothing to scroll
+             * itself. A global `* { overscroll-behavior: none }` froze the
+             * reader over the opener hero and every figure. `contain` on a
+             * real overlay scroller is fine; `none` below the root is not.
+             */
+            const isScroller = (v) =>
+              v === "hidden" || v === "auto" || v === "scroll";
+            const deadZones = [];
+            for (const el of document.querySelectorAll("body *")) {
+              const cs = getComputedStyle(el);
+              if (cs.overscrollBehaviorY !== "none") continue;
+              if (!isScroller(cs.overflowY) && !isScroller(cs.overflowX))
+                continue;
+              const r = el.getBoundingClientRect();
+              if (r.width < 200 || r.height < 100) continue;
+              deadZones.push(
+                `${el.tagName.toLowerCase()}.${(el.getAttribute("class") || "").slice(0, 40)}`
+              );
+            }
             return {
               maxScrollX,
+              deadZones,
+              scrollable:
+                document.documentElement.scrollHeight >
+                window.innerHeight + 600,
               textLength: document.body.innerText.trim().length,
               count: countSelector
                 ? document.querySelectorAll(countSelector).length
@@ -399,6 +428,28 @@ async function main() {
           failures.push(
             `${label}: scrolls horizontally by ${result.maxScrollX}px`
           );
+        }
+        // Structural: no wheel dead zones, and a real wheel over the middle
+        // of the first screen must move the page (OPENBRAIN-39). scrollTo()
+        // always works, so only real input catches this.
+        let wheelOk = result.deadZones.length === 0;
+        if (!wheelOk) {
+          failures.push(
+            `${label}: ${result.deadZones.length} wheel dead zone(s) (overscroll-behavior: none on a scroll container), e.g. ${result.deadZones.slice(0, 3).join(", ")}`
+          );
+        }
+        if (result.scrollable) {
+          await page.evaluate(() => window.scrollTo(0, 0));
+          await page.mouse.move(Math.round(width / 2), 450);
+          await page.mouse.wheel(0, 600);
+          await page.waitForTimeout(600);
+          const wheeledTo = await page.evaluate(() => window.scrollY);
+          if (wheeledTo < 1) {
+            wheelOk = false;
+            failures.push(
+              `${label}: a mouse wheel at the top of the page did not scroll it`
+            );
+          }
         }
         // Structural: things that must never be in the DOM (dev-only chrome).
         if (route.expectAbsent && result.absent > 0) {
@@ -472,6 +523,7 @@ async function main() {
           countOk &&
           absentOk &&
           stageOk &&
+          wheelOk &&
           !real.length;
         if (!ok) {
           await page.screenshot({

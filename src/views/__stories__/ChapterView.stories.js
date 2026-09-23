@@ -20,7 +20,7 @@ export default {
   },
   render: () => ({
     components: { ChapterView, ViewStoryShell },
-    template: `<ViewStoryShell label="ChapterView" path="/chapter/3/foundations-of-neuroscience"><ChapterView /></ViewStoryShell>`,
+    template: `<ViewStoryShell label="ChapterView" path="/chapter/1/foundations-of-neuroscience"><ChapterView /></ViewStoryShell>`,
   }),
 };
 

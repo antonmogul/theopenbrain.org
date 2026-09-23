@@ -494,6 +494,7 @@ export default {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 /* Demos section */
