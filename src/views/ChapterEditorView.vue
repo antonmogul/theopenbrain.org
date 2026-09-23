@@ -19,6 +19,8 @@ import ParagraphEditor from "@/components/chapterEditor/ParagraphEditor.vue";
 import InsertMenu from "@/components/chapterEditor/InsertMenu.vue";
 import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
+import { placementsForChapter } from "@/widgets/placements";
+import { planPlacementConversion } from "@/editor/placementsToBlocks";
 import {
   StatusBadge,
   Button,
@@ -282,6 +284,76 @@ function scrollToSection(id) {
 }
 
 const rowsOf = (sectionId) => ed.paragraphsBySection.value.get(sectionId) || [];
+
+// ---- sections (OPENBRAIN-62) ----
+const renaming = ref(null); // { id, title }
+function startRename(sec) {
+  whenLive(() => (renaming.value = { id: sec.id, title: sec.title }));
+}
+async function saveRename() {
+  const r = renaming.value;
+  renaming.value = null;
+  const title = r.title.trim();
+  const current = ed.sections.value.find((x) => x.id === r.id)?.title;
+  if (!title || title === current) return;
+  await attempt(() => ed.renameSection(r.id, title), "Section renamed.");
+}
+function moveSec(sec, dir) {
+  whenLive(() =>
+    attempt(
+      () => ed.moveSection(sec.id, dir),
+      dir < 0 ? "Section moved up." : "Section moved down."
+    )
+  );
+}
+const newSection = ref(null); // { index, title }
+function askAddSection(index) {
+  whenLive(() => (newSection.value = { index, title: "" }));
+}
+async function saveNewSection() {
+  const { index, title } = newSection.value;
+  if (!title.trim()) return;
+  newSection.value = null;
+  const created = await attempt(
+    () => ed.addSection(index, title.trim()),
+    "Section added."
+  );
+  if (created)
+    setTimeout(() => scrollToSection(ed.sections.value[index]?.id), 50);
+}
+function deleteSec(sec) {
+  whenLive(() => attempt(() => ed.deleteSection(sec.id), "Section deleted."));
+}
+
+// ---- widgets still placed in code (src/widgets/placements.js) ----
+const placementPlan = computed(() => {
+  if (!ed.module.value) return { ready: [], unresolved: [] };
+  const existing = new Set(
+    ed.paragraphs.value.flatMap((p) =>
+      (p.content?.blocks || [])
+        .filter((b) => b.type === "widget")
+        .map((b) => b.widgetId)
+    )
+  );
+  return planPlacementConversion({
+    placements: placementsForChapter(ed.module.value.slug),
+    sections: ed.sections.value,
+    rowsBySection: ed.paragraphsBySection.value,
+    existingWidgetIds: existing,
+  });
+});
+const converting = ref(false);
+function convertPlacements() {
+  whenLive(async () => {
+    converting.value = true;
+    const n = placementPlan.value.ready.length;
+    await attempt(
+      () => ed.convertPlacements(placementPlan.value.ready),
+      `${n} widget${n === 1 ? " is" : "s are"} now blocks you can move and edit.`
+    );
+    converting.value = false;
+  });
+}
 const excerpt = (p) =>
   (p.content_text || "this block").slice(0, 80) +
   ((p.content_text || "").length > 80 ? "…" : "");
@@ -349,9 +421,38 @@ onMounted(async () => {
           <span class="ce-toc-n">{{ i + 1 }}</span>
           <span>{{ s.title }}</span>
         </button>
+        <button
+          type="button"
+          class="ce-toc-item ce-toc-add"
+          @click="askAddSection(ed.sections.value.length)"
+        >
+          <span class="ce-toc-n">+</span>
+          <span>Add section</span>
+        </button>
       </nav>
 
       <main class="ce-main">
+        <div v-if="placementPlan.ready.length" class="ce-banner" role="note">
+          <p>
+            <strong
+              >{{ placementPlan.ready.length }} widget{{
+                placementPlan.ready.length === 1 ? " is" : "s are"
+              }}
+              placed by code</strong
+            >
+            ({{ placementPlan.ready.map((r) => r.block.title).join(", ") }}), so
+            {{ placementPlan.ready.length === 1 ? "it" : "they" }} can't be
+            moved or edited here yet.
+          </p>
+          <Button
+            variant="solid"
+            size="sm"
+            :loading="converting"
+            @click="convertPlacements"
+            >Make editable</Button
+          >
+        </div>
+
         <p v-if="isPublished" class="ce-live-note">
           This chapter is published: saved edits reach readers straight away.
           Every save can be undone.
@@ -364,8 +465,62 @@ onMounted(async () => {
           class="ce-section"
         >
           <header class="ce-section-head">
-            <span class="ce-section-n">Section {{ i + 1 }}</span>
-            <h2>{{ s.title }}</h2>
+            <div class="ce-section-row">
+              <span class="ce-section-n">Section {{ i + 1 }}</span>
+              <span class="ce-spacer" />
+              <div
+                class="ce-sec-tools"
+                role="toolbar"
+                :aria-label="`Section: ${s.title}`"
+              >
+                <button type="button" @click="startRename(s)">Rename</button>
+                <button
+                  type="button"
+                  aria-label="Move section up"
+                  :disabled="i === 0"
+                  @click="moveSec(s, -1)"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  aria-label="Move section down"
+                  :disabled="i === ed.sections.value.length - 1"
+                  @click="moveSec(s, 1)"
+                >
+                  ↓
+                </button>
+                <button
+                  v-if="!rowsOf(s.id).length"
+                  type="button"
+                  class="is-danger"
+                  @click="deleteSec(s)"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <form
+              v-if="renaming?.id === s.id"
+              class="ce-rename"
+              @submit.prevent="saveRename"
+            >
+              <input
+                :id="`rename-${s.id}`"
+                v-model="renaming.title"
+                type="text"
+                aria-label="Section title"
+                @keydown.esc="renaming = null"
+                @vue:mounted="({ el }) => el.focus()"
+              />
+              <Button variant="solid" size="sm" @click="saveRename"
+                >Save</Button
+              >
+              <Button variant="ghost" size="sm" @click="renaming = null"
+                >Cancel</Button
+              >
+            </form>
+            <h2 v-else>{{ s.title }}</h2>
           </header>
 
           <template v-for="(p, pi) in rowsOf(s.id)" :key="p.id">
@@ -498,6 +653,39 @@ onMounted(async () => {
             No paragraphs in this section yet. Use + to add one.
           </p>
         </section>
+        <form
+          v-if="newSection"
+          class="ce-rename ce-new-section"
+          @submit.prevent="saveNewSection"
+        >
+          <input
+            id="new-section-title"
+            v-model="newSection.title"
+            type="text"
+            placeholder="New section title"
+            aria-label="New section title"
+            @keydown.esc="newSection = null"
+            @vue:mounted="({ el }) => el.focus()"
+          />
+          <Button
+            variant="solid"
+            size="sm"
+            :disabled="!newSection.title.trim()"
+            @click="saveNewSection"
+            >Add section</Button
+          >
+          <Button variant="ghost" size="sm" @click="newSection = null"
+            >Cancel</Button
+          >
+        </form>
+        <button
+          v-else
+          type="button"
+          class="ce-add-section"
+          @click="askAddSection(ed.sections.value.length)"
+        >
+          + Add section
+        </button>
       </main>
     </div>
 
@@ -837,6 +1025,105 @@ onMounted(async () => {
 }
 .ce-tools .is-danger {
   color: rgb(var(--color-accent));
+}
+.ce-section-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ce-sec-tools {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.ce-section-head:hover .ce-sec-tools,
+.ce-section-head:focus-within .ce-sec-tools {
+  opacity: 1;
+}
+.ce-sec-tools button {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ce-sec-tools button:hover:not(:disabled),
+.ce-sec-tools button:focus-visible {
+  background: rgb(var(--color-line));
+  outline: none;
+}
+.ce-sec-tools button:disabled {
+  opacity: 0.35;
+}
+.ce-sec-tools .is-danger {
+  color: rgb(var(--color-accent));
+}
+.ce-rename {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ce-rename input {
+  flex: 1 1 18rem;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid rgb(var(--color-accent) / 0.5);
+  border-radius: 6px;
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.ce-rename input:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 1px;
+}
+.ce-add-section {
+  justify-self: start;
+  padding: 10px 16px;
+  border: 1px dashed rgb(var(--color-line));
+  border-radius: 8px;
+  background: transparent;
+  color: rgb(var(--color-mute));
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ce-add-section:hover,
+.ce-add-section:focus-visible {
+  border-color: rgb(var(--color-accent));
+  color: rgb(var(--color-accent));
+  outline: none;
+}
+.ce-toc-add {
+  margin-top: 6px;
+  color: rgb(var(--color-mute));
+}
+.ce-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  border: 1px solid rgb(var(--color-accent) / 0.35);
+  border-radius: 8px;
+  background: rgb(var(--color-accent) / 0.06);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+}
+.ce-banner p {
+  flex: 1 1 20rem;
+  margin: 0;
 }
 .ce-form {
   display: grid;

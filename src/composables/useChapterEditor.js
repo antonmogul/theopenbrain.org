@@ -300,6 +300,173 @@ export function useChapterEditor(slug) {
     });
   }
 
+  // ---- sections (OPENBRAIN-62) ----
+  // (module_id, order_index) and (module_id, slug) are UNIQUE. Deleting a
+  // section cascades to its paragraphs, notes, quizzes and flashcards, so
+  // only empty sections can be deleted here.
+  const RESERVED_SLUGS = new Set([
+    "introduction",
+    "further-reading",
+    "footnotes",
+  ]);
+
+  function slugFor(title) {
+    const base =
+      String(title || "section")
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60) || "section";
+    const taken = new Set(sections.value.map((sec) => sec.slug));
+    let slug =
+      RESERVED_SLUGS.has(base) || base.startsWith("box-")
+        ? `${base}-section`
+        : base;
+    for (let n = 2; taken.has(slug); n++) slug = `${base}-${n}`;
+    return slug;
+  }
+
+  async function patchSection(id, body) {
+    const rows = await authedRequest(`sections?id=eq.${id}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ ...body, updated_at: new Date().toISOString() }),
+    });
+    if (!rows?.length)
+      throw new Error("The database didn't allow this change.");
+    const i = sections.value.findIndex((sec) => sec.id === id);
+    if (i >= 0)
+      sections.value.splice(i, 1, { ...sections.value[i], ...rows[0] });
+    sections.value.sort((x, y) => x.order_index - y.order_index);
+    return rows[0];
+  }
+  async function setSectionOrders(pairs) {
+    await Promise.all(
+      pairs.map(([id, order_index]) => patchSection(id, { order_index }))
+    );
+  }
+
+  async function renameSection(id, title) {
+    return withSaving(async () => {
+      const before = sections.value.find((sec) => sec.id === id)?.title;
+      await patchSection(id, { title });
+      pushUndo("Rename section", () => patchSection(id, { title: before }));
+    });
+  }
+
+  /** Add a section at position `index` of the chapter's sections. */
+  async function addSection(index, title) {
+    return withSaving(async () => {
+      const list = sections.value.slice();
+      const after = list.slice(index);
+      const order_index = after.length
+        ? after[0].order_index
+        : (list[list.length - 1]?.order_index ?? -1) + 1;
+      const shifted = after.map((sec) => [sec.id, sec.order_index + 1]);
+      if (shifted.length)
+        await setSectionOrders(shifted.map(([id], j) => [id, PARK + j]));
+      const rows = await authedRequest("sections", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          module_id: module.value.id,
+          title,
+          slug: slugFor(title),
+          order_index,
+        }),
+      });
+      if (!rows?.length)
+        throw new Error("The database didn't allow this change.");
+      sections.value = [...sections.value, rows[0]].sort(
+        (x, y) => x.order_index - y.order_index
+      );
+      if (shifted.length) await setSectionOrders(shifted);
+      const created = rows[0];
+      pushUndo("Add section", async () => {
+        await authedRequest(`sections?id=eq.${created.id}`, {
+          method: "DELETE",
+        });
+        sections.value = sections.value.filter((sec) => sec.id !== created.id);
+        if (after.length) {
+          await setSectionOrders(after.map((sec, j) => [sec.id, PARK + j]));
+          await setSectionOrders(after.map((sec) => [sec.id, sec.order_index]));
+        }
+      });
+      return created;
+    });
+  }
+
+  async function moveSection(id, dir) {
+    return withSaving(async () => {
+      const list = sections.value.slice();
+      const i = list.findIndex((sec) => sec.id === id);
+      const other = list[i + dir];
+      if (i < 0 || !other) return;
+      const a = list[i];
+      const swap = async (x, y) => {
+        await setSectionOrders([[x.id, PARK]]);
+        await setSectionOrders([[y.id, x.order_index]]);
+        await setSectionOrders([[x.id, y.order_index]]);
+      };
+      await swap(a, other);
+      pushUndo(dir < 0 ? "Move section up" : "Move section down", () =>
+        swap(
+          { ...a, order_index: other.order_index },
+          { ...other, order_index: a.order_index }
+        )
+      );
+    });
+  }
+
+  async function deleteSection(id) {
+    return withSaving(async () => {
+      if ((paragraphsBySection.value.get(id) || []).length)
+        throw new Error("Move or delete this section's blocks first.");
+      const sec = sections.value.find((x) => x.id === id);
+      const rows = await authedRequest(`sections?id=eq.${id}`, {
+        method: "DELETE",
+        headers: { Prefer: "return=representation" },
+      });
+      if (!rows?.length)
+        throw new Error("The database didn't allow this change.");
+      sections.value = sections.value.filter((x) => x.id !== id);
+      pushUndo("Delete section", async () => {
+        const back = await authedRequest("sections", {
+          method: "POST",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            id: sec.id,
+            module_id: sec.module_id,
+            title: sec.title,
+            slug: sec.slug,
+            order_index: sec.order_index,
+          }),
+        });
+        sections.value = [...sections.value, back[0]].sort(
+          (x, y) => x.order_index - y.order_index
+        );
+      });
+    });
+  }
+
+  /**
+   * Insert planned widget blocks (planPlacementConversion). Within a section
+   * the lowest positions go last, so earlier inserts don't shift later ones.
+   */
+  async function convertPlacements(ready) {
+    const ordered = ready
+      .slice()
+      .sort((x, y) =>
+        x.sectionId === y.sectionId
+          ? y.index - x.index
+          : String(x.sectionId).localeCompare(String(y.sectionId))
+      );
+    for (const item of ordered)
+      await insertParagraph(item.sectionId, item.index, [item.block]);
+  }
+
   async function undo() {
     const last = undoStack.value[undoStack.value.length - 1];
     if (!last) return null;
@@ -327,6 +494,11 @@ export function useChapterEditor(slug) {
     deleteParagraph,
     moveParagraph,
     setFigure,
+    renameSection,
+    addSection,
+    moveSection,
+    deleteSection,
+    convertPlacements,
     undo,
     // exposed for later phases (insert/move/delete build on these)
     patchParagraph,

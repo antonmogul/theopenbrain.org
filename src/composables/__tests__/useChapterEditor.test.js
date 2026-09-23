@@ -222,3 +222,121 @@ describe("useChapterEditor structure edits (OPENBRAIN-61)", () => {
     expect(t.rows[0].animation_id).toBe("anim-1");
   });
 });
+
+// Sections with UNIQUE (module_id, order_index) and (module_id, slug).
+function fakeSections(initial, paragraphs = []) {
+  const rows = initial.map((r) => ({ ...r }));
+  const unique = () => {
+    for (const key of ["order_index", "slug"]) {
+      const seen = new Set();
+      for (const r of rows) {
+        const k = `${r.module_id}:${r[key]}`;
+        if (seen.has(k))
+          throw new Error(`API Error 409: duplicate ${key} ${k}`);
+        seen.add(k);
+      }
+    }
+  };
+  authedRequest.mockImplementation(async (path, init = {}) => {
+    if (path.startsWith("modules?"))
+      return [{ id: "m1", slug: "c", status: "draft" }];
+    if (path.startsWith("animations?")) return [];
+    if (path.startsWith("paragraphs?")) return paragraphs;
+    if (path.startsWith("sections?module_id"))
+      return rows
+        .map((r) => ({ ...r }))
+        .sort((a, b) => a.order_index - b.order_index);
+    const id = (path.match(/id=eq\.([^&]+)/) || [])[1];
+    if (init.method === "PATCH") {
+      const r = rows.find((x) => x.id === id);
+      Object.assign(r, JSON.parse(init.body));
+      unique();
+      return [{ ...r }];
+    }
+    if (init.method === "POST") {
+      const body = JSON.parse(init.body);
+      const r = { id: body.id || `sec-${rows.length}`, ...body };
+      rows.push(r);
+      unique();
+      return [{ ...r }];
+    }
+    if (init.method === "DELETE") {
+      const i = rows.findIndex((x) => x.id === id);
+      return rows.splice(i, 1);
+    }
+    return [];
+  });
+  const order = () =>
+    rows
+      .slice()
+      .sort((a, b) => a.order_index - b.order_index)
+      .map((r) => r.id);
+  return { rows, order };
+}
+
+const secSeed = () =>
+  [
+    ["introduction", "Introduction"],
+    ["story", "The story of attention"],
+    ["measured", "Attention is measured"],
+  ].map(([slug, title], i) => ({
+    id: slug,
+    module_id: "m1",
+    slug,
+    title,
+    order_index: i,
+  }));
+
+describe("useChapterEditor sections (OPENBRAIN-62)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("adds a section in the middle with a unique slug, and undoes", async () => {
+    const t = fakeSections(secSeed());
+    const ed = useChapterEditor("c");
+    await ed.load();
+    const created = await ed.addSection(1, "The story of attention");
+    expect(created.slug).toBe("the-story-of-attention");
+    expect(t.order()).toEqual([
+      "introduction",
+      created.id,
+      "story",
+      "measured",
+    ]);
+    const again = await ed.addSection(4, "Introduction");
+    expect(again.slug).toBe("introduction-section"); // reserved slug avoided
+    await ed.undo();
+    await ed.undo();
+    expect(t.order()).toEqual(["introduction", "story", "measured"]);
+  });
+
+  it("renames, moves and undoes", async () => {
+    const t = fakeSections(secSeed());
+    const ed = useChapterEditor("c");
+    await ed.load();
+    await ed.renameSection("story", "A history of attention");
+    expect(t.rows.find((r) => r.id === "story").title).toBe(
+      "A history of attention"
+    );
+    await ed.moveSection("measured", -1);
+    expect(t.order()).toEqual(["introduction", "measured", "story"]);
+    await ed.undo();
+    expect(t.order()).toEqual(["introduction", "story", "measured"]);
+    await ed.undo();
+    expect(t.rows.find((r) => r.id === "story").title).toBe(
+      "The story of attention"
+    );
+  });
+
+  it("only deletes empty sections, and undo brings one back", async () => {
+    const t = fakeSections(secSeed(), [
+      { id: "p", section_id: "story", order_index: 0, content: { blocks: [] } },
+    ]);
+    const ed = useChapterEditor("c");
+    await ed.load();
+    await expect(ed.deleteSection("story")).rejects.toThrow(/blocks first/);
+    await ed.deleteSection("measured");
+    expect(t.order()).toEqual(["introduction", "story"]);
+    await ed.undo();
+    expect(t.order()).toEqual(["introduction", "story", "measured"]);
+  });
+});
