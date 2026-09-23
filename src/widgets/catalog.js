@@ -200,13 +200,13 @@ export const WIDGETS = [
   // HTML to show alongside; the gallery renders the Vue route only.
   {
     id: "case-cabinet",
-    title: "Case cabinet — patients who taught us where the mind lives",
-    desc: "Open the folders of R.W., H.M., S.B. and P.G.: four clinical cases, each a lesion or a surgery that revealed what a region of the brain does.",
+    title: "Penfield’s case files — what stimulation brought back",
+    desc: "Pull a patient’s folder from the drawer: the numbered points Penfield stimulated, and what the patient reported. From Penfield and Perot, Brain, 1963.",
     chapter: "Foundations of Neuroscience",
     author: "The Open Brain (prototype)",
     vuePath: "/case-cabinet",
     height: "760px",
-    deps: ["gsap/Flip"],
+    deps: ["gsap"],
   },
   {
     id: "phrenology",

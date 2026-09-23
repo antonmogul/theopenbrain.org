@@ -581,18 +581,22 @@ function foundationsSections() {
     },
     {
       id: "f-box",
-      slug: "box-psychosurgery",
+      slug: "box-penfield",
       kind: "box",
-      title: "The doctor with an icepick: A brief history of psychosurgeries",
+      title: "Wilder Penfield and the Montreal Procedure",
       paragraphs: [
-        { id: "h1", text: "The first ‘psychosurgeries’ were performed" },
+        { id: "h1", text: "Wilder Penfield was born in Spokane, Washington" },
         {
           id: "h2",
-          text: "The procedure then took off thanks to American physician Walter Freeman",
+          text: "They would carefully stimulate the brain surrounding an area. This became known as The Montreal Procedure",
         },
         {
           id: "h3",
-          text: "Over a 20-year period, lobotomies were performed on tens of thousands",
+          text: "Some stimulations caused motor movements, some stimulations even triggered memory recall.",
+        },
+        {
+          id: "h4",
+          text: "Penfield founded the Montreal Neurological Institute",
         },
       ],
     },
@@ -600,7 +604,7 @@ function foundationsSections() {
 }
 
 describe("WIDGET_PLACEMENTS — Foundations prototypes (OPENBRAIN-35)", () => {
-  it("places phrenology after the popularity paragraph and the cabinet at the end of the psychosurgery box", () => {
+  it("places phrenology after the popularity paragraph and the cabinet after Penfield's memory-recall paragraph", () => {
     const chapter = chapterWith(...foundationsSections());
     const result = applyWidgetPlacements(
       chapter,
@@ -617,9 +621,13 @@ describe("WIDGET_PLACEMENTS — Foundations prototypes (OPENBRAIN-35)", () => {
       "widget-foundations-phrenology",
       "g3",
     ]);
-    expect(ids(chapter.sections[1].paragraphs).at(-1)).toBe(
-      "widget-foundations-case-cabinet"
-    );
+    expect(ids(chapter.sections[1].paragraphs)).toEqual([
+      "h1",
+      "h2",
+      "h3",
+      "widget-foundations-case-cabinet",
+      "h4",
+    ]);
   });
 
   it("falls back to the end of each section when the passages are reworded", () => {

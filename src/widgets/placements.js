@@ -234,19 +234,20 @@ export const WIDGET_PLACEMENTS = [
     id: "foundations-case-cabinet",
     widgetId: "case-cabinet",
     chapterSlug: "foundations-of-neuroscience",
-    sectionSlug: "box-psychosurgery",
+    sectionSlug: "box-penfield",
     kind: "breakout",
-    // Closes the psychosurgery box: the cabinet's folders are patients whose
-    // lesions and surgeries (H.M.'s among them) taught the field what a
-    // region does. After the lobotomy-era paragraph; else end of the box.
+    // The box shares the widget's title ("Wilder Penfield and the Montreal
+    // Procedure"). The folders are Penfield and Perot's patients, so the
+    // cabinet follows the paragraph where stimulation "triggered memory
+    // recall"; else after the Montreal Procedure paragraph; else box end.
     anchors: [
-      { after: { textIncludes: "tens of thousands" } },
-      { after: { textIncludes: "Freeman" } },
+      { after: { textIncludes: "triggered memory recall" } },
+      { after: { textIncludes: "Montreal Procedure" } },
       { endOfSection: true },
     ],
-    title: "Case cabinet — patients who taught us where the mind lives",
+    title: "Penfield’s case files — what stimulation brought back",
     blurb:
-      "Open the folders of R.W., H.M., S.B. and P.G.: four clinical cases, each a lesion or a surgery that revealed what a region of the brain does.",
+      "Pull a patient’s folder from the drawer: the numbered points Penfield stimulated, and what the patient reported. From Penfield and Perot, Brain, 1963.",
     credit: "Interactive by The Open Brain",
     route: "/case-cabinet",
   },

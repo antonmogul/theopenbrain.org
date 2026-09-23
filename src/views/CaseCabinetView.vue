@@ -1,879 +1,794 @@
 <script setup>
 /*
- * CaseCabinetView — "The Case Cabinet" prototype (demo).
+ * CaseCabinetView — "Wilder Penfield and the Montreal Procedure"
+ * (Figma Open-Brain-Chapters, node 3:1653, row 2 storyboard).
  *
- * A drawer of patient-case folders. Clicking one makes the folder itself grow
- * out of its slot into a two-leaf spread (brain + numbered regions | case
- * transcript). Close reverses it — same system, same maths.
+ * A drawer of seven patient folders seen from above, tabs up. Choosing one:
+ *   1. it lifts out of the drawer,
+ *   2. rotates 90° clockwise into an upright portrait folder (tab now on the
+ *      right edge) while narrowing to the upright size,
+ *   3. its front cover swings open to the left: a paper-clipped photo of the
+ *      brain on the inside of the cover, the case transcript on the paper.
+ * Closing plays the same timeline backwards.
  *
- * MORPH MODEL — GSAP Flip on the REAL clicked v-for node, both directions.
- * open() records the folder's drawer state, promotes it to `.folder--flying`
- * (fixed position, open-card size) and Flip.from() animates the diff. close()
- * records the open state, demotes the class, and Flip.from() animates it home.
- * The teleported `.flyer` only carries the spread's CONTENTS (illustration,
- * hinged notes page); it fades in over the arrived folder and out before the
- * return flight, so one continuous element does all the travelling.
+ * ONE OUTLINE, NO ART SWAP. The travelling folder is the drawer folder's own
+ * outline (helper/folderPath) re-drawn every frame from tweened numbers, so it
+ * never changes identity mid-flight. At the upright pose that rotated outline
+ * IS the open folder's back leaf; the paper and the front cover appear on top
+ * of it in the same purple, which is why the hand-off cannot be seen.
+ *
+ * Everything is laid out in the Figma frame's own pixels (1729 × 993) on a
+ * canvas scaled to fit; the title and the source line are real HTML outside
+ * the canvas so they stay readable when the stage is small.
  *
  * Data comes from the mock seam `@/mocks/caseFiles` — swap for Supabase later.
- * Unlisted route (like /styleguide): open /case-cabinet directly.
  */
-import { ref, onMounted, nextTick } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+} from "vue";
 import gsap from "gsap";
-import { Flip } from "gsap/Flip";
-import { useCaseFiles } from "@/mocks/caseFiles";
-import { readSpeed, readScrub } from "@/helper/debugFlags";
+import { useCaseFiles, CASE_SOURCE } from "@/mocks/caseFiles";
+import { folderPath } from "@/helper/folderPath";
+import { readSpeed } from "@/helper/debugFlags";
 import { reducedMotionK } from "@/helper/motion";
 
-gsap.registerPlugin(Flip);
+// ── Geometry, in Figma frame pixels ─────────────────────────────────────────
+const STAGE_W = 1729;
+const STAGE_H = 993;
+const RULE_Y = 927; // the line above the source caption; folders stop here
+// Drawer bands measured off Figma frame 169:30: each tab starts where the
+// folder in front of it is last visible, so a band is one tab high.
+const DRAWER = { top: 140, step: 93, h: 690, tab: 93, r: 50 };
+// Upright pose (storyboard frame 5), sized to Figma frame 171:3383: a
+// portrait folder 781 tall from y=107, clear of the title, standing right of
+// centre. `w` is its height once rotated, `h` its width (tab included).
+const UPRIGHT = { cx: 1180, cy: 497, w: 780, h: 600, tab: 52, r: 12 };
+// The open spread's centre is nudged onto the stage's centre line.
+const SPREAD_SHIFT = STAGE_W / 2 - (UPRIGHT.cx - UPRIGHT.h / 2);
+const CLIP_SRC = "/publicAssets/images/case-cabinet/paper-clip.png";
+
+// The open folder's body (upright coordinates): the cover and paper sit here.
+const BODY = {
+  left: UPRIGHT.cx - UPRIGHT.h / 2,
+  top: UPRIGHT.cy - UPRIGHT.w / 2,
+  width: UPRIGHT.h - UPRIGHT.tab,
+  height: UPRIGHT.w,
+};
 
 const cases = ref([]);
-const openCase = ref(null); // the case object being shown, or null
-const animating = ref(false);
-/*
- * .folder--flying (open-card geometry) is tracked separately from openCase:
- * during close() the class must come off while the spread is still mounted, so
- * Flip can diff "open card" → "drawer slot" and fly the folder home under the
- * still-visible veil. returningId marks that homebound folder so CSS can keep
- * it above the veil and exempt from the stack dimming until the flight lands.
- */
-const flyingId = ref(null); // folder carrying .folder--flying
-const returningId = ref(null); // folder flying home during close()
+const openCase = ref(null);
+const busy = ref(false);
 
-/*
- * ── Timeline scrubber (dev tool) ──────────────────────────────────────────
- * Holds the live open/close timeline so the on-screen scrubber can pause it and
- * step through frame by frame. Purely a tuning aid.
- *
- * Two separate gates, deliberately:
- *   • DEBUG_TIMELINE — the visible on-screen scrubber panel. Off by default so
- *     the animation is demo-ready; opt in with ?scrub=1 when tuning.
- *   • EXPOSE_TIMELINE — the `window.__cc` handle that scripts/filmstrip.mjs
- *     seeks to capture frames. Dev builds only, no visible UI, so the filmstrip
- *     harness keeps working without a scrubber on screen.
- */
-const SEARCH = typeof window === "undefined" ? "" : window.location.search;
-const DEBUG_TIMELINE = readScrub(SEARCH);
-const EXPOSE_TIMELINE = import.meta.env.DEV;
-const activeTl = ref(null); // the GSAP timeline currently on screen
-const scrubValue = ref(0); // 0–1 progress, two-way bound to the range input
-const scrubbing = ref(false); // true once the user grabs the slider (pauses tl)
-const tlLabel = ref(""); // which sequence is loaded (open / close)
+const stageEl = ref(null);
+const pullEl = ref(null);
+const coverEl = ref(null);
+const bookEl = ref(null);
+const closeBtn = ref(null);
 
-// Named beats, so the scrubber can jump straight to a moment worth inspecting.
-const TL_MARKERS = [
-  { at: 0, name: "in drawer" },
-  { at: 0.25, name: "rising" },
-  { at: 0.45, name: "upright" },
-  { at: 0.7, name: "opening" },
-  { at: 1, name: "open" },
-];
+// The travelling folder, tweened directly by GSAP (reactive → re-drawn).
+const fly = reactive({
+  visible: 0,
+  book: 0,
+  x: 0,
+  y: 0,
+  w: STAGE_W,
+  h: DRAWER.h,
+  rot: 0,
+  tab: DRAWER.tab,
+  r: DRAWER.r,
+});
 
-// Mirror the timeline's own progress into the slider while it plays freely.
-function trackTimeline(tl, label) {
-  // Handle for scripts/filmstrip.mjs, which seeks this timeline to capture
-  // frames off-screen. Dev-only, and independent of the visible panel so the
-  // filmstrip can run against a demo-clean UI.
-  if (EXPOSE_TIMELINE) window.__cc = { tl, label };
-  if (!DEBUG_TIMELINE) return tl;
-  activeTl.value = tl;
-  tlLabel.value = label;
-  scrubbing.value = false;
-  tl.eventCallback("onUpdate", () => {
-    if (!scrubbing.value) scrubValue.value = tl.progress();
+const drawerY = (i) => DRAWER.top + i * DRAWER.step;
+
+function outline(c, w, h, tab, r) {
+  return folderPath({
+    w,
+    h,
+    a: c.tabSpan[0] * w,
+    b: c.tabSpan[1] * w,
+    tab,
+    r,
   });
-  return tl;
 }
 
-function onScrub(e) {
-  const p = Number(e.target.value);
-  scrubValue.value = p;
-  const tl = activeTl.value;
-  if (!tl) return;
-  scrubbing.value = true;
-  tl.pause();
-  tl.progress(p);
+function tabStyle(c, w, tab) {
+  const a = c.tabSpan[0] * w;
+  const b = c.tabSpan[1] * w;
+  return { left: `${a}px`, width: `${b - a}px`, "--t": `${tab}px` };
 }
 
-function scrubTo(p) {
-  const tl = activeTl.value;
-  if (!tl) return;
-  scrubbing.value = true;
-  scrubValue.value = p;
-  tl.pause();
-  tl.progress(p);
+const drawerOutlines = computed(() =>
+  cases.value.map((c) => outline(c, STAGE_W, DRAWER.h, DRAWER.tab, DRAWER.r))
+);
+const flyOutline = computed(() =>
+  openCase.value ? outline(openCase.value, fly.w, fly.h, fly.tab, fly.r) : ""
+);
+
+// ── Fit the Figma canvas to the container ───────────────────────────────────
+const scale = ref(1);
+const offsetX = ref(0);
+let ro = null;
+function fit() {
+  const el = stageEl.value;
+  if (!el) return;
+  const width = el.clientWidth;
+  const byHeight =
+    typeof window === "undefined"
+      ? Infinity
+      : (window.innerHeight * 0.92) / STAGE_H;
+  scale.value = Math.min(width / STAGE_W, byHeight);
+  offsetX.value = Math.max(0, (width - STAGE_W * scale.value) / 2);
 }
 
-// Nudge by a single frame-ish step, for pinning down an exact moment.
-function stepScrub(delta) {
-  scrubTo(Math.min(1, Math.max(0, scrubValue.value + delta)));
-}
-
-function resumeTimeline() {
-  const tl = activeTl.value;
-  if (!tl) return;
-  scrubbing.value = false;
-  tl.play();
-}
-const stackEls = ref([]); // stack folder nodes (entrance stagger + Flip targets)
-const flyerEl = ref(null); // teleported spread contents (fades over the folder)
-const rightLeafEl = ref(null); // hinged cover that swings open
+// ── Timeline ────────────────────────────────────────────────────────────────
+const K = reducedMotionK();
+const SPEED =
+  readSpeed(typeof window === "undefined" ? "" : window.location.search) * K;
+let tl = null;
 
 const { fetchCases } = useCaseFiles();
 
 onMounted(async () => {
   cases.value = await fetchCases();
   await nextTick();
-  // Opacity-only entrance so it doesn't overwrite the CSS stacking transform.
-  gsap.from(stackEls.value, {
-    opacity: 0,
-    duration: 0.5,
-    ease: "power3.out",
-    stagger: 0.08,
-  });
+  fit();
+  if (typeof ResizeObserver !== "undefined") {
+    ro = new ResizeObserver(fit);
+    ro.observe(stageEl.value);
+  }
+  window.addEventListener("keydown", onKey);
 });
 
-function setStackRef(el, i) {
-  if (el) stackEls.value[i] = el;
+onBeforeUnmount(() => {
+  ro?.disconnect();
+  tl?.kill();
+  window.removeEventListener("keydown", onKey);
+});
+
+function onKey(e) {
+  if (e.key === "Escape" && openCase.value) close();
 }
 
-// Global slow-mo multiplier for tuning. 1 is ship speed; ?slow=N slows the whole
-// sequence by N without touching the individual beat durations, so the timings
-// that ship are the ones being judged. K additionally collapses everything to
-// ~0 under reduced motion (shared convention — see src/helper/motion.js).
-const K = reducedMotionK();
-const SPEED = readSpeed(SEARCH) * K;
-
-/*
- * The flyer's layout box is ONE portrait leaf. It mounts hidden; we seed it onto
- * the clicked folder's slot BEFORE revealing, so there is no center-flash. Then:
- * rise to upright portrait → shift to centered → swing the cover open.
- */
-async function open(c, evt) {
-  if (!c.openable || openCase.value || animating.value) return;
-  animating.value = true;
-
-  /*
-   * ONE ELEMENT, START TO FINISH — this is a GSAP Flip, not a hand-off.
-   *
-   * We record the clicked folder's real state, then let Vue promote that SAME
-   * node into the open layout (`.folder--flying` lifts it to fixed position and
-   * the open size). Flip.from() diffs the two states and animates the actual
-   * element between them. There is no second node to seed, disguise or
-   * cross-fade — which is what made the previous version read as a new element
-   * appearing: it genuinely was one.
-   *
-   * Flip handles the position/parent change safely, so the old worry about
-   * reparenting a v-for node and corrupting the vdom doesn't apply: Vue still
-   * owns the node, we only change its class.
-   */
-  const folderNode = evt.currentTarget;
-  // The mount entrance (gsap.from opacity) can leave an inline opacity behind;
-  // clear it so the flying folder is never animated out from under us.
-  gsap.set(folderNode, { clearProps: "opacity" });
-  const state = Flip.getState(folderNode, {
-    props: "borderRadius,backgroundColor",
-  });
-
+async function open(c, i) {
+  if (busy.value || openCase.value) return;
+  busy.value = true;
   openCase.value = c;
-  flyingId.value = c.id;
-  await nextTick();
-  const flyer = flyerEl.value;
-  const right = rightLeafEl.value;
-
-  gsap.set(right, { rotationY: -180 }); // right cover folded shut over the file
-  gsap.set(flyer.querySelector(".flyer__close"), { autoAlpha: 0 });
-  // The flyer carries the spread's contents. It stays hidden until the Flip has
-  // delivered the folder to the open position, then fades in over it.
-  gsap.set(flyer, { autoAlpha: 0 });
-
-  // Animate the real folder from its drawer slot into the open card.
-  const flip = Flip.from(state, {
-    duration: 0.7 * SPEED,
-    ease: "power3.inOut",
-    absolute: true,
-    scale: false, // tween width/height, so the tab and contents don't distort
+  Object.assign(fly, {
+    visible: 0,
+    book: 0,
+    x: 0,
+    y: drawerY(i),
+    w: STAGE_W,
+    h: DRAWER.h,
+    rot: 0,
+    tab: DRAWER.tab,
+    r: DRAWER.r,
   });
+  await nextTick();
 
-  const tl = trackTimeline(
-    gsap.timeline({
-      onComplete: () => (animating.value = false),
-    }),
-    "open"
-  );
+  gsap.set(pullEl.value, { x: 0 });
+  gsap.set(coverEl.value, { rotationY: 0 });
+  const markers = bookEl.value.querySelectorAll(".marker");
+  const notes = bookEl.value.querySelectorAll(".note");
+  const upright = {
+    x: UPRIGHT.cx - UPRIGHT.w / 2,
+    y: UPRIGHT.cy - UPRIGHT.h / 2,
+    w: UPRIGHT.w,
+    h: UPRIGHT.h,
+    rot: 90,
+    tab: UPRIGHT.tab,
+    r: UPRIGHT.r,
+  };
 
-  // 1) The Flip itself: the real folder travels from its drawer slot to the
-  //    open card, tweening size and border-radius as one continuous object.
-  tl.add(flip)
-    // 2) The spread's contents fade in over the arrived folder, then the cover
-    //    swings open. The folder itself remains the card beneath.
-    .to(flyer, { autoAlpha: 1, duration: 0.25 * SPEED }, ">-" + 0.15 * SPEED)
+  tl = gsap.timeline({
+    onComplete: () => {
+      busy.value = false;
+      closeBtn.value?.focus();
+    },
+    onReverseComplete: () => {
+      openCase.value = null;
+      fly.visible = 0;
+      fly.book = 0;
+      busy.value = false;
+    },
+  });
+  // Handle for scripts/filmstrip.mjs, which seeks the timeline to capture
+  // frames. Dev builds only; no visible UI.
+  if (import.meta.env.DEV) window.__cc = { tl, label: "open" };
+
+  tl.set(fly, { visible: 1 })
+    // 1) Lift it out of its slot, starting to turn.
+    .to(fly, {
+      y: fly.y - 150,
+      rot: 12,
+      duration: 0.4 * SPEED,
+      ease: "power2.out",
+    })
+    // 2) Swing upright, narrowing to the portrait folder.
+    .to(fly, { ...upright, duration: 0.95 * SPEED, ease: "power2.inOut" })
+    // 3) The paper and the cover arrive under/over the upright outline.
+    .set(fly, { book: 1 })
+    // 4) The cover swings open to the left; the spread slides to centre.
+    .to(coverEl.value, {
+      rotationY: -180,
+      duration: 0.9 * SPEED,
+      ease: "power2.inOut",
+    })
     .to(
-      right,
-      { rotationY: 0, duration: 0.7 * SPEED, ease: "power2.inOut" },
-      ">-" + 0.1 * SPEED
-    )
-    // 3) Reveal the file + notes as it finishes opening.
-    .to(
-      flyer.querySelector(".flyer__close"),
-      { autoAlpha: 1, duration: 0.2 * SPEED },
-      "-=" + 0.2 * SPEED
-    )
-    .from(
-      flyer.querySelectorAll(".region-marker"),
+      pullEl.value,
+      { x: SPREAD_SHIFT, duration: 0.9 * SPEED, ease: "power2.inOut" },
+      "<"
+    );
+  if (markers.length)
+    tl.from(
+      markers,
       {
         scale: 0,
         autoAlpha: 0,
         duration: 0.3 * SPEED,
         ease: "back.out(2)",
-        stagger: 0.04 * SPEED,
+        stagger: 0.05 * SPEED,
       },
-      "-=" + 0.3 * SPEED
-    )
-    .from(
-      flyer.querySelectorAll(".note"),
+      "-=0.25"
+    );
+  if (notes.length)
+    tl.from(
+      notes,
       {
-        x: 20,
+        y: 12,
         autoAlpha: 0,
         duration: 0.3 * SPEED,
         ease: "power2.out",
-        stagger: 0.07 * SPEED,
+        stagger: 0.08 * SPEED,
       },
-      "-=" + 0.3 * SPEED
+      "<"
     );
 }
 
-/*
- * Mirror of open(): same Flip, opposite direction. We capture the folder's
- * open-card state, demote it back to a stack item, and let Flip.from() animate
- * the diff — the identical maths the outbound flight used, so the two read as
- * one system. Flip's immediateRender holds the folder at the open position
- * until its slot in the timeline, so nothing jumps when the class comes off.
- */
-async function close() {
-  if (!openCase.value || animating.value) return;
-  animating.value = true;
-  const flyer = flyerEl.value;
-  const right = rightLeafEl.value;
-  const c = openCase.value;
-  const folderNode = stackEls.value[cases.value.indexOf(c)];
-
-  // No node to fly home (shouldn't happen — openCase always comes from cases):
-  // just drop the spread rather than animating a detached ghost.
-  if (!folderNode) {
-    openCase.value = null;
-    flyingId.value = null;
-    animating.value = false;
-    return;
-  }
-
-  const state = Flip.getState(folderNode, {
-    props: "borderRadius,backgroundColor",
-  });
-  // Demote the folder to its stack layout. returningId keeps it above the veil
-  // and disables the hover transition so CSS doesn't fight Flip's per-tick
-  // positioning on the way home.
-  flyingId.value = null;
-  returningId.value = c.id;
-  await nextTick();
-
-  // Created here (immediateRender re-seeds the folder at the open card), played
-  // later in the timeline — after the cover has swung shut over it.
-  const flip = Flip.from(state, {
-    duration: 0.6 * SPEED,
-    ease: "power3.inOut",
-    absolute: true,
-    scale: false, // same as open(): tween the box, don't distort the tab
-  });
-
-  const tl = trackTimeline(
-    gsap.timeline({
-      onComplete: () => {
-        openCase.value = null;
-        returningId.value = null;
-        animating.value = false;
-      },
-    }),
-    "close"
-  );
-  // Reverse the open, beat for beat: contents away → cover swings shut → the
-  // spread fades out over the folder → the folder Flips back into its slot.
-  tl.to(flyer.querySelector(".flyer__close"), {
-    autoAlpha: 0,
-    duration: 0.15 * SPEED,
-  })
-    .to(
-      right,
-      { rotationY: -180, duration: 0.5 * SPEED, ease: "power2.inOut" },
-      "<"
-    )
-    .to(flyer, { autoAlpha: 0, duration: 0.2 * SPEED }, ">-" + 0.15 * SPEED)
-    .add(flip, ">-" + 0.05 * SPEED);
+function close() {
+  if (!openCase.value || !tl) return;
+  // Also fine mid-open: reverse() runs it back from wherever it is.
+  busy.value = true;
+  if (import.meta.env.DEV) window.__cc = { tl, label: "close" };
+  tl.timeScale(1.25).reverse();
 }
 </script>
 
 <template>
-  <div class="cabinet">
-    <header class="cabinet__head">
-      <h1 class="t-h2">Case Cabinet</h1>
-      <p class="t-body cabinet__sub">
-        Select a patient file to review the case.
-      </p>
-    </header>
-
-    <!-- Backdrop + flyer are Teleported to <body> so they escape any ancestor
-         `filter`/`transform` containing block (the route transition on .cabinet
-         uses filter:blur, which would otherwise trap position:fixed). -->
-    <Teleport to="body">
-      <transition name="veil">
-        <div v-if="openCase" class="veil" @click="close"></div>
-      </transition>
-    </Teleport>
-
-    <!-- Dev-only scrubber: pause the morph and step through it frame by frame.
-         Teleported so it sits above the veil/flyer. Gate off via DEBUG_TIMELINE. -->
-    <Teleport to="body">
-      <div v-if="DEBUG_TIMELINE && activeTl" class="scrubber">
-        <div class="scrubber__row">
-          <span class="scrubber__tag">{{ tlLabel }}</span>
-          <span class="scrubber__pct">{{ Math.round(scrubValue * 100) }}%</span>
-          <button class="scrubber__btn" @click="stepScrub(-0.02)">◀</button>
-          <button class="scrubber__btn" @click="stepScrub(0.02)">▶</button>
-          <button class="scrubber__btn" @click="resumeTimeline">play</button>
-        </div>
-        <input
-          class="scrubber__range"
-          type="range"
-          min="0"
-          max="1"
-          step="0.005"
-          :value="scrubValue"
-          @input="onScrub"
-        />
-        <div class="scrubber__row scrubber__marks">
+  <section
+    ref="stageEl"
+    class="cabinet"
+    aria-label="Case cabinet: Wilder Penfield and the Montreal Procedure"
+  >
+    <div class="frame" :style="{ height: `${(RULE_Y + 1) * scale}px` }">
+      <div
+        class="canvas"
+        :style="{
+          width: `${STAGE_W}px`,
+          height: `${STAGE_H}px`,
+          transform: `translateX(${offsetX}px) scale(${scale})`,
+        }"
+      >
+        <!-- The drawer: back folder first, front folder last. Only the painted
+           outline takes clicks, so a folder's empty corner never steals a
+           click meant for the tab behind it. -->
+        <div class="drawer" :style="{ height: `${RULE_Y}px` }">
           <button
-            v-for="m in TL_MARKERS"
-            :key="m.name"
-            class="scrubber__mark"
-            @click="scrubTo(m.at)"
+            v-for="(c, i) in cases"
+            :key="c.id"
+            type="button"
+            class="folder"
+            :data-id="c.id"
+            :class="{
+              'folder--out': fly.visible && openCase && openCase.id === c.id,
+            }"
+            :style="{
+              top: `${drawerY(i)}px`,
+              width: `${STAGE_W}px`,
+              height: `${DRAWER.h}px`,
+              '--tint': c.tint,
+            }"
+            :aria-label="`Open case ${c.caseNo}, patient ${c.tab}`"
+            :tabindex="openCase ? -1 : 0"
+            @click="open(c, i)"
           >
-            {{ m.name }}
+            <svg
+              class="folder__svg"
+              :width="STAGE_W"
+              :height="DRAWER.h"
+              aria-hidden="true"
+            >
+              <path :d="drawerOutlines[i]" />
+            </svg>
+            <span class="tab" :style="tabStyle(c, STAGE_W, DRAWER.tab)">
+              <span class="tab__no">{{ c.caseNo }}</span>
+              <span class="tab__initials">{{ c.tab }}</span>
+            </span>
           </button>
         </div>
-      </div>
-    </Teleport>
 
-    <!-- The closed drawer: hanging files seen front-on. Index 0 (R.W.) is the
-         FRONT folder (bottom, most visible); later folders sit behind and peek
-         up. Tabs are staggered horizontally via each case's tabX. -->
-    <div class="stack" :class="{ 'stack--dimmed': openCase }">
-      <button
-        v-for="(c, i) in cases"
-        :key="c.id"
-        :ref="(el) => setStackRef(el, i)"
-        class="folder"
-        :class="{
-          'folder--locked': !c.openable,
-          'folder--flying': flyingId === c.id,
-          'folder--returning': returningId === c.id,
-        }"
-        :style="{
-          '--tint': c.tint,
-          '--tab-x': c.tabX + '%',
-          '--depth': i,
-          zIndex: cases.length - i,
-        }"
-        @click="open(c, $event)"
-      >
-        <span class="folder__tab">{{ c.tab }}</span>
-        <span class="folder__title">{{ c.title }}</span>
-        <span v-if="!c.openable" class="folder__lock">soon</span>
-      </button>
-    </div>
+        <!-- Click-away layer while a file is out. -->
+        <div v-if="openCase" class="scrim" @click="close"></div>
 
-    <!-- The spread's CONTENTS (the real folder does the morphing — see the
-         MORPH MODEL header). `.book` is a preserve-3d stage: `.leaf--left`
-         carries the file (brain + regions); `.leaf--right-hinge` starts folded
-         shut over it (rotateY -180) and swings open at the spine to reveal the
-         two-leaf landscape spread. Fades in over the arrived folder. -->
-    <Teleport to="body">
-      <div
-        v-if="openCase"
-        ref="flyerEl"
-        class="flyer"
-        :style="{ '--tint': openCase.tint }"
-      >
-        <button class="flyer__close" @click="close">✕</button>
-        <div class="book">
-          <!-- LEFT half: the cover (front) + the file inside (revealed on open).
-               This leaf never moves, so the tab lives here — pinned to its LEFT
-               (outer) edge, the far side from the spine. -->
-          <div class="leaf leaf--left">
-            <span class="folder__tab folder__tab--side">{{
-              openCase.tab
-            }}</span>
-            <!-- the file: brain illustration + regions -->
-            <div class="illus">
-              <img
-                v-if="openCase.illustration"
-                :src="openCase.illustration"
-                alt="Brain illustration"
-                class="illus__img"
-              />
-              <svg
-                v-else
-                viewBox="0 0 320 260"
-                class="illus__svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M60 150 q-30 -80 60 -110 q40 -20 90 0 q60 5 70 60 q30 30 -5 65 q5 40 -45 45 q-30 25 -70 5 q-50 15 -75 -20 q-40 -25 -20 -50 z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                />
-                <path
-                  d="M95 90 q30 25 10 55 M150 70 q10 40 -10 70 M210 80 q20 35 0 70 M120 150 q40 15 80 0"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  opacity="0.5"
-                />
-              </svg>
-              <span
-                v-for="rg in openCase.regions"
-                :key="rg.n"
-                class="region-marker"
-                :style="{ left: rg.x + '%', top: rg.y + '%' }"
-                >{{ rg.n }}</span
-              >
-            </div>
+        <!-- The pulled file. Clipped at the rule, so it rises out of the drawer
+           rather than appearing over the source line. -->
+        <div
+          v-if="openCase"
+          ref="pullEl"
+          class="pull"
+          :style="{ '--tint': openCase.tint }"
+        >
+          <div
+            v-show="fly.visible"
+            class="flyer"
+            :style="{
+              left: `${fly.x}px`,
+              top: `${fly.y}px`,
+              width: `${fly.w}px`,
+              height: `${fly.h}px`,
+              transform: `rotate(${fly.rot}deg)`,
+            }"
+          >
+            <svg
+              class="folder__svg"
+              :width="fly.w"
+              :height="fly.h"
+              aria-hidden="true"
+            >
+              <path :d="flyOutline" />
+            </svg>
+            <span class="tab" :style="tabStyle(openCase, fly.w, fly.tab)">
+              <span class="tab__no">{{ openCase.caseNo }}</span>
+              <span class="tab__initials">{{ openCase.tab }}</span>
+            </span>
           </div>
 
-          <!-- RIGHT half: hinged cover that swings open. Its BACK (facing us when
-               closed) is the plain folder; its FRONT (seen when open) is the
-               notes page. The tab is NOT here — it belongs to the stationary
-               left leaf (see .folder__tab--side), so it stays on the folder's
-               outer edge instead of travelling to the spine as this swings. -->
-          <div ref="rightLeafEl" class="leaf--right-hinge">
-            <!-- outer/back = plain folder cover -->
-            <div class="cover-back"></div>
-            <!-- inner/front = the transcript page -->
-            <div class="leaf leaf--right">
-              <span class="leaf__index">{{ openCase.regions[0]?.n }}</span>
-              <div v-for="(note, ni) in openCase.notes" :key="ni" class="note">
-                <span v-if="note.speaker" class="note__speaker">{{
-                  note.speaker
+          <div
+            ref="bookEl"
+            class="book"
+            :class="{ 'book--shown': fly.book }"
+            :style="{
+              left: `${BODY.left}px`,
+              top: `${BODY.top}px`,
+              width: `${BODY.width}px`,
+              height: `${BODY.height}px`,
+            }"
+            role="dialog"
+            :aria-label="`Case ${openCase.caseNo}, patient ${openCase.tab}`"
+          >
+            <!-- The back leaf's paper: the transcript. -->
+            <div class="paper">
+              <p class="paper__head">
+                <span class="paper__case"
+                  >Case {{ openCase.caseNo }} · {{ openCase.tab }}</span
+                >
+                <span v-if="openCase.point" class="paper__point">{{
+                  openCase.point
                 }}</span>
-                <div class="note__body">
+              </p>
+              <div v-if="openCase.notes.length" class="transcript">
+                <div
+                  v-for="(note, ni) in openCase.notes"
+                  :key="ni"
+                  class="note"
+                  :class="{ 'note--caption': !note.text }"
+                >
+                  <span v-if="note.speaker" class="note__speaker">{{
+                    note.speaker
+                  }}</span>
                   <p v-if="note.text" class="note__text">{{ note.text }}</p>
                   <p v-if="note.caption" class="note__caption">
                     {{ note.caption }}
                   </p>
                 </div>
               </div>
+              <p v-else class="paper__pending">
+                Case notes from Penfield &amp; Perot (1963) to come.
+              </p>
+            </div>
+
+            <!-- The front cover, hinged on its left edge. Outside face = the
+               folder; inside face = the paper-clipped photo of the brain. -->
+            <div ref="coverEl" class="cover">
+              <div class="cover__face cover__face--out"></div>
+              <div class="cover__face cover__face--in">
+                <div class="photo">
+                  <div class="photo__art">
+                    <img
+                      v-if="openCase.illustration"
+                      :src="openCase.illustration"
+                      alt="Brain illustration with the stimulated points numbered"
+                    />
+                    <svg
+                      v-else
+                      viewBox="0 0 320 240"
+                      class="photo__placeholder"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M52 132 q-26 -72 58 -98 q38 -18 86 0 q58 5 68 54 q28 28 -4 58 q4 36 -42 40 q-28 22 -66 4 q-48 14 -72 -18 q-38 -22 -28 -40 z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      />
+                      <path
+                        d="M84 82 q28 22 10 50 M138 64 q10 36 -10 64 M196 72 q18 32 0 64 M108 136 q38 14 76 0"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        opacity="0.5"
+                      />
+                    </svg>
+                    <span
+                      v-for="rg in openCase.regions"
+                      :key="rg.n"
+                      class="marker"
+                      :style="{ left: `${rg.x}%`, top: `${rg.y}%` }"
+                      >{{ rg.n }}</span
+                    >
+                  </div>
+                </div>
+                <img class="clip" :src="CLIP_SRC" alt="" aria-hidden="true" />
+              </div>
             </div>
           </div>
         </div>
+
+        <div class="rule" :style="{ top: `${RULE_Y}px` }"></div>
       </div>
-    </Teleport>
-  </div>
+      <p class="cabinet__title">Wilder Penfield and the Montreal Procedure</p>
+    </div>
+
+    <div class="cabinet__foot">
+      <p class="cabinet__source">{{ CASE_SOURCE }}</p>
+      <button
+        v-if="openCase"
+        ref="closeBtn"
+        type="button"
+        class="flyer__close"
+        aria-label="Close the file"
+        @click="close"
+      >
+        Close file ✕
+      </button>
+    </div>
+  </section>
 </template>
 
 <style scoped>
+/* The stage is the Figma frame's own dark surface (#333), not a theme token:
+   the widget reads the same in light and dark mode, like a figure. */
 .cabinet {
-  min-height: 100vh;
-  padding: 4rem clamp(1rem, 6vw, 6rem);
-  background: rgb(var(--color-bg));
-  color: rgb(var(--color-ink));
-}
-.cabinet__head {
-  margin-bottom: 2.5rem;
-}
-.cabinet__sub {
-  color: rgb(var(--color-mute));
-  margin-top: 0.25rem;
-}
-
-/* ---- backdrop ---- */
-.veil {
-  position: fixed;
-  inset: 0;
-  z-index: 150;
-  background: rgb(0 0 0 / 0.45);
-  cursor: pointer;
-}
-.veil-enter-active,
-.veil-leave-active {
-  transition: opacity 0.35s;
-}
-.veil-enter-from,
-.veil-leave-to {
-  opacity: 0;
-}
-
-/* ---- closed drawer (hanging files, front-on) ---- */
-.stack {
+  --cc-stage: #333;
   position: relative;
-  width: min(920px, 92vw);
-  height: 480px;
-  transition: opacity 0.3s;
+  width: 100%;
+  overflow: hidden;
+  background: var(--cc-stage);
+  color: #fff;
 }
-/* Dim the drawer behind the opened file — but never the flying folder itself
-   (outbound or homebound), which has left the stack visually and must stay at
-   full strength. */
-.stack--dimmed .folder:not(.folder--flying):not(.folder--returning) {
-  opacity: 0.25;
+.frame {
+  position: relative;
+  overflow: hidden;
 }
-/* Open-card leaf dimensions, declared ONCE at :root because .folder (in .stack)
-   and .flyer (teleported to <body>) live in different subtrees and custom
-   properties don't cross between them. */
-:global(:root) {
-  --cc-leaf-w: min(480px, 46vw); /* one leaf = half the open landscape width */
-  --cc-leaf-h: min(640px, 61.33vw); /* portrait height */
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
 }
-.folder {
-  --tint: rgb(var(--color-chapter));
-  --depth: 0;
-  --lip: 84px; /* vertical step between folders (how much of each shows) */
+
+.cabinet__title {
+  position: absolute;
+  left: 3.4%;
+  right: 3.4%;
+  margin: 0;
+  color: #fff;
+  pointer-events: none;
+  top: 4.8%;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(0.75rem, 1.05vw, 1.125rem);
+  letter-spacing: 0.01em;
+}
+.cabinet__foot {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 3.4% 0.9rem;
+}
+.cabinet__source {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-ui, var(--font-body));
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(0.625rem, 0.75vw, 0.8125rem);
+  line-height: 1.4;
+}
+
+/* ── the drawer ─────────────────────────────────────────────────────────── */
+.drawer {
+  position: absolute;
+  inset: 0 0 auto 0;
+  overflow: hidden;
+}
+.rule {
   position: absolute;
   left: 0;
   right: 0;
-  /* Front folder (depth 0) sits at the bottom, fully visible. Deeper folders
-     step UP by one lip each and tuck behind (lower z-index handled inline). */
-  bottom: 0;
-  transform: translateY(calc(var(--depth) * var(--lip) * -1));
-  height: 300px;
-  text-align: left;
-  border: none;
-  border-radius: 18px 18px 22px 22px;
-  background: var(--tint);
+  height: 1px;
+  background: rgb(255 255 255 / 0.7);
+}
+.folder {
+  position: absolute;
+  left: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 -8px 18px rgb(0 0 0 / 0.18);
-  transition: transform 0.25s;
+  pointer-events: none; /* only the painted outline is a target */
+  transition: transform 0.25s ease;
 }
-/* the raised tab, positioned horizontally per folder */
-.folder::before {
-  content: "";
+.folder__svg {
   position: absolute;
-  top: -26px;
-  left: var(--tab-x, 20%);
-  width: 150px;
-  height: 30px;
-  background: var(--tint);
-  border-radius: 14px 14px 0 0;
+  inset: 0;
+  overflow: visible;
+  filter: drop-shadow(0 -6px 10px rgb(0 0 0 / 0.28));
 }
-.folder:hover {
-  transform: translateY(calc(var(--depth) * var(--lip) * -1 - 14px));
+.folder__svg path {
+  fill: var(--tint);
+  pointer-events: visiblePainted;
 }
-/*
- * The clicked folder's OPEN state. Flip animates the real node from its drawer
- * slot into this — it is the same element, promoted to fixed position and the
- * open card's size. Sized to one leaf so it lands as the spread's left half.
- */
-.folder--flying {
-  position: fixed;
-  /* Positioned with plain offsets, NOT a translate: Flip owns `transform` while
-     it animates, so a CSS translate here would be overwritten mid-flight and
-     the element would land off-screen. calc() puts the left leaf's right edge
-     on the viewport's centre line (the spine). */
-  left: calc(50% - var(--cc-leaf-w));
-  top: calc(50% - var(--cc-leaf-h) / 2);
-  right: auto;
-  bottom: auto;
-  transform: none;
-  width: var(--cc-leaf-w);
-  height: var(--cc-leaf-h);
-  border-radius: 18px 0 0 18px;
-  z-index: 210;
+.folder:hover,
+.folder:focus-visible {
+  transform: translateY(-12px);
 }
-/* Homebound flight (close). Flip owns the geometry; this only (a) keeps the
-   folder above the veil — !important because the stacking z-index is set
-   inline per folder — and (b) kills the hover transition so CSS doesn't lerp
-   Flip's per-tick positioning on the way down. */
-.folder--returning {
-  z-index: 210 !important;
-  transition: none;
+.folder:focus-visible {
+  outline: none;
 }
-/* Its raised tab keeps riding the outer (left) edge as it flies. */
-.folder--flying::before {
-  top: 40%;
-  left: -34px;
-  width: 30px;
-  height: 76px;
-  border-radius: 14px 0 0 14px;
+.folder:focus-visible .tab__initials {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
-.folder__tab {
-  position: absolute;
-  top: -20px;
-  left: calc(var(--tab-x, 20%) + 20px);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  z-index: 1;
-}
-.folder__title {
-  position: absolute;
-  top: 18px;
-  left: 24px;
-  font-weight: 600;
-  font-size: 1rem;
-}
-.folder--locked {
-  cursor: not-allowed;
-  filter: saturate(0.7);
-}
-.folder__lock {
-  position: absolute;
-  right: 1.5rem;
-  bottom: 1rem;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.7;
-}
-
-/* ---- the spread's contents ----
-   Since the Flip refactor the CLICKED FOLDER is the left leaf — it flies in and
-   becomes the card. This element now only carries what sits inside/right of it:
-   the file illustration and the hinged notes page. It must therefore align
-   exactly with .folder--flying's open box, or you see two offset folders. */
-.flyer {
-  --tint: rgb(var(--color-chapter));
-  position: fixed;
-  /* Same geometry as .folder--flying: left leaf's right edge on the centre line. */
-  top: calc(50% - var(--cc-leaf-h) / 2);
-  left: calc(50% - var(--cc-leaf-w));
-  z-index: 200;
-  width: var(--cc-leaf-w);
-  height: var(--cc-leaf-h);
-  perspective: 2000px;
-  will-change: transform;
-  /* Start hidden; open() seeds the transform onto the folder slot, THEN reveals,
-     so the first painted frame is already on the folder (no center flash). */
+.folder--out {
   visibility: hidden;
-  opacity: 0;
-}
-.book {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-}
-/* Close sits at the top-right of the OPEN spread. The spread spans from the
-   flyer's left edge to one leaf-width right of it, so top-right ≈ right:-100%. */
-.flyer__close {
-  position: absolute;
-  top: 14px;
-  right: calc(-1 * var(--cc-leaf-w) + 16px);
-  z-index: 20;
-  display: grid;
-  place-items: center;
-  border: none;
-  background: rgb(0 0 0 / 0.25);
-  color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 0.9rem;
 }
 
-/* ---- the two leaves ---- */
-.leaf {
-  padding: 2rem;
-  box-sizing: border-box;
-}
-/* LEFT half = the file (brain). Fills the flyer box. */
-.leaf--left {
-  position: absolute;
-  inset: 0;
-  background: var(--tint);
-  border-radius: 6px 0 0 6px;
-  display: grid;
-  place-items: center;
-}
-/* RIGHT hinge = swings open from the spine (the flyer's right edge). */
-.leaf--right-hinge {
+/* The tab label: case number in a ring, initials set wide on the right. It is
+   laid along the outline's tab and sized from the tab height (--t), so it
+   shrinks with the tab as the folder stands up. */
+.tab {
   position: absolute;
   top: 0;
-  left: 100%;
-  width: 100%;
-  height: 100%;
-  transform-origin: left center;
-  transform-style: preserve-3d;
+  height: var(--t);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 calc(var(--t) * 0.42);
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  pointer-events: none;
 }
-/* back face (seen closed) = plain folder cover */
-.cover-back {
-  position: absolute;
-  inset: 0;
-  background: var(--tint);
-  border-radius: 0 6px 6px 0;
-  backface-visibility: hidden;
-  transform: rotateY(180deg);
-}
-/* front face (seen open) = the transcript page */
-.leaf--right {
-  position: absolute;
-  inset: 0;
-  background: #fff;
-  color: #1a1a1a;
-  border-radius: 0 6px 6px 0;
-  overflow-y: auto;
-  backface-visibility: hidden;
-}
-/* The folder's own tab, riding the stationary left leaf. It sits on that leaf's
-   LEFT (outer) edge — the far side from the spine — so when the cover swings
-   open the tab stays on the outside of the spread rather than drifting inward. */
-.folder__tab--side {
-  position: absolute;
-  top: 40%;
-  left: -34px;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg); /* read bottom-up on the left edge */
-  background: var(--tint);
-  color: #fff;
-  padding: 14px 6px;
-  border-radius: 0 8px 8px 0;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  font-size: 0.72rem;
-  z-index: 1;
-}
-.illus {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  background: #fff;
-  border-radius: 6px;
+.tab__no {
+  flex: none;
   display: grid;
   place-items: center;
-  color: #1a1a1a;
-  padding: 1rem;
+  width: calc(var(--t) * 0.52);
+  height: calc(var(--t) * 0.52);
+  border: 1.5px solid rgb(255 255 255 / 0.9);
+  border-radius: 50%;
+  font-size: calc(var(--t) * 0.25);
+  letter-spacing: -0.04em;
 }
-.illus__img,
-.illus__svg {
+.tab__initials {
+  font-size: calc(var(--t) * 0.38);
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* ── the pulled file ────────────────────────────────────────────────────── */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  cursor: pointer;
+}
+.pull {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  /* Rises out of the drawer: nothing of it shows below the rule. */
+  clip-path: inset(-400px -400px 66px -400px);
+}
+.flyer {
+  position: absolute;
+  transform-origin: 50% 50%;
+}
+.flyer .folder__svg {
+  filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.35));
+}
+.flyer .folder__svg path {
+  pointer-events: none;
+}
+
+.book {
+  position: absolute;
+  perspective: 2600px;
+  visibility: hidden;
+  pointer-events: auto;
+}
+.book--shown {
+  visibility: visible;
+}
+.paper {
+  position: absolute;
+  inset: 22px 22px 22px 22px;
+  background: #fff;
+  color: #1a1a1a;
+  box-shadow: 0 3px 3px rgb(0 0 0 / 0.1);
+  padding: 44px 40px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.paper__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 28px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: rgb(0 0 0 / 0.55);
+}
+.paper__point {
+  display: inline-block;
+  background: var(--tint);
+  color: #fff;
+  padding: 4px 10px;
+  font-size: 20px;
+}
+.paper__pending {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: rgb(0 0 0 / 0.5);
+}
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  background: #f2f2f2;
+}
+.note {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-left: 62px;
+  position: relative;
+}
+.note__speaker {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--tint);
+  color: var(--tint);
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+.note__text {
+  margin: 0;
+  padding: 12px 16px;
+  background: #fff;
+  font-size: 20px;
+  line-height: 1.35;
+}
+.note--caption {
+  justify-content: flex-end;
+}
+.note__caption {
+  margin: 0;
+  max-width: 34ch;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(0 0 0 / 0.65);
+}
+
+/* The front cover, hinged on the spine (its left edge). */
+.cover {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 50%;
+  transform-style: preserve-3d;
+}
+.cover__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background: var(--tint);
+}
+.cover__face--out {
+  box-shadow: 0 3px 3px rgb(0 0 0 / 0.1);
+}
+.cover__face--in {
+  transform: rotateY(180deg);
+  filter: brightness(0.97);
+}
+.photo {
+  position: absolute;
+  left: 9%;
+  top: 8%;
+  width: 80%;
+  aspect-ratio: 1.2;
+  background: #fff;
+  transform: rotate(-6deg);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 0.18);
+  padding: 7%;
+  box-sizing: border-box;
+}
+.photo__art {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: #1a1a1a;
+}
+.photo__art img,
+.photo__placeholder {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
-.region-marker {
+.clip {
+  position: absolute;
+  left: 58%;
+  top: 2.5%;
+  width: 120px;
+  transform: rotate(-6deg);
+  pointer-events: none;
+}
+.marker {
   position: absolute;
   transform: translate(-50%, -50%);
   background: var(--tint);
   color: #fff;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  min-width: 20px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  line-height: 1;
+  padding: 5px 7px;
+  min-width: 34px;
   text-align: center;
 }
-.leaf__index {
-  display: inline-block;
-  background: var(--tint);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-}
-.note {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.9rem;
-  align-items: flex-start;
-}
-.note__speaker {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1.5px solid var(--tint);
-  color: var(--tint);
-  font-size: 0.6rem;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-}
-.note__body {
-  background: #f4f4f5;
-  border-radius: 10px;
-  padding: 0.6rem 0.9rem;
-  flex: 1;
-}
-.note__text {
-  font-size: 0.95rem;
-}
-.note__caption {
-  font-size: 0.75rem;
-  color: #71717a;
-  margin-top: 0.25rem;
-  text-align: right;
-}
 
-/* ── Timeline scrubber (dev tool, gated by DEBUG_TIMELINE) ─────────────── */
-.scrubber {
-  position: fixed;
-  left: 50%;
-  bottom: 1.25rem;
-  transform: translateX(-50%);
-  z-index: 999;
-  width: min(560px, 92vw);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  background: rgb(18 18 20 / 0.92);
-  color: #f4f4f5;
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 0.75rem;
-}
-.scrubber__row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.scrubber__tag {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #a78bfa;
-}
-.scrubber__pct {
-  margin-left: auto;
-  opacity: 0.8;
-}
-.scrubber__btn {
-  padding: 0.15rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid rgb(255 255 255 / 0.2);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-}
-.scrubber__btn:hover {
-  background: rgb(255 255 255 / 0.12);
-}
-.scrubber__range {
-  width: 100%;
-  accent-color: #8b5cf6;
-}
-.scrubber__marks {
-  justify-content: space-between;
-}
-.scrubber__mark {
-  border: 0;
-  background: transparent;
-  color: rgb(255 255 255 / 0.6);
-  cursor: pointer;
-  font: inherit;
-  padding: 0;
-}
-.scrubber__mark:hover {
+.flyer__close {
+  flex: none;
+  padding: 0.45em 0.9em;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.35);
   color: #fff;
-  text-decoration: underline;
+  font-family: var(--font-mono);
+  font-size: clamp(0.6875rem, 0.8vw, 0.875rem);
+  cursor: pointer;
+}
+.flyer__close:hover,
+.flyer__close:focus-visible {
+  background: rgb(0 0 0 / 0.6);
+  outline: none;
+  border-color: #fff;
 }
 </style>
