@@ -8,6 +8,10 @@ import { ref } from "vue";
 import ToggleRow from "@/components/dashboard/shared/ToggleRow.vue";
 import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
+import { isBetaHidden } from "@/constants/beta";
+
+const showNotifications = !isBetaHidden("settings.notifications");
+const showData = !isBetaHidden("settings.data");
 
 // --- Presentational toggle state (visual only this round) ---
 const emailPrefs = ref({
@@ -24,10 +28,10 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
   <div class="settings-panels">
     <SettingsProfileSection />
 
-    <hr class="rule" />
+    <hr v-if="showNotifications" class="rule" />
 
     <!-- EMAIL PREFERENCES (presentational) -->
-    <section id="notifications" class="section">
+    <section v-if="showNotifications" id="notifications" class="section">
       <header class="section-header">
         <p class="eyebrow">
           02 · Email preferences <span class="soon">· preview</span>
@@ -66,10 +70,10 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
       </div>
     </section>
 
-    <hr class="rule" />
+    <hr v-if="showData" class="rule" />
 
     <!-- DATA & PRIVACY (presentational) -->
-    <section id="data" class="section">
+    <section v-if="showData" id="data" class="section">
       <header class="section-header">
         <p class="eyebrow">
           03 · Data &amp; privacy <span class="soon">· preview</span>

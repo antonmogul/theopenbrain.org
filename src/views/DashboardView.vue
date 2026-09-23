@@ -20,6 +20,7 @@ import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
 import UsersSection from "@/components/dashboard/sections/UsersSection.vue";
 import AnalyticsSection from "@/components/dashboard/sections/AnalyticsSection.vue";
 import QuizzesSection from "@/components/dashboard/sections/QuizzesSection.vue";
+import { isBetaHidden } from "@/constants/beta";
 
 // Shared dashboard library (token-based)
 import {
@@ -34,6 +35,7 @@ import {
   LoadingState,
   ErrorState,
   BaseModal,
+  ConfirmDialog,
   Button,
   SearchInput,
 } from "@/components/dashboard/shared";
@@ -79,7 +81,7 @@ const creatorNavItems = [
   { id: "quizzes", label: "Quizzes", icon: "quiz" },
   { id: "users", label: "Users", icon: "users" },
   { id: "analytics", label: "Analytics", icon: "chart" },
-];
+].filter((item) => !isBetaHidden(`dashboard.${item.id}`));
 
 // Filter/segmented-control option sets (shared components)
 const mediaFilterOptions = [
@@ -111,6 +113,8 @@ const chapters = ref([]);
 const chaptersLoading = ref(false);
 const chaptersError = ref(null);
 const expandedChapterId = ref(null);
+// Chapters open read-only; "Edit chapter" unlocks the block editor for one.
+const editingChapterId = ref(null);
 
 // Expanded chapter content (passed to ChapterBlockEditor as props)
 const expandedChapterSections = ref([]);
@@ -196,19 +200,72 @@ async function attachMedia(animation) {
   }
 }
 
-async function detachMedia(block) {
+// Removing a figure edits the live chapter, so it asks first and then offers
+// Undo (which puts the same animation_id + trigger back).
+const pendingDetach = ref(null);
+const detaching = ref(false);
+
+function detachMedia(block) {
+  pendingDetach.value = block;
+}
+
+async function patchParagraphMedia(paragraphId, animationId, trigger) {
+  await supabaseRest(`paragraphs?id=eq.${paragraphId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      animation_id: animationId,
+      animation_trigger: trigger,
+    }),
+  });
+  // Refresh content so ChapterBlockEditor rebuilds with/without the badge.
+  await fetchChapterContent(expandedChapterId.value);
+}
+
+async function confirmDetach() {
+  const block = pendingDetach.value;
+  if (!block) return;
+  const label = block.animationTitle || "the media";
+  detaching.value = true;
   try {
-    await supabaseRest(`paragraphs?id=eq.${block.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        animation_id: null,
-        animation_trigger: null,
-      }),
+    await patchParagraphMedia(block.id, null, null);
+    showToast(`Removed ${label} from P${block.paraIndex + 1}.`, {
+      undo: () =>
+        patchParagraphMedia(
+          block.id,
+          block.animationId,
+          block.animationTrigger
+        ),
     });
-    // Refresh content so ChapterBlockEditor rebuilds without the media badge.
-    await fetchChapterContent(expandedChapterId.value);
   } catch (err) {
     console.error("Error detaching media:", err);
+    showToast(`Couldn't remove ${label}: ${err.message}`, { error: true });
+  } finally {
+    detaching.value = false;
+    pendingDetach.value = null;
+  }
+}
+
+// ============ TOAST (result + Undo for live chapter edits) ============
+const toast = ref(null);
+let toastTimer = null;
+
+function showToast(message, { undo = null, error = false } = {}) {
+  clearTimeout(toastTimer);
+  toast.value = { message, undo, error };
+  toastTimer = setTimeout(() => (toast.value = null), undo ? 10000 : 6000);
+}
+
+async function runToastUndo() {
+  const undo = toast.value?.undo;
+  clearTimeout(toastTimer);
+  toast.value = null;
+  if (!undo) return;
+  try {
+    await undo();
+    showToast("Undone.");
+  } catch (err) {
+    console.error("Undo failed:", err);
+    showToast(`Couldn't undo: ${err.message}`, { error: true });
   }
 }
 
@@ -325,6 +382,7 @@ async function fetchAllChapters() {
 
 // ============ EXPAND/COLLAPSE CHAPTER ============
 async function toggleChapter(chapterId) {
+  editingChapterId.value = null;
   if (expandedChapterId.value === chapterId) {
     // Collapse (ChapterBlockEditor unmounts and resets its own state)
     expandedChapterId.value = null;
@@ -392,21 +450,40 @@ async function onBlockSave({ paragraphId, content, contentText }) {
   }
 }
 
-async function onBlockReorder({ orderedIds }) {
+function toggleChapterEditing(chapterId) {
+  editingChapterId.value =
+    editingChapterId.value === chapterId ? null : chapterId;
+}
+
+async function writeParagraphOrder(orderedIds) {
+  for (let i = 0; i < orderedIds.length; i++) {
+    await supabaseRest(`paragraphs?id=eq.${orderedIds[i]}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({
+        order_index: i,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  }
+  await fetchChapterContent(expandedChapterId.value);
+}
+
+async function onBlockReorder({ sectionId, orderedIds }) {
+  // The order before the drag, so Undo can put it back.
+  const previousIds = expandedChapterParagraphs.value
+    .filter((p) => p.section_id === sectionId)
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((p) => p.id);
   try {
-    for (let i = 0; i < orderedIds.length; i++) {
-      await supabaseRest(`paragraphs?id=eq.${orderedIds[i]}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({
-          order_index: i,
-          updated_at: new Date().toISOString(),
-        }),
-      });
-    }
-    await fetchChapterContent(expandedChapterId.value);
+    await writeParagraphOrder(orderedIds);
+    showToast("Paragraph moved.", {
+      undo: () => writeParagraphOrder(previousIds),
+    });
   } catch (err) {
     console.error("Error reordering blocks:", err);
+    showToast(`Couldn't move the paragraph: ${err.message}`, { error: true });
+    await fetchChapterContent(expandedChapterId.value);
   }
 }
 
@@ -637,6 +714,8 @@ watch(activeSection, (newSection) => {
   switch (newSection) {
     case "chapters":
       if (chapters.value.length === 0) fetchAllChapters();
+      // Figure badges and the remove prompt name figures by their media title.
+      if (mediaItems.value.length === 0) fetchMedia();
       break;
     case "versions":
       if (versions.value.length === 0) fetchVersions();
@@ -710,6 +789,11 @@ onMounted(() => {
   // Check for query param to open a specific section (e.g., from redirect)
   if (route.query.section === "chapter-wizard") {
     startChapterWizard();
+    return;
+  }
+  const requested = creatorNavItems.find((i) => i.id === route.query.section);
+  if (requested && requested.id !== "dashboard") {
+    activeSection.value = requested.id; // the section watcher fetches its data
     return;
   }
 
@@ -900,6 +984,7 @@ onMounted(() => {
                 >Manage users</Button
               >
               <Button
+                v-if="!isBetaHidden('dashboard.analytics')"
                 variant="outline"
                 size="sm"
                 block
@@ -1075,7 +1160,34 @@ onMounted(() => {
 
           <!-- Expanded content -->
           <div v-if="expandedChapterId === chapter.id" class="chapter-body">
+            <div
+              class="edit-bar"
+              :class="{ 'is-editing': editingChapterId === chapter.id }"
+            >
+              <p v-if="editingChapterId === chapter.id" class="edit-bar-text">
+                <strong>Editing.</strong>
+                {{
+                  chapter.status === "published"
+                    ? "Changes save straight to the live chapter."
+                    : "Changes save to this draft."
+                }}
+              </p>
+              <p v-else class="edit-bar-text">
+                Read-only. Click Edit to change text, order or figures.
+              </p>
+              <Button
+                :variant="editingChapterId === chapter.id ? 'solid' : 'outline'"
+                size="sm"
+                @click="toggleChapterEditing(chapter.id)"
+                >{{
+                  editingChapterId === chapter.id
+                    ? "Done editing"
+                    : "Edit chapter"
+                }}</Button
+              >
+            </div>
             <ChapterBlockEditor
+              :readonly="editingChapterId !== chapter.id"
               :sections="expandedChapterSections"
               :paragraphs="expandedChapterParagraphs"
               :media-items="mediaItems"
@@ -1281,6 +1393,48 @@ onMounted(() => {
       @range-change="onAnalyticsRange"
     />
 
+    <!-- Figure removal: asks first, because it edits the live chapter. -->
+    <ConfirmDialog
+      :model-value="!!pendingDetach"
+      title="Remove this figure?"
+      confirm-label="Remove figure"
+      :loading="detaching"
+      @update:model-value="(open) => !open && (pendingDetach = null)"
+      @confirm="confirmDetach"
+    >
+      Remove
+      <strong>{{ pendingDetach?.animationTitle || "the media" }}</strong>
+      from paragraph P{{ (pendingDetach?.paraIndex ?? 0) + 1 }}? Readers stop
+      seeing it straight away. You can undo this for a few seconds afterwards.
+    </ConfirmDialog>
+
+    <!-- Result of a live chapter edit, with Undo where it applies. -->
+    <div
+      v-if="toast"
+      class="dash-toast"
+      :class="{ 'is-error': toast.error }"
+      role="status"
+      aria-live="polite"
+    >
+      <span>{{ toast.message }}</span>
+      <button
+        v-if="toast.undo"
+        type="button"
+        class="dash-toast-undo"
+        @click="runToastUndo"
+      >
+        Undo
+      </button>
+      <button
+        type="button"
+        class="dash-toast-close"
+        aria-label="Dismiss"
+        @click="toast = null"
+      >
+        &times;
+      </button>
+    </div>
+
     <!-- Media picker modal — section-independent: opened from
              ChapterBlockEditor (chapters section), so it must render
              regardless of activeSection. Bridges chapters <-> media. -->
@@ -1338,6 +1492,73 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.edit-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-bg));
+}
+.edit-bar.is-editing {
+  background: rgb(var(--color-warn) / 0.12);
+}
+.edit-bar-text {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: rgb(var(--color-mute));
+}
+.edit-bar.is-editing .edit-bar-text {
+  color: rgb(var(--color-ink));
+}
+.dash-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 12px 10px 16px;
+  border-radius: 8px;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-bg));
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.dash-toast.is-error {
+  background: rgb(var(--color-accent));
+  color: #fff;
+}
+.dash-toast-undo,
+.dash-toast-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.dash-toast-undo {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dash-toast-close {
+  font-size: 1.125rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+.dash-toast-undo:focus-visible,
+.dash-toast-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
 /*
  * Shared section layout/visual classes live in
  * src/styles/dashboard-sections.css (imported below) so the per-section
