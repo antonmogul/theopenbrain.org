@@ -12,7 +12,7 @@
 // Props are the already-fetched content; the parent re-passes them after a refresh.
 import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
-import { dashboardLockReason } from "@/editor/editability";
+import { dashboardLockReason } from "@/editor/editability.mjs";
 import { StatGrid, StatCard, Button } from "@/components/dashboard/shared";
 
 const props = defineProps({

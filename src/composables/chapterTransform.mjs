@@ -12,6 +12,7 @@
  * `animation_key` / `animation_title` already attached (fetch step 3b).
  * Output shape: Chapter 1's text.json paragraph tree.
  */
+import { readerLockReason } from "../editor/editability.mjs";
 
 /**
  * Convert JSONB content blocks to HTML text
@@ -22,7 +23,6 @@
  * Returns extra fields to merge onto the paragraph object
  * (animationFull, type, img, steps, etc.)
  */
-import { readerLockReason } from "../editor/editability.js";
 export function extractChapter1Meta(blocks) {
   const meta = {};
   if (!blocks || !Array.isArray(blocks)) return meta;

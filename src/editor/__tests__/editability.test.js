@@ -3,7 +3,7 @@ import {
   dashboardLockReason,
   readerLockReason,
   withBlocks,
-} from "@/editor/editability";
+} from "@/editor/editability.mjs";
 
 describe("readerLockReason (OPENBRAIN-58)", () => {
   it("lets plain text through", () => {

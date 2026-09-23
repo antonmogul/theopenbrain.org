@@ -6,7 +6,7 @@
  * keeping every other key (animationFlags). `rest(path, init)` performs an
  * authenticated PostgREST request and resolves to the parsed JSON body.
  */
-import { readerLockReason, withBlocks } from "./editability.js";
+import { readerLockReason, withBlocks } from "./editability.mjs";
 
 export const PARAGRAPH_SAVES = new Set([
   "paragraph",
