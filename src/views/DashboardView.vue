@@ -1630,6 +1630,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Must stay the first rule: CSS drops an @import that follows any other
+   rule, which silently unstyled Overview and Chapters in production
+   (OPENBRAIN-57). */
+@import "@/styles/dashboard-sections.css";
 .chapter-actions {
   display: flex;
   align-items: center;
@@ -1729,7 +1733,6 @@ onMounted(() => {
  *
  * NOTE: root font-size is the browser default (16px), so one rem equals 16px.
  */
-@import "@/styles/dashboard-sections.css";
 
 /* Full-screen states (loading / access denied) */
 .screen {
