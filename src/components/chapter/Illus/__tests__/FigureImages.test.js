@@ -31,9 +31,9 @@ describe("FigureImages", () => {
 
   it("uses the image's caption, then the shared one, and a real alt", async () => {
     const w = mountSet();
-    expect(w.find(".figimg-caption").text()).toBe("First plate");
+    expect(w.find(".figimg-caption.is-current").text()).toBe("First plate");
     await w.find('[aria-label="Next image"]').trigger("click");
-    expect(w.find(".figimg-caption").text()).toBe("Shared legend");
+    expect(w.find(".figimg-caption.is-current").text()).toBe("Shared legend");
     expect(w.find(".figimg-count").text()).toBe("2 / 3");
     await w.find('[aria-label="Next image"]').trigger("click");
     expect(w.find("img").attributes("alt")).toBe("Alt three");

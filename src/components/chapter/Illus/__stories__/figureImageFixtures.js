@@ -39,3 +39,36 @@ export const FIG7_IMAGES = [
 
 export const FIG7_LEGEND =
   "From A. Vesalius, De Humani Corporis Fabrica Libri Septem, Basle: Joannes Oporinus, 1543. Image source, The Wellcome Collection.";
+
+/* Figure 2 (OPENBRAIN-43): five aligned frames from the Figma "Fig 2
+   Animation"; only the hand moves between them. Mirrors the migration
+   20260922000000_foundations_fig2_trepanation_frames.sql. */
+export const FIG2_LEGEND =
+  "Different trepanation methods, including scraping (1), grooving (2), drilling a perimeter around the hole (3) and cutting a rectangular opening (4) (Lisowski, 1967).";
+
+export const FIG2_IMAGES = [
+  {
+    src: "/publicAssets/images/foundations/fig02-01.jpg",
+    alt: "A trepanned skull in profile with four healed openings, numbered 1 to 4.",
+  },
+  {
+    src: "/publicAssets/images/foundations/fig02-02.jpg",
+    caption: "Scraping (1).",
+    alt: "A hand scrapes the skull with a stone at opening 1.",
+  },
+  {
+    src: "/publicAssets/images/foundations/fig02-03.jpg",
+    caption: "Grooving (2).",
+    alt: "A hand cuts a circular groove into the skull at opening 2.",
+  },
+  {
+    src: "/publicAssets/images/foundations/fig02-04.jpg",
+    caption: "Drilling a perimeter around the hole (3).",
+    alt: "A hand holds a drill to the skull at opening 3.",
+  },
+  {
+    src: "/publicAssets/images/foundations/fig02-05.jpg",
+    caption: "Cutting a rectangular opening (4).",
+    alt: "A hand cuts the skull with a stone blade at opening 4.",
+  },
+];

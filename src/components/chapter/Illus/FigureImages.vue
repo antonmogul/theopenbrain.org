@@ -31,6 +31,17 @@ const userPaused = ref(false);
 const isSet = computed(() => props.images.length > 1);
 const current = computed(() => props.images[index.value] || props.images[0]);
 const shownCaption = computed(() => current.value?.caption || props.caption);
+/*
+ * Every caption the set can show, stacked in one grid cell with only the
+ * current one visible. The caption box is then always as tall as the longest,
+ * so the image above it keeps one size while the set cycles; otherwise a long
+ * legend on one frame would shrink that frame's image and it would jump.
+ */
+const captionSlots = computed(() =>
+  [...new Set(props.images.map((img) => img.caption || props.caption))].filter(
+    Boolean
+  )
+);
 const altText = computed(
   () =>
     current.value?.alt ||
@@ -151,13 +162,18 @@ onBeforeUnmount(clearTimer);
       </transition>
     </div>
 
-    <p
-      v-if="shownCaption"
-      class="figimg-caption"
-      :aria-live="userTookOver ? 'polite' : 'off'"
-    >
-      {{ shownCaption }}
-    </p>
+    <div v-if="captionSlots.length" class="figimg-captions">
+      <p
+        v-for="text in captionSlots"
+        :key="text"
+        class="figimg-caption"
+        :class="{ 'is-current': text === shownCaption }"
+        :aria-hidden="text === shownCaption ? undefined : 'true'"
+        :aria-live="text === shownCaption && userTookOver ? 'polite' : 'off'"
+      >
+        {{ text }}
+      </p>
+    </div>
 
     <div v-if="isSet" class="figimg-controls">
       <button
@@ -220,8 +236,13 @@ onBeforeUnmount(clearTimer);
   object-fit: scale-down;
   user-select: none;
 }
-.figimg-caption {
+.figimg-captions {
   flex: none;
+  display: grid;
+}
+.figimg-caption {
+  grid-area: 1 / 1;
+  visibility: hidden;
   margin: 0 auto;
   max-width: 62ch;
   font-family: var(--font-body);
@@ -229,6 +250,9 @@ onBeforeUnmount(clearTimer);
   line-height: 1.45;
   color: rgb(var(--color-mute));
   text-align: left;
+}
+.figimg-caption.is-current {
+  visibility: visible;
 }
 .figimg--large .figimg-caption {
   font-size: 0.9375rem;

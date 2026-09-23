@@ -6,7 +6,13 @@
  */
 import FigureImages from "../FigureImages.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
-import { FIG6_IMAGES, FIG7_IMAGES, FIG7_LEGEND } from "./figureImageFixtures";
+import {
+  FIG2_IMAGES,
+  FIG2_LEGEND,
+  FIG6_IMAGES,
+  FIG7_IMAGES,
+  FIG7_LEGEND,
+} from "./figureImageFixtures";
 
 export default {
   title: "Chapter/Illustrations/FigureImages",
@@ -46,6 +52,17 @@ export const CyclingSetSharedLegend = {
     caption: FIG7_LEGEND,
     label: "FIG 07",
     title: "Vesalius, De humani corporis fabrica",
+  },
+};
+
+/** Animation frames: the same skull, a hand demonstrating each method in
+ *  turn (History Figure 2). The legend shows on the first frame. */
+export const AnimationFrames = {
+  args: {
+    images: FIG2_IMAGES,
+    caption: FIG2_LEGEND,
+    label: "FIG 02",
+    title: "Methods of trepanation",
   },
 };
 
