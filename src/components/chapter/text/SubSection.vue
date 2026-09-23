@@ -208,18 +208,15 @@ defineProps({
   },
 });
 
-const emit = defineEmits(["save"]);
+defineEmits(["save"]);
 
 // Get save handler from parent
 const saveContent = inject("saveContent", null);
 
-const handleSave = async ({ paragraphId, content, type = "paragraph" }) => {
-  console.log("SubSection: Saving", paragraphId, type);
-  if (saveContent) {
-    await saveContent({ paragraphId, content, type });
-  }
-  emit("save", { paragraphId, content, type });
-};
+// One save, returned so EditableBlock can show a failure; not re-emitted
+// (SectionComp and TextComp used to save the same row again — OPENBRAIN-58).
+const handleSave = ({ paragraphId, content, type = "paragraph" }) =>
+  saveContent({ paragraphId, content, type });
 </script>
 
 <style scoped></style>

@@ -12,6 +12,7 @@
 // Props are the already-fetched content; the parent re-passes them after a refresh.
 import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
+import { dashboardLockReason } from "@/editor/editability";
 import { StatGrid, StatCard, Button } from "@/components/dashboard/shared";
 
 const props = defineProps({
@@ -155,6 +156,9 @@ function buildFlatBlocks() {
         paraIndex,
         isSubsectionHeader: p.is_subsection_header,
         wordCount,
+        // Set when this editor's HTML converter would drop blocks
+        // (citations, widgets, captions…) — OPENBRAIN-58.
+        lockReason: dashboardLockReason(p.content),
         animationId: p.animation_id || null,
         animationTrigger: p.animation_trigger || null,
         animationTitle: p.animation_id
@@ -564,9 +568,17 @@ const chapterStats = computed(() => {
           </h4>
         </div>
 
-        <TipTapEditor v-model="editorContent" placeholder="Start writing..." />
+        <p v-if="selectedBlock.lockReason" class="lock-note" role="status">
+          {{ selectedBlock.lockReason }}
+        </p>
+        <template v-else>
+          <TipTapEditor
+            v-model="editorContent"
+            placeholder="Start writing..."
+          />
+        </template>
 
-        <div class="editor-footer">
+        <div v-if="!selectedBlock.lockReason" class="editor-footer">
           <span
             v-if="saveStatus"
             class="save-status"
@@ -583,6 +595,15 @@ const chapterStats = computed(() => {
 </template>
 
 <style scoped>
+.lock-note {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 4px;
+  background: rgb(var(--color-warn) / 0.14);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
 .chapter-editor-layout.is-readonly .block-item {
   cursor: default;
 }

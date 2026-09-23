@@ -128,3 +128,32 @@ describe("ChapterBlockEditor sections open one at a time (OPENBRAIN-53)", () => 
     expect(rows()).toHaveLength(3); // s1, s2, p3
   });
 });
+
+describe("ChapterBlockEditor locks what it can't keep (OPENBRAIN-58)", () => {
+  it("shows why instead of an editor for a paragraph with citations", async () => {
+    const wrapper = mount(ChapterBlockEditor, {
+      props: {
+        sections,
+        paragraphs: [
+          {
+            id: "pc",
+            section_id: "s1",
+            order_index: 0,
+            content: {
+              blocks: [
+                { type: "text", content: "Rods" },
+                { type: "citation_ref", number: 9 },
+              ],
+            },
+            content_text: "Rods",
+          },
+        ],
+        mediaItems,
+        readonly: false,
+      },
+    });
+    await wrapper.find(".block-item.paragraph").trigger("click");
+    expect(wrapper.find(".lock-note").text()).toContain("citations");
+    expect(wrapper.find(".editor-footer").exists()).toBe(false);
+  });
+});

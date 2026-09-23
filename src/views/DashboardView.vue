@@ -15,6 +15,7 @@ import { useRouter, useRoute } from "vue-router";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
 import { attemptPercent } from "@/utils/quizLabels";
+import { dashboardLockReason, withBlocks } from "@/editor/editability";
 import ChapterBlockEditor from "@/components/dashboard/chapters/ChapterBlockEditor.vue";
 import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
@@ -431,11 +432,19 @@ async function onBlockSave({ paragraphId, content, contentText }) {
   saving.value = true;
   saveStatus.value = "";
   try {
+    // Re-check against what's stored: never overwrite blocks this editor
+    // can't keep, and keep every other key of `content` (animationFlags) —
+    // the old PATCH replaced the whole column (OPENBRAIN-58).
+    const [row] = await supabaseRest(
+      `paragraphs?id=eq.${paragraphId}&select=content`
+    );
+    const reason = dashboardLockReason(row?.content);
+    if (reason) throw new Error(reason);
     await supabaseRest(`paragraphs?id=eq.${paragraphId}`, {
       method: "PATCH",
       headers: { Prefer: "return=minimal" },
       body: JSON.stringify({
-        content,
+        content: withBlocks(row?.content, content.blocks),
         content_text: contentText,
         updated_at: new Date().toISOString(),
       }),
@@ -500,17 +509,23 @@ function toggleChapterEditing(chapterId) {
     editingChapterId.value === chapterId ? null : chapterId;
 }
 
+// (section_id, order_index) is UNIQUE, so writing the final positions one
+// row at a time can collide with a row that hasn't moved yet. Park every row
+// on a temporary position first, then write the real ones (OPENBRAIN-58).
+const PARKED_ORDER = 100000;
 async function writeParagraphOrder(orderedIds) {
-  for (let i = 0; i < orderedIds.length; i++) {
-    await supabaseRest(`paragraphs?id=eq.${orderedIds[i]}`, {
+  const patch = (id, order_index) =>
+    supabaseRest(`paragraphs?id=eq.${id}`, {
       method: "PATCH",
       headers: { Prefer: "return=minimal" },
       body: JSON.stringify({
-        order_index: i,
+        order_index,
         updated_at: new Date().toISOString(),
       }),
     });
-  }
+  for (let i = 0; i < orderedIds.length; i++)
+    await patch(orderedIds[i], PARKED_ORDER + i);
+  for (let i = 0; i < orderedIds.length; i++) await patch(orderedIds[i], i);
   await fetchChapterContent(expandedChapterId.value);
 }
 

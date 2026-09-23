@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, onBeforeUnmount, nextTick } from "vue";
+import { ref, watch, computed, onBeforeUnmount, nextTick, inject } from "vue";
 import { useEditor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -27,14 +27,27 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  // Bound by `@save`: declared as a prop so the block can await the parent's
+  // save and keep the editor open with the error if it fails (OPENBRAIN-58).
+  onSave: {
+    type: Function,
+    default: null,
+  },
 });
 
-const emit = defineEmits(["save", "cancel"]);
+defineEmits(["cancel"]);
 
 const isEditing = ref(false);
 const isSaving = ref(false);
 const hasChanges = ref(false);
 const originalContent = ref(props.content);
+const saveError = ref("");
+const lockNote = ref("");
+
+// Why this paragraph can't be edited inline (citations, images…), from the
+// reader's lock map; null when it can.
+const lockReasonFor = inject("lockReasonFor", () => null);
+const lockReason = computed(() => lockReasonFor(props.paragraphId));
 
 // Create editor instance
 const editor = useEditor({
@@ -75,6 +88,11 @@ watch(
 // Enter edit mode
 const startEditing = () => {
   if (!props.isCreator || isEditing.value) return;
+  if (lockReason.value) {
+    lockNote.value = lockReason.value;
+    return;
+  }
+  saveError.value = "";
 
   isEditing.value = true;
   originalContent.value = props.content;
@@ -95,10 +113,11 @@ const saveChanges = async () => {
   }
 
   isSaving.value = true;
+  saveError.value = "";
   const newContent = editor.value.getHTML();
 
   try {
-    emit("save", {
+    await props.onSave?.({
       paragraphId: props.paragraphId,
       content: newContent,
     });
@@ -108,7 +127,9 @@ const saveChanges = async () => {
     isEditing.value = false;
     editor.value.setEditable(false);
   } catch (error) {
+    // Keep the editor open with the text intact so nothing typed is lost.
     console.error("Failed to save:", error);
+    saveError.value = error?.message || "Couldn't save. Try again.";
   } finally {
     isSaving.value = false;
   }
@@ -124,19 +145,13 @@ const cancelEditing = () => {
   hasChanges.value = false;
 };
 
-// Handle blur - auto-save if changes exist
+// Clicking away never saves (it used to auto-save to the live chapter):
+// with no changes the editor just closes; with changes it stays open until
+// Save (✓ / Cmd+S) or Cancel (Esc).
 const handleBlur = (event) => {
-  // Don't save if clicking on toolbar buttons
-  const relatedTarget = event.relatedTarget;
-  if (relatedTarget?.closest(".editable-toolbar")) {
-    return;
-  }
-
-  // Small delay to allow button clicks to register
+  if (event.relatedTarget?.closest(".editable-toolbar")) return;
   setTimeout(() => {
-    if (isEditing.value && hasChanges.value) {
-      saveChanges();
-    } else if (isEditing.value) {
+    if (isEditing.value && !hasChanges.value && !isSaving.value) {
       cancelEditing();
     }
   }, 150);
@@ -306,12 +321,47 @@ onBeforeUnmount(() => {
 
     <!-- Saving indicator -->
     <div v-if="isSaving" class="saving-indicator">Saving...</div>
+    <p v-if="saveError" class="edit-note is-error" role="alert">
+      {{ saveError }}
+    </p>
+    <p v-if="hasChanges && isEditing && !saveError" class="edit-note">
+      Unsaved changes. Press ✓ or Cmd+S to save, or Esc to cancel.
+    </p>
+    <p v-if="lockNote" class="edit-note" role="status">
+      {{ lockNote }}
+      <button type="button" class="edit-note-close" @click="lockNote = ''">
+        OK
+      </button>
+    </p>
   </div>
 </template>
 
 <style scoped>
 .editable-block-wrapper {
   position: relative;
+}
+.edit-note {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: rgb(var(--color-warn) / 0.14);
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  pointer-events: auto;
+}
+.edit-note.is-error {
+  background: rgb(var(--color-accent) / 0.12);
+}
+.edit-note-close {
+  margin-left: 8px;
+  padding: 0 6px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
 }
 
 /* Creator hover state */
