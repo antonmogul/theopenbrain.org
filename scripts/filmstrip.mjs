@@ -66,8 +66,9 @@ const waitForTimeline = (label) =>
     { timeout: 5000 }
   );
 
-// Open the first unlocked case. The timeline only exists once one runs.
-await page.click(".folder:not(.folder--locked)");
+// Open R.W., the front folder and the one with case content. Only a folder's
+// painted outline takes pointer events, so click the outline itself.
+await page.click('.folder[data-id="rw"] path');
 await waitForTimeline("open");
 
 if (CLOSE) {

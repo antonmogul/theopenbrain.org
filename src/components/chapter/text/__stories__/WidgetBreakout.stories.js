@@ -105,9 +105,9 @@ export const FoundationsBreakout = {
       placementId: "foundations-case-cabinet",
       widgetId: "case-cabinet",
       kind: "breakout",
-      title: "Case cabinet — patients who taught us where the mind lives",
+      title: "Penfield’s case files — what stimulation brought back",
       blurb:
-        "Open the folders of R.W., H.M., S.B. and P.G.: four clinical cases, each a lesion or a surgery that revealed what a region of the brain does.",
+        "Pull a patient’s folder from the drawer: the numbered points Penfield stimulated, and what the patient reported. From Penfield and Perot, Brain, 1963.",
       credit: "Interactive by The Open Brain",
       route: "/case-cabinet",
     },
