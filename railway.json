@@ -2,7 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "npm run build && (npm run build-storybook -- -o dist/storybook || echo 'Storybook build failed: deploying the app without /storybook')"
+    "buildCommand": "sh scripts/railway-build.sh"
   },
   "deploy": {
     "startCommand": "serve dist -l $PORT",
