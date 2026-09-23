@@ -74,13 +74,19 @@ const viewTitle = computed(() => {
     />
 
     <!-- Auth Panel -->
+    <!-- Closed = zero width, so it must also leave the tab order and the
+         accessibility tree (its Log out / Dashboard buttons were reachable
+         while invisible), and drop its border (the 1px line down the left
+         edge of every page) — OPENBRAIN-56. -->
     <div
-      class="fixed h-screen bg-dark text-white overflow-y-scroll overflow-x-hidden overscroll-contain scrollbar top-0 left-0 z-[56] text-medium duration-300 border-r border-violet/90"
+      class="fixed h-screen bg-dark text-white overflow-y-scroll overflow-x-hidden overscroll-contain scrollbar top-0 left-0 z-[56] text-medium duration-300"
       :class="[
         authStore.activeAuth
-          ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none ml-0'
+          ? 'w-full md:max-w-[480px] xl:w-[50vw] xl:max-w-none ml-0 border-r border-violet/90'
           : 'w-[0]',
       ]"
+      :inert="!authStore.activeAuth"
+      :aria-hidden="authStore.activeAuth ? undefined : 'true'"
     >
       <div class="px-8 xl:px-24 pt-12 pb-56 w-full max-w-[800px]">
         <div class="font-sans">

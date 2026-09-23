@@ -127,3 +127,12 @@ describe("router wiring", () => {
     );
   });
 });
+
+describe("tab titles (OPENBRAIN-56)", () => {
+  it("names non-reader routes and resets the chapter title", async () => {
+    const router = makeRouter();
+    document.title = "The Open Brain – The Retina";
+    await router.push("/chapters");
+    expect(document.title).toBe("Chapters · The Open Brain");
+  });
+});

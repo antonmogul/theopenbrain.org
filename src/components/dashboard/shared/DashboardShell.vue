@@ -52,7 +52,9 @@ const accentAttr = props.accent === "magenta" ? null : props.accent;
 .shell-layout {
   display: grid;
   grid-template-columns: 1fr;
-  max-width: 77.5rem;
+  /* Was 77.5rem, which left a wide empty band on laptop/desktop screens
+     (OPENBRAIN-56); tables and the chapter outline use the extra room. */
+  max-width: 96rem;
   margin: 0 auto;
   padding: 2.5rem 3rem 6rem;
   gap: 3rem;

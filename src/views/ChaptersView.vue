@@ -233,6 +233,11 @@ function chapterNumberFor(mod) {
           An openly-published, interactive textbook — pick up where you left
           off.
         </p>
+        <p v-if="isCreator" class="signin-cta">
+          <router-link to="/dashboard?section=chapters"
+            >Creator console →</router-link
+          >
+        </p>
         <p v-if="!isAuthenticated" class="signin-cta">
           <button type="button" @click="authStore.openAuth()">Sign in</button>
           to track your progress.

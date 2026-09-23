@@ -259,6 +259,23 @@ export const authGuard = createAuthGuard({
  * Build the app router. The history is injectable so tests can drive the real
  * route table and guard registrations with createMemoryHistory().
  */
+// Tab titles for routes that don't set their own (the reader does).
+export const ROUTE_TITLES = {
+  dashboard: "Creator console",
+  chapters: "Chapters",
+  "chapter-overview": "Chapter overview",
+  "professor-dashboard": "Professor dashboard",
+  "student-dashboard": "My courses",
+  settings: "Settings",
+  playground: "Python playground",
+  quiz: "Quiz",
+  flashcards: "Flashcards",
+  lab: "Code lab",
+  enroll: "Enrol",
+  styleguide: "Styleguide",
+  widgets: "Widget library",
+};
+
 export function createAppRouter({
   history = createWebHistory(import.meta.env.BASE_URL),
 } = {}) {
@@ -317,6 +334,15 @@ export function createAppRouter({
   // the public catalog; ChapterView applies the ramp again from the module
   // row it loads, which also lets the DB `ramp` column win.
   router.afterEach((to) => {
+    // Tab title (OPENBRAIN-56): ChapterView sets the chapter's own title once
+    // it loads; every other route gets a fixed one, so a chapter's title no
+    // longer sticks to the dashboard, settings or library.
+    if (to.name !== "chapter") {
+      document.title = ROUTE_TITLES[to.name]
+        ? `${ROUTE_TITLES[to.name]} · The Open Brain`
+        : "The Open Brain";
+    }
+
     // Clear first, unconditionally: if the catalog fails, comes back empty, or
     // the route names a module it does not know, the previous chapter's colour
     // must not survive. The catalog is cached after its first fetch, so on

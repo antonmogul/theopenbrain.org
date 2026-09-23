@@ -379,7 +379,7 @@ async function loadChapter() {
   if (data) {
     storeText.updateText("*", data);
     if (typeof document !== "undefined" && data.title) {
-      document.title = `The Open Brain – ${data.title}`;
+      document.title = `${data.title} · The Open Brain`;
     }
     await nextTick();
     chapterDataLoaded.value = true;

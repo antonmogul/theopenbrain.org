@@ -1304,8 +1304,13 @@ onMounted(() => {
           </div>
         </BaseCard>
 
-        <Button variant="outline" size="md" @click="startChapterWizard()"
-          >+ Add new chapter</Button
+        <!-- The header's "New chapter" covers a non-empty list. -->
+        <Button
+          v-if="chapters.length === 0"
+          variant="outline"
+          size="md"
+          @click="startChapterWizard()"
+          >+ Add your first chapter</Button
         >
       </div>
     </section>
