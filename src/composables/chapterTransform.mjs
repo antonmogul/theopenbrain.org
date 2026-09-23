@@ -22,6 +22,7 @@
  * Returns extra fields to merge onto the paragraph object
  * (animationFull, type, img, steps, etc.)
  */
+import { readerLockReason } from "../editor/editability.js";
 export function extractChapter1Meta(blocks) {
   const meta = {};
   if (!blocks || !Array.isArray(blocks)) return meta;
@@ -170,6 +171,9 @@ export function transformParagraph(p) {
     id: p.id,
     text: contentResult.text,
     hasHeading: contentResult.hasHeading,
+    // Set when the reader's inline editor can't save this paragraph without
+    // dropping blocks (citations, images…) — OPENBRAIN-58.
+    lockReason: readerLockReason(p.content),
     // Spread Chapter 1-specific metadata (animationFull, type, img, etc.)
     ...meta,
   };

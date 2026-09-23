@@ -200,34 +200,23 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["save"]);
+defineEmits(["save"]);
 
 // Get save handler from parent (injected from TextComp)
 const saveContent = inject("saveContent", null);
 
-const handleParagraphSave = async ({ paragraphId, content }) => {
-  console.log("SectionComp: Saving paragraph", paragraphId);
-  if (saveContent) {
-    await saveContent({ paragraphId, content, type: "paragraph" });
-  }
-  emit("save", { paragraphId, content, type: "paragraph" });
-};
+// Saves go straight through the injected saveContent and are returned so
+// EditableBlock can show a failure. Nothing is re-emitted upward: the parent
+// used to save the same row again (OPENBRAIN-58).
+const handleParagraphSave = ({ paragraphId, content }) =>
+  saveContent({ paragraphId, content, type: "paragraph" });
 
-const handleSectionTitleSave = async ({ paragraphId, content }) => {
-  console.log("SectionComp: Saving section title", paragraphId);
-  if (saveContent) {
-    await saveContent({
-      paragraphId: props.section.id,
-      content,
-      type: "section-title",
-    });
-  }
-  emit("save", {
+const handleSectionTitleSave = ({ content }) =>
+  saveContent({
     paragraphId: props.section.id,
     content,
     type: "section-title",
   });
-};
 </script>
 
 <style scoped>

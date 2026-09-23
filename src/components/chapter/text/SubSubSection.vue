@@ -172,15 +172,10 @@ const isMobile = useMediaQuery("(max-width: 1299px)");
 const saveContent = inject("saveContent", null);
 
 // Handle save from editable block
-const handleSave = async ({ paragraphId, content }) => {
-  if (saveContent) {
-    await saveContent({
-      paragraphId,
-      content,
-      type: "subSubParagraph",
-    });
-  }
-};
+// Level-2 subsection paragraphs are ordinary paragraph rows; TextComp's
+// saveContent now handles this type (these edits used to be dropped).
+const handleSave = ({ paragraphId, content }) =>
+  saveContent({ paragraphId, content, type: "subSubParagraph" });
 </script>
 
 <style lang="scss" scoped></style>
