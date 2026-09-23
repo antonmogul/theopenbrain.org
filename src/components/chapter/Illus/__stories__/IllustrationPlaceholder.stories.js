@@ -1,10 +1,12 @@
 /*
- * Chapter/Illustrations/IllustrationPlaceholder — the figure shell shown
- * while artwork is pending: figure label, title, type chip, caption and an
- * authoring note, with a fullscreen toggle. Purely prop-driven.
+ * Chapter/Illustrations/IllustrationPlaceholder — the figure shell: figure
+ * label, title and a fullscreen toggle around either the "artwork pending"
+ * state (type chip, caption, authoring note) or, once the row carries images,
+ * the artwork itself (OPENBRAIN-41). Purely prop-driven.
  */
 import IllustrationPlaceholder from "../IllustrationPlaceholder.vue";
 import { illustrationFrame } from "../../__stories__/chapterFixtures";
+import { FIG6_IMAGES, FIG7_IMAGES, FIG7_LEGEND } from "./figureImageFixtures";
 
 const DIAGRAM_TYPES = [
   "photo",
@@ -80,6 +82,41 @@ export const WithoutFigureNumber = {
       placeholder: true,
       diagramType: "chart",
       title: "Spike rate against contrast",
+    },
+  },
+};
+
+/* The reader's figure pane has a fixed height (viewport minus the top bar);
+   the artwork stories use one too, so fitting is what is on show. */
+const paneFrame = illustrationFrame(IllustrationPlaceholder, {
+  template: `<div style="position:relative;height:720px;overflow:hidden;background:rgb(var(--color-bg));"><StoryComponent v-bind="args" /></div>`,
+});
+
+/** Artwork has landed: a cycling set, each plate with its own caption. */
+export const WithCyclingArtwork = {
+  render: paneFrame,
+  args: {
+    animation: {
+      id: "animationFoundationsFig6",
+      figureNumber: 6,
+      diagramType: "manuscript",
+      title: "The cell doctrine (ventricular theory)",
+      images: FIG6_IMAGES,
+    },
+  },
+};
+
+/** Artwork under one shared legend (config.caption). */
+export const WithSharedLegendArtwork = {
+  render: paneFrame,
+  args: {
+    animation: {
+      id: "animationFoundationsFig7",
+      figureNumber: 7,
+      diagramType: "manuscript",
+      title: "Vesalius, De Humani Corporis Fabrica",
+      caption: FIG7_LEGEND,
+      images: FIG7_IMAGES,
     },
   },
 };
