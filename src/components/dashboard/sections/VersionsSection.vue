@@ -86,10 +86,19 @@ defineEmits(["fetch", "create", "update-status", "delete"]);
             >
               Archive
             </Button>
+            <!-- Deleting a version deletes every chapter in it (ON DELETE
+                 CASCADE), and a browser confirm is the only other guard. Only
+                 an empty version can be deleted here. -->
             <Button
               variant="danger"
               size="sm"
-              @click="$emit('delete', version.id)"
+              :disabled="version.moduleCount > 0"
+              :title="
+                version.moduleCount > 0
+                  ? 'Move or delete this version’s chapters first: deleting it would delete them too.'
+                  : 'Delete this empty version'
+              "
+              @click="version.moduleCount > 0 || $emit('delete', version.id)"
               >Delete</Button
             >
           </div>

@@ -96,6 +96,16 @@ export function useVersions(profile) {
   }
 
   async function deleteVersion(versionId) {
+    // Deleting a version cascades to every chapter in it. The dashboard only
+    // offers Delete on empty versions; refuse here too in case it is reached
+    // another way.
+    const version = versions.value.find((v) => v.id === versionId);
+    if (version?.moduleCount > 0) {
+      alert(
+        `Version ${version.version_number} still has ${version.moduleCount} chapter(s). Move or delete them first.`
+      );
+      return;
+    }
     if (!confirm("Are you sure you want to delete this version?")) return;
 
     try {

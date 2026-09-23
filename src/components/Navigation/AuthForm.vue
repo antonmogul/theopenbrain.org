@@ -98,13 +98,19 @@ async function handleRegister() {
     return;
   }
   authStore.setLoading(true);
-  const { error } = await signUp(email.value, password.value);
+  const { data, error } = await signUp(email.value, password.value);
   authStore.setLoading(false);
   if (error) {
     authStore.setError(error.message || "Sign up failed");
     return;
   }
-  authStore.setSuccess("Check your email to confirm your account");
+  // Supabase returns a session straight away when email confirmation is off
+  // (the current project setting); only ask for the email when it didn't.
+  authStore.setSuccess(
+    data?.session
+      ? "Account created. You're signed in."
+      : "Check your email to confirm your account"
+  );
   resetFields();
   emit("register-success");
 }
