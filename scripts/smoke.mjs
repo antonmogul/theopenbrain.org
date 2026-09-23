@@ -140,6 +140,20 @@ const ROUTES = [
     minText: 50,
     widths: [1280, 1440, 1920],
   },
+  // History widget 1, both versions (OPENBRAIN-44): the 3D one loads a GLB
+  // and three SVG maps into WebGL, so errors there only show in a browser.
+  {
+    path: "/phrenology",
+    name: "phrenology",
+    minText: 30,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/phrenology-3d",
+    name: "phrenology-3d",
+    minText: 30,
+    widths: [1280, 1440, 1920],
+  },
   /*
    * Interactive widgets (OPENBRAIN-13/14). Every widget route in the catalog
    * gets a check: these are the pages shown to the authors, and ~15k lines of

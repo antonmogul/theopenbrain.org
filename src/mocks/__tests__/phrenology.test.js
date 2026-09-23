@@ -56,7 +56,8 @@ describe("phrenology mock data", () => {
     }
   });
 
-  it("exports the shared footer citation", () => {
-    expect(PHRENOLOGY_CITATION).toMatch(/Excerpts from/);
+  it("exports the shared footer line, not the Case Cabinet's Penfield source", () => {
+    expect(PHRENOLOGY_CITATION).toMatch(/phrenolog/i);
+    expect(PHRENOLOGY_CITATION).not.toMatch(/Penfield|Auditory and Visual/);
   });
 });
