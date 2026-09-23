@@ -1,4 +1,7 @@
 <script setup>
+import { ref } from "vue";
+import ImageUpload from "@/components/chapterEditor/ImageUpload.vue";
+import { imageUrl } from "@/editor/media.mjs";
 // Creator-dashboard "Media" library section (#11 split). Presentational: the
 // parent owns the useDashboardMedia instance. The media *picker* modal stays in
 // the view (it bridges to the chapters section and is opened from
@@ -33,12 +36,40 @@ const selectedMedia = defineModel("selectedMedia", {
   default: null,
 });
 
-defineEmits(["fetch", "filter", "select", "delete"]);
+const emit = defineEmits(["fetch", "filter", "select", "delete", "uploaded"]);
+
+// Upload an image straight into the library (OPENBRAIN-63).
+const showUpload = ref(false);
+function onUploaded(e) {
+  showUpload.value = false;
+  emit("uploaded", e.media);
+}
 </script>
 
 <template>
   <section class="section">
-    <SectionHeader eyebrow="04 · Media" title="Images & assets" />
+    <SectionHeader eyebrow="04 · Media" title="Images & assets">
+      <template #actions>
+        <Button variant="solid" size="sm" @click="showUpload = true"
+          >Upload image</Button
+        >
+      </template>
+    </SectionHeader>
+
+    <BaseModal
+      :model-value="showUpload"
+      title="Upload an image"
+      size="md"
+      @update:model-value="(v) => (showUpload = v)"
+      @close="showUpload = false"
+    >
+      <ImageUpload
+        slug="library"
+        :with-caption="false"
+        action-label="Upload"
+        @uploaded="onUploaded"
+      />
+    </BaseModal>
 
     <div class="filters-bar">
       <FilterChips
@@ -273,12 +304,13 @@ defineEmits(["fetch", "filter", "select", "delete"]);
           ></div>
           <img
             v-else-if="selectedMedia.media_type === 'image'"
-            :src="selectedMedia.lottie_file_url || selectedMedia.file_path"
+            :src="imageUrl(selectedMedia.image_file_url)"
+            :alt="selectedMedia.title || ''"
             class="media-modal-img"
           />
           <video
             v-else-if="selectedMedia.media_type === 'video'"
-            :src="selectedMedia.lottie_file_url || selectedMedia.file_path"
+            :src="selectedMedia.video_file_url"
             controls
             class="media-modal-video"
           ></video>

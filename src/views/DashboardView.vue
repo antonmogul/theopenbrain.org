@@ -1173,6 +1173,7 @@ onMounted(() => {
       @filter="onMediaFilter"
       @select="selectMedia"
       @delete="deleteMedia"
+      @uploaded="fetchMedia"
     />
 
     <QuizzesSection

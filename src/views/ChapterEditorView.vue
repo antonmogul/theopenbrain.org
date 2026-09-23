@@ -161,6 +161,19 @@ async function onPickImage(m) {
   );
 }
 
+async function onUploadedImage({ media, alt, caption }) {
+  ed.media.value = [...ed.media.value, media];
+  const { sectionId, index } = pickerFor.value;
+  pickerFor.value = null;
+  await attempt(
+    () =>
+      ed.insertParagraph(sectionId, index, [
+        { type: "image", src: media.image_file_url, alt, caption },
+      ]),
+    "Image uploaded and added."
+  );
+}
+
 async function onWidgetDone(block) {
   const target = pickerFor.value;
   pickerFor.value = null;
@@ -726,8 +739,10 @@ onMounted(async () => {
       :open="pickerFor?.kind === 'image'"
       :media="ed.media.value"
       :types="['image']"
-      title="Add an image from the library"
+      title="Add an image"
+      :upload-slug="ed.module.value?.slug || ''"
       @pick="onPickImage"
+      @uploaded="onUploadedImage"
       @close="pickerFor = null"
     />
 

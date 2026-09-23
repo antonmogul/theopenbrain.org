@@ -15,7 +15,7 @@ const root = ref(null);
 const OPTIONS = [
   { type: "text", label: "Text", hint: "A paragraph" },
   { type: "heading", label: "Heading", hint: "A subheading" },
-  { type: "image", label: "Image", hint: "From the media library" },
+  { type: "image", label: "Image", hint: "Upload or pick from the library" },
   { type: "widget", label: "Widget", hint: "An interactive" },
   { type: "quote", label: "Quote", hint: "A quotation" },
   { type: "list", label: "List", hint: "Bulleted points" },
