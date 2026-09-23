@@ -153,6 +153,153 @@ export function useChapterEditor(slug) {
     });
   }
 
+  // ---- structure: insert / delete / move / figure (OPENBRAIN-61) ----
+  // (section_id, order_index) is UNIQUE, so rows that change position are
+  // parked on a temporary order first; each phase runs in parallel because
+  // its values can't collide with each other or with rows that stay put.
+  const PARK = 100000;
+  const sectionRows = (sectionId) =>
+    (paragraphsBySection.value.get(sectionId) || []).slice();
+
+  async function setOrders(pairs) {
+    await Promise.all(
+      pairs.map(([id, order_index]) => patchParagraph(id, { order_index }))
+    );
+  }
+  async function reorder(pairs) {
+    await setOrders(pairs.map(([id], j) => [id, PARK + j]));
+    await setOrders(pairs);
+  }
+
+  async function postParagraph(row) {
+    const rows = await authedRequest("paragraphs", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(row),
+    });
+    if (!rows?.length)
+      throw new Error("The database didn't allow this change.");
+    paragraphs.value = [...paragraphs.value, rows[0]];
+    return rows[0];
+  }
+
+  async function removeParagraph(id) {
+    const rows = await authedRequest(`paragraphs?id=eq.${id}`, {
+      method: "DELETE",
+      headers: { Prefer: "return=representation" },
+    });
+    if (!rows?.length)
+      throw new Error("The database didn't allow this change.");
+    paragraphs.value = paragraphs.value.filter((p) => p.id !== id);
+  }
+
+  /**
+   * Insert a paragraph at position `index` of a section (0 = first). It takes
+   * the subsection level of the row before it, so it lands in the same
+   * subsection. Returns the new row.
+   */
+  async function insertParagraph(sectionId, index, blocks, extra = {}) {
+    return withSaving(async () => {
+      const rows = sectionRows(sectionId);
+      const after = rows.slice(index);
+      const prev = rows[index - 1];
+      const order_index = after.length
+        ? after[0].order_index
+        : (rows[rows.length - 1]?.order_index ?? -1) + 1;
+      const shifted = after.map((r) => [r.id, r.order_index + 1]);
+      if (shifted.length)
+        await setOrders(shifted.map(([id], j) => [id, PARK + j]));
+      const row = await postParagraph({
+        section_id: sectionId,
+        order_index,
+        content: { blocks },
+        content_text: blocksToPlainText(blocks),
+        is_subsection_header: false,
+        subsection_level: prev?.subsection_level || 0,
+        ...extra,
+      });
+      if (shifted.length) await setOrders(shifted);
+      pushUndo("Add block", async () => {
+        await removeParagraph(row.id);
+        if (after.length)
+          await reorder(after.map((r) => [r.id, r.order_index]));
+      });
+      return row;
+    });
+  }
+
+  /** Delete a paragraph; Undo puts the row back (not readers' highlights). */
+  async function deleteParagraph(id) {
+    return withSaving(async () => {
+      const row = paragraphs.value.find((p) => p.id === id);
+      if (!row) return;
+      try {
+        await removeParagraph(id);
+      } catch (err) {
+        if (/409|foreign key|violates/i.test(err.message))
+          throw new Error(
+            "A reader's saved place points at this paragraph, so it can't be deleted yet."
+          );
+        throw err;
+      }
+      pushUndo("Delete block", () =>
+        postParagraph({
+          id: row.id,
+          section_id: row.section_id,
+          order_index: row.order_index,
+          content: row.content,
+          content_text: row.content_text,
+          is_subsection_header: row.is_subsection_header,
+          subsection_level: row.subsection_level,
+          animation_id: row.animation_id,
+          animation_trigger: row.animation_trigger,
+        })
+      );
+    });
+  }
+
+  /** Swap a paragraph with its neighbour: dir -1 = up, +1 = down. */
+  async function moveParagraph(id, dir) {
+    return withSaving(async () => {
+      const row = paragraphs.value.find((p) => p.id === id);
+      if (!row) return;
+      const rows = sectionRows(row.section_id);
+      const i = rows.findIndex((p) => p.id === id);
+      const other = rows[i + dir];
+      if (!other) return;
+      const swap = [
+        [row.id, other.order_index],
+        [other.id, row.order_index],
+      ];
+      await reorder(swap);
+      pushUndo(dir < 0 ? "Move up" : "Move down", () =>
+        reorder([
+          [row.id, row.order_index],
+          [other.id, other.order_index],
+        ])
+      );
+    });
+  }
+
+  /** Attach, change or remove (animationId null) a paragraph's figure. */
+  async function setFigure(id, animationId, trigger = null) {
+    return withSaving(async () => {
+      const row = paragraphs.value.find((p) => p.id === id);
+      if (!row) return;
+      const before = {
+        animation_id: row.animation_id,
+        animation_trigger: row.animation_trigger,
+      };
+      await patchParagraph(id, {
+        animation_id: animationId,
+        animation_trigger: animationId ? trigger : null,
+      });
+      pushUndo(animationId ? "Set figure" : "Remove figure", () =>
+        patchParagraph(id, before)
+      );
+    });
+  }
+
   async function undo() {
     const last = undoStack.value[undoStack.value.length - 1];
     if (!last) return null;
@@ -176,6 +323,10 @@ export function useChapterEditor(slug) {
     undoStack,
     load,
     saveBlocks,
+    insertParagraph,
+    deleteParagraph,
+    moveParagraph,
+    setFigure,
     undo,
     // exposed for later phases (insert/move/delete build on these)
     patchParagraph,
