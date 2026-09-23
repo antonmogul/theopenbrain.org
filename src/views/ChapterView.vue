@@ -596,6 +596,16 @@ async function handleDeleteHighlight(highlightId) {
         :is-authenticated="isAuthenticated"
       />
 
+      <!-- Only creators can open a draft (useChapter gate + RLS), so this
+           reminds them readers can't see it yet (OPENBRAIN-51). -->
+      <p
+        v-if="chapterData && chapterData.status !== 'published'"
+        class="draft-ribbon"
+        role="status"
+      >
+        <strong>Draft</strong> · only creators can see this chapter
+      </p>
+
       <div v-if="readingSaveError" class="save-error" role="alert">
         <span>{{ readingSaveError }}</span>
         <button type="button" @click="retryReadingProgressSave">Retry</button>
@@ -733,6 +743,24 @@ export default {
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.draft-ribbon {
+  position: fixed;
+  z-index: 180;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  background: rgb(var(--color-warn));
+  color: rgb(10 10 10);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  pointer-events: none;
 }
 
 .save-error {

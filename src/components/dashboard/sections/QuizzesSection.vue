@@ -13,6 +13,7 @@ import {
   Button,
   FormField,
 } from "@/components/dashboard/shared";
+import { attemptPercent, questionTypeLabel } from "@/utils/quizLabels";
 
 defineProps({
   quizzes: { type: Array, default: () => [] },
@@ -163,7 +164,7 @@ defineEmits([
               <div class="q-head-meta">
                 <span class="eyebrow-mono">Q{{ index + 1 }}</span>
                 <StatusBadge variant="neutral">{{
-                  question.question_type
+                  questionTypeLabel(question.question_type)
                 }}</StatusBadge>
                 <span class="muted-mono"
                   >{{ question.points }} pt{{
@@ -333,11 +334,15 @@ defineEmits([
             <span class="mini-label">Attempts</span>
           </div>
           <div class="mini-stat">
-            <span class="mini-value">{{ quiz.avgScore }}%</span>
+            <span class="mini-value">{{
+              attemptPercent(quiz.avgScore, quiz.attemptCount)
+            }}</span>
             <span class="mini-label">Avg score</span>
           </div>
           <div class="mini-stat">
-            <span class="mini-value">{{ quiz.passRate }}%</span>
+            <span class="mini-value">{{
+              attemptPercent(quiz.passRate, quiz.attemptCount)
+            }}</span>
             <span class="mini-label">Pass rate</span>
           </div>
         </div>
