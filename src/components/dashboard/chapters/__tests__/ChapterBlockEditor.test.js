@@ -84,3 +84,47 @@ describe("ChapterBlockEditor read-only mode (OPENBRAIN-50)", () => {
     expect(wrapper.find(".editor-content").exists()).toBe(false);
   });
 });
+
+describe("ChapterBlockEditor sections open one at a time (OPENBRAIN-53)", () => {
+  const twoSections = [
+    ...sections,
+    { id: "s2", title: "Methods", slug: "methods", order_index: 1 },
+  ];
+  const withSecond = [
+    ...paragraphs,
+    {
+      id: "p3",
+      section_id: "s2",
+      order_index: 0,
+      content: { blocks: [] },
+      content_text: "Later",
+      animation_id: null,
+      animation_trigger: null,
+    },
+  ];
+
+  it("opens only the first section, and a section row toggles its own", async () => {
+    const wrapper = mount(ChapterBlockEditor, {
+      props: {
+        sections: twoSections,
+        paragraphs: withSecond,
+        mediaItems,
+        readonly: true,
+      },
+    });
+    const rows = () => wrapper.findAll(".blocks-list .block-item");
+    expect(rows()).toHaveLength(4); // s1, p1, p2, s2
+    const second = wrapper.findAll(".block-item.section")[1];
+    expect(second.attributes("aria-expanded")).toBe("false");
+    expect(second.text()).toContain("1 ¶");
+
+    await second.trigger("keydown", { key: "Enter" });
+    expect(rows()).toHaveLength(5);
+    expect(
+      wrapper.findAll(".block-item.section")[1].attributes("aria-expanded")
+    ).toBe("true");
+
+    await wrapper.findAll(".block-item.section")[0].trigger("click");
+    expect(rows()).toHaveLength(3); // s1, s2, p3
+  });
+});

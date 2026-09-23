@@ -1,14 +1,15 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useAuth } from "@/composables/useAuth";
 import { useAuthStore } from "@/stores/auth";
+import { authedRequest } from "@/services/api/client";
 import { ROLE_UNAVAILABLE_QUERY } from "@/router/guards";
 
 const route = useRoute();
 const authStore = useAuthStore();
-const { user, session, isAuthenticated } = useAuth();
+const { user, session, isAuthenticated, isCreator } = useAuth();
 
 // The auth guard lands here with ?auth=role-unavailable when a role-gated
 // route had to fail closed (profile lookup errored or returned nothing).
@@ -16,6 +17,35 @@ const roleUnavailable = computed(
   () => route.query.auth === ROLE_UNAVAILABLE_QUERY
 );
 const { fetchCatalog, modules, loading } = useChapterCatalog();
+
+// Creators also see drafts (OPENBRAIN-51). The public catalog stays
+// published-only; drafts come from an authenticated read, which RLS allows
+// only for creators, and are marked so the card can say so.
+const creatorDrafts = ref([]);
+watch(
+  isCreator,
+  async (creator) => {
+    if (!creator) {
+      creatorDrafts.value = [];
+      return;
+    }
+    try {
+      creatorDrafts.value = await authedRequest(
+        "modules?status=eq.draft&select=*&order=order_index.asc"
+      );
+    } catch (err) {
+      console.warn("ChaptersView: draft fetch failed", err);
+      creatorDrafts.value = [];
+    }
+  },
+  { immediate: true }
+);
+const libraryModules = computed(() =>
+  [
+    ...modules.value,
+    ...creatorDrafts.value.map((d) => ({ ...d, isDraft: true })),
+  ].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+);
 
 // Progress rows keyed by module_id for the current user
 const progressByModule = ref({});
@@ -189,7 +219,15 @@ function chapterNumberFor(mod) {
          prototype IndexScreen. Grid 1fr / 1.4fr. -->
     <header class="hero">
       <div class="hero-text">
-        <p class="eyebrow">Book · {{ modules.length }} chapters</p>
+        <p class="eyebrow">
+          Book · {{ modules.length }} chapters<template
+            v-if="creatorDrafts.length"
+          >
+            · {{ creatorDrafts.length }}
+            {{ creatorDrafts.length === 1 ? "draft" : "drafts" }} (only creators
+            see drafts)</template
+          >
+        </p>
         <h1>Chapters</h1>
         <p class="lede">
           An openly-published, interactive textbook — pick up where you left
@@ -258,12 +296,13 @@ function chapterNumberFor(mod) {
     <div v-if="loading" class="loading">Loading chapters…</div>
 
     <ul v-else class="grid">
-      <li v-for="mod in modules" :key="mod.id">
-        <div class="card">
+      <li v-for="mod in libraryModules" :key="mod.id">
+        <div class="card" :class="{ 'card--draft': mod.isDraft }">
+          <!-- A draft has no public overview page, so it links to the reader. -->
           <router-link
-            :to="chapterRoute(mod)"
+            :to="mod.isDraft ? readerRoute(mod) : chapterRoute(mod)"
             class="cover"
-            :aria-label="`${mod.title} — overview`"
+            :aria-label="`${mod.title} — ${mod.isDraft ? 'draft' : 'overview'}`"
           >
             <img
               v-if="mod.cover_image_url"
@@ -271,8 +310,9 @@ function chapterNumberFor(mod) {
               :alt="mod.title"
             />
             <div v-else class="cover-fallback" />
+            <span v-if="mod.isDraft" class="pill pill-draft">Draft</span>
             <span
-              v-if="isAuthenticated && pillFor(mod.id) === 'done'"
+              v-else-if="isAuthenticated && pillFor(mod.id) === 'done'"
               class="pill pill-done"
             >
               ✓ Done
@@ -289,7 +329,10 @@ function chapterNumberFor(mod) {
               Chapter {{ chapterNumberFor(mod) }}
             </span>
             <h3 class="title">
-              <router-link :to="chapterRoute(mod)" class="title-link">
+              <router-link
+                :to="mod.isDraft ? readerRoute(mod) : chapterRoute(mod)"
+                class="title-link"
+              >
                 {{ mod.title }}
               </router-link>
             </h3>
@@ -308,6 +351,7 @@ function chapterNumberFor(mod) {
                 Read →
               </router-link>
               <router-link
+                v-if="!mod.isDraft"
                 :to="chapterRoute(mod)"
                 class="card-action card-action--muted"
               >
@@ -726,6 +770,14 @@ function chapterNumberFor(mod) {
   color: rgb(var(--color-paper));
 }
 
+.pill-draft {
+  background: rgb(var(--color-warn));
+  color: rgb(var(--color-ink));
+}
+.card--draft .cover {
+  outline: 1px dashed rgb(var(--color-warn));
+  outline-offset: -1px;
+}
 .pill-reading {
   background: rgb(var(--color-accent));
   color: #fff;

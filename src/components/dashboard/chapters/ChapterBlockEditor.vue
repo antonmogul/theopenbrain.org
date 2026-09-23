@@ -168,6 +168,44 @@ function buildFlatBlocks() {
     });
   });
   flatBlocks.value = blocks;
+  // First build: open the first section, so the outline starts short.
+  if (!openSectionsInit && props.sections.length) {
+    openSections.value = new Set([props.sections[0].id]);
+    openSectionsInit = true;
+  }
+}
+
+// --- sections open one at a time (OPENBRAIN-53) ---
+// Rendering a whole chapter at once (The Retina: ~1,300 rows) made the outline
+// slow and long; sections now expand on demand and the preview follows.
+const openSections = ref(new Set());
+let openSectionsInit = false;
+
+function toggleSection(sectionId) {
+  const next = new Set(openSections.value);
+  if (next.has(sectionId)) next.delete(sectionId);
+  else next.add(sectionId);
+  openSections.value = next;
+}
+
+const visibleBlocks = computed(() =>
+  flatBlocks.value.filter(
+    (b) => b.type === "section" || openSections.value.has(b.sectionId)
+  )
+);
+
+const paragraphCountBySection = computed(() => {
+  const counts = {};
+  for (const b of flatBlocks.value) {
+    if (b.type === "paragraph")
+      counts[b.sectionId] = (counts[b.sectionId] || 0) + 1;
+  }
+  return counts;
+});
+
+function onRowActivate(block) {
+  if (block.type === "section") toggleSection(block.id);
+  else selectBlock(block);
 }
 
 // Rebuild blocks whenever the source content changes (parent refresh), and
@@ -320,7 +358,7 @@ const chapterStats = computed(() => {
     <div class="blocks-sidebar">
       <div class="blocks-list">
         <div
-          v-for="block in flatBlocks"
+          v-for="block in visibleBlocks"
           :key="block.id"
           class="block-item"
           :class="{
@@ -331,7 +369,14 @@ const chapterStats = computed(() => {
             'drag-over': dragOverBlockId === block.id,
           }"
           :draggable="!readonly && block.type === 'paragraph'"
-          @click="selectBlock(block)"
+          :role="block.type === 'section' || !readonly ? 'button' : undefined"
+          :tabindex="block.type === 'section' || !readonly ? 0 : undefined"
+          :aria-expanded="
+            block.type === 'section' ? openSections.has(block.id) : undefined
+          "
+          @click="onRowActivate(block)"
+          @keydown.enter.self.prevent="onRowActivate(block)"
+          @keydown.space.self.prevent="onRowActivate(block)"
           @dragstart="handleDragStart($event, block)"
           @dragover="handleDragOver($event, block)"
           @dragleave="handleDragLeave"
@@ -354,6 +399,22 @@ const chapterStats = computed(() => {
               ></path>
             </svg>
             <span class="block-title">{{ block.title }}</span>
+            <span class="block-count"
+              >{{ paragraphCountBySection[block.id] || 0 }} ¶</span
+            >
+            <svg
+              class="section-chev"
+              :class="{ open: openSections.has(block.id) }"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <polyline points="9 6 15 12 9 18"></polyline>
+            </svg>
           </template>
           <template v-else>
             <svg
@@ -449,7 +510,7 @@ const chapterStats = computed(() => {
           <h4 class="preview-title">Content preview</h4>
           <div class="preview-content">
             <div
-              v-for="block in flatBlocks"
+              v-for="block in visibleBlocks"
               :key="block.id"
               :data-block-id="block.id"
               class="preview-block"
@@ -594,9 +655,35 @@ const chapterStats = computed(() => {
   flex: none;
 }
 .block-title {
+  flex: 1;
+  min-width: 0;
   font-size: 0.875rem;
   font-weight: 500;
   color: rgb(var(--color-ink));
+}
+.block-count {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(var(--color-mute));
+  flex: none;
+}
+.section-chev {
+  flex: none;
+  color: rgb(var(--color-mute));
+  transition: transform 0.15s ease;
+}
+.section-chev.open {
+  transform: rotate(90deg);
+}
+.block-item.section:hover {
+  background: rgb(var(--color-ink) / 0.04);
+}
+.block-item:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: -2px;
+}
+.chapter-editor-layout.is-readonly .block-item.section {
+  cursor: pointer;
 }
 .drag-handle {
   color: rgb(var(--color-mute));

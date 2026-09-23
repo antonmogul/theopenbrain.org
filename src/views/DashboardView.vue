@@ -14,6 +14,7 @@ import { useDashboardQuizzes } from "@/composables/useDashboardQuizzes";
 import { useRouter, useRoute } from "vue-router";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
+import { attemptPercent } from "@/utils/quizLabels";
 import ChapterBlockEditor from "@/components/dashboard/chapters/ChapterBlockEditor.vue";
 import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
@@ -148,6 +149,7 @@ const {
   mediaFilter,
   mediaSearch,
   selectedMedia,
+  mediaUsage,
   filteredMedia,
   mediaByType,
   fetchMedia,
@@ -450,6 +452,49 @@ async function onBlockSave({ paragraphId, content, contentText }) {
   }
 }
 
+// ============ PUBLISH / UNPUBLISH (asks first) ============
+const pendingStatusChange = ref(null); // { chapter, to }
+const statusChanging = ref(false);
+
+function readerPath(chapter) {
+  return `/chapter/${chapter.order_index}/${chapter.slug}`;
+}
+
+function askStatusChange(chapter) {
+  pendingStatusChange.value = {
+    chapter,
+    to: chapter.status === "published" ? "draft" : "published",
+  };
+}
+
+async function confirmStatusChange() {
+  const change = pendingStatusChange.value;
+  if (!change) return;
+  statusChanging.value = true;
+  try {
+    await supabaseRest(`modules?id=eq.${change.chapter.id}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({
+        status: change.to,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+    await fetchAllChapters();
+    showToast(
+      change.to === "published"
+        ? `Published ${change.chapter.title}. Readers can see it now.`
+        : `${change.chapter.title} is a draft again. Only creators can see it.`
+    );
+  } catch (err) {
+    console.error("Error changing chapter status:", err);
+    showToast(`Couldn't change the status: ${err.message}`, { error: true });
+  } finally {
+    statusChanging.value = false;
+    pendingStatusChange.value = null;
+  }
+}
+
 function toggleChapterEditing(chapterId) {
   editingChapterId.value =
     editingChapterId.value === chapterId ? null : chapterId;
@@ -537,6 +582,7 @@ const wizardSteps = [
 const wizardMeta = ref({
   title: "",
   description: "",
+  ramp: null,
   slug: "",
   order_index: 0,
 });
@@ -564,7 +610,13 @@ async function initWizardOrderIndex() {
 function startChapterWizard() {
   // Reset wizard state
   wizardCurrentStep.value = 1;
-  wizardMeta.value = { title: "", description: "", slug: "", order_index: 0 };
+  wizardMeta.value = {
+    title: "",
+    description: "",
+    ramp: null,
+    slug: "",
+    order_index: 0,
+  };
   wizardSections.value = [];
   wizardReferences.value = [];
   wizardCreating.value = false;
@@ -644,6 +696,8 @@ async function handleWizardCreate() {
     // 2. Create the module (chapter)
     const chapter = await apiCreateChapter({
       title: wizardMeta.value.title,
+      description: wizardMeta.value.description,
+      ramp: wizardMeta.value.ramp,
       slug: wizardMeta.value.slug,
       order_index: wizardMeta.value.order_index,
       status: "draft",
@@ -709,6 +763,31 @@ async function handleWizardCreate() {
   }
 }
 
+// The address bar follows the section (OPENBRAIN-53), so Back/Forward, reload
+// and shared links land where you were. Overview is the bare /dashboard.
+watch(activeSection, (section) => {
+  const wanted = section === "dashboard" ? undefined : section;
+  if (route.query.section !== wanted) {
+    const query = { ...route.query };
+    if (wanted) query.section = wanted;
+    else delete query.section;
+    router.push({ query });
+  }
+  // Each section starts at its top, not at the last section's scroll offset.
+  window.scrollTo({ top: 0 });
+});
+
+watch(
+  () => route.query.section,
+  (section) => {
+    const target = section || "dashboard";
+    if (target === activeSection.value) return;
+    if (target === "chapter-wizard") startChapterWizard();
+    else if (creatorNavItems.some((i) => i.id === target))
+      activeSection.value = target;
+  }
+);
+
 // Watch for section changes to fetch data
 watch(activeSection, (newSection) => {
   switch (newSection) {
@@ -736,6 +815,8 @@ watch(activeSection, (newSection) => {
       break;
     case "quizzes":
       if (quizzes.value.length === 0) fetchQuizzes();
+      // The quiz form's chapter picker.
+      if (chapters.value.length === 0) fetchAllChapters();
       break;
   }
 });
@@ -1023,8 +1104,8 @@ onMounted(() => {
                   <td class="cell-strong">{{ q.title }}</td>
                   <td>{{ q.questionCount }}</td>
                   <td>{{ q.attemptCount }}</td>
-                  <td>{{ q.avgScore }}%</td>
-                  <td>{{ q.passRate }}%</td>
+                  <td>{{ attemptPercent(q.avgScore, q.attemptCount) }}</td>
+                  <td>{{ attemptPercent(q.passRate, q.attemptCount) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -1129,6 +1210,23 @@ onMounted(() => {
               <span v-if="expandedChapterId !== chapter.id" class="muted-mono">
                 Last edited: {{ formatDate(chapter.updated_at) }}
               </span>
+            </div>
+            <div class="chapter-actions" @click.stop>
+              <a
+                :href="readerPath(chapter)"
+                target="_blank"
+                rel="noopener"
+                class="chapter-action"
+                >Open in reader ↗</a
+              >
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="askStatusChange(chapter)"
+                >{{
+                  chapter.status === "published" ? "Unpublish" : "Publish"
+                }}</Button
+              >
             </div>
             <StatusBadge :status="chapter.status || 'draft'" />
             <button
@@ -1330,6 +1428,7 @@ onMounted(() => {
       :filtered-media="filteredMedia"
       :media-by-type="mediaByType"
       :format-file-size="formatFileSize"
+      :media-usage="mediaUsage"
       v-model:media-search="mediaSearch"
       v-model:selected-media="selectedMedia"
       @fetch="fetchMedia"
@@ -1345,6 +1444,7 @@ onMounted(() => {
       :quizzes-error="quizzesError"
       :editing-quiz="editingQuiz"
       :editing-question="editingQuestion"
+      :chapters="chapters"
       v-model:show-quiz-editor="showQuizEditor"
       v-model:quiz-form="quizForm"
       v-model:show-question-editor="showQuestionEditor"
@@ -1373,6 +1473,7 @@ onMounted(() => {
       :users-total-count="usersTotalCount"
       :user-role-breakdown="userRoleBreakdown"
       :role-select-options="roleSelectOptions"
+      :current-user-id="user?.id || null"
       v-model:selected-user="selectedUser"
       @fetch="fetchUsers"
       @filter="onUsersFilter"
@@ -1397,6 +1498,33 @@ onMounted(() => {
       @fetch="fetchAnalytics"
       @range-change="onAnalyticsRange"
     />
+
+    <!-- Publish / unpublish: changes who can read the chapter. -->
+    <ConfirmDialog
+      :model-value="!!pendingStatusChange"
+      :title="
+        pendingStatusChange?.to === 'published'
+          ? 'Publish this chapter?'
+          : 'Unpublish this chapter?'
+      "
+      :confirm-label="
+        pendingStatusChange?.to === 'published' ? 'Publish' : 'Unpublish'
+      "
+      :variant="pendingStatusChange?.to === 'published' ? 'info' : 'danger'"
+      :loading="statusChanging"
+      @update:model-value="(open) => !open && (pendingStatusChange = null)"
+      @confirm="confirmStatusChange"
+    >
+      <template v-if="pendingStatusChange?.to === 'published'">
+        <strong>{{ pendingStatusChange?.chapter.title }}</strong> will appear in
+        the chapter library for every reader, signed in or not.
+      </template>
+      <template v-else>
+        <strong>{{ pendingStatusChange?.chapter.title }}</strong> leaves the
+        library straight away. Readers who open its link get "not found"; only
+        creators can still read it.
+      </template>
+    </ConfirmDialog>
 
     <!-- Figure removal: asks first, because it edits the live chapter. -->
     <ConfirmDialog
@@ -1497,6 +1625,29 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.chapter-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.chapter-action {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-ink));
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.chapter-action:hover,
+.chapter-action:focus-visible {
+  background: rgb(var(--color-line));
+}
+.chapter-action:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
 .edit-bar {
   display: flex;
   flex-wrap: wrap;

@@ -2,11 +2,13 @@
 /**
  * WizardStepMeta — Step 1: Title & Metadata
  *
- * Collects chapter title, description, slug, and order_index.
+ * Collects chapter title, description, subject (the chapter's colour ramp),
+ * slug, and order_index.
  * Slug auto-generates from title but is editable.
  */
 import { computed } from "vue";
 import { toSlug } from "@/helper/general";
+import { RAMPS, RAMP_NAMES } from "@/helper/chapterTheme";
 
 const props = defineProps({
   modelValue: {
@@ -94,6 +96,32 @@ defineExpose({ isValid });
         />
       </div>
 
+      <!-- Subject sets the chapter's colour (opener title, TOC numbers,
+           section badges). Without one it falls back to neutral. -->
+      <fieldset class="form-group ramp-group">
+        <legend class="form-label">Subject</legend>
+        <div class="ramp-options">
+          <label
+            v-for="key in RAMPS"
+            :key="key"
+            class="ramp-option"
+            :class="{ selected: meta.ramp === key }"
+            :data-chapter="key"
+          >
+            <input
+              type="radio"
+              name="chapter-ramp"
+              class="ramp-radio"
+              :value="key"
+              :checked="meta.ramp === key"
+              @change="updateField('ramp', key)"
+            />
+            <span class="ramp-swatch" aria-hidden="true" />
+            <span class="ramp-name">{{ RAMP_NAMES[key] }}</span>
+          </label>
+        </div>
+      </fieldset>
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="chapter-slug"> URL Slug </label>
@@ -128,6 +156,47 @@ defineExpose({ isValid });
 </template>
 
 <style scoped>
+.ramp-group {
+  border: 0;
+  padding: 0;
+  margin-inline: 0;
+}
+.ramp-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ramp-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+.ramp-option.selected {
+  border-color: rgb(var(--color-chapter));
+  background: rgb(var(--color-chapter) / 0.1);
+}
+.ramp-option:focus-within {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+.ramp-radio {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.ramp-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(var(--color-chapter));
+}
 .wizard-step-meta {
   max-width: 640px;
 }
@@ -184,7 +253,7 @@ defineExpose({ isValid });
 }
 
 .required {
-  color: rgb(151, 71, 255);
+  color: rgb(var(--color-accent));
 }
 
 .optional {
@@ -206,7 +275,7 @@ defineExpose({ isValid });
 
 .form-input:focus {
   outline: none;
-  border-color: rgb(151, 71, 255);
+  border-color: rgb(var(--color-accent));
 }
 
 .form-input::placeholder {
@@ -228,7 +297,7 @@ defineExpose({ isValid });
 
 .form-textarea:focus {
   outline: none;
-  border-color: rgb(151, 71, 255);
+  border-color: rgb(var(--color-accent));
 }
 
 .form-textarea::placeholder {
@@ -264,6 +333,6 @@ defineExpose({ isValid });
 }
 
 .slug-preview:focus-within {
-  border-color: rgb(151, 71, 255);
+  border-color: rgb(var(--color-accent));
 }
 </style>

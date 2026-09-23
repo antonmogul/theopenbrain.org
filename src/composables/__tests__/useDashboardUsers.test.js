@@ -58,14 +58,34 @@ describe("useDashboardUsers", () => {
   });
 
   it("updateUserRole PATCHes role then refetches", async () => {
-    authedRequest.mockResolvedValue([]);
+    authedRequest.mockImplementation((endpoint, opts) =>
+      Promise.resolve(
+        opts?.method === "PATCH" ? [{ id: "u1", role: "professor" }] : []
+      )
+    );
     const { selectedUser, updateUserRole } = useDashboardUsers();
     selectedUser.value = { id: "u1", role: "student" };
     await updateUserRole("u1", "professor");
     expect(authedRequest).toHaveBeenCalledWith("profiles?id=eq.u1", {
       method: "PATCH",
+      headers: { Prefer: "return=representation" },
       body: JSON.stringify({ role: "professor" }),
     });
     expect(selectedUser.value.role).toBe("professor");
+  });
+
+  it("treats a 0-row update (RLS refused it) as a failure", async () => {
+    authedRequest.mockResolvedValue([]);
+    const alert = vi.spyOn(window, "alert").mockImplementation(() => {});
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { selectedUser, updateUserRole } = useDashboardUsers();
+    selectedUser.value = { id: "u1", role: "student" };
+    await updateUserRole("u1", "creator");
+    expect(selectedUser.value.role).toBe("student");
+    expect(alert).toHaveBeenCalledWith(
+      expect.stringContaining("didn't allow this change")
+    );
+    alert.mockRestore();
+    error.mockRestore();
   });
 });
