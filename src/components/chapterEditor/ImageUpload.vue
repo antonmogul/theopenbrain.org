@@ -30,13 +30,20 @@ const input = ref(null);
 
 const problem = computed(() => (file.value ? uploadProblem(file.value) : null));
 
+// Alt text is suggested from the file name only while the author hasn't
+// typed their own, so choosing another file updates the suggestion.
+let suggestedAlt = "";
 function setFile(f) {
   error.value = "";
   if (preview.value) URL.revokeObjectURL(preview.value);
   file.value = f || null;
   preview.value = f && !uploadProblem(f) ? URL.createObjectURL(f) : "";
-  if (f && !alt.value)
-    alt.value = f.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+  if (!alt.value || alt.value === suggestedAlt) {
+    suggestedAlt = f
+      ? f.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ")
+      : "";
+    alt.value = suggestedAlt;
+  }
 }
 function onDrop(e) {
   dragging.value = false;
