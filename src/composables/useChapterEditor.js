@@ -89,7 +89,7 @@ export function useChapterEditor(slug) {
           )
         : [];
       media.value = await authedRequest(
-        "animations?select=id,title,animation_key,media_type,lottie_file_url,file_path&order=title.asc"
+        "animations?select=id,title,animation_key,media_type,lottie_file_url,image_file_url,video_file_url,youtube_id&order=title.asc"
       );
     } catch (err) {
       console.error("useChapterEditor: load failed", err);
