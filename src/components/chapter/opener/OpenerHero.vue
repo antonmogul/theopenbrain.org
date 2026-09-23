@@ -80,6 +80,9 @@ const tools = [
     enabled: false,
   },
 ];
+// Only the working tools are shown: three disabled buttons read as broken
+// to a reader (beta, 2026-09-24). Flip `enabled` to bring one back.
+const shownTools = tools.filter((t) => t.enabled);
 function onTool(tool) {
   if (tool.key === "help") openSidebarTab("info");
 }
@@ -121,7 +124,7 @@ function onTool(tool) {
 
     <div class="opener-hero__tools" role="group" aria-label="Chapter tools">
       <button
-        v-for="tool in tools"
+        v-for="tool in shownTools"
         :key="tool.key"
         type="button"
         class="opener-hero__tool"
