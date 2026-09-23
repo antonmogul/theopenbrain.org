@@ -581,6 +581,7 @@ const wizardSteps = [
 const wizardMeta = ref({
   title: "",
   description: "",
+  ramp: null,
   slug: "",
   order_index: 0,
 });
@@ -608,7 +609,13 @@ async function initWizardOrderIndex() {
 function startChapterWizard() {
   // Reset wizard state
   wizardCurrentStep.value = 1;
-  wizardMeta.value = { title: "", description: "", slug: "", order_index: 0 };
+  wizardMeta.value = {
+    title: "",
+    description: "",
+    ramp: null,
+    slug: "",
+    order_index: 0,
+  };
   wizardSections.value = [];
   wizardReferences.value = [];
   wizardCreating.value = false;
@@ -688,6 +695,8 @@ async function handleWizardCreate() {
     // 2. Create the module (chapter)
     const chapter = await apiCreateChapter({
       title: wizardMeta.value.title,
+      description: wizardMeta.value.description,
+      ramp: wizardMeta.value.ramp,
       slug: wizardMeta.value.slug,
       order_index: wizardMeta.value.order_index,
       status: "draft",
@@ -805,6 +814,8 @@ watch(activeSection, (newSection) => {
       break;
     case "quizzes":
       if (quizzes.value.length === 0) fetchQuizzes();
+      // The quiz form's chapter picker.
+      if (chapters.value.length === 0) fetchAllChapters();
       break;
   }
 });
@@ -1431,6 +1442,7 @@ onMounted(() => {
       :quizzes-error="quizzesError"
       :editing-quiz="editingQuiz"
       :editing-question="editingQuestion"
+      :chapters="chapters"
       v-model:show-quiz-editor="showQuizEditor"
       v-model:quiz-form="quizForm"
       v-model:show-question-editor="showQuestionEditor"
@@ -1459,6 +1471,7 @@ onMounted(() => {
       :users-total-count="usersTotalCount"
       :user-role-breakdown="userRoleBreakdown"
       :role-select-options="roleSelectOptions"
+      :current-user-id="user?.id || null"
       v-model:selected-user="selectedUser"
       @fetch="fetchUsers"
       @filter="onUsersFilter"

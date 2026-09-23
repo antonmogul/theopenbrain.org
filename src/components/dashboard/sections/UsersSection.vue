@@ -1,6 +1,7 @@
 <script setup>
 // Creator-dashboard "Users" section (#11 split). Presentational: parent owns
 // the useDashboardUsers instance.
+import { ref } from "vue";
 import { relativeLong as formatDate } from "@/utils/format";
 import {
   SectionHeader,
@@ -16,9 +17,10 @@ import {
   SearchInput,
   FilterChips,
   FormField,
+  ConfirmDialog,
 } from "@/components/dashboard/shared";
 
-defineProps({
+const props = defineProps({
   users: { type: Array, default: () => [] },
   usersLoading: { type: Boolean, default: false },
   usersError: { type: [String, null], default: null },
@@ -33,6 +35,9 @@ defineProps({
     default: () => ({ creators: 0, professors: 0, students: 0 }),
   },
   roleSelectOptions: { type: Array, default: () => [] },
+  // The signed-in creator: they can't change their own role here, so a
+  // creator can't lock themselves out of the console.
+  currentUserId: { type: [String, null], default: null },
 });
 
 const selectedUser = defineModel("selectedUser", {
@@ -40,7 +45,37 @@ const selectedUser = defineModel("selectedUser", {
   default: null,
 });
 
-defineEmits(["fetch", "filter", "search", "select", "page", "update-role"]);
+const emit = defineEmits([
+  "fetch",
+  "filter",
+  "search",
+  "select",
+  "page",
+  "update-role",
+]);
+
+// A role change widens or narrows what someone can do, so it asks first.
+const pendingRole = ref(null); // { user, role }
+
+function requestRole(user, event) {
+  const role = event.target.value;
+  event.target.value = user.role; // stays as-is until confirmed
+  if (role !== user.role) pendingRole.value = { user, role };
+}
+
+function roleLabel(value) {
+  return props.roleSelectOptions.find((o) => o.value === value)?.label || value;
+}
+
+function displayName(u) {
+  return u.full_name || u.email?.split("@")[0] || "Unnamed user";
+}
+
+function confirmRole() {
+  const { user, role } = pendingRole.value;
+  pendingRole.value = null;
+  emit("update-role", user.id, role);
+}
 </script>
 
 <template>
@@ -122,9 +157,7 @@ defineEmits(["fetch", "filter", "search", "select", "page", "update-role"]);
             {{ (u.full_name || u.email || "?")[0].toUpperCase() }}
           </div>
           <div class="user-info-col">
-            <span class="card-title sm">{{
-              u.full_name || "Unnamed user"
-            }}</span>
+            <span class="card-title sm">{{ displayName(u) }}</span>
             <span class="muted-mono">{{ u.email }}</span>
           </div>
           <div class="user-meta-col">
@@ -214,10 +247,19 @@ defineEmits(["fetch", "filter", "search", "select", "page", "update-role"]);
             ><span class="kv-val">{{ selectedUser.creator_bio || "—" }}</span>
           </div>
         </div>
-        <FormField label="Change role" class="mt-3">
+        <FormField
+          label="Change role"
+          class="mt-3"
+          :hint="
+            selectedUser.id === currentUserId
+              ? 'You can\'t change your own role here.'
+              : ''
+          "
+        >
           <select
             :value="selectedUser.role"
-            @change="$emit('update-role', selectedUser.id, $event.target.value)"
+            :disabled="selectedUser.id === currentUserId"
+            @change="requestRole(selectedUser, $event)"
           >
             <option
               v-for="opt in roleSelectOptions"
@@ -235,6 +277,25 @@ defineEmits(["fetch", "filter", "search", "select", "page", "update-role"]);
         >
       </template>
     </BaseModal>
+    <ConfirmDialog
+      :model-value="!!pendingRole"
+      title="Change this person's role?"
+      confirm-label="Change role"
+      variant="warn"
+      @update:model-value="(open) => !open && (pendingRole = null)"
+      @confirm="confirmRole"
+    >
+      Make <strong>{{ pendingRole && displayName(pendingRole.user) }}</strong> a
+      <strong>{{ pendingRole && roleLabel(pendingRole.role) }}</strong
+      >?
+      <template v-if="pendingRole?.role === 'creator'">
+        Creators can edit and publish every chapter and change anyone's role.
+      </template>
+      <template v-else>
+        They'll use the {{ pendingRole && roleLabel(pendingRole.role) }}
+        dashboard the next time they sign in.
+      </template>
+    </ConfirmDialog>
   </section>
 </template>
 

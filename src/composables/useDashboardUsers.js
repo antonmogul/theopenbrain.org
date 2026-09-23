@@ -95,10 +95,15 @@ export function useDashboardUsers() {
 
   async function updateUserRole(userId, newRole) {
     try {
-      await supabaseRest(`profiles?id=eq.${userId}`, {
+      const rows = await supabaseRest(`profiles?id=eq.${userId}`, {
         method: "PATCH",
+        headers: { Prefer: "return=representation" },
         body: JSON.stringify({ role: newRole }),
       });
+      // RLS answers a refused update with 0 rows, not an error.
+      if (Array.isArray(rows) && rows.length === 0) {
+        throw new Error("the database didn't allow this change");
+      }
       await fetchUsers();
       if (selectedUser.value?.id === userId) {
         selectedUser.value.role = newRole;
