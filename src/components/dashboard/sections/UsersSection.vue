@@ -80,11 +80,8 @@ function confirmRole() {
 
 <template>
   <section class="section">
-    <SectionHeader eyebrow="06 · Users" title="Accounts & roles">
-      <template #actions>
-        <span class="muted-mono">{{ usersTotalCount }} total</span>
-      </template>
-    </SectionHeader>
+    <!-- The "All users" tile below already shows the total (OPENBRAIN-56). -->
+    <SectionHeader eyebrow="06 · Users" title="Accounts & roles" />
 
     <!-- Role breakdown stats (also act as filters) -->
     <StatGrid :columns="4">
