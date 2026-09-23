@@ -16,7 +16,6 @@ import Section from "./text/SectionComp.vue";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
 import FurtherReading from "./text/FurtherReading.vue";
-import DownloadSection from "./text/DownloadSection.vue";
 import EditableBlock from "./text/EditableBlock.vue";
 
 import FootNotes from "./text/FootNotes.vue";
@@ -537,9 +536,19 @@ onBeforeUnmount(() => {
                EndOfChapterCallout. Inside TextComp so absolute positioning
                doesn't pull it to the top of the document. -->
           <slot name="end-of-chapter" />
-          <DownloadSection />
-          <FurtherReading :content="source['furtherReading']" />
-          <FootNotes :content="source['footNotes']" />
+          <!-- Downloads is off until there are real files: its links were
+               2023 placeholders (stock videos on Dropbox) shown under every
+               chapter. Further reading and footnotes render only for a
+               chapter that has them (today only The Retina); the further-
+               reading copy is the Retina's Webvision pointer. -->
+          <FurtherReading
+            v-if="source['furtherReading']?.paragraphs?.length"
+            :content="source['furtherReading']"
+          />
+          <FootNotes
+            v-if="source['footNotes']?.notes?.length"
+            :content="source['footNotes']"
+          />
         </div>
       </main>
       <Points />
