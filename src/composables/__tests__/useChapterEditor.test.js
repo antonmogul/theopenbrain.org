@@ -96,7 +96,7 @@ describe("blocksToPlainText", () => {
 
 // An in-memory paragraphs table that enforces UNIQUE (section_id,
 // order_index) after every write, like Postgres, so ordering bugs fail.
-function fakeTable(initial) {
+function fakeTable(initial, media = []) {
   const rows = initial.map((r) => ({ ...r }));
   const unique = () => {
     const seen = new Set();
@@ -109,7 +109,12 @@ function fakeTable(initial) {
   authedRequest.mockImplementation(async (path, init = {}) => {
     if (path.startsWith("modules?")) return [{ id: "m1", status: "draft" }];
     if (path.startsWith("sections?")) return [{ id: "s1", order_index: 0 }];
-    if (path.startsWith("animations?")) return [];
+    if (path.startsWith("animations?")) return media;
+    if (path === "animations" && init.method === "POST") {
+      const r = { id: `media-${media.length}`, ...JSON.parse(init.body) };
+      media.push(r);
+      return [r];
+    }
     if (path.startsWith("paragraphs?section_id"))
       return rows.map((r) => ({ ...r }));
     const id = (path.match(/id=eq\.([^&]+)/) || [])[1];
@@ -493,5 +498,74 @@ describe("useChapterEditor chapter details (OPENBRAIN-70 C1, C2)", () => {
       authors: null,
     });
     expect(ed.module.value.title).toBe("Old");
+  });
+});
+
+describe("useChapterEditor figures: panel or text (OPENBRAIN-70 B2)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const skull = {
+    id: "fig1",
+    media_type: "image",
+    title: "Incan skull",
+    image_file_url: "/img/fig01-01.jpg",
+    config: {
+      caption: "An Incan skull.",
+      images: [{ src: "/img/fig01-01.jpg", alt: "A trepanned skull" }],
+    },
+  };
+  const rowsWith = () => {
+    const r = seed().map((x) => ({ ...x, subsection_level: 0 }));
+    r[0].animation_id = "fig1";
+    return r;
+  };
+
+  it("moves a panel figure into the text after its paragraph, one undo", async () => {
+    const t = fakeTable(rowsWith(), [skull]);
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const { row } = await ed.figureToText("a");
+    expect(t.order()).toEqual(["a", row.id, "b", "c"]);
+    expect(t.rows.find((r) => r.id === "a").animation_id).toBeNull();
+    expect(row.content.blocks[0]).toMatchObject({
+      type: "image",
+      src: "/img/fig01-01.jpg",
+      alt: "A trepanned skull",
+      caption: "An Incan skull.",
+    });
+    expect(ed.undoStack.value.map((u) => u.label)).toEqual([
+      "Figure into text",
+    ]);
+    await ed.undo();
+    expect(t.order()).toEqual(["a", "b", "c"]);
+    expect(t.rows.find((r) => r.id === "a").animation_id).toBe("fig1");
+  });
+
+  it("moves an image block into the panel of the paragraph before it", async () => {
+    const r = seed().map((x) => ({ ...x, subsection_level: 0 }));
+    r[1].content = {
+      blocks: [
+        { type: "image", src: "/img/new.jpg", alt: "New", caption: "Cap" },
+      ],
+    };
+    const media = [];
+    const t = fakeTable(r, media);
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const { host } = await ed.imageToPanel("b");
+    expect(host.id).toBe("a");
+    expect(t.order()).toEqual(["a", "c"]);
+    expect(media).toHaveLength(1); // added to the library
+    expect(t.rows.find((x) => x.id === "a").animation_id).toBe(media[0].id);
+    await ed.undo();
+    expect(t.order()).toEqual(["a", "b", "c"]);
+    expect(t.rows.find((x) => x.id === "a").animation_id ?? null).toBeNull();
+  });
+
+  it("refuses to move a non-image figure into the text", async () => {
+    fakeTable(rowsWith(), [{ ...skull, media_type: "lottie" }]);
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await expect(ed.figureToText("a")).rejects.toThrow(/Only image figures/);
   });
 });

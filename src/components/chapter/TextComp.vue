@@ -263,9 +263,10 @@ const updateLocalContent = (id, content, type) => {
 };
 
 // ---- Change figure (OPENBRAIN-65) ----
-// "Figure…" on a paragraph opens the media library (Lottie, video, YouTube);
-// the pick is PATCHed onto the row and shown in place, with Undo.
-const FIGURE_TYPES = ["lottie", "video", "youtube"];
+// "Figure…" on a paragraph opens the media library (image, Lottie, video,
+// YouTube; images since OPENBRAIN-70 B1); the pick is PATCHed onto the row
+// and shown in place, with Undo.
+const FIGURE_TYPES = ["image", "lottie", "video", "youtube"];
 const figureMedia = ref([]);
 const figureTarget = ref(null); // paragraph node being changed
 const figureCurrentId = computed(() => {

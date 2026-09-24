@@ -314,6 +314,44 @@ async function onPickFigure(m) {
     `Figure set: ${m.title || m.animation_key}.`
   );
 }
+// A new upload from the figure picker becomes that paragraph's panel figure.
+async function onUploadedFigure({ media }) {
+  ed.media.value = [...ed.media.value, media];
+  await onPickFigure(media);
+}
+
+// ---- figures: panel or text (OPENBRAIN-70 B2) ----
+const isImageFigure = (p) =>
+  ed.mediaById.value.get(p.animation_id)?.media_type === "image";
+function figureIntoText(p) {
+  whenLive(async () => {
+    try {
+      const { frames } = await ed.figureToText(p.id);
+      showToast(
+        frames > 1
+          ? `Figure moved into the text, showing its first of ${frames} images.`
+          : "Figure moved into the text.",
+        { undo: true }
+      );
+    } catch (err) {
+      showToast(err.message || "Couldn't move the figure.", { error: true });
+    }
+  });
+}
+function imageIntoPanel(p) {
+  whenLive(async () => {
+    try {
+      const { host } = await ed.imageToPanel(p.id);
+      showToast(
+        `Image moved to the figure panel, beside “${excerpt(host).slice(0, 40)}…”.`,
+        { undo: true }
+      );
+    } catch (err) {
+      showToast(err.message || "Couldn't move the image.", { error: true });
+    }
+  });
+}
+
 async function onRemoveFigure() {
   const { paragraphId } = pickerFor.value;
   pickerFor.value = null;
@@ -752,6 +790,22 @@ onMounted(async () => {
                     {{ p.animation_id ? "Figure…" : "+ Figure" }}
                   </button>
                   <button
+                    v-if="p.animation_id && isImageFigure(p)"
+                    type="button"
+                    title="Show this figure as an image card in the text instead of the left panel"
+                    @click="figureIntoText(p)"
+                  >
+                    Into text
+                  </button>
+                  <button
+                    v-if="imageIndex(p) >= 0"
+                    type="button"
+                    title="Show this image in the left panel beside the paragraph before it"
+                    @click="imageIntoPanel(p)"
+                  >
+                    To panel
+                  </button>
+                  <button
                     v-if="imageIndex(p) >= 0"
                     type="button"
                     @click="editImage(p)"
@@ -896,7 +950,9 @@ onMounted(async () => {
     <MediaPicker
       :open="pickerFor?.kind === 'figure'"
       :media="ed.media.value"
-      :types="['lottie', 'video', 'youtube']"
+      :types="['image', 'lottie', 'video', 'youtube']"
+      :upload-slug="ed.module.value?.slug || ''"
+      @uploaded="onUploadedFigure"
       title="Choose this paragraph's figure"
       :current-id="
         pickerFor?.kind === 'figure'

@@ -116,6 +116,24 @@ export const editorMedia = [
     animation_key: "animationLatteralOrganization",
     media_type: "lottie",
   },
+  // An image figure (OPENBRAIN-70 B1, B2): a local file, so stories make no
+  // outside requests.
+  {
+    id: "img-skull",
+    title: "Trepanned Incan skull",
+    animation_key: "animationFoundationsFig1",
+    media_type: "image",
+    image_file_url: "/publicAssets/images/foundations/fig02-01.jpg",
+    config: {
+      caption: "An Incan skull, acquired by Squier and studied by Broca.",
+      images: [
+        {
+          src: "/publicAssets/images/foundations/fig02-01.jpg",
+          alt: "A trepanned skull in profile.",
+        },
+      ],
+    },
+  },
 ];
 
 /** parameters.api for a story of the whole page. */

@@ -81,7 +81,7 @@ export function useChapterEditor(slug) {
           )
         : [];
       media.value = await authedRequest(
-        "animations?select=id,title,animation_key,media_type,lottie_file_url,image_file_url,video_file_url,youtube_id&order=title.asc"
+        "animations?select=id,title,animation_key,media_type,lottie_file_url,image_file_url,video_file_url,youtube_id,config&order=title.asc"
       );
     } catch (err) {
       console.error("useChapterEditor: load failed", err);
@@ -378,9 +378,11 @@ export function useChapterEditor(slug) {
     return withSaving(async () => {
       const row = paragraphs.value.find((p) => p.id === id);
       if (!row) return;
+      // ?? null: an absent value must still clear the field on Undo (JSON
+      // drops undefined).
       const before = {
-        animation_id: row.animation_id,
-        animation_trigger: row.animation_trigger,
+        animation_id: row.animation_id ?? null,
+        animation_trigger: row.animation_trigger ?? null,
       };
       await patchParagraph(id, {
         animation_id: animationId,
@@ -438,6 +440,92 @@ export function useChapterEditor(slug) {
     await Promise.all(
       pairs.map(([id, order_index]) => patchSection(id, { order_index }))
     );
+  }
+
+  // ---- figures: panel or text (OPENBRAIN-70 B2) ----
+  // Fold the last `n` undo entries into one, so a multi-write step undoes as
+  // one action.
+  function foldUndo(n, label) {
+    const steps = undoStack.value.slice(-n);
+    undoStack.value = undoStack.value.slice(0, -n);
+    pushUndo(label, async () => {
+      for (const step of steps.reverse()) await step.run();
+    });
+  }
+
+  /**
+   * A paragraph's left-panel image figure becomes an image card in the text,
+   * right after it. A figure with several frames brings its first frame.
+   */
+  async function figureToText(paragraphId) {
+    const p = paragraphs.value.find((x) => x.id === paragraphId);
+    const m = p && mediaById.value.get(p.animation_id);
+    if (!m || m.media_type !== "image")
+      throw new Error("Only image figures can move into the text.");
+    const frames = Array.isArray(m.config?.images) ? m.config.images : [];
+    const src = frames[0]?.src || m.image_file_url;
+    if (!src) throw new Error("This figure has no image yet.");
+    const rows = sectionRows(p.section_id);
+    const at = rows.findIndex((x) => x.id === paragraphId) + 1;
+    await setFigure(paragraphId, null);
+    const row = await insertParagraph(p.section_id, at, [
+      {
+        type: "image",
+        src,
+        alt: frames[0]?.alt || m.title || "",
+        caption: m.config?.caption || frames[0]?.caption || m.title || "",
+      },
+    ]);
+    foldUndo(2, "Figure into text");
+    return { row, frames: frames.length };
+  }
+
+  /**
+   * An image block becomes the left-panel figure of the paragraph before it
+   * (or after it, if it opens the section). Reuses the library row for that
+   * image, or adds one.
+   */
+  async function imageToPanel(paragraphId) {
+    const p = paragraphs.value.find((x) => x.id === paragraphId);
+    const img = p?.content?.blocks?.find((b) => b.type === "image");
+    if (!img?.src) throw new Error("This block has no image.");
+    const rows = sectionRows(p.section_id);
+    const i = rows.findIndex((x) => x.id === paragraphId);
+    const host = rows
+      .slice(0, i)
+      .reverse()
+      .concat(rows.slice(i + 1))
+      .find(
+        (x) =>
+          !x.is_subsection_header &&
+          !x.content?.blocks?.some((b) => b.type === "image")
+      );
+    if (!host) throw new Error("There's no paragraph here to show it beside.");
+    let m = media.value.find(
+      (x) => x.media_type === "image" && x.image_file_url === img.src
+    );
+    if (!m) {
+      const key = `image-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+      const added = await authedRequest("animations", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({
+          animation_key: key,
+          title: img.alt || img.caption || "Image",
+          media_type: "image",
+          image_file_url: img.src,
+          config: img.caption ? { caption: img.caption } : {},
+        }),
+      });
+      if (!added?.length)
+        throw new Error("The image couldn't be added to the library.");
+      m = added[0];
+      media.value = [...media.value, m];
+    }
+    await setFigure(host.id, m.id, host.animation_trigger || "auto");
+    await deleteParagraph(paragraphId);
+    foldUndo(2, "Image to panel");
+    return { host, media: m };
   }
 
   // ---- chapter cover (OPENBRAIN-67) ----
@@ -630,6 +718,8 @@ export function useChapterEditor(slug) {
     ungroupSubsection,
     setCover,
     setDetails,
+    figureToText,
+    imageToPanel,
     renameSection,
     addSection,
     moveSection,
