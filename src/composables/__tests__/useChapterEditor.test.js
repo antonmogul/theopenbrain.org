@@ -627,3 +627,69 @@ describe("useChapterEditor figure frames (OPENBRAIN-70 B3)", () => {
     ).rejects.toThrow(/at least one image/);
   });
 });
+
+describe("useChapterEditor box placement (OPENBRAIN-70 A3, A4)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  function boxApi() {
+    const secs = [
+      { id: "s1", slug: "where-is-my-mind", order_index: 1 },
+      { id: "bx", slug: "box-descartes", order_index: 6 },
+    ];
+    const patches = [];
+    authedRequest.mockImplementation(async (path, init = {}) => {
+      if (path.startsWith("modules?")) return [{ id: "m1" }];
+      if (path.startsWith("sections?id=eq.") && init.method === "PATCH") {
+        const id = path.match(/id=eq\.([^&]+)/)[1];
+        const body = JSON.parse(init.body);
+        patches.push(body);
+        const r = secs.find((x) => x.id === id);
+        Object.assign(r, body);
+        return [{ ...r }];
+      }
+      if (path.startsWith("sections?")) return secs.map((x) => ({ ...x }));
+      if (path === "sections" && init.method === "POST") {
+        const r = { id: "new", ...JSON.parse(init.body) };
+        secs.push(r);
+        return [r];
+      }
+      return [];
+    });
+    return { secs, patches };
+  }
+
+  it("places a box under a section after a paragraph, and undoes", async () => {
+    const { patches } = boxApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setBoxPlacement("bx", { parentId: "s1", anchorParagraphId: "p9" });
+    expect(patches[0]).toMatchObject({
+      parent_section_id: "s1",
+      anchor_paragraph_id: "p9",
+    });
+    await ed.undo();
+    expect(patches[1]).toMatchObject({
+      parent_section_id: null,
+      anchor_paragraph_id: null,
+    });
+  });
+
+  it("drops the anchor without a parent, and refuses ordinary sections", async () => {
+    const { patches } = boxApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setBoxPlacement("bx", { parentId: null, anchorParagraphId: "p9" });
+    expect(patches[0].anchor_paragraph_id).toBeNull();
+    await expect(ed.setBoxPlacement("s1", { parentId: "bx" })).rejects.toThrow(
+      /Only breakout boxes/
+    );
+  });
+
+  it("adds a new breakout box with a box- slug", async () => {
+    const { secs } = boxApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.addSection(2, "Humoral theory", { box: true });
+    expect(secs.find((x) => x.id === "new").slug).toBe("box-humoral-theory");
+  });
+});

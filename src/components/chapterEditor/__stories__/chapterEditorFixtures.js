@@ -30,6 +30,16 @@ export const editorSections = [
     slug: "attention-is-measured-behaviorally",
     order_index: 2,
   },
+  // A breakout box (OPENBRAIN-70 A3, A4): not placed yet.
+  {
+    id: "sec-box-james",
+    module_id: editorModule.id,
+    title: "William James and the stream of attention",
+    slug: "box-william-james",
+    order_index: 3,
+    parent_section_id: null,
+    anchor_paragraph_id: null,
+  },
 ];
 
 const row = (id, section_id, order_index, blocks, extra = {}) => ({

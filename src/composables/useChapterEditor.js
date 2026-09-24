@@ -422,6 +422,48 @@ export function useChapterEditor(slug) {
     return slug;
   }
 
+  // Breakout boxes are sections slugged box-* (the reader letters them).
+  function boxSlugFor(title) {
+    const base = `box-${slugFor(title).replace(/-section$/, "")}`;
+    const taken = new Set(sections.value.map((sec) => sec.slug));
+    let slug = base;
+    for (let n = 2; taken.has(slug); n++) slug = `${base}-${n}`;
+    return slug;
+  }
+  const isBox = (sec) => !!sec?.slug?.startsWith("box-");
+
+  /**
+   * Place a breakout box (OPENBRAIN-70 A3, A4): under a main section
+   * (parentId; null = end of the chapter) and, optionally, right after one
+   * of that section's paragraphs.
+   */
+  async function setBoxPlacement(
+    id,
+    { parentId = null, anchorParagraphId = null }
+  ) {
+    return withSaving(async () => {
+      const sec = sections.value.find((x) => x.id === id);
+      if (!isBox(sec)) throw new Error("Only breakout boxes can be placed.");
+      const before = {
+        parent_section_id: sec.parent_section_id ?? null,
+        anchor_paragraph_id: sec.anchor_paragraph_id ?? null,
+      };
+      try {
+        await patchSection(id, {
+          parent_section_id: parentId,
+          anchor_paragraph_id: parentId ? anchorParagraphId : null,
+        });
+      } catch (err) {
+        if (/parent_section_id|anchor_paragraph_id|column/i.test(err.message))
+          throw new Error(
+            "Placing boxes needs the OPENBRAIN-70 database update, which isn't applied yet."
+          );
+        throw err;
+      }
+      pushUndo("Box placement", () => patchSection(id, before));
+    });
+  }
+
   async function patchSection(id, body) {
     const rows = await authedRequest(`sections?id=eq.${id}`, {
       method: "PATCH",
@@ -618,7 +660,7 @@ export function useChapterEditor(slug) {
   }
 
   /** Add a section at position `index` of the chapter's sections. */
-  async function addSection(index, title) {
+  async function addSection(index, title, { box = false } = {}) {
     return withSaving(async () => {
       const list = sections.value.slice();
       const after = list.slice(index);
@@ -634,7 +676,7 @@ export function useChapterEditor(slug) {
         body: JSON.stringify({
           module_id: module.value.id,
           title,
-          slug: slugFor(title),
+          slug: box ? boxSlugFor(title) : slugFor(title),
           order_index,
         }),
       });
@@ -765,6 +807,8 @@ export function useChapterEditor(slug) {
     setFigureFrames,
     imageToPanel,
     renameSection,
+    setBoxPlacement,
+    isBox,
     addSection,
     moveSection,
     deleteSection,

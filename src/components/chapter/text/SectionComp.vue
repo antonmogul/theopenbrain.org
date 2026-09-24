@@ -152,6 +152,19 @@
           :content="paragraph"
         />
         <StartEndIcon :paragraph="paragraph" art="end" />
+        <!-- A breakout box placed right after this paragraph (OPENBRAIN-70) -->
+        <div
+          v-for="box in boxesAfter(paragraph.id)"
+          :key="box.id"
+          class="anchored-box"
+        >
+          <SectionComp
+            :section="box"
+            :index="0"
+            :label="sectionLabels?.[box.id || box.title]"
+            :is-creator="isCreator"
+          />
+        </div>
       </template>
     </span>
     <StartEndIcon :paragraph="section" art="end" />
@@ -165,6 +178,8 @@
 
 <script setup>
 import { inject } from "vue";
+// Self-reference: an anchored breakout box renders as a nested section.
+import SectionComp from "./SectionComp.vue";
 import { markersEnabled } from "@/helper/debugFlags";
 import BreakImages from "./BreakImages.vue";
 
@@ -180,6 +195,9 @@ import InlineImages from "./InlineImages.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import EditableBlock from "./EditableBlock.vue";
 import WidgetBreakout from "./WidgetBreakout.vue";
+
+const boxesAfter = inject("boxesAfter", () => []);
+const sectionLabels = inject("sectionLabels", null);
 
 const store = useGeneral();
 
@@ -221,6 +239,10 @@ const handleSectionTitleSave = ({ content }) =>
 </script>
 
 <style scoped>
+/* A breakout box placed inside its section (OPENBRAIN-70 A4). */
+.anchored-box {
+  margin: 2.5rem 0;
+}
 .TN--box {
   font-family: var(--font-mono);
   font-size: 1.5rem;

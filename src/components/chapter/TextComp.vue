@@ -86,6 +86,26 @@ const source = computed(() => {
 // (useChapterOutline, OPENBRAIN-32) so the prose and the contents agree.
 const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 
+// Boxes anchored to a paragraph render inside their section, right after it
+// (OPENBRAIN-70 A4); the rest render in order.
+const topSections = computed(() =>
+  (source.value?.sections || []).filter((s) => !s.anchored)
+);
+const anchoredBoxes = computed(() => {
+  const map = new Map();
+  for (const s of source.value?.sections || []) {
+    if (!s.anchored) continue;
+    if (!map.has(s.anchorParagraphId)) map.set(s.anchorParagraphId, []);
+    map.get(s.anchorParagraphId).push(s);
+  }
+  return map;
+});
+provide(
+  "boxesAfter",
+  (paragraphId) => anchoredBoxes.value.get(paragraphId) || []
+);
+provide("sectionLabels", sectionLabels);
+
 // ---- Edit mode (OPENBRAIN-58, 64) ----
 // Off until a creator switches it on (or opens ?edit=1), so reading a
 // chapter can't change it.
@@ -715,7 +735,7 @@ onBeforeUnmount(() => {
 
         <!-- text sections -->
         <div
-          v-for="(section, index) in source['sections']"
+          v-for="(section, index) in topSections"
           :id="toSlug(section.title)"
           :key="section.id || toSlug(section.title)"
           ref="triggers"

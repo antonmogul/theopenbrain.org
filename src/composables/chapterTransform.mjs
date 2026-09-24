@@ -188,6 +188,38 @@ export function figureFor(p) {
 /**
  * Transform a single DB paragraph row into a legacy JSON paragraph object.
  */
+/**
+ * Put breakout boxes where they belong (OPENBRAIN-70 A3, A4). A box with a
+ * parent section follows that section in reading order (after the parent's
+ * earlier boxes); if its anchor paragraph is one of the parent's top-level
+ * paragraphs it is also marked `anchored`, and SectionComp renders it right
+ * after that paragraph instead of on its own. Unplaced boxes keep their
+ * order. Returns a new array; `parentId` stays on each box for the contents.
+ */
+export function placeBoxes(sections) {
+  const byId = new Map(sections.map((s) => [s.id, s]));
+  const children = new Map();
+  const top = [];
+  for (const s of sections) {
+    const parent = s.kind === "box" && s.parentId && byId.get(s.parentId);
+    if (parent && parent !== s && parent.kind !== "box") {
+      if (!children.has(parent.id)) children.set(parent.id, []);
+      children.get(parent.id).push(s);
+    } else top.push(s);
+  }
+  const out = [];
+  for (const s of top) {
+    out.push(s);
+    const kids = children.get(s.id) || [];
+    const ids = new Set((s.paragraphs || []).map((p) => p.id));
+    for (const box of kids) {
+      box.anchored = !!box.anchorParagraphId && ids.has(box.anchorParagraphId);
+      out.push(box);
+    }
+  }
+  return out;
+}
+
 export function transformParagraph(p) {
   const blocks = p.content?.blocks || [];
   const contentResult = contentBlocksToHTML(blocks);
@@ -435,6 +467,11 @@ export function transformModuleToChapterFormat(module) {
       // Foundations seeds its sidebars as sections slugged box-*; the reader
       // letters those as breakout boxes instead of numbering them.
       kind: section.slug?.startsWith("box-") ? "box" : "section",
+      // Box placement (OPENBRAIN-70 A3, A4): the section a box belongs to,
+      // and the paragraph it follows. placeBoxes() applies them.
+      orderIndex: section.order_index,
+      parentId: section.parent_section_id || null,
+      anchorParagraphId: section.anchor_paragraph_id || null,
       paragraphs,
     };
 
@@ -445,6 +482,8 @@ export function transformModuleToChapterFormat(module) {
 
     return sectionObj;
   });
+
+  const placedSections = placeBoxes(sections);
 
   // Build furtherReading from its section's paragraphs
   let furtherReading = {
@@ -497,7 +536,7 @@ export function transformModuleToChapterFormat(module) {
     title: module.title || "",
     slug: module.slug || "",
     intro,
-    sections,
+    sections: placedSections,
     furtherReading,
     footNotes,
   };

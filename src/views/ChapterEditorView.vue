@@ -459,15 +459,36 @@ function moveSec(sec, dir) {
 }
 const newSection = ref(null); // { index, title }
 function askAddSection(index) {
-  whenLive(() => (newSection.value = { index, title: "" }));
+  whenLive(() => (newSection.value = { index, title: "", box: false }));
 }
+// ---- breakout boxes (OPENBRAIN-70 A3, A4) ----
+const mainSections = computed(() =>
+  ed.sections.value.filter((x) => !ed.isBox(x))
+);
+// A box can follow any top-level block of its section (not one inside a
+// subsection: the reader nests those differently).
+const anchorRows = (sectionId) =>
+  rowsOf(sectionId).filter(
+    (p) => !p.is_subsection_header && !(p.subsection_level > 0)
+  );
+function placeBox(box, parentId, anchorParagraphId) {
+  whenLive(() =>
+    attempt(
+      () => ed.setBoxPlacement(box.id, { parentId, anchorParagraphId }),
+      parentId
+        ? `“${box.title}” placed under “${ed.sections.value.find((x) => x.id === parentId)?.title}”.`
+        : `“${box.title}” moved back to the end of the chapter.`
+    )
+  );
+}
+
 async function saveNewSection() {
-  const { index, title } = newSection.value;
+  const { index, title, box } = newSection.value;
   if (!title.trim()) return;
   newSection.value = null;
   const created = await attempt(
-    () => ed.addSection(index, title.trim()),
-    "Section added."
+    () => ed.addSection(index, title.trim(), { box: !!box }),
+    box ? "Breakout box added. Choose where it belongs." : "Section added."
   );
   if (created)
     setTimeout(() => scrollToSection(ed.sections.value[index]?.id), 50);
@@ -505,9 +526,16 @@ function convertPlacements() {
     converting.value = false;
   });
 }
-const excerpt = (p) =>
-  (p.content_text || "this block").slice(0, 80) +
-  ((p.content_text || "").length > 80 ? "…" : "");
+// A short name for a block, for menus and labels. Blocks with no text (an
+// image or a widget) are named by what they are.
+function excerpt(p) {
+  const text = p.content_text || "";
+  if (text) return text.slice(0, 80) + (text.length > 80 ? "…" : "");
+  const b = p.content?.blocks?.find((x) => x.type !== "text");
+  if (b?.type === "image") return `Image: ${b.caption || b.alt || "untitled"}`;
+  if (b?.type === "widget") return `Widget: ${b.title || b.widgetId}`;
+  return "this block";
+}
 
 onMounted(async () => {
   await ed.load();
@@ -640,7 +668,9 @@ onMounted(async () => {
         >
           <header class="ce-section-head">
             <div class="ce-section-row">
-              <span class="ce-section-n">Section {{ i + 1 }}</span>
+              <span class="ce-section-n">{{
+                ed.isBox(s) ? "Breakout box" : `Section ${i + 1}`
+              }}</span>
               <span class="ce-spacer" />
               <div
                 class="ce-sec-tools"
@@ -695,6 +725,43 @@ onMounted(async () => {
               >
             </form>
             <h2 v-else>{{ s.title }}</h2>
+            <!-- Where a breakout box shows in the reader (OPENBRAIN-70 A3, A4) -->
+            <div v-if="ed.isBox(s)" class="ce-box-place">
+              <label>
+                <span>Belongs to</span>
+                <select
+                  :value="s.parent_section_id || ''"
+                  @change="placeBox(s, $event.target.value || null, null)"
+                >
+                  <option value="">End of the chapter (not placed)</option>
+                  <option v-for="m in mainSections" :key="m.id" :value="m.id">
+                    {{ m.title }}
+                  </option>
+                </select>
+              </label>
+              <label v-if="s.parent_section_id">
+                <span>Shows after</span>
+                <select
+                  :value="s.anchor_paragraph_id || ''"
+                  @change="
+                    placeBox(
+                      s,
+                      s.parent_section_id,
+                      $event.target.value || null
+                    )
+                  "
+                >
+                  <option value="">The end of that section</option>
+                  <option
+                    v-for="p in anchorRows(s.parent_section_id)"
+                    :key="p.id"
+                    :value="p.id"
+                  >
+                    {{ excerpt(p).slice(0, 70) }}
+                  </option>
+                </select>
+              </label>
+            </div>
           </header>
 
           <template v-for="(p, pi) in rowsOf(s.id)" :key="p.id">
@@ -894,12 +961,16 @@ onMounted(async () => {
             @keydown.esc="newSection = null"
             @vue:mounted="({ el }) => el.focus()"
           />
+          <label class="ce-box-check">
+            <input v-model="newSection.box" type="checkbox" />
+            Breakout box
+          </label>
           <Button
             variant="solid"
             size="sm"
             :disabled="!newSection.title.trim()"
             @click="saveNewSection"
-            >Add section</Button
+            >{{ newSection.box ? "Add box" : "Add section" }}</Button
           >
           <Button variant="ghost" size="sm" @click="newSection = null"
             >Cancel</Button
@@ -1228,6 +1299,43 @@ onMounted(async () => {
   display: grid;
   gap: 6px;
   scroll-margin-top: 88px;
+}
+.ce-box-place {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+}
+.ce-box-place label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 240px;
+}
+.ce-box-place span {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-mute));
+}
+.ce-box-place select {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  background: rgb(var(--color-paper));
+  font: inherit;
+}
+.ce-box-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  white-space: nowrap;
 }
 .ce-section-head {
   display: grid;
