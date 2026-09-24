@@ -16,6 +16,12 @@ import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScrol
 import IllustrationTransition from "@/components/chapter/Illus/IllustrationTransition.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 import { usesFigureShell } from "@/helper/figureCycle";
+import FigureWidget from "@/widgets/figures/FigureWidget.vue";
+import { figureWidgetFor } from "@/widgets/figures/registry";
+
+// Panel figures rebuilt as figure widgets (full-screen ones render in the
+// text through FullScreenIllustration).
+const isPanelWidget = (a) => !a.fullscreen && !!figureWidgetFor(a.id);
 import IllustrationWidget from "./IllustrationWidget.vue";
 gsap.registerPlugin(ScrollTrigger);
 
@@ -209,6 +215,17 @@ onBeforeUnmount(() => {
           />
         </transition>
       </template>
+      <!-- A figure rebuilt as a figure widget (OPENBRAIN-82) -->
+      <template v-if="isPanelWidget(animation)">
+        <transition name="fade" mode="out-in">
+          <div
+            v-if="activeAnimation === animation.id.toLowerCase()"
+            class="w-full h-full pointer-events-auto"
+          >
+            <FigureWidget :record="animation" />
+          </div>
+        </transition>
+      </template>
       <!-- An interactive widget as the figure (OPENBRAIN-70 B5) -->
       <template v-if="animation.widgetId">
         <transition name="fade" mode="out-in">
@@ -222,6 +239,7 @@ onBeforeUnmount(() => {
       <template
         v-if="
           !animation.widgetId &&
+          !isPanelWidget(animation) &&
           !usesFigureShell(animation) &&
           !animation.fullscreen &&
           !animation.scroll &&

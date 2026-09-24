@@ -46,6 +46,7 @@ export default {
       key: "legend",
       label: "Legend",
       type: "list",
+      artwork: true,
       itemLabels: ["Item 1", "Item 2", "Item 3", "Item 4"],
       hint: "Each label lights up its part of the drawing when clicked.",
     },

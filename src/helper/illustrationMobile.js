@@ -11,6 +11,8 @@
 // behave. Only the handful that genuinely can't reflow inline are pinned to
 // `fullscreen` via FULLSCREEN_FALLBACK.
 
+import { figureWidgetFor } from "@/widgets/figures/registry";
+
 // Figures that can't reflow inline on a phone and must open in a fullscreen
 // overlay instead. The split figures render two side-by-side Lottie panes driven
 // by scrubbed scroll (`FullScreenIllustrationSplit.vue`) — they collapse below
@@ -24,12 +26,14 @@ export const FULLSCREEN_FALLBACK = new Set([
  * Classify an animation into a mobile render mode.
  *
  * @param {Object} animation - the animation object (from Supabase or animations.json)
- * @returns {"skip"|"static"|"fullscreen"|"scroll"|"interactive"}
+ * @returns {"skip"|"widget"|"figure-widget"|"static"|"fullscreen"|"scroll"|"interactive"}
  *   - skip:        scene transitions; not a standalone figure, don't render inline
  *   - static:      a plain image or embedded video; render as-is at full width
  *   - fullscreen:  can't reflow inline; show a poster + tap-to-view overlay
  *   - scroll:      scroll-driven figure; keep scroll behavior in an inline box
  *   - interactive: clickable / auto-playing figure; render inline with its controls
+ *   - figure-widget: a panel figure rebuilt as a figure widget (OPENBRAIN-82);
+ *                  render the widget inline in a box of its own
  */
 export function mobileMode(animation) {
   if (!animation) return "skip";
@@ -39,6 +43,11 @@ export function mobileMode(animation) {
 
   // An interactive widget figure (OPENBRAIN-70 B5): its breakout card.
   if (animation.widgetId) return "widget";
+
+  // A panel figure rebuilt as a figure widget draws itself inline. (Full-
+  // screen widget figures already render in the text via FullScreenIllustration.)
+  if (!animation.fullscreen && figureWidgetFor(animation.id))
+    return "figure-widget";
 
   // Explicit per-figure escape hatch for the ones that break inline.
   if (FULLSCREEN_FALLBACK.has(animation.id)) return "fullscreen";

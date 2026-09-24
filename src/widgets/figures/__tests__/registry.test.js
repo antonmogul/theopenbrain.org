@@ -103,3 +103,28 @@ describe("step-through figures match their artwork", () => {
     }
   });
 });
+
+// A switch schema is bound to its artwork too: one Lottie per switch, every
+// legend symbol on disk.
+describe("switch figures match their artwork", () => {
+  const pub = join(__dirname, "../../../../public");
+  const switches = Object.values(FIGURE_WIDGETS)
+    .map((w) => w.schema)
+    .filter((s) => s.variants);
+
+  it("finds them", () => expect(switches.length).toBe(4));
+
+  it.each(switches.map((s) => [s.id, s]))("%s", (_, schema) => {
+    expect(schema.variants).toHaveLength(schema.defaults.switches.length);
+    expect(schema.legendArt).toHaveLength(schema.defaults.legend.length);
+    for (const v of schema.variants) {
+      const lottie = JSON.parse(readFileSync(join(pub, v.file), "utf8"));
+      expect(lottie.op, v.file).toBeGreaterThan(0);
+    }
+    for (const art of schema.legendArt)
+      expect(statSync(join(pub, art.icon)).isFile(), art.icon).toBe(true);
+    // Their labels are the drawing's, not the database's older ones.
+    for (const key of ["switches", "legend"])
+      expect(schema.fields.find((f) => f.key === key).artwork).toBe(true);
+  });
+});

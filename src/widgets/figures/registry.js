@@ -11,8 +11,13 @@ import refractionErrors from "./refraction-errors/schema.js";
 import pupillaryReflex from "./pupillary-reflex/schema.js";
 import phototransduction from "./phototransduction/schema.js";
 import visualCycle from "./visual-cycle/schema.js";
+import centerSurround from "./center-surround/schema.js";
+import directionSelectivity from "./direction-selectivity/schema.js";
+import objectMotion from "./object-motion/schema.js";
+import rodCone from "./rod-cone/schema.js";
 
 const stepThrough = () => import("./step-through/StepThrough.vue");
+const switchFigure = () => import("./switch/SwitchFigure.vue");
 
 export const FIGURE_WIDGETS = {
   [refractionErrors.animationKey]: {
@@ -29,6 +34,14 @@ export const FIGURE_WIDGETS = {
     load: stepThrough,
   },
   [visualCycle.animationKey]: { schema: visualCycle, load: stepThrough },
+  // Four panel figures, one component (OPENBRAIN-82).
+  [centerSurround.animationKey]: { schema: centerSurround, load: switchFigure },
+  [directionSelectivity.animationKey]: {
+    schema: directionSelectivity,
+    load: switchFigure,
+  },
+  [objectMotion.animationKey]: { schema: objectMotion, load: switchFigure },
+  [rodCone.animationKey]: { schema: rodCone, load: switchFigure },
 };
 
 /** The widget for an animation key, or null. */

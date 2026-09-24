@@ -7,6 +7,15 @@ describe("mobileMode", () => {
       mobileMode({ id: "widget-phrenology", widgetId: "phrenology" })
     ).toBe("widget");
   });
+  it("draws a panel figure widget inline (OPENBRAIN-82)", () => {
+    expect(
+      mobileMode({ id: "animationRodVsConeCircuits", switch: true, loop: true })
+    ).toBe("figure-widget");
+    // Full-screen figure widgets already render in the text.
+    expect(
+      mobileMode({ id: "animationImpairedVision", fullscreen: true })
+    ).toBe("scroll");
+  });
   it("keeps the other modes", () => {
     expect(mobileMode(null)).toBe("skip");
     expect(mobileMode({ id: "a", isTransition: true })).toBe("skip");
