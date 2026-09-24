@@ -75,7 +75,10 @@ function go(anchor, event) {
 </template>
 
 <style scoped>
-/* Frame: 1728 wide, padding 120 / 60 / 60, list = right half (864). */
+/* Figma: Open-Brain-Chapters node 2029:26083 (the History TOC), a 1724-wide
+   frame. Sizes below are that frame's px, as vw of 1724 with rem floors and
+   ceilings: title 54px, section rows 22px, subsection rows 18px, circles
+   40px, titles 53px right of the divider (OPENBRAIN-69). */
 .opener-toc {
   --toc-accent: rgb(var(--color-chapter));
   position: relative;
@@ -100,15 +103,15 @@ function go(anchor, event) {
 }
 
 .opener-toc__title {
-  padding: 0 3.75rem;
-  max-width: 34.9vw; /* 602 / 1728 */
+  padding: 0 0 0 3.625rem; /* 58 */
+  max-width: 47.3vw; /* 58 + a 758 text box, of 1724: the lead fits on one line */
 }
 .opener-toc__h1 {
   margin: 0;
   font-weight: 450;
-  font-size: clamp(2.25rem, 3.5vw, 3.75rem); /* 60px on the 1728 frame */
-  line-height: 1.43;
-  letter-spacing: 0.002em;
+  font-size: clamp(2.25rem, 3.13vw, 3.375rem); /* 54px */
+  line-height: 1.429;
+  letter-spacing: 0.1px;
   text-wrap: balance;
 }
 .opener-toc__lead {
@@ -122,6 +125,7 @@ function go(anchor, event) {
 
 .opener-toc__list {
   padding-right: 3.75rem;
+  letter-spacing: 0.1px;
 }
 .opener-toc__sections,
 .opener-toc__subs {
@@ -134,41 +138,46 @@ function go(anchor, event) {
   align-items: center;
   color: inherit;
   text-decoration: none;
-  padding: 1.125rem 0 1.125rem 2.625rem; /* 18 / 42 */
-  line-height: 1.43;
+  padding: 1.0625rem 0 1.0625rem 3.3125rem; /* 17 / 53: a 66px row */
+  line-height: 1.429;
 }
 .opener-toc__row--section {
   position: relative;
   border-top: 1px solid var(--toc-accent);
   color: var(--toc-accent);
-  font-size: clamp(1.125rem, 1.42vw, 1.53rem); /* 24.5px */
+  font-size: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
+  font-weight: 450; /* IBM Plex Sans Text */
 }
-/* 48px circle straddling the divider: its centre sits on the line. */
+/* 40px circle straddling the divider: its centre sits on the line and on
+   the first line of the title. */
 .opener-toc__num {
   position: absolute;
-  left: -1.5rem;
-  top: 0.75rem;
-  width: 3rem;
-  height: 3rem;
+  left: -1.25rem;
+  top: calc(1.0625rem + 0.7145em - 1.25rem);
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 999px;
   background: var(--toc-accent);
   color: #fff;
   display: grid;
   place-items: center;
-  font-size: clamp(1.125rem, 1.42vw, 1.53rem);
+  font-size: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
   font-weight: 400;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .opener-toc__section--box .opener-toc__num {
   letter-spacing: 0.04em;
 }
 .opener-toc__subs {
-  padding: 0 2.625rem;
+  padding: 0 0 0 3.3125rem; /* rules start under the titles, at 53 */
 }
 .opener-toc__row--sub {
-  border-top: 1px solid rgb(255 255 255 / 0.2); /* the frame's 0.2px white rule */
+  padding: 0.5rem 0; /* a 41px row */
+  border-top: 1px solid rgb(142 142 147 / 0.45); /* the frame's 0.25px #8E8E93 */
   color: #fff;
-  font-size: clamp(1rem, 1.16vw, 1.25rem); /* 20px */
+  font-size: clamp(1rem, 1.04vw, 1.125rem); /* 18px */
+  font-weight: 450;
 }
 .opener-toc__row:hover .opener-toc__label,
 .opener-toc__row--sub:hover {
