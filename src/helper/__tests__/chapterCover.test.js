@@ -28,10 +28,20 @@ describe("coverForModule", () => {
   });
 
   it("uses the neutral default for unknown or missing modules", () => {
-    expect(coverForModule({ slug: "foundations-of-neuroscience" })).toBe(
-      DEFAULT_COVER
-    );
+    expect(coverForModule({ slug: "a-future-chapter" })).toBe(DEFAULT_COVER);
     expect(coverForModule(null)).toBe(DEFAULT_COVER);
     expect(coverForModule(undefined)).toBe(DEFAULT_COVER);
+  });
+
+  it("gives History the Matisse reader until a cover is set (OPENBRAIN-67)", () => {
+    expect(coverForModule({ slug: "foundations-of-neuroscience" })).toBe(
+      "/publicAssets/images/attention-matisse-reader.jpg"
+    );
+    expect(
+      coverForModule({
+        slug: "foundations-of-neuroscience",
+        cover_image_url: "https://x/cover.jpg",
+      })
+    ).toBe("https://x/cover.jpg");
   });
 });

@@ -20,6 +20,8 @@ import InsertMenu from "@/components/chapterEditor/InsertMenu.vue";
 import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
 import { placementsForChapter } from "@/widgets/placements";
+import { coverForModule } from "@/helper/chapterCover";
+import { imageUrl } from "@/editor/media.mjs";
 import { planPlacementConversion } from "@/editor/placementsToBlocks";
 import {
   StatusBadge,
@@ -159,6 +161,33 @@ async function onPickImage(m) {
       ]),
     "Image added. Hover it for Image settings to change the caption."
   );
+}
+
+// ---- cover (OPENBRAIN-67) ----
+const cover = computed(() => coverForModule(ed.module.value));
+const coverIsDefault = computed(() => !ed.module.value?.cover_image_url);
+const coverMediaId = computed(() => {
+  const url = ed.module.value?.cover_image_url;
+  return (
+    (url &&
+      ed.media.value.find(
+        (m) => m.media_type === "image" && imageUrl(m.image_file_url) === url
+      )?.id) ||
+    null
+  );
+});
+function chooseCover() {
+  whenLive(() => (pickerFor.value = { kind: "cover" }));
+}
+async function applyCover(url, done) {
+  pickerFor.value = null;
+  await attempt(() => ed.setCover(url), done);
+}
+const onPickCover = (m) =>
+  applyCover(imageUrl(m.image_file_url), `Cover set: ${m.title || "image"}.`);
+function onUploadedCover({ media }) {
+  ed.media.value = [...ed.media.value, media];
+  applyCover(imageUrl(media.image_file_url), "Cover uploaded and set.");
 }
 
 async function onUploadedImage({ media, alt, caption }) {
@@ -466,6 +495,23 @@ onMounted(async () => {
           >
         </div>
 
+        <section class="ce-cover" aria-label="Cover image">
+          <img :src="cover" alt="" class="ce-cover-img" />
+          <div class="ce-cover-meta">
+            <h2>Cover image</h2>
+            <p>
+              The full-screen image that opens the chapter{{
+                coverIsDefault
+                  ? ". This is the default; choose one to replace it."
+                  : ", also shown on the chapter's card in the library."
+              }}
+            </p>
+            <Button variant="outline" size="sm" @click="chooseCover"
+              >Change cover</Button
+            >
+          </div>
+        </section>
+
         <p v-if="isPublished" class="ce-live-note">
           This chapter is published: saved edits reach readers straight away.
           Every save can be undone.
@@ -747,6 +793,20 @@ onMounted(async () => {
     />
 
     <MediaPicker
+      :open="pickerFor?.kind === 'cover'"
+      :media="ed.media.value"
+      :types="['image']"
+      title="Choose the chapter's cover"
+      :current-id="coverIsDefault ? null : coverMediaId || 'custom'"
+      remove-label="Use the default cover"
+      :upload-slug="ed.module.value?.slug || ''"
+      @pick="onPickCover"
+      @uploaded="onUploadedCover"
+      @remove="applyCover(null, 'Cover reset to the default.')"
+      @close="pickerFor = null"
+    />
+
+    <MediaPicker
       :open="pickerFor?.kind === 'figure'"
       :media="ed.media.value"
       :types="['lottie', 'video', 'youtube']"
@@ -940,6 +1000,40 @@ onMounted(async () => {
   display: grid;
   gap: 48px;
   min-width: 0;
+}
+.ce-cover {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 10px;
+  background: rgb(var(--color-paper));
+}
+.ce-cover-img {
+  width: 200px;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 6px;
+  background: rgb(var(--color-bg));
+}
+.ce-cover-meta {
+  flex: 1 1 240px;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  font-family: var(--font-ui);
+}
+.ce-cover-meta h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.ce-cover-meta p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgb(var(--color-mute));
 }
 .ce-live-note {
   margin: 0;

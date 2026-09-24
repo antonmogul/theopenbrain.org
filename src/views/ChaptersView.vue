@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
+// One cover rule everywhere: the chapter's cover_image_url, else the
+// code-side default the reader's opener uses (OPENBRAIN-67).
+import { coverForModule } from "@/helper/chapterCover";
 import { useAuth } from "@/composables/useAuth";
 import { useAuthStore } from "@/stores/auth";
 import { authedRequest } from "@/services/api/client";
@@ -251,11 +254,9 @@ function chapterNumberFor(mod) {
       <div v-if="continueCard" class="continue-card">
         <div class="continue-cover">
           <img
-            v-if="continueCard.module.cover_image_url"
-            :src="continueCard.module.cover_image_url"
+            :src="coverForModule(continueCard.module)"
             :alt="continueCard.module.title"
           />
-          <div v-else class="cover-fallback" />
         </div>
         <div class="continue-meta">
           <span class="continue-label">● Continue reading</span>
@@ -309,12 +310,7 @@ function chapterNumberFor(mod) {
             class="cover"
             :aria-label="`${mod.title} — ${mod.isDraft ? 'draft' : 'overview'}`"
           >
-            <img
-              v-if="mod.cover_image_url"
-              :src="mod.cover_image_url"
-              :alt="mod.title"
-            />
-            <div v-else class="cover-fallback" />
+            <img :src="coverForModule(mod)" :alt="mod.title" />
             <span v-if="mod.isDraft" class="pill pill-draft">Draft</span>
             <span
               v-else-if="isAuthenticated && pillFor(mod.id) === 'done'"
@@ -518,16 +514,6 @@ function chapterNumberFor(mod) {
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-.cover-fallback {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgb(var(--color-accent) / 0.18),
-    rgb(var(--color-complete) / 0.18)
-  );
 }
 
 .continue-meta {
