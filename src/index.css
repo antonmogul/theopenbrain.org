@@ -611,11 +611,14 @@ h4 {
     stroke-opacity 0.5s;
 }
 
+/* A figure's lit part takes the chapter's colour, as v0.2.3 painted it in
+   the Retina's (OPENBRAIN-84); the global accent stays for the reader's own
+   highlight tools. */
 .highlighterIlluFill.highlightIllu > *,
 .highlightIllu > .highlighterIlluFill > *,
 .highlightIllu > .highlighterIlluFill,
 .highlighterIlluFill.highlightIllu > * > * {
-  fill: rgb(var(--color-accent));
+  fill: rgb(var(--color-chapter));
   fill-opacity: 1;
   stroke-width: 0;
 }
@@ -624,7 +627,7 @@ h4 {
 .highlightIllu > .highlighterIlluFill > *.highlighterIlluFill,
 .highlightIllu > .highlighterIlluFill,
 .highlightIllu > * > *.highlighterIlluFill {
-  fill: rgb(var(--color-accent));
+  fill: rgb(var(--color-chapter));
   fill-opacity: 1;
   stroke-width: 0;
 }
@@ -636,7 +639,7 @@ h4 {
 .highlightIllu > .highlighterIlluStroke > *,
 .highlightIllu > .highlighterIlluStroke,
 .highlighterIlluStroke.highlightIllu > * > * {
-  stroke: rgb(var(--color-accent));
+  stroke: rgb(var(--color-chapter));
   stroke-width: 3;
   stroke-opacity: 1;
 }
@@ -653,7 +656,8 @@ h4 {
 .active > * > .highlightText,
 .active > * > * > .highlightText,
 .active > * > * > * > .highlightText {
-  background: rgb(var(--color-accent));
+  /* Text tied to the figure on show; deep, so white stays readable. */
+  background: rgb(var(--color-chapter-deep));
   color: white;
 }
 #triggeranimationColorOpponency {
