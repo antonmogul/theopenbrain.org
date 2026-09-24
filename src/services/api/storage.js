@@ -6,6 +6,9 @@
  * stores the file under modules/<chapter slug>/<uuid>.<ext>, then adds an
  * `image` row to the media library (public.animations) so it can be reused
  * and shows "used in". Returns that media row.
+ *
+ * Lottie animations (OPENBRAIN-70 B4) upload the same way as JSON files; the
+ * bucket accepts application/json once its migration is applied.
  */
 import { authedRequest, getSession } from "./client";
 
@@ -35,6 +38,93 @@ export function uploadProblem(file) {
 
 export function publicUrl(path) {
   return `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+/** Why this file isn't an uploadable Lottie animation, or null (async). */
+export async function lottieProblem(file) {
+  if (!file) return "Choose a Lottie file first.";
+  if (!/\.json$/i.test(file.name) && file.type !== "application/json")
+    return "Use a Lottie animation exported as .json.";
+  if (file.size > MAX_BYTES)
+    return `That file is ${(file.size / 1048576).toFixed(1)} MB; the limit is 10 MB.`;
+  let data;
+  try {
+    data = JSON.parse(await file.text());
+  } catch {
+    return "That file isn't valid JSON.";
+  }
+  if (!data || typeof data.fr !== "number" || !Array.isArray(data.layers))
+    return "That JSON isn't a Lottie animation (it needs a frame rate and layers).";
+  return null;
+}
+
+async function putObject(path, file, contentType) {
+  const token = getSession()?.access_token;
+  if (!token)
+    throw new Error("Your session has expired. Sign in again to upload.");
+  const res = await fetch(
+    `${supabaseUrl}/storage/v1/object/${BUCKET}/${path}`,
+    {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": contentType,
+        "x-upsert": "false",
+        "cache-control": "31536000",
+      },
+      body: file,
+    }
+  );
+  if (!res.ok) {
+    let detail = "";
+    try {
+      detail = (await res.json())?.message || "";
+    } catch {
+      /* not JSON */
+    }
+    if (res.status === 403 || /row-level security/i.test(detail))
+      throw new Error("Only creators can upload files.");
+    if (/mime type|not supported/i.test(detail))
+      throw new Error(
+        "The media library doesn't accept this file type yet (it needs the OPENBRAIN-70 update)."
+      );
+    throw new Error(
+      `The upload failed (${res.status}${detail ? `: ${detail}` : ""}).`
+    );
+  }
+}
+
+/**
+ * Upload a Lottie animation for chapter `slug` and add it to the media
+ * library. It has no states, so it plays on repeat (config.autoLoop).
+ */
+export async function uploadChapterLottie(file, { slug, title }) {
+  const problem = await lottieProblem(file);
+  if (problem) throw new Error(problem);
+  const id = uuid();
+  const path = `modules/${slug || "unfiled"}/${id}.json`;
+  await putObject(path, file, "application/json");
+  const name =
+    (title || file.name.replace(/\.[^.]+$/, "")).trim() || "Animation";
+  const rows = await authedRequest("animations", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      animation_key: `animationUpload${id.replace(/-/g, "")}`,
+      title: name,
+      media_type: "lottie",
+      lottie_file_url: publicUrl(path),
+      interaction_type: "auto_loop",
+      config: { autoplay: true, autoLoop: true },
+      file_size_bytes: file.size,
+    }),
+  });
+  if (!rows?.length)
+    throw new Error(
+      "The animation uploaded but couldn't be added to the library."
+    );
+  return rows[0];
 }
 
 const uuid = () =>

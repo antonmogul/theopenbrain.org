@@ -1249,6 +1249,7 @@ onMounted(async () => {
       :types="['image', 'lottie', 'video', 'youtube']"
       :upload-slug="ed.module.value?.slug || ''"
       allow-youtube
+      :lottie-upload-slug="ed.module.value?.slug || ''"
       @uploaded="onUploadedFigure"
       @youtube="onYouTubeFigure"
       title="Choose this paragraph's figure"

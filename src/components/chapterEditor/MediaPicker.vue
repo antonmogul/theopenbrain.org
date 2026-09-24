@@ -9,6 +9,7 @@ import { computed, ref, watch } from "vue";
 import { BaseModal, Button, SearchInput } from "@/components/dashboard/shared";
 import { imageUrl } from "@/editor/media.mjs";
 import ImageUpload from "./ImageUpload.vue";
+import LottieUpload from "./LottieUpload.vue";
 import { parseYouTube } from "@/editor/video.mjs";
 
 const props = defineProps({
@@ -24,6 +25,8 @@ const props = defineProps({
   removeLabel: { type: String, default: "Remove figure" },
   /** Offer "Add a YouTube video" (OPENBRAIN-70 D2); emits `youtube`. */
   allowYoutube: { type: Boolean, default: false },
+  /** Offer a Lottie upload for this chapter (OPENBRAIN-70 B4). */
+  lottieUploadSlug: { type: String, default: null },
 });
 const emit = defineEmits(["pick", "uploaded", "remove", "close", "youtube"]);
 
@@ -78,6 +81,18 @@ function thumb(m) {
         @uploaded="(e) => emit('uploaded', e)"
       />
       <h3 class="mp-h">Or choose from the library</h3>
+    </section>
+    <section
+      v-if="lottieUploadSlug !== null"
+      class="mp-upload"
+      aria-label="Upload an animation"
+    >
+      <h3 class="mp-h">Upload a Lottie animation</h3>
+      <LottieUpload
+        :slug="lottieUploadSlug"
+        action-label="Upload and use"
+        @uploaded="(e) => emit('uploaded', e)"
+      />
     </section>
     <section v-if="allowYoutube" class="mp-upload" aria-label="YouTube">
       <h3 class="mp-h">Add a YouTube video</h3>

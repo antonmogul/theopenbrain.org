@@ -19,6 +19,7 @@ import { useAnimations } from "@/composables/useAnimations";
 import {
   resolveAnimationRecord,
   lottieAssetOk,
+  lottiePath,
 } from "@/helper/animationResolve";
 // Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
 import animationJSON from "@/assets/json_backend/animations.json";
@@ -66,7 +67,7 @@ watch(
   async (id) => {
     if (!id) return;
     assetOk.value = null;
-    const ok = await lottieAssetOk(id);
+    const ok = await lottieAssetOk(lottiePath(animation.value) || id);
     assetOk.value = ok;
     if (!ok) {
       console.warn(
