@@ -19,6 +19,8 @@ const props = defineProps({
   currentId: { type: String, default: null },
   /** Offer an upload above the library (images only), for this chapter. */
   uploadSlug: { type: String, default: null },
+  /** Label of the button that clears the current choice. */
+  removeLabel: { type: String, default: "Remove figure" },
 });
 const emit = defineEmits(["pick", "uploaded", "remove", "close"]);
 
@@ -92,7 +94,7 @@ function thumb(m) {
         variant="danger"
         size="sm"
         @click="emit('remove')"
-        >Remove figure</Button
+        >{{ removeLabel }}</Button
       >
       <Button variant="ghost" size="sm" @click="emit('close')">Close</Button>
     </template>

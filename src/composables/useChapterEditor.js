@@ -340,6 +340,30 @@ export function useChapterEditor(slug) {
     );
   }
 
+  // ---- chapter cover (OPENBRAIN-67) ----
+  // modules.cover_image_url wins over the code-side default in
+  // helper/chapterCover.js; null goes back to that default.
+  async function patchModule(body) {
+    const rows = await authedRequest(`modules?id=eq.${module.value.id}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(body),
+    });
+    if (!rows?.length)
+      throw new Error("The database didn't allow this change.");
+    module.value = { ...module.value, ...rows[0] };
+  }
+
+  async function setCover(url) {
+    return withSaving(async () => {
+      const before = module.value.cover_image_url ?? null;
+      await patchModule({ cover_image_url: url || null });
+      pushUndo(url ? "Change cover" : "Reset cover", () =>
+        patchModule({ cover_image_url: before })
+      );
+    });
+  }
+
   async function renameSection(id, title) {
     return withSaving(async () => {
       const before = sections.value.find((sec) => sec.id === id)?.title;
@@ -486,6 +510,7 @@ export function useChapterEditor(slug) {
     deleteParagraph,
     moveParagraph,
     setFigure,
+    setCover,
     renameSection,
     addSection,
     moveSection,

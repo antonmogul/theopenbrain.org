@@ -340,3 +340,50 @@ describe("useChapterEditor sections (OPENBRAIN-62)", () => {
     expect(t.order()).toEqual(["introduction", "story", "measured"]);
   });
 });
+
+describe("useChapterEditor cover (OPENBRAIN-67)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  function coverApi({ refuse = false } = {}) {
+    const patches = [];
+    authedRequest.mockImplementation(async (path, init = {}) => {
+      if (path.startsWith("modules?id=eq.m1") && init.method === "PATCH") {
+        const body = JSON.parse(init.body);
+        patches.push(body);
+        return refuse ? [] : [{ id: "m1", ...body }];
+      }
+      if (path.startsWith("modules?"))
+        return [{ id: "m1", slug: "s", cover_image_url: "/old.jpg" }];
+      return [];
+    });
+    return patches;
+  }
+
+  it("sets the cover and undo restores the previous one", async () => {
+    const patches = coverApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setCover("https://x.supabase.co/new.jpg");
+    expect(patches).toEqual([
+      { cover_image_url: "https://x.supabase.co/new.jpg" },
+    ]);
+    expect(ed.module.value.cover_image_url).toBe(
+      "https://x.supabase.co/new.jpg"
+    );
+    await ed.undo();
+    expect(patches[1]).toEqual({ cover_image_url: "/old.jpg" });
+    expect(ed.module.value.cover_image_url).toBe("/old.jpg");
+  });
+
+  it("resets to the default with null, and reports a refused save", async () => {
+    const patches = coverApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setCover(null);
+    expect(patches).toEqual([{ cover_image_url: null }]);
+
+    coverApi({ refuse: true });
+    await expect(ed.setCover("/x.jpg")).rejects.toThrow(/didn't allow/);
+    expect(ed.undoStack.value).toHaveLength(1);
+  });
+});
