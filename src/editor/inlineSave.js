@@ -7,6 +7,7 @@
  * authenticated PostgREST request and resolves to the parsed JSON body.
  */
 import { readerLockReason, withBlocks } from "./editability.mjs";
+import { blocksToPlainText } from "./plainText";
 
 export const PARAGRAPH_SAVES = new Set([
   "paragraph",
@@ -17,7 +18,37 @@ export const PARAGRAPH_SAVES = new Set([
 
 export const stripTags = (html) => String(html ?? "").replace(/<[^>]*>/g, "");
 
-export async function saveInlineEdit(rest, { paragraphId, content, type }) {
+/**
+ * @returns {Promise<{ previous: object, content?: object }>} what was stored
+ *   before (for Undo) and, for paragraph edits, the content now stored.
+ */
+export async function saveInlineEdit(
+  rest,
+  { paragraphId, content, blocks: editedBlocks, type }
+) {
+  // Edit mode (OPENBRAIN-64) sends blocks from the lossless schema: replace
+  // them, keep every other content key, nothing to refuse.
+  if (Array.isArray(editedBlocks) && PARAGRAPH_SAVES.has(type)) {
+    const [row] = await rest(
+      `paragraphs?id=eq.${paragraphId}&select=content,content_text`
+    );
+    if (!row)
+      throw new Error("This paragraph no longer exists. Reload the chapter.");
+    const next = withBlocks(row.content, editedBlocks);
+    const saved = await rest(`paragraphs?id=eq.${paragraphId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        content: next,
+        content_text: blocksToPlainText(editedBlocks),
+      }),
+    });
+    if (!saved?.length)
+      throw new Error("The database didn't allow this change.");
+    return {
+      previous: { content: row.content, content_text: row.content_text },
+      content: next,
+    };
+  }
   if (PARAGRAPH_SAVES.has(type)) {
     const [row] = await rest(`paragraphs?id=eq.${paragraphId}&select=content`);
     if (!row)

@@ -25,7 +25,9 @@ export const editorSections = [
     id: "sec-measure",
     module_id: editorModule.id,
     title: "Attention is measured behaviorally",
-    slug: "measured",
+    // The real slug, so the Posner code placement resolves here and the page
+    // offers to make it editable.
+    slug: "attention-is-measured-behaviorally",
     order_index: 2,
   },
 ];
@@ -89,6 +91,13 @@ export const editorParagraphs = [
       credit: "Arjun Krishnaswamy",
       placementId: "attention-sdt",
       route: "/sdt",
+    },
+  ]),
+  row("p-6", "sec-measure", 2, [
+    {
+      type: "text",
+      content:
+        "The spatial cueing paradigm introduced by Michael Posner in 1980 measures how a cue shifts attention.",
     },
   ]),
   row("p-5", "sec-measure", 1, [

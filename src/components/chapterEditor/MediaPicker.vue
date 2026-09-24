@@ -8,6 +8,7 @@
 import { computed, ref, watch } from "vue";
 import { BaseModal, Button, SearchInput } from "@/components/dashboard/shared";
 import { imageUrl } from "@/editor/media.mjs";
+import ImageUpload from "./ImageUpload.vue";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -16,8 +17,10 @@ const props = defineProps({
   title: { type: String, default: "Choose media" },
   /** Id of the current choice (a paragraph's figure), to mark and remove. */
   currentId: { type: String, default: null },
+  /** Offer an upload above the library (images only), for this chapter. */
+  uploadSlug: { type: String, default: null },
 });
-const emit = defineEmits(["pick", "remove", "close"]);
+const emit = defineEmits(["pick", "uploaded", "remove", "close"]);
 
 const search = ref("");
 watch(
@@ -52,6 +55,15 @@ function thumb(m) {
     @update:model-value="(v) => !v && emit('close')"
     @close="emit('close')"
   >
+    <section v-if="uploadSlug !== null" class="mp-upload" aria-label="Upload">
+      <h3 class="mp-h">Upload a new image</h3>
+      <ImageUpload
+        :slug="uploadSlug"
+        action-label="Upload and add"
+        @uploaded="(e) => emit('uploaded', e)"
+      />
+      <h3 class="mp-h">Or choose from the library</h3>
+    </section>
     <SearchInput v-model="search" placeholder="Search by title…" />
     <ul class="mp-grid">
       <li v-for="m in items" :key="m.id">
@@ -88,6 +100,19 @@ function thumb(m) {
 </template>
 
 <style scoped>
+.mp-upload {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.mp-h {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-mute));
+}
 .mp-grid {
   list-style: none;
   margin: 12px 0 0;
