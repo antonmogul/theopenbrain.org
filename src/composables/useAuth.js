@@ -8,8 +8,12 @@ import {
   resetPasswordREST,
   updatePasswordREST,
   listenToStorageChanges,
+  ensureFreshSession,
 } from "@/utils/authHelpers";
-import { setSession as setApiSession } from "@/services/api/client";
+import {
+  setSession as setApiSession,
+  setSessionRefresher,
+} from "@/services/api/client";
 
 const user = ref(null);
 const session = ref(null);
@@ -80,8 +84,58 @@ function initializeAuth() {
   });
 }
 
-// Initialize on module load
+// ---- keep the session alive (OPENBRAIN-77) ----
+// Supabase sessions last about an hour. Renew shortly before expiry, when
+// the tab comes back into view, and after any 401; a refused refresh signs
+// the reader out properly instead of leaving a dead token in place.
+function applySession(next) {
+  if (!next) {
+    if (session.value) {
+      session.value = null;
+      user.value = null;
+      profile.value = null;
+    }
+    return null;
+  }
+  if (next.access_token !== session.value?.access_token) {
+    const userChanged = next.user?.id !== user.value?.id;
+    session.value = next;
+    user.value = next.user ?? null;
+    if (userChanged && next.user?.id)
+      fetchUserProfile(next.user.id, next.access_token);
+  }
+  return next;
+}
+
+let refreshTimer = null;
+function scheduleRefresh(s) {
+  clearTimeout(refreshTimer);
+  refreshTimer = null;
+  if (!s?.expires_at || !s.refresh_token) return;
+  const ms = Math.max(5000, s.expires_at * 1000 - Date.now() - 60 * 1000);
+  refreshTimer = setTimeout(async () => {
+    applySession(await ensureFreshSession({ force: true }));
+  }, ms);
+}
+watch(session, scheduleRefresh);
+
+setSessionRefresher(async () =>
+  applySession(await ensureFreshSession({ force: true }))
+);
+
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible" && session.value)
+      applySession(await ensureFreshSession());
+  });
+}
+
+// Initialize on module load, then renew a stored session that's expired or
+// close to it (the synchronous read above treats an expired one as none).
 initializeAuth();
+ensureFreshSession().then((fresh) => {
+  if (fresh || session.value) applySession(fresh);
+});
 
 export function useAuth() {
   const isAuthenticated = computed(() => !!user.value);

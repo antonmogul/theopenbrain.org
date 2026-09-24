@@ -6,7 +6,7 @@ import {
   moduleForRoute,
 } from "@/helper/chapterTheme";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
-import { getSessionFromStorage } from "@/utils/authHelpers";
+import { ensureFreshSession } from "@/utils/authHelpers";
 import { apiRequest } from "@/services/api/client";
 import { createAuthGuard } from "./guards";
 import HomeView from "@/views/HomeView.vue";
@@ -257,7 +257,9 @@ async function getDevRoleOverride() {
 }
 
 export const authGuard = createAuthGuard({
-  getSession: getSessionFromStorage,
+  // An expired but refreshable session is renewed, not treated as signed
+  // out (OPENBRAIN-77).
+  getSession: () => ensureFreshSession(),
   fetchRole: fetchRoleForSession,
   isDev: import.meta.env.DEV,
   getDevRoleOverride,
