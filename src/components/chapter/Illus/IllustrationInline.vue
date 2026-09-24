@@ -224,6 +224,12 @@ const youtubeSrc = computed(() =>
   position: relative;
   width: 100%;
   min-height: 320px;
+  /* IllustrationComp's label layers are position: fixed, written for the
+     pinned desktop pane. Inline, fixed pinned every figure's labels to the
+     top of the viewport, piled over the chapter opener (OPENBRAIN-68).
+     Layout containment makes the stage their containing block, and paint
+     containment keeps them inside it. */
+  contain: layout paint;
 }
 
 .illu-expand,
