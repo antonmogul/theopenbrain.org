@@ -273,6 +273,106 @@ export function useChapterEditor(slug) {
     });
   }
 
+  // ---- subsections (OPENBRAIN-70) ----
+  // A subsection is a header row (is_subsection_header, level 1); the level-1
+  // rows after it belong to it, level 2 nests one deeper, and the next level-0
+  // row ends it (chapterTransform.reconstructNesting).
+  const levelOf = (r) => r.subsection_level || 0;
+
+  async function setLevels(pairs) {
+    for (const [id, subsection_level] of pairs)
+      await patchParagraph(id, { subsection_level });
+  }
+
+  /**
+   * Add a subsection heading before position `index`. The blocks below it
+   * join it, up to the next subsection heading.
+   */
+  async function insertSubsection(sectionId, index, blocks) {
+    const row = await insertParagraph(sectionId, index, blocks, {
+      is_subsection_header: true,
+      subsection_level: 1,
+    });
+    // One Undo for the whole step, not "Add block" plus the regrouping.
+    const addUndo = undoStack.value[undoStack.value.length - 1];
+    undoStack.value = undoStack.value.slice(0, -1);
+    return withSaving(async () => {
+      const rows = sectionRows(sectionId);
+      const adopted = [];
+      for (const r of rows.slice(rows.findIndex((x) => x.id === row.id) + 1)) {
+        if (r.is_subsection_header) break;
+        if (levelOf(r) === 0) adopted.push(r.id);
+      }
+      await setLevels(adopted.map((id) => [id, 1]));
+      pushUndo("Add subsection", async () => {
+        await setLevels(adopted.map((id) => [id, 0]));
+        await addUndo.run();
+      });
+      return { row, adopted: adopted.length };
+    });
+  }
+
+  /** Can this block move one level deeper (into the subsection above)? */
+  function canIndent(id) {
+    const row = paragraphs.value.find((p) => p.id === id);
+    if (!row || row.is_subsection_header || levelOf(row) >= 2) return false;
+    const rows = sectionRows(row.section_id);
+    const prev = rows[rows.findIndex((p) => p.id === id) - 1];
+    return !!prev && (prev.is_subsection_header || levelOf(prev) >= 1);
+  }
+
+  /**
+   * Move a block one level in (+1) or out (-1). A subsection is one unbroken
+   * run, so taking a block all the way out takes the blocks after it in that
+   * subsection out too; returns how many blocks moved.
+   */
+  async function shiftLevel(id, dir) {
+    return withSaving(async () => {
+      const row = paragraphs.value.find((p) => p.id === id);
+      if (!row) return 0;
+      const before = levelOf(row);
+      const after = Math.min(2, Math.max(0, before + dir));
+      if (after === before) return 0;
+      const moved = [[id, before]];
+      if (after === 0) {
+        const rows = sectionRows(row.section_id);
+        for (const r of rows.slice(rows.findIndex((x) => x.id === id) + 1)) {
+          if (r.is_subsection_header || levelOf(r) === 0) break;
+          moved.push([r.id, levelOf(r)]);
+        }
+      }
+      await setLevels(moved.map(([mid]) => [mid, after]));
+      pushUndo(dir > 0 ? "Indent" : "Outdent", () => setLevels(moved));
+      return moved.length;
+    });
+  }
+
+  /** Turn a subsection back into ordinary blocks (the heading stays as text). */
+  async function ungroupSubsection(id) {
+    return withSaving(async () => {
+      const header = paragraphs.value.find((p) => p.id === id);
+      if (!header?.is_subsection_header) return;
+      const rows = sectionRows(header.section_id);
+      const members = [];
+      for (const r of rows.slice(rows.findIndex((x) => x.id === id) + 1)) {
+        if (r.is_subsection_header || levelOf(r) === 0) break;
+        members.push([r.id, levelOf(r)]);
+      }
+      await patchParagraph(id, {
+        is_subsection_header: false,
+        subsection_level: 0,
+      });
+      await setLevels(members.map(([mid]) => [mid, 0]));
+      pushUndo("Ungroup subsection", async () => {
+        await patchParagraph(id, {
+          is_subsection_header: true,
+          subsection_level: levelOf(header),
+        });
+        await setLevels(members);
+      });
+    });
+  }
+
   /** Attach, change or remove (animationId null) a paragraph's figure. */
   async function setFigure(id, animationId, trigger = null) {
     return withSaving(async () => {
@@ -510,6 +610,10 @@ export function useChapterEditor(slug) {
     deleteParagraph,
     moveParagraph,
     setFigure,
+    insertSubsection,
+    canIndent,
+    shiftLevel,
+    ungroupSubsection,
     setCover,
     renameSection,
     addSection,

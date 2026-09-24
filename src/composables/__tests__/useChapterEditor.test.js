@@ -387,3 +387,80 @@ describe("useChapterEditor cover (OPENBRAIN-67)", () => {
     expect(ed.undoStack.value).toHaveLength(1);
   });
 });
+
+describe("useChapterEditor subsections (OPENBRAIN-70)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const flat = () =>
+    ["a", "b", "c", "d"].map((id, i) => ({
+      id,
+      section_id: "s1",
+      order_index: i,
+      content: { blocks: [{ type: "text", content: id }] },
+      content_text: id,
+      is_subsection_header: false,
+      subsection_level: 0,
+    }));
+  const levels = (t) =>
+    t.rows
+      .slice()
+      .sort((x, y) => x.order_index - y.order_index)
+      .map((r) => (r.is_subsection_header ? "H" : r.subsection_level));
+
+  it("adds a heading and the blocks below join it, with one undo", async () => {
+    const t = fakeTable(flat());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const { row, adopted } = await ed.insertSubsection("s1", 2, [
+      { type: "text", content: "Methods" },
+    ]);
+    expect(adopted).toBe(2);
+    expect(t.order()).toEqual(["a", "b", row.id, "c", "d"]);
+    expect(levels(t)).toEqual([0, 0, "H", 1, 1]);
+    expect(ed.undoStack.value.map((u) => u.label)).toEqual(["Add subsection"]);
+    await ed.undo();
+    expect(t.order()).toEqual(["a", "b", "c", "d"]);
+    expect(levels(t)).toEqual([0, 0, 0, 0]);
+  });
+
+  it("stops adopting at the next subsection heading", async () => {
+    const rows = flat();
+    rows[3] = { ...rows[3], is_subsection_header: true, subsection_level: 1 };
+    const t = fakeTable(rows);
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.insertSubsection("s1", 1, [{ type: "text", content: "H1" }]);
+    expect(levels(t)).toEqual([0, "H", 1, 1, "H"]);
+  });
+
+  it("indents only under a subsection, outdents, and undoes", async () => {
+    const t = fakeTable(flat());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    expect(ed.canIndent("b")).toBe(false); // no subsection above
+    await ed.insertSubsection("s1", 1, [{ type: "text", content: "H" }]);
+    // Taking c out takes d (after it in the subsection) out too.
+    expect(await ed.shiftLevel("c", -1)).toBe(2);
+    expect(levels(t)).toEqual([0, "H", 1, 0, 0]);
+    expect(ed.canIndent("c")).toBe(true);
+    await ed.undo();
+    expect(levels(t)).toEqual([0, "H", 1, 1, 1]);
+    await ed.shiftLevel("c", 1); // one deeper
+    expect(levels(t)).toEqual([0, "H", 1, 2, 1]);
+    expect(ed.canIndent("c")).toBe(false); // 2 is the deepest
+  });
+
+  it("ungroups a subsection and undo regroups it", async () => {
+    const t = fakeTable(flat());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const { row } = await ed.insertSubsection("s1", 1, [
+      { type: "text", content: "H" },
+    ]);
+    await ed.shiftLevel("c", 1);
+    await ed.ungroupSubsection(row.id);
+    expect(levels(t)).toEqual([0, 0, 0, 0, 0]);
+    await ed.undo();
+    expect(levels(t)).toEqual([0, "H", 1, 2, 1]);
+  });
+});

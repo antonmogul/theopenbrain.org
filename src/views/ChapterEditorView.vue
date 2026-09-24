@@ -119,6 +119,8 @@ const STARTERS = {
   heading: [{ type: "heading", level: 3, content: "" }],
   quote: [{ type: "blockquote", content: "" }],
   list: [{ type: "list", ordered: false, items: [""] }],
+  // A subsection heading: its text is the title in the contents list.
+  subsection: [{ type: "text", content: "" }],
 };
 const pickerFor = ref(null); // { kind: "image"|"widget"|"figure"|"widget-edit", ... }
 
@@ -126,7 +128,12 @@ function onInsert(sectionId, index, type) {
   whenLive(() => {
     editingId.value = null;
     if (STARTERS[type]) {
-      pendingInsert.value = { sectionId, index, blocks: STARTERS[type] };
+      pendingInsert.value = {
+        sectionId,
+        index,
+        blocks: STARTERS[type],
+        kind: type,
+      };
     } else {
       pickerFor.value = { kind: type, sectionId, index };
     }
@@ -134,9 +141,20 @@ function onInsert(sectionId, index, type) {
 }
 
 async function savePendingInsert(blocks) {
-  const { sectionId, index } = pendingInsert.value;
+  const { sectionId, index, kind } = pendingInsert.value;
   editError.value = "";
   try {
+    if (kind === "subsection") {
+      const { adopted } = await ed.insertSubsection(sectionId, index, blocks);
+      pendingInsert.value = null;
+      showToast(
+        adopted
+          ? `Subsection added, with the ${adopted === 1 ? "block" : `${adopted} blocks`} below it. Use ← Out to take one out.`
+          : "Subsection added. Use → In on the blocks that belong to it.",
+        { undo: true }
+      );
+      return;
+    }
     await ed.insertParagraph(sectionId, index, blocks);
     pendingInsert.value = null;
     showToast("Block added.", { undo: true });
@@ -246,6 +264,34 @@ function move(p, dir) {
     attempt(
       () => ed.moveParagraph(p.id, dir),
       dir < 0 ? "Moved up." : "Moved down."
+    )
+  );
+}
+
+// ---- subsections (OPENBRAIN-70) ----
+function shift(p, dir) {
+  whenLive(async () => {
+    try {
+      const moved = await ed.shiftLevel(p.id, dir);
+      showToast(
+        dir > 0
+          ? "Moved into the subsection."
+          : moved > 1
+            ? `Moved out of the subsection, with the ${moved - 1 === 1 ? "block" : `${moved - 1} blocks`} after it.`
+            : "Moved out of the subsection.",
+        { undo: true }
+      );
+    } catch (err) {
+      console.error("Chapter editor:", err);
+      showToast(err.message || "Couldn't save. Try again.", { error: true });
+    }
+  });
+}
+function ungroup(p) {
+  whenLive(() =>
+    attempt(
+      () => ed.ungroupSubsection(p.id),
+      "Subsection removed; its heading and blocks stay as ordinary text."
     )
   );
 }
@@ -610,7 +656,10 @@ onMounted(async () => {
               class="ce-block"
               :class="{
                 'is-editing': editingId === p.id,
-                'is-sub': (p.subsection_level || 0) > 0,
+                'is-sub':
+                  (p.subsection_level || 0) > 0 && !p.is_subsection_header,
+                'is-sub2': (p.subsection_level || 0) > 1,
+                'is-subhead': p.is_subsection_header,
               }"
             >
               <ParagraphEditor
@@ -661,6 +710,32 @@ onMounted(async () => {
                   >
                     ↓
                   </button>
+                  <button
+                    v-if="p.is_subsection_header"
+                    type="button"
+                    title="Turn this subsection back into ordinary blocks"
+                    @click="ungroup(p)"
+                  >
+                    Ungroup
+                  </button>
+                  <template v-else>
+                    <button
+                      v-if="ed.canIndent(p.id)"
+                      type="button"
+                      title="Move into the subsection above"
+                      @click="shift(p, 1)"
+                    >
+                      → In
+                    </button>
+                    <button
+                      v-if="(p.subsection_level || 0) > 0"
+                      type="button"
+                      title="Move out of the subsection"
+                      @click="shift(p, -1)"
+                    >
+                      ← Out
+                    </button>
+                  </template>
                   <button type="button" @click="chooseFigure(p)">
                     {{ p.animation_id ? "Figure…" : "+ Figure" }}
                   </button>
@@ -1065,8 +1140,26 @@ onMounted(async () => {
 .ce-block {
   position: relative;
 }
+/* Blocks inside a subsection hang off a rule from its heading (OPENBRAIN-70). */
+.ce-block.is-subhead {
+  margin-top: 12px;
+}
+.ce-block.is-subhead::before {
+  content: "Subsection";
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-accent));
+}
 .ce-block.is-sub {
   margin-left: 12px;
+  padding-left: 14px;
+  border-left: 2px solid rgb(var(--color-accent) / 0.35);
+}
+.ce-block.is-sub2 {
+  margin-left: 32px;
 }
 .ce-block-view {
   position: relative;

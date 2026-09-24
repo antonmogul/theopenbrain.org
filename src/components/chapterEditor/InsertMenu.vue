@@ -2,7 +2,7 @@
 /*
  * InsertMenu — the "+" between blocks on the chapter block page
  * (OPENBRAIN-61). Opens a small menu of block types and emits `choose` with
- * one of: text, heading, quote, list, image, widget.
+ * one of: text, heading, subsection, quote, list, image, widget.
  */
 import { nextTick, onBeforeUnmount, ref } from "vue";
 
@@ -14,7 +14,16 @@ const root = ref(null);
 
 const OPTIONS = [
   { type: "text", label: "Text", hint: "A paragraph" },
-  { type: "heading", label: "Heading", hint: "A subheading" },
+  {
+    type: "subsection",
+    label: "Subsection",
+    hint: "A heading in the contents; the blocks below join it",
+  },
+  {
+    type: "heading",
+    label: "Heading",
+    hint: "Heading text, not in the contents",
+  },
   { type: "image", label: "Image", hint: "Upload or pick from the library" },
   { type: "widget", label: "Widget", hint: "An interactive" },
   { type: "quote", label: "Quote", hint: "A quotation" },
