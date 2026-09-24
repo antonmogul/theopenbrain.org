@@ -464,3 +464,34 @@ describe("useChapterEditor subsections (OPENBRAIN-70)", () => {
     expect(levels(t)).toEqual([0, "H", 1, 2, 1]);
   });
 });
+
+describe("useChapterEditor chapter details (OPENBRAIN-70 C1, C2)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("saves title, subtitle and authors, and undo restores them", async () => {
+    const patches = [];
+    authedRequest.mockImplementation(async (path, init = {}) => {
+      if (path.startsWith("modules?id=eq.m1") && init.method === "PATCH") {
+        const body = JSON.parse(init.body);
+        patches.push(body);
+        return [{ id: "m1", ...body }];
+      }
+      if (path.startsWith("modules?"))
+        return [{ id: "m1", title: "Old", description: "Long", authors: null }];
+      return [];
+    });
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const authors = [{ name: "Stuart Trenholm", affiliation: "MNI" }];
+    await ed.setDetails({ title: "New", description: "Short", authors });
+    expect(patches[0]).toEqual({ title: "New", description: "Short", authors });
+    expect(ed.module.value.authors).toEqual(authors);
+    await ed.undo();
+    expect(patches[1]).toEqual({
+      title: "Old",
+      description: "Long",
+      authors: null,
+    });
+    expect(ed.module.value.title).toBe("Old");
+  });
+});

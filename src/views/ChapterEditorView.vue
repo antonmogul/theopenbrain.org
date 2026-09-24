@@ -19,6 +19,7 @@ import ParagraphEditor from "@/components/chapterEditor/ParagraphEditor.vue";
 import InsertMenu from "@/components/chapterEditor/InsertMenu.vue";
 import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
+import ChapterDetails from "@/components/chapterEditor/ChapterDetails.vue";
 import { placementsForChapter } from "@/widgets/placements";
 import { coverForModule } from "@/helper/chapterCover";
 import { imageUrl } from "@/editor/media.mjs";
@@ -179,6 +180,11 @@ async function onPickImage(m) {
       ]),
     "Image added. Hover it for Image settings to change the caption."
   );
+}
+
+// ---- chapter details (OPENBRAIN-70 C1, C2) ----
+function saveDetails(patch) {
+  whenLive(() => attempt(() => ed.setDetails(patch), "Chapter details saved."));
 }
 
 // ---- cover (OPENBRAIN-67) ----
@@ -540,6 +546,12 @@ onMounted(async () => {
             >Make editable</Button
           >
         </div>
+
+        <ChapterDetails
+          :module="ed.module.value"
+          :saving="ed.saving.value"
+          @save="saveDetails"
+        />
 
         <section class="ce-cover" aria-label="Cover image">
           <img :src="cover" alt="" class="ce-cover-img" />

@@ -454,6 +454,20 @@ export function useChapterEditor(slug) {
     module.value = { ...module.value, ...rows[0] };
   }
 
+  /**
+   * Save chapter details (OPENBRAIN-70 C1, C2): any of title, description
+   * (the opener's subtitle) and authors ([{ name, affiliation }]).
+   */
+  async function setDetails(patch) {
+    return withSaving(async () => {
+      const before = Object.fromEntries(
+        Object.keys(patch).map((k) => [k, module.value[k] ?? null])
+      );
+      await patchModule(patch);
+      pushUndo("Chapter details", () => patchModule(before));
+    });
+  }
+
   async function setCover(url) {
     return withSaving(async () => {
       const before = module.value.cover_image_url ?? null;
@@ -615,6 +629,7 @@ export function useChapterEditor(slug) {
     shiftLevel,
     ungroupSubsection,
     setCover,
+    setDetails,
     renameSection,
     addSection,
     moveSection,
