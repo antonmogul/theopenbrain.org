@@ -217,9 +217,9 @@ const invalidBarX = CHART_W / 2 + 16;
 </script>
 
 <template>
-  <div class="pn-wrap">
+  <div class="widget-root pn-wrap">
     <div class="pn-card">
-      <p class="pn-intro t-caption">
+      <p class="pn-intro t-widget-body">
         Watch the dot at center. It will briefly grow a small tail pointing
         toward one of the four corners — that's the cue. Shortly after, a faint
         gray dot will appear in one of the four boxes. Press
@@ -229,7 +229,7 @@ const invalidBarX = CHART_W / 2 + 16;
         actually see the dot. The first 20 trials are always valid; invalid
         trials can appear after that. 50 trials total, run automatically.
       </p>
-      <p class="pn-fine t-caption">
+      <p class="pn-fine t-widget-sub">
         The cue–target gap is always under 180 milliseconds — too brief for your
         eyes to move there. Any speed difference you feel reflects covert
         attention, not gaze.
@@ -265,8 +265,8 @@ const invalidBarX = CHART_W / 2 + 16;
       </div>
 
       <!-- Status & feedback -->
-      <p class="pn-status t-caption">{{ statusText }}</p>
-      <p class="pn-feedback t-caption">{{ feedbackText }}</p>
+      <p class="pn-status t-widget-body">{{ statusText }}</p>
+      <p class="pn-feedback t-widget-body">{{ feedbackText }}</p>
 
       <!-- Controls -->
       <div class="pn-controls">

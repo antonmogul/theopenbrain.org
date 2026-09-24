@@ -1977,7 +1977,7 @@ watch(projectionSvg, () => {
 </script>
 
 <template>
-  <div class="vpl">
+  <div class="widget-root vpl">
     <h1 class="vpl-title">
       Visual field deficits along the primary visual pathway
     </h1>

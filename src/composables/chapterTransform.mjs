@@ -46,6 +46,7 @@ export function extractChapter1Meta(blocks) {
       meta.img = block.src;
       if (block.caption) meta.imgCap = block.caption;
       if (block.closed) meta.imgClosed = block.closed;
+      if (block.wide) meta.imgWide = true; // FullBleed (OPENBRAIN-72)
     }
     if (block.type === "video" && block.youtubeId) {
       // A YouTube video in the prose (OPENBRAIN-70 D2); VideoEmbed renders it.

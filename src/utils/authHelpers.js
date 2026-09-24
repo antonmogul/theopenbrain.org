@@ -24,10 +24,11 @@ export function getSessionFromStorage() {
 
     const session = JSON.parse(sessionData);
 
-    // Check if session is expired
+    // An expired session isn't signed in. Keep it in storage while it still
+    // has a refresh token, so ensureFreshSession() can renew it
+    // (OPENBRAIN-77); without one it's useless and goes.
     if (session.expires_at && session.expires_at * 1000 < Date.now()) {
-      console.log("authHelpers: Session expired");
-      localStorage.removeItem(storageKey);
+      if (!session.refresh_token) localStorage.removeItem(storageKey);
       return null;
     }
 
@@ -36,6 +37,91 @@ export function getSessionFromStorage() {
     console.error("authHelpers: Error reading session:", err);
     return null;
   }
+}
+
+/** The stored session as-is, expired or not (null if none). */
+export function getStoredSession() {
+  try {
+    const raw = localStorage.getItem(getStorageKey());
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Swap a refresh token for a new session (Supabase Auth over REST). Throws
+ * with `status` set when Supabase refuses it.
+ */
+export async function refreshSessionREST(refreshToken) {
+  const response = await fetch(
+    `${supabaseUrl}/auth/v1/token?grant_type=refresh_token`,
+    {
+      method: "POST",
+      headers: { apikey: supabaseKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const err = new Error(
+      data.error_description || data.msg || "Session refresh failed"
+    );
+    err.status = response.status;
+    throw err;
+  }
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: data.expires_at,
+    expires_in: data.expires_in,
+    token_type: data.token_type,
+    user: data.user,
+  };
+}
+
+/* Renew this long before expiry, so a request in flight never carries a
+   token that expires on the way. */
+export const REFRESH_MARGIN_MS = 90 * 1000;
+let inflight = null;
+
+/**
+ * A session that's good for a while yet, renewing the stored one when it is
+ * close to expiry or already expired (OPENBRAIN-77). Readers were signed out
+ * silently after about an hour because nothing ever used the refresh token.
+ * One refresh at a time: concurrent callers share it. Resolves to the
+ * session, or null when there is none or Supabase refuses the refresh.
+ */
+export function ensureFreshSession({ force = false } = {}) {
+  if (inflight) return inflight;
+  const current = getStoredSession();
+  if (!current?.access_token) return Promise.resolve(null);
+  const expiresAt = (current.expires_at || 0) * 1000;
+  const stillValid = expiresAt > Date.now();
+  if (!force && expiresAt - Date.now() > REFRESH_MARGIN_MS)
+    return Promise.resolve(current);
+  if (!current.refresh_token) {
+    if (!stillValid) clearSessionFromStorage();
+    return Promise.resolve(stillValid ? current : null);
+  }
+  inflight = refreshSessionREST(current.refresh_token)
+    .then((next) => {
+      saveSessionToStorage(next);
+      return next;
+    })
+    .catch((err) => {
+      // Refused (revoked, reused, signed out elsewhere): the session is over.
+      // A network failure keeps the current one while it's still valid.
+      if (err.status && err.status < 500) {
+        clearSessionFromStorage();
+        return null;
+      }
+      return stillValid ? current : null;
+    })
+    .finally(() => {
+      inflight = null;
+    });
+  return inflight;
 }
 
 export function saveSessionToStorage(session) {

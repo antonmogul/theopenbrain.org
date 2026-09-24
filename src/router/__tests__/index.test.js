@@ -24,9 +24,15 @@ vi.mock("@/stores", async () => {
   return { useGeneral: () => general };
 });
 
-vi.mock("@/utils/authHelpers", () => ({
-  getSessionFromStorage: vi.fn(() => null),
-}));
+vi.mock("@/utils/authHelpers", () => {
+  const getSessionFromStorage = vi.fn(() => null);
+  // The guard awaits a fresh session (OPENBRAIN-77); in these tests it is
+  // whatever the stored-session mock returns.
+  return {
+    getSessionFromStorage,
+    ensureFreshSession: vi.fn(async () => getSessionFromStorage()),
+  };
+});
 
 vi.mock("@/services/api/client", () => ({
   apiRequest: vi.fn(),

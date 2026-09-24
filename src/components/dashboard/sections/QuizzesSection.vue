@@ -330,33 +330,22 @@ defineEmits([
     </BaseCard>
 
     <!-- Quizzes list -->
-    <div v-else class="card-grid">
-      <BaseCard v-for="quiz in quizzes" :key="quiz.id" padding="md">
-        <div class="card-head">
-          <div>
-            <h3 class="card-title sm">{{ quiz.title }}</h3>
-            <span class="muted-mono">{{
-              quiz.modules ? quiz.modules.title : "Not attached to a chapter"
-            }}</span>
-          </div>
+    <div v-else class="card-grid qz-grid">
+      <BaseCard
+        v-for="quiz in quizzes"
+        :key="quiz.id"
+        padding="md"
+        class="qz-card"
+      >
+        <div class="qz-head">
+          <h3 class="card-title sm qz-title">{{ quiz.title }}</h3>
           <StatusBadge :variant="quiz.is_published ? 'complete' : 'neutral'">{{
             quiz.is_published ? "Visible" : "Hidden"
           }}</StatusBadge>
-          <div class="btn-row">
-            <Button
-              variant="outline"
-              size="sm"
-              @click="$emit('open-quiz', quiz)"
-              >Edit</Button
-            >
-            <Button
-              variant="danger"
-              size="sm"
-              @click="$emit('delete-quiz', quiz.id)"
-              >Delete</Button
-            >
-          </div>
         </div>
+        <p class="qz-chapter">
+          {{ quiz.modules ? quiz.modules.title : "Not attached to a chapter" }}
+        </p>
         <div class="meta-row">
           <span>{{ quiz.questionCount }} questions</span>
           <span>{{ quiz.time_limit_minutes }} min</span>
@@ -380,12 +369,62 @@ defineEmits([
             <span class="mini-label">Pass rate</span>
           </div>
         </div>
+        <div class="qz-actions">
+          <Button variant="outline" size="sm" @click="$emit('open-quiz', quiz)"
+            >Edit</Button
+          >
+          <Button
+            variant="danger"
+            size="sm"
+            @click="$emit('delete-quiz', quiz.id)"
+            >Delete</Button
+          >
+        </div>
       </BaseCard>
     </div>
   </section>
 </template>
 
 <style scoped>
+/* Must stay the first rule: CSS drops an @import that follows any other
+   rule, which unstyled this section in production (OPENBRAIN-57). */
+@import "@/styles/dashboard-sections.css";
+
+/* Quiz cards: title and status, then details, actions last. */
+.qz-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+}
+.qz-card {
+  display: flex;
+  flex-direction: column;
+}
+.qz-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.qz-title {
+  margin: 0;
+}
+.qz-chapter {
+  margin: 4px 0 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgb(var(--color-mute));
+}
+.qz-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgb(var(--color-line));
+}
+.qz-card .mini-stats {
+  margin-bottom: 14px;
+}
+
 .form-note {
   margin: 0;
   font-family: var(--font-ui);
@@ -395,6 +434,4 @@ defineEmits([
   padding: 8px 12px;
   border-radius: 4px;
 }
-
-@import "@/styles/dashboard-sections.css";
 </style>

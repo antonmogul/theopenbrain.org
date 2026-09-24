@@ -213,18 +213,22 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     // Out of the clipping column: nothing of the stage remains in the card.
     expect(wrapper.find(".wb-slot .wb-stage").exists()).toBe(false);
     const slot = wrapper.find(".wb-slot");
-    expect(slot.classes()).toContain("wb-slot--vacated");
+    expect(slot.classes()).toContain("fb-slot--vacated");
     expect(slot.attributes("style")).toMatch(/height: \d+px/);
     // Geometry: fake rects (happy-dom lays nothing out) and let a resize
     // drive one sync — the slot takes the stage's height and the stage
     // sits at the slot's offset from the layer; ScrollTrigger re-measures.
+    // FullBleed (OPENBRAIN-72) positions its own stage box, which wraps the
+    // widget's stage.
+    const box = stage.closest(".fb-stage");
+    expect(box.classList.contains("fb-stage--floating")).toBe(true);
     layer.getBoundingClientRect = () => ({ top: 100, height: 0 });
     slot.element.getBoundingClientRect = () => ({ top: 1000, height: 0 });
-    stage.getBoundingClientRect = () => ({ top: 0, height: 300 });
+    box.getBoundingClientRect = () => ({ top: 0, height: 300 });
     window.dispatchEvent(new Event("resize"));
     await flushPromises();
     expect(slot.attributes("style")).toBe("height: 300px;");
-    expect(stage.style.top).toBe("900px");
+    expect(box.style.top).toBe("900px");
     expect(refreshSpy).toHaveBeenCalledTimes(1);
     // Same height again: no second refresh.
     window.dispatchEvent(new Event("resize"));
@@ -281,7 +285,7 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     desktop.matches = true;
     const wrapper = mountBreakout(inline);
     await flushPromises();
-    const stage = layer.querySelector(".wb-stage");
+    const stage = layer.querySelector(".fb-stage");
     stage.getBoundingClientRect = () => ({ top: 0, height: 480 });
     // Queue a sync (microtask) and unmount before it runs.
     window.dispatchEvent(new Event("resize"));

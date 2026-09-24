@@ -76,6 +76,13 @@ function confirmRole() {
   pendingRole.value = null;
   emit("update-role", user.id, role);
 }
+
+// Role badges: creators stand out; students are the quiet default.
+const ROLE_VARIANT = {
+  creator: "accent",
+  professor: "complete",
+  student: "neutral",
+};
 </script>
 
 <template>
@@ -145,7 +152,7 @@ function confirmRole() {
       <BaseCard
         v-for="u in users"
         :key="u.id"
-        padding="md"
+        padding="sm"
         interactive
         @click="$emit('select', u)"
       >
@@ -157,13 +164,16 @@ function confirmRole() {
             <span class="card-title sm">{{ displayName(u) }}</span>
             <span class="muted-mono">{{ u.email }}</span>
           </div>
-          <div class="user-meta-col">
-            <StatusBadge variant="accent">{{ u.role }}</StatusBadge>
-            <span class="muted-mono">{{ u.institution || "—" }}</span>
-            <span class="muted-mono"
-              >Joined {{ formatDate(u.created_at) }}</span
-            >
-          </div>
+          <!-- One line per account: what's known, then role and date. -->
+          <span v-if="u.institution" class="muted-mono user-inst">{{
+            u.institution
+          }}</span>
+          <StatusBadge :variant="ROLE_VARIANT[u.role] || 'neutral'">{{
+            u.role
+          }}</StatusBadge>
+          <span class="muted-mono user-joined"
+            >Joined {{ formatDate(u.created_at) }}</span
+          >
         </div>
       </BaseCard>
 
@@ -298,4 +308,22 @@ function confirmRole() {
 
 <style scoped>
 @import "@/styles/dashboard-sections.css";
+
+.user-inst {
+  max-width: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-joined {
+  min-width: 9ch;
+  text-align: right;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .user-inst,
+  .user-joined {
+    display: none;
+  }
+}
 </style>

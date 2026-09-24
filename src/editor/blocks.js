@@ -123,7 +123,7 @@ export function blocksToDoc(blocks) {
     } else if (b.type === "image") {
       content.push({
         type: "imageBlock",
-        attrs: pick(b, ["src", "alt", "caption", "closed"]),
+        attrs: pick(b, ["src", "alt", "caption", "closed", "wide"]),
       });
     } else if (b.type === "widget") {
       content.push({ type: "widgetBlock", attrs: pick(b, WIDGET_ATTRS) });
