@@ -13,6 +13,9 @@
  * changed (null elsewhere), so the rest keep following the record. An
  * optional field saved as `false` is switched off: it resolves to null.
  * Values of the wrong type are ignored, so bad data can't break a figure.
+ * A field marked `artwork: true` belongs to the figure's drawing (a legend,
+ * the labels of its versions), so the record's value is skipped: the
+ * database rows describe older artwork.
  *
  * `record` is flat: the reader's resolved animation (useAnimations spreads
  * config onto it and adds `states` from animation_states), or, on the chapter
@@ -54,7 +57,7 @@ export function figureContent(schema, record = {}) {
     out[field.key] = pick(
       field,
       saved[field.key],
-      record?.[field.key],
+      field.artwork ? undefined : record?.[field.key],
       schema.defaults[field.key]
     );
   }

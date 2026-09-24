@@ -82,6 +82,7 @@ export default {
       key: "legend",
       label: "Legend",
       type: "list",
+      artwork: true,
       itemLabels: [
         "Item 1",
         "Item 2",

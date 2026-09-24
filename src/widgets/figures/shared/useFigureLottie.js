@@ -25,7 +25,11 @@ export function useFigureLottie(stage, id) {
     anim?.destroy();
     anim = null;
     failed.value = false;
-    if (!stage.value) return null;
+    if (!stage.value) {
+      failed.value = true;
+      console.warn(`[${id}] no stage to draw ${url} into`);
+      return null;
+    }
     try {
       const data = prepareLottie(await fetchLottie(url), url, replace);
       const lottie = await loadLottie();

@@ -30,25 +30,49 @@ const LoadFailed = {
     ]),
 };
 
-const Widget = computed(() => {
-  if (!entry.value) return null;
-  const key = props.record?.id;
-  return defineAsyncComponent({
-    loader: entry.value.load,
-    errorComponent: LoadFailed,
-    timeout: 30000,
-    onError(err, retry, fail, attempts) {
-      if (attempts <= 1) retry();
-      else {
-        console.error(`[figure widget] ${key} didn't load`, err);
-        fail();
-      }
-    },
-  });
-});
+// One async component per registry entry, so a record that is swapped for
+// a fresher copy of itself (JSON first, then the database) doesn't remount.
+const loaded = new WeakMap();
+function widgetFor(e) {
+  if (!loaded.has(e))
+    loaded.set(
+      e,
+      defineAsyncComponent({
+        loader: e.load,
+        errorComponent: LoadFailed,
+        timeout: 30000,
+        onError(err, retry, fail, attempts) {
+          if (attempts <= 1) retry();
+          else {
+            console.error(
+              `[figure widget] ${e.schema.animationKey} didn't load`,
+              err
+            );
+            fail();
+          }
+        },
+      })
+    );
+  return loaded.get(e);
+}
+const Widget = computed(() => (entry.value ? widgetFor(entry.value) : null));
+
 const content = computed(() =>
   entry.value ? figureContent(entry.value.schema, props.record) : null
 );
+
+// In development, say when the database still holds its own values for a
+// field the widget takes from its artwork (they are ignored; edit them on
+// the chapter page's Figure settings instead).
+if (import.meta.env?.DEV && entry.value) {
+  for (const f of entry.value.schema.fields) {
+    const own = props.record?.[f.key];
+    if (f.artwork && own !== undefined)
+      console.info(
+        `[figure widget] ${props.record.id}: the database's "${f.key}" is ignored; the widget uses its artwork's labels (edit them under Figure settings).`
+      );
+  }
+}
 const lottieUrl = computed(() =>
   versionedUrl(lottiePath(props.record), entry.value?.schema.lottieVersion)
 );
