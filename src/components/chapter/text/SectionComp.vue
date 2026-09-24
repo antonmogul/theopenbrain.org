@@ -179,8 +179,9 @@
 
 <script setup>
 import { inject } from "vue";
-// Self-reference: an anchored breakout box renders as a nested section.
-import SectionComp from "./SectionComp.vue";
+// <SectionComp> in the template is this component (an SFC can use itself by
+// its file name without importing it): an anchored breakout box renders as a
+// nested section.
 import { markersEnabled } from "@/helper/debugFlags";
 import BreakImages from "./BreakImages.vue";
 
