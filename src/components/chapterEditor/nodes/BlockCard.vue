@@ -2,7 +2,9 @@
 // Node view for imageBlock / widgetBlock / blockAtom in the chapter editor
 // (OPENBRAIN-60). While a paragraph is being edited its images and widgets
 // show as cards (the live widget runs in the preview, outside edit mode);
-// they can be selected, dragged by the handle, or deleted.
+// they can be selected, dragged by the handle, or deleted. A widget can be
+// switched between sitting on the page and opening from a card
+// (OPENBRAIN-87).
 import { computed } from "vue";
 import { NodeViewWrapper, nodeViewProps } from "@tiptap/vue-3";
 import { BLOCK_LABELS } from "@/editor/segments";
@@ -27,6 +29,10 @@ const title = computed(() => {
     return `${b.number}. ${String(b.content || "").replace(/<[^>]*>/g, "")}`;
   return b.title || "";
 });
+const onPage = computed(() => props.node.attrs.kind === "inline");
+function setOnPage(on) {
+  props.updateAttributes({ kind: on ? "inline" : "breakout" });
+}
 </script>
 
 <template>
@@ -44,6 +50,14 @@ const title = computed(() => {
     />
     <span class="kind">{{ kind }}</span>
     <span class="title">{{ title }}</span>
+    <label v-if="type === 'widgetBlock' && editor.isEditable" class="place">
+      <input
+        type="checkbox"
+        :checked="onPage"
+        @change="setOnPage($event.target.checked)"
+      />
+      On the page
+    </label>
   </NodeViewWrapper>
 </template>
 
@@ -83,10 +97,20 @@ const title = computed(() => {
   color: rgb(var(--color-accent));
 }
 .title {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: rgb(var(--color-ink));
+}
+.place {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  color: rgb(var(--color-mute));
+  font-size: 0.8125rem;
+  cursor: pointer;
 }
 </style>

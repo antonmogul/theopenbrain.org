@@ -19,6 +19,8 @@ import onOff from "./on-off/schema.js";
 import lateralOrganization from "./lateral-organization/schema.js";
 import eyeStructureTransition from "./transitions/eye-structure.js";
 import retinalCellTypesTransition from "./transitions/retinal-cell-types.js";
+import trepanation from "./trepanation/schema.js";
+import papyrus from "./papyrus/schema.js";
 
 const stepThrough = () => import("./step-through/StepThrough.vue");
 const switchFigure = () => import("./switch/SwitchFigure.vue");
@@ -61,6 +63,15 @@ export const FIGURE_WIDGETS = {
   [retinalCellTypesTransition.animationKey]: {
     schema: retinalCellTypesTransition,
     load: transition,
+  },
+  // History: the skull and its hands, and case 20's tabs (OPENBRAIN-87).
+  [trepanation.animationKey]: {
+    schema: trepanation,
+    load: () => import("./trepanation/TrepanationMethods.vue"),
+  },
+  [papyrus.animationKey]: {
+    schema: papyrus,
+    load: () => import("./papyrus/PapyrusCase.vue"),
   },
 };
 
