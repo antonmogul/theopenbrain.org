@@ -144,13 +144,20 @@ const fieldId = (...parts) => ["fws", ...parts].join("-");
           <fieldset v-else-if="f.type === 'list'" class="fws-set">
             <legend>{{ f.label }}</legend>
             <p v-if="f.hint" class="fws-hint">{{ f.hint }}</p>
-            <div class="fws-grid">
+            <div class="fws-grid" :class="{ 'fws-grid--wide': f.multiline }">
               <FormField
                 v-for="(item, i) in form[f.key]"
                 :key="i"
                 :label="f.itemLabels?.[i] || `Item ${i + 1}`"
               >
+                <textarea
+                  v-if="f.multiline"
+                  :id="fieldId(f.key, i)"
+                  v-model="form[f.key][i]"
+                  rows="4"
+                />
                 <input
+                  v-else
                   :id="fieldId(f.key, i)"
                   v-model="form[f.key][i]"
                   type="text"
@@ -266,6 +273,10 @@ const fieldId = (...parts) => ["fws", ...parts].join("-");
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 10px 14px;
+}
+/* Paragraph-length items (a translation) get the full width. */
+.fws-grid--wide {
+  grid-template-columns: 1fr;
 }
 .fws-image {
   display: grid;

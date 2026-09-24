@@ -98,6 +98,7 @@ const lottieUrl = computed(() =>
 .figure-widget {
   --widget-accent: rgb(var(--color-chapter));
   --widget-accent-deep: rgb(var(--color-chapter-deep));
+  --widget-accent-soft: rgb(var(--color-chapter-soft));
   --widget-accent-pale: rgb(var(--color-chapter-pale));
   /* Widgets lay themselves out by the space they get (@container figure). */
   container: figure / size;
