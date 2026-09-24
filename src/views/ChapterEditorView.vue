@@ -480,6 +480,7 @@ function editImage(p) {
       blockIndex: i,
       alt: b.alt || "",
       caption: b.caption || "",
+      wide: !!b.wide,
     };
   });
 }
@@ -488,7 +489,13 @@ async function saveImage() {
   const p = ed.paragraphs.value.find((x) => x.id === f.paragraphId);
   const blocks = p.content.blocks.map((b, i) =>
     i === f.blockIndex
-      ? { ...b, alt: f.alt.trim(), caption: f.caption.trim() }
+      ? {
+          ...b,
+          alt: f.alt.trim(),
+          caption: f.caption.trim(),
+          // Full width across the reader (OPENBRAIN-72); absent = column.
+          wide: f.wide || undefined,
+        }
       : b
   );
   imageForm.value = null;
@@ -1306,6 +1313,10 @@ onMounted(async () => {
         <FormField label="Caption" hint="Shown under the image in the reader.">
           <textarea id="img-caption" v-model="imageForm.caption" rows="3" />
         </FormField>
+        <label class="ce-box-check">
+          <input v-model="imageForm.wide" type="checkbox" />
+          Full width: span the whole page on wide screens, over the figure panel
+        </label>
       </form>
       <template #footer>
         <Button variant="ghost" size="sm" @click="imageForm = null"

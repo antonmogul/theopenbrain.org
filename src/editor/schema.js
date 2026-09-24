@@ -178,6 +178,8 @@ export const ImageBlock = Node.create({
       alt: { default: null },
       caption: { default: null },
       closed: { default: null },
+      // Full width across the reader at desktop sizes (OPENBRAIN-72).
+      wide: { default: null },
     };
   },
   parseHTML() {

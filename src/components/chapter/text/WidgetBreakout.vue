@@ -29,15 +29,12 @@
 import {
   computed,
   defineAsyncComponent,
-  nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
-  watch,
 } from "vue";
-import ScrollTrigger from "gsap/ScrollTrigger";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
-import { STAGE_DESKTOP_QUERY, STAGE_LAYER_ID } from "@/helper/stageLayer";
+import FullBleed from "@/components/chapter/FullBleed.vue";
 import { WIDGET_EMBEDS, hasEmbed } from "@/widgets/embeds";
 
 const props = defineProps({
@@ -118,109 +115,10 @@ const inlineMounted = computed(
   () => kind.value === "inline" && nearViewport.value && !modalOpen.value
 );
 
-/*
- * Full-bleed inline stage (OPENBRAIN-37). `layer` is TextComp's
- * #reader-stage-layer; `wide` tracks the reader's desktop breakpoint. When
- * both hold, the stage teleports into the layer, absolutely positioned at
- * the slot's offset from the layer, and the slot takes the stage's height so
- * the prose flows around it exactly as if it were still in place.
- */
-const layer = ref(null);
-const wide = ref(false);
-const slotEl = ref(null);
-const stageEl = ref(null);
-const stageTop = ref(0);
-const slotHeight = ref(0);
-
-const teleported = computed(
-  () => kind.value === "inline" && wide.value && !!layer.value
-);
-const slotStyle = computed(() =>
-  teleported.value ? { height: `${slotHeight.value}px` } : null
-);
-const stageStyle = computed(() =>
-  teleported.value ? { top: `${stageTop.value}px` } : null
-);
-
-let mql = null;
-let resizeObserver = null;
-let syncPending = false;
-let unmounted = false;
-
-function syncStage() {
-  if (!teleported.value || !slotEl.value || !stageEl.value || !layer.value)
-    return;
-  const slotRect = slotEl.value.getBoundingClientRect();
-  const layerRect = layer.value.getBoundingClientRect();
-  stageTop.value = Math.round(slotRect.top - layerRect.top);
-  const h = Math.round(stageEl.value.getBoundingClientRect().height);
-  if (h !== slotHeight.value) {
-    slotHeight.value = h;
-    // The prose below the slot moves by the difference; scroll-linked
-    // figures and section triggers must re-measure (same as ChapterOpener).
-    // The refresh can itself move things (pinned figures), so measure once
-    // more after it. Converges: the second pass finds the same height.
-    nextTick(() => {
-      if (unmounted) return;
-      ScrollTrigger.refresh();
-      scheduleSync();
-    });
-  }
-}
-/* Coalesce bursts (ResizeObserver + resize event) into one measurement per
-   task. A microtask, not requestAnimationFrame: rAF is paused in background
-   tabs and never fires in some embedded browsers, and the observers already
-   deliver after layout so measuring synchronously is safe. */
-function scheduleSync() {
-  if (syncPending) return;
-  syncPending = true;
-  Promise.resolve().then(() => {
-    syncPending = false;
-    if (!unmounted) syncStage();
-  });
-}
-
-function observeStage() {
-  resizeObserver?.disconnect();
-  resizeObserver = null;
-  if (!teleported.value || typeof ResizeObserver !== "function") return;
-  resizeObserver = new ResizeObserver(scheduleSync);
-  if (stageEl.value) resizeObserver.observe(stageEl.value);
-  // The layer's parent (#container) is as tall as the prose column: any
-  // content change above the slot changes it, and moves the slot.
-  if (layer.value?.parentElement)
-    resizeObserver.observe(layer.value.parentElement);
-}
-
-onMounted(() => {
-  if (kind.value !== "inline") return;
-  layer.value = document.getElementById(STAGE_LAYER_ID);
-  if (typeof window.matchMedia === "function") {
-    mql = window.matchMedia(STAGE_DESKTOP_QUERY);
-    wide.value = mql.matches;
-    // Safari < 14 only has the legacy addListener API.
-    if (mql.addEventListener) mql.addEventListener("change", onMediaChange);
-    else mql.addListener?.(onMediaChange);
-  }
-  window.addEventListener("resize", scheduleSync);
-});
-function onMediaChange(e) {
-  wide.value = e.matches;
-}
-watch(teleported, async () => {
-  await nextTick();
-  observeStage();
-  scheduleSync();
-});
-onBeforeUnmount(() => {
-  unmounted = true;
-  if (mql?.removeEventListener)
-    mql.removeEventListener("change", onMediaChange);
-  else mql?.removeListener?.(onMediaChange);
-  window.removeEventListener("resize", scheduleSync);
-  resizeObserver?.disconnect();
-  resizeObserver = null;
-});
+/* Full-bleed at desktop widths (OPENBRAIN-37): FullBleed teleports the stage
+   into TextComp's stage layer and keeps a same-height slot (OPENBRAIN-72). */
+const fullBleed = ref(null);
+const scheduleSync = () => fullBleed.value?.sync();
 
 const headingId = computed(
   () => `widget-breakout-${props.placement?.placementId || widgetId.value}`
@@ -250,30 +148,25 @@ const headingId = computed(
     <!-- inline: the widget lives here once it is near the viewport. At
          desktop widths the stage teleports into TextComp's stage layer and
          this slot keeps its height (see the notes at the top). -->
-    <div
+    <FullBleed
       v-if="kind === 'inline'"
-      ref="slotEl"
-      class="wb-slot"
-      :class="{ 'wb-slot--vacated': teleported }"
-      :style="slotStyle"
+      ref="fullBleed"
+      v-slot="{ floating }"
+      class="wb-fb wb-slot"
     >
-      <Teleport :to="layer" :disabled="!teleported">
-        <div
-          ref="stageEl"
-          class="wb-stage"
-          :class="{ 'wb-stage--floating': teleported }"
-          :style="stageStyle"
-          :data-widget-stage="widgetId"
-          :aria-labelledby="headingId"
-        >
-          <component :is="Widget" v-if="inlineMounted && Widget" />
-          <div v-else-if="!embeddable" class="wb-missing">
-            This interactive is not available in the reader yet.
-          </div>
-          <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
+      <div
+        class="wb-stage"
+        :class="{ 'wb-stage--floating': floating }"
+        :data-widget-stage="widgetId"
+        :aria-labelledby="headingId"
+      >
+        <component :is="Widget" v-if="inlineMounted && Widget" />
+        <div v-else-if="!embeddable" class="wb-missing">
+          This interactive is not available in the reader yet.
         </div>
-      </Teleport>
-    </div>
+        <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
+      </div>
+    </FullBleed>
 
     <footer class="wb-foot">
       <div class="wb-actions">
@@ -388,19 +281,12 @@ const headingId = computed(
  * so the document's scrollable width is unchanged.
  */
 .wb-stage--floating {
-  position: absolute;
-  left: 0;
-  width: 100%;
+  /* FullBleed positions it; the stage only sheds the column spacing. */
   margin: 0;
   padding: 1.5rem clamp(1rem, 4vw, 4rem);
-  pointer-events: auto;
-  /* A widget wider than the window must not grow the document again;
-     vertical overflow stays visible (clip + visible is a valid pair). */
-  overflow-x: clip;
-  overflow-y: visible;
 }
 
-.wb-slot--vacated {
+.wb-fb.fb-slot--vacated {
   margin-top: 0.75rem;
 }
 
