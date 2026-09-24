@@ -177,11 +177,40 @@ export const routes = [
     component: () => import("../views/PosnerCueingView.vue"),
   },
   {
+    // Psychometric function box widget (Attention chapter). OPENBRAIN-88.
+    // Not linked in nav; open /psychometric-function directly.
+    path: "/psychometric-function",
+    name: "psychometric-function",
+    component: () => import("../views/PsychometricFunctionView.vue"),
+  },
+  {
     // TMT Feature Attention widget (Attention chapter). OPENBRAIN-13:
     // fifth widget port. Not linked in nav; open /feature-attention directly.
     path: "/feature-attention",
     name: "feature-attention",
     component: () => import("../views/TmtFeatureAttentionView.vue"),
+  },
+  {
+    // Corbetta PET attention widget (Attention chapter). OPENBRAIN-88. Not
+    // linked in nav; open /corbetta-pet directly.
+    path: "/corbetta-pet",
+    name: "corbetta-pet",
+    component: () => import("../views/CorbettaPetView.vue"),
+  },
+  {
+    // Hillyard auditory attention ERP widget (Attention chapter). OPENBRAIN-88.
+    // Not linked in nav; open /hillyard-erp directly.
+    path: "/hillyard-erp",
+    name: "hillyard-erp",
+    component: () => import("../views/HillyardErpView.vue"),
+  },
+  {
+    // Normalization model of attention (Attention chapter). OPENBRAIN-88:
+    // port of Arjun's v2. Not linked in nav; open /normalization-model
+    // directly.
+    path: "/normalization-model",
+    name: "normalization-model",
+    component: () => import("../views/NormalizationModelView.vue"),
   },
   {
     // Color Vision Explorer (Retina chapter). OPENBRAIN-14: first Stuart

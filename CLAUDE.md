@@ -220,7 +220,7 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 
 - `/case-cabinet` (History chapter prototype, mock data in `src/mocks/caseFiles.js`)
 - `/phrenology`, `/phrenology-3d` (History chapter, 2D SVG and model-viewer GLB)
-- Attention chapter widgets: `/sdt`, `/biased-competition`, `/contrast-response`, `/posner-cueing`, `/feature-attention`
+- Attention chapter widgets: `/sdt`, `/biased-competition`, `/contrast-response`, `/posner-cueing`, `/feature-attention`, `/corbetta-pet`, `/hillyard-erp`, `/normalization-model`, `/psychometric-function`
 - Retina/V1 chapter widgets: `/color-vision`, `/visual-pathway`, `/direction-selectivity` (Pyodide), `/v1-camera` (WebGL2), `/retinabox`
 
 Every widget is registered in `src/widgets/catalog.js`; the library renders the Vue port next to the author's original HTML from `src/widgets/source/` (kept byte-for-byte, excluded from Prettier). **To put a widget inside a chapter**, add a placement to `src/widgets/placements.js` (chapter slug + section slug + text anchors, `kind: "breakout"` card or `"inline"` stage) and a lazy loader to `src/widgets/embeds.js`; a DB-authored `{ type: "widget" }` paragraph block wins over a code placement for the same widget. At desktop widths an inline stage is Teleported out of the prose column (which clips horizontal overflow) into TextComp's `#reader-stage-layer` (`src/helper/stageLayer.js`) so it can paint full-bleed; the card keeps a same-height slot in the flow (OPENBRAIN-37).
@@ -248,7 +248,10 @@ Live modules today (`/chapter/<number>/<slug>`):
 
 - `foundations-of-neuroscience` — chapter 1, the "History" chapter, seeded by the `20260605*_seed_chapter_foundations*` migrations (generated with `scripts/import_foundations_chapter.py`).
 - `the-retina` — chapter 2, imported from `text.json` by `scripts/import-chapter-1-to-supabase.mjs`; figures/animation states seeded by the `2026*_seed_chapter1_*` migrations. Files, scripts and docs named "chapter1" refer to this chapter: it was chapter 1 until the book was reordered on 2026-09-17.
-- `attention-and-working-memory` — chapter 3, `status = 'draft'` (creator-only in the reader), seeded by `20260903000100_seed_chapter_attention_draft.sql`.
+- `attention-and-working-memory` — chapter 3, `status = 'draft'` (creator-only in the reader). Re-seeded from the authors' September manuscript by `20260925020000_attention_chapter_manuscript.sql`, which parks the 3 Sep draft (`20260903000100`) as the archived module `attention-and-working-memory-2026-09-03`. Its nine widgets are database blocks.
+- `stress` — chapter 4, `status = 'draft'`, seeded by `20260925030000_seed_chapter_stress_draft.sql` (Sandi & Schmidt). Figures are placeholders until artwork arrives.
+
+Chapter seeds come from `scripts/seed/gen-chapter-from-markdown.mjs` (chapter-template markdown; `### BREAK OUT BOX:` headings and `[[widget: id | inline]]` lines become widget blocks).
 
 The chapter number is `modules.order_index` and is display-only: the reader resolves by slug, so never hard-code `/chapter/<n>/<slug>` in app code (link to `/chapters`, or build the path from the module row). `modules` has `UNIQUE(content_version_id, order_index)`, so renumbering needs the park-then-assign pattern in `20260917000000_reorder_chapters_history_first.sql`.
 

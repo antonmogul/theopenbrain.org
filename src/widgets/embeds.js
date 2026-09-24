@@ -19,10 +19,14 @@ export const WIDGET_EMBEDS = {
     import("@/views/VisualPathwayLesionsView.vue"),
   sdt: () => import("@/views/SdtWidgetView.vue"),
   "posner-cueing": () => import("@/views/PosnerCueingView.vue"),
+  "psychometric-function": () => import("@/views/PsychometricFunctionView.vue"),
   "biased-competition": () => import("@/views/BiasedCompetitionView.vue"),
   "contrast-response-gain": () =>
     import("@/views/ContrastResponseGainView.vue"),
   "tmt-feature-attention": () => import("@/views/TmtFeatureAttentionView.vue"),
+  "corbetta-pet-attention": () => import("@/views/CorbettaPetView.vue"),
+  "hillyard-attention-erp": () => import("@/views/HillyardErpView.vue"),
+  "normalization-model": () => import("@/views/NormalizationModelView.vue"),
   // Foundations (History) prototypes — OPENBRAIN-35
   "case-cabinet": () => import("@/views/CaseCabinetView.vue"),
   phrenology: () => import("@/views/PhrenologyView.vue"),

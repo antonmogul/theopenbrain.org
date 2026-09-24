@@ -164,7 +164,7 @@ describe("gen-chapter-from-markdown: markdown -> rows", () => {
     expect(widget.content_text).toBe("Interactive: Signal Detection Theory");
   });
 
-  it("maps the normalization box to the route-less normalization-model widget", () => {
+  it("maps the normalization box to the normalization-model widget", () => {
     const { sections } = parseChapterMarkdown(
       "## S\n\n### BREAK OUT BOX: The normalization model of attention\n\nProse.\n",
       { author: "A", placementPrefix: "attention" }
@@ -173,7 +173,7 @@ describe("gen-chapter-from-markdown: markdown -> rows", () => {
     expect(widget.blocks[0]).toMatchObject({
       type: "widget",
       widgetId: "normalization-model",
-      route: "",
+      route: "/normalization-model",
       placementId: "attention-normalization-model",
     });
   });
@@ -293,5 +293,45 @@ describe("gen-chapter-from-markdown: SQL", () => {
     expect(() =>
       generateChapterSql("## S\n\nCosts $ob$ dollars\n", OPTS)
     ).toThrow(/dollar-quote/);
+  });
+});
+
+describe("[[widget: id]] lines", () => {
+  const md = `## Human studies
+
+Fmri work – dorsal and ventral attention networks.
+
+[[widget: corbetta-pet-attention]]
+
+Oscillations (gamma)
+
+[[widget: hillyard-attention-erp | inline]]
+
+[[widget: no-such-widget]]
+`;
+
+  it("places a known widget with its title, blurb and route, as a card or on the page", () => {
+    const { sections, warnings } = parseChapterMarkdown(md, {
+      author: "A. Author",
+      placementPrefix: "attention",
+    });
+    const widgets = sections[0].paragraphs
+      .filter((p) => p.kind === "widget")
+      .map((p) => p.blocks[0]);
+    expect(widgets[0]).toMatchObject({
+      type: "widget",
+      widgetId: "corbetta-pet-attention",
+      kind: "breakout",
+      route: "/corbetta-pet",
+      credit: "A. Author",
+      placementId: "attention-corbetta-pet-attention",
+    });
+    expect(widgets[0].title).toMatch(/Corbetta/);
+    expect(widgets[1]).toMatchObject({
+      widgetId: "hillyard-attention-erp",
+      kind: "inline",
+      route: "/hillyard-erp",
+    });
+    expect(warnings.join("\n")).toMatch(/no-such-widget.*not a known widget/);
   });
 });

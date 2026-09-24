@@ -10,8 +10,8 @@
  * Hosting: a widget with a `vuePath` shows its Vue port by default — that is
  * the version that ships, and the one that inherits brand.css theming. The
  * author's original HTML stays one click away under the "Original" tab so
- * they can check the port preserved their maths and interaction. Widgets with
- * no port yet (normalization model) render the original alone, with no tabs.
+ * they can check the port preserved their maths and interaction. A widget with
+ * no port yet renders the original alone, with no tabs.
  *
  * The Vue port renders in an <iframe src> rather than inline because these
  * views own the full viewport (their own headers, backgrounds, and layout).
