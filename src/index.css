@@ -594,8 +594,9 @@ h4 {
 
 .animationMarkerClick.active {
   border: solid black;
-  background: rgb(var(--color-accent));
-  color: white;
+  /* As .highlightText: tied to the figure, readable in every ramp. */
+  background: rgb(var(--color-chapter-soft));
+  color: rgb(var(--color-ink));
   padding: 0.125rem 0.25rem;
   stroke: rgb(var(--color-accent));
 }
@@ -611,11 +612,14 @@ h4 {
     stroke-opacity 0.5s;
 }
 
+/* A figure's lit part takes the chapter's colour, as v0.2.3 painted it in
+   the Retina's (OPENBRAIN-84); the global accent stays for the reader's own
+   highlight tools. */
 .highlighterIlluFill.highlightIllu > *,
 .highlightIllu > .highlighterIlluFill > *,
 .highlightIllu > .highlighterIlluFill,
 .highlighterIlluFill.highlightIllu > * > * {
-  fill: rgb(var(--color-accent));
+  fill: rgb(var(--color-chapter));
   fill-opacity: 1;
   stroke-width: 0;
 }
@@ -624,7 +628,7 @@ h4 {
 .highlightIllu > .highlighterIlluFill > *.highlighterIlluFill,
 .highlightIllu > .highlighterIlluFill,
 .highlightIllu > * > *.highlighterIlluFill {
-  fill: rgb(var(--color-accent));
+  fill: rgb(var(--color-chapter));
   fill-opacity: 1;
   stroke-width: 0;
 }
@@ -636,7 +640,7 @@ h4 {
 .highlightIllu > .highlighterIlluStroke > *,
 .highlightIllu > .highlighterIlluStroke,
 .highlighterIlluStroke.highlightIllu > * > * {
-  stroke: rgb(var(--color-accent));
+  stroke: rgb(var(--color-chapter));
   stroke-width: 3;
   stroke-opacity: 1;
 }
@@ -653,8 +657,11 @@ h4 {
 .active > * > .highlightText,
 .active > * > * > .highlightText,
 .active > * > * > * > .highlightText {
-  background: rgb(var(--color-accent));
-  color: white;
+  /* Text tied to the figure on show, in the chapter's colour. The soft
+     shade with ink keeps it readable in every ramp (teal and amber are too
+     light for white). */
+  background: rgb(var(--color-chapter-soft));
+  color: rgb(var(--color-ink));
 }
 #triggeranimationColorOpponency {
   min-height: 80vh;
