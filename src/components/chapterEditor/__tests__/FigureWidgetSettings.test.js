@@ -59,7 +59,7 @@ describe("FigureWidgetSettings", () => {
     expect(w.get("#fws-video-slug").element.value).toBe("neitz-myopia");
   });
 
-  it("saves only what was changed", async () => {
+  it("saves only what was changed, list items one by one", async () => {
     const w = mountForm();
     await w.get("#fws-states-1").setValue("Short sight");
     await w.get("#fws-video-title").setValue("The Neitzes");
@@ -67,53 +67,95 @@ describe("FigureWidgetSettings", () => {
     expect(w.emitted("save")[0][0]).toEqual({
       title: "Refraction errors",
       content: {
-        states: [
-          "Normal eye (emmetropia)",
-          "Short sight",
-          "Hyperopia",
-          "Astigmatism",
-        ],
-        video: {
-          title: "The Neitzes",
-          text: "Possible causes and cures for myopia",
-          slug: "neitz-myopia",
-        },
+        // Unchanged steps stay null, so they keep following the database.
+        states: [null, "Short sight"],
+        video: { title: "The Neitzes" },
       },
     });
+  });
+
+  it("can't save until something changes", async () => {
+    const w = mountForm();
+    expect(saveButton(w).attributes("disabled")).toBeDefined();
+    await w.get("#fws-toggle").setValue("With glasses");
+    expect(saveButton(w).attributes("disabled")).toBeUndefined();
+    await w.get("#fws-toggle").setValue("Corrected");
+    expect(saveButton(w).attributes("disabled")).toBeDefined();
   });
 
   it("keeps earlier saved edits", async () => {
     const w = mountForm({
       figure: {
         ...figure,
-        config: { ...figure.config, content: { toggle: "With glasses" } },
+        config: {
+          ...figure.config,
+          content: { toggle: "With glasses", states: [null, "Short sight"] },
+        },
       },
     });
     expect(w.get("#fws-toggle").element.value).toBe("With glasses");
+    expect(w.get("#fws-states-1").element.value).toBe("Short sight");
+    await w.get("#fws-title").setValue("Refraction");
     await saveButton(w).trigger("click");
-    expect(w.emitted("save")[0][0].content).toEqual({ toggle: "With glasses" });
+    expect(w.emitted("save")[0][0]).toEqual({
+      title: "Refraction",
+      content: { toggle: "With glasses", states: [null, "Short sight"] },
+    });
   });
 
-  it("replaces the picture from the library and can put the original back", async () => {
+  it("drops an edit set back to what the figure shows anyway", async () => {
+    const w = mountForm({
+      figure: {
+        ...figure,
+        config: { ...figure.config, content: { toggle: "With glasses" } },
+      },
+    });
+    await w.get("#fws-toggle").setValue("Corrected");
+    await saveButton(w).trigger("click");
+    expect(w.emitted("save")[0][0].content).toEqual({});
+  });
+
+  it("switches an optional part off, and back on", async () => {
+    const w = mountForm();
+    await w.get("#fws-video-on").setValue(false);
+    expect(w.find("#fws-video-title").exists()).toBe(false);
+    await saveButton(w).trigger("click");
+    expect(w.emitted("save")[0][0].content).toEqual({ video: false });
+
+    const again = mountForm({
+      figure: {
+        ...figure,
+        config: { ...figure.config, content: { video: false } },
+      },
+    });
+    expect(again.get("#fws-video-on").element.checked).toBe(false);
+    await again.get("#fws-video-on").setValue(true);
+    expect(again.get("#fws-video-title").element.value).toBe(
+      "Maureen and Jay Neitz"
+    );
+    await saveButton(again).trigger("click");
+    expect(again.emitted("save")[0][0].content).toEqual({});
+  });
+
+  it("replaces the picture from the library with its full URL", async () => {
     const w = mountForm();
     const choose = w.findAll("button").find((b) => b.text() === "Choose image");
     await choose.trigger("click");
     w.findComponent(MediaPickerStub).vm.$emit("pick", {
-      image_file_url: "https://storage.example/bust.jpg",
+      image_file_url: "/publicAssets/images/bust.jpg",
     });
     await w.vm.$nextTick();
     expect(w.text()).toContain("Replaced.");
     await saveButton(w).trigger("click");
     expect(w.emitted("save")[0][0].content).toEqual({
-      image: "https://storage.example/bust.jpg",
+      image: "/publicAssets/images/bust.jpg",
     });
 
     await w
       .findAll("button")
       .find((b) => b.text() === "Use the original")
       .trigger("click");
-    await saveButton(w).trigger("click");
-    expect(w.emitted("save")[1][0].content).toEqual({});
+    expect(saveButton(w).attributes("disabled")).toBeDefined();
   });
 
   it("won't save without a title", async () => {

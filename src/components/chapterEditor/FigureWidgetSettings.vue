@@ -5,15 +5,17 @@
  * (src/widgets/figures/<id>/schema.js), so each figure lists exactly what it
  * can change: text, labels, its picture, its video.
  *
- * Only fields that differ from what the figure would show anyway are saved,
- * as config.content, so a better default later still reaches every figure
- * nobody has edited. Emits `save` with { title, content }.
+ * Only what differs from what the figure would show anyway is saved, as
+ * config.content (see contentChanges): list items one by one, so the rest
+ * keep following the database, and a better default later still reaches
+ * every figure nobody has edited. Optional parts (a video, an introduction)
+ * can be switched off. Emits `save` with { title, content }.
  */
 import { computed, ref, watch } from "vue";
 import { BaseModal, Button, FormField } from "@/components/dashboard/shared";
 import { imageUrl } from "@/editor/media.mjs";
 import { figureWidgetFor } from "@/widgets/figures/registry";
-import { figureContent } from "@/widgets/figures/content";
+import { contentChanges, figureContent } from "@/widgets/figures/content";
 import MediaPicker from "./MediaPicker.vue";
 
 const props = defineProps({
@@ -45,34 +47,53 @@ const inherited = computed(() =>
 );
 
 const form = ref({});
+const off = ref({}); // optional fields switched off
+let opened = ""; // the form as it opened, to tell whether anything changed
+const clone = (v) => JSON.parse(JSON.stringify(v));
+const snapshot = () => JSON.stringify({ form: form.value, off: off.value });
+
 watch(
   () => [props.open, props.figure, props.states],
   () => {
     if (!props.open || !schema.value) return;
-    form.value = structuredClone(figureContent(schema.value, record.value));
+    const saved = { ...(props.figure?.config?.content || {}) };
+    const offNow = {};
+    for (const f of schema.value.fields)
+      if (f.optional && saved[f.key] === false) {
+        offNow[f.key] = true;
+        delete saved[f.key];
+      }
+    off.value = offNow;
+    form.value = clone(
+      figureContent(schema.value, { ...record.value, content: saved })
+    );
+    opened = snapshot();
   },
   { immediate: true }
 );
 
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const canSave = computed(() => !!form.value.title?.trim());
+const changed = computed(() => snapshot() !== opened);
+const canSave = computed(() => !!form.value.title?.trim() && changed.value);
 
 function save() {
   if (!canSave.value) return;
-  const content = {};
-  for (const f of schema.value.fields) {
-    if (f.key === "title") continue;
-    if (!same(form.value[f.key], inherited.value[f.key]))
-      content[f.key] = form.value[f.key];
-  }
-  emit("save", { title: form.value.title.trim(), content });
+  emit("save", {
+    title: form.value.title.trim(),
+    content: contentChanges(
+      schema.value,
+      form.value,
+      inherited.value,
+      off.value
+    ),
+  });
 }
 
 // ---- the picture ----
 const picking = ref(null); // the image field being chosen
 const originalImage = (f) => `/publicAssets/animations/images/${f.asset}`;
 function pick(m) {
-  form.value[picking.value] = m.image_file_url;
+  // As a full URL: the reader hands it to the Lottie as it stands.
+  form.value[picking.value] = imageUrl(m.image_file_url);
   picking.value = null;
 }
 function onUploaded(e) {
@@ -93,84 +114,95 @@ const fieldId = (...parts) => ["fws", ...parts].join("-");
   >
     <form v-if="schema" class="fws" @submit.prevent="save">
       <template v-for="f in schema.fields" :key="f.key">
-        <FormField v-if="f.type === 'text'" :label="f.label" :hint="f.hint">
+        <label v-if="f.optional" class="fws-switch" :for="fieldId(f.key, 'on')">
           <input
-            :id="fieldId(f.key)"
-            v-model="form[f.key]"
-            type="text"
-            :required="f.key === 'title'"
+            :id="fieldId(f.key, 'on')"
+            type="checkbox"
+            :checked="!off[f.key]"
+            @change="off = { ...off, [f.key]: !$event.target.checked }"
           />
-        </FormField>
-
-        <FormField
-          v-else-if="f.type === 'textarea'"
-          :label="f.label"
-          :hint="f.hint"
-        >
-          <textarea :id="fieldId(f.key)" v-model="form[f.key]" rows="7" />
-        </FormField>
-
-        <fieldset v-else-if="f.type === 'list'" class="fws-set">
-          <legend>{{ f.label }}</legend>
-          <p v-if="f.hint" class="fws-hint">{{ f.hint }}</p>
-          <div class="fws-grid">
-            <FormField
-              v-for="(item, i) in form[f.key]"
-              :key="i"
-              :label="f.itemLabels?.[i] || `Item ${i + 1}`"
-            >
-              <input
-                :id="fieldId(f.key, i)"
-                v-model="form[f.key][i]"
-                type="text"
-              />
-            </FormField>
-          </div>
-        </fieldset>
-
-        <fieldset v-else-if="f.type === 'group'" class="fws-set">
-          <legend>{{ f.label }}</legend>
-          <div class="fws-grid">
-            <FormField
-              v-for="sub in f.fields"
-              :key="sub.key"
-              :label="sub.label"
-              :hint="sub.hint"
-            >
-              <input
-                :id="fieldId(f.key, sub.key)"
-                v-model="form[f.key][sub.key]"
-                type="text"
-              />
-            </FormField>
-          </div>
-        </fieldset>
-
-        <fieldset v-else-if="f.type === 'image'" class="fws-set">
-          <legend>{{ f.label }}</legend>
-          <div class="fws-image">
-            <img
-              :src="form[f.key] ? imageUrl(form[f.key]) : originalImage(f)"
-              alt=""
+          Show the {{ f.label.toLowerCase() }}
+        </label>
+        <template v-if="!off[f.key]">
+          <FormField v-if="f.type === 'text'" :label="f.label" :hint="f.hint">
+            <input
+              :id="fieldId(f.key)"
+              v-model="form[f.key]"
+              type="text"
+              :required="f.key === 'title'"
             />
-            <div class="fws-image-tools">
-              <p class="fws-hint">
-                {{ form[f.key] ? "Replaced." : "The original." }}
-                {{ f.hint }}
-              </p>
-              <Button variant="outline" size="sm" @click="picking = f.key"
-                >Choose image</Button
+          </FormField>
+
+          <FormField
+            v-else-if="f.type === 'textarea'"
+            :label="f.label"
+            :hint="f.hint"
+          >
+            <textarea :id="fieldId(f.key)" v-model="form[f.key]" rows="7" />
+          </FormField>
+
+          <fieldset v-else-if="f.type === 'list'" class="fws-set">
+            <legend>{{ f.label }}</legend>
+            <p v-if="f.hint" class="fws-hint">{{ f.hint }}</p>
+            <div class="fws-grid">
+              <FormField
+                v-for="(item, i) in form[f.key]"
+                :key="i"
+                :label="f.itemLabels?.[i] || `Item ${i + 1}`"
               >
-              <Button
-                v-if="form[f.key]"
-                variant="ghost"
-                size="sm"
-                @click="form[f.key] = ''"
-                >Use the original</Button
-              >
+                <input
+                  :id="fieldId(f.key, i)"
+                  v-model="form[f.key][i]"
+                  type="text"
+                />
+              </FormField>
             </div>
-          </div>
-        </fieldset>
+          </fieldset>
+
+          <fieldset v-else-if="f.type === 'group'" class="fws-set">
+            <legend>{{ f.label }}</legend>
+            <div class="fws-grid">
+              <FormField
+                v-for="sub in f.fields"
+                :key="sub.key"
+                :label="sub.label"
+                :hint="sub.hint"
+              >
+                <input
+                  :id="fieldId(f.key, sub.key)"
+                  v-model="form[f.key][sub.key]"
+                  type="text"
+                />
+              </FormField>
+            </div>
+          </fieldset>
+
+          <fieldset v-else-if="f.type === 'image'" class="fws-set">
+            <legend>{{ f.label }}</legend>
+            <div class="fws-image">
+              <img
+                :src="form[f.key] ? imageUrl(form[f.key]) : originalImage(f)"
+                alt=""
+              />
+              <div class="fws-image-tools">
+                <p class="fws-hint">
+                  {{ form[f.key] ? "Replaced." : "The original." }}
+                  {{ f.hint }}
+                </p>
+                <Button variant="outline" size="sm" @click="picking = f.key"
+                  >Choose image</Button
+                >
+                <Button
+                  v-if="form[f.key]"
+                  variant="ghost"
+                  size="sm"
+                  @click="form[f.key] = ''"
+                  >Use the original</Button
+                >
+              </div>
+            </div>
+          </fieldset>
+        </template>
       </template>
     </form>
     <p v-else class="fws-hint">This figure has no settings of its own yet.</p>
@@ -215,6 +247,13 @@ const fieldId = (...parts) => ["fws", ...parts].join("-");
 }
 .fws-set legend {
   margin-bottom: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.fws-switch {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   font-size: 0.875rem;
   font-weight: 600;
 }

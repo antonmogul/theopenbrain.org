@@ -8,11 +8,10 @@
  * the host's --widget-accent, i.e. the chapter ramp), its text comes in as
  * `content` (see schema.js), and it never reaches outside its own root.
  */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { RouterLink } from "vue-router";
-import { loadLottie } from "@/composables/useLottie";
-import { prepareLottie } from "../content.js";
-import schema from "./schema.js";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import FigureIntro from "../shared/FigureIntro.vue";
+import { useFigureLottie } from "../shared/useFigureLottie.js";
+import ownSchema from "./schema.js";
 
 const props = defineProps({
   /** figureContent(schema, record): title, infoText, states, toggle, image, video. */
@@ -24,44 +23,26 @@ const props = defineProps({
   },
   /** Start with the introduction open, as the original does. */
   infoOpenAtStart: { type: Boolean, default: true },
+  /** Passed by the host to every figure widget; this one reads its own. */
+  schema: { type: Object, default: null },
 });
 
 const stage = ref(null);
 const infoOpen = ref(props.infoOpenAtStart && !!props.content.infoText);
 const state = ref(0); // 0 = the normal eye
 const corrected = ref(false);
-let anim = null;
+const lottie = useFigureLottie(stage, ownSchema.id);
 let totalFrames = 0;
 
-const imageFile = schema.fields.find((f) => f.key === "image").asset;
+const imageFile = ownSchema.fields.find((f) => f.key === "image").asset;
 
 async function mountLottie() {
-  if (!stage.value) return;
-  anim?.destroy();
-  anim = null;
-  try {
-    const res = await fetch(props.lottieUrl);
-    if (!res.ok) throw new Error(`${res.status} ${props.lottieUrl}`);
-    const data = prepareLottie(
-      await res.json(),
-      props.lottieUrl,
-      props.content.image ? { [imageFile]: props.content.image } : {}
-    );
-    const lottie = await loadLottie();
-    if (!stage.value) return;
-    anim = lottie.loadAnimation({
-      container: stage.value,
-      renderer: "svg",
-      loop: false,
-      autoplay: false,
-      animationData: data,
-    });
-    anim.setSubframe(true);
-    totalFrames = anim.totalFrames;
-    showState(state.value);
-  } catch (err) {
-    console.error("[refraction-errors] the animation didn't load", err);
-  }
+  const a = await lottie.mount(props.lottieUrl, {
+    replace: props.content.image ? { [imageFile]: props.content.image } : {},
+  });
+  if (!a) return;
+  totalFrames = a.totalFrames;
+  showState(state.value);
 }
 
 // The Lottie's timeline (v0.2.3): the normal eye at frame 0, then one
@@ -71,6 +52,7 @@ const SEGMENT_START = 36 + 23;
 const frameOf = (i, fix) => SEGMENT_START + 72 * (i - 1) + (fix ? 12 : 0);
 
 function showState(i) {
+  const anim = lottie.anim;
   if (!anim) return;
   if (i === 0) anim.goToAndStop(0, true);
   else anim.goToAndStop(frameOf(i, corrected.value), true);
@@ -78,6 +60,7 @@ function showState(i) {
 
 /** Play the current condition into (or out of) its correction. */
 function playCorrection() {
+  const anim = lottie.anim;
   if (!anim) return;
   const from = SEGMENT_START + 74 * (state.value - 1) - 5;
   const to = SEGMENT_START + 74 * (state.value - 1) + 15;
@@ -91,6 +74,7 @@ function selectState(i, wantCorrected) {
     return;
   }
   if (i !== 0 && wantCorrected !== corrected.value) playCorrection();
+  const anim = lottie.anim;
   if (!totalFrames && anim) totalFrames = anim.totalFrames;
   anim?.playSegments([1, totalFrames], true);
   if (i === 0) corrected.value = false;
@@ -102,16 +86,9 @@ const isOn = (i, fix) =>
   state.value === i && (i === 0 || corrected.value === fix);
 const isRow = (i) => state.value === i;
 
-const video = computed(() => props.content.video || {});
-const videoImage = computed(() =>
-  !video.value.slug || video.value.slug === "placeholder"
-    ? "/publicAssets/images/placeholders/monaLisa.webp"
-    : `/publicAssets/images/breakVideos/${video.value.slug}.png`
-);
-
 onMounted(mountLottie);
-watch(() => [props.lottieUrl, props.content.image], mountLottie);
-onBeforeUnmount(() => anim?.destroy());
+watch([() => props.lottieUrl, () => props.content.image], mountLottie);
+onBeforeUnmount(() => lottie.destroy());
 </script>
 
 <template>
@@ -170,26 +147,15 @@ onBeforeUnmount(() => anim?.destroy());
     </div>
 
     <div ref="stage" class="rx-stage" aria-hidden="true" />
+    <p v-if="lottie.failed.value" class="rx-failed" role="alert">
+      The animation didn't load. Reload the page to try again.
+    </p>
 
-    <div v-if="infoOpen" class="rx-info">
-      <p class="rx-info-text" v-html="content.infoText" />
-      <RouterLink
-        v-if="video.title"
-        :to="`/chapter/break/${video.slug || 'placeholder'}`"
-        class="rx-video"
-      >
-        <span class="rx-video-thumb">
-          <img :src="videoImage" alt="" loading="lazy" />
-        </span>
-        <span class="rx-round rx-video-play" aria-hidden="true">
-          <svg viewBox="0 0 32 32"><path d="M12 9l12 7-12 7z" /></svg>
-        </span>
-        <span class="rx-video-text">
-          <b>{{ video.title }}</b>
-          <span>{{ video.text }}</span>
-        </span>
-      </RouterLink>
-    </div>
+    <FigureIntro
+      v-if="infoOpen"
+      :text="content.infoText"
+      :video="content.video"
+    />
   </div>
 </template>
 
@@ -268,8 +234,7 @@ onBeforeUnmount(() => anim?.destroy());
   transform: rotate(45deg);
 }
 .rx-info-toggle:focus-visible,
-.rx-cell:focus-visible,
-.rx-video:focus-visible {
+.rx-cell:focus-visible {
   outline: 2px solid var(--rx-accent);
   outline-offset: 2px;
 }
@@ -350,84 +315,43 @@ onBeforeUnmount(() => anim?.destroy());
   filter: blur(4px);
 }
 
-/* The introduction: text on the left half, the video on the right, split
-   by a white rule, as on theopenbrain.org. */
-.rx-info {
+.rx-failed {
   position: absolute;
-  inset: 0;
   z-index: 2;
-  display: grid;
-  grid-template-columns: 50% 50%;
-  padding-top: 9.375rem;
-  pointer-events: none;
-}
-.rx-info::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 50%;
-  border-left: 1px solid #fff;
-}
-.rx-info-text {
+  right: 3.75rem;
+  bottom: 2rem;
+  max-width: 22rem;
   margin: 0;
-  padding: 0 3.75rem;
-  max-width: 45rem;
-  max-height: calc(100% - 3rem);
-  overflow-y: auto;
-  font: 1.125rem/1.67 var(--rx-sans);
-  hyphens: auto;
-  pointer-events: auto;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  color: #000;
+  font: 0.875rem/1.4 var(--rx-sans);
 }
-.rx-video {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  align-self: start;
-  margin-top: -2rem;
-  color: #fff;
-  text-decoration: none;
-  pointer-events: auto;
-}
-/* Duotone as the original: the grey photo screened over the accent. */
-.rx-video-thumb {
-  position: relative;
-  display: block;
-  height: 12.5rem;
-  background: #000;
-  isolation: isolate;
-}
-.rx-video-thumb::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--rx-accent);
-  opacity: 0.7;
-}
-.rx-video-thumb img {
-  position: relative;
-  display: block;
-  height: 100%;
-  width: auto;
-  filter: grayscale(1);
-  mix-blend-mode: screen;
-}
-.rx-video-play {
-  position: absolute;
-  left: -1.25rem;
-  top: -1.25rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  z-index: 1;
-}
-.rx-video-text {
-  display: grid;
-  gap: 0.125rem;
-  padding-top: 0.25rem;
-  font: 0.8125rem/1.3 var(--rx-sans);
-  opacity: 0.7;
-}
-.rx-video:hover .rx-video-text {
-  opacity: 1;
+
+/* Narrow screens: the conditions above the drawing, full width. */
+@container figure (max-width: 760px) {
+  .rx {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .rx-info-toggle {
+    margin-top: 0.75rem;
+  }
+  .rx-states {
+    width: min(100%, 22rem);
+  }
+  .rx-stage {
+    position: relative;
+    inset: auto;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+  }
+  .rx-failed {
+    right: 1rem;
+    left: 1rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

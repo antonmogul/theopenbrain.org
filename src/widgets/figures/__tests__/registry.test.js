@@ -60,3 +60,46 @@ describe("figure widgets use only their own colours", () => {
     expect(hit, `line ${hit + 1}`).toBe(-1);
   });
 });
+
+// A step-through schema is bound to its artwork: its last frame is the
+// Lottie's end, its icons exist, and each legend item lights up a layer the
+// Lottie has. This is what catches the live site's dead "α subunit" key.
+describe("step-through figures match their artwork", () => {
+  const pub = join(__dirname, "../../../../public");
+  const stepThrough = Object.values(FIGURE_WIDGETS)
+    .map((w) => w.schema)
+    .filter((s) => s.frames);
+
+  function layerClasses(lottie) {
+    const out = new Set();
+    const walk = (layers = []) => {
+      for (const l of layers) {
+        for (const c of `${l.cl || ""} ${(l.nm || "").split(".").join(" ")}`
+          .split(/\s+/)
+          .filter(Boolean))
+          out.add(c);
+        walk(l.layers);
+      }
+    };
+    walk(lottie.layers);
+    for (const a of lottie.assets || []) walk(a.layers);
+    return out;
+  }
+
+  it.each(stepThrough.map((s) => [s.id, s]))("%s", (_, schema) => {
+    const lottie = JSON.parse(
+      readFileSync(
+        join(pub, "publicAssets/animations", `${schema.animationKey}.json`),
+        "utf8"
+      )
+    );
+    expect(schema.frames.at(-1)).toBe(lottie.op);
+    expect(schema.defaults.states).toHaveLength(schema.frames.length - 1);
+    expect(schema.legendArt).toHaveLength(schema.defaults.legend.length);
+    const classes = layerClasses(lottie);
+    for (const art of schema.legendArt) {
+      expect(classes, art.highlight).toContain(art.highlight);
+      expect(statSync(join(pub, art.icon)).isFile(), art.icon).toBe(true);
+    }
+  });
+});

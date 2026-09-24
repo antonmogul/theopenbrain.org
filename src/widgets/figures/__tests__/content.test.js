@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { figureContent, prepareLottie } from "../content.js";
+import {
+  contentChanges,
+  fetchLottie,
+  figureContent,
+  prepareLottie,
+  versionedUrl,
+} from "../content.js";
 
 const schema = {
   fields: [
@@ -11,6 +17,7 @@ const schema = {
     {
       key: "video",
       type: "group",
+      optional: true,
       fields: [
         { key: "title", type: "text" },
         { key: "slug", type: "text" },
@@ -108,5 +115,105 @@ describe("prepareLottie", () => {
       "motif-medium.jpg": "x",
     });
     expect(data.assets[0].u).toBe("images/");
+  });
+});
+
+describe("figureContent, defensively", () => {
+  it("resolves an optional part switched off to null", () => {
+    expect(
+      figureContent(schema, { content: { video: false } }).video
+    ).toBeNull();
+  });
+
+  it("ignores values of the wrong type", () => {
+    const out = figureContent(schema, {
+      toggle: true,
+      states: "ABC",
+      content: { title: 42, states: [7, "Saved B"], video: "x" },
+    });
+    expect(out.title).toBe("Default title");
+    expect(out.toggle).toBe("Fixed");
+    expect(out.states).toEqual(["A", "Saved B", "C"]);
+    expect(out.video).toEqual(schema.defaults.video);
+  });
+});
+
+describe("contentChanges", () => {
+  const inherited = figureContent(schema, {});
+  const edit = (patch) => ({ ...structuredCloneSafe(inherited), ...patch });
+  function structuredCloneSafe(v) {
+    return JSON.parse(JSON.stringify(v));
+  }
+
+  it("saves nothing when nothing changed", () => {
+    expect(contentChanges(schema, edit({}), inherited)).toEqual({});
+  });
+
+  it("keeps changed list items and nulls the rest", () => {
+    const form = edit({ states: ["A", "b!", "C"] });
+    expect(contentChanges(schema, form, inherited)).toEqual({
+      states: [null, "b!"],
+    });
+  });
+
+  it("keeps only changed group fields", () => {
+    const form = edit({ video: { title: "Speaker", slug: "other" } });
+    expect(contentChanges(schema, form, inherited)).toEqual({
+      video: { slug: "other" },
+    });
+  });
+
+  it("saves an optional part switched off as false", () => {
+    expect(
+      contentChanges(schema, edit({}), inherited, { video: true })
+    ).toEqual({ video: false });
+  });
+
+  it("round-trips: what it saves resolves to the form", () => {
+    const form = edit({ states: ["A", "b!", "C"], toggle: "Glasses" });
+    const saved = contentChanges(schema, form, inherited);
+    expect(figureContent(schema, { content: saved })).toEqual(form);
+  });
+});
+
+describe("versionedUrl", () => {
+  it("adds the artwork version as a query", () => {
+    expect(versionedUrl("/a/fig.json", "v0.2.3")).toBe("/a/fig.json?v=v0.2.3");
+    expect(versionedUrl("/a/fig.json?x=1", "v1")).toBe("/a/fig.json?x=1&v=v1");
+    expect(versionedUrl("/a/fig.json", undefined)).toBe("/a/fig.json");
+  });
+
+  it("doesn't change where images resolve", () => {
+    const out = prepareLottie(
+      { assets: [{ id: "a", u: "images/", p: "x.jpg", e: 0 }] },
+      "/publicAssets/animations/fig.json?v=v0.2.3"
+    );
+    expect(out.assets[0].u).toBe("/publicAssets/animations/images/");
+  });
+});
+
+describe("fetchLottie", () => {
+  const answer = (ok, type, status = 200) =>
+    (global.fetch = () =>
+      Promise.resolve({
+        ok,
+        status,
+        headers: { get: () => type },
+        json: () => Promise.resolve({ op: 10 }),
+      }));
+
+  it("returns the parsed file", async () => {
+    answer(true, "application/json");
+    expect(await fetchLottie("/f.json")).toEqual({ op: 10 });
+  });
+
+  it("treats the app page served for a missing file as not found", async () => {
+    answer(true, "text/html; charset=utf-8");
+    await expect(fetchLottie("/f.json")).rejects.toThrow(/not a Lottie file/);
+  });
+
+  it("reports an HTTP error", async () => {
+    answer(false, "text/plain", 404);
+    await expect(fetchLottie("/f.json")).rejects.toThrow(/HTTP 404/);
   });
 });

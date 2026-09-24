@@ -658,7 +658,7 @@ describe("useChapterEditor figure widgets (OPENBRAIN-80)", () => {
         ];
       return [];
     });
-    return { patches };
+    return { patches, media };
   }
 
   it("reads the state labels, falling back to the label", async () => {
@@ -669,9 +669,11 @@ describe("useChapterEditor figure widgets (OPENBRAIN-80)", () => {
   });
 
   it("saves title and content into config, keeping its flags; undo restores", async () => {
-    const { patches } = widgetApi();
+    const { patches, media } = widgetApi();
     const ed = useChapterEditor("s");
     await ed.load();
+    // Changed elsewhere after this page loaded: kept, not overwritten.
+    media[0].config = { ...media[0].config, note: "added elsewhere" };
     await ed.setFigureContent("rx", {
       title: " Refraction ",
       content: { toggle: "With glasses" },
@@ -681,6 +683,7 @@ describe("useChapterEditor figure widgets (OPENBRAIN-80)", () => {
       config: {
         toggle: "Corrected",
         fullscreen: true,
+        note: "added elsewhere",
         content: { toggle: "With glasses" },
       },
     });

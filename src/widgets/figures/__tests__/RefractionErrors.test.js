@@ -127,14 +127,22 @@ describe("RefractionErrors", () => {
     expect(w.text()).toContain("With glasses");
   });
 
-  it("keeps going when the animation can't load", async () => {
+  it("keeps going, and says so, when the animation can't load", async () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     global.fetch = vi.fn(() => Promise.resolve({ ok: false, status: 404 }));
     const w = mountWidget({}, { infoOpenAtStart: false });
     await flushPromises();
+    expect(w.find(".rx-failed").exists()).toBe(true);
     await button(w, "Myopia").trigger("click");
     expect(button(w, "Myopia").attributes("aria-pressed")).toBe("true");
     expect(error).toHaveBeenCalled();
     error.mockRestore();
+  });
+
+  it("hides the video when it's switched off", async () => {
+    const w = mountWidget({ video: false });
+    await flushPromises();
+    expect(w.text()).toContain("Despite our body");
+    expect(w.findComponent(RouterLinkStub).exists()).toBe(false);
   });
 });

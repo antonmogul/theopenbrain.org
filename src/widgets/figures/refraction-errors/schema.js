@@ -9,12 +9,15 @@ export default {
   id: "refraction-errors",
   name: "Refraction errors",
   animationKey: "animationImpairedVision",
+  /** The Lottie artwork this schema was written for (cache key). */
+  lottieVersion: "v0.2.3",
   fields: [
     { key: "title", label: "Title", type: "text" },
     {
       key: "infoText",
       label: "Introduction",
       type: "textarea",
+      optional: true,
       hint: "Shown over the figure until the reader closes it.",
     },
     {
@@ -41,6 +44,7 @@ export default {
       key: "video",
       label: "Video",
       type: "group",
+      optional: true,
       fields: [
         { key: "title", label: "Speaker", type: "text" },
         { key: "text", label: "Subject", type: "text" },

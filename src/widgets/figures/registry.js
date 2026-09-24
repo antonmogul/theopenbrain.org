@@ -8,17 +8,33 @@
  * components load when a figure is shown.
  */
 import refractionErrors from "./refraction-errors/schema.js";
+import pupillaryReflex from "./pupillary-reflex/schema.js";
+import phototransduction from "./phototransduction/schema.js";
+import visualCycle from "./visual-cycle/schema.js";
+
+const stepThrough = () => import("./step-through/StepThrough.vue");
 
 export const FIGURE_WIDGETS = {
   [refractionErrors.animationKey]: {
     schema: refractionErrors,
     load: () => import("./refraction-errors/RefractionErrors.vue"),
   },
+  // Three figures, one component (OPENBRAIN-81).
+  [pupillaryReflex.animationKey]: {
+    schema: pupillaryReflex,
+    load: stepThrough,
+  },
+  [phototransduction.animationKey]: {
+    schema: phototransduction,
+    load: stepThrough,
+  },
+  [visualCycle.animationKey]: { schema: visualCycle, load: stepThrough },
 };
 
 /** The widget for an animation key, or null. */
 export function figureWidgetFor(animationKey) {
-  return animationKey && Object.hasOwn(FIGURE_WIDGETS, animationKey)
+  return animationKey &&
+    Object.prototype.hasOwnProperty.call(FIGURE_WIDGETS, animationKey)
     ? FIGURE_WIDGETS[animationKey]
     : null;
 }

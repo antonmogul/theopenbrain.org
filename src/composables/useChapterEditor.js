@@ -688,16 +688,27 @@ export function useChapterEditor(slug) {
     return (rows || []).map((r) => r.state_description || r.state_label);
   }
 
-  /** Save a widget figure's title and content (see widgets/figures/content.js). */
+  /**
+   * Save a widget figure's title and content (see widgets/figures/content.js).
+   * Reads the row first, so a config changed since the page loaded (another
+   * tab, another creator) keeps its other keys.
+   */
   async function setFigureContent(id, { title, content }) {
     return withSaving(async () => {
-      const m = media.value.find((x) => x.id === id);
-      if (!m) throw new Error("That figure isn't in the library.");
+      if (!media.value.some((x) => x.id === id))
+        throw new Error("That figure isn't in the library.");
       if (!title?.trim()) throw new Error("A figure needs a title.");
-      const before = { title: m.title ?? null, config: m.config ?? null };
+      const rows = await authedRequest(
+        `animations?id=eq.${id}&select=title,config`
+      );
+      if (!rows?.length) throw new Error("That figure isn't in the library.");
+      const before = {
+        title: rows[0].title ?? null,
+        config: rows[0].config ?? null,
+      };
       await patchMedia(id, {
         title: title.trim(),
-        config: { ...(m.config || {}), content },
+        config: { ...(before.config || {}), content },
       });
       pushUndo("Figure settings", () => patchMedia(id, before));
     });

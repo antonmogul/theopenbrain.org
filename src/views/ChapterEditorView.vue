@@ -23,6 +23,7 @@ import ChapterDetails from "@/components/chapterEditor/ChapterDetails.vue";
 import FigureSettings from "@/components/chapterEditor/FigureSettings.vue";
 import FigureWidgetSettings from "@/components/chapterEditor/FigureWidgetSettings.vue";
 import { figureWidgetFor } from "@/widgets/figures/registry";
+import { useAnimations } from "@/composables/useAnimations";
 import { parseYouTube, youTubeStart } from "@/editor/video.mjs";
 import { placementsForChapter } from "@/widgets/placements";
 import { coverForModule } from "@/helper/chapterCover";
@@ -468,6 +469,7 @@ async function saveFigure(value) {
 // ---- figure widgets (OPENBRAIN-80) ----
 const isWidgetFigure = (p) =>
   !!figureWidgetFor(ed.mediaById.value.get(p.animation_id)?.animation_key);
+const { clearCache: clearAnimationsCache } = useAnimations();
 const widgetSettingsFor = ref(null); // the figure's media row
 const widgetStates = ref([]);
 function editWidgetFigure(p) {
@@ -475,9 +477,14 @@ function editWidgetFigure(p) {
     const m = ed.mediaById.value.get(p.animation_id);
     try {
       widgetStates.value = await ed.loadFigureStates(m.id);
-    } catch {
-      // The form falls back to the figure's own labels.
-      widgetStates.value = [];
+    } catch (err) {
+      // Without the database's labels the form would start from defaults,
+      // and a save would put those over steps nobody touched.
+      console.error("[figure settings] states didn't load", err);
+      showToast("Couldn't load this figure's steps. Try again.", {
+        error: true,
+      });
+      return;
     }
     widgetSettingsFor.value = m;
   });
@@ -488,7 +495,10 @@ async function saveWidgetFigure(value) {
     () => ed.setFigureContent(id, value),
     "Figure saved."
   );
-  if (ok) widgetSettingsFor.value = null;
+  if (!ok) return;
+  widgetSettingsFor.value = null;
+  // The reader keeps the animations it loaded; let it fetch the new content.
+  clearAnimationsCache();
 }
 
 async function onRemoveFigure() {
