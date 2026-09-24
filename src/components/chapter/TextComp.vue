@@ -12,6 +12,8 @@ import { authorsForModule } from "@/helper/chapterAuthors";
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
 import { saveInlineEdit } from "@/editor/inlineSave";
+import { blocksToPlainText } from "@/editor/plainText";
+import { contentBlocksToHTML } from "@/composables/chapterTransform.mjs";
 
 import Section from "./text/SectionComp.vue";
 import Points from "@/components/UI/PointsComp.vue";
@@ -77,10 +79,34 @@ const source = computed(() => {
 // (useChapterOutline, OPENBRAIN-32) so the prose and the contents agree.
 const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 
-// ---- Inline text editing (OPENBRAIN-58) ----
-// Off until a creator switches it on, so reading a chapter can't change it.
-const editMode = ref(false);
+// ---- Edit mode (OPENBRAIN-58, 64) ----
+// Off until a creator switches it on (or opens ?edit=1), so reading a
+// chapter can't change it.
+const editMode = ref(route.query.edit === "1");
 const canEdit = computed(() => isCreator.value && editMode.value);
+const lastSavedAt = ref(null);
+const saving = ref(false);
+const editUndo = ref([]); // [{ label, run }]
+const editNote = ref(null); // { message, error }
+let editNoteTimer = null;
+function note(message, error = false) {
+  clearTimeout(editNoteTimer);
+  editNote.value = { message, error };
+  editNoteTimer = setTimeout(() => (editNote.value = null), 6000);
+}
+const savedLabel = computed(() =>
+  saving.value
+    ? "Saving…"
+    : lastSavedAt.value
+      ? `Saved ${lastSavedAt.value.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}`
+      : "Click any paragraph to edit it"
+);
+const blockPageHref = computed(() =>
+  props.module?.slug ? `/dashboard/chapters/${props.module.slug}` : null
+);
 
 // Walk the transformed chapter (intro, sections, subsections, sub-sub…) and
 // visit every object that has an id; used for the lock map and local updates.
@@ -102,16 +128,16 @@ function eachNode(node, visit) {
   }
 }
 
-// paragraph id → why the inline editor can't save it (chapterTransform sets
-// lockReason from the stored blocks), for EditableBlock to explain on click.
-const lockMap = computed(() => {
+// paragraph id → its stored blocks (chapterTransform keeps them on every
+// paragraph and subsection header), so EditableBlock edits them losslessly.
+const blocksMap = computed(() => {
   const map = new Map();
   eachNode(source.value, (n) => {
-    if (n.lockReason) map.set(n.id, n.lockReason);
+    if (Array.isArray(n.blocks)) map.set(n.id, n.blocks);
   });
   return map;
 });
-provide("lockReasonFor", (id) => lockMap.value.get(id) || null);
+provide("blocksFor", (id) => blocksMap.value.get(id) || null);
 
 const stripTags = (html) => html.replace(/<[^>]*>/g, "");
 
@@ -143,9 +169,67 @@ async function rest(path, init = {}) {
 // no longer re-emit (which PATCHed the same row two or three times). The
 // checks and the merge live in src/editor/inlineSave.js.
 const saveContent = async (edit) => {
-  await saveInlineEdit(rest, edit);
-  updateLocalContent(edit.paragraphId, edit.content, edit.type);
+  saving.value = true;
+  try {
+    const result = await saveInlineEdit(rest, edit);
+    if (edit.blocks) {
+      updateLocalBlocks(edit.paragraphId, edit.blocks, edit.type);
+      const before = result?.previous;
+      if (before)
+        editUndo.value = [
+          ...editUndo.value.slice(-19),
+          {
+            label: "Edit",
+            run: async () => {
+              await rest(`paragraphs?id=eq.${edit.paragraphId}`, {
+                method: "PATCH",
+                body: JSON.stringify(before),
+              });
+              updateLocalBlocks(
+                edit.paragraphId,
+                before.content?.blocks || [],
+                edit.type
+              );
+            },
+          },
+        ];
+    } else {
+      updateLocalContent(edit.paragraphId, edit.content, edit.type);
+    }
+    lastSavedAt.value = new Date();
+    note("Saved.");
+  } finally {
+    saving.value = false;
+  }
 };
+
+async function undoLastEdit() {
+  const last = editUndo.value[editUndo.value.length - 1];
+  if (!last) return;
+  saving.value = true;
+  try {
+    await last.run();
+    editUndo.value = editUndo.value.slice(0, -1);
+    lastSavedAt.value = new Date();
+    note("Undone.");
+  } catch (err) {
+    note(`Couldn't undo: ${err.message}`, true);
+  } finally {
+    saving.value = false;
+  }
+}
+
+// After a blocks save: re-render that paragraph from its new blocks.
+function updateLocalBlocks(id, blocks, type) {
+  if (!source.value) return;
+  eachNode(source.value, (n) => {
+    if (n.id !== id) return;
+    n.blocks = blocks;
+    if (type === "subsection-title" && "title" in n)
+      n.title = blocksToPlainText(blocks);
+    else n.text = contentBlocksToHTML(blocks).text;
+  });
+}
 
 // Update content in the local store so the edit shows without a reload
 // (subsections are arrays, which the old lookup missed).
@@ -276,14 +360,12 @@ onBeforeUnmount(() => {
     id="container"
     class="absolute top-start z-40 w-full xl:w-text pointer-events-none font-sans"
   >
-    <!-- Inline editing is off until a creator turns it on (OPENBRAIN-58). -->
+    <!-- Edit mode (OPENBRAIN-58, 64): off until a creator turns it on. -->
     <button
-      v-if="isCreator"
+      v-if="isCreator && !editMode"
       type="button"
       class="edit-toggle"
-      :class="{ 'is-on': editMode }"
-      :aria-pressed="editMode"
-      @click="editMode = !editMode"
+      @click="editMode = true"
     >
       <svg
         width="16"
@@ -301,12 +383,52 @@ onBeforeUnmount(() => {
           d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
         ></path>
       </svg>
-      {{
-        editMode
-          ? "Editing text · changes save to this chapter · Done"
-          : "Edit text"
-      }}
+      Edit chapter
     </button>
+    <div
+      v-if="isCreator && editMode"
+      class="edit-bar"
+      role="region"
+      aria-label="Editing"
+    >
+      <span class="edit-bar-title"
+        >✎ Editing<template v-if="module?.title">
+          · {{ module.title }}</template
+        ></span
+      >
+      <span class="edit-bar-status" :class="{ 'is-saving': saving }">{{
+        savedLabel
+      }}</span>
+      <button
+        v-if="editUndo.length"
+        type="button"
+        class="edit-bar-btn"
+        @click="undoLastEdit"
+      >
+        Undo
+      </button>
+      <a
+        v-if="blockPageHref"
+        :href="blockPageHref"
+        class="edit-bar-btn"
+        title="Add, move and delete blocks, images and widgets"
+        >Blocks &amp; widgets ↗</a
+      >
+      <button
+        type="button"
+        class="edit-bar-btn edit-bar-done"
+        @click="editMode = false"
+      >
+        Done
+      </button>
+      <span
+        v-if="editNote"
+        class="edit-bar-note"
+        :class="{ 'is-error': editNote.error }"
+        role="status"
+        >{{ editNote.message }}</span
+      >
+    </div>
 
     <HoverImg />
     <!-- Viewport-centre trigger line: dev chrome behind ?markers=1 (OPENBRAIN-31) -->
@@ -551,10 +673,72 @@ onBeforeUnmount(() => {
   cursor: pointer;
   pointer-events: auto;
 }
-.edit-toggle.is-on {
+.edit-bar {
+  position: fixed;
+  top: calc(var(--reader-topbar-h, 3rem) + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  max-width: calc(100vw - 2rem);
+  padding: 0.5rem 0.625rem 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgb(14 19 19);
+  color: rgb(243 239 230);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.25);
+  pointer-events: auto;
+}
+.edit-bar-title {
+  font-weight: 600;
+}
+.edit-bar-status {
+  color: rgb(243 239 230 / 0.65);
+}
+.edit-bar-status.is-saving {
+  color: rgb(var(--color-warn));
+}
+.edit-bar-btn {
+  padding: 4px 10px;
+  border: 1px solid rgb(243 239 230 / 0.3);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.edit-bar-btn:hover,
+.edit-bar-btn:focus-visible {
+  background: rgb(243 239 230 / 0.12);
+  outline: none;
+}
+.edit-bar-done {
+  background: rgb(243 239 230);
+  color: rgb(14 19 19);
+}
+.edit-bar-done:hover,
+.edit-bar-done:focus-visible {
   background: rgb(var(--color-warn));
-  border-color: rgb(var(--color-warn));
-  color: rgb(10 10 10);
+}
+.edit-bar-note {
+  flex-basis: 100%;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+}
+.edit-bar-note.is-error {
+  color: rgb(var(--color-warn));
 }
 .edit-toggle:focus-visible {
   outline: 2px solid rgb(var(--color-accent));

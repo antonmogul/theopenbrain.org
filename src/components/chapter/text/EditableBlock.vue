@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
+import ParagraphEditor from "@/components/chapterEditor/ParagraphEditor.vue";
 
 const props = defineProps({
   content: {
@@ -42,12 +43,28 @@ const isSaving = ref(false);
 const hasChanges = ref(false);
 const originalContent = ref(props.content);
 const saveError = ref("");
-const lockNote = ref("");
 
-// Why this paragraph can't be edited inline (citations, images…), from the
-// reader's lock map; null when it can.
-const lockReasonFor = inject("lockReasonFor", () => null);
-const lockReason = computed(() => lockReasonFor(props.paragraphId));
+// Paragraph rows carry their stored blocks (TextComp's map). With blocks,
+// Edit mode opens the chapter editor's lossless ParagraphEditor, so
+// citations, figure refs, images and widgets survive a save (OPENBRAIN-64).
+// Section titles have no blocks and keep the simple inline editor below.
+const blocksFor = inject("blocksFor", () => null);
+const storedBlocks = computed(() => blocksFor(props.paragraphId));
+const blocksMode = computed(() => Array.isArray(storedBlocks.value));
+
+async function saveBlocks(blocks) {
+  isSaving.value = true;
+  saveError.value = "";
+  try {
+    await props.onSave?.({ paragraphId: props.paragraphId, blocks });
+    isEditing.value = false;
+  } catch (error) {
+    console.error("Failed to save:", error);
+    saveError.value = error?.message || "Couldn't save. Try again.";
+  } finally {
+    isSaving.value = false;
+  }
+}
 
 // Create editor instance
 const editor = useEditor({
@@ -88,11 +105,11 @@ watch(
 // Enter edit mode
 const startEditing = () => {
   if (!props.isCreator || isEditing.value) return;
-  if (lockReason.value) {
-    lockNote.value = lockReason.value;
+  saveError.value = "";
+  if (blocksMode.value) {
+    isEditing.value = true;
     return;
   }
-  saveError.value = "";
 
   isEditing.value = true;
   originalContent.value = props.content;
@@ -231,8 +248,19 @@ onBeforeUnmount(() => {
       </svg>
     </div>
 
-    <!-- Inline toolbar (shown when editing) -->
-    <div v-if="isEditing" class="editable-toolbar">
+    <!-- Paragraph rows: the chapter editor's lossless editor, in place -->
+    <div v-if="isEditing && blocksMode" class="blocks-editor">
+      <ParagraphEditor
+        :blocks="storedBlocks"
+        :saving="isSaving"
+        :error="saveError"
+        @save="saveBlocks"
+        @cancel="isEditing = false"
+      />
+    </div>
+
+    <!-- Inline toolbar (titles, which have no blocks) -->
+    <div v-if="isEditing && !blocksMode" class="editable-toolbar">
       <button
         @mousedown.prevent="toggleBold"
         :class="{ active: isActive('bold') }"
@@ -298,6 +326,7 @@ onBeforeUnmount(() => {
     <!-- Editor content -->
     <component
       :is="isEditing ? 'div' : tag"
+      v-if="!(isEditing && blocksMode)"
       :id="paragraphId"
       :class="[
         className,
@@ -321,17 +350,14 @@ onBeforeUnmount(() => {
 
     <!-- Saving indicator -->
     <div v-if="isSaving" class="saving-indicator">Saving...</div>
-    <p v-if="saveError" class="edit-note is-error" role="alert">
+    <p v-if="saveError && !blocksMode" class="edit-note is-error" role="alert">
       {{ saveError }}
     </p>
-    <p v-if="hasChanges && isEditing && !saveError" class="edit-note">
+    <p
+      v-if="hasChanges && isEditing && !saveError && !blocksMode"
+      class="edit-note"
+    >
       Unsaved changes. Press ✓ or Cmd+S to save, or Esc to cancel.
-    </p>
-    <p v-if="lockNote" class="edit-note" role="status">
-      {{ lockNote }}
-      <button type="button" class="edit-note-close" @click="lockNote = ''">
-        OK
-      </button>
     </p>
   </div>
 </template>
@@ -339,6 +365,12 @@ onBeforeUnmount(() => {
 <style scoped>
 .editable-block-wrapper {
   position: relative;
+}
+.blocks-editor {
+  position: relative;
+  z-index: 60;
+  margin: 0.5rem -0.75rem;
+  pointer-events: auto;
 }
 .edit-note {
   margin: 6px 0 0;
