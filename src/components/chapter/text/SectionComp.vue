@@ -127,6 +127,7 @@
             :key="'images' + paragraph.id"
             v-if="paragraph.img"
           />
+          <VideoEmbed v-if="paragraph.video" :video="paragraph.video" />
           <FullScreenIllustration
             :key="paragraph.id"
             v-if="paragraph.animationFull"
@@ -192,6 +193,7 @@ import SubSection from "./SubSection.vue";
 import { useGeneral } from "@/stores";
 import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
+import VideoEmbed from "./VideoEmbed.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import EditableBlock from "./EditableBlock.vue";
 import WidgetBreakout from "./WidgetBreakout.vue";

@@ -47,6 +47,14 @@ export function extractChapter1Meta(blocks) {
       if (block.caption) meta.imgCap = block.caption;
       if (block.closed) meta.imgClosed = block.closed;
     }
+    if (block.type === "video" && block.youtubeId) {
+      // A YouTube video in the prose (OPENBRAIN-70 D2); VideoEmbed renders it.
+      meta.video = {
+        youtubeId: block.youtubeId,
+        title: block.title || "",
+        start: block.start || 0,
+      };
+    }
     if (block.type === "widget" && block.widgetId) {
       // Author-placed interactive (OPENBRAIN-21). Same paragraph shape as
       // src/widgets/placements.js produces, so the reader has one branch.

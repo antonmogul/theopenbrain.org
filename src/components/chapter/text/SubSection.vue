@@ -140,6 +140,7 @@
               :key="'images' + subParagraph.id"
               v-if="subParagraph.img"
             />
+            <VideoEmbed v-if="subParagraph.video" :video="subParagraph.video" />
             <FullScreenIllustration
               :key="subParagraph.animationFull"
               v-if="subParagraph.animationFull"
@@ -192,6 +193,7 @@ import WidgetBreakout from "./WidgetBreakout.vue";
 
 import { toSlug } from "@/helper/general.js";
 import InlineImages from "./InlineImages.vue";
+import VideoEmbed from "./VideoEmbed.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";

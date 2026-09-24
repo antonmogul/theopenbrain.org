@@ -103,6 +103,10 @@
                 :paragraph="subSubParagraph"
                 v-if="subSubParagraph.img"
               />
+              <VideoEmbed
+                v-if="subSubParagraph.video"
+                :video="subSubParagraph.video"
+              />
               <FullScreenIllustration
                 :key="subSubParagraph.id"
                 v-if="subSubParagraph.animationFull"
@@ -154,6 +158,7 @@ import { useMediaQuery } from "@/composables/useMediaQuery";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
+import VideoEmbed from "./VideoEmbed.vue";
 import EditableBlock from "./EditableBlock.vue";
 import WidgetBreakout from "./WidgetBreakout.vue";
 

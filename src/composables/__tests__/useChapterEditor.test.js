@@ -693,3 +693,23 @@ describe("useChapterEditor box placement (OPENBRAIN-70 A3, A4)", () => {
     expect(secs.find((x) => x.id === "new").slug).toBe("box-humoral-theory");
   });
 });
+
+describe("videos (OPENBRAIN-70 D2)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("adds a YouTube video to the library once, then reuses it", async () => {
+    const media = [];
+    fakeTable(seed(), media);
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const a = await ed.addYouTubeMedia("g4-6A8u8QBc", "History of neuro");
+    const b = await ed.addYouTubeMedia("g4-6A8u8QBc", "Again");
+    expect(a.id).toBe(b.id);
+    expect(media).toHaveLength(1);
+    expect(media[0]).toMatchObject({
+      media_type: "youtube",
+      youtube_id: "g4-6A8u8QBc",
+      animation_key: "youtube-g4-6A8u8QBc",
+    });
+  });
+});

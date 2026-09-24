@@ -570,6 +570,30 @@ export function useChapterEditor(slug) {
     return { host, media: m };
   }
 
+  // ---- YouTube in the media library (OPENBRAIN-70 D2) ----
+  /** The library row for a YouTube video, reused if it's already there. */
+  async function addYouTubeMedia(youtubeId, title) {
+    const found = media.value.find(
+      (m) => m.media_type === "youtube" && m.youtube_id === youtubeId
+    );
+    if (found) return found;
+    const rows = await authedRequest("animations", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        animation_key: `youtube-${youtubeId}`,
+        title: title || "YouTube video",
+        media_type: "youtube",
+        youtube_id: youtubeId,
+        interaction_type: "youtube_embed",
+      }),
+    });
+    if (!rows?.length)
+      throw new Error("The video couldn't be added to the library.");
+    media.value = [...media.value, rows[0]];
+    return rows[0];
+  }
+
   // ---- figure frames (OPENBRAIN-70 B3) ----
   async function patchMedia(id, body) {
     const rows = await authedRequest(`animations?id=eq.${id}`, {
@@ -805,6 +829,7 @@ export function useChapterEditor(slug) {
     setDetails,
     figureToText,
     setFigureFrames,
+    addYouTubeMedia,
     imageToPanel,
     renameSection,
     setBoxPlacement,

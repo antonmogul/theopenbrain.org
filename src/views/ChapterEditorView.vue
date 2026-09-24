@@ -21,6 +21,7 @@ import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
 import ChapterDetails from "@/components/chapterEditor/ChapterDetails.vue";
 import FigureSettings from "@/components/chapterEditor/FigureSettings.vue";
+import { parseYouTube, youTubeStart } from "@/editor/video.mjs";
 import { placementsForChapter } from "@/widgets/placements";
 import { coverForModule } from "@/helper/chapterCover";
 import { imageUrl } from "@/editor/media.mjs";
@@ -126,9 +127,40 @@ const STARTERS = {
 };
 const pickerFor = ref(null); // { kind: "image"|"widget"|"figure"|"widget-edit", ... }
 
+// ---- videos (OPENBRAIN-70 D2) ----
+const videoForm = ref(null); // { sectionId, index, url, title }
+const videoId = computed(() =>
+  videoForm.value ? parseYouTube(videoForm.value.url) : null
+);
+async function saveVideo() {
+  const f = videoForm.value;
+  const youtubeId = videoId.value; // read before the form (its source) closes
+  if (!youtubeId) return;
+  videoForm.value = null;
+  const start = youTubeStart(f.url);
+  await attempt(
+    () =>
+      ed.insertParagraph(f.sectionId, f.index, [
+        {
+          type: "video",
+          provider: "youtube",
+          youtubeId,
+          url: f.url.trim(),
+          title: f.title.trim(),
+          ...(start ? { start } : {}),
+        },
+      ]),
+    "Video added."
+  );
+}
+
 function onInsert(sectionId, index, type) {
   whenLive(() => {
     editingId.value = null;
+    if (type === "video") {
+      videoForm.value = { sectionId, index, url: "", title: "" };
+      return;
+    }
     if (STARTERS[type]) {
       pendingInsert.value = {
         sectionId,
@@ -319,6 +351,15 @@ async function onPickFigure(m) {
 async function onUploadedFigure({ media }) {
   ed.media.value = [...ed.media.value, media];
   await onPickFigure(media);
+}
+
+// A YouTube link from the figure picker becomes that paragraph's figure.
+async function onYouTubeFigure({ youtubeId, title }) {
+  try {
+    await onPickFigure(await ed.addYouTubeMedia(youtubeId, title));
+  } catch (err) {
+    showToast(err.message || "Couldn't add the video.", { error: true });
+  }
 }
 
 // ---- figures: panel or text (OPENBRAIN-70 B2) ----
@@ -1031,6 +1072,47 @@ onMounted(async () => {
       @close="pickerFor = null"
     />
 
+    <BaseModal
+      :model-value="!!videoForm"
+      title="Add a video"
+      size="md"
+      @update:model-value="(v) => !v && (videoForm = null)"
+      @close="videoForm = null"
+    >
+      <form v-if="videoForm" class="ce-form" @submit.prevent="saveVideo">
+        <FormField
+          label="YouTube link"
+          hint="Paste the video's address, e.g. https://www.youtube.com/watch?v=… A t= start time is kept."
+        >
+          <input
+            id="video-url"
+            v-model="videoForm.url"
+            type="url"
+            required
+            @vue:mounted="({ el }) => el.focus()"
+          />
+        </FormField>
+        <p v-if="videoForm.url && !videoId" class="ce-form-error" role="alert">
+          That isn't a YouTube video link.
+        </p>
+        <FormField label="Title" hint="Shown on the video card in the reader.">
+          <input id="video-title" v-model="videoForm.title" type="text" />
+        </FormField>
+      </form>
+      <template #footer>
+        <Button variant="ghost" size="sm" @click="videoForm = null"
+          >Cancel</Button
+        >
+        <Button
+          variant="solid"
+          size="sm"
+          :disabled="!videoId"
+          @click="saveVideo"
+          >Add video</Button
+        >
+      </template>
+    </BaseModal>
+
     <FigureSettings
       :open="!!figureSettingsFor"
       :figure="figureSettingsFor"
@@ -1061,7 +1143,9 @@ onMounted(async () => {
       :media="ed.media.value"
       :types="['image', 'lottie', 'video', 'youtube']"
       :upload-slug="ed.module.value?.slug || ''"
+      allow-youtube
       @uploaded="onUploadedFigure"
+      @youtube="onYouTubeFigure"
       title="Choose this paragraph's figure"
       :current-id="
         pickerFor?.kind === 'figure'
@@ -1299,6 +1383,12 @@ onMounted(async () => {
   display: grid;
   gap: 6px;
   scroll-margin-top: 88px;
+}
+.ce-form-error {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: rgb(var(--color-accent));
 }
 .ce-box-place {
   display: flex;
