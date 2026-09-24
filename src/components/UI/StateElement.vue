@@ -3,9 +3,11 @@
     <p
       v-for="(state, index) in states"
       :key="state"
-      class="hover:text-violet text-small cursor-pointer pb-6"
+      class="hover:text-chapter-deep text-small cursor-pointer pb-6"
       :class="
-        activeState == index ? 'underline pointer-events-none text-violet' : ''
+        activeState == index
+          ? 'underline pointer-events-none text-chapter-deep'
+          : ''
       "
       @click="$emit('onClick', { index, activeState })"
     >

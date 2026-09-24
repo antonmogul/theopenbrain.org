@@ -30,7 +30,7 @@
       </div>
     </div>
     <FlipIcon
-      class="cursor-pointer duration-200 -translate-x-24 translate-y-20 fill-black stroke-black hover:stroke-violet hover:fill-violet hoverState"
+      class="cursor-pointer duration-200 -translate-x-24 translate-y-20 fill-black stroke-black hover:stroke-chapter hover:fill-chapter hoverState"
       @click="flip"
     />
     <SourceElement :scource="animation.source" />

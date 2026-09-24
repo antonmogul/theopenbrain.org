@@ -20,7 +20,7 @@
         >
           <div class="relative">
             <div class="h-64 bg-black absolute w-full opacity-20"></div>
-            <div class="h-64 bg-violet absolute w-full opacity-70"></div>
+            <div class="h-64 bg-chapter absolute w-full opacity-70"></div>
             <img
               v-if="video.slug === 'placeholder'"
               class="bg-black h-64 mix-blend-screen grayscale"

@@ -66,9 +66,9 @@
               ? animation.states
               : Object.keys(animation.states)"
             :key="state"
-            class="hover:text-violet hover:bg-white hover:border-violet select-none text-small cursor-pointer pb-2 mb-4 border-black border p-4 flex flex-col justify-center items-center"
+            class="hover:text-chapter-deep hover:bg-white hover:border-chapter select-none text-small cursor-pointer pb-2 mb-4 border-black border p-4 flex flex-col justify-center items-center"
             :class="
-              activeState[index] ? 'font-semibold bg-violet text-white' : ''
+              activeState[index] ? 'font-semibold bg-chapter text-black' : ''
             "
             @click="setBlockState(index, activeState.state)"
           >

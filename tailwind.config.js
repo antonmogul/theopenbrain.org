@@ -120,6 +120,14 @@ module.exports = {
         accent: "rgb(var(--color-accent) / <alpha-value>)",
         complete: "rgb(var(--color-complete) / <alpha-value>)",
         warn: "rgb(var(--color-warn) / <alpha-value>)",
+        // The chapter's subject ramp ([data-chapter] on <html>): figure
+        // controls take it, so one figure matches whichever chapter it's in.
+        chapter: {
+          DEFAULT: "rgb(var(--color-chapter) / <alpha-value>)",
+          deep: "rgb(var(--color-chapter-deep) / <alpha-value>)",
+          soft: "rgb(var(--color-chapter-soft) / <alpha-value>)",
+          pale: "rgb(var(--color-chapter-pale) / <alpha-value>)",
+        },
 
         // Legacy aliases — keep existing classes working through the migration
         lightest: "rgb(var(--color-bg) / <alpha-value>)",
