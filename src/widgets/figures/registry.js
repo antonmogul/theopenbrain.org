@@ -15,9 +15,13 @@ import centerSurround from "./center-surround/schema.js";
 import directionSelectivity from "./direction-selectivity/schema.js";
 import objectMotion from "./object-motion/schema.js";
 import rodCone from "./rod-cone/schema.js";
+import lateralOrganization from "./lateral-organization/schema.js";
+import eyeStructureTransition from "./transitions/eye-structure.js";
+import retinalCellTypesTransition from "./transitions/retinal-cell-types.js";
 
 const stepThrough = () => import("./step-through/StepThrough.vue");
 const switchFigure = () => import("./switch/SwitchFigure.vue");
+const transition = () => import("./transitions/TransitionFigure.vue");
 
 export const FIGURE_WIDGETS = {
   [refractionErrors.animationKey]: {
@@ -42,6 +46,19 @@ export const FIGURE_WIDGETS = {
   },
   [objectMotion.animationKey]: { schema: objectMotion, load: switchFigure },
   [rodCone.animationKey]: { schema: rodCone, load: switchFigure },
+  // The split and the transitions, driven by the reader's scroll (OPENBRAIN-83).
+  [lateralOrganization.animationKey]: {
+    schema: lateralOrganization,
+    load: () => import("./split/SplitFigure.vue"),
+  },
+  [eyeStructureTransition.animationKey]: {
+    schema: eyeStructureTransition,
+    load: transition,
+  },
+  [retinalCellTypesTransition.animationKey]: {
+    schema: retinalCellTypesTransition,
+    load: transition,
+  },
 };
 
 /** The widget for an animation key, or null. */

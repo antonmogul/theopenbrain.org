@@ -468,7 +468,8 @@ async function saveFigure(value) {
 
 // ---- figure widgets (OPENBRAIN-80) ----
 const isWidgetFigure = (p) =>
-  !!figureWidgetFor(ed.mediaById.value.get(p.animation_id)?.animation_key);
+  !!figureWidgetFor(ed.mediaById.value.get(p.animation_id)?.animation_key)
+    ?.schema.fields.length;
 const { clearCache: clearAnimationsCache } = useAnimations();
 const widgetSettingsFor = ref(null); // the figure's media row
 const widgetStates = ref([]);

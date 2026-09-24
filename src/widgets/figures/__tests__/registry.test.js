@@ -68,7 +68,7 @@ describe("step-through figures match their artwork", () => {
   const pub = join(__dirname, "../../../../public");
   const stepThrough = Object.values(FIGURE_WIDGETS)
     .map((w) => w.schema)
-    .filter((s) => s.frames);
+    .filter((s) => Array.isArray(s.frames));
 
   function layerClasses(lottie) {
     const out = new Set();
@@ -129,5 +129,35 @@ describe("switch figures match their artwork", () => {
     // Their labels are the drawing's, not the database's older ones.
     for (const key of ["switches", "legend"])
       expect(schema.fields.find((f) => f.key === key).artwork).toBe(true);
+  });
+});
+
+// The split and the transitions are bound to their artwork too.
+describe("scrubbed figures match their artwork", () => {
+  const pub = join(__dirname, "../../../../public");
+  const read = (f) => JSON.parse(readFileSync(join(pub, f), "utf8"));
+
+  it("the split: two files of one length, its layers inside them", () => {
+    const s = FIGURE_WIDGETS.animationLatteralOrganization.schema;
+    const [l, r] = [read(s.left), read(s.right)];
+    expect(l.op).toBe(r.op);
+    expect(s.frames).toBe(l.op);
+    expect(s.startFrame).toBeLessThan(s.layers[0].from);
+    for (const layer of s.layers) {
+      expect(layer.from).toBeLessThan(layer.to);
+      expect(layer.to).toBeLessThan(l.op);
+    }
+    expect(s.defaults.infos).toHaveLength(s.layers.length);
+    expect(s.defaults.sources).toHaveLength(s.layers.length);
+    expect(s.scrollLength).toMatch(/vh$/);
+  });
+
+  it.each([
+    "animationEyeStructurTransition",
+    "animationRetinalCellTypesTransition",
+  ])("%s", (key) => {
+    const s = FIGURE_WIDGETS[key].schema;
+    expect(read(`publicAssets/animations/${key}.json`).op).toBeGreaterThan(0);
+    expect(s.scrub.from).toBeLessThan(s.scrub.to);
   });
 });

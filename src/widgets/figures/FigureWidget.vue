@@ -12,6 +12,8 @@ import { lottiePath } from "@/helper/animationResolve";
 const props = defineProps({
   /** The resolved animation record (useAnimations / animations.json shape). */
   record: { type: Object, required: true },
+  /** Scroll progress (0–1) for figures the reader scrubs through, else null. */
+  progress: { type: Number, default: null },
 });
 
 const entry = computed(() => figureWidgetFor(props.record?.id));
@@ -69,7 +71,7 @@ if (import.meta.env?.DEV && entry.value) {
     const own = props.record?.[f.key];
     if (f.artwork && own !== undefined)
       console.info(
-        `[figure widget] ${props.record.id}: the database's "${f.key}" is ignored; the widget uses its artwork's labels (edit them under Figure settings).`
+        `[figure widget] ${props.record.id}: the database's "${f.key}" is ignored; this figure's "${f.key}" belong to its artwork (edit them under Figure settings).`
       );
   }
 }
@@ -85,6 +87,7 @@ const lottieUrl = computed(() =>
       :content="content"
       :schema="entry.schema"
       :lottie-url="lottieUrl"
+      v-bind="progress === null ? {} : { progress }"
     />
   </div>
 </template>
