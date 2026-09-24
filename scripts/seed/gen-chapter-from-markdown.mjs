@@ -69,7 +69,7 @@ export const BREAKOUT_WIDGETS = [
   {
     match: /normali[sz]ation/i,
     widgetId: "normalization-model",
-    route: "",
+    route: "/normalization-model",
     title: "Normalization model of attention",
     blurb:
       "Interactive normalization model showing how attention modulates neural responses through divisive normalisation — the unifying computation.",

@@ -213,6 +213,7 @@ export const WIDGETS = [
     chapter: "Attention & Working Memory",
     author: "Arjun Krishnaswamy",
     srcHtml: normModelHtml,
+    vuePath: "/normalization-model",
     height: "700px",
     deps: [],
   },

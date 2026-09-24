@@ -164,7 +164,7 @@ describe("gen-chapter-from-markdown: markdown -> rows", () => {
     expect(widget.content_text).toBe("Interactive: Signal Detection Theory");
   });
 
-  it("maps the normalization box to the route-less normalization-model widget", () => {
+  it("maps the normalization box to the normalization-model widget", () => {
     const { sections } = parseChapterMarkdown(
       "## S\n\n### BREAK OUT BOX: The normalization model of attention\n\nProse.\n",
       { author: "A", placementPrefix: "attention" }
@@ -173,7 +173,7 @@ describe("gen-chapter-from-markdown: markdown -> rows", () => {
     expect(widget.blocks[0]).toMatchObject({
       type: "widget",
       widgetId: "normalization-model",
-      route: "",
+      route: "/normalization-model",
       placementId: "attention-normalization-model",
     });
   });

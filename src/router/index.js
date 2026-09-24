@@ -198,6 +198,14 @@ export const routes = [
     component: () => import("../views/HillyardErpView.vue"),
   },
   {
+    // Normalization model of attention (Attention chapter). OPENBRAIN-88:
+    // port of Arjun's v2. Not linked in nav; open /normalization-model
+    // directly.
+    path: "/normalization-model",
+    name: "normalization-model",
+    component: () => import("../views/NormalizationModelView.vue"),
+  },
+  {
     // Color Vision Explorer (Retina chapter). OPENBRAIN-14: first Stuart
     // widget port. Not linked in nav; open /color-vision directly.
     path: "/color-vision",
