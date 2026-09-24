@@ -103,12 +103,86 @@ describe("SwitchFigure", () => {
     expect(w.text()).not.toContain("Excitatation");
   });
 
-  it("says so when a version's animation doesn't load", async () => {
+  it("says so only for the version on show that didn't load", async () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
-    global.fetch = vi.fn(() => Promise.resolve({ ok: false, status: 404 }));
+    // Day loads, Night doesn't.
+    global.fetch = vi.fn((url) =>
+      Promise.resolve(
+        url.includes("Night")
+          ? { ok: false, status: 404 }
+          : { ok: true, json: () => Promise.resolve({ assets: [] }) }
+      )
+    );
     const w = mountFigure(rodCone);
     await flushPromises();
+    expect(w.find(".sf-failed").exists()).toBe(false);
+    await w.findAll(".sf-option")[1].trigger("click");
     expect(w.find(".sf-failed").exists()).toBe(true);
+    expect(error.mock.calls[0][0]).toMatch(/rod-cone #2/);
     error.mockRestore();
+  });
+
+  it("holds each version at its still frame when reduced motion is on", async () => {
+    document.documentElement.dataset.reduceMotion = "1";
+    const w = mountFigure(rodCone);
+    await flushPromises();
+    expect(made[0].goToAndStop).toHaveBeenCalledWith(
+      rodCone.variants[0].stillFrame,
+      true
+    );
+    expect(made[0].goToAndPlay).not.toHaveBeenCalled();
+    expect(w.find(".sf-pause").exists()).toBe(false);
+    await w.findAll(".sf-option")[1].trigger("click");
+    expect(made[1].goToAndStop).toHaveBeenLastCalledWith(
+      rodCone.variants[1].stillFrame,
+      true
+    );
+    delete document.documentElement.dataset.reduceMotion;
+  });
+
+  it("pauses off screen and picks up again on screen, unless paused", async () => {
+    let report;
+    global.IntersectionObserver = class {
+      constructor(cb) {
+        report = cb;
+      }
+      observe() {}
+      disconnect() {}
+    };
+    const w = mountFigure(rodCone);
+    await flushPromises();
+    report([{ isIntersecting: false }]);
+    expect(made[0].pause).toHaveBeenCalled();
+    report([{ isIntersecting: true }]);
+    expect(made[0].play).toHaveBeenCalledTimes(1);
+    await w.get(".sf-pause").trigger("click");
+    report([{ isIntersecting: false }]);
+    report([{ isIntersecting: true }]);
+    expect(made[0].play).toHaveBeenCalledTimes(1);
+    delete global.IntersectionObserver;
+  });
+
+  it("gives each copy of a figure on the page its own legend id", async () => {
+    const content = figureContent(rodCone, {});
+    const w = mount({
+      components: { SwitchFigure },
+      setup: () => ({ rodCone, content }),
+      template: `<div><SwitchFigure :schema="rodCone" :content="content" /><SwitchFigure :schema="rodCone" :content="content" /></div>`,
+    });
+    await flushPromises();
+    const ids = w.findAll(".sf-legend").map((l) => l.attributes("id"));
+    expect(new Set(ids).size).toBe(2);
+    expect(
+      w.findAll(".sf-legend-toggle").map((t) => t.attributes("aria-controls"))
+    ).toEqual(ids);
+  });
+
+  it("shows labels as text, not markup", async () => {
+    const w = mountFigure(rodCone, {
+      content: { legend: ['<img src=x onerror="alert(1)">'] },
+    });
+    await flushPromises();
+    expect(w.find(".sf-legend img[src='x']").exists()).toBe(false);
+    expect(w.get(".sf-legend li span").text()).toContain("<img");
   });
 });

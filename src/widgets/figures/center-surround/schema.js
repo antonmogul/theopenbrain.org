@@ -11,9 +11,11 @@ export default {
   variants: [
     {
       file: "/publicAssets/animations/animationCenterSurroundReceptiveFieldsCenter.json",
+      stillFrame: 146,
     },
     {
       file: "/publicAssets/animations/animationCenterSurroundReceptiveFieldsCenterSurround.json",
+      stillFrame: 176,
     },
   ],
   legendArt: [

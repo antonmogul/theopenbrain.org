@@ -120,6 +120,9 @@ describe("switch figures match their artwork", () => {
     for (const v of schema.variants) {
       const lottie = JSON.parse(readFileSync(join(pub, v.file), "utf8"));
       expect(lottie.op, v.file).toBeGreaterThan(0);
+      // Where a held version rests: inside the file, past its start.
+      expect(v.stillFrame, v.file).toBeGreaterThan(0);
+      expect(v.stillFrame, v.file).toBeLessThan(lottie.op);
     }
     for (const art of schema.legendArt)
       expect(statSync(join(pub, art.icon)).isFile(), art.icon).toBe(true);

@@ -11,9 +11,11 @@ export default {
   variants: [
     {
       file: "/publicAssets/animations/animationRodVsConeCircuitsDay.json",
+      stillFrame: 144,
     },
     {
       file: "/publicAssets/animations/animationRodVsConeCircuitsNight.json",
+      stillFrame: 172,
     },
   ],
   legendArt: [

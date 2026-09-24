@@ -11,9 +11,11 @@ export default {
   variants: [
     {
       file: "/publicAssets/animations/animationDirectionSelectivityPreferred.json",
+      stillFrame: 179,
     },
     {
       file: "/publicAssets/animations/animationDirectionSelectivityNull.json",
+      stillFrame: 171,
     },
   ],
   legendArt: [

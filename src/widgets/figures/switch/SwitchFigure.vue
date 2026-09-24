@@ -11,8 +11,9 @@
  * holds the words. It sits on the reader's own ground; the accent (the
  * host's --widget-accent, the chapter ramp) marks the chosen switch.
  */
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
 import { versionedUrl } from "../content.js";
+import { prefersReducedMotion } from "../shared/motion.js";
 import { useFigureLottie } from "../shared/useFigureLottie.js";
 
 const props = defineProps({
@@ -24,10 +25,15 @@ const props = defineProps({
   lottieUrl: { type: String, default: "" },
 });
 
+const root = ref(null);
 const active = ref(0);
 const paused = ref(false);
 const legendOpen = ref(false);
 const stages = ref([]);
+// Unique per instance: the same figure can be on the page twice.
+const legendId = `${props.schema.id}-legend-${useId()}`;
+let observer = null;
+let visible = true;
 // One loader per version of the drawing; each keeps its own stage.
 const loaders = props.schema.variants.map((_, i) =>
   useFigureLottie(
@@ -39,20 +45,27 @@ const loaders = props.schema.variants.map((_, i) =>
     `${props.schema.id} #${i + 1}`
   )
 );
-const reducedMotion =
-  typeof window !== "undefined" &&
-  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = prefersReducedMotion();
 
-const failed = () => loaders.some((l) => l.failed.value);
+/** Only the version on show can say it didn't load. */
+const failed = computed(() => loaders[active.value]?.failed.value);
 
-/** Play only the chosen version, from its start; hold the rest. */
+/**
+ * Play only the chosen version, from its start; hold the rest. Held still
+ * (reduced motion, or paused), a version shows its still frame: the drawing
+ * with its signals in, where frame 0 has only the outlines.
+ */
 function show(i) {
   loaders.forEach((l, j) => {
     const a = l.anim;
     if (!a) return;
     if (j !== i) a.pause();
-    else if (reducedMotion || paused.value) a.goToAndStop(0, true);
-    else a.goToAndPlay(0, true);
+    else if (reducedMotion || paused.value)
+      a.goToAndStop(props.schema.variants[i].stillFrame ?? 0, true);
+    else {
+      a.goToAndPlay(0, true);
+      if (!visible) a.pause();
+    }
   });
 }
 
@@ -71,6 +84,17 @@ function togglePause() {
 }
 
 onMounted(async () => {
+  // Only animate while on screen (the phone's inline figures all mount).
+  if (typeof IntersectionObserver !== "undefined" && root.value) {
+    observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      const a = loaders[active.value].anim;
+      if (!a || reducedMotion || paused.value) return;
+      if (visible) a.play();
+      else a.pause();
+    });
+    observer.observe(root.value);
+  }
   await Promise.all(
     props.schema.variants.map((v, i) =>
       loaders[i].mount(versionedUrl(v.file, props.schema.lottieVersion), {
@@ -80,11 +104,14 @@ onMounted(async () => {
   );
   show(active.value);
 });
-onBeforeUnmount(() => loaders.forEach((l) => l.destroy()));
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  loaders.forEach((l) => l.destroy());
+});
 </script>
 
 <template>
-  <div class="sf">
+  <div ref="root" class="sf">
     <div class="sf-controls">
       <h4 class="sf-title">{{ content.title }}</h4>
 
@@ -106,7 +133,7 @@ onBeforeUnmount(() => loaders.forEach((l) => l.destroy()));
         type="button"
         class="sf-legend-toggle"
         :aria-expanded="legendOpen"
-        :aria-controls="`${schema.id}-legend`"
+        :aria-controls="legendId"
         @click="legendOpen = !legendOpen"
       >
         <span class="sf-round" :class="{ 'is-open': legendOpen }">
@@ -116,10 +143,10 @@ onBeforeUnmount(() => loaders.forEach((l) => l.destroy()));
         </span>
         Legend
       </button>
-      <ul v-show="legendOpen" :id="`${schema.id}-legend`" class="sf-legend">
+      <ul v-show="legendOpen" :id="legendId" class="sf-legend">
         <li v-for="(label, i) in content.legend" :key="i">
           <img :src="schema.legendArt[i]?.icon" alt="" loading="lazy" />
-          <span v-html="label" />
+          <span>{{ label }}</span>
         </li>
       </ul>
     </div>
@@ -148,7 +175,7 @@ onBeforeUnmount(() => loaders.forEach((l) => l.destroy()));
         class="sf-stage"
         aria-hidden="true"
       />
-      <p v-if="failed()" class="sf-failed" role="alert">
+      <p v-if="failed" class="sf-failed" role="alert">
         The animation didn't load. Reload the page to try again.
       </p>
     </div>
@@ -180,6 +207,10 @@ onBeforeUnmount(() => loaders.forEach((l) => l.destroy()));
   display: grid;
   justify-items: start;
   gap: 0;
+  /* A long legend scrolls on short screens instead of running off. */
+  max-height: calc(100% - 2.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .sf .sf-title {
   margin: 0 0 2.25rem;
@@ -345,10 +376,14 @@ onBeforeUnmount(() => loaders.forEach((l) => l.destroy()));
   .sf-controls {
     position: relative;
     inset: auto;
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: 55%;
     padding: 1rem;
   }
   .sf .sf-title {
     margin-bottom: 1rem;
+    padding-right: 3rem;
   }
   .sf-switch {
     grid-auto-flow: column;
@@ -358,7 +393,7 @@ onBeforeUnmount(() => loaders.forEach((l) => l.destroy()));
   .sf-drawing.is-narrow {
     position: relative;
     inset: auto;
-    flex: 1 1 auto;
+    flex: 1 0 45%;
     width: 100%;
     min-height: 0;
     padding: 0 1rem 1rem;

@@ -13,6 +13,7 @@
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import FigureIntro from "../shared/FigureIntro.vue";
+import { prefersReducedMotion } from "../shared/motion.js";
 import { useFigureLottie } from "../shared/useFigureLottie.js";
 
 const props = defineProps({
@@ -38,9 +39,7 @@ let started = false; // the first step has been set playing
 
 const frames = computed(() => props.schema.frames);
 const stepCount = computed(() => frames.value.length - 1);
-const reducedMotion =
-  typeof window !== "undefined" &&
-  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = prefersReducedMotion();
 
 /** Play step i (wrapping) on a loop, from its start frame to the next. */
 function playStep(i) {

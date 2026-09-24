@@ -11,9 +11,11 @@ export default {
   variants: [
     {
       file: "/publicAssets/animations/animationObjectMotionSensitivitySymmetric.json",
+      stillFrame: 133,
     },
     {
       file: "/publicAssets/animations/animationObjectMotionSensitivityAsymmetric.json",
+      stillFrame: 95,
     },
   ],
   legendArt: [
