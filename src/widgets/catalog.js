@@ -31,6 +31,7 @@ import biasedCompHtml from "./source/biased_competition_widget.html?raw";
 import contrastGainHtml from "./source/contrast_response_gain_widget.html?raw";
 import tmtHtml from "./source/tmt_feature_attention_widget.html?raw";
 import normModelHtml from "./source/normalization_model_widget_v2.html?raw";
+import hillyardHtml from "./source/hillyard_attention_erp_widget.html?raw";
 import retinaboxHtml from "./source/retinabox-web.html?raw";
 import retinaboxAppHtml from "./source/retinabox-web_app.html?raw";
 import dirSelectHtml from "./source/retina_direction_selectivity_data_widget.html?raw";
@@ -213,6 +214,17 @@ export const WIDGETS = [
     author: "Arjun Krishnaswamy",
     srcHtml: normModelHtml,
     height: "700px",
+    deps: [],
+  },
+  {
+    id: "hillyard-attention-erp",
+    title: "Selective attention changes the auditory ERP",
+    desc: "Attend to the left or right ear and watch the N1 evoked by the same left-ear tone grow or shrink, after Hillyard and colleagues (1973).",
+    chapter: "Attention & Working Memory",
+    author: "Arjun Krishnaswamy",
+    srcHtml: hillyardHtml,
+    vuePath: "/hillyard-erp",
+    height: "760px",
     deps: [],
   },
 

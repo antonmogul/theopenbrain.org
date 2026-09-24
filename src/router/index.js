@@ -191,6 +191,13 @@ export const routes = [
     component: () => import("../views/CorbettaPetView.vue"),
   },
   {
+    // Hillyard auditory attention ERP widget (Attention chapter). OPENBRAIN-88.
+    // Not linked in nav; open /hillyard-erp directly.
+    path: "/hillyard-erp",
+    name: "hillyard-erp",
+    component: () => import("../views/HillyardErpView.vue"),
+  },
+  {
     // Color Vision Explorer (Retina chapter). OPENBRAIN-14: first Stuart
     // widget port. Not linked in nav; open /color-vision directly.
     path: "/color-vision",

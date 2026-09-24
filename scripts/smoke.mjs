@@ -272,6 +272,12 @@ const ROUTES = [
     widths: [1280, 1440, 1920],
   },
   {
+    path: "/hillyard-erp",
+    name: "widget-hillyard-erp",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
     path: "/color-vision",
     name: "widget-color-vision",
     minText: 50,
