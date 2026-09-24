@@ -664,7 +664,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="v1-camera">
+  <div class="widget-root v1-camera">
     <header class="v1-header">
       <h1 class="v1-title">What V1 sees</h1>
       <div class="v1-spacer" />

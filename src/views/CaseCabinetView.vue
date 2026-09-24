@@ -262,7 +262,7 @@ function close() {
 <template>
   <section
     ref="stageEl"
-    class="cabinet"
+    class="widget-root cabinet"
     aria-label="Case cabinet: Wilder Penfield and the Montreal Procedure"
   >
     <div class="frame" :style="{ height: `${(RULE_Y + 1) * scale}px` }">

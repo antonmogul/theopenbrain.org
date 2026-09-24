@@ -87,6 +87,47 @@
     font-weight: 400;
     font-family: var(--font-mono);
   }
+  /* Section labels inside widgets ("Evidence axis", "Model"): the widget
+     ports used these two roles before they existed, so their headings fell
+     back to the book's h2 (OPENBRAIN-75). */
+  .t-overline {
+    font-size: var(--type-label-size);
+    line-height: var(--type-label-lh);
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .t-mono {
+    font-family: var(--font-mono);
+  }
+  /* Widget titles and prose where the authors' originals are set in sans
+     (SDT, Posner, Biased competition, Contrast gain), rather than the
+     site's uppercase mono labels (OPENBRAIN-75). */
+  .t-widget-title {
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+    margin: 0;
+    padding: 0;
+  }
+  .t-widget-body {
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    letter-spacing: normal;
+  }
+  .t-widget-sub {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    letter-spacing: normal;
+  }
   .t-label {
     font-size: var(--type-label-size);
     line-height: var(--type-label-lh);
@@ -474,6 +515,36 @@ h3 {
 h4 {
   font-size: 1.25rem;
   line-height: 1.4375rem;
+}
+
+/*
+ * Widget views (src/views/*View.vue, ported from the authors' standalone
+ * HTML) carry `widget-root` on their root. The originals were written
+ * against browser defaults; the book's reading metrics (.text-base: 19px,
+ * 30px leading, 0.5px tracking), hyphenation and h1–h4 sizes/padding must
+ * not reach inside them (OPENBRAIN-75). Each rule here is one class deep, so
+ * a widget's own scoped styles still win.
+ */
+.widget-root {
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: normal;
+  hyphens: manual;
+}
+.widget-root :where(h1, h2, h3, h4, h5, h6) {
+  padding: 0;
+  hyphens: manual;
+}
+/* The global `canvas { position: fixed }` above (a legacy full-screen
+   reader effect) pinned every widget canvas to the window: RetINaBox's
+   signal monitor was laid out 1440px wide and never scrolled. */
+.widget-root canvas {
+  position: static;
+  z-index: auto;
+}
+.widget-root :where(h1, h2, h3, h4, h5, h6):not([class*="t-"]) {
+  font-size: revert;
+  line-height: 1.25;
 }
 
 .T,

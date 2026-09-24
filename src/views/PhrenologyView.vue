@@ -278,7 +278,7 @@ function closePanel(instant = false) {
 </script>
 
 <template>
-  <div class="phreno">
+  <div class="widget-root phreno">
     <header class="phreno__chrome">
       <span class="phreno__eyebrow">Phrenology</span>
       <nav class="tabs" aria-label="Skull view">
