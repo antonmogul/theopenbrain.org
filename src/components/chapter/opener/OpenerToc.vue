@@ -123,9 +123,16 @@ function go(anchor, event) {
   color: #fff;
 }
 
+/* The divider lines run to the frame's right edge (Figma); the rows carry
+   the right margin instead of the list (OPENBRAIN-74). */
 .opener-toc__list {
-  padding-right: 3.75rem;
   letter-spacing: 0.1px;
+  /* The reader hyphenates prose; titles in the contents break at words. */
+  hyphens: manual;
+}
+/* Figma has no line above the first row: Introduction sits on the frame. */
+.opener-toc__section--intro > .opener-toc__row--section {
+  border-top: 0;
 }
 .opener-toc__sections,
 .opener-toc__subs {
@@ -138,7 +145,7 @@ function go(anchor, event) {
   align-items: center;
   color: inherit;
   text-decoration: none;
-  padding: 1.0625rem 0 1.0625rem 3.3125rem; /* 17 / 53: a 66px row */
+  padding: 1.0625rem 3.75rem 1.0625rem 3.3125rem; /* 17 / 53: a 66px row */
   line-height: 1.429;
 }
 .opener-toc__row--section {
@@ -173,7 +180,7 @@ function go(anchor, event) {
   padding: 0 0 0 3.3125rem; /* rules start under the titles, at 53 */
 }
 .opener-toc__row--sub {
-  padding: 0.5rem 0; /* a 41px row */
+  padding: 0.5rem 3.75rem 0.5rem 0; /* a 41px row */
   border-top: 1px solid rgb(142 142 147 / 0.45); /* the frame's 0.25px #8E8E93 */
   color: #fff;
   font-size: clamp(1rem, 1.04vw, 1.125rem); /* 18px */
@@ -205,6 +212,9 @@ function go(anchor, event) {
   }
   .opener-toc__list {
     padding: 0 0 0 1.5rem;
+  }
+  .opener-toc__row {
+    padding-right: 0;
   }
 }
 </style>
