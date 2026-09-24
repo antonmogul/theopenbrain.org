@@ -44,7 +44,10 @@ export default {
       key: "caption",
       label: "Legend",
       type: "textarea",
-      hint: "The figure legend, with its source.",
+      // The database's legend predates the translations (it doesn't credit
+      // Breasted), so this widget's own wording wins until it is edited here.
+      artwork: true,
+      hint: "The figure legend, with its sources.",
     },
   ],
   defaults: {

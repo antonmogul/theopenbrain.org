@@ -73,6 +73,15 @@ function release() {
 }
 
 const label = (i) => `${i + 1}. ${props.content.methods[i]}`;
+
+/** Say which file failed: production answers a missing one with the app. */
+function onImgError(e) {
+  failed.value = true;
+  console.error(
+    `[figure widget] ${props.schema.animationKey}: an image didn't load`,
+    e.target?.currentSrc || e.target?.src
+  );
+}
 </script>
 
 <template>
@@ -90,7 +99,7 @@ const label = (i) => `${i + 1}. ${props.content.methods[i]}`;
             width: pctX(art.skull.w),
           }"
           alt="A trepanned skull in profile with four healed openings, numbered 1 to 4."
-          @error="failed = true"
+          @error="onImgError"
         />
 
         <img
@@ -102,7 +111,7 @@ const label = (i) => `${i + 1}. ${props.content.methods[i]}`;
           :style="handStyle(m)"
           alt=""
           aria-hidden="true"
-          @error="failed = true"
+          @error="onImgError"
         />
 
         <!-- Each opening is a pointer target too; the numbers carry the

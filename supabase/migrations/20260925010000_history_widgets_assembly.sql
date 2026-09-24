@@ -14,6 +14,9 @@
 -- Figure 2 (trepanation) needs no change here: the reader hands its row to
 -- the new widget by its animation key. Each step is guarded by the state it
 -- expects, so a re-run, or a creator's own change since, is left alone.
+-- The paragraphs are production's own rows (the seed gave them random ids),
+-- so on any other database the steps match nothing and the check steps
+-- aside.
 
 begin;
 
@@ -27,7 +30,8 @@ where id = '806e2b05-05d4-4302-9805-848e8231848b'
 update public.paragraphs
 set animation_id = (select id from public.animations where animation_key = 'animationFoundationsFig4')
 where id = 'd8cca9b1-8463-41eb-a7d9-096fc42b7d7b'
-  and animation_id = (select id from public.animations where animation_key = 'animationFoundationsFig3');
+  and animation_id = (select id from public.animations where animation_key = 'animationFoundationsFig3')
+  and exists (select 1 from public.animations where animation_key = 'animationFoundationsFig4');
 
 -- 2. Figure B as Figure A's second image.
 update public.animations a
@@ -82,16 +86,26 @@ declare
   fig4 uuid := (select id from public.animations where animation_key = 'animationFoundationsFig4');
   n int;
 begin
+  if not exists (select 1 from public.paragraphs where id = '806e2b05-05d4-4302-9805-848e8231848b') then
+    raise notice 'history: not production''s History rows, nothing to check';
+    return;
+  end if;
+  if fig3 is null or fig4 is null then
+    raise exception 'history: the figure 3 or figure 4 row is missing';
+  end if;
   if (select animation_id from public.paragraphs where id = '806e2b05-05d4-4302-9805-848e8231848b') is distinct from fig3 then
     raise exception 'history: figure 3 is not on the Egyptian-writing paragraph';
   end if;
   if (select animation_id from public.paragraphs where id = 'd8cca9b1-8463-41eb-a7d9-096fc42b7d7b') is distinct from fig4 then
     raise exception 'history: figure 4 is not on the case 20 paragraph';
   end if;
-  select jsonb_array_length(config -> 'images') into n
-    from public.animations where animation_key = 'animationFoundationsFigA';
-  if n <> 2 then
-    raise exception 'history: figure A has % images, expected 2', n;
+  if not exists (
+    select 1 from public.animations a, public.animations b
+    where a.animation_key = 'animationFoundationsFigA'
+      and b.animation_key = 'animationFoundationsFigB'
+      and (a.config -> 'images') @> jsonb_build_array(jsonb_build_object('src', b.config -> 'images' -> 0 ->> 'src'))
+  ) then
+    raise exception 'history: figure B is not in figure A''s pane';
   end if;
   select count(*) into n
     from public.paragraphs p
@@ -102,7 +116,7 @@ begin
      and blk ->> 'type' = 'widget'
      and blk ->> 'widgetId' in ('case-cabinet', 'phrenology')
      and blk ->> 'kind' = 'inline';
-  if n <> 2 then
+  if n is distinct from 2 then
     raise exception 'history: % of the 2 widgets are on the page', n;
   end if;
 end $$;
