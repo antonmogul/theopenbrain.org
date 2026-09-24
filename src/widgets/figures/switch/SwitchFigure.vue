@@ -102,6 +102,9 @@ onMounted(async () => {
       })
     )
   );
+  // Some play slower than recorded (ON & OFF runs at half speed).
+  if (props.schema.speed)
+    loaders.forEach((l) => l.anim?.setSpeed(props.schema.speed));
   show(active.value);
 });
 onBeforeUnmount(() => {

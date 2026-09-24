@@ -112,7 +112,7 @@ describe("switch figures match their artwork", () => {
     .map((w) => w.schema)
     .filter((s) => s.variants);
 
-  it("finds them", () => expect(switches.length).toBe(4));
+  it("finds them", () => expect(switches.length).toBe(5));
 
   it.each(switches.map((s) => [s.id, s]))("%s", (_, schema) => {
     expect(schema.variants).toHaveLength(schema.defaults.switches.length);
