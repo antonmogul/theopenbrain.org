@@ -79,6 +79,78 @@ function hasSupabaseCredentials() {
 }
 
 const HAS_SUPABASE = hasSupabaseCredentials();
+
+/* The Supabase URL and publishable key, from the environment or .env. */
+function supabaseCredentials() {
+  let url = process.env.VITE_SUPABASE_URL;
+  let key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) {
+    try {
+      const env = readFileSync(path.resolve(".env"), "utf8");
+      url ||= env.match(/^VITE_SUPABASE_URL=(.+)$/m)?.[1]?.trim();
+      key ||= env.match(/^VITE_SUPABASE_PUBLISHABLE_KEY=(.+)$/m)?.[1]?.trim();
+    } catch {
+      /* no .env */
+    }
+  }
+  return url && key ? { url, key } : null;
+}
+
+/*
+ * Data check (OPENBRAIN-76): every figure a published chapter uses must have
+ * its artwork. A placeholder card is not an error the browser can see, so
+ * History shipped with 26 of 29 figures blank and every check green.
+ * Returns failure messages (empty when all figures have artwork).
+ */
+async function checkFigureArtwork() {
+  const creds = supabaseCredentials();
+  if (!creds) return [];
+  const get = async (q) => {
+    const res = await fetch(`${creds.url}/rest/v1/${q}`, {
+      headers: { apikey: creds.key },
+    });
+    if (!res.ok) throw new Error(`${q.split("?")[0]}: HTTP ${res.status}`);
+    return res.json();
+  };
+  const inList = (ids) => `(${ids.map((id) => `"${id}"`).join(",")})`;
+  const modules = await get("modules?status=eq.published&select=id,slug");
+  if (!modules.length) return [];
+  const sections = await get(
+    `sections?module_id=in.${inList(modules.map((m) => m.id))}&select=id,module_id`
+  );
+  const rows = sections.length
+    ? await get(
+        `paragraphs?section_id=in.${inList(sections.map((x) => x.id))}&animation_id=not.is.null&select=animation_id,section_id`
+      )
+    : [];
+  const ids = [...new Set(rows.map((r) => r.animation_id))];
+  if (!ids.length) return [];
+  const media = await get(
+    `animations?id=in.${inList(ids)}&select=id,animation_key,title,media_type,image_file_url,lottie_file_url,video_file_url,youtube_id,config`
+  );
+  const slugOf = new Map(
+    sections.map((x) => [x.id, modules.find((m) => m.id === x.module_id)?.slug])
+  );
+  const chaptersFor = (id) =>
+    [
+      ...new Set(
+        rows
+          .filter((r) => r.animation_id === id)
+          .map((r) => slugOf.get(r.section_id))
+      ),
+    ].join(", ");
+  const blank = media.filter((m) => {
+    const frames = Array.isArray(m.config?.images) ? m.config.images.length : 0;
+    if (m.media_type === "image") return !m.image_file_url && !frames;
+    if (m.media_type === "video") return !m.video_file_url;
+    if (m.media_type === "youtube") return !m.youtube_id;
+    return false; // lottie loads by key; widgets by config
+  });
+  return blank.map(
+    (m) =>
+      `figure "${m.title || m.animation_key}" (${m.animation_key}) in ${chaptersFor(m.id)} has no artwork — readers see a placeholder`
+  );
+}
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
  * /styleguide and /case-cabinet are unlisted internal routes — a design
@@ -288,6 +360,21 @@ async function main() {
   const browser = await chromium.launch();
   const failures = [];
   let checks = 0;
+
+  if (HAS_SUPABASE && !ONLY.length) {
+    checks++;
+    try {
+      const blank = await checkFigureArtwork();
+      failures.push(...blank);
+      console.log(
+        blank.length
+          ? `  ✗ figures: ${blank.length} without artwork`
+          : "  ✓ figures: every figure in a published chapter has artwork"
+      );
+    } catch (err) {
+      failures.push(`figure artwork check failed: ${err.message}`);
+    }
+  }
   let skippedContent = 0;
 
   for (const route of ROUTES) {
