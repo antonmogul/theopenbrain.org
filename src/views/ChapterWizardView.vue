@@ -8,14 +8,8 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
-import {
-  createChapter,
-  createSection,
-  createParagraph,
-  createReference,
-  fetchChapters,
-} from "@/services/api/chapters";
-import { fetchVersions, createVersion } from "@/services/api/versions";
+import { fetchChapters } from "@/services/api/chapters";
+import { importChapter } from "@/services/api/chapterImport";
 import WizardStepMeta from "@/components/dashboard/chapters/WizardStepMeta.vue";
 import WizardStepImport from "@/components/dashboard/chapters/WizardStepImport.vue";
 import WizardStepStructure from "@/components/dashboard/chapters/WizardStepStructure.vue";
@@ -123,81 +117,14 @@ async function handleCreate() {
   createError.value = null;
 
   try {
-    // 1. Get or create a content version
-    const versions = await fetchVersions();
-    let contentVersionId;
-
-    const draftVersion = versions.find((v) => v.status === "draft");
-    if (draftVersion) {
-      contentVersionId = draftVersion.id;
-    } else {
-      const newVersion = await createVersion(
-        {
-          version_number: `v${versions.length + 1}.0`,
-          release_notes: `Created for chapter: ${meta.value.title}`,
-        },
-        user.value?.id
-      );
-      contentVersionId = newVersion.id;
-    }
-
-    // 2. Create the module (chapter)
-    const chapter = await createChapter({
-      title: meta.value.title,
-      slug: meta.value.slug,
-      order_index: meta.value.order_index,
-      status: "draft",
-      content_version_id: contentVersionId,
-      created_by: user.value?.id,
+    // One all-or-nothing import (OPENBRAIN-78): bulk inserts, and a failure
+    // removes whatever was created instead of leaving half a chapter.
+    createdChapter.value = await importChapter({
+      meta: meta.value,
+      sections: sections.value,
+      references: references.value,
+      userId: user.value?.id,
     });
-
-    // 3. Create sections and paragraphs
-    for (const section of sections.value) {
-      const createdSection = await createSection({
-        module_id: chapter.id,
-        title: section.title,
-        slug: section.slug,
-        order_index: section.order_index,
-      });
-
-      // Create paragraphs in parallel for each section
-      await Promise.all(
-        section.paragraphs.map((para) =>
-          createParagraph({
-            section_id: createdSection.id,
-            content: para.content,
-            content_text: para.content_text,
-            order_index: para.order_index,
-            is_subsection_header: para.is_subsection_header,
-            subsection_level: para.subsection_level,
-          })
-        )
-      );
-    }
-
-    // 4. Create references if any
-    if (references.value.length > 0) {
-      await Promise.all(
-        references.value.map((ref) =>
-          createReference({
-            module_id: chapter.id,
-            number: ref.number,
-            authors: ref.authors,
-            title: ref.title,
-            journal: ref.journal,
-            year: ref.year,
-            volume: ref.volume,
-            pages: ref.pages,
-            doi: ref.doi,
-            url: ref.url,
-            pub_type: ref.pub_type,
-            raw_text: ref.raw_text,
-          })
-        )
-      );
-    }
-
-    createdChapter.value = chapter;
   } catch (err) {
     createError.value =
       err.message || "Failed to create chapter. Please try again.";
