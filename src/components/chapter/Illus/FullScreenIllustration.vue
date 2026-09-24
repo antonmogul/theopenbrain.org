@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, nextTick } from "vue";
+import { onBeforeUnmount, onMounted, ref, nextTick } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 let lottie;
 
@@ -27,6 +27,20 @@ const props = defineProps({
 // Figures rebuilt as widgets (OPENBRAIN-80) draw themselves; this component
 // only places them.
 const asWidget = !!figureWidgetFor(props.paragraph?.animationId);
+// A widget the reader scrubs through (the split) asks for a scroll length;
+// this measures the reader's way through it and passes it on as progress.
+const scrollLength = figureWidgetFor(props.paragraph?.animationId)?.schema
+  .scrollLength;
+const widgetScroll = ref(null);
+const widgetProgress = ref(0);
+function measureWidget() {
+  const el = widgetScroll.value;
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const range = r.height - window.innerHeight;
+  widgetProgress.value =
+    range > 0 ? Math.min(Math.max(-r.top / range, 0), 1) : 0;
+}
 
 const animation = ref(null);
 const totalFrames = ref(null);
@@ -59,6 +73,14 @@ onMounted(async () => {
     activeState.value.state = Object.keys(thisAnimation.value.states)[0];
   }
 
+  if (asWidget && scrollLength) {
+    await nextTick();
+    // Measured from where the figure is now on every scroll, so text and
+    // images loading above it can't leave the measurement stale.
+    window.addEventListener("scroll", measureWidget, { passive: true });
+    window.addEventListener("resize", measureWidget);
+    measureWidget();
+  }
   if (props.paragraph.scroll || asWidget) return;
   // The container div is inside the v-if="thisAnimation" template guard, so it
   // doesn't exist until the DOM catches up with the resolution above.
@@ -80,6 +102,11 @@ onMounted(async () => {
   });
   animation.value.setSubframe(true);
   animation.value.setSpeed(1);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", measureWidget);
+  window.removeEventListener("resize", measureWidget);
 });
 
 const toggleState = (index, activeState) => {
@@ -138,11 +165,18 @@ const openInfo = () => {
   <!-- Below xl a widget fills the prose column (which clips anything
        wider); either way it pins below the reader's top bar. -->
   <FullBleed v-if="thisAnimation && asWidget">
-    <div class="h-[150vh] mb-32 w-full">
+    <div
+      ref="widgetScroll"
+      class="mb-32 w-full"
+      :style="{ height: scrollLength || '150vh' }"
+    >
       <div
         class="sticky w-full top-[var(--reader-topbar-h,0px)] h-[calc(100vh-var(--reader-topbar-h,0px))]"
       >
-        <FigureWidget :record="thisAnimation" />
+        <FigureWidget
+          :record="thisAnimation"
+          :progress="scrollLength ? widgetProgress : null"
+        />
       </div>
     </div>
   </FullBleed>

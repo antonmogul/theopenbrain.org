@@ -12,6 +12,8 @@ import { lottiePath } from "@/helper/animationResolve";
 const props = defineProps({
   /** The resolved animation record (useAnimations / animations.json shape). */
   record: { type: Object, required: true },
+  /** Scroll progress (0–1) for figures the reader scrubs through, else null. */
+  progress: { type: Number, default: null },
 });
 
 const entry = computed(() => figureWidgetFor(props.record?.id));
@@ -85,6 +87,7 @@ const lottieUrl = computed(() =>
       :content="content"
       :schema="entry.schema"
       :lottie-url="lottieUrl"
+      v-bind="progress === null ? {} : { progress }"
     />
   </div>
 </template>

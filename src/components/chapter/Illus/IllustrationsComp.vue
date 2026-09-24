@@ -230,7 +230,10 @@ onBeforeUnmount(() => {
             v-if="panelShows && activeAnimation === animation.id.toLowerCase()"
             class="w-full h-full pointer-events-auto"
           >
-            <FigureWidget :record="animation" />
+            <FigureWidget
+              :record="animation"
+              :progress="animation.isTransition ? progress : null"
+            />
           </div>
         </transition>
       </template>
@@ -283,7 +286,10 @@ onBeforeUnmount(() => {
       </template>
       <template
         v-if="
-          !animation.fullscreen && !animation.scroll && animation.isTransition
+          !animation.fullscreen &&
+          !animation.scroll &&
+          animation.isTransition &&
+          !isPanelWidget(animation)
         "
       >
         <transition name="fade" mode="out-in">

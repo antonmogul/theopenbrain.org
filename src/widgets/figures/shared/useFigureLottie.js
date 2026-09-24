@@ -20,7 +20,10 @@ export function useFigureLottie(stage, id) {
   let token = 0;
 
   /** Resolves with the animation, or null if it failed or was superseded. */
-  async function mount(url, { replace = {}, loop = false } = {}) {
+  async function mount(
+    url,
+    { replace = {}, loop = false, renderer = "svg" } = {}
+  ) {
     const mine = ++token;
     anim?.destroy();
     anim = null;
@@ -36,7 +39,7 @@ export function useFigureLottie(stage, id) {
       if (mine !== token || !stage.value) return null;
       anim = lottie.loadAnimation({
         container: stage.value,
-        renderer: "svg",
+        renderer,
         loop,
         autoplay: false,
         animationData: data,

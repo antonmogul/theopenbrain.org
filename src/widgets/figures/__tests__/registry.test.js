@@ -131,3 +131,32 @@ describe("switch figures match their artwork", () => {
       expect(schema.fields.find((f) => f.key === key).artwork).toBe(true);
   });
 });
+
+// The split and the transitions are bound to their artwork too.
+describe("scrubbed figures match their artwork", () => {
+  const pub = join(__dirname, "../../../../public");
+  const read = (f) => JSON.parse(readFileSync(join(pub, f), "utf8"));
+
+  it("the split: two files of one length, its layers inside them", () => {
+    const s = FIGURE_WIDGETS.animationLatteralOrganization.schema;
+    const [l, r] = [read(s.left), read(s.right)];
+    expect(l.op).toBe(r.op);
+    expect(s.startFrame).toBeLessThan(s.layers[0].from);
+    for (const layer of s.layers) {
+      expect(layer.from).toBeLessThan(layer.to);
+      expect(layer.to).toBeLessThan(l.op);
+    }
+    expect(s.defaults.infos).toHaveLength(s.layers.length);
+    expect(s.defaults.sources).toHaveLength(s.layers.length);
+    expect(s.scrollLength).toMatch(/vh$/);
+  });
+
+  it.each([
+    "animationEyeStructurTransition",
+    "animationRetinalCellTypesTransition",
+  ])("%s", (key) => {
+    const s = FIGURE_WIDGETS[key].schema;
+    expect(read(`publicAssets/animations/${key}.json`).op).toBeGreaterThan(0);
+    expect(s.scrub.from).toBeLessThan(s.scrub.to);
+  });
+});
