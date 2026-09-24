@@ -182,10 +182,10 @@ const openInfo = () => {
                   (activeState.toggle === false &&
                     activeState.state === index) ||
                   (activeState.state === index && index === 0)
-                    ? 'bg-violet text-white pointer-events-none'
+                    ? 'bg-chapter text-black pointer-events-none'
                     : activeState.state === index
-                      ? 'border-violet text-black hover:text-violet  '
-                      : ' text-dark hover:text-violet hover:border-violet',
+                      ? 'border-chapter text-black hover:text-chapter-deep  '
+                      : ' text-dark hover:text-chapter-deep hover:border-chapter',
                 ]"
                 @click="
                   activeState.state !== index
@@ -204,10 +204,10 @@ const openInfo = () => {
                 class="flex justify-center items-center flex-col border border-l-0 col-span-1 p-6 border-black duration-100 flex-1"
                 :class="[
                   activeState.toggle === true && activeState.state === index
-                    ? 'bg-violet text-white pointer-events-none'
+                    ? 'bg-chapter text-black pointer-events-none'
                     : activeState.state === index
-                      ? 'border-violet text-black  hover:text-violet '
-                      : 'bg-lighter text-dark hover:text-violet hover:border-violet',
+                      ? 'border-chapter text-black  hover:text-chapter-deep '
+                      : 'bg-lighter text-dark hover:text-chapter-deep hover:border-chapter',
                   ,
                 ]"
                 @click="

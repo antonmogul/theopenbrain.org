@@ -25,7 +25,7 @@
               :class="[
                 !isPlay ? 'opacity-20 pointer-events-none ' : '',
                 isGoingNext &&
-                  'pointer-events-none !bg-violet !border-violet !fill-white',
+                  'pointer-events-none !bg-chapter !border-chapter !fill-white',
               ]"
               @click="playPause()"
               class="icon"
@@ -43,7 +43,7 @@
               :class="[
                 isPlay ? 'opacity-20 pointer-events-none ' : '',
                 isGoingNext &&
-                  'pointer-events-none !bg-violet !border-violet !fill-white',
+                  'pointer-events-none !bg-chapter !border-chapter !fill-white',
               ]"
               @click="nextStep()"
               class="icon -rotate-90"
@@ -88,7 +88,7 @@
               <div
                 :class="
                   currenSection === index
-                    ? ' opacity-100 text-violet '
+                    ? ' opacity-100 text-chapter-deep '
                     : ' opacity-10'
                 "
                 class="shrink-0 duration-300 h-10 w-10 text-center rounded-full"
@@ -98,7 +98,7 @@
               <div
                 :class="
                   currenSection === index
-                    ? 'opacity-100 text-violet'
+                    ? 'opacity-100 text-chapter-deep'
                     : 'opacity-0'
                 "
               >
@@ -119,8 +119,8 @@
               class="pb-6 cursor-pointer flex gap-3"
               :class="
                 toCamelCase(state) === activeState
-                  ? 'underline  text-violet hover:text-violet'
-                  : ' hover:text-violet'
+                  ? 'underline  text-chapter-deep hover:text-chapter-deep'
+                  : ' hover:text-chapter-deep'
               "
               v-for="state of animation.statesHighlight"
               :key="state"
