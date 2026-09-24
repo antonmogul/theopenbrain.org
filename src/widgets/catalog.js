@@ -37,7 +37,17 @@ import dirSelectHtml from "./source/retina_direction_selectivity_data_widget.htm
 import v1CameraHtml from "./source/v1-camera-widget.html?raw";
 import colorVisionHtml from "./source/color-vision-widget.html?raw";
 import visualLesionsHtml from "./source/visual-pathway-lesions-widget.html?raw";
+import corbettaPetHtmlRaw from "./source/corbetta_pet_attention_widget_v2.html?raw";
 /* eslint-enable import/no-unresolved */
+
+// The Corbetta original loads its photo from a relative `assets/` folder,
+// which does not resolve inside the gallery's srcdoc iframe (it would hit
+// /assets/ on the app origin). The source file stays byte-for-byte; only
+// the gallery's copy is pointed at the web-compressed image in public/.
+const corbettaPetHtml = corbettaPetHtmlRaw.replace(
+  'src="assets/corbetta_head_brain.png"',
+  'src="/publicAssets/images/widgets/corbetta_head_brain.webp"'
+);
 
 /**
  * @typedef {Object} Widget
@@ -182,6 +192,17 @@ export const WIDGETS = [
     srcHtml: tmtHtml,
     vuePath: "/feature-attention",
     height: "700px",
+    deps: [],
+  },
+  {
+    id: "corbetta-pet-attention",
+    title: "Attention selects visual cortex (Corbetta PET)",
+    desc: "The display stays the same; attending to shape, colour or velocity lights up different PET foci over posterior cortex (Corbetta et al., 1990). A spatial mode, labelled conceptual, shifts emphasis to the hemisphere opposite the attended field.",
+    chapter: "Attention & Working Memory",
+    author: "Arjun Krishnaswamy",
+    srcHtml: corbettaPetHtml,
+    vuePath: "/corbetta-pet",
+    height: "780px",
     deps: [],
   },
   {

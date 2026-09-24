@@ -184,6 +184,13 @@ export const routes = [
     component: () => import("../views/TmtFeatureAttentionView.vue"),
   },
   {
+    // Corbetta PET attention widget (Attention chapter). OPENBRAIN-88. Not
+    // linked in nav; open /corbetta-pet directly.
+    path: "/corbetta-pet",
+    name: "corbetta-pet",
+    component: () => import("../views/CorbettaPetView.vue"),
+  },
+  {
     // Color Vision Explorer (Retina chapter). OPENBRAIN-14: first Stuart
     // widget port. Not linked in nav; open /color-vision directly.
     path: "/color-vision",
