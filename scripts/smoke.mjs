@@ -465,6 +465,37 @@ async function main() {
             );
           }
         }
+        // Inline figures must paint inside themselves (OPENBRAIN-68): their
+        // label layers are position: fixed for the desktop pane, and below
+        // xl they escaped to the top of the viewport, over the opener. At the
+        // top of the page, nothing from a figure that starts below the first
+        // screen may be visible in it.
+        if (!route.needsData || HAS_SUPABASE) {
+          const escaped = await page.evaluate(() => {
+            window.scrollTo(0, 0);
+            const vh = window.innerHeight;
+            let n = 0;
+            for (const fig of document.querySelectorAll("figure.illu-inline")) {
+              if (fig.getBoundingClientRect().top < vh) continue;
+              for (const el of fig.querySelectorAll("*")) {
+                const r = el.getBoundingClientRect();
+                if (r.width && r.height && r.bottom > 0 && r.top < vh) {
+                  const cs = getComputedStyle(el);
+                  if (cs.visibility !== "hidden" && cs.opacity !== "0") {
+                    n++;
+                    break;
+                  }
+                }
+              }
+            }
+            return n;
+          });
+          if (escaped > 0) {
+            failures.push(
+              `${label}: ${escaped} inline figure(s) paint outside themselves, over the top of the page`
+            );
+          }
+        }
         // Structural: things that must never be in the DOM (dev-only chrome).
         if (route.expectAbsent && result.absent > 0) {
           failures.push(
