@@ -300,6 +300,13 @@ async function onUploadedImage({ media, alt, caption }) {
 async function onWidgetDone(block) {
   const target = pickerFor.value;
   pickerFor.value = null;
+  if (target.kind === "panel-widget") {
+    await attempt(
+      () => ed.setPanelWidget(target.paragraphId, block),
+      `“${block.title || block.widgetId}” is now this paragraph's figure.`
+    );
+    return;
+  }
   if (target.kind === "widget-edit") {
     const p = ed.paragraphs.value.find((x) => x.id === target.paragraphId);
     const blocks = (p.content?.blocks || []).map((b, i) =>
@@ -429,6 +436,13 @@ function imageIntoPanel(p) {
       showToast(err.message || "Couldn't move the image.", { error: true });
     }
   });
+}
+
+// ---- widgets as panel figures (OPENBRAIN-70 B5) ----
+function panelWidget(p) {
+  whenLive(
+    () => (pickerFor.value = { kind: "panel-widget", paragraphId: p.id })
+  );
 }
 
 // ---- figure frames (OPENBRAIN-70 B3) ----
@@ -958,6 +972,13 @@ onMounted(async () => {
                     {{ p.animation_id ? "Figure…" : "+ Figure" }}
                   </button>
                   <button
+                    type="button"
+                    title="Show an interactive widget in the left panel beside this paragraph"
+                    @click="panelWidget(p)"
+                  >
+                    Widget in panel
+                  </button>
+                  <button
                     v-if="p.animation_id && isImageFigure(p)"
                     type="button"
                     title="Title, caption and images of this figure"
@@ -1097,7 +1118,11 @@ onMounted(async () => {
     </ConfirmDialog>
 
     <WidgetPicker
-      :open="pickerFor?.kind === 'widget' || pickerFor?.kind === 'widget-edit'"
+      :open="
+        pickerFor?.kind === 'widget' ||
+        pickerFor?.kind === 'widget-edit' ||
+        pickerFor?.kind === 'panel-widget'
+      "
       :initial="pickerFor?.kind === 'widget-edit' ? pickerFor.initial : null"
       :chapter-slug="ed.module.value?.slug || ''"
       @done="onWidgetDone"
@@ -1246,7 +1271,7 @@ onMounted(async () => {
     <MediaPicker
       :open="pickerFor?.kind === 'figure'"
       :media="ed.media.value"
-      :types="['image', 'lottie', 'video', 'youtube']"
+      :types="['image', 'lottie', 'video', 'youtube', 'widget']"
       :upload-slug="ed.module.value?.slug || ''"
       allow-youtube
       :lottie-upload-slug="ed.module.value?.slug || ''"

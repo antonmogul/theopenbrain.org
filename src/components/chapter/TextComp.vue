@@ -286,7 +286,7 @@ const updateLocalContent = (id, content, type) => {
 // "Figure…" on a paragraph opens the media library (image, Lottie, video,
 // YouTube; images since OPENBRAIN-70 B1); the pick is PATCHed onto the row
 // and shown in place, with Undo.
-const FIGURE_TYPES = ["image", "lottie", "video", "youtube"];
+const FIGURE_TYPES = ["image", "lottie", "video", "youtube", "widget"];
 const figureMedia = ref([]);
 const figureTarget = ref(null); // paragraph node being changed
 const figureCurrentId = computed(() => {

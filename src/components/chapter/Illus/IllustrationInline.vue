@@ -28,6 +28,7 @@ import { mobileMode } from "@/helper/illustrationMobile";
 import IllustrationComp from "@/components/chapter/Illus/IllustrationComp.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 import SourceElement from "@/components/UI/SourceElement.vue";
+import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 
 const props = defineProps({
   // The figure's id, e.g. "animationEyeStructur" (the `para.animation.id`).
@@ -103,8 +104,18 @@ const youtubeSrc = computed(() =>
   <!-- Interactive figures collapse only on a CONFIRMED missing asset
        (assetOk === false). While the check runs the figure renders with its
        reserved empty stage, so slow connections see no layout pop-in. -->
+  <!-- A widget figure opens as its breakout card inline (OPENBRAIN-70 B5) -->
+  <WidgetBreakout
+    v-if="animation && mode === 'widget'"
+    :placement="{
+      placementId: animation.id,
+      widgetId: animation.widgetId,
+      kind: 'breakout',
+      title: animation.title || '',
+    }"
+  />
   <figure
-    v-if="
+    v-else-if="
       animation &&
       (mode === 'static' ||
         mode === 'fullscreen' ||

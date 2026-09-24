@@ -713,3 +713,41 @@ describe("videos (OPENBRAIN-70 D2)", () => {
     });
   });
 });
+
+describe("widgets as panel figures (OPENBRAIN-70 B5)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("adds one library row per widget and sets it as the figure", async () => {
+    const media = [];
+    const t = fakeTable(seed(), media);
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const m = await ed.setPanelWidget("a", {
+      widgetId: "phrenology",
+      title: "Phrenology",
+    });
+    await ed.setPanelWidget("b", { widgetId: "phrenology", title: "Again" });
+    expect(media).toHaveLength(1);
+    expect(m).toMatchObject({
+      media_type: "widget",
+      animation_key: "widget-phrenology",
+      config: { widgetId: "phrenology" },
+    });
+    expect(t.rows.find((r) => r.id === "a").animation_id).toBe(m.id);
+    expect(t.rows.find((r) => r.id === "b").animation_id).toBe(m.id);
+  });
+
+  it("explains the missing database update", async () => {
+    fakeTable(seed(), []);
+    const ed = useChapterEditor("s");
+    await ed.load();
+    authedRequest.mockImplementationOnce(async () => {
+      throw new Error(
+        'API Error 400: new row violates check constraint "animations_media_type_check"'
+      );
+    });
+    await expect(
+      ed.setPanelWidget("a", { widgetId: "phrenology" })
+    ).rejects.toThrow(/OPENBRAIN-70 database update/);
+  });
+});

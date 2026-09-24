@@ -594,6 +594,45 @@ export function useChapterEditor(slug) {
     return rows[0];
   }
 
+  // ---- widgets as panel figures (OPENBRAIN-70 B5) ----
+  /**
+   * Make an interactive widget a paragraph's left-panel figure. The library
+   * keeps one row per widget (media_type "widget", config.widgetId).
+   */
+  async function setPanelWidget(paragraphId, { widgetId, title }) {
+    let m = media.value.find(
+      (x) => x.media_type === "widget" && x.config?.widgetId === widgetId
+    );
+    if (!m) {
+      let rows;
+      try {
+        rows = await authedRequest("animations", {
+          method: "POST",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            animation_key: `widget-${widgetId}`,
+            title: title || widgetId,
+            media_type: "widget",
+            config: { widgetId },
+          }),
+        });
+      } catch (err) {
+        if (/media_type|check constraint|23514/i.test(err.message))
+          throw new Error(
+            "Widgets in the figure panel need the OPENBRAIN-70 database update, which isn't applied yet."
+          );
+        throw err;
+      }
+      if (!rows?.length)
+        throw new Error("The widget couldn't be added to the library.");
+      m = rows[0];
+      media.value = [...media.value, m];
+    }
+    const p = paragraphs.value.find((x) => x.id === paragraphId);
+    await setFigure(paragraphId, m.id, p?.animation_trigger || "auto");
+    return m;
+  }
+
   // ---- figure frames (OPENBRAIN-70 B3) ----
   async function patchMedia(id, body) {
     const rows = await authedRequest(`animations?id=eq.${id}`, {
@@ -830,6 +869,7 @@ export function useChapterEditor(slug) {
     figureToText,
     setFigureFrames,
     addYouTubeMedia,
+    setPanelWidget,
     imageToPanel,
     renameSection,
     setBoxPlacement,
