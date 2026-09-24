@@ -82,7 +82,66 @@ export const BREAKOUT_WIDGETS = [
     blurb:
       "Interactive normalization model showing how attention modulates neural responses through divisive normalisation — the unifying computation.",
   },
+  {
+    match: /corbetta/i,
+    widgetId: "corbetta-pet-attention",
+    route: "/corbetta-pet",
+    title: "Attention selects visual cortex (Corbetta PET)",
+    blurb:
+      "The display stays the same; attending to shape, colour or velocity lights up different PET foci over posterior cortex (Corbetta et al., 1990).",
+  },
+  {
+    match: /hillyard/i,
+    widgetId: "hillyard-attention-erp",
+    route: "/hillyard-erp",
+    title: "Selective attention changes the auditory ERP",
+    blurb:
+      "Attend to the left or right ear and watch the N1 evoked by the same left-ear tone grow or shrink, after Hillyard and colleagues (1973).",
+  },
 ];
+
+// The Attention widgets that sit in the flow rather than in a box, placed
+// with [[widget: id | inline]] (their card wording is placements.js's).
+BREAKOUT_WIDGETS.push(
+  {
+    match: /posner/i,
+    widgetId: "posner-cueing",
+    route: "/posner-cueing",
+    title: "Run the Posner cueing task",
+    blurb:
+      "Valid, invalid and neutral cues, your own reaction times: see why a cue at the target's location speeds detection and an invalid one slows it.",
+  },
+  {
+    match: /contrast.*response|response gain/i,
+    widgetId: "contrast-response-gain",
+    route: "/contrast-response",
+    title: "Contrast gain or response gain?",
+    blurb:
+      "Slide attention onto a neuron's receptive field and watch its contrast-response curve shift left or stretch up — the two signatures the chapter just described.",
+  },
+  {
+    match: /biased competition/i,
+    widgetId: "biased-competition",
+    route: "/biased-competition",
+    title: "Two stimuli, one receptive field",
+    blurb:
+      "Put a preferred and a non-preferred stimulus in the same receptive field and attend to either: the biased competition model shows which one wins the neuron's response.",
+  },
+  {
+    match: /feature.*attention/i,
+    widgetId: "tmt-feature-attention",
+    route: "/feature-attention",
+    title: "Feature-based attention",
+    blurb:
+      "Attend to a colour or a direction rather than a place: the feature-similarity gain principle multiplies a neuron's response by how well the attended feature matches its tuning.",
+  }
+);
+
+// "[[widget: <id>]]" or "[[widget: <id> | inline]]" on a line of its own
+// places a widget outside a breakout box, at the current level. Known ids
+// take their title, blurb and route from BREAKOUT_WIDGETS.
+const WIDGET_LINE_RE =
+  /^\[\[\s*widget\s*:\s*([a-z0-9-]+)\s*(?:\|\s*(inline|breakout)\s*)?\]\]$/i;
 
 const BOX_HEADING_RE = /^BREAK\s*OUT\s*BOX\s*[:—–-]?\s*(.*)$/i;
 const BOX_END_RE = /^<!--\s*end\s+breakout\s+box\s*-->$/i;
@@ -263,6 +322,20 @@ function splitBlocks(md) {
   return blocks;
 }
 
+function widgetById(widgetId, kind, opts) {
+  const hit = BREAKOUT_WIDGETS.find((w) => w.widgetId === widgetId);
+  return {
+    type: "widget",
+    widgetId,
+    kind: kind === "inline" ? "inline" : "breakout",
+    title: hit ? hit.title : widgetId,
+    blurb: hit ? hit.blurb : "",
+    credit: opts.author || "",
+    route: hit ? hit.route : "",
+    placementId: `${opts.placementPrefix}-${widgetId}`,
+  };
+}
+
 function resolveWidget(boxTitle, opts) {
   const hit = BREAKOUT_WIDGETS.find((w) => w.match.test(boxTitle));
   const widgetId = hit ? hit.widgetId : toSlug(boxTitle) || "breakout";
@@ -338,6 +411,23 @@ export function parseChapterMarkdown(md, options = {}) {
         level = levelBeforeBox;
         levelBeforeBox = null;
       }
+      continue;
+    }
+
+    const widgetLine = block.match(WIDGET_LINE_RE);
+    if (widgetLine) {
+      const widget = widgetById(
+        widgetLine[1].toLowerCase(),
+        widgetLine[2],
+        opts
+      );
+      if (!BREAKOUT_WIDGETS.some((w) => w.widgetId === widget.widgetId))
+        warnings.push(`[[widget: ${widget.widgetId}]] is not a known widget`);
+      push({
+        kind: "widget",
+        blocks: [widget],
+        content_text: truncate(`Interactive: ${widget.title}`),
+      });
       continue;
     }
 
