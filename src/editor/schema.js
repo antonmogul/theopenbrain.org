@@ -65,11 +65,29 @@ export const SpanMark = Mark.create({
         parseHTML: (el) => el.getAttribute("class"),
         renderHTML: (attrs) => (attrs.class ? { class: attrs.class } : {}),
       },
+      // A hover picture carried by the link itself (OPENBRAIN-70 D1); older
+      // hoverImg spans name a picture by their id instead.
+      hoverSrc: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("data-hover-src"),
+        renderHTML: (attrs) =>
+          attrs.hoverSrc ? { "data-hover-src": attrs.hoverSrc } : {},
+      },
+      hoverText: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("data-hover-text"),
+        renderHTML: (attrs) =>
+          attrs.hoverText ? { "data-hover-text": attrs.hoverText } : {},
+      },
     };
   },
   parseHTML() {
     // figure-ref spans are atoms (FigureRef), not marks.
-    return [{ tag: "span[id]" }, { tag: "span[class]:not(.figure-ref)" }];
+    return [
+      { tag: "span[id]" },
+      { tag: "span[class]:not(.figure-ref)" },
+      { tag: "span[data-hover-src]" },
+    ];
   },
   renderHTML({ HTMLAttributes }) {
     return ["span", HTMLAttributes, 0];

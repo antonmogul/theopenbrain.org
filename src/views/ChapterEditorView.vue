@@ -127,6 +127,43 @@ const STARTERS = {
 };
 const pickerFor = ref(null); // { kind: "image"|"widget"|"figure"|"widget-edit", ... }
 
+// ---- hover pictures (OPENBRAIN-70 D1) ----
+// { apply, remove, current, src, text, picking }
+const hoverFor = ref(null);
+function openHover({ apply, remove, current }) {
+  hoverFor.value = {
+    apply,
+    remove,
+    current,
+    src: current?.src || "",
+    text: current?.text || "",
+    picking: !current?.src,
+  };
+}
+function pickHover(m) {
+  hoverFor.value = { ...hoverFor.value, src: m.image_file_url, picking: false };
+}
+function onUploadedHover({ media, caption }) {
+  ed.media.value = [...ed.media.value, media];
+  hoverFor.value = {
+    ...hoverFor.value,
+    src: media.image_file_url,
+    text: hoverFor.value.text || caption || "",
+    picking: false,
+  };
+}
+function saveHover() {
+  const h = hoverFor.value;
+  if (!h?.src) return;
+  h.apply(h.src, h.text.trim());
+  hoverFor.value = null;
+  showToast("Hover picture set. Save the block to keep it.");
+}
+function removeHover() {
+  hoverFor.value?.remove();
+  hoverFor.value = null;
+}
+
 // ---- videos (OPENBRAIN-70 D2) ----
 const videoForm = ref(null); // { sectionId, index, url, title }
 const videoId = computed(() =>
@@ -816,6 +853,8 @@ onMounted(async () => {
               class="ce-block is-editing"
             >
               <ParagraphEditor
+                hover-images
+                @hover-image="openHover"
                 :blocks="pendingInsert.blocks"
                 :saving="ed.saving.value"
                 :error="editError"
@@ -840,6 +879,8 @@ onMounted(async () => {
               }"
             >
               <ParagraphEditor
+                hover-images
+                @hover-image="openHover"
                 v-if="editingId === p.id"
                 :blocks="p.content?.blocks || []"
                 :saving="ed.saving.value"
@@ -972,6 +1013,8 @@ onMounted(async () => {
             class="ce-block is-editing"
           >
             <ParagraphEditor
+              hover-images
+              @hover-image="openHover"
               :blocks="pendingInsert.blocks"
               :saving="ed.saving.value"
               :error="editError"
@@ -1070,6 +1113,68 @@ onMounted(async () => {
       @pick="onPickImage"
       @uploaded="onUploadedImage"
       @close="pickerFor = null"
+    />
+
+    <BaseModal
+      :model-value="!!hoverFor && !hoverFor.picking"
+      title="Hover picture"
+      size="md"
+      @update:model-value="(v) => !v && (hoverFor = null)"
+      @close="hoverFor = null"
+    >
+      <div v-if="hoverFor" class="ce-form">
+        <p class="ce-hover-note">
+          Readers see this picture and note when they point at the selected
+          words.
+        </p>
+        <div class="ce-hover-pick">
+          <img
+            v-if="hoverFor.src"
+            :src="imageUrl(hoverFor.src)"
+            alt=""
+            class="ce-hover-img"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            @click="hoverFor = { ...hoverFor, picking: true }"
+            >{{ hoverFor.src ? "Change image" : "Choose image" }}</Button
+          >
+        </div>
+        <FormField label="Note" hint="A line or two shown under the picture.">
+          <textarea id="hover-text" v-model="hoverFor.text" rows="3" />
+        </FormField>
+      </div>
+      <template #footer>
+        <Button
+          v-if="hoverFor?.current"
+          variant="danger"
+          size="sm"
+          @click="removeHover"
+          >Remove</Button
+        >
+        <Button variant="ghost" size="sm" @click="hoverFor = null"
+          >Cancel</Button
+        >
+        <Button
+          variant="solid"
+          size="sm"
+          :disabled="!hoverFor?.src"
+          @click="saveHover"
+          >Set picture</Button
+        >
+      </template>
+    </BaseModal>
+
+    <MediaPicker
+      :open="!!hoverFor && hoverFor.picking"
+      :media="ed.media.value"
+      :types="['image']"
+      title="Picture shown on hover"
+      :upload-slug="ed.module.value?.slug || ''"
+      @pick="pickHover"
+      @uploaded="onUploadedHover"
+      @close="hoverFor = hoverFor?.src ? { ...hoverFor, picking: false } : null"
     />
 
     <BaseModal
@@ -1383,6 +1488,24 @@ onMounted(async () => {
   display: grid;
   gap: 6px;
   scroll-margin-top: 88px;
+}
+.ce-hover-note {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  color: rgb(var(--color-mute));
+}
+.ce-hover-pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ce-hover-img {
+  width: 140px;
+  max-height: 110px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: rgb(var(--color-bg));
 }
 .ce-form-error {
   margin: 0;
