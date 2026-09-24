@@ -5,6 +5,7 @@ const made = [];
 const loadAnimation = vi.fn(() => {
   const a = {
     setSubframe: vi.fn(),
+    setSpeed: vi.fn(),
     goToAndPlay: vi.fn(),
     goToAndStop: vi.fn(),
     play: vi.fn(),
@@ -21,6 +22,7 @@ vi.mock("@/composables/useLottie", () => ({
 import SwitchFigure from "../switch/SwitchFigure.vue";
 import rodCone from "../rod-cone/schema.js";
 import centerSurround from "../center-surround/schema.js";
+import onOff from "../on-off/schema.js";
 import { figureContent } from "../content.js";
 
 function mountFigure(schema, record = {}) {
@@ -184,5 +186,14 @@ describe("SwitchFigure", () => {
     await flushPromises();
     expect(w.find(".sf-legend img[src='x']").exists()).toBe(false);
     expect(w.get(".sf-legend li span").text()).toContain("<img");
+  });
+
+  it("plays at its schema's speed (ON & OFF at half)", async () => {
+    mountFigure(onOff);
+    await flushPromises();
+    expect(made.map((a) => a.setSpeed.mock.calls[0]?.[0])).toEqual([0.5, 0.5]);
+    mountFigure(rodCone);
+    await flushPromises();
+    expect(made[2].setSpeed).not.toHaveBeenCalled();
   });
 });

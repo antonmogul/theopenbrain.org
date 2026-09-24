@@ -15,6 +15,7 @@ import centerSurround from "./center-surround/schema.js";
 import directionSelectivity from "./direction-selectivity/schema.js";
 import objectMotion from "./object-motion/schema.js";
 import rodCone from "./rod-cone/schema.js";
+import onOff from "./on-off/schema.js";
 import lateralOrganization from "./lateral-organization/schema.js";
 import eyeStructureTransition from "./transitions/eye-structure.js";
 import retinalCellTypesTransition from "./transitions/retinal-cell-types.js";
@@ -46,6 +47,8 @@ export const FIGURE_WIDGETS = {
   },
   [objectMotion.animationKey]: { schema: objectMotion, load: switchFigure },
   [rodCone.animationKey]: { schema: rodCone, load: switchFigure },
+  // On the live site; its row and paragraph links come by migration.
+  [onOff.animationKey]: { schema: onOff, load: switchFigure },
   // The split and the transitions, driven by the reader's scroll (OPENBRAIN-83).
   [lateralOrganization.animationKey]: {
     schema: lateralOrganization,

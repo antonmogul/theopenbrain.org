@@ -7,6 +7,7 @@ import centerSurround from "../center-surround/schema.js";
 import directionSelectivity from "../direction-selectivity/schema.js";
 import objectMotion from "../object-motion/schema.js";
 import rodCone from "../rod-cone/schema.js";
+import onOff from "../on-off/schema.js";
 import { figureContent } from "../content.js";
 
 const args = (schema) => ({ schema, content: figureContent(schema, {}) });
@@ -25,3 +26,4 @@ export const CenterSurround = { args: args(centerSurround) };
 export const DirectionSelectivity = { args: args(directionSelectivity) };
 export const ObjectMotion = { args: args(objectMotion) };
 export const RodVsCone = { args: args(rodCone) };
+export const OnOff = { args: args(onOff) };
