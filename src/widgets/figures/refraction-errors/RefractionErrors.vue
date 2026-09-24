@@ -8,11 +8,11 @@
  * the host's --widget-accent, i.e. the chapter ramp), its text comes in as
  * `content` (see schema.js), and it never reaches outside its own root.
  */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { RouterLink } from "vue-router";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 import { prepareLottie } from "../content.js";
-import schema from "./schema.js";
+import FigureIntro from "../shared/FigureIntro.vue";
+import ownSchema from "./schema.js";
 
 const props = defineProps({
   /** figureContent(schema, record): title, infoText, states, toggle, image, video. */
@@ -24,6 +24,8 @@ const props = defineProps({
   },
   /** Start with the introduction open, as the original does. */
   infoOpenAtStart: { type: Boolean, default: true },
+  /** Passed by the host to every figure widget; this one reads its own. */
+  schema: { type: Object, default: null },
 });
 
 const stage = ref(null);
@@ -33,7 +35,7 @@ const corrected = ref(false);
 let anim = null;
 let totalFrames = 0;
 
-const imageFile = schema.fields.find((f) => f.key === "image").asset;
+const imageFile = ownSchema.fields.find((f) => f.key === "image").asset;
 
 async function mountLottie() {
   if (!stage.value) return;
@@ -102,13 +104,6 @@ const isOn = (i, fix) =>
   state.value === i && (i === 0 || corrected.value === fix);
 const isRow = (i) => state.value === i;
 
-const video = computed(() => props.content.video || {});
-const videoImage = computed(() =>
-  !video.value.slug || video.value.slug === "placeholder"
-    ? "/publicAssets/images/placeholders/monaLisa.webp"
-    : `/publicAssets/images/breakVideos/${video.value.slug}.png`
-);
-
 onMounted(mountLottie);
 watch(() => [props.lottieUrl, props.content.image], mountLottie);
 onBeforeUnmount(() => anim?.destroy());
@@ -171,25 +166,11 @@ onBeforeUnmount(() => anim?.destroy());
 
     <div ref="stage" class="rx-stage" aria-hidden="true" />
 
-    <div v-if="infoOpen" class="rx-info">
-      <p class="rx-info-text" v-html="content.infoText" />
-      <RouterLink
-        v-if="video.title"
-        :to="`/chapter/break/${video.slug || 'placeholder'}`"
-        class="rx-video"
-      >
-        <span class="rx-video-thumb">
-          <img :src="videoImage" alt="" loading="lazy" />
-        </span>
-        <span class="rx-round rx-video-play" aria-hidden="true">
-          <svg viewBox="0 0 32 32"><path d="M12 9l12 7-12 7z" /></svg>
-        </span>
-        <span class="rx-video-text">
-          <b>{{ video.title }}</b>
-          <span>{{ video.text }}</span>
-        </span>
-      </RouterLink>
-    </div>
+    <FigureIntro
+      v-if="infoOpen"
+      :text="content.infoText"
+      :video="content.video"
+    />
   </div>
 </template>
 
@@ -268,8 +249,7 @@ onBeforeUnmount(() => anim?.destroy());
   transform: rotate(45deg);
 }
 .rx-info-toggle:focus-visible,
-.rx-cell:focus-visible,
-.rx-video:focus-visible {
+.rx-cell:focus-visible {
   outline: 2px solid var(--rx-accent);
   outline-offset: 2px;
 }
@@ -348,86 +328,6 @@ onBeforeUnmount(() => anim?.destroy());
 .rx--info .rx-stage {
   opacity: 0.1;
   filter: blur(4px);
-}
-
-/* The introduction: text on the left half, the video on the right, split
-   by a white rule, as on theopenbrain.org. */
-.rx-info {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 50% 50%;
-  padding-top: 9.375rem;
-  pointer-events: none;
-}
-.rx-info::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 50%;
-  border-left: 1px solid #fff;
-}
-.rx-info-text {
-  margin: 0;
-  padding: 0 3.75rem;
-  max-width: 45rem;
-  max-height: calc(100% - 3rem);
-  overflow-y: auto;
-  font: 1.125rem/1.67 var(--rx-sans);
-  hyphens: auto;
-  pointer-events: auto;
-}
-.rx-video {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  align-self: start;
-  margin-top: -2rem;
-  color: #fff;
-  text-decoration: none;
-  pointer-events: auto;
-}
-/* Duotone as the original: the grey photo screened over the accent. */
-.rx-video-thumb {
-  position: relative;
-  display: block;
-  height: 12.5rem;
-  background: #000;
-  isolation: isolate;
-}
-.rx-video-thumb::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--rx-accent);
-  opacity: 0.7;
-}
-.rx-video-thumb img {
-  position: relative;
-  display: block;
-  height: 100%;
-  width: auto;
-  filter: grayscale(1);
-  mix-blend-mode: screen;
-}
-.rx-video-play {
-  position: absolute;
-  left: -1.25rem;
-  top: -1.25rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  z-index: 1;
-}
-.rx-video-text {
-  display: grid;
-  gap: 0.125rem;
-  padding-top: 0.25rem;
-  font: 0.8125rem/1.3 var(--rx-sans);
-  opacity: 0.7;
-}
-.rx-video:hover .rx-video-text {
-  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

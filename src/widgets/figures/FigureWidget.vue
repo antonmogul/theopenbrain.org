@@ -28,6 +28,7 @@ const content = computed(() =>
     <component
       :is="Widget"
       :content="content"
+      :schema="entry.schema"
       :lottie-url="lottiePath(record)"
     />
   </div>
