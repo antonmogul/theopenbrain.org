@@ -17,10 +17,16 @@ import FullScreenIllustrationSplit from "./FullScreenIllustrationSplit.vue";
 import SourceElement from "../../UI/SourceElement.vue";
 import TextOverlay from "./TextOverlay.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
+import FigureWidget from "@/widgets/figures/FigureWidget.vue";
+import { figureWidgetFor } from "@/widgets/figures/registry";
 
 const props = defineProps({
   paragraph: Object,
 });
+
+// Figures rebuilt as widgets (OPENBRAIN-80) draw themselves; this component
+// only places them.
+const asWidget = !!figureWidgetFor(props.paragraph?.animationId);
 
 const animation = ref(null);
 const totalFrames = ref(null);
@@ -53,7 +59,7 @@ onMounted(async () => {
     activeState.value.state = Object.keys(thisAnimation.value.states)[0];
   }
 
-  if (props.paragraph.scroll) return;
+  if (props.paragraph.scroll || asWidget) return;
   // The container div is inside the v-if="thisAnimation" template guard, so it
   // doesn't exist until the DOM catches up with the resolution above.
   await nextTick();
@@ -129,7 +135,24 @@ const openInfo = () => {
   <!-- Full width at desktop sizes (OPENBRAIN-72): FullBleed lifts it out of
        the prose column, which clips anything wider than itself. In the
        column (below xl, or without the stage layer) it keeps the old span. -->
-  <FullBleed v-if="thisAnimation" v-slot="{ floating }">
+  <FullBleed v-if="thisAnimation && asWidget" v-slot="{ floating }">
+    <div
+      class="h-[150vh] mb-32"
+      :class="floating ? 'w-full' : 'w-screen -translate-x-custom -ml-20'"
+    >
+      <div
+        class="sticky w-full"
+        :class="
+          floating
+            ? 'top-[var(--reader-topbar-h)] h-[calc(100vh-var(--reader-topbar-h))]'
+            : 'h-screen top-0'
+        "
+      >
+        <FigureWidget :record="thisAnimation" />
+      </div>
+    </div>
+  </FullBleed>
+  <FullBleed v-else-if="thisAnimation" v-slot="{ floating }">
     <div
       ref="containerScroll"
       class="border-y bg-light text-black border-black my-[0] text-small font-mono duration-300"

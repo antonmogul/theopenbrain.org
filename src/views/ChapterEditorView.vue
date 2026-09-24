@@ -21,6 +21,8 @@ import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
 import ChapterDetails from "@/components/chapterEditor/ChapterDetails.vue";
 import FigureSettings from "@/components/chapterEditor/FigureSettings.vue";
+import FigureWidgetSettings from "@/components/chapterEditor/FigureWidgetSettings.vue";
+import { figureWidgetFor } from "@/widgets/figures/registry";
 import { parseYouTube, youTubeStart } from "@/editor/video.mjs";
 import { placementsForChapter } from "@/widgets/placements";
 import { coverForModule } from "@/helper/chapterCover";
@@ -461,6 +463,32 @@ async function saveFigure(value) {
       : "Figure saved."
   );
   if (ok) figureSettingsFor.value = null;
+}
+
+// ---- figure widgets (OPENBRAIN-80) ----
+const isWidgetFigure = (p) =>
+  !!figureWidgetFor(ed.mediaById.value.get(p.animation_id)?.animation_key);
+const widgetSettingsFor = ref(null); // the figure's media row
+const widgetStates = ref([]);
+function editWidgetFigure(p) {
+  whenLive(async () => {
+    const m = ed.mediaById.value.get(p.animation_id);
+    try {
+      widgetStates.value = await ed.loadFigureStates(m.id);
+    } catch {
+      // The form falls back to the figure's own labels.
+      widgetStates.value = [];
+    }
+    widgetSettingsFor.value = m;
+  });
+}
+async function saveWidgetFigure(value) {
+  const id = widgetSettingsFor.value.id;
+  const ok = await attempt(
+    () => ed.setFigureContent(id, value),
+    "Figure saved."
+  );
+  if (ok) widgetSettingsFor.value = null;
 }
 
 async function onRemoveFigure() {
@@ -994,6 +1022,14 @@ onMounted(async () => {
                     Figure settings
                   </button>
                   <button
+                    v-if="p.animation_id && isWidgetFigure(p)"
+                    type="button"
+                    title="Text, labels, picture and video of this interactive figure"
+                    @click="editWidgetFigure(p)"
+                  >
+                    Figure settings
+                  </button>
+                  <button
                     v-if="p.animation_id && isImageFigure(p)"
                     type="button"
                     title="Show this figure as an image card in the text instead of the left panel"
@@ -1249,6 +1285,18 @@ onMounted(async () => {
         >
       </template>
     </BaseModal>
+
+    <FigureWidgetSettings
+      :open="!!widgetSettingsFor"
+      :figure="widgetSettingsFor"
+      :states="widgetStates"
+      :media="ed.media.value"
+      :upload-slug="ed.module.value?.slug || ''"
+      :saving="ed.saving.value"
+      @save="saveWidgetFigure"
+      @uploaded="({ media }) => (ed.media.value = [...ed.media.value, media])"
+      @close="widgetSettingsFor = null"
+    />
 
     <FigureSettings
       :open="!!figureSettingsFor"

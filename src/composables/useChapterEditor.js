@@ -676,6 +676,33 @@ export function useChapterEditor(slug) {
     });
   }
 
+  // ---- figure widgets (OPENBRAIN-80) ----
+  // A figure widget's editable content is config.content on its animations
+  // row (animation_states is read-only), so no other table changes.
+
+  /** The figure's state labels from animation_states, for the form's defaults. */
+  async function loadFigureStates(id) {
+    const rows = await authedRequest(
+      `animation_states?animation_id=eq.${id}&is_highlight_state=eq.false&select=state_label,state_description&order=order_index`
+    );
+    return (rows || []).map((r) => r.state_description || r.state_label);
+  }
+
+  /** Save a widget figure's title and content (see widgets/figures/content.js). */
+  async function setFigureContent(id, { title, content }) {
+    return withSaving(async () => {
+      const m = media.value.find((x) => x.id === id);
+      if (!m) throw new Error("That figure isn't in the library.");
+      if (!title?.trim()) throw new Error("A figure needs a title.");
+      const before = { title: m.title ?? null, config: m.config ?? null };
+      await patchMedia(id, {
+        title: title.trim(),
+        config: { ...(m.config || {}), content },
+      });
+      pushUndo("Figure settings", () => patchMedia(id, before));
+    });
+  }
+
   // ---- chapter cover (OPENBRAIN-67) ----
   // modules.cover_image_url wins over the code-side default in
   // helper/chapterCover.js; null goes back to that default.
@@ -868,6 +895,8 @@ export function useChapterEditor(slug) {
     setDetails,
     figureToText,
     setFigureFrames,
+    loadFigureStates,
+    setFigureContent,
     addYouTubeMedia,
     setPanelWidget,
     imageToPanel,
