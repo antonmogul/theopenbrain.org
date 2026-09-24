@@ -34,6 +34,12 @@ const props = defineProps({
     type: Function,
     default: null,
   },
+  // Body paragraphs drive the figure pane, so they offer "Figure…"
+  // (OPENBRAIN-65). Intro paragraphs and titles don't.
+  canFigure: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits(["cancel"]);
@@ -51,6 +57,10 @@ const saveError = ref("");
 const blocksFor = inject("blocksFor", () => null);
 const storedBlocks = computed(() => blocksFor(props.paragraphId));
 const blocksMode = computed(() => Array.isArray(storedBlocks.value));
+const changeFigure = inject("changeFigure", null);
+const showFigureButton = computed(
+  () => props.canFigure && blocksMode.value && !!changeFigure
+);
 
 async function saveBlocks(blocks) {
   isSaving.value = true;
@@ -248,6 +258,29 @@ onBeforeUnmount(() => {
       </svg>
     </div>
 
+    <button
+      v-if="isCreator && !isEditing && showFigureButton"
+      type="button"
+      class="figure-indicator"
+      title="Change this paragraph's figure"
+      aria-label="Change figure"
+      @click.stop="changeFigure(paragraphId)"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+    </button>
+
     <!-- Paragraph rows: the chapter editor's lossless editor, in place -->
     <div v-if="isEditing && blocksMode" class="blocks-editor">
       <ParagraphEditor
@@ -410,8 +443,35 @@ onBeforeUnmount(() => {
   padding-right: 8px;
 }
 
-.editable-block-wrapper.is-creator:not(.is-editing):hover .edit-indicator {
+.editable-block-wrapper.is-creator:not(.is-editing):hover .edit-indicator,
+.editable-block-wrapper.is-creator:not(.is-editing):hover .figure-indicator,
+.figure-indicator:focus-visible {
   opacity: 1;
+}
+
+/* Change figure, under the pencil (OPENBRAIN-65) */
+.figure-indicator {
+  position: absolute;
+  top: 28px;
+  right: -30px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgb(151, 71, 255);
+  border-radius: 4px;
+  background: white;
+  color: rgb(151, 71, 255);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+.figure-indicator:hover {
+  background: rgb(151, 71, 255);
+  color: white;
 }
 
 /* Edit indicator */

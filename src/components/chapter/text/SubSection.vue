@@ -116,6 +116,7 @@
               tag="p"
               class-name="subP"
               @save="handleSave"
+              can-figure
             />
             <div
               v-else-if="!subParagraph.subSubSection && !subParagraph.type"

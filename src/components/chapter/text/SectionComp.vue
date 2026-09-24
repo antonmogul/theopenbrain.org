@@ -104,6 +104,7 @@
             tag="p"
             class-name="P"
             @save="handleParagraphSave"
+            can-figure
           />
           <div
             v-else-if="!paragraph.subSection"

@@ -68,5 +68,45 @@ export const Default = {};
 
 export const ShortChapter = { args: { chapter: SHORT_CHAPTER } };
 
-/** A creator: "Edit chapter" turns on Edit mode (dark bar, click to edit). */
-export const Creator = { parameters: { auth: { role: "creator" } } };
+// Story-only REST replies for Edit mode's Change figure (OPENBRAIN-65):
+// the media library, the row's current figure, and the PATCH echo.
+const FIGURE_MEDIA = [
+  {
+    id: "m-eye",
+    title: "Eye structure",
+    animation_key: "animationEyeStructur",
+    media_type: "lottie",
+  },
+  {
+    id: "m-photo",
+    title: "Photoreceptors",
+    animation_key: "animationPhotoreceptors",
+    media_type: "lottie",
+  },
+  {
+    id: "m-video",
+    title: "Retina in motion",
+    animation_key: "videoRetina",
+    media_type: "video",
+  },
+];
+const figureRest = (url, init) => {
+  if (url.includes("animations?")) return FIGURE_MEDIA;
+  const method = (init?.method || "GET").toUpperCase();
+  if (method === "PATCH") {
+    const patch = JSON.parse(init.body);
+    return [{ id: "ganglion-output-1", content: {}, ...patch }];
+  }
+  return [{ animation_id: null, animation_trigger: null }];
+};
+
+/**
+ * A creator: "Edit chapter" turns on Edit mode (dark bar, click to edit).
+ * Hover a paragraph for the pencil and, under it, "Change figure".
+ */
+export const Creator = {
+  parameters: {
+    auth: { role: "creator" },
+    fetch: { "/rest/v1/": figureRest },
+  },
+};
