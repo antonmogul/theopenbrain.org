@@ -396,6 +396,9 @@
   border-color: rgb(var(--color-accent));
 }
 .media-thumb {
+  /* The image is pinned inside, so a tall one can't stretch the card. */
+  position: relative;
+  overflow: hidden;
   aspect-ratio: 16 / 10;
   display: grid;
   place-items: center;
@@ -404,6 +407,8 @@
   border-bottom: 1px solid rgb(var(--color-line));
 }
 .media-thumb img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;

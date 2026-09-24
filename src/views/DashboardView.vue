@@ -18,6 +18,7 @@ import { attemptPercent } from "@/utils/quizLabels";
 import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
 import WidgetsSection from "@/components/dashboard/sections/WidgetsSection.vue";
+import { coverForModule } from "@/helper/chapterCover";
 import UsersSection from "@/components/dashboard/sections/UsersSection.vue";
 import AnalyticsSection from "@/components/dashboard/sections/AnalyticsSection.vue";
 import QuizzesSection from "@/components/dashboard/sections/QuizzesSection.vue";
@@ -235,7 +236,7 @@ async function fetchAllChapters() {
   try {
     // Fetch all modules (chapters)
     const modules = await supabaseRest(
-      "modules?select=id,title,slug,order_index,status,updated_at,ramp&order=order_index.asc"
+      "modules?select=id,title,slug,order_index,status,updated_at,ramp,cover_image_url&order=order_index.asc"
     );
 
     // For each module, fetch section and paragraph counts
@@ -988,6 +989,7 @@ onMounted(() => {
             <div
               class="chapter-card-cover"
               :data-chapter="chapter.ramp || null"
+              :style="{ '--cover': `url(${coverForModule(chapter)})` }"
             >
               <span class="chapter-card-n">{{ chapter.order_index }}</span>
             </div>
@@ -1317,12 +1319,17 @@ onMounted(() => {
 }
 .chapter-card-cover {
   position: relative;
-  height: 96px;
-  background: linear-gradient(
-    135deg,
-    rgb(var(--color-chapter, var(--color-accent)) / 0.85),
-    rgb(var(--color-chapter-deep, var(--color-accent)) / 0.95)
-  );
+  height: 120px;
+  /* The chapter's cover (the one the reader opens on), under a wash of its
+     subject colour so the number stays legible. */
+  background:
+    linear-gradient(
+      160deg,
+      rgb(var(--color-chapter, var(--color-accent)) / 0.25),
+      rgb(var(--color-chapter-deep, var(--color-accent)) / 0.85)
+    ),
+    var(--cover, none) center / cover no-repeat,
+    rgb(var(--color-chapter-deep, var(--color-accent)));
 }
 .chapter-card-n {
   position: absolute;

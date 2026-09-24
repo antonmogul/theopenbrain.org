@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import ImageUpload from "@/components/chapterEditor/ImageUpload.vue";
+import LottieUpload from "@/components/chapterEditor/LottieUpload.vue";
 import { imageUrl } from "@/editor/media.mjs";
 // Creator-dashboard "Media" library section (#11 split). Presentational: the
 // parent owns the useDashboardMedia instance. The media *picker* modal stays in
@@ -44,12 +45,22 @@ function onUploaded(e) {
   showUpload.value = false;
   emit("uploaded", e.media);
 }
+
+// Upload a Lottie animation (OPENBRAIN-70 B4).
+const showLottieUpload = ref(false);
+function onLottieUploaded(e) {
+  showLottieUpload.value = false;
+  emit("uploaded", e.media);
+}
 </script>
 
 <template>
   <section class="section">
     <SectionHeader eyebrow="04 · Media" title="Images & assets">
       <template #actions>
+        <Button variant="outline" size="sm" @click="showLottieUpload = true"
+          >Upload animation</Button
+        >
         <Button variant="solid" size="sm" @click="showUpload = true"
           >Upload image</Button
         >
@@ -68,6 +79,24 @@ function onUploaded(e) {
         :with-caption="false"
         action-label="Upload"
         @uploaded="onUploaded"
+      />
+    </BaseModal>
+
+    <BaseModal
+      :model-value="showLottieUpload"
+      title="Upload a Lottie animation"
+      size="md"
+      @update:model-value="(v) => (showLottieUpload = v)"
+      @close="showLottieUpload = false"
+    >
+      <p class="upload-note">
+        A .json animation exported from After Effects (Bodymovin) or
+        LottieFiles. It plays on repeat when used as a figure.
+      </p>
+      <LottieUpload
+        slug="library"
+        action-label="Upload"
+        @uploaded="onLottieUploaded"
       />
     </BaseModal>
 
@@ -132,7 +161,7 @@ function onUploaded(e) {
                 item.title || item.animation_key
               }}</span>
               <span class="media-size">{{
-                formatFileSize(item.file_size_bytes)
+                item.file_size_bytes ? formatFileSize(item.file_size_bytes) : ""
               }}</span>
             </div>
           </BaseCard>
@@ -186,7 +215,7 @@ function onUploaded(e) {
                 item.title || item.animation_key
               }}</span>
               <span class="media-size">{{
-                formatFileSize(item.file_size_bytes)
+                item.file_size_bytes ? formatFileSize(item.file_size_bytes) : ""
               }}</span>
             </div>
           </BaseCard>
@@ -234,7 +263,7 @@ function onUploaded(e) {
                 item.title || item.animation_key
               }}</span>
               <span class="media-size">{{
-                formatFileSize(item.file_size_bytes)
+                item.file_size_bytes ? formatFileSize(item.file_size_bytes) : ""
               }}</span>
             </div>
           </BaseCard>
@@ -411,6 +440,17 @@ function onUploaded(e) {
 </template>
 
 <style scoped>
+/* Must stay the first rule: CSS drops an @import that follows any other
+   rule, which unstyled this section in production (OPENBRAIN-57). */
+@import "@/styles/dashboard-sections.css";
+
+.upload-note {
+  margin: 0 0 12px;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  color: rgb(var(--color-mute));
+}
+
 .usage-list {
   margin: 4px 0 0;
   padding-left: 18px;
@@ -425,6 +465,4 @@ function onUploaded(e) {
   outline: 2px solid rgb(var(--color-accent));
   outline-offset: 2px;
 }
-
-@import "@/styles/dashboard-sections.css";
 </style>
