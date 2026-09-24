@@ -183,8 +183,12 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  ScrollTrigger.getById("scrollTriggerAnimation")?.kill();
-  ScrollTrigger.getById("scrollTriggerFull")?.kill();
+  // One trigger per figure anchor shares each id, and getById only finds the
+  // first; kill them all so a remount (Change figure) doesn't leave
+  // triggers behind.
+  for (const t of ScrollTrigger.getAll())
+    if (["scrollTriggerAnimation", "scrollTriggerFull"].includes(t.vars.id))
+      t.kill();
 });
 </script>
 

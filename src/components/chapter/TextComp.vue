@@ -13,7 +13,10 @@ import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
 import { saveInlineEdit } from "@/editor/inlineSave";
 import { blocksToPlainText } from "@/editor/plainText";
-import { contentBlocksToHTML } from "@/composables/chapterTransform.mjs";
+import {
+  contentBlocksToHTML,
+  figureFor,
+} from "@/composables/chapterTransform.mjs";
 
 import Section from "./text/SectionComp.vue";
 import Points from "@/components/UI/PointsComp.vue";
@@ -25,6 +28,7 @@ import FootNotes from "./text/FootNotes.vue";
 
 import Perlin from "@/helper/perlin.ts";
 import QuizSection from "./text/QuizSection.vue";
+import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
 
 // Seed value is optional, default is 0.
 const seed = Math.random();
@@ -52,6 +56,9 @@ let triggerSetupTimeout = null;
 const props = defineProps({
   module: { type: Object, default: null },
 });
+// A paragraph's figure changed: ChapterView remounts the figure pane so it
+// wires a scroll trigger for a paragraph that had none.
+const emit = defineEmits(["figure-changed"]);
 const authors = computed(() => authorsForModule(props.module));
 
 // The intro's scroll-trigger id derives from its animation config
@@ -255,7 +262,96 @@ const updateLocalContent = (id, content, type) => {
   });
 };
 
+// ---- Change figure (OPENBRAIN-65) ----
+// "Figure…" on a paragraph opens the media library (Lottie, video, YouTube);
+// the pick is PATCHed onto the row and shown in place, with Undo.
+const FIGURE_TYPES = ["lottie", "video", "youtube"];
+const figureMedia = ref([]);
+const figureTarget = ref(null); // paragraph node being changed
+const figureCurrentId = computed(() => {
+  const key = figureTarget.value?.animation?.id;
+  return (
+    (key && figureMedia.value.find((m) => m.animation_key === key)?.id) || null
+  );
+});
+
+async function openFigurePicker(paragraphId) {
+  let node = null;
+  eachNode(source.value, (n) => n.id === paragraphId && (node = n));
+  if (!node) return;
+  figureTarget.value = node;
+  if (figureMedia.value.length) return;
+  try {
+    figureMedia.value = await rest(
+      `animations?select=id,title,animation_key,media_type,image_file_url,youtube_id&media_type=in.(${FIGURE_TYPES.join(",")})&order=title.asc`
+    );
+  } catch (err) {
+    figureTarget.value = null;
+    note(`Couldn't load the media library: ${err.message}`, true);
+  }
+}
+
+function showFigure(node, row, media) {
+  if (media?.animation_key)
+    node.animation = figureFor({
+      ...row,
+      animation_key: media.animation_key,
+      animation_title: media.title,
+    });
+  else delete node.animation;
+  emit("figure-changed");
+}
+
+async function patchFigure(id, patch) {
+  const rows = await rest(`paragraphs?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+  if (!rows?.length) throw new Error("The database didn't allow this change.");
+  return rows[0];
+}
+
+async function setFigure(media) {
+  const node = figureTarget.value;
+  figureTarget.value = null;
+  if (!node) return;
+  saving.value = true;
+  try {
+    const [before] = await rest(
+      `paragraphs?id=eq.${node.id}&select=animation_id,animation_trigger`
+    );
+    if (!before) throw new Error("That paragraph no longer exists.");
+    const previousFigure = node.animation
+      ? { animation_key: node.animation.id, title: node.animation.title }
+      : null;
+    const row = await patchFigure(node.id, {
+      animation_id: media?.id || null,
+      animation_trigger: media ? before.animation_trigger || "auto" : null,
+    });
+    showFigure(node, row, media);
+    editUndo.value = [
+      ...editUndo.value.slice(-19),
+      {
+        label: media ? "Change figure" : "Remove figure",
+        run: async () =>
+          showFigure(node, await patchFigure(node.id, before), previousFigure),
+      },
+    ];
+    lastSavedAt.value = new Date();
+    note(
+      media
+        ? `Figure set to “${media.title || media.animation_key}”.`
+        : "Figure removed."
+    );
+  } catch (err) {
+    note(`Couldn't change the figure: ${err.message}`, true);
+  } finally {
+    saving.value = false;
+  }
+}
+
 // Provide save handler to child components
+provide("changeFigure", openFigurePicker);
 provide("saveContent", saveContent);
 provide("isCreator", canEdit);
 
@@ -429,6 +525,17 @@ onBeforeUnmount(() => {
         >{{ editNote.message }}</span
       >
     </div>
+    <MediaPicker
+      v-if="canEdit"
+      :open="!!figureTarget"
+      :media="figureMedia"
+      :types="FIGURE_TYPES"
+      :current-id="figureCurrentId"
+      title="Choose this paragraph's figure"
+      @pick="setFigure"
+      @remove="setFigure(null)"
+      @close="figureTarget = null"
+    />
 
     <HoverImg />
     <!-- Viewport-centre trigger line: dev chrome behind ?markers=1 (OPENBRAIN-31) -->

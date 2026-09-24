@@ -37,6 +37,7 @@
             tag="p"
             class-name="subSubP pt-0"
             @save="handleSave"
+            can-figure
           />
           <div
             v-else
@@ -72,6 +73,7 @@
                 :is-creator="isCreator"
                 tag="p"
                 class-name="subSubParP"
+                can-figure
                 @save="handleSave"
               />
               <div

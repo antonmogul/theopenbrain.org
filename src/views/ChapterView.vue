@@ -342,6 +342,8 @@ watch(
   }
 );
 
+const figureVersion = ref(0);
+
 // Load chapter data from Supabase by slug
 async function loadChapter() {
   const currentNumber = route.params.number;
@@ -620,13 +622,16 @@ async function handleDeleteHighlight(highlightId) {
         class="pointer-events-none bg-gray-900/20 fixed inset-0 z-[50] duration-Fix"
       ></div>
       <!-- text -->
-      <Illustration />
+      <!-- Re-keyed when Edit mode changes a paragraph's figure, so the pane
+           re-wires its scroll triggers (OPENBRAIN-65). -->
+      <Illustration :key="figureVersion" />
       <!-- Dark opener: cover, title, numbered TOC (OPENBRAIN-32). Publishes
            its height as --opener-h so the text column starts below it. -->
       <ChapterOpener :module="chapterData" :text="storeText.text" />
       <Text
         :key="`chapter-${chapterNumber}-${chapterSlug || 'default'}`"
         :module="chapterData"
+        @figure-changed="figureVersion++"
       >
         <!-- End-of-chapter callout slot (Track 3) — rendered inside
                      TextComp so absolute positioning doesn't pull it to the

@@ -159,6 +159,33 @@ export function contentBlocksToHTML(blocks) {
 }
 
 /**
+ * The reader's figure object for a paragraph row with an animation_key:
+ * `id` is the full key (IllustrationsComp matches activeAnimation on it) and
+ * `name` drops the leading "animation" (the DOM trigger id is
+ * `triggerAnimation` + name). Display flags (start/middel/end/stage) round-trip
+ * through content.animationFlags (scripts/import-chapter-1-to-supabase.mjs).
+ * Also used by the reader's Change figure to update a paragraph in place.
+ */
+export function figureFor(p) {
+  const flags = p.content?.animationFlags || {};
+  return {
+    name: p.animation_key.replace(/^animation/, ""),
+    id: p.animation_key,
+    title: p.animation_title || "",
+    // Transition figures: the flag round-trips via animationFlags; the
+    // legacy 'scroll' trigger value is kept as back-compat for rows seeded
+    // before the flags existed.
+    transition: flags.transition === true || p.animation_trigger === "scroll",
+    // start/middel/end drive StartEndIcon.vue. stage has no consumer yet;
+    // carried so nothing is lost across a re-seed.
+    ...(flags.start ? { start: true } : {}),
+    ...(flags.middel ? { middel: true } : {}),
+    ...(flags.end ? { end: true } : {}),
+    ...(flags.stage ? { stage: flags.stage } : {}),
+  };
+}
+
+/**
  * Transform a single DB paragraph row into a legacy JSON paragraph object.
  */
 export function transformParagraph(p) {
@@ -191,25 +218,7 @@ export function transformParagraph(p) {
   // *and* IllustrationInline for the same paragraph. Static fullscreen paragraphs carry
   // only animationFull.
   if (p.animation_id && p.animation_key && !para.animationFull) {
-    // Display flags (start/middel/end/stage) round-trip through the content
-    // JSONB — written by scripts/import-chapter-1-to-supabase.mjs.
-    const flags = p.content?.animationFlags || {};
-
-    para.animation = {
-      name: p.animation_key.replace(/^animation/, ""),
-      id: p.animation_key,
-      title: p.animation_title || "",
-      // Transition figures: the flag round-trips via animationFlags; the
-      // legacy 'scroll' trigger value is kept as back-compat for rows seeded
-      // before the flags existed.
-      transition: flags.transition === true || p.animation_trigger === "scroll",
-      // start/middel/end drive StartEndIcon.vue. stage has no consumer yet;
-      // carried so nothing is lost across a re-seed.
-      ...(flags.start ? { start: true } : {}),
-      ...(flags.middel ? { middel: true } : {}),
-      ...(flags.end ? { end: true } : {}),
-      ...(flags.stage ? { stage: flags.stage } : {}),
-    };
+    para.animation = figureFor(p);
   }
 
   return para;
@@ -261,21 +270,7 @@ export function reconstructNesting(flatParagraphs) {
       // Add animation from the section-header paragraph (keyed off the real
       // animation_key — see transformParagraph for the contract).
       if (p.animation_id && p.animation_key) {
-        // Same flags round-trip as transformParagraph above.
-        const flags = p.content?.animationFlags || {};
-
-        currentSubSection.animation = {
-          name: p.animation_key.replace(/^animation/, ""),
-          id: p.animation_key,
-          title: p.animation_title || "",
-          // Same flags round-trip + legacy back-compat as transformParagraph.
-          transition:
-            flags.transition === true || p.animation_trigger === "scroll",
-          ...(flags.start ? { start: true } : {}),
-          ...(flags.middel ? { middel: true } : {}),
-          ...(flags.end ? { end: true } : {}),
-          ...(flags.stage ? { stage: flags.stage } : {}),
-        };
+        currentSubSection.animation = figureFor(p);
       }
       continue;
     }
