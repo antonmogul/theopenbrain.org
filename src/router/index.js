@@ -39,6 +39,14 @@ export const routes = [
     beforeEnter: () => ({ path: "/dashboard", query: { section: "chapters" } }),
   },
   {
+    // The chapter block page (OPENBRAIN-60): every block rendered as the
+    // reader shows it, edited in place.
+    path: "/dashboard/chapters/:slug",
+    name: "chapter-editor",
+    component: () => import("../views/ChapterEditorView.vue"),
+    meta: { requiresAuth: true, requiredRole: "creator" },
+  },
+  {
     path: "/dashboard/chapter/new",
     name: "chapter-wizard",
     redirect: { path: "/dashboard", query: { section: "chapter-wizard" } },
@@ -262,6 +270,7 @@ export const authGuard = createAuthGuard({
 // Tab titles for routes that don't set their own (the reader does).
 export const ROUTE_TITLES = {
   dashboard: "Creator console",
+  "chapter-editor": "Edit chapter",
   chapters: "Chapters",
   "chapter-overview": "Chapter overview",
   "professor-dashboard": "Professor dashboard",
