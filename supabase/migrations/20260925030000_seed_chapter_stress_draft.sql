@@ -6,8 +6,11 @@
 -- from the cleaned manuscript:
 --   - the manuscript's own heading numbers are dropped (the reader numbers
 --     sections; the source numbered two sections "V.");
---   - its two text boxes become breakout boxes (sections slugged box-*),
---     placed after the paragraph they follow in the manuscript;
+--   - its two text boxes become breakout boxes (sections slugged box-*).
+--     Box 2 follows its section (Stress and Health). Box 1 sits in the
+--     Introduction in the manuscript, where the reader can't place a box
+--     yet, so it stays unplaced (end of the chapter), as History's unplaced
+--     boxes do, until it can be placed on the chapter page;
 --   - the three figures it cites have no artwork yet, so they are figure
 --     placeholders ("Artwork pending") where they are cited;
 --   - the 203 references are one list; reviewer comments are left out.
@@ -530,31 +533,17 @@ set ramp = 'deve',
     ]'::jsonb
 where slug = 'stress' and authors is null;
 
--- The boxes: after the paragraph they follow in the manuscript.
-with chapter as (
-  select id from public.modules where slug = 'stress'
-),
-secs as (
-  select s.id, s.slug from public.sections s join chapter c on s.module_id = c.id
-),
-anchor(box_slug, parent_slug, text_start) as (
-  values
-    ('box-1-bruce-s-mcewen', 'introduction', $t$Expanding on Selye's foundational work, research$t$),
-    ('box-2-the-match-mismatch-hypothesis', 'stress-and-health', $t$Interestingly, there is also evidence for the "i$t$)
-)
+-- Box 2 follows the section it sits in. The reader anchors boxes only to a
+-- section's top-level paragraphs, and "Stress and Health" has none (its text
+-- is all in subsections), so it takes no anchor paragraph.
 update public.sections box
-set
-  parent_section_id = parent.id,
-  anchor_paragraph_id = (
-    select p.id from public.paragraphs p
-    where p.section_id = parent.id
-      and p.content_text like anchor.text_start || '%'
-    order by p.order_index limit 1
-  )
-from anchor
-join secs b on b.slug = anchor.box_slug
-join secs parent on parent.slug = anchor.parent_slug
-where box.id = b.id
+set parent_section_id = parent.id
+from public.sections parent, public.modules m
+where m.slug = 'stress'
+  and box.module_id = m.id
+  and parent.module_id = m.id
+  and box.slug = 'box-2-the-match-mismatch-hypothesis'
+  and parent.slug = 'stress-and-health'
   and box.parent_section_id is null;
 
 -- Check.
@@ -571,9 +560,16 @@ begin
     raise exception 'stress: % sections, expected 9', n;
   end if;
   select count(*) into n from public.sections
-   where module_id = m and slug like 'box-%' and parent_section_id is not null;
+   where module_id = m and slug like 'box-%';
   if n <> 2 then
-    raise exception 'stress: % of 2 boxes placed', n;
+    raise exception 'stress: % boxes, expected 2', n;
+  end if;
+  if not exists (
+    select 1 from public.sections box join public.sections parent on parent.id = box.parent_section_id
+    where box.module_id = m and box.slug = 'box-2-the-match-mismatch-hypothesis'
+      and parent.slug = 'stress-and-health'
+  ) then
+    raise exception 'stress: box 2 is not placed after Stress and Health';
   end if;
 end $$;
 
