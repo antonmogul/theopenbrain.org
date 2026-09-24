@@ -49,3 +49,19 @@ export const IslamicGoldenAge = {
 
 /** Nothing hovered — the component renders nothing at all. */
 export const Idle = { args: { hovered: false }, play: hover };
+
+/**
+ * A link set in the CMS (OPENBRAIN-70 D1): it carries its own picture and
+ * note, so no id lookup is needed.
+ */
+export const FromTheCms = {
+  args: { hovered: true },
+  render: chapterFrame(HoverImg, {
+    template: `<div style="min-height:480px;padding:64px;"><span id="cms-hover" class="hoverImg" data-hover-src="/publicAssets/images/foundations/fig02-01.jpg" data-hover-text="An Incan skull with healed trepanation holes." style="font:20px var(--font-body);text-decoration:underline;">trepanned skull</span><StoryComponent /></div>`,
+  }),
+  play: async () => {
+    document
+      .querySelector("#cms-hover")
+      ?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+  },
+};

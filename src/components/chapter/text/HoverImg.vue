@@ -5,21 +5,22 @@
     class="fixed w-full max-w-[400px] z-[70] bg-black p-4 text-white flex flex-col gap-4"
   >
     <div class="w-full">
-      <img
-        class="w-full"
-        :src="'/publicAssets/hoverImges/' + activeHover + '.jpg'"
-      />
+      <img class="w-full" :src="activeHover.src" alt="" />
     </div>
-    <p class="w-full max-w-measure-narrow -mt-[3px] text-small">
-      {{ infos.images.find((x) => x.title === activeHover).text }}
+    <p
+      v-if="activeHover.text"
+      class="w-full max-w-measure-narrow -mt-[3px] text-small"
+    >
+      {{ activeHover.text }}
     </p>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useMouse } from "@vueuse/core";
 import infos from "@/assets/json_backend/infosImages.json";
+import { imageUrl } from "@/editor/media.mjs";
 
 const { x, y } = useMouse();
 const img = ref(null);
@@ -34,19 +35,39 @@ watch(x, (x, prevX) => {
   img.value.style.top = y.value - window.scrollY - offsetY + "px";
   img.value.style.left = x - offsetX + "px";
 });
+// { src, text } for the hovered link, or null. A link carries its own
+// picture (data-hover-src / data-hover-text, set in the CMS: OPENBRAIN-70 D1);
+// older ones name a picture by id (/publicAssets/hoverImges/<id>.jpg, text
+// from infosImages.json). One delegated listener, so links rendered or edited
+// after mount work too.
 const activeHover = ref(null);
+function hoverFor(el) {
+  if (el.dataset.hoverSrc)
+    return {
+      src: imageUrl(el.dataset.hoverSrc),
+      text: el.dataset.hoverText || "",
+    };
+  if (!el.id) return null;
+  return {
+    src: `/publicAssets/hoverImges/${el.id}.jpg`,
+    text: infos.images.find((x) => x.title === el.id)?.text || "",
+  };
+}
+function onOver(event) {
+  const el = event.target?.closest?.(".hoverImg");
+  if (el) activeHover.value = hoverFor(el);
+}
+function onOut(event) {
+  const el = event.target?.closest?.(".hoverImg");
+  if (el && !el.contains(event.relatedTarget)) activeHover.value = null;
+}
 onMounted(() => {
-  const anchors = document.getElementsByClassName("hoverImg");
-  let hover = (event) => {
-    activeHover.value = event.target.id;
-  };
-  let leaveHover = (event) => {
-    activeHover.value = null;
-  };
-  for (const anchor of anchors) {
-    anchor.addEventListener("mouseover", (event) => hover(event));
-    anchor.addEventListener("mouseleave", (event) => leaveHover(event));
-  }
+  document.addEventListener("mouseover", onOver);
+  document.addEventListener("mouseout", onOut);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener("mouseover", onOver);
+  document.removeEventListener("mouseout", onOut);
 });
 </script>
 

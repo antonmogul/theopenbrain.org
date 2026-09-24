@@ -121,3 +121,25 @@ describe("lottieAssetOk", () => {
     expect(await lottieAssetOk(undefined, vi.fn())).toBe(false);
   });
 });
+
+describe("lottiePath (OPENBRAIN-70 B4)", () => {
+  it("uses an uploaded file's URL, else the key's bundled file", async () => {
+    const { lottiePath } = await import("@/helper/animationResolve");
+    expect(
+      lottiePath({
+        id: "animationUpload1",
+        lottieUrl: "https://x.supabase.co/a.json",
+      })
+    ).toBe("https://x.supabase.co/a.json");
+    // A row naming another bundled file loads that file (its key has none).
+    expect(
+      lottiePath({
+        id: "animationRetinalCellTypes3",
+        lottieUrl: "/publicAssets/animations/animationRetinalCellTypes.json",
+      })
+    ).toBe("/publicAssets/animations/animationRetinalCellTypes.json");
+    expect(lottiePath({ id: "animationDragon" })).toBe(
+      "/publicAssets/animations/animationDragon.json"
+    );
+  });
+});

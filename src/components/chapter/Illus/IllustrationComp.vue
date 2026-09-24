@@ -174,7 +174,7 @@ const prefersReducedMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)"
 ).matches;
 import animationJSON from "@/assets/json_backend/animations.json";
-import { resolveAnimationConfig } from "@/helper/animationResolve";
+import { lottiePath, resolveAnimationConfig } from "@/helper/animationResolve";
 import PlayIcon from "@/icons/custom/PlayIcon.vue";
 import PauseIcon from "@/icons/custom/PauseIcon.vue";
 import IllustrationFlip from "./IllustrationFlip.vue";
@@ -315,9 +315,11 @@ onMounted(async () => {
     speed: info.speed || 1,
     wrapper: svgContainer,
     animType: "svg",
-    loop: false,
+    // autoLoop: an uploaded animation with no states just plays on repeat
+    // (OPENBRAIN-70 B4). `loop` means something else to the state figures.
+    loop: props.animation.autoLoop ? true : false,
     autoplay: props.animation.autoplay ? true : false,
-    path: `/publicAssets/animations/${props.animation.id}.json`,
+    path: lottiePath(props.animation),
   });
   animationLottie.addEventListener("DOMLoaded", () => {
     const highligters = document.getElementsByClassName("highlighterIllu");

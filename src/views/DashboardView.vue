@@ -17,6 +17,7 @@ import { relativeLong as formatDate } from "@/utils/format";
 import { attemptPercent } from "@/utils/quizLabels";
 import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
+import WidgetsSection from "@/components/dashboard/sections/WidgetsSection.vue";
 import UsersSection from "@/components/dashboard/sections/UsersSection.vue";
 import AnalyticsSection from "@/components/dashboard/sections/AnalyticsSection.vue";
 import QuizzesSection from "@/components/dashboard/sections/QuizzesSection.vue";
@@ -76,6 +77,7 @@ const creatorNavItems = [
   { id: "chapters", label: "Chapters", icon: "book" },
   { id: "versions", label: "Versions", icon: "layers" },
   { id: "media", label: "Media", icon: "image" },
+  { id: "widgets", label: "Widgets", icon: "widget" },
   { id: "quizzes", label: "Quizzes", icon: "quiz" },
   { id: "users", label: "Users", icon: "users" },
   { id: "analytics", label: "Analytics", icon: "chart" },
@@ -1175,6 +1177,8 @@ onMounted(() => {
       @delete="deleteMedia"
       @uploaded="fetchMedia"
     />
+
+    <WidgetsSection v-else-if="activeSection === 'widgets'" />
 
     <QuizzesSection
       v-else-if="activeSection === 'quizzes'"

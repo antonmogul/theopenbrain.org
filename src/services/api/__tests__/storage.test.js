@@ -7,6 +7,8 @@ vi.mock("@/services/api/client", () => ({
 import { authedRequest, getSession } from "@/services/api/client";
 import {
   uploadChapterImage,
+  uploadChapterLottie,
+  lottieProblem,
   uploadProblem,
   publicUrl,
 } from "@/services/api/storage";
@@ -85,5 +87,80 @@ describe("uploadChapterImage", () => {
       uploadChapterImage(file("image/png"), { slug: "x" })
     ).rejects.toThrow(/Sign in again/);
     expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+});
+
+// OPENBRAIN-70 B4: Lottie uploads.
+const jsonFile = (data, name = "pupil.json") => {
+  const text = typeof data === "string" ? data : JSON.stringify(data);
+  return {
+    name,
+    type: "application/json",
+    size: text.length,
+    text: async () => text,
+  };
+};
+const lottie = { v: "5.7.4", fr: 30, ip: 0, op: 60, layers: [] };
+
+describe("lottieProblem", () => {
+  it("accepts a Lottie JSON", async () => {
+    expect(await lottieProblem(jsonFile(lottie))).toBeNull();
+  });
+  it("refuses other files, bad JSON and JSON that isn't Lottie", async () => {
+    expect(
+      await lottieProblem({ name: "a.png", type: "image/png", size: 1 })
+    ).toMatch(/\.json/);
+    expect(await lottieProblem(jsonFile("{nope"))).toMatch(/valid JSON/);
+    expect(await lottieProblem(jsonFile({ hello: 1 }))).toMatch(
+      /isn't a Lottie/
+    );
+    expect(await lottieProblem(null)).toMatch(/Choose/);
+  });
+});
+
+describe("uploadChapterLottie", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({}),
+    }));
+    authedRequest.mockImplementation(async (_p, init) => [
+      { id: "m1", ...JSON.parse(init.body) },
+    ]);
+  });
+
+  it("stores the file as JSON and adds a looping library row", async () => {
+    const row = await uploadChapterLottie(jsonFile(lottie), {
+      slug: "foundations-of-neuroscience",
+      title: "Pupil reflex",
+    });
+    const [url, init] = globalThis.fetch.mock.calls[0];
+    expect(url).toMatch(
+      /chapter-media\/modules\/foundations-of-neuroscience\/.+\.json$/
+    );
+    expect(init.headers["Content-Type"]).toBe("application/json");
+    expect(row).toMatchObject({
+      media_type: "lottie",
+      title: "Pupil reflex",
+      config: { autoplay: true, autoLoop: true },
+    });
+    expect(row.animation_key).toMatch(/^animationUpload[0-9a-z]+$/);
+    expect(row.lottie_file_url).toBe(
+      publicUrl(url.split("/chapter-media/")[1])
+    );
+  });
+
+  it("explains a bucket that doesn't accept JSON yet", async () => {
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      status: 400,
+      json: async () => ({
+        message: "mime type application/json is not supported",
+      }),
+    }));
+    await expect(
+      uploadChapterLottie(jsonFile(lottie), { slug: "s" })
+    ).rejects.toThrow(/OPENBRAIN-70/);
   });
 });

@@ -1,16 +1,16 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 54,
-  "coveredCount": 54,
+  "sourceCount": 56,
+  "coveredCount": 56,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
     "ReaderShell": 12,
     "Highlighting": 6,
     "Demos": 5,
-    "Illustrations": 15,
-    "Text": 16
+    "Illustrations": 16,
+    "Text": 17
   },
   "components": [
     {
@@ -92,6 +92,11 @@
       "source": "src/components/chapter/Illus/IllustrationTransition.vue",
       "storyFile": "src/components/chapter/Illus/__stories__/IllustrationTransition.stories.js",
       "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/Illus/IllustrationWidget.vue",
+      "storyFile": "src/components/chapter/Illus/__stories__/IllustrationWidget.stories.js",
+      "story": "Phrenology"
     },
     {
       "source": "src/components/chapter/Illus/IllustrationsComp.vue",
@@ -276,6 +281,11 @@
     {
       "source": "src/components/chapter/text/SubSubSection.vue",
       "storyFile": "src/components/chapter/text/__stories__/SubSubSection.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/text/VideoEmbed.vue",
+      "storyFile": "src/components/chapter/text/__stories__/VideoEmbed.stories.js",
       "story": "Default"
     },
     {

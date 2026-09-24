@@ -5,7 +5,10 @@
  * reader shows it; clicking a block opens it for editing.
  */
 import ViewStoryShell from "@/stories/ViewStoryShell.vue";
-import { editorApi } from "@/components/chapterEditor/__stories__/chapterEditorFixtures";
+import {
+  editorApi,
+  memoryEditorApi,
+} from "@/components/chapterEditor/__stories__/chapterEditorFixtures";
 import ChapterEditorView from "../ChapterEditorView.vue";
 
 export default {
@@ -25,8 +28,13 @@ export default {
   }),
 };
 
-/** A draft chapter: edits need no confirmation. */
-export const DraftChapter = {};
+/**
+ * A draft chapter: edits need no confirmation. Backed by an in-memory store,
+ * so adding, moving, grouping and deleting blocks work as they would live.
+ */
+export const DraftChapter = {
+  parameters: { api: memoryEditorApi() },
+};
 
 /** A published chapter shows the "edits go live" note. */
 export const PublishedChapter = {

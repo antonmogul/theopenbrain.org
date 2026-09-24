@@ -10,6 +10,7 @@ import { computed, defineAsyncComponent } from "vue";
 import { contentBlocksToHTML } from "@/composables/chapterTransform.mjs";
 import { blockSegments, BLOCK_LABELS } from "@/editor/segments";
 import { imageUrl } from "@/editor/media.mjs";
+import VideoEmbed from "@/components/chapter/text/VideoEmbed.vue";
 
 const WidgetBreakout = defineAsyncComponent(
   () => import("@/components/chapter/text/WidgetBreakout.vue")
@@ -96,6 +97,11 @@ const plain = (html) => String(html || "").replace(/<[^>]*>/g, "");
         <div v-else-if="seg.kind === 'widget'" class="bp-widget">
           <WidgetBreakout :placement="seg.block" />
         </div>
+
+        <VideoEmbed
+          v-else-if="seg.kind === 'video' && seg.block.youtubeId"
+          :video="seg.block"
+        />
 
         <div v-else class="bp-card">
           <span class="bp-card-kind">{{

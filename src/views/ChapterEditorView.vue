@@ -19,7 +19,12 @@ import ParagraphEditor from "@/components/chapterEditor/ParagraphEditor.vue";
 import InsertMenu from "@/components/chapterEditor/InsertMenu.vue";
 import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
+import ChapterDetails from "@/components/chapterEditor/ChapterDetails.vue";
+import FigureSettings from "@/components/chapterEditor/FigureSettings.vue";
+import { parseYouTube, youTubeStart } from "@/editor/video.mjs";
 import { placementsForChapter } from "@/widgets/placements";
+import { coverForModule } from "@/helper/chapterCover";
+import { imageUrl } from "@/editor/media.mjs";
 import { planPlacementConversion } from "@/editor/placementsToBlocks";
 import {
   StatusBadge,
@@ -117,14 +122,89 @@ const STARTERS = {
   heading: [{ type: "heading", level: 3, content: "" }],
   quote: [{ type: "blockquote", content: "" }],
   list: [{ type: "list", ordered: false, items: [""] }],
+  // A subsection heading: its text is the title in the contents list.
+  subsection: [{ type: "text", content: "" }],
 };
 const pickerFor = ref(null); // { kind: "image"|"widget"|"figure"|"widget-edit", ... }
+
+// ---- hover pictures (OPENBRAIN-70 D1) ----
+// { apply, remove, current, src, text, picking }
+const hoverFor = ref(null);
+function openHover({ apply, remove, current }) {
+  hoverFor.value = {
+    apply,
+    remove,
+    current,
+    src: current?.src || "",
+    text: current?.text || "",
+    picking: !current?.src,
+  };
+}
+function pickHover(m) {
+  hoverFor.value = { ...hoverFor.value, src: m.image_file_url, picking: false };
+}
+function onUploadedHover({ media, caption }) {
+  ed.media.value = [...ed.media.value, media];
+  hoverFor.value = {
+    ...hoverFor.value,
+    src: media.image_file_url,
+    text: hoverFor.value.text || caption || "",
+    picking: false,
+  };
+}
+function saveHover() {
+  const h = hoverFor.value;
+  if (!h?.src) return;
+  h.apply(h.src, h.text.trim());
+  hoverFor.value = null;
+  showToast("Hover picture set. Save the block to keep it.");
+}
+function removeHover() {
+  hoverFor.value?.remove();
+  hoverFor.value = null;
+}
+
+// ---- videos (OPENBRAIN-70 D2) ----
+const videoForm = ref(null); // { sectionId, index, url, title }
+const videoId = computed(() =>
+  videoForm.value ? parseYouTube(videoForm.value.url) : null
+);
+async function saveVideo() {
+  const f = videoForm.value;
+  const youtubeId = videoId.value; // read before the form (its source) closes
+  if (!youtubeId) return;
+  videoForm.value = null;
+  const start = youTubeStart(f.url);
+  await attempt(
+    () =>
+      ed.insertParagraph(f.sectionId, f.index, [
+        {
+          type: "video",
+          provider: "youtube",
+          youtubeId,
+          url: f.url.trim(),
+          title: f.title.trim(),
+          ...(start ? { start } : {}),
+        },
+      ]),
+    "Video added."
+  );
+}
 
 function onInsert(sectionId, index, type) {
   whenLive(() => {
     editingId.value = null;
+    if (type === "video") {
+      videoForm.value = { sectionId, index, url: "", title: "" };
+      return;
+    }
     if (STARTERS[type]) {
-      pendingInsert.value = { sectionId, index, blocks: STARTERS[type] };
+      pendingInsert.value = {
+        sectionId,
+        index,
+        blocks: STARTERS[type],
+        kind: type,
+      };
     } else {
       pickerFor.value = { kind: type, sectionId, index };
     }
@@ -132,9 +212,20 @@ function onInsert(sectionId, index, type) {
 }
 
 async function savePendingInsert(blocks) {
-  const { sectionId, index } = pendingInsert.value;
+  const { sectionId, index, kind } = pendingInsert.value;
   editError.value = "";
   try {
+    if (kind === "subsection") {
+      const { adopted } = await ed.insertSubsection(sectionId, index, blocks);
+      pendingInsert.value = null;
+      showToast(
+        adopted
+          ? `Subsection added, with the ${adopted === 1 ? "block" : `${adopted} blocks`} below it. Use ← Out to take one out.`
+          : "Subsection added. Use → In on the blocks that belong to it.",
+        { undo: true }
+      );
+      return;
+    }
     await ed.insertParagraph(sectionId, index, blocks);
     pendingInsert.value = null;
     showToast("Block added.", { undo: true });
@@ -161,6 +252,38 @@ async function onPickImage(m) {
   );
 }
 
+// ---- chapter details (OPENBRAIN-70 C1, C2) ----
+function saveDetails(patch) {
+  whenLive(() => attempt(() => ed.setDetails(patch), "Chapter details saved."));
+}
+
+// ---- cover (OPENBRAIN-67) ----
+const cover = computed(() => coverForModule(ed.module.value));
+const coverIsDefault = computed(() => !ed.module.value?.cover_image_url);
+const coverMediaId = computed(() => {
+  const url = ed.module.value?.cover_image_url;
+  return (
+    (url &&
+      ed.media.value.find(
+        (m) => m.media_type === "image" && imageUrl(m.image_file_url) === url
+      )?.id) ||
+    null
+  );
+});
+function chooseCover() {
+  whenLive(() => (pickerFor.value = { kind: "cover" }));
+}
+async function applyCover(url, done) {
+  pickerFor.value = null;
+  await attempt(() => ed.setCover(url), done);
+}
+const onPickCover = (m) =>
+  applyCover(imageUrl(m.image_file_url), `Cover set: ${m.title || "image"}.`);
+function onUploadedCover({ media }) {
+  ed.media.value = [...ed.media.value, media];
+  applyCover(imageUrl(media.image_file_url), "Cover uploaded and set.");
+}
+
 async function onUploadedImage({ media, alt, caption }) {
   ed.media.value = [...ed.media.value, media];
   const { sectionId, index } = pickerFor.value;
@@ -177,6 +300,13 @@ async function onUploadedImage({ media, alt, caption }) {
 async function onWidgetDone(block) {
   const target = pickerFor.value;
   pickerFor.value = null;
+  if (target.kind === "panel-widget") {
+    await attempt(
+      () => ed.setPanelWidget(target.paragraphId, block),
+      `“${block.title || block.widgetId}” is now this paragraph's figure.`
+    );
+    return;
+  }
   if (target.kind === "widget-edit") {
     const p = ed.paragraphs.value.find((x) => x.id === target.paragraphId);
     const blocks = (p.content?.blocks || []).map((b, i) =>
@@ -221,6 +351,34 @@ function move(p, dir) {
   );
 }
 
+// ---- subsections (OPENBRAIN-70) ----
+function shift(p, dir) {
+  whenLive(async () => {
+    try {
+      const moved = await ed.shiftLevel(p.id, dir);
+      showToast(
+        dir > 0
+          ? "Moved into the subsection."
+          : moved > 1
+            ? `Moved out of the subsection, with the ${moved - 1 === 1 ? "block" : `${moved - 1} blocks`} after it.`
+            : "Moved out of the subsection.",
+        { undo: true }
+      );
+    } catch (err) {
+      console.error("Chapter editor:", err);
+      showToast(err.message || "Couldn't save. Try again.", { error: true });
+    }
+  });
+}
+function ungroup(p) {
+  whenLive(() =>
+    attempt(
+      () => ed.ungroupSubsection(p.id),
+      "Subsection removed; its heading and blocks stay as ordinary text."
+    )
+  );
+}
+
 function chooseFigure(p) {
   whenLive(() => (pickerFor.value = { kind: "figure", paragraphId: p.id }));
 }
@@ -233,6 +391,78 @@ async function onPickFigure(m) {
     `Figure set: ${m.title || m.animation_key}.`
   );
 }
+// A new upload from the figure picker becomes that paragraph's panel figure.
+async function onUploadedFigure({ media }) {
+  ed.media.value = [...ed.media.value, media];
+  await onPickFigure(media);
+}
+
+// A YouTube link from the figure picker becomes that paragraph's figure.
+async function onYouTubeFigure({ youtubeId, title }) {
+  try {
+    await onPickFigure(await ed.addYouTubeMedia(youtubeId, title));
+  } catch (err) {
+    showToast(err.message || "Couldn't add the video.", { error: true });
+  }
+}
+
+// ---- figures: panel or text (OPENBRAIN-70 B2) ----
+const isImageFigure = (p) =>
+  ed.mediaById.value.get(p.animation_id)?.media_type === "image";
+function figureIntoText(p) {
+  whenLive(async () => {
+    try {
+      const { frames } = await ed.figureToText(p.id);
+      showToast(
+        frames > 1
+          ? `Figure moved into the text, showing its first of ${frames} images.`
+          : "Figure moved into the text.",
+        { undo: true }
+      );
+    } catch (err) {
+      showToast(err.message || "Couldn't move the figure.", { error: true });
+    }
+  });
+}
+function imageIntoPanel(p) {
+  whenLive(async () => {
+    try {
+      const { host } = await ed.imageToPanel(p.id);
+      showToast(
+        `Image moved to the figure panel, beside “${excerpt(host).slice(0, 40)}…”.`,
+        { undo: true }
+      );
+    } catch (err) {
+      showToast(err.message || "Couldn't move the image.", { error: true });
+    }
+  });
+}
+
+// ---- widgets as panel figures (OPENBRAIN-70 B5) ----
+function panelWidget(p) {
+  whenLive(
+    () => (pickerFor.value = { kind: "panel-widget", paragraphId: p.id })
+  );
+}
+
+// ---- figure frames (OPENBRAIN-70 B3) ----
+const figureSettingsFor = ref(null); // the figure's media row
+function editFigure(p) {
+  whenLive(
+    () => (figureSettingsFor.value = ed.mediaById.value.get(p.animation_id))
+  );
+}
+async function saveFigure(value) {
+  const id = figureSettingsFor.value.id;
+  const ok = await attempt(
+    () => ed.setFigureFrames(id, value),
+    value.images.length > 1
+      ? `Figure saved: ${value.images.length} images.`
+      : "Figure saved."
+  );
+  if (ok) figureSettingsFor.value = null;
+}
+
 async function onRemoveFigure() {
   const { paragraphId } = pickerFor.value;
   pickerFor.value = null;
@@ -321,15 +551,36 @@ function moveSec(sec, dir) {
 }
 const newSection = ref(null); // { index, title }
 function askAddSection(index) {
-  whenLive(() => (newSection.value = { index, title: "" }));
+  whenLive(() => (newSection.value = { index, title: "", box: false }));
 }
+// ---- breakout boxes (OPENBRAIN-70 A3, A4) ----
+const mainSections = computed(() =>
+  ed.sections.value.filter((x) => !ed.isBox(x))
+);
+// A box can follow any top-level block of its section (not one inside a
+// subsection: the reader nests those differently).
+const anchorRows = (sectionId) =>
+  rowsOf(sectionId).filter(
+    (p) => !p.is_subsection_header && !(p.subsection_level > 0)
+  );
+function placeBox(box, parentId, anchorParagraphId) {
+  whenLive(() =>
+    attempt(
+      () => ed.setBoxPlacement(box.id, { parentId, anchorParagraphId }),
+      parentId
+        ? `“${box.title}” placed under “${ed.sections.value.find((x) => x.id === parentId)?.title}”.`
+        : `“${box.title}” moved back to the end of the chapter.`
+    )
+  );
+}
+
 async function saveNewSection() {
-  const { index, title } = newSection.value;
+  const { index, title, box } = newSection.value;
   if (!title.trim()) return;
   newSection.value = null;
   const created = await attempt(
-    () => ed.addSection(index, title.trim()),
-    "Section added."
+    () => ed.addSection(index, title.trim(), { box: !!box }),
+    box ? "Breakout box added. Choose where it belongs." : "Section added."
   );
   if (created)
     setTimeout(() => scrollToSection(ed.sections.value[index]?.id), 50);
@@ -367,9 +618,16 @@ function convertPlacements() {
     converting.value = false;
   });
 }
-const excerpt = (p) =>
-  (p.content_text || "this block").slice(0, 80) +
-  ((p.content_text || "").length > 80 ? "…" : "");
+// A short name for a block, for menus and labels. Blocks with no text (an
+// image or a widget) are named by what they are.
+function excerpt(p) {
+  const text = p.content_text || "";
+  if (text) return text.slice(0, 80) + (text.length > 80 ? "…" : "");
+  const b = p.content?.blocks?.find((x) => x.type !== "text");
+  if (b?.type === "image") return `Image: ${b.caption || b.alt || "untitled"}`;
+  if (b?.type === "widget") return `Widget: ${b.title || b.widgetId}`;
+  return "this block";
+}
 
 onMounted(async () => {
   await ed.load();
@@ -466,6 +724,29 @@ onMounted(async () => {
           >
         </div>
 
+        <ChapterDetails
+          :module="ed.module.value"
+          :saving="ed.saving.value"
+          @save="saveDetails"
+        />
+
+        <section class="ce-cover" aria-label="Cover image">
+          <img :src="cover" alt="" class="ce-cover-img" />
+          <div class="ce-cover-meta">
+            <h2>Cover image</h2>
+            <p>
+              The full-screen image that opens the chapter{{
+                coverIsDefault
+                  ? ". This is the default; choose one to replace it."
+                  : ", also shown on the chapter's card in the library."
+              }}
+            </p>
+            <Button variant="outline" size="sm" @click="chooseCover"
+              >Change cover</Button
+            >
+          </div>
+        </section>
+
         <p v-if="isPublished" class="ce-live-note">
           This chapter is published: saved edits reach readers straight away.
           Every save can be undone.
@@ -479,7 +760,9 @@ onMounted(async () => {
         >
           <header class="ce-section-head">
             <div class="ce-section-row">
-              <span class="ce-section-n">Section {{ i + 1 }}</span>
+              <span class="ce-section-n">{{
+                ed.isBox(s) ? "Breakout box" : `Section ${i + 1}`
+              }}</span>
               <span class="ce-spacer" />
               <div
                 class="ce-sec-tools"
@@ -534,6 +817,43 @@ onMounted(async () => {
               >
             </form>
             <h2 v-else>{{ s.title }}</h2>
+            <!-- Where a breakout box shows in the reader (OPENBRAIN-70 A3, A4) -->
+            <div v-if="ed.isBox(s)" class="ce-box-place">
+              <label>
+                <span>Belongs to</span>
+                <select
+                  :value="s.parent_section_id || ''"
+                  @change="placeBox(s, $event.target.value || null, null)"
+                >
+                  <option value="">End of the chapter (not placed)</option>
+                  <option v-for="m in mainSections" :key="m.id" :value="m.id">
+                    {{ m.title }}
+                  </option>
+                </select>
+              </label>
+              <label v-if="s.parent_section_id">
+                <span>Shows after</span>
+                <select
+                  :value="s.anchor_paragraph_id || ''"
+                  @change="
+                    placeBox(
+                      s,
+                      s.parent_section_id,
+                      $event.target.value || null
+                    )
+                  "
+                >
+                  <option value="">The end of that section</option>
+                  <option
+                    v-for="p in anchorRows(s.parent_section_id)"
+                    :key="p.id"
+                    :value="p.id"
+                  >
+                    {{ excerpt(p).slice(0, 70) }}
+                  </option>
+                </select>
+              </label>
+            </div>
           </header>
 
           <template v-for="(p, pi) in rowsOf(s.id)" :key="p.id">
@@ -547,6 +867,8 @@ onMounted(async () => {
               class="ce-block is-editing"
             >
               <ParagraphEditor
+                hover-images
+                @hover-image="openHover"
                 :blocks="pendingInsert.blocks"
                 :saving="ed.saving.value"
                 :error="editError"
@@ -564,10 +886,15 @@ onMounted(async () => {
               class="ce-block"
               :class="{
                 'is-editing': editingId === p.id,
-                'is-sub': (p.subsection_level || 0) > 0,
+                'is-sub':
+                  (p.subsection_level || 0) > 0 && !p.is_subsection_header,
+                'is-sub2': (p.subsection_level || 0) > 1,
+                'is-subhead': p.is_subsection_header,
               }"
             >
               <ParagraphEditor
+                hover-images
+                @hover-image="openHover"
                 v-if="editingId === p.id"
                 :blocks="p.content?.blocks || []"
                 :saving="ed.saving.value"
@@ -615,8 +942,65 @@ onMounted(async () => {
                   >
                     ↓
                   </button>
+                  <button
+                    v-if="p.is_subsection_header"
+                    type="button"
+                    title="Turn this subsection back into ordinary blocks"
+                    @click="ungroup(p)"
+                  >
+                    Ungroup
+                  </button>
+                  <template v-else>
+                    <button
+                      v-if="ed.canIndent(p.id)"
+                      type="button"
+                      title="Move into the subsection above"
+                      @click="shift(p, 1)"
+                    >
+                      → In
+                    </button>
+                    <button
+                      v-if="(p.subsection_level || 0) > 0"
+                      type="button"
+                      title="Move out of the subsection"
+                      @click="shift(p, -1)"
+                    >
+                      ← Out
+                    </button>
+                  </template>
                   <button type="button" @click="chooseFigure(p)">
                     {{ p.animation_id ? "Figure…" : "+ Figure" }}
+                  </button>
+                  <button
+                    type="button"
+                    title="Show an interactive widget in the left panel beside this paragraph"
+                    @click="panelWidget(p)"
+                  >
+                    Widget in panel
+                  </button>
+                  <button
+                    v-if="p.animation_id && isImageFigure(p)"
+                    type="button"
+                    title="Title, caption and images of this figure"
+                    @click="editFigure(p)"
+                  >
+                    Figure settings
+                  </button>
+                  <button
+                    v-if="p.animation_id && isImageFigure(p)"
+                    type="button"
+                    title="Show this figure as an image card in the text instead of the left panel"
+                    @click="figureIntoText(p)"
+                  >
+                    Into text
+                  </button>
+                  <button
+                    v-if="imageIndex(p) >= 0"
+                    type="button"
+                    title="Show this image in the left panel beside the paragraph before it"
+                    @click="imageIntoPanel(p)"
+                  >
+                    To panel
                   </button>
                   <button
                     v-if="imageIndex(p) >= 0"
@@ -650,6 +1034,8 @@ onMounted(async () => {
             class="ce-block is-editing"
           >
             <ParagraphEditor
+              hover-images
+              @hover-image="openHover"
               :blocks="pendingInsert.blocks"
               :saving="ed.saving.value"
               :error="editError"
@@ -680,12 +1066,16 @@ onMounted(async () => {
             @keydown.esc="newSection = null"
             @vue:mounted="({ el }) => el.focus()"
           />
+          <label class="ce-box-check">
+            <input v-model="newSection.box" type="checkbox" />
+            Breakout box
+          </label>
           <Button
             variant="solid"
             size="sm"
             :disabled="!newSection.title.trim()"
             @click="saveNewSection"
-            >Add section</Button
+            >{{ newSection.box ? "Add box" : "Add section" }}</Button
           >
           <Button variant="ghost" size="sm" @click="newSection = null"
             >Cancel</Button
@@ -728,7 +1118,11 @@ onMounted(async () => {
     </ConfirmDialog>
 
     <WidgetPicker
-      :open="pickerFor?.kind === 'widget' || pickerFor?.kind === 'widget-edit'"
+      :open="
+        pickerFor?.kind === 'widget' ||
+        pickerFor?.kind === 'widget-edit' ||
+        pickerFor?.kind === 'panel-widget'
+      "
       :initial="pickerFor?.kind === 'widget-edit' ? pickerFor.initial : null"
       :chapter-slug="ed.module.value?.slug || ''"
       @done="onWidgetDone"
@@ -746,10 +1140,143 @@ onMounted(async () => {
       @close="pickerFor = null"
     />
 
+    <BaseModal
+      :model-value="!!hoverFor && !hoverFor.picking"
+      title="Hover picture"
+      size="md"
+      @update:model-value="(v) => !v && (hoverFor = null)"
+      @close="hoverFor = null"
+    >
+      <div v-if="hoverFor" class="ce-form">
+        <p class="ce-hover-note">
+          Readers see this picture and note when they point at the selected
+          words.
+        </p>
+        <div class="ce-hover-pick">
+          <img
+            v-if="hoverFor.src"
+            :src="imageUrl(hoverFor.src)"
+            alt=""
+            class="ce-hover-img"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            @click="hoverFor = { ...hoverFor, picking: true }"
+            >{{ hoverFor.src ? "Change image" : "Choose image" }}</Button
+          >
+        </div>
+        <FormField label="Note" hint="A line or two shown under the picture.">
+          <textarea id="hover-text" v-model="hoverFor.text" rows="3" />
+        </FormField>
+      </div>
+      <template #footer>
+        <Button
+          v-if="hoverFor?.current"
+          variant="danger"
+          size="sm"
+          @click="removeHover"
+          >Remove</Button
+        >
+        <Button variant="ghost" size="sm" @click="hoverFor = null"
+          >Cancel</Button
+        >
+        <Button
+          variant="solid"
+          size="sm"
+          :disabled="!hoverFor?.src"
+          @click="saveHover"
+          >Set picture</Button
+        >
+      </template>
+    </BaseModal>
+
+    <MediaPicker
+      :open="!!hoverFor && hoverFor.picking"
+      :media="ed.media.value"
+      :types="['image']"
+      title="Picture shown on hover"
+      :upload-slug="ed.module.value?.slug || ''"
+      @pick="pickHover"
+      @uploaded="onUploadedHover"
+      @close="hoverFor = hoverFor?.src ? { ...hoverFor, picking: false } : null"
+    />
+
+    <BaseModal
+      :model-value="!!videoForm"
+      title="Add a video"
+      size="md"
+      @update:model-value="(v) => !v && (videoForm = null)"
+      @close="videoForm = null"
+    >
+      <form v-if="videoForm" class="ce-form" @submit.prevent="saveVideo">
+        <FormField
+          label="YouTube link"
+          hint="Paste the video's address, e.g. https://www.youtube.com/watch?v=… A t= start time is kept."
+        >
+          <input
+            id="video-url"
+            v-model="videoForm.url"
+            type="url"
+            required
+            @vue:mounted="({ el }) => el.focus()"
+          />
+        </FormField>
+        <p v-if="videoForm.url && !videoId" class="ce-form-error" role="alert">
+          That isn't a YouTube video link.
+        </p>
+        <FormField label="Title" hint="Shown on the video card in the reader.">
+          <input id="video-title" v-model="videoForm.title" type="text" />
+        </FormField>
+      </form>
+      <template #footer>
+        <Button variant="ghost" size="sm" @click="videoForm = null"
+          >Cancel</Button
+        >
+        <Button
+          variant="solid"
+          size="sm"
+          :disabled="!videoId"
+          @click="saveVideo"
+          >Add video</Button
+        >
+      </template>
+    </BaseModal>
+
+    <FigureSettings
+      :open="!!figureSettingsFor"
+      :figure="figureSettingsFor"
+      :media="ed.media.value"
+      :upload-slug="ed.module.value?.slug || ''"
+      :saving="ed.saving.value"
+      @save="saveFigure"
+      @uploaded="({ media }) => (ed.media.value = [...ed.media.value, media])"
+      @close="figureSettingsFor = null"
+    />
+
+    <MediaPicker
+      :open="pickerFor?.kind === 'cover'"
+      :media="ed.media.value"
+      :types="['image']"
+      title="Choose the chapter's cover"
+      :current-id="coverIsDefault ? null : coverMediaId || 'custom'"
+      remove-label="Use the default cover"
+      :upload-slug="ed.module.value?.slug || ''"
+      @pick="onPickCover"
+      @uploaded="onUploadedCover"
+      @remove="applyCover(null, 'Cover reset to the default.')"
+      @close="pickerFor = null"
+    />
+
     <MediaPicker
       :open="pickerFor?.kind === 'figure'"
       :media="ed.media.value"
-      :types="['lottie', 'video', 'youtube']"
+      :types="['image', 'lottie', 'video', 'youtube', 'widget']"
+      :upload-slug="ed.module.value?.slug || ''"
+      allow-youtube
+      :lottie-upload-slug="ed.module.value?.slug || ''"
+      @uploaded="onUploadedFigure"
+      @youtube="onYouTubeFigure"
       title="Choose this paragraph's figure"
       :current-id="
         pickerFor?.kind === 'figure'
@@ -941,6 +1468,40 @@ onMounted(async () => {
   gap: 48px;
   min-width: 0;
 }
+.ce-cover {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 10px;
+  background: rgb(var(--color-paper));
+}
+.ce-cover-img {
+  width: 200px;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 6px;
+  background: rgb(var(--color-bg));
+}
+.ce-cover-meta {
+  flex: 1 1 240px;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  font-family: var(--font-ui);
+}
+.ce-cover-meta h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.ce-cover-meta p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgb(var(--color-mute));
+}
 .ce-live-note {
   margin: 0;
   padding: 10px 14px;
@@ -953,6 +1514,67 @@ onMounted(async () => {
   display: grid;
   gap: 6px;
   scroll-margin-top: 88px;
+}
+.ce-hover-note {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  color: rgb(var(--color-mute));
+}
+.ce-hover-pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ce-hover-img {
+  width: 140px;
+  max-height: 110px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: rgb(var(--color-bg));
+}
+.ce-form-error {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: rgb(var(--color-accent));
+}
+.ce-box-place {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+}
+.ce-box-place label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 240px;
+}
+.ce-box-place span {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-mute));
+}
+.ce-box-place select {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  background: rgb(var(--color-paper));
+  font: inherit;
+}
+.ce-box-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  white-space: nowrap;
 }
 .ce-section-head {
   display: grid;
@@ -971,8 +1593,26 @@ onMounted(async () => {
 .ce-block {
   position: relative;
 }
+/* Blocks inside a subsection hang off a rule from its heading (OPENBRAIN-70). */
+.ce-block.is-subhead {
+  margin-top: 12px;
+}
+.ce-block.is-subhead::before {
+  content: "Subsection";
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-accent));
+}
 .ce-block.is-sub {
   margin-left: 12px;
+  padding-left: 14px;
+  border-left: 2px solid rgb(var(--color-accent) / 0.35);
+}
+.ce-block.is-sub2 {
+  margin-left: 32px;
 }
 .ce-block-view {
   position: relative;

@@ -37,6 +37,9 @@ export function mobileMode(animation) {
   // Scene transitions are choreography between figures, not figures themselves.
   if (animation.isTransition) return "skip";
 
+  // An interactive widget figure (OPENBRAIN-70 B5): its breakout card.
+  if (animation.widgetId) return "widget";
+
   // Explicit per-figure escape hatch for the ones that break inline.
   if (FULLSCREEN_FALLBACK.has(animation.id)) return "fullscreen";
 

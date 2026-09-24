@@ -54,7 +54,7 @@ defineEmits([
 
 <template>
   <section class="section">
-    <SectionHeader eyebrow="05 · Quizzes" title="Assessments">
+    <SectionHeader eyebrow="06 · Quizzes" title="Assessments">
       <template #actions>
         <Button
           v-if="!showQuizEditor"

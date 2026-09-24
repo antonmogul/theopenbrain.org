@@ -9,6 +9,8 @@ import { computed, ref, watch } from "vue";
 import { BaseModal, Button, SearchInput } from "@/components/dashboard/shared";
 import { imageUrl } from "@/editor/media.mjs";
 import ImageUpload from "./ImageUpload.vue";
+import LottieUpload from "./LottieUpload.vue";
+import { parseYouTube } from "@/editor/video.mjs";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -19,8 +21,24 @@ const props = defineProps({
   currentId: { type: String, default: null },
   /** Offer an upload above the library (images only), for this chapter. */
   uploadSlug: { type: String, default: null },
+  /** Label of the button that clears the current choice. */
+  removeLabel: { type: String, default: "Remove figure" },
+  /** Offer "Add a YouTube video" (OPENBRAIN-70 D2); emits `youtube`. */
+  allowYoutube: { type: Boolean, default: false },
+  /** Offer a Lottie upload for this chapter (OPENBRAIN-70 B4). */
+  lottieUploadSlug: { type: String, default: null },
 });
-const emit = defineEmits(["pick", "uploaded", "remove", "close"]);
+const emit = defineEmits(["pick", "uploaded", "remove", "close", "youtube"]);
+
+const ytUrl = ref("");
+const ytTitle = ref("");
+const ytId = computed(() => parseYouTube(ytUrl.value));
+function addYoutube() {
+  if (!ytId.value) return;
+  emit("youtube", { youtubeId: ytId.value, title: ytTitle.value.trim() });
+  ytUrl.value = "";
+  ytTitle.value = "";
+}
 
 const search = ref("");
 watch(
@@ -64,6 +82,45 @@ function thumb(m) {
       />
       <h3 class="mp-h">Or choose from the library</h3>
     </section>
+    <section
+      v-if="lottieUploadSlug !== null"
+      class="mp-upload"
+      aria-label="Upload an animation"
+    >
+      <h3 class="mp-h">Upload a Lottie animation</h3>
+      <LottieUpload
+        :slug="lottieUploadSlug"
+        action-label="Upload and use"
+        @uploaded="(e) => emit('uploaded', e)"
+      />
+    </section>
+    <section v-if="allowYoutube" class="mp-upload" aria-label="YouTube">
+      <h3 class="mp-h">Add a YouTube video</h3>
+      <form class="mp-yt" @submit.prevent="addYoutube">
+        <input
+          v-model="ytUrl"
+          type="url"
+          placeholder="https://www.youtube.com/watch?v=…"
+          aria-label="YouTube link"
+        />
+        <input
+          v-model="ytTitle"
+          type="text"
+          placeholder="Title"
+          aria-label="Video title"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="!ytId"
+          @click="addYoutube"
+          >Add</Button
+        >
+      </form>
+      <p v-if="ytUrl && !ytId" class="mp-yt-error" role="alert">
+        That isn't a YouTube video link.
+      </p>
+    </section>
     <SearchInput v-model="search" placeholder="Search by title…" />
     <ul class="mp-grid">
       <li v-for="m in items" :key="m.id">
@@ -92,7 +149,7 @@ function thumb(m) {
         variant="danger"
         size="sm"
         @click="emit('remove')"
-        >Remove figure</Button
+        >{{ removeLabel }}</Button
       >
       <Button variant="ghost" size="sm" @click="emit('close')">Close</Button>
     </template>
@@ -104,6 +161,30 @@ function thumb(m) {
   display: grid;
   gap: 10px;
   margin-bottom: 12px;
+}
+.mp-yt {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 8px;
+}
+.mp-yt input {
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.875rem;
+}
+.mp-yt-error {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: rgb(var(--color-accent));
+}
+@media (max-width: 640px) {
+  .mp-yt {
+    grid-template-columns: 1fr;
+  }
 }
 .mp-h {
   margin: 0;

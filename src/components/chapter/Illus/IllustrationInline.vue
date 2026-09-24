@@ -19,6 +19,7 @@ import { useAnimations } from "@/composables/useAnimations";
 import {
   resolveAnimationRecord,
   lottieAssetOk,
+  lottiePath,
 } from "@/helper/animationResolve";
 // Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
 import animationJSON from "@/assets/json_backend/animations.json";
@@ -27,6 +28,7 @@ import { mobileMode } from "@/helper/illustrationMobile";
 import IllustrationComp from "@/components/chapter/Illus/IllustrationComp.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 import SourceElement from "@/components/UI/SourceElement.vue";
+import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 
 const props = defineProps({
   // The figure's id, e.g. "animationEyeStructur" (the `para.animation.id`).
@@ -66,7 +68,7 @@ watch(
   async (id) => {
     if (!id) return;
     assetOk.value = null;
-    const ok = await lottieAssetOk(id);
+    const ok = await lottieAssetOk(lottiePath(animation.value) || id);
     assetOk.value = ok;
     if (!ok) {
       console.warn(
@@ -102,8 +104,18 @@ const youtubeSrc = computed(() =>
   <!-- Interactive figures collapse only on a CONFIRMED missing asset
        (assetOk === false). While the check runs the figure renders with its
        reserved empty stage, so slow connections see no layout pop-in. -->
+  <!-- A widget figure opens as its breakout card inline (OPENBRAIN-70 B5) -->
+  <WidgetBreakout
+    v-if="animation && mode === 'widget'"
+    :placement="{
+      placementId: animation.id,
+      widgetId: animation.widgetId,
+      kind: 'breakout',
+      title: animation.title || '',
+    }"
+  />
   <figure
-    v-if="
+    v-else-if="
       animation &&
       (mode === 'static' ||
         mode === 'fullscreen' ||
@@ -224,6 +236,12 @@ const youtubeSrc = computed(() =>
   position: relative;
   width: 100%;
   min-height: 320px;
+  /* IllustrationComp's label layers are position: fixed, written for the
+     pinned desktop pane. Inline, fixed pinned every figure's labels to the
+     top of the viewport, piled over the chapter opener (OPENBRAIN-68).
+     Layout containment makes the stage their containing block, and paint
+     containment keeps them inside it. */
+  contain: layout paint;
 }
 
 .illu-expand,

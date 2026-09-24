@@ -30,6 +30,16 @@ export const editorSections = [
     slug: "attention-is-measured-behaviorally",
     order_index: 2,
   },
+  // A breakout box (OPENBRAIN-70 A3, A4): not placed yet.
+  {
+    id: "sec-box-james",
+    module_id: editorModule.id,
+    title: "William James and the stream of attention",
+    slug: "box-william-james",
+    order_index: 3,
+    parent_section_id: null,
+    anchor_paragraph_id: null,
+  },
 ];
 
 const row = (id, section_id, order_index, blocks, extra = {}) => ({
@@ -116,6 +126,24 @@ export const editorMedia = [
     animation_key: "animationLatteralOrganization",
     media_type: "lottie",
   },
+  // An image figure (OPENBRAIN-70 B1, B2): a local file, so stories make no
+  // outside requests.
+  {
+    id: "img-skull",
+    title: "Trepanned Incan skull",
+    animation_key: "animationFoundationsFig1",
+    media_type: "image",
+    image_file_url: "/publicAssets/images/foundations/fig02-01.jpg",
+    config: {
+      caption: "An Incan skull, acquired by Squier and studied by Broca.",
+      images: [
+        {
+          src: "/publicAssets/images/foundations/fig02-01.jpg",
+          alt: "A trepanned skull in profile.",
+        },
+      ],
+    },
+  },
 ];
 
 /** parameters.api for a story of the whole page. */
@@ -125,3 +153,84 @@ export const editorApi = {
   "paragraphs?": editorParagraphs,
   "animations?": editorMedia,
 };
+
+/*
+ * A tiny in-memory PostgREST for stories (OPENBRAIN-70): reads, inserts,
+ * updates and deletes against copies of the fixtures above, so edits made in
+ * a story show up the way they would against Supabase. Understands the
+ * filters the chapter page uses: col=eq.x, col=in.(a,b), order=col.asc.
+ * Each call returns a fresh store, so stories don't share edits.
+ */
+export function memoryEditorApi(seed = {}) {
+  const tables = {
+    modules: structuredClone(seed.modules || [editorModule]),
+    sections: structuredClone(seed.sections || editorSections),
+    paragraphs: structuredClone(seed.paragraphs || editorParagraphs),
+    animations: structuredClone(seed.animations || editorMedia),
+  };
+  let n = 0;
+  const parse = (endpoint) => {
+    const [table, query = ""] = endpoint.split("?");
+    const filters = [];
+    let order = null;
+    for (const part of query.split("&")) {
+      const [col, raw] = part.split("=");
+      if (!col || raw === undefined || col === "select") continue;
+      if (col === "order") {
+        order = raw.split(".")[0];
+        continue;
+      }
+      const [op, ...rest] = raw.split(".");
+      const val = decodeURIComponent(rest.join("."));
+      // Stories have no route params, so e.g. slug=eq.undefined: match all.
+      if (val === "undefined") continue;
+      if (op === "eq") filters.push((r) => String(r[col]) === val);
+      if (op === "in") {
+        const set = new Set(
+          val
+            .replace(/^\(|\)$/g, "")
+            .split(",")
+            .map((v) => v.replace(/^"|"$/g, ""))
+        );
+        filters.push((r) => set.has(String(r[col])));
+      }
+    }
+    return { table, match: (r) => filters.every((f) => f(r)), order };
+  };
+  const handler = (endpoint, options = {}) => {
+    const { table, match, order } = parse(endpoint);
+    const rows = tables[table];
+    if (!rows) return [];
+    const method = (options.method || "GET").toUpperCase();
+    if (method === "GET") {
+      const out = rows.filter(match);
+      return order ? out.sort((a, b) => (a[order] > b[order] ? 1 : -1)) : out;
+    }
+    if (method === "POST") {
+      const body = JSON.parse(options.body);
+      const added = (Array.isArray(body) ? body : [body]).map((r) => ({
+        id: r.id || `${table}-new-${++n}`,
+        ...r,
+      }));
+      rows.push(...added);
+      return added;
+    }
+    if (method === "PATCH") {
+      const body = JSON.parse(options.body);
+      const hit = rows.filter(match);
+      hit.forEach((r) => Object.assign(r, body));
+      return hit;
+    }
+    if (method === "DELETE") {
+      const hit = rows.filter(match);
+      tables[table] = rows.filter((r) => !match(r));
+      return hit;
+    }
+    return [];
+  };
+  // Storybook deep-merges a story's parameters with the file's, so the
+  // store takes over editorApi's "table?" keys as well as bare "table" (POST).
+  const api = {};
+  for (const t of Object.keys(tables)) api[`${t}?`] = api[t] = handler;
+  return api;
+}

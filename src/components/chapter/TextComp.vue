@@ -86,6 +86,26 @@ const source = computed(() => {
 // (useChapterOutline, OPENBRAIN-32) so the prose and the contents agree.
 const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 
+// Boxes anchored to a paragraph render inside their section, right after it
+// (OPENBRAIN-70 A4); the rest render in order.
+const topSections = computed(() =>
+  (source.value?.sections || []).filter((s) => !s.anchored)
+);
+const anchoredBoxes = computed(() => {
+  const map = new Map();
+  for (const s of source.value?.sections || []) {
+    if (!s.anchored) continue;
+    if (!map.has(s.anchorParagraphId)) map.set(s.anchorParagraphId, []);
+    map.get(s.anchorParagraphId).push(s);
+  }
+  return map;
+});
+provide(
+  "boxesAfter",
+  (paragraphId) => anchoredBoxes.value.get(paragraphId) || []
+);
+provide("sectionLabels", sectionLabels);
+
 // ---- Edit mode (OPENBRAIN-58, 64) ----
 // Off until a creator switches it on (or opens ?edit=1), so reading a
 // chapter can't change it.
@@ -263,9 +283,10 @@ const updateLocalContent = (id, content, type) => {
 };
 
 // ---- Change figure (OPENBRAIN-65) ----
-// "Figure…" on a paragraph opens the media library (Lottie, video, YouTube);
-// the pick is PATCHed onto the row and shown in place, with Undo.
-const FIGURE_TYPES = ["lottie", "video", "youtube"];
+// "Figure…" on a paragraph opens the media library (image, Lottie, video,
+// YouTube; images since OPENBRAIN-70 B1); the pick is PATCHed onto the row
+// and shown in place, with Undo.
+const FIGURE_TYPES = ["image", "lottie", "video", "youtube", "widget"];
 const figureMedia = ref([]);
 const figureTarget = ref(null); // paragraph node being changed
 const figureCurrentId = computed(() => {
@@ -714,7 +735,7 @@ onBeforeUnmount(() => {
 
         <!-- text sections -->
         <div
-          v-for="(section, index) in source['sections']"
+          v-for="(section, index) in topSections"
           :id="toSlug(section.title)"
           :key="section.id || toSlug(section.title)"
           ref="triggers"

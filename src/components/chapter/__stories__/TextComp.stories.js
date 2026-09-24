@@ -7,6 +7,7 @@
  */
 import TextComp from "../TextComp.vue";
 import { chapterFrame, retinaChapter } from "./chapterFixtures";
+import { placeBoxes } from "@/composables/chapterTransform.mjs";
 
 const LONG_CHAPTER = {
   ...retinaChapter,
@@ -108,5 +109,47 @@ export const Creator = {
   parameters: {
     auth: { role: "creator" },
     fetch: { "/rest/v1/": figureRest },
+  },
+};
+
+/*
+ * Breakout boxes placed by the CMS (OPENBRAIN-70 A3, A4): "Rod photoreceptors"
+ * sits after the first paragraph of Photoreceptors; "Cones" follows the
+ * section. Both keep their authored letters (A, B).
+ */
+const boxSection = (id, title, text, extra) => ({
+  id,
+  kind: "box",
+  title,
+  paragraphs: [{ id: `${id}-1`, text }],
+  subSection: [],
+  ...extra,
+});
+const [photo, ...restSections] = retinaChapter.sections;
+export const PlacedBoxes = {
+  args: {
+    chapter: {
+      ...retinaChapter,
+      sections: placeBoxes([
+        { ...photo, orderIndex: 1 },
+        ...restSections.map((s, i) => ({ ...s, orderIndex: 2 + i })),
+        boxSection(
+          "box-rods",
+          "Rod photoreceptors",
+          "Rods are exquisitely sensitive and dominate vision in dim light.",
+          {
+            orderIndex: 10,
+            parentId: photo.id,
+            anchorParagraphId: photo.paragraphs[0].id,
+          }
+        ),
+        boxSection(
+          "box-cones",
+          "Cones",
+          "Cones sample colour and fine detail in bright light.",
+          { orderIndex: 11, parentId: photo.id }
+        ),
+      ]),
+    },
   },
 };

@@ -16,6 +16,7 @@ import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScrol
 import IllustrationTransition from "@/components/chapter/Illus/IllustrationTransition.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 import { usesFigureShell } from "@/helper/figureCycle";
+import IllustrationWidget from "./IllustrationWidget.vue";
 gsap.registerPlugin(ScrollTrigger);
 
 const activeAnimation = ref(null);
@@ -208,8 +209,19 @@ onBeforeUnmount(() => {
           />
         </transition>
       </template>
+      <!-- An interactive widget as the figure (OPENBRAIN-70 B5) -->
+      <template v-if="animation.widgetId">
+        <transition name="fade" mode="out-in">
+          <IllustrationWidget
+            v-if="activeAnimation === animation.id.toLowerCase()"
+            :animation="animation"
+            class="w-full h-full"
+          />
+        </transition>
+      </template>
       <template
         v-if="
+          !animation.widgetId &&
           !usesFigureShell(animation) &&
           !animation.fullscreen &&
           !animation.scroll &&

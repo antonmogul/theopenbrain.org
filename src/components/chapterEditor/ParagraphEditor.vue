@@ -17,8 +17,10 @@ const props = defineProps({
   blocks: { type: Array, default: () => [] },
   saving: { type: Boolean, default: false },
   error: { type: String, default: "" },
+  /** Offer "Hover image" (OPENBRAIN-70 D1); the page handles `hover-image`. */
+  hoverImages: { type: Boolean, default: false },
 });
-const emit = defineEmits(["save", "cancel"]);
+const emit = defineEmits(["save", "cancel", "hover-image"]);
 
 const VIEWS = {
   citationRef: InlineChip,
@@ -108,6 +110,41 @@ function setLink() {
   (href ? chain.setLink({ href }) : chain.unsetLink()).run();
 }
 
+// A picture that appears when the reader hovers the selected words. The page
+// picks the image; `apply` and `remove` act on the words selected now.
+function hoverImage() {
+  const ed = editor.value;
+  if (!ed) return;
+  const current = ed.getAttributes("span");
+  const onHover = current?.class === "hoverImg";
+  if (onHover) ed.chain().extendMarkRange("span").run();
+  const { from, to } = ed.state.selection;
+  if (from === to) {
+    window.alert("Select the words that should show a picture on hover.");
+    return;
+  }
+  const range = { from, to };
+  emit("hover-image", {
+    current: onHover
+      ? { src: current.hoverSrc || "", text: current.hoverText || "" }
+      : null,
+    apply: (src, text) =>
+      ed
+        .chain()
+        .focus()
+        .setTextSelection(range)
+        .setMark("span", {
+          class: "hoverImg",
+          id: null,
+          hoverSrc: src,
+          hoverText: text || null,
+        })
+        .run(),
+    remove: () =>
+      ed.chain().focus().setTextSelection(range).unsetMark("span").run(),
+  });
+}
+
 onBeforeUnmount(() => editor.value?.destroy());
 defineExpose({ save });
 </script>
@@ -132,6 +169,15 @@ defineExpose({ save });
         @mousedown.prevent="setLink"
       >
         Link
+      </button>
+      <button
+        v-if="hoverImages"
+        type="button"
+        title="Show a picture when readers hover the selected words"
+        :class="{ active: editor?.getAttributes('span')?.class === 'hoverImg' }"
+        @mousedown.prevent="hoverImage"
+      >
+        Hover image
       </button>
       <span class="pe-spacer" />
       <span class="pe-hint">Cmd+S to save · Esc to cancel</span>

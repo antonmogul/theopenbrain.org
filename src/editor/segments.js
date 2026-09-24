@@ -37,6 +37,7 @@ export const BLOCK_LABELS = {
   blockquote: "Quote",
   image: "Image",
   widget: "Widget",
+  video: "Video",
   footnote: "Footnote",
   further_reading: "Further reading",
   break_video: "Break video",

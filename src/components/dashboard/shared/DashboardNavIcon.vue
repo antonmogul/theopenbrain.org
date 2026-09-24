@@ -42,6 +42,13 @@ defineProps({ name: { type: String, required: true } });
       <circle cx="8.5" cy="8.5" r="1.5" />
       <polyline points="21 15 16 10 5 21" />
     </template>
+    <!-- widget: a slider panel (OPENBRAIN-71) -->
+    <template v-else-if="name === 'widget'">
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <circle cx="9" cy="7" r="2" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+      <circle cx="15" cy="17" r="2" />
+    </template>
     <template v-else-if="name === 'quiz'">
       <circle cx="12" cy="12" r="10" />
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
