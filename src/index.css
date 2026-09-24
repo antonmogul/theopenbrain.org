@@ -594,8 +594,9 @@ h4 {
 
 .animationMarkerClick.active {
   border: solid black;
-  background: rgb(var(--color-accent));
-  color: white;
+  /* As .highlightText: tied to the figure, readable in every ramp. */
+  background: rgb(var(--color-chapter-soft));
+  color: rgb(var(--color-ink));
   padding: 0.125rem 0.25rem;
   stroke: rgb(var(--color-accent));
 }
@@ -656,9 +657,11 @@ h4 {
 .active > * > .highlightText,
 .active > * > * > .highlightText,
 .active > * > * > * > .highlightText {
-  /* Text tied to the figure on show; deep, so white stays readable. */
-  background: rgb(var(--color-chapter-deep));
-  color: white;
+  /* Text tied to the figure on show, in the chapter's colour. The soft
+     shade with ink keeps it readable in every ramp (teal and amber are too
+     light for white). */
+  background: rgb(var(--color-chapter-soft));
+  color: rgb(var(--color-ink));
 }
 #triggeranimationColorOpponency {
   min-height: 80vh;

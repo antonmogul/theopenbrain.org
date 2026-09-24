@@ -3,13 +3,16 @@
     class="pr-14 pl-32 flex flex-row justify-center items-center h-[100%] pointer-events-auto"
   >
     <div
-      class="px-24 pt-10 z-30 fixed flex flex-col w-illus justify-between top-[var(--reader-topbar-h,0px)] left-0"
+      class="px-24 pt-10 z-30 fixed flex flex-col w-illus justify-between top-0 xl:top-[var(--reader-topbar-h,0px)] left-0"
       :class="animation.multiple ? 'items-center' : 'items-start'"
     >
-      <!-- Below the reader's top bar, in the original's title style. -->
-      <span class="pb-0 font-sans font-bold text-[1.25rem] leading-[1.55]">{{
-        animation.title
-      }}</span>
+      <!-- Below the reader's top bar, in the original's title style. Inline
+           (scopeId, below xl) the figure's caption already names it. -->
+      <span
+        v-if="!scopeId"
+        class="pb-0 font-sans font-bold text-[1.25rem] leading-[1.55]"
+        >{{ animation.title }}</span
+      >
       <div
         v-if="animation.multiple"
         class="fixed top-0 left-0 w-illus h-screen px-24 pl-24 flex flex-col justify-center items-start"
