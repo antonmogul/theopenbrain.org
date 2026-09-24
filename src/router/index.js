@@ -177,6 +177,13 @@ export const routes = [
     component: () => import("../views/PosnerCueingView.vue"),
   },
   {
+    // Psychometric function box widget (Attention chapter). OPENBRAIN-88.
+    // Not linked in nav; open /psychometric-function directly.
+    path: "/psychometric-function",
+    name: "psychometric-function",
+    component: () => import("../views/PsychometricFunctionView.vue"),
+  },
+  {
     // TMT Feature Attention widget (Attention chapter). OPENBRAIN-13:
     // fifth widget port. Not linked in nav; open /feature-attention directly.
     path: "/feature-attention",

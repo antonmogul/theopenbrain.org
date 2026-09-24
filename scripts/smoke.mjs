@@ -266,6 +266,14 @@ const ROUTES = [
     widths: [1280, 1440, 1920],
   },
   {
+    // Unlike its siblings this port is built to fit a phone (OPENBRAIN-88),
+    // so it is also held to the 390px no-horizontal-scroll check.
+    path: "/psychometric-function",
+    name: "widget-psychometric-function",
+    minText: 50,
+    widths: [390, 1280, 1440, 1920],
+  },
+  {
     path: "/feature-attention",
     name: "widget-feature-attention",
     minText: 50,

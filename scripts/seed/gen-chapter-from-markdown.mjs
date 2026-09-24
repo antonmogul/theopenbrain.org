@@ -67,6 +67,14 @@ export const BREAKOUT_WIDGETS = [
       "Drag the criterion, adjust d′, and watch the ROC curve respond. Demonstrates how sensitivity and bias are independent.",
   },
   {
+    match: /psychometric/i,
+    widgetId: "psychometric-function",
+    route: "/psychometric-function",
+    title: "The psychometric function",
+    blurb:
+      "Scrub stimulus strength along the detection curve and compare a lower threshold, a liberal bias and a high lapse rate: threshold and bias shift the curve alike, and only the false-alarm rate tells them apart.",
+  },
+  {
     match: /normali[sz]ation/i,
     widgetId: "normalization-model",
     route: "/normalization-model",

@@ -27,6 +27,7 @@
 // Raw HTML imports — Vite serves these as strings via ?raw suffix.
 import sdtHtml from "./source/sdt_widget.html?raw";
 import posnerHtml from "./source/posner_cueing_widget.html?raw";
+import psychometricHtml from "./source/psychometric_function_widget.html?raw";
 import biasedCompHtml from "./source/biased_competition_widget.html?raw";
 import contrastGainHtml from "./source/contrast_response_gain_widget.html?raw";
 import tmtHtml from "./source/tmt_feature_attention_widget.html?raw";
@@ -149,6 +150,17 @@ export const WIDGETS = [
     srcHtml: sdtHtml,
     vuePath: "/sdt",
     height: "520px",
+    deps: [],
+  },
+  {
+    id: "psychometric-function",
+    title: "The psychometric function",
+    desc: "Scrub stimulus strength along the detection curve and compare a lower threshold, a liberal bias and a high lapse rate: threshold and bias shift the curve alike, and only the false-alarm rate tells them apart.",
+    chapter: "Attention & Working Memory",
+    author: "Arjun Krishnaswamy",
+    srcHtml: psychometricHtml,
+    vuePath: "/psychometric-function",
+    height: "760px",
     deps: [],
   },
   {
