@@ -569,3 +569,61 @@ describe("useChapterEditor figures: panel or text (OPENBRAIN-70 B2)", () => {
     await expect(ed.figureToText("a")).rejects.toThrow(/Only image figures/);
   });
 });
+
+describe("useChapterEditor figure frames (OPENBRAIN-70 B3)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("saves frames, caption and title; undo restores them", async () => {
+    const media = [
+      {
+        id: "fig2",
+        media_type: "image",
+        title: "Methods",
+        image_file_url: "/a.jpg",
+        config: { placeholder: true, images: [{ src: "/a.jpg" }] },
+      },
+    ];
+    const patches = [];
+    authedRequest.mockImplementation(async (path, init = {}) => {
+      if (path.startsWith("modules?")) return [{ id: "m1" }];
+      if (path.startsWith("animations?id=eq.fig2") && init.method === "PATCH") {
+        const body = JSON.parse(init.body);
+        patches.push(body);
+        return [{ ...media[0], ...body }];
+      }
+      if (path.startsWith("animations?")) return media;
+      return [];
+    });
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setFigureFrames("fig2", {
+      title: "Trepanation",
+      caption: "Four methods",
+      images: [
+        { src: "/b.jpg", alt: "B", caption: "" },
+        { src: "/a.jpg", alt: "", caption: "First" },
+      ],
+    });
+    expect(patches[0]).toMatchObject({
+      title: "Trepanation",
+      image_file_url: "/b.jpg",
+      config: {
+        placeholder: true, // other config keys are kept
+        caption: "Four methods",
+        images: [
+          { src: "/b.jpg", alt: "B" },
+          { src: "/a.jpg", caption: "First" },
+        ],
+      },
+    });
+    await ed.undo();
+    expect(patches[1]).toMatchObject({
+      title: "Methods",
+      image_file_url: "/a.jpg",
+      config: { placeholder: true, images: [{ src: "/a.jpg" }] },
+    });
+    await expect(
+      ed.setFigureFrames("fig2", { title: "x", caption: "", images: [] })
+    ).rejects.toThrow(/at least one image/);
+  });
+});

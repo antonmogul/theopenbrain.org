@@ -20,6 +20,7 @@ import InsertMenu from "@/components/chapterEditor/InsertMenu.vue";
 import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
 import ChapterDetails from "@/components/chapterEditor/ChapterDetails.vue";
+import FigureSettings from "@/components/chapterEditor/FigureSettings.vue";
 import { placementsForChapter } from "@/widgets/placements";
 import { coverForModule } from "@/helper/chapterCover";
 import { imageUrl } from "@/editor/media.mjs";
@@ -350,6 +351,24 @@ function imageIntoPanel(p) {
       showToast(err.message || "Couldn't move the image.", { error: true });
     }
   });
+}
+
+// ---- figure frames (OPENBRAIN-70 B3) ----
+const figureSettingsFor = ref(null); // the figure's media row
+function editFigure(p) {
+  whenLive(
+    () => (figureSettingsFor.value = ed.mediaById.value.get(p.animation_id))
+  );
+}
+async function saveFigure(value) {
+  const id = figureSettingsFor.value.id;
+  const ok = await attempt(
+    () => ed.setFigureFrames(id, value),
+    value.images.length > 1
+      ? `Figure saved: ${value.images.length} images.`
+      : "Figure saved."
+  );
+  if (ok) figureSettingsFor.value = null;
 }
 
 async function onRemoveFigure() {
@@ -792,6 +811,14 @@ onMounted(async () => {
                   <button
                     v-if="p.animation_id && isImageFigure(p)"
                     type="button"
+                    title="Title, caption and images of this figure"
+                    @click="editFigure(p)"
+                  >
+                    Figure settings
+                  </button>
+                  <button
+                    v-if="p.animation_id && isImageFigure(p)"
+                    type="button"
                     title="Show this figure as an image card in the text instead of the left panel"
                     @click="figureIntoText(p)"
                   >
@@ -931,6 +958,17 @@ onMounted(async () => {
       @pick="onPickImage"
       @uploaded="onUploadedImage"
       @close="pickerFor = null"
+    />
+
+    <FigureSettings
+      :open="!!figureSettingsFor"
+      :figure="figureSettingsFor"
+      :media="ed.media.value"
+      :upload-slug="ed.module.value?.slug || ''"
+      :saving="ed.saving.value"
+      @save="saveFigure"
+      @uploaded="({ media }) => (ed.media.value = [...ed.media.value, media])"
+      @close="figureSettingsFor = null"
     />
 
     <MediaPicker

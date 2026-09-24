@@ -528,6 +528,49 @@ export function useChapterEditor(slug) {
     return { host, media: m };
   }
 
+  // ---- figure frames (OPENBRAIN-70 B3) ----
+  async function patchMedia(id, body) {
+    const rows = await authedRequest(`animations?id=eq.${id}`, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ ...body, updated_at: new Date().toISOString() }),
+    });
+    if (!rows?.length)
+      throw new Error("The database didn't allow this change.");
+    media.value = media.value.map((m) =>
+      m.id === id ? { ...m, ...rows[0] } : m
+    );
+    return rows[0];
+  }
+
+  /**
+   * Save an image figure's title, caption and frames ([{ src, alt, caption }]).
+   * The first frame is also image_file_url, which older readers show.
+   */
+  async function setFigureFrames(id, { title, caption, images }) {
+    return withSaving(async () => {
+      const m = media.value.find((x) => x.id === id);
+      if (!m) throw new Error("That figure isn't in the library.");
+      if (!images.length) throw new Error("A figure needs at least one image.");
+      const before = {
+        title: m.title ?? null,
+        image_file_url: m.image_file_url ?? null,
+        config: m.config ?? {},
+      };
+      const frames = images.map(({ src, alt, caption: c }) => ({
+        src,
+        ...(alt ? { alt } : {}),
+        ...(c ? { caption: c } : {}),
+      }));
+      await patchMedia(id, {
+        title,
+        image_file_url: frames[0].src,
+        config: { ...(m.config || {}), caption: caption || "", images: frames },
+      });
+      pushUndo("Figure settings", () => patchMedia(id, before));
+    });
+  }
+
   // ---- chapter cover (OPENBRAIN-67) ----
   // modules.cover_image_url wins over the code-side default in
   // helper/chapterCover.js; null goes back to that default.
@@ -719,6 +762,7 @@ export function useChapterEditor(slug) {
     setCover,
     setDetails,
     figureToText,
+    setFigureFrames,
     imageToPanel,
     renameSection,
     addSection,
