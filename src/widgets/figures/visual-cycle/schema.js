@@ -8,6 +8,8 @@ export default {
   id: "visual-cycle",
   name: "The visual cycle",
   animationKey: "animationTheVisualCycle",
+  /** The Lottie artwork this schema was written for (cache key). */
+  lottieVersion: "v0.2.3",
   frames: [0, 72, 120, 240, 312, 432, 480],
   legendArt: [
     {
@@ -41,6 +43,7 @@ export default {
       key: "infoText",
       label: "Introduction",
       type: "textarea",
+      optional: true,
       hint: "Shown over the figure until the reader closes it.",
     },
     {
@@ -61,7 +64,7 @@ export default {
   defaults: {
     title: "The visual cycle",
     infoText:
-      "When rhodopsin absorbs a photon, its light-catching 11-cis retinal chromophore is isomerized into all-trans retinal. This latter form cannot be used for photon absorption, and the retina undertakes a complex series of steps to convert all-trans retinal back to photo-activatable 11-cis retinal. Following binding of arrestin, the bond between all-trans retinal and the opsin is broken. The all-trans aldehyde is released and quickly converted to all-trans retinol by membrane bound retinal dehydrogenase, which is in turn bound by an all-trans retinol binding protein. From here, a transport protein called interphotoreceptor retinoid-binding protein (IRBP) takes all-trans retinol on an inter-cellular journey into the retina pigment epithelium, which intercalates with photoreceptor outer segments. The retina pigment epithelium contains a pair of enzymes&nbsp;&mdash;&nbsp;retinyl-ester isomerase which converts all-trans retinol to 11-cis retinol, and 11-cis retinol dehydrogenase which uses ATP to convert 11-cis retinol back into 11-cis retinal. The regenerated 11-cis retinal is highly insoluble and is quickly bound by an IRBP which encapsulates the molecule, which makes the return trip out of retina pigment epithelium and back into the photoreceptor outer segment, where it is released and binds anew with an opsin<sup>28,41</sup>.</sup>",
+      "When rhodopsin absorbs a photon, its light-catching 11-cis retinal chromophore is isomerized into all-trans retinal. This latter form cannot be used for photon absorption, and the retina undertakes a complex series of steps to convert all-trans retinal back to photo-activatable 11-cis retinal. Following binding of arrestin, the bond between all-trans retinal and the opsin is broken. The all-trans aldehyde is released and quickly converted to all-trans retinol by membrane bound retinal dehydrogenase, which is in turn bound by an all-trans retinol binding protein. From here, a transport protein called interphotoreceptor retinoid-binding protein (IRBP) takes all-trans retinol on an inter-cellular journey into the retina pigment epithelium, which intercalates with photoreceptor outer segments. The retina pigment epithelium contains a pair of enzymes&nbsp;&mdash;&nbsp;retinyl-ester isomerase which converts all-trans retinol to 11-cis retinol, and 11-cis retinol dehydrogenase which uses ATP to convert 11-cis retinol back into 11-cis retinal. The regenerated 11-cis retinal is highly insoluble and is quickly bound by an IRBP which encapsulates the molecule, which makes the return trip out of retina pigment epithelium and back into the photoreceptor outer segment, where it is released and binds anew with an opsin<sup>28,41</sup>.",
     states: [
       "Rhodopsin absorps a photon of light and retinal changes from 11-cis to all-trans",
       "All-trans retinal exits the rod",

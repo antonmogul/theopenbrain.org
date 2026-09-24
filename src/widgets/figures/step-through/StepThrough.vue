@@ -12,9 +12,8 @@
  * --widget-accent, the chapter ramp), which marks the lit legend item.
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { loadLottie } from "@/composables/useLottie";
-import { prepareLottie } from "../content.js";
 import FigureIntro from "../shared/FigureIntro.vue";
+import { useFigureLottie } from "../shared/useFigureLottie.js";
 
 const props = defineProps({
   /** figureContent(schema, record): title, infoText?, states, legend. */
@@ -31,10 +30,11 @@ const stage = ref(null);
 const infoOpen = ref(props.infoOpenAtStart && !!props.content.infoText);
 const step = ref(0);
 const lit = ref(-1); // the legend item lit up, -1 for none
-let anim = null;
+const lottie = useFigureLottie(stage, props.schema.id);
 let startTimer = null;
 let observer = null;
 let visible = true;
+let started = false; // the first step has been set playing
 
 const frames = computed(() => props.schema.frames);
 const stepCount = computed(() => frames.value.length - 1);
@@ -47,9 +47,12 @@ function playStep(i) {
   const n = stepCount.value;
   const s = ((i % n) + n) % n;
   step.value = s;
+  const anim = lottie.anim;
   if (!anim) return;
+  started = true;
   const [from, to] = [frames.value[s], frames.value[s + 1]];
-  if (reducedMotion) anim.goToAndStop(from, true);
+  // Without motion, show where the step ends: what the step did.
+  if (reducedMotion) anim.goToAndStop(Math.max(from, to - 1), true);
   else {
     anim.playSegments([from, to], true);
     if (!visible) anim.pause();
@@ -68,39 +71,26 @@ function applyLit() {
     n.classList.remove("highlightIllu");
   const art = props.schema.legendArt[lit.value];
   if (!art) return;
-  for (const n of el.getElementsByClassName(art.highlight))
-    n.classList.add("highlightIllu");
+  const layers = el.getElementsByClassName(art.highlight);
+  if (!layers.length && lottie.anim)
+    console.warn(
+      `[${props.schema.id}] no layer ${art.highlight} in ${props.lottieUrl}`
+    );
+  for (const n of layers) n.classList.add("highlightIllu");
 }
 
 async function mountLottie() {
-  if (!stage.value) return;
-  anim?.destroy();
-  anim = null;
   clearTimeout(startTimer);
-  try {
-    const res = await fetch(props.lottieUrl);
-    if (!res.ok) throw new Error(`${res.status} ${props.lottieUrl}`);
-    const data = prepareLottie(await res.json(), props.lottieUrl);
-    const lottie = await loadLottie();
-    if (!stage.value) return;
-    anim = lottie.loadAnimation({
-      container: stage.value,
-      renderer: "svg",
-      loop: true,
-      autoplay: false,
-      animationData: data,
-    });
-    anim.setSubframe(true);
-    anim.addEventListener("DOMLoaded", applyLit);
-    anim.goToAndStop(frames.value[step.value], true);
-    // The original starts its first step a second in, at 0.6× speed.
-    startTimer = setTimeout(() => {
-      anim?.setSpeed(0.6);
-      playStep(step.value);
-    }, 1000);
-  } catch (err) {
-    console.error(`[${props.schema.id}] the animation didn't load`, err);
-  }
+  started = false;
+  const anim = await lottie.mount(props.lottieUrl, { loop: true });
+  if (!anim) return;
+  anim.addEventListener("DOMLoaded", applyLit);
+  anim.goToAndStop(frames.value[step.value], true);
+  // The original starts its first step a second in, at 0.6× speed.
+  startTimer = setTimeout(() => {
+    lottie.anim?.setSpeed(0.6);
+    playStep(step.value);
+  }, 1000);
 }
 
 onMounted(() => {
@@ -109,7 +99,9 @@ onMounted(() => {
   if (typeof IntersectionObserver !== "undefined" && root.value) {
     observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
-      if (!anim || reducedMotion) return;
+      const anim = lottie.anim;
+      // Before the first step is set, playing would run the whole timeline.
+      if (!anim || reducedMotion || !started) return;
       if (visible) anim.play();
       else anim.pause();
     });
@@ -120,7 +112,7 @@ watch(() => props.lottieUrl, mountLottie);
 onBeforeUnmount(() => {
   clearTimeout(startTimer);
   observer?.disconnect();
-  anim?.destroy();
+  lottie.destroy();
 });
 </script>
 
@@ -162,6 +154,9 @@ onBeforeUnmount(() => {
       </div>
 
       <div ref="stage" class="st-lottie" aria-hidden="true" />
+      <p v-if="lottie.failed.value" class="st-failed" role="alert">
+        The animation didn't load. Reload the page to try again.
+      </p>
     </div>
 
     <ol class="st-steps" :inert="infoOpen || undefined">
@@ -439,6 +434,71 @@ onBeforeUnmount(() => {
 .st--info .st-steps,
 .st--info .st-legend {
   background: var(--st-stage);
+}
+
+.st-failed {
+  position: absolute;
+  z-index: 2;
+  left: 3.75rem;
+  right: 1rem;
+  bottom: 2rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  color: #000;
+  font: 0.875rem/1.4 var(--st-sans);
+}
+
+/* Narrow screens: the drawing on top, then the steps, the legend in a row. */
+@container figure (max-width: 900px) {
+  .st {
+    flex-direction: column;
+  }
+  .st-stage {
+    flex: 0 0 58%;
+    padding-left: 0;
+    border-right: 0;
+    border-bottom: 1px solid #fff;
+  }
+  .st .st-title,
+  .st-info-toggle {
+    left: 1rem;
+  }
+  .st-info-toggle {
+    top: 4.25rem;
+  }
+  .st-banner {
+    top: 7rem;
+    padding-left: 1rem;
+  }
+  .st-banner-text {
+    font-size: 1rem;
+  }
+  .st-lottie {
+    height: calc(100% - 10rem);
+  }
+  .st-steps {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0.75rem 0;
+    border-left: 0;
+  }
+  .st-step {
+    padding: 0.25rem 1rem 0.75rem;
+  }
+  .st-legend {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 0;
+    border-top: 1px solid #000;
+  }
+  .st-key {
+    width: auto;
+    padding: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -33,7 +33,8 @@ export const FIGURE_WIDGETS = {
 
 /** The widget for an animation key, or null. */
 export function figureWidgetFor(animationKey) {
-  return animationKey && Object.hasOwn(FIGURE_WIDGETS, animationKey)
+  return animationKey &&
+    Object.prototype.hasOwnProperty.call(FIGURE_WIDGETS, animationKey)
     ? FIGURE_WIDGETS[animationKey]
     : null;
 }

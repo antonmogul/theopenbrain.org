@@ -23,7 +23,7 @@ const videoImage = computed(() =>
 
 <template>
   <div class="fi">
-    <p class="fi-text" v-html="text" />
+    <p class="fi-text" tabindex="0" aria-label="Introduction" v-html="text" />
     <RouterLink
       v-if="video?.title"
       :to="`/chapter/break/${video.slug || 'placeholder'}`"
@@ -83,6 +83,10 @@ const videoImage = computed(() =>
 .fi-text :deep(sup:hover) {
   background: var(--fi-accent);
   color: #000;
+}
+.fi-text:focus-visible {
+  outline: 2px solid var(--fi-accent);
+  outline-offset: 4px;
 }
 .fi-video {
   position: relative;
@@ -150,5 +154,28 @@ const videoImage = computed(() =>
 }
 .fi-video:hover .fi-caption {
   opacity: 1;
+}
+
+/* Narrow screens: one column, the video under the text. */
+@container figure (max-width: 760px) {
+  .fi {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    padding: 7rem 0 1rem;
+  }
+  .fi::after {
+    display: none;
+  }
+  .fi-text {
+    padding: 0 1rem;
+    max-height: none;
+    font-size: 1rem;
+  }
+  .fi-video {
+    margin: 1rem 1rem 0 2.25rem;
+  }
+  .fi-thumb {
+    height: 6rem;
+  }
 }
 </style>

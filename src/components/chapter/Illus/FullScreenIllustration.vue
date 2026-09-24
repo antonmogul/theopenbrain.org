@@ -135,18 +135,12 @@ const openInfo = () => {
   <!-- Full width at desktop sizes (OPENBRAIN-72): FullBleed lifts it out of
        the prose column, which clips anything wider than itself. In the
        column (below xl, or without the stage layer) it keeps the old span. -->
-  <FullBleed v-if="thisAnimation && asWidget" v-slot="{ floating }">
-    <div
-      class="h-[150vh] mb-32"
-      :class="floating ? 'w-full' : 'w-screen -translate-x-custom -ml-20'"
-    >
+  <!-- Below xl a widget fills the prose column (which clips anything
+       wider); either way it pins below the reader's top bar. -->
+  <FullBleed v-if="thisAnimation && asWidget">
+    <div class="h-[150vh] mb-32 w-full">
       <div
-        class="sticky w-full"
-        :class="
-          floating
-            ? 'top-[var(--reader-topbar-h)] h-[calc(100vh-var(--reader-topbar-h))]'
-            : 'h-screen top-0'
-        "
+        class="sticky w-full top-[var(--reader-topbar-h,0px)] h-[calc(100vh-var(--reader-topbar-h,0px))]"
       >
         <FigureWidget :record="thisAnimation" />
       </div>

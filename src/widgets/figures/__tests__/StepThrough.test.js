@@ -144,4 +144,86 @@ describe("StepThrough", () => {
     expect(w.find("button[aria-expanded]").exists()).toBe(false);
     expect(w.find(".st").classes()).not.toContain("st--info");
   });
+
+  it("says so on the stage when the animation doesn't load", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    // Production answers a missing file with the app's index.html.
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: { get: () => "text/html" },
+        json: () => Promise.reject(new SyntaxError("Unexpected token <")),
+      })
+    );
+    const w = mountFigure(visualCycle);
+    await flushPromises();
+    expect(w.find(".st-failed").text()).toContain("didn't load");
+    expect(error.mock.calls[0][0]).toMatch(/visual-cycle.*not a Lottie file/);
+    expect(loadAnimation).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+
+  it("doesn't play before the first step is set, when scrolled into view", async () => {
+    let report;
+    global.IntersectionObserver = class {
+      constructor(cb) {
+        report = cb;
+      }
+      observe() {}
+      disconnect() {}
+    };
+    mountFigure(visualCycle);
+    await flushPromises();
+    report([{ isIntersecting: true }]);
+    expect(anim.play).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1000);
+    report([{ isIntersecting: false }]);
+    expect(anim.pause).toHaveBeenCalled();
+    report([{ isIntersecting: true }]);
+    expect(anim.play).toHaveBeenCalled();
+    delete global.IntersectionObserver;
+  });
+
+  it("mounts only the latest animation when its file changes mid-load", async () => {
+    let release;
+    global.fetch = vi
+      .fn()
+      .mockImplementationOnce(() => new Promise((r) => (release = r)))
+      .mockImplementation(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ assets: [] }),
+        })
+      );
+    const w = mountFigure(visualCycle);
+    await w.setProps({ lottieUrl: "/publicAssets/animations/other.json" });
+    await flushPromises();
+    release({ ok: true, json: () => Promise.resolve({ assets: [] }) });
+    await flushPromises();
+    expect(loadAnimation).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("StepThrough without motion", () => {
+  it("shows where each step ends instead of playing it", async () => {
+    vi.resetModules();
+    window.matchMedia = () => ({ matches: true });
+    const { default: Fresh } = await import("../step-through/StepThrough.vue");
+    const w = mount(Fresh, {
+      props: {
+        schema: visualCycle,
+        content: figureContent(visualCycle, {}),
+        lottieUrl: "/f.json",
+        infoOpenAtStart: false,
+      },
+      global: { stubs: { RouterLink: RouterLinkStub } },
+    });
+    await flushPromises();
+    vi.advanceTimersByTime(1000);
+    expect(anim.playSegments).not.toHaveBeenCalled();
+    expect(anim.goToAndStop).toHaveBeenLastCalledWith(71, true);
+    await w.get("button[aria-label='Next step']").trigger("click");
+    expect(anim.goToAndStop).toHaveBeenLastCalledWith(119, true);
+    delete window.matchMedia;
+  });
 });

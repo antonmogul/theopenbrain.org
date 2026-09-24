@@ -8,6 +8,8 @@ export default {
   id: "phototransduction",
   name: "Phototransduction",
   animationKey: "animationPhototransduction",
+  /** The Lottie artwork this schema was written for (cache key). */
+  lottieVersion: "v0.2.3",
   frames: [0, 48, 96, 144, 192, 240, 336, 432, 528],
   legendArt: [
     {
@@ -57,6 +59,7 @@ export default {
       key: "infoText",
       label: "Introduction",
       type: "textarea",
+      optional: true,
       hint: "Shown over the figure until the reader closes it.",
     },
     {

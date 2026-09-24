@@ -8,6 +8,8 @@ export default {
   id: "pupillary-reflex",
   name: "Pupillary light reflex",
   animationKey: "animationPupillaryLightreflex",
+  /** The Lottie artwork this schema was written for (cache key). */
+  lottieVersion: "v0.2.3",
   frames: [0, 48, 96, 144, 192, 264],
   legendArt: [
     {
