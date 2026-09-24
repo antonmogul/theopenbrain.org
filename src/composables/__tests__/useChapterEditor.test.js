@@ -628,6 +628,74 @@ describe("useChapterEditor figure frames (OPENBRAIN-70 B3)", () => {
   });
 });
 
+describe("useChapterEditor figure widgets (OPENBRAIN-80)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  function widgetApi() {
+    const media = [
+      {
+        id: "rx",
+        media_type: "lottie",
+        title: "Refraction errors",
+        animation_key: "animationImpairedVision",
+        config: { toggle: "Corrected", fullscreen: true },
+      },
+    ];
+    const patches = [];
+    authedRequest.mockImplementation(async (path, init = {}) => {
+      if (path.startsWith("modules?")) return [{ id: "m1" }];
+      if (path.startsWith("animations?id=eq.rx") && init.method === "PATCH") {
+        const body = JSON.parse(init.body);
+        patches.push(body);
+        Object.assign(media[0], body);
+        return [{ ...media[0] }];
+      }
+      if (path.startsWith("animations?")) return media.map((m) => ({ ...m }));
+      if (path.startsWith("animation_states?animation_id=eq.rx"))
+        return [
+          { state_label: "Step 1", state_description: "Normal eye" },
+          { state_label: "Step 2", state_description: null },
+        ];
+      return [];
+    });
+    return { patches };
+  }
+
+  it("reads the state labels, falling back to the label", async () => {
+    widgetApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    expect(await ed.loadFigureStates("rx")).toEqual(["Normal eye", "Step 2"]);
+  });
+
+  it("saves title and content into config, keeping its flags; undo restores", async () => {
+    const { patches } = widgetApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setFigureContent("rx", {
+      title: " Refraction ",
+      content: { toggle: "With glasses" },
+    });
+    expect(patches[0]).toMatchObject({
+      title: "Refraction",
+      config: {
+        toggle: "Corrected",
+        fullscreen: true,
+        content: { toggle: "With glasses" },
+      },
+    });
+    await ed.undo();
+    expect(patches[1]).toMatchObject({
+      title: "Refraction errors",
+      config: { toggle: "Corrected", fullscreen: true },
+    });
+    expect(patches[1].config).not.toHaveProperty("content");
+    await expect(
+      ed.setFigureContent("rx", { title: " ", content: {} })
+    ).rejects.toThrow(/needs a title/);
+  });
+});
+
 describe("useChapterEditor box placement (OPENBRAIN-70 A3, A4)", () => {
   beforeEach(() => vi.clearAllMocks());
 
