@@ -71,7 +71,7 @@ if (import.meta.env?.DEV && entry.value) {
     const own = props.record?.[f.key];
     if (f.artwork && own !== undefined)
       console.info(
-        `[figure widget] ${props.record.id}: the database's "${f.key}" is ignored; the widget uses its artwork's labels (edit them under Figure settings).`
+        `[figure widget] ${props.record.id}: the database's "${f.key}" is ignored; this figure's "${f.key}" belong to its artwork (edit them under Figure settings).`
       );
   }
 }

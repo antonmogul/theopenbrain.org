@@ -31,10 +31,13 @@ const left = useFigureLottie(leftStage, `${props.schema.id} (layers)`);
 const right = useFigureLottie(rightStage, `${props.schema.id} (mosaics)`);
 const frame = ref(0);
 
-/** The original's mapping: the scroll runs frames startFrame to the end. */
+/**
+ * The original's mapping: the scroll runs frames startFrame to the end. The
+ * length is the schema's, so the captions and the other side keep going if
+ * one file doesn't load.
+ */
 function frameFor(p) {
-  const total = left.anim?.totalFrames;
-  if (!total) return 0;
+  const total = props.schema.frames;
   const f = props.schema.startFrame + p * (total - 1 - props.schema.startFrame);
   return Math.min(Math.max(f, 1), total - 1);
 }
@@ -78,14 +81,23 @@ onBeforeUnmount(() => {
         <div ref="rightStage" class="sp-stage-right" />
       </div>
     </div>
-    <div v-if="layer >= 0" class="sp-caption" aria-live="polite">
-      <p v-if="content.infos[layer]" class="sp-info">
-        {{ content.infos[layer] }}
-      </p>
-      <p v-if="content.sources[layer]" class="sp-source">
-        {{ content.sources[layer] }}
-      </p>
+    <!-- The live region stays in the page, so each caption is announced as
+         it appears; the full list is there for reading in order. -->
+    <div class="sp-caption" aria-live="polite">
+      <template v-if="layer >= 0">
+        <p v-if="content.infos[layer]" class="sp-info">
+          {{ content.infos[layer] }}
+        </p>
+        <p v-if="content.sources[layer]" class="sp-source">
+          {{ content.sources[layer] }}
+        </p>
+      </template>
     </div>
+    <ol class="sp-sr">
+      <li v-for="(info, i) in content.infos" :key="i">
+        {{ info }} {{ content.sources[i] }}
+      </li>
+    </ol>
     <p v-if="failed" class="sp-failed" role="alert">
       The animation didn't load. Reload the page to try again.
     </p>
@@ -159,6 +171,17 @@ onBeforeUnmount(() => {
 }
 .sp-caption p {
   margin: 0;
+}
+.sp-caption:empty {
+  display: none;
+}
+.sp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .sp-info {
   padding-bottom: 0.5rem;

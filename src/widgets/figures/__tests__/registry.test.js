@@ -68,7 +68,7 @@ describe("step-through figures match their artwork", () => {
   const pub = join(__dirname, "../../../../public");
   const stepThrough = Object.values(FIGURE_WIDGETS)
     .map((w) => w.schema)
-    .filter((s) => s.frames);
+    .filter((s) => Array.isArray(s.frames));
 
   function layerClasses(lottie) {
     const out = new Set();
@@ -141,6 +141,7 @@ describe("scrubbed figures match their artwork", () => {
     const s = FIGURE_WIDGETS.animationLatteralOrganization.schema;
     const [l, r] = [read(s.left), read(s.right)];
     expect(l.op).toBe(r.op);
+    expect(s.frames).toBe(l.op);
     expect(s.startFrame).toBeLessThan(s.layers[0].from);
     for (const layer of s.layers) {
       expect(layer.from).toBeLessThan(layer.to);

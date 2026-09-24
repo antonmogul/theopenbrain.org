@@ -18,8 +18,13 @@ const props = defineProps({
   schema: { type: Object, required: true },
   lottieUrl: { type: String, required: true },
   /** How far the reader has scrolled through the section, 0 to 1. */
-  progress: { type: Number, default: 0 },
+  progress: { type: Number, default: null },
 });
+
+if (props.progress === null)
+  console.warn(
+    `[${props.schema.id}] no scroll progress from its host; it will hold its first frame`
+  );
 
 const stage = ref(null);
 const lottie = useFigureLottie(stage, props.schema.id);
@@ -29,7 +34,7 @@ function draw() {
   const total = a?.totalFrames;
   if (!total) return;
   const { from, to } = props.schema.scrub;
-  const f = ((props.progress - from) / (to - from)) * total;
+  const f = (((props.progress ?? 0) - from) / (to - from)) * total;
   a.goToAndStop(Math.min(Math.max(f, 1), total - 1), true);
 }
 

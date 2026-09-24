@@ -33,6 +33,10 @@ const scrollLength = figureWidgetFor(props.paragraph?.animationId)?.schema
   .scrollLength;
 const widgetScroll = ref(null);
 const widgetProgress = ref(0);
+let unmounted = false;
+let widgetResize = null;
+// After layout settles (FullBleed moves its stage a tick later).
+const measureSoon = () => setTimeout(measureWidget, 0);
 function measureWidget() {
   const el = widgetScroll.value;
   if (!el) return;
@@ -75,11 +79,18 @@ onMounted(async () => {
 
   if (asWidget && scrollLength) {
     await nextTick();
-    // Measured from where the figure is now on every scroll, so text and
-    // images loading above it can't leave the measurement stale.
+    if (unmounted) return;
+    // Measured from where the figure is now on every scroll, and again
+    // whenever it moves or resizes without one (text and images loading
+    // above, FullBleed resyncing), so the measurement can't go stale.
     window.addEventListener("scroll", measureWidget, { passive: true });
-    window.addEventListener("resize", measureWidget);
-    measureWidget();
+    window.addEventListener("resize", measureSoon);
+    if (typeof ResizeObserver !== "undefined" && widgetScroll.value) {
+      widgetResize = new ResizeObserver(measureSoon);
+      widgetResize.observe(widgetScroll.value);
+      widgetResize.observe(document.body);
+    }
+    measureSoon();
   }
   if (props.paragraph.scroll || asWidget) return;
   // The container div is inside the v-if="thisAnimation" template guard, so it
@@ -105,8 +116,10 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  unmounted = true;
   window.removeEventListener("scroll", measureWidget);
-  window.removeEventListener("resize", measureWidget);
+  window.removeEventListener("resize", measureSoon);
+  widgetResize?.disconnect();
 });
 
 const toggleState = (index, activeState) => {
@@ -171,7 +184,7 @@ const openInfo = () => {
       :style="{ height: scrollLength || '150vh' }"
     >
       <div
-        class="sticky w-full top-[var(--reader-topbar-h,0px)] h-[calc(100vh-var(--reader-topbar-h,0px))]"
+        class="sticky w-full top-[var(--reader-topbar-h,0px)] h-[calc(100svh-var(--reader-topbar-h,0px))]"
       >
         <FigureWidget
           :record="thisAnimation"

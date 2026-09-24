@@ -232,7 +232,9 @@ onBeforeUnmount(() => {
           >
             <FigureWidget
               :record="animation"
-              :progress="animation.isTransition ? progress : null"
+              :progress="
+                figureWidgetFor(animation.id)?.schema.scrub ? progress : null
+              "
             />
           </div>
         </transition>

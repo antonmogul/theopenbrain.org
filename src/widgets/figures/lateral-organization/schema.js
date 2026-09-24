@@ -13,6 +13,8 @@ export default {
   scrollLength: "700vh",
   left: "/publicAssets/animations/animationLatteralOrganizationLeft.json",
   right: "/publicAssets/animations/animationLatteralOrganizationRight.json",
+  /** Both files' length; the scroll and the captions run on it alone. */
+  frames: 192,
   startFrame: 20,
   layers: [
     {
