@@ -12,7 +12,6 @@
  * `animation_key` / `animation_title` already attached (fetch step 3b).
  * Output shape: Chapter 1's text.json paragraph tree.
  */
-import { readerLockReason } from "../editor/editability.mjs";
 
 /**
  * Convert JSONB content blocks to HTML text
@@ -171,9 +170,9 @@ export function transformParagraph(p) {
     id: p.id,
     text: contentResult.text,
     hasHeading: contentResult.hasHeading,
-    // Set when the reader's inline editor can't save this paragraph without
-    // dropping blocks (citations, images…) — OPENBRAIN-58.
-    lockReason: readerLockReason(p.content),
+    // The stored blocks, so the reader's Edit mode can edit them losslessly
+    // (OPENBRAIN-64); rendering still uses `text` above.
+    blocks: blocks,
     // Spread Chapter 1-specific metadata (animationFull, type, img, etc.)
     ...meta,
   };
@@ -255,6 +254,8 @@ export function reconstructNesting(flatParagraphs) {
       currentSubSection = {
         id: p.id,
         title: p.content_text || "",
+        // The header row's blocks, for editing the title in the reader.
+        blocks: p.content?.blocks || [],
         paragraphs: [],
       };
       // Add animation from the section-header paragraph (keyed off the real

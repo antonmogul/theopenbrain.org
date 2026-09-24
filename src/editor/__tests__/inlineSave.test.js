@@ -96,3 +96,42 @@ describe("saveInlineEdit (OPENBRAIN-58)", () => {
     });
   });
 });
+
+describe("saveInlineEdit with blocks (Edit mode, OPENBRAIN-64)", () => {
+  it("saves a cited paragraph losslessly and returns what to undo to", async () => {
+    const stored = {
+      blocks: [
+        { type: "text", content: "Rods" },
+        { type: "citation_ref", number: 12 },
+      ],
+      animationFlags: { transition: true },
+    };
+    const { rest, patches } = fakeRest(stored);
+    const blocks = [
+      { type: "text", content: "Rods and <em>cones</em>" },
+      { type: "citation_ref", number: 12 },
+    ];
+    const out = await saveInlineEdit(rest, {
+      paragraphId: "p9",
+      blocks,
+      type: "paragraph",
+    });
+    expect(patches).toHaveLength(1);
+    expect(patches[0].body).toEqual({
+      content: { blocks, animationFlags: { transition: true } },
+      content_text: "Rods and cones12",
+    });
+    expect(out.previous.content).toEqual(stored);
+  });
+
+  it("still reports a refused update", async () => {
+    const { rest } = fakeRest({ blocks: [] }, { refused: true });
+    await expect(
+      saveInlineEdit(rest, {
+        paragraphId: "p",
+        blocks: [{ type: "text", content: "x" }],
+        type: "subsection-title",
+      })
+    ).rejects.toThrow(/didn't allow/);
+  });
+});

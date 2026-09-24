@@ -18,7 +18,21 @@ const LONG_CHAPTER = {
       paragraphs: [
         {
           id: "ganglion-output-1",
-          text: "Midget, parasol, and small bistratified ganglion cells carry distinct combinations of spatial, temporal, and chromatic information toward the lateral geniculate nucleus.",
+          text: 'Midget, parasol, and small bistratified ganglion cells carry distinct combinations of spatial, temporal, and chromatic information<sup class="citation-ref" data-ref="42">42</sup> toward the lateral geniculate nucleus.',
+          // Stored blocks, as chapterTransform keeps them: Edit mode opens
+          // the lossless editor with the citation as a chip (OPENBRAIN-64).
+          blocks: [
+            {
+              type: "text",
+              content:
+                "Midget, parasol, and small bistratified ganglion cells carry distinct combinations of spatial, temporal, and chromatic information",
+            },
+            { type: "citation_ref", number: 42 },
+            {
+              type: "text",
+              content: " toward the lateral geniculate nucleus.",
+            },
+          ],
         },
       ],
       subSection: [],
@@ -54,5 +68,5 @@ export const Default = {};
 
 export const ShortChapter = { args: { chapter: SHORT_CHAPTER } };
 
-/** A creator: titles and paragraphs render as EditableBlocks. */
+/** A creator: "Edit chapter" turns on Edit mode (dark bar, click to edit). */
 export const Creator = { parameters: { auth: { role: "creator" } } };

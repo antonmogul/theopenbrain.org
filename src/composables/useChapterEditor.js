@@ -12,21 +12,13 @@
  */
 import { computed, ref } from "vue";
 import { authedRequest } from "@/services/api/client";
-import { contentBlocksToHTML } from "@/composables/chapterTransform.mjs";
 import { withBlocks } from "@/editor/editability.mjs";
+import { blocksToPlainText } from "@/editor/plainText";
+
+export { blocksToPlainText };
 
 const PARAGRAPH_COLUMNS =
   "id,section_id,order_index,content,content_text,is_subsection_header,subsection_level,animation_id,animation_trigger,updated_at";
-
-/** Plain text for paragraphs.content_text (search, stats, subsection titles). */
-export function blocksToPlainText(blocks) {
-  const el =
-    typeof document !== "undefined" ? document.createElement("div") : null;
-  const html = contentBlocksToHTML(blocks).text;
-  if (!el) return html.replace(/<[^>]*>/g, "");
-  el.innerHTML = html;
-  return el.textContent || "";
-}
 
 export function useChapterEditor(slug) {
   const module = ref(null);
