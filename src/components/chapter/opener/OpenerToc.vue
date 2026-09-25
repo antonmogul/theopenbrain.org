@@ -11,10 +11,6 @@
  * body below is light. Accent = --color-chapter (set per module by the
  * router), never the global magenta.
  */
-import { reactive } from "vue";
-import { useMediaQuery } from "@/composables/useMediaQuery";
-import { READER_NARROW_QUERY } from "@/helper/readerLayout";
-
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: "" },
@@ -23,17 +19,6 @@ defineProps({
   /* Element id so the hero's arrow can scroll here. */
   id: { type: String, default: "chapter-toc" },
 });
-
-// On desktop the outline fits one screen (Stuart, 24 Sep: it was longer
-// than a fullscreen; OPENBRAIN-90): sections, their parts behind a toggle,
-// and the rows' spacing sized from the number of sections (--rows). On
-// phones and tablets, where it scrolls anyway, every part is listed
-// (OPENBRAIN-94).
-const narrow = useMediaQuery(READER_NARROW_QUERY);
-const openParts = reactive({});
-function toggleParts(id) {
-  openParts[id] = !openParts[id];
-}
 
 function go(anchor, event) {
   // Section ids are UUIDs that can start with a digit, which is not a valid
@@ -56,11 +41,7 @@ function go(anchor, event) {
       </h1>
     </div>
 
-    <nav
-      class="opener-toc__list"
-      aria-label="Chapter contents"
-      :style="{ '--rows': outline.length || 1 }"
-    >
+    <nav class="opener-toc__list" aria-label="Chapter contents">
       <ol class="opener-toc__sections">
         <li
           v-for="entry in outline"
@@ -78,28 +59,7 @@ function go(anchor, event) {
             <span class="opener-toc__num">{{ entry.label }}</span>
             <span class="opener-toc__label">{{ entry.title }}</span>
           </a>
-          <button
-            v-if="entry.subsections.length && !narrow"
-            type="button"
-            class="opener-toc__more"
-            :aria-expanded="!!openParts[entry.id]"
-            :aria-controls="`${id}-parts-${entry.id}`"
-            :aria-label="`${openParts[entry.id] ? 'Hide' : 'Show'} the parts of ${entry.title}`"
-            @click="toggleParts(entry.id)"
-          >
-            <span class="opener-toc__more-count">{{
-              entry.subsections.length
-            }}</span>
-            <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
-              <path d="M2.5 4.5 6 8l3.5-3.5" />
-            </svg>
-          </button>
-          <ol
-            v-if="entry.subsections.length"
-            v-show="narrow || openParts[entry.id]"
-            :id="`${id}-parts-${entry.id}`"
-            class="opener-toc__subs"
-          >
+          <ol v-if="entry.subsections.length" class="opener-toc__subs">
             <li v-for="sub in entry.subsections" :key="sub.id">
               <a
                 class="opener-toc__row opener-toc__row--sub"
@@ -193,25 +153,13 @@ function go(anchor, event) {
   text-decoration: none;
   line-height: 1.429;
 }
-/* Section rows share the screen on desktop: what the viewport leaves after
-   the top bar and the block's padding, divided by the number of sections,
-   between a 40px row and Figma's 18px padding. The row and its parts toggle
-   read the same values. */
+/* Every section lists its parts, as in Figma (OPENBRAIN-94). */
 .opener-toc__section {
   position: relative;
-  --row-pad: clamp(
-    0.3125rem,
-    calc(
-      (100svh - var(--reader-topbar-h, 4rem) - var(--toc-pt) - var(--toc-pb)) /
-        var(--rows, 12) / 2 - 0.7145 * var(--toc-row-font)
-    ),
-    var(--toc-pad)
-  );
-  --row-h: calc(2 * var(--row-pad) + 1.429 * var(--toc-row-font));
 }
 .opener-toc__row--section {
   position: relative;
-  padding: var(--row-pad) 3.75rem var(--row-pad) var(--toc-indent);
+  padding: var(--toc-pad) 3.75rem var(--toc-pad) var(--toc-indent);
   border-top: 1px solid var(--toc-accent);
   color: var(--toc-accent);
   font-size: var(--toc-row-font);
@@ -222,7 +170,7 @@ function go(anchor, event) {
 .opener-toc__num {
   position: absolute;
   left: calc(var(--toc-num) / -2);
-  top: calc(var(--row-pad) + 0.7145 * var(--toc-row-font) - var(--toc-num) / 2);
+  top: calc(var(--toc-pad) + 0.7145 * var(--toc-row-font) - var(--toc-num) / 2);
   width: var(--toc-num);
   height: var(--toc-num);
   border-radius: 999px;
@@ -258,45 +206,8 @@ function go(anchor, event) {
   outline-offset: -2px;
 }
 
-/* Desktop: a section's parts open from a toggle at its row's end. */
-.opener-toc__section:has(> .opener-toc__more) > .opener-toc__row--section {
-  padding-right: 6.5rem;
-}
-.opener-toc__more {
-  position: absolute;
-  top: 1px; /* under the row's rule */
-  right: 1.25rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  min-width: 44px;
-  height: calc(var(--row-h) - 1px); /* exactly its row: never over the next */
-  padding: 0 0.5rem;
-  border: 0;
-  background: transparent;
-  color: rgb(255 255 255 / 0.7);
-  font: 0.75rem/1 var(--font-mono);
-  cursor: pointer;
-}
-.opener-toc__more svg {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  transition: transform 0.15s ease;
-}
-.opener-toc__more[aria-expanded="true"] svg {
-  transform: rotate(180deg);
-}
-.opener-toc__more:hover {
-  color: #fff;
-}
-.opener-toc__more:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: -2px;
-}
-
-/* Below the two-column reader the block stacks, title then the list, and
-   every section's parts are listed (no toggles). */
+/* Below the two-column reader the block stacks, title then the list; the
+   ramp-coloured line moves with the list, through the number circles. */
 @media (max-width: 1023px) {
   .opener-toc {
     --toc-num: 2rem;
@@ -314,10 +225,18 @@ function go(anchor, event) {
     padding: 0 0 2rem;
   }
   .opener-toc__list {
+    position: relative;
     padding: 0 0 0 1rem;
   }
-  .opener-toc__section {
-    --row-pad: var(--toc-pad);
+  .opener-toc__list::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: calc(-1 * var(--toc-pb)); /* to the block's end, as on desktop */
+    left: 1rem;
+    width: 1px;
+    background: var(--toc-accent);
+    pointer-events: none;
   }
   .opener-toc__row--section,
   .opener-toc__row--sub {
