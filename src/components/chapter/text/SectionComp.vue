@@ -85,7 +85,14 @@
       v-if="figuresInline && section?.animation?.id"
       :animation-id="section.animation.id"
     />
+    <!-- The References section, from the references table once it has
+         rows: each entry links to its source (OPENBRAIN-92). -->
+    <ReferenceList
+      v-if="tableReferences.length"
+      :references="tableReferences"
+    />
     <span
+      v-else
       :id="
         section?.animation?.name
           ? 'triggerAnimation' + section?.animation?.name
@@ -199,7 +206,7 @@
 </template>
 
 <script setup>
-import { inject } from "vue";
+import { computed, inject } from "vue";
 // <SectionComp> in the template is this component (an SFC can use itself by
 // its file name without importing it): an anchored breakout box renders as a
 // nested section.
@@ -215,6 +222,7 @@ import SubSection from "./SubSection.vue";
 import { useGeneral } from "@/stores";
 import BreakSection from "./BreakSection.vue";
 import BreakoutBox from "./BreakoutBox.vue";
+import ReferenceList from "./ReferenceList.vue";
 import InlineImages from "./InlineImages.vue";
 import VideoEmbed from "./VideoEmbed.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
@@ -246,6 +254,15 @@ const props = defineProps({
 });
 
 defineEmits(["save"]);
+
+// The references table's rows replace the References section's own list
+// (OPENBRAIN-92); the section's text stays for creators, who edit it.
+const refsCtx = inject("references", null);
+const tableReferences = computed(() =>
+  props.section?.slug === "references" && !props.isCreator
+    ? refsCtx?.references?.value || []
+    : []
+);
 
 // Get save handler from parent (injected from TextComp)
 const saveContent = inject("saveContent", null);

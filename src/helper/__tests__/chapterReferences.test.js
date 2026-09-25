@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   linkifyReference,
+  referenceDisplay,
   referenceFromChapter,
 } from "../chapterReferences.js";
 
@@ -72,5 +73,40 @@ describe("linkifyReference", () => {
   it("leaves a reference that already has links alone", () => {
     const html = 'See <a href="https://a.b">here</a>.';
     expect(linkifyReference(html)).toBe(html);
+  });
+});
+
+describe("referenceDisplay (OPENBRAIN-92)", () => {
+  it("shows the authors' own text with a link to the DOI", () => {
+    const d = referenceDisplay({
+      raw_text:
+        "Masland, R. H. The neuronal organization of the retina. <em>Neuron</em> <strong>76</strong>, 266–280 (2012).",
+      doi: "10.1016/j.neuron.2012.10.002",
+    });
+    expect(d.html).toContain("<em>Neuron</em>");
+    expect(d.href).toBe("https://doi.org/10.1016/j.neuron.2012.10.002");
+    expect(d.hrefLabel).toBe("doi:10.1016/j.neuron.2012.10.002");
+  });
+
+  it("uses the URL when there is no DOI, and nothing unsafe", () => {
+    expect(referenceDisplay({ raw_text: "x", url: "https://a.b/c" }).href).toBe(
+      "https://a.b/c"
+    );
+    expect(
+      referenceDisplay({ raw_text: "x", url: "javascript:alert(1)" }).href
+    ).toBeNull();
+  });
+
+  it("falls back to the structured fields, escaped", () => {
+    const d = referenceDisplay({
+      authors: "Hubel, D. H.",
+      year: 1962,
+      title: "Receptive fields <b>",
+      journal: "J Physiol",
+    });
+    expect(d.html).toBe(
+      "Hubel, D. H. (1962) Receptive fields &lt;b&gt; <em>J Physiol</em>"
+    );
+    expect(d.href).toBeNull();
   });
 });
