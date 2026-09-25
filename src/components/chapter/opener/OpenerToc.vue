@@ -1,7 +1,8 @@
 <script setup>
 /*
  * Chapter opener — title + table of contents on the dark block
- * (OPENBRAIN-32, Figma attn/toc 1495:34232, history 3:80).
+ * (OPENBRAIN-32; OPENBRAIN-94 matches the Assets Library's ui/toc,
+ * WNnPvBkixODGsiYmIZKSWw node 286:1641).
  *
  * Left half: the chapter title in the chapter's ramp colour with the
  * subtitle in white beneath it. Right half, starting on the 50/50 divider:
@@ -11,6 +12,8 @@
  * router), never the global magenta.
  */
 import { reactive } from "vue";
+import { useMediaQuery } from "@/composables/useMediaQuery";
+import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 
 defineProps({
   title: { type: String, required: true },
@@ -21,9 +24,12 @@ defineProps({
   id: { type: String, default: "chapter-toc" },
 });
 
-// The outline fits one screen (Stuart, 24 Sep: it was longer than a
-// fullscreen; OPENBRAIN-90): sections only, their parts behind a toggle, and
-// the rows' spacing sized from the number of sections (--rows).
+// On desktop the outline fits one screen (Stuart, 24 Sep: it was longer
+// than a fullscreen; OPENBRAIN-90): sections, their parts behind a toggle,
+// and the rows' spacing sized from the number of sections (--rows). On
+// phones and tablets, where it scrolls anyway, every part is listed
+// (OPENBRAIN-94).
+const narrow = useMediaQuery(READER_NARROW_QUERY);
 const openParts = reactive({});
 function toggleParts(id) {
   openParts[id] = !openParts[id];
@@ -73,7 +79,7 @@ function go(anchor, event) {
             <span class="opener-toc__label">{{ entry.title }}</span>
           </a>
           <button
-            v-if="entry.subsections.length"
+            v-if="entry.subsections.length && !narrow"
             type="button"
             class="opener-toc__more"
             :aria-expanded="!!openParts[entry.id]"
@@ -90,7 +96,7 @@ function go(anchor, event) {
           </button>
           <ol
             v-if="entry.subsections.length"
-            v-show="openParts[entry.id]"
+            v-show="narrow || openParts[entry.id]"
             :id="`${id}-parts-${entry.id}`"
             class="opener-toc__subs"
           >
@@ -110,25 +116,33 @@ function go(anchor, event) {
 </template>
 
 <style scoped>
-/* Figma: Open-Brain-Chapters node 2029:26083 (the History TOC), a 1724-wide
-   frame. Sizes below are that frame's px, as vw of 1724 with rem floors and
-   ceilings: title 54px, section rows 22px, subsection rows 18px, circles
-   40px, titles 53px right of the divider (OPENBRAIN-69). */
+/* Figma: Open-Brain Assets Library, ui/toc (node 286:1641), a 1728-wide
+   frame. Its px become vw of 1728, with Figma's size as the ceiling and the
+   type scale (brand.css) as the floor on smaller screens:
+   title 60px · section rows 24.5px, 18px above and below, a ramp-coloured
+   rule on top · numbers in 48px circles on the divider · titles 42px right
+   of the divider · subsection rows 20px white on a hairline, indented the
+   same 42px. */
 .opener-toc {
   --toc-accent: rgb(var(--color-chapter));
-  /* 22px rows on Figma's frame; the phone scale's body step below that. */
-  --toc-row-font: clamp(min(var(--type-body-size), 1.125rem), 1.28vw, 1.375rem);
-  --toc-num: 2.5rem;
+  --toc-title: clamp(var(--type-subhead-size), 3.48vw, 3.75rem);
+  --toc-row-font: clamp(min(var(--type-body-size), 1.125rem), 1.417vw, 1.53rem);
+  --toc-sub-font: clamp(min(var(--type-body-sm-size), 1rem), 1.159vw, 1.252rem);
+  --toc-num: clamp(2.5rem, 2.78vw, 3rem);
+  --toc-indent: clamp(2.25rem, 2.43vw, 2.625rem);
+  --toc-pad: clamp(0.75rem, 1.04vw, 1.125rem);
+  --toc-pt: clamp(2.5rem, 6.94vw, 7.5rem);
+  --toc-pb: clamp(2.5rem, 3.47vw, 3.75rem);
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 0;
   background: rgb(var(--color-dark-surface));
   color: #fff;
-  padding: clamp(2.5rem, 4.5vw, 5rem) 0 2.5rem;
+  padding: var(--toc-pt) 0 var(--toc-pb);
   font-family: var(--font-body);
 }
-/* The divider line runs the full height of the block, on the 50/50 split. */
+/* The divider runs the full height of the block, on the 50/50 split. */
 .opener-toc::before {
   content: "";
   position: absolute;
@@ -141,15 +155,13 @@ function go(anchor, event) {
 }
 
 .opener-toc__title {
-  padding: 0 0 0 3.625rem; /* 58 */
-  max-width: 47.3vw; /* 58 + a 758 text box, of 1724: the lead fits on one line */
+  padding: 0 clamp(1.25rem, 3.47vw, 3.75rem); /* 60 */
+  max-width: 50vw;
 }
 .opener-toc__h1 {
   margin: 0;
   font-weight: 450;
-  /* 54px on Figma's 1724 frame; on phones and tablets the type scale's
-     subhead step (27px on a phone, OPENBRAIN-93). */
-  font-size: clamp(var(--type-subhead-size), 3.13vw, 3.375rem);
+  font-size: var(--toc-title);
   line-height: 1.429;
   letter-spacing: 0.1px;
   text-wrap: balance;
@@ -163,16 +175,10 @@ function go(anchor, event) {
   color: #fff;
 }
 
-/* The divider lines run to the frame's right edge (Figma); the rows carry
-   the right margin instead of the list (OPENBRAIN-74). */
 .opener-toc__list {
   letter-spacing: 0.1px;
   /* The reader hyphenates prose; titles in the contents break at words. */
   hyphens: manual;
-}
-/* Figma has no line above the first row: Introduction sits on the frame. */
-.opener-toc__section--intro > .opener-toc__row--section {
-  border-top: 0;
 }
 .opener-toc__sections,
 .opener-toc__subs {
@@ -185,43 +191,38 @@ function go(anchor, event) {
   align-items: center;
   color: inherit;
   text-decoration: none;
-  padding: 1.0625rem 3.75rem 1.0625rem 3.3125rem; /* 17 / 53: a 66px row */
   line-height: 1.429;
 }
-/* Section rows share the screen: what the viewport leaves after the top bar
-   and the block's padding, divided by the number of sections, within a 40px
-   row and the design's 66px one. */
+/* Section rows share the screen on desktop: what the viewport leaves after
+   the top bar and the block's padding, divided by the number of sections,
+   between a 40px row and Figma's 18px padding. The row and its parts toggle
+   read the same values. */
 .opener-toc__section {
   position: relative;
-  /* Shared by the row and its parts toggle, so both are the same height. */
   --row-pad: clamp(
     0.3125rem,
     calc(
-      (100svh - var(--reader-topbar-h, 4rem) - 7.5rem) / var(--rows, 12) / 2 -
-        0.7145 * var(--toc-row-font)
+      (100svh - var(--reader-topbar-h, 4rem) - var(--toc-pt) - var(--toc-pb)) /
+        var(--rows, 12) / 2 - 0.7145 * var(--toc-row-font)
     ),
-    1.0625rem
+    var(--toc-pad)
   );
   --row-h: calc(2 * var(--row-pad) + 1.429 * var(--toc-row-font));
 }
 .opener-toc__row--section {
-  padding-top: var(--row-pad);
-  padding-bottom: var(--row-pad);
   position: relative;
+  padding: var(--row-pad) 3.75rem var(--row-pad) var(--toc-indent);
   border-top: 1px solid var(--toc-accent);
   color: var(--toc-accent);
   font-size: var(--toc-row-font);
   font-weight: 450; /* IBM Plex Sans Text */
 }
-/* 40px circle straddling the divider: its centre sits on the line and on
-   the first line of the title. */
+/* The number's circle straddles the divider, centred on the title's first
+   line. */
 .opener-toc__num {
   position: absolute;
   left: calc(var(--toc-num) / -2);
-  top: calc(
-    var(--row-pad, 1.0625rem) + 0.7145 * var(--toc-row-font) - var(--toc-num) /
-      2
-  );
+  top: calc(var(--row-pad) + 0.7145 * var(--toc-row-font) - var(--toc-num) / 2);
   width: var(--toc-num);
   height: var(--toc-num);
   border-radius: 999px;
@@ -229,7 +230,7 @@ function go(anchor, event) {
   color: #fff;
   display: grid;
   place-items: center;
-  font-size: calc(var(--toc-num) * 0.45);
+  font-size: calc(var(--toc-num) * 0.51);
   font-weight: 400;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -238,13 +239,13 @@ function go(anchor, event) {
   letter-spacing: 0.04em;
 }
 .opener-toc__subs {
-  padding: 0 0 0 3.3125rem; /* rules start under the titles, at 53 */
+  padding: 0 0 0 var(--toc-indent);
 }
 .opener-toc__row--sub {
-  padding: 0.5rem 3.75rem 0.5rem 0; /* a 41px row */
-  border-top: 1px solid rgb(142 142 147 / 0.45); /* the frame's 0.25px #8E8E93 */
+  padding: var(--toc-pad) 3.75rem var(--toc-pad) 0;
+  border-top: 1px solid rgb(255 255 255 / 0.25); /* Figma's 0.2px white */
   color: #fff;
-  font-size: clamp(min(var(--type-body-sm-size), 1rem), 1.04vw, 1.125rem);
+  font-size: var(--toc-sub-font);
   font-weight: 450;
 }
 .opener-toc__row:hover .opener-toc__label,
@@ -252,11 +253,15 @@ function go(anchor, event) {
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
-/* Rows with parts leave room for their toggle at the right end. */
+.opener-toc__row:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+/* Desktop: a section's parts open from a toggle at its row's end. */
 .opener-toc__section:has(> .opener-toc__more) > .opener-toc__row--section {
   padding-right: 6.5rem;
 }
-/* The parts toggle sits at the row's right end. */
 .opener-toc__more {
   position: absolute;
   top: 1px; /* under the row's rule */
@@ -289,15 +294,14 @@ function go(anchor, event) {
   outline: 2px solid #fff;
   outline-offset: -2px;
 }
-.opener-toc__row:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: -2px;
-}
 
-/* Below the two-column reader the block stacks: title, then the list. */
+/* Below the two-column reader the block stacks, title then the list, and
+   every section's parts are listed (no toggles). */
 @media (max-width: 1023px) {
   .opener-toc {
     --toc-num: 2rem;
+    --toc-indent: 1.75rem;
+    --toc-pad: 0.75rem;
     grid-template-columns: 1fr;
     padding-left: 1.25rem;
     padding-right: 1.25rem;
@@ -310,10 +314,18 @@ function go(anchor, event) {
     padding: 0 0 2rem;
   }
   .opener-toc__list {
-    padding: 0 0 0 1.5rem;
+    padding: 0 0 0 1rem;
   }
-  .opener-toc__row {
+  .opener-toc__section {
+    --row-pad: var(--toc-pad);
+  }
+  .opener-toc__row--section,
+  .opener-toc__row--sub {
     padding-right: 0;
+  }
+  .opener-toc__row--sub {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
   }
 }
 </style>
