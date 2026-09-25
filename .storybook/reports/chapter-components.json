@@ -36,7 +36,7 @@
     {
       "source": "src/components/chapter/Illus/FigureImages.vue",
       "storyFile": "src/components/chapter/Illus/__stories__/FigureImages.stories.js",
-      "story": "CyclingSetWithCaptions"
+      "story": "GalleryWithCaptions"
     },
     {
       "source": "src/components/chapter/Illus/FullScreenIllustration.vue",
