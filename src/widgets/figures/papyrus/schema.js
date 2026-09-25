@@ -13,6 +13,10 @@ export default {
   id: "papyrus",
   name: "Edwin Smith papyrus, case 20",
   animationKey: "animationFoundationsFig4",
+  /* Inline (below the two-column reader) the figure is as tall as the
+     current part, not a screen-sized box, and runs the page's full width. */
+  fitHeight: true,
+  bleed: true,
   /** One per part, in the papyrus's order; the art files are in ./art. */
   parts: ["title", "examination", "diagnosis", "treatment"],
   fields: [

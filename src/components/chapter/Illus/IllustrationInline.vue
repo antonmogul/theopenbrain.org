@@ -24,6 +24,7 @@ import {
 // Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
 import animationJSON from "@/assets/json_backend/animations.json";
 import { mobileMode } from "@/helper/illustrationMobile";
+import { figureWidgetFor } from "@/widgets/figures/registry";
 
 import IllustrationComp from "@/components/chapter/Illus/IllustrationComp.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
@@ -59,6 +60,11 @@ const animation = computed(() =>
 );
 
 const mode = computed(() => mobileMode(animation.value));
+// A figure widget's schema can ask to be as tall as its content (fitHeight)
+// and to run the page's full width (bleed) when it is inline.
+const widgetSchema = computed(
+  () => figureWidgetFor(animation.value?.id)?.schema || null
+);
 
 // Interactive figures mount a Lottie, so the asset must really exist — a DB
 // record whose /publicAssets/animations/<id>.json is missing would otherwise
@@ -128,8 +134,12 @@ const youtubeSrc = computed(() =>
   <figure
     v-else-if="animation && mode === 'figure-widget'"
     class="illu-inline illu-inline--widget my-12"
+    :class="{
+      'illu-inline--fit': widgetSchema?.fitHeight,
+      'illu-inline--bleed': widgetSchema?.bleed,
+    }"
   >
-    <FigureWidget :record="animation" />
+    <FigureWidget :record="animation" :fit="!!widgetSchema?.fitHeight" />
   </figure>
   <figure
     v-else-if="
@@ -251,6 +261,17 @@ const youtubeSrc = computed(() =>
 /* A figure widget inline: a box of its own, sized to the screen. */
 .illu-inline--widget {
   height: min(80vh, 40rem);
+}
+.illu-inline--widget.illu-inline--fit {
+  height: auto;
+}
+/* Edge to edge below the two-column reader, where the column is the page
+   and centred in it (TextComp .ml-text). */
+@media (max-width: 1023px) {
+  .illu-inline--bleed {
+    width: var(--app-w, 100vw);
+    margin-left: calc(50% - var(--app-w, 100vw) / 2);
+  }
 }
 .illu-inline--shell {
   height: min(75vh, 36rem);

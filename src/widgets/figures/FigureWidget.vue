@@ -14,6 +14,8 @@ const props = defineProps({
   record: { type: Object, required: true },
   /** Scroll progress (0–1) for figures the reader scrubs through, else null. */
   progress: { type: Number, default: null },
+  /** Size to the content's height instead of filling the host's box. */
+  fit: { type: Boolean, default: false },
 });
 
 const entry = computed(() => figureWidgetFor(props.record?.id));
@@ -81,7 +83,11 @@ const lottieUrl = computed(() =>
 </script>
 
 <template>
-  <div v-if="Widget" class="widget-root figure-widget">
+  <div
+    v-if="Widget"
+    class="widget-root figure-widget"
+    :class="{ 'figure-widget--fit': fit }"
+  >
     <component
       :is="Widget"
       :content="content"
@@ -104,6 +110,12 @@ const lottieUrl = computed(() =>
   container: figure / size;
   width: 100%;
   height: 100%;
+}
+/* As tall as its content (a schema's fitHeight, inline): only the width can
+   be contained, or the box would collapse to nothing. */
+.figure-widget--fit {
+  container: figure / inline-size;
+  height: auto;
 }
 .figure-widget-failed {
   display: grid;
