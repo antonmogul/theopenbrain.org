@@ -46,11 +46,24 @@ function toggleColorFilter(color) {
   selectedColor.value = selectedColor.value === color ? null : color;
 }
 
-// Filtered highlights based on selected color
+// Tag filter: tags are labels for grouping highlights, so the Notebook can
+// show one group at a time (OPENBRAIN-103). null means every tag.
+const selectedTag = ref(null);
+const allTags = computed(() =>
+  [...new Set((highlights?.value || []).flatMap((h) => h.tags || []))].sort()
+);
+function toggleTagFilter(tag) {
+  selectedTag.value = selectedTag.value === tag ? null : tag;
+}
+
+// Filtered highlights based on the selected color and tag
 const filteredHighlights = computed(() => {
   if (!highlights?.value) return [];
-  if (!selectedColor.value) return highlights.value;
-  return highlights.value.filter((h) => h.color === selectedColor.value);
+  return highlights.value.filter(
+    (h) =>
+      (!selectedColor.value || h.color === selectedColor.value) &&
+      (!selectedTag.value || (h.tags || []).includes(selectedTag.value))
+  );
 });
 
 // Notes UI state (migrated from NotesSidebar)
@@ -203,6 +216,21 @@ async function executeDelete() {
         </button>
       </div>
 
+      <!-- Tag filter -->
+      <div v-if="allTags.length" class="tag-filter" aria-label="Filter by tag">
+        <button
+          v-for="tag in allTags"
+          :key="tag"
+          type="button"
+          class="tag-chip tag-chip--filter"
+          :class="{ active: selectedTag === tag }"
+          :aria-pressed="selectedTag === tag"
+          @click="toggleTagFilter(tag)"
+        >
+          {{ tag }}
+        </button>
+      </div>
+
       <EmptyState
         v-if="!highlights || highlights.length === 0"
         title="No highlights yet"
@@ -210,8 +238,8 @@ async function executeDelete() {
       />
       <EmptyState
         v-else-if="filteredHighlights.length === 0"
-        :title="`No ${selectedColor} highlights`"
-        message="Try a different color filter"
+        title="No highlights match"
+        message="Try a different colour or tag"
       />
       <div v-else class="items-list">
         <div
@@ -233,9 +261,16 @@ async function executeDelete() {
               }}"
             </p>
             <div v-if="h.tags?.length" class="tag-list">
-              <span v-for="tag in h.tags" :key="tag" class="tag-chip">{{
-                tag
-              }}</span>
+              <button
+                v-for="tag in h.tags"
+                :key="tag"
+                type="button"
+                class="tag-chip"
+                :title="`Show highlights tagged ${tag}`"
+                @click.stop="toggleTagFilter(tag)"
+              >
+                {{ tag }}
+              </button>
             </div>
             <span class="item-date">{{ formatDate(h.created_at) }}</span>
           </div>
@@ -364,7 +399,7 @@ async function executeDelete() {
       <EmptyState
         v-if="!isAddingNote && (!notes || notes.length === 0)"
         title="No notes yet"
-        message='Highlight text or click "Add Note" to get started'
+        message='Select text and choose Note, or click "Add Note"'
       />
     </div>
 
@@ -540,8 +575,24 @@ async function executeDelete() {
   margin: 0 0 6px;
 }
 
+.tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0.75rem 0;
+}
+.tag-chip--filter {
+  padding: 3px 8px;
+  font-size: 0.625rem;
+}
+.tag-chip.active {
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-paper));
+}
 .tag-chip {
   display: inline-block;
+  border: 0;
+  cursor: pointer;
   padding: 1px 8px;
   background: rgb(var(--color-accent) / 0.12);
   color: rgb(var(--color-accent));

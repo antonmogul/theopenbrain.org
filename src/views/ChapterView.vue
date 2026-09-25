@@ -491,14 +491,26 @@ onBeforeRouteLeave(async () => {
 // === Phase 3A: Highlighting System Handlers ===
 
 // Handle creating a highlight from the toolbar
-async function handleCreateHighlight({ color, isPublic }) {
+// The note of the highlight the toolbar is on (notes are their own rows).
+const activeNote = computed(() => {
+  const id = activeHighlight.value?.id;
+  return id ? notes.value?.find((n) => n.highlight_id === id) || null : null;
+});
+// Set by the selection's "Note": the toolbar reopens on the new highlight
+// with the note open (OPENBRAIN-103).
+const noteOnOpen = ref(false);
+watch(showToolbar, (open) => {
+  if (!open) noteOnOpen.value = false;
+});
+
+async function handleCreateHighlight({ color, isPublic, withNote }) {
   if (!selection.value || !isAuthenticated.value) {
     clearSelection();
     return;
   }
 
   try {
-    await createHighlight({
+    const created = await createHighlight({
       paragraphId: selection.value.paragraphId,
       startOffset: selection.value.startOffset,
       endOffset: selection.value.endOffset,
@@ -507,6 +519,7 @@ async function handleCreateHighlight({ color, isPublic }) {
       isPublic: isPublic,
     });
 
+    const position = { ...toolbarPosition.value };
     clearSelection();
 
     // Refresh highlights and re-render visual marks
@@ -514,6 +527,22 @@ async function handleCreateHighlight({ color, isPublic }) {
       await fetchHighlights();
       await nextTick();
       renderAllHighlights();
+    }
+
+    // "Note": straight into the new highlight's note.
+    if (withNote && created?.id) {
+      activeHighlight.value = {
+        id: created.id,
+        color: created.color,
+        note: null,
+        tags: created.tags || [],
+        selected_text: created.selected_text,
+        paragraph_id: created.paragraph_id,
+        is_public: created.is_public,
+      };
+      toolbarPosition.value = position;
+      noteOnOpen.value = true;
+      showToolbar.value = true;
     }
   } catch (err) {
     console.error("ChapterView: Error creating highlight:", err);
@@ -538,11 +567,16 @@ async function handleUpdateHighlight({ id, updates }) {
 }
 
 // Handle saving a note inline from the toolbar
-async function handleSaveNote({ highlightId, paragraphId, content }) {
+async function handleSaveNote({ highlightId, paragraphId, noteId, content }) {
   if (!isAuthenticated.value) return;
 
   try {
-    if (content) {
+    // One note per highlight: edit it (or remove it when emptied). Saving
+    // used to add another row every time.
+    if (noteId) {
+      if (content) await updateNote(noteId, content);
+      else await deleteNote(noteId);
+    } else if (content) {
       await createNote({
         content,
         highlightId,
@@ -696,6 +730,8 @@ async function handleDeleteHighlight(highlightId) {
         :selection="selection"
         :mode="toolbarMode"
         :active-highlight="activeHighlight"
+        :note="activeNote"
+        :open-note="noteOnOpen"
         @highlight="handleCreateHighlight"
         @cancel="clearSelection"
         @update-highlight="handleUpdateHighlight"

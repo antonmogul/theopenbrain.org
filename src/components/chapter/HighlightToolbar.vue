@@ -8,6 +8,7 @@
 // pattern. The public contract (props + emits) is unchanged for ChapterView.
 import { ref, watch } from "vue";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
+import { HIGHLIGHT_COLORS } from "@/composables/useHighlights";
 import HighlightColorPicker from "@/components/chapter/highlight-toolbar/HighlightColorPicker.vue";
 import HighlightActionBar from "@/components/chapter/highlight-toolbar/HighlightActionBar.vue";
 import HighlightNotePanel from "@/components/chapter/highlight-toolbar/HighlightNotePanel.vue";
@@ -35,6 +36,16 @@ const props = defineProps({
   activeHighlight: {
     type: Object,
     default: null,
+  },
+  /** The active highlight's note (a `notes` row), if it has one. */
+  note: {
+    type: Object,
+    default: null,
+  },
+  /** Open straight on the note (the selection's "Note" button). */
+  openNote: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -76,14 +87,24 @@ watch(
   () => props.activeHighlight,
   (hl) => {
     if (hl) {
-      noteContent.value = hl.note || "";
+      // Notes live in the notes table; highlights.note is the old column.
+      noteContent.value = props.note?.content ?? hl.note ?? "";
       localTags.value = [...(hl.tags || [])];
       isPublic.value = hl.is_public || false;
+      if (props.openNote) toggleNotePanel(true);
     } else {
       resetPanels();
     }
   },
   { immediate: true }
+);
+// The note row can arrive after the highlight (notes load separately).
+watch(
+  () => props.note,
+  (note) => {
+    if (props.activeHighlight && !showNotePanel.value)
+      noteContent.value = note?.content ?? props.activeHighlight.note ?? "";
+  }
 );
 
 function resetPanels() {
@@ -107,6 +128,17 @@ function onHighlight(color) {
   });
 }
 
+// "Note" on a fresh selection: highlight it (in the first colour) and open
+// the note, so a note does not need a highlight first (Stuart, 24 Sep;
+// OPENBRAIN-103).
+function onNote() {
+  emit("highlight", {
+    color: HIGHLIGHT_COLORS[0].value,
+    isPublic: isPublic.value,
+    withNote: true,
+  });
+}
+
 // Color-pick dispatcher: create mode highlights, edit mode recolors.
 function onColorPick(color) {
   if (props.mode === "edit") {
@@ -126,8 +158,8 @@ function onChangeColor(color) {
   });
 }
 
-function toggleNotePanel() {
-  showNotePanel.value = !showNotePanel.value;
+function toggleNotePanel(force) {
+  showNotePanel.value = force === true ? true : !showNotePanel.value;
   showTagPanel.value = false;
   showDeleteConfirm.value = false;
   showOverflowMenu.value = false;
@@ -146,6 +178,7 @@ function saveNote() {
   emit("save-note", {
     highlightId: props.activeHighlight.id,
     paragraphId: props.activeHighlight.paragraph_id,
+    noteId: props.note?.id || null,
     content,
   });
   showNotePanel.value = false;
@@ -255,15 +288,25 @@ function onCancel() {
             @copy-text="copyText"
           />
 
-          <!-- Create mode actions -->
-          <button
-            v-else
-            @click="onCancel"
-            class="hl-action hl-action-cancel"
-            title="Cancel"
-          >
-            <CloseIcon :width="16" :height="16" />
-          </button>
+          <!-- Create mode actions: a note straight away, or cancel -->
+          <template v-else>
+            <button
+              type="button"
+              class="hl-note-btn"
+              title="Highlight and add a note"
+              data-testid="create-note"
+              @click="onNote"
+            >
+              Note
+            </button>
+            <button
+              @click="onCancel"
+              class="hl-action hl-action-cancel"
+              title="Cancel"
+            >
+              <CloseIcon :width="16" :height="16" />
+            </button>
+          </template>
         </div>
 
         <!-- Expandable panels (edit mode only) -->
@@ -338,6 +381,22 @@ function onCancel() {
 }
 
 /* Create-mode cancel button (edit-mode actions live in HighlightActionBar). */
+.hl-note-btn {
+  height: 28px;
+  padding: 0 0.625rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: rgb(var(--color-ink));
+  font: 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.hl-note-btn:hover {
+  background: rgb(var(--color-ink) / 0.06);
+}
+
 .hl-action {
   width: 28px;
   height: 28px;
