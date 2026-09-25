@@ -56,7 +56,7 @@ defineProps({
 .field :deep(textarea) {
   width: 100%;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-body);

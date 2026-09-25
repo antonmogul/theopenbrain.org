@@ -47,7 +47,7 @@ const swatches = [
   padding: 0.625rem 0.375rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.5rem;
+  border-radius: var(--radius-control);
   cursor: pointer;
   transition: border-color 0.15s;
 }

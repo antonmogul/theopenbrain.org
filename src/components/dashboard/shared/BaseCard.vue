@@ -26,7 +26,7 @@ const tag = computed(() => props.as);
 <style scoped>
 .base-card {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   text-align: left;

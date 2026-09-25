@@ -335,7 +335,7 @@ Citations use [^1] or [1] notation."
   padding: 0.5rem 1rem;
   background: transparent;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: #4b5563;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.75rem;
@@ -383,7 +383,7 @@ Citations use [^1] or [1] notation."
   width: 100%;
   background: #f9fafb;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 1rem;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.8125rem;
@@ -407,7 +407,7 @@ Citations use [^1] or [1] notation."
   padding: 0.75rem 2rem;
   background: rgb(151, 71, 255);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: white;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.875rem;
@@ -435,7 +435,7 @@ Citations use [^1] or [1] notation."
   gap: 0.75rem;
   padding: 3rem 1.5rem;
   border: 2px dashed #d1d5db;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   transition: all 0.2s;
   color: #9ca3af;
@@ -468,7 +468,7 @@ Citations use [^1] or [1] notation."
   gap: 0.5rem;
   margin-top: 1.25rem;
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.8125rem;
 }

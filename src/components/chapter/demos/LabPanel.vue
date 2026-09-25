@@ -191,7 +191,7 @@ const failedTestCount = computed(() => {
 .lab-panel {
   min-height: 400px;
   background: #111827;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: #e5e7eb;
   margin: -32px;
   padding: 24px;
@@ -257,7 +257,7 @@ const failedTestCount = computed(() => {
   padding: 0.078125rem 0.3125rem;
   background: #374151;
   color: #9ca3af;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 
 .toolbar-right {
@@ -270,7 +270,7 @@ const failedTestCount = computed(() => {
   font-size: 0.5078125rem;
   font-weight: 500;
   padding: 0.15625rem 0.390625rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgba(234, 179, 8, 0.15);
   color: #fbbf24;
 }
@@ -283,7 +283,7 @@ const failedTestCount = computed(() => {
 /* Buttons */
 .action-btn {
   padding: 0.3125rem 0.625rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-size: 0.5078125rem;
   font-weight: 500;
   cursor: pointer;
@@ -318,7 +318,7 @@ const failedTestCount = computed(() => {
 .instructions {
   background: #1f2937;
   border: 1px solid #374151;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 0.625rem;
   margin-bottom: 0.625rem;
 }
@@ -334,7 +334,7 @@ const failedTestCount = computed(() => {
 .solution-warning {
   background: rgba(234, 179, 8, 0.1);
   border: 1px solid rgba(234, 179, 8, 0.3);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 0.46875rem 0.625rem;
   margin-bottom: 0.625rem;
   font-size: 0.546875rem;
@@ -363,7 +363,7 @@ const failedTestCount = computed(() => {
 
 .tab-btn {
   padding: 0.234375rem 0.46875rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-size: 0.5078125rem;
   font-weight: 500;
   background: none;
@@ -389,7 +389,7 @@ const failedTestCount = computed(() => {
 .badge {
   font-size: 0.4296875rem;
   padding: 0.0390625rem 0.234375rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-weight: 600;
 }
 

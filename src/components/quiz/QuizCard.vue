@@ -139,7 +139,7 @@ const questionCount =
 <style scoped>
 .quiz-card {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   border: 1px solid #e5e7eb;
   padding: 0.9375rem;
   transition: all 0.2s;
@@ -182,7 +182,7 @@ const questionCount =
   font-size: 0.546875rem;
   font-weight: 600;
   padding: 0.078125rem 0.3125rem;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 
 .score-value.passed {
@@ -231,7 +231,7 @@ const questionCount =
   background: #3b82f6;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.5859375rem;
   font-weight: 500;

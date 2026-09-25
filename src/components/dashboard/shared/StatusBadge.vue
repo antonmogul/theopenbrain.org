@@ -46,7 +46,7 @@ const autoLabel = computed(() =>
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid transparent;
   white-space: nowrap;
 }

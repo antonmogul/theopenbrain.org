@@ -172,7 +172,7 @@ defineExpose({ isValid });
   gap: 8px;
   padding: 6px 12px 6px 8px;
   border: 1px solid #d1d5db;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-size: 0.8125rem;
   color: #1a1a1a;
   cursor: pointer;
@@ -265,7 +265,7 @@ defineExpose({ isValid });
 .form-input {
   background: #f9fafb;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.9375rem;
@@ -285,7 +285,7 @@ defineExpose({ isValid });
 .form-textarea {
   background: #f9fafb;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.9375rem;
@@ -309,7 +309,7 @@ defineExpose({ isValid });
   align-items: center;
   background: #f9fafb;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 

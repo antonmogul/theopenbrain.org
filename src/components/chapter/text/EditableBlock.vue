@@ -408,7 +408,7 @@ onBeforeUnmount(() => {
 .edit-note {
   margin: 6px 0 0;
   padding: 6px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-warn) / 0.14);
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
@@ -423,7 +423,7 @@ onBeforeUnmount(() => {
   margin-left: 8px;
   padding: 0 6px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   font: inherit;
   cursor: pointer;
@@ -436,7 +436,7 @@ onBeforeUnmount(() => {
 
 .editable-block-wrapper.is-creator:not(.is-editing):hover {
   background-color: rgba(151, 71, 255, 0.05);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   margin-left: -8px;
   margin-right: -8px;
   padding-left: 8px;
@@ -461,7 +461,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 0;
   border: 1px solid rgb(151, 71, 255);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: white;
   color: rgb(151, 71, 255);
   cursor: pointer;
@@ -485,7 +485,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   background: rgb(151, 71, 255);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: white;
   cursor: pointer;
   opacity: 0;
@@ -506,7 +506,7 @@ onBeforeUnmount(() => {
 .editable-content.editing {
   background: white;
   border: 2px solid rgb(151, 71, 255);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 12px 16px;
   margin: -12px -16px;
   box-shadow: 0 4px 20px rgba(151, 71, 255, 0.2);
@@ -543,7 +543,7 @@ onBeforeUnmount(() => {
   gap: 4px;
   padding: 6px 8px;
   background: #1a1a1a;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 110;
 }
@@ -556,7 +556,7 @@ onBeforeUnmount(() => {
   height: 28px;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
   cursor: pointer;
@@ -603,7 +603,7 @@ onBeforeUnmount(() => {
   background: rgb(151, 71, 255);
   color: white;
   font-size: 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   animation: pulse 1s infinite;
 }
 

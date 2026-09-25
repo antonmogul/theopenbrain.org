@@ -386,7 +386,7 @@ const formattedDuration = computed(() => {
   height: 40px;
   border: 1px solid rgb(var(--color-line));
   background: transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -470,7 +470,7 @@ const formattedDuration = computed(() => {
   padding: 0.078125rem 0.234375rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.625rem;
   color: rgb(var(--color-ink));
@@ -500,7 +500,7 @@ const formattedDuration = computed(() => {
 .confirm-modal {
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 0.9375rem;
   max-width: 400px;
   width: 100%;
@@ -533,7 +533,7 @@ const formattedDuration = computed(() => {
   justify-content: center;
   gap: 0.3125rem;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;

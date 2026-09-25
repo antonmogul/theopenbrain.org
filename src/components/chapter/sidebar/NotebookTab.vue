@@ -468,7 +468,7 @@ async function executeDelete() {
   background: rgb(var(--color-complete));
   color: #0a3d33;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 
 /* View content */
@@ -545,7 +545,7 @@ async function executeDelete() {
   padding: 1px 8px;
   background: rgb(var(--color-accent) / 0.12);
   color: rgb(var(--color-accent));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.5625rem;
   text-transform: uppercase;
@@ -568,7 +568,7 @@ async function executeDelete() {
 
 .color-border {
   width: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   flex-shrink: 0;
 }
 
@@ -576,7 +576,7 @@ async function executeDelete() {
   width: 3px;
   height: 100%;
   min-height: 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   flex-shrink: 0;
 }
 
@@ -616,7 +616,7 @@ async function executeDelete() {
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -631,7 +631,7 @@ async function executeDelete() {
 
 .note-editor {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   padding: 12px;
   margin-bottom: 12px;
 }
@@ -646,7 +646,7 @@ async function executeDelete() {
   width: 100%;
   padding: 10px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: var(--font-body);
   font-size: 0.875rem;
   resize: none;
@@ -676,7 +676,7 @@ async function executeDelete() {
   gap: 8px;
   padding: 6px 8px;
   background: rgb(var(--color-bg));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   margin-bottom: 8px;
   font-size: 0.8125rem;
   color: rgb(var(--color-mute));
@@ -723,7 +723,7 @@ async function executeDelete() {
   color: rgb(var(--color-mute));
   cursor: pointer;
   padding: 3px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   transition: color 0.12s ease;
 }
 

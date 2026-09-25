@@ -208,7 +208,7 @@ function onTool(tool) {
   text-transform: uppercase;
   line-height: 1;
   padding: 0.45rem 0.7rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid rgb(255 255 255 / 0.85);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));

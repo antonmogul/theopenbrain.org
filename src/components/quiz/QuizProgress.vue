@@ -168,7 +168,7 @@ function goToQuestion(index) {
   gap: 0.234375rem;
   padding: 0.234375rem 0.5625rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   color: rgb(var(--color-ink));
 }
 

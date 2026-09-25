@@ -294,7 +294,7 @@ async function executeDelete() {
   padding: 6px 12px;
   background: transparent;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.625rem;
   text-transform: uppercase;
@@ -393,7 +393,7 @@ async function executeDelete() {
   height: 28px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;

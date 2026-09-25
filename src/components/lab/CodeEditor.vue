@@ -84,7 +84,7 @@ const languageLabel = computed(() => {
 
 <template>
   <div
-    class="code-editor rounded-lg border border-gray-700 overflow-hidden"
+    class="code-editor border border-gray-700 overflow-hidden"
     data-testid="code-editor"
   >
     <!-- Header bar with traffic lights -->

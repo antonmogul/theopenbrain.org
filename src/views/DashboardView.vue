@@ -1307,7 +1307,7 @@ onMounted(() => {
 }
 .chapter-edit {
   padding: 7px 14px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-ink));
   color: rgb(var(--color-bg));
   font-family: var(--font-mono);
@@ -1337,7 +1337,7 @@ onMounted(() => {
   color: rgb(var(--color-ink));
   text-decoration: none;
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 .chapter-action:hover,
 .chapter-action:focus-visible {
@@ -1358,7 +1358,7 @@ onMounted(() => {
   gap: 12px;
   max-width: calc(100vw - 32px);
   padding: 10px 12px 10px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-ink));
   color: rgb(var(--color-bg));
   font-family: var(--font-ui);

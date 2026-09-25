@@ -106,7 +106,7 @@ onMounted(() => {
 <style scoped>
 .trending-highlights {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   border: 1px solid #e5e7eb;
   padding: 0.78125rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -136,13 +136,13 @@ onMounted(() => {
 .skeleton-item {
   padding: 0.46875rem;
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 
 .skeleton-text {
   height: 16px;
   background: #e5e7eb;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   width: 75%;
   margin-bottom: 0.3125rem;
   animation: pulse 1.5s ease-in-out infinite;
@@ -151,7 +151,7 @@ onMounted(() => {
 .skeleton-meta {
   height: 12px;
   background: #f3f4f6;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   width: 40%;
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -188,7 +188,7 @@ onMounted(() => {
   padding: 0.546875rem;
   background: #fefce8;
   border: 1px solid #fef08a;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   transition: all 0.15s;
 }

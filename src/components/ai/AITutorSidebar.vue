@@ -363,7 +363,7 @@ async function executeDelete() {
   height: 36px;
   border: none;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -450,7 +450,7 @@ async function executeDelete() {
   height: 28px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -490,7 +490,7 @@ async function executeDelete() {
 .btn-secondary,
 .btn-danger {
   padding: 0.234375rem 0.46875rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-size: 0.46875rem;
   font-weight: 500;
   cursor: pointer;

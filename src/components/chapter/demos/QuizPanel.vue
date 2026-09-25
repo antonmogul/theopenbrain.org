@@ -356,13 +356,13 @@ function handleGoToQuestion(index) {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   z-index: 10;
 }
 
 .confirm-box {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   padding: 0.9375rem;
   max-width: 360px;
   width: 90%;
@@ -385,7 +385,7 @@ function handleGoToQuestion(index) {
 .btn-primary,
 .btn-secondary {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 15px;
   font-weight: 500;

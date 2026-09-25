@@ -64,7 +64,7 @@ const isAnswerCorrect = computed(() => {
 
 // Get option styling based on state
 function getOptionClass(option) {
-  const classes = ["w-full text-left p-4 rounded-lg border-2 transition-all"];
+  const classes = ["w-full text-left p-4 border-2 transition-all"];
 
   if (props.showResult) {
     // Show correct answer
@@ -317,7 +317,7 @@ function getOptionClass(option) {
   width: 100%;
   padding: 0.546875rem 0.625rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-family: var(--font-body);
   font-size: 0.9375rem;
   background: rgb(var(--color-paper));
@@ -355,7 +355,7 @@ function getOptionClass(option) {
   margin-top: 0.9375rem;
   padding: 0.625rem 0.75rem;
   background: rgb(var(--color-ink) / 0.03);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   border-left: 3px solid rgb(var(--color-complete));
 }
 
@@ -382,7 +382,7 @@ function getOptionClass(option) {
    teal = correct, magenta = wrong/selected. */
 .options-list button {
   padding: 0.625rem 0.75rem !important;
-  border-radius: 4px !important;
+  border-radius: var(--radius-control) !important;
   border-width: 1px !important;
   transition:
     border-color 0.12s ease,

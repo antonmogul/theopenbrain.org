@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
 
 .demo-panel {
   background: rgb(var(--color-paper));
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   width: 100%;
   max-width: 1200px;
   margin: auto;
@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-mute));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   transition: all 0.15s;
 }
 

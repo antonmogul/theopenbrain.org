@@ -122,7 +122,7 @@ defineEmits(["flip"]);
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;

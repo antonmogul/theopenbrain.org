@@ -282,7 +282,7 @@ function onDropdownKeydown(event) {
   width: 44px;
   height: 44px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   cursor: pointer;
@@ -345,7 +345,7 @@ function onDropdownKeydown(event) {
   cursor: pointer;
   min-height: 44px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -393,7 +393,7 @@ function onDropdownKeydown(event) {
   padding: 5px 10px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.625rem;
   text-transform: uppercase;
@@ -423,7 +423,7 @@ function onDropdownKeydown(event) {
   max-width: 420px;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
   max-height: 60vh;
   overflow-y: auto;
@@ -440,7 +440,7 @@ function onDropdownKeydown(event) {
   padding: 10px 12px;
   background: none;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   text-align: left;
   transition: background 0.12s ease;

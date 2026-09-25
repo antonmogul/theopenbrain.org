@@ -29,7 +29,7 @@ defineEmits(["update:modelValue"]);
   display: inline-flex;
   background: rgb(var(--color-bg));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.5rem;
+  border-radius: var(--radius-control);
   padding: 0.1875rem;
   gap: 0.125rem;
 }
@@ -39,7 +39,7 @@ defineEmits(["update:modelValue"]);
   font-size: 0.8125rem;
   background: transparent;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-control);
   color: rgb(var(--color-mute));
   cursor: pointer;
   transition:

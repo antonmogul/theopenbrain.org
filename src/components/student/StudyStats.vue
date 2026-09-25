@@ -179,7 +179,7 @@ const statItems = computed(() => [
 
 .stat-card {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   border: 1px solid #e5e7eb;
   padding: 0.78125rem;
   display: flex;
@@ -196,7 +196,7 @@ const statItems = computed(() => [
 .stat-icon {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   display: flex;
   align-items: center;
   justify-content: center;

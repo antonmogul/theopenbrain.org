@@ -263,7 +263,7 @@ async function handleCreate() {
   padding: 0.375rem 0.75rem;
   background: transparent;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: #6b7280;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.75rem;
@@ -383,7 +383,7 @@ async function handleCreate() {
 
 .nav-btn {
   padding: 0.75rem 2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.875rem;
   font-weight: 500;

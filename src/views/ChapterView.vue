@@ -715,7 +715,7 @@ export default {
   left: 1.25rem;
   margin: 0;
   padding: 0.5rem 0.875rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-warn));
   color: rgb(10 10 10);
   font-family: var(--font-mono);
@@ -737,7 +737,7 @@ export default {
   gap: 0.75rem;
   padding: 0.75rem 0.875rem;
   border: 1px solid rgb(var(--color-warn));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   box-shadow: 0 8px 24px rgb(var(--color-ink) / 0.14);
@@ -750,7 +750,7 @@ export default {
   min-height: 44px;
   padding: 0 0.875rem;
   border: 1px solid rgb(var(--color-ink));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
   font: inherit;

@@ -470,7 +470,7 @@ const infoText = computed(() => {
 .preset-btn {
   padding: 6px 14px;
   border: 1px solid #e5e7eb;
-  border-radius: 20px;
+  border-radius: var(--radius-control);
   background: #f9fafb;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 13px;
@@ -515,7 +515,7 @@ const infoText = computed(() => {
 .color-bar {
   width: 100%;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   border: 1px solid #e5e7eb;
   display: block;
   box-sizing: border-box;
@@ -542,7 +542,7 @@ const infoText = computed(() => {
   gap: 12px;
   padding: 10px 14px;
   background: #f9fafb;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   border: 1px solid #f3f4f6;
 }
 
@@ -599,7 +599,7 @@ const infoText = computed(() => {
   padding: 14px 16px;
   background: #f5f3ff;
   border: 1px solid #ede9fe;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
 }
 
 .info-icon {

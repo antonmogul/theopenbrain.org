@@ -217,7 +217,7 @@ function getVisibleMessages() {
 
 .message-bubble {
   padding: 10px 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   position: relative;
 }
 
@@ -225,14 +225,14 @@ function getVisibleMessages() {
 .message.user .message-bubble {
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: var(--radius-control);
 }
 
 /* Assistant: paper bubble, serif body, tail bottom-left. */
 .message.assistant .message-bubble {
   background: rgb(var(--color-bg));
   color: rgb(var(--color-ink));
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: var(--radius-control);
 }
 
 .message-content {
@@ -307,7 +307,7 @@ function getVisibleMessages() {
   flex: 1;
   padding: 10px 12px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-body);
   font-size: 0.84375rem;
   resize: none;

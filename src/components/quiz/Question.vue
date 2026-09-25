@@ -1,8 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -- legacy name; renaming touches 2 importing files -->
 <template>
-  <div
-    class="absolute flex flex-col justify-center border-black border-4 p-12 rounded-3xl"
-  >
+  <div class="absolute flex flex-col justify-center border-black border-4 p-12">
     <label class="pb-12">{{ question.q }}?</label>
     <fieldset ref="formElemnt" class="radio flex flex-col">
       <label

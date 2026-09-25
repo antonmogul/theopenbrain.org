@@ -157,7 +157,7 @@ function select(id) {
   width: 100%;
   padding: 0.375rem 0.546875rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-body);
@@ -184,7 +184,7 @@ function select(id) {
   font-size: 0.6875rem;
   color: rgb(var(--color-mute));
   background: rgb(var(--color-bg));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.0625rem 0.375rem;
 }
 .sg-nav-item.is-active .sg-nav-count {

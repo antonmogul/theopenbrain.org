@@ -13,7 +13,7 @@ defineProps({
 
 <template>
   <div
-    class="code-output rounded-lg border border-gray-700 overflow-hidden"
+    class="code-output border border-gray-700 overflow-hidden"
     data-testid="code-output"
   >
     <!-- Header -->
@@ -110,7 +110,7 @@ defineProps({
             :key="index"
             :src="`data:image/png;base64,${plot}`"
             :alt="`Plot ${index + 1}`"
-            class="max-w-full rounded-lg border border-gray-700"
+            class="max-w-full border border-gray-700"
           />
         </div>
 

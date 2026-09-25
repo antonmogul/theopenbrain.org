@@ -596,7 +596,7 @@ onBeforeUnmount(() => {
   padding: 10px;
   background: rgb(var(--color-bg));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   transition:
     border-color 0.15s ease,
@@ -816,7 +816,7 @@ onBeforeUnmount(() => {
   height: 64px;
   padding: 4px;
   border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: rgb(255 255 255 / 0.04);
   cursor: pointer;
   opacity: 0.55;

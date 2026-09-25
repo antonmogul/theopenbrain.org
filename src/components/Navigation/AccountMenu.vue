@@ -214,7 +214,7 @@ async function logOut() {
 .account-signin {
   padding: 0 12px;
   border: 1px solid rgb(var(--color-ink));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   min-height: 32px;
   font: 0.625rem/1 var(--font-mono);
   letter-spacing: 0.06em;
@@ -245,7 +245,7 @@ async function logOut() {
   min-width: 220px;
   padding: 6px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
 }
@@ -282,7 +282,7 @@ async function logOut() {
   min-height: 40px;
   padding: 0 12px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: none;
   color: rgb(var(--color-ink));
   font: 0.875rem/1.3 var(--font-ui);
@@ -296,6 +296,6 @@ async function logOut() {
 .account-logout {
   margin-top: 4px;
   border-top: 1px solid rgb(var(--color-line));
-  border-radius: 0 0 4px 4px;
+  border-radius: var(--radius-control);
 }
 </style>

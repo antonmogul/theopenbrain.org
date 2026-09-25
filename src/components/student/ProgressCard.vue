@@ -132,7 +132,7 @@ function formatRelativeTime(date) {
 <style scoped>
 .progress-card {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   padding: 0.9375rem;
   display: flex;
   align-items: center;
@@ -217,14 +217,14 @@ function formatRelativeTime(date) {
   flex: 1;
   height: 6px;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: white;
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   transition: width 0.3s ease;
 }
 

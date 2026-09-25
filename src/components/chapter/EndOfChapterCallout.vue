@@ -123,7 +123,7 @@ function goNext() {
 .takeaways {
   background: rgb(var(--color-complete) / 0.08);
   border: 1px solid rgb(var(--color-complete) / 0.4);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   padding: 1.25rem 1.5rem;
 }
 
@@ -175,7 +175,7 @@ function goNext() {
   gap: 0.625rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   padding: 1rem 0.625rem;
 }
 
@@ -211,7 +211,7 @@ function goNext() {
   display: inline-flex;
   align-items: center;
   padding: 0.625rem 1.125rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-control);
   font-size: 0.875rem;
   font-family: var(--font-ui);
   text-decoration: none;
@@ -255,7 +255,7 @@ function goNext() {
   width: 100%;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   padding: 1rem 1.25rem;
   cursor: pointer;
   text-align: left;

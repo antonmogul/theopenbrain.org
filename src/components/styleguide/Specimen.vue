@@ -35,7 +35,7 @@ defineProps({
   display: flex;
   flex-direction: column;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: rgb(var(--color-paper));
 }

@@ -349,7 +349,7 @@ function sectionTitleById(id) {
   justify-content: center;
   gap: 0.375rem;
   padding: 0.5rem 0.875rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -457,7 +457,7 @@ function sectionTitleById(id) {
   padding: 0.75rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   text-decoration: none;
   color: inherit;
   transition: border-color 0.12s ease;

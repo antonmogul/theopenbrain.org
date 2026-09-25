@@ -180,7 +180,7 @@ const wordCount = computed(() =>
 .review-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -232,7 +232,7 @@ const wordCount = computed(() =>
   padding: 0.1875rem 0.625rem;
   background: rgba(234, 179, 8, 0.12);
   color: #ca8a04;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -283,7 +283,7 @@ const wordCount = computed(() =>
   padding: 0.75rem 1rem;
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: #dc2626;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.8125rem;
@@ -301,7 +301,7 @@ const wordCount = computed(() =>
   padding: 1rem 2.5rem;
   background: rgb(151, 71, 255);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   color: white;
   font-family: "IBM Plex Mono", monospace;
   font-size: 1rem;
@@ -377,7 +377,7 @@ const wordCount = computed(() =>
 
 .action-btn {
   padding: 0.75rem 1.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.875rem;
   font-weight: 500;

@@ -40,7 +40,7 @@ defineEmits(["remove", "keydown"]);
 <style scoped>
 .hl-panel {
   background: rgb(var(--color-paper));
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 10px 12px;
   box-shadow:
     0 4px 16px rgb(var(--color-ink) / 0.16),
@@ -63,7 +63,7 @@ defineEmits(["remove", "keydown"]);
   padding: 3px 8px;
   background: rgb(var(--color-ink) / 0.06);
   color: rgb(var(--color-ink));
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   font-size: 12px;
   font-family: "IBM Plex Sans", sans-serif;
 }
@@ -95,7 +95,7 @@ defineEmits(["remove", "keydown"]);
   padding: 4px 8px;
   background: rgb(var(--color-bg));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: rgb(var(--color-ink));
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 12px;

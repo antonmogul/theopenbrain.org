@@ -118,7 +118,7 @@ function handleStart() {
 <style scoped>
 .flashcard-deck {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   border: 1px solid #e5e7eb;
   padding: 0.9375rem;
   transition: all 0.2s;
@@ -140,7 +140,7 @@ function handleStart() {
   width: 40px;
   height: 40px;
   background: #f3e8ff;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,7 +165,7 @@ function handleStart() {
   flex: 1;
   height: 48px;
   background: #f3f4f6;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -188,7 +188,7 @@ function handleStart() {
 
 .stat {
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 0.46875rem;
   text-align: center;
 }
@@ -247,7 +247,7 @@ function handleStart() {
   background: #8b5cf6;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.5859375rem;
   font-weight: 500;

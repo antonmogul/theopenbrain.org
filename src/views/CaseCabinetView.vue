@@ -778,7 +778,7 @@ function close() {
   flex: none;
   padding: 0.45em 0.9em;
   border: 1px solid rgb(255 255 255 / 0.6);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(0 0 0 / 0.35);
   color: #fff;
   font-family: var(--font-mono);

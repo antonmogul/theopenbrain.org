@@ -41,7 +41,7 @@ onMounted(() => {
 <style scoped>
 .hl-panel {
   background: rgb(var(--color-paper));
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 10px 12px;
   box-shadow:
     0 4px 16px rgb(var(--color-ink) / 0.16),
@@ -54,7 +54,7 @@ onMounted(() => {
   padding: 8px 10px;
   background: rgb(var(--color-bg));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: rgb(var(--color-ink));
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 13px;
@@ -83,7 +83,7 @@ onMounted(() => {
   background: rgb(var(--color-accent));
   color: rgb(var(--color-paper));
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 12px;
   font-weight: 500;

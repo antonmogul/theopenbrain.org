@@ -524,7 +524,7 @@ function closePanel(instant = false) {
   bottom: 6%;
   width: min(480px, 46%);
   padding: 2.25rem 2.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: #f2f0ec;
   color: #2b2a2e;
   box-shadow: -18px 0 48px rgb(0 0 0 / 0.4);
@@ -547,7 +547,7 @@ function closePanel(instant = false) {
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.9rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: var(--violet);
   color: #fff;
   font-size: 0.7rem;
@@ -585,7 +585,7 @@ function closePanel(instant = false) {
     width: auto;
     /* Within the widget, which is shorter than the screen inline. */
     max-height: min(55vh, 100%);
-    border-radius: 12px 12px 0 0;
+    border-radius: var(--radius-control);
     box-shadow: 0 -12px 40px rgb(0 0 0 / 0.45);
     padding: 1.5rem 1.5rem 2rem;
   }

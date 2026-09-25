@@ -81,7 +81,7 @@ function clear() {
 .search-input {
   width: 100%;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   padding: 9px 34px 9px 36px;
   font-family: var(--font-body);

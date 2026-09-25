@@ -16,7 +16,7 @@ const swatchRow = (tokens) => ({
         <div :style="{
           background: 'rgb(var(' + t.name + '))',
           height: '72px',
-          borderRadius: '8px',
+          borderRadius: 'var(--radius-control)',
           border: '1px solid rgb(var(--color-line))',
         }" />
         <figcaption style="margin-top:8px; font-family:var(--font-mono); font-size:11px; line-height:1.5;">

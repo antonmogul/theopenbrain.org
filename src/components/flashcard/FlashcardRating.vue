@@ -102,7 +102,7 @@ const ratings = [
   flex-direction: column;
   align-items: center;
   padding: 0.625rem 0.3125rem;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   border: none;
   color: #fff;
   cursor: pointer;
@@ -148,7 +148,7 @@ const ratings = [
   background: transparent;
   color: rgb(var(--color-ink));
   border: 1px solid rgb(var(--color-ink) / 0.85);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.625rem;
   text-transform: uppercase;

@@ -300,7 +300,7 @@ async function handleForgot() {
         <button
           type="submit"
           :disabled="authStore.authLoading"
-          class="uppercase bg-white text-black border border-white font-mono px-6 py-2 rounded-full hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
+          class="uppercase bg-white text-black border border-white font-mono px-6 py-2 hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
         >
           {{ authStore.authLoading ? "Creating account..." : "Create Account" }}
         </button>
@@ -355,7 +355,7 @@ async function handleForgot() {
         <button
           type="submit"
           :disabled="authStore.authLoading"
-          class="uppercase bg-white text-black border border-white font-mono px-6 py-2 rounded-full hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
+          class="uppercase bg-white text-black border border-white font-mono px-6 py-2 hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
         >
           {{ authStore.authLoading ? "Logging in..." : "Login" }}
         </button>
@@ -406,7 +406,7 @@ async function handleForgot() {
         <button
           type="submit"
           :disabled="authStore.authLoading"
-          class="uppercase bg-white text-black border border-white font-mono px-6 py-2 rounded-full hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
+          class="uppercase bg-white text-black border border-white font-mono px-6 py-2 hover:bg-violet hover:text-white hover:border-violet disabled:opacity-50 disabled:pointer-events-none"
         >
           {{ authStore.authLoading ? "Sending..." : "Send Reset Link" }}
         </button>
@@ -440,7 +440,7 @@ async function handleForgot() {
 .af-drawer .auth-input {
   width: 100%;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-body);
@@ -457,7 +457,7 @@ async function handleForgot() {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 11px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-accent));
   color: #fff;
   border: 1px solid rgb(var(--color-accent));

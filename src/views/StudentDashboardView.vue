@@ -510,7 +510,7 @@ function formatScore(score, total) {
   background: rgb(var(--color-warn) / 0.12);
   color: rgb(var(--color-warn));
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: var(--font-body);
   font-size: 0.8125rem;
   margin-bottom: 12px;
@@ -563,7 +563,7 @@ function formatScore(score, total) {
   color: rgb(var(--color-mute));
   padding: 8px;
   background: rgb(var(--color-mark1) / 0.18);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   margin-bottom: 12px;
 }
 .note-content {

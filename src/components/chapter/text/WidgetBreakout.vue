@@ -217,7 +217,7 @@ const headingId = computed(
   margin: 2.5rem 0;
   border: 1px solid rgb(var(--color-line));
   border-left: 4px solid rgb(var(--wb-accent));
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
@@ -320,7 +320,7 @@ const headingId = computed(
     rgb(var(--color-line) / 0.25) 0 8px,
     transparent 8px 16px
   );
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 
 .wb-missing {
@@ -350,7 +350,7 @@ const headingId = computed(
   gap: 0.4rem;
   padding: 0.55rem 1rem;
   border: 1px solid rgb(var(--color-ink));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-mono);

@@ -1446,7 +1446,7 @@ onMounted(async () => {
   color: rgb(var(--color-ink));
   text-decoration: none;
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 .ce-back:hover,
 .ce-link:hover,
@@ -1515,7 +1515,7 @@ onMounted(async () => {
   gap: 6px;
   padding: 6px 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
@@ -1545,7 +1545,7 @@ onMounted(async () => {
   gap: 16px;
   padding: 12px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
 }
 .ce-cover-img {
@@ -1553,7 +1553,7 @@ onMounted(async () => {
   max-width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-bg));
 }
 .ce-cover-meta {
@@ -1575,7 +1575,7 @@ onMounted(async () => {
 .ce-live-note {
   margin: 0;
   padding: 10px 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-warn) / 0.14);
   font-family: var(--font-ui);
   font-size: 0.875rem;
@@ -1600,7 +1600,7 @@ onMounted(async () => {
   width: 140px;
   max-height: 110px;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-bg));
 }
 .ce-form-error {
@@ -1634,7 +1634,7 @@ onMounted(async () => {
   min-width: 0;
   padding: 6px 8px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   font: inherit;
 }
@@ -1689,7 +1689,7 @@ onMounted(async () => {
   padding: 10px 14px;
   margin: 0 -14px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   cursor: text;
 }
 .ce-block-view:hover,
@@ -1714,7 +1714,7 @@ onMounted(async () => {
   gap: 2px;
   padding: 3px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
   opacity: 0;
@@ -1730,7 +1730,7 @@ onMounted(async () => {
 .ce-tools button {
   padding: 3px 9px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-mono);
@@ -1769,7 +1769,7 @@ onMounted(async () => {
 .ce-sec-tools button {
   padding: 3px 9px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-mono);
@@ -1800,7 +1800,7 @@ onMounted(async () => {
   min-width: 0;
   padding: 8px 10px;
   border: 1px solid rgb(var(--color-accent) / 0.5);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
@@ -1815,7 +1815,7 @@ onMounted(async () => {
   justify-self: start;
   padding: 10px 16px;
   border: 1px dashed rgb(var(--color-line));
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-mute));
   font-family: var(--font-mono);
@@ -1841,7 +1841,7 @@ onMounted(async () => {
   gap: 10px 16px;
   padding: 12px 14px;
   border: 1px solid rgb(var(--color-accent) / 0.35);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-accent) / 0.06);
   font-family: var(--font-ui);
   font-size: 0.875rem;
@@ -1870,7 +1870,7 @@ onMounted(async () => {
   gap: 12px;
   max-width: calc(100vw - 32px);
   padding: 10px 12px 10px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-ink));
   color: rgb(var(--color-bg));
   font-family: var(--font-ui);

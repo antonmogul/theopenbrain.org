@@ -72,7 +72,7 @@ import AccentSwatches from "@/components/settings/AccentSwatches.vue";
   color: rgb(var(--color-warn));
   background: rgb(var(--color-warn) / 0.1);
   border: 1px solid rgb(var(--color-warn) / 0.4);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.25rem 0.625rem;
   margin-bottom: 1.25rem;
 }
