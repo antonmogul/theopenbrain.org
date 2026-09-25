@@ -280,7 +280,7 @@ Schema and seeds live in `supabase/migrations/` (initial schema, RLS fixes, refe
 #### Styling
 
 - **Tailwind Configuration** (`tailwind.config.js`):
-  - Breakpoints: `xs` 480px, `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1300px, `2xl` 1500px. The reader switches to the pinned two-column (text + figure pane) layout at `xl`; between `md` and `xl` the figure pane is hidden.
+  - Breakpoints: `xs` 480px, `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1300px, `2xl` 1500px. The reader has its own screen, `reader` (1024px, from `src/helper/readerLayout.js`): from there up it is the pinned two-column layout (text + figure pane); below it, one column with the figures inline. `--reader-prose-w` gives the text column a 35rem floor and `--reader-gutter-*` tighten its padding below 1280px, so lines stay around 50–55 characters on laptops (OPENBRAIN-89). JS media queries import the constant; CSS queries repeat the number, and `src/__tests__/readerLayout.test.js` keeps them in step.
   - `width: text` / `width: illus` derive from `--reader-prose-w` in `brand.css` (50vw prose, capped at the legacy 890px measure; figure pane fills the rest) so the two panes cannot drift. Everything that used to hardcode the old 50vw maths (trigger markers, full-bleed blocks) derives from that token.
   - Colours and fonts come from the tokens below, not from literal values.
 
@@ -316,7 +316,7 @@ Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `ac
 - The router is injected into Pinia stores using `markRaw()` to prevent reactivity issues.
 - Window scroll position for the reader is tracked in the store, not in browser history.
 - Text highlighting injects `<mark>` tags into the rendered paragraph DOM.
-- The reader is desktop-first: the two-column layout needs 1300px+. Public routes (`/`, `/chapters`, chapter pages) must still render without horizontal scroll at 390px — the smoke test checks them at 390/1280/1440/1920. Internal and widget routes (`/styleguide`, `/case-cabinet`, `/sdt`, ...) are checked at desktop widths only and are allowed to overflow on phones by design.
+- The reader's two-column layout starts at 1024px. Public routes (`/`, `/chapters`, chapter pages) must still render without horizontal scroll at 390px — the smoke test checks them at 390/1024/1280/1440/1920. Internal and widget routes (`/styleguide`, `/case-cabinet`, `/sdt`, ...) are checked at desktop widths only and are allowed to overflow on phones by design.
 - Do not reformat `src/widgets/source/` — those files are the authors' originals and are excluded from Prettier on purpose.
 
 ## Environment Variables

@@ -1,3 +1,5 @@
+import { READER_WIDE_QUERY } from "./readerLayout.js";
+
 /*
  * stageLayer — the one place the reader's full-bleed stage layer is named.
  *
@@ -8,6 +10,6 @@
  */
 export const STAGE_LAYER_ID = "reader-stage-layer";
 
-/* The reader's desktop breakpoint (tailwind `xl`), where the two-column
-   layout and the full-bleed stage engage. */
-export const STAGE_DESKTOP_QUERY = "(min-width: 1300px)";
+/* The reader's two-column breakpoint (readerLayout.js), where the
+   full-bleed stage engages. */
+export const STAGE_DESKTOP_QUERY = READER_WIDE_QUERY;
