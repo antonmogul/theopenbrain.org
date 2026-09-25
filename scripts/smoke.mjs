@@ -40,7 +40,8 @@ const ONLY = (flag("only", "") || "").split(",").filter(Boolean);
  * (where the figure pane is hidden), and above xl:1300 where the reader
  * switches to the pinned two-column layout.
  */
-const WIDTHS = [390, 1280, 1440, 1920];
+// 1024: the reader's two-column layout starts here (src/helper/readerLayout.js).
+const WIDTHS = [390, 1024, 1280, 1440, 1920];
 
 /*
  * minText guards against a route rendering its chrome but no content — the

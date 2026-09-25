@@ -19,6 +19,7 @@ import IllustrationWidget from "./IllustrationWidget.vue";
 import { usesFigureShell } from "@/helper/figureCycle";
 import FigureWidget from "@/widgets/figures/FigureWidget.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
+import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { figureWidgetFor } from "@/widgets/figures/registry";
 
 // Panel figures rebuilt as figure widgets (full-screen ones render in the
@@ -26,7 +27,7 @@ import { figureWidgetFor } from "@/widgets/figures/registry";
 const isPanelWidget = (a) => !a.fullscreen && !!figureWidgetFor(a.id);
 // The panel is hidden below xl but stays mounted; there the figure draws
 // inline in the text (IllustrationInline), so don't run it twice.
-const panelShows = useMediaQuery("(min-width: 1300px)");
+const panelShows = useMediaQuery(READER_WIDE_QUERY);
 gsap.registerPlugin(ScrollTrigger);
 
 const activeAnimation = ref(null);
@@ -210,7 +211,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="!store.isScrolling"
-    class="hidden xl:block xl:fixed xl:left-0 xl:w-illus xl:z-30 pointer-events-none font-mono xl:top-[var(--reader-topbar-h)] xl:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
+    class="hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
   >
     <template v-for="animation in animationList" :key="animation.id">
       <!-- Figure shell: image artwork, or the typed placeholder until it lands -->

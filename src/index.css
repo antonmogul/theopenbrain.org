@@ -265,8 +265,8 @@
   }
 }
 
-/* Tablet: 768px - 1299px */
-@media (max-width: 1299px) {
+/* Tablet: 768px - 1023px */
+@media (max-width: 1023px) {
   .text-smaller {
     font-size: 0.6875rem;
     line-height: 0.875rem;
@@ -697,7 +697,7 @@ h4 {
   transition: none;
 }
 
-@media (max-width: 1299px) {
+@media (max-width: 1023px) {
   .punkt,
   .punktComment {
     display: none;
@@ -830,7 +830,7 @@ sup:hover {
   top: 50vh;
 }
 
-@media (max-width: 1299px) {
+@media (max-width: 1023px) {
   .marker-start,
   .marker-end,
   .marker-center {
@@ -941,7 +941,7 @@ sup:hover {
   transform: none;
 }
 
-@media (min-width: 1300px) {
+@media (min-width: 1024px) {
   .-translate-x-custom {
     width: calc(100% + 6.875rem);
   }

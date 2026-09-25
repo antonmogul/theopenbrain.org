@@ -285,7 +285,7 @@ function go(anchor, event) {
 }
 
 /* Below the two-column reader the block stacks: title, then the list. */
-@media (max-width: 1299px) {
+@media (max-width: 1023px) {
   .opener-toc {
     grid-template-columns: 1fr;
     padding-left: 1.25rem;

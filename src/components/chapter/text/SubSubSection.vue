@@ -155,6 +155,7 @@ import StartEndIcon from "../../UI/StartEndIcon.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
+import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
@@ -173,7 +174,7 @@ defineProps({
 });
 
 // Below the desktop pane's breakpoint, render trigger figures inline.
-const isMobile = useMediaQuery("(max-width: 1299px)");
+const isMobile = useMediaQuery(READER_NARROW_QUERY);
 
 // Inject save handler from parent
 const saveContent = inject("saveContent", null);

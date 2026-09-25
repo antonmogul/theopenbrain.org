@@ -657,7 +657,7 @@ async function handleDeleteHighlight(highlightId) {
       <Comment v-if="commentStore.activeCom" />
 
       <MenuTutorial
-        class="fixed z-40 bottom-2 right-2 xl:bottom-4 xl:right-6"
+        class="fixed z-40 bottom-2 right-2 reader:bottom-4 reader:right-6"
         :class="store.imgActive ? 'opacity-0' : ''"
       />
 
