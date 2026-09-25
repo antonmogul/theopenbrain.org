@@ -1,11 +1,15 @@
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useFeedback } from "@/composables/useFeedback";
 
 const props = defineProps({
   chapterNumber: { type: [String, Number], required: true },
   chapterTitle: { type: String, default: "" },
   moduleId: { type: String, default: null },
+  /** The chapter's published quiz, if it has one: the quiz route takes a
+   *  quiz id, not the chapter's, so without one there is no quiz link. */
+  quizId: { type: String, default: null },
   // Optional content
   keyTakeaways: { type: Array, default: () => [] },
   // Stats — passed in by the parent (already computed from composables)
@@ -33,8 +37,17 @@ const minutes = computed(() =>
 
 const overviewRoute = computed(() => `/chapter/${props.chapterNumber}`);
 const quizRoute = computed(() =>
-  props.moduleId ? `/quiz/${props.moduleId}` : null
+  props.quizId ? `/quiz/${props.quizId}` : null
 );
+
+// "Send feedback" about this chapter (OPENBRAIN-101).
+const { openFeedback } = useFeedback();
+function feedback() {
+  openFeedback({
+    moduleId: props.moduleId,
+    label: `Chapter ${props.chapterNumber}${props.chapterTitle ? ` · ${props.chapterTitle}` : ""}`,
+  });
+}
 const flashcardsRoute = computed(() =>
   props.moduleId ? `/flashcards/${props.moduleId}` : null
 );
@@ -95,6 +108,9 @@ function goNext() {
       <router-link :to="overviewRoute" class="cta cta-secondary">
         Chapter overview
       </router-link>
+      <button type="button" class="cta cta-secondary" @click="feedback">
+        Send feedback
+      </button>
     </div>
 
     <!-- Up Next -->

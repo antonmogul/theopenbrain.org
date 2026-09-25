@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onBeforeUnmount, nextTick, watch } from "vue";
+import { computed, ref, onBeforeUnmount, nextTick, watch } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useDraggablePanel } from "@/composables/useDraggablePanel";
 import { useAuth } from "@/composables/useAuth";
@@ -12,7 +12,6 @@ import DemoModal from "./demos/DemoModal.vue";
 import QuizPanel from "./demos/QuizPanel.vue";
 import FlashcardPanel from "./demos/FlashcardPanel.vue";
 import LabPanel from "./demos/LabPanel.vue";
-import ConeExplorerPanel from "./demos/ConeExplorerPanel.vue";
 
 const props = defineProps({
   moduleId: {
@@ -83,7 +82,15 @@ async function onTabKeydown(event, index) {
 
 // --- Demos state ---
 const activeDemo = ref(null); // null | { type: 'quiz'|'flashcards'|'lab', id?, title? }
-const demoItems = ref({ quizzes: [], labs: [] });
+// Only what the chapter really has: its published quizzes, labs and the
+// number of flashcards (Stuart, 24 Sep, found the flashcards button empty).
+const demoItems = ref({ quizzes: [], labs: [], flashcards: 0 });
+const hasDemos = computed(
+  () =>
+    demoItems.value.quizzes.length > 0 ||
+    demoItems.value.labs.length > 0 ||
+    demoItems.value.flashcards > 0
+);
 const demosLoading = ref(false);
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -104,23 +111,28 @@ async function fetchDemoItems(moduleId = props.moduleId) {
   };
 
   try {
-    const [quizRes, labRes] = await Promise.all([
+    const [quizRes, labRes, cardRes] = await Promise.all([
       fetch(
-        `${supabaseUrl}/rest/v1/quizzes?module_id=eq.${moduleId}&select=id,title&limit=3`,
+        `${supabaseUrl}/rest/v1/quizzes?module_id=eq.${moduleId}&is_published=eq.true&select=id,title&limit=3`,
         { headers }
       ),
       fetch(
         `${supabaseUrl}/rest/v1/code_labs?module_id=eq.${moduleId}&select=id,title&order=order_index`,
         { headers }
       ),
+      fetch(
+        `${supabaseUrl}/rest/v1/flashcards?module_id=eq.${moduleId}&select=id&limit=1`,
+        { headers }
+      ),
     ]);
 
     const quizzes = quizRes.ok ? await quizRes.json() : [];
     const labs = labRes.ok ? await labRes.json() : [];
+    const cards = cardRes.ok ? await cardRes.json() : [];
     if (generation !== demoRequestGeneration || moduleId !== props.moduleId) {
       return;
     }
-    demoItems.value = { quizzes, labs };
+    demoItems.value = { quizzes, labs, flashcards: cards.length };
   } catch (e) {
     console.error("ReaderSidebar: Error fetching demo items:", e);
   } finally {
@@ -133,7 +145,7 @@ watch(
   ([moduleId, authenticated]) => {
     demoRequestGeneration += 1;
     activeDemo.value = null;
-    demoItems.value = { quizzes: [], labs: [] };
+    demoItems.value = { quizzes: [], labs: [], flashcards: 0 };
     demosLoading.value = false;
     if (authenticated && moduleId) fetchDemoItems(moduleId);
   },
@@ -158,8 +170,6 @@ function demoModalTitle() {
       return "Flashcards";
     case "lab":
       return activeDemo.value.title || "Code Lab";
-    case "explorer":
-      return "Cone Spectral Sensitivity Explorer";
     default:
       return "Demo";
   }
@@ -242,14 +252,16 @@ function demoModalTitle() {
           </KeepAlive>
         </div>
 
-        <!-- Demos section (only for authenticated users with a module) -->
+        <!-- Study tools the chapter has (signed in). The "Explorer" cone
+             chart that sat here in every chapter is gone: the Retina's
+             colour-vision widget covers it (Stuart, 24 Sep; OPENBRAIN-101). -->
         <div
-          v-if="isAuthenticated && moduleId"
+          v-if="isAuthenticated && moduleId && (demosLoading || hasDemos)"
           class="demos-section"
           data-testid="demos-section"
         >
           <div class="demos-divider"></div>
-          <span class="demos-label">DEMOS</span>
+          <span class="demos-label">STUDY</span>
 
           <div v-if="demosLoading" class="demos-loading">Loading...</div>
 
@@ -288,6 +300,7 @@ function demoModalTitle() {
 
             <!-- Flashcards button -->
             <button
+              v-if="demoItems.flashcards > 0"
               class="demo-btn"
               type="button"
               @click="openDemo('flashcards', moduleId, 'Flashcards')"
@@ -336,29 +349,6 @@ function demoModalTitle() {
               </svg>
               <span>{{ lab.title || "Code Lab" }}</span>
             </button>
-
-            <!-- Cone Explorer button (always visible) -->
-            <button
-              class="demo-btn"
-              type="button"
-              @click="openDemo('explorer', null, 'Cone Spectral Sensitivity')"
-              title="Explore cone spectral sensitivity"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-              </svg>
-              <span>Explorer</span>
-            </button>
           </div>
         </div>
       </aside>
@@ -380,10 +370,6 @@ function demoModalTitle() {
     <LabPanel
       v-if="activeDemo?.type === 'lab'"
       :lab-id="activeDemo.id"
-      @close="closeDemo"
-    />
-    <ConeExplorerPanel
-      v-if="activeDemo?.type === 'explorer'"
       @close="closeDemo"
     />
   </DemoModal>

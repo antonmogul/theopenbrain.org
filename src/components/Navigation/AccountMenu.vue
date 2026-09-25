@@ -12,6 +12,7 @@ import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { useAuthStore } from "@/stores/auth";
 import { dashboardForRole } from "@/router/guards";
+import { useFeedback } from "@/composables/useFeedback";
 
 const props = defineProps({
   /** Open the menu to the left (a right-edge button) or the right. */
@@ -82,6 +83,13 @@ function onKeydown(e) {
   if (!target) return;
   e.preventDefault();
   target.focus();
+}
+
+// "Send feedback" (OPENBRAIN-101): about the page the reader is on.
+const { openFeedback } = useFeedback();
+function feedback() {
+  close({ focus: false });
+  openFeedback();
 }
 
 async function logOut() {
@@ -163,6 +171,14 @@ async function logOut() {
         >
           Settings
         </router-link>
+        <button
+          type="button"
+          class="account-item"
+          role="menuitem"
+          @click="feedback"
+        >
+          Send feedback
+        </button>
         <button
           type="button"
           class="account-item account-logout"

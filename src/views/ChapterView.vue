@@ -1,5 +1,14 @@
 <script setup>
-import { onMounted, watch, computed, ref, nextTick, provide } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  computed,
+  ref,
+  nextTick,
+  provide,
+} from "vue";
+import { useFeedback } from "@/composables/useFeedback";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
@@ -8,7 +17,6 @@ import ChapterOpener from "@/components/chapter/opener/ChapterOpener.vue";
 import { useGeneral, useText, useCom } from "@/stores";
 import Comment from "../components/chapter/text/CommentComp.vue";
 import FootNotesWindow from "../components/chapter/text/FootNotesWindow.vue";
-import MenuTutorial from "../components/Navigation/MenuTutorial.vue";
 import { useChapter } from "@/composables/useChapter";
 import { useReferences } from "@/composables/useReferences";
 
@@ -202,6 +210,23 @@ const { fetchChapter, chapterData, transformedData, loading, error } =
 watch(chapterData, (module) => {
   if (module && module.slug === route.params.slug) applyChapterRamp(module);
 });
+
+// Feedback sent from anywhere on this page is about this chapter.
+const { setFeedbackContext } = useFeedback();
+watch(
+  chapterData,
+  (module) =>
+    setFeedbackContext(
+      module
+        ? {
+            moduleId: module.id,
+            label: `Chapter ${module.order_index} · ${module.title}`,
+          }
+        : null
+    ),
+  { immediate: true }
+);
+onBeforeUnmount(() => setFeedbackContext(null));
 
 function nextAnimationFrame() {
   return new Promise((resolve) => requestAnimationFrame(resolve));
@@ -660,10 +685,8 @@ async function handleDeleteHighlight(highlightId) {
       <FootNotesWindow />
       <Comment v-if="commentStore.activeCom" />
 
-      <MenuTutorial
-        class="fixed z-40 bottom-2 right-2 reader:bottom-4 reader:right-6"
-        :class="store.imgActive ? 'opacity-0' : ''"
-      />
+      <!-- The 2023 "prototype" help button that sat bottom-right is gone:
+           its copy was out of date and it opened nothing (OPENBRAIN-101). -->
 
       <!-- Phase 3A: Highlight Toolbar (appears on text selection or highlight click) -->
       <HighlightToolbar
@@ -698,7 +721,7 @@ async function handleDeleteHighlight(highlightId) {
 
 <script>
 export default {
-  components: { Comment, FootNotesWindow, MenuTutorial, CitationTooltip },
+  components: { Comment, FootNotesWindow, CitationTooltip },
 };
 </script>
 

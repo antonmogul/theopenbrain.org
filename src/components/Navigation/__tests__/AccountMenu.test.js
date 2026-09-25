@@ -66,7 +66,13 @@ describe("AccountMenu (OPENBRAIN-90)", () => {
     await btn.trigger("click");
     expect(btn.attributes("aria-expanded")).toBe("true");
     const items = w.findAll("[role=menuitem]").map((i) => i.text());
-    expect(items).toEqual(["My dashboard", "Chapters", "Settings", "Log out"]);
+    expect(items).toEqual([
+      "My dashboard",
+      "Chapters",
+      "Settings",
+      "Send feedback",
+      "Log out",
+    ]);
     expect(w.find("a[href='/student']").exists()).toBe(true);
     w.unmount();
   });
