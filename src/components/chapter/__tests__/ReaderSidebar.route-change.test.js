@@ -76,7 +76,8 @@ describe("ReaderSidebar chapter changes", () => {
     await flushPromises();
     expect(wrapper.text()).toContain("Lab 2");
     expect(wrapper.text()).not.toContain("Lab 1");
-    expect(fetch).toHaveBeenCalledTimes(4);
+    // quizzes, labs and a flashcard count, per chapter
+    expect(fetch).toHaveBeenCalledTimes(6);
     wrapper.unmount();
   });
 });

@@ -8,9 +8,11 @@ const props = defineProps({
   },
 });
 
-const hasContent = computed(() => {
-  return props.continueReading?.module;
-});
+// A card needs somewhere to go: a module without a slug has no reader route,
+// and a router-link to null breaks the whole dashboard.
+const hasContent = computed(
+  () => !!props.continueReading?.module && !!continueRoute.value
+);
 
 const module = computed(() => props.continueReading?.module || {});
 const course = computed(() => props.continueReading?.course || {});

@@ -7,6 +7,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { useStudentCourses } from "@/composables/useStudentCourses";
+import { useMyChapters } from "@/composables/useMyChapters";
 import { useHighlights } from "@/composables/useHighlights";
 import { useNotes } from "@/composables/useNotes";
 import { useQuizzes } from "@/composables/useQuizzes";
@@ -25,7 +26,6 @@ import {
   LoadingState,
   StatusBadge,
   Button,
-  PreviewTag,
 } from "@/components/dashboard/shared";
 
 // Domain components (functional — kept, only wrapped/restyled)
@@ -46,8 +46,28 @@ const {
   courses,
   loading: coursesLoading,
   fetchEnrolledCourses,
-  continueReading,
+  continueReading: courseContinueReading,
 } = useStudentCourses();
+
+// The chapters this student has opened, course or not (Stuart, 24 Sep: "my
+// chapters", not "my courses"; OPENBRAIN-101).
+const {
+  chapters: myChapters,
+  continueReading: chapterContinueReading,
+  loading: chaptersLoading,
+  fetchMyChapters,
+} = useMyChapters();
+const continueReading = computed(
+  () => chapterContinueReading.value || courseContinueReading.value
+);
+const STATUS_LABEL = { done: "Finished", reading: "Reading", opened: "Opened" };
+function chapterHint(c) {
+  const when = c.lastAccessedAt ? formatRelativeDate(c.lastAccessedAt) : "";
+  return [`${c.percent}% read`, when].filter(Boolean).join(" · ");
+}
+function openChapter(c) {
+  router.push({ path: c.route, query: { resume: "1" } });
+}
 
 const { fetchRecentHighlights } = useHighlights();
 const { fetchRecentNotes } = useNotes();
@@ -71,17 +91,21 @@ const activeSection = ref("dashboard");
 const recentHighlights = ref([]);
 const recentNotes = ref([]);
 
-// Navigation (settings routes out — see onNav)
-const navItems = [
+// Navigation (settings routes out — see onNav). Courses only for students
+// who are enrolled in one.
+const navItems = computed(() => [
   { id: "dashboard", label: "Dashboard", icon: "grid" },
-  { id: "courses", label: "My Courses", icon: "book" },
+  { id: "chapters", label: "My Chapters", icon: "book" },
+  ...(courses.value.length
+    ? [{ id: "courses", label: "My Courses", icon: "book" }]
+    : []),
   { id: "quizzes", label: "Quizzes", icon: "quiz" },
   { id: "flashcards", label: "Flashcards", icon: "flashcard" },
   { id: "highlights", label: "My Highlights", icon: "highlight" },
   { id: "notes", label: "My Notes", icon: "notes" },
   { id: "progress", label: "Progress", icon: "progress" },
   { id: "settings", label: "Settings", icon: "settings" },
-];
+]);
 
 const displayName = computed(
   () =>
@@ -89,18 +113,26 @@ const displayName = computed(
 );
 
 onMounted(async () => {
-  await fetchEnrolledCourses();
-  recentHighlights.value = await fetchRecentHighlights(5);
-  recentNotes.value = await fetchRecentNotes(5);
+  await Promise.all([fetchEnrolledCourses(), fetchMyChapters()]);
+  // The dashboard shows the latest few; the Highlights and Notes sections
+  // list everything (they said "Everything you've marked" over five).
+  recentHighlights.value = await fetchRecentHighlights(500);
+  recentNotes.value = await fetchRecentNotes(500);
   await studentStore.fetchStudyStats();
   await loadQuizzesAndFlashcards();
 });
 
+// Quizzes and flashcards for the chapters the student reads, and their
+// courses' chapters: they used to need a course enrolment.
 async function loadQuizzesAndFlashcards() {
-  if (courses.value.length === 0) return;
-  const moduleIds = courses.value
-    .flatMap((enrollment) => enrollment.course?.modules || [])
-    .map((module) => module.id);
+  const moduleIds = [
+    ...new Set([
+      ...myChapters.value.map((c) => c.module.id),
+      ...courses.value
+        .flatMap((enrollment) => enrollment.course?.modules || [])
+        .map((module) => module.id),
+    ]),
+  ];
   if (moduleIds.length > 0) {
     await Promise.all([
       fetchAvailableQuizzes(moduleIds),
@@ -150,6 +182,81 @@ function formatScore(score, total) {
       <ProgressCard :continue-reading="continueReading" />
       <StudyStats :stats="studentStore.studyStats" />
 
+      <div class="grid-2">
+        <div>
+          <div class="card-head">
+            <h3 class="card-title">My chapters</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              @click="activeSection = 'chapters'"
+              >View all</Button
+            >
+          </div>
+          <LoadingState
+            v-if="chaptersLoading"
+            message="Loading chapters…"
+            size="sm"
+          />
+          <EmptyState
+            v-else-if="myChapters.length === 0"
+            title="No chapters yet"
+            message="Open a chapter and it appears here."
+            action-label="Browse chapters"
+            @action="router.push('/chapters')"
+          />
+          <BaseCard v-else>
+            <ListRow
+              v-for="c in myChapters.slice(0, 4)"
+              :key="c.module.id"
+              :label="`${c.module.order_index} · ${c.module.title}`"
+              :hint="chapterHint(c)"
+              interactive
+              @click="openChapter(c)"
+            >
+              <StatusBadge
+                :variant="c.status === 'done' ? 'complete' : 'accent'"
+              >
+                {{ STATUS_LABEL[c.status] }}
+              </StatusBadge>
+            </ListRow>
+          </BaseCard>
+        </div>
+
+        <div>
+          <div class="card-head">
+            <h3 class="card-title">Recent highlights</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              @click="activeSection = 'highlights'"
+              >View all</Button
+            >
+          </div>
+          <EmptyState
+            v-if="recentHighlights.length === 0"
+            title="No highlights yet"
+          />
+          <div v-else class="stack">
+            <BaseCard
+              v-for="highlight in recentHighlights.slice(0, 5)"
+              :key="highlight.id"
+              padding="sm"
+              class="hl-card"
+              :style="{ borderLeftColor: `rgb(var(--color-mark1))` }"
+            >
+              <p class="hl-text">
+                "{{ highlight.selected_text?.slice(0, 80)
+                }}{{ highlight.selected_text?.length > 80 ? "…" : "" }}"
+              </p>
+              <span class="hl-date">{{
+                formatRelativeDate(highlight.created_at)
+              }}</span>
+            </BaseCard>
+          </div>
+          <TrendingHighlights class="mt-6" :limit="5" />
+        </div>
+      </div>
       <div class="grid-2">
         <BaseCard>
           <div class="card-head">
@@ -227,77 +334,46 @@ function formatScore(score, total) {
           :hint="formatRelativeDate(attempt.completed_at)"
         >
           <StatusBadge :variant="attempt.passed ? 'complete' : 'warn'">
-            {{ formatScore(attempt.score, attempt.total_questions) }}
+            {{ formatScore(attempt.score, attempt.total_points) }}
           </StatusBadge>
         </ListRow>
       </BaseCard>
+    </section>
 
-      <div class="grid-2">
-        <div>
-          <div class="card-head">
-            <h3 class="card-title">My courses</h3>
-            <Button variant="ghost" size="sm" @click="activeSection = 'courses'"
-              >View all</Button
-            >
-          </div>
-          <LoadingState
-            v-if="coursesLoading"
-            message="Loading courses…"
-            size="sm"
-          />
-          <EmptyState
-            v-else-if="courses.length === 0"
-            title="No courses enrolled yet"
-            message="Ask your professor for a course enrollment link."
-          />
-          <div v-else class="stack">
-            <CourseCard
-              v-for="enrollment in courses.slice(0, 2)"
-              :key="enrollment.id"
-              :enrollment="enrollment"
-            />
-          </div>
-        </div>
-
-        <div>
-          <div class="card-head">
-            <h3 class="card-title">Recent highlights</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              @click="activeSection = 'highlights'"
-              >View all</Button
-            >
-          </div>
-          <EmptyState
-            v-if="recentHighlights.length === 0"
-            title="No highlights yet"
-          />
-          <div v-else class="stack">
-            <BaseCard
-              v-for="highlight in recentHighlights"
-              :key="highlight.id"
-              padding="sm"
-              class="hl-card"
-              :style="{ borderLeftColor: `rgb(var(--color-mark1))` }"
-            >
-              <p class="hl-text">
-                "{{ highlight.selected_text?.slice(0, 80)
-                }}{{ highlight.selected_text?.length > 80 ? "…" : "" }}"
-              </p>
-              <span class="hl-date">{{
-                formatRelativeDate(highlight.created_at)
-              }}</span>
-            </BaseCard>
-          </div>
-          <TrendingHighlights class="mt-6" :limit="5" />
-        </div>
-      </div>
+    <!-- CHAPTERS -->
+    <section v-else-if="activeSection === 'chapters'" class="section">
+      <SectionHeader
+        eyebrow="02 · My chapters"
+        title="The chapters you've opened"
+        subtitle="Most recent first. Pick one up where you left off."
+      />
+      <LoadingState v-if="chaptersLoading" message="Loading chapters…" />
+      <EmptyState
+        v-else-if="myChapters.length === 0"
+        title="No chapters yet"
+        message="Open a chapter from the library and it appears here."
+        action-label="Browse chapters"
+        @action="router.push('/chapters')"
+      />
+      <BaseCard v-else>
+        <ListRow
+          v-for="c in myChapters"
+          :key="c.module.id"
+          :label="`Chapter ${c.module.order_index} · ${c.module.title}`"
+          :hint="chapterHint(c)"
+          interactive
+          @click="openChapter(c)"
+        >
+          <StatusBadge :variant="c.status === 'done' ? 'complete' : 'accent'">
+            {{ STATUS_LABEL[c.status] }}
+          </StatusBadge>
+        </ListRow>
+      </BaseCard>
     </section>
 
     <!-- COURSES -->
     <section v-else-if="activeSection === 'courses'" class="section">
-      <SectionHeader eyebrow="02 · My courses" title="Your enrolled courses" />
+      <SectionHeader eyebrow="My courses" title="Your enrolled courses" />
       <LoadingState v-if="coursesLoading" message="Loading courses…" />
       <EmptyState
         v-else-if="courses.length === 0"
@@ -403,9 +479,9 @@ function formatScore(score, total) {
             <span class="hl-date">{{
               formatRelativeDate(highlight.created_at)
             }}</span>
-            <StatusBadge v-if="highlight.note" variant="accent"
-              >Has note</StatusBadge
-            >
+            <StatusBadge v-if="highlight.tags?.length" variant="accent">{{
+              highlight.tags.join(", ")
+            }}</StatusBadge>
           </div>
         </BaseCard>
       </div>
@@ -435,12 +511,21 @@ function formatScore(score, total) {
       <SectionHeader eyebrow="07 · Progress" title="Your reading footprint" />
       <StudyStats :stats="studentStore.studyStats" />
       <BaseCard class="mt-6">
-        <h3 class="card-title">
-          Reading progress by module <PreviewTag variant="soon" />
-        </h3>
-        <p class="muted">
-          Detailed per-module progress tracking is coming soon.
+        <h3 class="card-title">Reading progress by chapter</h3>
+        <p v-if="myChapters.length === 0" class="muted">
+          Open a chapter to start tracking your progress.
         </p>
+        <div v-else class="progress-list">
+          <div v-for="c in myChapters" :key="c.module.id" class="progress-row">
+            <span class="progress-name"
+              >{{ c.module.order_index }} · {{ c.module.title }}</span
+            >
+            <span class="progress-bar" aria-hidden="true"
+              ><span :style="{ width: `${c.percent}%` }"
+            /></span>
+            <span class="progress-pct">{{ c.percent }}%</span>
+          </div>
+        </div>
       </BaseCard>
     </section>
 
@@ -578,5 +663,37 @@ function formatScore(score, total) {
   font-size: 0.875rem;
   color: rgb(var(--color-mute));
   margin: 8px 0 0;
+}
+.progress-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.progress-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(6rem, 14rem) 3rem;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9375rem;
+}
+.progress-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.progress-bar {
+  height: 0.375rem;
+  background: rgb(var(--color-line));
+}
+.progress-bar span {
+  display: block;
+  height: 100%;
+  background: rgb(var(--color-accent));
+}
+.progress-pct {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-align: right;
+  color: rgb(var(--color-mute));
 }
 </style>
