@@ -82,7 +82,7 @@
 
     <StartEndIcon :paragraph="section" art="start" />
     <IllustrationInline
-      v-if="figuresInline && section?.animation?.id"
+      v-if="inlineFigureFor(section)"
       :animation-id="section.animation.id"
     />
     <!-- The References section, from the references table once it has
@@ -162,7 +162,7 @@
             :paragraph="paragraph"
           />
           <IllustrationInline
-            v-if="figuresInline && paragraph?.animation?.id"
+            v-if="inlineFigureFor(paragraph)"
             :key="'inline' + paragraph.id"
             :animation-id="paragraph.animation.id"
           />
@@ -217,7 +217,7 @@ import BreakImages from "./BreakImages.vue";
 const showMarkers = markersEnabled();
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 import IllustrationInline from "@/components/chapter/Illus/IllustrationInline.vue";
-import { useInlineFigures } from "@/composables/useInlineFigures";
+import { useInlineFigureFor } from "@/composables/useInlineFigures";
 import SubSection from "./SubSection.vue";
 import { useGeneral } from "@/stores";
 import BreakSection from "./BreakSection.vue";
@@ -236,7 +236,8 @@ const store = useGeneral();
 
 // Inline below the two-column breakpoint, and inside a floating breakout box
 // (it covers the figure pane): OPENBRAIN-91.
-const figuresInline = useInlineFigures();
+// Draw a figure here only where it first appears (below 1024px).
+const inlineFigureFor = useInlineFigureFor();
 
 const props = defineProps({
   section: Object,

@@ -8,7 +8,7 @@
   >
     <StartEndIcon :paragraph="subSections" art="start" />
     <IllustrationInline
-      v-if="figuresInline && subSections?.animation?.id"
+      v-if="inlineFigureFor(subSections)"
       :animation-id="subSections.animation.id"
     />
     <span
@@ -147,7 +147,7 @@
               :paragraph="subParagraph"
             />
             <IllustrationInline
-              v-if="figuresInline && subParagraph?.animation?.id"
+              v-if="inlineFigureFor(subParagraph)"
               :key="'inline' + subParagraph.id"
               :animation-id="subParagraph.animation.id"
             />
@@ -197,12 +197,13 @@ import VideoEmbed from "./VideoEmbed.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
-import { useInlineFigures } from "@/composables/useInlineFigures";
+import { useInlineFigureFor } from "@/composables/useInlineFigures";
 
 // Below the desktop pane's breakpoint, render trigger figures inline.
 // Inline below the two-column breakpoint, and inside a floating breakout box
 // (it covers the figure pane): OPENBRAIN-91.
-const figuresInline = useInlineFigures();
+// Draw a figure here only where it first appears (below 1024px).
+const inlineFigureFor = useInlineFigureFor();
 
 defineProps({
   paragraph: Object,

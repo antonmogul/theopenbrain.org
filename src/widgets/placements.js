@@ -106,6 +106,9 @@ export const WIDGET_PLACEMENTS = [
     chapterSlug: "the-retina",
     sectionSlug: "amacrine-and-ganglion-cells-circuits-computations-and-output",
     kind: "inline",
+    // 1180px of controls and plots: on phones and tablets it is the card,
+    // and opens full screen (OPENBRAIN-99).
+    narrowKind: "breakout",
     // "at the bottom of the Circuit Computations section, right before the
     // Rod vs. Cone signals section". Listed after the direction-selectivity
     // placement so that, when both resolve to the same anchor, RetINaBox is
@@ -283,6 +286,8 @@ export function widgetParagraph(placement) {
       placedBy: "config",
       widgetId: placement.widgetId,
       kind: placement.kind || "breakout",
+      // Below the two-column reader, a card instead (a desktop-sized tool).
+      ...(placement.narrowKind ? { narrowKind: placement.narrowKind } : {}),
       title: placement.title || "",
       blurb: placement.blurb || "",
       credit: placement.credit || "",

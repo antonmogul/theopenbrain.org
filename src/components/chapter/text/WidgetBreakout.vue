@@ -36,6 +36,8 @@ import {
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import { WIDGET_EMBEDS, hasEmbed } from "@/widgets/embeds";
+import { useMediaQuery } from "@/composables/useMediaQuery";
+import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 
 const props = defineProps({
   /** The `widget` object of a `{ type: "widget" }` paragraph. */
@@ -43,9 +45,14 @@ const props = defineProps({
 });
 
 const widgetId = computed(() => props.placement?.widgetId || "");
-const kind = computed(() =>
-  props.placement?.kind === "inline" ? "inline" : "breakout"
-);
+// A placement can ask to be the card below the two-column reader, where a
+// desktop-sized tool would be squeezed into the column (narrowKind).
+const narrow = useMediaQuery(READER_NARROW_QUERY);
+const narrowed = computed(() => narrow.value && !!props.placement?.narrowKind);
+const kind = computed(() => {
+  const k = narrowed.value ? props.placement.narrowKind : props.placement?.kind;
+  return k === "inline" ? "inline" : "breakout";
+});
 const title = computed(() => props.placement?.title || widgetId.value);
 const embeddable = computed(() => hasEmbed(widgetId.value));
 
@@ -143,6 +150,9 @@ const headingId = computed(
       </p>
       <h3 :id="headingId" class="wb-title">{{ title }}</h3>
       <p v-if="placement.blurb" class="wb-blurb">{{ placement.blurb }}</p>
+      <p v-if="narrowed" class="wb-note">
+        Made for a larger screen: it opens full screen.
+      </p>
     </header>
 
     <!-- inline: the widget lives here once it is near the viewport. At
@@ -259,6 +269,13 @@ const headingId = computed(
   line-height: 1.55;
   color: rgb(var(--color-ink) / 0.8);
   max-width: 60ch;
+}
+
+.wb-note {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgb(var(--color-mute));
 }
 
 .wb-stage {
