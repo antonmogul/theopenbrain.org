@@ -143,7 +143,9 @@ export function contentBlocksToHTML(blocks) {
         // via data-figure so it can later deep-link / scroll-sync.
         const n = block.number;
         const label = n === undefined || n === null ? "Figure" : `Figure ${n}`;
-        return `<span class="figure-ref" data-figure="${n ?? ""}">${label}</span>`;
+        // A link to the figure (useFigureLinks scrolls to it): focusable,
+        // announced as a link (OPENBRAIN-91).
+        return `<span class="figure-ref" data-figure="${n ?? ""}" role="link" tabindex="0">${label}</span>`;
       }
       // Chapter 1-specific types — metadata only, no HTML
       if (

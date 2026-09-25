@@ -12,6 +12,7 @@
 // `fullscreen` via FULLSCREEN_FALLBACK.
 
 import { figureWidgetFor } from "@/widgets/figures/registry";
+import { usesFigureShell } from "@/helper/figureCycle";
 
 // Figures that can't reflow inline on a phone and must open in a fullscreen
 // overlay instead. The split figures render two side-by-side Lottie panes driven
@@ -34,6 +35,10 @@ export const FULLSCREEN_FALLBACK = new Set([
  *   - interactive: clickable / auto-playing figure; render inline with its controls
  *   - figure-widget: a panel figure rebuilt as a figure widget (OPENBRAIN-82);
  *                  render the widget inline in a box of its own
+ *   - figure-shell: an image figure (or its "Artwork pending" placeholder),
+ *                  the History chapter's kind; render the pane's figure shell
+ *                  inline (OPENBRAIN-91: these used to fall through to
+ *                  "interactive" and vanish, as they have no Lottie)
  */
 export function mobileMode(animation) {
   if (!animation) return "skip";
@@ -48,6 +53,9 @@ export function mobileMode(animation) {
   // screen widget figures already render in the text via FullScreenIllustration.)
   if (!animation.fullscreen && figureWidgetFor(animation.id))
     return "figure-widget";
+
+  // Image figures and their placeholders: the same shell as the pane.
+  if (usesFigureShell(animation)) return "figure-shell";
 
   // Explicit per-figure escape hatch for the ones that break inline.
   if (FULLSCREEN_FALLBACK.has(animation.id)) return "fullscreen";

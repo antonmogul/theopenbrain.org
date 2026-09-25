@@ -113,7 +113,7 @@
                 :paragraph="subSubParagraph"
               />
               <IllustrationInline
-                v-if="isMobile && subSubParagraph?.animation?.id"
+                v-if="figuresInline && subSubParagraph?.animation?.id"
                 :key="'inline' + subSubParagraph.id"
                 :animation-id="subSubParagraph.animation.id"
               />
@@ -138,7 +138,7 @@
           :paragraph="subSubSection"
         />
         <IllustrationInline
-          v-if="isMobile && subSubSection?.animation?.id"
+          v-if="figuresInline && subSubSection?.animation?.id"
           :key="'inline' + subSubSection.id"
           :animation-id="subSubSection.animation.id"
         />
@@ -154,8 +154,7 @@ import { inject } from "vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
-import { useMediaQuery } from "@/composables/useMediaQuery";
-import { READER_NARROW_QUERY } from "@/helper/readerLayout";
+import { useInlineFigures } from "@/composables/useInlineFigures";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
@@ -174,7 +173,9 @@ defineProps({
 });
 
 // Below the desktop pane's breakpoint, render trigger figures inline.
-const isMobile = useMediaQuery(READER_NARROW_QUERY);
+// Inline below the two-column breakpoint, and inside a floating breakout box
+// (it covers the figure pane): OPENBRAIN-91.
+const figuresInline = useInlineFigures();
 
 // Inject save handler from parent
 const saveContent = inject("saveContent", null);
