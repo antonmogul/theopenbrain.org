@@ -407,7 +407,7 @@ export default {
   max-height: calc(100vh - 2rem);
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-ink) / 0.85);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.18),
     0 4px 12px rgba(0, 0, 0, 0.06);
@@ -540,7 +540,7 @@ export default {
   padding: 0.5rem 0.625rem;
   background: transparent;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -616,7 +616,7 @@ export default {
     border-right: 0;
     border-bottom: 0;
     border-left: 0;
-    border-radius: 12px 12px 0 0;
+    border-radius: var(--radius-control);
   }
 
   .drag-handle {

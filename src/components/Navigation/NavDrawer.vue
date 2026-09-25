@@ -343,7 +343,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   width: 30px;
   height: 30px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   cursor: pointer;
@@ -377,7 +377,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   gap: 12px;
   padding: 12px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   cursor: pointer;
   text-align: left;
@@ -390,7 +390,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   width: 50px;
   aspect-ratio: 3 / 4;
   flex-shrink: 0;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   background: linear-gradient(
     135deg,
     rgb(var(--color-accent) / 0.25),
@@ -515,7 +515,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 10px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-ink));
@@ -544,7 +544,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   padding: 8px 0;
   background: transparent;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: rgb(var(--color-mute));
   cursor: pointer;
   transition:

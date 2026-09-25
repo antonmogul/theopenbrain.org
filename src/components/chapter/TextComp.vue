@@ -835,7 +835,7 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   font-family: var(--font-mono);
@@ -858,7 +858,7 @@ onBeforeUnmount(() => {
   gap: 6px 12px;
   max-width: calc(100vw - 2rem);
   padding: 0.5rem 0.625rem 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(14 19 19);
   color: rgb(243 239 230);
   font-family: var(--font-mono);
@@ -880,7 +880,7 @@ onBeforeUnmount(() => {
 .edit-bar-btn {
   padding: 4px 10px;
   border: 1px solid rgb(243 239 230 / 0.3);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: inherit;
   font: inherit;

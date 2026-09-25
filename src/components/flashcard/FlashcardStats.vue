@@ -181,7 +181,7 @@ const cardsReviewed = computed(
 .stat-card {
   background: transparent;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   padding: 0.625rem;
 }
 
@@ -233,7 +233,7 @@ const cardsReviewed = computed(
   justify-content: center;
   gap: 0.3125rem;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;

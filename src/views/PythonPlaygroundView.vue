@@ -118,7 +118,7 @@ function goHome() {
         <div class="flex items-center gap-3 min-w-0">
           <button
             @click="goHome"
-            class="p-2 rounded-lg hover:bg-gray-800 transition-colors flex-shrink-0"
+            class="p-2 hover:bg-gray-800 transition-colors flex-shrink-0"
             title="Home"
           >
             <svg
@@ -141,7 +141,7 @@ function goHome() {
             >
               Python Playground
               <span
-                class="text-xs font-mono px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300"
+                class="text-xs font-mono px-2 py-0.5 bg-violet-500/20 text-violet-300"
               >
                 Pyodide · runs in your browser
               </span>
@@ -164,14 +164,14 @@ function goHome() {
           <button
             @click="resetCode"
             :disabled="executing || !isDirty"
-            class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors disabled:opacity-40"
+            class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors disabled:opacity-40"
           >
             Reset
           </button>
           <button
             @click="runCode"
             :disabled="executing || !userCode.trim()"
-            class="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+            class="px-5 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             <svg
               v-if="!executing"
@@ -226,7 +226,7 @@ function goHome() {
               v-for="demo in cat.demos"
               :key="demo.id"
               @click="selectDemo(cat.id, demo.id)"
-              class="w-full text-left px-3 py-2 rounded-lg transition-colors border"
+              class="w-full text-left px-3 py-2 transition-colors border"
               :class="
                 demo.id === activeDemoId
                   ? 'bg-violet-500/15 border-violet-500/40 text-white'
@@ -245,10 +245,7 @@ function goHome() {
       <!-- Editor column -->
       <section class="min-w-0 space-y-4">
         <!-- Demo description -->
-        <div
-          v-if="activeDemo"
-          class="bg-gray-900 rounded-lg p-4 border border-gray-800"
-        >
+        <div v-if="activeDemo" class="bg-gray-900 p-4 border border-gray-800">
           <div class="flex items-start justify-between gap-3 mb-2">
             <h3 class="text-base font-semibold text-white">
               {{ activeDemo.title }}
@@ -257,7 +254,7 @@ function goHome() {
               <span
                 v-for="tag in activeDemo.tags"
                 :key="tag"
-                class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-400"
+                class="text-[11px] font-mono px-2 py-0.5 bg-gray-800 text-gray-400"
               >
                 {{ tag }}
               </span>
@@ -271,7 +268,7 @@ function goHome() {
         <!-- Upload panel (only for upload demos) -->
         <div
           v-if="activeDemo?.requiresUpload"
-          class="bg-gray-900 rounded-lg p-4 border border-dashed border-violet-500/40"
+          class="bg-gray-900 p-4 border border-dashed border-violet-500/40"
         >
           <div class="flex items-center justify-between gap-3">
             <div class="min-w-0">
@@ -291,7 +288,7 @@ function goHome() {
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
               <label
-                class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium cursor-pointer transition-colors"
+                class="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium cursor-pointer transition-colors"
               >
                 Choose file
                 <input
@@ -304,7 +301,7 @@ function goHome() {
               <button
                 v-if="uploadedFileName"
                 @click="clearUpload"
-                class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm"
+                class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm"
               >
                 Clear
               </button>
@@ -325,7 +322,7 @@ function goHome() {
         <!-- First-run boot notice -->
         <div
           v-if="booting"
-          class="bg-violet-500/10 border border-violet-500/30 rounded-lg p-4 flex items-center gap-3"
+          class="bg-violet-500/10 border border-violet-500/30 p-4 flex items-center gap-3"
         >
           <svg
             class="animate-spin h-5 w-5 text-violet-400"

@@ -505,7 +505,7 @@ function scrollToCitation(number) {
   min-height: 28px;
   padding: 2px 4px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: none;
   font-family: var(--font-mono);
   font-size: 0.6875rem;

@@ -432,6 +432,6 @@ defineEmits([
   color: rgb(var(--color-ink));
   background: rgb(var(--color-warn) / 0.14);
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 </style>

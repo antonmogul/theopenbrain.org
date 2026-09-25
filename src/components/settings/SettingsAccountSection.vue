@@ -180,7 +180,7 @@ async function handleSignOut() {
 
 .rows-card {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: rgb(var(--color-paper));
 }
@@ -218,7 +218,7 @@ async function handleSignOut() {
 .input {
   width: 100%;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-body);
@@ -250,7 +250,7 @@ async function handleSignOut() {
   padding: 20px 24px;
   border: 1px solid rgb(var(--color-accent) / 0.4);
   background: rgb(var(--color-accent) / 0.06);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 .danger-eyebrow {
   font-family: var(--font-mono);
@@ -280,7 +280,7 @@ async function handleSignOut() {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 6px 14px;
   transition:
     background 0.12s ease,

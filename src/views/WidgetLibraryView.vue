@@ -275,7 +275,7 @@ const totalCount = WIDGETS.length;
   width: 100%;
   padding: 0.3125rem 0.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-body);
@@ -335,7 +335,7 @@ const totalCount = WIDGETS.length;
   font-size: 0.6875rem;
   color: rgb(var(--color-accent));
   background: rgb(var(--color-accent) / 0.12);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.125rem 0.5rem;
   font-weight: 500;
 }
@@ -353,7 +353,7 @@ const totalCount = WIDGETS.length;
 .wl-badge-pending {
   color: rgb(var(--color-mute));
   border: 1px dashed rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.0625rem 0.5rem;
 }
 
@@ -387,7 +387,7 @@ const totalCount = WIDGETS.length;
 .wl-tab {
   padding: 0.3125rem 0.75rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-mute));
   font-family: var(--font-body);
@@ -415,7 +415,7 @@ const totalCount = WIDGETS.length;
 /* ── Iframe ──────────────────────────────────────────────────────────── */
 .wl-frame-wrap {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: #fff;
 }

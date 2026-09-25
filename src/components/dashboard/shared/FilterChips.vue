@@ -52,7 +52,7 @@ function select(v) {
   gap: 8px;
   padding: 7px 14px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   font-family: var(--font-mono);
   font-size: 0.6875rem;

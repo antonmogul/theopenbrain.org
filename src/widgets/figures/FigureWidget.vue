@@ -136,7 +136,7 @@ const lottieUrl = computed(() =>
 .figure-widget-failed button {
   padding: 6px 14px;
   border: 1px solid #fff;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: inherit;
   font: inherit;

@@ -285,14 +285,14 @@ const formattedDuration = computed(() => {
 .progress-bar {
   height: 4px;
   background: rgba(139, 92, 246, 0.2);
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: #8b5cf6;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   transition: width 0.3s ease;
 }
 
@@ -315,7 +315,7 @@ const formattedDuration = computed(() => {
   padding: 2px 6px;
   background: #f3f4f6;
   border: 1px solid #d1d5db;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: monospace;
   font-size: 12px;
 }
@@ -331,7 +331,7 @@ const formattedDuration = computed(() => {
 /* Buttons */
 .btn-primary {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 15px;
   font-weight: 500;

@@ -44,7 +44,7 @@ const tag = computed(() => props.as);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   text-decoration: none;
   border: 1px solid transparent;

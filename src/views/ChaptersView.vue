@@ -488,7 +488,7 @@ function chapterNumberFor(mod) {
   padding: 1.5rem;
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 
 .continue-cover {
@@ -587,7 +587,7 @@ function chapterNumberFor(mod) {
   letter-spacing: 0.08em;
   white-space: nowrap;
   padding: 0.5625rem 1.125rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-complete));
   color: #0a3d33;
   text-decoration: none;
@@ -734,7 +734,7 @@ function chapterNumberFor(mod) {
   top: 0.5rem;
   right: 0.5rem;
   padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-control);
   font-size: 0.625rem;
   font-family: var(--font-mono);
   text-transform: uppercase;

@@ -291,7 +291,7 @@ textarea.input {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   transition:
     background 0.12s ease,
     color 0.12s ease,

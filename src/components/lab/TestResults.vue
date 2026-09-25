@@ -23,7 +23,7 @@ const totalCount = computed(() => {
 
 <template>
   <div
-    class="test-results rounded-lg border overflow-hidden"
+    class="test-results border overflow-hidden"
     :class="passed ? 'border-green-500' : 'border-yellow-500'"
     data-testid="test-results"
   >

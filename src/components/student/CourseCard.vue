@@ -113,7 +113,7 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 <style scoped>
 .course-card {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -172,7 +172,7 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
   font-size: 0.46875rem;
   font-weight: 500;
   padding: 0.15625rem 0.46875rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-control);
   white-space: nowrap;
 }
 
@@ -185,7 +185,7 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   transition: width 0.3s ease;
 }
 
@@ -254,7 +254,7 @@ const formatDate = (dateString) => shortDate(dateString, { withYear: true });
   font-weight: 500;
   cursor: pointer;
   padding: 0.15625rem 0.3125rem;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   transition: background 0.2s;
 }
 

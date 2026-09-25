@@ -232,7 +232,7 @@ function getBlockPreview(paragraph) {
   padding: 1rem 1.25rem;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   margin-bottom: 1.5rem;
 }
 
@@ -265,7 +265,7 @@ function getBlockPreview(paragraph) {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.875rem;
   border: 1px dashed #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 
 /* Section Tree */
@@ -277,7 +277,7 @@ function getBlockPreview(paragraph) {
 
 .section-node {
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 
@@ -303,13 +303,13 @@ function getBlockPreview(paragraph) {
   color: rgb(151, 71, 255);
   background: rgba(151, 71, 255, 0.08);
   padding: 0.1875rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 
 .section-title-input {
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   padding: 0.25rem 0.5rem;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.9375rem;
@@ -346,7 +346,7 @@ function getBlockPreview(paragraph) {
   height: 28px;
   background: transparent;
   border: 1px solid #d1d5db;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: #6b7280;
   font-size: 0.75rem;
   cursor: pointer;

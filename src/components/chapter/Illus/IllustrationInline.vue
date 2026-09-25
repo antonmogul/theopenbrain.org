@@ -312,7 +312,7 @@ const youtubeSrc = computed(() =>
   cursor: pointer;
   background: transparent;
   border: 1px solid rgb(var(--color-line, 0 0 0) / 1);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 
 .illu-inline__poster {
@@ -321,7 +321,7 @@ const youtubeSrc = computed(() =>
   position: relative;
   cursor: pointer;
   border: 1px solid rgb(var(--color-line, 0 0 0) / 1);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: transparent;
 }

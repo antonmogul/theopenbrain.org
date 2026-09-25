@@ -862,7 +862,7 @@ function onKeydown(e) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.3rem 0.7rem 0.3rem 0.3rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: var(--violet);
   color: #fff;
   font-family: var(--font-mono);

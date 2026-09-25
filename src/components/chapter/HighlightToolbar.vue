@@ -319,7 +319,7 @@ function onCancel() {
 
 .hl-pill {
   background: rgb(var(--color-paper));
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 6px 8px;
   display: flex;
   align-items: center;
@@ -343,7 +343,7 @@ function onCancel() {
   height: 28px;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;

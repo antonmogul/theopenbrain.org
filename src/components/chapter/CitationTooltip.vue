@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
   padding: 14px 16px;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.06);

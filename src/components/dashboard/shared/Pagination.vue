@@ -103,7 +103,7 @@ function goToPage(page) {
   min-width: 32px;
   padding: 6px 10px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   font-family: var(--font-mono);
   font-size: 0.75rem;

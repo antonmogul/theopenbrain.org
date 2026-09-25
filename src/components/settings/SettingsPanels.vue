@@ -187,7 +187,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 /* Email prefs bordered card */
 .bordered-card {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: rgb(var(--color-paper));
   padding: 0 20px;
@@ -243,7 +243,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   border: 1px solid rgb(var(--color-ink) / 0.85);

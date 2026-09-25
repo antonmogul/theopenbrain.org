@@ -322,7 +322,7 @@ const performanceMessage = computed(() => {
   gap: 0.3125rem;
   padding: 0.46875rem 0.625rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 
 .stat-icon {
@@ -395,7 +395,7 @@ const performanceMessage = computed(() => {
   justify-content: center;
   gap: 0.3125rem;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;

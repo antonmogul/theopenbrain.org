@@ -598,7 +598,7 @@ const chapterStats = computed(() => {
 .lock-note {
   margin: 12px 0 0;
   padding: 12px 14px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-warn) / 0.14);
   font-family: var(--font-ui);
   font-size: 0.875rem;
@@ -640,7 +640,7 @@ const chapterStats = computed(() => {
 }
 .blocks-list::-webkit-scrollbar-thumb {
   background: rgb(var(--color-ink) / 0.15);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 
 .block-item {
@@ -648,7 +648,7 @@ const chapterStats = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   transition: background 0.12s ease;
 }
@@ -741,7 +741,7 @@ const chapterStats = computed(() => {
   padding: 2px 8px;
   font-family: var(--font-mono);
   font-size: 0.625rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-accent) / 0.12);
   color: rgb(var(--color-accent));
   flex: none;
@@ -782,7 +782,7 @@ const chapterStats = computed(() => {
   justify-content: center;
   padding: 4px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-mute));
   cursor: pointer;
@@ -810,7 +810,7 @@ const chapterStats = computed(() => {
 
 .content-preview {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 .preview-title {
@@ -836,7 +836,7 @@ const chapterStats = computed(() => {
 }
 .preview-content::-webkit-scrollbar-thumb {
   background: rgb(var(--color-ink) / 0.15);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 
 .preview-block.paragraph {
@@ -863,7 +863,7 @@ const chapterStats = computed(() => {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 .meta-badge.section-badge {
   background: rgb(var(--color-accent) / 0.12);
@@ -944,7 +944,7 @@ const chapterStats = computed(() => {
 }
 .editor-content :deep(.tiptap-editor) {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   min-height: 280px;
 }
 .editor-footer {

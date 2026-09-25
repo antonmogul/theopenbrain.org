@@ -271,7 +271,7 @@ onMounted(() => {
 .enrollment-card {
   background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   padding: 2rem;
 }
 
@@ -289,7 +289,7 @@ onMounted(() => {
   background: rgba(59, 130, 246, 0.15);
   color: rgb(59, 130, 246);
   padding: 0.25rem 0.75rem;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   margin-bottom: 1rem;
 }
 
@@ -309,7 +309,7 @@ onMounted(() => {
 
 .course-description {
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -353,7 +353,7 @@ onMounted(() => {
   padding: 1rem;
   background: rgb(59, 130, 246);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   color: white;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 1rem;
@@ -376,7 +376,7 @@ onMounted(() => {
   padding: 0.875rem 2rem;
   background: rgb(59, 130, 246);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   color: white;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.9375rem;
@@ -394,7 +394,7 @@ onMounted(() => {
   padding: 0.875rem;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   color: #898989;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.9375rem;

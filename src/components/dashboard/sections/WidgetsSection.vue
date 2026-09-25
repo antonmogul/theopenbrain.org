@@ -228,7 +228,7 @@ const editHref = (p) =>
 .ws-chip {
   flex: none;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.625rem;
   letter-spacing: 0.06em;

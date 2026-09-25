@@ -249,7 +249,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   display: grid;
   place-items: center;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   cursor: pointer;
@@ -293,7 +293,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   letter-spacing: 0.1em;
   color: rgb(var(--color-accent));
   border: 1px solid rgb(var(--color-accent) / 0.5);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.1875rem 0.5625rem;
 }
 .fig-glyph {
@@ -358,7 +358,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   display: flex;
   flex-direction: column;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   overflow: hidden;
 }

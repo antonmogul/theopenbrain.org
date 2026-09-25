@@ -90,7 +90,7 @@ onUnmounted(() => {
   width: 100%;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   box-shadow: 0 20px 60px rgb(var(--color-ink) / 0.18);
 }
 .sz-sm {

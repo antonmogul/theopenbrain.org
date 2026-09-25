@@ -216,6 +216,22 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <section class="group">
+      <p class="t-label group-eyebrow">Corners</p>
+      <p class="t-body-sm group-note">
+        The book is square-cornered, like the chapter TOC, the papyrus tabs and
+        the widget bands. Every control and surface (buttons, chips, badges,
+        inputs, cards, panels, tooltips, modals) uses
+        <code>border-radius: var(--radius-control)</code>, which is
+        <code>0px</code>. Only true circles stay round: dots, avatars, number
+        badges, spinners, round icon buttons and switch tracks.
+      </p>
+      <div class="corners">
+        <span class="t-label corner-demo">Square control</span>
+        <span class="corner-dot" aria-hidden="true">1</span>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -256,7 +272,7 @@ onMounted(() => {
 }
 .swatch-chip {
   height: 88px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   border: 1px solid rgb(var(--color-line));
 }
 .swatch-meta {
@@ -306,7 +322,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 2.6fr 1fr 1fr 1fr;
   height: 76px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   border: 1px solid rgb(var(--color-line));
 }
@@ -330,5 +346,27 @@ onMounted(() => {
 }
 .ramp-legend .swatch-hex {
   font-size: 0.625rem;
+}
+.corners {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.9375rem;
+}
+.corner-demo {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(var(--color-ink));
+  border-radius: var(--radius-control);
+}
+.corner-dot {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
 }
 </style>

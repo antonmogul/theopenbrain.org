@@ -39,6 +39,13 @@
      on it keeps contrast. */
   --color-dark-surface: 28 28 28; /* #1C1C1C */
 
+  /* Corner radius for every control and surface (buttons, chips, badges,
+     inputs, cards, panels, tooltips, modals). The book is square-cornered,
+     like the chapter TOC, papyrus tabs and widget bands (OPENBRAIN-100).
+     True circles (dots, avatars, number badges, spinners, round icon
+     buttons, switch tracks) keep their own 50% / 999px radius. */
+  --radius-control: 0px;
+
   /* Type controls (user-tunable from Settings) */
   --reading-size: 1;
   --reading-measure: 780px;

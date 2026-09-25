@@ -251,7 +251,7 @@ const features = [
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.5625rem 1.125rem;
   cursor: pointer;
   transition:
@@ -323,7 +323,7 @@ const features = [
 }
 .feature {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   padding: 1.25rem 1.125rem;
 }
@@ -419,7 +419,7 @@ const features = [
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 0.125rem 0.4375rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid rgb(var(--color-line));
 }
 
