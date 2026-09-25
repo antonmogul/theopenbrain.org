@@ -52,7 +52,8 @@
    * each token's rem is therefore px ÷ 16. Sizes are the desktop target; `body`
    * role multiplies by --reading-size so the reading-size pref still works.
    *
-   * Steps (px): 11 · 13 · 17 · 20 · 27 · 36 · 47 · 63 · 84 · 112
+   * Steps (px): 11 · 13 · 17 · 20 · 27 · 36 · 47 · 63 · 84 · 112 (desktop;
+   * phones and tablets: see the media queries after this block).
    * Consume via the .t-* role classes below — never via raw Tailwind text-*.
    */
   --type-display-size: 7rem;
@@ -113,6 +114,71 @@
   --font-body: "IBM Plex Sans", system-ui, sans-serif;
   --font-ui: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/*
+ * ── The type scale on smaller screens (OPENBRAIN-93) ────────────────────
+ * The steps above are the desktop scale (Perfect Fourth, 20px body), from
+ * 1280px up. Phones get the same roles on a Major Third (1.25) from a 17px
+ * body: 15 · 17 · 21 · 27 · 33 · 42 · 52 · 65px (caption 13 and label 11
+ * stay). Between 768 and 1280px each step eases from its phone size to its
+ * desktop size with the window, so nothing jumps.
+ */
+@media (max-width: 1279px) {
+  :root {
+    --type-display-size: clamp(
+      4.0625rem,
+      calc(4.0625rem + 2.9375 * (100vw - 48rem) / 32),
+      7rem
+    );
+    --type-h1-size: clamp(
+      3.25rem,
+      calc(3.25rem + 2 * (100vw - 48rem) / 32),
+      5.25rem
+    );
+    --type-h2-size: clamp(
+      2.625rem,
+      calc(2.625rem + 1.3125 * (100vw - 48rem) / 32),
+      3.9375rem
+    );
+    --type-h3-size: clamp(
+      2.0625rem,
+      calc(2.0625rem + 0.875 * (100vw - 48rem) / 32),
+      2.9375rem
+    );
+    --type-subhead-size: clamp(
+      1.6875rem,
+      calc(1.6875rem + 0.5625 * (100vw - 48rem) / 32),
+      2.25rem
+    );
+    --type-body-lg-size: clamp(
+      1.3125rem,
+      calc(1.3125rem + 0.375 * (100vw - 48rem) / 32),
+      1.6875rem
+    );
+    --type-body-size: clamp(
+      1.0625rem,
+      calc(1.0625rem + 0.1875 * (100vw - 48rem) / 32),
+      1.25rem
+    );
+    --type-body-sm-size: clamp(
+      0.9375rem,
+      calc(0.9375rem + 0.125 * (100vw - 48rem) / 32),
+      1.0625rem
+    );
+  }
+}
+@media (max-width: 767px) {
+  :root {
+    --type-display-size: 4.0625rem;
+    --type-h1-size: 3.25rem;
+    --type-h2-size: 2.625rem;
+    --type-h3-size: 2.0625rem;
+    --type-subhead-size: 1.6875rem;
+    --type-body-lg-size: 1.3125rem;
+    --type-body-size: 1.0625rem;
+    --type-body-sm-size: 0.9375rem;
+  }
 }
 
 @media (min-width: 1280px) {

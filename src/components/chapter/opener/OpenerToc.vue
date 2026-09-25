@@ -116,7 +116,9 @@ function go(anchor, event) {
    40px, titles 53px right of the divider (OPENBRAIN-69). */
 .opener-toc {
   --toc-accent: rgb(var(--color-chapter));
-  --toc-row-font: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
+  /* 22px rows on Figma's frame; the phone scale's body step below that. */
+  --toc-row-font: clamp(min(var(--type-body-size), 1.125rem), 1.28vw, 1.375rem);
+  --toc-num: 2.5rem;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -145,7 +147,9 @@ function go(anchor, event) {
 .opener-toc__h1 {
   margin: 0;
   font-weight: 450;
-  font-size: clamp(2.25rem, 3.13vw, 3.375rem); /* 54px */
+  /* 54px on Figma's 1724 frame; on phones and tablets the type scale's
+     subhead step (27px on a phone, OPENBRAIN-93). */
+  font-size: clamp(var(--type-subhead-size), 3.13vw, 3.375rem);
   line-height: 1.429;
   letter-spacing: 0.1px;
   text-wrap: balance;
@@ -213,16 +217,19 @@ function go(anchor, event) {
    the first line of the title. */
 .opener-toc__num {
   position: absolute;
-  left: -1.25rem;
-  top: calc(var(--row-pad, 1.0625rem) + 0.7145 * var(--toc-row-font) - 1.25rem);
-  width: 2.5rem;
-  height: 2.5rem;
+  left: calc(var(--toc-num) / -2);
+  top: calc(
+    var(--row-pad, 1.0625rem) + 0.7145 * var(--toc-row-font) - var(--toc-num) /
+      2
+  );
+  width: var(--toc-num);
+  height: var(--toc-num);
   border-radius: 999px;
   background: var(--toc-accent);
   color: #fff;
   display: grid;
   place-items: center;
-  font-size: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
+  font-size: calc(var(--toc-num) * 0.45);
   font-weight: 400;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -237,7 +244,7 @@ function go(anchor, event) {
   padding: 0.5rem 3.75rem 0.5rem 0; /* a 41px row */
   border-top: 1px solid rgb(142 142 147 / 0.45); /* the frame's 0.25px #8E8E93 */
   color: #fff;
-  font-size: clamp(1rem, 1.04vw, 1.125rem); /* 18px */
+  font-size: clamp(min(var(--type-body-sm-size), 1rem), 1.04vw, 1.125rem);
   font-weight: 450;
 }
 .opener-toc__row:hover .opener-toc__label,
@@ -290,6 +297,7 @@ function go(anchor, event) {
 /* Below the two-column reader the block stacks: title, then the list. */
 @media (max-width: 1023px) {
   .opener-toc {
+    --toc-num: 2rem;
     grid-template-columns: 1fr;
     padding-left: 1.25rem;
     padding-right: 1.25rem;

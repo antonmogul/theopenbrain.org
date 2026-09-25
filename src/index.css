@@ -172,10 +172,11 @@
   letter-spacing: -0.00625rem;
 }
 
+/* Captions and figure notes: the scale's caption step (OPENBRAIN-93). */
 .text-small {
-  font-size: 0.84375rem;
-  line-height: 1.1875rem;
-  letter-spacing: -0.0125rem;
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-lh);
+  letter-spacing: 0;
 }
 
 .text-medium {
@@ -188,9 +189,13 @@
   line-height: 1.75rem;
 }
 
+/* The reader's body text: the scale's body step (20px desktop, 17px phone,
+   easing between), times the reader's size preference (OPENBRAIN-93). */
 .text-base {
-  font-size: calc(1.25rem * var(--reading-size, 1));
-  line-height: calc(1.9375rem * var(--reading-size, 1));
+  font-size: calc(var(--type-body-size) * var(--reading-size, 1));
+  line-height: calc(
+    var(--type-body-size) * var(--type-body-lh) * var(--reading-size, 1)
+  );
   letter-spacing: 0.5px;
 }
 .text-h2 {
@@ -222,12 +227,6 @@
     letter-spacing: -0.00625rem;
   }
 
-  .text-small {
-    font-size: 0.75rem;
-    line-height: 1rem;
-    letter-spacing: 0.0125rem;
-  }
-
   .text-medium {
     font-size: 0.9375rem;
     line-height: 1.65625rem;
@@ -238,10 +237,6 @@
     line-height: 1.75rem;
   }
 
-  .text-base {
-    font-size: calc(1.1875rem * var(--reading-size, 1));
-    line-height: calc(1.875rem * var(--reading-size, 1));
-  }
   .text-h2 {
     font-size: 2.5rem;
     line-height: 3.625rem;
@@ -272,11 +267,6 @@
     line-height: 0.875rem;
     letter-spacing: -0.00625rem;
   }
-  .text-small {
-    font-size: 0.6875rem;
-    line-height: 0.9375rem;
-    letter-spacing: 0.0125rem;
-  }
   .text-medium {
     font-size: 0.84375rem;
     line-height: 1.375rem;
@@ -284,10 +274,6 @@
   .text-baseMono {
     font-size: 1rem;
     line-height: 1.5rem;
-  }
-  .text-base {
-    font-size: calc(1.0625rem * var(--reading-size, 1));
-    line-height: calc(1.6875rem * var(--reading-size, 1));
   }
   .text-h2 {
     font-size: 1.875rem;
@@ -309,19 +295,6 @@
     font-size: 3.125rem;
     line-height: 3.125rem;
   }
-  h1 {
-    font-size: 2.1875rem;
-    line-height: 2.5rem;
-    padding-bottom: 1.875rem;
-  }
-  h2 {
-    font-size: 2rem;
-    line-height: 2.5rem;
-  }
-  h3 {
-    font-size: 1.5rem;
-    line-height: 1.875rem;
-  }
 }
 
 /* Phone: below 768px */
@@ -330,10 +303,6 @@
     font-size: 0.625rem;
     line-height: 0.8125rem;
   }
-  .text-small {
-    font-size: 0.625rem;
-    line-height: 0.875rem;
-  }
   .text-medium {
     font-size: 0.75rem;
     line-height: 1.25rem;
@@ -341,10 +310,6 @@
   .text-baseMono {
     font-size: 0.875rem;
     line-height: 1.375rem;
-  }
-  .text-base {
-    font-size: calc(0.9375rem * var(--reading-size, 1));
-    line-height: calc(1.5rem * var(--reading-size, 1));
   }
   .text-h2 {
     font-size: 1.5rem;
@@ -365,19 +330,6 @@
   .text-big {
     font-size: 2.1875rem;
     line-height: 2.1875rem;
-  }
-  h1 {
-    font-size: 1.75rem;
-    line-height: 2rem;
-    padding-bottom: 1.25rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-    line-height: 1.875rem;
-  }
-  h3 {
-    font-size: 1.25rem;
-    line-height: 1.625rem;
   }
 }
 
@@ -487,34 +439,39 @@ h4 {
   hyphens: none;
 }
 
+/* Headings on the modular scale (brand.css), so they step down on phones
+   and tablets with it (OPENBRAIN-93). They used to be fixed sizes, set
+   after (and so over) the old per-breakpoint rules: a section title was
+   48px on a phone. */
 h1 {
-  font-size: 3.125rem;
-  line-height: 3.125rem;
-  padding-bottom: 3.125rem;
+  font-size: var(--type-h3-size);
+  line-height: var(--type-h3-lh);
+  padding-bottom: 1em;
 }
 
 h2 {
-  font-size: 3rem;
-  line-height: 3.625rem;
-  padding-bottom: 1.25rem;
+  font-size: var(--type-h3-size);
+  line-height: var(--type-h3-lh);
+  padding-bottom: 0.42em;
 }
 
 h2.TN {
-  font-size: 2.375rem;
+  font-size: var(--type-subhead-size);
+  line-height: 1;
   padding-bottom: 0.125rem;
   z-index: 90;
 }
 
 h3 {
-  font-size: 1.875rem;
-  line-height: 2.375rem;
-  padding-top: 1.25rem;
-  padding-bottom: 0.75rem;
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-lh);
+  padding-top: 0.66em;
+  padding-bottom: 0.4em;
 }
 
 h4 {
-  font-size: 1.25rem;
-  line-height: 1.4375rem;
+  font-size: var(--type-body-size);
+  line-height: 1.2;
 }
 
 /*
