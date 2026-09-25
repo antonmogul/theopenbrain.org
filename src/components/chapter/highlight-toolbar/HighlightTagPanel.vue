@@ -15,6 +15,10 @@ defineEmits(["remove", "keydown"]);
 
 <template>
   <div class="hl-panel">
+    <p class="hl-panel-hint">
+      Tags are short labels, like <em>exam</em> or <em>confusing</em>, to group
+      highlights. Filter by them in the Notebook.
+    </p>
     <div class="hl-tags-list">
       <span v-for="(tag, i) in tags" :key="tag" class="hl-tag-chip">
         {{ tag }}
@@ -87,6 +91,14 @@ defineEmits(["remove", "keydown"]);
 .hl-tag-remove:hover {
   background: rgb(var(--color-ink) / 0.1);
   color: rgb(var(--color-warn));
+}
+
+.hl-panel-hint {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgb(var(--color-mute));
 }
 
 .hl-tag-input {

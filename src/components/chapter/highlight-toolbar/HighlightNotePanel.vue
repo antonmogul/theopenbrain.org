@@ -18,6 +18,9 @@ onMounted(() => {
 
 <template>
   <div class="hl-panel">
+    <p class="hl-panel-hint">
+      A note is your own words about this passage. Find them in the Notebook.
+    </p>
     <textarea
       ref="noteTextarea"
       v-model="note"
@@ -46,6 +49,14 @@ onMounted(() => {
   box-shadow:
     0 4px 16px rgb(var(--color-ink) / 0.16),
     0 0 0 1px rgb(var(--color-line));
+}
+
+.hl-panel-hint {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgb(var(--color-mute));
 }
 
 .hl-textarea {
