@@ -30,6 +30,7 @@ import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustr
 import SourceElement from "@/components/UI/SourceElement.vue";
 import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 import FigureWidget from "@/widgets/figures/FigureWidget.vue";
+import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 
 const props = defineProps({
   // The figure's id, e.g. "animationEyeStructur" (the `para.animation.id`).
@@ -115,6 +116,14 @@ const youtubeSrc = computed(() =>
       title: animation.title || '',
     }"
   />
+  <!-- An image figure (or its placeholder): the pane's figure shell
+       (OPENBRAIN-91) -->
+  <figure
+    v-else-if="animation && mode === 'figure-shell'"
+    class="illu-inline illu-inline--shell my-12"
+  >
+    <IllustrationPlaceholder :animation="animation" class="w-full h-full" />
+  </figure>
   <!-- A panel figure rebuilt as a figure widget (OPENBRAIN-82) -->
   <figure
     v-else-if="animation && mode === 'figure-widget'"
@@ -242,6 +251,9 @@ const youtubeSrc = computed(() =>
 /* A figure widget inline: a box of its own, sized to the screen. */
 .illu-inline--widget {
   height: min(80vh, 40rem);
+}
+.illu-inline--shell {
+  height: min(75vh, 36rem);
 }
 
 .illu-inline__stage {

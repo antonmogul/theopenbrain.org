@@ -23,4 +23,16 @@ describe("mobileMode", () => {
     expect(mobileMode({ id: "a", fullscreen: true })).toBe("scroll");
     expect(mobileMode({ id: "a" })).toBe("interactive");
   });
+  it("shows an image figure (or its placeholder) as the figure shell", () => {
+    expect(
+      mobileMode({
+        id: "animationFoundationsFigA",
+        placeholder: true,
+        images: [{ src: "/a.jpg" }],
+      })
+    ).toBe("figure-shell");
+    expect(mobileMode({ id: "animationStressFig1", placeholder: true })).toBe(
+      "figure-shell"
+    );
+  });
 });

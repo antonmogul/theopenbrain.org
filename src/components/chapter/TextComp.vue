@@ -561,6 +561,8 @@ onBeforeUnmount(() => {
     <HoverImg />
     <!-- Viewport-centre trigger line: dev chrome behind ?markers=1 (OPENBRAIN-31) -->
     <div v-if="showMarkers" class="marker-center" />
+    <!-- The reading line on the divider, where figures switch (OPENBRAIN-91) -->
+    <div class="reading-line" aria-hidden="true" />
     <!-- Full-bleed stage layer: inline widget stages teleport here at desktop
          widths because main#text clips its horizontal overflow (OPENBRAIN-37).
          Zero height; each stage is absolutely positioned at its slot's offset. -->

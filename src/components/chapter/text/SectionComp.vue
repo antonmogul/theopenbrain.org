@@ -1,6 +1,25 @@
 <template>
+  <!-- A breakout box goes full screen (OPENBRAIN-91): BreakoutBox is the
+       frame, and this component renders the box's text into it. -->
+  <BreakoutBox
+    v-if="section.kind === 'box' && !boxBody"
+    :section="section"
+    :label="label"
+  >
+    <SectionComp
+      :section="section"
+      :index="index"
+      :label="label"
+      :is-creator="isCreator"
+      box-body
+    />
+  </BreakoutBox>
   <!-- section -->
-  <section :id="section.id" class="overflow-y-visible">
+  <section
+    v-else
+    :id="boxBody ? undefined : section.id"
+    class="overflow-y-visible"
+  >
     <!-- section titel -->
     <!-- Trigger markers are dev chrome (?markers=1), see OPENBRAIN-31 -->
     <div
@@ -28,14 +47,13 @@
     />
 
     <h2
+      v-if="!boxBody"
       class="TN border border-black bg-white rounded-full absolute -translate-x-[5.40625rem] -translate-y-[0.5rem] w-28 h-28 flex items-center justify-center"
-      :class="{ 'TN--box': section.kind === 'box' }"
     >
       {{ label || index + 1 }}
     </h2>
     <!-- Breakout boxes (sections slugged box-*) are lettered, not numbered,
          and announce themselves so they read as asides to the main thread. -->
-    <p v-if="section.kind === 'box'" class="section-kicker">Breakout box</p>
 
     <!-- Section title - editable for creators -->
     <EditableBlock
@@ -51,8 +69,9 @@
       "
       @save="handleSectionTitleSave"
     />
+    <!-- In a box the title is the box's title card (BreakoutBox). -->
     <h2
-      v-else
+      v-else-if="!boxBody"
       :class="store.imgActive ? 'opacity-0' : ''"
       class="T duration-500 z-40 subChapter"
     >
@@ -61,7 +80,7 @@
 
     <StartEndIcon :paragraph="section" art="start" />
     <IllustrationInline
-      v-if="isMobile && section?.animation?.id"
+      v-if="figuresInline && section?.animation?.id"
       :animation-id="section.animation.id"
     />
     <span
@@ -134,7 +153,7 @@
             :paragraph="paragraph"
           />
           <IllustrationInline
-            v-if="isMobile && paragraph?.animation?.id"
+            v-if="figuresInline && paragraph?.animation?.id"
             :key="'inline' + paragraph.id"
             :animation-id="paragraph.animation.id"
           />
@@ -189,11 +208,11 @@ import BreakImages from "./BreakImages.vue";
 const showMarkers = markersEnabled();
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 import IllustrationInline from "@/components/chapter/Illus/IllustrationInline.vue";
-import { useMediaQuery } from "@/composables/useMediaQuery";
-import { READER_NARROW_QUERY } from "@/helper/readerLayout";
+import { useInlineFigures } from "@/composables/useInlineFigures";
 import SubSection from "./SubSection.vue";
 import { useGeneral } from "@/stores";
 import BreakSection from "./BreakSection.vue";
+import BreakoutBox from "./BreakoutBox.vue";
 import InlineImages from "./InlineImages.vue";
 import VideoEmbed from "./VideoEmbed.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
@@ -205,10 +224,9 @@ const sectionLabels = inject("sectionLabels", null);
 
 const store = useGeneral();
 
-// Below the desktop breakpoint the sticky illustration pane is hidden, so
-// trigger figures are rendered inline here instead. Matches the pane's `xl`
-// (1024px) gate.
-const isMobile = useMediaQuery(READER_NARROW_QUERY);
+// Inline below the two-column breakpoint, and inside a floating breakout box
+// (it covers the figure pane): OPENBRAIN-91.
+const figuresInline = useInlineFigures();
 
 const props = defineProps({
   section: Object,
@@ -221,6 +239,8 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** Rendering a breakout box's text inside its BreakoutBox frame. */
+  boxBody: { type: Boolean, default: false },
 });
 
 defineEmits(["save"]);
@@ -243,23 +263,9 @@ const handleSectionTitleSave = ({ content }) =>
 </script>
 
 <style scoped>
-/* A breakout box placed inside its section (OPENBRAIN-70 A4). */
+/* A breakout box placed inside its section (OPENBRAIN-70 A4); the box
+   brings its own spacing (BreakoutBox). */
 .anchored-box {
-  margin: 2.5rem 0;
-}
-.TN--box {
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-  letter-spacing: 0.04em;
-  background: rgb(var(--color-chapter-pale, var(--color-paper)));
-}
-
-.section-kicker {
-  margin: 0 0 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgb(var(--color-mute));
+  margin: 0;
 }
 </style>

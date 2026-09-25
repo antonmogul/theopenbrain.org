@@ -8,7 +8,7 @@
   >
     <StartEndIcon :paragraph="subSections" art="start" />
     <IllustrationInline
-      v-if="isMobile && subSections?.animation?.id"
+      v-if="figuresInline && subSections?.animation?.id"
       :animation-id="subSections.animation.id"
     />
     <span
@@ -147,7 +147,7 @@
               :paragraph="subParagraph"
             />
             <IllustrationInline
-              v-if="isMobile && subParagraph?.animation?.id"
+              v-if="figuresInline && subParagraph?.animation?.id"
               :key="'inline' + subParagraph.id"
               :animation-id="subParagraph.animation.id"
             />
@@ -197,11 +197,12 @@ import VideoEmbed from "./VideoEmbed.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
-import { useMediaQuery } from "@/composables/useMediaQuery";
-import { READER_NARROW_QUERY } from "@/helper/readerLayout";
+import { useInlineFigures } from "@/composables/useInlineFigures";
 
 // Below the desktop pane's breakpoint, render trigger figures inline.
-const isMobile = useMediaQuery(READER_NARROW_QUERY);
+// Inline below the two-column breakpoint, and inside a floating breakout box
+// (it covers the figure pane): OPENBRAIN-91.
+const figuresInline = useInlineFigures();
 
 defineProps({
   paragraph: Object,

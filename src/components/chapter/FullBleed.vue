@@ -21,9 +21,11 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
+  provide,
   ref,
   watch,
 } from "vue";
+import { FULL_BLEED_FLOATING } from "@/composables/useInlineFigures";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { STAGE_DESKTOP_QUERY, STAGE_LAYER_ID } from "@/helper/stageLayer";
 
@@ -42,6 +44,10 @@ const stageTop = ref(0);
 const slotHeight = ref(0);
 
 const floating = computed(() => props.enabled && wide.value && !!layer.value);
+// Descendants (a breakout box's paragraphs) read whether they are floating
+// full width, and show their figures inline while the stage covers the
+// figure pane (OPENBRAIN-91).
+provide(FULL_BLEED_FLOATING, floating);
 const slotStyle = computed(() =>
   floating.value ? { height: `${slotHeight.value}px` } : null
 );
