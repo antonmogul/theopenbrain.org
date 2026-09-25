@@ -41,7 +41,7 @@
           ? 'animationTrigger animationScrollAnchor block noHighlight'
           : ''
       "
-      class="transition left-0 w-full h-[200vh]"
+      class="section-transition-spacer transition left-0 w-full h-[200vh]"
     ></div>
     <div
       v-if="showMarkers && section['paragraphs'][0]?.animation?.transition"

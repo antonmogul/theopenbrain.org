@@ -962,13 +962,17 @@ onBeforeUnmount(() => {
   z-index: 45;
 }
 
+/* Tablets: the column is the page, white edge to edge, with the text
+   centred at the reading measure. It was a fixed 700px card on the beige
+   background (OPENBRAIN-95). */
 @media (min-width: 768px) {
   .ml-text {
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    --narrow-gutter: max(
+      2.5rem,
+      calc((100% - var(--reading-measure, 780px)) / 2)
+    );
+    padding-left: var(--narrow-gutter);
+    padding-right: var(--narrow-gutter);
   }
 }
 @media (min-width: 1024px) {
