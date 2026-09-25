@@ -429,6 +429,16 @@ onMounted(() => {
             })
           );
         }
+        // The reading line shows only while the text crosses mid-screen:
+        // not over the dark opener, not past the end (OPENBRAIN-91).
+        ownedScrollTriggers.push(
+          ScrollTrigger.create({
+            trigger: "#text",
+            start: "top center",
+            end: "bottom center",
+            toggleClass: { targets: ".reading-line", className: "is-on" },
+          })
+        );
         ownedScrollTriggers.push(
           ScrollTrigger.create({
             id: `scrollTriggerAll-${route.params.slug || "chapter"}`,

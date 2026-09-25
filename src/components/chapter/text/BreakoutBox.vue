@@ -149,11 +149,21 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   display: none;
 }
 
+/* Reduced motion: no hold. The reader's own setting decides
+   (data-reduce-motion "1" on, "0" off); the OS setting only when unset. */
+:global(:root[data-reduce-motion="1"]) .bx--floating .bx-hold {
+  height: auto;
+}
+:global(:root[data-reduce-motion="1"]) .bx--floating .bx-intro {
+  position: static;
+  height: auto;
+  padding: 5rem 2rem 3rem;
+}
 @media (prefers-reduced-motion: reduce) {
-  .bx--floating .bx-hold {
+  :global(:root:not([data-reduce-motion="0"])) .bx--floating .bx-hold {
     height: auto;
   }
-  .bx--floating .bx-intro {
+  :global(:root:not([data-reduce-motion="0"])) .bx--floating .bx-intro {
     position: static;
     height: auto;
     padding: 5rem 2rem 3rem;

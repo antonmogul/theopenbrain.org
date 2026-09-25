@@ -875,6 +875,11 @@ sup:hover {
   border-radius: 50%;
   background: rgb(var(--color-paper));
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.reading-line.is-on {
+  opacity: 1;
 }
 @media (max-width: 1023px) {
   .animationTrigger[id]:not([id=""])::before,

@@ -11,16 +11,25 @@
 import { onBeforeUnmount, onMounted } from "vue";
 import { useAnimations } from "@/composables/useAnimations";
 
-const TRIGGER_PREFIX = "triggerAnimation";
+/**
+ * A trigger span's figure key. Sections and subsections name it
+ * `triggerAnimation<Name>` (the key without "animation"); sub-subsections
+ * `trigger<key>`.
+ */
+function keyOf(el) {
+  const id = el.id;
+  if (id.startsWith("triggerAnimation"))
+    return "animation" + id.slice("triggerAnimation".length);
+  return id.replace(/^trigger/, "");
+}
 
 /** The trigger span that brings figure `number` into the pane, or null. */
 export function findFigureTrigger(number, records = [], root = document) {
   const n = String(number).trim();
   if (!n) return null;
-  const triggers = [
-    ...root.querySelectorAll(`.animationTrigger[id^="${TRIGGER_PREFIX}"]`),
-  ];
-  const keyOf = (el) => "animation" + el.id.slice(TRIGGER_PREFIX.length);
+  const triggers = [...root.querySelectorAll(".animationTrigger[id]")].filter(
+    (el) => /^trigger/i.test(el.id)
+  );
   const byKey = new Map(records.map((r) => [r.id, r]));
   return (
     triggers.find((el) => String(byKey.get(keyOf(el))?.figureNumber) === n) ||
@@ -31,9 +40,12 @@ export function findFigureTrigger(number, records = [], root = document) {
 
 /** Scroll so the trigger's top meets the reading line (mid-viewport). */
 export function scrollToFigure(trigger) {
+  // The reader's own setting decides ("1" on, "0" off); the OS only when unset.
+  const pref = document.documentElement.getAttribute("data-reduce-motion");
   const reduce =
-    document.documentElement.getAttribute("data-reduce-motion") === "1" ||
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    pref === "1" ||
+    (pref !== "0" &&
+      !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
   const top =
     trigger.getBoundingClientRect().top +
     window.scrollY -
@@ -48,6 +60,13 @@ export function useFigureLinks() {
   function onClick(e) {
     const ref = e.target?.closest?.(".figure-ref[data-figure]");
     if (!ref) return;
+    // In a creator's editor a figure chip is for selecting, not following.
+    if (
+      ref.closest(
+        '[contenteditable="true"], .ProseMirror, .editable-block-wrapper.is-creator'
+      )
+    )
+      return;
     const trigger = findFigureTrigger(ref.dataset.figure, animations.value);
     if (!trigger) return;
     e.preventDefault();

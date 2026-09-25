@@ -14,8 +14,10 @@
       box-body
     />
   </BreakoutBox>
-  <!-- section -->
-  <section
+  <!-- section (a div in a box: the reader gives every <section> a full
+       screen's height, which left short boxes mostly empty) -->
+  <component
+    :is="boxBody ? 'div' : 'section'"
     v-else
     :id="boxBody ? undefined : section.id"
     class="overflow-y-visible"
@@ -193,7 +195,7 @@
       v-if="section.animationFull"
       :paragraph="section"
     />
-  </section>
+  </component>
 </template>
 
 <script setup>

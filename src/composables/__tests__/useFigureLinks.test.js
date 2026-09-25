@@ -31,6 +31,15 @@ describe("findFigureTrigger", () => {
     );
   });
 
+  it("finds a sub-subsection's trigger (trigger<key>)", () => {
+    document.body.innerHTML = `<span id="triggeranimationFoundationsFig7" class="animationTrigger"></span>`;
+    expect(
+      findFigureTrigger("7", [
+        { id: "animationFoundationsFig7", figureNumber: 7 },
+      ]).id
+    ).toBe("triggeranimationFoundationsFig7");
+  });
+
   it("finds nothing for a figure that isn't on the page", () => {
     page();
     expect(findFigureTrigger("9", [])).toBeNull();
