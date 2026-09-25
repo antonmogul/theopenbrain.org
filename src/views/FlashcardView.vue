@@ -7,6 +7,7 @@ import { useAuth } from "@/composables/useAuth";
 import FlashcardCard from "@/components/flashcard/FlashcardCard.vue";
 import FlashcardRating from "@/components/flashcard/FlashcardRating.vue";
 import FlashcardStats from "@/components/flashcard/FlashcardStats.vue";
+import FlashcardGuide from "@/components/flashcard/FlashcardGuide.vue";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const route = useRoute();
@@ -224,8 +225,8 @@ const formattedDuration = computed(() => {
         <path d="M7 8h10"></path>
         <path d="M7 12h4"></path>
       </svg>
-      <h2>No Flashcards Available</h2>
-      <p>There are no flashcards for this module yet.</p>
+      <h2>No flashcards yet</h2>
+      <p>This chapter doesn't have a flashcard deck yet.</p>
       <button @click="handleExit" class="btn-primary">Go Back</button>
     </div>
 
@@ -259,6 +260,12 @@ const formattedDuration = computed(() => {
           ></div>
         </div>
       </div>
+
+      <!-- How flashcards work, and a draft deck's notice (OPENBRAIN-102) -->
+      <FlashcardGuide
+        class="guide"
+        :draft="!!currentCard?.tags?.includes('draft')"
+      />
 
       <!-- Card -->
       <div class="card-area">
@@ -449,6 +456,10 @@ const formattedDuration = computed(() => {
   height: 100%;
   background: rgb(var(--color-accent));
   transition: width 0.3s ease;
+}
+
+.guide {
+  margin-bottom: 1.25rem;
 }
 
 .card-area {
