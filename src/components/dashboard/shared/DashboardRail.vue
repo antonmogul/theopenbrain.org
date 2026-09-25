@@ -2,7 +2,7 @@
 // The unified light rail: user card + accent-bar nav + back-link. SettingsView
 // .rail aesthetic, click-to-switch (not scroll-spy). Accent inherited via
 // [data-accent] on the parent shell — the rail never takes an accent value.
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import DashboardNavIcon from "./DashboardNavIcon.vue";
 import { useAuth } from "@/composables/useAuth";
@@ -16,22 +16,20 @@ const props = defineProps({
   backTo: { type: [String, Object], default: "/" },
   showBack: { type: Boolean, default: true },
   /** A "Log out" link under the back-link (OPENBRAIN-90: Stuart couldn't
-   *  find one on the student or creator dashboard). */
-  showLogout: { type: Boolean, default: true },
+   *  find one on the student or creator dashboard). Off by default so a
+   *  sample rail (the styleguide) can't sign its viewer out; DashboardShell
+   *  turns it on. */
+  showLogout: { type: Boolean, default: false },
 });
 defineEmits(["update:activeSection", "back"]);
 
 const router = useRouter();
 const { signOut } = useAuth();
-const logoutError = ref("");
 async function logOut() {
-  logoutError.value = "";
+  // signOut clears the local session even if the server call fails, so
+  // leave either way; only log the failure.
   const { error } = (await signOut()) || {};
-  if (error) {
-    logoutError.value = "Couldn't log out. Try again.";
-    console.error("[dashboard] sign out failed", error);
-    return;
-  }
+  if (error) console.warn("[dashboard] server sign-out failed", error);
   router?.push("/");
 }
 const initials = computed(() => {
@@ -99,9 +97,6 @@ const metaLine = computed(() =>
       >
         Log out
       </button>
-      <p v-if="logoutError" class="rail-logout-error" role="alert">
-        {{ logoutError }}
-      </p>
     </slot>
   </aside>
 </template>
@@ -235,10 +230,5 @@ const metaLine = computed(() =>
 .rail-logout {
   margin-top: 14px;
   color: rgb(var(--color-mute));
-}
-.rail-logout-error {
-  margin: 6px 0 0;
-  color: rgb(var(--color-warn));
-  font-size: 0.75rem;
 }
 </style>

@@ -25,11 +25,11 @@ export function linkifyReference(html) {
   if (!html || /<a\s/i.test(html)) return html || "";
   return html
     .replace(
-      /(^|[\s(])(https?:\/\/[^\s<)]+[^\s<).,;])/g,
+      /(^|[\s(])(https?:\/\/(?:[^\s<>"'&()]|\([^\s<>"'&()]*\))+(?:[^\s<>"'&().,;]|\([^\s<>"'&()]*\)))/g,
       '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>'
     )
     .replace(
-      /(^|[\s(])(?:doi:\s*)?(10\.\d{4,9}\/[^\s<)]+[^\s<).,;])/gi,
+      /(^|[\s(])(?:doi:\s*)?(10\.\d{4,9}\/[^\s<>"'&)]+[^\s<>"'&).,;])/gi,
       (all, pre, doi) =>
         `${pre}<a href="https://doi.org/${doi}" target="_blank" rel="noopener noreferrer">doi:${doi}</a>`
     );

@@ -59,6 +59,16 @@ describe("linkifyReference", () => {
     expect(html).toContain("(2015)");
   });
 
+  it("keeps a URL's balanced brackets and stops at an entity", () => {
+    const html = linkifyReference(
+      "See https://en.wikipedia.org/wiki/Retina_(anatomy)&nbsp;today."
+    );
+    expect(html).toContain(
+      'href="https://en.wikipedia.org/wiki/Retina_(anatomy)"'
+    );
+    expect(html).not.toContain('&nbsp;"');
+  });
+
   it("leaves a reference that already has links alone", () => {
     const html = 'See <a href="https://a.b">here</a>.';
     expect(linkifyReference(html)).toBe(html);

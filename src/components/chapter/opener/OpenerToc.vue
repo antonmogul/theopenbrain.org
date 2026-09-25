@@ -116,6 +116,7 @@ function go(anchor, event) {
    40px, titles 53px right of the divider (OPENBRAIN-69). */
 .opener-toc {
   --toc-accent: rgb(var(--color-chapter));
+  --toc-row-font: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -188,22 +189,24 @@ function go(anchor, event) {
    row and the design's 66px one. */
 .opener-toc__section {
   position: relative;
-}
-.opener-toc__row--section {
+  /* Shared by the row and its parts toggle, so both are the same height. */
   --row-pad: clamp(
     0.3125rem,
     calc(
       (100svh - var(--reader-topbar-h, 4rem) - 7.5rem) / var(--rows, 12) / 2 -
-        0.7145em
+        0.7145 * var(--toc-row-font)
     ),
     1.0625rem
   );
+  --row-h: calc(2 * var(--row-pad) + 1.429 * var(--toc-row-font));
+}
+.opener-toc__row--section {
   padding-top: var(--row-pad);
   padding-bottom: var(--row-pad);
   position: relative;
   border-top: 1px solid var(--toc-accent);
   color: var(--toc-accent);
-  font-size: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
+  font-size: var(--toc-row-font);
   font-weight: 450; /* IBM Plex Sans Text */
 }
 /* 40px circle straddling the divider: its centre sits on the line and on
@@ -211,7 +214,7 @@ function go(anchor, event) {
 .opener-toc__num {
   position: absolute;
   left: -1.25rem;
-  top: calc(var(--row-pad, 1.0625rem) + 0.7145em - 1.25rem);
+  top: calc(var(--row-pad, 1.0625rem) + 0.7145 * var(--toc-row-font) - 1.25rem);
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 999px;
@@ -249,13 +252,13 @@ function go(anchor, event) {
 /* The parts toggle sits at the row's right end. */
 .opener-toc__more {
   position: absolute;
-  top: 0.625rem;
+  top: 1px; /* under the row's rule */
   right: 1.25rem;
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
   min-width: 44px;
-  min-height: 40px;
+  height: calc(var(--row-h) - 1px); /* exactly its row: never over the next */
   padding: 0 0.5rem;
   border: 0;
   background: transparent;

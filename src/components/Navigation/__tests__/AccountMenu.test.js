@@ -90,17 +90,28 @@ describe("AccountMenu (OPENBRAIN-90)", () => {
     w.unmount();
   });
 
-  it("says so when logging out fails, and stays signed in", async () => {
+  it("still leaves when the server sign-out fails (the local session is gone)", async () => {
     signIn("student");
     auth.state.signOut.mockResolvedValue({ error: new Error("offline") });
-    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const w = mountMenu();
     await w.find(".account-btn").trigger("click");
     await w.find(".account-logout").trigger("click");
     await flushPromises();
-    expect(w.find("[role=alert]").text()).toMatch(/Couldn't log out/);
-    expect(push).not.toHaveBeenCalled();
-    errSpy.mockRestore();
+    expect(push).toHaveBeenCalledWith("/");
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+    w.unmount();
+  });
+
+  it("closes when focus leaves it", async () => {
+    signIn("student");
+    const w = mountMenu();
+    await w.find(".account-btn").trigger("click");
+    await w
+      .find(".account")
+      .trigger("focusout", { relatedTarget: document.body });
+    expect(w.find("[role=menu]").exists()).toBe(false);
     w.unmount();
   });
 

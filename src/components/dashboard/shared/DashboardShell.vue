@@ -13,6 +13,8 @@ const props = defineProps({
   backLabel: { type: String, default: "Back to book" },
   backTo: { type: [String, Object], default: "/" },
   showBack: { type: Boolean, default: true },
+  /** The rail's Log out (OPENBRAIN-90); a real dashboard always has one. */
+  showLogout: { type: Boolean, default: true },
 });
 defineEmits(["update:activeSection", "back"]);
 // magenta is the :root default — emit no attribute for it.
@@ -31,6 +33,7 @@ const accentAttr = props.accent === "magenta" ? null : props.accent;
         :back-label="backLabel"
         :back-to="backTo"
         :show-back="showBack"
+        :show-logout="showLogout"
         @update:active-section="$emit('update:activeSection', $event)"
         @back="$emit('back')"
       >

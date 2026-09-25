@@ -27,7 +27,6 @@ const { isAuthenticated, user, profile, userRole, signOut } = useAuth();
 const open = ref(false);
 const button = ref(null);
 const menu = ref(null);
-const error = ref("");
 
 const name = computed(
   () => profile.value?.full_name || user.value?.email || "Your account"
@@ -50,7 +49,6 @@ const dashboard = computed(() => dashboardForRole(userRole.value));
 
 async function toggle() {
   open.value = !open.value;
-  error.value = "";
   if (open.value) {
     await nextTick();
     menu.value?.querySelector("[role=menuitem]")?.focus();
@@ -60,35 +58,45 @@ function close({ focus = true } = {}) {
   open.value = false;
   if (focus) button.value?.focus();
 }
+// Tab (or a click) out of the menu closes it, as a menu should.
+function onFocusOut(e) {
+  if (open.value && !e.currentTarget.contains(e.relatedTarget))
+    close({ focus: false });
+}
 function onKeydown(e) {
   if (e.key === "Escape") {
     e.preventDefault();
     close();
     return;
   }
-  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-  e.preventDefault();
+  if (!open.value) return;
   const items = [...(menu.value?.querySelectorAll("[role=menuitem]") || [])];
+  if (!items.length) return;
   const i = items.indexOf(document.activeElement);
-  const next = e.key === "ArrowDown" ? i + 1 : i - 1;
-  items[(next + items.length) % items.length]?.focus();
+  const target = {
+    ArrowDown: items[(i + 1) % items.length],
+    ArrowUp: items[(i - 1 + items.length) % items.length],
+    Home: items[0],
+    End: items.at(-1),
+  }[e.key];
+  if (!target) return;
+  e.preventDefault();
+  target.focus();
 }
 
 async function logOut() {
-  const { error: err } = await signOut();
-  if (err) {
-    // Say so rather than leaving the reader signed in without knowing why.
-    error.value = "Couldn't log out. Check your connection and try again.";
-    console.error("[account menu] sign out failed", err);
-    return;
-  }
   close({ focus: false });
+  // signOut clears the local session even when the server call fails
+  // (offline), so the reader is signed out here either way: leave, and only
+  // log the failure.
+  const { error: err } = (await signOut()) || {};
+  if (err) console.warn("[account menu] server sign-out failed", err);
   router.push("/");
 }
 </script>
 
 <template>
-  <div class="account" @keydown="onKeydown">
+  <div class="account" @keydown="onKeydown" @focusout="onFocusOut">
     <button
       v-if="!isAuthenticated"
       type="button"
@@ -163,7 +171,6 @@ async function logOut() {
         >
           Log out
         </button>
-        <p v-if="error" class="account-error" role="alert">{{ error }}</p>
       </div>
     </template>
   </div>
@@ -290,10 +297,5 @@ async function logOut() {
   margin-top: 4px;
   border-top: 1px solid rgb(var(--color-line));
   border-radius: 0 0 4px 4px;
-}
-.account-error {
-  margin: 6px 12px 4px;
-  color: rgb(var(--color-warn));
-  font: 0.75rem/1.4 var(--font-ui);
 }
 </style>
