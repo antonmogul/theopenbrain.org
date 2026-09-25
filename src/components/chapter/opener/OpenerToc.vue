@@ -10,6 +10,8 @@
  * body below is light. Accent = --color-chapter (set per module by the
  * router), never the global magenta.
  */
+import { reactive } from "vue";
+
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: "" },
@@ -18,6 +20,14 @@ defineProps({
   /* Element id so the hero's arrow can scroll here. */
   id: { type: String, default: "chapter-toc" },
 });
+
+// The outline fits one screen (Stuart, 24 Sep: it was longer than a
+// fullscreen; OPENBRAIN-90): sections only, their parts behind a toggle, and
+// the rows' spacing sized from the number of sections (--rows).
+const openParts = reactive({});
+function toggleParts(id) {
+  openParts[id] = !openParts[id];
+}
 
 function go(anchor, event) {
   // Section ids are UUIDs that can start with a digit, which is not a valid
@@ -40,7 +50,11 @@ function go(anchor, event) {
       </h1>
     </div>
 
-    <nav class="opener-toc__list" aria-label="Chapter contents">
+    <nav
+      class="opener-toc__list"
+      aria-label="Chapter contents"
+      :style="{ '--rows': outline.length || 1 }"
+    >
       <ol class="opener-toc__sections">
         <li
           v-for="entry in outline"
@@ -58,7 +72,28 @@ function go(anchor, event) {
             <span class="opener-toc__num">{{ entry.label }}</span>
             <span class="opener-toc__label">{{ entry.title }}</span>
           </a>
-          <ol v-if="entry.subsections.length" class="opener-toc__subs">
+          <button
+            v-if="entry.subsections.length"
+            type="button"
+            class="opener-toc__more"
+            :aria-expanded="!!openParts[entry.id]"
+            :aria-controls="`${id}-parts-${entry.id}`"
+            :aria-label="`${openParts[entry.id] ? 'Hide' : 'Show'} the parts of ${entry.title}`"
+            @click="toggleParts(entry.id)"
+          >
+            <span class="opener-toc__more-count">{{
+              entry.subsections.length
+            }}</span>
+            <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+              <path d="M2.5 4.5 6 8l3.5-3.5" />
+            </svg>
+          </button>
+          <ol
+            v-if="entry.subsections.length"
+            v-show="openParts[entry.id]"
+            :id="`${id}-parts-${entry.id}`"
+            class="opener-toc__subs"
+          >
             <li v-for="sub in entry.subsections" :key="sub.id">
               <a
                 class="opener-toc__row opener-toc__row--sub"
@@ -81,13 +116,14 @@ function go(anchor, event) {
    40px, titles 53px right of the divider (OPENBRAIN-69). */
 .opener-toc {
   --toc-accent: rgb(var(--color-chapter));
+  --toc-row-font: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 0;
   background: rgb(var(--color-dark-surface));
   color: #fff;
-  padding: clamp(4rem, 6.9vw, 7.5rem) 0 3.75rem;
+  padding: clamp(2.5rem, 4.5vw, 5rem) 0 2.5rem;
   font-family: var(--font-body);
 }
 /* The divider line runs the full height of the block, on the 50/50 split. */
@@ -148,11 +184,29 @@ function go(anchor, event) {
   padding: 1.0625rem 3.75rem 1.0625rem 3.3125rem; /* 17 / 53: a 66px row */
   line-height: 1.429;
 }
+/* Section rows share the screen: what the viewport leaves after the top bar
+   and the block's padding, divided by the number of sections, within a 40px
+   row and the design's 66px one. */
+.opener-toc__section {
+  position: relative;
+  /* Shared by the row and its parts toggle, so both are the same height. */
+  --row-pad: clamp(
+    0.3125rem,
+    calc(
+      (100svh - var(--reader-topbar-h, 4rem) - 7.5rem) / var(--rows, 12) / 2 -
+        0.7145 * var(--toc-row-font)
+    ),
+    1.0625rem
+  );
+  --row-h: calc(2 * var(--row-pad) + 1.429 * var(--toc-row-font));
+}
 .opener-toc__row--section {
+  padding-top: var(--row-pad);
+  padding-bottom: var(--row-pad);
   position: relative;
   border-top: 1px solid var(--toc-accent);
   color: var(--toc-accent);
-  font-size: clamp(1.125rem, 1.28vw, 1.375rem); /* 22px */
+  font-size: var(--toc-row-font);
   font-weight: 450; /* IBM Plex Sans Text */
 }
 /* 40px circle straddling the divider: its centre sits on the line and on
@@ -160,7 +214,7 @@ function go(anchor, event) {
 .opener-toc__num {
   position: absolute;
   left: -1.25rem;
-  top: calc(1.0625rem + 0.7145em - 1.25rem);
+  top: calc(var(--row-pad, 1.0625rem) + 0.7145 * var(--toc-row-font) - 1.25rem);
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 999px;
@@ -190,6 +244,43 @@ function go(anchor, event) {
 .opener-toc__row--sub:hover {
   text-decoration: underline;
   text-underline-offset: 0.2em;
+}
+/* Rows with parts leave room for their toggle at the right end. */
+.opener-toc__section:has(> .opener-toc__more) > .opener-toc__row--section {
+  padding-right: 6.5rem;
+}
+/* The parts toggle sits at the row's right end. */
+.opener-toc__more {
+  position: absolute;
+  top: 1px; /* under the row's rule */
+  right: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 44px;
+  height: calc(var(--row-h) - 1px); /* exactly its row: never over the next */
+  padding: 0 0.5rem;
+  border: 0;
+  background: transparent;
+  color: rgb(255 255 255 / 0.7);
+  font: 0.75rem/1 var(--font-mono);
+  cursor: pointer;
+}
+.opener-toc__more svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  transition: transform 0.15s ease;
+}
+.opener-toc__more[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.opener-toc__more:hover {
+  color: #fff;
+}
+.opener-toc__more:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 .opener-toc__row:focus-visible {
   outline: 2px solid #fff;

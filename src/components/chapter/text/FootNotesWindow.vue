@@ -35,7 +35,12 @@ const activeSup = ref([]);
 
 const toggle = (event) => {
   if (!store.superScriptActive) {
-    activeSup.value = event.target.dataset.sup.split(" ");
+    // Only the Retina's legacy footnote markers (<sup data-sup>) open this
+    // sheet. Citation superscripts (<sup class="citation-ref">) have their
+    // own tooltip; they used to throw here and break it (OPENBRAIN-90).
+    const sup = event?.target?.closest?.("sup[data-sup]");
+    if (!sup) return;
+    activeSup.value = sup.dataset.sup.split(" ");
     store.superScriptActive = true;
   } else {
     activeSup.value = [];
@@ -43,18 +48,17 @@ const toggle = (event) => {
   }
 };
 
-onMounted(() => {
-  let sups = document.getElementsByTagName("SUP");
-  for (let sup of sups) {
-    sup.addEventListener("click", (event) => toggle(event));
-  }
-});
-onBeforeUnmount(() => {
-  let sups = document.getElementsByTagName("SUP");
-  for (let sup of sups) {
-    sup.removeEventListener("click", toggle);
-  }
-});
+// One listener for the page, not one per <sup> at mount: the chapter's text
+// arrives after this mounts, so the old per-sup listeners never attached
+// and the Retina's footnotes didn't open (OPENBRAIN-90).
+const onDocumentClick = (event) => {
+  if (event.target?.closest?.("sup[data-sup]")) toggle(event);
+};
+// Capture phase: the reader's text handlers stop some clicks from bubbling.
+onMounted(() => document.addEventListener("click", onDocumentClick, true));
+onBeforeUnmount(() =>
+  document.removeEventListener("click", onDocumentClick, true)
+);
 </script>
 
 <style scoped></style>

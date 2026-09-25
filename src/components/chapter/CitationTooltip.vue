@@ -6,6 +6,10 @@ const refsCtx = inject("references", null);
 const visible = ref(false);
 const tooltipRef = ref(null);
 const currentRef = ref(null);
+// A click pins the tooltip: hovering shows it, and a click used to toggle
+// it, so clicking a reference you were hovering closed it (OPENBRAIN-90).
+// Pinned, it stays until a click elsewhere or Escape, so its links work.
+const pinned = ref(false);
 const position = ref({ top: 0, left: 0 });
 
 function formatAuthors(authors) {
@@ -52,11 +56,12 @@ function show(refData, rect) {
 function hide() {
   visible.value = false;
   currentRef.value = null;
+  pinned.value = false;
 }
 
 function handleMouseEnter(e) {
   const target = e.target.closest(".citation-ref");
-  if (!target || !refsCtx) return;
+  if (!target || !refsCtx || pinned.value) return;
 
   const num = parseInt(target.dataset.ref, 10);
   const refData = refsCtx.getReference(num);
@@ -67,7 +72,7 @@ function handleMouseEnter(e) {
 
 function handleMouseLeave(e) {
   const target = e.target.closest(".citation-ref");
-  if (!target) return;
+  if (!target || pinned.value) return;
 
   // Check if we're moving to the tooltip itself
   const related = e.relatedTarget;
@@ -77,6 +82,7 @@ function handleMouseLeave(e) {
 }
 
 function handleTooltipLeave(e) {
+  if (pinned.value) return;
   // Check if we're moving back to a citation-ref
   const related = e.relatedTarget;
   if (related && related.closest && related.closest(".citation-ref")) return;
@@ -91,11 +97,13 @@ function handleClick(e) {
   const refData = refsCtx.getReference(num);
   if (!refData) return;
 
-  if (visible.value && currentRef.value?.number === num) {
-    hide();
-  } else {
+  pinned.value = true;
+  if (!(visible.value && currentRef.value?.number === num))
     show(refData, target.getBoundingClientRect());
-  }
+}
+
+function handleKeydown(e) {
+  if (e.key === "Escape" && visible.value) hide();
 }
 
 function handleDocumentClick(e) {
@@ -110,6 +118,7 @@ onMounted(() => {
   document.addEventListener("mouseout", handleMouseLeave);
   document.addEventListener("click", handleClick);
   document.addEventListener("click", handleDocumentClick, true);
+  document.addEventListener("keydown", handleKeydown);
 });
 
 onBeforeUnmount(() => {
@@ -117,6 +126,7 @@ onBeforeUnmount(() => {
   document.removeEventListener("mouseout", handleMouseLeave);
   document.removeEventListener("click", handleClick);
   document.removeEventListener("click", handleDocumentClick, true);
+  document.removeEventListener("keydown", handleKeydown);
 });
 </script>
 
@@ -129,15 +139,21 @@ onBeforeUnmount(() => {
       :style="{ top: position.top + 'px', left: position.left + 'px' }"
       @mouseleave="handleTooltipLeave"
     >
-      <div class="ct-authors">{{ formatReference(currentRef) }}</div>
-      <div class="ct-title">"{{ currentRef.title }}"</div>
-      <div v-if="currentRef.journal" class="ct-journal">
+      <!-- The chapter's own reference text (no structured row yet): the
+           chapter's HTML, with its URLs and DOIs as links. -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div v-if="currentRef.html" class="ct-text" v-html="currentRef.html" />
+      <template v-else>
+        <div class="ct-authors">{{ formatReference(currentRef) }}</div>
+        <div class="ct-title">"{{ currentRef.title }}"</div>
+      </template>
+      <div v-if="!currentRef.html && currentRef.journal" class="ct-journal">
         <em>{{ currentRef.journal }}</em
         ><span v-if="currentRef.volume">, {{ currentRef.volume }}</span
         ><span v-if="currentRef.pages">, {{ currentRef.pages }}</span>
       </div>
       <a
-        v-if="currentRef.doi"
+        v-if="!currentRef.html && currentRef.doi"
         :href="`https://doi.org/${currentRef.doi}`"
         target="_blank"
         rel="noopener noreferrer"
@@ -166,6 +182,16 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.ct-text {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+.ct-text :deep(a) {
+  color: rgb(var(--color-accent));
+  text-decoration: underline;
+}
 .citation-tooltip {
   position: fixed;
   z-index: 9999;

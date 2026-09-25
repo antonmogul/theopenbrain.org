@@ -3,6 +3,7 @@ import { ref, computed, nextTick } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useHomeRoute } from "@/composables/useHomeRoute";
+import AccountMenu from "@/components/Navigation/AccountMenu.vue";
 
 const props = defineProps({
   chapterTitle: {
@@ -199,6 +200,9 @@ function onDropdownKeydown(event) {
           {{ t.label }}
         </button>
       </div>
+
+      <!-- Account: back to the dashboard, settings, log out (OPENBRAIN-90) -->
+      <AccountMenu />
     </div>
 
     <!-- Section dropdown -->

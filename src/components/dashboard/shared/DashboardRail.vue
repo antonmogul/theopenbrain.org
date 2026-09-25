@@ -3,7 +3,9 @@
 // .rail aesthetic, click-to-switch (not scroll-spy). Accent inherited via
 // [data-accent] on the parent shell — the rail never takes an accent value.
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import DashboardNavIcon from "./DashboardNavIcon.vue";
+import { useAuth } from "@/composables/useAuth";
 const props = defineProps({
   navItems: { type: Array, required: true }, // [{ id, label, icon?, count?, soon? }]
   activeSection: { type: String, required: true },
@@ -13,8 +15,23 @@ const props = defineProps({
   backLabel: { type: String, default: "Back to book" },
   backTo: { type: [String, Object], default: "/" },
   showBack: { type: Boolean, default: true },
+  /** A "Log out" link under the back-link (OPENBRAIN-90: Stuart couldn't
+   *  find one on the student or creator dashboard). Off by default so a
+   *  sample rail (the styleguide) can't sign its viewer out; DashboardShell
+   *  turns it on. */
+  showLogout: { type: Boolean, default: false },
 });
 defineEmits(["update:activeSection", "back"]);
+
+const router = useRouter();
+const { signOut } = useAuth();
+async function logOut() {
+  // signOut clears the local session even if the server call fails, so
+  // leave either way; only log the failure.
+  const { error } = (await signOut()) || {};
+  if (error) console.warn("[dashboard] server sign-out failed", error);
+  router?.push("/");
+}
 const initials = computed(() => {
   const n = props.displayName || props.email || "?";
   return n
@@ -72,6 +89,14 @@ const metaLine = computed(() =>
           ← {{ backLabel }}
         </button>
       </template>
+      <button
+        v-if="showLogout"
+        type="button"
+        class="rail-back rail-logout"
+        @click="logOut"
+      >
+        Log out
+      </button>
     </slot>
   </aside>
 </template>
@@ -201,5 +226,9 @@ const metaLine = computed(() =>
 }
 .rail-back:hover {
   color: rgb(var(--color-accent));
+}
+.rail-logout {
+  margin-top: 14px;
+  color: rgb(var(--color-mute));
 }
 </style>
