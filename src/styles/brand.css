@@ -90,12 +90,20 @@
      column is --reader-prose-w pinned right, the figure pane fills the rest.
      OPENBRAIN-31 restores the original 50/50 split (Sonia's chapter frames are
      864 + 864 on a 1728 canvas): prose = 50vw, capped at the legacy 890px
-     measure so very wide windows keep a readable column. Every legacy rule
+     measure so very wide windows keep a readable column. OPENBRAIN-89 gives it
+     a 35rem (560px) floor: two columns now start at 1024px
+     (src/helper/readerLayout.js), where half the window would leave lines of
+     about 40 characters; the figure pane takes what is left (464px at
+     1024px). Every legacy rule
      that used to spell out min(50vw, calc(780px + 6.875rem)) must derive from
      this token instead — the scroll-trigger markers drifted into the middle of
      the figure pane when the two disagreed. --reader-topbar-h lets the sticky
      figure pane start below the fixed top bar instead of behind it. */
-  --reader-prose-w: min(50vw, calc(780px + 6.875rem));
+  --reader-prose-w: clamp(35rem, 50vw, calc(780px + 6.875rem));
+  /* The prose column's gutters: the originals from 1280px up, tighter on
+     laptop widths so the floor above still gives a readable line. */
+  --reader-gutter-l: 2rem;
+  --reader-gutter-r: 2rem;
   /* Matches the rendered app-bar height (progress track + bar-row content).
      Keep in sync if the bar's padding / button size changes. */
   --reader-topbar-h: 4rem;
@@ -105,6 +113,13 @@
   --font-body: "IBM Plex Sans", system-ui, sans-serif;
   --font-ui: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --reader-gutter-l: 3.125rem;
+    --reader-gutter-r: 3.75rem;
+  }
 }
 
 [data-theme="dark"] {

@@ -475,7 +475,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     id="container"
-    class="absolute top-start z-40 w-full xl:w-text pointer-events-none font-sans"
+    class="absolute top-start z-40 w-full reader:w-text pointer-events-none font-sans"
   >
     <!-- Edit mode (OPENBRAIN-58, 64): off until a creator turns it on. -->
     <button
@@ -568,7 +568,7 @@ onBeforeUnmount(() => {
     <div id="scroller" class="pointer-events-none w-full">
       <main
         id="text"
-        class="text pointer-events-auto w-full text-left pt-[calc(var(--reader-topbar-h)+1.25rem)] ml-text z-30 xl:border-l bg-white border-black tracking-wide duration-300 text-black"
+        class="text pointer-events-auto w-full text-left pt-[calc(var(--reader-topbar-h)+1.25rem)] ml-text z-30 reader:border-l bg-white border-black tracking-wide duration-300 text-black"
       >
         <!-- intro -->
         <section
@@ -905,7 +905,7 @@ onBeforeUnmount(() => {
   /* #container is `absolute` and as tall as the prose column, so stages
      positioned from this layer scroll with the text. Width is the real
      content width (helper/appWidth.js), never 100vw, so a stage can't grow
-     the page. Above the fixed figure pane (xl:z-30) within #container's
+     the page. Above the fixed figure pane (reader:z-30) within #container's
      z-40 context. */
   position: absolute;
   top: 0;
@@ -926,7 +926,7 @@ onBeforeUnmount(() => {
     padding-right: 1.25rem;
   }
 }
-@media (min-width: 1300px) {
+@media (min-width: 1024px) {
   .ml-text {
     /* Prose column width + right-pinned offset both derive from the shared
        --reader-prose-w token (brand.css) so the figure pane and prose can't
@@ -936,13 +936,13 @@ onBeforeUnmount(() => {
     margin-left: calc(100vw - var(--reader-prose-w));
     margin-right: 0;
     max-width: unset;
-    padding-left: 3.125rem;
-    padding-right: 3.75rem;
+    padding-left: var(--reader-gutter-l);
+    padding-right: var(--reader-gutter-r);
   }
 
   .chapter-end-blocks {
-    width: calc(100% + 3.125rem);
-    margin-left: -3.125rem;
+    width: calc(100% + var(--reader-gutter-l));
+    margin-left: calc(-1 * var(--reader-gutter-l));
   }
 }
 </style>

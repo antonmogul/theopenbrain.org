@@ -198,9 +198,10 @@ import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
+import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 
 // Below the desktop pane's breakpoint, render trigger figures inline.
-const isMobile = useMediaQuery("(max-width: 1299px)");
+const isMobile = useMediaQuery(READER_NARROW_QUERY);
 
 defineProps({
   paragraph: Object,
