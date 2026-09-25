@@ -202,11 +202,8 @@ const stats = computed(() => {
 });
 
 // order_index is 1-based in DB and matches /chapter/:n URL numbering directly.
-// The numeric route is the chapter OVERVIEW; the slug route is the READER.
-function chapterRoute(mod) {
-  return `/chapter/${mod.order_index}`;
-}
-
+// The library links to the reader (the slug route); the numeric overview
+// route still resolves for old links.
 function readerRoute(mod) {
   return `/chapter/${mod.order_index}/${mod.slug}`;
 }
@@ -304,11 +301,13 @@ function chapterNumberFor(mod) {
     <ul v-else class="grid">
       <li v-for="mod in libraryModules" :key="mod.id">
         <div class="card" :class="{ 'card--draft': mod.isDraft }">
-          <!-- A draft has no public overview page, so it links to the reader. -->
+          <!-- Straight into the chapter: its opener has the outline, so
+               the overview page in between was one click too many
+               (Stuart, 24 Sep; OPENBRAIN-90). -->
           <router-link
-            :to="mod.isDraft ? readerRoute(mod) : chapterRoute(mod)"
+            :to="readerRoute(mod)"
             class="cover"
-            :aria-label="`${mod.title} — ${mod.isDraft ? 'draft' : 'overview'}`"
+            :aria-label="`${mod.title}${mod.isDraft ? ' — draft' : ''}`"
           >
             <img :src="coverForModule(mod)" :alt="mod.title" />
             <span v-if="mod.isDraft" class="pill pill-draft">Draft</span>
@@ -330,10 +329,7 @@ function chapterNumberFor(mod) {
               Chapter {{ chapterNumberFor(mod) }}
             </span>
             <h3 class="title">
-              <router-link
-                :to="mod.isDraft ? readerRoute(mod) : chapterRoute(mod)"
-                class="title-link"
-              >
+              <router-link :to="readerRoute(mod)" class="title-link">
                 {{ mod.title }}
               </router-link>
             </h3>
@@ -350,13 +346,6 @@ function chapterNumberFor(mod) {
             <div class="card-actions">
               <router-link :to="readerRoute(mod)" class="card-action">
                 Read →
-              </router-link>
-              <router-link
-                v-if="!mod.isDraft"
-                :to="chapterRoute(mod)"
-                class="card-action card-action--muted"
-              >
-                Overview →
               </router-link>
             </div>
           </div>
@@ -739,10 +728,6 @@ function chapterNumberFor(mod) {
 .card-action:hover {
   text-decoration: underline;
 }
-.card-action--muted {
-  color: rgb(var(--color-mute));
-}
-
 /* Status pills sit on the cover, top-right */
 .pill {
   position: absolute;

@@ -4,7 +4,6 @@ import { onBeforeRouteLeave, useRoute } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
 import ChapterOpener from "@/components/chapter/opener/ChapterOpener.vue";
-import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 import { useGeneral, useText, useCom } from "@/stores";
 import Comment from "../components/chapter/text/CommentComp.vue";
@@ -24,12 +23,12 @@ import EndOfChapterCallout from "@/components/chapter/EndOfChapterCallout.vue";
 
 // Phase 3A: Composables for highlighting
 import { useTextSelection } from "@/composables/useTextSelection";
+import { referenceFromChapter } from "@/helper/chapterReferences";
 import { useHighlights } from "@/composables/useHighlights";
 import { useHighlightRenderer } from "@/composables/useHighlightRenderer";
 import { useNotes } from "@/composables/useNotes";
 import { useReadingProgress } from "@/composables/useReadingProgress";
 import { useAuth } from "@/composables/useAuth";
-import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
 import { applyChapterRamp } from "@/helper/chapterTheme";
@@ -46,8 +45,6 @@ const commentStore = useCom();
 
 // Phase 3A: Authentication and highlighting composables
 const { isAuthenticated } = useAuth();
-const { toggle: toggleStudentTools, isOpen: studentToolsOpen } =
-  useReaderSidebar();
 
 // Text selection for highlighting
 const {
@@ -107,9 +104,13 @@ provide("notes", {
   updateNote,
   deleteNote,
 });
+// A structured reference row when there is one, else the chapter's own
+// reference list (its Footnotes or References section), so a click on a
+// superscript always shows the reference (OPENBRAIN-90).
 provide("references", {
   references,
-  getReference,
+  getReference: (n) =>
+    getReference(n) || referenceFromChapter(storeText.text, n),
 });
 provide("readingProgress", {
   progress: readingScrollPercent,
@@ -678,32 +679,9 @@ async function handleDeleteHighlight(highlightId) {
       <!-- Citation tooltip for Supabase chapters -->
       <CitationTooltip v-if="isSupabaseChapter" />
 
-      <!-- Student Tools toggle button -->
-      <button
-        v-if="isAuthenticated && isSupabaseChapter"
-        class="student-tools-toggle"
-        :class="{ open: studentToolsOpen }"
-        @click="toggleStudentTools()"
-      >
-        <svg
-          v-if="!studentToolsOpen"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect x="2" y="4" width="20" height="16" rx="2" />
-          <path d="M7 8h10" />
-          <path d="M7 12h4" />
-        </svg>
-        <CloseIcon v-else :width="16" :height="16" />
-        <span>Student Tools</span>
-      </button>
-
+      <!-- The reader's tools (Info / Notebook / Chat) open from the top bar;
+           the second "Student Tools" button here duplicated them (Stuart,
+           24 Sep, OPENBRAIN-90). -->
       <!-- Unified Reader Sidebar (Supabase chapters only) -->
       <ReaderSidebar
         v-if="isAuthenticated && isSupabaseChapter"
@@ -724,30 +702,6 @@ export default {
 .duration-Fix {
   transition: all 0s !important;
   transition-delay: 0;
-}
-
-.student-tools-toggle {
-  position: fixed;
-  bottom: 1.25rem;
-  right: 1.25rem;
-  z-index: 180;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.125rem;
-  border-radius: 12px;
-  border: 1.5px solid rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  color: #343434;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .draft-ribbon {
@@ -801,26 +755,9 @@ export default {
 }
 
 @media (max-width: 767px) {
-  .student-tools-toggle {
-    min-height: 44px;
-    right: 0.75rem;
-    bottom: 0.75rem;
-  }
-
   .save-error {
     left: 0.75rem;
     right: 0.75rem;
   }
-}
-
-.student-tools-toggle:hover {
-  border-color: rgba(0, 0, 0, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.student-tools-toggle.open {
-  background: rgb(var(--color-paper));
-  border-color: rgb(var(--color-accent));
-  color: rgb(var(--color-accent));
 }
 </style>

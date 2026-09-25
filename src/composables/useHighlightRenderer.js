@@ -128,16 +128,25 @@ function createMarkElement(id, bgColor, hoverColor, highlight) {
   mark.setAttribute("data-hl-color", highlight.color || "yellow");
   mark.style.backgroundColor = bgColor;
   mark.style.borderRadius = "2px";
-  mark.style.padding = "0 1px";
+  // No padding: a highlight that crosses a link or citation is several
+  // <mark>s, and each pixel of padding shifted the words after it (Stuart,
+  // 24 Sep: "highlighting changes the spacing of letters"). The shadow
+  // gives the same soft edge without taking any space. Keep in step with
+  // the hover colour below.
+  mark.style.boxShadow = `0 0 0 1px ${bgColor}`;
+  mark.style.boxDecorationBreak = "clone";
+  mark.style.webkitBoxDecorationBreak = "clone";
   mark.style.cursor = "pointer";
   mark.style.transition = "background-color 0.15s ease";
 
   // Hover effect via event listeners
   mark.addEventListener("mouseenter", () => {
     mark.style.backgroundColor = hoverColor;
+    mark.style.boxShadow = `0 0 0 1px ${hoverColor}`;
   });
   mark.addEventListener("mouseleave", () => {
     mark.style.backgroundColor = bgColor;
+    mark.style.boxShadow = `0 0 0 1px ${bgColor}`;
   });
 
   // Click handler — dispatches custom event for edit toolbar

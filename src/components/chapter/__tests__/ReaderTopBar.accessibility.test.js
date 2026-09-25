@@ -29,6 +29,11 @@ vi.mock("@/composables/useHomeRoute", () => ({
   useHomeRoute: () => "/chapters",
 }));
 
+// The account menu has its own tests (AccountMenu.test.js).
+vi.mock("@/components/Navigation/AccountMenu.vue", () => ({
+  default: { name: "AccountMenu", render: () => null },
+}));
+
 describe("ReaderTopBar accessibility", () => {
   it("exposes section navigation as a disclosure and returns focus on Escape", async () => {
     const wrapper = mount(ReaderTopBar, {
