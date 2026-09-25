@@ -65,7 +65,7 @@ export function referenceDisplay(ref) {
       /[&<>"]/g,
       (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]
     );
-  const html =
+  const html = (
     ref.html ||
     (ref.raw_text && linkifyReference(ref.raw_text)) ||
     [
@@ -75,12 +75,22 @@ export function referenceDisplay(ref) {
       ref.journal ? `<em>${esc(ref.journal)}</em>` : "",
     ]
       .filter(Boolean)
-      .join(" ");
-  const href = ref.doi
+      .join(" ")
+  )
+    // The Retina's entries write page ranges with "--".
+    .replace(/(\d)--(\d)/g, "$1–$2");
+  const linked = ref.doi
     ? `https://doi.org/${ref.doi}`
     : ref.url && /^https?:\/\//.test(ref.url)
       ? ref.url
       : null;
+  // No second link when the text already links the source.
+  const inText =
+    linked &&
+    (html.includes(`href="${linked}"`) ||
+      (ref.doi &&
+        html.toLowerCase().includes(`doi.org/${ref.doi.toLowerCase()}`)));
+  const href = inText ? null : linked;
   return {
     html,
     href,

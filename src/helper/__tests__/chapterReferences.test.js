@@ -109,4 +109,17 @@ describe("referenceDisplay (OPENBRAIN-92)", () => {
     );
     expect(d.href).toBeNull();
   });
+
+  it("links the source once: not again when the text already links it", () => {
+    const d = referenceDisplay({
+      raw_text:
+        "Schwartz, G. W. Texture sensitivity. in <em>Retinal Computation</em> 126--142 (2021). doi:10.1016/B978-0-12-819896-4.00008-1.",
+      doi: "10.1016/B978-0-12-819896-4.00008-1",
+    });
+    expect(d.html).toContain("126–142");
+    expect(d.html).toContain(
+      'href="https://doi.org/10.1016/B978-0-12-819896-4.00008-1"'
+    );
+    expect(d.href).toBeNull();
+  });
 });
