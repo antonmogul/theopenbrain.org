@@ -290,7 +290,7 @@ CSS custom properties in `src/styles/brand.css` are the single source of truth f
 
 Conventions:
 
-- **Chapter ramp** — `[data-chapter="fund|perc|move|lear|deve"]` on `<html>` switches `--color-chapter{,-deep,-soft,-pale}`. Keys and values mirror the Figma Assets Library variables `book/<key>/{main,dark,medium,light}` (`WNnPvBkixODGsiYmIZKSWw`, node 3:37); the router sets the key from the module's subject ramp, never from the chapter number. Inside a chapter the ramp is the chapter's identity colour (opener title, TOC numbers, section badges); the global `--color-accent` (magenta) stays the interaction accent everywhere — breakout cards, highlight tools, links, dashboards.
+- **Chapter ramp** — `[data-chapter="fund|perc|move|lear|deve"]` on `<html>` switches `--color-chapter{,-deep,-soft,-pale}`. Keys and values mirror the Figma Assets Library variables `book/<key>/{main,dark,medium,light}` (`WNnPvBkixODGsiYmIZKSWw`, node 3:37); the router sets the key from the module's subject ramp, never from the chapter number. Inside a chapter the ramp is the chapter's identity colour (opener title, TOC numbers, section badges); widget breakout cards and the widgets inside them use it too (OPENBRAIN-98); the global `--color-accent` (magenta) stays the interaction accent for highlight tools, links and dashboards.
 - **Theme** — `[data-theme="light|dark"]` on `<html>`. System mode resolved live via `matchMedia`.
 - **Accent** — `[data-accent="magenta|teal|amber|mono"]` on `<html>` overrides `--color-accent`.
 - **Font pair** — `[data-fontpair="ibm-plex-legacy|newsreader|literata|georgia|sans"]` on `<html>` overrides `--font-body`, `--font-ui`, `--font-mono`. Default `:root` binds these to IBM Plex (today's behavior); `data-fontpair="newsreader"` etc. swap them.
