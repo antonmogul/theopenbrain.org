@@ -379,10 +379,33 @@ input {
 }
 
 /* Scoped to .chapter-reader so it doesn't pollute Settings, dashboards,
-   etc. The original design used full-viewport sections for the scroll-paged
-   reader layout. */
-.chapter-reader section {
-  min-height: 100vh;
+   etc. The original design used full-viewport sections (and 15rem below
+   each) so the pinned figure pane had scroll room for its states. Only the
+   two-column reader has that pane: below 1024px, with the figures inline,
+   it was a blank screen before every section (OPENBRAIN-95). */
+@media (min-width: 1024px) {
+  .chapter-reader section {
+    min-height: 100vh;
+    padding-bottom: 15rem;
+  }
+}
+@media (max-width: 1023px) {
+  .chapter-reader section {
+    padding-bottom: 4rem;
+  }
+  /* The pane's section-transition spacer (200vh) has nothing to drive. */
+  .chapter-reader .section-transition-spacer {
+    display: none;
+  }
+  /* The section number and the intro's eye sit above the title instead of
+     hanging off the column's left edge, where the column clips them. */
+  .chapter-reader main#text .TN {
+    position: relative;
+    transform: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1rem;
+  }
 }
 
 /* Anchor targets (sections, subsection spans, intro heading) land below the
@@ -426,10 +449,6 @@ section p.breakSectionTitle {
 html,
 body {
   overscroll-behavior: none;
-}
-
-.chapter-reader section {
-  padding-bottom: 15rem;
 }
 
 h1,
