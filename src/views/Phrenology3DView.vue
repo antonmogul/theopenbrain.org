@@ -29,7 +29,13 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import gsap from "gsap";
 import { PHRENOLOGY_CITATION, usePhrenology } from "@/mocks/phrenology";
-import { MAP_H, MAP_SRC, MAP_W, loadRegionMap } from "@/helper/phrenologyMaps";
+import {
+  MAP_H,
+  MAP_SRC,
+  MAP_W,
+  facultyInfoByNumber,
+  loadRegionMap,
+} from "@/helper/phrenologyMaps";
 import { reducedMotionK } from "@/helper/motion";
 
 const MODEL_SRC = "/publicAssets/models/skull.glb";
@@ -477,22 +483,9 @@ function loop() {
   placeMarkers();
 }
 
-/*
- * Names and blurbs from the mock, matched BY NUMBER, and only for 1–18. The
- * Figma map's regions 1–18 sit where Spurzheim's faculties of those numbers
- * sit (1 at the nape, 10 at the crown, 13 top of the forehead…), and the mock
- * is written in Spurzheim's numbering. Its forehead regions (19–33) follow a
- * different chart, so a Spurzheim name there would be the wrong faculty:
- * those show their number until the authors supply the chart's own list.
- */
-const SPURZHEIM_MATCHES_MAP = 18;
 async function attachFacultyInfo() {
-  for (const v of await fetchViews()) {
-    for (const r of v.regions) {
-      if (r.n <= SPURZHEIM_MATCHES_MAP && !facultyInfo.has(r.n))
-        facultyInfo.set(r.n, { name: r.name, blurb: r.blurb });
-    }
-  }
+  for (const [n, info] of facultyInfoByNumber(await fetchViews()))
+    facultyInfo.set(n, info);
 }
 
 onMounted(async () => {

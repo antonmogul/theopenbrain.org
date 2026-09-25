@@ -7,15 +7,19 @@
  *     real 3D model — each view is its own engraving, and GSAP sells the turn:
  *     the outgoing view yaws away in perspective while the incoming one yaws in
  *     from the opposite side (direction-aware, based on tab order).
- *   • The phrenology region map draws itself over the skull (stroke-dashoffset
- *     line drawing — no paid DrawSVG plugin needed), then numbered faculty
- *     hotspots pop in with a stagger.
- *   • Clicking a hotspot expands a label pill and slides in a paper detail
+ *   • The phrenology region map (the Figma maps, helper/phrenologyMaps,
+ *     drawn from their own outlines) wipes on over the skull, and its
+ *     regions are the targets: a region lights up in the chapter colour under the pointer
+ *     (both halves of a paired one) and a click opens it (OPENBRAIN-98; they
+ *     used to be numbered dots).
+ *   • Opening a region lights it and slides in a paper detail
  *     card from the right while the skull cedes ground to the left
  *     (mirrors Figma frame 2 of the storyboard).
  *
  * Art: the real Figma engravings live in
- *   public/publicAssets/images/phrenology/{skull,lines}-{anterior|lateral|posterior}.png
+ *   public/publicAssets/images/phrenology/skull-{anterior|lateral|posterior}.png
+ * and the maps in regions-{front|side|back}.svg (the lines-*.png layers are
+ * no longer drawn: the side one is a different drawing from its map).
  * (the hand-drawn placeholder SVGs that predated them were removed in
  * OPENBRAIN-7).
  *
@@ -26,6 +30,17 @@ import { ref, computed, onMounted, nextTick } from "vue";
 import gsap from "gsap";
 import { PHRENOLOGY_CITATION, usePhrenology } from "@/mocks/phrenology";
 import { reducedMotionK } from "@/helper/motion";
+import {
+  MAP_H,
+  MAP_SRC,
+  MAP_W,
+  MAP_FIT,
+  VIEW_MAP,
+  facultyInfoByNumber,
+  fitTransform,
+  mapOutlines,
+  regionShapes,
+} from "@/helper/phrenologyMaps";
 
 // Narrow viewports get the detail card as a bottom sheet (media query below),
 // so the slide animation runs on the y axis and the stage doesn't cede ground.
@@ -44,7 +59,6 @@ const MOTION = {
   in: 0.55, // incoming view settles a bit slower
   draw: 0.7, // overlay line drawing
   drawStagger: 0.08,
-  popStagger: 0.05, // hotspot cascade
   panel: 0.55, // detail card slide
   easeOut: "power2.in",
   easeIn: "power3.out",
@@ -54,15 +68,17 @@ const { fetchViews } = usePhrenology();
 
 const views = ref([]);
 const activeIdx = ref(0);
-const activeRegion = ref(null); // region object shown in the detail card
+const activeRegion = ref(null); // { n, name, blurb } in the detail card
+const hoverN = ref(null); // faculty number under the pointer / focus
+const mapsByView = ref({}); // view id → { regions, outlines, transform }
+let facultyInfo = new Map(); // n → { name, blurb }
 const animating = ref(false);
 
 const stageEl = ref(null); // perspective wrapper
 const skullEl = ref(null); // the yawing card
-const linesEl = ref(null); // raster phrenology-map overlay (real Figma asset)
-const hotspotEls = ref([]);
+const regionsEl = ref(null); // the clickable region layer (SVG)
+const regionEls = ref([]);
 const panelEl = ref(null);
-const pillEl = ref(null);
 
 const activeView = computed(() => views.value[activeIdx.value] ?? null);
 const engravingSrc = computed(() =>
@@ -70,20 +86,21 @@ const engravingSrc = computed(() =>
     ? `/publicAssets/images/phrenology/skull-${activeView.value.id}.png`
     : ""
 );
-const linesSrc = computed(() =>
-  activeView.value
-    ? `/publicAssets/images/phrenology/lines-${activeView.value.id}.png`
-    : ""
-);
 
-function setHotspotRef(el, i) {
-  if (el) hotspotEls.value[i] = el;
+const activeMap = computed(() =>
+  activeView.value ? mapsByView.value[activeView.value.id] || null : null
+);
+function nameOf(n) {
+  return facultyInfo.get(n)?.name || `Faculty ${n}`;
 }
 
-/* ── Keyboard navigation between hotspots ─────────────────────────────────
- * Arrow keys cycle focus through the numbered dots (the primary interactive
- * elements); Enter/Space activates natively (they're <button>s); Escape
- * closes the detail card.
+function setRegionRef(el, i) {
+  if (el) regionEls.value[i] = el;
+}
+
+/* ── Keyboard navigation between regions ──────────────────────────────────
+ * Arrow keys cycle focus through the regions (role="button", in the map's
+ * order); Enter/Space opens one; Escape closes the detail card.
  */
 function onStageKeydown(e) {
   if (e.key === "Escape") {
@@ -94,18 +111,17 @@ function onStageKeydown(e) {
   const back = e.key === "ArrowLeft" || e.key === "ArrowUp";
   if (!forward && !back) return;
   e.preventDefault();
-  const dots = hotspotEls.value.filter(Boolean);
+  const dots = regionEls.value.filter(Boolean);
   if (!dots.length) return;
   const i = dots.indexOf(document.activeElement);
   const next = dots[(i + (forward ? 1 : -1) + dots.length) % dots.length];
   next.focus();
 }
 
-/* Reveal the region map + pop the hotspots into a given timeline: the Figma
- * line overlay is a raster PNG, so it reveals with a crown-to-jaw clip wipe. */
+/* Reveal the region map into a given timeline: a crown-to-jaw clip wipe. */
 function addRevealTo(tl, position = ">") {
   tl.fromTo(
-    linesEl.value,
+    regionsEl.value,
     { clipPath: "inset(0 0 100% 0)", opacity: 0.6 },
     {
       clipPath: "inset(0 0 0% 0)",
@@ -115,25 +131,32 @@ function addRevealTo(tl, position = ">") {
     },
     position
   );
-  tl.fromTo(
-    hotspotEls.value,
-    { scale: 0, opacity: 0 },
-    {
-      scale: 1,
-      opacity: 1,
-      duration: 0.35 * K,
-      ease: "back.out(2.2)",
-      stagger: MOTION.popStagger * K,
-    },
-    "<0.25"
-  );
   return tl;
 }
 
 onMounted(async () => {
   views.value = await fetchViews();
+  facultyInfo = facultyInfoByNumber(views.value);
+  // Every view's map, from the same SVGs as the 3D skull.
+  const loaded = {};
+  await Promise.all(
+    views.value.map(async (v) => {
+      const key = VIEW_MAP[v.id];
+      try {
+        const text = await (await fetch(MAP_SRC[key])).text();
+        loaded[v.id] = {
+          regions: regionShapes(text),
+          outlines: mapOutlines(text),
+          transform: fitTransform(MAP_FIT[key]),
+        };
+      } catch (e) {
+        console.warn(`[phrenology] no region map for ${v.id}`, e);
+      }
+    })
+  );
+  mapsByView.value = loaded;
   await nextTick();
-  // Entrance: skull surfaces, map draws, hotspots arrive.
+  // Entrance: skull surfaces, the map draws, the regions go live.
   const tl = gsap.timeline();
   tl.from(skullEl.value, {
     opacity: 0,
@@ -157,9 +180,8 @@ async function switchView(idx) {
   // by the incoming timeline's onComplete, so clicks can't land mid-swap.
   const tl = gsap.timeline();
 
-  // Outgoing: hotspots scatter, lines fade fast, skull yaws away.
-  tl.to(hotspotEls.value, { scale: 0, opacity: 0, duration: 0.18 * K }, 0);
-  tl.to(linesEl.value, { opacity: 0, duration: 0.18 * K }, 0);
+  // Outgoing: the map fades fast, skull yaws away.
+  tl.to(regionsEl.value, { opacity: 0, duration: 0.18 * K }, 0);
   tl.to(
     skullEl.value,
     {
@@ -176,7 +198,8 @@ async function switchView(idx) {
   await tl.then();
 
   // Swap content while invisible, then yaw in from the other side.
-  hotspotEls.value = [];
+  regionEls.value = [];
+  hoverN.value = null;
   activeIdx.value = idx;
   await nextTick();
 
@@ -201,21 +224,19 @@ async function switchView(idx) {
   addRevealTo(inTl, "-=0.25");
 }
 
-/* ── Hotspot → label pill + detail card ──────────────────────────────────── */
-async function selectRegion(region) {
+/* ── Region → detail card ────────────────────────────────────────────────── */
+async function selectRegion(shape) {
   if (animating.value) return;
   const opening = !activeRegion.value;
-  activeRegion.value = region;
+  const info = facultyInfo.get(shape.n);
+  activeRegion.value = {
+    n: shape.n,
+    name: nameOf(shape.n),
+    blurb: info?.blurb || null,
+  };
   await nextTick();
 
   const tl = gsap.timeline();
-  // Pill unrolls from its dot.
-  tl.fromTo(
-    pillEl.value,
-    { scaleX: 0, opacity: 0 },
-    { scaleX: 1, opacity: 1, duration: 0.3 * K, ease: MOTION.easeIn },
-    0
-  );
   if (opening) {
     if (!isNarrow()) {
       // Skull cedes ground; paper card slides in from the right.
@@ -298,36 +319,48 @@ function closePanel(instant = false) {
       <!-- perspective stage; shifts left when the detail card is out -->
       <div ref="stageEl" class="stage" @keydown="onStageKeydown">
         <div v-if="activeView" ref="skullEl" class="skull" :key="activeView.id">
-          <!-- Figma engraving + phrenology-map line overlay -->
+          <!-- Figma engraving -->
           <img :src="engravingSrc" alt="" class="skull__img" />
-          <img ref="linesEl" :src="linesSrc" alt="" class="skull__lines" />
 
-          <!-- numbered faculty hotspots -->
-          <button
-            v-for="(r, i) in activeView.regions"
-            :key="r.n + r.name"
-            :ref="(el) => setHotspotRef(el, i)"
-            class="dot"
-            :class="{ 'dot--on': activeRegion?.n === r.n }"
-            :style="{ left: r.x + '%', top: r.y + '%' }"
-            :aria-label="`${r.n} — ${r.name}`"
-            @click="selectRegion(r)"
+          <!-- the faculty map: its outlines, and its regions as targets -->
+          <svg
+            v-if="activeMap"
+            ref="regionsEl"
+            class="skull__regions"
+            :viewBox="`0 0 ${MAP_W} ${MAP_H}`"
+            preserveAspectRatio="none"
+            role="group"
+            :aria-label="`Faculties, ${activeView.label.toLowerCase()} view`"
           >
-            {{ r.n }}
-          </button>
-
-          <!-- label pill unrolling from the active dot -->
-          <span
-            v-if="activeRegion"
-            ref="pillEl"
-            class="pill"
-            :style="{
-              left: activeRegion.x + 3.5 + '%',
-              top: activeRegion.y + '%',
-            }"
-          >
-            {{ activeRegion.name }}
-          </span>
+            <g :transform="activeMap.transform">
+              <g class="map-lines" aria-hidden="true">
+                <path v-for="(d, j) in activeMap.outlines" :key="j" :d="d" />
+              </g>
+              <g
+                v-for="(r, i) in activeMap.regions"
+                :key="r.key"
+                :ref="(el) => setRegionRef(el, i)"
+                class="region"
+                :class="{
+                  'region--hover': hoverN === r.n,
+                  'region--on': activeRegion?.n === r.n,
+                }"
+                role="button"
+                tabindex="0"
+                :aria-label="nameOf(r.n)"
+                :aria-pressed="activeRegion?.n === r.n"
+                @pointerenter="hoverN = r.n"
+                @pointerleave="hoverN = null"
+                @focus="hoverN = r.n"
+                @blur="hoverN = null"
+                @click="selectRegion(r)"
+                @keydown.enter.prevent="selectRegion(r)"
+                @keydown.space.prevent="selectRegion(r)"
+              >
+                <path v-for="(d, j) in r.d" :key="j" :d="d" />
+              </g>
+            </g>
+          </svg>
         </div>
       </div>
 
@@ -336,32 +369,17 @@ function closePanel(instant = false) {
         <button class="card__close" aria-label="Close" @click="closePanel()">
           ✕
         </button>
-        <span class="card__badge">
-          <i class="card__num">{{ activeRegion.n }}</i
-          >{{ activeRegion.name }}
-        </span>
-        <p class="card__text">{{ activeRegion.blurb }}</p>
-        <p class="card__text card__text--mute">
+        <span class="card__badge">{{ activeRegion.name }}</span>
+        <p v-if="activeRegion.blurb" class="card__text">
+          {{ activeRegion.blurb }}
+        </p>
+        <p v-else class="card__text card__text--mute">
+          A description of this faculty is still to come from the authors.
+        </p>
+        <p v-if="activeRegion.blurb" class="card__text card__text--mute">
           — from the phrenological chart after Spurzheim; faculties were claimed
           to be legible in the relief of the living skull.
         </p>
-        <figure class="card__figures">
-          <img
-            class="card__fig"
-            src="/publicAssets/images/phrenology/skull-anterior.png"
-            alt="Anterior skull engraving"
-            loading="lazy"
-          />
-          <img
-            class="card__fig"
-            src="/publicAssets/images/phrenology/skull-lateral.png"
-            alt="Lateral skull engraving"
-            loading="lazy"
-          />
-          <figcaption class="card__cap">
-            Comparative engravings — anterior and lateral plates.
-          </figcaption>
-        </figure>
       </aside>
     </div>
 
@@ -374,10 +392,13 @@ function closePanel(instant = false) {
 .phreno {
   --plate: #232227;
   --bone: #eceae4;
-  --violet: #8b5cf6;
-  --violet-soft: #a78bfa;
+  /* The chapter's colour (the Figma map's violet outside a chapter). */
+  --accent-rgb: var(--color-chapter, 139 92 246);
+  --violet: rgb(var(--accent-rgb));
+  --violet-soft: rgb(var(--color-chapter-soft, 167 139 250));
   position: relative;
-  min-height: 100vh;
+  /* A full screen on its own route; a host can set less (WidgetBreakout). */
+  min-height: var(--widget-min-h, 100vh);
   display: flex;
   flex-direction: column;
   background: var(--plate);
@@ -444,8 +465,7 @@ function closePanel(instant = false) {
   /* Figma engraving assets are 450x435 */
   aspect-ratio: 450 / 435;
 }
-.skull__img,
-.skull__lines {
+.skull__img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -453,45 +473,47 @@ function closePanel(instant = false) {
   object-fit: contain;
 }
 
-/* ── hotspots + pill ── */
-.dot {
+/* ── regions ── */
+.skull__regions {
   position: absolute;
-  transform: translate(-50%, -50%);
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1.5px solid var(--violet-soft);
-  background: rgb(35 34 39 / 0.75);
-  color: var(--violet-soft);
-  font-size: 0.65rem;
-  font-family: var(--font-mono, monospace);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition:
-    background-color 0.15s,
-    color 0.15s,
-    border-color 0.15s;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
-.dot:hover,
-.dot--on {
-  background: var(--violet);
-  border-color: var(--violet);
-  color: #fff;
-}
-.pill {
-  position: absolute;
-  transform: translateY(-50%);
-  transform-origin: left center;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  background: var(--violet);
-  color: #fff;
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
+/* The map's dotted outlines, in the chapter colour, at a constant weight
+   whatever the widget's size. */
+.map-lines path {
+  fill: none;
+  stroke: var(--violet);
+  stroke-width: 1.25px;
+  stroke-dasharray: 1.5 2.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
   pointer-events: none;
+}
+.region {
+  cursor: pointer;
+  outline: none;
+}
+.region path {
+  /* Transparent, not none: a transparent fill still takes the pointer. */
+  fill: transparent;
+  stroke: none;
+  transition: fill 0.15s;
+}
+.region--hover path {
+  fill: rgb(var(--accent-rgb) / 0.28);
+}
+.region--on path {
+  fill: rgb(var(--accent-rgb) / 0.5);
+}
+.region:focus-visible path {
+  stroke: var(--violet);
+  stroke-width: 3;
+}
+[data-reduce-motion="1"] .region path {
+  transition: none;
 }
 
 /* ── detail card ── */
@@ -524,25 +546,13 @@ function closePanel(instant = false) {
 .card__badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.3rem 0.9rem 0.3rem 0.3rem;
+  padding: 0.35rem 0.9rem;
   border-radius: 999px;
   background: var(--violet);
   color: #fff;
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-.card__num {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 0.25);
-  font-style: normal;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.65rem;
 }
 .card__text {
   margin-top: 1.25rem;
@@ -552,26 +562,6 @@ function closePanel(instant = false) {
 .card__text--mute {
   opacity: 0.55;
   font-size: 0.8rem;
-}
-.card__figures {
-  margin-top: 1.75rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-.card__fig {
-  aspect-ratio: 4 / 3;
-  width: 100%;
-  border-radius: 3px;
-  object-fit: cover;
-  /* The engraving strokes are pale, so they need a dark backing to stay
-     legible on the pale paper card. */
-  background: #2b2a2e;
-}
-.card__cap {
-  grid-column: 1 / -1;
-  font-size: 0.7rem;
-  opacity: 0.5;
 }
 
 /* ── footer citation ── */
@@ -593,7 +583,8 @@ function closePanel(instant = false) {
     bottom: 0;
     left: 0;
     width: auto;
-    max-height: 55vh;
+    /* Within the widget, which is shorter than the screen inline. */
+    max-height: min(55vh, 100%);
     border-radius: 12px 12px 0 0;
     box-shadow: 0 -12px 40px rgb(0 0 0 / 0.45);
     padding: 1.5rem 1.5rem 2rem;

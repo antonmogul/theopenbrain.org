@@ -200,10 +200,13 @@ const headingId = computed(
 <style scoped>
 .wb {
   --wb-pad: 1.5rem;
+  /* Inside a chapter the card is the chapter's colour, not the global
+     magenta (OPENBRAIN-98). */
+  --wb-accent: var(--color-chapter, var(--color-accent));
   position: relative;
   margin: 2.5rem 0;
   border: 1px solid rgb(var(--color-line));
-  border-left: 4px solid rgb(var(--color-accent));
+  border-left: 4px solid rgb(var(--wb-accent));
   border-radius: 12px;
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
@@ -237,7 +240,7 @@ const headingId = computed(
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: rgb(var(--color-accent));
+  background: rgb(var(--wb-accent));
 }
 
 .wb-title {
@@ -266,6 +269,9 @@ const headingId = computed(
   /* Widget views bring their own page padding; keep ours minimal. */
   padding: 0.5rem;
   container-type: inline-size;
+  /* A widget that fills the screen on its own route sizes to its content
+     here (PhrenologyView). */
+  --widget-min-h: 0px;
 }
 
 /*
@@ -346,7 +352,7 @@ const headingId = computed(
 }
 
 .wb-btn:focus-visible {
-  outline: 3px solid rgb(var(--color-accent));
+  outline: 3px solid rgb(var(--wb-accent));
   outline-offset: 2px;
 }
 
@@ -356,8 +362,8 @@ const headingId = computed(
 }
 
 .wb-btn--primary:hover {
-  background: rgb(var(--color-accent));
-  border-color: rgb(var(--color-accent));
+  background: rgb(var(--wb-accent));
+  border-color: rgb(var(--wb-accent));
 }
 
 .wb-credit {
@@ -365,6 +371,36 @@ const headingId = computed(
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: rgb(var(--color-mute));
+}
+
+/* Below the two-column reader the card is a band across the page, like the
+   figures (OPENBRAIN-98): rules above and below, the header in line with
+   the text, the widget flush to the edges. It was a rounded card inside the
+   column with the widget inset in a second frame. */
+@media (max-width: 1023px) {
+  .wb {
+    width: var(--app-w, 100vw);
+    margin-left: calc(
+      50% - var(--app-w, 100vw) / 2
+    ); /* the column is centred */
+    border-width: 1px 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+  /* The text column's own gutter (TextComp .ml-text), resolved against the
+     band, which is as wide as the column's box. */
+  .wb-head,
+  .wb-foot {
+    padding-left: var(--narrow-gutter, 0.9375rem);
+    padding-right: var(--narrow-gutter, 0.9375rem);
+  }
+  .wb-kicker {
+    color: rgb(var(--wb-accent));
+  }
+  .wb-stage {
+    padding: 0;
+    border-bottom: 0;
+  }
 }
 
 [data-reduce-motion="1"] .wb-btn {
