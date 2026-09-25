@@ -5,6 +5,7 @@ import { useFlashcards } from "@/composables/useFlashcards";
 import FlashcardCard from "@/components/flashcard/FlashcardCard.vue";
 import FlashcardRating from "@/components/flashcard/FlashcardRating.vue";
 import FlashcardStats from "@/components/flashcard/FlashcardStats.vue";
+import FlashcardGuide from "@/components/flashcard/FlashcardGuide.vue";
 
 const props = defineProps({
   moduleId: { type: String, required: true },
@@ -142,7 +143,7 @@ const formattedDuration = computed(() => {
 
     <!-- Empty -->
     <div v-else-if="viewState === 'empty'" class="state-center">
-      <p>No flashcards available for this module.</p>
+      <p>This chapter doesn't have a flashcard deck yet.</p>
       <button @click="emit('close')" class="btn-primary">Close</button>
     </div>
 
@@ -165,6 +166,9 @@ const formattedDuration = computed(() => {
           ></div>
         </div>
       </div>
+
+      <!-- How flashcards work, and a draft deck's notice (OPENBRAIN-102) -->
+      <FlashcardGuide :draft="!!currentCard?.tags?.includes('draft')" />
 
       <div class="card-area">
         <FlashcardCard

@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import { get } from "@/services/api/client";
 import { useRouter } from "vue-router";
 import { useFeedback } from "@/composables/useFeedback";
 
@@ -48,8 +49,24 @@ function feedback() {
     label: `Chapter ${props.chapterNumber}${props.chapterTitle ? ` · ${props.chapterTitle}` : ""}`,
   });
 }
+// Only a chapter with cards links to them (it used to link to an empty deck).
+const hasFlashcards = ref(false);
+watch(
+  () => props.moduleId,
+  async (id) => {
+    hasFlashcards.value = false;
+    if (!id) return;
+    try {
+      const rows = await get(`flashcards?module_id=eq.${id}&select=id&limit=1`);
+      if (id === props.moduleId) hasFlashcards.value = rows?.length > 0;
+    } catch {
+      /* no link rather than a broken one */
+    }
+  },
+  { immediate: true }
+);
 const flashcardsRoute = computed(() =>
-  props.moduleId ? `/flashcards/${props.moduleId}` : null
+  props.moduleId && hasFlashcards.value ? `/flashcards/${props.moduleId}` : null
 );
 
 function goNext() {
