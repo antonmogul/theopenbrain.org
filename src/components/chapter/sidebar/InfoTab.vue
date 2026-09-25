@@ -3,6 +3,7 @@ import { computed, inject, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useGeneral, useText } from "@/stores";
 import { toSlug } from "@/helper/general.js";
+import { referenceDisplay } from "@/helper/chapterReferences";
 
 const route = useRoute();
 const store = useGeneral();
@@ -101,8 +102,21 @@ function scrollToSection(slug) {
   }
 }
 
+// The first place the text cites `number`: a citation superscript, or the
+// Retina's legacy <sup data-sup="48 49"> markers.
+function citationEl(number) {
+  const n = String(number);
+  return (
+    document.querySelector(`.citation-ref[data-ref="${n}"]`) ||
+    [...document.querySelectorAll("sup[data-sup]")].find((el) =>
+      el.dataset.sup.split(/[\s,]+/).includes(n)
+    ) ||
+    null
+  );
+}
+
 function scrollToCitation(number) {
-  const el = document.querySelector(`.citation-ref[data-ref="${number}"]`);
+  const el = citationEl(number);
   if (!el) return;
   el.scrollIntoView({ behavior: "smooth", block: "center" });
   // Flash the citation so it's easy to spot
@@ -238,34 +252,32 @@ function scrollToCitation(number) {
         <span class="collapsible-count">({{ referenceCount }})</span>
       </button>
       <div v-if="refsOpen" class="refs-list">
-        <button
-          v-for="r in referencesList"
-          :key="r.number"
-          class="ref-item"
-          @click="scrollToCitation(r.number)"
-        >
-          <span class="ref-number">{{ r.number }}.</span>
+        <div v-for="r in referencesList" :key="r.number" class="ref-item">
+          <!-- The number jumps to where the text cites it; the entry's own
+               links open the source (a link can't sit inside a button). -->
+          <button
+            type="button"
+            class="ref-number"
+            :aria-label="`Go to citation ${r.number} in the text`"
+            @click="scrollToCitation(r.number)"
+          >
+            {{ r.number }}.
+          </button>
           <div class="ref-body">
-            <span class="ref-text">
-              {{ r.authors }} ({{ r.year || "n.d." }}). {{ r.title
-              }}<template v-if="r.journal"
-                >. <em>{{ r.journal }}</em></template
-              ><template v-if="r.volume">, {{ r.volume }}</template
-              ><template v-if="r.pages">, {{ r.pages }}</template
-              >.
-            </span>
+            <!-- The authors' own reference text (OPENBRAIN-92). -->
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <span class="ref-text" v-html="referenceDisplay(r).html" />
             <a
-              v-if="r.doi"
-              :href="`https://doi.org/${r.doi}`"
+              v-if="referenceDisplay(r).href"
+              :href="referenceDisplay(r).href"
               target="_blank"
               rel="noopener noreferrer"
               class="ref-doi"
-              @click.stop
             >
-              DOI
+              Source
             </a>
           </div>
-        </button>
+        </div>
       </div>
     </div>
   </div>
@@ -481,26 +493,36 @@ function scrollToCitation(number) {
   display: flex;
   gap: 8px;
   padding: 10px 0;
-  background: none;
-  border: none;
   border-top: 1px solid rgb(var(--color-line));
-  cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: padding-left 0.12s ease;
-}
-
-.ref-item:hover {
-  padding-left: 4px;
 }
 
 .ref-number {
+  align-self: flex-start;
+  flex-shrink: 0;
+  min-width: 32px;
+  min-height: 28px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   color: rgb(var(--color-mute));
-  flex-shrink: 0;
-  width: 24px;
   text-align: right;
+  cursor: pointer;
+}
+.ref-number:hover {
+  background: rgb(var(--color-ink) / 0.06);
+  color: rgb(var(--color-accent));
+}
+.ref-number:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 1px;
+}
+.ref-text :deep(a) {
+  overflow-wrap: anywhere;
 }
 
 .ref-body {

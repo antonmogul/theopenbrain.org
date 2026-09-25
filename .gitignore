@@ -60,3 +60,6 @@ storybook-static
 
 # Claude Code agent worktrees (local only)
 .claude/worktrees/
+
+# Crossref lookups for scripts/references/import-references.mjs
+scripts/references/.crossref-cache.json

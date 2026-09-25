@@ -51,3 +51,39 @@ export function referenceFromChapter(chapter, number) {
   }
   return null;
 }
+
+/**
+ * How a reference shows (OPENBRAIN-92): the authors' own text (raw_text, or
+ * the chapter's list entry), linkified, and a link to its source (its DOI,
+ * else its URL). A row with neither falls back to its structured fields.
+ * @returns {{ html: string, href: string|null, hrefLabel: string }}
+ */
+export function referenceDisplay(ref) {
+  if (!ref) return { html: "", href: null, hrefLabel: "" };
+  const esc = (s) =>
+    String(s || "").replace(
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]
+    );
+  const html =
+    ref.html ||
+    (ref.raw_text && linkifyReference(ref.raw_text)) ||
+    [
+      esc(ref.authors),
+      ref.year ? `(${ref.year})` : "",
+      esc(ref.title),
+      ref.journal ? `<em>${esc(ref.journal)}</em>` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const href = ref.doi
+    ? `https://doi.org/${ref.doi}`
+    : ref.url && /^https?:\/\//.test(ref.url)
+      ? ref.url
+      : null;
+  return {
+    html,
+    href,
+    hrefLabel: ref.doi ? `doi:${ref.doi}` : href ? "Source" : "",
+  };
+}

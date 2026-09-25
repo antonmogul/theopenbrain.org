@@ -1,5 +1,13 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, inject, nextTick } from "vue";
+import {
+  computed,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  inject,
+  nextTick,
+} from "vue";
+import { referenceDisplay } from "@/helper/chapterReferences";
 
 const refsCtx = inject("references", null);
 
@@ -10,20 +18,8 @@ const currentRef = ref(null);
 // it, so clicking a reference you were hovering closed it (OPENBRAIN-90).
 // Pinned, it stays until a click elsewhere or Escape, so its links work.
 const pinned = ref(false);
+const display = computed(() => referenceDisplay(currentRef.value));
 const position = ref({ top: 0, left: 0 });
-
-function formatAuthors(authors) {
-  if (!authors) return "";
-  return authors;
-}
-
-function formatReference(r) {
-  if (!r) return "";
-  let parts = [];
-  parts.push(formatAuthors(r.authors));
-  if (r.year) parts.push(`(${r.year})`);
-  return parts.join(" ");
-}
 
 function show(refData, rect) {
   currentRef.value = refData;
@@ -139,27 +135,18 @@ onBeforeUnmount(() => {
       :style="{ top: position.top + 'px', left: position.left + 'px' }"
       @mouseleave="handleTooltipLeave"
     >
-      <!-- The chapter's own reference text (no structured row yet): the
-           chapter's HTML, with its URLs and DOIs as links. -->
+      <!-- The authors' own reference text, with a link to its source
+           (OPENBRAIN-92). -->
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <div v-if="currentRef.html" class="ct-text" v-html="currentRef.html" />
-      <template v-else>
-        <div class="ct-authors">{{ formatReference(currentRef) }}</div>
-        <div class="ct-title">"{{ currentRef.title }}"</div>
-      </template>
-      <div v-if="!currentRef.html && currentRef.journal" class="ct-journal">
-        <em>{{ currentRef.journal }}</em
-        ><span v-if="currentRef.volume">, {{ currentRef.volume }}</span
-        ><span v-if="currentRef.pages">, {{ currentRef.pages }}</span>
-      </div>
+      <div class="ct-text" v-html="display.html" />
       <a
-        v-if="!currentRef.html && currentRef.doi"
-        :href="`https://doi.org/${currentRef.doi}`"
+        v-if="display.href"
+        :href="display.href"
         target="_blank"
         rel="noopener noreferrer"
         class="ct-doi"
       >
-        DOI: {{ currentRef.doi }}
+        {{ display.hrefLabel }}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="12"

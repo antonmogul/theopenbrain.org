@@ -1,8 +1,8 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 58,
-  "coveredCount": 58,
+  "sourceCount": 59,
+  "coveredCount": 59,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
@@ -10,7 +10,7 @@
     "Highlighting": 6,
     "Demos": 5,
     "Illustrations": 16,
-    "Text": 18
+    "Text": 19
   },
   "components": [
     {
@@ -276,6 +276,11 @@
     {
       "source": "src/components/chapter/text/QuizSection.vue",
       "storyFile": "src/components/chapter/text/__stories__/QuizSection.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/text/ReferenceList.vue",
+      "storyFile": "src/components/chapter/text/__stories__/ReferenceList.stories.js",
       "story": "Default"
     },
     {

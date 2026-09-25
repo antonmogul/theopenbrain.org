@@ -1,5 +1,12 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, provide } from "vue";
+import {
+  computed,
+  inject,
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  provide,
+} from "vue";
 import { useRoute } from "vue-router";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -22,6 +29,7 @@ import Section from "./text/SectionComp.vue";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
 import FurtherReading from "./text/FurtherReading.vue";
+import ReferenceList from "./text/ReferenceList.vue";
 import EditableBlock from "./text/EditableBlock.vue";
 
 import FootNotes from "./text/FootNotes.vue";
@@ -85,6 +93,19 @@ const source = computed(() => {
 // One source for section numbering/lettering, shared with the opener's TOC
 // (useChapterOutline, OPENBRAIN-32) so the prose and the contents agree.
 const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
+
+// The references table's rows, listed at the chapter's end when its list
+// isn't a section of its own (OPENBRAIN-92); a References section renders
+// them itself (SectionComp).
+const refsCtx = inject("references", null);
+const endReferences = computed(() => {
+  const rows = refsCtx?.references?.value || [];
+  if (!rows.length) return [];
+  const hasSection = (source.value?.sections || []).some(
+    (s) => s.slug === "references"
+  );
+  return hasSection ? [] : rows;
+});
 
 // Boxes anchored to a paragraph render inside their section, right after it
 // (OPENBRAIN-70 A4); the rest render in order.
@@ -759,6 +780,18 @@ onBeforeUnmount(() => {
             :label="sectionLabels[section.id || section.title]"
             :is-creator="canEdit"
           />
+        </div>
+
+        <!-- The chapter's references, from the references table, for a
+             chapter whose list isn't a section of its own (the Retina keeps
+             it in Footnotes): every entry links to its source (OPENBRAIN-92). -->
+        <div
+          v-if="endReferences.length"
+          id="references"
+          class="trigger prose-measure chapter-references"
+        >
+          <h2 class="T subChapter">References</h2>
+          <ReferenceList :references="endReferences" />
         </div>
 
         <!-- End-of-chapter blocks only cancel the wide desktop column's left
