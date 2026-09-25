@@ -1,14 +1,23 @@
 <template>
-  <div class="absolute top-40 left-[3.625rem] z-50">
+  <!-- Inline (in the text, below the two-column reader) the states are a
+       wrapping row under the figure, not a column pinned beside it. -->
+  <div
+    :class="
+      inline
+        ? 'relative flex flex-wrap gap-x-5 gap-y-2'
+        : 'absolute top-40 left-[3.625rem] z-50'
+    "
+  >
     <p
       v-for="(state, index) in states"
       :key="state"
-      class="hover:text-chapter-deep text-small cursor-pointer pb-6"
-      :class="
+      class="hover:text-chapter-deep text-small cursor-pointer"
+      :class="[
+        inline ? 'py-1' : 'pb-6',
         activeState == index
           ? 'underline pointer-events-none text-chapter-deep'
-          : ''
-      "
+          : '',
+      ]"
       @click="$emit('onClick', { index, activeState })"
     >
       <template v-if="iconsIndex?.[index]">
@@ -30,6 +39,7 @@ defineProps({
   activeState: Number,
   praefix: String,
   iconsIndex: Object,
+  inline: { type: Boolean, default: false },
 });
 
 defineEmits(["onClick"]);

@@ -1,10 +1,24 @@
 <template>
+  <!-- Inline (scopeId: in the text, below the two-column reader) the figure
+       stacks: the art at the column's width, its states in a row under it.
+       In the pane the states are a column pinned beside the art
+       (OPENBRAIN-99). -->
   <div
-    class="pr-14 pl-32 flex flex-row justify-center items-center h-[100%] pointer-events-auto"
+    class="pointer-events-auto"
+    :class="
+      inline
+        ? 'relative flex flex-col gap-4'
+        : 'pr-14 pl-32 flex flex-row justify-center items-center h-[100%]'
+    "
   >
     <div
-      class="px-24 pt-10 z-30 fixed flex flex-col w-illus justify-between top-0 reader:top-[var(--reader-topbar-h,0px)] left-0"
-      :class="animation.multiple ? 'items-center' : 'items-start'"
+      class="flex flex-col"
+      :class="[
+        inline
+          ? 'relative order-2 w-full'
+          : 'px-24 pt-10 z-30 fixed w-illus justify-between top-0 reader:top-[var(--reader-topbar-h,0px)] left-0',
+        animation.multiple ? 'items-center' : 'items-start',
+      ]"
     >
       <!-- Below the reader's top bar, in the original's title style. Inline
            (scopeId, below xl) the figure's caption already names it. -->
@@ -15,7 +29,12 @@
       >
       <div
         v-if="animation.multiple"
-        class="fixed top-0 left-0 w-illus h-screen px-24 pl-24 flex flex-col justify-center items-start"
+        class="flex flex-col justify-center items-start"
+        :class="
+          inline
+            ? 'relative w-full'
+            : 'fixed top-0 left-0 w-illus h-screen px-24'
+        "
       >
         <template
           v-for="(state, index) in Object.keys(animation.states)"
@@ -47,7 +66,10 @@
         </div>
       </div>
 
-      <div v-if="animation.switches || animation.states">
+      <div
+        v-if="animation.switches || animation.states"
+        :class="inline ? 'w-full' : ''"
+      >
         <template v-if="!info.blockStates">
           <StateElement
             v-if="!info.blockSwitches"
@@ -55,6 +77,7 @@
             :activeState="activeState.state"
             :praefix="info.iconPraefix"
             :iconsIndex="info.icons"
+            :inline="inline"
             @onClick="setState"
           />
           <StateElementBlock
@@ -63,10 +86,18 @@
             :activeState="activeState.state"
             :praefix="info.iconPraefix"
             :iconsIndex="info.icons"
+            :inline="inline"
             @onClick="setState"
           />
         </template>
-        <div class="pt-20" v-else>
+        <div
+          v-else
+          :class="
+            inline
+              ? 'grid w-full grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2'
+              : 'pt-20'
+          "
+        >
           <p
             v-for="(state, index) in !animation.multiple
               ? animation.states
@@ -94,7 +125,7 @@
         </div>
       </div>
     </div>
-    <div class="flex flex-row min-w-full">
+    <div class="flex flex-row min-w-full" :class="inline ? 'order-1' : ''">
       <template v-if="animation.illuImage">
         <div
           v-if="!animation.youtubeID"
@@ -105,6 +136,7 @@
           "
         >
           <span
+            v-if="!inline"
             class="px-24 pt-10 z-30 fixed flex flex-col w-illus justify-between top-0 left-0 text-baseMono"
           >
             {{ animation.title }}
@@ -155,7 +187,10 @@
         />
       </template>
     </div>
-    <div class="absolute top-12 right-8 z-40">
+    <div
+      class="absolute z-40"
+      :class="inline ? 'top-0 right-0' : 'top-12 right-8'"
+    >
       <PauseIcon
         class="icon"
         v-if="animation.loop && !isPaused"
@@ -169,7 +204,7 @@
 <script setup>
 import { clog } from "@/helper/chapterDebug";
 import IllustarionMultiple from "@/components/chapter/Illus/IllustarionMultiple.vue";
-import { ref, onMounted, onUnmounted } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { addH, removeH, toSlug, toCamelCase } from "@/helper/general";
 import { loadLottie } from "@/composables/useLottie";
 
@@ -198,6 +233,8 @@ const props = defineProps({
   // uses `animation.id` (the .json filename). Absent = desktop behavior.
   scopeId: { type: String, default: null },
 });
+// Rendered in the text rather than the pane (see the template's note).
+const inline = computed(() => !!props.scopeId);
 let animationLottie;
 let isPaused = ref(false);
 

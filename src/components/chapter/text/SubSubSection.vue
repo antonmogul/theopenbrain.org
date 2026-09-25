@@ -113,7 +113,7 @@
                 :paragraph="subSubParagraph"
               />
               <IllustrationInline
-                v-if="figuresInline && subSubParagraph?.animation?.id"
+                v-if="inlineFigureFor(subSubParagraph)"
                 :key="'inline' + subSubParagraph.id"
                 :animation-id="subSubParagraph.animation.id"
               />
@@ -138,7 +138,7 @@
           :paragraph="subSubSection"
         />
         <IllustrationInline
-          v-if="figuresInline && subSubSection?.animation?.id"
+          v-if="inlineFigureFor(subSubSection)"
           :key="'inline' + subSubSection.id"
           :animation-id="subSubSection.animation.id"
         />
@@ -154,7 +154,7 @@ import { inject } from "vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
-import { useInlineFigures } from "@/composables/useInlineFigures";
+import { useInlineFigureFor } from "@/composables/useInlineFigures";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
@@ -175,7 +175,8 @@ defineProps({
 // Below the desktop pane's breakpoint, render trigger figures inline.
 // Inline below the two-column breakpoint, and inside a floating breakout box
 // (it covers the figure pane): OPENBRAIN-91.
-const figuresInline = useInlineFigures();
+// Draw a figure here only where it first appears (below 1024px).
+const inlineFigureFor = useInlineFigureFor();
 
 // Inject save handler from parent
 const saveContent = inject("saveContent", null);

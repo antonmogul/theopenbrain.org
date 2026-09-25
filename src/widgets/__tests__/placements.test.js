@@ -249,6 +249,17 @@ describe("applyWidgetPlacements", () => {
     expect(JSON.stringify(chapter)).toBe(before);
   });
 
+  it("carries narrowKind, for a desktop-sized tool shown as a card on phones", () => {
+    const p = widgetParagraph({
+      id: "rb",
+      widgetId: "retinabox",
+      kind: "inline",
+      narrowKind: "breakout",
+    });
+    expect(p.widget.kind).toBe("inline");
+    expect(p.widget.narrowKind).toBe("breakout");
+  });
+
   it("skips a placement when the chapter already carries that widget (DB-authored block wins)", () => {
     const section = circuitSection();
     section.paragraphs[0] = {
