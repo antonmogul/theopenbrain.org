@@ -25,6 +25,7 @@ import {
 import animationJSON from "@/assets/json_backend/animations.json";
 import { mobileMode } from "@/helper/illustrationMobile";
 import { figureWidgetFor } from "@/widgets/figures/registry";
+import { figureImages } from "@/helper/figureCycle";
 
 import IllustrationComp from "@/components/chapter/Illus/IllustrationComp.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
@@ -97,6 +98,10 @@ const expanded = ref(false);
 // FullScreenIllustration reads `paragraph.animationId`.
 const fsParagraph = computed(() => ({ animationId: props.animationId }));
 
+// A set of images renders as a gallery (OPENBRAIN-97), which flows at the
+// height it needs inline instead of fitting a fixed box.
+const isGallery = computed(() => figureImages(animation.value).length > 1);
+
 const title = computed(() => animation.value?.title || "");
 const posterSrc = computed(
   () => `/publicAssets/images/illuImages/${props.animationId}.png`
@@ -127,8 +132,13 @@ const youtubeSrc = computed(() =>
   <figure
     v-else-if="animation && mode === 'figure-shell'"
     class="illu-inline illu-inline--shell my-12"
+    :class="{ 'illu-inline--gallery': isGallery }"
   >
-    <IllustrationPlaceholder :animation="animation" class="w-full h-full" />
+    <IllustrationPlaceholder
+      :animation="animation"
+      inline
+      class="w-full h-full"
+    />
   </figure>
   <!-- A panel figure rebuilt as a figure widget (OPENBRAIN-82) -->
   <figure
@@ -275,6 +285,9 @@ const youtubeSrc = computed(() =>
 }
 .illu-inline--shell {
   height: min(75vh, 36rem);
+}
+.illu-inline--shell.illu-inline--gallery {
+  height: auto;
 }
 
 .illu-inline__stage {

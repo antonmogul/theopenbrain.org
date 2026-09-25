@@ -7,8 +7,9 @@
 // the diagram area shows a labelled placeholder ("Artwork pending"). The shell
 // is what every real diagram slots into: once the row carries artwork
 // (config.images, or image_file_url for a single image; see
-// helper/figureCycle.js) the same frame shows it, cycling through a set when
-// there are several (OPENBRAIN-41). IllustrationsComp routes both states here.
+// helper/figureCycle.js) the same frame shows it, as a gallery when there are
+// several (OPENBRAIN-41, OPENBRAIN-97). IllustrationsComp routes both states
+// here.
 //
 // Expected props on `animation` (spread from animations.config in useAnimations.js):
 //   placeholder: true        — routes IllustrationsComp here
@@ -24,6 +25,9 @@ import { figureImages } from "@/helper/figureCycle";
 
 const props = defineProps({
   animation: { type: Object, required: true },
+  /* Rendered in the text column (IllustrationInline), where the shell takes
+     the height its content needs rather than filling a fixed pane. */
+  inline: { type: Boolean, default: false },
 });
 
 const DIAGRAM_TYPES = {
@@ -109,6 +113,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           :caption="caption"
           :label="figureLabel"
           :title="title"
+          :fit="!inline"
         />
         <div v-else class="fig-placeholder">
           <span class="fig-type-chip">
