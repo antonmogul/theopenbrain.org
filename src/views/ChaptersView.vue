@@ -1,14 +1,24 @@
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+/*
+ * /chapters — the book's contents with the reader's place in it
+ * (OPENBRAIN-104). Anton, 25 Sep: redesign it "to feel more inline with the
+ * book". Signed-in readers land here (the guard skips the home page), so it
+ * opens on a dark band: the title, where they left off and what they have
+ * done, then the contents in the opener's TOC style (BookContents) with
+ * each chapter's progress. Chapter links go straight into the reader
+ * (Stuart, 24 Sep: no overview page in between; OPENBRAIN-90).
+ */
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { useChapterCatalog } from "@/composables/useChapterCatalog";
-// One cover rule everywhere: the chapter's cover_image_url, else the
-// code-side default the reader's opener uses (OPENBRAIN-67).
-import { coverForModule } from "@/helper/chapterCover";
 import { useAuth } from "@/composables/useAuth";
 import { useAuthStore } from "@/stores/auth";
-import { authedRequest } from "@/services/api/client";
+import { useBookContents } from "@/composables/useBookContents";
+import { useMyChapters } from "@/composables/useMyChapters";
+import { coverForModule } from "@/helper/chapterCover";
+import { rampForModule } from "@/helper/chapterTheme";
 import { ROLE_UNAVAILABLE_QUERY } from "@/router/guards";
+import BookContents from "@/components/book/BookContents.vue";
+import AccountMenu from "@/components/Navigation/AccountMenu.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -19,53 +29,50 @@ const { user, session, isAuthenticated, isCreator } = useAuth();
 const roleUnavailable = computed(
   () => route.query.auth === ROLE_UNAVAILABLE_QUERY
 );
-const { fetchCatalog, modules, loading } = useChapterCatalog();
 
-// Creators also see drafts (OPENBRAIN-51). The public catalog stays
-// published-only; drafts come from an authenticated read, which RLS allows
-// only for creators, and are marked so the card can say so.
-const creatorDrafts = ref([]);
-watch(
-  isCreator,
-  async (creator) => {
-    if (!creator) {
-      creatorDrafts.value = [];
-      return;
-    }
-    try {
-      creatorDrafts.value = await authedRequest(
-        "modules?status=eq.draft&select=*&order=order_index.asc"
-      );
-    } catch (err) {
-      console.warn("ChaptersView: draft fetch failed", err);
-      creatorDrafts.value = [];
-    }
-  },
-  { immediate: true }
-);
-const libraryModules = computed(() =>
-  [
-    ...modules.value,
-    ...creatorDrafts.value.map((d) => ({ ...d, isDraft: true })),
-  ].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+const { parts, chapters, loading } = useBookContents();
+const {
+  chapters: myChapters,
+  continueReading,
+  fetchMyChapters,
+} = useMyChapters();
+
+const published = computed(() => chapters.value.filter((c) => !c.isDraft));
+const drafts = computed(() => chapters.value.filter((c) => c.isDraft));
+
+// module id → { percent, status } for the contents
+const progress = computed(() =>
+  isAuthenticated.value
+    ? Object.fromEntries(
+        myChapters.value.map((c) => [
+          c.module.id,
+          { percent: c.percent, status: c.status },
+        ])
+      )
+    : null
 );
 
-// Progress rows keyed by module_id for the current user
-const progressByModule = ref({});
-const progressLoaded = ref(false);
+const cont = computed(() => {
+  const c = continueReading.value;
+  if (!c?.module?.slug) return null;
+  return {
+    module: c.module,
+    percent: Math.round(c.scrollPosition || 0),
+    route: {
+      path: `/chapter/${c.module.order_index}/${c.module.slug}`,
+      query: { resume: "1" },
+    },
+  };
+});
 
-// Reading stats (highlights / notes counts fetched separately; chapters,
-// sessions and total time derived from the progress rows we already load).
+// Highlight and note counts: a HEAD with count=exact returns the total in
+// Content-Range without fetching the rows.
 const highlightCount = ref(0);
 const noteCount = ref(0);
-
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// PostgREST exact-count helper: a HEAD request with count=exact returns the
-// total in the Content-Range header without fetching the rows.
 async function countRows(table) {
   if (!user.value || !session.value?.access_token) return 0;
   try {
@@ -80,278 +87,120 @@ async function countRows(table) {
         },
       }
     );
-    const range = res.headers.get("content-range"); // e.g. "0-24/47" or "*/0"
-    const total = range?.split("/")?.[1];
+    const total = res.headers.get("content-range")?.split("/")?.[1];
     return total ? parseInt(total, 10) : 0;
   } catch {
     return 0;
   }
 }
 
-async function loadProgress() {
-  if (!user.value || !session.value?.access_token) {
-    progressLoaded.value = true;
-    return;
-  }
-  try {
-    const res = await fetch(
-      `${supabaseUrl}/rest/v1/reading_progress?user_id=eq.${user.value.id}&select=module_id,scroll_position,is_completed,last_accessed_at,time_spent_seconds`,
-      {
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${session.value.access_token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (!res.ok) {
-      progressLoaded.value = true;
-      return;
-    }
-    const rows = await res.json();
-    const map = {};
-    for (const row of rows) map[row.module_id] = row;
-    progressByModule.value = map;
-  } catch (err) {
-    console.warn("ChaptersView: progress fetch failed", err);
-  } finally {
-    progressLoaded.value = true;
-  }
-}
-
 onMounted(async () => {
-  await fetchCatalog();
-  await loadProgress();
-  // Stat counts (only meaningful when signed in)
-  if (isAuthenticated.value) {
-    [highlightCount.value, noteCount.value] = await Promise.all([
-      countRows("highlights"),
-      countRows("notes"),
-    ]);
-  }
+  if (!isAuthenticated.value) return;
+  await fetchMyChapters();
+  [highlightCount.value, noteCount.value] = await Promise.all([
+    countRows("highlights"),
+    countRows("notes"),
+  ]);
 });
 
-function progressFor(moduleId) {
-  return progressByModule.value[moduleId];
-}
-
-function percentFor(moduleId) {
-  const p = progressFor(moduleId);
-  if (!p) return 0;
-  return Math.round(p.scroll_position || 0);
-}
-
-function pillFor(moduleId) {
-  const p = progressFor(moduleId);
-  if (!p) return null;
-  if (p.is_completed) return "done";
-  if ((p.scroll_position || 0) > 0) return "reading";
-  return null;
-}
-
-// "Continue reading" = most recently accessed incomplete chapter
-const continueCard = computed(() => {
-  if (!isAuthenticated.value || !progressLoaded.value) return null;
-  const rows = Object.values(progressByModule.value).filter(
-    (r) => !r.is_completed && (r.scroll_position || 0) > 0
-  );
-  if (rows.length === 0) return null;
-  rows.sort((a, b) =>
-    (b.last_accessed_at || "").localeCompare(a.last_accessed_at || "")
-  );
-  const top = rows[0];
-  const mod = modules.value.find((m) => m.id === top.module_id);
-  if (!mod) return null;
-  const percent = Math.round(top.scroll_position || 0);
-  // Rough time-remaining estimate: time-so-far × (1/p - 1), bounded
-  let remaining = null;
-  if (top.time_spent_seconds && percent > 5) {
-    const totalSec = top.time_spent_seconds / (percent / 100);
-    remaining = Math.max(
-      1,
-      Math.round((totalSec - top.time_spent_seconds) / 60)
-    );
-  }
-  return {
-    module: mod,
-    percent,
-    remainingMin: remaining,
-  };
-});
-
-// Reading stats row — all derived from real data (counts fetched above;
-// chapters / sessions / time from the reading_progress rows we already loaded).
 const stats = computed(() => {
-  const rows = Object.values(progressByModule.value);
-  const completed = rows.filter((r) => r.is_completed).length;
-  const totalSec = rows.reduce(
-    (sum, r) => sum + (r.time_spent_seconds || 0),
-    0
-  );
-  const hrs = Math.floor(totalSec / 3600);
-  const mins = Math.round((totalSec % 3600) / 60);
-  const timeLabel = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+  const rows = myChapters.value;
+  const done = rows.filter((c) => c.status === "done").length;
+  const sec = rows.reduce((sum, c) => sum + (c.timeSpentSeconds || 0), 0);
+  const h = Math.floor(sec / 3600);
+  const m = Math.round((sec % 3600) / 60);
   return [
-    { label: "Chapters", value: `${completed}/${modules.value.length}` },
+    { label: "Chapters finished", value: `${done}/${published.value.length}` },
+    { label: "Chapters opened", value: String(rows.length) },
     { label: "Highlights", value: String(highlightCount.value) },
     { label: "Notes", value: String(noteCount.value) },
-    // "Sessions" = distinct chapters opened (one reading_progress row each)
-    { label: "Sessions", value: String(rows.length) },
-    { label: "Total time", value: timeLabel },
+    { label: "Reading time", value: h ? `${h}h ${m}m` : `${m}m` },
   ];
 });
-
-// order_index is 1-based in DB and matches /chapter/:n URL numbering directly.
-// The library links to the reader (the slug route); the numeric overview
-// route still resolves for old links.
-function readerRoute(mod) {
-  return `/chapter/${mod.order_index}/${mod.slug}`;
-}
-
-function chapterNumberFor(mod) {
-  return mod.order_index;
-}
 </script>
 
 <template>
   <main class="chapters">
-    <!-- Hero: book title (left) + featured continue card (right), per
-         prototype IndexScreen. Grid 1fr / 1.4fr. -->
-    <header class="hero">
-      <div class="hero-text">
-        <p class="eyebrow">
-          Book · {{ modules.length }} chapters<template
-            v-if="creatorDrafts.length"
-          >
-            · {{ creatorDrafts.length }}
-            {{ creatorDrafts.length === 1 ? "draft" : "drafts" }} (only creators
-            see drafts)</template
+    <header class="band">
+      <!-- The way to the dashboard, settings and log out from here (or sign
+           in), as in the reader's top bar. -->
+      <AccountMenu class="band__account" />
+      <div class="band__title">
+        <p class="band__eyebrow">
+          The Open Brain · {{ published.length }}
+          {{ published.length === 1 ? "chapter" : "chapters" }}
+          <template v-if="drafts.length">
+            · {{ drafts.length }}
+            {{ drafts.length === 1 ? "draft" : "drafts" }} (only creators see
+            drafts)</template
           >
         </p>
-        <h1>Chapters</h1>
-        <p class="lede">
-          An openly-published, interactive textbook — pick up where you left
-          off.
+        <h1 class="band__h1">Chapters</h1>
+        <p class="band__lede">
+          An open access, interactive neuroscience textbook. Pick a chapter, or
+          carry on where you left off.
         </p>
-        <p v-if="isCreator" class="signin-cta">
-          <router-link to="/dashboard?section=chapters"
+        <p v-if="!isAuthenticated" class="band__note">
+          <button
+            type="button"
+            class="band__link"
+            @click="authStore.openAuth()"
+          >
+            Sign in
+          </button>
+          to keep your place, highlights and notes.
+        </p>
+        <p v-if="isCreator" class="band__note">
+          <router-link to="/dashboard?section=chapters" class="band__link"
             >Creator console →</router-link
           >
         </p>
-        <p v-if="!isAuthenticated" class="signin-cta">
-          <button type="button" @click="authStore.openAuth()">Sign in</button>
-          to track your progress.
-        </p>
-        <p v-if="roleUnavailable" class="auth-notice" role="status">
+        <p v-if="roleUnavailable" class="band__note" role="status">
           We couldn't confirm your account role, so that page stayed closed.
           Reload to try again.
         </p>
       </div>
 
-      <div v-if="continueCard" class="continue-card">
-        <div class="continue-cover">
-          <img
-            :src="coverForModule(continueCard.module)"
-            :alt="continueCard.module.title"
-          />
-        </div>
-        <div class="continue-meta">
-          <span class="continue-label">● Continue reading</span>
-          <span class="continue-chapter">
-            Chapter {{ chapterNumberFor(continueCard.module) }}
-          </span>
-          <h2 class="continue-title">{{ continueCard.module.title }}</h2>
-          <div class="progress-bar progress-bar--dark">
-            <div
-              class="progress-bar-fill progress-bar-fill--teal"
-              :style="{ width: `${continueCard.percent}%` }"
-            />
-          </div>
-          <span class="continue-stat">
-            {{ continueCard.percent }}%<template
-              v-if="continueCard.remainingMin"
-            >
-              · ~{{ continueCard.remainingMin }} min left</template
-            >
-          </span>
-        </div>
-        <router-link
-          :to="readerRoute(continueCard.module)"
-          class="resume-btn"
-          aria-label="Resume reading"
-        >
-          Resume →
-        </router-link>
-      </div>
+      <router-link
+        v-if="cont"
+        :to="cont.route"
+        class="continue"
+        :data-chapter="rampForModule(cont.module)"
+        :aria-label="`Continue reading ${cont.module.title}, ${cont.percent} percent read`"
+      >
+        <span
+          class="continue__art"
+          :style="{ backgroundImage: `url(${coverForModule(cont.module)})` }"
+        />
+        <span class="continue__body">
+          <span class="continue__eyebrow">Continue reading</span>
+          <span class="continue__chapter"
+            ><span class="continue__num">{{ cont.module.order_index }}</span>
+            {{ cont.module.title }}</span
+          >
+          <span class="continue__bar" aria-hidden="true"
+            ><span :style="{ width: `${cont.percent}%` }"
+          /></span>
+          <span class="continue__meta"
+            >{{ cont.percent }}% read · Resume →</span
+          >
+        </span>
+      </router-link>
     </header>
 
-    <!-- Reading stats (signed-in only — anonymous users have no data) -->
-    <div v-if="isAuthenticated && progressLoaded" class="stats">
+    <dl v-if="isAuthenticated && myChapters.length" class="stats">
       <div v-for="s in stats" :key="s.label" class="stat">
-        <span class="stat-label">{{ s.label }}</span>
-        <span class="stat-value">{{ s.value }}</span>
+        <dt>{{ s.label }}</dt>
+        <dd>{{ s.value }}</dd>
       </div>
-    </div>
+    </dl>
 
-    <hr class="rule" />
-    <p class="eyebrow section-label">All chapters</p>
-
-    <div v-if="loading" class="loading">Loading chapters…</div>
-
-    <ul v-else class="grid">
-      <li v-for="mod in libraryModules" :key="mod.id">
-        <div class="card" :class="{ 'card--draft': mod.isDraft }">
-          <!-- Straight into the chapter: its opener has the outline, so
-               the overview page in between was one click too many
-               (Stuart, 24 Sep; OPENBRAIN-90). -->
-          <router-link
-            :to="readerRoute(mod)"
-            class="cover"
-            :aria-label="`${mod.title}${mod.isDraft ? ' — draft' : ''}`"
-          >
-            <img :src="coverForModule(mod)" :alt="mod.title" />
-            <span v-if="mod.isDraft" class="pill pill-draft">Draft</span>
-            <span
-              v-else-if="isAuthenticated && pillFor(mod.id) === 'done'"
-              class="pill pill-done"
-            >
-              ✓ Done
-            </span>
-            <span
-              v-else-if="isAuthenticated && pillFor(mod.id) === 'reading'"
-              class="pill pill-reading"
-            >
-              Reading
-            </span>
-          </router-link>
-          <div class="meta">
-            <span class="chapter-label">
-              Chapter {{ chapterNumberFor(mod) }}
-            </span>
-            <h3 class="title">
-              <router-link :to="readerRoute(mod)" class="title-link">
-                {{ mod.title }}
-              </router-link>
-            </h3>
-            <p v-if="mod.subtitle" class="subtitle">{{ mod.subtitle }}</p>
-            <div
-              v-if="isAuthenticated && pillFor(mod.id) === 'reading'"
-              class="progress-bar progress-bar--thin"
-            >
-              <div
-                class="progress-bar-fill"
-                :style="{ width: `${percentFor(mod.id)}%` }"
-              />
-            </div>
-            <div class="card-actions">
-              <router-link :to="readerRoute(mod)" class="card-action">
-                Read →
-              </router-link>
-            </div>
-          </div>
-        </div>
-      </li>
-    </ul>
+    <BookContents
+      :parts="parts"
+      :progress="progress"
+      :loading="loading"
+      title="Contents"
+    />
 
     <!-- Signed-in users land here (the guard skips the home page and its
          footer), so the team's Storybook link lives here too. Plain anchor:
@@ -367,395 +216,202 @@ function chapterNumberFor(mod) {
 </template>
 
 <style scoped>
+.chapters {
+  min-height: 100vh;
+  background: rgb(var(--color-dark-surface));
+  color: #fff;
+  font-family: var(--font-body);
+}
+
+/* ── Band: title | continue ── */
+.band {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: end;
+  padding: clamp(3rem, 7vw, 6rem) clamp(1.25rem, 5vw, 6rem)
+    clamp(2rem, 4vw, 3.5rem);
+  border-bottom: 1px solid rgb(var(--color-chapter));
+}
+.band__account {
+  position: absolute;
+  top: clamp(1rem, 2vw, 1.5rem);
+  right: clamp(1.25rem, 5vw, 6rem);
+}
+/* The account button sits on the dark band here. */
+.band__account :deep(.account-btn),
+.band__account :deep(.account-signin) {
+  border-color: rgb(255 255 255 / 0.7);
+  background: transparent;
+  color: #fff;
+}
+.band__account :deep(.account-btn:hover),
+.band__account :deep(.account-signin:hover) {
+  border-color: #fff;
+  background: rgb(255 255 255 / 0.1);
+}
+.band__eyebrow {
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.55);
+}
+.band__h1 {
+  margin: 0;
+  padding: 0;
+  font-size: clamp(var(--type-h2-size), 5.5vw, var(--type-h1-size));
+  line-height: 1.05;
+  font-weight: 450;
+  letter-spacing: -0.01em;
+  color: rgb(var(--color-chapter));
+}
+.band__lede {
+  margin: 1.25rem 0 0;
+  max-width: 34rem;
+  font-size: var(--type-body-lg-size);
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.8);
+}
+.band__note {
+  margin: 1rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: rgb(255 255 255 / 0.65);
+}
+.band__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+/* The continue card: cover, number circle in the chapter's colour, bar */
+.continue {
+  display: grid;
+  grid-template-columns: clamp(6rem, 10vw, 9rem) minmax(0, 1fr);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: var(--radius-control);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.continue:hover,
+.continue:focus-visible {
+  border-color: rgb(var(--color-chapter));
+}
+.continue:focus-visible {
+  outline: 2px solid rgb(var(--color-chapter));
+  outline-offset: 2px;
+}
+.continue__art {
+  min-height: 9rem;
+  background-size: cover;
+  background-position: center;
+}
+.continue__body {
+  display: grid;
+  align-content: center;
+  gap: 0.625rem;
+  padding: 1.25rem 1.5rem;
+}
+.continue__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--color-chapter));
+}
+.continue__chapter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--type-body-lg-size);
+  line-height: 1.3;
+}
+.continue__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgb(var(--color-chapter));
+  font-size: 1rem;
+  line-height: 1;
+}
+.continue__bar {
+  height: 3px;
+  background: rgb(255 255 255 / 0.18);
+}
+.continue__bar span {
+  display: block;
+  height: 100%;
+  background: rgb(var(--color-chapter));
+}
+.continue__meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: rgb(255 255 255 / 0.7);
+}
+
+/* ── Stats: a ruled row, like the contents ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0 clamp(1.25rem, 5vw, 6rem);
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+}
+.stat {
+  padding: 1.25rem 1rem 1.25rem 0;
+}
+.stat dt {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.55);
+}
+.stat dd {
+  margin: 0.375rem 0 0;
+  font-size: var(--type-subhead-size);
+  line-height: 1.1;
+}
+
 .library-foot {
   display: flex;
   gap: 0.5rem;
-  margin: 3rem 0 0;
+  margin: 0;
+  padding: 0 clamp(1.25rem, 5vw, 6rem) 2.5rem;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   letter-spacing: 0.06em;
-  color: rgb(var(--color-mute));
+  color: rgb(255 255 255 / 0.5);
 }
 .library-foot a {
   color: inherit;
 }
 .library-foot a:hover,
 .library-foot a:focus-visible {
-  color: rgb(var(--color-accent));
-}
-
-/* Chapter index — matches prototype IndexScreen (New Design Ideas/components/
-   prototype.jsx). Editorial grid: serif titles, mono metadata, hairline rules,
-   sharp 4px/0 radii, magenta progress. --ob-* tokens map to live --color-*. */
-.chapters {
-  max-width: 82.5rem;
-  margin: 0 auto;
-  padding: 2rem 3.5rem 3.75rem;
-  color: rgb(var(--color-ink));
-  font-family: var(--font-body);
-}
-
-/* Shared mono eyebrow */
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgb(var(--color-mute));
-  margin: 0;
-}
-
-.rule {
-  border: 0;
-  border-top: 1px solid rgb(var(--color-ink));
-  margin: 0;
-}
-
-.section-label {
-  margin: 1.5rem 0 1rem;
-}
-
-/* Hero: 1fr / 1.4fr (book title | featured card) */
-.hero {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.875rem;
-  margin: 0 0 2.25rem;
-}
-
-@media (min-width: 900px) {
-  .hero {
-    grid-template-columns: 1fr 1.4fr;
-    gap: 3.5rem;
-    align-items: center;
-  }
-}
-
-.hero-text .eyebrow {
-  margin-bottom: 1.125rem;
-}
-
-.hero-text h1 {
-  font-size: 4rem;
-  line-height: 0.96;
-  letter-spacing: -0.02em;
-  padding: 0;
-  margin: 0;
-}
-
-.lede {
-  margin-top: 1.125rem;
-  max-width: 22.5rem;
-  font-size: 1.125rem;
-  line-height: 1.45;
-  color: rgb(var(--color-mute));
-}
-
-.signin-cta {
-  margin-top: 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: rgb(var(--color-mute));
-}
-
-.signin-cta button {
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  cursor: pointer;
-}
-.signin-cta a,
-.signin-cta button {
-  color: rgb(var(--color-accent));
-  text-decoration: underline;
-}
-
-/* One-line notice for the guard's fail-closed landing (see router/guards.js) */
-.auth-notice {
-  margin-top: 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: rgb(var(--color-warn));
-}
-
-/* Featured "continue reading" card — dark band (prototype IndexScreen A) */
-.continue-card {
-  display: grid;
-  grid-template-columns: 8.75rem 1fr auto;
-  gap: 1.5rem;
-  align-items: center;
-  padding: 1.5rem;
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-  border-radius: var(--radius-control);
-}
-
-.continue-cover {
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  background: rgb(var(--color-bg));
-}
-
-.continue-cover img,
-.cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.continue-meta {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.continue-label {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgb(var(--color-accent));
-  margin-bottom: 0.5rem;
-}
-
-/* On the dark band, chapter + stat lines read as dimmed paper */
-.continue-chapter,
-.continue-stat {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: rgb(var(--color-paper) / 0.7);
-}
-
-.chapter-label,
-.subtitle {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: rgb(var(--color-mute));
-}
-
-.continue-chapter {
-  margin-bottom: 0.25rem;
-}
-
-.continue-title {
-  font-size: 1.75rem;
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  margin: 0 0 0.75rem;
-  padding: 0;
-}
-
-.continue-stat {
-  margin-top: 0.375rem;
-}
-
-/* Progress bars: square, magenta, thin */
-.progress-bar {
-  width: 100%;
-  height: 3px;
-  background: rgb(var(--color-ink) / 0.08);
-  overflow: hidden;
-}
-
-.progress-bar--thin {
-  height: 2px;
-  margin-top: 0.5rem;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: rgb(var(--color-accent));
-  transition: width 0.3s ease;
-}
-
-/* Dark-band variants (continue card) */
-.progress-bar--dark {
-  background: rgb(var(--color-paper) / 0.18);
-}
-.progress-bar-fill--teal {
-  background: rgb(var(--color-complete));
-}
-
-/* Resume button (continue card) */
-.resume-btn {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  padding: 0.5625rem 1.125rem;
-  border-radius: var(--radius-control);
-  background: rgb(var(--color-complete));
-  color: #0a3d33;
-  text-decoration: none;
-  transition: opacity 0.12s ease;
-}
-.resume-btn:hover {
-  opacity: 0.88;
-}
-
-/* Stats row — hairline top + bottom, evenly spaced */
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2.5rem;
-  margin: 2rem 0 0;
-  padding: 1.125rem 0;
-  border-top: 1px solid rgb(var(--color-line));
-  border-bottom: 1px solid rgb(var(--color-line));
-}
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.stat-label {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgb(var(--color-mute));
-}
-.stat-value {
-  font-size: 1.375rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
-
-.loading {
-  text-align: center;
-  color: rgb(var(--color-mute));
-  padding: 2.5rem;
-}
-
-/* All-chapters grid: 4 across, gap 28px, borderless cards */
-.grid {
-  list-style: none;
-  padding: 0 0 3rem;
-  margin: 0;
-  display: grid;
-  gap: 1.75rem;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1300px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  text-decoration: none;
-  color: inherit;
-}
-
-.cover {
-  position: relative;
-  aspect-ratio: 3 / 4;
-  background: rgb(var(--color-bg));
-  overflow: hidden;
-  margin-bottom: 0.75rem;
-  transition: opacity 0.15s ease;
-}
-
-.card:hover .cover {
-  opacity: 0.92;
-}
-
-.meta {
-  display: flex;
-  flex-direction: column;
-}
-
-.chapter-label {
-  margin-bottom: 0.125rem;
-}
-
-.title {
-  font-size: 1.0625rem;
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.005em;
-  margin: 0 0 0.25rem;
-  padding: 0;
-}
-
-.subtitle {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.625rem;
-  margin: 0;
-}
-
-.title-link {
-  color: inherit;
-  text-decoration: none;
-}
-.title-link:hover {
-  text-decoration: underline;
-  text-decoration-color: rgb(var(--color-accent));
-}
-
-/* Two-link action row: Read (→ reader) · Overview (→ overview page) */
-.card-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-top: 0.625rem;
-  padding-top: 0.625rem;
-  border-top: 1px solid rgb(var(--color-line));
-}
-.card-action {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  color: rgb(var(--color-accent));
-  transition: opacity 0.12s ease;
-}
-.card-action:hover {
-  text-decoration: underline;
-}
-/* Status pills sit on the cover, top-right */
-.pill {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: var(--radius-control);
-  font-size: 0.625rem;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.pill-done {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-}
-
-.pill-draft {
-  background: rgb(var(--color-warn));
-  color: rgb(var(--color-ink));
-}
-.card--draft .cover {
-  outline: 1px dashed rgb(var(--color-warn));
-  outline-offset: -1px;
-}
-.pill-reading {
-  background: rgb(var(--color-accent));
   color: #fff;
+}
+
+@media (max-width: 1023px) {
+  .band {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>
