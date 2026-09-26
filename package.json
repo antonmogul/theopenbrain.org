@@ -40,7 +40,8 @@
     "storybook:coverage:student-views": "node scripts/check-storybook-student-views.mjs",
     "storybook:smoke:all": "node scripts/storybook-all-smoke.mjs",
     "storybook:smoke:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 storybook:smoke:all",
-    "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs"
+    "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs",
+    "widget-kit": "cd public/widget-kit && rm -f open-brain-widget.zip && zip -qr -X open-brain-widget.zip open-brain-widget"
   },
   "dependencies": {
     "@google/model-viewer": "^4.3.1",

@@ -9,7 +9,15 @@
  *
  * Ids match src/widgets/catalog.js. Add an entry here when a widget gains a
  * Vue port and should be embeddable inside a chapter.
+ *
+ * Widgets the authors upload (OPENBRAIN-105) need no entry: an id
+ * "upload:<slug>" loads the uploaded file into a sandboxed frame
+ * (src/widgets/uploaded/). Use embedLoader(id) rather than the map.
  */
+import { h } from "vue";
+
+const UPLOAD_PREFIX = "upload:";
+
 export const WIDGET_EMBEDS = {
   retinabox: () => import("@/views/RetINaBoxView.vue"),
   "direction-selectivity": () => import("@/views/DirectionSelectivityView.vue"),
@@ -32,7 +40,32 @@ export const WIDGET_EMBEDS = {
   phrenology: () => import("@/views/PhrenologyView.vue"),
 };
 
+function uploadSlugOf(widgetId) {
+  return typeof widgetId === "string" &&
+    widgetId.startsWith(UPLOAD_PREFIX) &&
+    widgetId.length > UPLOAD_PREFIX.length
+    ? widgetId.slice(UPLOAD_PREFIX.length)
+    : null;
+}
+
 /** @param {string} widgetId */
 export function hasEmbed(widgetId) {
-  return Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, widgetId);
+  return (
+    !!uploadSlugOf(widgetId) ||
+    Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, widgetId)
+  );
+}
+
+/** The lazy loader for a widget id (a built-in view or an upload), or null. */
+export function embedLoader(widgetId) {
+  const slug = uploadSlugOf(widgetId);
+  if (slug)
+    return () =>
+      import("@/widgets/uploaded/UploadedWidgetEmbed.vue").then((m) => ({
+        name: "UploadedWidget",
+        render: () => h(m.default, { slug }),
+      }));
+  return Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, widgetId)
+    ? WIDGET_EMBEDS[widgetId]
+    : null;
 }

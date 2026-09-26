@@ -20,6 +20,7 @@ import {
 } from "@/components/dashboard/shared";
 import { hasEmbed } from "@/widgets/embeds";
 import { useWidgetUsage } from "@/composables/useWidgetUsage";
+import WidgetStudio from "@/widgets/uploaded/WidgetStudio.vue";
 
 const widgets = ref([]);
 const catalogError = ref("");
@@ -97,91 +98,106 @@ const editHref = (p) =>
 </script>
 
 <template>
-  <section class="section">
-    <SectionHeader
-      eyebrow="05 · Widgets"
-      title="Interactive widgets"
-      subtitle="The authors' interactive figures. Add one to a chapter from its chapter page: “+ Widget” in the text, or “Widget in panel” beside a paragraph."
-    />
+  <div class="widgets-section">
+    <!-- Authors' widgets from Claude: upload, check, publish (OPENBRAIN-105) -->
+    <WidgetStudio class="section" />
 
-    <LoadingState v-if="catalogLoading" message="Loading widgets…" />
-    <ErrorState
-      v-else-if="catalogError"
-      :message="catalogError"
-      @retry="loadAll"
-    />
-    <template v-else>
-      <p class="ws-summary">
-        {{ counts.total }} widgets · {{ counts.used }} in a chapter ·
-        {{ counts.original }} only as the author's original
-        <span v-if="usageLoading"> · checking chapters…</span>
-      </p>
-      <p v-if="usageError" class="ws-warn" role="alert">{{ usageError }}</p>
-
-      <div class="ws-tools">
-        <SearchInput v-model="search" placeholder="Search widgets…" />
-        <FilterChips v-model="filter" :options="filterOptions" />
-      </div>
-
-      <EmptyState
-        v-if="!shown.length"
-        title="No widgets match"
-        description="Try another search or filter."
+    <section class="section">
+      <SectionHeader
+        eyebrow="05 · Widgets"
+        title="Built-in widgets"
+        subtitle="The authors' interactive figures. Add one to a chapter from its chapter page: “+ Widget” in the text, or “Widget in panel” beside a paragraph."
       />
-      <ul v-else class="ws-grid">
-        <li v-for="w in shown" :key="w.id">
-          <BaseCard class="ws-card">
-            <div class="ws-head">
-              <h3 class="ws-title">{{ w.title }}</h3>
-              <span
-                class="ws-chip"
-                :class="w.builtIn ? 'is-built' : 'is-original'"
-                >{{ w.builtIn ? "Built in" : "Original only" }}</span
-              >
-            </div>
-            <p class="ws-meta">{{ w.author }} · {{ w.chapter }}</p>
-            <p class="ws-desc">{{ w.desc }}</p>
 
-            <div class="ws-used">
-              <span class="ws-label">Used in</span>
-              <ul v-if="w.places.length" class="ws-places">
-                <li v-for="(p, i) in w.places" :key="i">
-                  <a v-if="editHref(p)" :href="editHref(p)">{{ p.chapter }}</a>
-                  <span v-else>{{ p.chapter }}</span>
-                  <template v-if="p.section"> · {{ p.section }}</template>
-                  <span class="ws-where"> — {{ WHERE[p.where] }}</span>
-                </li>
-              </ul>
-              <p v-else class="ws-none">
-                {{
-                  w.builtIn
-                    ? "Not in a chapter yet."
-                    : "Not in the reader yet: only the author's original HTML exists."
-                }}
-              </p>
-            </div>
+      <LoadingState v-if="catalogLoading" message="Loading widgets…" />
+      <ErrorState
+        v-else-if="catalogError"
+        :message="catalogError"
+        @retry="loadAll"
+      />
+      <template v-else>
+        <p class="ws-summary">
+          {{ counts.total }} widgets · {{ counts.used }} in a chapter ·
+          {{ counts.original }} only as the author's original
+          <span v-if="usageLoading"> · checking chapters…</span>
+        </p>
+        <p v-if="usageError" class="ws-warn" role="alert">{{ usageError }}</p>
 
-            <div class="ws-actions">
-              <a
-                v-if="w.vuePath"
-                :href="w.vuePath"
-                target="_blank"
-                rel="noopener"
-                class="ws-link"
-                >Open ↗</a
-              >
-              <a href="/widgets" target="_blank" rel="noopener" class="ws-link"
-                >Compare with the original ↗</a
-              >
-            </div>
-          </BaseCard>
-        </li>
-      </ul>
-    </template>
-  </section>
+        <div class="ws-tools">
+          <SearchInput v-model="search" placeholder="Search widgets…" />
+          <FilterChips v-model="filter" :options="filterOptions" />
+        </div>
+
+        <EmptyState
+          v-if="!shown.length"
+          title="No widgets match"
+          description="Try another search or filter."
+        />
+        <ul v-else class="ws-grid">
+          <li v-for="w in shown" :key="w.id">
+            <BaseCard class="ws-card">
+              <div class="ws-head">
+                <h3 class="ws-title">{{ w.title }}</h3>
+                <span
+                  class="ws-chip"
+                  :class="w.builtIn ? 'is-built' : 'is-original'"
+                  >{{ w.builtIn ? "Built in" : "Original only" }}</span
+                >
+              </div>
+              <p class="ws-meta">{{ w.author }} · {{ w.chapter }}</p>
+              <p class="ws-desc">{{ w.desc }}</p>
+
+              <div class="ws-used">
+                <span class="ws-label">Used in</span>
+                <ul v-if="w.places.length" class="ws-places">
+                  <li v-for="(p, i) in w.places" :key="i">
+                    <a v-if="editHref(p)" :href="editHref(p)">{{
+                      p.chapter
+                    }}</a>
+                    <span v-else>{{ p.chapter }}</span>
+                    <template v-if="p.section"> · {{ p.section }}</template>
+                    <span class="ws-where"> — {{ WHERE[p.where] }}</span>
+                  </li>
+                </ul>
+                <p v-else class="ws-none">
+                  {{
+                    w.builtIn
+                      ? "Not in a chapter yet."
+                      : "Not in the reader yet: only the author's original HTML exists."
+                  }}
+                </p>
+              </div>
+
+              <div class="ws-actions">
+                <a
+                  v-if="w.vuePath"
+                  :href="w.vuePath"
+                  target="_blank"
+                  rel="noopener"
+                  class="ws-link"
+                  >Open ↗</a
+                >
+                <a
+                  href="/widgets"
+                  target="_blank"
+                  rel="noopener"
+                  class="ws-link"
+                  >Compare with the original ↗</a
+                >
+              </div>
+            </BaseCard>
+          </li>
+        </ul>
+      </template>
+    </section>
+  </div>
 </template>
 
 <style scoped>
+.widgets-section {
+  display: grid;
+  gap: 3rem;
+}
 .ws-summary,
 .ws-warn {
   margin: 0 0 12px;
