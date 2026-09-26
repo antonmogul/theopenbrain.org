@@ -35,7 +35,7 @@ import {
 } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
-import { WIDGET_EMBEDS, hasEmbed } from "@/widgets/embeds";
+import { embedLoader, hasEmbed } from "@/widgets/embeds";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 
@@ -64,7 +64,7 @@ function widgetComponent(id) {
     asyncCache.set(
       id,
       defineAsyncComponent({
-        loader: WIDGET_EMBEDS[id],
+        loader: embedLoader(id),
         delay: 0,
       })
     );

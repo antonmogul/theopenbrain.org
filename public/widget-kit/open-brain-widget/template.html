@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ON-centre receptive field</title>
+    <!--
+  Open Brain widget template. Keep this structure: tokens with fallbacks,
+  the OB bridge fallback, title + instruction, controls, figure, readouts,
+  caption. Replace the example (an ON-centre ganglion cell's receptive
+  field) with your figure. See SKILL.md and design.md.
+-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* The book sets these; the fallbacks make the file work on its own. */
+      :root {
+        --accent: var(--ob-accent, #39d8ba);
+        --accent-pale: var(--ob-accent-pale, #9bf9e7);
+        --plate: var(--ob-plate, #1c1c1c);
+        --plate-2: var(--ob-plate-2, #2a2a2a);
+        --on: var(--ob-on-plate, #ffffff);
+        --mute: var(--ob-on-plate-mute, rgba(255, 255, 255, 0.62));
+        --line: var(--ob-line-plate, rgba(255, 255, 255, 0.18));
+        --sans: var(--ob-font-sans, "IBM Plex Sans", system-ui, sans-serif);
+        --mono: var(--ob-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+        --radius: var(--ob-radius, 0);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--plate);
+        color: var(--on);
+        font-family: var(--sans);
+      }
+      .w {
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 900px) {
+        .w {
+          padding: 32px 40px;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .hint {
+        margin: 4px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--mute);
+      }
+
+      /* Tabs: equal cells, hairline dividers, the active one in the accent */
+      .tabs {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        border: 1px solid var(--line);
+      }
+      .tabs button {
+        min-height: 44px;
+        padding: 8px;
+        border: 0;
+        border-left: 1px solid var(--line);
+        background: transparent;
+        color: var(--on);
+        cursor: pointer;
+        border-radius: var(--radius);
+        font: 500 12px/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .tabs button:first-child {
+        border-left: 0;
+      }
+      .tabs button[aria-pressed="true"] {
+        background: var(--accent);
+        color: #fff;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .field label {
+        font: 500 12px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      input[type="range"] {
+        width: 100%;
+        min-height: 44px;
+        accent-color: var(--accent);
+      }
+
+      /* Figure beside controls on wide screens; stacked on phones */
+      .body {
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 900px) {
+        .body {
+          grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+          align-items: start;
+        }
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .label {
+        font: 12px var(--mono);
+        fill: var(--mute);
+      }
+
+      .reads {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .reads div {
+        padding: 10px 0;
+      }
+      .reads div + div {
+        border-left: 1px solid var(--line);
+        padding-left: 12px;
+      }
+      .reads dt {
+        font: 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .reads dd {
+        margin: 4px 0 0;
+        font: 500 20px/1.1 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .cap {
+        margin: 0;
+        font: 12px/1.5 var(--mono);
+        color: var(--mute);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+      html[data-ob-reduce-motion] * {
+        transition: none !important;
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="w">
+      <header>
+        <h1>ON-centre receptive field</h1>
+        <p class="hint">
+          Move the spot of light across the receptive field and watch the
+          ganglion cell's firing.
+        </p>
+      </header>
+
+      <div class="tabs" role="group" aria-label="Stimulus">
+        <button type="button" data-stim="spot" aria-pressed="true">
+          Small spot
+        </button>
+        <button type="button" data-stim="large" aria-pressed="false">
+          Large spot
+        </button>
+      </div>
+
+      <div class="body">
+        <svg
+          id="fig"
+          viewBox="0 0 320 240"
+          role="img"
+          aria-label="A receptive field: an excitatory centre inside an inhibitory surround, with a spot of light"
+        >
+          <circle
+            cx="160"
+            cy="120"
+            r="96"
+            fill="none"
+            stroke="var(--line)"
+            stroke-width="1.5"
+            stroke-dasharray="4 4"
+          />
+          <circle
+            cx="160"
+            cy="120"
+            r="40"
+            fill="var(--accent-pale)"
+            fill-opacity=".14"
+            stroke="var(--on)"
+            stroke-width="1.5"
+          />
+          <text class="label" x="160" y="72" text-anchor="middle">
+            centre +
+          </text>
+          <text class="label" x="160" y="40" text-anchor="middle">
+            surround −
+          </text>
+          <circle id="spot" cx="160" cy="120" r="14" fill="var(--accent)" />
+        </svg>
+
+        <div style="display: grid; gap: 16px">
+          <div class="field">
+            <label for="pos">Spot position</label>
+            <input
+              id="pos"
+              type="range"
+              min="-130"
+              max="130"
+              step="1"
+              value="0"
+              aria-describedby="pos-v"
+            />
+          </div>
+          <dl class="reads">
+            <div>
+              <dt>Where</dt>
+              <dd id="where">Centre</dd>
+            </div>
+            <div>
+              <dt>Firing</dt>
+              <dd id="rate">—</dd>
+            </div>
+          </dl>
+          <svg
+            id="raster"
+            viewBox="0 0 300 36"
+            role="img"
+            aria-label="Spike train of the ganglion cell"
+          ></svg>
+        </div>
+      </div>
+
+      <p class="cap">
+        Illustrative model: a difference of Gaussians. Light in the centre
+        raises firing above the resting rate; light in the surround lowers it.
+        Rates are schematic, not recorded data.
+      </p>
+    </main>
+
+    <script>
+      // The book injects window.OB before this runs; this fallback keeps the
+      // file working on its own (in Claude, or opened in a browser).
+      window.OB = window.OB || {
+        reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
+        onTheme(fn) {
+          fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
+        },
+        resize() {},
+      };
+
+      const REST = 20; // resting rate, spikes/s (schematic)
+      const $ = (id) => document.getElementById(id);
+      let stim = "spot";
+
+      // Difference of Gaussians over the spot's overlap with centre and surround
+      function rate(x) {
+        const size = stim === "large" ? 70 : 14;
+        const centre = Math.exp(-(x * x) / (2 * 26 * 26));
+        const surround = Math.exp(-(x * x) / (2 * 80 * 80));
+        const drive =
+          (size / 14) ** 0.5 *
+          (60 * centre - 38 * surround * (size > 30 ? 1.6 : 1));
+        return Math.max(0, Math.round(REST + drive));
+      }
+
+      function draw() {
+        const x = Number($("pos").value);
+        const r = rate(x);
+        $("spot").setAttribute("cx", 160 + x);
+        $("spot").setAttribute("r", stim === "large" ? 70 : 14);
+        $("where").textContent =
+          Math.abs(x) < 40
+            ? "Centre"
+            : Math.abs(x) < 96
+              ? "Surround"
+              : "Outside";
+        $("rate").textContent = r + " /s";
+        // One second of spikes, evenly spaced at the current rate
+        const n = Math.min(r, 120);
+        $("raster").innerHTML = Array.from(
+          { length: n },
+          (_, i) =>
+            `<line x1="${(i + 0.5) * (300 / n)}" x2="${(i + 0.5) * (300 / n)}" y1="4" y2="32" stroke="var(--on)" stroke-width="1"/>`
+        ).join("");
+        OB.resize();
+      }
+
+      document.querySelectorAll(".tabs button").forEach((b) =>
+        b.addEventListener("click", () => {
+          stim = b.dataset.stim;
+          document
+            .querySelectorAll(".tabs button")
+            .forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+          draw();
+        })
+      );
+      $("pos").addEventListener("input", draw);
+      OB.onTheme(draw);
+      draw();
+    </script>
+  </body>
+</html>

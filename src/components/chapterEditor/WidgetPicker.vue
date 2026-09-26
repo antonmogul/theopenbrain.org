@@ -14,6 +14,7 @@ import {
   FormField,
 } from "@/components/dashboard/shared";
 import { hasEmbed } from "@/widgets/embeds";
+import { apiRequest } from "@/services/api/client";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -29,11 +30,34 @@ const search = ref("");
 const chosen = ref(null);
 const form = ref({ kind: "breakout", title: "", blurb: "", credit: "" });
 
+// Widgets the authors uploaded (OPENBRAIN-105), first: published ones,
+// and drafts for the creator who is placing them (RLS decides).
+async function loadUploads() {
+  try {
+    const rows = await apiRequest(
+      "widget_uploads?select=slug,title,description,author,status&order=updated_at.desc"
+    );
+    return (rows || []).map((u) => ({
+      id: `upload:${u.slug}`,
+      title: u.title,
+      desc: u.description || "",
+      author: u.author || "",
+      chapter: u.status === "published" ? "Uploaded" : "Uploaded · draft",
+    }));
+  } catch (err) {
+    console.warn("WidgetPicker: uploads failed to load", err);
+    return [];
+  }
+}
+
 async function loadCatalog() {
   if (widgets.value.length) return;
   try {
-    const { WIDGETS } = await import("@/widgets/catalog");
-    widgets.value = WIDGETS.filter((w) => hasEmbed(w.id));
+    const [{ WIDGETS }, uploads] = await Promise.all([
+      import("@/widgets/catalog"),
+      loadUploads(),
+    ]);
+    widgets.value = [...uploads, ...WIDGETS.filter((w) => hasEmbed(w.id))];
   } catch (err) {
     console.error("WidgetPicker: catalog failed to load", err);
     loadError.value = "The widget catalog didn't load. Try again.";
@@ -120,7 +144,9 @@ function done() {
         <li v-for="w in filtered" :key="w.id">
           <button type="button" class="wp-item" @click="choose(w)">
             <span class="wp-title">{{ w.title }}</span>
-            <span class="wp-meta">{{ w.chapter }} · {{ w.author }}</span>
+            <span class="wp-meta">{{
+              [w.chapter, w.author].filter(Boolean).join(" · ")
+            }}</span>
             <span class="wp-desc">{{ w.desc }}</span>
           </button>
         </li>

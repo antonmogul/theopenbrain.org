@@ -7,7 +7,7 @@
  * when the figure is active.
  */
 import { computed, defineAsyncComponent } from "vue";
-import { WIDGET_EMBEDS, hasEmbed } from "@/widgets/embeds";
+import { embedLoader, hasEmbed } from "@/widgets/embeds";
 
 const props = defineProps({
   /** The figure: { id, title?, widgetId } from useAnimations. */
@@ -17,7 +17,7 @@ const props = defineProps({
 const available = computed(() => hasEmbed(props.animation.widgetId));
 const view = computed(() =>
   available.value
-    ? defineAsyncComponent(WIDGET_EMBEDS[props.animation.widgetId])
+    ? defineAsyncComponent(embedLoader(props.animation.widgetId))
     : null
 );
 </script>

@@ -21,6 +21,7 @@ vi.mock("@/widgets/embeds", async () => {
   return {
     WIDGET_EMBEDS,
     hasEmbed: (id) => Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, id),
+    embedLoader: (id) => WIDGET_EMBEDS[id] || null,
   };
 });
 
