@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ON-centre receptive field</title>
+    <title>ON-center receptive field</title>
     <!--
   Open Brain widget template. Keep this structure: tokens with fallbacks,
   the OB bridge fallback, title + instruction, controls, figure, readouts,
-  caption. Replace the example (an ON-centre ganglion cell's receptive
+  caption. Replace the example (an ON-center ganglion cell's receptive
   field) with your figure. See SKILL.md and design.md.
 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,6 +21,8 @@
       :root {
         --accent: var(--ob-accent, #39d8ba);
         --accent-pale: var(--ob-accent-pale, #9bf9e7);
+        /* text on an accent fill: dark on the teal, white on the violet */
+        --on-accent: var(--ob-on-accent, #1c1c1c);
         --plate: var(--ob-plate, #1c1c1c);
         --plate-2: var(--ob-plate-2, #2a2a2a);
         --on: var(--ob-on-plate, #ffffff);
@@ -41,6 +43,8 @@
         font-family: var(--sans);
       }
       .w {
+        max-width: 1440px;
+        margin: 0 auto;
         padding: 20px;
         display: grid;
         gap: 16px;
@@ -89,7 +93,7 @@
       }
       .tabs button[aria-pressed="true"] {
         background: var(--accent);
-        color: #fff;
+        color: var(--on-accent);
       }
       button:focus-visible,
       input:focus-visible {
@@ -123,6 +127,11 @@
           grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
           align-items: start;
         }
+      }
+      .side {
+        display: grid;
+        gap: 16px;
+        align-content: start;
       }
       svg {
         display: block;
@@ -180,7 +189,7 @@
   <body>
     <main class="w">
       <header>
-        <h1>ON-centre receptive field</h1>
+        <h1>ON-center receptive field</h1>
         <p class="hint">
           Move the spot of light across the receptive field and watch the
           ganglion cell's firing.
@@ -201,7 +210,7 @@
           id="fig"
           viewBox="0 0 320 240"
           role="img"
-          aria-label="A receptive field: an excitatory centre inside an inhibitory surround, with a spot of light"
+          aria-label="A receptive field: an excitatory center inside an inhibitory surround, with a spot of light"
         >
           <circle
             cx="160"
@@ -222,7 +231,7 @@
             stroke-width="1.5"
           />
           <text class="label" x="160" y="72" text-anchor="middle">
-            centre +
+            center +
           </text>
           <text class="label" x="160" y="40" text-anchor="middle">
             surround −
@@ -230,7 +239,7 @@
           <circle id="spot" cx="160" cy="120" r="14" fill="var(--accent)" />
         </svg>
 
-        <div style="display: grid; gap: 16px">
+        <div class="side">
           <div class="field">
             <label for="pos">Spot position</label>
             <input
@@ -240,13 +249,12 @@
               max="130"
               step="1"
               value="0"
-              aria-describedby="pos-v"
             />
           </div>
           <dl class="reads">
             <div>
               <dt>Where</dt>
-              <dd id="where">Centre</dd>
+              <dd id="where">Center</dd>
             </div>
             <div>
               <dt>Firing</dt>
@@ -263,7 +271,7 @@
       </div>
 
       <p class="cap">
-        Illustrative model: a difference of Gaussians. Light in the centre
+        Illustrative model: a difference of Gaussians. Light in the center
         raises firing above the resting rate; light in the surround lowers it.
         Rates are schematic, not recorded data.
       </p>
@@ -273,7 +281,9 @@
       // The book injects window.OB before this runs; this fallback keeps the
       // file working on its own (in Claude, or opened in a browser).
       window.OB = window.OB || {
-        reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
+        reducedMotion:
+          matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-ob-reduce-motion"),
         onTheme(fn) {
           fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
         },
@@ -284,14 +294,14 @@
       const $ = (id) => document.getElementById(id);
       let stim = "spot";
 
-      // Difference of Gaussians over the spot's overlap with centre and surround
+      // Difference of Gaussians over the spot's overlap with center and surround
       function rate(x) {
         const size = stim === "large" ? 70 : 14;
-        const centre = Math.exp(-(x * x) / (2 * 26 * 26));
+        const center = Math.exp(-(x * x) / (2 * 26 * 26));
         const surround = Math.exp(-(x * x) / (2 * 80 * 80));
         const drive =
           (size / 14) ** 0.5 *
-          (60 * centre - 38 * surround * (size > 30 ? 1.6 : 1));
+          (60 * center - 38 * surround * (size > 30 ? 1.6 : 1));
         return Math.max(0, Math.round(REST + drive));
       }
 
@@ -302,7 +312,7 @@
         $("spot").setAttribute("r", stim === "large" ? 70 : 14);
         $("where").textContent =
           Math.abs(x) < 40
-            ? "Centre"
+            ? "Center"
             : Math.abs(x) < 96
               ? "Surround"
               : "Outside";

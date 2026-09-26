@@ -38,6 +38,11 @@ else is white, greys and lines.
 | Learning, Cognition & Memory | `#FF3351`     | `#C1062A`          | `#FC708A`          | `#FFC7D2`          |
 | Development & Degeneration   | `#F2BB40`     | `#C98F1B`          | `#FFD788`          | `#FFE6BB`          |
 
+**Text on the accent** (a filled tab or button) uses `--ob-on-accent`:
+white on the violet and the blue, `#1c1c1c` on the teal, red and yellow,
+where white text can't be read. Always pair them:
+`background: var(--ob-accent); color: var(--ob-on-accent, #fff)`.
+
 Always write colours as `var(--ob-accent, #8D4CF6)`, with a fallback, so
 the file works on its own. Data series beyond the accent: `--ob-series-2`
 `#FBEB00` (yellow), `--ob-series-3` `#F200FF` (pink), then white and greys.
@@ -68,7 +73,7 @@ Sentence case for titles and instructions. No exclamation marks.
   Circles are the only round things (cells, dots, number badges).
 - Hairline borders (`1px solid var(--ob-line-plate)`) instead of shadows.
 - Tabs are a row of equal cells with hairline dividers; the active tab is
-  filled with `--ob-accent` and white text.
+  filled with `--ob-accent` and its text is `--ob-on-accent`.
 - Buttons: mono uppercase label, 1 px border, square; primary is filled
   white on the plate.
 
@@ -86,7 +91,16 @@ A widget is, top to bottom:
 Padding 20–24 px on phones, up to 40 px on desktop. On wide screens,
 controls may move beside the figure (a two-column grid) but the figure
 stays the largest thing. The widget must work **from 360 px to 1440 px**
-with no horizontal scroll; test at 390, 768 and 1280.
+with no horizontal scroll; test at 390, 768 and 1280. On wider screens,
+cap the content at 1440 px and centre it.
+
+**Text in figures stays readable.** An SVG with a `viewBox` scaled to
+`width: 100%` shrinks its text with it: an 11 px label drawn for a 640 px
+figure is 6 px on a phone. Either keep the `viewBox` close to the phone
+width (about 320–400 units wide, as the template does), put labels in HTML
+beside the figure, or redraw the SVG at its real pixel width (a
+`ResizeObserver` on its container). Labels must be at least 11 px on
+screen at 390 px.
 
 ## 6. Drawing
 
@@ -117,6 +131,7 @@ buttons.
 
 ## 9. Words
 
-Write for a first-year student. One idea per sentence. Use the chapter's
+Write for a first-year student. One idea per sentence. Follow the
+chapter's spelling ("center" in the Retina, not "centre"). Use the chapter's
 own terms (if the chapter says "ganglion cell", don't say "RGC" without
 spelling it out once). Numbers carry units ("12 ms", "0.5 cd/m²").

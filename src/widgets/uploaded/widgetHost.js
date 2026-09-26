@@ -38,12 +38,45 @@ export const CSP = [
 ].join("; ");
 
 /** The subject colours (design.md §2), as hex for widget authors. */
+// `on` is the text colour on a fill of `main` (4.5:1 or better): white on
+// the violet and blue, the plate's near-black on the light teal, red and
+// yellow, where white is unreadable (1.9:1 on the Retina's teal).
 export const RAMP_HEX = {
-  fund: { main: "#8D4CF6", deep: "#7615F5", soft: "#BF97FC", pale: "#DCCDF9" },
-  perc: { main: "#39D8BA", deep: "#08AFA3", soft: "#4BEACC", pale: "#9BF9E7" },
-  move: { main: "#1A72F2", deep: "#0E61C4", soft: "#5EA7EF", pale: "#9AC0EF" },
-  lear: { main: "#FF3351", deep: "#C1062A", soft: "#FC708A", pale: "#FFC7D2" },
-  deve: { main: "#F2BB40", deep: "#C98F1B", soft: "#FFD788", pale: "#FFE6BB" },
+  fund: {
+    main: "#8D4CF6",
+    deep: "#7615F5",
+    soft: "#BF97FC",
+    pale: "#DCCDF9",
+    on: "#ffffff",
+  },
+  perc: {
+    main: "#39D8BA",
+    deep: "#08AFA3",
+    soft: "#4BEACC",
+    pale: "#9BF9E7",
+    on: "#1c1c1c",
+  },
+  move: {
+    main: "#1A72F2",
+    deep: "#0E61C4",
+    soft: "#5EA7EF",
+    pale: "#9AC0EF",
+    on: "#ffffff",
+  },
+  lear: {
+    main: "#FF3351",
+    deep: "#C1062A",
+    soft: "#FC708A",
+    pale: "#FFC7D2",
+    on: "#1c1c1c",
+  },
+  deve: {
+    main: "#F2BB40",
+    deep: "#C98F1B",
+    soft: "#FFD788",
+    pale: "#FFE6BB",
+    on: "#1c1c1c",
+  },
 };
 
 /** The --ob-* tokens for a subject ramp (design.md). */
@@ -54,6 +87,7 @@ export function widgetTokens(ramp) {
     "--ob-accent-deep": r.deep,
     "--ob-accent-soft": r.soft,
     "--ob-accent-pale": r.pale,
+    "--ob-on-accent": r.on,
     "--ob-series-2": "#FBEB00",
     "--ob-series-3": "#F200FF",
     "--ob-plate": "#1c1c1c",
@@ -76,7 +110,7 @@ export function widgetTokens(ramp) {
 // dependency-free; it only talks to its parent.
 const BRIDGE = `(function(){
   var post=function(m){try{m.__ob=1;parent.postMessage(m,"*")}catch(e){}};
-  var rm=document.documentElement.hasAttribute("data-ob-reduce-motion");
+  var rm=document.documentElement.hasAttribute("data-ob-reduce-motion")||!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
   var subs=[];
   window.OB={reducedMotion:rm,
     onTheme:function(fn){subs.push(fn);try{fn(window.OB.theme||{reduceMotion:rm})}catch(e){}},
@@ -95,7 +129,7 @@ const BRIDGE = `(function(){
     var s=document.documentElement.style;for(var k in m.tokens)s.setProperty(k,m.tokens[k]);
     if(m.reduceMotion)document.documentElement.setAttribute("data-ob-reduce-motion","");
     else document.documentElement.removeAttribute("data-ob-reduce-motion");
-    window.OB.reducedMotion=!!m.reduceMotion;window.OB.theme={accent:m.tokens["--ob-accent"],reduceMotion:!!m.reduceMotion,ramp:m.ramp};
+    window.OB.reducedMotion=!!m.reduceMotion||!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);window.OB.theme={accent:m.tokens["--ob-accent"],reduceMotion:window.OB.reducedMotion,ramp:m.ramp};
     subs.forEach(function(fn){try{fn(window.OB.theme)}catch(err){post({type:"error",message:String(err.message||err)})}});report();});
   window.addEventListener("load",function(){report();post({type:"ready"});
     if(window.ResizeObserver){new ResizeObserver(report).observe(document.documentElement)}});

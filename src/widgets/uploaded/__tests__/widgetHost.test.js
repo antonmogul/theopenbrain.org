@@ -77,6 +77,9 @@ describe("tokens and ids", () => {
   it("colours the accent by subject, defaulting to Fundamentals", () => {
     expect(widgetTokens("lear")["--ob-accent"]).toBe("#FF3351");
     expect(widgetTokens("nope")["--ob-accent"]).toBe("#8D4CF6");
+    // readable text on the accent: dark on the light teal, white on violet
+    expect(widgetTokens("perc")["--ob-on-accent"]).toBe("#1c1c1c");
+    expect(widgetTokens("fund")["--ob-on-accent"]).toBe("#ffffff");
     expect(themeMessage("perc", true)).toMatchObject({
       __ob: 1,
       type: "theme",

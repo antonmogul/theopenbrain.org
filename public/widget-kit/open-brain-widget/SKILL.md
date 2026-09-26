@@ -38,9 +38,13 @@ anything that matters: the frame may not keep it. Keep the file under 2 MB.
 3. **Uses the book's tokens.** Colours, fonts and corners come from the
    `--ob-*` CSS variables in `design.md` (the book sets them; the template
    gives fallbacks so the file also works on its own). The chapter's colour
-   is `--ob-accent`: use it for the one thing the reader should look at.
-4. **Respects reduced motion.** When `prefers-reduced-motion: reduce` or
-   `html[data-ob-reduce-motion]` is set, show the end state or step through
+   is `--ob-accent`: one accent colour, for what the reader should look at
+   (the active state, the stimulus, the key trace), plus focus rings. Text
+   on an accent fill is `--ob-on-accent`.
+4. **Respects reduced motion.** Check `OB.reducedMotion` (it covers both
+   the reader's system setting and the book's own) and the CSS for
+   `@media (prefers-reduced-motion: reduce)` and
+   `html[data-ob-reduce-motion]`: show the end state or step through
    without animating.
 5. **Works by keyboard and touch.** Real `<button>`, `<input type="range">`
    and `<select>` elements, visible focus, targets at least 44 px on touch,
@@ -49,9 +53,13 @@ anything that matters: the frame may not keep it. Keep the file under 2 MB.
    top ("Drag the light across the receptive field"), labels on every axis,
    and a caption or legend with units and the source of any data.
 7. **Is scientifically exact.** Every label, number and claim must match the
-   chapter text or a cited source. If you are unsure of a value, say so in a
-   comment at the top of the file and in your reply, never guess silently.
-   Put the source in the caption ("Data: Hubel & Wiesel, 1962").
+   chapter text or a cited source. Use the chapter's terms and spelling.
+   If the author asks for something the chapter doesn't cover, cite a
+   source for it in the caption and flag it in your reply for the author to
+   confirm. If you are unsure of a value, say so in a comment at the top of
+   the file and in your reply, never guess silently. Label any model as
+   illustrative ("Illustrative model, not recorded data"). Put sources in
+   the caption ("Data: Hubel & Wiesel, 1962").
 
 ## The book's bridge (optional)
 
@@ -59,7 +67,8 @@ The book injects a small `window.OB` object before your scripts run:
 
 - `OB.onTheme(fn)`: called with `{ accent, reduceMotion, ramp }` when the
   book's theme is known or changes (the CSS variables are already set);
-- `OB.reducedMotion`: `true` when the reader asked for less motion;
+- `OB.reducedMotion`: `true` when the reader asked for less motion (their
+  system setting or the book's);
 - `OB.resize()`: call after you change the layout without a DOM change
   the browser can see (the book also watches size on its own).
 
@@ -81,7 +90,9 @@ opened on its own, in Claude or in a browser.
 
 - [ ] One `.html` file, only the allowed outside resources, under 2 MB
 - [ ] No horizontal scroll at 360 px; nothing cut off at 1440 px
-- [ ] Colours, fonts and corners from `--ob-*` tokens; the accent used once
+- [ ] Colours, fonts and corners from `--ob-*` tokens; one accent colour,
+      with `--ob-on-accent` for text on it
+- [ ] Figure labels at least 11 px on screen at 390 px
 - [ ] Reduced motion handled
 - [ ] Keyboard and touch work; focus is visible
 - [ ] Title, one-line instruction, labels, caption with units and sources
