@@ -39,6 +39,9 @@ const DIAGRAM_TYPES = {
   map: { label: "Map", glyph: "⊕" },
   interactive: { label: "Interactive", glyph: "⊙" },
   chart: { label: "Chart", glyph: "▤" },
+  // A video still to come, e.g. an interview the manuscript marks
+  // (OPENBRAIN-107).
+  video: { label: "Video", glyph: "▶" },
 };
 
 const type = computed(
