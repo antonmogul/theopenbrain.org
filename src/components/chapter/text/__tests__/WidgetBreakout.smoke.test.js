@@ -18,12 +18,23 @@ vi.mock("@/widgets/embeds", async () => {
     "color-vision": fake("ColorVision"),
     retinabox: fake("RetINaBox"),
   };
+  const isUpload = (id) => /^upload:.+/.test(id || "");
   return {
     WIDGET_EMBEDS,
-    hasEmbed: (id) => Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, id),
-    embedLoader: (id) => WIDGET_EMBEDS[id] || null,
+    hasEmbed: (id) =>
+      isUpload(id) || Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, id),
+    embedLoader: (id) =>
+      isUpload(id) ? fake("Uploaded") : WIDGET_EMBEDS[id] || null,
   };
 });
+
+/* Uploaded widgets: "upload:built" is published, anything else isn't yet. */
+vi.mock("@/widgets/uploaded/useUploadedWidgets", () => ({
+  uploadSlug: (id) =>
+    typeof id === "string" && id.startsWith("upload:") ? id.slice(7) : null,
+  fetchUploadedWidget: async (slug) =>
+    slug === "built" ? { slug, html: "<p>hi</p>" } : null,
+}));
 
 /* The stage refreshes ScrollTrigger when its slot height changes; gsap
    itself is not under test here. */
@@ -324,5 +335,31 @@ describe("WidgetBreakout — unknown widget", () => {
     expect(wrapper.find("button.wb-btn--primary").exists()).toBe(false);
     expect(wrapper.find("a.router-link-stub").exists()).toBe(false);
     wrapper.unmount();
+  });
+});
+
+// A marker for a widget still to be built (OPENBRAIN-110).
+describe("WidgetBreakout for an uploaded widget", () => {
+  const card = (widgetId) => ({
+    placementId: "attn-x",
+    widgetId,
+    kind: "breakout",
+    title: "Helmholtz's black room",
+  });
+
+  it("says coming soon, with nothing to open, until it is published", async () => {
+    const w = mountBreakout(card("upload:attn-helmholtz"));
+    await flushPromises();
+    expect(w.find(".wb-kicker").text()).toContain("coming soon");
+    expect(w.find(".wb-btn--primary").exists()).toBe(false);
+    w.unmount();
+  });
+
+  it("opens like any widget once it is published", async () => {
+    const w = mountBreakout(card("upload:built"));
+    await flushPromises();
+    expect(w.find(".wb-kicker").text()).not.toContain("coming soon");
+    expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
+    w.unmount();
   });
 });
