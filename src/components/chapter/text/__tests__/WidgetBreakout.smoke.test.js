@@ -251,7 +251,9 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     await vi.waitFor(() =>
       expect(layer.querySelector(".fake-widget")?.textContent).toBe("RetINaBox")
     );
-    await wrapper.find("button.wb-btn--primary").trigger("click");
+    // The footer travels with the band (OPENBRAIN-112), so its button is in
+    // the layer too.
+    layer.querySelector("button.wb-btn--primary").click();
     await flushPromises();
     expect(layer.querySelector(".fake-widget")).toBeNull();
     wrapper.unmount();

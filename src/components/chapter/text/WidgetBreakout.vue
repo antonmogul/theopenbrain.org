@@ -81,6 +81,11 @@ watch(
 const comingSoon = computed(
   () => !!upload.value && uploadReady.value === false
 );
+// A published upload shows its own title (the kit's layout), so the band
+// doesn't repeat it.
+const ownsHeading = computed(
+  () => kind.value === "inline" && !!upload.value && uploadReady.value === true
+);
 const embeddable = computed(
   () => hasEmbed(widgetId.value) && !comingSoon.value
 );
@@ -171,68 +176,90 @@ const headingId = computed(
     :data-widget-breakout="widgetId"
     :aria-labelledby="headingId"
   >
-    <header class="wb-head">
-      <p class="wb-kicker">
-        <span class="wb-dot" aria-hidden="true"></span>
-        Interactive
-        <span v-if="comingSoon"> · coming soon</span>
-        <span v-else-if="kind === 'breakout'"> · breakout box</span>
-      </p>
-      <h3 :id="headingId" class="wb-title">{{ title }}</h3>
-      <p v-if="placement.blurb" class="wb-blurb">{{ placement.blurb }}</p>
-      <p v-if="narrowed" class="wb-note">
-        Made for a larger screen: it opens full screen.
-      </p>
-    </header>
-
-    <!-- inline: the widget lives here once it is near the viewport. At
-         desktop widths the stage teleports into TextComp's stage layer and
-         this slot keeps its height (see the notes at the top). -->
+    <!-- One block for both kinds. For inline widgets it is the dark band
+         the Figma review file draws (OPENBRAIN-112): label, widget and a
+         slim footer in one piece, which at desktop widths teleports whole
+         into TextComp's stage layer while this slot keeps its height (see
+         the notes at the top). A breakout stays a card in the column. -->
     <FullBleed
-      v-if="kind === 'inline'"
       ref="fullBleed"
       v-slot="{ floating }"
-      class="wb-fb wb-slot"
+      :enabled="kind === 'inline'"
+      class="wb-fb"
+      :class="{ 'wb-slot': kind === 'inline' }"
     >
       <div
-        class="wb-stage"
-        :class="{ 'wb-stage--floating': floating }"
-        :data-widget-stage="widgetId"
-        :aria-labelledby="headingId"
+        class="wb-body"
+        :class="{
+          'wb-band': kind === 'inline',
+          'wb-body--floating': floating,
+        }"
       >
-        <component :is="Widget" v-if="inlineMounted && Widget" />
-        <div v-else-if="comingSoon" class="wb-missing">
-          This interactive is being built. It will appear here when it's ready.
+        <header class="wb-head">
+          <p class="wb-kicker">
+            <span class="wb-dot" aria-hidden="true"></span>
+            Interactive
+            <span v-if="comingSoon"> · coming soon</span>
+            <span v-else-if="kind === 'breakout'"> · breakout box</span>
+          </p>
+          <!-- A kit-built upload carries its own title and instructions, so
+               in the band ours is for screen readers only. -->
+          <div :class="{ 'wb-sr': ownsHeading }">
+            <h3 :id="headingId" class="wb-title">{{ title }}</h3>
+            <p v-if="placement.blurb" class="wb-blurb">
+              {{ placement.blurb }}
+            </p>
+          </div>
+          <p v-if="narrowed" class="wb-note">
+            Made for a larger screen: it opens full screen.
+          </p>
+        </header>
+
+        <!-- inline: the widget lives here once it is near the viewport. -->
+        <div
+          v-if="kind === 'inline'"
+          class="wb-stage"
+          :class="{ 'wb-stage--floating': floating }"
+          :data-widget-stage="widgetId"
+          :aria-labelledby="headingId"
+        >
+          <component :is="Widget" v-if="inlineMounted && Widget" />
+          <div v-else-if="comingSoon" class="wb-missing">
+            This interactive is being built. It will appear here when it's
+            ready.
+          </div>
+          <div v-else-if="!embeddable" class="wb-missing">
+            This interactive is not available in the reader yet.
+          </div>
+          <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
         </div>
-        <div v-else-if="!embeddable" class="wb-missing">
-          This interactive is not available in the reader yet.
-        </div>
-        <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
+
+        <footer class="wb-foot">
+          <p v-if="placement.credit" class="wb-credit">
+            {{ placement.credit }}
+          </p>
+          <div class="wb-actions">
+            <button
+              v-if="embeddable"
+              type="button"
+              class="wb-btn wb-btn--primary"
+              @click="openModal"
+            >
+              {{ kind === "inline" ? "Full screen" : "Open interactive" }}
+            </button>
+            <RouterLink
+              v-if="placement.route"
+              :to="placement.route"
+              class="wb-btn"
+              target="_blank"
+              rel="noopener"
+            >
+              Open in new tab
+            </RouterLink>
+          </div>
+        </footer>
       </div>
     </FullBleed>
-
-    <footer class="wb-foot">
-      <div class="wb-actions">
-        <button
-          v-if="embeddable"
-          type="button"
-          class="wb-btn wb-btn--primary"
-          @click="openModal"
-        >
-          {{ kind === "inline" ? "Full screen" : "Open interactive" }}
-        </button>
-        <RouterLink
-          v-if="placement.route"
-          :to="placement.route"
-          class="wb-btn"
-          target="_blank"
-          rel="noopener"
-        >
-          Open in new tab
-        </RouterLink>
-      </div>
-      <p v-if="placement.credit" class="wb-credit">{{ placement.credit }}</p>
-    </footer>
 
     <DemoModal :show="modalOpen" :title="title" wide @close="closeModal">
       <component :is="Widget" v-if="modalOpen && Widget" />
@@ -257,10 +284,117 @@ const headingId = computed(
   overflow: hidden;
 }
 
-/* Inline stages break out of the prose column at desktop widths (below), so
-   the card must not clip them. */
+/* Inline widgets are a dark band, not a card (OPENBRAIN-112): the label,
+   the widget and a slim footer on one --color-dark-surface plate, as the
+   Figma review file draws them. The band breaks out of the prose column at
+   desktop widths (below), so the aside must not clip it. */
 .wb--inline {
   overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+/* The body may be teleported out of the aside, so it restates what it
+   would otherwise inherit from .wb. */
+.wb-body {
+  --wb-pad: 1.5rem;
+  --wb-accent: var(--color-chapter, var(--color-accent));
+  font-family: var(--font-ui);
+}
+
+.wb-band {
+  --wb-gutter: var(--wb-pad);
+  background: rgb(var(--color-dark-surface));
+  color: #fff;
+}
+
+/* Full width: the gutter the floating stage used to have. The band is keyed
+   on its own class, not on .wb--inline: at desktop widths it is teleported
+   out of the aside. */
+.wb-band.wb-body--floating {
+  --wb-gutter: clamp(1rem, 4vw, 4rem);
+}
+
+.wb-band .wb-head {
+  padding: 1.25rem var(--wb-gutter) 1rem;
+}
+
+.wb-band .wb-kicker {
+  margin: 0;
+  color: rgb(255 255 255 / 0.7);
+}
+
+.wb-band .wb-title {
+  margin-top: 0.5rem;
+  color: #fff;
+}
+
+.wb-band .wb-blurb {
+  color: rgb(255 255 255 / 0.72);
+}
+
+.wb-band .wb-credit {
+  order: 0;
+}
+
+.wb-band .wb-note,
+.wb-band .wb-credit,
+.wb-band .wb-missing {
+  color: rgb(255 255 255 / 0.6);
+}
+
+.wb-band .wb-stage {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  padding: 0 var(--wb-gutter);
+}
+
+.wb-band .wb-stage-placeholder {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgb(255 255 255 / 0.06) 0 8px,
+    transparent 8px 16px
+  );
+}
+
+.wb-band .wb-foot {
+  margin-top: 1rem;
+  padding: 0.5rem var(--wb-gutter);
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.wb-band .wb-btn {
+  min-height: 2.75rem;
+  border-color: rgb(255 255 255 / 0.4);
+  color: #fff;
+}
+
+.wb-band .wb-btn:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.wb-band .wb-btn--primary {
+  border-color: #fff;
+  background: #fff;
+  color: rgb(var(--color-dark-surface));
+}
+
+.wb-band .wb-btn--primary:hover {
+  background: rgb(255 255 255 / 0.85);
+}
+
+/* Visually hidden, still the band's accessible name. */
+.wb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .wb-head {
@@ -336,15 +470,7 @@ const headingId = computed(
  * flow should. Nothing is transformed and nothing leaves the layer's box,
  * so the document's scrollable width is unchanged.
  */
-.wb-stage--floating {
-  /* FullBleed positions it; the stage only sheds the column spacing. */
-  margin: 0;
-  padding: 1.5rem clamp(1rem, 4vw, 4rem);
-}
-
-.wb-fb.fb-slot--vacated {
-  margin-top: 0.75rem;
-}
+/* FullBleed positions the whole band; its gutter is --wb-gutter above. */
 
 .wb-stage-placeholder {
   min-height: 12rem;
@@ -418,6 +544,8 @@ const headingId = computed(
 
 .wb-credit {
   margin: 0;
+  /* After the buttons on a card, before them in a band. */
+  order: 2;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: rgb(var(--color-mute));
@@ -450,6 +578,16 @@ const headingId = computed(
   .wb-stage {
     padding: 0;
     border-bottom: 0;
+  }
+  /* The band runs edge to edge with no rules; the widget is flush. */
+  .wb--inline {
+    border: 0;
+  }
+  .wb-band {
+    --wb-gutter: var(--narrow-gutter, 0.9375rem);
+  }
+  .wb-band .wb-stage {
+    padding: 0;
   }
 }
 
