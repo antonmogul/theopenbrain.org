@@ -32,12 +32,17 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  watch,
 } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
+import {
+  fetchUploadedWidget,
+  uploadSlug,
+} from "@/widgets/uploaded/useUploadedWidgets";
 
 const props = defineProps({
   /** The `widget` object of a `{ type: "widget" }` paragraph. */
@@ -54,7 +59,31 @@ const kind = computed(() => {
   return k === "inline" ? "inline" : "breakout";
 });
 const title = computed(() => props.placement?.title || widgetId.value);
-const embeddable = computed(() => hasEmbed(widgetId.value));
+// An uploaded widget ("upload:<slug>") that isn't published yet is a marker
+// for a widget still to be built: the card says "Coming soon" and has
+// nothing to open (OPENBRAIN-110).
+const upload = computed(() => uploadSlug(widgetId.value));
+const uploadReady = ref(null); // null while checking
+watch(
+  upload,
+  async (slug) => {
+    uploadReady.value = null;
+    if (!slug) return;
+    try {
+      const row = await fetchUploadedWidget(slug);
+      if (slug === upload.value) uploadReady.value = !!row?.html;
+    } catch {
+      if (slug === upload.value) uploadReady.value = false;
+    }
+  },
+  { immediate: true }
+);
+const comingSoon = computed(
+  () => !!upload.value && uploadReady.value === false
+);
+const embeddable = computed(
+  () => hasEmbed(widgetId.value) && !comingSoon.value
+);
 
 /* One async component per widget id, created lazily so the import() only
    fires when something actually renders it. */
@@ -146,7 +175,8 @@ const headingId = computed(
       <p class="wb-kicker">
         <span class="wb-dot" aria-hidden="true"></span>
         Interactive
-        <span v-if="kind === 'breakout'"> · breakout box</span>
+        <span v-if="comingSoon"> · coming soon</span>
+        <span v-else-if="kind === 'breakout'"> · breakout box</span>
       </p>
       <h3 :id="headingId" class="wb-title">{{ title }}</h3>
       <p v-if="placement.blurb" class="wb-blurb">{{ placement.blurb }}</p>
@@ -171,6 +201,9 @@ const headingId = computed(
         :aria-labelledby="headingId"
       >
         <component :is="Widget" v-if="inlineMounted && Widget" />
+        <div v-else-if="comingSoon" class="wb-missing">
+          This interactive is being built. It will appear here when it's ready.
+        </div>
         <div v-else-if="!embeddable" class="wb-missing">
           This interactive is not available in the reader yet.
         </div>
