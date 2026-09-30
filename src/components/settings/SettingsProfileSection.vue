@@ -7,6 +7,8 @@
 import { ref, watch, computed } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useProfile } from "@/composables/useProfile";
+import FormField from "@/components/dashboard/shared/FormField.vue";
+import Button from "@/components/dashboard/shared/Button.vue";
 
 const { user } = useAuth();
 const { profile, fetchProfile, updateProfile, loading } = useProfile();
@@ -85,78 +87,51 @@ async function save() {
         chapter.
       </p>
     </header>
-
     <div class="profile-grid">
       <div class="avatar-col">
         <div class="avatar" aria-hidden="true">{{ initials }}</div>
-        <button class="btn-ghost photo-btn" type="button" disabled>
+        <Button variant="ghost" size="sm" class="photo-btn" disabled>
           Change photo
-        </button>
+        </Button>
       </div>
-
       <div class="fields">
-        <label class="field">
-          <span class="field-label">Display name</span>
-          <input v-model="form.full_name" class="input" type="text" />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Email address</span>
-          <input
-            :value="user?.email || ''"
-            class="input"
-            type="email"
-            readonly
-          />
-          <span class="field-hint">Email changes are handled separately.</span>
-        </label>
-
-        <label class="field">
-          <span class="field-label">Bio</span>
-          <textarea
-            v-model="form.bio"
-            class="input"
-            rows="3"
-            maxlength="280"
-          ></textarea>
-          <span class="field-hint">
-            Shown in note attributions. 280 char max.
-          </span>
-        </label>
-
+        <FormField label="Display name">
+          <input v-model="form.full_name" type="text" />
+        </FormField>
+        <FormField
+          label="Email address"
+          hint="Email changes are handled separately."
+        >
+          <input :value="user?.email || ''" type="email" readonly />
+        </FormField>
+        <FormField label="Bio" hint="Shown in note attributions. 280 char max.">
+          <textarea v-model="form.bio" rows="3" maxlength="280"></textarea>
+        </FormField>
         <div class="field-pair">
-          <label class="field">
-            <span class="field-label">Role / Field</span>
-            <select v-model="form.role_field" class="input">
+          <FormField label="Role / Field">
+            <select v-model="form.role_field">
               <option value="">—</option>
               <option v-for="r in ROLE_OPTIONS" :key="r" :value="r">
                 {{ r }}
               </option>
             </select>
-          </label>
-          <label class="field">
-            <span class="field-label">Location</span>
-            <input v-model="form.location" class="input" type="text" />
-          </label>
+          </FormField>
+          <FormField label="Location">
+            <input v-model="form.location" type="text" />
+          </FormField>
         </div>
-
         <div class="actions">
-          <button
-            class="btn-solid"
-            type="button"
-            :disabled="!dirty || loading"
+          <Button
+            variant="solid"
+            :loading="loading"
+            :disabled="!dirty"
             @click="save"
           >
             {{ loading ? "Saving…" : "Save changes" }}
-          </button>
-          <button
-            class="btn-ghost"
-            type="button"
-            :disabled="!dirty"
-            @click="resetFromProfile"
-          >
+          </Button>
+          <Button variant="ghost" :disabled="!dirty" @click="resetFromProfile">
             Cancel
-          </button>
+          </Button>
           <span v-if="saved" class="saved-note">✓ Saved</span>
         </div>
       </div>
@@ -204,8 +179,9 @@ async function save() {
   width: 120px;
   height: 120px;
   border-radius: 999px;
-  background: rgb(var(--color-complete));
-  color: #0a3d33;
+  /* The reader's accent, like the rail avatar (OPENBRAIN-126). */
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-paper));
   display: grid;
   place-items: center;
   font-family: var(--font-mono);
@@ -222,53 +198,10 @@ async function save() {
   flex-direction: column;
   gap: 22px;
 }
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.field-label {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-10);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgb(var(--color-mute));
-}
-.field-hint {
-  font-family: var(--font-body);
-  font-size: var(--ui-size-13);
-  color: rgb(var(--color-mute));
-  margin-top: 4px;
-  line-height: 1.45;
-}
 .field-pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 22px;
-}
-
-.input {
-  width: 100%;
-  border: 0;
-  border-bottom: 1px solid rgb(var(--color-line));
-  background: transparent;
-  padding: 8px 0;
-  font-family: var(--font-body);
-  font-size: var(--ui-size-18);
-  color: rgb(var(--color-ink));
-  outline: none;
-  transition: border-color 0.12s ease;
-}
-textarea.input {
-  font-size: var(--ui-size-16);
-  line-height: 1.5;
-  resize: vertical;
-}
-.input:focus {
-  border-bottom-color: rgb(var(--color-ink));
-}
-.input[readonly] {
-  color: rgb(var(--color-mute));
 }
 
 .actions {
@@ -277,6 +210,9 @@ textarea.input {
   gap: 6px;
   margin-top: 4px;
 }
+.actions :deep(.btn) {
+  white-space: nowrap;
+}
 .saved-note {
   font-family: var(--font-mono);
   font-size: var(--ui-size-11);
@@ -284,40 +220,24 @@ textarea.input {
   margin-left: 8px;
 }
 
-.btn-solid,
-.btn-ghost {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  border-radius: var(--radius-control);
-  transition:
-    background 0.12s ease,
-    color 0.12s ease,
-    border-color 0.12s ease;
-}
-.btn-solid {
-  padding: 10px 18px;
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-ink));
-}
-.btn-solid:hover:not(:disabled) {
-  background: rgb(var(--color-ink) / 0.85);
-}
-.btn-ghost {
-  padding: 6px 12px;
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid transparent;
-}
-.btn-ghost:hover:not(:disabled) {
-  background: rgb(var(--color-ink) / 0.05);
-}
-.btn-solid:disabled,
-.btn-ghost:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+/* Phones: the avatar sits above the fields instead of taking a column. */
+@media (max-width: 599px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .avatar-col {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 1.625rem;
+  }
+  .photo-btn {
+    margin-top: 0;
+  }
 }
 </style>

@@ -6,6 +6,7 @@
 // live elsewhere / are hidden everywhere per product decision).
 import { ref } from "vue";
 import ToggleRow from "@/components/dashboard/shared/ToggleRow.vue";
+import Button from "@/components/dashboard/shared/Button.vue";
 import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import { isBetaHidden } from "@/constants/beta";
@@ -122,10 +123,8 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
       </div>
 
       <div class="data-actions">
-        <button class="btn" type="button" disabled>Download my data</button>
-        <button class="btn" type="button" disabled>
-          Delete reading history
-        </button>
+        <Button variant="outline" disabled>Download my data</Button>
+        <Button variant="outline" disabled>Delete reading history</Button>
       </div>
     </section>
 
@@ -236,22 +235,6 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
   display: flex;
   gap: 8px;
   margin-top: 24px;
-}
-.btn {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 8px 16px;
-  border-radius: var(--radius-control);
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-ink) / 0.85);
-  cursor: pointer;
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 @media (max-width: 767px) {

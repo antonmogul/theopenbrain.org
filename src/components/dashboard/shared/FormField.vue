@@ -74,4 +74,9 @@ defineProps({
   line-height: 1.5;
   resize: vertical;
 }
+/* Read-only values (settings' email) read as not editable. */
+.field :deep(input[readonly]),
+.field :deep(textarea[readonly]) {
+  color: rgb(var(--color-mute));
+}
 </style>
