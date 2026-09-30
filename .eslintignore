@@ -21,3 +21,4 @@ supabase/.temp/
 # eslint reads .eslintignore only, and linting it hangs the run for minutes.
 storybook-static/
 storybook-snapshots/
+scripts/tokens/figma-check.js

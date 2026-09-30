@@ -40,6 +40,8 @@
     "storybook:coverage:student-views": "node scripts/check-storybook-student-views.mjs",
     "storybook:smoke:all": "node scripts/storybook-all-smoke.mjs",
     "storybook:smoke:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 storybook:smoke:all",
+    "tokens:export": "node scripts/tokens/export.mjs",
+    "tokens:figma-expected": "node scripts/tokens/figma-expected.mjs",
     "storybook:snapshots": "node scripts/storybook-snapshots.mjs",
     "storybook:snapshots:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 storybook:snapshots",
     "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs",
