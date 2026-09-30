@@ -303,6 +303,8 @@ Conventions:
 - **Reduce motion** — `[data-reduce-motion="1"]` on `<html>` zeroes animation durations globally.
 - **Pre-paint** — Inline `<script>` in `index.html` reads localStorage and sets the `data-*` attributes + reading-size/measure CSS vars before CSS loads, preventing flash. Maps in that script must stay in sync with `usePreferences.js`.
 
+**Tokens contract (OPENBRAIN-117).** `npm run tokens:export` writes `tokens/tokens.json` from brand.css and the `.t-*` classes; `src/__tests__/tokens.test.js` fails when they disagree, so regenerate and commit it with any token change. The Figma design system file ("Open Brain — Design System", `NAjmvySrMHLtWYqn2zi4h4`) mirrors these as variables; after a token change update Figma and run the drift check (`npm run tokens:figma-expected` + `scripts/tokens/figma-check.js` through the Figma MCP) — see `docs/design-system/figma-sync.md`.
+
 Variable web fonts (Newsreader, Inter Tight, JetBrains Mono, Literata) self-hosted under `public/publicAssets/fonts/`. Latin subset only (~260KB total). Declared in `src/styles/fonts.css`.
 
 Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `accent`, `complete`, `warn`) plus legacy aliases (`lightest`, `lighter`, `magenta`, `violet`, `green`, etc.) that resolve to the same tokens — both work during the migration. Drop legacy aliases only as you migrate the consuming components.

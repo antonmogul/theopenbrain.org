@@ -11,6 +11,7 @@ Two kinds of files live here. **Current reference docs** describe how the repo w
 | `architecture/README.md`             | Dependency-graph tooling: `npm run graph:visual`, `graph:orphans`, `graph:cycles`, `graph:check` and the layering rules.                     | 2026-08-05  |
 | `storybook/student-view-coverage.md` | Storybook coverage table for student components and full-page views.                                                                         | 2026-08-28  |
 | `typography-normalization.md`        | Typography tokens and role classes, plus the migration plan for components (updated 2026-06-30).                                             | 2026-08-05  |
+| `design-system/figma-sync.md`        | How the Figma design system file stays in step with the code: `tokens/tokens.json`, the drift test, and the Figma drift check.               | 2026-09-30  |
 
 Generated outputs, regenerate rather than edit: `architecture/graph.json` (`npm run graph:visual`, Prettier-ignored), `architecture/orphans.txt` (`npm run graph:orphans`), `architecture/cycles.txt` (`npm run graph:cycles`), `architecture/violations.txt` (`npm run graph:check`).
 
