@@ -207,7 +207,7 @@ defineEmits([
   border: none;
   background: transparent;
   color: rgb(var(--color-mute));
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   font-family: "IBM Plex Sans", sans-serif;
   cursor: pointer;
   transition: background 0.1s;

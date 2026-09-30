@@ -152,7 +152,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -163,7 +163,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .section-header h2 {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.012em;
@@ -171,7 +171,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .subtitle {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.5;
   color: rgb(var(--color-mute));
   margin: 0;
@@ -217,7 +217,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 .stat-value {
   display: block;
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -225,7 +225,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 .stat-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -239,7 +239,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .btn {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 8px 16px;

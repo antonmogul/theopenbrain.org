@@ -412,7 +412,7 @@ onBeforeUnmount(() => {
   background: rgb(var(--color-warn) / 0.14);
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   line-height: 1.4;
   pointer-events: auto;
 }
@@ -558,7 +558,7 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: var(--radius-control);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
+  font-size: var(--ui-size-14);
   cursor: pointer;
   transition: all 0.1s ease;
 }
@@ -602,7 +602,7 @@ onBeforeUnmount(() => {
   padding: 6px 12px;
   background: rgb(151, 71, 255);
   color: white;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   border-radius: var(--radius-control);
   animation: pulse 1s infinite;
 }

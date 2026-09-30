@@ -55,7 +55,7 @@ function cancel() {
 <style scoped>
 .confirm-msg {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   line-height: 1.5;
   color: rgb(var(--color-ink));
   margin: 0;

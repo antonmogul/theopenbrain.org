@@ -158,7 +158,7 @@ const cardsReviewed = computed(
 
 .stats-title {
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0 0 0.15625rem 0;
@@ -166,7 +166,7 @@ const cardsReviewed = computed(
 
 .performance-message {
   font-style: italic;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: rgb(var(--color-ink) / 0.7);
   margin: 0;
 }
@@ -188,7 +188,7 @@ const cardsReviewed = computed(
 .stat-value {
   display: block;
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
@@ -235,7 +235,7 @@ const cardsReviewed = computed(
   padding: 0.5rem 1rem;
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

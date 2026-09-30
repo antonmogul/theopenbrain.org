@@ -62,6 +62,8 @@ npm run storybook:smoke:all        # Mount every story in Chromium; fail on cons
 npm run storybook:smoke:ci         # Serve storybook-static on :6010 and run smoke:all (what CI runs)
 npm run storybook:smoke:chapter    # Chapter-only subset of the story smoke
 npm run storybook:snapshots:ci     # Screenshot Guides/Foundations/chapter-block stories at 390 + 1280 into storybook-snapshots/ (CI artifact)
+# Before/after visual check of a refactor (OPENBRAIN-118): SNAPSHOT_PREFIXES='*' SNAPSHOT_OUT=<dir> npm run storybook:snapshots:ci
+# on each build, then BEFORE=<dir> AFTER=<dir> [NOISE=<diff.json of two same-code runs>] npm run storybook:diff
 ```
 
 Story naming follows `.storybook/taxonomy.md` (Guides / Foundations / Chapter / Student / Dashboard / Widgets / Views / Legacy). Storybook is the design-system reference (the in-app `/styleguide` was retired in OPENBRAIN-114):
@@ -296,6 +298,7 @@ CSS custom properties in `src/styles/brand.css` are the single source of truth f
 
 Conventions:
 
+- **UI sizes** — `--ui-size-10` … `--ui-size-32` in brand.css are the fixed sizes interface components use (controls, labels, badges, panels); components set `font-size: var(--ui-size-11)`, never a literal. They are separate from the responsive reading scale (`--type-*` / `.t-*`) and map one to one onto the Figma `UI/*` text styles (OPENBRAIN-118).
 - **Chapter ramp** — `[data-chapter="fund|perc|move|lear|deve"]` on `<html>` switches `--color-chapter{,-deep,-soft,-pale}`. Keys and values mirror the Figma Assets Library variables `book/<key>/{main,dark,medium,light}` (`WNnPvBkixODGsiYmIZKSWw`, node 3:37); the router sets the key from the module's subject ramp, never from the chapter number. Inside a chapter the ramp is the chapter's identity colour (opener title, TOC numbers, section badges); widget breakout cards and the widgets inside them use it too (OPENBRAIN-98); the global `--color-accent` (magenta) stays the interaction accent for highlight tools, links and dashboards.
 - **Theme** — `[data-theme="light|dark"]` on `<html>`. System mode resolved live via `matchMedia`.
 - **Accent** — `[data-accent="magenta|teal|amber|mono"]` on `<html>` overrides `--color-accent`.

@@ -114,7 +114,7 @@ onBeforeUnmount(close);
   border-radius: 50%;
   background: rgb(var(--color-paper));
   color: rgb(var(--color-mute));
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   line-height: 1;
   cursor: pointer;
   opacity: 0;
@@ -163,12 +163,12 @@ onBeforeUnmount(close);
   outline: none;
 }
 .im-label {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 600;
   color: rgb(var(--color-ink));
 }
 .im-hint {
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
 }
 </style>

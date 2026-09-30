@@ -170,7 +170,7 @@ async function save() {
 }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -178,7 +178,7 @@ async function save() {
 }
 .section-header h2 {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.012em;
@@ -186,7 +186,7 @@ async function save() {
 }
 .subtitle {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.5;
   color: rgb(var(--color-mute));
   margin: 0;
@@ -229,14 +229,14 @@ async function save() {
 }
 .field-label {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
 }
 .field-hint {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   margin-top: 4px;
   line-height: 1.45;
@@ -254,13 +254,13 @@ async function save() {
   background: transparent;
   padding: 8px 0;
   font-family: var(--font-body);
-  font-size: 1.125rem;
+  font-size: var(--ui-size-18);
   color: rgb(var(--color-ink));
   outline: none;
   transition: border-color 0.12s ease;
 }
 textarea.input {
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.5;
   resize: vertical;
 }
@@ -279,7 +279,7 @@ textarea.input {
 }
 .saved-note {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-complete));
   margin-left: 8px;
 }
@@ -287,7 +287,7 @@ textarea.input {
 .btn-solid,
 .btn-ghost {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

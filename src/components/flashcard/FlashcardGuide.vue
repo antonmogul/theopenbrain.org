@@ -66,7 +66,7 @@ function dismiss() {
   border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   line-height: 1.5;
   color: rgb(var(--color-ink));
 }
@@ -92,7 +92,7 @@ function dismiss() {
 .fg-draft {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.02em;
   color: rgb(var(--color-mute));
 }

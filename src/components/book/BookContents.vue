@@ -154,7 +154,7 @@ function statusLabel(p) {
   gap: 0.75rem;
   margin: 0 0 1rem;
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(var(--color-chapter));
@@ -214,7 +214,7 @@ function statusLabel(p) {
 }
 .bc__authors {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.04em;
   color: rgb(255 255 255 / 0.6);
 }
@@ -226,14 +226,14 @@ function statusLabel(p) {
   border: 1px solid currentColor;
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .bc__go {
   align-self: center;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(255 255 255 / 0.7);
@@ -250,7 +250,7 @@ function statusLabel(p) {
 }
 .bc__progress-label {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.04em;
   color: rgb(255 255 255 / 0.8);
 }
@@ -283,7 +283,7 @@ function statusLabel(p) {
   padding: 1rem 0;
   border-top: 1px solid rgb(var(--color-chapter) / 0.5);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(255 255 255 / 0.45);

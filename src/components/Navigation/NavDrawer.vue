@@ -330,7 +330,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .wordmark-text {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   line-height: 1.1;
   text-transform: lowercase;
   letter-spacing: 0.02em;
@@ -353,7 +353,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -400,12 +400,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .continue-ch {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute));
 }
 .continue-title {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 500;
 }
 
@@ -435,12 +435,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .ch-num {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .ch-title {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
 }
 .ch-done {
   color: rgb(var(--color-complete));
@@ -466,17 +466,17 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   display: grid;
   place-items: center;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   font-weight: 600;
   flex-shrink: 0;
 }
 .user-name {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 .user-sub {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute));
   text-decoration: none;
 }
@@ -490,7 +490,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   gap: 0.5rem;
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -507,7 +507,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 .signin-btn {
   align-self: flex-start;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 10px 18px;

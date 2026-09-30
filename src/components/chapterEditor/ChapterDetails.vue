@@ -156,7 +156,7 @@ function moveAuthor(i, dir) {
 }
 .cd-h {
   margin: 0 0 12px;
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
 }
 .cd-form {
   display: grid;
@@ -171,12 +171,12 @@ function moveAuthor(i, dir) {
 }
 .cd-authors legend {
   margin-bottom: 6px;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 600;
 }
 .cd-empty {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-mute));
 }
 .cd-author {
@@ -191,7 +191,7 @@ function moveAuthor(i, dir) {
   border: 1px solid rgb(var(--color-line));
   border-radius: 6px;
   font: inherit;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   background: rgb(var(--color-bg));
 }
 .cd-author button {

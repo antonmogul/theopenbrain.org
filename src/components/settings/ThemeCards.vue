@@ -132,13 +132,13 @@ const options = [
 }
 
 .label {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 
 .hint {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   margin-top: 0.125rem;
 }

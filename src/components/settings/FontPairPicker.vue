@@ -104,7 +104,7 @@ const options = [
 }
 
 .label {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 </style>

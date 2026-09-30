@@ -434,7 +434,7 @@ export default {
   border: none;
   border-bottom: 2px solid transparent;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -498,7 +498,7 @@ export default {
 .demos-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -506,7 +506,7 @@ export default {
 }
 
 .demos-loading {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   text-align: center;
   padding: 0.5rem 0;
@@ -528,7 +528,7 @@ export default {
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));

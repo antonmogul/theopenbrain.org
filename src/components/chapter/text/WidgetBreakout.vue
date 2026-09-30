@@ -407,7 +407,7 @@ const headingId = computed(
   gap: 0.5rem;
   margin: 0 0 0.5rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -423,7 +423,7 @@ const headingId = computed(
 .wb-title {
   margin: 0;
   padding: 0; /* global h3 rule adds vertical padding */
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -432,7 +432,7 @@ const headingId = computed(
 .wb-blurb {
   margin: 0.5rem 0 0;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.55;
   color: rgb(var(--color-ink) / 0.8);
   max-width: 60ch;
@@ -441,7 +441,7 @@ const headingId = computed(
 .wb-note {
   margin: 0.5rem 0 0;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
 }
 
@@ -547,7 +547,7 @@ const headingId = computed(
   /* After the buttons on a card, before them in a band. */
   order: 2;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
 }
 

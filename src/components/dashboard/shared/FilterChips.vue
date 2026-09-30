@@ -55,7 +55,7 @@ function select(v) {
   border-radius: var(--radius-control);
   background: transparent;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-mute));
@@ -72,7 +72,7 @@ function select(v) {
   color: rgb(var(--color-accent));
 }
 .chip-count {
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   opacity: 0.7;
 }
 </style>

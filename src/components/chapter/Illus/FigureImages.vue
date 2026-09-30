@@ -533,13 +533,13 @@ onBeforeUnmount(() => {
   margin: 0 auto;
   max-width: 62ch;
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   line-height: 1.45;
   color: rgb(var(--color-mute));
   text-align: left;
 }
 .figimg--large .figimg-caption {
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   max-width: 78ch;
 }
 
@@ -634,7 +634,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   height: 16px;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   line-height: 16px;
   color: rgb(var(--color-mute));
 }
@@ -652,7 +652,7 @@ onBeforeUnmount(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-ink) / 0.8);
 }
 .figimg-foot {
@@ -664,7 +664,7 @@ onBeforeUnmount(() => {
 .figimg-hint {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -720,7 +720,7 @@ onBeforeUnmount(() => {
 }
 .figview-count {
   flex: none;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
   color: rgb(255 255 255 / 0.65);
@@ -796,7 +796,7 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   padding: 0 1.25rem 0.75rem;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   line-height: 1.5;
   color: rgb(255 255 255 / 0.78);
 }
@@ -863,7 +863,7 @@ onBeforeUnmount(() => {
     right: 0.75rem;
   }
   .figview-caption {
-    font-size: 0.8125rem;
+    font-size: var(--ui-size-13);
     max-height: 18vh;
   }
   .figview-strip-thumb {

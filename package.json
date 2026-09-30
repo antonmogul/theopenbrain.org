@@ -42,6 +42,7 @@
     "storybook:smoke:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 storybook:smoke:all",
     "tokens:export": "node scripts/tokens/export.mjs",
     "tokens:figma-expected": "node scripts/tokens/figma-expected.mjs",
+    "storybook:diff": "node scripts/storybook-diff.mjs",
     "storybook:snapshots": "node scripts/storybook-snapshots.mjs",
     "storybook:snapshots:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 storybook:snapshots",
     "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs",

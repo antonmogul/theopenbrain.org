@@ -47,7 +47,7 @@ defineProps({
 }
 .loading-msg {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
   text-transform: uppercase;
   letter-spacing: 0.08em;

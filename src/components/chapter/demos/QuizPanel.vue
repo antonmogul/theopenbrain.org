@@ -253,7 +253,7 @@ function handleGoToQuestion(index) {
 .quiz-panel {
   position: relative;
   min-height: 400px;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 .state-center {
@@ -304,7 +304,7 @@ function handleGoToQuestion(index) {
   color: #6b7280;
   margin: 0 0 20px;
   line-height: 1.5;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 .intro-meta {
@@ -313,7 +313,7 @@ function handleGoToQuestion(index) {
   justify-content: center;
   gap: 20px;
   margin-bottom: 24px;
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   color: #4b5563;
 }
 
@@ -387,7 +387,7 @@ function handleGoToQuestion(index) {
   padding: 10px 20px;
   border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;

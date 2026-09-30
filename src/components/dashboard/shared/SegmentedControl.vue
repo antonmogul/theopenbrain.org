@@ -36,7 +36,7 @@ defineEmits(["update:modelValue"]);
 
 .segment {
   padding: 0.375rem 0.875rem;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   background: transparent;
   border: none;
   border-radius: var(--radius-control);

@@ -138,7 +138,7 @@ const metaLine = computed(() =>
 }
 .rail-meta {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   margin-top: 2px;
   text-transform: uppercase;
@@ -173,18 +173,18 @@ const metaLine = computed(() =>
 }
 .rail-label {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   font-weight: 400;
   flex: 1;
 }
 .rail-soon {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute) / 0.7);
 }
 .rail-count {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .rail-link:hover {
@@ -213,7 +213,7 @@ const metaLine = computed(() =>
 }
 .rail-back {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-ink));

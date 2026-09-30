@@ -72,7 +72,7 @@ textarea {
   box-sizing: border-box;
   border: 0;
   border-radius: 0rem;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
   resize: none;
   --tw-bg-opacity: 1;
 }

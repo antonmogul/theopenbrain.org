@@ -173,7 +173,7 @@ defineExpose({ isValid });
   padding: 6px 12px 6px 8px;
   border: 1px solid #d1d5db;
   border-radius: var(--radius-control);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: #1a1a1a;
   cursor: pointer;
 }
@@ -207,7 +207,7 @@ defineExpose({ isValid });
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 0.5rem;
@@ -215,7 +215,7 @@ defineExpose({ isValid });
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: #6b7280;
   margin: 0;
 }
@@ -245,7 +245,7 @@ defineExpose({ isValid });
 
 .form-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   font-weight: 500;
   color: #4b5563;
   text-transform: uppercase;
@@ -268,7 +268,7 @@ defineExpose({ isValid });
   border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: #1a1a1a;
   transition: border-color 0.2s;
 }
@@ -288,7 +288,7 @@ defineExpose({ isValid });
   border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: #1a1a1a;
   resize: vertical;
   min-height: 80px;
@@ -316,7 +316,7 @@ defineExpose({ isValid });
 .slug-prefix {
   padding: 0.75rem 0 0.75rem 1rem;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: #9ca3af;
   white-space: nowrap;
 }

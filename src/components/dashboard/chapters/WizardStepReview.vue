@@ -163,7 +163,7 @@ const wordCount = computed(() =>
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 0.5rem;
@@ -171,7 +171,7 @@ const wordCount = computed(() =>
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: #6b7280;
   margin: 0;
 }
@@ -195,7 +195,7 @@ const wordCount = computed(() =>
 
 .review-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -204,7 +204,7 @@ const wordCount = computed(() =>
 
 .review-value {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: #1a1a1a;
   text-align: right;
   flex: 1;
@@ -212,11 +212,11 @@ const wordCount = computed(() =>
 
 .review-value.mono {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 
 .review-value.description {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: #4b5563;
   max-width: 400px;
 }
@@ -234,7 +234,7 @@ const wordCount = computed(() =>
   color: #ca8a04;
   border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
 }
 
@@ -245,7 +245,7 @@ const wordCount = computed(() =>
 
 .summary-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 600;
   color: #4b5563;
   margin: 0 0 0.75rem;
@@ -267,13 +267,13 @@ const wordCount = computed(() =>
 
 .section-name {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: #1a1a1a;
 }
 
 .section-meta {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: #9ca3af;
 }
 
@@ -286,7 +286,7 @@ const wordCount = computed(() =>
   border-radius: var(--radius-control);
   color: #dc2626;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 
 /* Create Button */
@@ -304,7 +304,7 @@ const wordCount = computed(() =>
   border-radius: var(--radius-control);
   color: white;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -347,7 +347,7 @@ const wordCount = computed(() =>
   border-radius: 50%;
   background: rgba(34, 197, 94, 0.1);
   color: #16a34a;
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -364,7 +364,7 @@ const wordCount = computed(() =>
 
 .success-message {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: #4b5563;
   margin: 0 0 2rem;
 }
@@ -379,7 +379,7 @@ const wordCount = computed(() =>
   padding: 0.75rem 1.75rem;
   border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   text-decoration: none;
   transition: all 0.2s;

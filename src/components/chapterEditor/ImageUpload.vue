@@ -155,7 +155,7 @@ onBeforeUnmount(() => preview.value && URL.revokeObjectURL(preview.value));
   cursor: pointer;
   text-align: center;
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-mute));
   transition:
     border-color 0.12s ease,
@@ -182,7 +182,7 @@ onBeforeUnmount(() => preview.value && URL.revokeObjectURL(preview.value));
 }
 .iu-prompt small {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
 }
 .iu-preview {
   max-width: 100%;
@@ -202,7 +202,7 @@ onBeforeUnmount(() => preview.value && URL.revokeObjectURL(preview.value));
 .iu-error {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-accent));
 }
 </style>

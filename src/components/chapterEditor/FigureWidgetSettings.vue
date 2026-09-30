@@ -254,19 +254,19 @@ const fieldId = (...parts) => ["fws", ...parts].join("-");
 }
 .fws-set legend {
   margin-bottom: 4px;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 600;
 }
 .fws-switch {
   display: flex;
   gap: 8px;
   align-items: center;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 600;
 }
 .fws-hint {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
 }
 .fws-grid {

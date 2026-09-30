@@ -40,13 +40,13 @@ defineEmits(["update:checked"]);
 
 .toggle-label {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: rgb(var(--color-ink));
 }
 
 .toggle-hint {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   margin-top: 4px;
   line-height: 1.45;

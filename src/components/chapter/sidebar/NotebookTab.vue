@@ -475,7 +475,7 @@ async function executeDelete() {
   border: none;
   border-bottom: 2px solid transparent;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -553,7 +553,7 @@ async function executeDelete() {
 
 .dot-all {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute));
 }
 
@@ -583,7 +583,7 @@ async function executeDelete() {
 }
 .tag-chip--filter {
   padding: 3px 8px;
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
 }
 .tag-chip.active {
   background: rgb(var(--color-accent));
@@ -637,7 +637,7 @@ async function executeDelete() {
 }
 
 .item-text {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
   line-height: 1.5;
   margin: 0 0 6px 0;
@@ -669,7 +669,7 @@ async function executeDelete() {
   border: none;
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -699,7 +699,7 @@ async function executeDelete() {
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   resize: none;
   transition: border-color 0.12s ease;
 }
@@ -729,7 +729,7 @@ async function executeDelete() {
   background: rgb(var(--color-bg));
   border-radius: var(--radius-control);
   margin-bottom: 8px;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   font-style: italic;
 }
@@ -739,7 +739,7 @@ async function executeDelete() {
 }
 
 .note-content {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   line-height: 1.55;
   margin: 0;
@@ -792,7 +792,7 @@ async function executeDelete() {
 
 .delete-confirm p {
   margin: 0 0 8px 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
 }
 

@@ -17,7 +17,7 @@ const TEXT = { preview: "preview", soon: "coming soon", beta: "beta" };
 <style scoped>
 .preview-tag {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute) / 0.7);
   letter-spacing: 0.04em;
 }

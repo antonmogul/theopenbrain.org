@@ -49,7 +49,7 @@ const deltaTone = computed(() => {
 .stat-value {
   display: block;
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -58,7 +58,7 @@ const deltaTone = computed(() => {
 .stat-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -67,7 +67,7 @@ const deltaTone = computed(() => {
 .stat-delta {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   margin-top: 6px;
 }
 .t-complete {

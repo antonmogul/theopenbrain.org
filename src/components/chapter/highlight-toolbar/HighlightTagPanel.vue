@@ -68,7 +68,7 @@ defineEmits(["remove", "keydown"]);
   background: rgb(var(--color-ink) / 0.06);
   color: rgb(var(--color-ink));
   border-radius: var(--radius-control);
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   font-family: "IBM Plex Sans", sans-serif;
 }
 
@@ -79,7 +79,7 @@ defineEmits(["remove", "keydown"]);
   background: transparent;
   color: rgb(var(--color-mute));
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--ui-size-14);
   line-height: 1;
   display: flex;
   align-items: center;
@@ -96,7 +96,7 @@ defineEmits(["remove", "keydown"]);
 .hl-panel-hint {
   margin: 0 0 0.5rem;
   font-family: var(--font-ui);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   line-height: 1.4;
   color: rgb(var(--color-mute));
 }
@@ -110,7 +110,7 @@ defineEmits(["remove", "keydown"]);
   border-radius: var(--radius-control);
   color: rgb(var(--color-ink));
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
 }
 
 .hl-tag-input:focus {

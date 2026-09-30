@@ -117,7 +117,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.3125rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 0.625rem 0;

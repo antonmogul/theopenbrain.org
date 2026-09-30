@@ -195,7 +195,7 @@ const failedTestCount = computed(() => {
   color: #e5e7eb;
   margin: -32px;
   padding: 24px;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 .state-center {
@@ -246,7 +246,7 @@ const failedTestCount = computed(() => {
 
 .lab-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 18px;
+  font-size: var(--ui-size-18);
   font-weight: 600;
   color: white;
   margin: 0;

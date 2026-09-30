@@ -41,14 +41,14 @@ defineEmits(["retry"]);
 }
 .state-title {
   font-family: var(--font-body);
-  font-size: 1.125rem;
+  font-size: var(--ui-size-18);
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0;
 }
 .state-msg {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-mute));
   margin: 0;
   max-width: 26.25rem;

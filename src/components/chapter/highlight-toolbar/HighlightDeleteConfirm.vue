@@ -45,7 +45,7 @@ defineEmits(["cancel", "confirm"]);
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   cursor: pointer;
   transition: all 0.12s;
 }
@@ -62,7 +62,7 @@ defineEmits(["cancel", "confirm"]);
   border: none;
   border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   font-weight: 500;
   cursor: pointer;
   transition: background 0.12s;
@@ -81,7 +81,7 @@ defineEmits(["cancel", "confirm"]);
 
 .hl-delete-text {
   color: rgb(var(--color-warn));
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   font-family: "IBM Plex Sans", sans-serif;
   white-space: nowrap;
 }

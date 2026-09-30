@@ -18,9 +18,13 @@ import { chromium } from "@playwright/test";
 
 const baseUrl = process.env.STORYBOOK_URL || "http://127.0.0.1:6010";
 // Not a dot-folder: actions/upload-artifact@v4 skips hidden files.
-const outDir = "storybook-snapshots";
-const WIDTHS = [390, 1280];
-const PREFIXES = [
+// SNAPSHOT_OUT / SNAPSHOT_WIDTHS / SNAPSHOT_PREFIXES ("*" = every story)
+// let the same script take before/after sets for storybook:diff.
+const outDir = process.env.SNAPSHOT_OUT || "storybook-snapshots";
+const WIDTHS = (process.env.SNAPSHOT_WIDTHS || "390,1280")
+  .split(",")
+  .map(Number);
+const DEFAULT_PREFIXES = [
   "guides-",
   "foundations-",
   "chapter-opener-",
@@ -28,9 +32,14 @@ const PREFIXES = [
   "chapter-illustrations-",
 ];
 
+const PREFIXES = process.env.SNAPSHOT_PREFIXES
+  ? process.env.SNAPSHOT_PREFIXES.split(",")
+  : DEFAULT_PREFIXES;
+const everything = PREFIXES.includes("*");
+
 const index = JSON.parse(await readFile("storybook-static/index.json", "utf8"));
 const entries = Object.values(index.entries || {})
-  .filter((e) => PREFIXES.some((p) => e.id.startsWith(p)))
+  .filter((e) => everything || PREFIXES.some((p) => e.id.startsWith(p)))
   // Docs pages for Guides; stories (not autodocs pages) for the rest.
   .filter((e) =>
     e.id.startsWith("guides-") ? e.type === "docs" : e.type === "story"

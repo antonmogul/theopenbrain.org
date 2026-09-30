@@ -89,7 +89,7 @@ function goToPage(page) {
 }
 .page-info {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-mute));
@@ -106,7 +106,7 @@ function goToPage(page) {
   border-radius: var(--radius-control);
   background: transparent;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-ink));
   cursor: pointer;
 }

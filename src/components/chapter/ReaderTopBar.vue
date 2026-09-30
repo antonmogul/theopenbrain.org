@@ -312,7 +312,7 @@ function onDropdownKeydown(event) {
 
 .wordmark-text {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   line-height: 1.4;
   text-transform: lowercase;
   letter-spacing: 0.02em;
@@ -328,7 +328,7 @@ function onDropdownKeydown(event) {
 
 .chapter-eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -347,7 +347,7 @@ function onDropdownKeydown(event) {
   padding: 4px 8px;
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-ink));
@@ -395,7 +395,7 @@ function onDropdownKeydown(event) {
   border: 1px solid transparent;
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
@@ -465,14 +465,14 @@ function onDropdownKeydown(event) {
 
 .dropdown-num {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   flex-shrink: 0;
   width: 20px;
 }
 
 .dropdown-title {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   line-height: 1.35;
 }
