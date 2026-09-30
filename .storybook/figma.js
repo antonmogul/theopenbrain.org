@@ -88,6 +88,7 @@ export const FIGMA_BY_TITLE = {
   "Views/Student/StudentDashboardView": "83-2",
   "Views/Student/ChaptersView": "88-425",
   "Views/Admin/DashboardView": "94-851",
+  "Views/Admin/ProfessorDashboardView": "99-1349",
 };
 
 /** The Figma link for a story title, or null. */
