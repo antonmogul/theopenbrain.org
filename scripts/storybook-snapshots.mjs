@@ -37,16 +37,33 @@ const entries = Object.values(index.entries || {})
   .sort((a, b) => a.id.localeCompare(b.id));
 
 const browser = await chromium.launch({ headless: true });
+const concurrency = Number(process.env.STORYBOOK_SNAPSHOT_CONCURRENCY || 4);
 const shots = [];
-for (const width of WIDTHS) {
+const jobs = WIDTHS.flatMap((width) => entries.map((e) => ({ e, width })));
+for (const width of WIDTHS)
   await mkdir(`${outDir}/${width}`, { recursive: true });
-  const page = await browser.newPage({ viewport: { width, height: 900 } });
-  for (const e of entries) {
+let cursor = 0;
+async function worker() {
+  const pages = {};
+  while (cursor < jobs.length) {
+    const { e, width } = jobs[cursor++];
+    pages[width] ||= await browser.newPage({
+      viewport: { width, height: 900 },
+    });
+    const page = pages[width];
     const viewMode = e.type === "docs" ? "docs" : "story";
     const url = `${baseUrl}/iframe.html?id=${e.id}&viewMode=${viewMode}`;
     try {
-      await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
-      await page.waitForTimeout(300);
+      // "load" + the rendered root, not networkidle: the story smoke already
+      // proves no request is left hanging, and networkidle waits 500ms each.
+      await page.goto(url, { waitUntil: "load", timeout: 30000 });
+      await page
+        .locator("#storybook-root > *, #storybook-docs > *")
+        .first()
+        .waitFor({ timeout: 10000 })
+        .catch(() => {});
+      await page.evaluate(() => document.fonts?.ready);
+      await page.waitForTimeout(150);
       const file = `${width}/${e.id}.png`;
       await page.screenshot({ path: `${outDir}/${file}`, fullPage: true });
       shots.push({ id: e.id, title: `${e.title} · ${e.name}`, width, file });
@@ -59,8 +76,10 @@ for (const width of WIDTHS) {
       });
     }
   }
-  await page.close();
+  await Promise.all(Object.values(pages).map((p) => p.close()));
 }
+const started = Date.now();
+await Promise.all(Array.from({ length: concurrency }, worker));
 await browser.close();
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -84,7 +103,7 @@ await writeFile(
 );
 const failed = shots.filter((s) => s.error);
 console.log(
-  `Captured ${shots.length - failed.length}/${shots.length} snapshots into ${outDir}/`
+  `Captured ${shots.length - failed.length}/${shots.length} snapshots into ${outDir}/ in ${Math.round((Date.now() - started) / 1000)}s`
 );
 if (failed.length)
   console.log(`Failed: ${failed.map((f) => `${f.id}@${f.width}`).join(", ")}`);
