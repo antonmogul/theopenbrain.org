@@ -173,12 +173,12 @@ function thumb(m) {
   border: 1px solid rgb(var(--color-line));
   border-radius: 6px;
   font: inherit;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 .mp-yt-error {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-accent));
 }
 @media (max-width: 640px) {
@@ -189,7 +189,7 @@ function thumb(m) {
 .mp-h {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -242,13 +242,13 @@ function thumb(m) {
 .mp-type,
 .mp-meta {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
 }
 .mp-title {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   line-height: 1.3;
 }
 .mp-empty {

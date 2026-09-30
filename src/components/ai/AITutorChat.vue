@@ -190,14 +190,14 @@ function getVisibleMessages() {
 
 .empty-title {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0 0 4px 0;
 }
 
 .empty-text {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   margin: 0;
 }

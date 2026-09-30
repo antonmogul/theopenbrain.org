@@ -74,7 +74,7 @@ const swatches = [
 }
 
 .label {
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-ink));
 }
 </style>

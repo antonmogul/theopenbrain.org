@@ -297,7 +297,7 @@ function scrollToCitation(number) {
 
 .chapter-label {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-accent));
@@ -345,7 +345,7 @@ function scrollToCitation(number) {
 
 .stat-text {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   white-space: nowrap;
 }
@@ -377,7 +377,7 @@ function scrollToCitation(number) {
 
 .stats-value {
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   color: rgb(var(--color-ink));
   line-height: 1;
@@ -385,7 +385,7 @@ function scrollToCitation(number) {
 
 .stats-label {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -410,7 +410,7 @@ function scrollToCitation(number) {
 
 .collapsible-label {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-ink));
@@ -418,7 +418,7 @@ function scrollToCitation(number) {
 
 .collapsible-count {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 
@@ -467,14 +467,14 @@ function scrollToCitation(number) {
 
 .toc-number {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   flex-shrink: 0;
   width: 20px;
 }
 
 .toc-title {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   line-height: 1.35;
 }
@@ -508,7 +508,7 @@ function scrollToCitation(number) {
   border-radius: var(--radius-control);
   background: none;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   text-align: right;
   cursor: pointer;
@@ -531,7 +531,7 @@ function scrollToCitation(number) {
 }
 
 .ref-text {
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-ink) / 0.75);
   line-height: 1.5;
 }
@@ -539,7 +539,7 @@ function scrollToCitation(number) {
 .ref-doi {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-accent));

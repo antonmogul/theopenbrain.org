@@ -94,6 +94,24 @@
   --type-label-lh: 1.3;
   --type-label-ls: 0.06em;
 
+  /*
+   * UI sizes (OPENBRAIN-118). The fixed sizes the interface's components use
+   * for controls, labels, badges and panels — separate from the reading
+   * scale above, which is responsive. Named by their pixel size so they map
+   * one to one onto the Figma design system's UI/* text styles. Components
+   * set `font-size: var(--ui-size-11)` rather than a literal.
+   */
+  --ui-size-10: 0.625rem;
+  --ui-size-11: 0.6875rem;
+  --ui-size-12: 0.75rem;
+  --ui-size-13: 0.8125rem;
+  --ui-size-14: 0.875rem;
+  --ui-size-15: 0.9375rem;
+  --ui-size-16: 1rem;
+  --ui-size-18: 1.125rem;
+  --ui-size-20: 1.25rem;
+  --ui-size-32: 2rem;
+
   /* Reader layout. Single source of truth for the desktop split: the prose
      column is --reader-prose-w pinned right, the figure pane fills the rest.
      OPENBRAIN-31 restores the original 50/50 split (Sonia's chapter frames are

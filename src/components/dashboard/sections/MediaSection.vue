@@ -447,7 +447,7 @@ function onLottieUploaded(e) {
 .upload-note {
   margin: 0 0 12px;
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-mute));
 }
 
@@ -456,7 +456,7 @@ function onLottieUploaded(e) {
   padding-left: 18px;
   display: grid;
   gap: 2px;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 .usage .muted {
   color: rgb(var(--color-mute));

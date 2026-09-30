@@ -117,7 +117,7 @@ onUnmounted(() => {
 }
 .modal-title {
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0;
@@ -126,7 +126,7 @@ onUnmounted(() => {
   border: 0;
   background: transparent;
   color: rgb(var(--color-mute));
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   cursor: pointer;
   line-height: 1;
 }

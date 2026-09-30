@@ -212,7 +212,7 @@ function getBlockPreview(paragraph) {
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 0.5rem;
@@ -220,7 +220,7 @@ function getBlockPreview(paragraph) {
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: #6b7280;
   margin: 0;
 }
@@ -244,14 +244,14 @@ function getBlockPreview(paragraph) {
 
 .stat-value {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1.125rem;
+  font-size: var(--ui-size-18);
   font-weight: 600;
   color: #1a1a1a;
 }
 
 .stat-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -263,7 +263,7 @@ function getBlockPreview(paragraph) {
   text-align: center;
   color: #9ca3af;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   border: 1px dashed #d1d5db;
   border-radius: var(--radius-control);
 }
@@ -299,7 +299,7 @@ function getBlockPreview(paragraph) {
 
 .section-number {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(151, 71, 255);
   background: rgba(151, 71, 255, 0.08);
   padding: 0.1875rem 0.5rem;
@@ -312,7 +312,7 @@ function getBlockPreview(paragraph) {
   border-radius: var(--radius-control);
   padding: 0.25rem 0.5rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   font-weight: 500;
   color: #1a1a1a;
   flex: 1;
@@ -333,7 +333,7 @@ function getBlockPreview(paragraph) {
 
 .paragraph-count {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: #9ca3af;
   margin-right: 0.5rem;
 }
@@ -348,7 +348,7 @@ function getBlockPreview(paragraph) {
   border: 1px solid #d1d5db;
   border-radius: var(--radius-control);
   color: #6b7280;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -392,14 +392,14 @@ function getBlockPreview(paragraph) {
 
 .para-index {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: #9ca3af;
   min-width: 24px;
 }
 
 .para-text {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: #6b7280;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -415,7 +415,7 @@ function getBlockPreview(paragraph) {
 
 .references-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 1rem;
@@ -431,7 +431,7 @@ function getBlockPreview(paragraph) {
 
 .reference-item {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: #4b5563;
   line-height: 1.6;
 }
@@ -461,7 +461,7 @@ function getBlockPreview(paragraph) {
 .ref-doi {
   color: #9ca3af;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
 }
 
 .ref-doi::before {

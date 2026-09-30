@@ -210,7 +210,7 @@ const formattedDuration = computed(() => {
 <style scoped>
 .flashcard-panel {
   min-height: 400px;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 .state-center {
@@ -221,7 +221,7 @@ const formattedDuration = computed(() => {
   min-height: 300px;
   gap: 16px;
   color: #6b7280;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 .spinner {
@@ -258,7 +258,7 @@ const formattedDuration = computed(() => {
 }
 
 .timer {
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   font-weight: 500;
   color: #6b7280;
   font-variant-numeric: tabular-nums;
@@ -268,7 +268,7 @@ const formattedDuration = computed(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   font-weight: 600;
 }
 
@@ -310,7 +310,7 @@ const formattedDuration = computed(() => {
 
 .kbd-hints {
   text-align: center;
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   color: #9ca3af;
 }
 
@@ -321,7 +321,7 @@ const formattedDuration = computed(() => {
   border: 1px solid #d1d5db;
   border-radius: var(--radius-control);
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
 }
 
 /* Complete */
@@ -337,7 +337,7 @@ const formattedDuration = computed(() => {
   padding: 10px 20px;
   border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   font-weight: 500;
   cursor: pointer;
   background: #8b5cf6;

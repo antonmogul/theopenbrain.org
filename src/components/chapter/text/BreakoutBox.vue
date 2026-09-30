@@ -133,7 +133,7 @@ const titleId = computed(() => `box-title-${props.section.id}`);
 }
 .bx-cue {
   margin-top: 1.5rem;
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   opacity: 0.6;
 }
 .bx--floating .bx-body {

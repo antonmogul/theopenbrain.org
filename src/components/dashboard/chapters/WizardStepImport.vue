@@ -315,7 +315,7 @@ Citations use [^1] or [1] notation."
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 0.5rem;
@@ -323,7 +323,7 @@ Citations use [^1] or [1] notation."
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: #6b7280;
   margin: 0;
 }
@@ -338,7 +338,7 @@ Citations use [^1] or [1] notation."
   border-radius: var(--radius-control);
   color: #4b5563;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -364,7 +364,7 @@ Citations use [^1] or [1] notation."
   border-bottom: 2px solid transparent;
   color: #6b7280;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -386,7 +386,7 @@ Citations use [^1] or [1] notation."
   border-radius: var(--radius-control);
   padding: 1rem;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   line-height: 1.8;
   color: #1a1a1a;
   resize: vertical;
@@ -410,7 +410,7 @@ Citations use [^1] or [1] notation."
   border-radius: var(--radius-control);
   color: white;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -449,14 +449,14 @@ Citations use [^1] or [1] notation."
 
 .upload-text {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: #4b5563;
   margin: 0;
 }
 
 .upload-hint {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: #9ca3af;
   margin: 0;
 }
@@ -470,7 +470,7 @@ Citations use [^1] or [1] notation."
   padding: 0.75rem 1rem;
   border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 
 .import-status.success {
@@ -492,7 +492,7 @@ Citations use [^1] or [1] notation."
 }
 
 .status-icon {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 
 .status-icon.spinning {

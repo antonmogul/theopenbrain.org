@@ -170,7 +170,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .ct-text {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   line-height: 1.5;
   color: #111827;
   overflow-wrap: anywhere;
@@ -196,20 +196,20 @@ onBeforeUnmount(() => {
 }
 
 .ct-authors {
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   font-weight: 600;
   color: #374151;
   margin-bottom: 4px;
 }
 
 .ct-title {
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   color: #4b5563;
   margin-bottom: 4px;
 }
 
 .ct-journal {
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   color: #6b7280;
   margin-bottom: 4px;
 }
@@ -218,7 +218,7 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   color: #7c3aed;
   text-decoration: none;
 }

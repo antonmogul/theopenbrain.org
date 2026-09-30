@@ -212,7 +212,7 @@ const statItems = computed(() => [
 
 .stat-value {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   font-weight: 600;
   color: #1f2937;
   margin: 0;

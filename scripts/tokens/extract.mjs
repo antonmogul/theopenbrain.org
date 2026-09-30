@@ -124,6 +124,14 @@ export function extractTokens(brandCss, indexCss) {
     };
   }
 
+  // Fixed interface sizes (OPENBRAIN-118): --ui-size-<px>.
+  const ui = Object.fromEntries(
+    Object.entries(base)
+      .filter(([k]) => /^--ui-size-\d+$/.test(k))
+      .map(([k, v]) => [k.slice("--ui-size-".length), remToPx(v)])
+      .sort(([a], [b]) => Number(a) - Number(b))
+  );
+
   const wide = pick(":root", "(min-width:1280px)");
   const layout = {
     "reading-measure": base["--reading-measure"],
@@ -154,6 +162,7 @@ export function extractTokens(brandCss, indexCss) {
     chapter,
     radius: { control: base["--radius-control"] },
     type,
+    ui,
     layout,
     font: {
       body: base["--font-body"],

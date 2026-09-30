@@ -84,7 +84,7 @@ async function upload() {
   align-items: center;
   gap: 8px;
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 .lu input[type="text"] {
   flex: 1 1 200px;
@@ -97,7 +97,7 @@ async function upload() {
 .lu-error {
   flex-basis: 100%;
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-accent));
 }
 </style>

@@ -142,7 +142,7 @@ function signIn() {
 .fb-lead {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.55;
   color: rgb(var(--color-ink));
 }
@@ -150,7 +150,7 @@ function signIn() {
   display: block;
   margin-top: 0.375rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));

@@ -146,7 +146,7 @@ function goToQuestion(index) {
 
 .question-count {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-ink));
 }
 
@@ -156,7 +156,7 @@ function goToQuestion(index) {
 
 .answered-count {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-mute));
@@ -190,7 +190,7 @@ function goToQuestion(index) {
 
 .time-value {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   font-variant-numeric: tabular-nums;
 }
 
@@ -220,7 +220,7 @@ function goToQuestion(index) {
   border: 1px solid rgb(var(--color-line));
   background: transparent;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-ink));
   cursor: pointer;
   transition:

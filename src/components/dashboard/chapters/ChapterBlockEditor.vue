@@ -601,7 +601,7 @@ const chapterStats = computed(() => {
   border-radius: var(--radius-control);
   background: rgb(var(--color-warn) / 0.14);
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   line-height: 1.45;
 }
 .chapter-editor-layout.is-readonly .block-item {
@@ -678,13 +678,13 @@ const chapterStats = computed(() => {
 .block-title {
   flex: 1;
   min-width: 0;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 .block-count {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   flex: none;
 }
@@ -716,12 +716,12 @@ const chapterStats = computed(() => {
 }
 .block-index {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   flex: none;
 }
 .block-preview {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
   flex: 1;
   min-width: 0;
@@ -740,7 +740,7 @@ const chapterStats = computed(() => {
   gap: 4px;
   padding: 2px 8px;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   border-radius: var(--radius-control);
   background: rgb(var(--color-accent) / 0.12);
   color: rgb(var(--color-accent));
@@ -764,7 +764,7 @@ const chapterStats = computed(() => {
   border-radius: 50%;
   background: transparent;
   color: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   line-height: 1;
   cursor: pointer;
 }
@@ -815,7 +815,7 @@ const chapterStats = computed(() => {
 }
 .preview-title {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -859,7 +859,7 @@ const chapterStats = computed(() => {
 }
 .meta-badge {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 2px 8px;
@@ -875,7 +875,7 @@ const chapterStats = computed(() => {
 }
 .meta-slug {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .preview-section-title {
@@ -893,17 +893,17 @@ const chapterStats = computed(() => {
 }
 .meta-index {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-accent));
 }
 .meta-words {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .preview-para-content {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   line-height: 1.6;
 }
@@ -921,7 +921,7 @@ const chapterStats = computed(() => {
   font-size: 1.0625rem;
 }
 .preview-para-content :deep(h3) {
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
 }
 
 .editor-content {
@@ -937,7 +937,7 @@ const chapterStats = computed(() => {
 }
 .editing-title {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0;
@@ -955,7 +955,7 @@ const chapterStats = computed(() => {
 }
 .save-status {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-complete));
 }
 .save-status.error {

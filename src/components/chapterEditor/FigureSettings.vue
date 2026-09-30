@@ -212,7 +212,7 @@ function save() {
 }
 .fs-frames legend {
   margin-bottom: 6px;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 600;
 }
 .fs-frames legend small {
@@ -256,7 +256,7 @@ function save() {
   border: 1px solid rgb(var(--color-line));
   border-radius: 6px;
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   background: rgb(var(--color-bg));
 }
 .fs-fields input.is-missing {
@@ -284,7 +284,7 @@ function save() {
 }
 .fs-warn {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
 }
 </style>

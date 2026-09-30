@@ -444,7 +444,7 @@ async function handleForgot() {
   background: transparent;
   padding: 10px 12px;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   outline: none;
 }
@@ -453,7 +453,7 @@ async function handleForgot() {
 }
 .auth-submit {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 11px 18px;
@@ -476,7 +476,7 @@ async function handleForgot() {
   background: transparent;
   border: 0;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute));
   cursor: pointer;
   padding: 2px 0;
@@ -505,7 +505,7 @@ async function handleForgot() {
   background: transparent;
   border-bottom: 1px solid rgb(181, 181, 181);
   padding: 0.46875rem 0;
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.25rem;
   color: white;
   transition: border-color 0.3s;

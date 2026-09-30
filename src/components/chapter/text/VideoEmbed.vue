@@ -109,7 +109,7 @@ const title = computed(() => props.video.title || "Video");
 }
 .ve-note {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0.7;
@@ -117,7 +117,7 @@ const title = computed(() => props.video.title || "Video");
 .ve-caption {
   padding: 6px 0 0;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
 }
 </style>

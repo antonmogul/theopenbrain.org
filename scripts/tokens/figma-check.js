@@ -46,6 +46,15 @@ for (const [role, [d, p]] of Object.entries(EXP.type)) {
     if (Math.abs(got - e) > 0.01) drift.push(`Type/${role} ${m}: figma ${got} ≠ code ${e}`);
   }
 }
+for (const [n, e] of Object.entries(EXP.ui || {})) {
+  const x = v("Type", `ui/size-${n}`);
+  if (!x) { drift.push(`Type/ui/size-${n} missing`); continue; }
+  for (const m of coll("Type").modes) {
+    const got = x.valuesByMode[m.modeId];
+    checked++;
+    if (got !== e) drift.push(`Type/ui/size-${n} ${m.name}: figma ${got} ≠ code ${e}`);
+  }
+}
 {
   const got = Object.values(v("Shape", "radius/control").valuesByMode)[0];
   checked++;

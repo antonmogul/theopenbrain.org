@@ -307,7 +307,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .fig-title {
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -316,20 +316,20 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .fig-caption {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   line-height: 1.45;
   color: rgb(var(--color-mute));
   margin: 0;
 }
 .fig-status {
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: rgb(var(--color-mute) / 0.8);
   margin: 0.125rem 0 0;
 }
 .fig-note {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   line-height: 1.5;
   color: rgb(var(--color-mute));
   margin: 0.625rem 0 0;

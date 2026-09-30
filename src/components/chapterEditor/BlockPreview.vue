@@ -177,7 +177,7 @@ const plain = (html) => String(html || "").replace(/<[^>]*>/g, "");
 .bp-heading.is-h2,
 .bp-heading.is-h3,
 h3.bp-subhead {
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
 }
 .bp-heading.is-h4,
 .bp-heading.is-h5,
@@ -207,7 +207,7 @@ h4.bp-subhead {
 }
 .bp-image figcaption {
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
 }
 .bp-widget {
@@ -224,7 +224,7 @@ h4.bp-subhead {
   border-radius: 6px;
   background: rgb(var(--color-bg));
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 .bp-figure {
   border-style: solid;
@@ -234,7 +234,7 @@ h4.bp-subhead {
 .bp-card-kind,
 .bp-figure-kind {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -247,7 +247,7 @@ h4.bp-subhead {
 }
 .bp-figure-trigger {
   color: rgb(var(--color-mute));
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 .bp-card-body {
   color: rgb(var(--color-ink));

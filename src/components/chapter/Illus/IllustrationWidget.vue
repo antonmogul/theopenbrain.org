@@ -62,7 +62,7 @@ const view = computed(() =>
   padding: 8px 16px 12px;
   border-top: 1px solid rgb(var(--color-line));
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
 }
 </style>

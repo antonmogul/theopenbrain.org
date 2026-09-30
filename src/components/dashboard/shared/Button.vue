@@ -57,15 +57,15 @@ const tag = computed(() => props.as);
   width: 100%;
 }
 .s-sm {
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   padding: 6px 12px;
 }
 .s-md {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   padding: 9px 18px;
 }
 .s-lg {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   padding: 12px 24px;
 }
 

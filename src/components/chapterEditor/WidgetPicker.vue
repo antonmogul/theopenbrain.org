@@ -247,12 +247,12 @@ function done() {
 }
 .wp-title {
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
 }
 .wp-meta,
 .wp-kind {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -262,7 +262,7 @@ function done() {
   margin-right: 6px;
 }
 .wp-desc {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   line-height: 1.4;
 }
@@ -292,12 +292,12 @@ function done() {
   padding: 0;
   border: 0;
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 .wp-kinds legend {
   margin-bottom: 6px;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -311,7 +311,7 @@ function done() {
 .wp-empty {
   margin: 12px 0 0;
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-mute));
 }
 .wp-error {

@@ -48,7 +48,7 @@ defineProps({
 }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -56,7 +56,7 @@ defineProps({
 }
 h2 {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.012em;
@@ -64,7 +64,7 @@ h2 {
 }
 .subtitle {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.5;
   color: rgb(var(--color-mute));
   margin: 8px 0 0;

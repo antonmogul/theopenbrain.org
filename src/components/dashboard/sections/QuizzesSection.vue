@@ -410,7 +410,7 @@ defineEmits([
 .qz-chapter {
   margin: 4px 0 12px;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
 }
 .qz-actions {
@@ -428,7 +428,7 @@ defineEmits([
 .form-note {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
   background: rgb(var(--color-warn) / 0.14);
   padding: 8px 12px;

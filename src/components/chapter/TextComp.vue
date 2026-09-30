@@ -839,7 +839,7 @@ onBeforeUnmount(() => {
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   box-shadow: 0 2px 10px rgb(0 0 0 / 0.1);
@@ -862,7 +862,7 @@ onBeforeUnmount(() => {
   background: rgb(14 19 19);
   color: rgb(243 239 230);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   box-shadow: 0 6px 24px rgb(0 0 0 / 0.25);
@@ -908,7 +908,7 @@ onBeforeUnmount(() => {
   text-transform: none;
   letter-spacing: 0;
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 .edit-bar-note.is-error {
   color: rgb(var(--color-warn));

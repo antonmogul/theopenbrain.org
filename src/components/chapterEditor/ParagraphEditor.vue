@@ -233,7 +233,7 @@ defineExpose({ save });
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   cursor: pointer;
 }
 .pe-toolbar button:hover {
@@ -249,7 +249,7 @@ defineExpose({ save });
 }
 .pe-hint {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .pe-content :deep(.ProseMirror) {
@@ -283,7 +283,7 @@ defineExpose({ save });
   margin: 0;
   color: rgb(var(--color-accent));
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 .pe-btn {
   padding: 6px 14px;
@@ -291,7 +291,7 @@ defineExpose({ save });
   border-radius: 999px;
   background: transparent;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;

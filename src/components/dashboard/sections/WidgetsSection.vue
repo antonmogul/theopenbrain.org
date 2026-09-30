@@ -202,7 +202,7 @@ const editHref = (p) =>
 .ws-warn {
   margin: 0 0 12px;
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-mute));
 }
 .ws-warn {
@@ -238,7 +238,7 @@ const editHref = (p) =>
 }
 .ws-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.3;
 }
 .ws-chip {
@@ -246,7 +246,7 @@ const editHref = (p) =>
   padding: 2px 8px;
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -262,13 +262,13 @@ const editHref = (p) =>
 .ws-meta {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.04em;
   color: rgb(var(--color-mute));
 }
 .ws-desc {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   line-height: 1.45;
 }
 .ws-used {
@@ -276,11 +276,11 @@ const editHref = (p) =>
   gap: 4px;
   padding-top: 8px;
   border-top: 1px solid rgb(var(--color-line));
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 .ws-label {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-mute));
@@ -310,7 +310,7 @@ const editHref = (p) =>
 }
 .ws-link {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-ink));

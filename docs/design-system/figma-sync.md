@@ -19,7 +19,7 @@ Writing Figma variables from CI would need Figma's REST Variables API, which req
 
 ## Last check
 
-- 30 Sep 2026: 70 values (Theme light/dark, all 20 chapter-ramp steps, 10 type roles × 2 sizes, radius, layout), 0 drift.
+- 30 Sep 2026: 88 values with `scripts/tokens/figma-check.js` (after OPENBRAIN-118 added the 10 `ui/size-*` sizes in both Type modes), 0 drift. First, manual run: 70 values (Theme light/dark, all 20 chapter-ramp steps, 10 type roles × 2 sizes, radius, layout), 0 drift.
 
 ## What is in the Figma file but not in `tokens.json`
 

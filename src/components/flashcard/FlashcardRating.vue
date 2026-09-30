@@ -84,7 +84,7 @@ const ratings = [
 
 .rating-prompt {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -121,7 +121,7 @@ const ratings = [
 
 .rating-label {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -150,7 +150,7 @@ const ratings = [
   border: 1px solid rgb(var(--color-ink) / 0.85);
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

@@ -196,7 +196,7 @@ function formatRelativeTime(date) {
 
 .module-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   font-weight: 600;
   color: white;
   margin: 0 0 0.15625rem 0;

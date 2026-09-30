@@ -31,6 +31,7 @@ const expected = {
     Object.entries(t.type).map(([k, v]) => [k, [v.desktop, v.phone]])
   ),
   radius: px(t.radius.control),
+  ui: t.ui,
   layout: {
     "measure/reading": px(t.layout["reading-measure"]),
     "gutter/laptop": px(t.layout["reader-gutter-l"]),

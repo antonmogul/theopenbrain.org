@@ -64,7 +64,7 @@ defineEmits(["exit", "start"]);
 }
 .quiz-eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-accent));
@@ -72,7 +72,7 @@ defineEmits(["exit", "start"]);
 }
 .quiz-title {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.01em;
@@ -82,7 +82,7 @@ defineEmits(["exit", "start"]);
 .quiz-description {
   font-family: var(--font-body);
   font-style: italic;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: rgb(var(--color-ink) / 0.7);
   line-height: 1.55;
   margin: 0 0 1.5rem 0;
@@ -112,7 +112,7 @@ defineEmits(["exit", "start"]);
 }
 .meta-label {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -134,7 +134,7 @@ defineEmits(["exit", "start"]);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

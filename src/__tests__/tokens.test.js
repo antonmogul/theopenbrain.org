@@ -33,6 +33,23 @@ describe("design tokens (tokens/tokens.json)", () => {
         expect(step).toMatch(/^#[0-9A-F]{6}$/);
   });
 
+  it("has the fixed UI sizes the components use (OPENBRAIN-118)", () => {
+    const { ui } = current();
+    expect(Object.keys(ui)).toEqual([
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "18",
+      "20",
+      "32",
+    ]);
+    for (const [n, px] of Object.entries(ui)) expect(px).toBe(Number(n));
+  });
+
   it("has a desktop and phone size, weight and font for every type role", () => {
     const { type } = current();
     expect(Object.keys(type)).toHaveLength(10);

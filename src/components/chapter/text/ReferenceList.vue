@@ -43,7 +43,7 @@ defineProps({
 .ref-list {
   margin: 0;
   padding-left: 2.25rem;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   line-height: 1.55;
 }
 .ref-list__item {
@@ -52,7 +52,7 @@ defineProps({
 }
 .ref-list__item::marker {
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
 }
 .ref-list__item:target {
@@ -66,7 +66,7 @@ defineProps({
 .ref-list__source {
   margin-left: 0.5rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.02em;
   white-space: nowrap;
   text-decoration: none;

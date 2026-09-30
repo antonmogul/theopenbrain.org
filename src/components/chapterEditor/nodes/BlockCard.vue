@@ -72,7 +72,7 @@ function setOnPage(on) {
   border-radius: 6px;
   background: rgb(var(--color-bg));
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   user-select: none;
 }
 .card.is-selected {
@@ -91,7 +91,7 @@ function setOnPage(on) {
 }
 .kind {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(var(--color-accent));
@@ -110,7 +110,7 @@ function setOnPage(on) {
   align-items: center;
   gap: 6px;
   color: rgb(var(--color-mute));
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   cursor: pointer;
 }
 </style>

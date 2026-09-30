@@ -177,11 +177,11 @@ function goNext() {
   background: rgb(var(--color-complete));
   color: rgb(var(--color-paper));
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 
 .takeaways h3 {
-  font-size: 1.125rem;
+  font-size: var(--ui-size-18);
   font-weight: 600;
   margin: 0;
   padding: 0;
@@ -197,7 +197,7 @@ function goNext() {
 }
 
 .takeaways li {
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.6;
   color: rgb(var(--color-ink));
 }
@@ -227,7 +227,7 @@ function goNext() {
 }
 
 .stat-label {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -245,7 +245,7 @@ function goNext() {
   align-items: center;
   padding: 0.625rem 1.125rem;
   border-radius: var(--radius-control);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-family: var(--font-ui);
   text-decoration: none;
   cursor: pointer;
@@ -314,7 +314,7 @@ function goNext() {
 }
 
 .up-next-label {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -322,13 +322,13 @@ function goNext() {
 }
 
 .up-next-title {
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 
 .up-next-arrow {
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   color: rgb(var(--color-accent));
 }
 
