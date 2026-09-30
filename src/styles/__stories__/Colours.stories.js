@@ -37,10 +37,12 @@ const swatchRow = (tokens) => ({
   },
 });
 
+import { figmaNode, FIGMA_NODES } from "../../../.storybook/figma";
 export default {
   title: "Foundations/Colours",
   tags: ["autodocs"],
   parameters: {
+    design: { url: figmaNode(FIGMA_NODES.foundations) },
     docs: {
       description: {
         component:

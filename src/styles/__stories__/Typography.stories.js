@@ -7,6 +7,7 @@
  * systems (the book rem-scale redefines `.text-base`), and a specimen that
  * reads its own metrics makes any future collision visible instead of silent.
  */
+import { figmaNode, FIGMA_NODES } from "../../../.storybook/figma";
 
 const SCALE = [
   { cls: "t-display", label: "Display", sample: "The Open Brain" },
@@ -67,6 +68,7 @@ export default {
   title: "Foundations/Typography",
   tags: ["autodocs"],
   parameters: {
+    design: { url: figmaNode(FIGMA_NODES.typeDesktopVsPhone) },
     docs: {
       description: {
         component:

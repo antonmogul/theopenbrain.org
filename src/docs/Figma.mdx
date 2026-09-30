@@ -1,0 +1,39 @@
+import { Meta, Markdown } from "@storybook/addon-docs/blocks";
+
+<Meta title="Guides/Figma" />
+
+# Figma
+
+**[Open Brain — Design System](https://www.figma.com/design/NAjmvySrMHLtWYqn2zi4h4/Open-Brain-Design-System)** is the Figma half of this system. It mirrors the code one to one: the same tokens as variables, the same components with the same props.
+
+## What is in it
+
+{/* GFM tables need the Markdown block: plain MDX here has no remark-gfm. */}
+
+<Markdown>{`| Page            | Contents                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| **Cover**       | What the file is and how it relates to the code                                           |
+| **Foundations** | Colour (theme, chapter ramps, support), the type scale, Desktop vs phone, the Layout grid |
+| **Components**  | One page per component (Button first), each naming its code file and its story here       |`}</Markdown>
+
+**Variables**, one collection per concern, each variable carrying its CSS name as code syntax (Dev Mode shows `rgb(var(--color-ink))`, `var(--type-body-size)`):
+
+- **Primitives**: the raw colours (hidden from pickers)
+- **Theme** (Light / Dark): `bg`, `paper`, `ink`, `mute`, `line`, `accent`…
+- **Chapter** (fund / perc / move / lear / deve): `chapter`, `chapter-deep`, `chapter-soft`, `chapter-pale`. Switch a frame's mode to see a chapter in another subject's colour.
+- **Type** (Desktop / Phone): every book size. Switch a frame to Phone to see the phone sizes.
+- **Layout**: gutters, reading measure, text column widths, top bar, breakpoints
+- **Shape**: `radius/control` (0)
+
+**Text styles** (`Book/…`, `UI/…`, `Widget/…`) match the `.t-…` classes; **grid styles** (Reader/Phone, Tablet, Laptop, Desktop) match the layout.
+
+## Moving between Figma and Storybook
+
+- In Storybook, the **Figma** button in the toolbar opens the story's component in Figma. It is greyed out when there is no Figma component yet.
+- In Figma, each component's description names its code file and its story.
+
+To link a story, add `parameters: { design: { url: figmaNode("<node-id>") } }` to its default export, with `figmaNode` from `.storybook/figma.js` (take the node id from the Figma URL, `node-id=1-161`).
+
+## Keeping them in step
+
+The code is the source of truth. When a token changes in `brand.css`, the Figma variables are updated to match; when a designer changes a component in Figma, the change is made in code and the story updated. Nothing is designed in Figma with raw values that don't exist as tokens.

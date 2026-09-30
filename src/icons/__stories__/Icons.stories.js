@@ -64,6 +64,7 @@ const icons = [
 
 export default {
   title: "Foundations/Icons/Complete Gallery",
+  tags: ["autodocs"],
   parameters: {
     layout: "fullscreen",
     docs: {

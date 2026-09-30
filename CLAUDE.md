@@ -61,9 +61,14 @@ npm run storybook:coverage:student-views  # Same, scoped to student components +
 npm run storybook:smoke:all        # Mount every story in Chromium; fail on console errors / non-localhost requests
 npm run storybook:smoke:ci         # Serve storybook-static on :6010 and run smoke:all (what CI runs)
 npm run storybook:smoke:chapter    # Chapter-only subset of the story smoke
+npm run storybook:snapshots:ci     # Screenshot Guides/Foundations/chapter-block stories at 390 + 1280 into .storybook-snapshots/ (CI artifact)
 ```
 
-Story naming follows `.storybook/taxonomy.md` (Foundations / Student / Chapter / Dashboard / Views).
+Story naming follows `.storybook/taxonomy.md` (Guides / Foundations / Chapter / Student / Dashboard / Widgets / Views / Legacy). Storybook is the design-system reference (the in-app `/styleguide` was retired in OPENBRAIN-114):
+
+- **Guides** are MDX pages in `src/docs/` (Introduction, Designing for the book, Writing a chapter, Widget kit, Figma, Contributing). They embed their sources with `?raw` + `<Markdown>` (the chapter template, the widget kit's SKILL/design.md, taxonomy.md) so they can't drift. Plain MDX has no GFM tables here (no remark-gfm): put tables inside a `<Markdown>` block.
+- **Theme**: `.storybook/theme.js` (manager + docs; brand.css values as hex), `manager-head.html` (IBM Plex faces), `brand/logo-white.svg` (the only static dir).
+- **Toolbar**: Chapter (sets `data-chapter`), viewports at the breakpoints (390/768/1024/1280/1440), Motion, Theme, Accent, and a **Figma** button (local addon in `.storybook/manager.js`) that opens `parameters.design.url`. Link a story with `figmaNode(FIGMA_NODES.x)` from `.storybook/figma.js`; the Figma file is "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`), whose variables mirror brand.css.
 
 ### Linting and Formatting
 
@@ -87,7 +92,7 @@ See `docs/architecture/README.md`. These run via `npx -y`; nothing is added to `
 
 ### What CI runs
 
-`.github/workflows/ci.yml` runs on every pull request and on pushes to `main` and `dev`, on Node 20.20.0 with `npm ci --legacy-peer-deps`, in this order: `format:check` → `lint:ci` → `test:ci` → `build` → `storybook:coverage` → `build-storybook` → `storybook:smoke:ci` → `test:smoke`. Cypress is deliberately excluded (its specs would need a seeded Supabase). `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are read from repository secrets; without them the build still passes but the smoke test drops its chapter-content assertions and keeps the structural ones (no horizontal scroll, no unexpected console errors, HTTP < 400).
+`.github/workflows/ci.yml` runs on every pull request and on pushes to `main` and `dev`, on Node 20.20.0 with `npm ci --legacy-peer-deps`, in this order: `format:check` → `lint:ci` → `graph:check` → `test:ci` → `build` → `storybook:coverage` → `build-storybook` → `storybook:smoke:ci` → `storybook:snapshots:ci` (uploaded as the `storybook-snapshots` artifact) → `test:smoke`. Cypress is deliberately excluded (its specs would need a seeded Supabase). `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are read from repository secrets; without them the build still passes but the smoke test drops its chapter-content assertions and keeps the structural ones (no horizontal scroll, no unexpected console errors, HTTP < 400).
 
 ### Deployment
 

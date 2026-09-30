@@ -1,0 +1,39 @@
+import { Meta, Markdown } from "@storybook/addon-docs/blocks";
+import template from "../../public/templates/chapter-template.md?raw";
+
+<Meta title="Guides/Writing a chapter" />
+
+# Writing a chapter
+
+A chapter is stored as sections, subsections and paragraphs, and every chapter is built from the same blocks. Designers design those blocks once; authors fill them.
+
+## What a chapter is made of
+
+{/* GFM tables need the Markdown block: plain MDX here has no remark-gfm. */}
+
+<Markdown>{`| Block              | What it is                                                                                               | Where to see it                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Opener**         | Cover image, then the dark title and contents block, in the chapter's colour                             | Chapter / Opener / ChapterOpener        |
+| **Section**        | A numbered heading (H2) with its paragraphs; subsections (H3) and sub-subsections (H4) nest inside       | Chapter / Text / SectionComp            |
+| **Figure**         | An image, animation or diagram tied to a paragraph: in the figure pane on wide screens, inline on phones | Chapter / Illustrations                 |
+| **Breakout box**   | A boxed aside anchored after a paragraph, with its own heading and text                                  | Chapter / Text / BreakoutBox            |
+| **Widget**         | An interactive figure in a full-width dark band, or a card that opens it full screen                     | Chapter / Text / WidgetBreakout         |
+| **References**     | Footnote markers in the text and a reference list at the end                                             | Chapter / ReaderShell / CitationTooltip |
+| **End of chapter** | Where to go next, flashcards and quizzes                                                                 | Chapter / EndOfChapterCallout           |`}</Markdown>
+
+## Headings
+
+- `##` is a **section** (numbered in the contents).
+- `###` is a **subsection**; `####` a sub-subsection.
+- `### BREAK OUT BOX: Title` starts a **breakout box**.
+- A line `[[widget: id | inline]]` places a **widget** (for an uploaded widget, the id is `upload:<slug>`).
+
+## Getting a chapter in
+
+Creators use the **Chapter Wizard** (Dashboard → Chapters → New chapter). It takes the metadata, then markdown or a Word file plus an optional bibliography (`.bib` / `.ris`), and lets you fix the section structure before it is saved as a draft. Drafts are visible only to creators until published.
+
+## The chapter template
+
+This is the file authors start from (`public/templates/chapter-template.md`), shown as it is:
+
+<Markdown>{template}</Markdown>
