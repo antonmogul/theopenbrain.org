@@ -89,6 +89,11 @@ export const FIGMA_BY_TITLE = {
   "Views/Student/ChaptersView": "88-425",
   "Views/Admin/DashboardView": "94-851",
   "Views/Admin/ProfessorDashboardView": "99-1349",
+  "Views/Admin/SettingsView": "102-1563",
+  // Settings (its own rail copy, underline fields and rows)
+  "Foundations/Settings/SettingsProfileSection": "101-101",
+  "Foundations/Settings/SettingsAccountSection": "101-370",
+  "Foundations/Settings/SettingsPanels": "101-61",
 };
 
 /** The Figma link for a story title, or null. */
