@@ -126,50 +126,9 @@ export const WIDGET_PLACEMENTS = [
   // Shipped as breakout cards in OPENBRAIN-34 while inline stages were
   // clipped by the prose column; inline since OPENBRAIN-37 fixed that.
   // SDT and the normalization model are DB-authored widget blocks from the
-  // OPENBRAIN-26 seed and are not placed here.
-  {
-    id: "attention-posner-cueing",
-    widgetId: "posner-cueing",
-    chapterSlug: "attention-and-working-memory",
-    sectionSlug: "attention-is-measured-behaviorally",
-    kind: "inline",
-    // "The spatial cueing paradigm introduced by Michael Posner in 1980…"
-    anchors: [
-      { after: { textIncludes: "Michael Posner in 1980" } },
-      { after: { textIncludes: "spatial cueing paradigm" } },
-      { before: { textIncludes: "Posner's original measurements" } },
-      { endOfSection: true },
-    ],
-    title: "Run the Posner cueing task",
-    blurb:
-      "Valid, invalid and neutral cues, your own reaction times: see why a cue at the target's location speeds detection and an invalid one slows it.",
-    credit: "Interactive by Arjun Krishnaswamy",
-    route: "/posner-cueing",
-  },
-  {
-    id: "attention-contrast-response-gain",
-    widgetId: "contrast-response-gain",
-    chapterSlug: "attention-and-working-memory",
-    sectionSlug: "neural-correlates-of-visual-attention",
-    kind: "inline",
-    // After the response-gain paragraph so both gain types are introduced
-    // before the model that lets you switch between them.
-    // Fallbacks stay ahead of the next topic (biased competition) rather than
-    // dropping to the end of the section behind the normalization block.
-    anchors: [
-      { after: { textIncludes: "Response gain increases" } },
-      { after: { textIncludes: "Contrast gain causes" } },
-      { before: { textIncludes: "Attention biases competition" } },
-      { before: { textIncludes: "feature-similarity gain principle" } },
-      { before: { textIncludes: "Normalization model:" } },
-      { endOfSection: true },
-    ],
-    title: "Contrast gain or response gain?",
-    blurb:
-      "Slide attention onto a neuron's receptive field and watch its contrast-response curve shift left or stretch up — the two signatures the chapter just described.",
-    credit: "Interactive by Arjun Krishnaswamy",
-    route: "/contrast-response",
-  },
+  // OPENBRAIN-26 seed and are not placed here. Posner, contrast/response gain
+  // and feature attention moved to DB blocks pointing at their widget-kit
+  // rebuilds (upload:attn-*, OPENBRAIN-113), so their placements are gone.
   {
     id: "attention-biased-competition",
     widgetId: "biased-competition",
@@ -192,24 +151,6 @@ export const WIDGET_PLACEMENTS = [
       "Put a preferred and a non-preferred stimulus in the same receptive field and attend to either: the biased competition model shows which one wins the neuron's response.",
     credit: "Interactive by Arjun Krishnaswamy",
     route: "/biased-competition",
-  },
-  {
-    id: "attention-feature-attention",
-    widgetId: "tmt-feature-attention",
-    chapterSlug: "attention-and-working-memory",
-    sectionSlug: "neural-correlates-of-visual-attention",
-    kind: "inline",
-    anchors: [
-      { after: { textIncludes: "feature-similarity gain principle" } },
-      { after: { textIncludes: "Treue and Martinez-Trujillo" } },
-      { before: { textIncludes: "Normalization model:" } },
-      { endOfSection: true },
-    ],
-    title: "Feature-based attention",
-    blurb:
-      "Attend to a colour or a direction rather than a place: the feature-similarity gain principle multiplies a neuron's response by how well the attended feature matches its tuning.",
-    credit: "Interactive by Arjun Krishnaswamy",
-    route: "/feature-attention",
   },
 
   // ── Foundations of Neuroscience (History) — in-house prototypes (OPENBRAIN-35)
