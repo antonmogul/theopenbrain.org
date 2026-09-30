@@ -119,10 +119,17 @@ export const routes = [
     meta: { requiresAuth: true },
   },
   {
-    // Internal design-system reference. Not linked in nav; open /styleguide directly.
+    // The in-app styleguide was retired for Storybook (OPENBRAIN-114). Old
+    // links and bookmarks land there. Storybook is a static build beside the
+    // app, so this is a full page load, not a route; public/serve.json does
+    // the same for a direct load.
     path: "/styleguide",
     name: "styleguide",
-    component: () => import("../views/StyleGuideView.vue"),
+    beforeEnter() {
+      window.location.replace("/storybook/index.html");
+      return false;
+    },
+    component: { render: () => null },
   },
   {
     // Case Cabinet prototype (History chapter). Reads mock data from
@@ -312,7 +319,6 @@ export const ROUTE_TITLES = {
   flashcards: "Flashcards",
   lab: "Code lab",
   enroll: "Enrol",
-  styleguide: "Styleguide",
   widgets: "Widget library",
 };
 

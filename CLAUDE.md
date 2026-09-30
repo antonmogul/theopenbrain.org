@@ -142,7 +142,6 @@ src/
 │   ├── UI/                 # Legacy reader controls (some are re-export shims to dashboard/shared)
 │   ├── Navigation/         # Menus
 │   ├── quiz/  flashcard/  student/  settings/  lab/  ai/   # Student-facing features
-│   ├── styleguide/         # /styleguide reference page
 │   ├── Editor/             # TipTap editor
 │   └── dev/                # Dev-only helpers (role override, debug)
 ├── composables/            # ~40 composables: useAuth, useChapter, useHighlights, usePreferences, ...
@@ -203,7 +202,7 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 - `/chapter/break/:video?` — break video.
 - `/playground` — Pyodide Python playground.
 - `/widgets` — widget library gallery (not in nav; shared with authors).
-- `/styleguide` — design-system reference (not in nav).
+- `/styleguide` — retired (OPENBRAIN-114); redirects to `/storybook/index.html`, which is the design-system reference (Foundations/Colours, Typography, Layout read the live tokens).
 
 **Role-gated routes** (`meta.requiresAuth` + `meta.requiredRole`)
 
@@ -318,7 +317,7 @@ Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `ac
 - The router is injected into Pinia stores using `markRaw()` to prevent reactivity issues.
 - Window scroll position for the reader is tracked in the store, not in browser history.
 - Text highlighting injects `<mark>` tags into the rendered paragraph DOM.
-- The reader's two-column layout starts at 1024px. Public routes (`/`, `/chapters`, chapter pages) must still render without horizontal scroll at 390px — the smoke test checks them at 390/1024/1280/1440/1920. Internal and widget routes (`/styleguide`, `/case-cabinet`, `/sdt`, ...) are checked at desktop widths only and are allowed to overflow on phones by design.
+- The reader's two-column layout starts at 1024px. Public routes (`/`, `/chapters`, chapter pages) must still render without horizontal scroll at 390px — the smoke test checks them at 390/1024/1280/1440/1920. Internal and widget routes (`/case-cabinet`, `/sdt`, ...) are checked at desktop widths only and are allowed to overflow on phones by design.
 - Do not reformat `src/widgets/source/` — those files are the authors' originals and are excluded from Prettier on purpose.
 
 ## Environment Variables

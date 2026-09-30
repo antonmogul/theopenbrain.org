@@ -17,7 +17,7 @@ const props = defineProps({
   showBack: { type: Boolean, default: true },
   /** A "Log out" link under the back-link (OPENBRAIN-90: Stuart couldn't
    *  find one on the student or creator dashboard). Off by default so a
-   *  sample rail (the styleguide) can't sign its viewer out; DashboardShell
+   *  sample rail (a Storybook story) can't sign its viewer out; DashboardShell
    *  turns it on. */
   showLogout: { type: Boolean, default: false },
 });

@@ -207,10 +207,8 @@ const stats = computed(() => {
          Storybook is a static build served beside the app. -->
     <p class="library-foot">
       <a href="/storybook/index.html" target="_blank" rel="noopener"
-        >Storybook</a
+        >Storybook · design system</a
       >
-      <span aria-hidden="true">·</span>
-      <router-link to="/styleguide">Styleguide</router-link>
     </p>
   </main>
 </template>

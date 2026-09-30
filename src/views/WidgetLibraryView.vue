@@ -2,7 +2,7 @@
 /*
  * WidgetLibraryView — browsable gallery of every interactive widget.
  *
- * Mirrors the sidebar pattern from StyleGuideView: a nav rail on the left
+ * Uses the sidebar pattern of the retired styleguide: a nav rail on the left
  * lists chapters (each containing widgets), and the content pane shows the
  * selected widget in a live iframe. Authors, professors, and the design
  * team can browse everything in one place without hunting through chapters.
@@ -18,7 +18,7 @@
  * Nesting one directly inside this page's grid would let its styles fight the
  * library chrome; the iframe gives it the clean viewport it was built for.
  *
- * Route: /widgets (unlisted, direct access only — same as /styleguide).
+ * Route: /widgets (unlisted, direct access only).
  */
 import { ref, computed, watch, nextTick } from "vue";
 import { WIDGETS, widgetsByChapter } from "@/widgets/catalog";
@@ -108,9 +108,9 @@ const totalCount = WIDGETS.length;
       </nav>
 
       <div class="wl-foot">
-        <router-link to="/styleguide" class="t-label wl-foot-link">
+        <a href="/storybook/index.html" class="t-label wl-foot-link">
           → Design system
-        </router-link>
+        </a>
         <router-link to="/" class="t-label wl-foot-link">
           ← Back to app
         </router-link>

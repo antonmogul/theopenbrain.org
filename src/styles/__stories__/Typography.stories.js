@@ -105,3 +105,90 @@ export const Families = {
       </div>`,
   }),
 };
+
+/*
+ * Desktop vs phone, read from the stylesheet itself: the desktop sizes are
+ * the base `:root` values in brand.css, the phone sizes the `:root` values
+ * inside its `@media (max-width: 767px)` block. Walking the CSSOM (rather
+ * than listing numbers here) keeps this table in step with brand.css.
+ */
+const ROLES = [
+  "display",
+  "h1",
+  "h2",
+  "h3",
+  "subhead",
+  "body-lg",
+  "body",
+  "body-sm",
+  "caption",
+  "label",
+];
+
+function rootTypeSizes() {
+  const desktop = {};
+  const phone = {};
+  const visit = (rules, media) => {
+    for (const r of rules) {
+      if (r.cssRules && r.conditionText !== undefined) {
+        visit(r.cssRules, r.conditionText.replace(/\s+/g, ""));
+      } else if (r.selectorText === ":root" && r.style) {
+        for (const role of ROLES) {
+          const v = r.style.getPropertyValue(`--type-${role}-size`).trim();
+          if (!v) continue;
+          if (!media) desktop[role] = v;
+          else if (media === "(max-width:767px)") phone[role] = v;
+        }
+      }
+    }
+  };
+  for (const sheet of document.styleSheets) {
+    try {
+      visit(sheet.cssRules, "");
+    } catch {
+      /* cross-origin sheet (fonts): nothing of ours in it */
+    }
+  }
+  const px = (v) => (v && v.endsWith("rem") ? parseFloat(v) * 16 : null);
+  return ROLES.map((role) => {
+    const d = px(desktop[role]);
+    const p = px(phone[role]) ?? d;
+    return { role, d, p };
+  });
+}
+
+export const DesktopVsPhone = {
+  name: "Desktop vs phone",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Desktop sizes apply from 1280px, phone sizes up to 767px; between " +
+          "768 and 1280 each size eases from one to the other with the window. " +
+          "Caption and label stay the same everywhere. Read from brand.css.",
+      },
+    },
+  },
+  render: () => ({
+    data: () => ({ rows: rootTypeSizes() }),
+    template: `
+      <table style="border-collapse:collapse; font-family:var(--font-mono); font-size:12px; color:rgb(var(--color-ink));">
+        <thead>
+          <tr style="text-align:left; color:rgb(var(--color-mute));">
+            <th style="padding:6px 16px 6px 0;">Role</th>
+            <th style="padding:6px 16px;">Desktop</th>
+            <th style="padding:6px 16px;">Phone</th>
+            <th style="padding:6px 16px;">Phone ÷ desktop</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="r in rows" :key="r.role" style="border-top:1px solid rgb(var(--color-line));">
+            <td style="padding:8px 16px 8px 0;">.t-{{ r.role }}</td>
+            <td style="padding:8px 16px;">{{ r.d }}px</td>
+            <td style="padding:8px 16px;">{{ r.p }}px</td>
+            <td style="padding:8px 16px;">{{ r.d ? Math.round((r.p / r.d) * 100) + "%" : "—" }}</td>
+          </tr>
+        </tbody>
+      </table>`,
+  }),
+};

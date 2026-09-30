@@ -284,11 +284,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
                load. The explicit file keeps its relative assets resolving. -->
           <p class="team-links">
             <a href="/storybook/index.html" target="_blank" rel="noopener"
-              >Storybook</a
-            >
-            <span aria-hidden="true">·</span>
-            <router-link to="/styleguide" @click="close"
-              >Styleguide</router-link
+              >Storybook · design system</a
             >
           </p>
         </aside>
