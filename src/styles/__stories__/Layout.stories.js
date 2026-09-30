@@ -12,6 +12,7 @@
  * The same grid is in the Figma design system file (Foundations → Layout
  * grid, and the Reader/* grid styles).
  */
+import { figmaNode, FIGMA_NODES } from "../../../.storybook/figma";
 import { READER_TWO_COLUMN_PX } from "@/helper/readerLayout";
 
 const PHONE_MARGIN = 15; // TextComp .ml-text padding 0.9375rem
@@ -131,6 +132,7 @@ export default {
   title: "Foundations/Layout",
   tags: ["autodocs"],
   parameters: {
+    design: { url: figmaNode(FIGMA_NODES.layoutGrid) },
     layout: "padded",
     docs: {
       description: {

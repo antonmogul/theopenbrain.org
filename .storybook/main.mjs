@@ -19,6 +19,9 @@ const config = {
   // Stories live next to the components they document, in src/**/__stories__/.
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs)"],
   addons: ["@storybook/addon-a11y", "@storybook/addon-docs"],
+  // Only the white logo the themed sidebar shows (.storybook/theme.js); the
+  // app's public/ stays out so Storybook doesn't copy its media.
+  staticDirs: ["./brand"],
   framework: "@storybook/vue3-vite",
   async viteFinal(cfg) {
     cfg.resolve = cfg.resolve || {};

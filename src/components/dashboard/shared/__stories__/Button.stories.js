@@ -5,12 +5,14 @@
  * control, so a reviewer can dial through variant × size × state without
  * anyone hand-writing a specimen for each combination.
  */
+import { figmaNode, FIGMA_NODES } from "../../../../../.storybook/figma";
 import Button from "../Button.vue";
 
 export default {
   title: "Foundations/Button",
   component: Button,
   tags: ["autodocs"],
+  parameters: { design: { url: figmaNode(FIGMA_NODES.button) } },
   argTypes: {
     variant: {
       control: "select",

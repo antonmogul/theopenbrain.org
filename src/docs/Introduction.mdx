@@ -1,0 +1,48 @@
+import { Meta, Markdown } from "@storybook/addon-docs/blocks";
+
+<Meta title="Guides/Introduction" />
+
+# The Open Brain design system
+
+This Storybook is the working catalogue of every piece of interface in The Open Brain: the book's reading experience, the student tools, the creator and professor dashboards, and the widgets. Every story renders the real component from the app, with the real tokens.
+
+## Three references, one rule
+
+{/* GFM tables need the Markdown block: plain MDX here has no remark-gfm. */}
+
+<Markdown>{`| Where                                                                                                                  | What it is                                                                                                       | Who uses it |
+| ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------- |
+| **The code** (\`src/\`)                                                                                                  | The source of truth. \`src/styles/brand.css\` holds every colour, size and radius.                                 | Developers  |
+| **Storybook** (here)                                                                                                   | The running catalogue: each component, its states, and live docs for the tokens.                                 | Everyone    |
+| **Figma** ([Open Brain — Design System](https://www.figma.com/design/NAjmvySrMHLtWYqn2zi4h4/Open-Brain-Design-System)) | The design mirror: the same tokens as variables and the same components, for designing new chapters and screens. | Designers   |`}</Markdown>
+
+**When they disagree, the code wins**, and Figma and this Storybook are brought back in line. A designer who wants to change a token or a component changes it in Figma and asks for the code change; nothing new is invented in one place only.
+
+## Finding your way
+
+The sidebar is organised by who the interface is for:
+
+- **Guides**: how the system works, how to design a chapter, the widget kit, Figma, contributing.
+- **Foundations**: colour, typography, layout grid, icons, and the generic controls (buttons, forms, badges).
+- **Chapter**: the reading experience (opener, text, figures, breakout boxes, widget bands, highlighting, sidebar).
+- **Student**: flashcards, quizzes, the AI tutor, code labs, the student dashboard.
+- **Dashboard**: creator and professor tooling.
+- **Widgets**: the widget catalogue and figure system.
+- **Views**: whole pages, as the app mounts them.
+- **Legacy**: older controls still in use but being replaced. Nothing new goes here.
+
+## The toolbar
+
+Above every story:
+
+- **Chapter**: switch the chapter colour (the subject ramp: fund, perc, move, lear, deve). A chapter's colour comes from its subject, never its number.
+- **Viewport**: preview at the book's breakpoints: phone 390, tablet 768, laptop 1024 (two columns start), desktop 1280 (desktop type sizes), wide 1440.
+- **Motion**: stories default to reduced motion so they are still; switch to see the app's motion.
+- **Theme** and **Accent**: for inspection. The app pins the light theme and the magenta accent.
+- **Figma**: opens the story's component in the Figma file. It is greyed out where the Figma component doesn't exist yet.
+
+## Start here
+
+1. **[Designing for the book](?path=/docs/guides-designing-for-the-book--docs)**: the principles and the phone-first rules.
+2. **[Foundations / Colours](?path=/docs/foundations-colours--docs)**, **[Typography](?path=/docs/foundations-typography--docs)** and **[Layout](?path=/docs/foundations-layout--docs)**: the tokens, read live from the code.
+3. **[Writing a chapter](?path=/docs/guides-writing-a-chapter--docs)** and the **[Widget kit](?path=/docs/guides-widget-kit--docs)**: what a new chapter is made of.

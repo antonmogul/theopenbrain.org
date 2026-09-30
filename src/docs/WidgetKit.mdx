@@ -1,0 +1,30 @@
+import { Meta, Markdown } from "@storybook/addon-docs/blocks";
+import skill from "../../public/widget-kit/open-brain-widget/SKILL.md?raw";
+import design from "../../public/widget-kit/open-brain-widget/design.md?raw";
+
+<Meta title="Guides/Widget kit" />
+
+# Widget kit
+
+New interactive figures are built in Claude as **one self-contained HTML file**, using the Open Brain widget skill. A creator uploads the file in the dashboard, checks it at phone, tablet and desktop widths, and publishes it; a chapter then places it like any other widget.
+
+1. **Get the kit**: [open-brain-widget.zip](/widget-kit/open-brain-widget.zip) (the skill, `design.md` and a starter template). Add it to Claude as a skill.
+2. **Build** the widget in Claude from the author's brief and the design.
+3. **Upload** it: Dashboard → Widgets → Upload. The studio runs it at 390, 768 and 1280px and runs its checks (size, no outside requests, tokens, reduced motion, title).
+4. **Place** it in a chapter: a widget block with the id `upload:<slug>`.
+
+In the book, the widget runs in a sandboxed frame inside a full-width dark band (see Chapter / Text / WidgetBreakout). The frame gives it the book's tokens (`--ob-*`) in the chapter's colour and reports its size and any errors.
+
+The two files below are the kit itself, shown as they are: what Claude reads when it builds a widget.
+
+---
+
+## The skill (`SKILL.md`)
+
+<Markdown>{skill}</Markdown>
+
+---
+
+## The design rules (`design.md`)
+
+<Markdown>{design}</Markdown>
