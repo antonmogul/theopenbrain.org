@@ -7,6 +7,8 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { isBetaHidden } from "@/constants/beta";
+import FormField from "@/components/dashboard/shared/FormField.vue";
+import Button from "@/components/dashboard/shared/Button.vue";
 
 const router = useRouter();
 const { signOut, updatePassword } = useAuth();
@@ -84,34 +86,37 @@ async function handleSignOut() {
           <div class="row-label">Change password</div>
           <div class="row-hint">Use at least 8 characters.</div>
         </div>
-        <button
-          class="btn"
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           @click="showPasswordForm = !showPasswordForm"
         >
           {{ showPasswordForm ? "Close" : "Update" }}
-        </button>
+        </Button>
       </div>
-
       <div v-if="showPasswordForm" class="pw-form">
-        <input
-          v-model="newPassword"
-          class="input"
-          type="password"
-          placeholder="New password"
-          autocomplete="new-password"
-        />
-        <input
-          v-model="confirmPassword"
-          class="input"
-          type="password"
-          placeholder="Confirm new password"
-          autocomplete="new-password"
-        />
+        <FormField label="New password">
+          <input
+            v-model="newPassword"
+            type="password"
+            autocomplete="new-password"
+          />
+        </FormField>
+        <FormField label="Confirm new password">
+          <input
+            v-model="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+          />
+        </FormField>
         <div class="pw-actions">
-          <button class="btn-solid" type="button" @click="changePassword">
+          <Button
+            variant="solid"
+            :loading="pwStatus === 'saving'"
+            @click="changePassword"
+          >
             {{ pwStatus === "saving" ? "Saving…" : "Save password" }}
-          </button>
+          </Button>
           <span v-if="pwStatus === 'done'" class="pw-status ok"
             >✓ Password updated</span
           >
@@ -131,7 +136,7 @@ async function handleSignOut() {
             <div class="row-label">{{ r.label }}</div>
             <div class="row-hint">{{ r.hint }}</div>
           </div>
-          <button class="btn" type="button" disabled>{{ r.action }}</button>
+          <Button variant="outline" size="sm" disabled>{{ r.action }}</Button>
         </div>
       </template>
     </div>
@@ -147,13 +152,13 @@ async function handleSignOut() {
             be undone.
           </div>
         </div>
-        <button class="btn-danger" type="button" disabled>Delete</button>
+        <Button variant="danger" size="sm" disabled>Delete</Button>
       </div>
     </div>
 
-    <button class="btn-ghost signout" type="button" @click="handleSignOut">
+    <Button variant="outline" class="signout" @click="handleSignOut">
       Sign out
-    </button>
+    </Button>
   </section>
 </template>
 
@@ -215,20 +220,6 @@ async function handleSignOut() {
   padding: 16px 20px;
   border-bottom: 1px solid rgb(var(--color-line));
 }
-.input {
-  width: 100%;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: var(--radius-control);
-  background: transparent;
-  padding: 10px 12px;
-  font-family: var(--font-body);
-  font-size: var(--ui-size-14);
-  color: rgb(var(--color-ink));
-  outline: none;
-}
-.input:focus {
-  border-color: rgb(var(--color-ink));
-}
 .pw-actions {
   display: flex;
   align-items: center;
@@ -269,56 +260,5 @@ async function handleSignOut() {
 
 .signout {
   margin-top: 28px;
-}
-
-.btn,
-.btn-solid,
-.btn-ghost,
-.btn-danger {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  border-radius: var(--radius-control);
-  padding: 6px 14px;
-  transition:
-    background 0.12s ease,
-    color 0.12s ease,
-    border-color 0.12s ease;
-}
-.btn {
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-ink) / 0.85);
-}
-.btn:hover:not(:disabled) {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-}
-.btn-solid {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-ink));
-  padding: 8px 16px;
-}
-.btn-ghost {
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-ink) / 0.85);
-}
-.btn-ghost:hover {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-}
-.btn-danger {
-  background: transparent;
-  color: rgb(var(--color-accent));
-  border: 1px solid rgb(var(--color-accent));
-}
-.btn:disabled,
-.btn-danger:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

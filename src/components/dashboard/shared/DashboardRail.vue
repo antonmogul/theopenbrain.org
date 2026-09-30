@@ -52,7 +52,13 @@ const metaLine = computed(() =>
       <div class="rail-user">
         <div class="rail-avatar" aria-hidden="true">{{ initials }}</div>
         <div class="rail-name">{{ displayName }}</div>
-        <div v-if="metaLine" class="rail-meta">{{ metaLine }}</div>
+        <div
+          v-if="metaLine"
+          class="rail-meta"
+          :class="{ 'rail-meta--email': !role }"
+        >
+          {{ metaLine }}
+        </div>
       </div>
     </slot>
 
@@ -143,6 +149,11 @@ const metaLine = computed(() =>
   margin-top: 2px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+/* Without a role the line is the email (settings): keep it as typed. */
+.rail-meta--email {
+  text-transform: none;
+  letter-spacing: 0;
 }
 .rail-nav {
   display: flex;

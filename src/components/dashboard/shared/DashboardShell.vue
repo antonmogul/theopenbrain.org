@@ -1,7 +1,8 @@
 <script setup>
 // Unified 2-column dashboard frame: sticky light rail + scrollable content.
 // Owns per-role accent via [data-accent] on its root, and the responsive grid
-// (mirrors SettingsView .layout). Forwards rail props + re-emits its events.
+// (settings uses it too). Forwards rail props + re-emits its events.
+import { computed } from "vue";
 import DashboardRail from "./DashboardRail.vue";
 const props = defineProps({
   navItems: { type: Array, required: true },
@@ -17,8 +18,11 @@ const props = defineProps({
   showLogout: { type: Boolean, default: true },
 });
 defineEmits(["update:activeSection", "back"]);
-// magenta is the :root default — emit no attribute for it.
-const accentAttr = props.accent === "magenta" ? null : props.accent;
+// magenta is the :root default — emit no attribute for it. Computed so an
+// accent that arrives later (settings reads it from the loaded profile) applies.
+const accentAttr = computed(() =>
+  props.accent === "magenta" ? null : props.accent
+);
 </script>
 
 <template>

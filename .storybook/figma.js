@@ -91,8 +91,8 @@ export const FIGMA_BY_TITLE = {
   "Views/Admin/ProfessorDashboardView": "99-1349",
   "Views/Admin/SettingsView": "102-1563",
   "Views/Foundations/HomeView": "106-1714",
-  // Settings (its own rail copy, underline fields and rows)
-  "Foundations/Settings/SettingsProfileSection": "101-101",
+  // Settings (the Settings page: Settings row, Profile avatar; fields are Form field)
+  "Foundations/Settings/SettingsProfileSection": "101-61",
   "Foundations/Settings/SettingsAccountSection": "101-370",
   "Foundations/Settings/SettingsPanels": "101-61",
 };
