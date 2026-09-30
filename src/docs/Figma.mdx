@@ -32,7 +32,7 @@ import { Meta, Markdown } from "@storybook/addon-docs/blocks";
 - In Storybook, the **Figma** button in the toolbar opens the story's component in Figma. It is greyed out when there is no Figma component yet.
 - In Figma, each component's description names its code file and its story.
 
-To link a story, add `parameters: { design: { url: figmaNode("<node-id>") } }` to its default export, with `figmaNode` from `.storybook/figma.js` (take the node id from the Figma URL, `node-id=1-161`).
+The links live in one place, `.storybook/figma.js` (`FIGMA_BY_TITLE`: story title → Figma node id, taken from the node's URL, `node-id=20-62`). Add a line there when a Figma component lands. A story can override its link with `parameters: { design: { url } }`.
 
 ## Keeping them in step
 

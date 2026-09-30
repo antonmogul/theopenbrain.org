@@ -61,14 +61,14 @@ npm run storybook:coverage:student-views  # Same, scoped to student components +
 npm run storybook:smoke:all        # Mount every story in Chromium; fail on console errors / non-localhost requests
 npm run storybook:smoke:ci         # Serve storybook-static on :6010 and run smoke:all (what CI runs)
 npm run storybook:smoke:chapter    # Chapter-only subset of the story smoke
-npm run storybook:snapshots:ci     # Screenshot Guides/Foundations/chapter-block stories at 390 + 1280 into .storybook-snapshots/ (CI artifact)
+npm run storybook:snapshots:ci     # Screenshot Guides/Foundations/chapter-block stories at 390 + 1280 into storybook-snapshots/ (CI artifact)
 ```
 
 Story naming follows `.storybook/taxonomy.md` (Guides / Foundations / Chapter / Student / Dashboard / Widgets / Views / Legacy). Storybook is the design-system reference (the in-app `/styleguide` was retired in OPENBRAIN-114):
 
 - **Guides** are MDX pages in `src/docs/` (Introduction, Designing for the book, Writing a chapter, Widget kit, Figma, Contributing). They embed their sources with `?raw` + `<Markdown>` (the chapter template, the widget kit's SKILL/design.md, taxonomy.md) so they can't drift. Plain MDX has no GFM tables here (no remark-gfm): put tables inside a `<Markdown>` block.
 - **Theme**: `.storybook/theme.js` (manager + docs; brand.css values as hex), `manager-head.html` (IBM Plex faces), `brand/logo-white.svg` (the only static dir).
-- **Toolbar**: Chapter (sets `data-chapter`), viewports at the breakpoints (390/768/1024/1280/1440), Motion, Theme, Accent, and a **Figma** button (local addon in `.storybook/manager.js`) that opens `parameters.design.url`. Link a story with `figmaNode(FIGMA_NODES.x)` from `.storybook/figma.js`; the Figma file is "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`), whose variables mirror brand.css.
+- **Toolbar**: Chapter (sets `data-chapter`), viewports at the breakpoints (390/768/1024/1280/1440), Motion, Theme, Accent, and a **Figma** button (local addon in `.storybook/manager.js`) that opens `parameters.design.url`. Links live in one map, `FIGMA_BY_TITLE` in `.storybook/figma.js` (story title → node id; `parameters.design.url` overrides); the Figma file is "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`), whose variables mirror brand.css.
 
 ### Linting and Formatting
 
