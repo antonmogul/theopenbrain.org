@@ -43,6 +43,7 @@ After OPENBRAIN-119 the remaining literal colours in components are the semantic
 - **End-of-chapter buttons** (`EndOfChapterCallout .cta`) are 14px sans pills of their own, not the shared Button (mono caps). Adopt Button, or add a "reader call to action" Button variant.
 - **Lab panel** (`chapter/demos/LabPanel.vue`) is a dark component on Tailwind greys (light-on-dark). It needs its own mapping onto `--color-dark-surface` and white-at-opacity; the light-surface mapping made its text vanish.
 - **Legacy**: 14 files in `src/components/UI/` and 11 Legacy stories are still in use; `.text-h2` / `.text-h3` in index.css are the old type classes. Migrate each to the shared library, then delete.
+- **Settings duplicates the shared pieces**: `SettingsView` has its own copy of the dashboard rail (avatar on `--color-complete` with `#0A3D33` initials, email instead of role, no icons), and `SettingsProfileSection` / `SettingsAccountSection` have their own underline inputs and `.btn-solid` / `.btn-ghost` / `.btn` buttons instead of FormField and Button. Figma mirrors them (Profile field, Settings row; the rail is the Dashboard rail with overrides). Decide: settings adopts DashboardShell + FormField + Button, or the underline field becomes a FormField variant.
 - **Plain white** (`#FFFFFF`, 27 in components): paper on light surfaces, but text-on-accent elsewhere. Map each to `--color-paper` or a new `--color-on-accent`.
 
 ## 6. Sizes still hard-coded
@@ -53,7 +54,7 @@ After OPENBRAIN-119 the remaining literal colours in components are the semantic
 
 ## 7. Figma and tooling
 
-- **Page templates** in Figma: the student, creator and professor dashboards and `/chapters` are composed from components (30 Sep); home and settings are still reference captures. Rebuild each from components before redesigning it.
+- **Page templates** in Figma: the student, creator and professor dashboards, `/chapters` and settings are composed from components (30 Sep); home is still a reference capture. Rebuild each from components before redesigning it.
 - **Student dashboard colours**: the Continue reading gradient and the study-stat tints are Tailwind blues/greens/yellows/violets, mirrored in Figma as hidden `color/legacy/*` primitives so nothing is a raw value. They belong to §3.
 - **Visual regression gate:** `storybook:snapshots:ci` + `storybook:diff` work locally; CI uploads the snapshots but doesn't diff, because baselines must be rendered on CI's own Linux fonts. Next step: keep a baseline artifact from `main` and diff PRs against it.
 - **Code Connect** (code snippets in Figma Dev Mode) needs a Figma Organization or Enterprise plan; the teams are on Pro.
