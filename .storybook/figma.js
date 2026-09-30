@@ -87,6 +87,7 @@ export const FIGMA_BY_TITLE = {
   // Page templates composed from the components
   "Views/Student/StudentDashboardView": "83-2",
   "Views/Student/ChaptersView": "88-425",
+  "Views/Admin/DashboardView": "94-851",
 };
 
 /** The Figma link for a story title, or null. */
