@@ -154,11 +154,10 @@ async function checkFigureArtwork() {
 }
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
- * /styleguide and /case-cabinet are unlisted internal routes — a design
- * reference and an interaction prototype — with fixed-pixel layouts that
- * overflow at phone width by design. They still get checked on desktop, so a
- * regression there is caught; they just don't block on a mobile layout nobody
- * has built yet. Student- and professor-facing routes are checked everywhere.
+ * /case-cabinet is an unlisted internal route — an interaction prototype —
+ * with a fixed-pixel layout that overflows at phone width by design. It is
+ * still checked on desktop, so a regression there is caught; it just doesn't
+ * block on a mobile layout nobody has built yet. Student- and professor-facing routes are checked everywhere.
  */
 const ROUTES = [
   { path: "/", name: "home", minText: 50 },
@@ -201,12 +200,6 @@ const ROUTES = [
     },
   },
   { path: "/chapters", name: "chapters", minText: 50 },
-  {
-    path: "/styleguide",
-    name: "styleguide",
-    minText: 200,
-    widths: [1280, 1440, 1920],
-  },
   {
     path: "/case-cabinet",
     name: "case-cabinet",

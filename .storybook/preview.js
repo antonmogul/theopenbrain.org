@@ -36,7 +36,7 @@ import "@/index.css";
  * callouts, nav, anything with a CTA). Storybook has no router, so those
  * components throw on mount. Installing a memory-history router app-wide is
  * the one-time fix — otherwise every such story needs its own stub, which is
- * the per-component special-casing that made /styleguide hard to extend.
+ * the per-component special-casing that made the old /styleguide hard to extend.
  *
  * Memory history keeps navigation in memory, so a story clicking a link cannot
  * navigate the Storybook shell away from itself. The catch-all route means any
