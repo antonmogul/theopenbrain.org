@@ -119,7 +119,7 @@ function handleStart() {
 .flashcard-deck {
   background: white;
   border-radius: var(--radius-control);
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   padding: 0.9375rem;
   transition: all 0.2s;
 }
@@ -151,7 +151,7 @@ function handleStart() {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.703125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
   margin: 0;
 }
 
@@ -164,7 +164,7 @@ function handleStart() {
 .skeleton-stat {
   flex: 1;
   height: 48px;
-  background: #f3f4f6;
+  background: rgb(var(--color-bg));
   border-radius: var(--radius-control);
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -187,7 +187,7 @@ function handleStart() {
 }
 
 .stat {
-  background: #f9fafb;
+  background: rgb(var(--color-bg));
   border-radius: var(--radius-control);
   padding: 0.46875rem;
   text-align: center;
@@ -205,7 +205,7 @@ function handleStart() {
   display: block;
   font-size: 0.78125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
 }
 
 .stat.due .stat-value {
@@ -219,7 +219,7 @@ function handleStart() {
 .stat-label {
   display: block;
   font-size: 0.4296875rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin-top: 0.078125rem;
 }
 
@@ -228,12 +228,12 @@ function handleStart() {
   align-items: center;
   gap: 0.3125rem;
   font-size: 0.546875rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin-bottom: 0.625rem;
 }
 
 .session-date {
-  color: #374151;
+  color: rgb(var(--color-ink) / 0.8);
   font-weight: 500;
 }
 
@@ -260,7 +260,7 @@ function handleStart() {
 }
 
 .start-btn:disabled {
-  background: #d1d5db;
+  background: rgb(var(--color-ink) / 0.18);
   cursor: not-allowed;
 }
 

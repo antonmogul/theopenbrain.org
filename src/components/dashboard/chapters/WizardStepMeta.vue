@@ -171,10 +171,10 @@ defineExpose({ isValid });
   align-items: center;
   gap: 8px;
   padding: 6px 12px 6px 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
   font-size: var(--ui-size-13);
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   cursor: pointer;
 }
 .ramp-option.selected {
@@ -209,14 +209,14 @@ defineExpose({ isValid });
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-20);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-14);
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0;
 }
 
@@ -247,7 +247,7 @@ defineExpose({ isValid });
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-12);
   font-weight: 500;
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -257,19 +257,19 @@ defineExpose({ isValid });
 }
 
 .optional {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   font-weight: 400;
   text-transform: none;
 }
 
 .form-input {
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-15);
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   transition: border-color 0.2s;
 }
 
@@ -279,17 +279,17 @@ defineExpose({ isValid });
 }
 
 .form-input::placeholder {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .form-textarea {
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-15);
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   resize: vertical;
   min-height: 80px;
   transition: border-color 0.2s;
@@ -301,14 +301,14 @@ defineExpose({ isValid });
 }
 
 .form-textarea::placeholder {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .slug-preview {
   display: flex;
   align-items: center;
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
   overflow: hidden;
 }
@@ -317,7 +317,7 @@ defineExpose({ isValid });
   padding: 0.75rem 0 0.75rem 1rem;
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-13);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   white-space: nowrap;
 }
 

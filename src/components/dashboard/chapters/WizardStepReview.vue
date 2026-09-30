@@ -165,21 +165,21 @@ const wordCount = computed(() =>
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-20);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-14);
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0;
 }
 
 /* Review Card */
 .review-card {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   padding: 1.25rem;
   display: flex;
@@ -196,7 +196,7 @@ const wordCount = computed(() =>
 .review-label {
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-12);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   min-width: 120px;
@@ -205,7 +205,7 @@ const wordCount = computed(() =>
 .review-value {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-15);
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   text-align: right;
   flex: 1;
 }
@@ -217,13 +217,13 @@ const wordCount = computed(() =>
 
 .review-value.description {
   font-size: var(--ui-size-13);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   max-width: 400px;
 }
 
 .review-divider {
   height: 1px;
-  background: #f3f4f6;
+  background: rgb(var(--color-bg));
   margin: 0.25rem 0;
 }
 
@@ -247,7 +247,7 @@ const wordCount = computed(() =>
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-14);
   font-weight: 600;
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   margin: 0 0 0.75rem;
 }
 
@@ -268,13 +268,13 @@ const wordCount = computed(() =>
 .section-name {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-14);
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
 }
 
 .section-meta {
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-11);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 /* Error */
@@ -311,7 +311,7 @@ const wordCount = computed(() =>
 }
 
 .create-btn:hover:not(:disabled) {
-  background: #1a1a1a;
+  background: rgb(var(--color-dark-surface));
   color: white;
 }
 
@@ -358,14 +358,14 @@ const wordCount = computed(() =>
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.625rem;
 }
 
 .success-message {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-15);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   margin: 0 0 2rem;
 }
 
@@ -391,18 +391,18 @@ const wordCount = computed(() =>
 }
 
 .action-btn.primary:hover {
-  background: #1a1a1a;
+  background: rgb(var(--color-dark-surface));
   color: white;
 }
 
 .action-btn.secondary {
   background: transparent;
-  border: 1px solid #d1d5db;
-  color: #4b5563;
+  border: 1px solid rgb(var(--color-ink) / 0.18);
+  color: rgb(var(--color-ink) / 0.7);
 }
 
 .action-btn.secondary:hover {
-  border-color: #9ca3af;
-  color: #1a1a1a;
+  border-color: rgb(var(--color-mute) / 0.6);
+  color: rgb(var(--color-ink));
 }
 </style>

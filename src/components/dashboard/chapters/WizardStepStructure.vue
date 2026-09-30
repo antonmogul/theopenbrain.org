@@ -214,14 +214,14 @@ function getBlockPreview(paragraph) {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-20);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-14);
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0;
 }
 
@@ -231,7 +231,7 @@ function getBlockPreview(paragraph) {
   gap: 1.5rem;
   padding: 1rem 1.25rem;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   margin-bottom: 1.5rem;
 }
@@ -246,13 +246,13 @@ function getBlockPreview(paragraph) {
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-18);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
 }
 
 .stat-label {
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-11);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -261,10 +261,10 @@ function getBlockPreview(paragraph) {
 .empty-state {
   padding: 2.5rem;
   text-align: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-14);
-  border: 1px dashed #d1d5db;
+  border: 1px dashed rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
 }
 
@@ -276,7 +276,7 @@ function getBlockPreview(paragraph) {
 }
 
 .section-node {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   overflow: hidden;
 }
@@ -286,8 +286,8 @@ function getBlockPreview(paragraph) {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: rgb(var(--color-bg));
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .section-title-group {
@@ -314,14 +314,14 @@ function getBlockPreview(paragraph) {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-15);
   font-weight: 500;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   flex: 1;
   transition: border-color 0.2s;
 }
 
 .section-title-input:hover,
 .section-title-input:focus {
-  border-color: #d1d5db;
+  border-color: rgb(var(--color-ink) / 0.18);
   outline: none;
 }
 
@@ -334,7 +334,7 @@ function getBlockPreview(paragraph) {
 .paragraph-count {
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-11);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   margin-right: 0.5rem;
 }
 
@@ -345,17 +345,17 @@ function getBlockPreview(paragraph) {
   width: 28px;
   height: 28px;
   background: transparent;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   font-size: var(--ui-size-12);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .icon-btn:hover:not(:disabled) {
-  border-color: #9ca3af;
-  color: #1a1a1a;
+  border-color: rgb(var(--color-mute) / 0.6);
+  color: rgb(var(--color-ink));
 }
 
 .icon-btn:disabled {
@@ -379,7 +379,7 @@ function getBlockPreview(paragraph) {
   align-items: flex-start;
   gap: 0.625rem;
   padding: 0.5rem 1rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .paragraph-preview.subsection {
@@ -393,14 +393,14 @@ function getBlockPreview(paragraph) {
 .para-index {
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-11);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   min-width: 24px;
 }
 
 .para-text {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-13);
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -410,14 +410,14 @@ function getBlockPreview(paragraph) {
 .references-section {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgb(var(--color-line));
 }
 
 .references-title {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-16);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 1rem;
 }
 
@@ -432,17 +432,17 @@ function getBlockPreview(paragraph) {
 .reference-item {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-13);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   line-height: 1.6;
 }
 
 .ref-authors {
   font-weight: 500;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
 }
 
 .ref-year {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0 0.25rem;
 }
 
@@ -451,7 +451,7 @@ function getBlockPreview(paragraph) {
 }
 
 .ref-journal {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .ref-journal::before {
@@ -459,7 +459,7 @@ function getBlockPreview(paragraph) {
 }
 
 .ref-doi {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-11);
 }

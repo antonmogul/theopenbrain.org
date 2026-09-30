@@ -161,7 +161,7 @@ const statItems = computed(() => [
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.703125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.625rem 0;
 }
 
@@ -180,7 +180,7 @@ const statItems = computed(() => [
 .stat-card {
   background: white;
   border-radius: var(--radius-control);
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   padding: 0.78125rem;
   display: flex;
   align-items: center;
@@ -214,14 +214,14 @@ const statItems = computed(() => [
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-15);
   font-weight: 600;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
   margin: 0;
   line-height: 1.2;
 }
 
 .stat-label {
   font-size: 0.546875rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0.15625rem 0 0 0;
 }
 </style>

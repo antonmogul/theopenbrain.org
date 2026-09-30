@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
 .ct-text {
   font-size: var(--ui-size-13);
   line-height: 1.5;
-  color: #111827;
+  color: rgb(var(--color-ink));
   overflow-wrap: anywhere;
 }
 .ct-text :deep(a) {
@@ -185,7 +185,7 @@ onBeforeUnmount(() => {
   max-width: 360px;
   padding: 14px 16px;
   background: white;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.12),
@@ -198,19 +198,19 @@ onBeforeUnmount(() => {
 .ct-authors {
   font-size: var(--ui-size-13);
   font-weight: 600;
-  color: #374151;
+  color: rgb(var(--color-ink) / 0.8);
   margin-bottom: 4px;
 }
 
 .ct-title {
   font-size: var(--ui-size-13);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   margin-bottom: 4px;
 }
 
 .ct-journal {
   font-size: var(--ui-size-12);
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin-bottom: 4px;
 }
 

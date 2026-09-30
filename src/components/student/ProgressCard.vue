@@ -158,7 +158,7 @@ function formatRelativeTime(date) {
 
 .progress-card.empty {
   background: white;
-  border: 2px dashed #e5e7eb;
+  border: 2px dashed rgb(var(--color-line));
   cursor: default;
   justify-content: center;
   min-height: 180px;
@@ -256,19 +256,19 @@ function formatRelativeTime(date) {
 
 .empty-content {
   text-align: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .empty-content svg {
   margin-bottom: 0.625rem;
-  color: #d1d5db;
+  color: rgb(var(--color-ink) / 0.18);
 }
 
 .empty-content h3 {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--type-body-sm-size);
   font-weight: 600;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0 0 0.3125rem 0;
 }
 

@@ -88,6 +88,6 @@ defineEmits(["pick"]);
 .dot-check {
   width: 10px;
   height: 10px;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
 }
 </style>

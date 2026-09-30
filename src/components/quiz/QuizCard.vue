@@ -140,7 +140,7 @@ const questionCount =
 .quiz-card {
   background: white;
   border-radius: var(--radius-control);
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-line));
   padding: 0.9375rem;
   transition: all 0.2s;
 }
@@ -162,7 +162,7 @@ const questionCount =
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 0.703125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
   margin: 0;
 }
 
@@ -175,7 +175,7 @@ const questionCount =
 
 .score-label {
   font-size: 0.46875rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .score-value {
@@ -197,7 +197,7 @@ const questionCount =
 
 .quiz-description {
   font-size: 0.5859375rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   line-height: 1.5;
   margin: 0 0 0.625rem 0;
 }
@@ -214,11 +214,11 @@ const questionCount =
   align-items: center;
   gap: 0.234375rem;
   font-size: 0.546875rem;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .meta-item svg {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .start-btn {
