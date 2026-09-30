@@ -54,7 +54,7 @@ After OPENBRAIN-119 the remaining literal colours in components are the semantic
 
 ## 7. Figma and tooling
 
-- **Page templates** in Figma: the student, creator and professor dashboards, `/chapters` and settings are composed from components (30 Sep); home is still a reference capture. Rebuild each from components before redesigning it.
+- **Page templates** in Figma: home, `/chapters`, the student, creator and professor dashboards and settings are all composed from components at 1440 and 390 (30 Sep). Only each page's first section is composed (e.g. a dashboard's Overview); compose other sections from the same components when they are redesigned.
 - **Student dashboard colours**: the Continue reading gradient and the study-stat tints are Tailwind blues/greens/yellows/violets, mirrored in Figma as hidden `color/legacy/*` primitives so nothing is a raw value. They belong to §3.
 - **Visual regression gate:** `storybook:snapshots:ci` + `storybook:diff` work locally; CI uploads the snapshots but doesn't diff, because baselines must be rendered on CI's own Linux fonts. Next step: keep a baseline artifact from `main` and diff PRs against it.
 - **Code Connect** (code snippets in Figma Dev Mode) needs a Figma Organization or Enterprise plan; the teams are on Pro.
