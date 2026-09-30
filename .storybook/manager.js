@@ -2,19 +2,23 @@
  * Storybook manager (the chrome around the stories): the Open Brain theme and
  * a "Figma" toolbar button (OPENBRAIN-115).
  *
- * The button opens the story's Figma component or frame, from
- * `parameters.design.url` — set it on a story file's default export:
- *
- *   parameters: { design: { url: FIGMA("1-161") } }  // see .storybook/figma.js
- *
- * Stories without a design link show the button disabled, so the gaps stay
- * visible. It is a local addon on purpose: the link is all we need, and it
+ * The button opens the story's Figma component or frame: from
+ * `parameters.design.url` if the story sets one, otherwise from the
+ * title → node map in .storybook/figma.js (FIGMA_BY_TITLE), which is where
+ * the links normally live. Stories with no link show the button disabled, so
+ * the gaps stay visible. It is a local addon on purpose: the link is all we need, and it
  * adds no dependency.
  */
 import React from "react";
-import { addons, types, useParameter } from "storybook/manager-api";
+import {
+  addons,
+  types,
+  useParameter,
+  useStorybookState,
+} from "storybook/manager-api";
 import { IconButton } from "storybook/internal/components";
 import { managerTheme } from "./theme";
+import { figmaUrlForTitle } from "./figma";
 
 addons.setConfig({
   theme: managerTheme,
@@ -49,7 +53,9 @@ function FigmaMark() {
 
 function FigmaTool() {
   const design = useParameter("design", null);
-  const url = design && design.url;
+  const state = useStorybookState();
+  const entry = state.index && state.index[state.storyId];
+  const url = (design && design.url) || figmaUrlForTitle(entry && entry.title);
   return React.createElement(
     IconButton,
     {

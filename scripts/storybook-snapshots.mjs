@@ -3,7 +3,7 @@
  *
  * Screenshots the design-system stories (Guides and Foundations docs, and the
  * chapter building blocks: opener, text, illustrations) at phone (390) and
- * desktop (1280) widths into .storybook-snapshots/, with an index.html
+ * desktop (1280) widths into storybook-snapshots/, with an index.html
  * gallery. CI uploads the folder as an artifact on every run, so a PR's
  * visual effect on the system can be looked at without running Storybook.
  *
@@ -17,7 +17,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { chromium } from "@playwright/test";
 
 const baseUrl = process.env.STORYBOOK_URL || "http://127.0.0.1:6010";
-const outDir = ".storybook-snapshots";
+// Not a dot-folder: actions/upload-artifact@v4 skips hidden files.
+const outDir = "storybook-snapshots";
 const WIDTHS = [390, 1280];
 const PREFIXES = [
   "guides-",
