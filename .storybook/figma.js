@@ -26,8 +26,11 @@ export const FIGMA_NODES = {
   typeDesktopVsPhone: "10-2",
   layoutGrid: "12-2",
   button: "1-161",
+  icons: "67-2",
   chapterKitDesktop: "36-2",
+  chapterKitTablet: "71-513",
   chapterKitPhone: "36-175",
+  libraryGuide: "73-2",
 };
 
 /** Story title → Figma node. */
@@ -65,12 +68,13 @@ export const FIGMA_BY_TITLE = {
   "Chapter/Opener/OpenerHero": "29-16",
   "Chapter/Opener/OpenerToc": "29-97",
   "Chapter/Opener/ChapterOpener": "29-97",
-  "Chapter/Text/SectionComp": "30-26",
+  // The Reader text page: Section heading, Author block and Paragraph.
+  "Chapter/Text/SectionComp": "28-88",
   "Chapter/Illustrations/IllustrationPlaceholder": "31-40",
   "Chapter/Illustrations/FigureImages": "35-120",
   "Chapter/Text/BreakoutBox": "32-21",
   "Chapter/Text/WidgetBreakout": "33-65",
-  "Chapter/EndOfChapterCallout": "34-76",
+  "Chapter/EndOfChapterCallout": "69-392",
   "Chapter/ReaderShell/TextComp": FIGMA_NODES.chapterKitDesktop,
 };
 

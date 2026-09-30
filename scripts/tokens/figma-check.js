@@ -40,7 +40,9 @@ for (const [ramp, steps] of Object.entries(EXP.chapter))
 for (const [role, [d, p]] of Object.entries(EXP.type)) {
   const x = v("Type", `type/${role}/size`);
   if (!x) { drift.push(`Type/${role} missing`); continue; }
-  for (const [m, e] of [["Desktop", d], ["Phone", p]]) {
+  // Laptop (1024px) sits halfway along the fluid 768–1280px ramp in
+  // brand.css; Tablet (768px) is where it starts, at the phone size.
+  for (const [m, e] of [["Desktop", d], ["Laptop", (d + p) / 2], ["Tablet", p], ["Phone", p]]) {
     const got = x.valuesByMode[mode("Type", m)];
     checked++;
     if (Math.abs(got - e) > 0.01) drift.push(`Type/${role} ${m}: figma ${got} ≠ code ${e}`);
