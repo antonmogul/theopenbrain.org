@@ -21,11 +21,24 @@ import { Meta, Markdown } from "@storybook/addon-docs/blocks";
 - **Primitives**: the raw colours (hidden from pickers)
 - **Theme** (Light / Dark): `bg`, `paper`, `ink`, `mute`, `line`, `accent`…
 - **Chapter** (fund / perc / move / lear / deve): `chapter`, `chapter-deep`, `chapter-soft`, `chapter-pale`. Switch a frame's mode to see a chapter in another subject's colour.
-- **Type** (Desktop / Phone): every book size. Switch a frame to Phone to see the phone sizes.
+- **Type** (Desktop 1440 / Laptop 1024 / Tablet 768 / Phone 390): every book size. The book's type eases from the phone size at 768px to the desktop size at 1280px, so Tablet holds the phone sizes and Laptop the halfway point. Switch a frame's mode to see a width.
 - **Layout**: gutters, reading measure, text column widths, top bar, breakpoints
 - **Shape**: `radius/control` (0)
 
 **Text styles** (`Book/…`, `UI/…`, `Widget/…`) match the `.t-…` classes; **grid styles** (Reader/Phone, Tablet, Laptop, Desktop) match the layout.
+
+## Responsive components
+
+Each block is built once and follows its frame:
+
+- **Text blocks** (Section heading, Author block, Paragraph, End of chapter) are single components. Put one in a column and it fills the width; its sizes come from the frame's Type mode.
+- **Full-width blocks** whose layout changes have a `Layout` property: `wide` is the two-column book (from 1024px), `narrow` the one-column reader below it (Reader top bar, Opener hero and contents, Breakout box, Widget band). Both stretch to the frame, so `narrow` covers phones and tablets.
+- **Figure** has `Context=pane` (the pinned figure pane, from 1024px) and `Context=inline` (full width after its paragraph, below 1024px).
+- Icons are components on the **Icons** page, their strokes bound to colour variables. Text a designer changes is a text property on the instance (Title, Caption, Blurb…).
+
+## Using the library
+
+The file lives in the Mogul team (Professional plan), which can publish libraries; the designers are invited to that team. The Cover page has the steps: publish (Assets → Libraries → Publish), invite, enable the library in a chapter file, copy the New chapter kit templates (Desktop 1440, Tablet 768, Phone 390), set the Chapter mode, and accept updates when a new version is published.
 
 ## Moving between Figma and Storybook
 

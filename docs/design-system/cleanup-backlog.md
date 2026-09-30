@@ -56,5 +56,5 @@ After OPENBRAIN-119 the remaining literal colours in components are the semantic
 - **Page templates** in Figma are reference captures (30 Sep): rebuild each from components before redesigning it.
 - **Visual regression gate:** `storybook:snapshots:ci` + `storybook:diff` work locally; CI uploads the snapshots but doesn't diff, because baselines must be rendered on CI's own Linux fonts. Next step: keep a baseline artifact from `main` and diff PRs against it.
 - **Code Connect** (code snippets in Figma Dev Mode) needs a Figma Organization or Enterprise plan; the teams are on Pro.
-- **The designers' file** (`M3Jnv2v4L0TUJX3Z2Rp500`) is view-only for us; the design system lives in "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`) until it can be moved or shared into their team.
+- **The designers' file** (`M3Jnv2v4L0TUJX3Z2Rp500`) is view-only for us. The design system stays in "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`) in the Mogul team, which can publish libraries (the designers' team is on Starter and can't); the designers are invited to the Mogul team and enable the library in their chapter files. Steps are on the file's Cover.
 - `src/helper/retinabox.js` is imported by nothing (the one `graph:check` warning).
