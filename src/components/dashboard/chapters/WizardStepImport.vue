@@ -317,14 +317,14 @@ Citations use [^1] or [1] notation."
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-20);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-14);
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0;
 }
 
@@ -334,9 +334,9 @@ Citations use [^1] or [1] notation."
   gap: 0.375rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-12);
   cursor: pointer;
@@ -346,14 +346,14 @@ Citations use [^1] or [1] notation."
 
 .template-btn:hover {
   border-color: rgb(151, 71, 255);
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
 }
 
 /* Tabs */
 .import-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgb(var(--color-line));
   margin-bottom: 1.5rem;
 }
 
@@ -362,7 +362,7 @@ Citations use [^1] or [1] notation."
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-13);
   cursor: pointer;
@@ -370,7 +370,7 @@ Citations use [^1] or [1] notation."
 }
 
 .import-tab:hover {
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
 }
 
 .import-tab.active {
@@ -381,14 +381,14 @@ Citations use [^1] or [1] notation."
 /* Paste Tab */
 .paste-textarea {
   width: 100%;
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
   padding: 1rem;
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-13);
   line-height: 1.8;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   resize: vertical;
   min-height: 300px;
 }
@@ -399,7 +399,7 @@ Citations use [^1] or [1] notation."
 }
 
 .paste-textarea::placeholder {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .parse-btn {
@@ -417,7 +417,7 @@ Citations use [^1] or [1] notation."
 }
 
 .parse-btn:hover:not(:disabled) {
-  background: #1a1a1a;
+  background: rgb(var(--color-dark-surface));
   color: white;
 }
 
@@ -434,30 +434,30 @@ Citations use [^1] or [1] notation."
   justify-content: center;
   gap: 0.75rem;
   padding: 3rem 1.5rem;
-  border: 2px dashed #d1d5db;
+  border: 2px dashed rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
   cursor: pointer;
   transition: all 0.2s;
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .upload-zone:hover {
   border-color: rgb(151, 71, 255);
   background: rgba(151, 71, 255, 0.03);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
 }
 
 .upload-text {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--ui-size-15);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   margin: 0;
 }
 
 .upload-hint {
   font-family: "IBM Plex Mono", monospace;
   font-size: var(--ui-size-12);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   margin: 0;
 }
 

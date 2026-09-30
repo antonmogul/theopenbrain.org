@@ -263,13 +263,13 @@ function handleGoToQuestion(index) {
   justify-content: center;
   min-height: 300px;
   gap: 16px;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e5e7eb;
+  border: 3px solid rgb(var(--color-line));
   border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -296,12 +296,12 @@ function handleGoToQuestion(index) {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 28px;
   font-weight: 600;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
   margin: 0 0 8px;
 }
 
 .intro-desc {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0 0 20px;
   line-height: 1.5;
   font-size: var(--ui-size-16);
@@ -314,7 +314,7 @@ function handleGoToQuestion(index) {
   gap: 20px;
   margin-bottom: 24px;
   font-size: var(--ui-size-15);
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
 }
 
 .intro-actions,
@@ -345,7 +345,7 @@ function handleGoToQuestion(index) {
 
 .review-actions {
   padding-top: 0.625rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgb(var(--color-line));
 }
 
 /* Confirm overlay */
@@ -372,11 +372,11 @@ function handleGoToQuestion(index) {
 
 .confirm-box h3 {
   margin: 0 0 0.3125rem;
-  color: #1f2937;
+  color: rgb(var(--color-ink));
 }
 
 .confirm-box p {
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0 0 0.78125rem;
   font-size: 0.5859375rem;
 }
@@ -405,12 +405,12 @@ function handleGoToQuestion(index) {
 
 .btn-secondary {
   background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  color: rgb(var(--color-ink) / 0.8);
+  border: 1px solid rgb(var(--color-ink) / 0.18);
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: rgb(var(--color-bg));
 }
 
 .btn-secondary:disabled {

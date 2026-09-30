@@ -220,14 +220,14 @@ const formattedDuration = computed(() => {
   justify-content: center;
   min-height: 300px;
   gap: 16px;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   font-size: var(--ui-size-16);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e5e7eb;
+  border: 3px solid rgb(var(--color-line));
   border-top-color: #8b5cf6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -260,7 +260,7 @@ const formattedDuration = computed(() => {
 .timer {
   font-size: var(--ui-size-15);
   font-weight: 500;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   font-variant-numeric: tabular-nums;
 }
 
@@ -279,7 +279,7 @@ const formattedDuration = computed(() => {
   color: #dc2626;
 }
 .sep {
-  color: #d1d5db;
+  color: rgb(var(--color-ink) / 0.18);
 }
 
 .progress-bar-wrap {
@@ -311,14 +311,14 @@ const formattedDuration = computed(() => {
 .kbd-hints {
   text-align: center;
   font-size: var(--ui-size-13);
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .kbd-hints kbd {
   display: inline-block;
   padding: 2px 6px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
   border-radius: var(--radius-control);
   font-family: monospace;
   font-size: var(--ui-size-12);
