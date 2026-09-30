@@ -76,6 +76,17 @@ export const FIGMA_BY_TITLE = {
   "Chapter/Text/WidgetBreakout": "33-65",
   "Chapter/EndOfChapterCallout": "69-392",
   "Chapter/ReaderShell/TextComp": FIGMA_NODES.chapterKitDesktop,
+  // Library (/chapters)
+  "Chapter/BookContents": "86-86",
+  // Dashboards
+  "Dashboard/DashboardRail": "79-20",
+  "Dashboard/DashboardShell": "79-6",
+  "Dashboard/DashboardNavIcon": FIGMA_NODES.icons,
+  "Student/Dashboard Cards/ProgressCard": "80-88",
+  "Student/Dashboard Cards/StudyStats": "80-129",
+  // Page templates composed from the components
+  "Views/Student/StudentDashboardView": "83-2",
+  "Views/Student/ChaptersView": "88-425",
 };
 
 /** The Figma link for a story title, or null. */
