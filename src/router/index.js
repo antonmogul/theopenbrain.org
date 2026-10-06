@@ -155,6 +155,14 @@ export const routes = [
     component: () => import("../views/Phrenology3DView.vue"),
   },
   {
+    // 3D brain atlas (OPENBRAIN-127): the cortex as a way into the book,
+    // after Tyler's opening-book prototype. Candidate for the home cover;
+    // not linked in nav, open /brain directly.
+    path: "/brain",
+    name: "brain",
+    component: () => import("../views/BrainView.vue"),
+  },
+  {
     // Signal Detection Theory widget prototype (Attention chapter).
     // OPENBRAIN-13: pilot for the widget hosting pattern. Not linked in nav;
     // open /sdt directly.

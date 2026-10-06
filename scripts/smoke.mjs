@@ -221,6 +221,13 @@ const ROUTES = [
     widths: [1280, 1440, 1920],
   },
   /*
+   * The brain atlas (OPENBRAIN-127) is the candidate home cover, so unlike
+   * the other prototypes it is checked at every width, phones included: no
+   * horizontal scroll, the page still scrolls over the canvas, and the
+   * WebGL stage loads its model without console errors.
+   */
+  { path: "/brain", name: "brain", minText: 200 },
+  /*
    * Interactive widgets (OPENBRAIN-13/14). Every widget route in the catalog
    * gets a check: these are the pages shown to the authors, and ~15k lines of
    * them shipped with only /sdt guarded. The CSP bug that blocked Pyodide on
