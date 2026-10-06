@@ -349,13 +349,38 @@ function correct(hemi, area, position, adj) {
   // 1. The "hippocampus" group holds S_pericallosal (the callosal sulcus,
   //    ringing the corpus callosum) and islands of the posterior collateral
   //    sulcus as well as the parahippocampal gyrus. Keep the largest piece
-  //    (the gyrus and collateral sulci under the temporal lobe); islands at
-  //    the occipital end join the visual cortex, the rest is medial wall.
+  //    (the gyrus and collateral sulci under the temporal lobe); the other
+  //    pieces take the area around them, filled in from their edges a ring
+  //    at a time (each vertex the commonest label among its settled
+  //    neighbours, the medial wall included), so no island is left bare.
   const [, ...strays] = pieces(area, adj, ID.parahippocampal);
-  for (const piece of strays) {
-    const cx = piece.reduce((s, v) => s + x(v), 0) / piece.length;
-    for (const v of piece)
-      move(v, cx < -13 ? ID.occipital : 0, "parahippocampal strays");
+  const unsettled = new Uint8Array(area.length);
+  let ring = strays.flat();
+  for (const v of ring) unsettled[v] = 1;
+  while (ring.length) {
+    const settle = [];
+    const rest = [];
+    for (const v of ring) {
+      const votes = new Map();
+      for (const u of adj[v])
+        if (!unsettled[u]) votes.set(area[u], (votes.get(area[u]) || 0) + 1);
+      if (!votes.size) {
+        rest.push(v);
+        continue;
+      }
+      const [label] = [...votes].sort((a, b) => b[1] - a[1])[0];
+      settle.push([v, label]);
+    }
+    if (!settle.length) break; // a piece with no settled neighbour at all
+    for (const [v, label] of settle) {
+      move(
+        v,
+        label,
+        `parahippocampal strays → ${AREAS[label - 1]?.[1] || "medial wall"}`
+      );
+      unsettled[v] = 0;
+    }
+    ring = rest;
   }
 
   // 2. The "Wernicke" group holds all of the superior temporal gyrus and

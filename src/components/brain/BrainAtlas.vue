@@ -14,7 +14,8 @@
  * contents and the card live there, as DOM text so they can be read,
  * selected and reached by keyboard; the canvas is decorative), the stage on
  * the right, the chapter-colour rule between them. Below the reader
- * breakpoint the stage comes first, as the home cover's art does.
+ * breakpoint the stage comes first, as the home cover's art does, and the
+ * card moves up under the title, next to the brain it describes.
  *
  * The three.js work lives in helper/brain/brainStage.js; this file wires its
  * callbacks to Vue state.
@@ -30,9 +31,10 @@ import {
   watch,
 } from "vue";
 import { useGeneral } from "@/stores/index";
+import { useMediaQuery } from "@/composables/useMediaQuery";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { reducedMotionK } from "@/helper/motion";
-import { RAMP_NAMES } from "@/helper/chapterTheme";
+import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import {
   AREAS,
   SURFACE,
@@ -46,6 +48,7 @@ import {
 } from "@/helper/brain/areas";
 import { ATLAS_DOPEFRAME } from "@/helper/brain/dopeframe";
 import { BRAIN_MODEL_URL, createBrainStage } from "@/helper/brain/brainStage";
+import BrainAtlasCard from "./BrainAtlasCard.vue";
 
 const props = defineProps({
   /** Start the tour on load (always off under reduced motion). */
@@ -74,9 +77,14 @@ const reducedMotion = reducedMotionK() < 1;
 const playing = ref(props.autoplay && !reducedMotion);
 const bookOpen = ref(false);
 const hoveredId = ref(null); // area under the pointer or legend focus
-const focusId = ref(null); // area the stage's label is on
+// The area the stage's label names. It keeps the last one when the label
+// hides, so the label fades out with its text and colour still on it.
+const labelId = ref(null);
 const selection = ref(null); // { kind: "chapter", slug } | { kind: "area", id }
 const resumeTourOnClose = ref(false);
+// Wide: the card goes after the contents, so the rows do not move under the
+// pointer when it opens. Narrow: under the title, close to the stage above.
+const wide = useMediaQuery(READER_WIDE_QUERY);
 
 const chapters = computed(() => bookChapters(modules.value));
 const unclaimed = computed(() => unclaimedAreas(chapters.value));
@@ -91,8 +99,8 @@ const selectedArea = computed(() =>
   selection.value?.kind === "area" ? areaById(selection.value.id) : null
 );
 const hoveredChapter = computed(() => chapterOf(hoveredId.value));
-const focusArea = computed(() => areaById(focusId.value));
-const focusChapter = computed(() => chapterOf(focusId.value));
+const labelArea = computed(() => areaById(labelId.value));
+const labelChapter = computed(() => chapterOf(labelId.value));
 
 const areaStyles = computed(() =>
   Object.fromEntries(
@@ -107,11 +115,9 @@ const areaStyles = computed(() =>
 );
 
 const announcement = computed(() => {
-  if (selectedChapter.value)
-    return `${selectedChapter.value.title} selected. Its card is under the title.`;
-  if (selectedArea.value)
-    return `${selectedArea.value.name} selected. Its card is under the title.`;
-  return "";
+  const name = selectedChapter.value?.title || selectedArea.value?.name;
+  if (!name) return "";
+  return `${name} selected. Its card is ${wide.value ? "after the contents" : "under the title"}.`;
 });
 const loadingCopy = computed(() =>
   progress.value == null
@@ -121,14 +127,6 @@ const loadingCopy = computed(() =>
 
 function partNames(chapter) {
   return chapter.areas.map((id) => areaById(id)?.name).join(" · ");
-}
-function chapterEyebrow(chapter) {
-  const lead = chapter.number
-    ? `Chapter ${chapter.number}`
-    : loaded.value
-      ? "In preparation"
-      : "Chapter";
-  return `${lead} · ${RAMP_NAMES[chapter.ramp]}`;
 }
 const pickKey = (sel) =>
   sel ? (sel.kind === "chapter" ? sel.slug : sel.id) : "";
@@ -144,7 +142,7 @@ function choose(next) {
     playing.value = true;
   }
 }
-/* The card sits under the contents: bring it into view once it renders. */
+/* Bring the card into view once it renders. */
 function revealCard() {
   nextTick(() =>
     panelEl.value?.querySelector(".card")?.scrollIntoView({
@@ -238,7 +236,9 @@ onMounted(() => {
       },
       hover: (id) => (hoveredId.value = id),
       select: chooseArea,
-      focus: (id) => (focusId.value = id),
+      focus: (id) => {
+        if (id) labelId.value = id;
+      },
       open: (isOpen) => (bookOpen.value = isOpen),
     },
   });
@@ -263,12 +263,21 @@ onBeforeUnmount(() => {
         Every chapter of the book is a part of the brain. Point at a part to see
         its chapter, and choose it to start reading.
         <template v-if="status !== 'error'"
-          >Drag to turn the brain{{
-            playing ? "; let go and it drifts back to the tour" : ""
-          }}.</template
+          >Drag to turn the brain; while the tour plays, it drifts back when you
+          let go.</template
         >
       </p>
       <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+
+      <BrainAtlasCard
+        v-if="!wide"
+        :chapter="selectedChapter"
+        :area="selectedArea"
+        :chapters="chapters"
+        :loaded="loaded"
+        :back-to-tour="resumeTourOnClose"
+        @close="closeCard"
+      />
 
       <nav class="contents" :aria-labelledby="`${uid}-contents`">
         <p :id="`${uid}-contents`" class="atlas__head">Contents</p>
@@ -345,59 +354,15 @@ onBeforeUnmount(() => {
         </div>
       </nav>
 
-      <!-- The chosen chapter or area. It sits under the contents so the
-           rows do not move under the pointer when it opens. -->
-      <article
-        v-if="selectedChapter"
-        class="card"
-        :style="{ '--area': rampHex(selectedChapter.ramp) }"
-      >
-        <p class="card__eyebrow">
-          <span class="dot" aria-hidden="true" />
-          {{ chapterEyebrow(selectedChapter) }}
-        </p>
-        <h2 class="card__title">{{ selectedChapter.title }}</h2>
-        <p class="card__blurb">{{ selectedChapter.why }}</p>
-        <ul class="card__parts">
-          <li v-for="id in selectedChapter.areas" :key="id">
-            <span class="card__part">{{ areaById(id)?.name }}</span>
-            <span class="card__where">{{ areaById(id)?.where }}</span>
-          </li>
-        </ul>
-        <router-link
-          v-if="selectedChapter.to"
-          :to="selectedChapter.to"
-          class="card__cta"
-        >
-          Read the chapter →
-        </router-link>
-        <p v-else-if="loaded" class="card__soon">
-          This chapter is in preparation.
-        </p>
-        <button type="button" class="card__close" @click="closeCard">
-          {{ resumeTourOnClose ? "Back to the tour" : "Close" }}
-        </button>
-      </article>
-      <article
-        v-else-if="selectedArea"
-        class="card"
-        :style="{ '--area': areaHex(selectedArea.id, chapters) }"
-      >
-        <p class="card__eyebrow">
-          <span class="dot" aria-hidden="true" />
-          Not in the book yet · {{ RAMP_NAMES[selectedArea.system] }}
-        </p>
-        <h2 class="card__title">{{ selectedArea.name }}</h2>
-        <p class="card__where">{{ selectedArea.where }}</p>
-        <p class="card__blurb">{{ selectedArea.blurb }}</p>
-        <p class="card__soon">
-          No chapter covers this part yet; it belongs with
-          {{ RAMP_NAMES[selectedArea.system] }}.
-        </p>
-        <button type="button" class="card__close" @click="closeCard">
-          {{ resumeTourOnClose ? "Back to the tour" : "Close" }}
-        </button>
-      </article>
+      <BrainAtlasCard
+        v-if="wide"
+        :chapter="selectedChapter"
+        :area="selectedArea"
+        :chapters="chapters"
+        :loaded="loaded"
+        :back-to-tour="resumeTourOnClose"
+        @close="closeCard"
+      />
 
       <p class="atlas__credit">
         Cortex: FreeSurfer fsaverage pial surface, areas from the Destrieux
@@ -413,15 +378,15 @@ onBeforeUnmount(() => {
         class="atlas__label"
         aria-hidden="true"
         :style="{
-          '--area': focusArea ? areaHex(focusArea.id, chapters) : null,
+          '--area': labelArea ? areaHex(labelArea.id, chapters) : null,
         }"
       >
-        <template v-if="focusArea">
+        <template v-if="labelArea">
           <span class="atlas__label-name">{{
-            focusChapter ? focusChapter.title : focusArea.name
+            labelChapter ? labelChapter.title : labelArea.name
           }}</span>
           <span class="atlas__label-sub">{{
-            focusChapter ? focusArea.name : "Not in the book yet"
+            labelChapter ? labelArea.name : "Not in the book yet"
           }}</span>
         </template>
       </div>
@@ -481,8 +446,7 @@ onBeforeUnmount(() => {
   border-right: 1px solid rgb(var(--color-chapter));
 }
 .atlas__eyebrow,
-.atlas__head,
-.card__eyebrow {
+.atlas__head {
   margin: 0;
   font-family: var(--font-mono);
   font-size: var(--ui-size-11);
@@ -508,13 +472,6 @@ onBeforeUnmount(() => {
   font-size: var(--type-body-size);
   line-height: 1.55;
   color: rgb(255 255 255 / 0.78);
-}
-.dot {
-  flex: none;
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 999px;
-  background: var(--area);
 }
 
 /* ── Contents: the chapters as parts of the brain ── */
@@ -621,103 +578,11 @@ onBeforeUnmount(() => {
 }
 .contents__chapter:focus-visible,
 .unclaimed__area:focus-visible,
-.ctl:focus-visible,
-.card__close:focus-visible,
-.card__cta:focus-visible {
+.ctl:focus-visible {
   outline: 2px solid rgb(var(--color-chapter));
   outline-offset: 3px;
 }
 
-/* ── Card: the chosen chapter or area ── */
-.card {
-  display: grid;
-  gap: 0.75rem;
-  padding-top: 1.25rem;
-  border-top: 2px solid var(--area);
-}
-.card__eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.card__title {
-  margin: 0;
-  padding: 0;
-  font-size: var(--type-subhead-size);
-  line-height: 1.15;
-  font-weight: 450;
-}
-.card__blurb {
-  margin: 0;
-  max-width: 34rem;
-  font-size: var(--type-body-sm-size);
-  line-height: 1.6;
-  color: rgb(255 255 255 / 0.82);
-}
-.card__parts {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.25rem;
-}
-.card__parts li {
-  display: grid;
-  gap: 0.125rem;
-}
-.card__part {
-  font-size: var(--ui-size-15);
-}
-.card__where {
-  margin: 0;
-  font-size: var(--ui-size-13);
-  line-height: 1.45;
-  color: rgb(255 255 255 / 0.65);
-}
-.card__cta {
-  justify-self: start;
-  padding: 0.75rem 1.125rem;
-  border: 1px solid #fff;
-  border-radius: var(--radius-control);
-  background: #fff;
-  color: rgb(var(--color-dark-surface));
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-12);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
-}
-.card__cta:hover {
-  background: transparent;
-  color: #fff;
-}
-.card__soon {
-  margin: 0;
-  font-size: var(--ui-size-15);
-  color: rgb(255 255 255 / 0.75);
-}
-.card__close {
-  justify-self: start;
-  /* A full-height tap target without changing the look. */
-  padding: 0.75rem 0;
-  margin: -0.5rem 0;
-  border: 0;
-  background: none;
-  color: rgb(255 255 255 / 0.75);
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-  cursor: pointer;
-}
-.card__close:hover {
-  color: #fff;
-}
 .atlas__credit {
   margin: auto 0 0;
   max-width: 34rem;
@@ -832,8 +697,7 @@ onBeforeUnmount(() => {
   .atlas__label,
   .contents__chapter,
   .unclaimed__area,
-  .ctl,
-  .card__cta {
+  .ctl {
     transition: none;
   }
 }
