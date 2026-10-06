@@ -6,9 +6,12 @@
  * What it does:
  *   - loads the atlas model (two hemispheres, meshopt-compressed; see
  *     scripts/brain/build-brain-asset.mjs) and shades it in the material's
- *     shader: gyri light, sulci darker from the baked sulcal depth, and any
- *     highlighted area mixed toward its ramp colour. Highlighting is a
- *     uniform per area, so hovering costs nothing on the CPU.
+ *     shader: gyri light, sulci darker from the baked sulcal depth, and each
+ *     area mixed toward its colour by a per-area amount (a resting tint for
+ *     the chapters' parts, stronger when highlighted). Highlighting is a
+ *     uniform per area, so hovering costs nothing on the CPU. Areas light up
+ *     in groups (o.groupFor): pointing at one part of a chapter lights all
+ *     of that chapter's parts.
  *   - hinges each hemisphere on the anterior-posterior axis at the base of
  *     the medial wall, so `open` swings them apart like the covers of a book
  *     and shows the medial surfaces.
@@ -22,7 +25,8 @@
  *   - pauses rendering when the canvas is off screen or the tab is hidden.
  *
  * Errors never reach console.error (the story smoke fails on those): a
- * missing WebGL context or model is reported through on.error.
+ * missing WebGL context is detected before three.js would log it, and it and
+ * a missing model are reported through on.error.
  */
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -38,7 +42,10 @@ const RETURN_DELAY = 2.5; // s after the last drag before easing back
 const RETURN_TIME = 2; // s to blend fully back onto the path
 const PICK_INTERVAL = 40; // ms between hover raycasts
 const LABEL_BOTTOM_INSET = 88; // px kept free for BrainAtlas's control row
-const MIX = { tour: 0.78, hover: 0.8, selected: 0.9, all: 0.6 };
+// How far each area mixes toward its colour: highlighted groups, and the
+// resting tint of everything else while a group is highlighted (a share of
+// its own resting tint, so the focus stands out).
+const MIX = { tour: 0.85, hover: 0.85, selected: 0.92, dimmed: 0.45 };
 // Where the camera goes when the reader opens or closes the book by hand:
 // looking down into the open book from behind, or at the closed left side.
 const BOOK_VIEWS = {
@@ -51,7 +58,7 @@ const NOOP = Object.freeze({
   setOpen() {},
   setHover() {},
   setSelected() {},
-  setShowAll() {},
+  setAreaStyles() {},
   setSuspended() {},
   dispose() {},
 });
@@ -147,7 +154,10 @@ function areaAnchors(geometry, count) {
  * @param {HTMLElement} [o.label]  element the stage positions over the focus
  * @param {string} [o.url]
  * @param {Array} o.dopeframe
- * @param {(id: string) => string|null} o.areaHex  colour for an area id
+ * @param {Record<string, {hex: string, base: number}>} o.areaStyles  colour
+ *   and resting tint (0..1) per area id; update with setAreaStyles
+ * @param {(id: string) => string[]} [o.groupFor]  the areas that light up
+ *   with this one (default: just it)
  * @param {{gyrus: string, sulcus: string}} o.surface
  * @param {boolean} [o.playing]
  * @param {boolean} [o.reducedMotion]  ease nothing: jump to targets
@@ -157,14 +167,19 @@ function areaAnchors(geometry, count) {
 export function createBrainStage(o) {
   const { canvas, label = null, url = BRAIN_MODEL_URL, dopeframe, on = {} } = o;
   const reducedMotion = !!o.reducedMotion;
+  const groupFor = o.groupFor || ((id) => [id]);
+  let areaStyles = o.areaStyles || {};
 
+  // Ask for the context ourselves: three.js logs a console.error before it
+  // throws when there is none, and that would fail the smoke tests.
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: true });
+  if (!gl) {
+    on.error?.("webgl");
+    return NOOP;
+  }
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-    });
+    renderer = new THREE.WebGLRenderer({ canvas, context: gl });
   } catch (err) {
     on.error?.("webgl", err);
     return NOOP;
@@ -210,10 +225,10 @@ export function createBrainStage(o) {
   let manualView = null;
   let reportedOpen = null;
   let hovered = null; // { id, fromPointer }
-  let selected = null;
-  let showAll = false;
+  let selected = []; // area ids
   let focusId = null;
   let disposed = false;
+  let failed = false;
 
   let areaIds = [];
   let uniforms = null;
@@ -257,7 +272,10 @@ export function createBrainStage(o) {
     },
     (e) => on.progress?.(e.total ? e.loaded / e.total : null),
     (err) => {
-      if (!disposed) on.error?.("load", err);
+      if (disposed) return;
+      failed = true; // nothing to draw: stop the loop
+      sync();
+      on.error?.("load", err);
     }
   );
 
@@ -265,11 +283,7 @@ export function createBrainStage(o) {
     areaIds = gltf.scene.userData.areas || [];
     const count = Math.max(areaIds.length, 1);
     ({ material, uniforms } = brainMaterial(count, o.surface));
-    areaIds.forEach((id, i) => {
-      const hex = id && o.areaHex(id);
-      if (hex) uniforms.uAreaColor.value[i].set(hex);
-      mixTarget[i] = 0;
-    });
+    applyColors();
 
     gltf.scene.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(gltf.scene);
@@ -300,6 +314,14 @@ export function createBrainStage(o) {
     // The hinge's height relative to the brain's centre: where the camera
     // looks once the book is open.
     hingeY -= center.y;
+  }
+
+  function applyColors() {
+    if (!uniforms) return;
+    areaIds.forEach((id, i) => {
+      const hex = id && areaStyles[id]?.hex;
+      if (hex) uniforms.uAreaColor.value[i].set(hex);
+    });
   }
 
   /* ── Picking ── */
@@ -416,7 +438,7 @@ export function createBrainStage(o) {
   }
 
   function placeLabel(pose) {
-    const id = hovered?.id || selected || (playing ? pose.area : "") || null;
+    const id = hovered?.id || selected[0] || (playing ? pose.area : "") || null;
     if (id !== focusId) {
       focusId = id;
       on.focus?.(id);
@@ -444,7 +466,7 @@ export function createBrainStage(o) {
   function frame(now) {
     const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.1) : 0;
     lastFrame = now;
-    if (playing) time += dt;
+    if (playing && hemis.length) time += dt; // the tour starts with the model
     const pose = sampleDopeframe(dopeframe, time);
 
     if (interacting) {
@@ -490,18 +512,24 @@ export function createBrainStage(o) {
     }
 
     if (uniforms) {
-      const tourId = playing && !hovered && !selected ? pose.area : "";
+      const tour =
+        playing && !hovered && !selected.length && pose.area
+          ? groupFor(pose.area)
+          : [];
+      const hover = hovered ? groupFor(hovered.id) : [];
+      const focusing = tour.length || hover.length || selected.length;
       areaIds.forEach((id, i) => {
-        let m = showAll && id ? MIX.all : 0;
-        if (id && id === tourId) m = MIX.tour;
-        if (id && id === selected) m = MIX.selected;
-        if (id && id === hovered?.id) m = Math.max(m, MIX.hover);
+        const base = (id && areaStyles[id]?.base) || 0;
+        let m = focusing ? base * MIX.dimmed : base;
+        if (tour.includes(id)) m = MIX.tour;
+        if (selected.includes(id)) m = MIX.selected;
+        if (hover.includes(id)) m = Math.max(m, MIX.hover);
         mixTarget[i] = m;
       });
       const k = ease(dt, 9);
       const mix = uniforms.uAreaMix.value;
       for (let i = 0; i < mix.length; i++)
-        mix[i] += (mixTarget[i] - mix[i]) * k;
+        mix[i] += ((mixTarget[i] || 0) - mix[i]) * k;
     }
 
     placeLabel(pose);
@@ -512,7 +540,8 @@ export function createBrainStage(o) {
   let onScreen = true;
   let suspended = false;
   function sync() {
-    const run = !disposed && !suspended && onScreen && !document.hidden;
+    const run =
+      !disposed && !failed && !suspended && onScreen && !document.hidden;
     if (run) lastFrame = 0; // drop the time spent paused
     renderer.setAnimationLoop(run ? frame : null);
   }
@@ -554,11 +583,13 @@ export function createBrainStage(o) {
       if (hovered?.fromPointer && !id) return;
       setHovered(id ? { id, fromPointer: false } : null);
     },
-    setSelected(id) {
-      selected = id || null;
+    /** The selected areas (a chapter's parts, or one area); [] for none. */
+    setSelected(ids) {
+      selected = ids || [];
     },
-    setShowAll(value) {
-      showAll = !!value;
+    setAreaStyles(styles) {
+      areaStyles = styles || {};
+      applyColors();
     },
     /** Stop rendering while something covers the stage (the nav drawer). */
     setSuspended(value) {

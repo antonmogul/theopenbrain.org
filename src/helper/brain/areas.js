@@ -1,11 +1,16 @@
 /*
- * The brain atlas's areas (OPENBRAIN-127): names, the book's subject ramp
- * each belongs to, and the chapters that cover it.
+ * The brain atlas's areas and the chapters that own them (OPENBRAIN-127).
  *
- * The ids match the `areas` list stored in the model
+ * The idea is that the brain is the book's contents: every chapter is a part
+ * of the brain. CHAPTER_PARTS says which part each chapter owns; the brain
+ * wears that chapter's colour there, and pointing at it names the chapter.
+ * Areas no chapter owns yet stay bare and say which part of the book they
+ * would belong to.
+ *
+ * Area ids match the `areas` list stored in the model
  * (public/publicAssets/models/brain/brain-v1.glb, built by
- * scripts/brain/build-brain-asset.mjs); the model carries only geometry and
- * a per-vertex area index, everything a reader sees lives here.
+ * scripts/brain/build-brain-asset.mjs); the model carries only geometry and a
+ * per-vertex area index, everything a reader sees lives here.
  *
  * The surface is FreeSurfer's fsaverage cortex with the Destrieux atlas
  * grouped into nine areas. Names say what the faces are: the source repo
@@ -14,11 +19,10 @@
  *
  * Colours are the subject ramps from brand.css, read from tokens/tokens.json
  * (generated from brand.css and kept equal by src/__tests__/tokens.test.js),
- * so a ramp change in the design system reaches the 3D model too. Areas in
- * one system take different steps of its ramp so neighbours stay apart.
+ * so a ramp change in the design system reaches the 3D model too.
  */
 import tokens from "../../../tokens/tokens.json";
-import { RAMPS, RAMP_NAMES } from "@/helper/chapterTheme";
+import { rampForModule } from "@/helper/chapterTheme";
 
 export const AREAS = Object.freeze([
   {
@@ -26,106 +30,110 @@ export const AREAS = Object.freeze([
     name: "Visual cortex",
     where: "Occipital lobe",
     system: "perc",
-    tone: "chapter",
     blurb:
       "The back of the brain. Primary visual cortex (V1) lines the calcarine sulcus on the medial surface and receives the eyes' signals by way of the thalamus; the areas around it build up form, colour and motion.",
-    chapters: [{ slug: "the-retina", title: "The Retina" }],
   },
   {
     id: "ventral-temporal",
     name: "Ventral temporal cortex",
     where: "Fusiform and inferior temporal gyri, temporal pole",
     system: "perc",
-    tone: "chapter-deep",
     blurb:
       "The underside of the temporal lobe, at the end of the visual “what” pathway. Neurons here respond to whole objects, faces and written words.",
-    chapters: [],
   },
   {
     id: "lateral-temporal",
     name: "Auditory cortex and insula",
     where: "Superior and middle temporal gyri, insula",
     system: "perc",
-    tone: "chapter-soft",
     blurb:
       "Heschl's gyrus, on the upper bank of the temporal lobe, is primary auditory cortex; the cortex around it analyses sound and speech. Folded inside the lateral fissure, the insula tracks the body's internal state.",
-    chapters: [],
   },
   {
     id: "parietal",
     name: "Parietal cortex",
-    where: "Postcentral gyrus and parietal lobe",
+    where: "Postcentral gyrus, parietal lobe and posterior cingulate",
     system: "perc",
-    tone: "chapter-deep",
     blurb:
       "Just behind the central sulcus, the postcentral gyrus is primary somatosensory cortex: touch, position and pain, mapped body part by body part. Further back, parietal cortex locates things in space and steers spatial attention.",
-    chapters: [
-      {
-        slug: "attention-and-working-memory",
-        title: "Attention and Working Memory",
-      },
-    ],
   },
   {
     id: "motor",
     name: "Motor cortex",
     where: "Precentral gyrus",
     system: "move",
-    tone: "chapter",
     blurb:
       "The strip in front of the central sulcus. Primary motor cortex maps the body from the feet, on the medial wall, to the face, near the lateral fissure, and sends movement commands down the spinal cord.",
-    chapters: [],
   },
   {
     id: "prefrontal",
     name: "Prefrontal cortex",
     where: "Frontal lobe, with the anterior cingulate",
     system: "lear",
-    tone: "chapter",
     blurb:
-      "The front of the frontal lobe. It keeps goals and information in mind, directs attention to what matters, and holds back the irrelevant. It is also where stress hormones change how we think.",
-    chapters: [
-      {
-        slug: "attention-and-working-memory",
-        title: "Attention and Working Memory",
-      },
-      { slug: "stress", title: "Understanding Stress" },
-    ],
+      "The front of the frontal lobe. It keeps goals and information in mind, directs attention to what matters, and holds back the irrelevant.",
   },
   {
     id: "broca",
     name: "Broca's area",
     where: "Left inferior frontal gyrus",
     system: "lear",
-    tone: "chapter-deep",
     blurb:
       "The inferior frontal gyrus of the left hemisphere. Damage here leaves understanding largely intact but makes speech slow and effortful, as Paul Broca described in 1861.",
-    chapters: [
-      {
-        slug: "foundations-of-neuroscience",
-        title: "Foundations of Neuroscience",
-      },
-    ],
   },
   {
     id: "wernicke",
     name: "Wernicke's area",
     where: "Left posterior superior temporal and supramarginal gyri",
     system: "lear",
-    tone: "chapter-soft",
     blurb:
       "Where the temporal lobe meets the parietal, in the left hemisphere. Damage here leaves speech fluent but empty of meaning and makes language hard to understand, as Carl Wernicke described in 1874.",
-    chapters: [],
   },
   {
     id: "parahippocampal",
     name: "Parahippocampal gyrus",
     where: "Medial temporal lobe",
     system: "lear",
-    tone: "chapter-soft",
     blurb:
       "On the inner underside of the temporal lobe, the cortical gateway to the hippocampus, which lies deeper and is not shown on this surface. Together they lay down new memories of places and events.",
-    chapters: [{ slug: "stress", title: "Understanding Stress" }],
+  },
+]);
+
+/*
+ * Which part of the brain each chapter is, in book order. An area belongs to
+ * at most one chapter (pointing at it names one chapter); a chapter may own
+ * several areas. `title` and `ramp` are fallbacks for chapters the public
+ * catalog does not list yet (drafts); the module row wins when it has them.
+ * `why` is the one line that ties the chapter to its part.
+ */
+export const CHAPTER_PARTS = Object.freeze([
+  {
+    slug: "foundations-of-neuroscience",
+    title: "Foundations of Neuroscience",
+    ramp: "fund",
+    areas: ["broca"],
+    why: "Where the brain's map began: in 1861 Broca traced lost speech to this patch of the left frontal lobe, one of the first functions pinned to a place.",
+  },
+  {
+    slug: "the-retina",
+    title: "The Retina",
+    ramp: "perc",
+    areas: ["occipital"],
+    why: "The retina's signals travel through the thalamus to here, the visual cortex at the back of the brain.",
+  },
+  {
+    slug: "attention-and-working-memory",
+    title: "Attention and Working Memory",
+    ramp: "lear",
+    areas: ["prefrontal", "parietal"],
+    why: "Prefrontal and parietal cortex form the network that chooses what to attend to and holds it in mind.",
+  },
+  {
+    slug: "stress",
+    title: "Understanding Stress",
+    ramp: "deve",
+    areas: ["parahippocampal"],
+    why: "The medial temporal lobe, over the hippocampus: one of the brain's main targets of stress hormones, and a brake on the stress response.",
   },
 ]);
 
@@ -147,35 +155,42 @@ export function rampHex(ramp, tone = "chapter") {
   return tokens.chapter[ramp]?.[tone] || null;
 }
 
-export function areaHex(area) {
-  return rampHex(area.system, area.tone);
-}
-
-/** The systems that have areas, in the book's ramp order, with their areas. */
-export function systemsWithAreas() {
-  return RAMPS.map((ramp) => ({
-    ramp,
-    name: RAMP_NAMES[ramp],
-    hex: rampHex(ramp),
-    areas: AREAS.filter((a) => a.system === ramp),
-  })).filter((s) => s.areas.length);
-}
-
 /**
- * The chapters to offer for an area. A chapter the public catalog has
- * links to its reader route, built from the module row (never a hard-coded
- * number); one it does not have (a draft) is listed as in preparation.
- * `findBySlug` is useChapterCatalog's.
+ * The chapters with their parts, merged with the public catalog: a chapter
+ * the catalog lists takes its title, ramp, number and reader route from the
+ * module row (the route is built from the row, never hard-coded); one it does
+ * not list (a draft) has no number and no route. Sorted in book order.
+ * `modules` is useChapterCatalog's.
  */
-export function chapterLinks(area, findBySlug) {
-  return (area?.chapters || []).map(({ slug, title }) => {
-    const mod = findBySlug ? findBySlug(slug) : null;
-    return mod
-      ? {
-          slug,
-          title: mod.title || title,
-          to: `/chapter/${mod.order_index}/${mod.slug}`,
-        }
-      : { slug, title, to: null };
-  });
+export function bookChapters(modules = []) {
+  const bySlug = new Map(modules.map((m) => [m.slug, m]));
+  return CHAPTER_PARTS.map((part, i) => {
+    const mod = bySlug.get(part.slug) || null;
+    return {
+      ...part,
+      title: mod?.title || part.title,
+      ramp: rampForModule(mod) || part.ramp,
+      number: mod ? mod.order_index : null,
+      to: mod ? `/chapter/${mod.order_index}/${mod.slug}` : null,
+      order: mod ? mod.order_index : 1000 + i,
+    };
+  }).sort((a, b) => a.order - b.order);
+}
+
+export function chapterForArea(chapters, areaId) {
+  return chapters.find((c) => c.areas.includes(areaId)) || null;
+}
+
+/** Areas no chapter owns yet, in AREAS order. */
+export function unclaimedAreas(chapters) {
+  const owned = new Set(chapters.flatMap((c) => c.areas));
+  return AREAS.filter((a) => !owned.has(a.id));
+}
+
+/** An area's colour: its chapter's ramp, or its subject's if unclaimed. */
+export function areaHex(areaId, chapters) {
+  const chapter = chapterForArea(chapters, areaId);
+  if (chapter) return rampHex(chapter.ramp);
+  const area = areaById(areaId);
+  return area ? rampHex(area.system) : null;
 }

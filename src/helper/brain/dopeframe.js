@@ -29,121 +29,24 @@ export const DOPEFRAME_COLUMNS = Object.freeze([
 ]);
 
 /*
- * The atlas loop: the closed brain turns in, the hemispheres open like a
- * book to show the medial wall (visual cortex along the calcarine sulcus,
- * the parahippocampal gyrus, medial prefrontal), close again, and the left
- * lateral surface takes over (language, motor, auditory) before the loop
- * returns to the opening pose.
+ * The atlas loop visits each chapter's part of the brain in book order. The
+ * closed brain turns to its left side (Foundations: Broca's area; Attention:
+ * prefrontal and parietal cortex), the hemispheres open like a book to show
+ * the medial wall (The Retina: visual cortex along the calcarine sulcus;
+ * Stress: the medial temporal lobe), then close, and the loop returns to the
+ * opening pose. Highlighting one part lights the whole chapter.
  */
+// One keyframe per line, like the spreadsheet rows it stands for.
+// prettier-ignore
 export const ATLAS_DOPEFRAME = Object.freeze([
-  {
-    t: 0,
-    azimuth: 140,
-    elevation: 10,
-    distance: 135,
-    open: 0,
-    area: "",
-    ease: "inOut",
-  },
-  {
-    t: 3,
-    azimuth: 165,
-    elevation: 14,
-    distance: 112,
-    open: 0,
-    area: "",
-    ease: "inOut",
-  },
-  {
-    t: 7.5,
-    azimuth: 270,
-    elevation: 62,
-    distance: 122,
-    open: 1,
-    area: "",
-    ease: "inOut",
-  },
-  {
-    t: 9,
-    azimuth: 264,
-    elevation: 62,
-    distance: 122,
-    open: 1,
-    area: "occipital",
-    ease: "linear",
-  },
-  {
-    t: 13,
-    azimuth: 278,
-    elevation: 60,
-    distance: 120,
-    open: 1,
-    area: "parahippocampal",
-    ease: "inOut",
-  },
-  {
-    t: 17,
-    azimuth: 262,
-    elevation: 64,
-    distance: 120,
-    open: 1,
-    area: "prefrontal",
-    ease: "inOut",
-  },
-  {
-    t: 21,
-    azimuth: 262,
-    elevation: 64,
-    distance: 120,
-    open: 1,
-    area: "",
-    ease: "inOut",
-  },
-  {
-    t: 25,
-    azimuth: 185,
-    elevation: 12,
-    distance: 106,
-    open: 0,
-    area: "broca",
-    ease: "inOut",
-  },
-  {
-    t: 29,
-    azimuth: 180,
-    elevation: 10,
-    distance: 106,
-    open: 0,
-    area: "wernicke",
-    ease: "linear",
-  },
-  {
-    t: 33,
-    azimuth: 175,
-    elevation: 22,
-    distance: 108,
-    open: 0,
-    area: "motor",
-    ease: "inOut",
-  },
-  {
-    t: 37,
-    azimuth: 160,
-    elevation: 8,
-    distance: 108,
-    open: 0,
-    area: "lateral-temporal",
-    ease: "inOut",
-  },
-  {
-    t: 41,
-    azimuth: 140,
-    elevation: 10,
-    distance: 135,
-    open: 0,
-    area: "",
-    ease: "inOut",
-  },
+  { t: 0, azimuth: 140, elevation: 10, distance: 135, open: 0, area: "", ease: "inOut" },
+  { t: 3, azimuth: 175, elevation: 12, distance: 110, open: 0, area: "broca", ease: "inOut" },
+  { t: 7, azimuth: 182, elevation: 18, distance: 110, open: 0, area: "prefrontal", ease: "linear" },
+  { t: 11, azimuth: 190, elevation: 28, distance: 114, open: 0, area: "", ease: "linear" },
+  { t: 15, azimuth: 270, elevation: 62, distance: 122, open: 1, area: "occipital", ease: "inOut" },
+  { t: 19, azimuth: 276, elevation: 60, distance: 120, open: 1, area: "parahippocampal", ease: "inOut" },
+  { t: 23, azimuth: 264, elevation: 64, distance: 120, open: 1, area: "", ease: "inOut" },
+  { t: 28, azimuth: 140, elevation: 10, distance: 135, open: 0, area: "", ease: "inOut" },
 ]);
 
 const EASES = {
