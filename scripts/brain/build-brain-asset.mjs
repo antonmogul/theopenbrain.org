@@ -42,7 +42,10 @@ if (!srcDir || !outFile) {
  * Explorer region key → our area id. The explorer named its groups after
  * the structures it hoped to show, but several are surface proxies (its
  * "amygdala" is the temporal pole and fusiform gyrus; its "hippocampus" the
- * parahippocampal gyrus), so the ids here say what the faces actually are.
+ * parahippocampal gyrus), so the ids here name the cortex that is there.
+ * Some of its groupings also put Destrieux labels in the wrong area; the
+ * explorer's map keeps only the groups, not the labels, so `correct()`
+ * below moves those vertices by position.
  * Order = the index stored in _ATLAS.x (1-based; 0 = unlabelled).
  */
 const AREAS = [
@@ -300,10 +303,100 @@ function vertexAreas(vertexCount, index, faceArea) {
  * y = S, z = R) fixes both: the reflection restores FreeSurfer's outward
  * winding.
  */
-const CALLOSAL_SULCUS_Y = -7;
-
 function unmirror(position) {
   for (let i = 0; i < position.length; i += 3) position[i] = -position[i];
+}
+
+/* ── Corrections to the explorer's grouping ───────────────────────────── */
+
+const ID = Object.fromEntries(AREAS.map(([, id], i) => [id, i + 1]));
+const LATERAL_Z = 8; // |z| beyond this is the lateral surface, not the medial wall
+
+/* The connected pieces of one area (vertices joined through the area). */
+function pieces(area, adj, label) {
+  const seen = new Uint8Array(area.length);
+  const out = [];
+  for (let v = 0; v < area.length; v++) {
+    if (area[v] !== label || seen[v]) continue;
+    const piece = [v];
+    seen[v] = 1;
+    for (let i = 0; i < piece.length; i++)
+      for (const u of adj[piece[i]])
+        if (area[u] === label && !seen[u]) {
+          seen[u] = 1;
+          piece.push(u);
+        }
+    out.push(piece);
+  }
+  return out.sort((a, b) => b.length - a.length);
+}
+
+/*
+ * Positions are x = anterior, y = superior, z = right, in the explorer's
+ * units (the brain is about 50 wide). Each rule names the Destrieux labels
+ * it undoes; the thresholds were read off the model.
+ */
+function correct(hemi, area, position, adj) {
+  const x = (v) => position[v * 3];
+  const y = (v) => position[v * 3 + 1];
+  const z = (v) => position[v * 3 + 2];
+  const moved = {};
+  const move = (v, to, why) => {
+    area[v] = to;
+    moved[why] = (moved[why] || 0) + 1;
+  };
+
+  // 1. The "hippocampus" group holds S_pericallosal (the callosal sulcus,
+  //    ringing the corpus callosum) and islands of the posterior collateral
+  //    sulcus as well as the parahippocampal gyrus. Keep the largest piece
+  //    (the gyrus and collateral sulci under the temporal lobe); islands at
+  //    the occipital end join the visual cortex, the rest is medial wall.
+  const [, ...strays] = pieces(area, adj, ID.parahippocampal);
+  for (const piece of strays) {
+    const cx = piece.reduce((s, v) => s + x(v), 0) / piece.length;
+    for (const v of piece)
+      move(v, cx < -13 ? ID.occipital : 0, "parahippocampal strays");
+  }
+
+  // 2. The "Wernicke" group holds all of the superior temporal gyrus and
+  //    sulcus (Destrieux 34, 74). Wernicke's area is the posterior part:
+  //    in front of Heschl's gyrus (x > 2) it is lateral temporal cortex.
+  if (hemi === "left")
+    for (let v = 0; v < area.length; v++)
+      if (area[v] === ID.wernicke && x(v) > 2)
+        move(v, ID["lateral-temporal"], "anterior superior temporal");
+
+  // 3. On the right the explorer folded the Wernicke group into "auditory",
+  //    carrying the supramarginal gyrus (26), Jensen's sulcus (56) and the
+  //    posterior lateral fissure (41) with it. Above the fissure (y > 1)
+  //    they are parietal cortex.
+  if (hemi === "right")
+    for (let v = 0; v < area.length; v++)
+      if (area[v] === ID["lateral-temporal"] && y(v) > 1)
+        move(v, ID.parietal, "right supramarginal");
+
+  // 4. The subcentral gyrus (4) went to "Broca" on the left and, folded with
+  //    it, to "prefrontal" on the right, though it lies under and behind the
+  //    central sulcus. Where it sits under the motor strip (between the
+  //    strip's front and back edges at its height) it joins motor cortex;
+  //    behind the strip, parietal cortex.
+  const target = hemi === "left" ? ID.broca : ID.prefrontal;
+  const BIN = 1.5;
+  const edges = new Map(); // height bin → [back x, front x] of the motor strip
+  for (let v = 0; v < area.length; v++) {
+    if (area[v] !== ID.motor || Math.abs(z(v)) < LATERAL_Z) continue;
+    const b = Math.floor(y(v) / BIN);
+    const e = edges.get(b) || [Infinity, -Infinity];
+    edges.set(b, [Math.min(e[0], x(v)), Math.max(e[1], x(v))]);
+  }
+  for (let v = 0; v < area.length; v++) {
+    if (area[v] !== target || Math.abs(z(v)) < LATERAL_Z) continue;
+    const e = edges.get(Math.floor(y(v) / BIN));
+    if (!e) continue;
+    if (x(v) < e[0]) move(v, ID.parietal, "subcentral behind the strip");
+    else if (x(v) < e[1]) move(v, ID.motor, "subcentral under the strip");
+  }
+  console.log(`${hemi}: corrections`, moved);
 }
 
 const regionMap = JSON.parse(
@@ -319,19 +412,7 @@ const meshes = ["left", "right"].map((hemi) => {
   });
   const adj = neighbours(vertexCount, index);
   const area = vertexAreas(vertexCount, index, faceArea);
-  /*
-   * The explorer's "hippocampus" group also holds S_pericallosal, the
-   * callosal sulcus, which rings the corpus callosum high on the medial wall,
-   * far from the parahippocampal gyrus and collateral sulci on the underside
-   * of the temporal lobe. The two sit at clearly separate heights (below
-   * y = -8 and above y = -6 in these units), so split by height and leave the
-   * callosal ring unlabelled, like the rest of the medial wall.
-   */
-  const parahippocampal =
-    AREAS.findIndex(([, id]) => id === "parahippocampal") + 1;
-  for (let v = 0; v < vertexCount; v++)
-    if (area[v] === parahippocampal && position[v * 3 + 1] > CALLOSAL_SULCUS_Y)
-      area[v] = 0;
+  correct(hemi, area, position, adj);
   const sulc = sulcalDepth(position, index, adj);
   const atlas = new Uint8Array(vertexCount * 4);
   for (let v = 0; v < vertexCount; v++) {

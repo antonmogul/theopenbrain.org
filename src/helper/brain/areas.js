@@ -30,6 +30,7 @@ export const AREAS = Object.freeze([
     name: "Visual cortex",
     where: "Occipital lobe",
     system: "perc",
+    view: "open",
     blurb:
       "The back of the brain. Primary visual cortex (V1) lines the calcarine sulcus on the medial surface and receives the eyes' signals by way of the thalamus; the areas around it build up form, colour and motion.",
   },
@@ -38,54 +39,63 @@ export const AREAS = Object.freeze([
     name: "Ventral temporal cortex",
     where: "Fusiform and inferior temporal gyri, temporal pole",
     system: "perc",
+    view: "open",
     blurb:
-      "The underside of the temporal lobe, at the end of the visual “what” pathway. Neurons here respond to whole objects, faces and written words.",
+      "The underside of the temporal lobe, at the end of the visual “what” pathway. Neurons here respond to whole objects, faces and written words. At its front tip, the temporal pole ties objects and faces to what we know about them.",
   },
   {
     id: "lateral-temporal",
-    name: "Auditory cortex and insula",
+    name: "Lateral temporal cortex and insula",
     where: "Superior and middle temporal gyri, insula",
     system: "perc",
+    view: "closed",
     blurb:
-      "Heschl's gyrus, on the upper bank of the temporal lobe, is primary auditory cortex; the cortex around it analyses sound and speech. Folded inside the lateral fissure, the insula tracks the body's internal state.",
+      "Heschl's gyrus, on the upper surface of the temporal lobe inside the lateral fissure, is primary auditory cortex; the cortex around it analyses sound and speech, and the middle temporal gyrus below ties sounds and words to meaning. Folded inside the fissure, the insula tracks the body's internal state.",
   },
   {
     id: "parietal",
     name: "Parietal cortex",
     where: "Postcentral gyrus, parietal lobe and posterior cingulate",
     system: "perc",
+    view: "closed",
     blurb:
       "Just behind the central sulcus, the postcentral gyrus is primary somatosensory cortex: touch, position and pain, mapped body part by body part. Further back, parietal cortex locates things in space and steers spatial attention.",
   },
   {
     id: "motor",
     name: "Motor cortex",
-    where: "Precentral gyrus",
+    where: "Precentral gyrus, central sulcus and paracentral lobule",
     system: "move",
+    view: "closed",
     blurb:
-      "The strip in front of the central sulcus. Primary motor cortex maps the body from the feet, on the medial wall, to the face, near the lateral fissure, and sends movement commands down the spinal cord.",
+      "The strip in front of the central sulcus. Primary motor cortex maps the body from the feet, on the medial wall, to the face, near the lateral fissure, and sends movement commands down to the brainstem and spinal cord.",
   },
   {
     id: "prefrontal",
     name: "Prefrontal cortex",
-    where: "Frontal lobe, with the anterior cingulate",
+    where:
+      "Frontal lobe in front of the motor strip, with premotor cortex and the anterior and middle cingulate",
     system: "lear",
+    view: "closed",
     blurb:
       "The front of the frontal lobe. It keeps goals and information in mind, directs attention to what matters, and holds back the irrelevant.",
   },
   {
     id: "broca",
     name: "Broca's area",
-    where: "Left inferior frontal gyrus",
+    where:
+      "Pars opercularis and triangularis of the left inferior frontal gyrus",
     system: "lear",
+    view: "closed",
     blurb:
-      "The inferior frontal gyrus of the left hemisphere. Damage here leaves understanding largely intact but makes speech slow and effortful, as Paul Broca described in 1861.",
+      "The back of the left inferior frontal gyrus. Damage here and to the cortex around it leaves understanding largely intact but makes speech slow and effortful, as Paul Broca described in 1861.",
   },
   {
     id: "wernicke",
     name: "Wernicke's area",
     where: "Left posterior superior temporal and supramarginal gyri",
     system: "lear",
+    view: "closed",
     blurb:
       "Where the temporal lobe meets the parietal, in the left hemisphere. Damage here leaves speech fluent but empty of meaning and makes language hard to understand, as Carl Wernicke described in 1874.",
   },
@@ -94,6 +104,7 @@ export const AREAS = Object.freeze([
     name: "Parahippocampal gyrus",
     where: "Medial temporal lobe",
     system: "lear",
+    view: "open",
     blurb:
       "On the inner underside of the temporal lobe, the cortical gateway to the hippocampus, which lies deeper and is not shown on this surface. Together they lay down new memories of places and events.",
   },
@@ -126,14 +137,14 @@ export const CHAPTER_PARTS = Object.freeze([
     title: "Attention and Working Memory",
     ramp: "lear",
     areas: ["prefrontal", "parietal"],
-    why: "Prefrontal and parietal cortex form the network that chooses what to attend to and holds it in mind.",
+    why: "Within these lobes, the frontal eye fields and the intraparietal sulcus steer attention, and lateral prefrontal cortex holds what matters in mind.",
   },
   {
     slug: "stress",
     title: "Understanding Stress",
     ramp: "deve",
     areas: ["parahippocampal"],
-    why: "The medial temporal lobe, over the hippocampus: one of the brain's main targets of stress hormones, and a brake on the stress response.",
+    why: "The parahippocampal gyrus, beside the hippocampus: the hippocampus is one of the brain's main targets of stress hormones, and a brake on the stress response.",
   },
 ]);
 
@@ -179,6 +190,17 @@ export function bookChapters(modules = []) {
 
 export function chapterForArea(chapters, areaId) {
   return chapters.find((c) => c.areas.includes(areaId)) || null;
+}
+
+/**
+ * Which way to show a set of areas: "open" (the book open, from behind and
+ * above, for the medial and ventral surfaces) when every one of them is best
+ * seen that way, else "closed" (the left side).
+ */
+export function viewForAreas(ids) {
+  return ids.length && ids.every((id) => areaById(id)?.view === "open")
+    ? "open"
+    : "closed";
 }
 
 /** Areas no chapter owns yet, in AREAS order. */

@@ -42,6 +42,7 @@ import {
   chapterForArea,
   rampHex,
   unclaimedAreas,
+  viewForAreas,
 } from "@/helper/brain/areas";
 import { ATLAS_DOPEFRAME } from "@/helper/brain/dopeframe";
 import { BRAIN_MODEL_URL, createBrainStage } from "@/helper/brain/brainStage";
@@ -143,14 +144,34 @@ function choose(next) {
     playing.value = true;
   }
 }
-function toggle(next) {
-  choose(pickKey(selection.value) === pickKey(next) ? null : next);
+/* The card sits under the contents: bring it into view once it renders. */
+function revealCard() {
+  nextTick(() =>
+    panelEl.value?.querySelector(".card")?.scrollIntoView({
+      block: "nearest",
+      behavior: reducedMotion ? "auto" : "smooth",
+    })
+  );
 }
-/* A part of the brain chosen on the canvas: its chapter, or the bare area. */
+/* Chosen in the contents: turn the brain to show it (book open for the
+   medial parts, closed for the lateral ones), then show its card. */
+function toggle(next) {
+  if (pickKey(selection.value) === pickKey(next)) return choose(null);
+  choose(next);
+  const ids =
+    next.kind === "chapter"
+      ? chapters.value.find((c) => c.slug === next.slug)?.areas || []
+      : [next.id];
+  stage.value?.setOpen(viewForAreas(ids) === "open");
+  revealCard();
+}
+/* A part of the brain chosen on the canvas: its chapter, or the bare area.
+   It is already in view, so the camera stays put. */
 function chooseArea(areaId) {
   const chapter = chapterOf(areaId);
   if (chapter) choose({ kind: "chapter", slug: chapter.slug });
   else choose(areaId ? { kind: "area", id: areaId } : null);
+  if (areaId) revealCard();
 }
 /* Close the card and give focus back to the entry that opened it. */
 function closeCard() {
@@ -238,8 +259,94 @@ onBeforeUnmount(() => {
         opened like a book
       </h1>
 
-      <!-- The chosen chapter takes the strapline's place, near the top, so
-           it is in view without scrolling past the contents. -->
+      <p class="atlas__strap">
+        Every chapter of the book is a part of the brain. Point at a part to see
+        its chapter, and choose it to start reading.
+        <template v-if="status !== 'error'"
+          >Drag to turn the brain{{
+            playing ? "; let go and it drifts back to the tour" : ""
+          }}.</template
+        >
+      </p>
+      <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+
+      <nav class="contents" :aria-labelledby="`${uid}-contents`">
+        <p :id="`${uid}-contents`" class="atlas__head">Contents</p>
+        <ol class="contents__list">
+          <li v-for="chapter in chapters" :key="chapter.slug">
+            <button
+              type="button"
+              class="contents__chapter"
+              :class="{
+                'is-hovered': hoveredChapter?.slug === chapter.slug,
+                'is-selected': selectedChapter?.slug === chapter.slug,
+              }"
+              :style="{ '--area': rampHex(chapter.ramp) }"
+              :aria-pressed="selectedChapter?.slug === chapter.slug"
+              :data-pick="chapter.slug"
+              @mouseenter="preview(chapter.areas[0])"
+              @mouseleave="preview(null)"
+              @focus="preview(chapter.areas[0])"
+              @blur="preview(null)"
+              @click="toggle({ kind: 'chapter', slug: chapter.slug })"
+            >
+              <span
+                class="contents__num"
+                :class="{ 'is-unnumbered': !chapter.number }"
+                aria-hidden="true"
+                >{{ chapter.number }}</span
+              >
+              <span class="contents__main">
+                <span class="contents__title"
+                  ><span v-if="chapter.number" class="sr-only"
+                    >Chapter {{ chapter.number }}: </span
+                  >{{ chapter.title }}</span
+                >
+                <span class="contents__parts">{{ partNames(chapter) }}</span>
+              </span>
+              <span v-if="loaded && !chapter.to" class="contents__tag"
+                >In preparation</span
+              >
+            </button>
+          </li>
+        </ol>
+
+        <div
+          v-if="unclaimed.length"
+          class="unclaimed"
+          role="group"
+          :aria-labelledby="`${uid}-unclaimed`"
+        >
+          <p :id="`${uid}-unclaimed`" class="atlas__head">
+            Not in the book yet
+          </p>
+          <ul class="unclaimed__list">
+            <li v-for="area in unclaimed" :key="area.id">
+              <button
+                type="button"
+                class="unclaimed__area"
+                :class="{
+                  'is-hovered': hoveredId === area.id,
+                  'is-selected': selectedArea?.id === area.id,
+                }"
+                :style="{ '--area': areaHex(area.id, chapters) }"
+                :aria-pressed="selectedArea?.id === area.id"
+                :data-pick="area.id"
+                @mouseenter="preview(area.id)"
+                @mouseleave="preview(null)"
+                @focus="preview(area.id)"
+                @blur="preview(null)"
+                @click="toggle({ kind: 'area', id: area.id })"
+              >
+                {{ area.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- The chosen chapter or area. It sits under the contents so the
+           rows do not move under the pointer when it opens. -->
       <article
         v-if="selectedChapter"
         class="card"
@@ -291,86 +398,6 @@ onBeforeUnmount(() => {
           {{ resumeTourOnClose ? "Back to the tour" : "Close" }}
         </button>
       </article>
-      <p v-else class="atlas__strap">
-        Every chapter of the book is a part of the brain. Point at a part to see
-        its chapter, and choose it to start reading.
-        <template v-if="status !== 'error'">
-          Drag to turn the brain; let go and it drifts back to the tour.
-        </template>
-      </p>
-      <p class="sr-only" aria-live="polite">{{ announcement }}</p>
-
-      <nav class="contents" :aria-labelledby="`${uid}-contents`">
-        <p :id="`${uid}-contents`" class="atlas__head">Contents</p>
-        <ol class="contents__list">
-          <li v-for="chapter in chapters" :key="chapter.slug">
-            <button
-              type="button"
-              class="contents__chapter"
-              :class="{
-                'is-hovered': hoveredChapter?.slug === chapter.slug,
-                'is-selected': selectedChapter?.slug === chapter.slug,
-              }"
-              :style="{ '--area': rampHex(chapter.ramp) }"
-              :aria-pressed="selectedChapter?.slug === chapter.slug"
-              :data-pick="chapter.slug"
-              @mouseenter="preview(chapter.areas[0])"
-              @mouseleave="preview(null)"
-              @focus="preview(chapter.areas[0])"
-              @blur="preview(null)"
-              @click="toggle({ kind: 'chapter', slug: chapter.slug })"
-            >
-              <span class="contents__num" aria-hidden="true">{{
-                chapter.number ?? "·"
-              }}</span>
-              <span class="contents__main">
-                <span class="contents__title"
-                  ><span v-if="chapter.number" class="sr-only"
-                    >Chapter {{ chapter.number }}: </span
-                  >{{ chapter.title }}</span
-                >
-                <span class="contents__parts">{{ partNames(chapter) }}</span>
-              </span>
-              <span v-if="loaded && !chapter.to" class="contents__tag"
-                >In preparation</span
-              >
-            </button>
-          </li>
-        </ol>
-
-        <div
-          v-if="unclaimed.length"
-          class="unclaimed"
-          role="group"
-          :aria-labelledby="`${uid}-unclaimed`"
-        >
-          <p :id="`${uid}-unclaimed`" class="atlas__head">
-            Not in the book yet
-          </p>
-          <ul class="unclaimed__list">
-            <li v-for="area in unclaimed" :key="area.id">
-              <button
-                type="button"
-                class="unclaimed__area"
-                :class="{
-                  'is-hovered': hoveredId === area.id,
-                  'is-selected': selectedArea?.id === area.id,
-                }"
-                :style="{ '--area': areaHex(area.id, chapters) }"
-                :aria-pressed="selectedArea?.id === area.id"
-                :data-pick="area.id"
-                @mouseenter="preview(area.id)"
-                @mouseleave="preview(null)"
-                @focus="preview(area.id)"
-                @blur="preview(null)"
-                @click="toggle({ kind: 'area', id: area.id })"
-              >
-                {{ area.name }}
-              </button>
-            </li>
-          </ul>
-        </div>
-      </nav>
 
       <p class="atlas__credit">
         Cortex: FreeSurfer fsaverage pial surface, areas from the Destrieux
@@ -385,9 +412,9 @@ onBeforeUnmount(() => {
         ref="labelEl"
         class="atlas__label"
         aria-hidden="true"
-        :style="
-          focusArea ? { '--area': areaHex(focusArea.id, chapters) } : null
-        "
+        :style="{
+          '--area': focusArea ? areaHex(focusArea.id, chapters) : null,
+        }"
       >
         <template v-if="focusArea">
           <span class="atlas__label-name">{{
@@ -437,7 +464,8 @@ onBeforeUnmount(() => {
 .atlas {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(20rem, 36rem) minmax(0, 1fr);
+  /* As the home cover: an even split, the panel capped on wide screens. */
+  grid-template-columns: minmax(20rem, 1fr) minmax(0, 1fr);
   min-height: 100svh;
   background: rgb(var(--color-dark-surface));
   color: #fff;
@@ -534,6 +562,10 @@ onBeforeUnmount(() => {
   font-size: var(--ui-size-15);
   font-weight: 500;
 }
+.contents__num.is-unnumbered {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--area);
+}
 .contents__main {
   display: grid;
   gap: 0.125rem;
@@ -611,7 +643,7 @@ onBeforeUnmount(() => {
 .card__title {
   margin: 0;
   padding: 0;
-  font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+  font-size: var(--type-subhead-size);
   line-height: 1.15;
   font-weight: 450;
 }
@@ -630,10 +662,8 @@ onBeforeUnmount(() => {
   gap: 0.25rem;
 }
 .card__parts li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.625rem;
-  align-items: baseline;
+  display: grid;
+  gap: 0.125rem;
 }
 .card__part {
   font-size: var(--ui-size-15);
@@ -641,6 +671,7 @@ onBeforeUnmount(() => {
 .card__where {
   margin: 0;
   font-size: var(--ui-size-13);
+  line-height: 1.45;
   color: rgb(255 255 255 / 0.65);
 }
 .card__cta {
@@ -670,7 +701,9 @@ onBeforeUnmount(() => {
 }
 .card__close {
   justify-self: start;
-  padding: 0;
+  /* A full-height tap target without changing the look. */
+  padding: 0.75rem 0;
+  margin: -0.5rem 0;
   border: 0;
   background: none;
   color: rgb(255 255 255 / 0.75);
@@ -770,6 +803,9 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
 }
 .ctl {
+  /* Equal widths, so the row does not shift when a label changes. */
+  min-width: 7.5rem;
+  text-align: center;
   padding: 0.625rem 0.875rem;
   border: 1px solid rgb(255 255 255 / 0.6);
   border-radius: var(--radius-control);
@@ -799,6 +835,12 @@ onBeforeUnmount(() => {
   .ctl,
   .card__cta {
     transition: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .atlas {
+    grid-template-columns: minmax(20rem, 36rem) minmax(0, 1fr);
   }
 }
 

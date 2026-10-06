@@ -29,24 +29,28 @@ export const DOPEFRAME_COLUMNS = Object.freeze([
 ]);
 
 /*
- * The atlas loop visits each chapter's part of the brain in book order. The
- * closed brain turns to its left side (Foundations: Broca's area; Attention:
- * prefrontal and parietal cortex), the hemispheres open like a book to show
- * the medial wall (The Retina: visual cortex along the calcarine sulcus;
- * Stress: the medial temporal lobe), then close, and the loop returns to the
- * opening pose. Highlighting one part lights the whole chapter.
+ * The atlas loop visits each chapter's part of the brain: first the two on
+ * the closed brain's left side (Foundations: Broca's area; Attention:
+ * prefrontal and parietal cortex), then the camera rises behind the brain
+ * and only then does the book open, for the two on the medial wall (The
+ * Retina: visual cortex along the calcarine sulcus; Stress: the
+ * parahippocampal gyrus). The book closes before the camera swings back,
+ * so moving and opening never happen at once. Highlighting one part lights
+ * the whole chapter.
  */
 // One keyframe per line, like the spreadsheet rows it stands for.
 // prettier-ignore
 export const ATLAS_DOPEFRAME = Object.freeze([
-  { t: 0, azimuth: 140, elevation: 10, distance: 135, open: 0, area: "", ease: "inOut" },
+  { t: 0, azimuth: 140, elevation: 10, distance: 118, open: 0, area: "", ease: "inOut" },
   { t: 3, azimuth: 175, elevation: 12, distance: 110, open: 0, area: "broca", ease: "inOut" },
   { t: 7, azimuth: 182, elevation: 18, distance: 110, open: 0, area: "prefrontal", ease: "linear" },
   { t: 11, azimuth: 190, elevation: 28, distance: 114, open: 0, area: "", ease: "linear" },
-  { t: 15, azimuth: 270, elevation: 62, distance: 122, open: 1, area: "occipital", ease: "inOut" },
-  { t: 19, azimuth: 276, elevation: 60, distance: 120, open: 1, area: "parahippocampal", ease: "inOut" },
-  { t: 23, azimuth: 264, elevation: 64, distance: 120, open: 1, area: "", ease: "inOut" },
-  { t: 28, azimuth: 140, elevation: 10, distance: 135, open: 0, area: "", ease: "inOut" },
+  { t: 13.5, azimuth: 270, elevation: 62, distance: 122, open: 0, area: "", ease: "inOut" },
+  { t: 16, azimuth: 270, elevation: 62, distance: 122, open: 1, area: "occipital", ease: "inOut" },
+  { t: 20, azimuth: 276, elevation: 60, distance: 120, open: 1, area: "parahippocampal", ease: "inOut" },
+  { t: 24, azimuth: 264, elevation: 64, distance: 120, open: 1, area: "", ease: "inOut" },
+  { t: 26.5, azimuth: 266, elevation: 62, distance: 120, open: 0, area: "", ease: "inOut" },
+  { t: 31, azimuth: 140, elevation: 10, distance: 118, open: 0, area: "", ease: "inOut" },
 ]);
 
 const EASES = {

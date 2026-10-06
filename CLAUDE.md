@@ -69,7 +69,7 @@ npm run storybook:snapshots:ci     # Screenshot Guides/Foundations/chapter-block
 Story naming follows `.storybook/taxonomy.md` (Guides / Foundations / Chapter / Student / Dashboard / Widgets / Views / Legacy). Storybook is the design-system reference (the in-app `/styleguide` was retired in OPENBRAIN-114):
 
 - **Guides** are MDX pages in `src/docs/` (Introduction, Designing for the book, Writing a chapter, Widget kit, Figma, Contributing). They embed their sources with `?raw` + `<Markdown>` (the chapter template, the widget kit's SKILL/design.md, taxonomy.md) so they can't drift. Plain MDX has no GFM tables here (no remark-gfm): put tables inside a `<Markdown>` block.
-- **Theme**: `.storybook/theme.js` (manager + docs; brand.css values as hex), `manager-head.html` (IBM Plex faces), `brand/logo-white.svg` (the only static dir).
+- **Theme**: `.storybook/theme.js` (manager + docs; brand.css values as hex), `manager-head.html` (IBM Plex faces), `brand/logo-white.svg` (static dirs: `brand/`, plus the brain atlas model folder for `/brain`).
 - **Toolbar**: Chapter (sets `data-chapter`), viewports at the breakpoints (390/768/1024/1280/1440), Motion, Theme, Accent, and a **Figma** button (local addon in `.storybook/manager.js`) that opens `parameters.design.url`. Links live in one map, `FIGMA_BY_TITLE` in `.storybook/figma.js` (story title → node id; `parameters.design.url` overrides); the Figma file is "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`), whose variables mirror brand.css.
 
 ### Linting and Formatting
@@ -123,7 +123,7 @@ npm run clean              # Clear cache, remove node_modules, reinstall with --
 - **Routing**: Vue Router 4
 - **Styling**: Tailwind CSS 3 over CSS custom properties in `src/styles/brand.css`
 - **Backend**: Supabase (Postgres + Auth + REST). Almost all access is hand-rolled `fetch` against the REST API (`src/services/api/client.js`, `src/utils/authHelpers.js`); a `supabase-js` client exists in `src/lib/supabase.js` and is used only by `useModules`, `useProfile` and `EditorView`.
-- **Animations**: GSAP, Lottie (`lottie-web`); `three` + `@google/model-viewer` for the 3D skull prototype (`/phrenology-3d`). `@formkit/auto-animate` is in `package.json` but nothing in `src/` imports it.
+- **Animations**: GSAP, Lottie (`lottie-web`); `three` for the 3D skull prototype (`/phrenology-3d`) and the brain atlas (`/brain`); `@google/model-viewer` is still installed but nothing imports it. `@formkit/auto-animate` is in `package.json` but nothing in `src/` imports it.
 - **Content tooling**: TipTap (block editor), `marked` (markdown import), `mammoth` (DOCX import), Pyodide (Python playground and labs), Chart.js (dashboards)
 - **Testing**: Vitest (unit, `src/**/__tests__/`, happy-dom) + Storybook 10 (story build and exhaustive story smoke, both in CI) + Playwright browser smoke (`scripts/smoke.mjs`, in CI) + 3 Cypress specs (stubbed with `cy.intercept`, excluded from CI)
 - **Tooling**: ESLint 8, Prettier 3, Node 20.20 (`.nvmrc`)
