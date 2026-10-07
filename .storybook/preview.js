@@ -284,6 +284,7 @@ const preview = {
           "Student",
           "Dashboard",
           "Widgets",
+          "Deck",
           "Views",
           "Legacy",
           "*",

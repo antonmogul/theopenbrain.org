@@ -1,0 +1,153 @@
+/*
+ * Slide deck styles (/deck). Every slide is a fixed 1920×1080 canvas that
+ * DeckStage scales to the window, so sizes here are design pixels, not the
+ * responsive reading scale: the deck is laid out once, like a printed page.
+ *
+ * The deck is a brand document. It ignores the viewer's theme and accent
+ * preferences, so the light-theme surface values are pinned on .deck-slide
+ * (the same values as :root in brand.css); dark slides switch to the chapter
+ * opener's dark surface.
+ */
+
+.deck-slide {
+  --color-bg: 247 245 240;
+  --color-paper: 255 255 255;
+  --color-ink: 10 10 10;
+  --color-mute: 107 107 102;
+  --color-line: 229 229 224;
+  --color-accent: 233 30 140;
+  /* Body copy on paper: between ink and mute. */
+  --deck-body: 58 58 54;
+  /* Device-frame chrome on paper. */
+  --deck-chrome: 236 235 230;
+  --deck-chrome-line: 217 215 208;
+  --deck-chrome-dot: 201 199 192;
+
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+  -webkit-font-smoothing: antialiased;
+}
+.deck-slide *,
+.deck-slide *::before,
+.deck-slide *::after {
+  box-sizing: border-box;
+}
+.deck-slide h1,
+.deck-slide h2,
+.deck-slide p {
+  margin: 0;
+}
+
+.deck-slide--dark {
+  --color-bg: var(--color-dark-surface);
+  --color-ink: 243 239 230; /* #f3efe6 */
+  --color-mute: 154 152 144; /* #9a9890 */
+  --deck-body: 243 239 230;
+}
+
+/* The standard content padding: title block at the top, content below. */
+.deck-pad {
+  padding: 100px 100px 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck-mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* "02 · Team" — the small capitals above a title. */
+.deck-eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--color-mute));
+}
+
+.deck-title {
+  font-size: 84px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+.deck-display {
+  font-size: 150px;
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+.deck-lead {
+  font-size: 40px;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.deck-body {
+  font-size: 30px;
+  line-height: 1.5;
+  color: rgb(var(--deck-body));
+  text-wrap: pretty;
+}
+.deck-muted {
+  color: rgb(var(--color-mute));
+}
+
+/* A titled column with a rule above it (columns, figures, timeline). */
+.deck-ruled {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 32px;
+  border-top: 2px solid rgb(var(--color-ink));
+}
+.deck-ruled__index {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 24px;
+  color: rgb(var(--color-accent));
+}
+.deck-ruled__heading {
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Role colours: Creator, Professor, Student and Public. They reuse the
+   chapter ramps and accents, so --role is the fill and --role-ink the
+   colour that reads on white. */
+.deck-role--creator {
+  --role: 141 76 246; /* fund ramp, main */
+  --role-ink: 118 21 245; /* fund ramp, deep */
+  --role-on: 255 255 255;
+}
+.deck-role--professor {
+  --role: var(--color-complete);
+  --role-ink: 8 175 163; /* perc ramp, deep */
+  --role-on: 10 10 10;
+}
+.deck-role--student {
+  --role: var(--color-accent);
+  --role-ink: 194 16 111; /* magenta, deepened for text on white */
+  --role-on: 255 255 255;
+}
+.deck-role--public {
+  --role: var(--color-dark-surface);
+  --role-ink: 10 10 10;
+  --role-on: 243 239 230;
+}
+
+@media print {
+  @page {
+    size: 1920px 1080px;
+    margin: 0;
+  }
+  .deck-slide {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -200,6 +200,17 @@ const ROUTES = [
     },
   },
   { path: "/chapters", name: "chapters", minText: 50 },
+  /*
+   * Funder deck (unlisted). A fixed 1920×1080 stage scaled to the window, so
+   * it is checked at every width: no horizontal scroll at 390px and all nine
+   * slides mounted (they stay in the DOM for print).
+   */
+  {
+    path: "/deck",
+    name: "deck",
+    minText: 20,
+    expectCount: { selector: ".deck-stage__slide", min: 9 },
+  },
   {
     path: "/case-cabinet",
     name: "case-cabinet",

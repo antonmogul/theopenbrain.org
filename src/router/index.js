@@ -265,6 +265,21 @@ export const routes = [
     component: () => import("../views/WidgetLibraryView.vue"),
   },
   {
+    // Funder slide deck (Claude Design handoff, Oct 2026). Unlisted: not in
+    // nav, and the view marks itself noindex. Share /deck directly; #N opens
+    // slide N. /deck/templates shows the slide templates for future decks.
+    path: "/deck",
+    name: "deck",
+    component: () => import("../views/DeckView.vue"),
+    props: { deck: "funding" },
+  },
+  {
+    path: "/deck/templates",
+    name: "deck-templates",
+    component: () => import("../views/DeckView.vue"),
+    props: { deck: "templates" },
+  },
+  {
     // RetINaBox — interactive retinal circuit simulator (Retina chapter).
     // OPENBRAIN-14: fifth Stuart widget port (merges both variants).
     // Not linked in nav; open /retinabox directly.
@@ -328,6 +343,8 @@ export const ROUTE_TITLES = {
   lab: "Code lab",
   enroll: "Enrol",
   widgets: "Widget library",
+  deck: "Funding deck",
+  "deck-templates": "Slide templates",
 };
 
 export function createAppRouter({
