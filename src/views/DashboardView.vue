@@ -9,6 +9,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useVersions } from "@/composables/useVersions";
 import { useDashboardMedia } from "@/composables/useDashboardMedia";
 import { useDashboardUsers } from "@/composables/useDashboardUsers";
+import { useDashboardFeedback } from "@/composables/useDashboardFeedback";
 import { useDashboardAnalytics } from "@/composables/useDashboardAnalytics";
 import { useDashboardQuizzes } from "@/composables/useDashboardQuizzes";
 import { useRouter, useRoute } from "vue-router";
@@ -21,6 +22,7 @@ import WidgetsSection from "@/components/dashboard/sections/WidgetsSection.vue";
 import { coverForModule } from "@/helper/chapterCover";
 import { importChapter } from "@/services/api/chapterImport";
 import UsersSection from "@/components/dashboard/sections/UsersSection.vue";
+import FeedbackSection from "@/components/dashboard/sections/FeedbackSection.vue";
 import AnalyticsSection from "@/components/dashboard/sections/AnalyticsSection.vue";
 import QuizzesSection from "@/components/dashboard/sections/QuizzesSection.vue";
 import { isBetaHidden } from "@/constants/beta";
@@ -73,6 +75,7 @@ const creatorNavItems = [
   { id: "quizzes", label: "Quizzes", icon: "quiz" },
   { id: "users", label: "Users", icon: "users" },
   { id: "analytics", label: "Analytics", icon: "chart" },
+  { id: "feedback", label: "Feedback", icon: "notes" },
 ].filter((item) => !isBetaHidden(`dashboard.${item.id}`));
 
 // Filter/segmented-control option sets (shared components)
@@ -183,9 +186,22 @@ const {
 // State + fetch extracted to useDashboardAnalytics (#10). The cross-section
 // aggregates (dashboardStats, maxRoleCount) and fetchDashboardData orchestrator
 // stay in the view as shell logic. userRoleBreakdown lives in useDashboardUsers.
+// Only a loaded creator profile matching the current identity may read these
+// datasets. An old creator profile can remain briefly during account changes.
+const creatorIdentity = computed(() => user.value?.id || null);
+const canReadCreatorData = computed(
+  () =>
+    !loading.value &&
+    !profileLoading.value &&
+    isAuthenticated.value &&
+    !!creatorIdentity.value &&
+    profile.value?.id === creatorIdentity.value &&
+    profile.value?.role === "creator"
+);
 const {
   analyticsLoading,
   analyticsError,
+  analyticsAccessDenied,
   analyticsDateRange,
   analyticsMetrics,
   analyticsChartData,
@@ -193,8 +209,24 @@ const {
   quizPerformance,
   trendingHighlights,
   fetchAnalytics,
-  formatDuration,
-} = useDashboardAnalytics();
+} = useDashboardAnalytics(canReadCreatorData, creatorIdentity);
+
+// Feedback is read-only and available only to verified creator profiles.
+const {
+  feedbackChapters,
+  feedbackLoading,
+  feedbackError,
+  feedbackAccessDenied,
+  feedbackChapter,
+  feedbackKind,
+  filteredFeedback,
+  fetchFeedback,
+} = useDashboardFeedback(canReadCreatorData, creatorIdentity);
+watch([canReadCreatorData, creatorIdentity], ([allowed]) => {
+  if (!allowed) return;
+  if (activeSection.value === "feedback") fetchFeedback();
+  if (activeSection.value === "analytics") fetchAnalytics();
+});
 
 // ============ QUIZZES SECTION ============
 // State (quiz + question editors) + CRUD extracted to useDashboardQuizzes (#10).
@@ -529,6 +561,9 @@ watch(activeSection, (newSection) => {
       break;
     case "analytics":
       fetchAnalytics(); // Always refresh analytics
+      break;
+    case "feedback":
+      fetchFeedback();
       break;
     case "quizzes":
       if (quizzes.value.length === 0) fetchQuizzes();
@@ -1157,6 +1192,7 @@ onMounted(() => {
       v-else-if="activeSection === 'analytics'"
       :analytics-loading="analyticsLoading"
       :analytics-error="analyticsError"
+      :analytics-access-denied="analyticsAccessDenied"
       :analytics-date-range="analyticsDateRange"
       :analytics-range-options="analyticsRangeOptions"
       :analytics-metrics="analyticsMetrics"
@@ -1164,9 +1200,22 @@ onMounted(() => {
       :content-performance="contentPerformance"
       :quiz-performance="quizPerformance"
       :trending-highlights="trendingHighlights"
-      :format-duration="formatDuration"
       @fetch="fetchAnalytics"
       @range-change="onAnalyticsRange"
+    />
+
+    <FeedbackSection
+      v-else-if="activeSection === 'feedback'"
+      :feedback-loading="feedbackLoading"
+      :feedback-error="feedbackError"
+      :feedback-access-denied="feedbackAccessDenied"
+      :feedback-chapters="feedbackChapters"
+      :feedback-chapter="feedbackChapter"
+      :feedback-kind="feedbackKind"
+      :filtered-feedback="filteredFeedback"
+      @fetch="fetchFeedback"
+      @chapter-change="feedbackChapter = $event"
+      @kind-change="feedbackKind = $event"
     />
 
     <!-- Publish / unpublish: changes who can read the chapter. -->

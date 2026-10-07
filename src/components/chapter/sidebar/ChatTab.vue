@@ -8,6 +8,7 @@ import { useAITutor } from "@/composables/useAITutor";
 import { useText } from "@/stores";
 import { chatTimestamp as formatDate } from "@/utils/format";
 import AITutorChat from "@/components/ai/AITutorChat.vue";
+import AITutorPreview from "@/components/ai/AITutorPreview.vue";
 import { Button } from "@/components/dashboard/shared";
 
 const props = defineProps({
@@ -24,6 +25,8 @@ const {
   loading,
   streaming,
   error,
+  isAvailable,
+  availabilityMessage,
   fetchConversations,
   createConversation,
   loadConversation,
@@ -33,6 +36,7 @@ const {
 
 const storeText = useText();
 const showHistory = ref(false);
+const showPreviews = ref(false);
 const deleteConfirmId = ref(null);
 
 // Build a content context summary from the chapter text for the AI tutor
@@ -81,6 +85,7 @@ onMounted(async () => {
 });
 
 async function handleNewConversation() {
+  if (!isAvailable.value || loading.value) return;
   try {
     await createConversation({
       moduleId: props.moduleId,
@@ -104,6 +109,7 @@ async function handleSelectConversation(conversationId) {
 }
 
 async function handleSendMessage(content) {
+  if (!isAvailable.value || loading.value || streaming.value) return;
   try {
     if (!currentConversation.value) {
       await createConversation({
@@ -144,7 +150,10 @@ async function executeDelete() {
     <!-- In-tab header with History + New -->
     <div class="chat-header">
       <button
-        @click="showHistory = !showHistory"
+        @click="
+          showHistory = !showHistory;
+          showPreviews = false;
+        "
         class="header-btn"
         :class="{ active: showHistory }"
         title="Conversation history"
@@ -168,7 +177,9 @@ async function executeDelete() {
       <button
         @click="handleNewConversation"
         class="header-btn new-btn"
-        title="New conversation"
+        :title="isAvailable ? 'New conversation' : availabilityMessage"
+        aria-label="New conversation"
+        :disabled="!isAvailable || loading || streaming"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -187,6 +198,22 @@ async function executeDelete() {
         New
       </button>
     </div>
+
+    <button
+      type="button"
+      class="preview-toggle"
+      :aria-expanded="showPreviews"
+      @click="
+        showPreviews = !showPreviews;
+        showHistory = false;
+      "
+    >
+      {{
+        showPreviews
+          ? "Back to saved chat"
+          : "Try offline previews: chat, read-aloud and podcast format"
+      }}
+    </button>
 
     <!-- History panel -->
     <Transition name="dropdown">
@@ -226,6 +253,7 @@ async function executeDelete() {
             <button
               @click.stop="confirmDelete(conv.id)"
               class="delete-btn"
+              v-if="isAvailable"
               title="Delete conversation"
             >
               <svg
@@ -258,7 +286,11 @@ async function executeDelete() {
 
     <!-- Chat area -->
     <div class="chat-area">
+      <AITutorPreview v-if="showPreviews" :chapter="storeText.text" />
       <AITutorChat
+        v-else
+        :available="isAvailable"
+        :availability-message="availabilityMessage"
         :messages="messages"
         :loading="loading"
         :streaming="streaming"
@@ -307,7 +339,12 @@ async function executeDelete() {
     border-color 0.12s ease;
 }
 
-.header-btn:hover {
+.header-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.header-btn:hover:not(:disabled) {
   border-color: rgb(var(--color-ink));
 }
 
@@ -319,6 +356,21 @@ async function executeDelete() {
 
 .new-btn {
   margin-left: auto;
+}
+
+.preview-toggle {
+  padding: 10px 18px;
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-bg));
+  text-align: left;
+  font-size: var(--ui-size-13);
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+}
+
+.preview-toggle:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: -2px;
 }
 
 /* History panel */

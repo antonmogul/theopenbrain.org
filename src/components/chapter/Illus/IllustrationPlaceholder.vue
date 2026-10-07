@@ -19,7 +19,8 @@
 //   description / caption    — optional supporting line
 //   note                     — optional production note (what art to source)
 //   images: [{ src, caption?, alt? }]  — real artwork; replaces the placeholder
-import { ref, computed, onBeforeUnmount } from "vue";
+import { ref, computed } from "vue";
+import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
 import { figureImages } from "@/helper/figureCycle";
 
@@ -66,16 +67,10 @@ const caption = computed(
 const isFullscreen = ref(false);
 function openFullscreen() {
   isFullscreen.value = true;
-  window.addEventListener("keydown", onKey);
 }
 function closeFullscreen() {
   isFullscreen.value = false;
-  window.removeEventListener("keydown", onKey);
 }
-function onKey(e) {
-  if (e.key === "Escape") closeFullscreen();
-}
-onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 </script>
 
 <template>
@@ -133,63 +128,41 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
       </div>
     </figure>
 
-    <!-- Fullscreen overlay -->
-    <Teleport to="body">
-      <div v-if="isFullscreen" class="fs-overlay" @click.self="closeFullscreen">
-        <div class="fs-inner">
-          <header class="fig-toolbar fs-toolbar">
-            <div class="fig-toolbar-left">
-              <span class="fig-label">{{ figureLabel }}</span>
-              <span class="fig-name">{{ title }}</span>
-            </div>
-            <button
-              class="fig-fs-btn"
-              type="button"
-              title="Exit full screen (Esc)"
-              aria-label="Exit full screen"
-              @click="closeFullscreen"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linecap="round"
-              >
-                <path d="M5 1v4H1M9 1v4h4M5 13V9H1M9 13V9h4" />
-              </svg>
-            </button>
-          </header>
-          <div
-            class="fig-area fs-area"
-            :class="{ 'fig-area--art': images.length }"
-          >
-            <FigureImages
-              v-if="images.length"
-              :images="images"
-              :caption="caption"
-              :label="figureLabel"
-              :title="title"
-              large
-            />
-            <div v-else class="fig-placeholder">
-              <span class="fig-type-chip">
-                <span aria-hidden="true">{{ type.glyph }}</span>
-                {{ type.label }}
-              </span>
-              <span class="fig-glyph fs-glyph" aria-hidden="true">{{
-                type.glyph
-              }}</span>
-              <p class="fig-title fs-title">{{ title }}</p>
-              <p v-if="caption" class="fig-caption">{{ caption }}</p>
-              <p class="fig-status">Artwork pending</p>
-            </div>
+    <!-- The shared reader dialog owns scroll lock, focus and navigation. -->
+    <DemoModal
+      :show="isFullscreen"
+      :title="`${figureLabel}: ${title}`"
+      wide
+      @close="closeFullscreen"
+    >
+      <div class="fs-content">
+        <div
+          class="fig-area fs-area"
+          :class="{ 'fig-area--art': images.length }"
+        >
+          <FigureImages
+            v-if="images.length"
+            :images="images"
+            :caption="caption"
+            :label="figureLabel"
+            :title="title"
+            large
+          />
+          <div v-else class="fig-placeholder">
+            <span class="fig-type-chip">
+              <span aria-hidden="true">{{ type.glyph }}</span>
+              {{ type.label }}
+            </span>
+            <span class="fig-glyph fs-glyph" aria-hidden="true">{{
+              type.glyph
+            }}</span>
+            <p class="fig-title fs-title">{{ title }}</p>
+            <p v-if="caption" class="fig-caption">{{ caption }}</p>
+            <p class="fig-status">Artwork pending</p>
           </div>
         </div>
       </div>
-    </Teleport>
+    </DemoModal>
   </div>
 </template>
 
@@ -342,28 +315,11 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   margin-right: 0.25rem;
 }
 
-/* Fullscreen overlay */
-.fs-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 400;
-  background: rgb(var(--color-bg) / 0.96);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3vw;
-}
-.fs-inner {
-  width: 100%;
+/* Fill the shared full-viewport dialog's body. */
+.fs-content {
   height: 100%;
-  max-width: 1200px;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: var(--radius-control);
-  background: rgb(var(--color-paper));
-  overflow: hidden;
 }
 .fs-glyph {
   font-size: 5rem;

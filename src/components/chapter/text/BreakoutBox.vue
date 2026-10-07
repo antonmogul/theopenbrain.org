@@ -1,19 +1,7 @@
 <script setup>
-/*
- * A breakout box, full screen (OPENBRAIN-91). Stuart, 24 Sep: "Breakout
- * boxes currently indistinguishable from regular scrolling. Should go full
- * screen (lose center divider line, and pause scrolling for a bit, like in
- * retina chapter)."
- *
- * From the two-column breakpoint up, the box floats full width over the
- * figure pane and the divider (FullBleed, as the full-screen figures do).
- * Its title card holds on screen for a short scroll before the text comes
- * up (the pause), and the box's own figures render inline in its text
- * while it covers the pane (useInlineFigures reads FullBleed's state).
- * Below the breakpoint it is a tinted card in the flow.
- *
- * The box's text is the slot: SectionComp renders its section into it.
- */
+/* Breakouts occupy the reader width and keep their artwork inside their
+ * own stage. Short boxes read as one viewport-sized panel; long manuscript
+ * text remains in normal vertical flow until horizontal paging is designed. */
 import { computed } from "vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 
@@ -45,7 +33,6 @@ const titleId = computed(() => `box-title-${props.section.id}`);
           }}</span>
           <p class="bx-kicker">Breakout box{{ label ? ` ${label}` : "" }}</p>
           <h2 :id="titleId" class="bx-title">{{ section.title }}</h2>
-          <span v-if="floating" class="bx-cue" aria-hidden="true">↓</span>
         </header>
       </div>
       <div class="bx-body">
@@ -104,69 +91,35 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   padding: 0.5rem 1.25rem 2rem;
 }
 
-/* Full screen: the title card holds for a short scroll (the pause), then
-   the text comes up in a centred column. */
+/* A compact heading and body share one screen where the source fits. */
 .bx--floating {
   margin: 0;
-}
-.bx--floating .bx-hold {
-  height: calc(100vh - var(--reader-topbar-h, 4rem) + 35vh);
+  min-height: calc(100vh - var(--reader-topbar-h, 4rem));
+  min-height: calc(100dvh - var(--reader-topbar-h, 4rem));
+  padding: clamp(1.5rem, 4vh, 3rem) 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .bx--floating .bx-intro {
-  position: sticky;
-  top: var(--reader-topbar-h, 4rem);
-  height: calc(100vh - var(--reader-topbar-h, 4rem));
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  padding: 2rem;
-  text-align: center;
-}
-.bx--floating .bx-badge {
-  width: 4.5rem;
-  height: 4.5rem;
-  font-size: 1.75rem;
+  max-width: calc(var(--reading-measure, 780px) + 4rem);
+  margin: 0 auto;
+  padding: 0 2rem 1.5rem;
 }
 .bx--floating .bx-title {
-  max-width: 24ch;
-  font-size: clamp(2rem, 3.4vw, 3.25rem);
-}
-.bx-cue {
-  margin-top: 1.5rem;
-  font-size: var(--ui-size-20);
-  opacity: 0.6;
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
 }
 .bx--floating .bx-body {
   position: relative;
+  width: 100%;
   max-width: calc(var(--reading-measure, 780px) + 4rem);
   margin: 0 auto;
-  padding: 0 2rem 6rem;
+  padding: 0 2rem;
 }
 
 /* The box covers the divider, so its paragraphs' figure marks (index.css)
    have no line to sit on. */
 .bx--floating :deep(.animationTrigger[id]::before) {
   display: none;
-}
-
-/* Reduced motion: no hold. The reader's own setting decides
-   (data-reduce-motion "1" on, "0" off); the OS setting only when unset. */
-:global(:root[data-reduce-motion="1"]) .bx--floating .bx-hold {
-  height: auto;
-}
-:global(:root[data-reduce-motion="1"]) .bx--floating .bx-intro {
-  position: static;
-  height: auto;
-  padding: 5rem 2rem 3rem;
-}
-@media (prefers-reduced-motion: reduce) {
-  :global(:root:not([data-reduce-motion="0"])) .bx--floating .bx-hold {
-    height: auto;
-  }
-  :global(:root:not([data-reduce-motion="0"])) .bx--floating .bx-intro {
-    position: static;
-    height: auto;
-    padding: 5rem 2rem 3rem;
-  }
 }
 </style>

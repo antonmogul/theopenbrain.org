@@ -419,6 +419,27 @@ async function main() {
       });
 
       const errors = [];
+      // This existing smoke lane is an anonymous public-reader audit, never
+      // an integration-write test. Refuse unexpected auth/database writes
+      // before transmission while keeping all content/layout assertions.
+      await page.route("**/*", async (requestRoute) => {
+        const request = requestRoute.request();
+        const url = new URL(request.url());
+        const isDataRequest =
+          url.hostname.endsWith(".supabase.co") ||
+          /^\/(?:rest|auth)\/v1\//.test(url.pathname);
+        if (
+          isDataRequest &&
+          !["GET", "HEAD", "OPTIONS"].includes(request.method())
+        ) {
+          errors.push(
+            `Read-only smoke blocked ${request.method()} ${url.pathname}`
+          );
+          await requestRoute.abort();
+          return;
+        }
+        await requestRoute.continue();
+      });
       page.on("pageerror", (e) => errors.push(e.message));
       page.on(
         "console",

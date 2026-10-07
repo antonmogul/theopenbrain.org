@@ -13,8 +13,7 @@
  *     (both halves of a paired one) and a click opens it (OPENBRAIN-98; they
  *     used to be numbered dots).
  *   • Opening a region lights it and slides in a paper detail
- *     card from the right while the skull cedes ground to the left
- *     (mirrors Figma frame 2 of the storyboard).
+ *     card without changing the skull’s displayed dimensions.
  *
  * Art: the real Figma engravings live in
  *   public/publicAssets/images/phrenology/skull-{anterior|lateral|posterior}.png
@@ -26,9 +25,14 @@
  * Data seam: @/mocks/phrenology — swap for Supabase later.
  * Unlisted route (like /case-cabinet): open /phrenology directly.
  */
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import gsap from "gsap";
-import { PHRENOLOGY_CITATION, usePhrenology } from "@/mocks/phrenology";
+import {
+  PHRENOLOGY_CITATION,
+  PHRENOLOGY_FACULTIES,
+  usePhrenology,
+} from "@/mocks/phrenology";
+import labelAnchors from "@/data/history/phrenologyLabelAnchors.json";
 import { reducedMotionK } from "@/helper/motion";
 import {
   MAP_H,
@@ -36,7 +40,6 @@ import {
   MAP_W,
   MAP_FIT,
   VIEW_MAP,
-  facultyInfoByNumber,
   fitTransform,
   mapOutlines,
   regionShapes,
@@ -44,7 +47,6 @@ import {
 
 // Narrow viewports get the detail card as a bottom sheet (media query below),
 // so the slide animation runs on the y axis and the stage doesn't cede ground.
-const isNarrow = () => window.matchMedia("(max-width: 760px)").matches;
 
 /* ── Motion recipe ──────────────────────────────────────────────────────────
  * All feel-tuning lives here. Durations in seconds, angles in degrees.
@@ -73,6 +75,18 @@ const hoverN = ref(null); // faculty number under the pointer / focus
 const mapsByView = ref({}); // view id → { regions, outlines, transform }
 let facultyInfo = new Map(); // n → { name, blurb }
 const animating = ref(false);
+let panelTween = null;
+let viewTween = null;
+let disposed = false;
+let previousRegionElement = null;
+onBeforeUnmount(() => {
+  disposed = true;
+  panelTween?.kill();
+  viewTween?.kill();
+  gsap.killTweensOf(
+    [skullEl.value, regionsEl.value, panelEl.value].filter(Boolean)
+  );
+});
 
 const stageEl = ref(null); // perspective wrapper
 const skullEl = ref(null); // the yawing card
@@ -103,10 +117,6 @@ function setRegionRef(el, i) {
  * order); Enter/Space opens one; Escape closes the detail card.
  */
 function onStageKeydown(e) {
-  if (e.key === "Escape") {
-    closePanel();
-    return;
-  }
   const forward = e.key === "ArrowRight" || e.key === "ArrowDown";
   const back = e.key === "ArrowLeft" || e.key === "ArrowUp";
   if (!forward && !back) return;
@@ -136,7 +146,8 @@ function addRevealTo(tl, position = ">") {
 
 onMounted(async () => {
   views.value = await fetchViews();
-  facultyInfo = facultyInfoByNumber(views.value);
+  if (disposed) return;
+  facultyInfo = new Map(PHRENOLOGY_FACULTIES.map((f) => [f.n, f]));
   // Every view's map, from the same SVGs as the 3D skull.
   const loaded = {};
   await Promise.all(
@@ -145,7 +156,10 @@ onMounted(async () => {
       try {
         const text = await (await fetch(MAP_SRC[key])).text();
         loaded[v.id] = {
-          regions: regionShapes(text),
+          regions: regionShapes(text).map((r) => ({
+            ...r,
+            label: labelAnchors[key].anchors[r.key],
+          })),
           outlines: mapOutlines(text),
           transform: fitTransform(MAP_FIT[key]),
         };
@@ -154,10 +168,12 @@ onMounted(async () => {
       }
     })
   );
+  if (disposed) return;
   mapsByView.value = loaded;
   await nextTick();
+  if (disposed) return;
   // Entrance: skull surfaces, the map draws, the regions go live.
-  const tl = gsap.timeline();
+  const tl = (viewTween = gsap.timeline());
   tl.from(skullEl.value, {
     opacity: 0,
     scale: 0.94,
@@ -178,7 +194,8 @@ async function switchView(idx) {
 
   // NOTE: `animating` stays locked across BOTH timelines — it is only released
   // by the incoming timeline's onComplete, so clicks can't land mid-swap.
-  const tl = gsap.timeline();
+  viewTween?.kill();
+  const tl = (viewTween = gsap.timeline());
 
   // Outgoing: the map fades fast, skull yaws away.
   tl.to(regionsEl.value, { opacity: 0, duration: 0.18 * K }, 0);
@@ -196,6 +213,7 @@ async function switchView(idx) {
   );
 
   await tl.then();
+  if (disposed) return;
 
   // Swap content while invisible, then yaw in from the other side.
   regionEls.value = [];
@@ -203,7 +221,10 @@ async function switchView(idx) {
   activeIdx.value = idx;
   await nextTick();
 
-  const inTl = gsap.timeline({ onComplete: () => (animating.value = false) });
+  if (disposed) return;
+  const inTl = (viewTween = gsap.timeline({
+    onComplete: () => (animating.value = false),
+  }));
   inTl.fromTo(
     skullEl.value,
     {
@@ -224,82 +245,40 @@ async function switchView(idx) {
   addRevealTo(inTl, "-=0.25");
 }
 
-/* ── Region → detail card ────────────────────────────────────────────────── */
+/* Detail panels never transform or resize the skull stage. */
 async function selectRegion(shape) {
-  if (animating.value) return;
-  const opening = !activeRegion.value;
-  const info = facultyInfo.get(shape.n);
-  activeRegion.value = {
-    n: shape.n,
-    name: nameOf(shape.n),
-    blurb: info?.blurb || null,
-  };
+  if (animating.value || !facultyInfo.has(shape.n)) return;
+  panelTween?.kill();
+  if (!activeRegion.value) previousRegionElement = document.activeElement;
+  activeRegion.value = facultyInfo.get(shape.n);
   await nextTick();
-
-  const tl = gsap.timeline();
-  if (opening) {
-    if (!isNarrow()) {
-      // Skull cedes ground; paper card slides in from the right.
-      tl.to(
-        stageEl.value,
-        {
-          xPercent: -16,
-          scale: 0.92,
-          duration: MOTION.panel * K,
-          ease: MOTION.easeIn,
-        },
-        0
-      );
-    }
-    // On narrow viewports the card is a bottom sheet, so it slides up instead.
-    tl.fromTo(
-      panelEl.value,
-      isNarrow()
-        ? { yPercent: 110, opacity: 0.4 }
-        : { xPercent: 108, opacity: 0.4 },
-      {
-        ...(isNarrow() ? { yPercent: 0 } : { xPercent: 0 }),
-        opacity: 1,
-        duration: MOTION.panel * K,
-        ease: MOTION.easeIn,
-      },
-      0.05
-    );
-  } else {
-    // Card already out — just flip its content over with a small dip.
-    tl.fromTo(
-      panelEl.value,
-      { opacity: 0.4, y: 10 },
-      { opacity: 1, y: 0, duration: 0.3 * K, ease: MOTION.easeIn },
-      0
-    );
-  }
+  if (disposed || !panelEl.value) return;
+  panelEl.value.scrollTop = 0;
+  panelTween = gsap.fromTo(
+    panelEl.value,
+    { opacity: 0.7 },
+    { opacity: 1, duration: 0.18 * K }
+  );
 }
-
 function closePanel(instant = false) {
   if (!activeRegion.value) return;
-  if (instant) {
-    activeRegion.value = null;
-    gsap.set(stageEl.value, { xPercent: 0, scale: 1 });
-    return;
+  panelTween?.kill();
+  activeRegion.value = null;
+  if (!instant && previousRegionElement?.isConnected)
+    previousRegionElement.focus();
+  previousRegionElement = null;
+}
+function onKeydown(e) {
+  if (e.key === "Escape" && activeRegion.value) {
+    e.preventDefault();
+    e.stopPropagation();
+    closePanel();
   }
-  const tl = gsap.timeline({ onComplete: () => (activeRegion.value = null) });
-  tl.to(panelEl.value, {
-    ...(isNarrow() ? { yPercent: 110 } : { xPercent: 108 }),
-    opacity: 0.4,
-    duration: 0.4 * K,
-    ease: MOTION.easeOut,
-  });
-  tl.to(
-    stageEl.value,
-    { xPercent: 0, scale: 1, duration: 0.45 * K, ease: MOTION.easeIn },
-    "<0.05"
-  );
 }
 </script>
 
 <template>
-  <div class="widget-root phreno">
+  <div class="widget-root phreno" @keydown="onKeydown">
     <header class="phreno__chrome">
       <span class="phreno__eyebrow">Phrenology</span>
       <nav class="tabs" aria-label="Skull view">
@@ -313,10 +292,30 @@ function closePanel(instant = false) {
           {{ v.label }}
         </button>
       </nav>
+      <label class="faculty-picker"
+        >Browse a faculty
+        <select
+          :value="activeRegion?.n || ''"
+          @change="selectRegion({ n: Number($event.target.value) })"
+        >
+          <option value="" disabled>Select a number and faculty</option>
+          <option
+            v-for="faculty in PHRENOLOGY_FACULTIES"
+            :key="faculty.n"
+            :value="faculty.n"
+          >
+            {{ faculty.n }} · {{ faculty.name }}
+          </option>
+        </select>
+      </label>
+      <p class="historical-note">
+        Historical phrenology claims, reproduced from the 1815 source. These are
+        not accepted neuroscience.
+      </p>
     </header>
 
     <div class="phreno__body">
-      <!-- perspective stage; shifts left when the detail card is out -->
+      <!-- The reserved skull stage keeps identical dimensions while details open. -->
       <div ref="stageEl" class="stage" @keydown="onStageKeydown">
         <div v-if="activeView" ref="skullEl" class="skull" :key="activeView.id">
           <!-- Figma engraving -->
@@ -327,6 +326,10 @@ function closePanel(instant = false) {
             v-if="activeMap"
             ref="regionsEl"
             class="skull__regions"
+            :style="{
+              maskImage: `url(${engravingSrc})`,
+              WebkitMaskImage: `url(${engravingSrc})`,
+            }"
             :viewBox="`0 0 ${MAP_W} ${MAP_H}`"
             preserveAspectRatio="none"
             role="group"
@@ -347,7 +350,7 @@ function closePanel(instant = false) {
                 }"
                 role="button"
                 tabindex="0"
-                :aria-label="nameOf(r.n)"
+                :aria-label="`${r.n}. ${nameOf(r.n)}`"
                 :aria-pressed="activeRegion?.n === r.n"
                 @pointerenter="hoverN = r.n"
                 @pointerleave="hoverN = null"
@@ -358,29 +361,75 @@ function closePanel(instant = false) {
                 @keydown.space.prevent="selectRegion(r)"
               >
                 <path v-for="(d, j) in r.d" :key="j" :d="d" />
+                <g v-if="r.label" class="region-label" aria-hidden="true">
+                  <circle :cx="r.label.x" :cy="r.label.y" r="15" />
+                  <text
+                    :x="r.label.x"
+                    :y="r.label.y"
+                    dy=".35em"
+                    text-anchor="middle"
+                  >
+                    {{ r.n }}
+                  </text>
+                </g>
               </g>
             </g>
           </svg>
         </div>
       </div>
 
-      <!-- paper detail card (Figma frame 2) -->
-      <aside v-if="activeRegion" ref="panelEl" class="card">
-        <button class="card__close" aria-label="Close" @click="closePanel()">
+      <aside
+        v-if="activeRegion"
+        ref="panelEl"
+        class="card"
+        :aria-label="`${activeRegion.n}. ${activeRegion.name}`"
+      >
+        <button
+          class="card__close"
+          type="button"
+          aria-label="Close faculty details"
+          @click="closePanel()"
+        >
           ✕
         </button>
-        <span class="card__badge">{{ activeRegion.name }}</span>
-        <p v-if="activeRegion.blurb" class="card__text">
-          {{ activeRegion.blurb }}
+        <h3 class="card__badge">
+          {{ activeRegion.n }} · {{ activeRegion.name }}
+        </h3>
+        <p
+          v-for="note in activeRegion.editorialNotes"
+          :key="note"
+          class="card__editorial"
+        >
+          {{ note }}
         </p>
-        <p v-else class="card__text card__text--mute">
-          A description of this faculty is still to come from the authors.
+        <p
+          v-for="quote in activeRegion.quotes"
+          :key="quote.sourceBlock"
+          class="card__text"
+          :data-source-block="quote.sourceBlock"
+        >
+          {{ quote.text }}
         </p>
-        <p v-if="activeRegion.blurb" class="card__text card__text--mute">
-          — from the phrenological chart after Spurzheim; faculties were claimed
-          to be legible in the relief of the living skull.
-        </p>
+        <figure
+          v-for="img in activeRegion.images"
+          :key="img.src"
+          class="source-image"
+        >
+          <img
+            :src="img.src"
+            :width="img.width"
+            :height="img.height"
+            :alt="img.caption"
+            loading="lazy"
+          />
+          <figcaption>{{ img.caption }}</figcaption>
+        </figure>
       </aside>
+      <p v-else class="card-instruction">
+        Select a numbered skull region to read the original quotation and see
+        its associated illustrations. Faculty 22 (Weight) is available in the
+        list; the source provides no labelled skull location.
+      </p>
     </div>
 
     <footer class="phreno__foot">{{ PHRENOLOGY_CITATION }}</footer>
@@ -453,11 +502,16 @@ function closePanel(instant = false) {
   position: relative;
   flex: 1;
   display: grid;
-  place-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 2rem;
+  min-height: 65vh;
 }
 .stage {
   perspective: 1200px;
-  width: min(460px, 60vh);
+  width: min(100%, 560px, 60vh);
+  margin: auto;
 }
 .skull {
   position: relative;
@@ -479,7 +533,11 @@ function closePanel(instant = false) {
   inset: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
+  overflow: hidden;
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
 }
 /* The map's dotted outlines, in the chapter colour, at a constant weight
    whatever the widget's size. */
@@ -518,17 +576,76 @@ function closePanel(instant = false) {
 
 /* ── detail card ── */
 .card {
-  position: absolute;
-  top: 6%;
-  right: 2.5rem;
-  bottom: 6%;
-  width: min(480px, 46%);
-  padding: 2.25rem 2.5rem;
+  position: relative;
+  width: 100%;
+  /* Fit inside the body's reserved height, including its vertical padding.
+     Long source text must scroll rather than grow the row and shift the skull. */
+  max-height: calc(65vh - 2rem);
+  box-sizing: border-box;
+  padding: 2.25rem 1.5rem;
   border-radius: var(--radius-control);
   background: #f2f0ec;
   color: #2b2a2e;
-  box-shadow: -18px 0 48px rgb(0 0 0 / 0.4);
   overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.card-instruction {
+  padding: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  opacity: 0.7;
+}
+.faculty-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+}
+.faculty-picker select {
+  max-width: 100%;
+  padding: 0.5rem;
+  color: #222;
+  background: #f8f6f1;
+  border-radius: 0.25rem;
+}
+.historical-note {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+.region-label {
+  pointer-events: none;
+}
+.region-label circle {
+  fill: #fff;
+  stroke: var(--violet);
+  stroke-width: 1.5;
+}
+.region-label text {
+  fill: #24202a;
+  font: 19px sans-serif;
+  font-weight: 600;
+}
+.source-image {
+  margin: 1.5rem 0;
+}
+.source-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.source-image figcaption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+.card__editorial {
+  border-left: 3px solid #8464ae;
+  padding-left: 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 .card__close {
   position: absolute;
@@ -574,10 +691,24 @@ function closePanel(instant = false) {
 
 /* ── narrow viewports: detail card becomes a bottom sheet ── */
 @media (max-width: 760px) {
+  .phreno__body {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1rem;
+    min-height: 65vh;
+  }
   .stage {
-    width: min(340px, 82vw);
+    width: min(460px, 90vw);
+  }
+  .card-instruction {
+    position: absolute;
+    bottom: 0;
+    margin: 0;
+    padding: 1rem;
+    font-size: 0.75rem;
   }
   .card {
+    position: absolute;
+    z-index: 2;
     top: auto;
     right: 0;
     bottom: 0;

@@ -469,7 +469,9 @@ onMounted(() => {
             srub: 0,
             markers: false,
             onUpdate: () => {
-              store.activeMenu = false;
+              // Opening the modal drawer changes scroll/layout state and can
+              // update this trigger. The drawer owns dismissal on navigation,
+              // backdrop and Escape; a layout update must not close it again.
               store.superScriptActive = false;
             },
           })
@@ -506,7 +508,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     id="container"
-    class="absolute top-start z-40 w-full reader:w-text pointer-events-none font-sans"
+    class="absolute left-0 top-start z-40 w-full pointer-events-none font-sans"
   >
     <!-- Edit mode (OPENBRAIN-58, 64): off until a creator turns it on. -->
     <button
@@ -982,7 +984,7 @@ onBeforeUnmount(() => {
        drift. OPENBRAIN-31: 50/50 — prose = 50vw (capped at 890px), the figure
        pane fills the rest. */
     width: var(--reader-prose-w);
-    margin-left: calc(100vw - var(--reader-prose-w));
+    margin-left: calc(var(--app-w, 100vw) - var(--reader-prose-w));
     margin-right: 0;
     max-width: unset;
     padding-left: var(--reader-gutter-l);

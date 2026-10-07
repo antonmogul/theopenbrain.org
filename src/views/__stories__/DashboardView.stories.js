@@ -14,16 +14,35 @@ export default {
   component: DashboardView,
   parameters: {
     auth: { authenticated: true, role: "creator" },
-    api: apiFixtures,
+    api: Object.fromEntries(
+      Object.entries(apiFixtures).map(([key, value]) => [
+        key,
+        (endpoint) => {
+          const params = new URLSearchParams(endpoint.split("?")[1]);
+          const offset = Number(params.get("offset") || 0);
+          const limit = Number(params.get("limit") || value.length);
+          return Array.isArray(value)
+            ? value.slice(offset, offset + limit)
+            : value;
+        },
+      ])
+    ),
     layout: "fullscreen",
   },
-  render: () => ({
+  args: { path: "/dashboard" },
+  render: (args) => ({
     components: { DashboardView, ViewStoryShell },
+    setup: () => ({ args }),
     template: `
-      <ViewStoryShell label="DashboardView" path="/dashboard">
+      <ViewStoryShell label="DashboardView" :path="args.path">
         <DashboardView />
       </ViewStoryShell>`,
   }),
 };
 
 export const CreatorDashboard = {};
+
+export const Feedback = { args: { path: "/dashboard?section=feedback" } };
+export const RecordedAnalytics = {
+  args: { path: "/dashboard?section=analytics" },
+};

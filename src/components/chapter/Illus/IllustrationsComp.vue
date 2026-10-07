@@ -1,5 +1,12 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
+import {
+  onBeforeUnmount,
+  onMounted,
+  nextTick,
+  ref,
+  computed,
+  watch,
+} from "vue";
 
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -21,6 +28,7 @@ import FigureWidget from "@/widgets/figures/FigureWidget.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { figureWidgetFor } from "@/widgets/figures/registry";
+import { historyFigureEnd } from "@/helper/historyFigureTiming";
 
 // Panel figures rebuilt as figure widgets (full-screen ones render in the
 // text through FullScreenIllustration).
@@ -31,6 +39,7 @@ const panelShows = useMediaQuery(READER_WIDE_QUERY);
 gsap.registerPlugin(ScrollTrigger);
 
 const activeAnimation = ref(null);
+const paneElement = ref(null);
 const store = useGeneral();
 const progress = ref(0);
 
@@ -107,110 +116,157 @@ watch(activeAnimation, (id) => {
   });
 });
 
-onMounted(async () => {
-  announce();
-  // Attempt to load animations from Supabase
-  try {
-    await fetchAnimations();
-  } catch (err) {
-    console.warn(
-      "IllustrationsComp: Supabase fetch failed, using JSON fallback:",
-      err
+const ownedTriggers = [];
+const activeTriggers = new Set();
+let setupTimer = null;
+let refreshTimer = null;
+let layoutObserver = null;
+let fontSet = null;
+let unmounted = false;
+
+function updateActiveFigure() {
+  // A nested/overlapping trigger leaving must not clear the one still active.
+  // The last authored active trigger wins, in either scroll direction.
+  const current = [...ownedTriggers]
+    .reverse()
+    .find((trigger) => activeTriggers.has(trigger.trigger));
+  activeAnimation.value = current
+    ? current.trigger.id.replace(/^trigger/i, "").toLowerCase()
+    : null;
+  store.animationActive = !!activeAnimation.value;
+}
+
+function refreshAfterLayout() {
+  if (unmounted || refreshTimer !== null) return;
+  refreshTimer = setTimeout(() => {
+    refreshTimer = null;
+    if (!unmounted) ScrollTrigger.refresh();
+  }, 0);
+}
+
+function setupTriggers() {
+  if (unmounted) return;
+  // During route transitions two chapter roots can coexist. Bind only to
+  // this reader, never the departing chapter's duplicate ids.
+  const reader = paneElement.value?.closest(".chapter-reader") || document;
+  const animationTriggers = [
+    ...reader.querySelectorAll(".animationTrigger[id]"),
+  ]
+    .filter((trigger) => /^trigger/i.test(trigger.id))
+    // A breakout draws its own artwork inline. Registering it in the pinned
+    // pane too leaked that artwork as the full-width box left the screen.
+    .filter((trigger) => !trigger.closest("[data-breakout-box]"));
+  clog("SCROLL", `wiring ${animationTriggers.length} reader figure triggers`);
+  for (const trigger of animationTriggers) {
+    const scrollTrigger = ScrollTrigger.create({
+      id: "scrollTriggerAnimation",
+      trigger,
+      start: () => `top ${window.innerHeight / 2}`,
+      end: () =>
+        historyFigureEnd(trigger, animationTriggers, animationList.value),
+      markers: false,
+      onToggle: (self) => {
+        trigger.classList.toggle("active", self.isActive);
+        if (self.isActive) activeTriggers.add(trigger);
+        else activeTriggers.delete(trigger);
+        updateActiveFigure();
+      },
+    });
+    ownedTriggers.push(scrollTrigger);
+    // GSAP may activate a trigger during create, before it is in our list.
+    if (scrollTrigger.isActive) activeTriggers.add(trigger);
+  }
+  updateActiveFigure();
+
+  for (const trigger of reader.querySelectorAll(".animationScrollAnchor")) {
+    if (trigger.closest("[data-breakout-box]")) continue;
+    ownedTriggers.push(
+      ScrollTrigger.create({
+        id: "scrollTriggerAnimation",
+        trigger,
+        start: () => `top ${window.innerHeight / 2}`,
+        end: () => `bottom ${window.innerHeight / 2}`,
+        scrub: 1,
+        markers: false,
+        onUpdate: (self) => {
+          progress.value = self.progress;
+        },
+      })
     );
   }
 
-  let animationTriggers = document.getElementsByClassName("animationTrigger");
-  // [3 SCROLL] how many GSAP scroll-triggers were wired up. Each corresponds to a
-  // figure anchor in the DOM; if this is low, figures didn't emit their trigger class.
-  clog(
-    "SCROLL",
-    `wiring ${animationTriggers.length} .animationTrigger + ` +
-      `${document.getElementsByClassName("animationScrollAnchor").length} .animationScrollAnchor`
-  );
-  for (let trigger of animationTriggers) {
-    setTimeout(() => {
+  const triggerFull = reader.querySelector("#container");
+  const bgGradient = reader.querySelector("#bgGradient");
+  if (triggerFull)
+    ownedTriggers.push(
       ScrollTrigger.create({
-        id: "scrollTriggerAnimation",
-        trigger: trigger,
-        start: "top " + window.innerHeight / 2,
-        end: "bottom " + window.innerHeight / 2,
-        srub: 0,
+        id: "scrollTriggerFull",
+        trigger: triggerFull,
+        start: () => `top ${window.innerHeight / 2}`,
+        end: () => `bottom ${window.innerHeight / 2}`,
+        scrub: 2,
         markers: false,
-        onToggle: (self) => {
-          if (self.isActive) {
-            trigger.classList.add("active");
-            activeAnimation.value = self.trigger.id
-              .replace("trigger", "")
-              .toLowerCase();
-            store.animationActive = true;
-            // [3 SCROLL] a figure scrolled into the viewport centre and became active.
-            // `activeAnimation` is what the template matches to decide which figure to
-            // render — this is the "why did this animation start" answer.
-            clog("SCROLL", `▶ ACTIVE: ${self.trigger.id}`, {
-              activeAnimation: activeAnimation.value,
-              triggerId: self.trigger.id,
-            });
-          } else {
-            trigger.classList.remove("active");
-            activeAnimation.value = null;
-            store.animationActive = false;
-            clog("SCROLL", `⏹ left: ${self.trigger.id}`);
-          }
+        onUpdate: (self) => {
+          if (!bgGradient) return;
+          const shade = Math.floor(255 - self.progress * 70);
+          bgGradient.style.backgroundColor = `rgba(${shade},${shade},${shade},0.7)`;
         },
-      });
-    }, 500);
-  }
-  let animationAnchors = document.getElementsByClassName(
-    "animationScrollAnchor"
-  );
-  for (let trigger of animationAnchors) {
-    ScrollTrigger.create({
-      id: "scrollTriggerAnimation",
-      trigger: trigger,
-      start: "top " + window.innerHeight / 2,
-      end: "bottom " + window.innerHeight / 2,
-      scrub: 1,
-      markers: false,
-      onUpdate: (self) => {
-        progress.value = self.progress;
-      },
+      })
+    );
+  // Text wrapping and late font subsets can move prose after initial setup.
+  // Keep ScrollTrigger's cached positions aligned with the actual reader.
+  const content = reader.querySelector("#container");
+  if (content && typeof ResizeObserver === "function") {
+    let previousSize = null;
+    layoutObserver = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      if (previousSize?.width === width && previousSize?.height === height)
+        return;
+      previousSize = { width, height };
+      refreshAfterLayout();
     });
+    layoutObserver.observe(content);
   }
+  fontSet = document.fonts;
+  fontSet?.addEventListener?.("loadingdone", refreshAfterLayout);
+  fontSet?.ready?.then(refreshAfterLayout);
+}
 
-  let triggerFull = document.getElementById("container");
-  let bgGradient = document.getElementById("bgGradient");
-  ScrollTrigger.create({
-    id: "scrollTriggerFull",
-    trigger: triggerFull,
-    start: "top " + window.innerHeight / 2,
-    end: "bottom " + window.innerHeight / 2,
-    scrub: 2,
-    markers: false,
-    onToggle: () => {},
-    onUpdate: (self) => {
-      let r = Math.floor(255 - self.progress * 70);
-      let g = Math.floor(255 - self.progress * 70);
-      let b = Math.floor(255 - self.progress * 70);
-      if (!bgGradient) return;
-      bgGradient.style.backgroundColor =
-        "rgba(" + r + "," + g + "," + b + ", 0.7)";
-    },
-  });
+onMounted(async () => {
+  announce();
+  try {
+    await fetchAnimations();
+  } catch (err) {
+    console.warn("IllustrationsComp: using JSON fallback:", err);
+  }
+  await nextTick();
+  if (unmounted) return;
+  // Let initial artwork layout settle; own this timeout so interrupted
+  // navigation cannot register a second set against the next chapter.
+  setupTimer = setTimeout(setupTriggers, 500);
 });
 
 onBeforeUnmount(() => {
-  // One trigger per figure anchor shares each id, and getById only finds the
-  // first; kill them all so a remount (Change figure) doesn't leave
-  // triggers behind.
-  for (const t of ScrollTrigger.getAll())
-    if (["scrollTriggerAnimation", "scrollTriggerFull"].includes(t.vars.id))
-      t.kill();
+  unmounted = true;
+  clearTimeout(setupTimer);
+  clearTimeout(refreshTimer);
+  layoutObserver?.disconnect();
+  fontSet?.removeEventListener?.("loadingdone", refreshAfterLayout);
+  for (const trigger of ownedTriggers.splice(0)) {
+    trigger.trigger?.classList.remove("active");
+    trigger.kill();
+  }
+  activeTriggers.clear();
+  activeAnimation.value = null;
+  store.animationActive = false;
 });
 </script>
 
 <template>
   <div
     v-if="!store.isScrolling"
+    ref="paneElement"
     class="hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
   >
     <template v-for="animation in animationList" :key="animation.id">

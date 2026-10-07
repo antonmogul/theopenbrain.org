@@ -109,7 +109,7 @@ export function contentBlocksToHTML(blocks) {
 
   let hasHeading = false;
   const html = blocks
-    .map((block) => {
+    .map((block, index) => {
       if (!block) return "";
 
       if (block.type === "heading") {
@@ -136,16 +136,20 @@ export function contentBlocksToHTML(blocks) {
         return `<img src="${block.src || ""}" alt="${block.alt || ""}" />`;
       }
       if (block.type === "citation_ref") {
-        return `<sup class="citation-ref" data-ref="${block.number}">${block.number}</sup>`;
+        // Preserve a multi-reference source such as 2,3 as two independently
+        // addressable citations without visually concatenating it into 23.
+        const separator =
+          blocks[index - 1]?.type === "citation_ref"
+            ? '<span aria-hidden="true">,</span>'
+            : "";
+        return `<sup class="citation-ref" data-ref="${block.number}">${separator}${block.number}</sup>`;
       }
       if (block.type === "figure_placeholder") {
-        // Inline "(Figure N)" callout. Anchors to the left-column placeholder
-        // via data-figure so it can later deep-link / scroll-sync.
+        // Stuart's 1 October review supersedes the earlier scroll-link
+        // behavior: figure citations are emphasized prose, not navigation.
         const n = block.number;
         const label = n === undefined || n === null ? "Figure" : `Figure ${n}`;
-        // A link to the figure (useFigureLinks scrolls to it): focusable,
-        // announced as a link (OPENBRAIN-91).
-        return `<span class="figure-ref" data-figure="${n ?? ""}" role="link" tabindex="0">${label}</span>`;
+        return `<strong class="figure-ref">${label}</strong>`;
       }
       // Chapter 1-specific types — metadata only, no HTML
       if (

@@ -3,7 +3,8 @@
  *
  * Presentational: the sidebar owns the conversation and passes `messages`
  * down. System messages are filtered out of the list, `streaming` shows the
- * typing indicator and `loading` blocks sending.
+ * typing indicator and `loading` blocks sending only when `available` is true.
+ * Enabled states below are presentation fixtures, never a live AI integration.
  */
 import { fn } from "storybook/test";
 import AITutorChat from "../AITutorChat.vue";
@@ -47,6 +48,10 @@ export default {
       description:
         "{ id, role, content, created_at }[]; system messages are hidden.",
     },
+    available: {
+      control: "boolean",
+      description: "Presentation only. The production tutor is unavailable.",
+    },
     loading: { control: "boolean", description: "Blocks sending." },
     streaming: {
       control: "boolean",
@@ -54,7 +59,13 @@ export default {
     },
     onSend: { description: "Emitted with the trimmed input." },
   },
-  args: { messages: MESSAGES, loading: false, streaming: false, onSend: fn() },
+  args: {
+    available: false,
+    messages: MESSAGES,
+    loading: false,
+    streaming: false,
+    onSend: fn(),
+  },
   render: (args) => ({
     components: { AITutorChat },
     setup: () => ({ args }),
@@ -62,17 +73,20 @@ export default {
   }),
 };
 
-/** A question and its answer. */
+/** Saved fixture history remains visible while generation is unavailable. */
 export const Default = {};
 
-/** Fresh conversation: the "ask me anything" prompt. */
-export const Empty = { args: { messages: [] } };
+/** No saved history and no configured server connection. */
+export const Unavailable = { args: { messages: [] } };
+
+/** Presentation fixture for a future verified available backend. */
+export const Empty = { args: { available: true, messages: [] } };
 
 /** The assistant is typing. */
-export const Streaming = { args: { streaming: true } };
+export const Streaming = { args: { available: true, streaming: true } };
 
 /** Waiting on the API: composer disabled. */
-export const Loading = { args: { loading: true } };
+export const Loading = { args: { available: true, loading: true } };
 
 /** Fourteen messages — the list scrolls to the newest. */
 export const LongThread = { args: { messages: LONG_THREAD } };

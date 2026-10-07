@@ -67,6 +67,19 @@ describe("ReaderTopBar accessibility", () => {
     wrapper.unmount();
   });
 
+  it("has one chapter-menu control including the wordmark, without a home link", async () => {
+    generalStore.activeMenu = false;
+    const wrapper = mount(ReaderTopBar);
+    const menu = wrapper.get('[aria-label="Open chapter menu"]');
+    expect(menu.element.tagName).toBe("BUTTON");
+    expect(menu.find(".wordmark").exists()).toBe(true);
+    expect(wrapper.find("a.wordmark").exists()).toBe(false);
+    await menu.trigger("click");
+    expect(generalStore.activeMenu).toBe(true);
+    wrapper.unmount();
+    generalStore.activeMenu = false;
+  });
+
   it("announces the same percentage rendered in the progress track", () => {
     const wrapper = mount(ReaderTopBar, {
       props: { progressPercent: 42 },

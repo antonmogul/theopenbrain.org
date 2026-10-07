@@ -1,210 +1,225 @@
-import { ref } from "vue";
+import { computed, ref, watch, getCurrentScope, onScopeDispose } from "vue";
 import { authedRequest as supabaseRest } from "@/services/api/client";
-import { withAsyncState } from "@/composables/withAsyncState";
+import { readDashboardRows } from "@/composables/dashboardReadRows";
 
-/**
- * Creator-dashboard "Analytics" section: metrics, daily-active chart, content/
- * quiz performance, trending highlights — all derived from analytics_events,
- * reading_progress and quiz_attempts over a selectable date range.
- *
- * Extracted verbatim from DashboardView.vue (#10 — dashboard section
- * composables). Behavior unchanged; only relocated. Fully self-contained:
- * reads only analyticsDateRange, writes only analytics state.
- *
- * Note: the cross-section dashboard-home aggregates (dashboardStats,
- * maxRoleCount) and the fetchDashboardData orchestrator stay in the view —
- * they compose multiple sections and belong to the shell, not here.
+const emptyMetrics = () => ({
+  activeUsers: 0,
+  totalPageViews: 0,
+  unidentifiedPageViews: 0,
+  unassignedPageViews: 0,
+  quizCompletionRate: 0,
+});
+const hasUser = (event) =>
+  typeof event.user_id === "string" && event.user_id.trim().length > 0;
+
+/** Creator metrics describe recorded events, not all traffic. This reader does
+ * not introduce tracking or infer an anonymous identity from other metadata.
  */
-export function useDashboardAnalytics() {
-  // ---- state ----
+export function useDashboardAnalytics(
+  canRead = ref(false),
+  identity = ref(null)
+) {
   const analyticsLoading = ref(false);
   const analyticsError = ref(null);
-  const analyticsDateRange = ref("7days"); // 7days, 30days, 90days
-  const analyticsMetrics = ref({
-    activeUsers: 0,
-    totalPageViews: 0,
-    avgTimeOnContent: 0,
-    quizCompletionRate: 0,
-  });
-  const analyticsChartData = ref({
-    labels: [],
-    datasets: [],
-  });
+  const analyticsDenied = ref(false);
+  const analyticsAccessDenied = computed(
+    () => !canRead.value || analyticsDenied.value
+  );
+  const analyticsDateRange = ref("7days");
+  const analyticsMetrics = ref(emptyMetrics());
+  const analyticsChartData = ref({ labels: [], datasets: [] });
   const contentPerformance = ref([]);
   const quizPerformance = ref([]);
   const trendingHighlights = ref([]);
+  let requestId = 0;
 
-  // ---- fetch ----
-  async function fetchAnalytics() {
-    await withAsyncState(
-      { loading: analyticsLoading, error: analyticsError },
-      "Error fetching analytics:",
-      async () => {
-        await runFetchAnalytics();
-      }
-    );
+  function reset() {
+    analyticsMetrics.value = emptyMetrics();
+    analyticsChartData.value = { labels: [], datasets: [] };
+    contentPerformance.value = [];
+    quizPerformance.value = [];
+    trendingHighlights.value = [];
   }
 
-  async function runFetchAnalytics() {
-    const now = new Date();
-    let startDate;
+  watch(
+    [canRead, identity],
+    () => {
+      requestId++;
+      reset();
+      analyticsError.value = null;
+      analyticsDenied.value = false;
+      analyticsLoading.value = false;
+    },
+    { flush: "sync" }
+  );
 
-    switch (analyticsDateRange.value) {
-      case "7days":
-        startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case "30days":
-        startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
-        break;
-      case "90days":
-        startDate = new Date(now - 90 * 24 * 60 * 60 * 1000);
-        break;
-      default:
-        startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
-    }
-
-    const startDateStr = startDate.toISOString();
-
-    // Fetch analytics events
-    const events = await supabaseRest(
-      `analytics_events?select=*&created_at=gte.${startDateStr}&order=created_at.desc`
-    );
-
-    // Calculate metrics
-    const uniqueUsers = new Set(
-      events.filter((e) => e.user_id).map((e) => e.user_id)
-    );
-    analyticsMetrics.value.activeUsers = uniqueUsers.size;
-    analyticsMetrics.value.totalPageViews = events.filter(
-      (e) => e.event_type === "page_view"
-    ).length;
-
-    // Fetch reading progress for avg time
-    const progress = await supabaseRest(
-      `reading_progress?select=time_spent_seconds&last_accessed_at=gte.${startDateStr}`
-    );
-    const totalTime = progress.reduce(
-      (sum, p) => sum + (p.time_spent_seconds || 0),
-      0
-    );
-    analyticsMetrics.value.avgTimeOnContent = progress.length
-      ? Math.round(totalTime / progress.length)
-      : 0;
-
-    // Fetch quiz completion rate
-    const quizAttempts = await supabaseRest(
-      `quiz_attempts?select=status,score,total_points,quiz_id&started_at=gte.${startDateStr}`
-    );
-    const completedAttempts = quizAttempts.filter(
-      (a) => a.status === "completed"
-    );
-    const passingAttempts = completedAttempts.filter(
-      (a) => a.total_points && (a.score / a.total_points) * 100 >= 70
-    );
-    analyticsMetrics.value.quizCompletionRate = completedAttempts.length
-      ? Math.round((passingAttempts.length / completedAttempts.length) * 100)
-      : 0;
-
-    // Build chart data (daily active users)
-    const dailyData = {};
-    const days =
-      analyticsDateRange.value === "7days"
-        ? 7
-        : analyticsDateRange.value === "30days"
-          ? 30
-          : 90;
-
-    for (let i = 0; i < days; i++) {
-      const date = new Date(now - i * 24 * 60 * 60 * 1000);
-      const dateStr = date.toISOString().split("T")[0];
-      dailyData[dateStr] = new Set();
-    }
-
-    events.forEach((event) => {
-      if (event.user_id && event.created_at) {
-        const dateStr = event.created_at.split("T")[0];
-        if (dailyData[dateStr]) {
-          dailyData[dateStr].add(event.user_id);
-        }
-      }
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      requestId++;
+      reset();
+      analyticsLoading.value = false;
     });
+  }
 
-    const sortedDates = Object.keys(dailyData).sort();
-    analyticsChartData.value = {
-      labels: sortedDates.map((d) => {
-        const date = new Date(d);
-        return date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-      }),
-      datasets: [
-        {
-          label: "Active Users",
-          data: sortedDates.map((d) => dailyData[d].size),
-          // Bars render via CSS (.chart-bar → rgb(var(--color-accent)));
-          // these dataset colors resolve to the same accent token.
-          borderColor: "rgb(var(--color-accent))",
-          backgroundColor: "rgb(var(--color-accent) / 0.1)",
-          fill: true,
-          tension: 0.4,
-        },
-      ],
-    };
+  async function fetchAnalytics() {
+    const current = ++requestId;
+    const range = analyticsDateRange.value;
+    const isCurrent = () =>
+      requestId === current &&
+      canRead.value &&
+      analyticsDateRange.value === range;
+    analyticsLoading.value = false;
+    analyticsError.value = null;
+    analyticsDenied.value = false;
+    reset();
+    if (!canRead.value) return;
+    analyticsLoading.value = true;
 
-    // Fetch content performance (views by module)
-    const moduleViews = {};
-    events
-      .filter((e) => e.event_type === "page_view" && e.module_id)
-      .forEach((e) => {
-        moduleViews[e.module_id] = (moduleViews[e.module_id] || 0) + 1;
-      });
+    try {
+      const now = new Date();
+      const days = { "7days": 7, "30days": 30, "90days": 90 }[range] || 7;
+      const start = new Date(now - days * 86400000).toISOString();
+      const end = now.toISOString();
+      const read = (query) => readDashboardRows(query, isCurrent);
+      const [events, quizAttempts, modules] = await Promise.all([
+        read(
+          `analytics_events?select=id,user_id,event_type,module_id,created_at&created_at=gte.${start}&created_at=lte.${end}&order=created_at.asc,id.asc`
+        ),
+        read(
+          `quiz_attempts?select=id,status,score,total_points,quiz_id&started_at=gte.${start}&started_at=lte.${end}&order=id.asc`
+        ),
+        read("modules?select=id,title&order=id.asc"),
+      ]);
+      if (!isCurrent()) return;
 
-    const moduleIds = Object.keys(moduleViews);
-    if (moduleIds.length > 0) {
-      const modules = await supabaseRest(
-        `modules?id=in.(${moduleIds.join(",")})&select=id,title`
+      const views = events.filter((e) => e.event_type === "page_view");
+      const completed = quizAttempts.filter((a) => a.status === "completed");
+      const passing = completed.filter(
+        (a) => a.total_points && (a.score / a.total_points) * 100 >= 70
       );
-      contentPerformance.value = modules
-        .map((m) => ({
-          title: m.title,
-          views: moduleViews[m.id] || 0,
+      const metrics = {
+        activeUsers: new Set(events.filter(hasUser).map((e) => e.user_id)).size,
+        totalPageViews: views.length,
+        unidentifiedPageViews: views.filter((e) => !hasUser(e)).length,
+        unassignedPageViews: views.filter((e) => !e.module_id).length,
+        quizCompletionRate: completed.length
+          ? Math.round((passing.length / completed.length) * 100)
+          : 0,
+      };
+
+      const byModule = new Map(
+        modules.map((m) => [
+          m.id,
+          {
+            id: m.id,
+            title: m.title,
+            views: 0,
+            users: new Set(),
+            unidentifiedViews: 0,
+          },
+        ])
+      );
+      for (const event of views) {
+        if (!event.module_id) continue;
+        if (!byModule.has(event.module_id)) {
+          byModule.set(event.module_id, {
+            id: event.module_id,
+            title: "Unavailable chapter",
+            views: 0,
+            users: new Set(),
+            unidentifiedViews: 0,
+          });
+        }
+        const chapter = byModule.get(event.module_id);
+        chapter.views++;
+        if (hasUser(event)) chapter.users.add(event.user_id);
+        else chapter.unidentifiedViews++;
+      }
+      const chapters = [...byModule.values()]
+        .map(({ users, ...chapter }) => ({
+          ...chapter,
+          uniqueUsers: users.size,
         }))
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 5);
-    }
+        .sort((a, b) => b.views - a.views || a.title.localeCompare(b.title));
 
-    // Fetch quiz performance
-    const quizScores = {};
-    quizAttempts.forEach((a) => {
-      if (a.status === "completed" && a.total_points) {
-        if (!quizScores[a.quiz_id]) {
-          quizScores[a.quiz_id] = { total: 0, count: 0 };
-        }
-        quizScores[a.quiz_id].total += (a.score / a.total_points) * 100;
-        quizScores[a.quiz_id].count++;
+      // Include the partial first UTC day of the rolling window, rather than
+      // silently dropping events at that boundary from the daily chart.
+      const daily = new Map();
+      const firstDay = new Date(start.slice(0, 10));
+      for (
+        let date = firstDay;
+        date <= now;
+        date = new Date(+date + 86400000)
+      ) {
+        daily.set(date.toISOString().slice(0, 10), new Set());
       }
-    });
+      for (const event of events) {
+        if (hasUser(event) && event.created_at) {
+          daily.get(event.created_at.slice(0, 10))?.add(event.user_id);
+        }
+      }
+      const chart = events.length
+        ? {
+            labels: [...daily.keys()].map((date) =>
+              new Date(date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                timeZone: "UTC",
+              })
+            ),
+            datasets: [
+              {
+                label: "Unique signed-in users",
+                data: [...daily.values()].map((users) => users.size),
+              },
+            ],
+          }
+        : { labels: [], datasets: [] };
 
-    const quizIds = Object.keys(quizScores);
-    if (quizIds.length > 0) {
-      const quizzesData = await supabaseRest(
-        `quizzes?id=in.(${quizIds.join(",")})&select=id,title`
+      const quizScores = new Map();
+      for (const attempt of completed) {
+        if (!attempt.total_points || !attempt.quiz_id) continue;
+        const score = quizScores.get(attempt.quiz_id) || { total: 0, count: 0 };
+        score.total += (attempt.score / attempt.total_points) * 100;
+        score.count++;
+        quizScores.set(attempt.quiz_id, score);
+      }
+      const quizzes = quizScores.size
+        ? await read("quizzes?select=id,title&order=id.asc")
+        : [];
+      if (!isCurrent()) return;
+      const highlights = await supabaseRest(
+        "trending_highlights?select=*&order=highlight_count.desc&limit=5"
       );
-      quizPerformance.value = quizzesData
+      if (!isCurrent()) return;
+
+      // Publish one consistent snapshot. Older responses and failed refreshes
+      // cannot leave old chapter totals beside a newly selected date range.
+      analyticsMetrics.value = metrics;
+      analyticsChartData.value = chart;
+      contentPerformance.value = chapters;
+      quizPerformance.value = quizzes
+        .filter((q) => quizScores.has(q.id))
         .map((q) => ({
           title: q.title,
-          avgScore: Math.round(quizScores[q.id].total / quizScores[q.id].count),
+          avgScore: Math.round(
+            quizScores.get(q.id).total / quizScores.get(q.id).count
+          ),
         }))
         .sort((a, b) => b.avgScore - a.avgScore)
         .slice(0, 5);
+      trendingHighlights.value = highlights;
+    } catch (error) {
+      if (isCurrent()) {
+        reset();
+        if (error.status === 401 || error.status === 403)
+          analyticsDenied.value = true;
+        else
+          analyticsError.value = error.message || "Could not load analytics.";
+      }
+    } finally {
+      if (requestId === current) analyticsLoading.value = false;
     }
-
-    // Fetch trending highlights
-    const highlights = await supabaseRest(
-      "trending_highlights?select=*&order=highlight_count.desc&limit=5"
-    );
-    trendingHighlights.value = highlights;
   }
 
   function formatDuration(seconds) {
@@ -213,22 +228,19 @@ export function useDashboardAnalytics() {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     if (minutes < 60) return `${minutes}m ${secs}s`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
+    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
   }
 
   return {
-    // state
     analyticsLoading,
     analyticsError,
+    analyticsAccessDenied,
     analyticsDateRange,
     analyticsMetrics,
     analyticsChartData,
     contentPerformance,
     quizPerformance,
     trendingHighlights,
-    // actions
     fetchAnalytics,
     formatDuration,
   };

@@ -3,6 +3,12 @@ import { mount } from "@vue/test-utils";
 import HighlightNotePanel from "@/components/chapter/highlight-toolbar/HighlightNotePanel.vue";
 
 describe("HighlightNotePanel (render smoke)", () => {
+  it("explains a note as the reader's own words about the passage", () => {
+    const w = mount(HighlightNotePanel);
+    expect(w.text()).toContain("A note is your own words about this passage");
+    expect(w.text()).toContain("Find them in the Notebook");
+  });
+
   it("renders the textarea with the bound note value", () => {
     const w = mount(HighlightNotePanel, { props: { note: "hello" } });
     const ta = w.find('[data-testid="edit-note-textarea"]');

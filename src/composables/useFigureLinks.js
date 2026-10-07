@@ -1,16 +1,6 @@
-/*
- * Figure links (OPENBRAIN-91). Stuart, 24 Sep: "Clicking on figure links in
- * the main text doesn't do anything." A "(Figure N)" reference is a
- * <span class="figure-ref" data-figure="N">. A click scrolls the paragraph
- * that shows figure N to the reading line, so the pane switches to it (the
- * pane follows the scroll; below the two-column breakpoint the figure is
- * inline after that paragraph). The paragraph is found by the figure's
- * number (animations.config.figureNumber) or, failing that, its key
- * (animation…FigN).
- */
-import { onBeforeUnmount, onMounted } from "vue";
-import { useAnimations } from "@/composables/useAnimations";
-
+/* Figure trigger lookup retained for authoring tools. Reader citations are
+ * deliberately non-interactive: Stuart's 1 October feedback supersedes the
+ * 24 September click-to-scroll request. No global click/keyboard handlers. */
 /**
  * A trigger span's figure key. Sections and subsections name it
  * `triggerAnimation<Name>` (the key without "animation"); sub-subsections
@@ -54,37 +44,5 @@ export function scrollToFigure(trigger) {
   window.scrollTo({ top, behavior: reduce ? "auto" : "smooth" });
 }
 
-export function useFigureLinks() {
-  const { animations, fetchAnimations } = useAnimations();
-
-  function onClick(e) {
-    const ref = e.target?.closest?.(".figure-ref[data-figure]");
-    if (!ref) return;
-    // In a creator's editor a figure chip is for selecting, not following.
-    if (
-      ref.closest(
-        '[contenteditable="true"], .ProseMirror, .editable-block-wrapper.is-creator'
-      )
-    )
-      return;
-    const trigger = findFigureTrigger(ref.dataset.figure, animations.value);
-    if (!trigger) return;
-    e.preventDefault();
-    scrollToFigure(trigger);
-  }
-
-  function onKeydown(e) {
-    if (e.key !== "Enter" && e.key !== " ") return;
-    if (e.target?.closest?.(".figure-ref[data-figure]")) onClick(e);
-  }
-
-  onMounted(() => {
-    fetchAnimations();
-    document.addEventListener("click", onClick);
-    document.addEventListener("keydown", onKeydown);
-  });
-  onBeforeUnmount(() => {
-    document.removeEventListener("click", onClick);
-    document.removeEventListener("keydown", onKeydown);
-  });
-}
+// Kept as a no-op for older reader integrations; no animation fetch is needed.
+export function useFigureLinks() {}

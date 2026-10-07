@@ -33,6 +33,7 @@ const {
 
 const viewState = ref("loading");
 const sessionSummary = ref(null);
+const reviewPending = ref(false);
 
 function handleKeydown(e) {
   if (viewState.value !== "studying") return;
@@ -80,20 +81,31 @@ onUnmounted(() => {
 });
 
 async function rateAndMoveNext(rating) {
+  if (reviewPending.value || !isFlipped.value) return;
+  reviewPending.value = true;
+  // rateCard advances the index; remember which card was actually answered.
+  const wasLastCard = isLastCard.value;
   try {
     await rateCard(rating);
-    if (isLastCard.value) {
+    if (wasLastCard) {
       await handleEndSession();
     }
   } catch (e) {
     console.error("FlashcardPanel: Error rating card:", e);
+  } finally {
+    reviewPending.value = false;
   }
 }
 
-function handleSkip() {
-  skipCard();
-  if (isLastCard.value) {
-    handleEndSession();
+async function handleSkip() {
+  if (reviewPending.value || !isFlipped.value) return;
+  reviewPending.value = true;
+  const wasLastCard = isLastCard.value;
+  try {
+    skipCard();
+    if (wasLastCard) await handleEndSession();
+  } finally {
+    reviewPending.value = false;
   }
 }
 
@@ -183,7 +195,11 @@ const formattedDuration = computed(() => {
 
       <Transition name="fade">
         <div v-if="isFlipped" class="rating-area">
-          <FlashcardRating @rate="rateAndMoveNext" @skip="handleSkip" />
+          <FlashcardRating
+            :disabled="reviewPending"
+            @rate="rateAndMoveNext"
+            @skip="handleSkip"
+          />
         </div>
       </Transition>
 

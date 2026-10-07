@@ -3,12 +3,21 @@
 // prototype.jsx): focused reading-navigator. Continue card → JUMP TO chapter
 // list with progress → user footer. Auth is an in-drawer form (shared
 // AuthForm.vue, variant="drawer") revealed by the footer's Sign in; the
-// section accordion is dropped (covered by the reader's Info tab + section dots). Open state is the existing useGeneral.activeMenu so
+// current chapter expands to its authored heading outline. Open state is the existing useGeneral.activeMenu so
 // all current triggers (ReaderTopBar menu button, BottomNav, router) work
 // unchanged. Token-driven; replaces the legacy violet MainNav.
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
-import { useGeneral } from "@/stores";
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useGeneral, useText } from "@/stores";
+import { buildOutline } from "@/composables/useChapterOutline";
+import { lockReaderScroll } from "@/helper/readerScrollLock";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
@@ -17,6 +26,8 @@ import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useHomeRoute } from "@/composables/useHomeRoute";
 
 const router = useRouter();
+const route = useRoute();
+const textStore = useText();
 const store = useGeneral();
 const authStore = useAuthStore();
 const { user, profile, isAuthenticated } = useAuth();
@@ -105,13 +116,80 @@ const initials = computed(() => {
     .toUpperCase();
 });
 
-function close() {
+const currentSlug = computed(() =>
+  route.name === "chapter" ? route.params.slug : null
+);
+const outline = computed(() => {
+  if (!currentSlug.value) return [];
+  if (textStore.text?.slug && textStore.text.slug !== currentSlug.value)
+    return [];
+  return buildOutline(textStore.text);
+});
+const drawerRef = ref(null);
+const closeButtonRef = ref(null);
+let opener = null;
+let releaseScroll = null;
+let restoreOnClose = true;
+let unmounted = false;
+let focusEpoch = 0;
+
+function close({ restoreFocus = true } = {}) {
+  restoreOnClose = restoreFocus;
   store.activeMenu = false;
 }
 function go(path) {
+  close({ restoreFocus: false });
   router.push(path);
-  close();
 }
+async function jumpTo(anchor) {
+  const target = document.getElementById(anchor.slice(1));
+  if (!target) return;
+  close({ restoreFocus: false });
+  await nextTick();
+  if (unmounted || !target.isConnected) return;
+  const pref = document.documentElement.dataset.reduceMotion;
+  const reduce =
+    pref === "1" ||
+    (pref !== "0" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+  target.scrollIntoView({
+    behavior: reduce ? "auto" : "smooth",
+    block: "start",
+  });
+  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+}
+function goChapter(chapter) {
+  if (chapter.slug === currentSlug.value) jumpTo("#chapter-toc");
+  else go(`/chapter/${chapter.order_index}/${chapter.slug}`);
+}
+watch(
+  () => store.activeMenu,
+  async (open) => {
+    if (unmounted) return;
+    const epoch = ++focusEpoch;
+    if (open) {
+      opener = document.activeElement;
+      restoreOnClose = true;
+      releaseScroll ||= lockReaderScroll();
+      await nextTick();
+      if (!unmounted && store.activeMenu && epoch === focusEpoch)
+        closeButtonRef.value?.focus({ preventScroll: true });
+    } else {
+      releaseScroll?.();
+      releaseScroll = null;
+      const target = opener;
+      opener = null;
+      if (restoreOnClose && target?.isConnected)
+        target.focus({ preventScroll: true });
+    }
+  },
+  { immediate: true }
+);
+watch(
+  () => route.fullPath,
+  () => close({ restoreFocus: false })
+);
 // In-drawer auth (restored from the old MainNav so login lives in the hamburger
 // nav, not a separate screen). The form itself + validation + auth calls live
 // in the shared AuthForm (audit #19); the drawer just owns the tabs, the
@@ -130,7 +208,28 @@ function onAuthLogin() {
 }
 
 function onKey(e) {
-  if (e.key === "Escape" && store.activeMenu) close();
+  if (!store.activeMenu || e.defaultPrevented) return;
+  if (e.key === "Escape") {
+    e.preventDefault();
+    close();
+    return;
+  }
+  if (e.key !== "Tab" || !drawerRef.value) return;
+  const buttons = [
+    ...drawerRef.value.querySelectorAll(
+      'button:not([disabled]), a[href], input:not([disabled]), [tabindex="0"]'
+    ),
+  ];
+  const first = buttons[0];
+  const last = buttons[buttons.length - 1];
+  const inside = drawerRef.value.contains(document.activeElement);
+  if (e.shiftKey && (!inside || document.activeElement === first)) {
+    e.preventDefault();
+    last?.focus();
+  } else if (!e.shiftKey && (!inside || document.activeElement === last)) {
+    e.preventDefault();
+    first?.focus();
+  }
 }
 
 onMounted(() => {
@@ -138,14 +237,25 @@ onMounted(() => {
   loadProgress();
   window.addEventListener("keydown", onKey);
 });
-onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
+onBeforeUnmount(() => {
+  unmounted = true;
+  window.removeEventListener("keydown", onKey);
+  releaseScroll?.();
+  releaseScroll = null;
+});
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="drawer">
       <div v-if="store.activeMenu" class="nav-backdrop" @click.self="close">
-        <aside class="drawer" role="dialog" aria-label="Navigation">
+        <aside
+          ref="drawerRef"
+          class="drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation"
+        >
           <!-- Header -->
           <div class="drawer-head">
             <router-link :to="homeRoute" class="wordmark" @click="close">
@@ -165,8 +275,10 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
               <span class="wordmark-text">the<br />open brain</span>
             </router-link>
             <button
+              ref="closeButtonRef"
               class="close-btn"
               type="button"
+              aria-label="Close chapter menu"
               title="Close"
               @click="close"
             >
@@ -203,27 +315,53 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           <!-- Jump to -->
           <p class="eyebrow">Jump to</p>
           <div class="chapter-list">
-            <button
-              v-for="ch in chapters"
-              :key="ch.id"
-              class="chapter-row"
-              type="button"
-              @click="go(`/chapter/${ch.order_index}/${ch.slug}`)"
-            >
-              <span class="ch-num">{{
-                String(ch.order_index).padStart(2, "0")
-              }}</span>
-              <span class="ch-title">{{ ch.title }}</span>
-              <span
-                v-if="statusFor(ch) === 'done'"
-                class="ch-done"
-                aria-label="Completed"
-                >✓</span
+            <div v-for="ch in chapters" :key="ch.id">
+              <button
+                class="chapter-row"
+                type="button"
+                :aria-current="ch.slug === currentSlug ? 'page' : undefined"
+                @click="goChapter(ch)"
               >
-              <span v-else-if="statusFor(ch) === 'reading'" class="ch-pct"
-                >{{ percentFor(ch) }}%</span
+                <span class="ch-num">{{
+                  String(ch.order_index).padStart(2, "0")
+                }}</span>
+                <span class="ch-title">{{ ch.title }}</span>
+                <span
+                  v-if="statusFor(ch) === 'done'"
+                  class="ch-done"
+                  aria-label="Completed"
+                  >✓</span
+                >
+                <span v-else-if="statusFor(ch) === 'reading'" class="ch-pct"
+                  >{{ percentFor(ch) }}%</span
+                >
+              </button>
+              <nav
+                v-if="ch.slug === currentSlug && outline.length"
+                class="chapter-outline"
+                :aria-label="`${ch.title} contents`"
               >
-            </button>
+                <div v-for="section in outline" :key="section.id">
+                  <button
+                    type="button"
+                    class="outline-section"
+                    @click="jumpTo(section.anchor)"
+                  >
+                    <span class="outline-label">{{ section.label }}</span
+                    >{{ section.title }}
+                  </button>
+                  <button
+                    v-for="sub in section.subsections"
+                    :key="sub.id"
+                    type="button"
+                    class="outline-subsection"
+                    @click="jumpTo(sub.anchor)"
+                  >
+                    {{ sub.title }}
+                  </button>
+                </div>
+              </nav>
+            </div>
           </div>
 
           <hr class="rule" />
@@ -577,5 +715,45 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   .drawer-leave-active .drawer {
     transition: none;
   }
+}
+.chapter-outline {
+  margin: 0.25rem 0 1rem 1rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid rgb(var(--color-line));
+}
+.outline-section,
+.outline-subsection {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.25rem;
+  text-align: left;
+  font: inherit;
+  font-size: var(--ui-size-14);
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.outline-subsection {
+  padding-left: 1.5rem;
+  color: rgb(var(--color-mute));
+}
+.outline-label {
+  margin-right: 0.5rem;
+  font-family: var(--font-mono);
+}
+.outline-section:hover,
+.outline-subsection:hover {
+  color: rgb(var(--color-accent));
+}
+.outline-section:focus-visible,
+.outline-subsection:focus-visible,
+.close-btn:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 1px;
+}
+.chapter-row[aria-current="page"] {
+  background: rgb(var(--color-chapter-pale));
 }
 </style>

@@ -29,6 +29,8 @@ const {
   loading,
   streaming,
   error,
+  isAvailable,
+  availabilityMessage,
   fetchConversations,
   createConversation,
   loadConversation,
@@ -55,6 +57,7 @@ onMounted(async () => {
 
 // Handle creating a new conversation
 async function handleNewConversation() {
+  if (!isAvailable.value || loading.value) return;
   try {
     await createConversation({
       moduleId: props.moduleId,
@@ -80,6 +83,7 @@ async function handleSelectConversation(conversationId) {
 
 // Handle sending a message
 async function handleSendMessage(content) {
+  if (!isAvailable.value || loading.value || streaming.value) return;
   try {
     // If no current conversation, create one first
     if (!currentConversation.value) {
@@ -178,7 +182,9 @@ async function executeDelete() {
             <button
               @click="handleNewConversation"
               class="icon-btn"
-              title="New conversation"
+              :title="isAvailable ? 'New conversation' : availabilityMessage"
+              aria-label="New conversation"
+              :disabled="!isAvailable || loading || streaming"
               data-testid="new-conversation"
             >
               <svg
@@ -253,6 +259,7 @@ async function executeDelete() {
                 <button
                   @click.stop="confirmDelete(conv.id)"
                   class="delete-btn"
+                  v-if="isAvailable"
                   title="Delete conversation"
                 >
                   <svg
@@ -286,6 +293,8 @@ async function executeDelete() {
         <!-- Chat area -->
         <div class="chat-area">
           <AITutorChat
+            :available="isAvailable"
+            :availability-message="availabilityMessage"
             :messages="messages"
             :loading="loading"
             :streaming="streaming"
@@ -372,7 +381,12 @@ async function executeDelete() {
   transition: all 0.15s;
 }
 
-.icon-btn:hover {
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.2);
 }
 

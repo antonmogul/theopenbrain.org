@@ -41,6 +41,7 @@ const wide = ref(false);
 const slotEl = ref(null);
 const stageEl = ref(null);
 const stageTop = ref(0);
+const stageLeft = ref(0);
 const slotHeight = ref(0);
 
 const floating = computed(() => props.enabled && wide.value && !!layer.value);
@@ -52,7 +53,9 @@ const slotStyle = computed(() =>
   floating.value ? { height: `${slotHeight.value}px` } : null
 );
 const stageStyle = computed(() =>
-  floating.value ? { top: `${stageTop.value}px` } : null
+  floating.value
+    ? { top: `${stageTop.value}px`, left: `${stageLeft.value}px` }
+    : null
 );
 
 let mql = null;
@@ -66,6 +69,7 @@ function sync() {
   const slotRect = slotEl.value.getBoundingClientRect();
   const layerRect = layer.value.getBoundingClientRect();
   stageTop.value = Math.round(slotRect.top - layerRect.top);
+  stageLeft.value = -Math.round(layerRect.left || 0);
   const h = Math.round(stageEl.value.getBoundingClientRect().height);
   if (h !== slotHeight.value) {
     slotHeight.value = h;
@@ -159,7 +163,7 @@ defineExpose({ sync: schedule, floating });
 .fb-stage--floating {
   position: absolute;
   left: 0;
-  width: 100%;
+  width: var(--app-w, 100vw);
   pointer-events: auto;
   /* Content wider than the window must not grow the document; vertical
      overflow stays visible (clip + visible is a valid pair). */
