@@ -209,6 +209,7 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 - `/chapter/break/:video?` — break video.
 - `/playground` — Pyodide Python playground.
 - `/widgets` — widget library gallery (not in nav; shared with authors).
+- `/deck`, `/deck/templates` — funder slide deck and slide templates (unlisted, `noindex`; `DeckView` + `src/components/deck/`, content in `src/data/decks/`). See `docs/funding-deck.md`.
 - `/styleguide` — retired (OPENBRAIN-114); redirects to `/storybook/index.html`, which is the design-system reference (Foundations/Colours, Typography, Layout read the live tokens).
 
 **Role-gated routes** (`meta.requiresAuth` + `meta.requiredRole`)

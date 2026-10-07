@@ -12,6 +12,7 @@ Two kinds of files live here. **Current reference docs** describe how the repo w
 | `storybook/student-view-coverage.md` | Storybook coverage table for student components and full-page views.                                                                                                        | 2026-08-28  |
 | `typography-normalization.md`        | Typography tokens and role classes, plus the migration plan for components (updated 2026-06-30).                                                                            | 2026-08-05  |
 | `design-system/figma-sync.md`        | How the Figma design system file stays in step with the code: `tokens/tokens.json`, the drift test, and the Figma drift check.                                              | 2026-09-30  |
+| `funding-deck.md`                    | The funder slide deck at `/deck`: presenting, printing to PDF, editing the deck data, adding photos and the walkthrough video.                                              | 2026-10-07  |
 | `design-system/cleanup-backlog.md`   | Design-system findings that need a designer's decision: failing text contrast, reader type vs the scale, semantic colours, the two highlighter palettes, legacy components. | 2026-09-30  |
 
 Generated outputs, regenerate rather than edit: `architecture/graph.json` (`npm run graph:visual`, Prettier-ignored), `architecture/orphans.txt` (`npm run graph:orphans`), `architecture/cycles.txt` (`npm run graph:cycles`), `architecture/violations.txt` (`npm run graph:check`).
