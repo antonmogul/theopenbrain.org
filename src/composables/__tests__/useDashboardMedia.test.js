@@ -88,6 +88,19 @@ describe("useDashboardMedia", () => {
     });
   });
 
+  it("names the paragraph's own section in the usage embed", async () => {
+    // paragraphs and sections are related twice (section_id and a box's
+    // anchor_paragraph_id), so the embed must say which: PostgREST answers
+    // an unqualified one with 300 / PGRST201.
+    authedRequest.mockResolvedValue([]);
+    const { selectMedia, mediaUsage } = useDashboardMedia();
+    await selectMedia({ id: "a1", media_type: "image" });
+    await vi.waitFor(() => expect(mediaUsage.value).not.toBeNull());
+    expect(authedRequest).toHaveBeenCalledWith(
+      "paragraphs?animation_id=eq.a1&select=id,order_index,section:sections!section_id(title,module:modules(title))"
+    );
+  });
+
   it("deleteMedia refuses an asset that is in use", async () => {
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
     const { deleteMedia, mediaUsage } = useDashboardMedia();
