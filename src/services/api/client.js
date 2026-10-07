@@ -10,6 +10,9 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+/** Is there a Supabase project to talk to? (No .env: the app shell only.) */
+export const isApiConfigured = () => Boolean(supabaseUrl && supabaseKey);
+
 // Session holder - will be set by useAuth composable
 let currentSession = null;
 
@@ -188,6 +191,7 @@ export function buildInFilter(ids) {
 }
 
 export default {
+  isApiConfigured,
   setSession,
   getSession,
   apiRequest,

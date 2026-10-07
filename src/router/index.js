@@ -47,6 +47,24 @@ export const routes = [
     meta: { requiresAuth: true, requiredRole: "creator" },
   },
   {
+    // The deck editor (OPENBRAIN-129): slide rail, live preview and the
+    // slide's form, autosaving to the deck's private working copy. Opened
+    // from Dashboard → Decks.
+    path: "/dashboard/decks/:slug",
+    name: "deck-editor",
+    component: () => import("../views/DeckEditorView.vue"),
+    props: true,
+    meta: { requiresAuth: true, requiredRole: "creator" },
+  },
+  {
+    // The working copy presented with its speaker notes ("Present draft").
+    path: "/dashboard/decks/:slug/present",
+    name: "deck-present",
+    component: () => import("../views/DeckView.vue"),
+    props: (route) => ({ source: "draft", slug: String(route.params.slug) }),
+    meta: { requiresAuth: true, requiredRole: "creator" },
+  },
+  {
     path: "/dashboard/chapter/new",
     name: "chapter-wizard",
     redirect: { path: "/dashboard", query: { section: "chapter-wizard" } },
@@ -265,19 +283,31 @@ export const routes = [
     component: () => import("../views/WidgetLibraryView.vue"),
   },
   {
-    // Funder slide deck (Claude Design handoff, Oct 2026). Unlisted: not in
-    // nav, and the view marks itself noindex. Share /deck directly; #N opens
-    // slide N. /deck/templates shows the slide templates for future decks.
+    // Funder slide deck. Unlisted: not in nav, and the view marks itself
+    // noindex. Share /deck directly; #N opens slide N. Since OPENBRAIN-129
+    // /deck shows the published deck a creator pinned in Dashboard → Decks
+    // (rpc/get_pinned_deck), and the bundled October copy when there is none
+    // or the database can't be reached. /deck/templates stays bundled: the
+    // slide templates new decks start from.
     path: "/deck",
     name: "deck",
     component: () => import("../views/DeckView.vue"),
-    props: { deck: "funding" },
+    props: { source: "pinned", deck: "funding" },
   },
   {
     path: "/deck/templates",
     name: "deck-templates",
     component: () => import("../views/DeckView.vue"),
-    props: { deck: "templates" },
+    props: { source: "bundled", deck: "templates" },
+  },
+  {
+    // A published deck's funder link (OPENBRAIN-129): public, no sign-in,
+    // the frozen snapshot from rpc/get_shared_deck. A bad or rotated token
+    // says the link isn't available; it never falls back to another deck.
+    path: "/deck/s/:token",
+    name: "deck-shared",
+    component: () => import("../views/DeckView.vue"),
+    props: (route) => ({ source: "shared", token: String(route.params.token) }),
   },
   {
     // RetINaBox — interactive retinal circuit simulator (Retina chapter).
@@ -345,6 +375,11 @@ export const ROUTE_TITLES = {
   widgets: "Widget library",
   deck: "Funding deck",
   "deck-templates": "Slide templates",
+  // The deck routes' DeckView replaces its title with the deck's own once
+  // it loads.
+  "deck-shared": "Deck",
+  "deck-editor": "Edit deck",
+  "deck-present": "Present deck",
 };
 
 export function createAppRouter({
@@ -404,11 +439,17 @@ export function createAppRouter({
   // (OPENBRAIN-30), so it is resolved through the catalog. Drafts are not in
   // the public catalog; ChapterView applies the ramp again from the module
   // row it loads, which also lets the DB `ramp` column win.
-  router.afterEach((to) => {
+  router.afterEach((to, from, failure) => {
+    // An aborted, cancelled or duplicated navigation left the page as it was
+    // (the deck editor's leave guard can cancel one): its title and ramp stay.
+    if (failure) return;
     // Tab title (OPENBRAIN-56): ChapterView sets the chapter's own title once
     // it loads; every other route gets a fixed one, so a chapter's title no
-    // longer sticks to the dashboard, settings or library.
-    if (to.name !== "chapter") {
+    // longer sticks to the dashboard, settings or library. A change of hash
+    // or query on the same page keeps the title the page set: DeckView names
+    // the tab after its deck and keeps the slide number in the hash.
+    const samePage = from.name === to.name && from.path === to.path;
+    if (to.name !== "chapter" && !samePage) {
       document.title = ROUTE_TITLES[to.name]
         ? `${ROUTE_TITLES[to.name]} · The Open Brain`
         : "The Open Brain";

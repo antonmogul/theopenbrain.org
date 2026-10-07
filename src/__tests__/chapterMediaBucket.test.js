@@ -31,3 +31,35 @@ describe("OPENBRAIN-63 chapter-media bucket migration", () => {
     }
   });
 });
+
+const noListing = readFileSync(
+  resolve(
+    process.cwd(),
+    "supabase/migrations/20261007010200_chapter_media_no_listing.sql"
+  ),
+  "utf8"
+);
+
+describe("OPENBRAIN-129 chapter-media listing migration", () => {
+  it("drops the anon read policy and lets only creators list the bucket", () => {
+    expect(noListing).toContain(
+      'drop policy if exists "Anyone reads chapter media" on storage.objects;'
+    );
+    const reads = noListing.match(/create policy[\s\S]*?;/g) || [];
+    expect(reads).toHaveLength(1);
+    expect(reads[0]).toContain("for select to authenticated");
+    expect(reads[0]).toContain(
+      "using (bucket_id = 'chapter-media' and public.is_creator())"
+    );
+    expect(reads[0]).not.toMatch(/\bto (anon|public)\b/);
+  });
+
+  it("keeps the bucket public and checks itself", () => {
+    expect(noListing).not.toMatch(/update storage\.buckets/i);
+    expect(noListing).toContain("where id = 'chapter-media' and public) then");
+    expect(noListing).toMatch(
+      /raise exception 'chapter media: % read policies let non-creators list the bucket'/
+    );
+    expect(noListing).not.toMatch(/^\s*(begin|commit)\s*;/im);
+  });
+});
