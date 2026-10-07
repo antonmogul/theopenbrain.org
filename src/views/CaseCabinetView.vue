@@ -466,7 +466,6 @@ function onKeydown(e) {
         ref="workspaceEl"
         class="casefile"
         :class="{ 'casefile--desktop': desktop }"
-        style="opacity: 0; visibility: hidden"
         :style="{ '--tint': openCase.tint }"
         :aria-hidden="phase !== 'open' ? 'true' : undefined"
         :inert="phase !== 'open' ? true : undefined"
@@ -900,6 +899,10 @@ button:focus-visible {
   font-size: 0.85rem;
 }
 .casefile {
+  /* GSAP owns inline visibility throughout the handoff. Keeping the initial
+     state in CSS prevents Vue style patches from hiding the opened file. */
+  opacity: 0;
+  visibility: hidden;
   flex: 1;
   min-width: 0;
   padding: 0 clamp(1rem, 3vw, 2.5rem) 1.5rem;

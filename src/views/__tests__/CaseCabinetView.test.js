@@ -153,6 +153,8 @@ describe("restored desktop folder storyboard", () => {
     expect(w.attributes("data-phase")).toBe("open");
     expect(w.find(".casefile").attributes("inert")).toBeUndefined();
     expect(w.find(".casefile").element.style.transform).toBe("");
+    expect(w.find(".casefile").element.style.opacity).toBe("1");
+    expect(w.find(".casefile").element.style.visibility).not.toBe("hidden");
     expect(w.find(".storyboard").element.style.visibility).toBe("hidden");
     expect(w.find(".brain-map img").attributes("src")).toContain("image79.png");
     expect(document.activeElement).toBe(w.find(".casefile__title").element);
@@ -164,6 +166,8 @@ describe("restored desktop folder storyboard", () => {
       const timeline = await finishOpen(w);
       await w.find('[data-point="24"]').trigger("click");
       expect(w.find(".transcript").text()).toContain("robbers");
+      expect(w.find(".casefile").element.style.opacity).toBe("1");
+      expect(w.find(".casefile").element.style.visibility).not.toBe("hidden");
       await w.find(".back-button").trigger("click");
       expect(w.attributes("data-phase")).toBe("closing");
       expect(timeline.reversed()).toBe(true);
@@ -236,6 +240,8 @@ describe("restored desktop folder storyboard", () => {
     expect(w.attributes("data-animation-mode")).toBe("immediate");
     expect(w.find(".storyboard").exists()).toBe(false);
     expect(w.find(".casefile").element.style.transform).toBe("");
+    expect(w.find(".casefile").element.style.opacity).toBe("1");
+    expect(w.find(".casefile").element.style.visibility).not.toBe("hidden");
     await w.find('[data-point="24"]').trigger("click");
     expect(w.find(".transcript").text()).toContain("robbers");
     await w.find(".back-button").trigger("click");
@@ -251,6 +257,8 @@ describe("restored desktop folder storyboard", () => {
     expect(w.attributes("data-phase")).toBe("open");
     expect(w.attributes("data-animation-mode")).toBe("immediate");
     expect(window.__cc).toBeUndefined();
+    expect(w.find(".casefile").element.style.opacity).toBe("1");
+    expect(w.find(".casefile").element.style.visibility).not.toBe("hidden");
     await w.find(".back-button").trigger("click");
     await flushPromises();
     expect(w.attributes("data-phase")).toBe("closed");
@@ -267,6 +275,8 @@ describe("restored desktop folder storyboard", () => {
     expect(w.attributes("data-phase")).toBe("open");
     expect(w.attributes("data-animation-mode")).toBe("immediate");
     expect(window.__cc).toBeUndefined();
+    expect(w.find(".casefile").element.style.opacity).toBe("1");
+    expect(w.find(".casefile").element.style.visibility).not.toBe("hidden");
     await w.find(".back-button").trigger("click");
     await flushPromises();
     expect(w.attributes("data-phase")).toBe("closed");
