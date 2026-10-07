@@ -1,3 +1,9 @@
+<script>
+// One count for every BaseModal on the page, so title ids never repeat (even
+// across separately mounted apps, which useId() would number alike).
+let modalSeq = 0;
+</script>
+
 <script setup>
 // Teleported scrim dialog. Logic (escape, backdrop, body-scroll-lock, transitions)
 // preserved from the original; chrome rebuilt to tokens. v-model:open via modelValue.
@@ -11,6 +17,9 @@ const props = defineProps({
   closeOnEscape: { type: Boolean, default: true },
 });
 const emit = defineEmits(["update:modelValue", "close"]);
+// The panel is a modal dialog named by its title, so assistive tech knows
+// what opened (OPENBRAIN-129: the deck editor's dialogs are all BaseModals).
+const titleId = `modal-title-${++modalSeq}`;
 const open = computed(() =>
   props.show !== undefined ? props.show : props.modelValue
 );
@@ -27,6 +36,28 @@ function handleEscape(e) {
 watch(open, (v) => {
   document.body.style.overflow = v ? "hidden" : "";
 });
+// aria-modal says the page behind is inert, so Tab stays in the panel: past
+// the last control it wraps to the first, and Shift+Tab the other way. The
+// listener is on the panel, so a dialog stacked on another (a confirm over
+// the deck's Share dialog) keeps Tab in its own panel only.
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+function onPanelKeydown(e) {
+  if (e.key !== "Tab" || e.defaultPrevented) return;
+  const panel = e.currentTarget;
+  const items = [...panel.querySelectorAll(FOCUSABLE)].filter(
+    (el) => !el.closest("[hidden], [inert], [aria-hidden='true']")
+  );
+  if (!items.length) return;
+  const active = document.activeElement;
+  if (e.shiftKey && active === items[0]) {
+    e.preventDefault();
+    items.at(-1).focus();
+  } else if (!e.shiftKey && active === items.at(-1)) {
+    e.preventDefault();
+    items[0].focus();
+  }
+}
 onMounted(() => document.addEventListener("keydown", handleEscape));
 onUnmounted(() => {
   document.removeEventListener("keydown", handleEscape);
@@ -40,10 +71,19 @@ onUnmounted(() => {
       <div v-if="open" class="modal-root">
         <div class="modal-backdrop" @click="handleBackdropClick" />
         <div class="modal-wrap">
-          <div class="modal-panel" :class="`sz-${size}`" @click.stop>
+          <div
+            class="modal-panel"
+            :class="`sz-${size}`"
+            role="dialog"
+            aria-modal="true"
+            :aria-labelledby="title && !$slots.header ? titleId : undefined"
+            :aria-label="title && $slots.header ? title : undefined"
+            @click.stop
+            @keydown="onPanelKeydown"
+          >
             <div v-if="title || $slots.header" class="modal-header">
               <slot name="header"
-                ><h3 class="modal-title">{{ title }}</h3></slot
+                ><h3 :id="titleId" class="modal-title">{{ title }}</h3></slot
               >
               <button
                 type="button"

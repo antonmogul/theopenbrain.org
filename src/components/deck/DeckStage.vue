@@ -4,6 +4,12 @@
 // Home/End and the number keys; on touch screens a tap on the left or right
 // half of the slide. F toggles full screen, N the speaker notes. The browser's
 // Print (or the overlay's PDF button) lays every slide out as its own page.
+//
+// Speaker notes only reach a funder's page for a signed-in creator (the deck
+// RPCs strip them for everyone else, and DeckView strips them from the
+// bundled copy /deck falls back to, OPENBRAIN-129), so with no notes on any
+// slide there is no Notes button and N does nothing. `editTo` adds an Edit
+// link to the overlay; DeckView passes it to creators only.
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 const props = defineProps({
@@ -13,6 +19,8 @@ const props = defineProps({
   modelValue: { type: Number, default: 0 },
   // Heading for the overlay and the screen-reader description.
   title: { type: String, default: "Slides" },
+  // Where the overlay's Edit link goes (opens in a new tab); none when empty.
+  editTo: { type: String, default: "" },
 });
 const emit = defineEmits(["update:modelValue"]);
 
@@ -30,6 +38,12 @@ const index = computed(() =>
   Math.min(Math.max(props.modelValue, 0), Math.max(count.value - 1, 0))
 );
 const current = computed(() => props.slides[index.value]);
+const hasNotes = computed(() =>
+  props.slides.some((s) => typeof s?.notes === "string" && s.notes.trim())
+);
+const toggleNotes = () => {
+  if (hasNotes.value) showNotes.value = !showNotes.value;
+};
 
 const scale = computed(() =>
   Math.min(box.value.width / WIDTH, box.value.height / HEIGHT)
@@ -75,8 +89,8 @@ function onKeydown(e) {
     PageUp: prev,
     Home: () => go(0),
     End: () => go(count.value - 1),
-    n: () => (showNotes.value = !showNotes.value),
-    N: () => (showNotes.value = !showNotes.value),
+    n: toggleNotes,
+    N: toggleNotes,
     f: toggleFullscreen,
     F: toggleFullscreen,
   };
@@ -162,7 +176,7 @@ onBeforeUnmount(() => {
       Slide {{ index + 1 }} of {{ count }}: {{ current?.label }}
     </p>
 
-    <div v-if="showNotes && current" class="deck-stage__notes">
+    <div v-if="showNotes && hasNotes && current" class="deck-stage__notes">
       <span class="deck-stage__notes-label">Notes · {{ current.label }}</span>
       <p>{{ current.notes || "No notes for this slide." }}</p>
     </div>
@@ -197,10 +211,11 @@ onBeforeUnmount(() => {
       </button>
       <span class="deck-stage__sep" aria-hidden="true" />
       <button
+        v-if="hasNotes"
         type="button"
         :aria-pressed="showNotes"
         title="Speaker notes (N)"
-        @click="showNotes = !showNotes"
+        @click="toggleNotes"
       >
         Notes
       </button>
@@ -210,6 +225,15 @@ onBeforeUnmount(() => {
       <button type="button" title="Print or save as PDF" @click="print">
         PDF
       </button>
+      <a
+        v-if="editTo"
+        class="deck-stage__edit"
+        :href="editTo"
+        target="_blank"
+        rel="noopener"
+        aria-label="Edit this deck (opens in a new tab)"
+        >Edit</a
+      >
     </nav>
   </div>
 </template>
@@ -255,7 +279,8 @@ onBeforeUnmount(() => {
 .deck-stage__overlay.is-hidden {
   opacity: 0;
 }
-.deck-stage__overlay button {
+.deck-stage__overlay button,
+.deck-stage__edit {
   min-width: 36px;
   height: 36px;
   padding: 0 10px;
@@ -267,10 +292,17 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .deck-stage__overlay button:hover:not(:disabled),
-.deck-stage__overlay button[aria-pressed="true"] {
+.deck-stage__overlay button[aria-pressed="true"],
+.deck-stage__edit:hover {
   background: rgb(243 239 230 / 0.12);
 }
-.deck-stage__overlay button:focus-visible {
+.deck-stage__edit {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.deck-stage__overlay button:focus-visible,
+.deck-stage__edit:focus-visible {
   outline: 2px solid rgb(var(--color-accent));
   outline-offset: 1px;
 }
@@ -349,7 +381,8 @@ onBeforeUnmount(() => {
   }
   .deck-stage__overlay,
   .deck-stage__notes,
-  .deck-stage__live {
+  .deck-stage__live,
+  .deck-stage__edit {
     display: none;
   }
 }

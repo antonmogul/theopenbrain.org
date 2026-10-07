@@ -50,7 +50,8 @@
     "history:fixture:prepare": "node scripts/history-fixture-browser-prepare.mjs",
     "history:fixture:browser": "node scripts/history-fixture-browser.mjs",
     "history:fixture:browser:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 history:fixture:browser",
-    "widget-thumbs": "node scripts/timeline/capture-widget-thumbs.mjs"
+    "widget-thumbs": "node scripts/timeline/capture-widget-thumbs.mjs",
+    "deck:seed-sql": "node scripts/decks/gen-deck-seed.mjs"
   },
   "dependencies": {
     "@google/model-viewer": "^4.3.1",

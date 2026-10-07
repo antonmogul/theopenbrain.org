@@ -1,11 +1,20 @@
 /**
- * The funder deck at /deck (Claude Design handoff "Open Brain Funding Deck",
- * 7 Oct 2026). Six slides for the pitch, then three appendix slides, one per
- * role. Each entry names a layout from src/components/deck/slides/layouts.js
- * and the props it renders with; `notes` are the speaker notes (N on /deck).
+ * The funding deck as of October 2026, frozen (Claude Design handoff "Open
+ * Brain Funding Deck", 7 Oct 2026). Six slides for the pitch, then three
+ * appendix slides, one per role. Each entry names a layout from
+ * src/components/deck/slides/layouts.js and the props it renders with;
+ * `notes` are the speaker notes (N when presenting).
  *
- * To fill a photo or the video, put the file under public/publicAssets/deck/
- * and set its path here (see docs/funding-deck.md).
+ * The live deck is edited in Dashboard → Decks (OPENBRAIN-129) and lives in
+ * the database. This copy is:
+ *   - the seed: scripts/decks/gen-deck-seed.mjs (npm run deck:seed-sql)
+ *     writes supabase/migrations/20261007010100_seed_funding_deck.sql from
+ *     it. The script loads this file on its own, so keep it free of imports;
+ *   - the fallback /deck shows when the database has no pinned deck or can't
+ *     be reached (useDeckSource);
+ *   - the fixture stories and tests use (propsOf(FUNDING_DECK, '<id>'),
+ *     layouts.test.js reads entry "trajectory"), so keep the ids.
+ * See docs/funding-deck.md.
  */
 
 const IMAGES = "/publicAssets/images";

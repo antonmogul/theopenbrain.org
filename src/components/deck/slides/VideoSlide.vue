@@ -2,7 +2,8 @@
 // A title row over a full-width video: the feature walkthrough. Until a
 // recording is in public/ (see docs/funding-deck.md) the frame shows a
 // placeholder saying where it goes.
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
+import { cspLoads } from "@/data/decks/validate.js";
 import DeckSlide from "../DeckSlide.vue";
 
 const props = defineProps({
@@ -16,11 +17,23 @@ const props = defineProps({
 });
 
 // A src that does not load (a typo, a file not deployed yet) falls back to
-// the placeholder rather than an empty black player.
+// the placeholder rather than an empty black player. An address the site's
+// CSP refuses (a YouTube page, another host) is never requested, nor is a
+// refused poster, which would not even fail the video: either would only
+// log an error.
 const failed = ref(false);
 watch(
   () => props.src,
   () => (failed.value = false)
+);
+const origin = globalThis.location?.origin;
+const srcLoads = computed(
+  () => !!props.src && cspLoads(props.src, "media", origin)
+);
+const posterSrc = computed(() =>
+  props.poster && cspLoads(props.poster, "img", origin)
+    ? props.poster
+    : undefined
 );
 </script>
 
@@ -35,9 +48,9 @@ watch(
     </div>
     <div class="video__frame">
       <video
-        v-if="src && !failed"
+        v-if="srcLoads && !failed"
         :src="src"
-        :poster="poster || undefined"
+        :poster="posterSrc"
         controls
         playsinline
         preload="metadata"

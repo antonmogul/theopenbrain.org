@@ -1,0 +1,292 @@
+/*
+ * Deck editor styles (OPENBRAIN-129): the chrome the editor's parts share,
+ * so the rail, the form and the dialogs read as one tool. Each component in
+ * src/components/deck/editor/ imports this file, so a story of one part looks
+ * the way it does in the editor; component-only rules stay scoped in the
+ * component. Tokens only: colours from brand.css, sizes from --ui-size-*.
+ * Slides themselves keep deck.css and are never restyled here.
+ */
+
+/* ── field chrome ───────────────────────────────────────────────────────── */
+
+/* One field outside DeckField (the slide's label, layout and notes, the
+   dialogs): FormField plus its description line. */
+.deck-ed-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* A fieldset that looks like FormField. FormField is a <label>, which
+   passes a click on its text to the first button inside it, so controls
+   made of several buttons (segments, swatches, the icon grid, image tools,
+   lists, groups) sit in a fieldset with a legend instead. */
+.deck-ed-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.deck-ed-legend,
+.deck-ed-label {
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-10);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-mute));
+}
+.deck-ed-legend {
+  margin-bottom: 6px;
+}
+.deck-ed-req {
+  color: rgb(var(--color-accent));
+}
+
+/* A group or an optional group: its fields, indented under a rule. */
+.deck-ed-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 12px;
+  border-left: 2px solid rgb(var(--color-line));
+}
+
+/* Boxed inputs outside FormField (list items, the slug, the share link),
+   matching FormField's slotted controls. */
+.deck-ed-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-paper));
+  padding: 8px 10px;
+  font-family: var(--font-body);
+  font-size: var(--ui-size-14);
+  color: rgb(var(--color-ink));
+}
+.deck-ed-input:focus {
+  outline: none;
+  border-color: rgb(var(--color-ink));
+}
+/* An error at a field: the accent border, beside the message under it. */
+.deck-ed-input[aria-invalid="true"],
+:is(.deck-ed-field, .deck-field)
+  .field
+  :is(input, select, textarea)[aria-invalid="true"] {
+  border-color: rgb(var(--color-accent));
+}
+.deck-ed-input[readonly] {
+  color: rgb(var(--color-mute));
+}
+
+/* Hint, character count and problems under a control. Read with the
+   control through aria-describedby; never a live region. */
+.deck-ed-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--ui-size-13);
+  line-height: 1.45;
+  color: rgb(var(--color-mute));
+}
+.deck-ed-desc__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.deck-ed-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.deck-ed-count.is-over {
+  padding: 0 4px;
+  background: rgb(var(--color-warn) / 0.22);
+  color: rgb(var(--color-ink));
+}
+
+/* ── problems ───────────────────────────────────────────────────────────── */
+
+.deck-ed-problems {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.deck-ed-problem {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-13);
+  line-height: 1.4;
+  color: rgb(var(--color-ink));
+}
+.deck-ed-problem svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+}
+.deck-ed-problem.is-error svg {
+  color: rgb(var(--color-accent));
+}
+.deck-ed-problem.is-warn svg {
+  color: rgb(var(--color-warn));
+}
+
+/* Error / warning count: icon plus number, so it never relies on colour. */
+.deck-ed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-control);
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-10);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.deck-ed-badge svg {
+  width: 11px;
+  height: 11px;
+}
+/* Ink text: at 10px the accent is under 4.5:1 on paper for some accent and
+   theme. The error colour is on the border and the icon, beside the text. */
+.deck-ed-badge.is-error {
+  color: rgb(var(--color-ink));
+  border-color: rgb(var(--color-accent));
+}
+.deck-ed-badge.is-error svg {
+  color: rgb(var(--color-accent));
+}
+.deck-ed-badge.is-warn {
+  color: rgb(var(--color-ink));
+  border-color: rgb(var(--color-warn));
+  background: rgb(var(--color-warn) / 0.16);
+}
+.deck-ed-badge.is-muted {
+  color: rgb(var(--color-mute));
+}
+
+/* ── small controls ─────────────────────────────────────────────────────── */
+
+/* Square icon button: list and rail actions. */
+.deck-ed-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+}
+.deck-ed-iconbtn svg {
+  width: 16px;
+  height: 16px;
+}
+.deck-ed-iconbtn:hover:not(:disabled) {
+  background: rgb(var(--color-ink) / 0.06);
+}
+.deck-ed-iconbtn:disabled {
+  color: rgb(var(--color-mute) / 0.6);
+  cursor: not-allowed;
+}
+
+/* Text button: "Write summary from counts", "Clear", "Copy". */
+.deck-ed-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-ink));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.deck-ed-link:disabled {
+  color: rgb(var(--color-mute));
+  cursor: not-allowed;
+}
+
+.deck-ed-iconbtn:focus-visible,
+.deck-ed-link:focus-visible,
+.deck-ed-focus:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+
+/* ── radio groups: role swatches and the icon grid ──────────────────────── */
+
+.deck-ed-radios {
+  display: grid;
+  gap: 6px;
+}
+.deck-ed-radios:focus {
+  outline: none;
+}
+.deck-ed-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-13);
+  text-align: left;
+  cursor: pointer;
+}
+.deck-ed-radio:hover {
+  border-color: rgb(var(--color-ink) / 0.5);
+}
+.deck-ed-radio[aria-checked="true"] {
+  border-color: rgb(var(--color-ink));
+  box-shadow: inset 0 0 0 1px rgb(var(--color-ink));
+}
+.deck-ed-radio:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+
+/* ── cards ──────────────────────────────────────────────────────────────── */
+
+.deck-ed-card {
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-paper));
+}
+
+/* Section heading inside the form and the drawers. */
+.deck-ed-heading {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--color-ink));
+}

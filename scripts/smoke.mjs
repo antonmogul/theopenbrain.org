@@ -169,6 +169,9 @@ const TIMELINE = { selector: '[data-testid="chapter-timeline"]', min: 1 };
  *
  * `expectCount` is one { selector, min } or a list of them (data assertions:
  * skipped without credentials on `needsData` routes).
+ *
+ * `ignoreErrors` lists console errors that one route may log because of
+ * production content, never code; IGNORED_ERRORS below is the global list.
  */
 const ROUTES = [
   { path: "/", name: "home", minText: 50 },
@@ -214,14 +217,41 @@ const ROUTES = [
   { path: "/chapters", name: "chapters", minText: 50 },
   /*
    * Funder deck (unlisted). A fixed 1920×1080 stage scaled to the window, so
-   * it is checked at every width: no horizontal scroll at 390px and all nine
+   * it is checked at every width: no horizontal scroll at 390px and the
    * slides mounted (they stay in the DOM for print).
+   *
+   * /deck shows the deck a creator pinned in Dashboard → Decks (OPENBRAIN-129),
+   * and falls back to the bundled October copy (9 slides) without Supabase or
+   * before the decks migration is pushed. How many slides it has is
+   * production data, so this asserts only that some rendered; the layout
+   * check with a known count is /deck/templates below.
+   *
+   * Production content must not gate CI (spec decision 12). The slides never
+   * request an address the site's CSP refuses (DeckImage, VideoSlide), but
+   * an uploaded deck image can still be gone from Storage (deleted outside
+   * the app, a hand-typed address): the browser logs its 4xx, the slide
+   * shows its placeholder. That one error is exempt here, on /deck only;
+   * /deck/templates stays strict.
    */
   {
     path: "/deck",
     name: "deck",
     minText: 20,
-    expectCount: { selector: ".deck-stage__slide", min: 9 },
+    expectCount: { selector: ".deck-stage__slide", min: 1 },
+    ignoreErrors: [
+      /status of 4\d\d.*@ https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/public\/chapter-media\/decks\//,
+    ],
+  },
+  /*
+   * The slide templates are bundled and never touch the database, so this is
+   * the deterministic deck check: all 15 template slides (the ten template
+   * layouts) at every width, with or without credentials.
+   */
+  {
+    path: "/deck/templates",
+    name: "deck-templates",
+    minText: 20,
+    expectCount: { selector: ".deck-stage__slide", min: 15 },
   },
   {
     path: "/case-cabinet",
@@ -385,6 +415,12 @@ const IGNORED_ERRORS = [
   // inline figures render YT embeds): its permissions-policy probes are not
   // ours to fix.
   /Permissions policy violation.*youtube\.com/i,
+  // /deck asks rpc/get_pinned_deck first (OPENBRAIN-129). Until the decks
+  // migration is in production the function doesn't exist, PostgREST answers
+  // 404 and the browser logs it; the page falls back to the bundled deck with
+  // a console.warn, which is the intended behaviour. Temporary: remove once
+  // 20261007010000_decks.sql is pushed (docs/production-sql.md).
+  /status of 404.*@ .*\/rest\/v1\/rpc\/get_pinned_deck/,
 ];
 
 const isRealError = (text) => !IGNORED_ERRORS.some((re) => re.test(text));
@@ -703,6 +739,7 @@ async function main() {
         // failure anywhere the keys exist.
         const real = errors
           .filter(isRealError)
+          .filter((e) => !(route.ignoreErrors || []).some((re) => re.test(e)))
           .filter(
             (e) =>
               checkContent ||

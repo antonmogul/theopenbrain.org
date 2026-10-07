@@ -5,7 +5,10 @@
 // the file in public/ and setting `src` in the deck data. It is absolutely
 // positioned over its parent (which must be positioned), so a large image
 // cannot stretch the slide's grid.
-defineProps({
+import { computed, ref, watch } from "vue";
+import { cspLoads } from "@/data/decks/validate.js";
+
+const props = defineProps({
   src: { type: String, default: "" },
   alt: { type: String, default: "" },
   // Shown in the placeholder, e.g. "Stuart — headshot".
@@ -13,15 +16,31 @@ defineProps({
   // object-position, for headshots that need a different crop.
   position: { type: String, default: "center" },
 });
+
+// A src that does not load (a typo, a deleted upload) shows the placeholder
+// rather than the browser's broken-image icon, the way VideoSlide falls back
+// for a video. A new src tries again. An address the site's CSP refuses is
+// never requested: the refusal would be logged as a console error on every
+// page that shows the slide (and fail the /deck smoke check), for the same
+// placeholder in the end.
+const failed = ref(false);
+watch(
+  () => props.src,
+  () => (failed.value = false)
+);
+const blocked = computed(
+  () => !!props.src && !cspLoads(props.src, "img", globalThis.location?.origin)
+);
 </script>
 
 <template>
   <img
-    v-if="src"
+    v-if="src && !blocked && !failed"
     class="deck-image"
     :src="src"
     :alt="alt"
     :style="{ objectPosition: position }"
+    @error="failed = true"
   />
   <div
     v-else

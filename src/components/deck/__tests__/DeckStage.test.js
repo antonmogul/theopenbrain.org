@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { markRaw } from "vue";
 import DeckStage from "../DeckStage.vue";
 
 beforeAll(() => {
@@ -14,7 +15,9 @@ beforeAll(() => {
   };
 });
 
-const Slide = { props: ["text"], template: "<p>{{ text }}</p>" };
+// markRaw: the mounted props are reactive (setProps), and a component inside
+// them would otherwise be proxied, with a Vue warning per render.
+const Slide = markRaw({ props: ["text"], template: "<p>{{ text }}</p>" });
 const SLIDES = ["One", "Two", "Three"].map((label) => ({
   id: label.toLowerCase(),
   label,
@@ -24,11 +27,12 @@ const SLIDES = ["One", "Two", "Three"].map((label) => ({
 }));
 
 let wrapper;
-const mountStage = (modelValue = 0) => {
+const mountStage = (modelValue = 0, extra = {}) => {
   wrapper = mount(DeckStage, {
     props: {
       slides: SLIDES,
       modelValue,
+      ...extra,
       "onUpdate:modelValue": (v) => wrapper.setProps({ modelValue: v }),
     },
     attachTo: document.body,
@@ -96,5 +100,26 @@ describe("DeckStage", () => {
   it("announces the slide for screen readers", () => {
     mountStage(1);
     expect(wrapper.find(".deck-stage__live").text()).toBe("Slide 2 of 3: Two");
+  });
+
+  it("shows an Edit link only when given editTo (OPENBRAIN-129)", async () => {
+    mountStage(0);
+    expect(wrapper.find(".deck-stage__edit").exists()).toBe(false);
+    await wrapper.setProps({ editTo: "/dashboard/decks/funding" });
+    const link = wrapper.find("a.deck-stage__edit");
+    expect(link.attributes("href")).toBe("/dashboard/decks/funding");
+    expect(link.attributes("target")).toBe("_blank");
+    expect(link.attributes("rel")).toBe("noopener");
+    expect(link.attributes("aria-label")).toMatch(/^Edit this deck/);
+    expect(link.text()).toBe("Edit");
+  });
+
+  it("has no notes button, and N does nothing, when no slide has notes", async () => {
+    const bare = SLIDES.map(({ notes, ...s }) => s); // eslint-disable-line no-unused-vars
+    mountStage(0, { slides: bare });
+    const labels = wrapper.findAll("button").map((b) => b.text());
+    expect(labels).not.toContain("Notes");
+    await press("n");
+    expect(wrapper.find(".deck-stage__notes").exists()).toBe(false);
   });
 });

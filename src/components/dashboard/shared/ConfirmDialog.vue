@@ -1,6 +1,10 @@
 <script setup>
 // Destructive/confirm prompt built on BaseModal + Button. Token danger language.
-import { computed } from "vue";
+// Opening it moves focus to Cancel (the safe answer, whatever the variant, so
+// a held or repeated Enter from the button that asked can't confirm);
+// closing it returns focus to that button.
+import { computed, ref } from "vue";
+import { useDialogFocus } from "@/composables/useDialogFocus.js";
 import BaseModal from "./BaseModal.vue";
 import Button from "./Button.vue";
 const props = defineProps({
@@ -24,6 +28,11 @@ function cancel() {
   emit("update:modelValue", false);
   emit("cancel");
 }
+const cancelButton = ref(null);
+useDialogFocus(
+  () => openValue.value,
+  () => cancelButton.value?.$el ?? cancelButton.value
+);
 </script>
 
 <template>
@@ -38,7 +47,7 @@ function cancel() {
       <slot>{{ message }}</slot>
     </p>
     <template #footer>
-      <Button variant="ghost" size="sm" @click="cancel">{{
+      <Button ref="cancelButton" variant="ghost" size="sm" @click="cancel">{{
         cancelLabel
       }}</Button>
       <Button

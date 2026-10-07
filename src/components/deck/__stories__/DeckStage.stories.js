@@ -9,11 +9,11 @@ import { FUNDING_DECK } from "@/data/decks/funding.js";
 import { DECK_TEMPLATES } from "@/data/decks/templates.js";
 
 const mount =
-  (entries, start = 0) =>
+  (entries, start = 0, editTo = "") =>
   () => ({
     components: { DeckStage },
-    setup: () => ({ slides: toSlides(entries), index: ref(start) }),
-    template: `<div style="height: 100vh"><DeckStage v-model="index" :slides="slides" title="Story deck" /></div>`,
+    setup: () => ({ slides: toSlides(entries), index: ref(start), editTo }),
+    template: `<div style="height: 100vh"><DeckStage v-model="index" :slides="slides" title="Story deck" :edit-to="editTo" /></div>`,
   });
 
 export default {
@@ -30,3 +30,11 @@ export const OnSlideFour = { render: mount(FUNDING_DECK, 3) };
 
 /** The slide templates. */
 export const Templates = { render: mount(DECK_TEMPLATES) };
+
+/**
+ * What a signed-in creator sees (OPENBRAIN-129): an Edit link at the end of
+ * the overlay, opening the deck's editor in a new tab.
+ */
+export const WithEditLink = {
+  render: mount(FUNDING_DECK, 0, "/dashboard/decks/funding"),
+};

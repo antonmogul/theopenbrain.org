@@ -149,6 +149,7 @@ src/
 │   │   ├── shared/         # Design-system primitives (Button, Switch, FormField, Badge, ...)
 │   │   ├── sections/       # Creator dashboard sections
 │   │   └── chapters/       # Chapter Wizard steps + ChapterBlockEditor
+│   ├── deck/               # Slide decks: DeckStage, slides/ (the 16 layouts), SlidePreview, editor/ (deck editor)
 │   ├── UI/                 # Legacy reader controls (some are re-export shims to dashboard/shared)
 │   ├── Navigation/         # Menus
 │   ├── quiz/  flashcard/  student/  settings/  lab/  ai/   # Student-facing features
@@ -212,12 +213,17 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 - `/chapter/break/:video?` — break video.
 - `/playground` — Pyodide Python playground.
 - `/widgets` — widget library gallery (not in nav; shared with authors).
-- `/deck`, `/deck/templates` — funder slide deck and slide templates (unlisted, `noindex`; `DeckView` + `src/components/deck/`, content in `src/data/decks/`). See `docs/funding-deck.md`.
+- `/deck` (`deck`) — the funder deck: the published deck a creator pinned in Dashboard → Decks (`rpc/get_pinned_deck`), or the bundled October copy (`src/data/decks/funding.js`) when Supabase isn't configured, the request fails or takes over 5 s, the function isn't pushed yet, or nothing is pinned (`data-deck-source="db|bundled"` on `.deck-view` says which).
+- `/deck/templates` (`deck-templates`) — the 15 slide templates, bundled, no request.
+- `/deck/s/:token` (`deck-shared`) — a published deck by its share link, no sign-in (`rpc/get_shared_deck`). Never falls back: a bad or old token renders "This link isn't available".
+- All deck routes are unlisted and `noindex` and render `DeckView` (`source` prop: `bundled` | `pinned` | `shared` | `draft`, loaded by `useDeckSource`); `#N` opens slide N. See `docs/funding-deck.md`.
 - `/styleguide` — retired (OPENBRAIN-114); redirects to `/storybook/index.html`, which is the design-system reference (Foundations/Colours, Typography, Layout read the live tokens).
 
 **Role-gated routes** (`meta.requiresAuth` + `meta.requiredRole`)
 
-- `/dashboard` — creator dashboard. Only `requiresAuth`, but the guard sends students to `/student` and professors to `/professor`, so it is creator-only in effect. `?section=chapter-wizard` opens the Chapter Wizard (`/dashboard/chapter/new` redirects there).
+- `/dashboard` — creator dashboard. Only `requiresAuth`, but the guard sends students to `/student` and professors to `/professor`, so it is creator-only in effect. `?section=chapter-wizard` opens the Chapter Wizard (`/dashboard/chapter/new` redirects there); `?section=decks` opens Decks (see Data Architecture).
+- `/dashboard/decks/:slug` (`deck-editor`, `DeckEditorView`) — creator. The deck editor, a full page outside `DashboardShell` like the chapter editor.
+- `/dashboard/decks/:slug/present` (`deck-present`) — creator. `DeckView` with `source: 'draft'`: the unpublished working copy, speaker notes included.
 - `/editor` — creator.
 - `/professor` — professor.
 - `/student` — student.
@@ -281,6 +287,17 @@ Schema and seeds live in `supabase/migrations/` (initial schema, RLS fixes, refe
 
 **Adding a chapter**: use the Chapter Wizard at `/dashboard?section=chapter-wizard` (creator role). It takes metadata, then markdown or DOCX content plus an optional `.bib`/`.ris` bibliography (`useContentParser`, `useBibParser`), lets you fix the section structure, and writes modules/sections/paragraphs/references through the REST client. The expected heading structure is documented in `public/templates/chapter-template.md` (H2 = section, H3 = subsection, H4 = sub-subsection).
 
+**Slide decks (OPENBRAIN-129).** `20261007010000_decks.sql` adds `decks` (one row per deck: `slides` is the working copy, a JSON array of `{ id, label, notes?, layout, props, hidden?, source? }` where `layout` is a key of `SLIDE_LAYOUTS` in `components/deck/slides/layouts.js`; `published_slides` the frozen snapshot the public sees; `share_token`; `pinned`, at most one row, what `/deck` shows; `version` for compare-and-swap saves) and `deck_revisions` (a row per publish, nothing reads them yet). Both are creators only, with no anon policy or grant, so the publishable key can't list decks. The public reads through two SECURITY DEFINER RPCs, `get_pinned_deck()` and `get_shared_deck(p_token)`, which drop hidden slides and, unless `is_creator()`, speaker notes; they are `stable`, so call them with GET (the smoke test aborts non-GET data requests). The editor writes with `PATCH decks?id=eq.<id>&version=eq.<n>` (0 rows back is a conflict or a refusal) and the SECURITY INVOKER RPCs `publish_deck(p_id, p_version)` (snapshot + revision in one transaction, `deck_conflict` when the version moved) and `set_pinned_deck(p_id | null)`. The SQL checks only array / 100 slides / 1 MB; layouts are validated in JS, so a new layout needs no migration:
+
+- `src/data/decks/fields.js` — `LAYOUT_SCHEMAS`, one field schema per layout, from which the editor form is generated. A test holds its keys and `required` flags equal to the component's props.
+- `src/data/decks/validate.js` — `normalizeSlide`, `validateDeck` (errors block Publish, warnings don't), `defaultsFor`, `cloneEntry`, `carryOver` (layout switch), `cspAllowed`, `renumberEyebrows`.
+- `src/data/decks/text.js` — `slugify`, `smartPunctuation`, `SLUG_RE` and the reserved slugs (`new`, `present`, `s`, `templates`).
+- `src/data/decks/index.js` — `BUNDLED_DECKS` (`/deck/templates` and the `/deck` fallback), `STARTERS` (New deck: Blank / funding copy / every template), `GALLERY` (Add slide).
+- `funding.js` is the frozen October copy: the `/deck` fallback, the fixture stories and tests use, and the source of the generated seed `20261007010100_seed_funding_deck.sql` (`npm run deck:seed-sql`; published, pinned unless another deck is, `on conflict (slug) do nothing`). `templates.js` is unchanged.
+- `safeSlides` (layouts.js) turns entries into slides and never throws: public mode skips hidden and broken entries, draft mode shows a placeholder slide for a broken one.
+
+The creator dashboard's **Decks** section (`DecksSection`, loaded with `defineAsyncComponent` so the layouts stay out of the dashboard chunk; last in the nav) lists decks and creates, duplicates, archives and deletes them (`useDecks`). The editor (`useDeckEditor`) is a slide rail, a live `SlidePreview` (never `DeckStage`, which binds `window` keys) and a form generated from the layout schema; it autosaves 1 s after the last edit, has 50-step undo, a Problems list, Publish and a Share dialog (copy / rotate the link, unpublish, show at `/deck`); below 1024px it only offers Present draft and Share. Images upload with `uploadDeckImage` (`services/api/storage.js`) to the public `chapter-media` bucket under `decks/<slug>/`, with no `animations` row; video is a URL field. Until the migration is pushed `/deck` falls back and Decks shows "Decks need a database update" (`docs/production-sql.md`).
+
 **User data**: highlights (`highlights` table), notes, reading progress, quiz/flashcard results, preferences and enrolments are all per-user Supabase rows. The `useText` localStorage `sections` mirror is a legacy Chapter 1 behaviour that still exists (the chapter-switch stale-clear check reads it); the JSON import/export UI was removed.
 
 #### Vite Configuration
@@ -323,7 +340,7 @@ Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `ac
 
 1. **Text Highlighting**: select text in the reader to create highlights, saved per user to Supabase (`useHighlights`), with tags, notes and a trending-highlights view. A highlight is private until its owner turns on "Share with readers" in the highlight toolbar. `20261007000000_trending_highlights_sync.sql` keeps highlight rows to their owner (creators can also read shared ones) and counts each passage in `trending_highlights` as distinct readers whose text is in the paragraph, readable for published chapters (and by creators). The switch shows only once that migration is pushed (`useTrendingSharing`).
 2. **Study tools**: quizzes, flashcards, Python labs (Pyodide) and an AI tutor (`VITE_AI_API_*`, mock responses when unset).
-3. **Roles**: creator (dashboard, editor, Chapter Wizard), professor (courses, students, analytics), student (courses, progress).
+3. **Roles**: creator (dashboard, editor, Chapter Wizard, slide decks), professor (courses, students, analytics), student (courses, progress).
 4. **Reading progress and scroll memory**: progress is tracked per user; leaving and returning to a chapter restores the position. The chapter timeline at the bottom of the reader shows it (see Reader chrome), and is how a reader jumps around the chapter.
 5. **Interactive figures**: Lottie/GSAP illustrations driven by scroll and click triggers stored on paragraphs.
 6. **Widget library**: research widgets ported to Vue and rendered beside the authors' originals for verification.
