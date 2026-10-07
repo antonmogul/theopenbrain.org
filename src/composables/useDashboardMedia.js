@@ -84,9 +84,13 @@ export function useDashboardMedia() {
   async function fetchMediaUsage(id) {
     mediaUsage.value = null;
     try {
+      // `sections!section_id`: paragraphs and sections are joined both ways
+      // (paragraphs.section_id, and a box's sections.anchor_paragraph_id since
+      // 20260924030000), so an unqualified embed is ambiguous and PostgREST
+      // refuses it with 300 / PGRST201.
       const [paragraphs, sections, states, variants] = await Promise.all([
         supabaseRest(
-          `paragraphs?animation_id=eq.${id}&select=id,order_index,section:sections(title,module:modules(title))`
+          `paragraphs?animation_id=eq.${id}&select=id,order_index,section:sections!section_id(title,module:modules(title))`
         ),
         supabaseRest(
           `sections?animation_id=eq.${id}&select=id,title,module:modules(title)`
