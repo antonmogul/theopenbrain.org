@@ -2,7 +2,6 @@
 import { ref, computed, nextTick } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
-import { useHomeRoute } from "@/composables/useHomeRoute";
 import AccountMenu from "@/components/Navigation/AccountMenu.vue";
 
 const props = defineProps({
@@ -34,10 +33,6 @@ const {
   isOpen: sidebarOpen,
   activeTab,
 } = useReaderSidebar();
-
-// Wordmark routes to the library when signed-in, marketing home otherwise
-// (also wires the long-parked Track 4 D4 gap).
-const homeRoute = useHomeRoute();
 
 // Panel tool buttons (Info / Notebook / Chat) — share the floating-panel toggle.
 const panelTabs = [
@@ -117,8 +112,10 @@ function onDropdownKeydown(event) {
       <!-- Menu -->
       <button
         type="button"
-        class="icon-btn"
+        class="reader-menu-btn"
         aria-label="Open chapter menu"
+        aria-haspopup="dialog"
+        :aria-expanded="store.activeMenu"
         @click="store.activeMenu = true"
       >
         <svg
@@ -131,24 +128,22 @@ function onDropdownKeydown(event) {
         >
           <path d="M2 4h10M2 7h10M2 10h10" />
         </svg>
+        <span class="wordmark" aria-hidden="true">
+          <svg
+            class="wordmark-logo"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
+          </svg>
+          <span class="wordmark-text">the open brain</span>
+        </span>
       </button>
-
-      <!-- Wordmark -->
-      <router-link :to="homeRoute" class="wordmark" title="The Open Brain">
-        <svg
-          class="wordmark-logo"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
-        </svg>
-        <span class="wordmark-text">the open brain</span>
-      </router-link>
 
       <div class="divider"></div>
 
@@ -278,21 +273,24 @@ function onDropdownKeydown(event) {
   padding: 8px 18px;
 }
 
-.icon-btn {
-  width: 44px;
-  height: 44px;
+.reader-menu-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  gap: 0.625rem;
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   cursor: pointer;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   transition: border-color 0.12s ease;
 }
 
-.icon-btn:hover {
+.reader-menu-btn:hover {
   border-color: rgb(var(--color-ink));
 }
 
@@ -495,7 +493,7 @@ function onDropdownKeydown(event) {
   transform: translateY(-8px);
 }
 
-.icon-btn:focus-visible,
+.reader-menu-btn:focus-visible,
 .section-jump:focus-visible,
 .tool-btn:focus-visible,
 .dropdown-item:focus-visible {

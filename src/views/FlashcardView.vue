@@ -35,6 +35,7 @@ const {
 // View states
 const viewState = ref("loading"); // loading, empty, studying, complete
 const sessionSummary = ref(null);
+const reviewPending = ref(false);
 const showExitConfirm = ref(false);
 
 // Get module ID from route
@@ -101,23 +102,34 @@ onUnmounted(() => {
 
 // Rate card and move to next
 async function rateAndMoveNext(rating) {
+  if (reviewPending.value || !isFlipped.value) return;
+  reviewPending.value = true;
+  // rateCard advances the index; remember which card was actually answered.
+  const wasLastCard = isLastCard.value;
   try {
     await rateCard(rating);
 
     // Check if we've reviewed all cards
-    if (isLastCard.value) {
+    if (wasLastCard) {
       await handleEndSession();
     }
   } catch (e) {
     console.error("FlashcardView: Error rating card:", e);
+  } finally {
+    reviewPending.value = false;
   }
 }
 
 // Handle skip
-function handleSkip() {
-  skipCard();
-  if (isLastCard.value) {
-    handleEndSession();
+async function handleSkip() {
+  if (reviewPending.value || !isFlipped.value) return;
+  reviewPending.value = true;
+  const wasLastCard = isLastCard.value;
+  try {
+    skipCard();
+    if (wasLastCard) await handleEndSession();
+  } finally {
+    reviewPending.value = false;
   }
 }
 
@@ -282,7 +294,11 @@ const formattedDuration = computed(() => {
       <!-- Rating (only show when flipped) -->
       <Transition name="fade">
         <div v-if="isFlipped" class="rating-area">
-          <FlashcardRating @rate="rateAndMoveNext" @skip="handleSkip" />
+          <FlashcardRating
+            :disabled="reviewPending"
+            @rate="rateAndMoveNext"
+            @skip="handleSkip"
+          />
         </div>
       </Transition>
 

@@ -27,6 +27,7 @@ import {
   watch,
 } from "vue";
 import { stepIndex } from "@/helper/figureCycle";
+import { lockReaderScroll } from "@/helper/readerScrollLock";
 
 const props = defineProps({
   /* Normalised by figureImages(): [{ src, caption, alt }]. */
@@ -159,32 +160,20 @@ const closeBtn = ref(null);
 const strip = ref(null);
 const thumbs = ref([]);
 let opener = null;
-let lockedStyles = null;
+let releaseScroll = null;
 
 const current = computed(() => props.images[index.value] || first.value);
 const currentCaption = computed(() => captionFor(current.value));
-
-function lockScroll() {
-  if (lockedStyles || typeof document === "undefined") return;
-  const html = document.documentElement;
-  lockedStyles = [html.style.overflow, document.body.style.overflow];
-  html.style.overflow = "hidden";
-  document.body.style.overflow = "hidden";
-}
-function unlockScroll() {
-  if (!lockedStyles) return;
-  document.documentElement.style.overflow = lockedStyles[0];
-  document.body.style.overflow = lockedStyles[1];
-  lockedStyles = null;
-}
 
 function open(i) {
   index.value = i;
   opener = thumbs.value[i] || null;
   viewerOpen.value = true;
-  lockScroll();
+  releaseScroll ||= lockReaderScroll();
+  window.addEventListener("popstate", onHistoryChange);
   document.addEventListener("keydown", onViewerKeydown, true);
   nextTick(() => {
+    if (!viewerOpen.value) return;
     closeBtn.value?.focus();
     revealStripThumb();
   });
@@ -192,10 +181,17 @@ function open(i) {
 function close({ restoreFocus = true } = {}) {
   if (!viewerOpen.value) return;
   viewerOpen.value = false;
-  unlockScroll();
+  releaseScroll?.();
+  releaseScroll = null;
+  swipe = null;
+  window.removeEventListener("popstate", onHistoryChange);
   document.removeEventListener("keydown", onViewerKeydown, true);
-  if (restoreFocus) opener?.focus?.();
+  if (restoreFocus && opener?.isConnected)
+    opener.focus({ preventScroll: true });
   opener = null;
+}
+function onHistoryChange() {
+  close({ restoreFocus: false });
 }
 function go(direction) {
   index.value = stepIndex(index.value, props.images.length, direction);
@@ -224,6 +220,10 @@ function onViewerKeydown(e) {
     e.stopPropagation();
     go(-1);
   } else if (e.key === "Tab") {
+    // The viewer is teleported outside the enclosing figure dialog. Own all
+    // Tab events, including native movement between interior controls, so
+    // the underlying dialog cannot pull focus behind this topmost layer.
+    e.stopPropagation();
     const items = focusables();
     if (!items.length) return;
     const firstEl = items[0];
@@ -679,7 +679,7 @@ onBeforeUnmount(() => {
 .figview {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 1200;
   display: grid;
   /* minmax(0, 1fr): the bar's nowrap title must not widen the column past
      the viewport. */
@@ -775,8 +775,11 @@ onBeforeUnmount(() => {
   box-shadow: 0 12px 40px rgb(0 0 0 / 0.45);
 }
 .figview-nav {
-  position: absolute;
-  top: 50%;
+  /* Anchor to the viewport, not the image stage: captions change height. */
+  position: fixed;
+  top: 50vh;
+  top: 50dvh;
+  z-index: 1;
   transform: translateY(-50%);
   width: 48px;
   height: 48px;
@@ -844,15 +847,12 @@ onBeforeUnmount(() => {
     padding: 0.5rem 0.5rem 0.5rem 1rem;
     gap: 0.75rem;
   }
-  /* Prev/next drop below the image, where thumbs reach them, instead of
-     covering its edges on a narrow screen. */
+  /* Keep the same viewport-anchored controls on narrow screens, with
+     side gutters so neither the artwork nor the filmstrip is covered. */
   .figview-stage {
-    padding: 0.75rem 0.75rem 4.25rem;
+    padding: 0.75rem 3.5rem;
   }
   .figview-nav {
-    top: auto;
-    bottom: 0.75rem;
-    transform: none;
     width: 44px;
     height: 44px;
   }

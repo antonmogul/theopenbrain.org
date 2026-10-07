@@ -87,22 +87,15 @@ export function regionShapes(svgText) {
   return out;
 }
 
-/*
- * Names and blurbs from the mock, matched BY NUMBER, and only for 1–18. The
- * Figma map's regions 1–18 sit where Spurzheim's faculties of those numbers
- * sit (1 at the nape, 10 at the crown, 13 top of the forehead…), and the mock
- * is written in Spurzheim's numbering. Its forehead regions (19–33) follow a
- * different chart, so a Spurzheim name there would be the wrong faculty:
- * those have no name until the authors supply the chart's own list.
+/** The source appendix supplies the same I–XXXIII numbering as the maps.
+ * Keep complete source records; never join a different chart by number.
+ * XXII has no labelled location and is available through the faculty list.
  */
-export const SPURZHEIM_MATCHES_MAP = 18;
-/** n → { name, blurb } from the mock's views. */
 export function facultyInfoByNumber(views) {
   const info = new Map();
-  for (const v of views)
-    for (const r of v.regions)
-      if (r.n <= SPURZHEIM_MATCHES_MAP && !info.has(r.n))
-        info.set(r.n, { name: r.name, blurb: r.blurb });
+  for (const view of views)
+    for (const region of view.regions)
+      if (!info.has(region.n)) info.set(region.n, region);
   return info;
 }
 

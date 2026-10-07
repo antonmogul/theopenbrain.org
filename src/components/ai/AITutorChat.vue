@@ -1,7 +1,16 @@
 <script setup>
 import { ref, watch, nextTick } from "vue";
+import { AI_TUTOR_AVAILABILITY } from "@/helper/aiTutorAvailability";
 
 const props = defineProps({
+  available: {
+    type: Boolean,
+    default: false,
+  },
+  availabilityMessage: {
+    type: String,
+    default: AI_TUTOR_AVAILABILITY.message,
+  },
   messages: {
     type: Array,
     default: () => [],
@@ -35,7 +44,7 @@ watch(
 // Handle sending message
 function handleSend() {
   const content = inputMessage.value.trim();
-  if (!content || props.loading) return;
+  if (!props.available || !content || props.loading || props.streaming) return;
 
   emit("send", content);
   inputMessage.value = "";
@@ -67,11 +76,16 @@ function getVisibleMessages() {
 
 <template>
   <div class="ai-chat" data-testid="ai-tutor-chat">
+    <div v-if="!available" class="availability-banner" role="status">
+      <p class="availability-title">AI chat unavailable</p>
+      <p>{{ availabilityMessage }}</p>
+    </div>
+
     <!-- Messages area -->
     <div ref="chatContainer" class="messages-container">
       <!-- Empty state -->
       <div
-        v-if="getVisibleMessages().length === 0 && !streaming"
+        v-if="available && getVisibleMessages().length === 0 && !streaming"
         class="empty-state"
       >
         <svg
@@ -89,7 +103,7 @@ function getVisibleMessages() {
             d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
           ></path>
         </svg>
-        <p class="empty-title">Ask me anything!</p>
+        <p class="empty-title">Ask about this chapter</p>
         <p class="empty-text">
           I'm here to help you understand the neuroscience content.
         </p>
@@ -109,7 +123,7 @@ function getVisibleMessages() {
       </div>
 
       <!-- Typing indicator -->
-      <div v-if="streaming" class="message assistant">
+      <div v-if="available && streaming" class="message assistant">
         <div class="message-bubble typing">
           <div class="typing-indicator">
             <span></span>
@@ -125,15 +139,19 @@ function getVisibleMessages() {
       <textarea
         v-model="inputMessage"
         class="message-input"
-        placeholder="Type your question..."
+        :placeholder="
+          available ? 'Type your question...' : 'AI chat unavailable'
+        "
+        aria-label="Message to AI Tutor"
         rows="2"
-        :disabled="loading"
+        :disabled="!available || loading || streaming"
         @keydown="handleKeydown"
         data-testid="ai-chat-input"
       ></textarea>
       <button
         class="send-btn"
-        :disabled="loading || !inputMessage.trim()"
+        :disabled="!available || loading || streaming || !inputMessage.trim()"
+        aria-label="Send message"
         @click="handleSend"
         data-testid="ai-send-btn"
       >
@@ -161,6 +179,25 @@ function getVisibleMessages() {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.availability-banner {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-mute));
+  font-size: var(--ui-size-13);
+  line-height: 1.5;
+}
+
+.availability-banner p {
+  margin: 0;
+}
+
+.availability-banner .availability-title {
+  color: rgb(var(--color-ink));
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .messages-container {

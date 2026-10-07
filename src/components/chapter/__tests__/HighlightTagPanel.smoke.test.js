@@ -3,6 +3,12 @@ import { mount } from "@vue/test-utils";
 import HighlightTagPanel from "@/components/chapter/highlight-toolbar/HighlightTagPanel.vue";
 
 describe("HighlightTagPanel (render smoke)", () => {
+  it("explains tags as labels for grouping and filtering in the Notebook", () => {
+    const w = mount(HighlightTagPanel);
+    expect(w.text()).toContain("Tags are short labels");
+    expect(w.text()).toContain("Filter by them in the Notebook");
+  });
+
   it("renders a chip per tag", () => {
     const w = mount(HighlightTagPanel, {
       props: { tags: ["alpha", "beta"], tagInput: "" },

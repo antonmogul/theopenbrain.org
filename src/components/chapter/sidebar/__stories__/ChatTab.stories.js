@@ -1,8 +1,8 @@
 /*
  * Chapter/ReaderShell/ChatTab — the AI tutor inside the sidebar. It loads
  * the module's conversations through the (mocked) API client and builds its
- * context from the text store's chapter. Without VITE_AI_API_* the tutor
- * answers with mock responses, so no request can leave localhost.
+ * context from the text store's chapter. Live AI is disabled. The separate
+ * offline previews rearrange loaded text and never persist mock answers.
  */
 import ChatTab from "../ChatTab.vue";
 import { sidebarFrame } from "../../__stories__/chapterFixtures";
@@ -26,7 +26,7 @@ export default {
   render: sidebarFrame(ChatTab),
 };
 
-/** First use: no conversation yet, the welcome prompt. */
+/** First use: live AI unavailable; optional offline previews. */
 export const Default = {};
 
 /** An existing conversation with an assistant reply. */

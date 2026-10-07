@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { ref } from "vue";
 import { useHighlightRenderer } from "../useHighlightRenderer.js";
 
@@ -6,6 +6,47 @@ import { useHighlightRenderer } from "../useHighlightRenderer.js";
 // crossing a link or a citation becomes several <mark>s, so any padding on
 // them pushed the words that follow (OPENBRAIN-90).
 describe("useHighlightRenderer marks", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("keeps text and inline markup unchanged after repeated highlight, hover, and clear", () => {
+    const original =
+      "Light <strong>hits</strong> the <a href='#ref-1'>retina</a><sup>1</sup>.";
+    document.body.innerHTML = `<p data-paragraph-id="p1">${original}</p>`;
+    const paragraph = document.querySelector("p");
+    const text = paragraph.textContent;
+    const normalizedHtml = paragraph.innerHTML;
+    const grouped = ref({
+      p1: [
+        { id: "h1", start_offset: 0, end_offset: text.length, color: "blue" },
+      ],
+    });
+    const renderer = useHighlightRenderer(grouped);
+    for (let i = 0; i < 3; i++) {
+      renderer.renderAllHighlights();
+      for (const mark of paragraph.querySelectorAll("mark")) {
+        mark.dispatchEvent(new Event("mouseenter"));
+        for (const property of [
+          "padding",
+          "margin",
+          "letterSpacing",
+          "fontSize",
+          "fontWeight",
+          "whiteSpace",
+        ]) {
+          expect(mark.style[property]).toBe("");
+        }
+        mark.dispatchEvent(new Event("mouseleave"));
+      }
+      expect(paragraph.textContent).toBe(text);
+      expect(paragraph.querySelector("strong").textContent).toBe("hits");
+      expect(paragraph.querySelector("a").getAttribute("href")).toBe("#ref-1");
+      renderer.clearHighlightMarks(paragraph);
+      expect(paragraph.innerHTML).toBe(normalizedHtml);
+    }
+  });
+
   function render(html, highlight) {
     document.body.innerHTML = `<p data-paragraph-id="p1">${html}</p>`;
     const byParagraph = ref({ p1: [highlight] });

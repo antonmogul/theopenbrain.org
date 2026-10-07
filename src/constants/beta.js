@@ -7,8 +7,6 @@ export const SHOW_UNFINISHED = import.meta.env.VITE_SHOW_UNFINISHED === "1";
 const HIDDEN = new Set([
   // v1.0 holds every chapter but reads "Draft"; the empty seed versions read "Published".
   "dashboard.versions",
-  // Nothing in the app writes analytics_events, so every number is zero.
-  "dashboard.analytics",
   // Presentational toggles with no backend.
   "settings.notifications",
   "settings.data",

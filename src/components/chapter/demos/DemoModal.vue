@@ -1,5 +1,7 @@
 <script setup>
-import { ref, watch, onBeforeUnmount, nextTick } from "vue";
+import { ref, watch, onBeforeUnmount, nextTick, useId, inject } from "vue";
+import { routerKey } from "vue-router";
+import { lockReaderScroll } from "@/helper/readerScrollLock";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const props = defineProps({
@@ -14,7 +16,11 @@ const emit = defineEmits(["close"]);
 const panelRef = ref(null);
 const closeButtonRef = ref(null);
 let triggerElement = null;
-let previousBodyOverflow = "";
+const titleId = `demo-modal-title-${useId()}`;
+const router = inject(routerKey, null);
+let releaseScroll = null;
+let activation = 0;
+let unmounted = false;
 
 const focusableSelector = [
   "a[href]",
@@ -32,7 +38,10 @@ function onBackdropClick(e) {
 }
 
 function onKeydown(e) {
+  // A widget may consume Escape to close its own detail panel first.
+  if (e.defaultPrevented || !props.show) return;
   if (e.key === "Escape") {
+    e.preventDefault();
     emit("close");
     return;
   }
@@ -49,59 +58,82 @@ function onKeydown(e) {
 
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
-  if (e.shiftKey && document.activeElement === first) {
+  const inside = panelRef.value.contains(document.activeElement);
+  if (e.shiftKey && (!inside || document.activeElement === first)) {
     e.preventDefault();
     last.focus();
-  } else if (!e.shiftKey && document.activeElement === last) {
+  } else if (!e.shiftKey && (!inside || document.activeElement === last)) {
     e.preventDefault();
     first.focus();
   }
 }
 
+function deactivate({ restoreFocus = true } = {}) {
+  activation++;
+  releaseScroll?.();
+  releaseScroll = null;
+  window.removeEventListener("keydown", onKeydown);
+  window.removeEventListener("popstate", onNavigation);
+  const trigger = triggerElement;
+  triggerElement = null;
+  if (restoreFocus && trigger?.isConnected)
+    trigger.focus({ preventScroll: true });
+}
+
+function onNavigation() {
+  if (!props.show || !releaseScroll) return;
+  deactivate({ restoreFocus: false });
+  emit("close");
+}
+
 watch(
   () => props.show,
   async (open) => {
-    if (open) {
-      triggerElement = document.activeElement;
-      previousBodyOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", onKeydown);
-      await nextTick();
-      closeButtonRef.value?.focus();
-    } else {
-      document.body.style.overflow = previousBodyOverflow;
-      window.removeEventListener("keydown", onKeydown);
-      await nextTick();
-      if (triggerElement?.isConnected) triggerElement.focus();
-      triggerElement = null;
+    if (unmounted) return;
+    if (!open) {
+      deactivate();
+      return;
     }
+    triggerElement = document.activeElement;
+    releaseScroll ||= lockReaderScroll();
+    const currentActivation = ++activation;
+    window.addEventListener("keydown", onKeydown);
+    window.addEventListener("popstate", onNavigation);
+    await nextTick();
+    if (!unmounted && props.show && currentActivation === activation)
+      closeButtonRef.value?.focus({ preventScroll: true });
   },
   { immediate: true }
 );
 
+// Includes programmatic navigation as well as browser Back/Forward.
+watch(() => router?.currentRoute.value.fullPath, onNavigation);
 onBeforeUnmount(() => {
-  document.body.style.overflow = previousBodyOverflow;
-  window.removeEventListener("keydown", onKeydown);
-  if (triggerElement?.isConnected) triggerElement.focus();
-  triggerElement = null;
+  unmounted = true;
+  deactivate();
 });
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="demo-modal">
-      <div v-if="show" class="demo-backdrop" @click="onBackdropClick">
+      <div
+        v-if="show"
+        class="demo-backdrop"
+        :class="{ 'demo-backdrop--wide': wide }"
+        @click="onBackdropClick"
+      >
         <div
           ref="panelRef"
           class="demo-panel"
           :class="{ 'demo-panel--wide': wide }"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="demo-modal-title"
+          :aria-labelledby="titleId"
           tabindex="-1"
         >
           <header class="demo-header">
-            <h2 id="demo-modal-title" class="demo-title">{{ title }}</h2>
+            <h2 :id="titleId" class="demo-title">{{ title }}</h2>
             <button
               ref="closeButtonRef"
               type="button"
@@ -189,6 +221,8 @@ onBeforeUnmount(() => {
 
 .demo-body {
   flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
   overflow-y: auto;
   padding: 32px;
   font-size: var(--ui-size-16);
@@ -196,11 +230,22 @@ onBeforeUnmount(() => {
 
 /* Wide: let the slot content own the width; widget views carry their own
    max-width and padding. */
+.demo-backdrop--wide {
+  padding: 0;
+}
 .demo-panel--wide {
   max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+}
+.demo-panel--wide .demo-header {
+  padding: 0.5rem 1rem;
 }
 
 .demo-panel--wide .demo-body {
+  --widget-min-h: 100%;
   padding: 0;
   background: rgb(var(--color-bg));
 }

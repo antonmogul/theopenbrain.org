@@ -1,0 +1,67 @@
+name: History fixture browser QA
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: history-fixture-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  history-fixture-browser:
+    name: History fixture Chromium assertions and screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # Storybook aliases every API/auth client. No repository secrets are used.
+      STORYBOOK_DISABLE_TELEMETRY: "1"
+      DO_NOT_TRACK: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20.20.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Exercise source-repair SQL in an isolated temporary database
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p history-fixture-browser-artifacts
+          harness="$(mktemp -d)"
+          npm install --prefix "$harness" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.5.8
+          export HISTORY_SQL_HARNESS="$harness/node_modules/@electric-sql/pglite"
+          node scripts/history-full-reader-generate.mjs "$HISTORY_SQL_HARNESS" --check
+          npx vitest run --pool=forks src/__tests__/historySourceContent.test.js src/__tests__/historySourceRepair.sql.test.js src/__tests__/historyReferenceLinks.test.js src/__tests__/historyReferenceLinks.sql.test.js 2>&1 | tee history-fixture-browser-artifacts/isolated-sql.log
+      - name: Install hosted Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build isolated Storybook fixtures
+        shell: bash
+        run: npm run build-storybook 2>&1 | tee history-fixture-browser-artifacts/storybook-build.log
+      - name: Supply and verify local History artwork
+        shell: bash
+        run: npm run history:fixture:prepare 2>&1 | tee history-fixture-browser-artifacts/fixture-assets.log
+      - name: Supply and verify complete reader artwork
+        shell: bash
+        run: node scripts/history-full-reader-prepare.mjs 2>&1 | tee history-fixture-browser-artifacts/full-reader-assets.log
+      - name: Run fixture-only browser assertions
+        shell: bash
+        run: npm run history:fixture:browser:ci 2>&1 | tee history-fixture-browser-artifacts/browser.log
+      - name: Run complete reader fixture assertions
+        shell: bash
+        run: npx start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 'node scripts/history-full-reader-browser.mjs' 2>&1 | tee history-fixture-browser-artifacts/full-reader-browser.log
+      - name: Upload screenshots, measurements and failure context
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-fixture-browser-${{ github.sha }}
+          path: history-fixture-browser-artifacts/
+          retention-days: 14
+          if-no-files-found: error

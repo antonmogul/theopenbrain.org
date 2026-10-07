@@ -49,18 +49,18 @@ describe("phrenologyMaps", () => {
     expect(mapOutlines(SVG)).toHaveLength(5);
   });
 
-  it("names faculties 1–18 only, where the map follows Spurzheim", () => {
+  it("keeps source-numbered records above 18 and de-duplicates shared views", () => {
     const info = facultyInfoByNumber([
       {
         regions: [
           { n: 14, name: "Veneration", blurb: "a" },
-          { n: 19, name: "Ideality", blurb: "b" },
+          { n: 19, name: "Individuality", blurb: "b" },
           { n: 14, name: "Duplicate", blurb: "c" },
         ],
       },
     ]);
-    expect(info.get(14)).toEqual({ name: "Veneration", blurb: "a" });
-    expect(info.has(19)).toBe(false);
+    expect(info.get(14)).toEqual({ n: 14, name: "Veneration", blurb: "a" });
+    expect(info.get(19)).toEqual({ n: 19, name: "Individuality", blurb: "b" });
   });
 
   it("has a fit for every view, as an SVG transform about the centre", () => {

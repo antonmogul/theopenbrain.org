@@ -289,7 +289,6 @@ export function useFlashcards() {
           interval = 1;
           repetitions = 0;
           easeFactor = Math.max(1.3, easeFactor - 0.2);
-          sessionStats.value.incorrect++;
           break;
 
         case 2: // Hard - Small interval increase
@@ -302,7 +301,6 @@ export function useFlashcards() {
           }
           easeFactor = Math.max(1.3, easeFactor - 0.15);
           repetitions++;
-          sessionStats.value.correct++;
           break;
 
         case 3: // Good - Normal progression
@@ -314,7 +312,6 @@ export function useFlashcards() {
             interval = Math.round(interval * easeFactor);
           }
           repetitions++;
-          sessionStats.value.correct++;
           break;
 
         case 4: // Easy - Accelerated progression
@@ -327,7 +324,6 @@ export function useFlashcards() {
           }
           easeFactor = Math.min(3.0, easeFactor + 0.15);
           repetitions++;
-          sessionStats.value.correct++;
           break;
       }
 
@@ -348,6 +344,10 @@ export function useFlashcards() {
           next_review_date: nextReview.toISOString().split("T")[0],
         }),
       });
+
+      // Count only a saved response: an offline retry must not count twice.
+      if (rating === 1) sessionStats.value.incorrect++;
+      else if ([2, 3, 4].includes(rating)) sessionStats.value.correct++;
 
       // Update local card data for potential re-review
       card.lastResponse = {

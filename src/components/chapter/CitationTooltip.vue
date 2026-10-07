@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
   z-index: 9999;
   max-width: 360px;
   padding: 14px 16px;
-  background: white;
+  background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   box-shadow:
@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 4px;
   font-size: var(--ui-size-12);
-  color: #7c3aed;
+  color: rgb(var(--color-accent));
   text-decoration: none;
 }
 

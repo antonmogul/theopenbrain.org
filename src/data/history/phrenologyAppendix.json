@@ -1,0 +1,1050 @@
+{
+  "source": {
+    "filename": "Foundations_ST7_NM3_LL.docx",
+    "sha256": "c8118d6d3be7c1f8cc4a6b3ca5893192acab7c33c8f7798fbeab64048b6dbd9f",
+    "citation": "Excerpts taken from “The Physiognomical System of Drs. Gall and Spurzheim Founded on an Anatomical and Physiological Examination of the Nervous System in General, and of the Brain in Particular, and Indicating the Dispositions and Manifestations of the Mind” published by Baldwin, Cradock and Joy, in London, 1815."
+  },
+  "faculties": [
+    {
+      "n": 1,
+      "roman": "I",
+      "name": "Amativeness (physical love)",
+      "sourceTitle": "I. The Organ of Amativeness (physical love)",
+      "sourceBlock": 410,
+      "quotes": [
+        {
+          "sourceBlock": 412,
+          "text": "This particular organ is situated in the neck. Discover the mastoid process behind the ear, and the protuberance of the occipital spine above the middle of the neck, the space between these two elevations indicates the extent of this organ. Consider then its size in all dimensions, and compare its development and the propensity to erotic actions."
+        },
+        {
+          "sourceBlock": 414,
+          "text": "…Dr. Gall did not originally think that there was an organ of this propensity in the brain. He discovered its existence by chance. Being physician to a widow who was subject to very strong hysterical fits, during which she drew her head backward with great violence, Gall sometimes supported her head with his hand, and observed that her neck was very large and hot. He was acquainted with her character, and knew that she was extremely fond of sensual pleasure. Gall considered this magnitude of her neck, the consequent development of her cerebellum, and her excessive passion for physical love; and he was naturally led to inquire, whether there might not be some relation between the magnitude of the cerebellum and this particular propensity."
+        },
+        {
+          "sourceBlock": 416,
+          "text": "… The sexual parts, or the testes and uterus in particular cannot produce it; for many children manifest this propensity before their testes secrete. Besides, many eunuchs, although deprived of their testes, preserve this propensity. In the same manner, there are women entirely destitute of the uterus, who yet manifest this inclination."
+        },
+        {
+          "sourceBlock": 418,
+          "text": "… Organised beings which are propagated without copulation, as by buds, by slips, or by cuts, have neither brain nor cerebellum… The activity is even proportionate to the particular development of the cerebellum… In some individuals, this propensity is almost wanting; in others it is moderate; in others again it is very violent. In the first the cerebellum is very small; in the second it is of a middling size ; and in the third class it is very prominent."
+        },
+        {
+          "sourceBlock": 420,
+          "text": "… other proofs show evidently that the development of the cerebellum always precedes the manifestation of this faculty."
+        },
+        {
+          "sourceBlock": 422,
+          "text": "… Farmers and breeders of cattle have for a long time past made the observation, that stallions, rams and bulls, which have a large neck, have a more energetic power of propagation. It is also known that vigorous pigeons are distinguished by the size of their necks."
+        },
+        {
+          "sourceBlock": 424,
+          "text": "… If the cerebellum or neck be wounded, the genital parts are affected by sympathy. Gall attended two officers, at Vienna, who were wounded in the neck, and became impotent… Baron Larrey, at Paris, showed us several individuals who had been wounded in the neck, and whose genital parts had diminished in size."
+        },
+        {
+          "sourceBlock": 426,
+          "text": "… In ancient times it was a common opinion that the seminal fluid is secreted in the cerebellum, and that it descends along the spinal marrow."
+        },
+        {
+          "sourceBlock": 428,
+          "text": "… In lunatic hospitals, there are often idiots who have lost all their intellectual faculties, or whose intellectual functions are very weak, while they manifest an irresistible erotic desire… These unfortunate creatures have the neck and the posterior part of the head large and much developed, while the fore and superior part of their heads is narrow and small."
+        },
+        {
+          "sourceBlock": 430,
+          "text": "… Many persons carry their arms and hands involuntarily behind the neck during the erotic state."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image45.png",
+          "width": 817,
+          "height": 1452,
+          "caption": "Plate VI – Organ of amativeness (I)",
+          "sha256": "7a065610b60c71b0f35dd5c1b8e3c14361664f1fb1e419923a974c2ff7391808",
+          "sourceBlock": 432,
+          "relationshipId": "rId79"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 2,
+      "roman": "II",
+      "name": "Philoprogenitiveness (love of progeny)",
+      "sourceTitle": "II. The Organ of Philoprogenitiveness (love of progeny)",
+      "sourceBlock": 437,
+      "quotes": [
+        {
+          "sourceBlock": 439,
+          "text": "Dr. Gall observed a distinct protuberance on the posterior part of the skulls of women… In fine, he found that this protuberance, which is situated immediately above that of physical love or amativeness, and corresponds with the general protuberance of the occiput, is the organ of philoprogenitiveness… Species, sexes, individuals, which are endowed with a great deal of maternal love, have this organ much developed. In women and females, this organ is, in general, larger."
+        },
+        {
+          "sourceBlock": 441,
+          "text": "… In mankind this phenomenon must be considered as an indirect cause conducive to infanticide. We have examined the shape of the head in twenty-nine women who were infanticides. Twenty-five of them had the organ of philoprogenitiveness very small."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image47.png",
+          "width": 647,
+          "height": 1150,
+          "caption": "Plate VII – Organ of Philoprogenitiveness (II)",
+          "sha256": "4a062d81f8a695432a760ac00804c8438216fefc218b71e747c9d04ca66ffa58",
+          "sourceBlock": 443,
+          "relationshipId": "rId80"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 3,
+      "roman": "III",
+      "name": "Inhabitiveness",
+      "sourceTitle": "III. The Organ of Inhabitiveness",
+      "sourceBlock": 449,
+      "quotes": [
+        {
+          "sourceBlock": 451,
+          "text": "…it seems to me that there is a particular faculty, and a special organ, which determines the dwelling of animals."
+        },
+        {
+          "sourceBlock": 453,
+          "text": "… In examining the habits and manners of living of different animals, it is obvious, that different kinds of animals are attached to some particular region and country. Nature which intended that all regions and countries should be inhabited, assigned to all animals their dwelling, and gave to every kind of animal its respective propensity to some particular region. If we place any animal in another region, it leaves it and returns to its natural dwelling."
+        },
+        {
+          "sourceBlock": 455,
+          "text": "… its organ must be deep-seated in the brain, and must be looked for in the region of the other propensities; while self-love is a sentiment, and its organ occupies a higher place in the head."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image48.png",
+          "width": 781,
+          "height": 1156,
+          "caption": "Plate 9: Organ of Inhabitiveness (III).",
+          "sha256": "db9dc40687ac938a817542813bbf55855ed0f1384002e0c360661d8d31f1511b",
+          "sourceBlock": 457,
+          "relationshipId": "rId81"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 4,
+      "roman": "IV",
+      "name": "Adhesiveness (Attachment)",
+      "sourceTitle": "IV. Organ of Adhesiveness (Attachment)",
+      "sourceBlock": 461,
+      "quotes": [
+        {
+          "sourceBlock": 463,
+          "text": "Gall seldom speaks of it. He examined the head of a woman at Vienna, who was known as a model of friendship. She suffered different changes of fortune; she became alternately rich and poor; but was always attached to her former friends. Gall found the part of her head situated upward and outward from the organ of philoprogenitiveness; very prominent, and called it the organ of friendship. Our observations are not multiplied enough to enable us to decide positively on this organ; yet its seat seems to me more than probable. It must be inferiorly, because this faculty exists in the lower animals and is a propensity. For this reason it belongs to their region of the head; and according to its mimical signs and the motions of the head when it is active, it lies laterally and backward."
+        },
+        {
+          "sourceBlock": 465,
+          "text": "… It results that society and marriage are not at all the effect of human reflection, but of original nature."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image49.png",
+          "width": 819,
+          "height": 1211,
+          "caption": "Plate 9: Organ of Adhesiveness (IV).",
+          "sha256": "9943c37f171032561b9c77e701285cd9f561751b1a3e47ca4e000068c0865150",
+          "sourceBlock": 467,
+          "relationshipId": "rId82"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 5,
+      "roman": "V",
+      "name": "Combativeness",
+      "sourceTitle": "V. Organ Of Combativeness.",
+      "sourceBlock": 470,
+      "quotes": [
+        {
+          "sourceBlock": 472,
+          "text": "…Dr. Gall, having called together boys from the streets, made them fight each other: there were some who liked it much, and others who, on the contrary, were peaceable and timid. In the former, that part of the head which corresponds to the posterior inferior angle of the parietal bone, behind the mastoid process was prominent, and in the latter the same place was flat or depressed. The prominence was also found in the heads of brave and valiant officers, of quarrelsome students, of duellists, and of those whose greatest pleasure consisted in fighting and making themselves feared. Gall therefore at first called this organ that of courage… At present he calls it the organ of self-defence… but it seems to me that this faculty is, like all others, general and not limited to self-defence. Therefore I call it the organ of the propensity to fight, or of combativeness."
+        },
+        {
+          "sourceBlock": 474,
+          "text": "… There are animals which never fight; others are fond of it... the courageous animals have the head between and behind the ears very large. This is an unfailing sign to distinguish or recognize, if a horse be shy and timid, or bold and sure."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image50.png",
+          "width": 621,
+          "height": 919,
+          "caption": "Plates 9 and 10 : Organ of combativeness in humans (left, V), and in animals (right, V).",
+          "sha256": "827537d899f9a9b86d7883d925c9b6b4fde0bb49af520ed4427714557011a420",
+          "sourceBlock": 475,
+          "relationshipId": "rId83"
+        },
+        {
+          "src": "/publicAssets/images/foundations/appendix/image52.png",
+          "width": 703,
+          "height": 921,
+          "caption": "Plates 9 and 10 : Organ of combativeness in humans (left, V), and in animals (right, V).",
+          "sha256": "78e299e6fe8ca542d6eab79c4147465f022f11a39d62e1b2edaafbc3bae372f9",
+          "sourceBlock": 475,
+          "relationshipId": "rId84"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 6,
+      "roman": "VI",
+      "name": "Destructiveness",
+      "sourceTitle": "VI. Organ of Destructiveness",
+      "sourceBlock": 483,
+      "quotes": [
+        {
+          "sourceBlock": 485,
+          "text": "A difference in the skulls of carnivorous and herbivorous animals gave the first idea of the existence of this organ. If we place a skull of any carnivorous animal horizontally, and trace a vertical line through the external meatus auditorius, a great portion of cerebral mass is situated behind that line. The more an animal is carnivorous, the more considerable is the portion of the cerebral mass situated there."
+        },
+        {
+          "sourceBlock": 487,
+          "text": "… Gall formerly called the organ of this faculty the organ of murder, because he found it much developed in two murderers… I think that the name organ of the propensity to destroy, or of destructiveness, is the most general and the most conformable to the sphere of activity of this faculty. We are convinced, by a great number of observations, that the seat of this organ is on the side of the head immediately above the ears."
+        },
+        {
+          "sourceBlock": 489,
+          "text": "… The propensity to kill exists beyond doubt in certain animals. It is more or less energetic in animals of different species, and even in the individuals of the same kind… Gall had a little dog which had this propensity in so high a degree, that he would sometimes watch several hours for a mouse. As soon as it was killed he left it. Notwithstanding repeated punishment he had an irresistible propensity to kill birds."
+        },
+        {
+          "sourceBlock": 491,
+          "text": "… There are some individuals who choose their profession according to this propensity, if it be very energetic. A student often shocked his school-fellows by his extraordinary pleasure in tormenting insects, birds and other animals. In order, as he pretended, to satisfy this inclination he became surgeon. A journeyman apothecary, at Vienna, felt so great a propensity to kill, that he became an executioner. The son of a rich merchant, of the same city, gave up commerce and became a butcher. A rich Dutchman paid the butchers who furnished the navy with beef, for permission to kill the oxen."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image53.png",
+          "width": 451,
+          "height": 667,
+          "caption": "Plates 9 and 11 : Organ of combativeness (left, VI; right, VI).",
+          "sha256": "a043b544fd435783544cf4fbb5d08c6b971edc6d657dfbbc0bf2e9f17ed73098",
+          "sourceBlock": 492,
+          "relationshipId": "rId85"
+        },
+        {
+          "src": "/publicAssets/images/foundations/appendix/image56.png",
+          "width": 351,
+          "height": 665,
+          "caption": "Plates 9 and 11 : Organ of combativeness (left, VI; right, VI).",
+          "sha256": "25e9665c77b6366070c7b9f7b5e12e5e9500415b13f737d04d58658bd9f83c8b",
+          "sourceBlock": 492,
+          "relationshipId": "rId86"
+        }
+      ],
+      "editorialNotes": [
+        "Editorial note: the manuscript caption below says “combativeness”; its section heading identifies VI as Destructiveness. The original caption is reproduced unchanged."
+      ],
+      "mapped": true
+    },
+    {
+      "n": 7,
+      "roman": "VII",
+      "name": "Constructiveness",
+      "sourceTitle": "VII. Organ of Constructiveness",
+      "sourceBlock": 495,
+      "quotes": [
+        {
+          "sourceBlock": 497,
+          "text": "Gall observed that those who had a particular disposition to mechanical arts presented a face of somewhat parallel form, that is, a face as large at the temples as at the cheeks; consequently that a greater disposition to mechanical arts is indicated by the development of the brain at the temples. He found this sign in great mechanicians, architects, sculptors, and designers. The skulls of animals which build, and those of others which do not build, present a remarkable difference at the place where this organ is situated"
+        },
+        {
+          "sourceBlock": 499,
+          "text": "… Gall possesses the skull of a milliner of Vienna, who had a good taste, and understood perfectly to change the forms of her merchandises. In this skull the organ in question is prominent."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image57.png",
+          "width": 782,
+          "height": 849,
+          "caption": "Plate 13: Organ of constructiveness (VII).",
+          "sha256": "eced6e4856757f1192a50864deb6ff268375e34ab568a0cc0ea1e326e4fd37ed",
+          "sourceBlock": 501,
+          "relationshipId": "rId87"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 8,
+      "roman": "VIII",
+      "name": "Covetiveness",
+      "sourceTitle": "VIII. Organ of Covetiveness",
+      "sourceBlock": 514,
+      "quotes": [
+        {
+          "sourceBlock": 516,
+          "text": "This organ is situated at the temples on the anterior inferior angle of the parietal bone."
+        },
+        {
+          "sourceBlock": 518,
+          "text": "…We have examined the heads of a very great number of thieves; and there is no doubt that those who manifest a great propensity to steal, present one part of the brain much developed, while in other persons, who are destitute of this inclination, that part is small in proportion to the other cerebral parts… but theft being an evil action, is only an abuse of a certain faculty… Hence, we must examine what is the special faculty which produces theft? May it not be the faculty of property and possession?"
+        },
+        {
+          "sourceBlock": 520,
+          "text": "… This faculty gives a desire for all that pleases: money, property, animals, servants, land, cattle, or anything upon the earth. This faculty produces egotism and selfishness."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image58.png",
+          "width": 594,
+          "height": 664,
+          "caption": "Plate 12. The organ of covetiveness (VIII)",
+          "sha256": "b5586a325bd762928dd9a6e73d0dac21f11f5087b3c5d740132e11910d32b816",
+          "sourceBlock": 522,
+          "relationshipId": "rId88"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 9,
+      "roman": "IX",
+      "name": "Secretiveness",
+      "sourceTitle": "IX. The Organ of Secretiveness",
+      "sourceBlock": 533,
+      "quotes": [
+        {
+          "sourceBlock": 535,
+          "text": "Gall calls this organ that of cunning... He ascribes to it cunning, prudence, the savoir faire, the capacity of finding means necessary to succeed, hypocrisy, lies, intrigues, dissimulation, duplicity, falsehood; in poets the talent of finding out interesting plots for romances and dramatic pieces; and finally slyness of animals. In all individuals remarkable for such actions, a larger development of this organ is observed. It is situated in the midst of the side of the head above the organ of the propensity to destroy. Gall first observed this organ in a person who had many debts, but who had the address to conceal his real situation, so that the creditors could have no knowledge of each other."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image59.png",
+          "width": 632,
+          "height": 740,
+          "caption": "Frontispiece - The organ of secretiveness (IX).",
+          "sha256": "ebe028d79635dcecae6e515ed6d55b50f3cd8a0cee603c77514e382559573d03",
+          "sourceBlock": 538,
+          "relationshipId": "rId89"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 10,
+      "roman": "X",
+      "name": "Self-love",
+      "sourceTitle": "X. Organ of Self-love",
+      "sourceBlock": 551,
+      "quotes": [
+        {
+          "sourceBlock": 553,
+          "text": "Gall first found this organ in a beggar. In examining the head of this person, he observed in the midst of the upper posterior part of the head, an elevation which he had not observed before in so high a degree. He asked him the cause of his mendicity. The beggar accused his pride as the cause of his present state, he having considered himself too important to acquire any business. He therefore only spent money, and did not think of earning a livelihood. We have a great number of proofs of this organ, and can establish its existence. Proud persons and those who are alienated by pride, who imagine themselves to be emperors, kings, ministers, generals &c. possess it in a high degree."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image60.png",
+          "width": 375,
+          "height": 789,
+          "caption": "Plate 9 - The organ of self-love (X).",
+          "sha256": "22916c17de86239c3f7e90bfb9bad9b2a7aec4845ea8cacbc76c6734b1f31ec5",
+          "sourceBlock": 555,
+          "relationshipId": "rId90"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 11,
+      "roman": "XI",
+      "name": "Approbation",
+      "sourceTitle": "XI. Organ of Approbation",
+      "sourceBlock": 565,
+      "quotes": [
+        {
+          "sourceBlock": 567,
+          "text": "Persons who are very fond of being caressed, honoured and applauded, in short, who are ambitious, have the upper posterior and lateral part of the head much developed."
+        },
+        {
+          "sourceBlock": 569,
+          "text": "…Some persons are fond of flattery or of applause, they wish to be distinguished and to be honoured."
+        },
+        {
+          "sourceBlock": 571,
+          "text": "…This faculty contributes much, and is necessary, to society. It excites the other faculties,"
+        },
+        {
+          "sourceBlock": 572,
+          "text": "and produces emulation and the point of honour. Its activity, when too strong or irregular, causes many abuses. The want of this faculty makes us indifferent to the opinions of others. This faculty is more active in women than in men, and even in certain nations more than in others."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image60.png",
+          "width": 375,
+          "height": 789,
+          "caption": "Plate 9 - The organ of self-love (XI).",
+          "sha256": "22916c17de86239c3f7e90bfb9bad9b2a7aec4845ea8cacbc76c6734b1f31ec5",
+          "sourceBlock": 574,
+          "relationshipId": "rId90"
+        }
+      ],
+      "editorialNotes": [
+        "Editorial note: the manuscript caption below says “self-love”; its section heading identifies XI as Approbation. The original caption is reproduced unchanged."
+      ],
+      "mapped": true
+    },
+    {
+      "n": 12,
+      "roman": "XII",
+      "name": "Cautiousness",
+      "sourceTitle": "XII. Organ of Cautiousness",
+      "sourceBlock": 581,
+      "quotes": [
+        {
+          "sourceBlock": 583,
+          "text": "Two persons at Vienna were known to be remarkable for their extreme irresolution. One day"
+        },
+        {
+          "sourceBlock": 584,
+          "text": "in a public place, Gall stood behind them and observed their heads. He found them extremely large on the upper posterior part of both sides of the head. This observation gave the first idea of this organ. The heads of circumspect persons, and of those who want this faculty, are very different. Circumspect animals also, as the stag, roe, pole-cat, otter and mole, and those which place sentinels to warn them of approaching danger, as the chamois, cranes, starlings and bustards, have this cerebral part much developed."
+        },
+        {
+          "sourceBlock": 586,
+          "text": "… This faculty when too active causes abuses, as uncertainty, irresolution, unquietness, anxiety, fear, melancholy and hypochondriasis… A great degree of cautiousness predisposes also to the disease of suicide."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image61.png",
+          "width": 506,
+          "height": 1120,
+          "caption": "Plate 9 - The organ of cautiousness (XII).",
+          "sha256": "283797bd65fceb8381a41d3919238c97fb1b7328fdf05f2ab59f01a01b49bd63",
+          "sourceBlock": 588,
+          "relationshipId": "rId91"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 13,
+      "roman": "XIII",
+      "name": "Benevolence",
+      "sourceTitle": "XIII. Organ of Benevolence",
+      "sourceBlock": 594,
+      "quotes": [
+        {
+          "sourceBlock": 596,
+          "text": "For a long time Gall did not think of placing goodness of heart in the brain. A family at Vienna often praised the goodness of one of their servants. This family several times told Gall, that he ought to mould this servant in plaster. At last he actually did so, and observed a considerable protuberance on the superior middle part of his forehead. This organ was afterward confirmed by numerous observations ; for it is very easy to examine and verify this organ in children and in adult persons. This organ may also be proved by reference to animals, either in comparing different species or different individuals of the same species. Several kinds of animals are naturally meek, as the roe, goat, sheep, while others are wild, savage and mischievous. Some dogs, horses, cows &c. are meek and familiar; while other individuals of the same kind bite, kick etc. The mild and good-natured animals have the place of their forehead corresponding to the organ of goodness in man elevated and prominent, while the ill-natured present a hollow at this place."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image62.png",
+          "width": 497,
+          "height": 1099,
+          "caption": "Plates 11 and 10 - The organ of benevolence in humans (left, XIII) and animals (right, XIII). ",
+          "sha256": "3a5808cc74fa44a17835fafc722e866be61898a16703df93795ef22a5e7cd41f",
+          "sourceBlock": 598,
+          "relationshipId": "rId92"
+        },
+        {
+          "src": "/publicAssets/images/foundations/appendix/image52.png",
+          "width": 703,
+          "height": 921,
+          "caption": "Plates 11 and 10 - The organ of benevolence in humans (left, XIII) and animals (right, XIII). ",
+          "sha256": "78e299e6fe8ca542d6eab79c4147465f022f11a39d62e1b2edaafbc3bae372f9",
+          "sourceBlock": 598,
+          "relationshipId": "rId84"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 14,
+      "roman": "XIV",
+      "name": "Veneration",
+      "sourceTitle": "XIV. Organ of Veneration",
+      "sourceBlock": 603,
+      "quotes": [
+        {
+          "sourceBlock": 605,
+          "text": "Dr. Gall, in examining the actions of man, visited churches in order to see the configuration of the heads of those who excel in devotion. He first observed, that the heads of those who prayed with the greatest fervour were bald. Now it is inconceivable that the bald state of the head can produce devotion. For every bald man is not pious, and though women do not grow bald, yet a great number of them are pious and devout. Gall observed also, that the heads of these pious men were very elevated… It is situated in the midst of the upper part of the head… It is by this faculty that man adores God, or venerates saints, persons and things. It respects all sacred objects."
+        },
+        {
+          "sourceBlock": 607,
+          "text": "…Priests… present a different degree of development in the middle of the upper part of their heads…  the head of Christ is always represented as very elevated."
+        },
+        {
+          "sourceBlock": 609,
+          "text": "… Gall even maintains that this organ is not only necessary but that it is also the most evident proof of the existence of God."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image63.png",
+          "width": 330,
+          "height": 454,
+          "caption": "Plate 12 - The organ of veneration (left, XIV).",
+          "sha256": "3b1e5526e6d3ec99e9c64b1c2541f08ef2f6496e30ef099c48e0090a72371d02",
+          "sourceBlock": 611,
+          "relationshipId": "rId93"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 15,
+      "roman": "XV",
+      "name": "Hope and Faith",
+      "sourceTitle": "XV. Organ of Hope and Faith",
+      "sourceBlock": 615,
+      "quotes": [
+        {
+          "sourceBlock": 617,
+          "text": "This sentiment is necessary in almost every situation; it gives hope in the present and of a future life. In religion it is called faith. Persons endowed with it in a higher degree are credulous. The organ of hope seems to be situated on the side of that of veneration."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image64.png",
+          "width": 452,
+          "height": 516,
+          "caption": "Frontispiece. The organ of hope and faith (XV).",
+          "sha256": "0e4fed337a6a0ec4b59dd95e7099c78a7ed820ebf66e96a0b06bf3e3b99b7e26",
+          "sourceBlock": 620,
+          "relationshipId": "rId94"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 16,
+      "roman": "XVI",
+      "name": "Ideality",
+      "sourceTitle": "XVI. Organ of Ideality",
+      "sourceBlock": 635,
+      "quotes": [
+        {
+          "sourceBlock": 637,
+          "text": "It is a proverb that a poet must be born. It is also certain that the heads of great poets, but not of all versificators, are enlarged above the temples in an arched direction. Now it is impossible that poetry, in general, should be confined to one single organ. I therefore think that the name organ of poetry, given by Gall to this organ, does not indicate the essential faculty of this organ, but that it is necessary to point out what is essential to. all kinds of poetry. This common faculty of poets then must be the special faculty of this organ, and the combination of this with the other faculties must determine the kind of poetry of each poet. It can neither be the faculty of versification, nor that of rhyming… It seems to me that in every kind of poetry the sentiments are exalted, the expressions warm, and that there must be rapture, inspiration—what is commonly called imagination or fancy. I observe moreover, that in all persons this faculty gives a peculiar tinge to all other faculties; it makes them in every thing aspire to ideality."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image66.png",
+          "width": 517,
+          "height": 514,
+          "caption": "Plate 18. Organ of ideality (XVI).",
+          "sha256": "c47e0ae522311c6da8f7cf8df69122007146fbc04b2bd37f7fa96874dfe45a37",
+          "sourceBlock": 639,
+          "relationshipId": "rId95"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 17,
+      "roman": "XVII",
+      "name": "Righteousness",
+      "sourceTitle": "XVII. Organ of Righteousness",
+      "sourceBlock": 642,
+      "quotes": [
+        {
+          "sourceBlock": 644,
+          "text": "I think also that there is a particular sentiment of just and unjust, right and wrong, and that a particular organ of righteousness must be admitted… It produces only the sentiment of justice without determining what is just… This faculty produces the sentiment of duty, and constitutes what is called conscience and remorse… Thus I admit a particular organ of justice, and seek for its organ on the side of the [organ of determinateness]."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image64.png",
+          "width": 452,
+          "height": 516,
+          "caption": "Frontispiece. The organ of righteousness (XVII).",
+          "sha256": "0e4fed337a6a0ec4b59dd95e7099c78a7ed820ebf66e96a0b06bf3e3b99b7e26",
+          "sourceBlock": 647,
+          "relationshipId": "rId94"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 18,
+      "roman": "XVIII",
+      "name": "Determinateness",
+      "sourceTitle": "XVIII. Organ of Determinateness",
+      "sourceBlock": 660,
+      "quotes": [
+        {
+          "sourceBlock": 662,
+          "text": "Dr. Gall observed that persons of a firm and constant character have the top of the brain much developed… Its effects are often called will; but this will is not the moral will which is necessary to liberty. It is true, persons endowed with a greater development of this organ say commonly, \" I will,\" that is, I want, I desire, I insist, I command… It gives constancy and perseverance. Its too great activity produces infatuation, stubbornness, obstinacy, and disobedience. Its want renders men unsure, inconstant, and changeable, according to the other impressions… it seems to be situated in the midst of the feelings, in order to strengthen their activity."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image61.png",
+          "width": 506,
+          "height": 1120,
+          "caption": "Plate 9 - The organ of determinateness (XVIII).",
+          "sha256": "283797bd65fceb8381a41d3919238c97fb1b7328fdf05f2ab59f01a01b49bd63",
+          "sourceBlock": 664,
+          "relationshipId": "rId91"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 19,
+      "roman": "XIX",
+      "name": "Individuality",
+      "sourceTitle": "XIX. Organ of Individuality",
+      "sourceBlock": 673,
+      "quotes": [
+        {
+          "sourceBlock": 675,
+          "text": "Dr. Gall observed, in society, different persons who were learned, who had a superficial knowledge of all arts and sciences, and who were not always profound, but who knew enough to be capable of speaking with facility—such as are called brilliant in society. He found that in them, the midst of the lower part of the forehead was very prominent, consequently that the anterior inferior part of the brain was much developed. "
+        },
+        {
+          "sourceBlock": 677,
+          "text": "… I call this faculty that of individuality because it knows not only the external world in general, but also each object in its individual capacity. This organ is early developed in children, because they are obliged to acquire knowledge of the external world. By this faculty, children are attentive to every object and fact, and in a short time they make an immense number of observations."
+        },
+        {
+          "sourceBlock": 679,
+          "text": "…Persons endowed with this faculty in a high degree are attentive to all that happens around them, to every object, to every phenomenon, to every fact; hence also to motions. This faculty neither learns the qualities of objects, nor the details of facts; it knows only their existence. The qualities of the objects, and the particularities of the phenomena, are known by the assistance of other organs."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image67.png",
+          "width": 732,
+          "height": 731,
+          "caption": "Plate 13 - The organ of individuality (XIX).",
+          "sha256": "d4055ef1f039ab2f4d7ccd485d24058723c75a9616d4a3fe76a93fb54a0cc2f3",
+          "sourceBlock": 681,
+          "relationshipId": "rId96"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 20,
+      "roman": "XX",
+      "name": "Form",
+      "sourceTitle": "XX. Organ of Form",
+      "sourceBlock": 689,
+      "quotes": [
+        {
+          "sourceBlock": 691,
+          "text": "Dr. Gall sometimes speaks of an organ of the sense of persons. He was desired to examine the head of a young girl who had an extreme facility of distinguishing and recollecting persons. He only found in her the eyes pushed laterally outward, and a squinting look. My manner of considering this faculty is the following. The preceding faculty has knowledge of the existence of external bodies. The first quality, which our intellect considers in them, is their form. Persons are particularly known by their form. I therefore speak of this faculty in general. Persons, endowed with it in a high degree, are fond of seeing pictures, and if they make collections, they collect portraits."
+        },
+        {
+          "sourceBlock": 693,
+          "text": "… Animals of the lower orders, as insects, know well individuals of their kind and of their family"
+        },
+        {
+          "sourceBlock": 695,
+          "text": "… The organ of form seems to be placed in the internal angle of the orbit. If this part of the brain be much developed, it pushes the eyeball toward the external angle, that is, a little outward and downward… This organ, in order to be verified, requires still a great number of observations."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image69.png",
+          "width": 974,
+          "height": 895,
+          "caption": "Plate 13 - The organ of form (XX).",
+          "sha256": "1972c2424781e3cb88cd9d78ff3f0d7be623e695890fe3742dd7b1cb5797e530",
+          "sourceBlock": 697,
+          "relationshipId": "rId97"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 21,
+      "roman": "XXI",
+      "name": "Size",
+      "sourceTitle": "XXI. Organ of Size",
+      "sourceBlock": 703,
+      "quotes": [
+        {
+          "sourceBlock": 705,
+          "text": "After the existence and figure of any body, the mind considers its dimensions or size. There is no proportion either of the senses of feeling or seeing, or of the other internal faculties, to this kind of conceptions. The faculty of distinguishing form, for instance, is not the same as the faculty of size, because there is an essential difference between the idea of size and that of form… Nevertheless these two organs seem to be near to each other without being the same."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image70.png",
+          "width": 859,
+          "height": 863,
+          "caption": "Frontispiece. The organ of size (XXI).",
+          "sha256": "273f66be3e13182f1f052a806dddd7eb65cc5064041b1730b1fdde840a6cd635",
+          "sourceBlock": 707,
+          "relationshipId": "rId98"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 22,
+      "roman": "XXII",
+      "name": "Weight",
+      "sourceTitle": "XXII. Organ of Weight",
+      "sourceBlock": 724,
+      "quotes": [
+        {
+          "sourceBlock": 726,
+          "text": "In treating of the sense of feeling and of its sphere of activity, I have ascertained that the ideas of weight and existence, and of consistency, density, softness, and hardness, cannot be attributed to this external sense. I admit a particular faculty for conceptions of this kind. Its organ most be situated in the neighbourhood of the organ of form and size."
+        }
+      ],
+      "images": [],
+      "editorialNotes": [
+        "The manuscript states: “[not labelled by Spurzheim in a plate nor on the frontispiece].” No skull position is assigned here."
+      ],
+      "mapped": false
+    },
+    {
+      "n": 23,
+      "roman": "XXIII",
+      "name": "Colour",
+      "sourceTitle": "XXIII. Organ of Colour",
+      "sourceBlock": 765,
+      "quotes": [
+        {
+          "sourceBlock": 767,
+          "text": "Certain persons are almost destitute of the power of perceiving colours. We know a family in which all the individuals distinguish only black and white. Dr. Unzer, of Altona, could not perceive green and blue. A boy, of Vienna, wished to become a tailor, but he was obliged to leave this trade because he could not distinguish different colours."
+        },
+        {
+          "sourceBlock": 769,
+          "text": "… These persons, who do not perceive colours, have sometimes the vision very acute, and they perceive the other qualities of external bodies, as their size and form. Thus, as in man the faculty of colouring is not in proportion to the sense of sight, nor to the understanding in general, it seems evident that there is some particular faculty which perceives the different colours, recollects them, and judges of their relations."
+        },
+        {
+          "sourceBlock": 771,
+          "text": "… Its organ is placed in the midst of the arch of the eyebrows. The external sign of a greater development of the organ of this faculty is a vaulted and round arch of the eyebrows… This faculty is generally more active in women than in men… Their eyebrows, accordingly, are more rounded than those of men."
+        },
+        {
+          "sourceBlock": 773,
+          "text": "… I am not certain that animals are destitute of the faculty of distinguishing colour, because they have no art of painting. For there is a great difference between producing a thing, and being capable of perceiving it."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image71.png",
+          "width": 601,
+          "height": 605,
+          "caption": "Plate 16 - The organ of colour (XXIII).",
+          "sha256": "d11c3d89d210b5e4b521fb6b6c8649b1ae0f6c41f26601763beb79252e67ae05",
+          "sourceBlock": 775,
+          "relationshipId": "rId99"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 24,
+      "roman": "XXIV",
+      "name": "Space",
+      "sourceTitle": "XXIV. Organ of Space",
+      "sourceBlock": 784,
+      "quotes": [
+        {
+          "sourceBlock": 786,
+          "text": "Dr. Gall had always good eyes, but he could not again find places where he had been before, and which he wished to discover. One of his fellow-students had a surprising facility of recollecting localities and particular places. This young man, called Scheidler, never lost any place where he had discovered a bird's nest, but always found it again without having made any artificial marks… and he distinguished at the eyebrows, toward the middle line of the forehead, a protuberance on each side which reached to the middle of the forehead."
+        },
+        {
+          "sourceBlock": 788,
+          "text": "… One day Gall met, at Vienna, a woman who had this organ extremely developed, so that her face was deformed by it. He spoke to her, and learned that she had the greatest propensity to travel, that she had left her parents, at Munich, solely in order to see foreign countries, that she never lived long in the same house, because she liked change of place,"
+        },
+        {
+          "sourceBlock": 789,
+          "text": "and that her greatest pleasure consisted in travelling… The pictures and busts of great astronomers, navigators, and geographers, as of Newton, Cooke, Columbus etc., present a great development of this organ… At Torgau, in Saxony, we saw a blind man in whom this organ was much developed. This man told us that he was fond of hearing geography and travels spoken of, and that he often dreamed of foreign countries… it seems to me that it is"
+        },
+        {
+          "sourceBlock": 790,
+          "text": "the faculty of space in general."
+        },
+        {
+          "sourceBlock": 792,
+          "text": "… This faculty being innate, and being active by internal excitement, explains a phenomenon observed in many animals. Certain animals, chiefly birds, as swallows, storks, starlings, quails, nightingales etc., emigrate at certain periods of the year."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image72.png",
+          "width": 737,
+          "height": 743,
+          "caption": "Plate 16 - The organ of space (XXIV).",
+          "sha256": "07cba5306f3dc4e9f517dd614a6fa122f4472285d5c278df9e7b58d3eb9fc528",
+          "sourceBlock": 794,
+          "relationshipId": "rId100"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 25,
+      "roman": "XXV",
+      "name": "Order",
+      "sourceTitle": "XXV. Organ of Order",
+      "sourceBlock": 798,
+      "quotes": [
+        {
+          "sourceBlock": 800,
+          "text": "It seems to me that there is a particular faculty which makes us conceive order. We may have some idea of different objects without order. The mind being acquainted with external objects, their qualities, and the places they occupy, considers also the order in which they are ranged one by the side of another. Order then may be applied to different faculties, to form, size, weight, colour. Its organ is probably situated outward, but not far from the organs of size and space. Is cleanliness dependent on the same faculty as order?"
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image64.png",
+          "width": 452,
+          "height": 516,
+          "caption": "Frontispiece. The organ of order (XXV).",
+          "sha256": "0e4fed337a6a0ec4b59dd95e7099c78a7ed820ebf66e96a0b06bf3e3b99b7e26",
+          "sourceBlock": 802,
+          "relationshipId": "rId94"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 26,
+      "roman": "XXVI",
+      "name": "Time",
+      "sourceTitle": "XXVI. The Organ of Time",
+      "sourceBlock": 814,
+      "quotes": [
+        {
+          "sourceBlock": 816,
+          "text": "The conception of time seems to be higher in the scale, and its organ occupies a higher place in the brain; the organ of order, the middle, and that of number, the lowest and the most outward. The mimicry of time and number proves indeed that the organs of these faculties occupy different places, and that the seat of the organ of time is higher than that of the organ of number. We raise up the eyes in thinking of time, and we look downward and outward in ciphering… It seems indeed that the organ of time is situated between the organs of individuality, space, order, tune, and cause"
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image64.png",
+          "width": 452,
+          "height": 516,
+          "caption": "Frontispiece. The organ of time (XXVI).",
+          "sha256": "0e4fed337a6a0ec4b59dd95e7099c78a7ed820ebf66e96a0b06bf3e3b99b7e26",
+          "sourceBlock": 818,
+          "relationshipId": "rId94"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 27,
+      "roman": "XXVII",
+      "name": "Number",
+      "sourceTitle": "XXVII. The Organ of Number",
+      "sourceBlock": 830,
+      "quotes": [
+        {
+          "sourceBlock": 832,
+          "text": "Some individuals remarkable for their great talent of calculating excited the attention of Dr. Gall. There are children who excel in this faculty. A child of seven years of age, called Devaux, was extremely delighted with running about the fairs, and making calculations for the merchants. A boy of thirteen years of age, born at St. Poelten, not far from Vienna, excelled his school-fellows in a surprising manner. He learnt easily an immense quantity of numbers, made the most complicated arithmetical operations from memory, and very soon found their result. Mr. Mantelli, a counsellor of the Court of Appeals at Vienna, took a particular pleasure in the solution of arithmetical problems; and his son of five years of age did nothing but calculate during the whole of the day. In such individuals the arch of the eyebrows is much depressed or elevated at the external angle of the orbit. The portraits and busts of great calculators present the external sign of this faculty, as Newton, Euler, Kaestner, Jedidiah Buxton, Pitt, etc."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image73.png",
+          "width": 638,
+          "height": 521,
+          "caption": "Plate 15 – Organ of number (XXVII).",
+          "sha256": "4558f897d4114b836e9e795362dee466169e91d319028f9c187ca15eb9262d3e",
+          "sourceBlock": 834,
+          "relationshipId": "rId101"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 28,
+      "roman": "XXVIII",
+      "name": "Tune",
+      "sourceTitle": "XXVIII. The Organ of Tune",
+      "sourceBlock": 846,
+      "quotes": [
+        {
+          "sourceBlock": 848,
+          "text": "Sometimes in epileptic fits, in delirium, and syncope, certain individuals sing continually and with great precision. This faculty then is alone active, while in such cases the functions of all the other faculties are deranged. A greater development of this organ enlarges the lateral parts of the forehead. Its form varies according to the direction and form of its convolutions. In Gluck, Hadyn, and others, this organ had a pyramidal form; in Mozart, Viotti, Zumstey, Dussek, Crescentini, and others, the external corners of the forehead are enlarged but rounded."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image64.png",
+          "width": 452,
+          "height": 516,
+          "caption": "Frontispiece. The organ of tune (XXVIII).",
+          "sha256": "0e4fed337a6a0ec4b59dd95e7099c78a7ed820ebf66e96a0b06bf3e3b99b7e26",
+          "sourceBlock": 850,
+          "relationshipId": "rId94"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 29,
+      "roman": "XXIX",
+      "name": "Language",
+      "sourceTitle": "XXIX. Organ of Language",
+      "sourceBlock": 862,
+      "quotes": [
+        {
+          "sourceBlock": 864,
+          "text": "Dr. Gall, at thirteen years of age, was vexed that while several of his school-fellows learned by heart even things which they did not understand with great facility, he had the utmost difficulty in engraving in his memory a less number of words… He afterwards observed, that in those individuals who had so great a facility of learning by heart, the eyes were very prominent. This observation was the commencement of all his future inquiries into psychology… He established an organ of words, the greater degree of development of which is denoted by the prominence of the eyes. Sometimes the eyes are not only prominent but also depressed downward, so that the under eye-lid presents a sort of roll, or appears swollen. Such persons are fond of philology, that is, they like to study the spirit of different languages."
+        },
+        {
+          "sourceBlock": 866,
+          "text": "… The organ of language accordingly seems to be placed in the midst of the knowing faculties, and it occupies a transverse situation. One Lereard, of Marseilles, after having received a blow from a foil on the orbit, lost entirely the memory of names; sometimes he did not recollect the names of his intimate friends, and of his father, as he asserted in a letter written to Gall, to ask his advice… Certain children who are half idiots do not speak, though they do many things like reasonable persons, and manifest sometimes a great deal of cunning… Gall has in his collection two skulls of children who had this imbecility…The eyes, instead of being pushed forward, lie deeply in the orbits : the roof of the orbits, instead of being flat, is very convex toward the interior of the skull… He possesses also the skull of a woman of forty years of age who never was capable of learning any language."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image74.png",
+          "width": 471,
+          "height": 902,
+          "caption": "Plate 9. The organ of language (XXIX).",
+          "sha256": "4c34a0ffc987126f55a9459eb613934eed27b783eb8c5f75c685c0fc615cba6b",
+          "sourceBlock": 868,
+          "relationshipId": "rId102"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 30,
+      "roman": "XXX",
+      "name": "Comparison",
+      "sourceTitle": "XXX. Organ of Comparison",
+      "sourceBlock": 872,
+      "quotes": [
+        {
+          "sourceBlock": 874,
+          "text": "Dr. Gall observed various persons, who, in every conversation, had recourse to examples, similitudes, and analogies, in order to convince others; and seldom to reasoning and philosophical arguments. In them he found, in the midst of the superior part of the forehead, an elevation which presented the form of a reversed pyramid, and he named this organ according to its functions, organ of analogy. This organ is developed in all popular preachers beloved by the crowd, who speak of examples and parables, and who choose their similitudes from facts which are generally known. Gall possesses the skulls of two Jesuits who had this faculty in a high degree. Indeed, in order to persuade and to affect, the speaker or orator must speak by analogy: he must bring spiritual things near to terrestrial objects, and compare them with each other; he must imitate the manner of the preaching of Christ."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image75.png",
+          "width": 552,
+          "height": 505,
+          "caption": "Plate 17. The organ of comparison (XXX).",
+          "sha256": "17607bf5f26610f6f7d5f3c341c69404ffc79c14decbe8b7258cc470169d645f",
+          "sourceBlock": 876,
+          "relationshipId": "rId103"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 31,
+      "roman": "XXXI",
+      "name": "Causality",
+      "sourceTitle": "XXXI. Organ of Causality",
+      "sourceBlock": 889,
+      "quotes": [
+        {
+          "sourceBlock": 891,
+          "text": "Dr. Gall remarked, that persons who like metaphysical study have the superior part of the forehead much developed and prominent in a hemispherical form, as Mendelsohn, Kant, Fichte, and others. It is also remarkable that the ancient artists have given to Jupiter Capitolinus a forehead more prominent than to any other antique head. It seems therefore that they had observed that the development of the forehead has a relation to great understanding… This latter kind of mental operation is manifested by the development of those convolutions which occupy the upper, middle and lateral parts of the forehead."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image76.png",
+          "width": 531,
+          "height": 517,
+          "caption": "Plate 17. The organ of causality (XXXI)",
+          "sha256": "4300e0f3d3c51580f8d4760cd644edb9fbf98666835fa79ed4548f206385415e",
+          "sourceBlock": 893,
+          "relationshipId": "rId104"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 32,
+      "roman": "XXXII",
+      "name": "Wit",
+      "sourceTitle": "XXXII. Organ of Wit",
+      "sourceBlock": 910,
+      "quotes": [
+        {
+          "sourceBlock": 912,
+          "text": "Persons who are called witty, who write like Sterne, Voltaire, Piron, John Paul &c., have the superior external parts of the forehead elevated. Jest, raillery, mockery, ridicule, irony etc., belong to this faculty… the essence of this faculty consists in its peculiar manner of comparing, which always excites gaiety and laughter."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image77.png",
+          "width": 471,
+          "height": 888,
+          "caption": "Plate 18. The organ of wit (XXXII)",
+          "sha256": "f15825ebf24ac90ae6cdcd2cdc13e80c282092099740682495c33cd8399e6eb5",
+          "sourceBlock": 914,
+          "relationshipId": "rId105"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    },
+    {
+      "n": 33,
+      "roman": "XXXIII",
+      "name": "Imitation",
+      "sourceTitle": "XXXIII. Organ of Imitation",
+      "sourceBlock": 917,
+      "quotes": [
+        {
+          "sourceBlock": 919,
+          "text": "One of Gall’s acquaintance, Mr. Hannibal, governor to the young counts Festerditsh at Vienna, possessed the faculty of imitating in a surprising degree; he was a perfect actor. He desired Gall to examine his head, because he had a transverse furrow in the midst of it. Gall found the hollow place; but he at the same time observed before it, at the superior part of"
+        },
+        {
+          "sourceBlock": 920,
+          "text": "the forehead, a considerable elevation of a semiglobular form. Sometime after. Gall observed in the institute for deaf and dumb persons, an individual, who, the first time he put on a mask at the carnival, imitated perfectly well all the persons who frequented the institution. Gall found the configuration of the upper forepart of his head the same as that of Mr. Hannibal. In comparing many persons endowed with this faculty at Vienna, and during our travels, we have always found that the development of this organ coincides with the energy of the faculty of imitating… persons endowed with a higher degree of development of this cerebral part, imitate with great precision the gestures, voice, manners, and in general all the natural manifestations of man and animals. They like also to be actors."
+        }
+      ],
+      "images": [
+        {
+          "src": "/publicAssets/images/foundations/appendix/image78.png",
+          "width": 385,
+          "height": 394,
+          "caption": "Frontispiece. The organ of imitation (XXXIII).",
+          "sha256": "19461eac67a6c6d53ebe5dbd3b0352b5983f05b6ffedb5c56d927f79056ef326",
+          "sourceBlock": 922,
+          "relationshipId": "rId106"
+        }
+      ],
+      "editorialNotes": [],
+      "mapped": true
+    }
+  ]
+}

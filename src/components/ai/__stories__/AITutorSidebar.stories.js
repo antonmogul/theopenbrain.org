@@ -4,8 +4,8 @@
  * It teleports to <body> and pins itself to the right edge, so it renders
  * over the canvas rather than inside it (hence no autodocs page). On mount it
  * lists `ai_conversations` for the module and reopens the active one, which
- * is what the states below drive through `parameters.api`. Sending a message
- * goes to the AI-tutor mock response, never a network call.
+ * is what the states below drive through `parameters.api`. Generation is
+ * unavailable; saved fixture history is read-only and no mock AI reply is sent.
  */
 import { fn } from "storybook/test";
 import AITutorSidebar from "../AITutorSidebar.vue";
@@ -78,7 +78,7 @@ export default {
   }),
 };
 
-/** No conversations yet: the empty chat prompt. */
+/** No conversations yet: the explicit unavailable status. */
 export const Default = {};
 
 /** The module's active conversation is reopened with its messages. */

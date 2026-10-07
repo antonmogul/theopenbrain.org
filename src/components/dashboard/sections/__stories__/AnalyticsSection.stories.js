@@ -2,8 +2,7 @@
  * Dashboard/Sections/AnalyticsSection — creator "Analytics" panel.
  *
  * Presentational: the parent owns useDashboardAnalytics and passes its state
- * down, so every state here is a prop. `formatDuration` is a required function
- * prop and therefore has no control.
+ * down, so every state here is a prop.
  */
 import AnalyticsSection from "../AnalyticsSection.vue";
 
@@ -16,7 +15,8 @@ const RANGE_OPTIONS = [
 const METRICS = {
   activeUsers: 1248,
   totalPageViews: 18342,
-  avgTimeOnContent: 522,
+  unidentifiedPageViews: 260,
+  unassignedPageViews: 21,
   quizCompletionRate: 78,
 };
 
@@ -30,15 +30,15 @@ const CONTENT = [
     id: "retina",
     title: "The Retina",
     views: 5810,
-    avgTime: 684,
-    completionRate: 72,
+    uniqueUsers: 302,
+    unidentifiedViews: 174,
   },
   {
     id: "foundations",
     title: "Foundations of Neuroscience",
     views: 2940,
-    avgTime: 510,
-    completionRate: 64,
+    uniqueUsers: 190,
+    unidentifiedViews: 86,
   },
 ];
 
@@ -60,8 +60,6 @@ const HIGHLIGHTS = [
   },
 ];
 
-const formatDuration = (seconds) => `${Math.round(seconds / 60)} min`;
-
 export default {
   title: "Dashboard/Sections/AnalyticsSection",
   component: AnalyticsSection,
@@ -82,10 +80,6 @@ export default {
     contentPerformance: { control: "object" },
     quizPerformance: { control: "object" },
     trendingHighlights: { control: "object" },
-    formatDuration: {
-      control: false,
-      description: "Seconds → label. Function prop; no control.",
-    },
   },
   args: {
     analyticsLoading: false,
@@ -97,7 +91,6 @@ export default {
     contentPerformance: CONTENT,
     quizPerformance: QUIZZES,
     trendingHighlights: HIGHLIGHTS,
-    formatDuration,
   },
   render: (args) => ({
     components: { AnalyticsSection },
@@ -120,7 +113,8 @@ export const Empty = {
     analyticsMetrics: {
       activeUsers: 0,
       totalPageViews: 0,
-      avgTimeOnContent: 0,
+      unidentifiedPageViews: 0,
+      unassignedPageViews: 0,
       quizCompletionRate: 0,
     },
     analyticsChartData: { labels: [], datasets: [] },
@@ -129,3 +123,5 @@ export const Empty = {
     trendingHighlights: [],
   },
 };
+
+export const AccessDenied = { args: { analyticsAccessDenied: true } };

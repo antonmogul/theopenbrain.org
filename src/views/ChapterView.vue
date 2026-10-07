@@ -32,7 +32,6 @@ import EndOfChapterCallout from "@/components/chapter/EndOfChapterCallout.vue";
 // Phase 3A: Composables for highlighting
 import { useTextSelection } from "@/composables/useTextSelection";
 import { referenceFromChapter } from "@/helper/chapterReferences";
-import { useFigureLinks } from "@/composables/useFigureLinks";
 import { useHighlights } from "@/composables/useHighlights";
 import { useHighlightRenderer } from "@/composables/useHighlightRenderer";
 import { useNotes } from "@/composables/useNotes";
@@ -56,7 +55,6 @@ const commentStore = useCom();
 const { isAuthenticated } = useAuth();
 
 // "(Figure N)" in the text scrolls to that figure (OPENBRAIN-91).
-useFigureLinks();
 
 // Text selection for highlighting
 const {

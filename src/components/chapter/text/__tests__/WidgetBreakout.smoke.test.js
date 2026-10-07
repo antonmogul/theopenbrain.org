@@ -234,13 +234,15 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     // widget's stage.
     const box = stage.closest(".fb-stage");
     expect(box.classList.contains("fb-stage--floating")).toBe(true);
-    layer.getBoundingClientRect = () => ({ top: 100, height: 0 });
+    layer.getBoundingClientRect = () => ({ top: 100, left: 24, height: 0 });
     slot.element.getBoundingClientRect = () => ({ top: 1000, height: 0 });
     box.getBoundingClientRect = () => ({ top: 0, height: 300 });
     window.dispatchEvent(new Event("resize"));
     await flushPromises();
     expect(slot.attributes("style")).toBe("height: 300px;");
     expect(box.style.top).toBe("900px");
+    // The viewport edge, not the layer's accidental inset, is the left edge.
+    expect(box.style.left).toBe("-24px");
     expect(refreshSpy).toHaveBeenCalledTimes(1);
     // Same height again: no second refresh.
     window.dispatchEvent(new Event("resize"));

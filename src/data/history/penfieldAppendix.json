@@ -1,0 +1,1241 @@
+{
+  "source": {
+    "filename": "Foundations_ST7_NM3_LL.docx",
+    "sha256": "c8118d6d3be7c1f8cc4a6b3ca5893192acab7c33c8f7798fbeab64048b6dbd9f",
+    "citation": "Excerpts from: The Brain’s Record of Auditory and Visual Experience - A Final Summary and Discussion, by Wilder Penfield and Phanor Perot. Brain, 1963."
+  },
+  "cases": [
+    {
+      "id": "rw",
+      "tab": "R.W.",
+      "caseNo": 3,
+      "sourceTitle": "Case 3: R.W.",
+      "sourceBlock": 974,
+      "image": {
+        "src": "/publicAssets/images/foundations/appendix/image79.png",
+        "width": 576,
+        "height": 389,
+        "caption": "Case 3: R.W.",
+        "sha256": "48549d13340ece3147eda99927d2e0278b58586036d376f8594a7f09ee09449e",
+        "sourceBlock": 991,
+        "relationshipId": "rId107"
+      },
+      "points": [
+        {
+          "id": "22",
+          "events": [
+            {
+              "id": "rw-22-1",
+              "sourceBlock": 976,
+              "text": "22. He said nothing for a little interval, and then he said, \"Oh, gee, gosh, robbers are coming at me with guns!\" He heard nothing, he just saw them coming at him. The robbers seemed to have been coming at an angle from the left. When asked if they came in front of him, he said no they were behind him. This seems to be the reproduction not of a real event, but of a fantasy or a dream drawn from the reading of a comic book, a silent fantasy devoid of auditory components."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 29.6875,
+              "y": 48.5861,
+              "sourcePixel": {
+                "x": 171,
+                "y": 189
+              }
+            }
+          ]
+        },
+        {
+          "id": "23",
+          "events": [
+            {
+              "id": "rw-23-1",
+              "sourceBlock": 978,
+              "text": "23. \"Pain in my forehead, and there was a robber. He wasn't in front, he was off to the left side.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 37.8472,
+              "y": 71.7224,
+              "sourcePixel": {
+                "x": 218,
+                "y": 279
+              }
+            }
+          ]
+        },
+        {
+          "id": "24",
+          "events": [
+            {
+              "id": "rw-24-1",
+              "sourceBlock": 980,
+              "text": "24. \"Yes, the robbers, they are coming after me.\" "
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 15.7986,
+              "y": 34.4473,
+              "sourcePixel": {
+                "x": 91,
+                "y": 134
+              }
+            }
+          ]
+        },
+        {
+          "id": "28",
+          "events": [
+            {
+              "id": "rw-28-1",
+              "sourceBlock": 982,
+              "text": "28. \"Oh gosh! There they are, my brother is there. He is aiming an air rifle at me.\" His eyes moved slowly to the left. The figures seemed to disappear before the cessation of the stimulus. When asked, he said his brother was walking toward him, and the gun was loaded. When asked where he was, he said at his house, in the yard. His other little brother was there, that was all. When asked if he felt scared when he saw his brother, he said, \"Yes.\" When asked if he always felt scared when he saw the robbers, he said, \"Yes.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 27.9514,
+              "y": 64.2674,
+              "sourcePixel": {
+                "x": 161,
+                "y": 250
+              }
+            }
+          ]
+        },
+        {
+          "id": "30",
+          "events": [
+            {
+              "id": "rw-30-1",
+              "sourceBlock": 984,
+              "text": "30. \"I heard someone speaking, my mother telling one of my aunts to come up tonight.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 49.4792,
+              "y": 50.6427,
+              "sourcePixel": {
+                "x": 285,
+                "y": 197
+              }
+            }
+          ]
+        },
+        {
+          "id": "31",
+          "events": [
+            {
+              "id": "rw-31-1",
+              "sourceBlock": 986,
+              "text": "31. \"Would you do it again, please ?\""
+            },
+            {
+              "id": "rw-31-2",
+              "sourceBlock": 988,
+              "text": "31. Repeated. After a pause, he said, \"The same as before. My mother was telling my aunt over the telephone to come up and visit us tonight.\" When asked how he knew she was talking over the telephone, he said he did not see her, but from the way his aunt's voice sounded when she answered he knew it was over the telephone."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 40.9722,
+              "y": 45.7584,
+              "sourcePixel": {
+                "x": 236,
+                "y": 178
+              }
+            }
+          ]
+        },
+        {
+          "id": "32",
+          "events": [
+            {
+              "id": "rw-32-1",
+              "sourceBlock": 990,
+              "text": "32. \"My mother is telling my brother he has got his coat on backwards. I can just hear them.\" When asked if he remembered it, he said, \"Oh yes, just before I came here.\" When asked if he thought these things were like dreams, he said, \"No.\" When asked what it was like, he said, \"It is just like I go into a daze.\" "
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 44.7917,
+              "y": 48.5861,
+              "sourcePixel": {
+                "x": 258,
+                "y": 189
+              }
+            }
+          ]
+        }
+      ],
+      "coordinateProvenance": "Printed-number centres manually verified against the exact original image; full-image percentage coordinates. These are label click targets, not inferred anatomical boundaries."
+    },
+    {
+      "id": "abra",
+      "tab": "A. Bra.",
+      "caseNo": 4,
+      "sourceTitle": "Case 4: A. Bra.",
+      "sourceBlock": 992,
+      "image": {
+        "src": "/publicAssets/images/foundations/appendix/image80.png",
+        "width": 640,
+        "height": 851,
+        "caption": "Case 4: A. Bra.",
+        "sha256": "d86866e8cd01e9c3ab1448c491bff1782ab51dc42d6cbb1a65469d10021711a8",
+        "sourceBlock": 1026,
+        "relationshipId": "rId108"
+      },
+      "points": [
+        {
+          "id": "15",
+          "events": [
+            {
+              "id": "abra-15-1",
+              "sourceBlock": 994,
+              "text": "15. \"I hear singing.\""
+            },
+            {
+              "id": "abra-15-2",
+              "sourceBlock": 996,
+              "text": "15. Repeated. \"Yes, it is White Christmas.\" When asked if anyone was singing, she said, \"Yes, a choir.\" When asked if she remembered it being sung with a choir, she said she thought so."
+            },
+            {
+              "id": "abra-15-3",
+              "sourceBlock": 1010,
+              "text": "15. Repeated (26 minutes after last stimulation at 15). \"White Christmas,\" she said it was the orchestra playing."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 46.875,
+              "y": 23.8543,
+              "sourcePixel": {
+                "x": 300,
+                "y": 203
+              }
+            }
+          ]
+        },
+        {
+          "id": "16",
+          "events": [
+            {
+              "id": "abra-16-1",
+              "sourceBlock": 998,
+              "text": "16. \"That is different, a voice—talking—a man.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 51.0938,
+              "y": 25.0294,
+              "sourcePixel": {
+                "x": 327,
+                "y": 213
+              }
+            }
+          ]
+        },
+        {
+          "id": "17",
+          "events": [
+            {
+              "id": "abra-17-1",
+              "sourceBlock": 1000,
+              "text": "17. \"Yes, 1 have heard it before. A man's voice—talking.\""
+            },
+            {
+              "id": "abra-17-2",
+              "sourceBlock": 1002,
+              "text": "17. Repeated without warning. \"Yes, about the same.\""
+            },
+            {
+              "id": "abra-17-3",
+              "sourceBlock": 1012,
+              "text": "17. Repeated (24 minutes after last stimulation at 17). \"Yes, the play again.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 53.5938,
+              "y": 25.7344,
+              "sourcePixel": {
+                "x": 343,
+                "y": 219
+              }
+            }
+          ]
+        },
+        {
+          "id": "18",
+          "events": [
+            {
+              "id": "abra-18-1",
+              "sourceBlock": 1004,
+              "text": "18. \"There is the sound again—like a radio program—a man talking.\" She said it was like a play, the same voice as before."
+            },
+            {
+              "id": "abra-18-2",
+              "sourceBlock": 1014,
+              "text": "18. Repeated (21 minutes after last stimulation at 18). \"White Christmas.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 58.5938,
+              "y": 27.7321,
+              "sourcePixel": {
+                "x": 375,
+                "y": 236
+              }
+            }
+          ]
+        },
+        {
+          "id": "19",
+          "events": [
+            {
+              "id": "abra-19-1",
+              "sourceBlock": 1006,
+              "text": "19. \"The play again!\" Then she began to hum. When asked what she was humming, she said she did not know, it was what she heard."
+            },
+            {
+              "id": "abra-19-2",
+              "sourceBlock": 1008,
+              "text": "19. Repeated. Patient began to hum. She continued at the ordinary pace of a song. \"I know it but I don't know the name—I have heard it before. I hear it, it is an instrument—just one.\" She thought it was a violin."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 40.4688,
+              "y": 20.6816,
+              "sourcePixel": {
+                "x": 259,
+                "y": 176
+              }
+            }
+          ]
+        },
+        {
+          "id": "23",
+          "events": [
+            {
+              "id": "abra-23-1",
+              "sourceBlock": 1016,
+              "text": "23. \"The play—they are talking.\" When asked who, she said, \"The men are talking.\" When asked who they were, she said, \"I don't know.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 46.875,
+              "y": 26.792,
+              "sourcePixel": {
+                "x": 300,
+                "y": 228
+              }
+            }
+          ]
+        },
+        {
+          "id": "26",
+          "events": [
+            {
+              "id": "abra-26-1",
+              "sourceBlock": 1018,
+              "text": "26. Patient said, \"It hurts.\" Stimulation was stopped. She said, \"I see a picture.\" She added, \"It was a face which comes from a picture.\""
+            },
+            {
+              "id": "abra-26-2",
+              "sourceBlock": 1020,
+              "text": "26. Repeated. \"Nothing.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 51.7188,
+              "y": 85.0764,
+              "sourcePixel": {
+                "x": 331,
+                "y": 724
+              }
+            }
+          ]
+        },
+        {
+          "id": "27",
+          "events": [
+            {
+              "id": "abra-27-1",
+              "sourceBlock": 1022,
+              "text": "27. \"The same thing. The play and they are banging on something like a drum.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 43.75,
+              "y": 64.3948,
+              "sourcePixel": {
+                "x": 280,
+                "y": 548
+              }
+            }
+          ]
+        },
+        {
+          "id": "28",
+          "events": [
+            {
+              "id": "abra-28-1",
+              "sourceBlock": 1024,
+              "text": "28. \"I see people walking.\" When asked where they are, she said, \"I think they are here.\" She said they were strangers."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 39.2188,
+              "y": 64.3948,
+              "sourcePixel": {
+                "x": 251,
+                "y": 548
+              }
+            }
+          ]
+        }
+      ],
+      "coordinateProvenance": "Printed-number centres manually verified against the exact original image; full-image percentage coordinates. These are label click targets, not inferred anatomical boundaries."
+    },
+    {
+      "id": "yn",
+      "tab": "Y.N.",
+      "caseNo": 12,
+      "sourceTitle": "Case 12: Y.N.",
+      "sourceBlock": 1028,
+      "image": {
+        "src": "/publicAssets/images/foundations/appendix/image81.png",
+        "width": 1298,
+        "height": 938,
+        "caption": "Case 12: Y.N.",
+        "sha256": "13238b0ffeb776c51666b222d78db5a97628ab738a1695062130a3ad69a36159",
+        "sourceBlock": 1043,
+        "relationshipId": "rId109"
+      },
+      "points": [
+        {
+          "id": "26",
+          "events": [
+            {
+              "id": "yn-26-1",
+              "sourceBlock": 1030,
+              "text": "26. \"I could hear someone talking, murmuring or something.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 50.3082,
+              "y": 51.5991,
+              "sourcePixel": {
+                "x": 653,
+                "y": 484
+              }
+            }
+          ]
+        },
+        {
+          "id": "25",
+          "events": [
+            {
+              "id": "yn-25-1",
+              "sourceBlock": 1032,
+              "text": "25. \"There was talking or murmuring, but I cannot understand it.\" Apparently this resembled the voices she heard before her attacks."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 44.1448,
+              "y": 55.3305,
+              "sourcePixel": {
+                "x": 573,
+                "y": 519
+              }
+            }
+          ]
+        },
+        {
+          "id": "27",
+          "events": [
+            {
+              "id": "yn-27-1",
+              "sourceBlock": 1034,
+              "text": "27. Silence, then a loud cry. \"I heard the voices and then I screamed. I had a feeling all over.\""
+            },
+            {
+              "id": "yn-27-2",
+              "sourceBlock": 1038,
+              "text": "27. Repeated thirteen minutes after last stimulation at this point. After a time the patient said that she was trying to hear what someone was saying, but she could not make it out. She said it was one man doing the talking."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 58.6287,
+              "y": 47.1215,
+              "sourcePixel": {
+                "x": 761,
+                "y": 442
+              }
+            }
+          ]
+        },
+        {
+          "id": "28",
+          "events": [
+            {
+              "id": "yn-28-1",
+              "sourceBlock": 1036,
+              "text": "28. \"I hear something.\" She did not see anything. The electrode was kept in place. When asked what she heard, she said, \"A buzzing-like.\" Then she added, \"A man buzzing or murmuring.\" When asked where he was she said, \"In the back.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 61.3251,
+              "y": 43.9232,
+              "sourcePixel": {
+                "x": 796,
+                "y": 412
+              }
+            }
+          ]
+        },
+        {
+          "id": "33",
+          "events": [
+            {
+              "id": "yn-33-1",
+              "sourceBlock": 1040,
+              "text": "33. She began to sob, \"That man's voice again! The only thing I know is that my father frightens me a lot.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 54.5455,
+              "y": 49.3603,
+              "sourcePixel": {
+                "x": 708,
+                "y": 463
+              }
+            }
+          ]
+        }
+      ],
+      "coordinateProvenance": "Printed-number centres manually verified against the exact original image; full-image percentage coordinates. These are label click targets, not inferred anatomical boundaries."
+    },
+    {
+      "id": "gp",
+      "tab": "G.P.",
+      "caseNo": 24,
+      "sourceTitle": "Case 24: G.P.",
+      "sourceBlock": 1047,
+      "image": {
+        "src": "/publicAssets/images/foundations/appendix/image82.png",
+        "width": 1298,
+        "height": 840,
+        "caption": "Case 24: G.P.",
+        "sha256": "8190735ecef73a1a720f8a2462dc13a4a96df6d36f99e7ce58a2646fe3bdc5f7",
+        "sourceBlock": 1056,
+        "relationshipId": "rId110"
+      },
+      "points": [
+        {
+          "id": "14",
+          "events": [
+            {
+              "id": "gp-14-1",
+              "sourceBlock": 1049,
+              "text": "14. When the electrode was applied, the patient said, \"Wait a minute, I see someone.\" When asked, he said it was a man running."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 33.9753,
+              "y": 56.0714,
+              "sourcePixel": {
+                "x": 441,
+                "y": 471
+              }
+            }
+          ]
+        },
+        {
+          "id": "15",
+          "events": [
+            {
+              "id": "gp-15-1",
+              "sourceBlock": 1051,
+              "text": "15. He exclaimed, \"Oui, la, la, la. It was he, he came, that fool.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 35.208,
+              "y": 51.4286,
+              "sourcePixel": {
+                "x": 457,
+                "y": 432
+              }
+            }
+          ]
+        },
+        {
+          "id": "16",
+          "events": [
+            {
+              "id": "gp-16-1",
+              "sourceBlock": 1053,
+              "text": "16. Patient said, \"There, there, j'entend. It is just that somebody wanted to speak to me and he was going vite, vite, vite.\""
+            }
+          ],
+          "hotspots": [],
+          "mapNote": "The source transcript calls this point 16, but the original G.P. map labels 17d instead. Their relationship is unconfirmed; no location for point 16 has been invented."
+        }
+      ],
+      "coordinateProvenance": "Printed-number centres manually verified against the exact original image; full-image percentage coordinates. These are label click targets, not inferred anatomical boundaries."
+    },
+    {
+      "id": "sbe",
+      "tab": "S. Be.",
+      "caseNo": 29,
+      "sourceTitle": "Case 29: S. Be.",
+      "sourceBlock": 1069,
+      "image": {
+        "src": "/publicAssets/images/foundations/appendix/image83.png",
+        "width": 1170,
+        "height": 1280,
+        "caption": "Case 29: S. Be.",
+        "sha256": "f05c305eed3da5b19e76da8e79e13647db44c42f4fc250a24b6952286f2a913b",
+        "sourceBlock": 1117,
+        "relationshipId": "rId111"
+      },
+      "points": [
+        {
+          "id": "14",
+          "events": [
+            {
+              "id": "sbe-14-1",
+              "sourceBlock": 1071,
+              "text": "14. \"Just like someone whispering, or something, in my left ear. It sounded something like a crowd.\" Warning was then given but no stimulation. He reported, \"Nothing.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 52.4786,
+              "y": 32.7344,
+              "sourcePixel": {
+                "x": 614,
+                "y": 419
+              }
+            }
+          ]
+        },
+        {
+          "id": "15",
+          "events": [
+            {
+              "id": "sbe-15-1",
+              "sourceBlock": 1073,
+              "text": "15. \"Again someone trying to speak to me, a single person.\" When asked, he added, \"Oh, a man's voice, I could not understand what he said.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 47.6068,
+              "y": 31.0938,
+              "sourcePixel": {
+                "x": 557,
+                "y": 398
+              }
+            }
+          ]
+        },
+        {
+          "id": "16",
+          "events": [
+            {
+              "id": "sbe-16-1",
+              "sourceBlock": 1075,
+              "text": "16. While the electrode was held in place the patient said, \"Something brings back a memory, I could see Seven-Up Bottling Company—Harrison Bakery.\" Warning was given again, but no stimulus applied. He was not fooled and replied, \"Nothing.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 59.4872,
+              "y": 35.625,
+              "sourcePixel": {
+                "x": 696,
+                "y": 456
+              }
+            }
+          ]
+        },
+        {
+          "id": "17",
+          "events": [
+            {
+              "id": "sbe-17-1",
+              "sourceBlock": 1077,
+              "text": "17. While the electrode was held in place he replied, \"Again something ] have heard of but I cannot remember it.\" On questioning he added that it was a word but he could not remember what Word."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 62.0513,
+              "y": 37.5781,
+              "sourcePixel": {
+                "x": 726,
+                "y": 481
+              }
+            }
+          ]
+        },
+        {
+          "id": "18",
+          "events": [
+            {
+              "id": "sbe-18-1",
+              "sourceBlock": 1079,
+              "text": "18. Stimulus was applied without warning the patient. He said he was a little drowsy, then, \"Someone was there in front of me right where the nurse is sitting.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 54.4444,
+              "y": 36.1719,
+              "sourcePixel": {
+                "x": 637,
+                "y": 463
+              }
+            }
+          ]
+        },
+        {
+          "id": "19",
+          "events": [
+            {
+              "id": "sbe-19-1",
+              "sourceBlock": 1081,
+              "text": "19. During stimulation he said, \"I am trying to find the name of a song.\" The electrode was removed. \"There was a piano there and someone was playing. I could hear the song, you know. It is a song I have sung before but I cannot find out quite what the title of the song is. That was what I was trying to do when you finished stimulating!\""
+            },
+            {
+              "id": "sbe-19-2",
+              "sourceBlock": 1083,
+              "text": "19. Repeated without warning. After withdrawal of the electrode, he said, \"Someone was speaking to another and he mentioned a name but I could not understand it.\" When asked whether he saw the person, he replied, \"It was just like a dream.\" When asked if the person was there he said, \"Yes, sir, about where the nurse with the eyeglasses is sitting over there.\""
+            },
+            {
+              "id": "sbe-19-3",
+              "sourceBlock": 1085,
+              "text": "19. Repeated again without warning the patient, and without questioning him. \"Yes, 'Oh Marie, Oh Marie'—someone is singing it.\" He was then asked who it was and he replied, \"I don't know, Doctor, I cannot recognize the voice.\""
+            },
+            {
+              "id": "sbe-19-4",
+              "sourceBlock": 1087,
+              "text": "19. Repeated again without warning. He observed, while the electrode was being held in place, \"Again, 'Oh Marie, Oh Marie.' \" He explained that he had heard this before. \"It is a theme song,\" he said, \"on a radio program. The program is called the 'Life of Luigi,' \" The patient then discussed the identity of the song with Dr. Sears and he ended by singing the well-known refrain, \"Oh Marie, Oh Marie.\" All in the operating room recognized the song."
+            },
+            {
+              "id": "sbe-19-5",
+              "sourceBlock": 1094,
+              "text": "19. Repeated eight minutes after first stimulation at this point. Patient said, \"Nothing.\" This stimulation was preceded by stimulation just below this same point and he heard the singing."
+            },
+            {
+              "id": "sbe-19-6",
+              "sourceBlock": 1114,
+              "text": "19. This point where the song had been produced earlier was restimulated several times near the end of the exploration but nothing was evoked."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 44.5299,
+              "y": 29.6094,
+              "sourcePixel": {
+                "x": 521,
+                "y": 379
+              }
+            }
+          ]
+        },
+        {
+          "id": "21",
+          "events": [
+            {
+              "id": "sbe-21-1",
+              "sourceBlock": 1089,
+              "text": "21. \"Someone telling me in my left (contralateral) ear, 'Sylvere, Sylvere!' It could have been the voice of my brother.\""
+            },
+            {
+              "id": "sbe-21-2",
+              "sourceBlock": 1091,
+              "text": "21. Repeated without warning. When asked after the stimulation, he said, \"I can- not make it out.\""
+            },
+            {
+              "id": "sbe-21-3",
+              "sourceBlock": 1108,
+              "text": "21. Repeated thirty minutes after last stimulation at this point. \"Nothing.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 46.0684,
+              "y": 37.7344,
+              "sourcePixel": {
+                "x": 539,
+                "y": 483
+              }
+            }
+          ]
+        },
+        {
+          "id": "23",
+          "events": [
+            {
+              "id": "sbe-23-1",
+              "sourceBlock": 1092,
+              "text": "23. During stimulation he said, \"It is a woman calling something, but I cannot make out the name.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 48.7179,
+              "y": 34.8438,
+              "sourcePixel": {
+                "x": 570,
+                "y": 446
+              }
+            }
+          ]
+        },
+        {
+          "id": "24",
+          "events": [
+            {
+              "id": "sbe-24-1",
+              "sourceBlock": 1096,
+              "text": "24. Stimulation at a depth of 1 -5 cm. \"Somebody talking. I cannot make out who it was.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 51.8803,
+              "y": 77.5781,
+              "sourcePixel": {
+                "x": 607,
+                "y": 993
+              }
+            }
+          ]
+        },
+        {
+          "id": "25",
+          "events": [
+            {
+              "id": "sbe-25-1",
+              "sourceBlock": 1098,
+              "text": "25. Stimulation at a depth of 1 cm. Patient said, \"Buzzing sound.\" When asked if there was anything else, he said, \"A man talking.\" (Auditory sensation and experiential response.)"
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 53.5897,
+              "y": 79.8438,
+              "sourcePixel": {
+                "x": 627,
+                "y": 1022
+              }
+            }
+          ]
+        },
+        {
+          "id": "26",
+          "events": [
+            {
+              "id": "sbe-26-1",
+              "sourceBlock": 1100,
+              "text": "26. Stimulation without warning. \"There is someone near my left eye, but I cannot make it out\""
+            },
+            {
+              "id": "sbe-26-2",
+              "sourceBlock": 1102,
+              "text": "26. Repeated without warning. \"Oh, my left eye! I see someone.\" Then he explained that there were men and women. \"They seemed to be sitting down and listening to someone. But I do not see who that someone might be.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 33.2479,
+              "y": 42.5781,
+              "sourcePixel": {
+                "x": 389,
+                "y": 545
+              }
+            }
+          ]
+        },
+        {
+          "id": "27",
+          "events": [
+            {
+              "id": "sbe-27-1",
+              "sourceBlock": 1104,
+              "text": "27. During stimulation without warning he said, \"Yes, there was something.\" He said he saw it; it was an object. The operator noted that each of these visual experiences seemed to disappear before the end of stimulation."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 43.4188,
+              "y": 32.1875,
+              "sourcePixel": {
+                "x": 508,
+                "y": 412
+              }
+            }
+          ]
+        },
+        {
+          "id": "28",
+          "events": [
+            {
+              "id": "sbe-28-1",
+              "sourceBlock": 1106,
+              "text": "28. Stimulation at a depth of 1 cm. \"A buzzing.\" Then the electrode was withdrawn slowly and he exclaimed, \"Someone is calling.\" He could not understand the words. (Here the electrode was in the anterior transverse temporal gyrus of Heschl and upon withdrawal the adjacent first temporal gyrus was stimulated)."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 57.265,
+              "y": 41.4062,
+              "sourcePixel": {
+                "x": 670,
+                "y": 530
+              }
+            }
+          ]
+        },
+        {
+          "id": "29",
+          "events": [
+            {
+              "id": "sbe-29-1",
+              "sourceBlock": 1110,
+              "text": "29. \"I don't know—I see someone in front of me.\""
+            },
+            {
+              "id": "sbe-29-2",
+              "sourceBlock": 1112,
+              "text": "29. Repeated without warning. \"I hear someone talking.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 57.265,
+              "y": 81.4844,
+              "sourcePixel": {
+                "x": 670,
+                "y": 1043
+              }
+            }
+          ]
+        }
+      ],
+      "coordinateProvenance": "Printed-number centres manually verified against the exact original image; full-image percentage coordinates. These are label click targets, not inferred anatomical boundaries."
+    },
+    {
+      "id": "nc",
+      "tab": "N.C.",
+      "caseNo": 31,
+      "sourceTitle": "Case 31: N.C.",
+      "sourceBlock": 1127,
+      "image": {
+        "src": "/publicAssets/images/foundations/appendix/image84.png",
+        "width": 1342,
+        "height": 886,
+        "caption": "Case 31: N.C.",
+        "sha256": "4e9f9c65b2cf9bdb3b4566252cc78b266004359403c264d5dbcac48055f484e5",
+        "sourceBlock": 1153,
+        "relationshipId": "rId112"
+      },
+      "points": [
+        {
+          "id": "19",
+          "events": [
+            {
+              "id": "nc-19-1",
+              "sourceBlock": 1129,
+              "text": "19. \"I had a dream. I had a book under my arm and 1 was talking to a man. The man was trying to reassure me not to worry about the book.\" When asked, she said she did not know what the book was or who the man was."
+            },
+            {
+              "id": "nc-19-2",
+              "sourceBlock": 1137,
+              "text": "19. Repeated without warning, twenty minutes after the previous stimulation at this point. When asked afterward if she had noticed anything, she said, \"I noticed I was having a dream, but I do not know what it was, it was crazy.\""
+            },
+            {
+              "id": "nc-19-3",
+              "sourceBlock": 1139,
+              "text": "19. Stimulation near point 19. \"Another dream, crazy.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 39.8659,
+              "y": 74.4921,
+              "sourcePixel": {
+                "x": 535,
+                "y": 660
+              }
+            }
+          ]
+        },
+        {
+          "id": "20",
+          "events": [
+            {
+              "id": "nc-20-1",
+              "sourceBlock": 1131,
+              "text": "20. Patient said, \"I feel like I have a sick spell.\" Stimulus was withdrawn. She then added that, \"Mother is talking to me.\""
+            },
+            {
+              "id": "nc-20-2",
+              "sourceBlock": 1133,
+              "text": "20. Repeated ten minutes later. Patient laughed. When asked what had happened, while stimulation was still going on, she said, \"Well, it is kind of a long story but I will tell you.\" Stimulus was withdrawn. She went on to explain a rather complicated situation, and then said she told her mother, \"Don't forget the fabulous feeling.\" When asked if that was something she had said to her mother, she said her mother mocked her. When asked whether it was a dream or something she remembered, she exclaimed, \"No.\" Then she said, \"I took my arm and brought it down on the plate and broke the plate all to pieces.\" When asked where it was, she said in her home in Richland, Washington."
+            },
+            {
+              "id": "nc-20-3",
+              "sourceBlock": 1135,
+              "text": "20. Repeated without warning. She said, \"Yes, another experience, a different experience.\" Then she added, \"A true experience. This man, Mr. Meerburger, he, oh well, he drinks. Twice his boy has run away. I went to the store once for an ice cream cone and I saw that he was back, and I said 'Hmm, he is back,' and the lady asked me 'What is the matter,' and I didn't know how to explain so I said, 'Well you know Mr. Meerburger drinks.' I thought that was the easiest way but later mother told me, no, and it made it a lot worse.\""
+            },
+            {
+              "id": "nc-20-4",
+              "sourceBlock": 1141,
+              "text": "20. Repeated seven minutes after previous stimulation at this point. \"Nothing.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 43.6662,
+              "y": 69.0745,
+              "sourcePixel": {
+                "x": 586,
+                "y": 612
+              }
+            }
+          ]
+        },
+        {
+          "id": "23",
+          "events": [
+            {
+              "id": "nc-23-1",
+              "sourceBlock": 1143,
+              "text": "23. \"It made me think of a baby song, I cannot think of the words.\""
+            },
+            {
+              "id": "nc-23-2",
+              "sourceBlock": 1145,
+              "text": "23. Repeated. \"I had a little pain in my head. I again thought of the song.\" When asked what song, she said, \"That baby song—the War March of the Priests.\" "
+            },
+            {
+              "id": "nc-23-3",
+              "sourceBlock": 1147,
+              "text": "23. Repeated without warning. After withdrawal, the operator said, \"You don't notice anything do you?\" She replied, \"Yes, I was trying to identify the song.\" When asked if she would like the stimulation repeated, she said, \"Yes.\" Stimulus was applied and after a time she began to hum, and she hummed an air quite accurately. Then she said, \"It is the War March of the Priests.\""
+            },
+            {
+              "id": "nc-23-4",
+              "sourceBlock": 1149,
+              "text": "23. Repeated. Patient was asked if she heard the air and she said she heard another one which sounded very much like \"War March of the Preiests.\" She added that it was not a baby song after all. She thought the first song she heard was a baby song."
+            },
+            {
+              "id": "nc-23-5",
+              "sourceBlock": 1151,
+              "text": "23. As a final test the patient was asked to let the operator know when she heard the song. After some delay, point 23 was stimulated. As the electrode was applied, she said, \"There.\" When asked what it was, she said all she could think of was the War March of the Priests. She said she had the Hallelujah Chorus on a record at home and that this was on the other side of it."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 39.9404,
+              "y": 60.158,
+              "sourcePixel": {
+                "x": 536,
+                "y": 533
+              }
+            }
+          ]
+        }
+      ],
+      "coordinateProvenance": "Printed-number centres manually verified against the exact original image; full-image percentage coordinates. These are label click targets, not inferred anatomical boundaries."
+    },
+    {
+      "id": "ge",
+      "tab": "G.E.",
+      "caseNo": 32,
+      "sourceTitle": "Case 32: G.E.",
+      "sourceBlock": 1167,
+      "image": {
+        "src": "/publicAssets/images/foundations/appendix/image85.png",
+        "width": 1342,
+        "height": 886,
+        "caption": "Case 32: G.E.",
+        "sha256": "8621d4f391e0fdf63113b37968ed00fa84346eaef74c7ecf71143307763a736f",
+        "sourceBlock": 1198,
+        "relationshipId": "rId113"
+      },
+      "points": [
+        {
+          "id": "1b",
+          "events": [
+            {
+              "id": "ge-1b-1",
+              "sourceBlock": 1169,
+              "text": "1b. Electrode at a depth of 2 cm. Patient said she heard a buzzing sound. Then she said she saw a friend of hers. When asked who it was, she said \"Somebody I know who I met on the street.\" She said it was a man and that she sometimes sees people in her attacks."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 24.9627,
+              "y": 63.8826,
+              "sourcePixel": {
+                "x": 335,
+                "y": 566
+              }
+            }
+          ]
+        },
+        {
+          "id": "1c",
+          "events": [
+            {
+              "id": "ge-1c-1",
+              "sourceBlock": 1171,
+              "text": "1c. After a pause the patient said, \"I see a machine, one that I have seen before.\" The machine seemed to disappear before the end of the stimulation."
+            },
+            {
+              "id": "ge-1c-2",
+              "sourceBlock": 1175,
+              "text": "1c. Repeated eighteen minutes after last stimulation at this point \"I see the nurse.\" When asked afterwards, she said, \"It was a little dream.\" She saw the nurse just as she is now."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 26.9001,
+              "y": 50.4515,
+              "sourcePixel": {
+                "x": 361,
+                "y": 447
+              }
+            }
+          ]
+        },
+        {
+          "id": "2b",
+          "events": [
+            {
+              "id": "ge-2b-1",
+              "sourceBlock": 1173,
+              "text": "2b. After stimulation was over she said, \"I saw a few people. Some of the nurses on the floor (she meant her hospital ward). I cannot describe it now.\" When asked, she said that in her attacks she sees mostly people."
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 36.4382,
+              "y": 68.2844,
+              "sourcePixel": {
+                "x": 489,
+                "y": 605
+              }
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "events": [
+            {
+              "id": "ge-3-1",
+              "sourceBlock": 1177,
+              "text": "3. \"Something new, I hear my mother singing.\" The electrode was replaced and she repeated, \"I hear my mother singing.\""
+            },
+            {
+              "id": "ge-3-2",
+              "sourceBlock": 1179,
+              "text": "3. Repeated without warning. After a little time, she said, \"1 hear my brother talking.\" When asked what he was saying, she said he was talking to one of his schoolmates."
+            },
+            {
+              "id": "ge-3-3",
+              "sourceBlock": 1181,
+              "text": "3. Repeated again without warning. \"I hear my mother and father talking and singing.\" And after a pause, \"Christmas carols.\" When asked, she said, \"I saw them for a second or two, then it faded.\" On further inquiry, she said they were talking and singing about Christmas. She was then asked if when she had heard her brother she also saw him and she replied, \"Yes.\""
+            },
+            {
+              "id": "ge-3-4",
+              "sourceBlock": 1183,
+              "text": "3. Repeated ten minutes after previous stimulation at this point. \"Nothing.\""
+            },
+            {
+              "id": "ge-3-5",
+              "sourceBlock": 1185,
+              "text": "3. Repeated. The electrode was moved slowly down over the convolution. Patient said, \"I heard my mother again, singing.\""
+            },
+            {
+              "id": "ge-3-6",
+              "sourceBlock": 1191,
+              "text": "3. Repeated 11 minutes after last stimulation at this point. \"I hear some kind of a machine. I saw it for a minute and heard it."
+            },
+            {
+              "id": "ge-3-7",
+              "sourceBlock": 1194,
+              "text": "3. Repeated fifteen minutes after last stimulation at this point, \"Nothing.\" When asked whether she ever heard people like her mother and father in any of her attacks, she said, \"Sometimes.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 54.62,
+              "y": 53.9503,
+              "sourcePixel": {
+                "x": 733,
+                "y": 478
+              }
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "events": [
+            {
+              "id": "ge-4-1",
+              "sourceBlock": 1187,
+              "text": "4. She exclaimed \"Was that my mother yelling ?\" When asked after withdrawal of the electrode, she said, \"She was yelling at my little baby sister, Mary Jane.\" When asked if she saw them, she said she saw both distinctly. She said one was moving, but she could not remember which. \"Mary Jane had done something bad, and mother was telling her not to do it.\""
+            },
+            {
+              "id": "ge-4-2",
+              "sourceBlock": 1189,
+              "text": "4. Repeated five minutes after above stimulation at this point, the patient began to weep and said, \"It is coming. A spell. A fainting one.\""
+            }
+          ],
+          "hotspots": [],
+          "mapNote": "Point 4 appears in the source transcript, but its location is not labelled on the original G.E. map. Its notes are reproduced here without an invented location."
+        },
+        {
+          "id": "16",
+          "events": [
+            {
+              "id": "ge-16-1",
+              "sourceBlock": 1192,
+              "text": "16. \"I hear my mother calling.\" When asked afterwards what she was calling, she said, \"Just yelling.\""
+            }
+          ],
+          "hotspots": [
+            {
+              "x": 49.1058,
+              "y": 51.2415,
+              "sourcePixel": {
+                "x": 659,
+                "y": 454
+              }
+            }
+          ]
+        }
+      ],
+      "coordinateProvenance": "Printed-number centres manually verified against the exact original image; full-image percentage coordinates. These are label click targets, not inferred anatomical boundaries."
+    }
+  ]
+}

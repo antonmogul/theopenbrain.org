@@ -23,19 +23,13 @@
  *
  * Unlisted route: /phrenology-3d.
  */
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import gsap from "gsap";
-import { PHRENOLOGY_CITATION, usePhrenology } from "@/mocks/phrenology";
-import {
-  MAP_H,
-  MAP_SRC,
-  MAP_W,
-  facultyInfoByNumber,
-  loadRegionMap,
-} from "@/helper/phrenologyMaps";
+import { PHRENOLOGY_CITATION, PHRENOLOGY_FACULTIES } from "@/mocks/phrenology";
+import { MAP_H, MAP_SRC, MAP_W, loadRegionMap } from "@/helper/phrenologyMaps";
 import { reducedMotionK } from "@/helper/motion";
 
 const MODEL_SRC = "/publicAssets/models/skull.glb";
@@ -146,12 +140,14 @@ const canvasEl = ref(null);
 const loading = ref(true);
 const failed = ref(false);
 const activeView = ref("anterior");
-const selected = shallowRef(null); // { n, name, blurb }
+const selected = shallowRef(null); // Complete source faculty record
+const detailEl = ref(null);
+let previousRegionElement = null;
 const markers = shallowRef([]); // [{ key, n, view, sign, pos, normal }]
 const markerEls = {};
 
-const { fetchViews } = usePhrenology();
-const facultyInfo = new Map(); // n → { name, blurb }
+const facultyInfo = new Map(PHRENOLOGY_FACULTIES.map((f) => [f.n, f]));
+let disposed = false;
 
 let renderer, scene, camera, controls, skull, raf;
 let maps = {}; // view → loadRegionMap() result
@@ -159,8 +155,6 @@ let xf = {}; // view → { A, B } model → plate px (affine)
 let uniforms = null;
 let ro = null;
 let camTween = null;
-
-const cardOpen = computed(() => !!selected.value);
 
 // ── Region maps → shader ────────────────────────────────────────────────────
 function fitRegistration() {
@@ -278,7 +272,9 @@ function regionAt(point, normal) {
 }
 
 function hitAt(clientX, clientY) {
+  if (!canPick()) return null;
   const rect = canvasEl.value.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
   ndc.set(
     ((clientX - rect.left) / rect.width) * 2 - 1,
     -((clientY - rect.top) / rect.height) * 2 + 1
@@ -293,8 +289,19 @@ function hitAt(clientX, clientY) {
 }
 
 let downAt = null;
+function canPick() {
+  return (
+    !disposed &&
+    !loading.value &&
+    !failed.value &&
+    !!canvasEl.value &&
+    !!camera &&
+    !!skull &&
+    !!uniforms
+  );
+}
 function onPointerDown(e) {
-  downAt = { x: e.clientX, y: e.clientY };
+  downAt = canPick() ? { x: e.clientX, y: e.clientY } : null;
 }
 function onPointerUp(e) {
   if (!downAt) return;
@@ -305,23 +312,30 @@ function onPointerUp(e) {
   if (region) select(region.n);
 }
 function onPointerMove(e) {
-  if (!uniforms || e.buttons) return;
+  if (!canPick() || e.buttons) return;
   const region = hitAt(e.clientX, e.clientY);
   uniforms.uHover.value = region ? region.n : -1;
   canvasEl.value.style.cursor = region ? "pointer" : "grab";
 }
 function onPointerLeave() {
+  downAt = null;
   if (uniforms) uniforms.uHover.value = -1;
 }
 
-function select(n) {
+async function select(n) {
   const info = facultyInfo.get(n);
-  selected.value = { n, name: info?.name || null, blurb: info?.blurb || null };
+  if (!info) return;
+  if (!selected.value) previousRegionElement = document.activeElement;
+  selected.value = info;
   if (uniforms) uniforms.uSel.value = n;
+  await nextTick();
+  if (detailEl.value) detailEl.value.scrollTop = 0;
 }
 function closeCard() {
   selected.value = null;
   if (uniforms) uniforms.uSel.value = -1;
+  if (previousRegionElement?.isConnected) previousRegionElement.focus();
+  previousRegionElement = null;
 }
 
 // ── Markers: region centroids raycast onto the skull ───────────────────────
@@ -469,8 +483,8 @@ function resize() {
   const { clientWidth: w, clientHeight: h } = el;
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
-  // Framed for a landscape stage; a narrower one (card open, phone) zooms
-  // out so the whole skull stays in view instead of being cropped.
+  // A permanent detail column keeps this aspect unchanged on selection.
+  // Only actual viewport resizing changes the camera framing.
   camera.zoom = Math.min(1, camera.aspect / 1.15);
   camera.updateProjectionMatrix();
 }
@@ -483,17 +497,19 @@ function loop() {
   placeMarkers();
 }
 
-async function attachFacultyInfo() {
-  for (const [n, info] of facultyInfoByNumber(await fetchViews()))
-    facultyInfo.set(n, info);
-}
-
 onMounted(async () => {
-  renderer = new THREE.WebGLRenderer({
-    canvas: canvasEl.value,
-    antialias: true,
-    alpha: true,
-  });
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas: canvasEl.value,
+      antialias: true,
+      alpha: true,
+    });
+  } catch (error) {
+    console.warn("Phrenology3DView: WebGL is unavailable", error);
+    failed.value = true;
+    loading.value = false;
+    return;
+  }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -526,6 +542,18 @@ onMounted(async () => {
       loadRegionMap(MAP_SRC.side),
       loadRegionMap(MAP_SRC.back),
     ]);
+    if (disposed) {
+      gltf.scene.traverse((o) => {
+        if (o.isMesh) {
+          o.geometry.dispose();
+          for (const material of Array.isArray(o.material)
+            ? o.material
+            : [o.material])
+            material.dispose();
+        }
+      });
+      return;
+    }
     maps = { front, side, back };
     skull = gltf.scene;
     scene.add(skull);
@@ -576,17 +604,20 @@ onMounted(async () => {
     controls.update();
 
     buildMarkers(box);
-    await attachFacultyInfo();
     loading.value = false;
     gsap.to(uniforms.uReveal, { value: 1, duration: 0.8 * K, delay: 0.2 * K });
   } catch (err) {
     console.error("Phrenology3DView: failed to load the skull or maps", err);
-    failed.value = true;
-    loading.value = false;
+    if (!disposed) {
+      failed.value = true;
+      loading.value = false;
+    }
   }
 });
 
 onBeforeUnmount(() => {
+  disposed = true;
+  if (uniforms) gsap.killTweensOf(uniforms.uReveal);
   cancelAnimationFrame(raf);
   camTween?.kill();
   ro?.disconnect();
@@ -604,7 +635,11 @@ onBeforeUnmount(() => {
 });
 
 function onKeydown(e) {
-  if (e.key === "Escape") closeCard();
+  if (e.key === "Escape" && selected.value) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeCard();
+  }
 }
 </script>
 
@@ -612,6 +647,25 @@ function onKeydown(e) {
   <section class="phreno3d" aria-label="Phrenology, 3D" @keydown="onKeydown">
     <header class="phreno3d__head">
       <h2 class="phreno3d__title">Phrenology</h2>
+      <p class="historical-note">
+        Historical claims from 1815, not accepted neuroscience.
+      </p>
+      <label class="faculty-picker"
+        >Browse a faculty
+        <select
+          :value="selected?.n || ''"
+          @change="select(Number($event.target.value))"
+        >
+          <option value="" disabled>Select a number and faculty</option>
+          <option
+            v-for="faculty in PHRENOLOGY_FACULTIES"
+            :key="faculty.n"
+            :value="faculty.n"
+          >
+            {{ faculty.n }} · {{ faculty.name }}
+          </option>
+        </select>
+      </label>
     </header>
     <nav class="tabs" aria-label="Skull views">
       <button
@@ -627,7 +681,7 @@ function onKeydown(e) {
       </button>
     </nav>
 
-    <div class="body" :class="{ 'body--card': cardOpen }">
+    <div class="body">
       <div ref="stageEl" class="stage">
         <canvas
           ref="canvasEl"
@@ -636,6 +690,7 @@ function onKeydown(e) {
           @pointerup="onPointerUp"
           @pointermove="onPointerMove"
           @pointerleave="onPointerLeave"
+          @pointercancel="onPointerLeave"
         ></canvas>
         <div class="markers">
           <button
@@ -664,8 +719,9 @@ function onKeydown(e) {
       <transition name="card">
         <aside
           v-if="selected"
+          ref="detailEl"
           class="card"
-          role="dialog"
+          role="region"
           :aria-label="`Faculty ${selected.n}`"
         >
           <button
@@ -680,12 +736,42 @@ function onKeydown(e) {
             <i class="card__num">{{ selected.n }}</i>
             {{ selected.name || `Faculty ${selected.n}` }}
           </span>
-          <p v-if="selected.blurb" class="card__text">{{ selected.blurb }}</p>
-          <p v-else class="card__text card__text--mute">
-            A description of this faculty is still to come from the authors.
+          <p
+            v-for="note in selected.editorialNotes"
+            :key="note"
+            class="card__editorial"
+          >
+            {{ note }}
           </p>
+          <p
+            v-for="quote in selected.quotes"
+            :key="quote.sourceBlock"
+            class="card__text"
+            :data-source-block="quote.sourceBlock"
+          >
+            {{ quote.text }}
+          </p>
+          <figure
+            v-for="img in selected.images"
+            :key="img.src"
+            class="source-image"
+          >
+            <img
+              :src="img.src"
+              :width="img.width"
+              :height="img.height"
+              :alt="img.caption"
+              loading="lazy"
+            />
+            <figcaption>{{ img.caption }}</figcaption>
+          </figure>
         </aside>
       </transition>
+      <p v-if="!selected" class="card-instruction">
+        Select a numbered region to read the source and see its illustrations.
+        Faculty 22 is available in the list; the source gives no labelled
+        location.
+      </p>
     </div>
 
     <footer class="phreno3d__foot">
@@ -696,6 +782,49 @@ function onKeydown(e) {
 </template>
 
 <style scoped>
+.card-instruction {
+  padding: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  opacity: 0.7;
+}
+.faculty-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+.faculty-picker select {
+  max-width: 100%;
+  padding: 0.5rem;
+  color: #222;
+  background: #f8f6f1;
+}
+.historical-note {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+.source-image {
+  margin: 1.5rem 0;
+}
+.source-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.source-image figcaption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+.card__editorial {
+  border-left: 3px solid #8464ae;
+  padding-left: 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
 /* The Figma widget plate (#333) and the History ramp for the accents. */
 .phreno3d {
   --plate: #333;
@@ -704,7 +833,7 @@ function onKeydown(e) {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: min(100vh, 860px);
+  min-height: var(--widget-min-h, 100dvh);
   background: var(--plate);
   color: #fff;
   font-family: var(--font-ui, var(--font-body));
@@ -753,14 +882,16 @@ function onKeydown(e) {
 
 .body {
   position: relative;
-  flex: 1;
-  display: flex;
-  min-height: 0;
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+  height: 65vh;
+  min-height: 420px;
 }
 .stage {
   position: relative;
-  flex: 1;
-  min-height: 420px;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 .stage__canvas {
@@ -838,7 +969,10 @@ function onKeydown(e) {
 .card {
   position: relative;
   flex: none;
-  width: min(360px, 38%);
+  width: auto;
+  height: calc(100% - 2rem);
+  min-height: 0;
+  box-sizing: border-box;
   margin: 1rem 1rem 1rem 0;
   padding: 1.5rem 1.25rem;
   background: #f4f1ea;
@@ -918,12 +1052,27 @@ function onKeydown(e) {
 
 @media (max-width: 760px) {
   .body {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
   }
   .stage {
-    min-height: 60vh;
+    min-height: 0;
+  }
+  .card-instruction {
+    position: absolute;
+    bottom: 0;
+    margin: 0;
+    padding: 1rem;
+    font-size: 0.75rem;
+    pointer-events: none;
   }
   .card {
+    position: absolute;
+    z-index: 2;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: auto;
+    max-height: 55vh;
     width: auto;
     margin: 0 0.75rem 0.75rem;
   }

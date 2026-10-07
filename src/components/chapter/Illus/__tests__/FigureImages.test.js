@@ -178,6 +178,48 @@ describe("FigureImages", () => {
     expect(document.activeElement).toBe(last);
   });
 
+  it("keeps the same arrow controls through changing captions and repeated clicks", async () => {
+    const w = mountSet({
+      images: [
+        { src: "/wide.jpg", caption: "Short", alt: "Wide plate" },
+        {
+          src: "/tall.jpg",
+          caption: "Long caption ".repeat(100),
+          alt: "Tall plate",
+        },
+      ],
+    });
+    await w.findAll(".figimg-thumb")[0].trigger("click");
+    const next = dialog().querySelector('[aria-label="Next image"]');
+    for (let i = 0; i < 6; i++) {
+      next.click();
+      await nextTick();
+      expect(dialog().querySelector('[aria-label="Next image"]')).toBe(next);
+      expect(count().trim()).toBe(`${i % 2 === 0 ? 2 : 1} / 2`);
+    }
+  });
+
+  it("closes and unlocks on Back/Forward without a stranded viewer", async () => {
+    const w = mountSet();
+    for (let i = 0; i < 2; i++) {
+      await w.findAll(".figimg-thumb")[0].trigger("click");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      await nextTick();
+      expect(dialog()).toBeNull();
+      expect(document.body.getAttribute("style") || "").not.toContain("hidden");
+    }
+  });
+
+  it("discards an open viewer when the chapter supplies a different figure", async () => {
+    const w = mountSet();
+    await w.findAll(".figimg-thumb")[1].trigger("click");
+    await w.setProps({
+      images: [{ src: "/replacement.jpg", caption: "Replacement" }],
+    });
+    expect(dialog()).toBeNull();
+    expect(document.body.getAttribute("style") || "").not.toContain("hidden");
+  });
+
   it("closes with its close button", async () => {
     const w = mountSet();
     await w.findAll(".figimg-thumb")[1].trigger("click");
