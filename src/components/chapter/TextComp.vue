@@ -18,7 +18,7 @@ import { authorsForModule } from "@/helper/chapterAuthors";
 
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
-import { saveInlineEdit } from "@/editor/inlineSave";
+import { saveInlineEdit, undoInlineEdit } from "@/editor/inlineSave";
 import { blocksToPlainText } from "@/editor/plainText";
 import {
   contentBlocksToHTML,
@@ -82,7 +82,8 @@ const introTriggerId = (section) => {
 
 // An intro paragraph with a figure of its own gets the scroll trigger the
 // pinned pane listens for, `triggerAnimation` + the figure's name, exactly
-// as SectionComp gives one to a section's paragraphs (OPENBRAIN-131). Without
+// as SectionComp gives one to a section's paragraphs (OPENBRAIN-131), with
+// the figure's authored hold (data-figure-hold, historyFigureTiming). Without
 // a figure the wrapper is a bare span, as there.
 const paragraphTrigger = (paragraph) => {
   const name = paragraph?.animation?.name;
@@ -90,6 +91,7 @@ const paragraphTrigger = (paragraph) => {
     ? {
         id: `triggerAnimation${name}`,
         class: "animationTrigger block noHighlight",
+        "data-figure-hold": paragraph.animation.hold,
       }
     : {};
 };
@@ -247,11 +249,9 @@ const saveContent = async (edit) => {
           ...editUndo.value.slice(-19),
           {
             label: "Edit",
+            // Only the blocks go back: a hold set meanwhile is kept.
             run: async () => {
-              await rest(`paragraphs?id=eq.${edit.paragraphId}`, {
-                method: "PATCH",
-                body: JSON.stringify(before),
-              });
+              await undoInlineEdit(rest, edit.paragraphId, before);
               updateLocalBlocks(
                 edit.paragraphId,
                 before.content?.blocks || [],
@@ -714,6 +714,7 @@ onBeforeUnmount(() => {
             v-if="introTriggerId(section)"
             :id="introTriggerId(section)"
             class="animationTrigger block noHighlight"
+            :data-figure-hold="section.animation?.hold"
           >
             <template
               v-for="paragraph in section.paragraphs"

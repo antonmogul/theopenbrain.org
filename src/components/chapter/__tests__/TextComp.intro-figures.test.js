@@ -220,6 +220,34 @@ describe("TextComp: the intro's figures", () => {
     ]);
   });
 
+  it("binds each intro figure's authored hold for the pane (data-figure-hold)", async () => {
+    const module = attentionModule();
+    module.sections[0].paragraphs[1].content.animationFlags = { hold: 0 };
+    const chapter = transformModuleToChapterFormat(module);
+    chapter.intro[0].animation = { name: "dragon", hold: "next" };
+    const wrapper = mountReader(chapter);
+    await wrapper.vm.$nextTick();
+    // An authored 0 ("with its paragraph") is a value, not Automatic.
+    expect(
+      wrapper
+        .find("#triggerAnimationAttentionV2Fig1")
+        .attributes("data-figure-hold")
+    ).toBe("0");
+    expect(
+      wrapper.find("#triggerAnimationDragon").attributes("data-figure-hold")
+    ).toBe("next");
+  });
+
+  it("leaves data-figure-hold off an intro figure on Automatic", async () => {
+    const wrapper = mountReader(
+      transformModuleToChapterFormat(attentionModule())
+    );
+    await wrapper.vm.$nextTick();
+    expect(
+      wrapper.find("#triggerAnimationAttentionV2Fig1").attributes()
+    ).not.toHaveProperty("data-figure-hold");
+  });
+
   it("gives the intro its section gap (reader-section)", async () => {
     const wrapper = mountReader(
       transformModuleToChapterFormat(attentionModule())

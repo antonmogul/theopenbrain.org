@@ -3,6 +3,7 @@ import {
   dashboardLockReason,
   readerLockReason,
   withBlocks,
+  withFigureHold,
 } from "@/editor/editability.mjs";
 
 describe("readerLockReason (OPENBRAIN-58)", () => {
@@ -65,6 +66,51 @@ describe("withBlocks", () => {
     expect(next).toEqual({
       blocks: [{ type: "text", content: "New" }],
       animationFlags: { transition: true },
+    });
+  });
+});
+
+describe("withFigureHold (OPENBRAIN-131)", () => {
+  const content = {
+    blocks: [{ type: "text", content: "Figure 1." }],
+    animationFlags: { transition: true, start: true },
+    note: "kept",
+  };
+
+  it("sets the hold beside the other flags, keeping every other key", () => {
+    expect(withFigureHold(content, 0.5)).toEqual({
+      ...content,
+      animationFlags: { transition: true, start: true, hold: 0.5 },
+    });
+    // An authored 0 is a value, not Automatic.
+    expect(withFigureHold(content, 0).animationFlags.hold).toBe(0);
+    // The stored row is not touched.
+    expect(content.animationFlags).not.toHaveProperty("hold");
+  });
+
+  it("removes it for Automatic, dropping animationFlags only if empty", () => {
+    const held = withFigureHold(content, "next");
+    expect(withFigureHold(held, null)).toEqual(content);
+    expect(
+      withFigureHold({ blocks: [], animationFlags: { hold: 1 } }, null)
+    ).toEqual({ blocks: [] });
+  });
+
+  it("starts animationFlags on content without any", () => {
+    expect(withFigureHold({ blocks: [] }, 2)).toEqual({
+      blocks: [],
+      animationFlags: { hold: 2 },
+    });
+    expect(withFigureHold(null, "next")).toEqual({
+      animationFlags: { hold: "next" },
+    });
+  });
+
+  it("survives a later blocks save (withBlocks)", () => {
+    const held = withFigureHold(content, 1);
+    expect(withBlocks(held, [{ type: "text", content: "New" }])).toEqual({
+      ...held,
+      blocks: [{ type: "text", content: "New" }],
     });
   });
 });

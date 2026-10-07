@@ -103,6 +103,7 @@
       :class="
         section?.animation?.name ? 'animationTrigger block noHighlight' : ''
       "
+      :data-figure-hold="section?.animation?.hold"
     >
       <template v-for="paragraph in section['paragraphs']" :key="paragraph.id">
         <StartEndIcon :paragraph="paragraph" art="start" />
@@ -116,6 +117,7 @@
               ? 'animationTrigger block noHighlight'
               : ''
           "
+          :data-figure-hold="paragraph?.animation?.hold"
           v-if="
             paragraph?.type != 'breakVideo' && paragraph.type != 'breakSection'
           "

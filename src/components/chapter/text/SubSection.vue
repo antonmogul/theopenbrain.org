@@ -19,6 +19,7 @@
       :class="
         subSections?.animation?.name ? 'animationTrigger block noHighlight' : ''
       "
+      :data-figure-hold="subSections?.animation?.hold"
     >
       <!-- subSection title -->
       <span :id="subSections?.title ? toSlug(subSections?.title) : ''" />
@@ -73,6 +74,7 @@
               ? 'animationTrigger block noHighlight'
               : ''
           "
+          :data-figure-hold="subParagraph?.animation?.hold"
         >
           <template
             v-if="

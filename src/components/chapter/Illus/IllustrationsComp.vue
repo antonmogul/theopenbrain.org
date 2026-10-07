@@ -28,7 +28,7 @@ import FigureWidget from "@/widgets/figures/FigureWidget.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { figureWidgetFor } from "@/widgets/figures/registry";
-import { historyFigureEnd } from "@/helper/historyFigureTiming";
+import { figureEnd, figureRecordFor } from "@/helper/historyFigureTiming";
 
 // Panel figures rebuilt as figure widgets (full-screen ones render in the
 // text through FullScreenIllustration).
@@ -130,8 +130,11 @@ function updateActiveFigure() {
   const current = [...ownedTriggers]
     .reverse()
     .find((trigger) => activeTriggers.has(trigger.trigger));
+  // The figure's own id, so a key the editor made (`image-…`, `widget-…`,
+  // whose trigger reads `triggerAnimationimage-…`) matches its record too.
+  const key = current?.trigger.id.replace(/^trigger/i, "");
   activeAnimation.value = current
-    ? current.trigger.id.replace(/^trigger/i, "").toLowerCase()
+    ? (figureRecordFor(key, animationList.value)?.id ?? key).toLowerCase()
     : null;
   store.animationActive = !!activeAnimation.value;
 }
@@ -162,8 +165,10 @@ function setupTriggers() {
       id: "scrollTriggerAnimation",
       trigger,
       start: () => `top ${window.innerHeight / 2}`,
-      end: () =>
-        historyFigureEnd(trigger, animationTriggers, animationList.value),
+      // Its paragraph's window, or longer for a figure that holds (still
+      // images, an author's "Stays"; OPENBRAIN-131). A function, so every
+      // refresh re-measures it.
+      end: () => figureEnd(trigger, animationTriggers, animationList.value),
       markers: false,
       onToggle: (self) => {
         trigger.classList.toggle("active", self.isActive);

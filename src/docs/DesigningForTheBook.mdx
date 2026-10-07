@@ -31,11 +31,11 @@ The reader is one text column plus, from 1024px, a pinned figure pane. See [Foun
 - **Phone first.** Every public page must work at 390px with no sideways scroll (the smoke test checks 390, 1024, 1280, 1440 and 1920).
 - **Phones:** 15px margins, 360px of text. Figures and widget bands run edge to edge; captions return to the margin.
 - **Tablets (768–1023):** one column, centred at the 780px reading measure.
-- **Laptop and up (1024+):** the figure pane on the left stays in place while the text on the right scrolls. Each figure appears there when its paragraph is read. On phones the same figure appears once, inline, after its paragraph.
+- **Laptop and up (1024+):** the figure pane on the left stays in place while the text on the right scrolls. Each figure appears there when its paragraph reaches the middle of the screen. A still image then stays while the text after it is read, until the next figure, a full-width band (a widget, a breakout box, a break, a full-width image, a full-screen figure) or the end of the section; animations, widgets and placeholders leave with their paragraph. Authors can change this per figure with **Stays** in the chapter editor. On phones the same figure appears once, inline, after its paragraph.
 
 ## Figures and widgets
 
-- **Figures** go in the figure pane on wide screens and inline on phones. Design each figure to work at both: about 464–890px wide in the pane, and the full phone width (390px) inline.
+- **Figures** go in the figure pane on wide screens and inline on phones. Design each figure to work at both: about 464–890px wide in the pane, and the full phone width (390px) inline. A still image can stay in the pane for several paragraphs, so it should make sense beside the text that follows it, not only its own caption.
 - **Interactive widgets** are single self-contained files built with the [Widget kit](?path=/docs/guides-widget-kit--docs). In the chapter they play in a full-width dark band (`--color-dark-surface`) with a small label, the widget, and a credit line.
 - **Motion respects reduced motion.** Anything that moves must also make sense still.
 

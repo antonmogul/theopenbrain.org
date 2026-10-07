@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { supabase } from "@/lib/supabase";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
+import { withBlocks } from "@/editor/editability.mjs";
 
 const router = useRouter();
 const { isCreator, loading, userRole } = useAuth();
@@ -158,10 +159,13 @@ const saveParagraph = async () => {
 
   try {
     const blocks = htmlToBlocks(editorContent.value);
+    // Replace the blocks only: animationFlags (a figure's transition, its
+    // hold in the pane) and any other content key survive.
+    const content = withBlocks(selectedParagraph.value.content, blocks);
     const { error } = await supabase
       .from("paragraphs")
       .update({
-        content: { blocks },
+        content,
         updated_at: new Date().toISOString(),
       })
       .eq("id", selectedParagraph.value.id);
@@ -169,7 +173,7 @@ const saveParagraph = async () => {
     if (error) throw error;
 
     // Update local state
-    selectedParagraph.value.content = { blocks };
+    selectedParagraph.value.content = content;
     saveStatus.value = "Saved successfully!";
 
     // Refresh the list

@@ -86,3 +86,22 @@ export function dashboardLockReason(content) {
 export function withBlocks(content, blocks) {
   return { ...(content && typeof content === "object" ? content : {}), blocks };
 }
+
+/**
+ * The content to PATCH when setting how long a paragraph's figure stays in
+ * the pane (OPENBRAIN-131): `animationFlags.hold`, merged so every other key
+ * (blocks, the other flags) survives. null or undefined removes it
+ * (Automatic), and drops `animationFlags` if nothing else is left in it.
+ */
+export function withFigureHold(content, hold) {
+  const base = content && typeof content === "object" ? content : {};
+  const flags =
+    base.animationFlags && typeof base.animationFlags === "object"
+      ? { ...base.animationFlags }
+      : {};
+  if (hold === null || hold === undefined) delete flags.hold;
+  else flags.hold = hold;
+  const next = { ...base, animationFlags: flags };
+  if (!Object.keys(flags).length) delete next.animationFlags;
+  return next;
+}

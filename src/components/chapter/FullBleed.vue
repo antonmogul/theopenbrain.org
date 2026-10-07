@@ -139,10 +139,13 @@ defineExpose({ sync: schedule, floating });
 </script>
 
 <template>
+  <!-- fb-slot--column: never full width (an in-column image, a widget
+       card), so not a band a pane figure's hold stops at
+       (historyFigureTiming FIGURE_BANDS). -->
   <div
     ref="slotEl"
     class="fb-slot"
-    :class="{ 'fb-slot--vacated': floating }"
+    :class="{ 'fb-slot--vacated': floating, 'fb-slot--column': !enabled }"
     :style="slotStyle"
   >
     <Teleport :to="layer" :disabled="!floating">

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { saveInlineEdit } from "@/editor/inlineSave";
+import { saveInlineEdit, undoInlineEdit } from "@/editor/inlineSave";
 
 // A fake PostgREST: GET returns the stored row, PATCH records its body and
 // answers with one updated row (or none, like an RLS refusal).
@@ -133,5 +133,53 @@ describe("saveInlineEdit with blocks (Edit mode, OPENBRAIN-64)", () => {
         type: "subsection-title",
       })
     ).rejects.toThrow(/didn't allow/);
+  });
+});
+
+describe("undoInlineEdit (OPENBRAIN-131)", () => {
+  // A shared row: the reader's edit, then the chapter editor sets the
+  // figure's hold in another tab, then the reader's Undo.
+  function table(content) {
+    const row = { content, content_text: "Old" };
+    const rest = vi.fn(async (path, init = {}) => {
+      if (!init.method) return [structuredClone(row)];
+      Object.assign(row, JSON.parse(init.body));
+      return [{ id: "p1" }];
+    });
+    return { row, rest };
+  }
+
+  it("puts back only the blocks and text, keeping a hold set since", async () => {
+    const { row, rest } = table({
+      blocks: [{ type: "text", content: "Old" }],
+      animationFlags: { transition: true },
+    });
+    const { previous } = await saveInlineEdit(rest, {
+      paragraphId: "p1",
+      blocks: [{ type: "text", content: "New" }],
+      type: "paragraph",
+    });
+    row.content.animationFlags.hold = "next";
+    const content = await undoInlineEdit(rest, "p1", previous);
+    expect(row.content).toEqual({
+      blocks: [{ type: "text", content: "Old" }],
+      animationFlags: { transition: true, hold: "next" },
+    });
+    expect(row.content_text).toBe("Old");
+    expect(content).toEqual(row.content);
+  });
+
+  it("reports a refused undo, or a deleted paragraph", async () => {
+    const previous = { content: { blocks: [] }, content_text: "" };
+    const refused = vi.fn(async (path, init = {}) =>
+      init.method ? [] : [{ content: { blocks: [] } }]
+    );
+    await expect(undoInlineEdit(refused, "p1", previous)).rejects.toThrow(
+      /didn't allow/
+    );
+    const gone = vi.fn(async () => []);
+    await expect(undoInlineEdit(gone, "p1", previous)).rejects.toThrow(
+      /no longer exists/
+    );
   });
 });
