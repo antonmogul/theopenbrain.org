@@ -336,9 +336,22 @@ try {
             { waitUntil: "networkidle" }
           );
           expect(response.ok()).toBe(true);
+          // The application hides scrollbars through both the standard property
+          // and a WebKit pseudo-element rule. Override both in this fixture so
+          // the geometry lane exercises a real classic gutter, not fake padding.
           await page.addStyleTag({
-            content:
-              "html { overflow-y: scroll !important; scrollbar-gutter: stable; } html::-webkit-scrollbar { width: 16px; } html::-webkit-scrollbar-thumb { background: #888; }",
+            content: `
+              html {
+                overflow-y: scroll !important;
+                scrollbar-gutter: stable;
+                scrollbar-width: auto !important;
+              }
+              html::-webkit-scrollbar {
+                display: block !important;
+                width: 16px;
+              }
+              html::-webkit-scrollbar-thumb { background: #888; }
+            `,
           });
           await readerReady(page);
           await expect

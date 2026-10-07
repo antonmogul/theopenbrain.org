@@ -258,6 +258,7 @@ describe("restored desktop folder storyboard", () => {
       .findAll(".case-tabs button")
       .find((b) => b.text().includes("G.E."))
       .trigger("click");
+    expect(document.activeElement).toBe(w.find(".back-button").element);
     timeline.pause().progress(0);
     await flushPromises();
     expect(w.attributes("data-phase")).toBe("opening");
@@ -346,6 +347,19 @@ describe("restored desktop folder storyboard", () => {
     expect(window.__cc).toBeUndefined();
   });
 
+  it("advances a fresh timeline naturally after repeated early cancellation", async () => {
+    const w = await animatedCabinet();
+    for (let i = 0; i < 2; i++) {
+      await w.find('[data-id="ge"]').trigger("click");
+      await flushPromises();
+      await w.find(".cabinet").trigger("keydown", { key: "Escape" });
+      await vi.waitFor(() => expect(w.attributes("data-phase")).toBe("closed"));
+    }
+    await w.find('[data-id="ge"]').trigger("click");
+    await vi.waitFor(() => expect(w.attributes("data-phase")).toBe("open"), {
+      timeout: 6000,
+    });
+  }, 8000);
   it("kills the timeline and pending handoff on unmount", async () => {
     const w = await animatedCabinet();
     await w.find('[data-id="rw"]').trigger("click");

@@ -272,6 +272,11 @@ async function historyDismissal(state) {
 
 async function testCabinet(state) {
   const { page } = state;
+  // Hosted software rendering can stretch GSAP time through lag smoothing.
+  // Preserve the production ticker and require completion within a bounded
+  // wall-clock budget; immediate/mobile behavior retains its shorter deadline.
+  const phaseTimeout =
+    state.viewport.width > 760 && !state.reduced ? 45_000 : 8_000;
   const cabinet = page.locator(".cabinet");
   await step(
     state,
@@ -303,7 +308,7 @@ async function testCabinet(state) {
       // Motion frames are retained by the timestamped trace screencast.
       // Sequential screenshots cannot reliably capture intermediate GSAP phases.
       await expect(cabinet).toHaveAttribute("data-phase", "open", {
-        timeout: 8_000,
+        timeout: phaseTimeout,
       });
       await expect(cabinet.locator(".casefile__title")).toBeFocused();
       await imageReady(cabinet.locator(".brain-map img"));
@@ -332,7 +337,7 @@ async function testCabinet(state) {
       await expect(cabinet.locator(".map-zoom")).toContainText("100%");
       await page.keyboard.press("Escape");
       await expect(cabinet).toHaveAttribute("data-phase", "closed", {
-        timeout: 8_000,
+        timeout: phaseTimeout,
       });
       await expect(folder).toBeFocused();
       await expect(page.locator(".demo-panel")).toBeVisible();
@@ -350,13 +355,13 @@ async function testCabinet(state) {
         // No delay: exercise Escape before/at the start of the spatial timeline.
         await page.keyboard.press("Escape");
         await expect(cabinet).toHaveAttribute("data-phase", "closed", {
-          timeout: 8_000,
+          timeout: phaseTimeout,
         });
         await expect(folder).toBeFocused();
       }
       await folder.press("Enter");
       await expect(cabinet).toHaveAttribute("data-phase", "open", {
-        timeout: 8_000,
+        timeout: phaseTimeout,
       });
       if (!state.reduced && state.viewport.width > 760) {
         await cabinet
@@ -366,20 +371,20 @@ async function testCabinet(state) {
         await expect(cabinet).toHaveAttribute("data-phase", "closing");
         await page.keyboard.press("Escape");
         await expect(cabinet).toHaveAttribute("data-phase", "closed", {
-          timeout: 8_000,
+          timeout: phaseTimeout,
         });
         await expect(cabinet.locator(".casefile")).toHaveCount(0);
         await folder.focus();
         await folder.press("Enter");
         await expect(cabinet).toHaveAttribute("data-phase", "open", {
-          timeout: 8_000,
+          timeout: phaseTimeout,
         });
       }
       await cabinet
         .getByRole("button", { name: "Back to cases", exact: true })
         .click();
       await expect(cabinet).toHaveAttribute("data-phase", "closed", {
-        timeout: 8_000,
+        timeout: phaseTimeout,
       });
       await expect(folder).toBeFocused();
     }

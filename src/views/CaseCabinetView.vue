@@ -291,6 +291,7 @@ function close({ keepQueue = false } = {}) {
   if (!openCase.value || disposed) return;
   if (!keepQueue) queuedCase = null;
   if (phase.value === "closing") return;
+  closeButton.value?.focus({ preventScroll: true });
   phase.value = "closing";
   if (!desktop.value || reducedMotionK() < 1) {
     returnedToDrawer();
@@ -920,7 +921,9 @@ button:focus-visible {
   font-size: 0.85rem;
 }
 .casefile,
-.casefile * {
+.casefile *,
+.storyboard,
+.storyboard * {
   /* The global reduced-motion rule implicitly transitions every property,
      including inherited visibility on each child. Keep this whole subtree
      immediately focusable when GSAP reveals it. */
