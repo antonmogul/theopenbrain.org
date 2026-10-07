@@ -1,7 +1,8 @@
 <script setup>
 // Unified 2-column dashboard frame: sticky light rail + scrollable content.
 // Owns per-role accent via [data-accent] on its root, and the responsive grid
-// (mirrors SettingsView .layout). Forwards rail props + re-emits its events.
+// (settings uses it too). Forwards rail props + re-emits its events.
+import { computed } from "vue";
 import DashboardRail from "./DashboardRail.vue";
 const props = defineProps({
   navItems: { type: Array, required: true },
@@ -13,10 +14,15 @@ const props = defineProps({
   backLabel: { type: String, default: "Back to book" },
   backTo: { type: [String, Object], default: "/" },
   showBack: { type: Boolean, default: true },
+  /** The rail's Log out (OPENBRAIN-90); a real dashboard always has one. */
+  showLogout: { type: Boolean, default: true },
 });
 defineEmits(["update:activeSection", "back"]);
-// magenta is the :root default — emit no attribute for it.
-const accentAttr = props.accent === "magenta" ? null : props.accent;
+// magenta is the :root default — emit no attribute for it. Computed so an
+// accent that arrives later (settings reads it from the loaded profile) applies.
+const accentAttr = computed(() =>
+  props.accent === "magenta" ? null : props.accent
+);
 </script>
 
 <template>
@@ -31,6 +37,7 @@ const accentAttr = props.accent === "magenta" ? null : props.accent;
         :back-label="backLabel"
         :back-to="backTo"
         :show-back="showBack"
+        :show-logout="showLogout"
         @update:active-section="$emit('update:activeSection', $event)"
         @back="$emit('back')"
       >
@@ -52,7 +59,9 @@ const accentAttr = props.accent === "magenta" ? null : props.accent;
 .shell-layout {
   display: grid;
   grid-template-columns: 1fr;
-  max-width: 77.5rem;
+  /* Was 77.5rem, which left a wide empty band on laptop/desktop screens
+     (OPENBRAIN-56); tables and the chapter outline use the extra room. */
+  max-width: 96rem;
   margin: 0 auto;
   padding: 2.5rem 3rem 6rem;
   gap: 3rem;

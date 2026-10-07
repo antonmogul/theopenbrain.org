@@ -28,14 +28,14 @@ describe("useTrendingHighlights", () => {
     expect(loading.value).toBe(false);
   });
 
-  it("fetchTrendingForSection scopes the query by section_id", async () => {
+  it("fetchTrendingForSection scopes by the paragraph's section", async () => {
     apiRequest.mockResolvedValue([]);
     const { fetchTrendingForSection } = useTrendingHighlights({ limit: 10 });
 
     await fetchTrendingForSection("sec-7");
 
     expect(apiRequest).toHaveBeenCalledWith(
-      "trending_highlights?section_id=eq.sec-7&select=*&order=highlight_count.desc&limit=10"
+      "trending_highlights?select=*,paragraph:paragraphs!inner(section_id)&paragraph.section_id=eq.sec-7&order=highlight_count.desc&limit=10"
     );
   });
 

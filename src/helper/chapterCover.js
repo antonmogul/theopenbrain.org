@@ -13,6 +13,11 @@
 export const DEFAULT_COVER = "/publicAssets/images/background.jpg";
 
 export const COVER_BY_SLUG = Object.freeze({
+  // Anton's choice, 24 Sep: Matisse's girl reading, shared with Attention
+  // until that chapter gets its own. Set a cover on the chapter page to
+  // override (OPENBRAIN-67).
+  "foundations-of-neuroscience":
+    "/publicAssets/images/attention-matisse-reader.jpg",
   "the-retina": "/publicAssets/images/00-matisse-bg.jpg",
   "attention-and-working-memory":
     "/publicAssets/images/attention-matisse-reader.jpg",

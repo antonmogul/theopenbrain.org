@@ -1,5 +1,5 @@
 <template>
-  <div class="rb" ref="rootEl" style="position: relative">
+  <div class="widget-root rb" ref="rootEl" style="position: relative">
     <!-- ====== SVG symbol definitions ====== -->
     <svg width="0" height="0" style="position: absolute" aria-hidden="true">
       <defs>

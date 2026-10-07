@@ -77,7 +77,7 @@ const options = [
   padding: 0.75rem 0.625rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.5rem;
+  border-radius: var(--radius-control);
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s;
@@ -104,7 +104,7 @@ const options = [
 }
 
 .label {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 </style>

@@ -122,6 +122,10 @@ export function useAnimations() {
         if (row.video_file_url) {
           anim.videoUrl = row.video_file_url;
         }
+        // A Lottie uploaded in the CMS lives at its own URL (OPENBRAIN-70 B4).
+        if (row.lottie_file_url) {
+          anim.lottieUrl = row.lottie_file_url;
+        }
         if (row.image_file_url) {
           anim.imageUrl = row.image_file_url;
         }

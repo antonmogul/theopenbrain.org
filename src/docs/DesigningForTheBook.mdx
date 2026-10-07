@@ -1,0 +1,49 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Guides/Designing for the book" />
+
+# Designing for the book
+
+The Open Brain is read more than it is used. These rules keep new chapters and screens consistent with the book readers already know. Each rule points at the token or component that carries it.
+
+## Colour
+
+- **A chapter's colour is its subject.** Five ramps (`fund`, `perc`, `move`, `lear`, `deve`), each with main, dark, medium and light steps (`--color-chapter`, `-deep`, `-soft`, `-pale`). The chapter's subject picks the ramp, never its number: renumbering chapters must not repaint them.
+- **Chapter colour is identity; magenta is interaction.** Inside a chapter the ramp colours the opener title, the contents numbers, section badges and the widget bands. Links, highlight tools and the dashboards keep the global accent (`--color-accent`, magenta).
+- **Support colours** (yellow `#FBEB00`, pink `#F200FF`) are shared across chapters. A chapter never uses its own ramp as a support colour.
+- **Never colour alone.** Every state that a colour shows (correct and wrong, attended and unattended, selected) also shows in shape, text or a mark.
+- **Use tokens, not hex.** Every colour is a token in `brand.css` and a variable in Figma. See [Foundations / Colours](?path=/docs/foundations-colours--docs).
+
+## Type
+
+- **One scale for everything**, from `display` to `label`, applied with the `.t-*` classes (`.t-h2`, `.t-body`, `.t-caption`…). IBM Plex Sans for reading, IBM Plex Mono for labels, captions and controls.
+- **Two sizes per role.** Desktop from 1280px, phone up to 767px, easing in between. Headings shrink most (display 112 → 65px), body least (20 → 17px) so reading stays comfortable. See [Typography / Desktop vs phone](?path=/story/foundations-typography--desktop-vs-phone).
+- **The body size follows the reader's setting.** `.t-body` multiplies by the reading-size preference; design body text to reflow, not to fit a box.
+
+## Shape
+
+- **Square corners everywhere** (`--radius-control: 0`): buttons, cards, chips, panels, modals, widget bands. True circles (dots, avatars, number badges) keep their own radius.
+
+## Layout
+
+The reader is one text column plus, from 1024px, a pinned figure pane. See [Foundations / Layout](?path=/docs/foundations-layout--docs) and the Layout grid page in Figma.
+
+- **Phone first.** Every public page must work at 390px with no sideways scroll (the smoke test checks 390, 1024, 1280, 1440 and 1920).
+- **Phones:** 15px margins, 360px of text. Figures and widget bands run edge to edge; captions return to the margin.
+- **Tablets (768–1023):** one column, centred at the 780px reading measure.
+- **Laptop and up (1024+):** the figure pane on the left stays in place while the text on the right scrolls. Each figure appears there when its paragraph is read. On phones the same figure appears once, inline, after its paragraph.
+
+## Figures and widgets
+
+- **Figures** go in the figure pane on wide screens and inline on phones. Design each figure to work at both: about 464–890px wide in the pane, and the full phone width (390px) inline.
+- **Interactive widgets** are single self-contained files built with the [Widget kit](?path=/docs/guides-widget-kit--docs). In the chapter they play in a full-width dark band (`--color-dark-surface`) with a small label, the widget, and a credit line.
+- **Motion respects reduced motion.** Anything that moves must also make sense still.
+
+## Checklist for a new design
+
+- [ ] Uses the chapter's subject ramp and the magenta accent correctly
+- [ ] Only type roles from the scale; checked at the phone sizes
+- [ ] Square corners
+- [ ] Works at 390px with no sideways scroll; figures and bands edge to edge on phones
+- [ ] Nothing relies on colour alone
+- [ ] Every component exists in Figma and here; anything new is flagged, not drawn ad hoc

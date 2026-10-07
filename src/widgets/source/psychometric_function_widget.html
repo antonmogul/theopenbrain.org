@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The psychometric function</title>
+<style>
+  :root{
+    --bg:#fdfcf9;
+    --panel:#ffffff;
+    --ink:#1a1a1a;
+    --muted:#6f6b63;
+    --rule:#dcd8cf;
+    --teal:#0d8b8b;
+    --teal-soft:#8fc9c9;
+    --amber:#d99a1f;
+    --amber-soft:#eccf92;
+    --ghost:#bdb9b0;
+    --btn:#f3f1ec;
+    --btn-on:#0d8b8b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    padding:24px;
+  }
+  .widget{
+    max-width:880px;
+    margin:0 auto;
+    background:var(--panel);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:26px 28px 22px;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 6px;
+  }
+  h1{
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .lede{
+    margin:0 0 20px;
+    color:var(--muted);
+    max-width:64ch;
+    font-size:14px;
+  }
+  .row{
+    display:flex;
+    gap:22px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .cartoon-panel{
+    flex:0 0 212px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .plot-panel{flex:1 1 440px;min-width:340px;}
+  .seg{
+    display:inline-flex;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    overflow:hidden;
+    width:100%;
+  }
+  .seg button{
+    flex:1;
+    appearance:none;
+    border:0;
+    background:var(--btn);
+    color:var(--muted);
+    font:inherit;
+    font-size:13px;
+    padding:6px 4px;
+    cursor:pointer;
+  }
+  .seg button + button{border-left:1px solid var(--rule);}
+  .seg button[aria-pressed="true"]{
+    background:var(--btn-on);
+    color:#fff;
+  }
+  .cartoon-box{
+    border:1px solid var(--rule);
+    border-radius:4px;
+    background:#fff;
+  }
+  .readout{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px;
+    color:var(--muted);
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .readout b{color:var(--ink);font-weight:600;}
+  .presets{
+    margin-top:18px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .presets button{
+    appearance:none;
+    font:inherit;
+    font-size:13px;
+    padding:7px 13px;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    background:var(--btn);
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .presets button[aria-pressed="true"]{
+    background:var(--btn-on);
+    border-color:var(--btn-on);
+    color:#fff;
+  }
+  .caption{
+    margin-top:14px;
+    padding-top:13px;
+    border-top:1px solid var(--rule);
+    font-size:13.5px;
+    color:var(--muted);
+    max-width:72ch;
+    min-height:42px;
+  }
+  .caption b{color:var(--ink);font-weight:600;}
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
+  .axlabel{font-size:12px;fill:var(--muted);}
+  .ticklabel{font-size:11px;fill:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .annot{font-size:11.5px;fill:var(--muted);}
+  .annot-strong{font-size:11.5px;fill:var(--ink);font-weight:600;}
+  #plot text{paint-order:stroke fill;stroke:#fff;stroke-width:3.5px;stroke-linejoin:round;}
+</style>
+</head>
+<body>
+<div class="widget">
+  <p class="eyebrow">Box &middot; measuring detection</p>
+  <h1>The psychometric function</h1>
+  <p class="lede">Present a stimulus at a range of strengths and record how often the observer says they detected it. The resulting curve is the same shape whatever the stimulus is made of &mdash; and three very different things can change it.</p>
+
+  <div class="row">
+    <div class="cartoon-panel">
+      <div class="seg" role="group" aria-label="Stimulus modality">
+        <button id="mod-sound" aria-pressed="true">Sound</button>
+        <button id="mod-light" aria-pressed="false">Light</button>
+      </div>
+      <div class="cartoon-box">
+        <svg id="cartoon" width="210" height="196" viewBox="0 0 210 196" role="img" aria-label="Stimulus at the selected strength"></svg>
+      </div>
+      <div class="readout">
+        <span>strength <b id="r-strength">50</b></span>
+        <span>P(&ldquo;yes&rdquo;) <b id="r-p">0.50</b></span>
+      </div>
+    </div>
+
+    <div class="plot-panel">
+      <svg id="plot" width="490" height="340" viewBox="0 0 490 340" role="img" aria-label="Psychometric function"></svg>
+    </div>
+  </div>
+
+  <div class="presets" role="group" aria-label="Presets">
+    <button data-preset="baseline" aria-pressed="true">Baseline</button>
+    <button data-preset="threshold" aria-pressed="false">Lower threshold</button>
+    <button data-preset="bias" aria-pressed="false">Liberal bias</button>
+    <button data-preset="lapse" aria-pressed="false">High lapse rate</button>
+    <button data-preset="compare" aria-pressed="false">Threshold vs. bias</button>
+  </div>
+
+  <div class="caption" id="caption"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var SVGNS = "http://www.w3.org/2000/svg";
+
+  // ---- model -------------------------------------------------------------
+  // psi(x) = gamma + (1 - gamma - lambda) * logistic((x - alpha)/beta)
+  var P = {
+    baseline : {alpha:50, beta:6, gamma:0.02, lambda:0.02},
+    threshold: {alpha:32, beta:6, gamma:0.02, lambda:0.02},
+    bias     : {alpha:35.2, beta:4.85, gamma:0.25, lambda:0.02},
+    lapse    : {alpha:50, beta:6, gamma:0.02, lambda:0.22}
+  };
+
+  function psi(x,p){
+    var f = 1/(1+Math.exp(-(x-p.alpha)/p.beta));
+    return p.gamma + (1-p.gamma-p.lambda)*f;
+  }
+
+  var CAPTIONS = {
+    baseline : "<b>Baseline.</b> Detection climbs from almost never to almost always over a narrow band of stimulus strengths. Two numbers summarise the curve: the <b>threshold</b>, the strength at which the observer says yes half the time, and the <b>slope</b>, how abruptly the transition happens.",
+    threshold: "<b>Lower threshold.</b> The observer has become more sensitive, and the whole curve slides toward weaker stimuli. The bottom of the curve stays on the floor: with no stimulus present, this observer still says no.",
+    bias     : "<b>Liberal bias.</b> This observer is simply more willing to say yes. The curve also slides toward weaker stimuli &mdash; but now it lifts off the floor, because they report a stimulus on a quarter of the trials where nothing was presented at all.",
+    lapse    : "<b>High lapse rate.</b> The curve never reaches the ceiling. However strong the stimulus, some trials are missed &mdash; not because the stimulus was too weak, but because the observer was not attending on that trial.",
+    compare  : "<b>The problem.</b> A more sensitive observer and a more willing one produce curves that are nearly superimposable through the middle of the range. They separate only at the far left, where nothing was presented and one observer is saying yes anyway. That number &mdash; the <b>false&nbsp;alarm rate</b> &mdash; is what tells the two apart, and it is where signal detection theory begins."
+  };
+
+  var state = {preset:"baseline", modality:"sound", strength:50};
+
+  // ---- plot geometry -----------------------------------------------------
+  var W=490, H=340, M={t:16,r:20,b:52,l:60};
+  var pw = W-M.l-M.r, ph = H-M.t-M.b;
+  var X = function(v){ return M.l + (v/100)*pw; };
+  var Y = function(v){ return M.t + (1-v)*ph; };
+
+  var plot = document.getElementById("plot");
+
+  function el(name,attrs,text){
+    var n = document.createElementNS(SVGNS,name);
+    for(var k in attrs){ n.setAttribute(k,attrs[k]); }
+    if(text!==undefined){ n.textContent = text; }
+    return n;
+  }
+
+  function curvePath(p){
+    var d="", first=true;
+    for(var x=0;x<=100.0001;x+=0.5){
+      d += (first?"M":"L") + X(x).toFixed(2) + " " + Y(psi(x,p)).toFixed(2);
+      first=false;
+    }
+    return d;
+  }
+
+  function drawPlot(){
+    while(plot.firstChild){ plot.removeChild(plot.firstChild); }
+
+    // gridlines + y ticks
+    [0,0.25,0.5,0.75,1].forEach(function(v){
+      plot.appendChild(el("line",{x1:M.l,x2:M.l+pw,y1:Y(v),y2:Y(v),
+        stroke:"#ece9e2","stroke-width":1}));
+      plot.appendChild(el("text",{x:M.l-10,y:Y(v)+4,"text-anchor":"end",
+        "class":"ticklabel"}, v.toFixed(2)));
+    });
+
+    // axes
+    plot.appendChild(el("line",{x1:M.l,x2:M.l+pw,y1:Y(0),y2:Y(0),
+      stroke:"#8d8880","stroke-width":1.25}));
+    plot.appendChild(el("line",{x1:M.l,x2:M.l,y1:Y(0),y2:Y(1),
+      stroke:"#8d8880","stroke-width":1.25}));
+
+    // x ticks
+    [0,25,50,75,100].forEach(function(v){
+      plot.appendChild(el("line",{x1:X(v),x2:X(v),y1:Y(0),y2:Y(0)+5,
+        stroke:"#8d8880","stroke-width":1.25}));
+      plot.appendChild(el("text",{x:X(v),y:Y(0)+19,"text-anchor":"middle",
+        "class":"ticklabel"}, String(v)));
+    });
+
+    // axis labels
+    plot.appendChild(el("text",{x:M.l+pw/2,y:H-12,"text-anchor":"middle",
+      "class":"axlabel"},"Stimulus strength"));
+    var yl = el("text",{x:16,y:M.t+ph/2,"text-anchor":"middle","class":"axlabel",
+      transform:"rotate(-90 16 "+(M.t+ph/2)+")"},"Proportion “yes”");
+    plot.appendChild(yl);
+
+    var showGhost = (state.preset!=="baseline" && state.preset!=="compare");
+    if(showGhost){
+      plot.appendChild(el("path",{d:curvePath(P.baseline),fill:"none",
+        stroke:"var(--ghost)","stroke-width":1.6,"stroke-dasharray":"4 4"}));
+      plot.appendChild(el("text",{x:X(74),y:Y(psi(74,P.baseline))+18,
+        "class":"annot",fill:"#a5a199"},"baseline"));
+    }
+
+    if(state.preset==="compare"){
+      drawCompare();
+    } else {
+      var p = P[state.preset];
+      plot.appendChild(el("path",{d:curvePath(p),fill:"none",
+        stroke:"var(--teal)","stroke-width":2.6,"stroke-linecap":"round"}));
+      annotate(p);
+    }
+
+    drawScrub();
+  }
+
+  function annotate(p){
+    if(state.preset==="threshold" || state.preset==="baseline"){
+      // threshold marker at 50% point
+      var half = p.gamma + (1-p.gamma-p.lambda)*0.5;
+      plot.appendChild(el("line",{x1:X(p.alpha),x2:X(p.alpha),y1:Y(half),y2:Y(0),
+        stroke:"var(--teal)","stroke-width":1,"stroke-dasharray":"3 3",opacity:.75}));
+      plot.appendChild(el("line",{x1:M.l,x2:X(p.alpha),y1:Y(half),y2:Y(half),
+        stroke:"var(--teal)","stroke-width":1,"stroke-dasharray":"3 3",opacity:.75}));
+      plot.appendChild(el("text",{x:X(p.alpha)+6,y:Y(0)-8,"class":"annot-strong",
+        fill:"var(--teal)"},"threshold"));
+    }
+    if(state.preset==="bias"){
+      var fa = psi(0,P.bias);
+      plot.appendChild(el("line",{x1:M.l,x2:X(26),y1:Y(fa),y2:Y(fa),
+        stroke:"var(--amber)","stroke-width":1.2,"stroke-dasharray":"3 3"}));
+      plot.appendChild(el("circle",{cx:X(0),cy:Y(fa),r:4,fill:"var(--amber)"}));
+      plot.appendChild(el("text",{x:X(27),y:Y(fa)+4,"class":"annot-strong",
+        fill:"var(--amber)"},"says “yes” with no stimulus"));
+    }
+    if(state.preset==="lapse"){
+      var top = 1-P.lapse.lambda;
+      plot.appendChild(el("line",{x1:M.l,x2:M.l+pw,y1:Y(top),y2:Y(top),
+        stroke:"var(--amber)","stroke-width":1.2,"stroke-dasharray":"3 3"}));
+      plot.appendChild(el("text",{x:M.l+pw-4,y:Y(top)-8,"text-anchor":"end",
+        "class":"annot-strong",fill:"var(--amber)"},"ceiling never reached"));
+    }
+  }
+
+  function drawCompare(){
+    var t=P.threshold, b=P.bias;
+    plot.appendChild(el("path",{d:curvePath(t),fill:"none",
+      stroke:"var(--teal)","stroke-width":2.6,"stroke-linecap":"round"}));
+    plot.appendChild(el("path",{d:curvePath(b),fill:"none",
+      stroke:"var(--amber)","stroke-width":2.6,"stroke-linecap":"round",
+      "stroke-dasharray":"7 4"}));
+
+    var yt=psi(0,t), yb=psi(0,b);
+    var bx = X(0)+16;
+    plot.appendChild(el("line",{x1:bx,x2:bx,y1:Y(yt),y2:Y(yb),
+      stroke:"#6f6b63","stroke-width":1.2}));
+    plot.appendChild(el("line",{x1:bx-5,x2:bx+5,y1:Y(yt),y2:Y(yt),
+      stroke:"#6f6b63","stroke-width":1.2}));
+    plot.appendChild(el("line",{x1:bx-5,x2:bx+5,y1:Y(yb),y2:Y(yb),
+      stroke:"#6f6b63","stroke-width":1.2}));
+    plot.appendChild(el("text",{x:bx+10,y:Y((yt+yb)/2)-3,"class":"annot-strong"},
+      "false alarms"));
+    plot.appendChild(el("text",{x:bx+10,y:Y((yt+yb)/2)+12,"class":"annot"},
+      "the only thing separating them"));
+
+    // legend
+    var lx = X(62), ly = Y(0.30);
+    plot.appendChild(el("line",{x1:lx,x2:lx+26,y1:ly,y2:ly,
+      stroke:"var(--teal)","stroke-width":2.6}));
+    plot.appendChild(el("text",{x:lx+33,y:ly+4,"class":"annot-strong",
+      fill:"var(--teal)"},"more sensitive"));
+    plot.appendChild(el("line",{x1:lx,x2:lx+26,y1:ly+20,y2:ly+20,
+      stroke:"var(--amber)","stroke-width":2.6,"stroke-dasharray":"7 4"}));
+    plot.appendChild(el("text",{x:lx+33,y:ly+24,"class":"annot-strong",
+      fill:"var(--amber)"},"more willing"));
+  }
+
+  // ---- scrub line --------------------------------------------------------
+  var scrubG=null;
+  function drawScrub(){
+    var p = (state.preset==="compare") ? P.threshold : P[state.preset];
+    var v = psi(state.strength,p);
+    scrubG = el("g",{});
+    scrubG.appendChild(el("line",{x1:X(state.strength),x2:X(state.strength),
+      y1:Y(0),y2:Y(1),stroke:"#3d3a35","stroke-width":1,opacity:.28}));
+    scrubG.appendChild(el("circle",{cx:X(state.strength),cy:Y(v),r:4.5,
+      fill:"#fff",stroke:"#3d3a35","stroke-width":1.6}));
+    plot.appendChild(scrubG);
+    document.getElementById("r-strength").textContent = Math.round(state.strength);
+    document.getElementById("r-p").textContent = v.toFixed(2);
+  }
+
+  plot.addEventListener("mousemove", function(ev){
+    var rect = plot.getBoundingClientRect();
+    var sx = (ev.clientX-rect.left) * (W/rect.width);
+    var v = ((sx-M.l)/pw)*100;
+    v = Math.max(0,Math.min(100,v));
+    state.strength = v;
+    drawPlot();
+    drawCartoon();
+  });
+
+  // ---- cartoon -----------------------------------------------------------
+  var cart = document.getElementById("cartoon");
+
+  function drawCartoon(){
+    while(cart.firstChild){ cart.removeChild(cart.firstChild); }
+    var s = state.strength/100;
+
+    if(state.modality==="sound"){
+      cart.appendChild(el("rect",{x:0,y:0,width:210,height:196,fill:"#fff"}));
+      // waveform, amplitude scales with strength
+      var amp = 3 + s*52, d="", cx;
+      for(var i=0;i<=120;i++){
+        cx = 14 + i*(118/120);
+        var yy = 98 - amp*Math.sin(i/120*Math.PI*6);
+        d += (i?"L":"M") + cx.toFixed(2) + " " + yy.toFixed(2);
+      }
+      cart.appendChild(el("path",{d:d,fill:"none",stroke:"var(--teal)",
+        "stroke-width":2,"stroke-linecap":"round"}));
+      cart.appendChild(el("line",{x1:14,x2:132,y1:98,y2:98,
+        stroke:"#e3dfd7","stroke-width":1}));
+      // ear glyph
+      cart.appendChild(el("path",{
+        d:"M176 62 C158 58 146 74 147 94 C148 114 156 126 160 136 C164 146 170 150 176 148",
+        fill:"none",stroke:"#3d3a35","stroke-width":2.2,"stroke-linecap":"round"}));
+      cart.appendChild(el("path",{
+        d:"M171 80 C160 82 157 96 163 105 C168 112 174 111 176 106",
+        fill:"none",stroke:"#3d3a35","stroke-width":1.8,"stroke-linecap":"round"}));
+      cart.appendChild(el("text",{x:105,y:180,"text-anchor":"middle",
+        "class":"annot"},"a tone in noise"));
+    } else {
+      cart.appendChild(el("rect",{x:0,y:0,width:210,height:196,fill:"#fff"}));
+      // grey field with a spot of increasing luminance
+      cart.appendChild(el("rect",{x:14,y:24,width:118,height:118,rx:3,
+        fill:"#7d7a75"}));
+      var lum = Math.round(125 + s*128);
+      cart.appendChild(el("circle",{cx:73,cy:83,r:30,
+        fill:"rgb("+lum+","+lum+","+lum+")"}));
+      // eye glyph
+      cart.appendChild(el("path",{d:"M144 83 Q170 60 196 83 Q170 106 144 83 Z",
+        fill:"none",stroke:"#3d3a35","stroke-width":2.2,"stroke-linejoin":"round"}));
+      cart.appendChild(el("circle",{cx:170,cy:83,r:9,fill:"none",
+        stroke:"#3d3a35","stroke-width":2}));
+      cart.appendChild(el("circle",{cx:170,cy:83,r:3.4,fill:"#3d3a35"}));
+      cart.appendChild(el("text",{x:105,y:180,"text-anchor":"middle",
+        "class":"annot"},"a spot against grey"));
+    }
+  }
+
+  // ---- controls ----------------------------------------------------------
+  var presetBtns = Array.prototype.slice.call(
+    document.querySelectorAll(".presets button"));
+  presetBtns.forEach(function(b){
+    b.addEventListener("click", function(){
+      state.preset = b.getAttribute("data-preset");
+      presetBtns.forEach(function(o){
+        o.setAttribute("aria-pressed", String(o===b));
+      });
+      document.getElementById("caption").innerHTML = CAPTIONS[state.preset];
+      drawPlot();
+    });
+  });
+
+  var mS = document.getElementById("mod-sound"),
+      mL = document.getElementById("mod-light");
+  function setMod(m){
+    state.modality = m;
+    mS.setAttribute("aria-pressed", String(m==="sound"));
+    mL.setAttribute("aria-pressed", String(m==="light"));
+    drawCartoon();
+  }
+  mS.addEventListener("click", function(){ setMod("sound"); });
+  mL.addEventListener("click", function(){ setMod("light"); });
+
+  document.getElementById("caption").innerHTML = CAPTIONS.baseline;
+  drawPlot();
+  drawCartoon();
+})();
+</script>
+</body>
+</html>

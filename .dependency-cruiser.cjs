@@ -45,6 +45,9 @@ module.exports = {
           "\\.config\\.(js|cjs|ts)$",
           "^src/router",
           "^src/App\\.vue$",
+          // Storybook loads every story file itself; a self-contained story
+          // (the token pages in src/styles/__stories__) imports nothing.
+          "\\.stories\\.(js|mjs)$",
         ],
       },
       to: {},

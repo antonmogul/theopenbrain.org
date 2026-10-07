@@ -50,15 +50,51 @@ describe("useDashboardMedia", () => {
     expect(formatFileSize(2 * 1024 * 1024)).toBe("2.0 MB");
   });
 
-  it("deleteMedia DELETEs then refetches and clears selection", async () => {
+  it("deleteMedia DELETEs an unused asset, refetches and clears selection", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     authedRequest.mockResolvedValue([]);
-    const { selectedMedia, deleteMedia } = useDashboardMedia();
+    const { selectedMedia, mediaUsage, deleteMedia } = useDashboardMedia();
     selectedMedia.value = { id: "a1" };
+    mediaUsage.value = { places: [], states: 0, variants: 0, inUse: false };
     await deleteMedia("a1");
     expect(authedRequest).toHaveBeenCalledWith("animations?id=eq.a1", {
       method: "DELETE",
     });
     expect(selectedMedia.value).toBe(null);
+  });
+
+  it("selectMedia looks up where the asset is used", async () => {
+    authedRequest.mockImplementation((endpoint) => {
+      if (endpoint.startsWith("paragraphs"))
+        return Promise.resolve([
+          {
+            id: "p1",
+            order_index: 2,
+            section: { title: "Anatomy", module: { title: "The Retina" } },
+          },
+        ]);
+      if (endpoint.startsWith("animation_states"))
+        return Promise.resolve([{ id: "s1" }, { id: "s2" }]);
+      return Promise.resolve([]);
+    });
+    const { selectMedia, mediaUsage } = useDashboardMedia();
+    await selectMedia({ id: "a1", media_type: "image" });
+    await vi.waitFor(() => expect(mediaUsage.value).not.toBeNull());
+    expect(mediaUsage.value).toEqual({
+      places: [{ chapter: "The Retina", where: "Anatomy · paragraph 3" }],
+      states: 2,
+      variants: 0,
+      inUse: true,
+    });
+  });
+
+  it("deleteMedia refuses an asset that is in use", async () => {
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const { deleteMedia, mediaUsage } = useDashboardMedia();
+    mediaUsage.value = { places: [], states: 3, variants: 0, inUse: true };
+    await deleteMedia("a1");
+    expect(confirm).not.toHaveBeenCalled();
+    expect(authedRequest).not.toHaveBeenCalled();
+    confirm.mockRestore();
   });
 });

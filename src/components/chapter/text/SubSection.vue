@@ -8,7 +8,7 @@
   >
     <StartEndIcon :paragraph="subSections" art="start" />
     <IllustrationInline
-      v-if="isMobile && subSections?.animation?.id"
+      v-if="inlineFigureFor(subSections)"
       :animation-id="subSections.animation.id"
     />
     <span
@@ -116,6 +116,7 @@
               tag="p"
               class-name="subP"
               @save="handleSave"
+              can-figure
             />
             <div
               v-else-if="!subParagraph.subSubSection && !subParagraph.type"
@@ -139,13 +140,14 @@
               :key="'images' + subParagraph.id"
               v-if="subParagraph.img"
             />
+            <VideoEmbed v-if="subParagraph.video" :video="subParagraph.video" />
             <FullScreenIllustration
               :key="subParagraph.animationFull"
               v-if="subParagraph.animationFull"
               :paragraph="subParagraph"
             />
             <IllustrationInline
-              v-if="isMobile && subParagraph?.animation?.id"
+              v-if="inlineFigureFor(subParagraph)"
               :key="'inline' + subParagraph.id"
               :animation-id="subParagraph.animation.id"
             />
@@ -191,13 +193,17 @@ import WidgetBreakout from "./WidgetBreakout.vue";
 
 import { toSlug } from "@/helper/general.js";
 import InlineImages from "./InlineImages.vue";
+import VideoEmbed from "./VideoEmbed.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
-import { useMediaQuery } from "@/composables/useMediaQuery";
+import { useInlineFigureFor } from "@/composables/useInlineFigures";
 
 // Below the desktop pane's breakpoint, render trigger figures inline.
-const isMobile = useMediaQuery("(max-width: 1299px)");
+// Inline below the two-column breakpoint, and inside a floating breakout box
+// (it covers the figure pane): OPENBRAIN-91.
+// Draw a figure here only where it first appears (below 1024px).
+const inlineFigureFor = useInlineFigureFor();
 
 defineProps({
   paragraph: Object,
@@ -208,18 +214,15 @@ defineProps({
   },
 });
 
-const emit = defineEmits(["save"]);
+defineEmits(["save"]);
 
 // Get save handler from parent
 const saveContent = inject("saveContent", null);
 
-const handleSave = async ({ paragraphId, content, type = "paragraph" }) => {
-  console.log("SubSection: Saving", paragraphId, type);
-  if (saveContent) {
-    await saveContent({ paragraphId, content, type });
-  }
-  emit("save", { paragraphId, content, type });
-};
+// One save, returned so EditableBlock can show a failure; not re-emitted
+// (SectionComp and TextComp used to save the same row again — OPENBRAIN-58).
+const handleSave = ({ paragraphId, content, type = "paragraph" }) =>
+  saveContent({ paragraphId, content, type });
 </script>
 
 <style scoped></style>

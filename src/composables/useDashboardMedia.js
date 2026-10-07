@@ -76,8 +76,53 @@ export function useDashboardMedia() {
   });
 
   // ---- actions ----
+  // Where the selected asset is used (OPENBRAIN-55): paragraph and section
+  // figures by animation_id, plus figure states/variants that cascade away
+  // with it. null while loading; { error } if the lookup failed.
+  const mediaUsage = ref(null);
+
+  async function fetchMediaUsage(id) {
+    mediaUsage.value = null;
+    try {
+      const [paragraphs, sections, states, variants] = await Promise.all([
+        supabaseRest(
+          `paragraphs?animation_id=eq.${id}&select=id,order_index,section:sections(title,module:modules(title))`
+        ),
+        supabaseRest(
+          `sections?animation_id=eq.${id}&select=id,title,module:modules(title)`
+        ),
+        supabaseRest(`animation_states?animation_id=eq.${id}&select=id`),
+        supabaseRest(`animation_variants?animation_id=eq.${id}&select=id`),
+      ]);
+      if (selectedMedia.value?.id !== id) return; // another asset was opened
+      const places = [
+        ...paragraphs.map((p) => ({
+          chapter: p.section?.module?.title || "Unknown chapter",
+          where: `${p.section?.title || "Section"} · paragraph ${
+            (p.order_index ?? 0) + 1
+          }`,
+        })),
+        ...sections.map((sec) => ({
+          chapter: sec.module?.title || "Unknown chapter",
+          where: `${sec.title} · section figure`,
+        })),
+      ];
+      mediaUsage.value = {
+        places,
+        states: states.length,
+        variants: variants.length,
+        inUse: places.length + states.length + variants.length > 0,
+      };
+    } catch (err) {
+      console.error("Error loading media usage:", err);
+      if (selectedMedia.value?.id === id)
+        mediaUsage.value = { error: err.message };
+    }
+  }
+
   async function selectMedia(item) {
     selectedMedia.value = item;
+    fetchMediaUsage(item.id);
 
     // Load Lottie preview for lottie items
     if (item.media_type === "lottie" && item.lottie_file_url) {
@@ -105,6 +150,8 @@ export function useDashboardMedia() {
   }
 
   async function deleteMedia(mediaId) {
+    // Deleting a used asset breaks a figure or silently drops its states.
+    if (mediaUsage.value?.inUse || !mediaUsage.value) return;
     if (!confirm("Are you sure you want to delete this media asset?")) return;
 
     try {
@@ -134,6 +181,7 @@ export function useDashboardMedia() {
     mediaFilter,
     mediaSearch,
     selectedMedia,
+    mediaUsage,
     showMediaUploadModal,
     // derived
     filteredMedia,

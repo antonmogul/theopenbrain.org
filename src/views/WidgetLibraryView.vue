@@ -2,7 +2,7 @@
 /*
  * WidgetLibraryView — browsable gallery of every interactive widget.
  *
- * Mirrors the sidebar pattern from StyleGuideView: a nav rail on the left
+ * Uses the sidebar pattern of the retired styleguide: a nav rail on the left
  * lists chapters (each containing widgets), and the content pane shows the
  * selected widget in a live iframe. Authors, professors, and the design
  * team can browse everything in one place without hunting through chapters.
@@ -10,15 +10,15 @@
  * Hosting: a widget with a `vuePath` shows its Vue port by default — that is
  * the version that ships, and the one that inherits brand.css theming. The
  * author's original HTML stays one click away under the "Original" tab so
- * they can check the port preserved their maths and interaction. Widgets with
- * no port yet (normalization model) render the original alone, with no tabs.
+ * they can check the port preserved their maths and interaction. A widget with
+ * no port yet renders the original alone, with no tabs.
  *
  * The Vue port renders in an <iframe src> rather than inline because these
  * views own the full viewport (their own headers, backgrounds, and layout).
  * Nesting one directly inside this page's grid would let its styles fight the
  * library chrome; the iframe gives it the clean viewport it was built for.
  *
- * Route: /widgets (unlisted, direct access only — same as /styleguide).
+ * Route: /widgets (unlisted, direct access only).
  */
 import { ref, computed, watch, nextTick } from "vue";
 import { WIDGETS, widgetsByChapter } from "@/widgets/catalog";
@@ -108,9 +108,9 @@ const totalCount = WIDGETS.length;
       </nav>
 
       <div class="wl-foot">
-        <router-link to="/styleguide" class="t-label wl-foot-link">
+        <a href="/storybook/index.html" class="t-label wl-foot-link">
           → Design system
-        </router-link>
+        </a>
         <router-link to="/" class="t-label wl-foot-link">
           ← Back to app
         </router-link>
@@ -275,7 +275,7 @@ const totalCount = WIDGETS.length;
   width: 100%;
   padding: 0.3125rem 0.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-body);
@@ -335,7 +335,7 @@ const totalCount = WIDGETS.length;
   font-size: 0.6875rem;
   color: rgb(var(--color-accent));
   background: rgb(var(--color-accent) / 0.12);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.125rem 0.5rem;
   font-weight: 500;
 }
@@ -353,7 +353,7 @@ const totalCount = WIDGETS.length;
 .wl-badge-pending {
   color: rgb(var(--color-mute));
   border: 1px dashed rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.0625rem 0.5rem;
 }
 
@@ -387,7 +387,7 @@ const totalCount = WIDGETS.length;
 .wl-tab {
   padding: 0.3125rem 0.75rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-mute));
   font-family: var(--font-body);
@@ -415,7 +415,7 @@ const totalCount = WIDGETS.length;
 /* ── Iframe ──────────────────────────────────────────────────────────── */
 .wl-frame-wrap {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: #fff;
 }

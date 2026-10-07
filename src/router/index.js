@@ -6,7 +6,7 @@ import {
   moduleForRoute,
 } from "@/helper/chapterTheme";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
-import { getSessionFromStorage } from "@/utils/authHelpers";
+import { ensureFreshSession } from "@/utils/authHelpers";
 import { apiRequest } from "@/services/api/client";
 import { createAuthGuard } from "./guards";
 import HomeView from "@/views/HomeView.vue";
@@ -28,9 +28,22 @@ export const routes = [
     meta: { requiresAuth: true },
   },
   {
+    // The old flat block editor (382 blocks titled "Paragraph 1", "Paragraph
+    // 2"…, chapters interleaved). Dashboard → Chapters → Edit chapter replaces
+    // it (OPENBRAIN-50). beforeEnter runs after the global role guard, so the
+    // route keeps its creator gate; EditorView stays until it is retired.
     path: "/editor",
     name: "editor",
     component: () => import("../views/EditorView.vue"),
+    meta: { requiresAuth: true, requiredRole: "creator" },
+    beforeEnter: () => ({ path: "/dashboard", query: { section: "chapters" } }),
+  },
+  {
+    // The chapter block page (OPENBRAIN-60): every block rendered as the
+    // reader shows it, edited in place.
+    path: "/dashboard/chapters/:slug",
+    name: "chapter-editor",
+    component: () => import("../views/ChapterEditorView.vue"),
     meta: { requiresAuth: true, requiredRole: "creator" },
   },
   {
@@ -106,10 +119,17 @@ export const routes = [
     meta: { requiresAuth: true },
   },
   {
-    // Internal design-system reference. Not linked in nav; open /styleguide directly.
+    // The in-app styleguide was retired for Storybook (OPENBRAIN-114). Old
+    // links and bookmarks land there. Storybook is a static build beside the
+    // app, so this is a full page load, not a route; public/serve.json does
+    // the same for a direct load.
     path: "/styleguide",
     name: "styleguide",
-    component: () => import("../views/StyleGuideView.vue"),
+    beforeEnter() {
+      window.location.replace("/storybook/index.html");
+      return false;
+    },
+    component: { render: () => null },
   },
   {
     // Case Cabinet prototype (History chapter). Reads mock data from
@@ -133,6 +153,14 @@ export const routes = [
     path: "/phrenology-3d",
     name: "phrenology-3d",
     component: () => import("../views/Phrenology3DView.vue"),
+  },
+  {
+    // 3D brain atlas (OPENBRAIN-127): the cortex as a way into the book,
+    // after Tyler's opening-book prototype. Candidate for the home cover;
+    // not linked in nav, open /brain directly.
+    path: "/brain",
+    name: "brain",
+    component: () => import("../views/BrainView.vue"),
   },
   {
     // Signal Detection Theory widget prototype (Attention chapter).
@@ -164,11 +192,40 @@ export const routes = [
     component: () => import("../views/PosnerCueingView.vue"),
   },
   {
+    // Psychometric function box widget (Attention chapter). OPENBRAIN-88.
+    // Not linked in nav; open /psychometric-function directly.
+    path: "/psychometric-function",
+    name: "psychometric-function",
+    component: () => import("../views/PsychometricFunctionView.vue"),
+  },
+  {
     // TMT Feature Attention widget (Attention chapter). OPENBRAIN-13:
     // fifth widget port. Not linked in nav; open /feature-attention directly.
     path: "/feature-attention",
     name: "feature-attention",
     component: () => import("../views/TmtFeatureAttentionView.vue"),
+  },
+  {
+    // Corbetta PET attention widget (Attention chapter). OPENBRAIN-88. Not
+    // linked in nav; open /corbetta-pet directly.
+    path: "/corbetta-pet",
+    name: "corbetta-pet",
+    component: () => import("../views/CorbettaPetView.vue"),
+  },
+  {
+    // Hillyard auditory attention ERP widget (Attention chapter). OPENBRAIN-88.
+    // Not linked in nav; open /hillyard-erp directly.
+    path: "/hillyard-erp",
+    name: "hillyard-erp",
+    component: () => import("../views/HillyardErpView.vue"),
+  },
+  {
+    // Normalization model of attention (Attention chapter). OPENBRAIN-88:
+    // port of Arjun's v2. Not linked in nav; open /normalization-model
+    // directly.
+    path: "/normalization-model",
+    name: "normalization-model",
+    component: () => import("../views/NormalizationModelView.vue"),
   },
   {
     // Color Vision Explorer (Retina chapter). OPENBRAIN-14: first Stuart
@@ -244,7 +301,9 @@ async function getDevRoleOverride() {
 }
 
 export const authGuard = createAuthGuard({
-  getSession: getSessionFromStorage,
+  // An expired but refreshable session is renewed, not treated as signed
+  // out (OPENBRAIN-77).
+  getSession: () => ensureFreshSession(),
   fetchRole: fetchRoleForSession,
   isDev: import.meta.env.DEV,
   getDevRoleOverride,
@@ -254,6 +313,23 @@ export const authGuard = createAuthGuard({
  * Build the app router. The history is injectable so tests can drive the real
  * route table and guard registrations with createMemoryHistory().
  */
+// Tab titles for routes that don't set their own (the reader does).
+export const ROUTE_TITLES = {
+  dashboard: "Creator console",
+  "chapter-editor": "Edit chapter",
+  chapters: "Chapters",
+  "chapter-overview": "Chapter overview",
+  "professor-dashboard": "Professor dashboard",
+  "student-dashboard": "My courses",
+  settings: "Settings",
+  playground: "Python playground",
+  quiz: "Quiz",
+  flashcards: "Flashcards",
+  lab: "Code lab",
+  enroll: "Enrol",
+  widgets: "Widget library",
+};
+
 export function createAppRouter({
   history = createWebHistory(import.meta.env.BASE_URL),
 } = {}) {
@@ -312,6 +388,15 @@ export function createAppRouter({
   // the public catalog; ChapterView applies the ramp again from the module
   // row it loads, which also lets the DB `ramp` column win.
   router.afterEach((to) => {
+    // Tab title (OPENBRAIN-56): ChapterView sets the chapter's own title once
+    // it loads; every other route gets a fixed one, so a chapter's title no
+    // longer sticks to the dashboard, settings or library.
+    if (to.name !== "chapter") {
+      document.title = ROUTE_TITLES[to.name]
+        ? `${ROUTE_TITLES[to.name]} · The Open Brain`
+        : "The Open Brain";
+    }
+
     // Clear first, unconditionally: if the catalog fails, comes back empty, or
     // the route names a module it does not know, the previous chapter's colour
     // must not survive. The catalog is cached after its first fetch, so on

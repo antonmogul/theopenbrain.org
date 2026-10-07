@@ -27,9 +27,6 @@ vi.mock("@/components/chapter/text/CommentComp.vue", () => ({
 vi.mock("@/components/chapter/text/FootNotesWindow.vue", () => ({
   default: stubComponent,
 }));
-vi.mock("@/components/Navigation/MenuTutorial.vue", () => ({
-  default: stubComponent,
-}));
 vi.mock("@/components/chapter/HighlightToolbar.vue", () => ({
   default: stubComponent,
 }));

@@ -1,0 +1,56 @@
+import { Meta, Markdown } from "@storybook/addon-docs/blocks";
+
+<Meta title="Guides/Figma" />
+
+# Figma
+
+**[Open Brain — Design System](https://www.figma.com/design/NAjmvySrMHLtWYqn2zi4h4/Open-Brain-Design-System)** is the Figma half of this system. It mirrors the code one to one: the same tokens as variables, the same components with the same props.
+
+## What is in it
+
+{/* GFM tables need the Markdown block: plain MDX here has no remark-gfm. */}
+
+<Markdown>{`| Page            | Contents                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| **Cover**       | What the file is and how it relates to the code                                           |
+| **Foundations** | Colour (theme, chapter ramps, support), the type scale, Desktop vs phone, the Layout grid |
+| **Components**  | One page per component (Button first), each naming its code file and its story here       |`}</Markdown>
+
+**Variables**, one collection per concern, each variable carrying its CSS name as code syntax (Dev Mode shows `rgb(var(--color-ink))`, `var(--type-body-size)`):
+
+- **Primitives**: the raw colours (hidden from pickers)
+- **Theme** (Light / Dark): `bg`, `paper`, `ink`, `mute`, `line`, `accent`…
+- **Chapter** (fund / perc / move / lear / deve): `chapter`, `chapter-deep`, `chapter-soft`, `chapter-pale`. Switch a frame's mode to see a chapter in another subject's colour.
+- **Type** (Desktop 1440 / Laptop 1024 / Tablet 768 / Phone 390): every book size. The book's type eases from the phone size at 768px to the desktop size at 1280px, so Tablet holds the phone sizes and Laptop the halfway point. Switch a frame's mode to see a width.
+- **Layout**: gutters, reading measure, text column widths, top bar, breakpoints
+- **Shape**: `radius/control` (0)
+
+**Text styles** (`Book/…`, `UI/…`, `Widget/…`) match the `.t-…` classes; **grid styles** (Reader/Phone, Tablet, Laptop, Desktop) match the layout.
+
+## Responsive components
+
+Each block is built once and follows its frame:
+
+- **Text blocks** (Section heading, Author block, Paragraph, End of chapter) are single components. Put one in a column and it fills the width; its sizes come from the frame's Type mode.
+- **Full-width blocks** whose layout changes have a `Layout` property: `wide` is the two-column book (from 1024px), `narrow` the one-column reader below it (Reader top bar, Opener hero and contents, Breakout box, Widget band). Both stretch to the frame, so `narrow` covers phones and tablets.
+- **Figure** has `Context=pane` (the pinned figure pane, from 1024px) and `Context=inline` (full width after its paragraph, below 1024px).
+- Icons are components on the **Icons** page, their strokes bound to colour variables. Text a designer changes is a text property on the instance (Title, Caption, Blurb…).
+
+## Using the library
+
+The file lives in the Mogul team (Professional plan), which can publish libraries; the designers are invited to that team. The Cover page has the steps: publish (Assets → Libraries → Publish), invite, enable the library in a chapter file, copy the New chapter kit templates (Desktop 1440, Tablet 768, Phone 390), set the Chapter mode, and accept updates when a new version is published.
+
+## Page templates
+
+The Page templates page composes the app's pages from the library at 1440 and 390: home, `/chapters`, the student, creator and professor dashboards (each in its role's Accent mode) and settings. Start a redesign from these rather than from screenshots; a new page is built the same way, from instances.
+
+## Moving between Figma and Storybook
+
+- In Storybook, the **Figma** button in the toolbar opens the story's component in Figma. It is greyed out when there is no Figma component yet.
+- In Figma, each component's description names its code file and its story.
+
+The links live in one place, `.storybook/figma.js` (`FIGMA_BY_TITLE`: story title → Figma node id, taken from the node's URL, `node-id=20-62`). Add a line there when a Figma component lands. A story can override its link with `parameters: { design: { url } }`.
+
+## Keeping them in step
+
+The code is the source of truth. When a token changes in `brand.css`, the Figma variables are updated to match; when a designer changes a component in Figma, the change is made in code and the story updated. Nothing is designed in Figma with raw values that don't exist as tokens.

@@ -35,7 +35,7 @@ defineEmits(["fetch", "range-change"]);
 
 <template>
   <section class="section">
-    <SectionHeader eyebrow="07 · Analytics" title="Platform analytics">
+    <SectionHeader eyebrow="08 · Analytics" title="Platform analytics">
       <template #actions>
         <SegmentedControl
           :model-value="analyticsDateRange"

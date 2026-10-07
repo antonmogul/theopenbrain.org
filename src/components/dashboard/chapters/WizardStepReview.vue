@@ -163,24 +163,24 @@ const wordCount = computed(() =>
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
-  color: #6b7280;
+  font-size: var(--ui-size-14);
+  color: rgb(var(--color-mute));
   margin: 0;
 }
 
 /* Review Card */
 .review-card {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -195,8 +195,8 @@ const wordCount = computed(() =>
 
 .review-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
-  color: #9ca3af;
+  font-size: var(--ui-size-12);
+  color: rgb(var(--color-mute) / 0.6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   min-width: 120px;
@@ -204,26 +204,26 @@ const wordCount = computed(() =>
 
 .review-value {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  color: #1a1a1a;
+  font-size: var(--ui-size-15);
+  color: rgb(var(--color-ink));
   text-align: right;
   flex: 1;
 }
 
 .review-value.mono {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 
 .review-value.description {
-  font-size: 0.8125rem;
-  color: #4b5563;
+  font-size: var(--ui-size-13);
+  color: rgb(var(--color-ink) / 0.7);
   max-width: 400px;
 }
 
 .review-divider {
   height: 1px;
-  background: #f3f4f6;
+  background: rgb(var(--color-bg));
   margin: 0.25rem 0;
 }
 
@@ -232,9 +232,9 @@ const wordCount = computed(() =>
   padding: 0.1875rem 0.625rem;
   background: rgba(234, 179, 8, 0.12);
   color: #ca8a04;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
 }
 
@@ -245,9 +245,9 @@ const wordCount = computed(() =>
 
 .summary-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 600;
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   margin: 0 0 0.75rem;
 }
 
@@ -267,14 +267,14 @@ const wordCount = computed(() =>
 
 .section-name {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
-  color: #1a1a1a;
+  font-size: var(--ui-size-14);
+  color: rgb(var(--color-ink));
 }
 
 .section-meta {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.6875rem;
-  color: #9ca3af;
+  font-size: var(--ui-size-11);
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 /* Error */
@@ -283,10 +283,10 @@ const wordCount = computed(() =>
   padding: 0.75rem 1rem;
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: #dc2626;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 
 /* Create Button */
@@ -301,17 +301,17 @@ const wordCount = computed(() =>
   padding: 1rem 2.5rem;
   background: rgb(151, 71, 255);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   color: white;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .create-btn:hover:not(:disabled) {
-  background: #1a1a1a;
+  background: rgb(var(--color-dark-surface));
   color: white;
 }
 
@@ -347,7 +347,7 @@ const wordCount = computed(() =>
   border-radius: 50%;
   background: rgba(34, 197, 94, 0.1);
   color: #16a34a;
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -358,14 +358,14 @@ const wordCount = computed(() =>
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.625rem;
 }
 
 .success-message {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  color: #4b5563;
+  font-size: var(--ui-size-15);
+  color: rgb(var(--color-ink) / 0.7);
   margin: 0 0 2rem;
 }
 
@@ -377,9 +377,9 @@ const wordCount = computed(() =>
 
 .action-btn {
   padding: 0.75rem 1.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   text-decoration: none;
   transition: all 0.2s;
@@ -391,18 +391,18 @@ const wordCount = computed(() =>
 }
 
 .action-btn.primary:hover {
-  background: #1a1a1a;
+  background: rgb(var(--color-dark-surface));
   color: white;
 }
 
 .action-btn.secondary {
   background: transparent;
-  border: 1px solid #d1d5db;
-  color: #4b5563;
+  border: 1px solid rgb(var(--color-ink) / 0.18);
+  color: rgb(var(--color-ink) / 0.7);
 }
 
 .action-btn.secondary:hover {
-  border-color: #9ca3af;
-  color: #1a1a1a;
+  border-color: rgb(var(--color-mute) / 0.6);
+  color: rgb(var(--color-ink));
 }
 </style>

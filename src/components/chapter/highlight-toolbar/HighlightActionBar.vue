@@ -156,7 +156,7 @@ defineEmits([
   height: 28px;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -190,7 +190,7 @@ defineEmits([
   right: 0;
   margin-top: 4px;
   background: rgb(var(--color-paper));
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   box-shadow:
     0 4px 16px rgb(var(--color-ink) / 0.22),
     0 0 0 1px rgb(var(--color-line));
@@ -207,7 +207,7 @@ defineEmits([
   border: none;
   background: transparent;
   color: rgb(var(--color-mute));
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   font-family: "IBM Plex Sans", sans-serif;
   cursor: pointer;
   transition: background 0.1s;

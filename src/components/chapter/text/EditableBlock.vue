@@ -1,10 +1,11 @@
 <script setup>
-import { ref, watch, computed, onBeforeUnmount, nextTick } from "vue";
+import { ref, watch, computed, onBeforeUnmount, nextTick, inject } from "vue";
 import { useEditor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
+import ParagraphEditor from "@/components/chapterEditor/ParagraphEditor.vue";
 
 const props = defineProps({
   content: {
@@ -27,14 +28,53 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  // Bound by `@save`: declared as a prop so the block can await the parent's
+  // save and keep the editor open with the error if it fails (OPENBRAIN-58).
+  onSave: {
+    type: Function,
+    default: null,
+  },
+  // Body paragraphs drive the figure pane, so they offer "Figure…"
+  // (OPENBRAIN-65). Intro paragraphs and titles don't.
+  canFigure: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["save", "cancel"]);
+defineEmits(["cancel"]);
 
 const isEditing = ref(false);
 const isSaving = ref(false);
 const hasChanges = ref(false);
 const originalContent = ref(props.content);
+const saveError = ref("");
+
+// Paragraph rows carry their stored blocks (TextComp's map). With blocks,
+// Edit mode opens the chapter editor's lossless ParagraphEditor, so
+// citations, figure refs, images and widgets survive a save (OPENBRAIN-64).
+// Section titles have no blocks and keep the simple inline editor below.
+const blocksFor = inject("blocksFor", () => null);
+const storedBlocks = computed(() => blocksFor(props.paragraphId));
+const blocksMode = computed(() => Array.isArray(storedBlocks.value));
+const changeFigure = inject("changeFigure", null);
+const showFigureButton = computed(
+  () => props.canFigure && blocksMode.value && !!changeFigure
+);
+
+async function saveBlocks(blocks) {
+  isSaving.value = true;
+  saveError.value = "";
+  try {
+    await props.onSave?.({ paragraphId: props.paragraphId, blocks });
+    isEditing.value = false;
+  } catch (error) {
+    console.error("Failed to save:", error);
+    saveError.value = error?.message || "Couldn't save. Try again.";
+  } finally {
+    isSaving.value = false;
+  }
+}
 
 // Create editor instance
 const editor = useEditor({
@@ -75,6 +115,11 @@ watch(
 // Enter edit mode
 const startEditing = () => {
   if (!props.isCreator || isEditing.value) return;
+  saveError.value = "";
+  if (blocksMode.value) {
+    isEditing.value = true;
+    return;
+  }
 
   isEditing.value = true;
   originalContent.value = props.content;
@@ -95,10 +140,11 @@ const saveChanges = async () => {
   }
 
   isSaving.value = true;
+  saveError.value = "";
   const newContent = editor.value.getHTML();
 
   try {
-    emit("save", {
+    await props.onSave?.({
       paragraphId: props.paragraphId,
       content: newContent,
     });
@@ -108,7 +154,9 @@ const saveChanges = async () => {
     isEditing.value = false;
     editor.value.setEditable(false);
   } catch (error) {
+    // Keep the editor open with the text intact so nothing typed is lost.
     console.error("Failed to save:", error);
+    saveError.value = error?.message || "Couldn't save. Try again.";
   } finally {
     isSaving.value = false;
   }
@@ -124,19 +172,13 @@ const cancelEditing = () => {
   hasChanges.value = false;
 };
 
-// Handle blur - auto-save if changes exist
+// Clicking away never saves (it used to auto-save to the live chapter):
+// with no changes the editor just closes; with changes it stays open until
+// Save (✓ / Cmd+S) or Cancel (Esc).
 const handleBlur = (event) => {
-  // Don't save if clicking on toolbar buttons
-  const relatedTarget = event.relatedTarget;
-  if (relatedTarget?.closest(".editable-toolbar")) {
-    return;
-  }
-
-  // Small delay to allow button clicks to register
+  if (event.relatedTarget?.closest(".editable-toolbar")) return;
   setTimeout(() => {
-    if (isEditing.value && hasChanges.value) {
-      saveChanges();
-    } else if (isEditing.value) {
+    if (isEditing.value && !hasChanges.value && !isSaving.value) {
       cancelEditing();
     }
   }, 150);
@@ -216,8 +258,42 @@ onBeforeUnmount(() => {
       </svg>
     </div>
 
-    <!-- Inline toolbar (shown when editing) -->
-    <div v-if="isEditing" class="editable-toolbar">
+    <button
+      v-if="isCreator && !isEditing && showFigureButton"
+      type="button"
+      class="figure-indicator"
+      title="Change this paragraph's figure"
+      aria-label="Change figure"
+      @click.stop="changeFigure(paragraphId)"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+    </button>
+
+    <!-- Paragraph rows: the chapter editor's lossless editor, in place -->
+    <div v-if="isEditing && blocksMode" class="blocks-editor">
+      <ParagraphEditor
+        :blocks="storedBlocks"
+        :saving="isSaving"
+        :error="saveError"
+        @save="saveBlocks"
+        @cancel="isEditing = false"
+      />
+    </div>
+
+    <!-- Inline toolbar (titles, which have no blocks) -->
+    <div v-if="isEditing && !blocksMode" class="editable-toolbar">
       <button
         @mousedown.prevent="toggleBold"
         :class="{ active: isActive('bold') }"
@@ -283,6 +359,7 @@ onBeforeUnmount(() => {
     <!-- Editor content -->
     <component
       :is="isEditing ? 'div' : tag"
+      v-if="!(isEditing && blocksMode)"
       :id="paragraphId"
       :class="[
         className,
@@ -306,12 +383,50 @@ onBeforeUnmount(() => {
 
     <!-- Saving indicator -->
     <div v-if="isSaving" class="saving-indicator">Saving...</div>
+    <p v-if="saveError && !blocksMode" class="edit-note is-error" role="alert">
+      {{ saveError }}
+    </p>
+    <p
+      v-if="hasChanges && isEditing && !saveError && !blocksMode"
+      class="edit-note"
+    >
+      Unsaved changes. Press ✓ or Cmd+S to save, or Esc to cancel.
+    </p>
   </div>
 </template>
 
 <style scoped>
 .editable-block-wrapper {
   position: relative;
+}
+.blocks-editor {
+  position: relative;
+  z-index: 60;
+  margin: 0.5rem -0.75rem;
+  pointer-events: auto;
+}
+.edit-note {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-warn) / 0.14);
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-13);
+  line-height: 1.4;
+  pointer-events: auto;
+}
+.edit-note.is-error {
+  background: rgb(var(--color-accent) / 0.12);
+}
+.edit-note-close {
+  margin-left: 8px;
+  padding: 0 6px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
 }
 
 /* Creator hover state */
@@ -321,15 +436,42 @@ onBeforeUnmount(() => {
 
 .editable-block-wrapper.is-creator:not(.is-editing):hover {
   background-color: rgba(151, 71, 255, 0.05);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   margin-left: -8px;
   margin-right: -8px;
   padding-left: 8px;
   padding-right: 8px;
 }
 
-.editable-block-wrapper.is-creator:not(.is-editing):hover .edit-indicator {
+.editable-block-wrapper.is-creator:not(.is-editing):hover .edit-indicator,
+.editable-block-wrapper.is-creator:not(.is-editing):hover .figure-indicator,
+.figure-indicator:focus-visible {
   opacity: 1;
+}
+
+/* Change figure, under the pencil (OPENBRAIN-65) */
+.figure-indicator {
+  position: absolute;
+  top: 28px;
+  right: -30px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgb(151, 71, 255);
+  border-radius: var(--radius-control);
+  background: white;
+  color: rgb(151, 71, 255);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+.figure-indicator:hover {
+  background: rgb(151, 71, 255);
+  color: white;
 }
 
 /* Edit indicator */
@@ -343,7 +485,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   background: rgb(151, 71, 255);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: white;
   cursor: pointer;
   opacity: 0;
@@ -364,7 +506,7 @@ onBeforeUnmount(() => {
 .editable-content.editing {
   background: white;
   border: 2px solid rgb(151, 71, 255);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 12px 16px;
   margin: -12px -16px;
   box-shadow: 0 4px 20px rgba(151, 71, 255, 0.2);
@@ -400,8 +542,8 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 4px;
   padding: 6px 8px;
-  background: #1a1a1a;
-  border-radius: 6px;
+  background: rgb(var(--color-dark-surface));
+  border-radius: var(--radius-control);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 110;
 }
@@ -414,9 +556,9 @@ onBeforeUnmount(() => {
   height: 28px;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
+  font-size: var(--ui-size-14);
   cursor: pointer;
   transition: all 0.1s ease;
 }
@@ -460,8 +602,8 @@ onBeforeUnmount(() => {
   padding: 6px 12px;
   background: rgb(151, 71, 255);
   color: white;
-  font-size: 12px;
-  border-radius: 4px;
+  font-size: var(--ui-size-12);
+  border-radius: var(--radius-control);
   animation: pulse 1s infinite;
 }
 

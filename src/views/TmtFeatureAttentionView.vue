@@ -81,7 +81,7 @@ function setCondition(cond) {
 </script>
 
 <template>
-  <div class="tmt-wrap">
+  <div class="widget-root tmt-wrap">
     <div class="tmt-title t-label">
       Feature-based attention modulates responses to a fixed, unattended
       stimulus

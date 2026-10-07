@@ -46,20 +46,20 @@ const autoLabel = computed(() =>
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid transparent;
   white-space: nowrap;
 }
 .s-sm {
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   padding: 3px 9px;
 }
 .s-md {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   padding: 4px 11px;
 }
 .s-lg {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   padding: 6px 14px;
 }
 .dot {

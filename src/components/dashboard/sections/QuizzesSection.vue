@@ -13,6 +13,7 @@ import {
   Button,
   FormField,
 } from "@/components/dashboard/shared";
+import { attemptPercent, questionTypeLabel } from "@/utils/quizLabels";
 
 defineProps({
   quizzes: { type: Array, default: () => [] },
@@ -20,6 +21,8 @@ defineProps({
   quizzesError: { type: [String, null], default: null },
   editingQuiz: { type: [Object, null], default: null },
   editingQuestion: { type: [Object, null], default: null },
+  // Chapters a quiz can be attached to ({ id, title, order_index }).
+  chapters: { type: Array, default: () => [] },
 });
 
 const showQuizEditor = defineModel("showQuizEditor", {
@@ -51,7 +54,7 @@ defineEmits([
 
 <template>
   <section class="section">
-    <SectionHeader eyebrow="05 · Quizzes" title="Assessments">
+    <SectionHeader eyebrow="06 · Quizzes" title="Assessments">
       <template #actions>
         <Button
           v-if="!showQuizEditor"
@@ -101,6 +104,35 @@ defineEmits([
             rows="2"
           ></textarea>
         </FormField>
+        <div class="grid-2">
+          <FormField
+            label="Chapter"
+            hint="Students find a quiz through its chapter."
+          >
+            <select v-model="quizForm.module_id">
+              <option :value="null">Not attached</option>
+              <option v-for="c in chapters" :key="c.id" :value="c.id">
+                {{ c.order_index }}. {{ c.title }}
+              </option>
+            </select>
+          </FormField>
+          <FormField label="Visible to students">
+            <label class="check-row">
+              <input type="checkbox" v-model="quizForm.is_published" />
+              <span>{{
+                quizForm.is_published ? "Visible" : "Hidden (draft)"
+              }}</span>
+            </label>
+          </FormField>
+        </div>
+        <p
+          v-if="quizForm.is_published && !quizForm.module_id"
+          class="form-note"
+          role="note"
+        >
+          Visible, but not attached to a chapter, so students still won't find
+          it.
+        </p>
         <div class="grid-2">
           <FormField label="Time limit (min)">
             <input
@@ -163,7 +195,7 @@ defineEmits([
               <div class="q-head-meta">
                 <span class="eyebrow-mono">Q{{ index + 1 }}</span>
                 <StatusBadge variant="neutral">{{
-                  question.question_type
+                  questionTypeLabel(question.question_type)
                 }}</StatusBadge>
                 <span class="muted-mono"
                   >{{ question.points }} pt{{
@@ -298,30 +330,22 @@ defineEmits([
     </BaseCard>
 
     <!-- Quizzes list -->
-    <div v-else class="card-grid">
-      <BaseCard v-for="quiz in quizzes" :key="quiz.id" padding="md">
-        <div class="card-head">
-          <div>
-            <h3 class="card-title sm">{{ quiz.title }}</h3>
-            <span v-if="quiz.modules" class="muted-mono">{{
-              quiz.modules.title
-            }}</span>
-          </div>
-          <div class="btn-row">
-            <Button
-              variant="outline"
-              size="sm"
-              @click="$emit('open-quiz', quiz)"
-              >Edit</Button
-            >
-            <Button
-              variant="danger"
-              size="sm"
-              @click="$emit('delete-quiz', quiz.id)"
-              >Delete</Button
-            >
-          </div>
+    <div v-else class="card-grid qz-grid">
+      <BaseCard
+        v-for="quiz in quizzes"
+        :key="quiz.id"
+        padding="md"
+        class="qz-card"
+      >
+        <div class="qz-head">
+          <h3 class="card-title sm qz-title">{{ quiz.title }}</h3>
+          <StatusBadge :variant="quiz.is_published ? 'complete' : 'neutral'">{{
+            quiz.is_published ? "Visible" : "Hidden"
+          }}</StatusBadge>
         </div>
+        <p class="qz-chapter">
+          {{ quiz.modules ? quiz.modules.title : "Not attached to a chapter" }}
+        </p>
         <div class="meta-row">
           <span>{{ quiz.questionCount }} questions</span>
           <span>{{ quiz.time_limit_minutes }} min</span>
@@ -333,13 +357,28 @@ defineEmits([
             <span class="mini-label">Attempts</span>
           </div>
           <div class="mini-stat">
-            <span class="mini-value">{{ quiz.avgScore }}%</span>
+            <span class="mini-value">{{
+              attemptPercent(quiz.avgScore, quiz.attemptCount)
+            }}</span>
             <span class="mini-label">Avg score</span>
           </div>
           <div class="mini-stat">
-            <span class="mini-value">{{ quiz.passRate }}%</span>
+            <span class="mini-value">{{
+              attemptPercent(quiz.passRate, quiz.attemptCount)
+            }}</span>
             <span class="mini-label">Pass rate</span>
           </div>
+        </div>
+        <div class="qz-actions">
+          <Button variant="outline" size="sm" @click="$emit('open-quiz', quiz)"
+            >Edit</Button
+          >
+          <Button
+            variant="danger"
+            size="sm"
+            @click="$emit('delete-quiz', quiz.id)"
+            >Delete</Button
+          >
         </div>
       </BaseCard>
     </div>
@@ -347,5 +386,52 @@ defineEmits([
 </template>
 
 <style scoped>
+/* Must stay the first rule: CSS drops an @import that follows any other
+   rule, which unstyled this section in production (OPENBRAIN-57). */
 @import "@/styles/dashboard-sections.css";
+
+/* Quiz cards: title and status, then details, actions last. */
+.qz-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+}
+.qz-card {
+  display: flex;
+  flex-direction: column;
+}
+.qz-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.qz-title {
+  margin: 0;
+}
+.qz-chapter {
+  margin: 4px 0 12px;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-12);
+  color: rgb(var(--color-mute));
+}
+.qz-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgb(var(--color-line));
+}
+.qz-card .mini-stats {
+  margin-bottom: 14px;
+}
+
+.form-note {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-13);
+  color: rgb(var(--color-ink));
+  background: rgb(var(--color-warn) / 0.14);
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+}
 </style>

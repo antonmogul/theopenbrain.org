@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
+// One cover rule everywhere: the chapter's cover_image_url, else the
+// code-side default the reader's opener uses (OPENBRAIN-67).
+import { coverForModule } from "@/helper/chapterCover";
 import { useChapter } from "@/composables/useChapter";
 import { useAuth } from "@/composables/useAuth";
 import { sectionStats } from "@/composables/useChapterOutline";
@@ -127,12 +130,7 @@ function sectionTitleById(id) {
   <main class="overview" v-if="moduleSummary">
     <aside class="rail">
       <div class="cover">
-        <img
-          v-if="moduleSummary.cover_image_url"
-          :src="moduleSummary.cover_image_url"
-          :alt="moduleSummary.title"
-        />
-        <div v-else class="cover-fallback" />
+        <img :src="coverForModule(moduleSummary)" :alt="moduleSummary.title" />
       </div>
 
       <span class="eyebrow chapter-label">Chapter {{ chapterNumber }}</span>
@@ -293,16 +291,6 @@ function sectionTitleById(id) {
   object-fit: cover;
 }
 
-.cover-fallback {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgb(var(--color-accent) / 0.18),
-    rgb(var(--color-complete) / 0.18)
-  );
-}
-
 .chapter-label {
   margin-bottom: 0.25rem;
 }
@@ -361,7 +349,7 @@ function sectionTitleById(id) {
   justify-content: center;
   gap: 0.375rem;
   padding: 0.5rem 0.875rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -469,7 +457,7 @@ function sectionTitleById(id) {
   padding: 0.75rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   text-decoration: none;
   color: inherit;
   transition: border-color 0.12s ease;

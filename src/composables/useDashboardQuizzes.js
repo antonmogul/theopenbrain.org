@@ -28,6 +28,7 @@ export function useDashboardQuizzes(profile) {
     passing_score: 70,
     allow_multiple_attempts: true,
     show_correct_answers: true,
+    is_published: false,
     questions: [],
   });
   const showQuestionEditor = ref(false);
@@ -113,6 +114,7 @@ export function useDashboardQuizzes(profile) {
         passing_score: quiz.passing_score || 70,
         allow_multiple_attempts: quiz.allow_multiple_attempts ?? true,
         show_correct_answers: quiz.show_correct_answers ?? true,
+        is_published: quiz.is_published ?? false,
         questions: [],
       };
       // Fetch questions
@@ -128,6 +130,7 @@ export function useDashboardQuizzes(profile) {
         passing_score: 70,
         allow_multiple_attempts: true,
         show_correct_answers: true,
+        is_published: false,
         questions: [],
       };
     }
@@ -161,6 +164,9 @@ export function useDashboardQuizzes(profile) {
         passing_score: quizForm.value.passing_score,
         allow_multiple_attempts: quizForm.value.allow_multiple_attempts,
         show_correct_answers: quizForm.value.show_correct_answers,
+        // Students only see quizzes that are published and attached to a
+        // chapter (useQuizzes filters on both) — OPENBRAIN-54.
+        is_published: !!quizForm.value.is_published,
       };
 
       if (editingQuiz.value) {

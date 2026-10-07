@@ -1,15 +1,40 @@
 <template>
+  <!-- Inline (scopeId: in the text, below the two-column reader) the figure
+       stacks: the art at the column's width, its states in a row under it.
+       In the pane the states are a column pinned beside the art
+       (OPENBRAIN-99). -->
   <div
-    class="pr-14 pl-32 flex flex-row justify-center items-center h-[100%] pointer-events-auto"
+    class="pointer-events-auto"
+    :class="
+      inline
+        ? 'relative flex flex-col gap-4'
+        : 'pr-14 pl-32 flex flex-row justify-center items-center h-[100%]'
+    "
   >
     <div
-      class="px-24 pt-10 z-30 fixed flex flex-col w-illus justify-between top-0 left-0"
-      :class="animation.multiple ? 'items-center' : 'items-start'"
+      class="flex flex-col"
+      :class="[
+        inline
+          ? 'relative order-2 w-full'
+          : 'px-24 pt-10 z-30 fixed w-illus justify-between top-0 reader:top-[var(--reader-topbar-h,0px)] left-0',
+        animation.multiple ? 'items-center' : 'items-start',
+      ]"
     >
-      <span class="pb-0 text-baseMono">{{ animation.title }}</span>
+      <!-- Below the reader's top bar, in the original's title style. Inline
+           (scopeId, below xl) the figure's caption already names it. -->
+      <span
+        v-if="!scopeId"
+        class="pb-0 font-sans font-bold text-[1.25rem] leading-[1.55]"
+        >{{ animation.title }}</span
+      >
       <div
         v-if="animation.multiple"
-        class="fixed top-0 left-0 w-illus h-screen px-24 pl-24 flex flex-col justify-center items-start"
+        class="flex flex-col justify-center items-start"
+        :class="
+          inline
+            ? 'relative w-full'
+            : 'fixed top-0 left-0 w-illus h-screen px-24'
+        "
       >
         <template
           v-for="(state, index) in Object.keys(animation.states)"
@@ -41,7 +66,10 @@
         </div>
       </div>
 
-      <div v-if="animation.switches || animation.states">
+      <div
+        v-if="animation.switches || animation.states"
+        :class="inline ? 'w-full' : ''"
+      >
         <template v-if="!info.blockStates">
           <StateElement
             v-if="!info.blockSwitches"
@@ -49,6 +77,7 @@
             :activeState="activeState.state"
             :praefix="info.iconPraefix"
             :iconsIndex="info.icons"
+            :inline="inline"
             @onClick="setState"
           />
           <StateElementBlock
@@ -57,18 +86,26 @@
             :activeState="activeState.state"
             :praefix="info.iconPraefix"
             :iconsIndex="info.icons"
+            :inline="inline"
             @onClick="setState"
           />
         </template>
-        <div class="pt-20" v-else>
+        <div
+          v-else
+          :class="
+            inline
+              ? 'grid w-full grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2'
+              : 'pt-20'
+          "
+        >
           <p
             v-for="(state, index) in !animation.multiple
               ? animation.states
               : Object.keys(animation.states)"
             :key="state"
-            class="hover:text-violet hover:bg-white hover:border-violet select-none text-small cursor-pointer pb-2 mb-4 border-black border p-4 flex flex-col justify-center items-center"
+            class="hover:text-chapter-deep hover:bg-white hover:border-chapter select-none text-small cursor-pointer pb-2 mb-4 border-black border p-4 flex flex-col justify-center items-center"
             :class="
-              activeState[index] ? 'font-semibold bg-violet text-white' : ''
+              activeState[index] ? 'font-semibold bg-chapter text-black' : ''
             "
             @click="setBlockState(index, activeState.state)"
           >
@@ -88,7 +125,7 @@
         </div>
       </div>
     </div>
-    <div class="flex flex-row min-w-full">
+    <div class="flex flex-row min-w-full" :class="inline ? 'order-1' : ''">
       <template v-if="animation.illuImage">
         <div
           v-if="!animation.youtubeID"
@@ -99,6 +136,7 @@
           "
         >
           <span
+            v-if="!inline"
             class="px-24 pt-10 z-30 fixed flex flex-col w-illus justify-between top-0 left-0 text-baseMono"
           >
             {{ animation.title }}
@@ -149,7 +187,10 @@
         />
       </template>
     </div>
-    <div class="absolute top-12 right-8 z-40">
+    <div
+      class="absolute z-40"
+      :class="inline ? 'top-0 right-0' : 'top-12 right-8'"
+    >
       <PauseIcon
         class="icon"
         v-if="animation.loop && !isPaused"
@@ -163,7 +204,7 @@
 <script setup>
 import { clog } from "@/helper/chapterDebug";
 import IllustarionMultiple from "@/components/chapter/Illus/IllustarionMultiple.vue";
-import { ref, onMounted, onUnmounted } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { addH, removeH, toSlug, toCamelCase } from "@/helper/general";
 import { loadLottie } from "@/composables/useLottie";
 
@@ -174,7 +215,7 @@ const prefersReducedMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)"
 ).matches;
 import animationJSON from "@/assets/json_backend/animations.json";
-import { resolveAnimationConfig } from "@/helper/animationResolve";
+import { lottiePath, resolveAnimationConfig } from "@/helper/animationResolve";
 import PlayIcon from "@/icons/custom/PlayIcon.vue";
 import PauseIcon from "@/icons/custom/PauseIcon.vue";
 import IllustrationFlip from "./IllustrationFlip.vue";
@@ -192,6 +233,8 @@ const props = defineProps({
   // uses `animation.id` (the .json filename). Absent = desktop behavior.
   scopeId: { type: String, default: null },
 });
+// Rendered in the text rather than the pane (see the template's note).
+const inline = computed(() => !!props.scopeId);
 let animationLottie;
 let isPaused = ref(false);
 
@@ -315,9 +358,11 @@ onMounted(async () => {
     speed: info.speed || 1,
     wrapper: svgContainer,
     animType: "svg",
-    loop: false,
+    // autoLoop: an uploaded animation with no states just plays on repeat
+    // (OPENBRAIN-70 B4). `loop` means something else to the state figures.
+    loop: props.animation.autoLoop ? true : false,
     autoplay: props.animation.autoplay ? true : false,
-    path: `/publicAssets/animations/${props.animation.id}.json`,
+    path: lottiePath(props.animation),
   });
   animationLottie.addEventListener("DOMLoaded", () => {
     const highligters = document.getElementsByClassName("highlighterIllu");

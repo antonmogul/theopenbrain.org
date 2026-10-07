@@ -25,10 +25,12 @@ export function useTrendingHighlights(options = {}) {
     );
   }
 
-  // Fetch trending highlights for a section
+  // Fetch trending highlights for a section. trending_highlights has no
+  // section_id, so filter through its paragraph (inner embed) — the old
+  // `section_id=eq.` filter was a 400 (OPENBRAIN-56).
   async function fetchTrendingForSection(sectionId) {
     await runFetch(
-      `trending_highlights?section_id=eq.${sectionId}&select=*&order=highlight_count.desc&limit=${limit}`
+      `trending_highlights?select=*,paragraph:paragraphs!inner(section_id)&paragraph.section_id=eq.${sectionId}&order=highlight_count.desc&limit=${limit}`
     );
   }
 

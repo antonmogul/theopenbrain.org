@@ -3,7 +3,9 @@
 // .rail aesthetic, click-to-switch (not scroll-spy). Accent inherited via
 // [data-accent] on the parent shell — the rail never takes an accent value.
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import DashboardNavIcon from "./DashboardNavIcon.vue";
+import { useAuth } from "@/composables/useAuth";
 const props = defineProps({
   navItems: { type: Array, required: true }, // [{ id, label, icon?, count?, soon? }]
   activeSection: { type: String, required: true },
@@ -13,8 +15,23 @@ const props = defineProps({
   backLabel: { type: String, default: "Back to book" },
   backTo: { type: [String, Object], default: "/" },
   showBack: { type: Boolean, default: true },
+  /** A "Log out" link under the back-link (OPENBRAIN-90: Stuart couldn't
+   *  find one on the student or creator dashboard). Off by default so a
+   *  sample rail (a Storybook story) can't sign its viewer out; DashboardShell
+   *  turns it on. */
+  showLogout: { type: Boolean, default: false },
 });
 defineEmits(["update:activeSection", "back"]);
+
+const router = useRouter();
+const { signOut } = useAuth();
+async function logOut() {
+  // signOut clears the local session even if the server call fails, so
+  // leave either way; only log the failure.
+  const { error } = (await signOut()) || {};
+  if (error) console.warn("[dashboard] server sign-out failed", error);
+  router?.push("/");
+}
 const initials = computed(() => {
   const n = props.displayName || props.email || "?";
   return n
@@ -35,7 +52,13 @@ const metaLine = computed(() =>
       <div class="rail-user">
         <div class="rail-avatar" aria-hidden="true">{{ initials }}</div>
         <div class="rail-name">{{ displayName }}</div>
-        <div v-if="metaLine" class="rail-meta">{{ metaLine }}</div>
+        <div
+          v-if="metaLine"
+          class="rail-meta"
+          :class="{ 'rail-meta--email': !role }"
+        >
+          {{ metaLine }}
+        </div>
       </div>
     </slot>
 
@@ -72,6 +95,14 @@ const metaLine = computed(() =>
           ← {{ backLabel }}
         </button>
       </template>
+      <button
+        v-if="showLogout"
+        type="button"
+        class="rail-back rail-logout"
+        @click="logOut"
+      >
+        Log out
+      </button>
     </slot>
   </aside>
 </template>
@@ -113,11 +144,16 @@ const metaLine = computed(() =>
 }
 .rail-meta {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   margin-top: 2px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+/* Without a role the line is the email (settings): keep it as typed. */
+.rail-meta--email {
+  text-transform: none;
+  letter-spacing: 0;
 }
 .rail-nav {
   display: flex;
@@ -148,18 +184,18 @@ const metaLine = computed(() =>
 }
 .rail-label {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   font-weight: 400;
   flex: 1;
 }
 .rail-soon {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute) / 0.7);
 }
 .rail-count {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .rail-link:hover {
@@ -188,7 +224,7 @@ const metaLine = computed(() =>
 }
 .rail-back {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-ink));
@@ -201,5 +237,9 @@ const metaLine = computed(() =>
 }
 .rail-back:hover {
   color: rgb(var(--color-accent));
+}
+.rail-logout {
+  margin-top: 14px;
+  color: rgb(var(--color-mute));
 }
 </style>

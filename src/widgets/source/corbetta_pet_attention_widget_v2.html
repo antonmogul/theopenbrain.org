@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Attention selects visual cortex</title>
+<style>
+:root{
+  --bg:#eef0f0;--panel:#f8f8f7;--ink:#1a1a1a;--dim:#6b7280;--line:#dcdedd;
+  --teal:#1fb3a3;--teal-soft:#cdeee9;--yellow:#f5d90a;--yellow-soft:rgba(245,217,10,.28);
+  --coral:#e76f51;--purple:#7f72c8;--blue:#4b8fc8;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+body{padding:22px}.wrap{max-width:680px;margin:0 auto}.head{margin-bottom:14px}
+.head h1{font-size:15px;font-weight:700;margin:0 0 4px}.head .sub{font-size:12px;color:var(--dim);line-height:1.45}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:18px}
+.stage{position:relative;aspect-ratio:3/2;overflow:hidden;border-radius:5px;background:#050606}
+svg{display:block;width:100%;height:100%}text{font-family:var(--sans)}
+.label{fill:var(--ink);font-size:11px;font-weight:650}.small{fill:var(--dim);font-size:9.5px}.tiny{fill:var(--dim);font-size:8.5px}
+.brain-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.brain-overlay{position:absolute;inset:0;pointer-events:none}.brain-overlay svg{overflow:visible}
+.hotspot{opacity:0;transform-box:fill-box;transform-origin:center;filter:url(#glow);transition:opacity .42s ease,transform .42s ease}
+.hotspot.on{opacity:.9;transform:scale(1)}.hotspot.dim{opacity:.18;transform:scale(.78)}
+.hotspot.core{opacity:0}.hotspot.core.on{opacity:1}.hotspot.core.dim{opacity:.25}
+.hemi-wash{opacity:0;transition:opacity .45s ease;filter:url(#wideGlow)}.hemi-wash.on{opacity:.42}
+.callout{opacity:0;transition:opacity .35s ease}.callout.on{opacity:1}
+.callout-line{stroke:rgba(255,255,255,.76);stroke-width:2.5;stroke-dasharray:7 7}.callout-box{fill:rgba(5,7,7,.82);stroke:rgba(255,255,255,.28)}
+.callout-text{fill:#fff;font-size:22px;font-weight:650}
+.stim-note{position:absolute;left:16px;top:232px;width:190px;text-align:center;font-size:9.5px;line-height:1.35;color:rgba(255,255,255,.8);text-shadow:0 1px 3px #000}
+
+.pet-badge{position:absolute;left:18px;bottom:17px;width:225px;padding:9px 10px;border:1px solid rgba(255,255,255,.22);background:rgba(5,7,7,.76);border-radius:5px;color:#fff;backdrop-filter:blur(3px)}
+.pet-badge .kicker{font-size:9px;color:var(--teal);font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.pet-badge .title{font-size:11px;font-weight:680;margin-top:3px}.pet-badge .copy{font-size:9px;color:rgba(255,255,255,.67);line-height:1.35;margin-top:3px}
+.orientation{position:absolute;right:14px;bottom:10px;font-size:8.5px;color:rgba(255,255,255,.64);letter-spacing:.03em;text-shadow:0 1px 3px #000}
+
+.controls{margin-top:14px}.control-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.control-name{font-size:10px;color:var(--dim);width:80px;text-align:right}
+button{background:#fff;border:1.5px solid var(--line);color:var(--ink);font:600 12px var(--sans);border-radius:5px;padding:8px 13px;cursor:pointer;transition:.15s}
+button:hover:not(.active){border-color:var(--teal)}button.active{background:var(--teal);border-color:var(--teal);color:#fff}
+.mode button{min-width:132px}.options{min-height:38px}.hidden{display:none!important}
+.takeaway{margin:14px 2px 0;padding-top:12px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;color:var(--dim)}
+.takeaway strong{color:var(--ink);font-weight:700}.source-note{margin:8px 2px 0;font-size:9.5px;color:#858987;line-height:1.4}
+@media(max-width:590px){.stim-note{top:54%;left:10px;width:145px}.pet-badge{display:none}.orientation{right:8px;bottom:7px;font-size:7.5px}.control-name{width:100%;text-align:center}}
+@media(prefers-reduced-motion:reduce){.hotspot{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="head"><h1>Attention selects visual cortex</h1><div class="sub">The visual input stays constant; the attended feature—or location—changes which cortical population is emphasized.</div></header>
+  <section class="card" aria-label="Interactive explanation of feature and spatial attention in visual cortex">
+    <div class="stage">
+      <div id="stimNote" class="stim-note">Attend to subtle changes in <strong>shape</strong></div>
+      <aside class="pet-badge"><div class="kicker">Corbetta et al. · PET</div><div class="title">Blood-flow enhancement</div><div class="copy">Selective attention was compared with divided attention while the physical displays were matched.</div></aside>
+      <img class="brain-img" src="assets/corbetta_head_brain.png" alt="Translucent human head looking toward a visual display, with posterior visual cortex exposed in a rear-oblique view">
+      <div class="brain-overlay">
+        <svg viewBox="0 0 1536 1024" role="img" aria-labelledby="brainTitle brainDesc">
+          <title id="brainTitle">Attention-dependent activity over posterior human cortex</title>
+          <desc id="brainDesc">Colored clusters change with attention to shape, color, velocity, or a visual-field location.</desc>
+          <defs>
+            <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="18" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="wideGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="42"/></filter>
+            <radialGradient id="shapeG"><stop offset="0" stop-color="#e76f51" stop-opacity="1"/><stop offset="1" stop-color="#e76f51" stop-opacity="0"/></radialGradient>
+            <radialGradient id="colorG"><stop offset="0" stop-color="#7f72c8" stop-opacity="1"/><stop offset="1" stop-color="#7f72c8" stop-opacity="0"/></radialGradient>
+            <radialGradient id="velocityG"><stop offset="0" stop-color="#4b8fc8" stop-opacity="1"/><stop offset="1" stop-color="#4b8fc8" stop-opacity="0"/></radialGradient>
+            <radialGradient id="spaceG"><stop offset="0" stop-color="#f5d90a" stop-opacity=".9"/><stop offset="1" stop-color="#f5d90a" stop-opacity="0"/></radialGradient>
+          </defs>
+          <!-- Conceptual hemisphere washes projected onto the rear-oblique surface. -->
+          <ellipse id="washLeft" class="hemi-wash" fill="url(#spaceG)" cx="1010" cy="455" rx="260" ry="290"/>
+          <ellipse id="washRight" class="hemi-wash" fill="url(#spaceG)" cx="1290" cy="390" rx="205" ry="245"/>
+
+          <!-- Shape: ventral occipital/fusiform plus bilateral temporal foci. -->
+          <g id="shapeSpots">
+            <ellipse class="hotspot" fill="url(#shapeG)" cx="1030" cy="565" rx="118" ry="76"/><ellipse class="hotspot core" fill="#e76f51" cx="1030" cy="565" rx="24" ry="17"/>
+            <ellipse class="hotspot" fill="url(#shapeG)" cx="1255" cy="525" rx="112" ry="76"/><ellipse class="hotspot core" fill="#e76f51" cx="1255" cy="525" rx="23" ry="16"/>
+            <ellipse class="hotspot" fill="url(#shapeG)" cx="850" cy="505" rx="98" ry="68"/><ellipse class="hotspot core" fill="#e76f51" cx="850" cy="505" rx="21" ry="15"/>
+            <ellipse class="hotspot" fill="url(#shapeG)" cx="1370" cy="500" rx="82" ry="62"/><ellipse class="hotspot core" fill="#e76f51" cx="1370" cy="500" rx="20" ry="14"/>
+          </g>
+          <!-- Color: bilateral lingual/dorsolateral occipital foci. -->
+          <g id="colorSpots">
+            <ellipse class="hotspot" fill="url(#colorG)" cx="1110" cy="505" rx="115" ry="98"/><ellipse class="hotspot core" fill="#7f72c8" cx="1110" cy="505" rx="24" ry="19"/>
+            <ellipse class="hotspot" fill="url(#colorG)" cx="1325" cy="430" rx="100" ry="88"/><ellipse class="hotspot core" fill="#7f72c8" cx="1325" cy="430" rx="22" ry="18"/>
+            <ellipse class="hotspot" fill="url(#colorG)" cx="930" cy="455" rx="88" ry="74"/><ellipse class="hotspot core" fill="#7f72c8" cx="930" cy="455" rx="19" ry="15"/>
+          </g>
+          <!-- Velocity: left inferior parietal focus. -->
+          <g id="velocitySpots">
+            <ellipse class="hotspot" fill="url(#velocityG)" cx="925" cy="300" rx="145" ry="110"/><ellipse class="hotspot core" fill="#4b8fc8" cx="925" cy="300" rx="27" ry="20"/>
+          </g>
+
+          <g id="featureCallout" class="callout on"><line class="callout-line" x1="1030" y1="565" x2="760" y2="740"/><rect class="callout-box" x="545" y="712" width="265" height="58" rx="10"/><text id="calloutText" class="callout-text" x="677" y="749" text-anchor="middle">ventral + temporal</text></g>
+        </svg>
+      </div>
+      <div class="orientation">rear-oblique view · posterior visual cortex exposed</div>
+    </div>
+
+    <div class="controls">
+      <div class="control-row mode" role="group" aria-label="Choose type of attention">
+        <span class="control-name">Attention type</span>
+        <button id="featureMode" class="active" aria-pressed="true">Feature · PET study</button>
+        <button id="spatialMode" aria-pressed="false">Spatial · comparison</button>
+      </div>
+      <div id="featureOptions" class="control-row options" role="group" aria-label="Choose attended feature">
+        <span class="control-name">Attend to</span>
+        <button data-feature="shape" class="active" aria-pressed="true">Shape</button>
+        <button data-feature="color" aria-pressed="false">Color</button>
+        <button data-feature="velocity" aria-pressed="false">Velocity</button>
+      </div>
+      <div id="spatialOptions" class="control-row options hidden" role="group" aria-label="Choose attended visual field">
+        <span class="control-name">Attend to</span>
+        <button data-side="left" class="active" aria-pressed="true">Left visual field</button>
+        <button data-side="right" aria-pressed="false">Right visual field</button>
+      </div>
+    </div>
+    <p id="takeaway" class="takeaway"><strong>Attend shape:</strong> activity increases across ventral occipital, fusiform/parahippocampal, and temporal regions involved in form and object processing.</p>
+    <p id="sourceNote" class="source-note">Feature mode summarizes Corbetta et al. (1990), <em>Science</em> 248:1556–1559. Hotspots are schematic projections of the reported PET foci, not a statistical brain map. Spatial mode is a conceptual comparison and was not tested in this experiment.</p>
+  </section>
+</main>
+<script>
+(function(){
+  const featureMode=document.getElementById('featureMode'),spatialMode=document.getElementById('spatialMode');
+  const featureOptions=document.getElementById('featureOptions'),spatialOptions=document.getElementById('spatialOptions');
+  const stimNote=document.getElementById('stimNote'),takeaway=document.getElementById('takeaway');
+  const washLeft=document.getElementById('washLeft'),washRight=document.getElementById('washRight');
+  const featureCallout=document.getElementById('featureCallout'),calloutText=document.getElementById('calloutText');
+  let mode='feature',feature='shape',side='left';
+
+  function setPressed(group,selector,value){[...group.querySelectorAll('button')].forEach(b=>{const on=b.dataset[selector]===value;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))})}
+  function spotState(activeGroup,hemi){
+    ['shape','color','velocity'].forEach(name=>document.querySelectorAll('#'+name+'Spots .hotspot').forEach(el=>{
+      const active=mode==='feature'&&name===activeGroup;
+      el.classList.toggle('on',active);el.classList.remove('dim');
+    }));
+    washLeft.classList.toggle('on',mode==='spatial'&&hemi==='left');washRight.classList.toggle('on',mode==='spatial'&&hemi==='right');
+  }
+  function render(){
+    const isFeature=mode==='feature';
+    featureMode.classList.toggle('active',isFeature);spatialMode.classList.toggle('active',!isFeature);
+    featureMode.setAttribute('aria-pressed',String(isFeature));spatialMode.setAttribute('aria-pressed',String(!isFeature));
+    featureOptions.classList.toggle('hidden',!isFeature);spatialOptions.classList.toggle('hidden',isFeature);
+    featureCallout.classList.toggle('on',isFeature);
+    if(isFeature){
+      spotState(feature,null);stimNote.innerHTML='Attend to subtle changes in <strong>'+feature+'</strong>';
+      const copy={
+        shape:['ventral + temporal','<strong>Attend shape:</strong> activity increases across ventral occipital, fusiform/parahippocampal, and temporal regions involved in form and object processing.'],
+        color:['lingual + occipital','<strong>Attend color:</strong> activity increases bilaterally in lingual and dorsolateral occipital cortex, regions associated with color-sensitive visual processing.'],
+        velocity:['left inferior parietal','<strong>Attend velocity:</strong> activity shifts toward a left inferior parietal region associated with processing coherent motion and velocity information.']
+      };
+      calloutText.textContent=copy[feature][0];takeaway.innerHTML=copy[feature][1];
+      const line=document.querySelector('#featureCallout line'),box=document.querySelector('#featureCallout rect'),text=document.getElementById('calloutText');
+      if(feature==='velocity'){line.setAttribute('x1','925');line.setAttribute('y1','300');line.setAttribute('x2','720');line.setAttribute('y2','235');box.setAttribute('x','455');box.setAttribute('y','190');box.setAttribute('width','285');text.setAttribute('x','597');text.setAttribute('y','227')}
+      else{line.setAttribute('x1',feature==='color'?'1110':'1030');line.setAttribute('y1',feature==='color'?'505':'565');line.setAttribute('x2','760');line.setAttribute('y2','740');box.setAttribute('x','545');box.setAttribute('y','712');box.setAttribute('width','265');text.setAttribute('x','677');text.setAttribute('y','749')}
+    }else{
+      // Visual fields project mainly to the contralateral hemisphere.
+      const hemi=side==='left'?'right':'left';spotState(null,hemi);stimNote.innerHTML='Attend the <strong>'+side+' visual field</strong>';
+      takeaway.innerHTML='<strong>Attend '+side+' field:</strong> the emphasis shifts toward '+hemi+' visual cortex because each visual hemifield is represented primarily in the opposite hemisphere.';
+    }
+  }
+  featureMode.addEventListener('click',()=>{mode='feature';render()});spatialMode.addEventListener('click',()=>{mode='spatial';render()});
+  featureOptions.addEventListener('click',e=>{const b=e.target.closest('[data-feature]');if(!b)return;feature=b.dataset.feature;setPressed(featureOptions,'feature',feature);render()});
+  spatialOptions.addEventListener('click',e=>{const b=e.target.closest('[data-side]');if(!b)return;side=b.dataset.side;setPressed(spatialOptions,'side',side);render()});
+  render();
+})();
+</script>
+</body>
+</html>

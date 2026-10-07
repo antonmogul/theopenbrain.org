@@ -19,14 +19,20 @@ import { useAnimations } from "@/composables/useAnimations";
 import {
   resolveAnimationRecord,
   lottieAssetOk,
+  lottiePath,
 } from "@/helper/animationResolve";
 // Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
 import animationJSON from "@/assets/json_backend/animations.json";
 import { mobileMode } from "@/helper/illustrationMobile";
+import { figureWidgetFor } from "@/widgets/figures/registry";
+import { figureImages } from "@/helper/figureCycle";
 
 import IllustrationComp from "@/components/chapter/Illus/IllustrationComp.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 import SourceElement from "@/components/UI/SourceElement.vue";
+import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
+import FigureWidget from "@/widgets/figures/FigureWidget.vue";
+import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 
 const props = defineProps({
   // The figure's id, e.g. "animationEyeStructur" (the `para.animation.id`).
@@ -55,6 +61,11 @@ const animation = computed(() =>
 );
 
 const mode = computed(() => mobileMode(animation.value));
+// A figure widget's schema can ask to be as tall as its content (fitHeight)
+// and to run the page's full width (bleed) when it is inline.
+const widgetSchema = computed(
+  () => figureWidgetFor(animation.value?.id)?.schema || null
+);
 
 // Interactive figures mount a Lottie, so the asset must really exist — a DB
 // record whose /publicAssets/animations/<id>.json is missing would otherwise
@@ -66,7 +77,7 @@ watch(
   async (id) => {
     if (!id) return;
     assetOk.value = null;
-    const ok = await lottieAssetOk(id);
+    const ok = await lottieAssetOk(lottiePath(animation.value) || id);
     assetOk.value = ok;
     if (!ok) {
       console.warn(
@@ -87,6 +98,10 @@ const expanded = ref(false);
 // FullScreenIllustration reads `paragraph.animationId`.
 const fsParagraph = computed(() => ({ animationId: props.animationId }));
 
+// A set of images renders as a gallery (OPENBRAIN-97), which flows at the
+// height it needs inline instead of fitting a fixed box.
+const isGallery = computed(() => figureImages(animation.value).length > 1);
+
 const title = computed(() => animation.value?.title || "");
 const posterSrc = computed(
   () => `/publicAssets/images/illuImages/${props.animationId}.png`
@@ -102,8 +117,42 @@ const youtubeSrc = computed(() =>
   <!-- Interactive figures collapse only on a CONFIRMED missing asset
        (assetOk === false). While the check runs the figure renders with its
        reserved empty stage, so slow connections see no layout pop-in. -->
+  <!-- A widget figure opens as its breakout card inline (OPENBRAIN-70 B5) -->
+  <WidgetBreakout
+    v-if="animation && mode === 'widget'"
+    :placement="{
+      placementId: animation.id,
+      widgetId: animation.widgetId,
+      kind: 'breakout',
+      title: animation.title || '',
+    }"
+  />
+  <!-- An image figure (or its placeholder): the pane's figure shell
+       (OPENBRAIN-91) -->
   <figure
-    v-if="
+    v-else-if="animation && mode === 'figure-shell'"
+    class="illu-inline illu-inline--shell my-12"
+    :class="{ 'illu-inline--gallery': isGallery }"
+  >
+    <IllustrationPlaceholder
+      :animation="animation"
+      inline
+      class="w-full h-full"
+    />
+  </figure>
+  <!-- A panel figure rebuilt as a figure widget (OPENBRAIN-82) -->
+  <figure
+    v-else-if="animation && mode === 'figure-widget'"
+    class="illu-inline illu-inline--widget my-12"
+    :class="{
+      'illu-inline--fit': widgetSchema?.fitHeight,
+      'illu-inline--bleed': widgetSchema?.bleed,
+    }"
+  >
+    <FigureWidget :record="animation" :fit="!!widgetSchema?.fitHeight" />
+  </figure>
+  <figure
+    v-else-if="
       animation &&
       (mode === 'static' ||
         mode === 'fullscreen' ||
@@ -219,11 +268,38 @@ const youtubeSrc = computed(() =>
 .illu-inline {
   width: 100%;
 }
+/* A figure widget inline: a box of its own, sized to the screen. */
+.illu-inline--widget {
+  height: min(80vh, 40rem);
+}
+.illu-inline--widget.illu-inline--fit {
+  height: auto;
+}
+/* Edge to edge below the two-column reader, where the column is the page
+   and centred in it (TextComp .ml-text). */
+@media (max-width: 1023px) {
+  .illu-inline--bleed {
+    width: var(--app-w, 100vw);
+    margin-left: calc(50% - var(--app-w, 100vw) / 2);
+  }
+}
+.illu-inline--shell {
+  height: min(75vh, 36rem);
+}
+.illu-inline--shell.illu-inline--gallery {
+  height: auto;
+}
 
 .illu-inline__stage {
   position: relative;
   width: 100%;
   min-height: 320px;
+  /* IllustrationComp's label layers are position: fixed, written for the
+     pinned desktop pane. Inline, fixed pinned every figure's labels to the
+     top of the viewport, piled over the chapter opener (OPENBRAIN-68).
+     Layout containment makes the stage their containing block, and paint
+     containment keeps them inside it. */
+  contain: layout paint;
 }
 
 .illu-expand,
@@ -236,7 +312,7 @@ const youtubeSrc = computed(() =>
   cursor: pointer;
   background: transparent;
   border: 1px solid rgb(var(--color-line, 0 0 0) / 1);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 
 .illu-inline__poster {
@@ -245,7 +321,7 @@ const youtubeSrc = computed(() =>
   position: relative;
   cursor: pointer;
   border: 1px solid rgb(var(--color-line, 0 0 0) / 1);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: transparent;
 }

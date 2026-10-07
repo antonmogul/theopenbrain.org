@@ -2,11 +2,13 @@
 /**
  * WizardStepMeta — Step 1: Title & Metadata
  *
- * Collects chapter title, description, slug, and order_index.
+ * Collects chapter title, description, subject (the chapter's colour ramp),
+ * slug, and order_index.
  * Slug auto-generates from title but is editable.
  */
 import { computed } from "vue";
 import { toSlug } from "@/helper/general";
+import { RAMPS, RAMP_NAMES } from "@/helper/chapterTheme";
 
 const props = defineProps({
   modelValue: {
@@ -94,6 +96,32 @@ defineExpose({ isValid });
         />
       </div>
 
+      <!-- Subject sets the chapter's colour (opener title, TOC numbers,
+           section badges). Without one it falls back to neutral. -->
+      <fieldset class="form-group ramp-group">
+        <legend class="form-label">Subject</legend>
+        <div class="ramp-options">
+          <label
+            v-for="key in RAMPS"
+            :key="key"
+            class="ramp-option"
+            :class="{ selected: meta.ramp === key }"
+            :data-chapter="key"
+          >
+            <input
+              type="radio"
+              name="chapter-ramp"
+              class="ramp-radio"
+              :value="key"
+              :checked="meta.ramp === key"
+              @change="updateField('ramp', key)"
+            />
+            <span class="ramp-swatch" aria-hidden="true" />
+            <span class="ramp-name">{{ RAMP_NAMES[key] }}</span>
+          </label>
+        </div>
+      </fieldset>
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="chapter-slug"> URL Slug </label>
@@ -128,6 +156,47 @@ defineExpose({ isValid });
 </template>
 
 <style scoped>
+.ramp-group {
+  border: 0;
+  padding: 0;
+  margin-inline: 0;
+}
+.ramp-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ramp-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid rgb(var(--color-ink) / 0.18);
+  border-radius: var(--radius-control);
+  font-size: var(--ui-size-13);
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+}
+.ramp-option.selected {
+  border-color: rgb(var(--color-chapter));
+  background: rgb(var(--color-chapter) / 0.1);
+}
+.ramp-option:focus-within {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+.ramp-radio {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.ramp-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(var(--color-chapter));
+}
 .wizard-step-meta {
   max-width: 640px;
 }
@@ -138,16 +207,16 @@ defineExpose({ isValid });
 
 .step-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 600;
-  color: #1a1a1a;
+  color: rgb(var(--color-ink));
   margin: 0 0 0.5rem;
 }
 
 .step-description {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.875rem;
-  color: #6b7280;
+  font-size: var(--ui-size-14);
+  color: rgb(var(--color-mute));
   margin: 0;
 }
 
@@ -176,51 +245,51 @@ defineExpose({ isValid });
 
 .form-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   font-weight: 500;
-  color: #4b5563;
+  color: rgb(var(--color-ink) / 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .required {
-  color: rgb(151, 71, 255);
+  color: rgb(var(--color-accent));
 }
 
 .optional {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   font-weight: 400;
   text-transform: none;
 }
 
 .form-input {
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
+  border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  color: #1a1a1a;
+  font-size: var(--ui-size-15);
+  color: rgb(var(--color-ink));
   transition: border-color 0.2s;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: rgb(151, 71, 255);
+  border-color: rgb(var(--color-accent));
 }
 
 .form-input::placeholder {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .form-textarea {
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
+  border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
-  color: #1a1a1a;
+  font-size: var(--ui-size-15);
+  color: rgb(var(--color-ink));
   resize: vertical;
   min-height: 80px;
   transition: border-color 0.2s;
@@ -228,27 +297,27 @@ defineExpose({ isValid });
 
 .form-textarea:focus {
   outline: none;
-  border-color: rgb(151, 71, 255);
+  border-color: rgb(var(--color-accent));
 }
 
 .form-textarea::placeholder {
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .slug-preview {
   display: flex;
   align-items: center;
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 
 .slug-prefix {
   padding: 0.75rem 0 0.75rem 1rem;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.8125rem;
-  color: #9ca3af;
+  font-size: var(--ui-size-13);
+  color: rgb(var(--color-mute) / 0.6);
   white-space: nowrap;
 }
 
@@ -264,6 +333,6 @@ defineExpose({ isValid });
 }
 
 .slug-preview:focus-within {
-  border-color: rgb(151, 71, 255);
+  border-color: rgb(var(--color-accent));
 }
 </style>

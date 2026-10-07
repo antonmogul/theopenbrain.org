@@ -130,7 +130,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="ds-wrap">
+  <div class="widget-root ds-wrap">
     <!-- Header -->
     <header>
       <p class="ds-rubric">How it's made</p>

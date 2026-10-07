@@ -128,10 +128,10 @@ const attendButtons = [
 </script>
 
 <template>
-  <div class="bc-wrap">
+  <div class="widget-root bc-wrap">
     <div class="bc-head">
-      <h1 class="t-label">Biased Competition</h1>
-      <span class="bc-sub t-caption">
+      <h1 class="t-widget-title">Biased Competition</h1>
+      <span class="bc-sub t-widget-sub">
         Two stimuli, one receptive field &mdash; attention decides which one the
         neuron reports
       </span>

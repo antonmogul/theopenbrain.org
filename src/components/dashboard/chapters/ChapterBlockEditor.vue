@@ -6,10 +6,13 @@
 //   @save     { paragraphId, content: { blocks }, contentText }  -> parent PATCHes + refreshes
 //   @reorder  { sectionId, orderedIds: string[] }                -> parent PATCHes order_index + refreshes
 //   @attach-media  block   -> parent opens the media picker for this block
-//   @detach-media  block   -> parent clears the block's media
+//   @detach-media  block   -> parent asks, then clears the block's media
+// `readonly` (the default until the creator clicks Edit) turns off selection,
+// drag-reorder and attach/detach, so browsing a live chapter can't change it.
 // Props are the already-fetched content; the parent re-passes them after a refresh.
 import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
 import TipTapEditor from "@/components/Editor/TipTapEditor.vue";
+import { dashboardLockReason } from "@/editor/editability.mjs";
 import { StatGrid, StatCard, Button } from "@/components/dashboard/shared";
 
 const props = defineProps({
@@ -18,6 +21,7 @@ const props = defineProps({
   mediaItems: { type: Array, default: () => [] },
   saving: { type: Boolean, default: false },
   saveStatus: { type: String, default: "" },
+  readonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(["save", "reorder", "attach-media", "detach-media"]);
 
@@ -152,6 +156,9 @@ function buildFlatBlocks() {
         paraIndex,
         isSubsectionHeader: p.is_subsection_header,
         wordCount,
+        // Set when this editor's HTML converter would drop blocks
+        // (citations, widgets, captions…) — OPENBRAIN-58.
+        lockReason: dashboardLockReason(p.content),
         animationId: p.animation_id || null,
         animationTrigger: p.animation_trigger || null,
         animationTitle: p.animation_id
@@ -165,6 +172,44 @@ function buildFlatBlocks() {
     });
   });
   flatBlocks.value = blocks;
+  // First build: open the first section, so the outline starts short.
+  if (!openSectionsInit && props.sections.length) {
+    openSections.value = new Set([props.sections[0].id]);
+    openSectionsInit = true;
+  }
+}
+
+// --- sections open one at a time (OPENBRAIN-53) ---
+// Rendering a whole chapter at once (The Retina: ~1,300 rows) made the outline
+// slow and long; sections now expand on demand and the preview follows.
+const openSections = ref(new Set());
+let openSectionsInit = false;
+
+function toggleSection(sectionId) {
+  const next = new Set(openSections.value);
+  if (next.has(sectionId)) next.delete(sectionId);
+  else next.add(sectionId);
+  openSections.value = next;
+}
+
+const visibleBlocks = computed(() =>
+  flatBlocks.value.filter(
+    (b) => b.type === "section" || openSections.value.has(b.sectionId)
+  )
+);
+
+const paragraphCountBySection = computed(() => {
+  const counts = {};
+  for (const b of flatBlocks.value) {
+    if (b.type === "paragraph")
+      counts[b.sectionId] = (counts[b.sectionId] || 0) + 1;
+  }
+  return counts;
+});
+
+function onRowActivate(block) {
+  if (block.type === "section") toggleSection(block.id);
+  else selectBlock(block);
 }
 
 // Rebuild blocks whenever the source content changes (parent refresh), and
@@ -186,6 +231,7 @@ watch(
 
 // --- selection ---
 function selectBlock(block) {
+  if (props.readonly) return;
   if (block.type === "section") return; // sections not editable
   selectedBlock.value = block;
   const blocks = block.content?.blocks || [];
@@ -195,6 +241,13 @@ function clearSelection() {
   selectedBlock.value = null;
   editorContent.value = "";
 }
+
+watch(
+  () => props.readonly,
+  (ro) => {
+    if (ro) clearSelection();
+  }
+);
 
 // --- save (emit to parent) ---
 function save() {
@@ -213,7 +266,7 @@ function save() {
 
 // --- drag & drop (reorder within a section; emit ordered ids to parent) ---
 function handleDragStart(e, block) {
-  if (block.type === "section") return;
+  if (props.readonly || block.type === "section") return;
   draggedBlockId.value = block.id;
   e.dataTransfer.effectAllowed = "move";
 }
@@ -304,12 +357,12 @@ const chapterStats = computed(() => {
 </script>
 
 <template>
-  <div class="chapter-editor-layout">
+  <div class="chapter-editor-layout" :class="{ 'is-readonly': readonly }">
     <!-- Left: block list -->
     <div class="blocks-sidebar">
       <div class="blocks-list">
         <div
-          v-for="block in flatBlocks"
+          v-for="block in visibleBlocks"
           :key="block.id"
           class="block-item"
           :class="{
@@ -319,8 +372,15 @@ const chapterStats = computed(() => {
             highlighted: highlightedBlockId === block.id && !selectedBlock,
             'drag-over': dragOverBlockId === block.id,
           }"
-          :draggable="block.type === 'paragraph'"
-          @click="selectBlock(block)"
+          :draggable="!readonly && block.type === 'paragraph'"
+          :role="block.type === 'section' || !readonly ? 'button' : undefined"
+          :tabindex="block.type === 'section' || !readonly ? 0 : undefined"
+          :aria-expanded="
+            block.type === 'section' ? openSections.has(block.id) : undefined
+          "
+          @click="onRowActivate(block)"
+          @keydown.enter.self.prevent="onRowActivate(block)"
+          @keydown.space.self.prevent="onRowActivate(block)"
           @dragstart="handleDragStart($event, block)"
           @dragover="handleDragOver($event, block)"
           @dragleave="handleDragLeave"
@@ -343,9 +403,26 @@ const chapterStats = computed(() => {
               ></path>
             </svg>
             <span class="block-title">{{ block.title }}</span>
+            <span class="block-count"
+              >{{ paragraphCountBySection[block.id] || 0 }} ¶</span
+            >
+            <svg
+              class="section-chev"
+              :class="{ open: openSections.has(block.id) }"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <polyline points="9 6 15 12 9 18"></polyline>
+            </svg>
           </template>
           <template v-else>
             <svg
+              v-if="!readonly"
               class="drag-handle"
               width="14"
               height="14"
@@ -361,13 +438,13 @@ const chapterStats = computed(() => {
             </svg>
             <span class="block-index">P{{ block.paraIndex + 1 }}</span>
             <span class="block-preview">{{
-              block.preview || "Empty paragraph"
+              block.preview ||
+              (block.animationId ? "Figure" : "Empty paragraph")
             }}</span>
             <span
               v-if="block.animationId"
               class="media-badge"
-              title="Click to remove media"
-              @click.stop="emit('detach-media', block)"
+              :title="block.animationTitle"
             >
               <svg
                 width="12"
@@ -379,11 +456,19 @@ const chapterStats = computed(() => {
               >
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
               </svg>
-              {{ block.animationTrigger || "Media" }}
-              <span class="media-badge-x">&times;</span>
+              <span class="media-badge-label">{{ block.animationTitle }}</span>
+              <button
+                v-if="!readonly"
+                type="button"
+                class="media-badge-x"
+                :aria-label="`Remove ${block.animationTitle} from P${block.paraIndex + 1}`"
+                @click.stop="emit('detach-media', block)"
+              >
+                &times;
+              </button>
             </span>
             <button
-              v-else
+              v-else-if="!readonly"
               type="button"
               class="attach-media-btn"
               title="Attach animation or media"
@@ -429,7 +514,7 @@ const chapterStats = computed(() => {
           <h4 class="preview-title">Content preview</h4>
           <div class="preview-content">
             <div
-              v-for="block in flatBlocks"
+              v-for="block in visibleBlocks"
               :key="block.id"
               :data-block-id="block.id"
               class="preview-block"
@@ -483,9 +568,17 @@ const chapterStats = computed(() => {
           </h4>
         </div>
 
-        <TipTapEditor v-model="editorContent" placeholder="Start writing..." />
+        <p v-if="selectedBlock.lockReason" class="lock-note" role="status">
+          {{ selectedBlock.lockReason }}
+        </p>
+        <template v-else>
+          <TipTapEditor
+            v-model="editorContent"
+            placeholder="Start writing..."
+          />
+        </template>
 
-        <div class="editor-footer">
+        <div v-if="!selectedBlock.lockReason" class="editor-footer">
           <span
             v-if="saveStatus"
             class="save-status"
@@ -502,6 +595,18 @@ const chapterStats = computed(() => {
 </template>
 
 <style scoped>
+.lock-note {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-warn) / 0.14);
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-14);
+  line-height: 1.45;
+}
+.chapter-editor-layout.is-readonly .block-item {
+  cursor: default;
+}
 .chapter-editor-layout {
   display: grid;
   grid-template-columns: 340px 1fr;
@@ -535,7 +640,7 @@ const chapterStats = computed(() => {
 }
 .blocks-list::-webkit-scrollbar-thumb {
   background: rgb(var(--color-ink) / 0.15);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 
 .block-item {
@@ -543,7 +648,7 @@ const chapterStats = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   transition: background 0.12s ease;
 }
@@ -571,9 +676,35 @@ const chapterStats = computed(() => {
   flex: none;
 }
 .block-title {
-  font-size: 0.875rem;
+  flex: 1;
+  min-width: 0;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   color: rgb(var(--color-ink));
+}
+.block-count {
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  color: rgb(var(--color-mute));
+  flex: none;
+}
+.section-chev {
+  flex: none;
+  color: rgb(var(--color-mute));
+  transition: transform 0.15s ease;
+}
+.section-chev.open {
+  transform: rotate(90deg);
+}
+.block-item.section:hover {
+  background: rgb(var(--color-ink) / 0.04);
+}
+.block-item:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: -2px;
+}
+.chapter-editor-layout.is-readonly .block-item.section {
+  cursor: pointer;
 }
 .drag-handle {
   color: rgb(var(--color-mute));
@@ -585,12 +716,12 @@ const chapterStats = computed(() => {
 }
 .block-index {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   flex: none;
 }
 .block-preview {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
   flex: 1;
   min-width: 0;
@@ -609,19 +740,41 @@ const chapterStats = computed(() => {
   gap: 4px;
   padding: 2px 8px;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  border-radius: 999px;
+  font-size: var(--ui-size-10);
+  border-radius: var(--radius-control);
   background: rgb(var(--color-accent) / 0.12);
   color: rgb(var(--color-accent));
   flex: none;
-  cursor: pointer;
 }
-.media-badge:hover {
-  background: rgb(var(--color-accent) / 0.2);
+.media-badge-label {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .media-badge-x {
-  font-size: 0.8125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: var(--ui-size-13);
   line-height: 1;
+  cursor: pointer;
+}
+.media-badge-x:hover,
+.media-badge-x:focus-visible {
+  background: rgb(var(--color-accent) / 0.2);
+}
+.media-badge-x:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 1px;
 }
 .attach-media-btn {
   display: inline-flex;
@@ -629,7 +782,7 @@ const chapterStats = computed(() => {
   justify-content: center;
   padding: 4px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-mute));
   cursor: pointer;
@@ -657,12 +810,12 @@ const chapterStats = computed(() => {
 
 .content-preview {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 .preview-title {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -683,7 +836,7 @@ const chapterStats = computed(() => {
 }
 .preview-content::-webkit-scrollbar-thumb {
   background: rgb(var(--color-ink) / 0.15);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 
 .preview-block.paragraph {
@@ -706,11 +859,11 @@ const chapterStats = computed(() => {
 }
 .meta-badge {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 .meta-badge.section-badge {
   background: rgb(var(--color-accent) / 0.12);
@@ -722,7 +875,7 @@ const chapterStats = computed(() => {
 }
 .meta-slug {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .preview-section-title {
@@ -740,17 +893,17 @@ const chapterStats = computed(() => {
 }
 .meta-index {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-accent));
 }
 .meta-words {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
 }
 .preview-para-content {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   line-height: 1.6;
 }
@@ -768,7 +921,7 @@ const chapterStats = computed(() => {
   font-size: 1.0625rem;
 }
 .preview-para-content :deep(h3) {
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
 }
 
 .editor-content {
@@ -784,14 +937,14 @@ const chapterStats = computed(() => {
 }
 .editing-title {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0;
 }
 .editor-content :deep(.tiptap-editor) {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   min-height: 280px;
 }
 .editor-footer {
@@ -802,7 +955,7 @@ const chapterStats = computed(() => {
 }
 .save-status {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   color: rgb(var(--color-complete));
 }
 .save-status.error {

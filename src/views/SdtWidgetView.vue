@@ -240,10 +240,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="sdt-wrap">
+  <div class="widget-root sdt-wrap">
     <div class="sdt-head">
-      <h1 class="t-label">Signal Detection Theory</h1>
-      <span class="sdt-sub t-caption">
+      <h1 class="t-widget-title">Signal Detection Theory</h1>
+      <span class="sdt-sub t-widget-sub">
         drag the criterion &middot; move d&prime; &middot; watch the ROC
       </span>
     </div>
@@ -469,7 +469,7 @@ onUnmounted(() => {
           </button>
         </div>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <p class="sdt-note t-caption" v-html="noteHtml" />
+        <p class="sdt-note t-widget-sub" v-html="noteHtml" />
       </div>
 
       <!-- RIGHT: Key -->

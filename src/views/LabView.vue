@@ -81,7 +81,7 @@ const failedTestCount = computed(() => {
           <!-- Back button -->
           <button
             @click="goBack"
-            class="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+            class="p-2 hover:bg-gray-800 transition-colors"
             data-testid="lab-back-btn"
           >
             <svg
@@ -115,7 +115,7 @@ const failedTestCount = computed(() => {
           <!-- Best score badge -->
           <div
             v-if="bestScore !== null"
-            class="px-3 py-1 rounded-full text-sm font-medium"
+            class="px-3 py-1 text-sm font-medium"
             :class="
               bestScore >= 100
                 ? 'bg-green-500/20 text-green-400'
@@ -130,7 +130,7 @@ const failedTestCount = computed(() => {
           <button
             @click="handleReset"
             :disabled="executing"
-            class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors disabled:opacity-50"
+            class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors disabled:opacity-50"
             data-testid="reset-btn"
           >
             Reset
@@ -141,7 +141,7 @@ const failedTestCount = computed(() => {
             v-if="currentLab?.show_solution"
             @click="handleShowSolution"
             :disabled="executing || showingSolution"
-            class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors disabled:opacity-50"
+            class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium transition-colors disabled:opacity-50"
             data-testid="solution-btn"
           >
             Solution
@@ -151,7 +151,7 @@ const failedTestCount = computed(() => {
           <button
             @click="handleRun"
             :disabled="executing || !userCode.trim()"
-            class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+            class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             data-testid="run-btn"
           >
             <svg
@@ -233,7 +233,7 @@ const failedTestCount = computed(() => {
         <p class="text-gray-400 mb-4">{{ error }}</p>
         <button
           @click="goBack"
-          class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300"
+          class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300"
         >
           Go Back
         </button>
@@ -245,7 +245,7 @@ const failedTestCount = computed(() => {
       <!-- Instructions -->
       <div
         v-if="currentLab?.instructions"
-        class="instructions bg-gray-900 rounded-lg p-6 mb-6 border border-gray-800"
+        class="instructions bg-gray-900 p-6 mb-6 border border-gray-800"
       >
         <h2
           class="text-lg font-semibold text-white mb-3 flex items-center gap-2"
@@ -280,7 +280,7 @@ const failedTestCount = computed(() => {
       <!-- Solution warning banner -->
       <div
         v-if="showingSolution"
-        class="solution-warning bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6 flex items-center gap-3"
+        class="solution-warning bg-yellow-500/10 border border-yellow-500/30 p-4 mb-6 flex items-center gap-3"
         data-testid="solution-warning"
       >
         <svg
@@ -324,7 +324,7 @@ const failedTestCount = computed(() => {
           <div v-if="hasTestCases" class="tab-bar flex gap-2 mb-4">
             <button
               @click="activeTab = 'output'"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              class="px-4 py-2 text-sm font-medium transition-colors"
               :class="
                 activeTab === 'output'
                   ? 'bg-gray-800 text-white'
@@ -336,7 +336,7 @@ const failedTestCount = computed(() => {
             </button>
             <button
               @click="activeTab = 'tests'"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              class="px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2"
               :class="
                 activeTab === 'tests'
                   ? 'bg-gray-800 text-white'
@@ -347,13 +347,13 @@ const failedTestCount = computed(() => {
               Tests
               <span
                 v-if="executionResult?.testResults && failedTestCount > 0"
-                class="px-1.5 py-0.5 rounded-full text-xs bg-red-500 text-white"
+                class="px-1.5 py-0.5 text-xs bg-red-500 text-white"
               >
                 {{ failedTestCount }}
               </span>
               <span
                 v-else-if="executionResult?.testResults && passedAllTests"
-                class="px-1.5 py-0.5 rounded-full text-xs bg-green-500 text-white"
+                class="px-1.5 py-0.5 text-xs bg-green-500 text-white"
               >
                 ✓
               </span>

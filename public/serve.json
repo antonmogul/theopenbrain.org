@@ -5,6 +5,11 @@
       "source": "/storybook",
       "destination": "/storybook/index.html",
       "type": 302
+    },
+    {
+      "source": "/styleguide",
+      "destination": "/storybook/index.html",
+      "type": 301
     }
   ],
   "rewrites": [{ "source": "**", "destination": "/index.html" }],

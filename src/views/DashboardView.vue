@@ -14,12 +14,16 @@ import { useDashboardQuizzes } from "@/composables/useDashboardQuizzes";
 import { useRouter, useRoute } from "vue-router";
 import { authedRequest as supabaseRest } from "@/services/api/client";
 import { relativeLong as formatDate } from "@/utils/format";
-import ChapterBlockEditor from "@/components/dashboard/chapters/ChapterBlockEditor.vue";
+import { attemptPercent } from "@/utils/quizLabels";
 import VersionsSection from "@/components/dashboard/sections/VersionsSection.vue";
 import MediaSection from "@/components/dashboard/sections/MediaSection.vue";
+import WidgetsSection from "@/components/dashboard/sections/WidgetsSection.vue";
+import { coverForModule } from "@/helper/chapterCover";
+import { importChapter } from "@/services/api/chapterImport";
 import UsersSection from "@/components/dashboard/sections/UsersSection.vue";
 import AnalyticsSection from "@/components/dashboard/sections/AnalyticsSection.vue";
 import QuizzesSection from "@/components/dashboard/sections/QuizzesSection.vue";
+import { isBetaHidden } from "@/constants/beta";
 
 // Shared dashboard library (token-based)
 import {
@@ -33,9 +37,8 @@ import {
   EmptyState,
   LoadingState,
   ErrorState,
-  BaseModal,
+  ConfirmDialog,
   Button,
-  SearchInput,
 } from "@/components/dashboard/shared";
 
 // Wizard step components
@@ -45,17 +48,7 @@ import WizardStepStructure from "@/components/dashboard/chapters/WizardStepStruc
 import WizardStepReview from "@/components/dashboard/chapters/WizardStepReview.vue";
 
 // Wizard API functions
-import {
-  createChapter as apiCreateChapter,
-  createSection as apiCreateSection,
-  createParagraph as apiCreateParagraph,
-  createReference as apiCreateReference,
-  fetchChapters as apiFetchChapters,
-} from "@/services/api/chapters";
-import {
-  fetchVersions as apiFetchVersions,
-  createVersion as apiCreateVersion,
-} from "@/services/api/versions";
+import { fetchChapters as apiFetchChapters } from "@/services/api/chapters";
 
 const router = useRouter();
 const route = useRoute();
@@ -76,10 +69,11 @@ const creatorNavItems = [
   { id: "chapters", label: "Chapters", icon: "book" },
   { id: "versions", label: "Versions", icon: "layers" },
   { id: "media", label: "Media", icon: "image" },
+  { id: "widgets", label: "Widgets", icon: "widget" },
   { id: "quizzes", label: "Quizzes", icon: "quiz" },
   { id: "users", label: "Users", icon: "users" },
   { id: "analytics", label: "Analytics", icon: "chart" },
-];
+].filter((item) => !isBetaHidden(`dashboard.${item.id}`));
 
 // Filter/segmented-control option sets (shared components)
 const mediaFilterOptions = [
@@ -110,16 +104,6 @@ const roleSelectOptions = [
 const chapters = ref([]);
 const chaptersLoading = ref(false);
 const chaptersError = ref(null);
-const expandedChapterId = ref(null);
-
-// Expanded chapter content (passed to ChapterBlockEditor as props)
-const expandedChapterSections = ref([]);
-const expandedChapterParagraphs = ref([]);
-
-// Save state (passed to the editor; set by onBlockSave)
-const saving = ref(false);
-const saveStatus = ref("");
-
 // ============ VERSIONS SECTION ============
 // State + CRUD extracted to useVersions composable (#10).
 const {
@@ -144,6 +128,7 @@ const {
   mediaFilter,
   mediaSearch,
   selectedMedia,
+  mediaUsage,
   filteredMedia,
   mediaByType,
   fetchMedia,
@@ -152,63 +137,27 @@ const {
   formatFileSize,
 } = useDashboardMedia();
 
-// ============ MEDIA PICKER (for attaching to content blocks) ============
-const showMediaPicker = ref(false);
-const mediaPickerTarget = ref(null); // the block we're attaching media to
-const mediaPickerSearch = ref("");
+// ============ TOAST (result + Undo for live chapter edits) ============
+const toast = ref(null);
+let toastTimer = null;
 
-const mediaPickerFiltered = computed(() => {
-  if (!mediaPickerSearch.value) return mediaItems.value;
-  const q = mediaPickerSearch.value.toLowerCase();
-  return mediaItems.value.filter(
-    (m) =>
-      (m.title || "").toLowerCase().includes(q) ||
-      (m.animation_key || "").toLowerCase().includes(q)
-  );
-});
-
-function openMediaPicker(block) {
-  mediaPickerTarget.value = block;
-  mediaPickerSearch.value = "";
-  showMediaPicker.value = true;
-  // Ensure media is loaded
-  if (mediaItems.value.length === 0) fetchMedia();
+function showToast(message, { undo = null, error = false } = {}) {
+  clearTimeout(toastTimer);
+  toast.value = { message, undo, error };
+  toastTimer = setTimeout(() => (toast.value = null), undo ? 10000 : 6000);
 }
 
-async function attachMedia(animation) {
-  if (!mediaPickerTarget.value) return;
-  const blockId = mediaPickerTarget.value.id;
-  const trigger = animation.animation_key.replace("animation", "");
+async function runToastUndo() {
+  const undo = toast.value?.undo;
+  clearTimeout(toastTimer);
+  toast.value = null;
+  if (!undo) return;
   try {
-    await supabaseRest(`paragraphs?id=eq.${blockId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        animation_id: animation.id,
-        animation_trigger: trigger,
-      }),
-    });
-    showMediaPicker.value = false;
-    mediaPickerTarget.value = null;
-    // Refresh content so ChapterBlockEditor rebuilds with the new media badge.
-    await fetchChapterContent(expandedChapterId.value);
+    await undo();
+    showToast("Undone.");
   } catch (err) {
-    console.error("Error attaching media:", err);
-  }
-}
-
-async function detachMedia(block) {
-  try {
-    await supabaseRest(`paragraphs?id=eq.${block.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        animation_id: null,
-        animation_trigger: null,
-      }),
-    });
-    // Refresh content so ChapterBlockEditor rebuilds without the media badge.
-    await fetchChapterContent(expandedChapterId.value);
-  } catch (err) {
-    console.error("Error detaching media:", err);
+    console.error("Undo failed:", err);
+    showToast(`Couldn't undo: ${err.message}`, { error: true });
   }
 }
 
@@ -278,7 +227,7 @@ async function fetchAllChapters() {
   try {
     // Fetch all modules (chapters)
     const modules = await supabaseRest(
-      "modules?select=id,title,slug,order_index,status,updated_at&order=order_index.asc"
+      "modules?select=id,title,slug,order_index,status,updated_at,ramp,cover_image_url&order=order_index.asc"
     );
 
     // For each module, fetch section and paragraph counts
@@ -323,90 +272,46 @@ async function fetchAllChapters() {
   }
 }
 
-// ============ EXPAND/COLLAPSE CHAPTER ============
-async function toggleChapter(chapterId) {
-  if (expandedChapterId.value === chapterId) {
-    // Collapse (ChapterBlockEditor unmounts and resets its own state)
-    expandedChapterId.value = null;
-    expandedChapterSections.value = [];
-    expandedChapterParagraphs.value = [];
-    return;
-  }
+// ============ PUBLISH / UNPUBLISH (asks first) ============
+const pendingStatusChange = ref(null); // { chapter, to }
+const statusChanging = ref(false);
 
-  // Expand new chapter
-  expandedChapterId.value = chapterId;
-  await fetchChapterContent(chapterId);
+function readerPath(chapter) {
+  return `/chapter/${chapter.order_index}/${chapter.slug}`;
 }
 
-async function fetchChapterContent(moduleId) {
-  try {
-    // Fetch sections
-    const sections = await supabaseRest(
-      `sections?module_id=eq.${moduleId}&select=id,title,slug,order_index&order=order_index.asc`
-    );
-    expandedChapterSections.value = sections;
-
-    // Fetch paragraphs
-    const sectionIds = sections.map((s) => s.id);
-    let paragraphs = [];
-
-    if (sectionIds.length > 0) {
-      const idsParam = sectionIds.map((id) => `"${id}"`).join(",");
-      paragraphs = await supabaseRest(
-        `paragraphs?section_id=in.(${idsParam})&select=id,order_index,content,content_text,section_id,is_subsection_header,animation_id,animation_trigger&order=order_index.asc`
-      );
-    }
-    expandedChapterParagraphs.value = paragraphs;
-    // ChapterBlockEditor rebuilds its flat block list from these props.
-  } catch (err) {
-    console.error("Error fetching chapter content:", err);
-  }
+function askStatusChange(chapter) {
+  pendingStatusChange.value = {
+    chapter,
+    to: chapter.status === "published" ? "draft" : "published",
+  };
 }
 
-// ============ CHAPTER BLOCK EDITOR HANDLERS ============
-// ChapterBlockEditor owns the editing UI + pure transforms; the DB writes that
-// need a content refresh are handled here so the parent stays the data owner.
-
-async function onBlockSave({ paragraphId, content, contentText }) {
-  saving.value = true;
-  saveStatus.value = "";
+async function confirmStatusChange() {
+  const change = pendingStatusChange.value;
+  if (!change) return;
+  statusChanging.value = true;
   try {
-    await supabaseRest(`paragraphs?id=eq.${paragraphId}`, {
+    await supabaseRest(`modules?id=eq.${change.chapter.id}`, {
       method: "PATCH",
       headers: { Prefer: "return=minimal" },
       body: JSON.stringify({
-        content,
-        content_text: contentText,
+        status: change.to,
         updated_at: new Date().toISOString(),
       }),
     });
-    saveStatus.value = "Saved!";
-    // Refresh the expanded chapter content + the chapters list stats.
-    await fetchChapterContent(expandedChapterId.value);
     await fetchAllChapters();
+    showToast(
+      change.to === "published"
+        ? `Published ${change.chapter.title}. Readers can see it now.`
+        : `${change.chapter.title} is a draft again. Only creators can see it.`
+    );
   } catch (err) {
-    console.error("Error saving block:", err);
-    saveStatus.value = "Error: " + err.message;
+    console.error("Error changing chapter status:", err);
+    showToast(`Couldn't change the status: ${err.message}`, { error: true });
   } finally {
-    saving.value = false;
-  }
-}
-
-async function onBlockReorder({ orderedIds }) {
-  try {
-    for (let i = 0; i < orderedIds.length; i++) {
-      await supabaseRest(`paragraphs?id=eq.${orderedIds[i]}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({
-          order_index: i,
-          updated_at: new Date().toISOString(),
-        }),
-      });
-    }
-    await fetchChapterContent(expandedChapterId.value);
-  } catch (err) {
-    console.error("Error reordering blocks:", err);
+    statusChanging.value = false;
+    pendingStatusChange.value = null;
   }
 }
 
@@ -460,6 +365,7 @@ const wizardSteps = [
 const wizardMeta = ref({
   title: "",
   description: "",
+  ramp: null,
   slug: "",
   order_index: 0,
 });
@@ -487,7 +393,13 @@ async function initWizardOrderIndex() {
 function startChapterWizard() {
   // Reset wizard state
   wizardCurrentStep.value = 1;
-  wizardMeta.value = { title: "", description: "", slug: "", order_index: 0 };
+  wizardMeta.value = {
+    title: "",
+    description: "",
+    ramp: null,
+    slug: "",
+    order_index: 0,
+  };
   wizardSections.value = [];
   wizardReferences.value = [];
   wizardCreating.value = false;
@@ -546,78 +458,14 @@ async function handleWizardCreate() {
   wizardCreateError.value = null;
 
   try {
-    // 1. Get or create a content version
-    const versions = await apiFetchVersions();
-    let contentVersionId;
-
-    const draftVersion = versions.find((v) => v.status === "draft");
-    if (draftVersion) {
-      contentVersionId = draftVersion.id;
-    } else {
-      const newVersion = await apiCreateVersion(
-        {
-          version_number: `v${versions.length + 1}.0`,
-          release_notes: `Created for chapter: ${wizardMeta.value.title}`,
-        },
-        user.value?.id
-      );
-      contentVersionId = newVersion.id;
-    }
-
-    // 2. Create the module (chapter)
-    const chapter = await apiCreateChapter({
-      title: wizardMeta.value.title,
-      slug: wizardMeta.value.slug,
-      order_index: wizardMeta.value.order_index,
-      status: "draft",
-      content_version_id: contentVersionId,
-      created_by: user.value?.id,
+    // One all-or-nothing import (OPENBRAIN-78): bulk inserts, and a failure
+    // removes whatever was created instead of leaving half a chapter.
+    const chapter = await importChapter({
+      meta: wizardMeta.value,
+      sections: wizardSections.value,
+      references: wizardReferences.value,
+      userId: user.value?.id,
     });
-
-    // 3. Create sections and paragraphs
-    for (const section of wizardSections.value) {
-      const createdSection = await apiCreateSection({
-        module_id: chapter.id,
-        title: section.title,
-        slug: section.slug,
-        order_index: section.order_index,
-      });
-
-      await Promise.all(
-        section.paragraphs.map((para) =>
-          apiCreateParagraph({
-            section_id: createdSection.id,
-            content: para.content,
-            content_text: para.content_text,
-            order_index: para.order_index,
-            is_subsection_header: para.is_subsection_header,
-            subsection_level: para.subsection_level,
-          })
-        )
-      );
-    }
-
-    // 4. Create references if any
-    if (wizardReferences.value.length > 0) {
-      await Promise.all(
-        wizardReferences.value.map((ref) =>
-          apiCreateReference({
-            module_id: chapter.id,
-            number: ref.number,
-            authors: ref.authors,
-            title: ref.title,
-            journal: ref.journal,
-            year: ref.year,
-            volume: ref.volume,
-            pages: ref.pages,
-            doi: ref.doi,
-            url: ref.url,
-            pub_type: ref.pub_type,
-            raw_text: ref.raw_text,
-          })
-        )
-      );
-    }
 
     wizardCreatedChapter.value = chapter;
 
@@ -632,11 +480,43 @@ async function handleWizardCreate() {
   }
 }
 
+// The address bar follows the section (OPENBRAIN-53), so Back/Forward, reload
+// and shared links land where you were. Overview is the bare /dashboard.
+watch(activeSection, (section) => {
+  const wanted = section === "dashboard" ? undefined : section;
+  if (route.query.section !== wanted) {
+    const query = { ...route.query };
+    if (wanted) query.section = wanted;
+    else delete query.section;
+    router.push({ query });
+  }
+  // Each section starts at its top, not at the last section's scroll offset.
+  window.scrollTo({ top: 0 });
+});
+
+watch(
+  () => route.query.section,
+  (section) => {
+    const target = section || "dashboard";
+    if (target === activeSection.value) return;
+    if (target === "chapter-wizard") startChapterWizard();
+    else if (creatorNavItems.some((i) => i.id === target))
+      activeSection.value = target;
+  }
+);
+
 // Watch for section changes to fetch data
 watch(activeSection, (newSection) => {
   switch (newSection) {
+    case "dashboard":
+      // Opened on another section first (?section=, /editor), so the
+      // overview's data was never fetched.
+      if (dashboardLoading.value) fetchDashboardData();
+      break;
     case "chapters":
       if (chapters.value.length === 0) fetchAllChapters();
+      // Figure badges and the remove prompt name figures by their media title.
+      if (mediaItems.value.length === 0) fetchMedia();
       break;
     case "versions":
       if (versions.value.length === 0) fetchVersions();
@@ -652,6 +532,8 @@ watch(activeSection, (newSection) => {
       break;
     case "quizzes":
       if (quizzes.value.length === 0) fetchQuizzes();
+      // The quiz form's chapter picker.
+      if (chapters.value.length === 0) fetchAllChapters();
       break;
   }
 });
@@ -710,6 +592,11 @@ onMounted(() => {
   // Check for query param to open a specific section (e.g., from redirect)
   if (route.query.section === "chapter-wizard") {
     startChapterWizard();
+    return;
+  }
+  const requested = creatorNavItems.find((i) => i.id === route.query.section);
+  if (requested && requested.id !== "dashboard") {
+    activeSection.value = requested.id; // the section watcher fetches its data
     return;
   }
 
@@ -900,6 +787,7 @@ onMounted(() => {
                 >Manage users</Button
               >
               <Button
+                v-if="!isBetaHidden('dashboard.analytics')"
                 variant="outline"
                 size="sm"
                 block
@@ -933,8 +821,8 @@ onMounted(() => {
                   <td class="cell-strong">{{ q.title }}</td>
                   <td>{{ q.questionCount }}</td>
                   <td>{{ q.attemptCount }}</td>
-                  <td>{{ q.avgScore }}%</td>
-                  <td>{{ q.passRate }}%</td>
+                  <td>{{ attemptPercent(q.avgScore, q.attemptCount) }}</td>
+                  <td>{{ attemptPercent(q.passRate, q.attemptCount) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -1014,83 +902,77 @@ onMounted(() => {
       />
 
       <div v-else class="stack">
-        <BaseCard
-          v-for="chapter in chapters"
-          :key="chapter.id"
-          padding="none"
-          :class="{ 'chapter-expanded': expandedChapterId === chapter.id }"
-        >
-          <!-- Chapter header (always visible) -->
-          <div class="chapter-head" @click="toggleChapter(chapter.id)">
-            <div class="chapter-head-main">
-              <span class="eyebrow-mono"
-                >Chapter {{ chapter.order_index }}</span
-              >
-              <h3 class="card-title sm">{{ chapter.title }}</h3>
-              <div
-                v-if="expandedChapterId !== chapter.id"
-                class="meta-row mt-1"
-              >
-                <span>{{ chapter.sectionCount }} sections</span>
-                <span>{{ chapter.paragraphCount }} paragraphs</span>
-                <span>{{ chapter.wordCount.toLocaleString() }} words</span>
-                <span>{{ chapter.readingTime }} min read</span>
-              </div>
-              <span v-if="expandedChapterId !== chapter.id" class="muted-mono">
-                Last edited: {{ formatDate(chapter.updated_at) }}
-              </span>
+        <!-- One card per chapter: stats and actions. Editing happens on the
+             chapter's own page (OPENBRAIN-60), not in an inline expand. -->
+        <div class="chapter-grid">
+          <BaseCard
+            v-for="chapter in chapters"
+            :key="chapter.id"
+            padding="none"
+            class="chapter-card"
+          >
+            <div
+              class="chapter-card-cover"
+              :data-chapter="chapter.ramp || null"
+              :style="{ '--cover': `url(${coverForModule(chapter)})` }"
+            >
+              <span class="chapter-card-n">{{ chapter.order_index }}</span>
             </div>
-            <StatusBadge :status="chapter.status || 'draft'" />
-            <button
-              v-if="expandedChapterId === chapter.id"
-              type="button"
-              class="chev-btn"
-              @click.stop="toggleChapter(chapter.id)"
-              aria-label="Collapse"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="18 15 12 9 6 15"></polyline>
-              </svg>
-            </button>
-            <svg
-              v-else
-              class="chev"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
+            <div class="chapter-card-body">
+              <div class="chapter-card-top">
+                <StatusBadge :status="chapter.status || 'draft'" />
+                <span class="muted-mono"
+                  >Edited {{ formatDate(chapter.updated_at) }}</span
+                >
+              </div>
+              <h3 class="card-title sm">{{ chapter.title }}</h3>
+              <dl class="chapter-card-stats">
+                <div>
+                  <dt>Sections</dt>
+                  <dd>{{ chapter.sectionCount }}</dd>
+                </div>
+                <div>
+                  <dt>Words</dt>
+                  <dd>{{ chapter.wordCount.toLocaleString() }}</dd>
+                </div>
+                <div>
+                  <dt>Min read</dt>
+                  <dd>{{ chapter.readingTime }}</dd>
+                </div>
+              </dl>
+              <div class="chapter-card-actions">
+                <router-link
+                  :to="`/dashboard/chapters/${chapter.slug}`"
+                  class="chapter-edit"
+                  >Edit chapter</router-link
+                >
+                <a
+                  :href="readerPath(chapter)"
+                  target="_blank"
+                  rel="noopener"
+                  class="chapter-action"
+                  >Open in reader ↗</a
+                >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="askStatusChange(chapter)"
+                  >{{
+                    chapter.status === "published" ? "Unpublish" : "Publish"
+                  }}</Button
+                >
+              </div>
+            </div>
+          </BaseCard>
+        </div>
 
-          <!-- Expanded content -->
-          <div v-if="expandedChapterId === chapter.id" class="chapter-body">
-            <ChapterBlockEditor
-              :sections="expandedChapterSections"
-              :paragraphs="expandedChapterParagraphs"
-              :media-items="mediaItems"
-              :saving="saving"
-              :save-status="saveStatus"
-              @save="onBlockSave"
-              @reorder="onBlockReorder"
-              @attach-media="openMediaPicker"
-              @detach-media="detachMedia"
-            />
-          </div>
-        </BaseCard>
-
-        <Button variant="outline" size="md" @click="startChapterWizard()"
-          >+ Add new chapter</Button
+        <!-- The header's "New chapter" covers a non-empty list. -->
+        <Button
+          v-if="chapters.length === 0"
+          variant="outline"
+          size="md"
+          @click="startChapterWizard()"
+          >+ Add your first chapter</Button
         >
       </div>
     </section>
@@ -1213,13 +1095,17 @@ onMounted(() => {
       :filtered-media="filteredMedia"
       :media-by-type="mediaByType"
       :format-file-size="formatFileSize"
+      :media-usage="mediaUsage"
       v-model:media-search="mediaSearch"
       v-model:selected-media="selectedMedia"
       @fetch="fetchMedia"
       @filter="onMediaFilter"
       @select="selectMedia"
       @delete="deleteMedia"
+      @uploaded="fetchMedia"
     />
+
+    <WidgetsSection v-else-if="activeSection === 'widgets'" />
 
     <QuizzesSection
       v-else-if="activeSection === 'quizzes'"
@@ -1228,6 +1114,7 @@ onMounted(() => {
       :quizzes-error="quizzesError"
       :editing-quiz="editingQuiz"
       :editing-question="editingQuestion"
+      :chapters="chapters"
       v-model:show-quiz-editor="showQuizEditor"
       v-model:quiz-form="quizForm"
       v-model:show-question-editor="showQuestionEditor"
@@ -1256,6 +1143,7 @@ onMounted(() => {
       :users-total-count="usersTotalCount"
       :user-role-breakdown="userRoleBreakdown"
       :role-select-options="roleSelectOptions"
+      :current-user-id="user?.id || null"
       v-model:selected-user="selectedUser"
       @fetch="fetchUsers"
       @filter="onUsersFilter"
@@ -1281,63 +1169,229 @@ onMounted(() => {
       @range-change="onAnalyticsRange"
     />
 
-    <!-- Media picker modal — section-independent: opened from
-             ChapterBlockEditor (chapters section), so it must render
-             regardless of activeSection. Bridges chapters <-> media. -->
-    <BaseModal v-model="showMediaPicker" title="Attach media" size="xl">
-      <p class="muted">
-        Select an animation or media to attach to this content block.
-      </p>
-      <SearchInput
-        v-model="mediaPickerSearch"
-        placeholder="Search animations…"
-        class="mt-3"
-      />
-      <div class="media-picker-grid mt-3">
-        <BaseCard
-          v-for="item in mediaPickerFiltered"
-          :key="item.id"
-          padding="sm"
-          interactive
-          class="media-picker-item"
-          @click="attachMedia(item)"
-        >
-          <div class="media-picker-thumb">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-          </div>
-          <div class="media-info">
-            <span class="media-title">{{
-              item.title || item.animation_key
-            }}</span>
-            <span class="media-size"
-              >{{ item.interaction_type }} · {{ item.media_type }}</span
-            >
-          </div>
-        </BaseCard>
-        <EmptyState
-          v-if="mediaPickerFiltered.length === 0"
-          title="No media found"
-        />
-      </div>
-      <template #footer>
-        <Button variant="ghost" size="sm" @click="showMediaPicker = false"
-          >Close</Button
-        >
+    <!-- Publish / unpublish: changes who can read the chapter. -->
+    <ConfirmDialog
+      :model-value="!!pendingStatusChange"
+      :title="
+        pendingStatusChange?.to === 'published'
+          ? 'Publish this chapter?'
+          : 'Unpublish this chapter?'
+      "
+      :confirm-label="
+        pendingStatusChange?.to === 'published' ? 'Publish' : 'Unpublish'
+      "
+      :variant="pendingStatusChange?.to === 'published' ? 'info' : 'danger'"
+      :loading="statusChanging"
+      @update:model-value="(open) => !open && (pendingStatusChange = null)"
+      @confirm="confirmStatusChange"
+    >
+      <template v-if="pendingStatusChange?.to === 'published'">
+        <strong>{{ pendingStatusChange?.chapter.title }}</strong> will appear in
+        the chapter library for every reader, signed in or not.
       </template>
-    </BaseModal>
+      <template v-else>
+        <strong>{{ pendingStatusChange?.chapter.title }}</strong> leaves the
+        library straight away. Readers who open its link get "not found"; only
+        creators can still read it.
+      </template>
+    </ConfirmDialog>
+
+    <!-- Result of a live chapter edit, with Undo where it applies. -->
+    <div
+      v-if="toast"
+      class="dash-toast"
+      :class="{ 'is-error': toast.error }"
+      role="status"
+      aria-live="polite"
+    >
+      <span>{{ toast.message }}</span>
+      <button
+        v-if="toast.undo"
+        type="button"
+        class="dash-toast-undo"
+        @click="runToastUndo"
+      >
+        Undo
+      </button>
+      <button
+        type="button"
+        class="dash-toast-close"
+        aria-label="Dismiss"
+        @click="toast = null"
+      >
+        &times;
+      </button>
+    </div>
   </DashboardShell>
 </template>
 
 <style scoped>
+/* Must stay the first rule: CSS drops an @import that follows any other
+   rule, which silently unstyled Overview and Chapters in production
+   (OPENBRAIN-57). */
+@import "@/styles/dashboard-sections.css";
+
+/* Chapters: one card per chapter (OPENBRAIN-60) */
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.chapter-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+.chapter-card-cover {
+  position: relative;
+  height: 120px;
+  /* The chapter's cover (the one the reader opens on), under a wash of its
+     subject colour so the number stays legible. */
+  background:
+    linear-gradient(
+      160deg,
+      rgb(var(--color-chapter, var(--color-accent)) / 0.25),
+      rgb(var(--color-chapter-deep, var(--color-accent)) / 0.85)
+    ),
+    var(--cover, none) center / cover no-repeat,
+    rgb(var(--color-chapter-deep, var(--color-accent)));
+}
+.chapter-card-n {
+  position: absolute;
+  left: 16px;
+  bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  line-height: 1;
+  color: rgb(255 255 255 / 0.9);
+}
+.chapter-card-body {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  align-content: start;
+}
+.chapter-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.chapter-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 10px 0;
+  border-block: 1px solid rgb(var(--color-line));
+}
+.chapter-card-stats dt {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-mute));
+}
+.chapter-card-stats dd {
+  margin: 2px 0 0;
+  font-family: var(--font-ui);
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chapter-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.chapter-edit {
+  padding: 7px 14px;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-bg));
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.chapter-edit:hover,
+.chapter-edit:focus-visible {
+  background: rgb(var(--color-accent));
+}
+.chapter-edit:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+.chapter-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.chapter-action {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--color-ink));
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: var(--radius-control);
+}
+.chapter-action:hover,
+.chapter-action:focus-visible {
+  background: rgb(var(--color-line));
+}
+.chapter-action:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+.dash-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 12px 10px 16px;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-bg));
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.dash-toast.is-error {
+  background: rgb(var(--color-accent));
+  color: #fff;
+}
+.dash-toast-undo,
+.dash-toast-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.dash-toast-undo {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dash-toast-close {
+  font-size: 1.125rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+.dash-toast-undo:focus-visible,
+.dash-toast-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
 /*
  * Shared section layout/visual classes live in
  * src/styles/dashboard-sections.css (imported below) so the per-section
@@ -1347,7 +1401,6 @@ onMounted(() => {
  *
  * NOTE: root font-size is the browser default (16px), so one rem equals 16px.
  */
-@import "@/styles/dashboard-sections.css";
 
 /* Full-screen states (loading / access denied) */
 .screen {

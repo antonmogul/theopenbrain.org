@@ -330,7 +330,7 @@ async function executeDelete() {
   align-items: center;
   justify-content: space-between;
   padding: 0.625rem 0.78125rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgb(var(--color-line));
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
   color: white;
 }
@@ -363,7 +363,7 @@ async function executeDelete() {
   height: 36px;
   border: none;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -382,26 +382,26 @@ async function executeDelete() {
 
 /* History panel */
 .history-panel {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgb(var(--color-line));
   max-height: 300px;
   overflow-y: auto;
-  background: #f9fafb;
+  background: rgb(var(--color-bg));
 }
 
 .history-header {
   padding: 0.46875rem 0.78125rem;
   font-size: 0.46875rem;
   font-weight: 600;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgb(var(--color-line));
 }
 
 .history-empty {
   padding: 0.9375rem;
   text-align: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   font-size: 0.546875rem;
 }
 
@@ -410,13 +410,13 @@ async function executeDelete() {
   align-items: center;
   justify-content: space-between;
   padding: 0.46875rem 0.78125rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid rgb(var(--color-line));
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .history-item:hover {
-  background: #f3f4f6;
+  background: rgb(var(--color-bg));
 }
 
 .history-item.active {
@@ -433,7 +433,7 @@ async function executeDelete() {
 
 .item-title {
   font-size: 0.546875rem;
-  color: #374151;
+  color: rgb(var(--color-ink) / 0.8);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -442,7 +442,7 @@ async function executeDelete() {
 
 .item-date {
   font-size: 0.46875rem;
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .delete-btn {
@@ -450,12 +450,12 @@ async function executeDelete() {
   height: 28px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
   opacity: 0;
   transition: all 0.15s;
 }
@@ -478,7 +478,7 @@ async function executeDelete() {
 .delete-confirm p {
   margin: 0 0 0.3125rem 0;
   font-size: 0.546875rem;
-  color: #374151;
+  color: rgb(var(--color-ink) / 0.8);
 }
 
 .confirm-actions {
@@ -490,7 +490,7 @@ async function executeDelete() {
 .btn-secondary,
 .btn-danger {
   padding: 0.234375rem 0.46875rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-size: 0.46875rem;
   font-weight: 500;
   cursor: pointer;
@@ -499,12 +499,12 @@ async function executeDelete() {
 
 .btn-secondary {
   background: white;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  color: rgb(var(--color-mute));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: rgb(var(--color-bg));
 }
 
 .btn-danger {

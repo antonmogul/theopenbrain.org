@@ -1,11 +1,16 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import { get } from "@/services/api/client";
 import { useRouter } from "vue-router";
+import { useFeedback } from "@/composables/useFeedback";
 
 const props = defineProps({
   chapterNumber: { type: [String, Number], required: true },
   chapterTitle: { type: String, default: "" },
   moduleId: { type: String, default: null },
+  /** The chapter's published quiz, if it has one: the quiz route takes a
+   *  quiz id, not the chapter's, so without one there is no quiz link. */
+  quizId: { type: String, default: null },
   // Optional content
   keyTakeaways: { type: Array, default: () => [] },
   // Stats — passed in by the parent (already computed from composables)
@@ -33,10 +38,35 @@ const minutes = computed(() =>
 
 const overviewRoute = computed(() => `/chapter/${props.chapterNumber}`);
 const quizRoute = computed(() =>
-  props.moduleId ? `/quiz/${props.moduleId}` : null
+  props.quizId ? `/quiz/${props.quizId}` : null
+);
+
+// "Send feedback" about this chapter (OPENBRAIN-101).
+const { openFeedback } = useFeedback();
+function feedback() {
+  openFeedback({
+    moduleId: props.moduleId,
+    label: `Chapter ${props.chapterNumber}${props.chapterTitle ? ` · ${props.chapterTitle}` : ""}`,
+  });
+}
+// Only a chapter with cards links to them (it used to link to an empty deck).
+const hasFlashcards = ref(false);
+watch(
+  () => props.moduleId,
+  async (id) => {
+    hasFlashcards.value = false;
+    if (!id) return;
+    try {
+      const rows = await get(`flashcards?module_id=eq.${id}&select=id&limit=1`);
+      if (id === props.moduleId) hasFlashcards.value = rows?.length > 0;
+    } catch {
+      /* no link rather than a broken one */
+    }
+  },
+  { immediate: true }
 );
 const flashcardsRoute = computed(() =>
-  props.moduleId ? `/flashcards/${props.moduleId}` : null
+  props.moduleId && hasFlashcards.value ? `/flashcards/${props.moduleId}` : null
 );
 
 function goNext() {
@@ -95,6 +125,9 @@ function goNext() {
       <router-link :to="overviewRoute" class="cta cta-secondary">
         Chapter overview
       </router-link>
+      <button type="button" class="cta cta-secondary" @click="feedback">
+        Send feedback
+      </button>
     </div>
 
     <!-- Up Next -->
@@ -123,7 +156,7 @@ function goNext() {
 .takeaways {
   background: rgb(var(--color-complete) / 0.08);
   border: 1px solid rgb(var(--color-complete) / 0.4);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   padding: 1.25rem 1.5rem;
 }
 
@@ -144,11 +177,11 @@ function goNext() {
   background: rgb(var(--color-complete));
   color: rgb(var(--color-paper));
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 
 .takeaways h3 {
-  font-size: 1.125rem;
+  font-size: var(--ui-size-18);
   font-weight: 600;
   margin: 0;
   padding: 0;
@@ -164,7 +197,7 @@ function goNext() {
 }
 
 .takeaways li {
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.6;
   color: rgb(var(--color-ink));
 }
@@ -175,7 +208,7 @@ function goNext() {
   gap: 0.625rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   padding: 1rem 0.625rem;
 }
 
@@ -194,7 +227,7 @@ function goNext() {
 }
 
 .stat-label {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -211,8 +244,8 @@ function goNext() {
   display: inline-flex;
   align-items: center;
   padding: 0.625rem 1.125rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  border-radius: var(--radius-control);
+  font-size: var(--ui-size-14);
   font-family: var(--font-ui);
   text-decoration: none;
   cursor: pointer;
@@ -255,7 +288,7 @@ function goNext() {
   width: 100%;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   padding: 1rem 1.25rem;
   cursor: pointer;
   text-align: left;
@@ -281,7 +314,7 @@ function goNext() {
 }
 
 .up-next-label {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -289,13 +322,13 @@ function goNext() {
 }
 
 .up-next-title {
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 
 .up-next-arrow {
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   color: rgb(var(--color-accent));
 }
 

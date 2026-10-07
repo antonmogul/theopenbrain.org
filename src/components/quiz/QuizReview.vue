@@ -66,7 +66,7 @@ defineEmits(["exit", "retry"]);
 }
 .review-header h2 {
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   color: rgb(var(--color-ink));
   margin: 0;
@@ -83,7 +83,7 @@ defineEmits(["exit", "retry"]);
   margin-top: 1.25rem;
   padding: 0.9375rem;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
 }
 
 /* Shared pill buttons (kept local so this screen is self-contained) */
@@ -94,9 +94,9 @@ defineEmits(["exit", "retry"]);
   justify-content: center;
   gap: 0.3125rem;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

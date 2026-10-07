@@ -1227,7 +1227,7 @@ onMounted(() => {
 /* Bare select (used outside FormField, e.g. filter/target-course bars) */
 .bare-select {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   padding: 9px 12px;
   font-family: var(--font-body);
@@ -1244,7 +1244,7 @@ onMounted(() => {
 .boxed-input {
   flex: 1;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   padding: 9px 12px;
   font-family: var(--font-body);
@@ -1378,7 +1378,7 @@ onMounted(() => {
   letter-spacing: 0.2em;
   background: rgb(var(--color-accent) / 0.1);
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 
 /* Mini stat rows (assessment / analytics cards) */

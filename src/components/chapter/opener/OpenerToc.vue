@@ -1,7 +1,8 @@
 <script setup>
 /*
  * Chapter opener — title + table of contents on the dark block
- * (OPENBRAIN-32, Figma attn/toc 1495:34232, history 3:80).
+ * (OPENBRAIN-32; OPENBRAIN-94 matches the Assets Library's ui/toc,
+ * WNnPvBkixODGsiYmIZKSWw node 286:1641).
  *
  * Left half: the chapter title in the chapter's ramp colour with the
  * subtitle in white beneath it. Right half, starting on the 50/50 divider:
@@ -75,19 +76,33 @@ function go(anchor, event) {
 </template>
 
 <style scoped>
-/* Frame: 1728 wide, padding 120 / 60 / 60, list = right half (864). */
+/* Figma: Open-Brain Assets Library, ui/toc (node 286:1641), a 1728-wide
+   frame. Its px become vw of 1728, with Figma's size as the ceiling and the
+   type scale (brand.css) as the floor on smaller screens:
+   title 60px · section rows 24.5px, 18px above and below, a ramp-coloured
+   rule on top · numbers in 48px circles on the divider · titles 42px right
+   of the divider · subsection rows 20px white on a hairline, indented the
+   same 42px. */
 .opener-toc {
   --toc-accent: rgb(var(--color-chapter));
+  --toc-title: clamp(var(--type-subhead-size), 3.48vw, 3.75rem);
+  --toc-row-font: clamp(min(var(--type-body-size), 1.125rem), 1.417vw, 1.53rem);
+  --toc-sub-font: clamp(min(var(--type-body-sm-size), 1rem), 1.159vw, 1.252rem);
+  --toc-num: clamp(2.5rem, 2.78vw, 3rem);
+  --toc-indent: clamp(2.25rem, 2.43vw, 2.625rem);
+  --toc-pad: clamp(0.75rem, 1.04vw, 1.125rem);
+  --toc-pt: clamp(2.5rem, 6.94vw, 7.5rem);
+  --toc-pb: clamp(2.5rem, 3.47vw, 3.75rem);
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 0;
   background: rgb(var(--color-dark-surface));
   color: #fff;
-  padding: clamp(4rem, 6.9vw, 7.5rem) 0 3.75rem;
+  padding: var(--toc-pt) 0 var(--toc-pb);
   font-family: var(--font-body);
 }
-/* The divider line runs the full height of the block, on the 50/50 split. */
+/* The divider runs the full height of the block, on the 50/50 split. */
 .opener-toc::before {
   content: "";
   position: absolute;
@@ -100,15 +115,15 @@ function go(anchor, event) {
 }
 
 .opener-toc__title {
-  padding: 0 3.75rem;
-  max-width: 34.9vw; /* 602 / 1728 */
+  padding: 0 clamp(1.25rem, 3.47vw, 3.75rem); /* 60 */
+  max-width: 50vw;
 }
 .opener-toc__h1 {
   margin: 0;
   font-weight: 450;
-  font-size: clamp(2.25rem, 3.5vw, 3.75rem); /* 60px on the 1728 frame */
-  line-height: 1.43;
-  letter-spacing: 0.002em;
+  font-size: var(--toc-title);
+  line-height: 1.429;
+  letter-spacing: 0.1px;
   text-wrap: balance;
 }
 .opener-toc__lead {
@@ -121,7 +136,9 @@ function go(anchor, event) {
 }
 
 .opener-toc__list {
-  padding-right: 3.75rem;
+  letter-spacing: 0.1px;
+  /* The reader hyphenates prose; titles in the contents break at words. */
+  hyphens: manual;
 }
 .opener-toc__sections,
 .opener-toc__subs {
@@ -134,41 +151,50 @@ function go(anchor, event) {
   align-items: center;
   color: inherit;
   text-decoration: none;
-  padding: 1.125rem 0 1.125rem 2.625rem; /* 18 / 42 */
-  line-height: 1.43;
+  line-height: 1.429;
+}
+/* Every section lists its parts, as in Figma (OPENBRAIN-94). */
+.opener-toc__section {
+  position: relative;
 }
 .opener-toc__row--section {
   position: relative;
+  padding: var(--toc-pad) 3.75rem var(--toc-pad) var(--toc-indent);
   border-top: 1px solid var(--toc-accent);
   color: var(--toc-accent);
-  font-size: clamp(1.125rem, 1.42vw, 1.53rem); /* 24.5px */
+  font-size: var(--toc-row-font);
+  font-weight: 450; /* IBM Plex Sans Text */
 }
-/* 48px circle straddling the divider: its centre sits on the line. */
+/* The number's circle straddles the divider, centred on the title's first
+   line. */
 .opener-toc__num {
   position: absolute;
-  left: -1.5rem;
-  top: 0.75rem;
-  width: 3rem;
-  height: 3rem;
+  left: calc(var(--toc-num) / -2);
+  top: calc(var(--toc-pad) + 0.7145 * var(--toc-row-font) - var(--toc-num) / 2);
+  width: var(--toc-num);
+  height: var(--toc-num);
   border-radius: 999px;
   background: var(--toc-accent);
   color: #fff;
   display: grid;
   place-items: center;
-  font-size: clamp(1.125rem, 1.42vw, 1.53rem);
+  font-size: calc(var(--toc-num) * 0.51);
   font-weight: 400;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .opener-toc__section--box .opener-toc__num {
   letter-spacing: 0.04em;
 }
 .opener-toc__subs {
-  padding: 0 2.625rem;
+  padding: 0 0 0 var(--toc-indent);
 }
 .opener-toc__row--sub {
-  border-top: 1px solid rgb(255 255 255 / 0.2); /* the frame's 0.2px white rule */
+  padding: var(--toc-pad) 3.75rem var(--toc-pad) 0;
+  border-top: 1px solid rgb(255 255 255 / 0.25); /* Figma's 0.2px white */
   color: #fff;
-  font-size: clamp(1rem, 1.16vw, 1.25rem); /* 20px */
+  font-size: var(--toc-sub-font);
+  font-weight: 450;
 }
 .opener-toc__row:hover .opener-toc__label,
 .opener-toc__row--sub:hover {
@@ -180,9 +206,13 @@ function go(anchor, event) {
   outline-offset: -2px;
 }
 
-/* Below the two-column reader the block stacks: title, then the list. */
-@media (max-width: 1299px) {
+/* Below the two-column reader the block stacks, title then the list; the
+   ramp-coloured line moves with the list, through the number circles. */
+@media (max-width: 1023px) {
   .opener-toc {
+    --toc-num: 2rem;
+    --toc-indent: 1.75rem;
+    --toc-pad: 0.75rem;
     grid-template-columns: 1fr;
     padding-left: 1.25rem;
     padding-right: 1.25rem;
@@ -195,7 +225,26 @@ function go(anchor, event) {
     padding: 0 0 2rem;
   }
   .opener-toc__list {
-    padding: 0 0 0 1.5rem;
+    position: relative;
+    padding: 0 0 0 1rem;
+  }
+  .opener-toc__list::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: calc(-1 * var(--toc-pb)); /* to the block's end, as on desktop */
+    left: 1rem;
+    width: 1px;
+    background: var(--toc-accent);
+    pointer-events: none;
+  }
+  .opener-toc__row--section,
+  .opener-toc__row--sub {
+    padding-right: 0;
+  }
+  .opener-toc__row--sub {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
   }
 }
 </style>

@@ -1,24 +1,28 @@
 <script setup>
-// Student settings (standalone route). Sticky left rail + scroll-spy wrapper
-// around the shared SettingsPanels content (Profile, Email preferences,
-// Data & privacy, Account). Reading & display + Theme & accents are hidden.
+// Settings (standalone route). The shared dashboard shell and rail
+// (OPENBRAIN-126: it had its own copy) with scroll-spy over the
+// SettingsPanels sections (Profile, Email preferences, Data & privacy,
+// Account). The rail's accent follows the reader's role, as on their
+// dashboard; its Log out is off because the Account section has Sign out.
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useProfile } from "@/composables/useProfile";
 import { useHomeRoute } from "@/composables/useHomeRoute";
+import DashboardShell from "@/components/dashboard/shared/DashboardShell.vue";
 import SettingsPanels from "@/components/settings/SettingsPanels.vue";
+import { isBetaHidden } from "@/constants/beta";
 
 const { user, profile } = useAuth();
 const { profile: liveProfile } = useProfile();
 const homeRoute = useHomeRoute();
 
-// --- Left-rail nav + scroll-spy ---
+// --- Rail nav + scroll-spy ---
 const SECTIONS = [
   { id: "profile", label: "Profile" },
   { id: "notifications", label: "Email preferences" },
   { id: "data", label: "Data & privacy" },
   { id: "account", label: "Account" },
-];
+].filter((s) => !isBetaHidden(`settings.${s.id}`));
 const activeId = ref("profile");
 
 function onScroll() {
@@ -30,6 +34,7 @@ function onScroll() {
   activeId.value = current;
 }
 function goTo(id) {
+  activeId.value = id;
   document
     .getElementById(id)
     ?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -44,172 +49,30 @@ onBeforeUnmount(() => window.removeEventListener("scroll", onScroll));
 const displayName = computed(
   () => liveProfile.value?.full_name || profile.value?.full_name || "Reader"
 );
-const railInitials = computed(() => {
-  const n = displayName.value || user.value?.email || "?";
-  return n
-    .split(/\s+/)
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-});
+// The same accent as the reader's own dashboard (DashboardShell `accent`).
+const ROLE_ACCENT = { student: "teal", professor: "amber", creator: "magenta" };
+const accent = computed(() => ROLE_ACCENT[profile.value?.role] || "magenta");
 </script>
 
 <template>
-  <main class="settings">
-    <div class="layout">
-      <!-- Left rail -->
-      <aside class="rail">
-        <div class="rail-user">
-          <div class="rail-avatar" aria-hidden="true">{{ railInitials }}</div>
-          <div class="rail-name">{{ displayName }}</div>
-          <div class="rail-email">{{ user?.email }}</div>
-        </div>
-        <nav class="rail-nav">
-          <button
-            v-for="s in SECTIONS"
-            :key="s.id"
-            class="rail-link"
-            :class="{ active: activeId === s.id }"
-            @click="goTo(s.id)"
-          >
-            <span class="rail-bar" />
-            <span class="rail-label">{{ s.label }}</span>
-          </button>
-        </nav>
-        <hr class="rail-rule" />
-        <router-link :to="homeRoute" class="rail-back"
-          >← Back to book</router-link
-        >
-      </aside>
-
-      <!-- Content -->
-      <SettingsPanels class="content" />
-    </div>
-  </main>
+  <DashboardShell
+    :nav-items="SECTIONS"
+    :active-section="activeId"
+    :display-name="displayName"
+    :email="user?.email"
+    :accent="accent"
+    :back-to="homeRoute"
+    back-label="Back to book"
+    :show-logout="false"
+    @update:active-section="goTo"
+  >
+    <SettingsPanels class="settings-content" />
+  </DashboardShell>
 </template>
 
 <style scoped>
-/* Settings — prototype profile.jsx layout. Rail + scroll-spy + sections. */
-.settings {
-  background: rgb(var(--color-bg));
-  color: rgb(var(--color-ink));
-  font-family: var(--font-body);
-  min-height: 100vh;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  max-width: 77.5rem;
-  margin: 0 auto;
-  padding: 2.5rem 3rem 6rem;
-  gap: 3rem;
-}
-
-@media (min-width: 900px) {
-  .layout {
-    grid-template-columns: 17.5rem 1fr;
-  }
-}
-
-/* Left rail */
-.rail {
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-@media (min-width: 900px) {
-  .rail {
-    position: sticky;
-    top: 2.5rem;
-  }
-}
-.rail-user {
-  margin-bottom: 18px;
-}
-.rail-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 999px;
-  background: rgb(var(--color-complete));
-  color: #0a3d33;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-mono);
-  font-size: 1.625rem;
-  font-weight: 600;
-  border: 1px solid rgb(var(--color-line));
-}
-.rail-name {
-  font-family: var(--font-body);
-  font-size: 1.375rem;
-  letter-spacing: -0.01em;
-  margin-top: 14px;
-}
-.rail-email {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  color: rgb(var(--color-mute));
-  margin-top: 2px;
-}
-
-.rail-nav {
-  display: flex;
-  flex-direction: column;
-}
-.rail-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-align: left;
-  padding: 10px 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  color: rgb(var(--color-mute));
-}
-.rail-bar {
-  width: 4px;
-  height: 16px;
-  background: transparent;
-  transition: background 200ms ease;
-}
-.rail-label {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 400;
-}
-.rail-link.active {
-  color: rgb(var(--color-ink));
-}
-.rail-link.active .rail-bar {
-  background: rgb(var(--color-accent));
-}
-.rail-link.active .rail-label {
-  font-weight: 500;
-}
-.rail-rule {
-  border: 0;
-  border-top: 1px solid rgb(var(--color-line));
-  margin: 20px 0 12px;
-}
-.rail-back {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgb(var(--color-ink));
-  text-decoration: none;
-}
-.rail-back:hover {
-  color: rgb(var(--color-accent));
-}
-
-@media (max-width: 767px) {
-  .layout {
-    padding: 1.5rem 1.125rem 5rem;
-  }
+/* The settings column keeps its reading width inside the wider shell. */
+.settings-content {
+  max-width: 57rem;
 }
 </style>

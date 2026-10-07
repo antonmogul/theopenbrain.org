@@ -27,17 +27,29 @@
 // Raw HTML imports — Vite serves these as strings via ?raw suffix.
 import sdtHtml from "./source/sdt_widget.html?raw";
 import posnerHtml from "./source/posner_cueing_widget.html?raw";
+import psychometricHtml from "./source/psychometric_function_widget.html?raw";
 import biasedCompHtml from "./source/biased_competition_widget.html?raw";
 import contrastGainHtml from "./source/contrast_response_gain_widget.html?raw";
 import tmtHtml from "./source/tmt_feature_attention_widget.html?raw";
 import normModelHtml from "./source/normalization_model_widget_v2.html?raw";
+import hillyardHtml from "./source/hillyard_attention_erp_widget.html?raw";
 import retinaboxHtml from "./source/retinabox-web.html?raw";
 import retinaboxAppHtml from "./source/retinabox-web_app.html?raw";
 import dirSelectHtml from "./source/retina_direction_selectivity_data_widget.html?raw";
 import v1CameraHtml from "./source/v1-camera-widget.html?raw";
 import colorVisionHtml from "./source/color-vision-widget.html?raw";
 import visualLesionsHtml from "./source/visual-pathway-lesions-widget.html?raw";
+import corbettaPetHtmlRaw from "./source/corbetta_pet_attention_widget_v2.html?raw";
 /* eslint-enable import/no-unresolved */
+
+// The Corbetta original loads its photo from a relative `assets/` folder,
+// which does not resolve inside the gallery's srcdoc iframe (it would hit
+// /assets/ on the app origin). The source file stays byte-for-byte; only
+// the gallery's copy is pointed at the web-compressed image in public/.
+const corbettaPetHtml = corbettaPetHtmlRaw.replace(
+  'src="assets/corbetta_head_brain.png"',
+  'src="/publicAssets/images/widgets/corbetta_head_brain.webp"'
+);
 
 /**
  * @typedef {Object} Widget
@@ -141,6 +153,17 @@ export const WIDGETS = [
     deps: [],
   },
   {
+    id: "psychometric-function",
+    title: "The psychometric function",
+    desc: "Scrub stimulus strength along the detection curve and compare a lower threshold, a liberal bias and a high lapse rate: threshold and bias shift the curve alike, and only the false-alarm rate tells them apart.",
+    chapter: "Attention & Working Memory",
+    author: "Arjun Krishnaswamy",
+    srcHtml: psychometricHtml,
+    vuePath: "/psychometric-function",
+    height: "760px",
+    deps: [],
+  },
+  {
     id: "posner-cueing",
     title: "Posner spatial cueing task",
     desc: "Run a block of 50 trials to measure your own reaction-time cost and benefit for valid versus invalid spatial cues.",
@@ -185,13 +208,36 @@ export const WIDGETS = [
     deps: [],
   },
   {
+    id: "corbetta-pet-attention",
+    title: "Attention selects visual cortex (Corbetta PET)",
+    desc: "The display stays the same; attending to shape, colour or velocity lights up different PET foci over posterior cortex (Corbetta et al., 1990). A spatial mode, labelled conceptual, shifts emphasis to the hemisphere opposite the attended field.",
+    chapter: "Attention & Working Memory",
+    author: "Arjun Krishnaswamy",
+    srcHtml: corbettaPetHtml,
+    vuePath: "/corbetta-pet",
+    height: "780px",
+    deps: [],
+  },
+  {
     id: "normalization-model",
     title: "Normalization model of attention",
     desc: "Interactive normalization model showing how attention modulates neural responses through divisive normalisation — the unifying computation.",
     chapter: "Attention & Working Memory",
     author: "Arjun Krishnaswamy",
     srcHtml: normModelHtml,
+    vuePath: "/normalization-model",
     height: "700px",
+    deps: [],
+  },
+  {
+    id: "hillyard-attention-erp",
+    title: "Selective attention changes the auditory ERP",
+    desc: "Attend to the left or right ear and watch the N1 evoked by the same left-ear tone grow or shrink, after Hillyard and colleagues (1973).",
+    chapter: "Attention & Working Memory",
+    author: "Arjun Krishnaswamy",
+    srcHtml: hillyardHtml,
+    vuePath: "/hillyard-erp",
+    height: "760px",
     deps: [],
   },
 

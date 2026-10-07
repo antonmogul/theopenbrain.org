@@ -294,9 +294,9 @@ async function executeDelete() {
   padding: 6px 12px;
   background: transparent;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
@@ -332,7 +332,7 @@ async function executeDelete() {
 .history-label {
   padding: 10px 18px;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute));
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -343,7 +343,7 @@ async function executeDelete() {
   padding: 16px;
   text-align: center;
   color: rgb(var(--color-mute));
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
 }
 
 .history-item {
@@ -372,7 +372,7 @@ async function executeDelete() {
 }
 
 .item-title {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
   font-weight: 500;
   white-space: nowrap;
@@ -393,7 +393,7 @@ async function executeDelete() {
   height: 28px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -419,7 +419,7 @@ async function executeDelete() {
 
 .delete-confirm p {
   margin: 0 0 6px 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
 }
 
@@ -442,7 +442,7 @@ async function executeDelete() {
 
 .error-banner p {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-accent));
 }
 
@@ -451,7 +451,7 @@ async function executeDelete() {
   background: none;
   border: none;
   color: rgb(var(--color-accent));
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   cursor: pointer;
   text-decoration: underline;
 }

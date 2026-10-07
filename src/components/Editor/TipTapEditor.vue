@@ -500,7 +500,7 @@ const isActive = (type, attrs = {}) => {
   border-radius: 6px;
   color: rgba(255, 255, 255, 0.6);
   font-family: "IBM Plex Mono", monospace;
-  font-size: 0.75rem;
+  font-size: var(--ui-size-12);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -520,7 +520,7 @@ const isActive = (type, attrs = {}) => {
 }
 
 .toolbar button .btn-label {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   font-weight: 600;
 }
 
@@ -553,7 +553,7 @@ const isActive = (type, attrs = {}) => {
 }
 
 .editor-content :deep(.ProseMirror h1) {
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 600;
   margin-bottom: 1rem;
   margin-top: 2rem;
@@ -571,7 +571,7 @@ const isActive = (type, attrs = {}) => {
 }
 
 .editor-content :deep(.ProseMirror h3) {
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 600;
   margin-bottom: 0.625rem;
   margin-top: 1.5rem;
@@ -612,7 +612,7 @@ const isActive = (type, attrs = {}) => {
   border-radius: 8px;
   overflow-x: auto;
   margin-bottom: 1rem;
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
 }
 
 .editor-content :deep(.ProseMirror pre code) {

@@ -99,7 +99,7 @@ defineEmits(["flip"]);
 .card-counter {
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -122,7 +122,7 @@ defineEmits(["flip"]);
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -144,7 +144,7 @@ defineEmits(["flip"]);
 
 .card-label {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   margin-bottom: 0.46875rem;
@@ -196,7 +196,7 @@ defineEmits(["flip"]);
   justify-content: center;
   gap: 0.234375rem;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   opacity: 0.55;

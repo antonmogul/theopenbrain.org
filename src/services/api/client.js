@@ -21,6 +21,13 @@ export function setSession(session) {
   currentSession = session;
 }
 
+/* Renews the session after a 401 (registered by useAuth, OPENBRAIN-77); kept
+   as an injected function so this module doesn't import the auth layer. */
+let sessionRefresher = null;
+export function setSessionRefresher(fn) {
+  sessionRefresher = typeof fn === "function" ? fn : null;
+}
+
 /**
  * Get the current session
  * @returns {Object|null} Current session
@@ -39,6 +46,7 @@ export async function apiRequest(endpoint, options = {}) {
   const {
     headers: optionHeaders,
     requireAuth = false,
+    _retried = false,
     ...restOptions
   } = options;
   const accessToken = currentSession?.access_token;
@@ -63,6 +71,15 @@ export async function apiRequest(endpoint, options = {}) {
       ...optionHeaders,
     },
   });
+
+  // An expired token: renew the session once and repeat the request.
+  if (response.status === 401 && accessToken && sessionRefresher && !_retried) {
+    const next = await sessionRefresher().catch(() => null);
+    if (next?.access_token && next.access_token !== accessToken) {
+      currentSession = next;
+      return apiRequest(endpoint, { ...options, _retried: true });
+    }
+  }
 
   if (!response.ok) {
     const errorText = await response.text();

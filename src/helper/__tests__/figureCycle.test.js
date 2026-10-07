@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  figureImages,
-  usesFigureShell,
-  stepIndex,
-  slideDurationMs,
-} from "../figureCycle";
+import { figureImages, usesFigureShell, stepIndex } from "../figureCycle";
 
 describe("figureImages", () => {
   it("normalises objects and bare strings, dropping entries without a src", () => {
@@ -53,24 +48,5 @@ describe("stepIndex", () => {
     expect(stepIndex(3, 4, 1)).toBe(0);
     expect(stepIndex(0, 4, -1)).toBe(3);
     expect(stepIndex(0, 0, 1)).toBe(0);
-  });
-});
-
-describe("slideDurationMs", () => {
-  it("scales with caption length, clamped to a 4–12 s window", () => {
-    // No caption → floor (4 s).
-    expect(slideDurationMs({ src: "/a.jpg" }, "")).toBe(4000);
-    // Short shared legend → still at the floor.
-    expect(slideDurationMs({ src: "/a.jpg", caption: "" }, "Short.")).toBe(
-      4000
-    );
-    // Long caption (500 chars ÷ 18 cps ≈ 27.8 s) → ceiling (12 s).
-    expect(
-      slideDurationMs({ src: "/a.jpg", caption: "x".repeat(500) }, "")
-    ).toBe(12000);
-    // Medium caption (180 chars ÷ 18 cps = 10 s) → 10 000 ms.
-    expect(
-      slideDurationMs({ src: "/a.jpg", caption: "x".repeat(180) }, "")
-    ).toBe(10000);
   });
 });

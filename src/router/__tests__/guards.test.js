@@ -102,7 +102,7 @@ describe("createAuthGuard: public routes and the root redirect", () => {
   it("tolerates a route with no meta at all", async () => {
     const { guard } = makeGuard({ getSession: vi.fn(() => null) });
     await expect(
-      guard({ path: "/styleguide", name: "styleguide" })
+      guard({ path: "/widgets", name: "widgets" })
     ).resolves.toBeUndefined();
   });
 

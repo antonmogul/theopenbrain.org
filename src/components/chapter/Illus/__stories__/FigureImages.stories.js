@@ -1,8 +1,8 @@
 /*
  * Chapter/Illustrations/FigureImages — the artwork inside the figure shell:
- * one image, or a set that cycles until the reader takes over (pauses on
- * hover/focus, stops once the arrows are used, never runs under
- * reduce-motion). Purely prop-driven.
+ * one image, or a set shown as a gallery grid whose thumbnails open a
+ * full-viewport viewer (arrows, Esc, filmstrip; OPENBRAIN-97). Purely
+ * prop-driven.
  */
 import FigureImages from "../FigureImages.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
@@ -25,28 +25,35 @@ export default {
     label: "FIG 06",
     title: "The medieval cell doctrine",
     large: false,
+    fit: true,
   },
   argTypes: {
     images: {
       control: "object",
       description:
-        "[{ src, caption?, alt? }] as normalised by figureImages(). One image renders without controls.",
+        "[{ src, caption?, alt? }] as normalised by figureImages(). One image renders on its own; several render as a gallery.",
     },
     caption: {
       description: "Figure-level caption, used when an image has none.",
     },
     large: { description: "Fullscreen overlay sizing." },
+    fit: {
+      description:
+        "The container has a fixed height (the pinned pane): size the grid to fit it. Off inline, where the grid flows.",
+    },
   },
   render: chapterFrame(FigureImages, {
     template: `<div style="height:720px;padding:20px;background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
   }),
 };
 
-/** A set where every plate has its own caption (History Figure 6). */
-export const CyclingSetWithCaptions = {};
+/** A gallery where every plate has its own (long) caption, shown in the
+ *  viewer only (History Figure 6). */
+export const GalleryWithCaptions = {};
 
-/** A set under one shared legend (History Figure 7). */
-export const CyclingSetSharedLegend = {
+/** A gallery under one shared legend (History Figure 7). Select a plate to
+ *  open the viewer. */
+export const GallerySharedLegend = {
   args: {
     images: FIG7_IMAGES,
     caption: FIG7_LEGEND,
@@ -56,7 +63,7 @@ export const CyclingSetSharedLegend = {
 };
 
 /** Animation frames: the same skull, a hand demonstrating each method in
- *  turn (History Figure 2). The legend shows on the first frame. */
+ *  turn (History Figure 2). Short captions sit under their thumbnails. */
 export const AnimationFrames = {
   args: {
     images: FIG2_IMAGES,
@@ -66,7 +73,22 @@ export const AnimationFrames = {
   },
 };
 
-/** A single image: no controls, no cycling. */
+/** Inline in the text column (below 1024px): the grid takes the height it
+ *  needs instead of fitting a fixed box. */
+export const GalleryInline = {
+  args: {
+    images: FIG7_IMAGES,
+    caption: FIG7_LEGEND,
+    label: "FIG 07",
+    title: "Vesalius, De humani corporis fabrica",
+    fit: false,
+  },
+  render: chapterFrame(FigureImages, {
+    template: `<div style="max-width:390px;padding:16px;background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
+  }),
+};
+
+/** A single image: no grid, no viewer. */
 export const SingleImage = {
   args: { images: FIG7_IMAGES.slice(0, 1), caption: FIG7_LEGEND },
 };

@@ -1,4 +1,8 @@
 <script setup>
+import { ref } from "vue";
+import ImageUpload from "@/components/chapterEditor/ImageUpload.vue";
+import LottieUpload from "@/components/chapterEditor/LottieUpload.vue";
+import { imageUrl } from "@/editor/media.mjs";
 // Creator-dashboard "Media" library section (#11 split). Presentational: the
 // parent owns the useDashboardMedia instance. The media *picker* modal stays in
 // the view (it bridges to the chapters section and is opened from
@@ -23,6 +27,8 @@ defineProps({
   filteredMedia: { type: Array, default: () => [] },
   mediaByType: { type: Object, default: () => ({}) },
   formatFileSize: { type: Function, required: true },
+  // { places: [{ chapter, where }], states, variants, inUse } | { error } | null
+  mediaUsage: { type: [Object, null], default: null },
 });
 
 const mediaSearch = defineModel("mediaSearch", { type: String, default: "" });
@@ -31,12 +37,68 @@ const selectedMedia = defineModel("selectedMedia", {
   default: null,
 });
 
-defineEmits(["fetch", "filter", "select", "delete"]);
+const emit = defineEmits(["fetch", "filter", "select", "delete", "uploaded"]);
+
+// Upload an image straight into the library (OPENBRAIN-63).
+const showUpload = ref(false);
+function onUploaded(e) {
+  showUpload.value = false;
+  emit("uploaded", e.media);
+}
+
+// Upload a Lottie animation (OPENBRAIN-70 B4).
+const showLottieUpload = ref(false);
+function onLottieUploaded(e) {
+  showLottieUpload.value = false;
+  emit("uploaded", e.media);
+}
 </script>
 
 <template>
   <section class="section">
-    <SectionHeader eyebrow="04 · Media" title="Images & assets" />
+    <SectionHeader eyebrow="04 · Media" title="Images & assets">
+      <template #actions>
+        <Button variant="outline" size="sm" @click="showLottieUpload = true"
+          >Upload animation</Button
+        >
+        <Button variant="solid" size="sm" @click="showUpload = true"
+          >Upload image</Button
+        >
+      </template>
+    </SectionHeader>
+
+    <BaseModal
+      :model-value="showUpload"
+      title="Upload an image"
+      size="md"
+      @update:model-value="(v) => (showUpload = v)"
+      @close="showUpload = false"
+    >
+      <ImageUpload
+        slug="library"
+        :with-caption="false"
+        action-label="Upload"
+        @uploaded="onUploaded"
+      />
+    </BaseModal>
+
+    <BaseModal
+      :model-value="showLottieUpload"
+      title="Upload a Lottie animation"
+      size="md"
+      @update:model-value="(v) => (showLottieUpload = v)"
+      @close="showLottieUpload = false"
+    >
+      <p class="upload-note">
+        A .json animation exported from After Effects (Bodymovin) or
+        LottieFiles. It plays on repeat when used as a figure.
+      </p>
+      <LottieUpload
+        slug="library"
+        action-label="Upload"
+        @uploaded="onLottieUploaded"
+      />
+    </BaseModal>
 
     <div class="filters-bar">
       <FilterChips
@@ -76,7 +138,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <svg
@@ -95,7 +161,7 @@ defineEmits(["fetch", "filter", "select", "delete"]);
                 item.title || item.animation_key
               }}</span>
               <span class="media-size">{{
-                formatFileSize(item.file_size_bytes)
+                item.file_size_bytes ? formatFileSize(item.file_size_bytes) : ""
               }}</span>
             </div>
           </BaseCard>
@@ -112,7 +178,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <svg
@@ -145,7 +215,7 @@ defineEmits(["fetch", "filter", "select", "delete"]);
                 item.title || item.animation_key
               }}</span>
               <span class="media-size">{{
-                formatFileSize(item.file_size_bytes)
+                item.file_size_bytes ? formatFileSize(item.file_size_bytes) : ""
               }}</span>
             </div>
           </BaseCard>
@@ -162,7 +232,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <img
@@ -189,7 +263,7 @@ defineEmits(["fetch", "filter", "select", "delete"]);
                 item.title || item.animation_key
               }}</span>
               <span class="media-size">{{
-                formatFileSize(item.file_size_bytes)
+                item.file_size_bytes ? formatFileSize(item.file_size_bytes) : ""
               }}</span>
             </div>
           </BaseCard>
@@ -208,7 +282,11 @@ defineEmits(["fetch", "filter", "select", "delete"]);
             interactive
             class="media-card"
             :class="{ selected: selectedMedia?.id === item.id }"
+            role="button"
+            tabindex="0"
             @click="$emit('select', item)"
+            @keydown.enter.prevent="$emit('select', item)"
+            @keydown.space.prevent="$emit('select', item)"
           >
             <div class="media-thumb">
               <svg
@@ -255,12 +333,13 @@ defineEmits(["fetch", "filter", "select", "delete"]);
           ></div>
           <img
             v-else-if="selectedMedia.media_type === 'image'"
-            :src="selectedMedia.lottie_file_url || selectedMedia.file_path"
+            :src="imageUrl(selectedMedia.image_file_url)"
+            :alt="selectedMedia.title || ''"
             class="media-modal-img"
           />
           <video
             v-else-if="selectedMedia.media_type === 'video'"
-            :src="selectedMedia.lottie_file_url || selectedMedia.file_path"
+            :src="selectedMedia.video_file_url"
             controls
             class="media-modal-video"
           ></video>
@@ -297,6 +376,41 @@ defineEmits(["fetch", "filter", "select", "delete"]);
               selectedMedia.scientific_domain || "-"
             }}</span>
           </div>
+          <div class="kv-row kv-full usage">
+            <span class="kv-key">Used in</span>
+            <p v-if="!mediaUsage" class="kv-val muted">Checking…</p>
+            <p v-else-if="mediaUsage.error" class="kv-val muted">
+              Couldn't check: {{ mediaUsage.error }}
+            </p>
+            <template v-else>
+              <ul v-if="mediaUsage.places.length" class="usage-list">
+                <li v-for="(p, i) in mediaUsage.places" :key="i">
+                  <strong>{{ p.chapter }}</strong> · {{ p.where }}
+                </li>
+              </ul>
+              <p v-else class="kv-val muted">
+                No paragraph or section shows it directly.
+                <template v-if="!mediaUsage.inUse">
+                  Figures can still load it by its key ({{
+                    selectedMedia.animation_key
+                  }}) from code, for example as a transition, so check before
+                  deleting.
+                </template>
+              </p>
+              <p
+                v-if="mediaUsage.states || mediaUsage.variants"
+                class="kv-val muted"
+              >
+                Carries {{ mediaUsage.states }} figure state{{
+                  mediaUsage.states === 1 ? "" : "s"
+                }}<template v-if="mediaUsage.variants">
+                  and {{ mediaUsage.variants }} variant{{
+                    mediaUsage.variants === 1 ? "" : "s"
+                  }}</template
+                >, which would be deleted with it.
+              </p>
+            </template>
+          </div>
           <div v-if="selectedMedia.description" class="kv-row kv-full">
             <span class="kv-key">Description</span>
             <p class="kv-val">{{ selectedMedia.description }}</p>
@@ -311,6 +425,12 @@ defineEmits(["fetch", "filter", "select", "delete"]);
           v-if="selectedMedia"
           variant="danger"
           size="sm"
+          :disabled="!mediaUsage || !!mediaUsage.error || mediaUsage.inUse"
+          :title="
+            mediaUsage?.inUse
+              ? 'In use: remove it from its figures first.'
+              : 'Delete this unused asset'
+          "
           @click="$emit('delete', selectedMedia.id)"
           >Delete asset</Button
         >
@@ -320,5 +440,29 @@ defineEmits(["fetch", "filter", "select", "delete"]);
 </template>
 
 <style scoped>
+/* Must stay the first rule: CSS drops an @import that follows any other
+   rule, which unstyled this section in production (OPENBRAIN-57). */
 @import "@/styles/dashboard-sections.css";
+
+.upload-note {
+  margin: 0 0 12px;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-14);
+  color: rgb(var(--color-mute));
+}
+
+.usage-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 2px;
+  font-size: var(--ui-size-13);
+}
+.usage .muted {
+  color: rgb(var(--color-mute));
+}
+.media-card:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
 </style>

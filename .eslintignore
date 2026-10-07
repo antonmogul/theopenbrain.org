@@ -20,3 +20,5 @@ supabase/.temp/
 # Storybook build output — 130MB of bundled JS. Git-ignores it already, but
 # eslint reads .eslintignore only, and linting it hangs the run for minutes.
 storybook-static/
+storybook-snapshots/
+scripts/tokens/figma-check.js

@@ -15,7 +15,19 @@ import Illustration from "@/components/chapter/Illus/IllustrationComp.vue";
 import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScroll.vue";
 import IllustrationTransition from "@/components/chapter/Illus/IllustrationTransition.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
+import IllustrationWidget from "./IllustrationWidget.vue";
 import { usesFigureShell } from "@/helper/figureCycle";
+import FigureWidget from "@/widgets/figures/FigureWidget.vue";
+import { useMediaQuery } from "@/composables/useMediaQuery";
+import { READER_WIDE_QUERY } from "@/helper/readerLayout";
+import { figureWidgetFor } from "@/widgets/figures/registry";
+
+// Panel figures rebuilt as figure widgets (full-screen ones render in the
+// text through FullScreenIllustration).
+const isPanelWidget = (a) => !a.fullscreen && !!figureWidgetFor(a.id);
+// The panel is hidden below xl but stays mounted; there the figure draws
+// inline in the text (IllustrationInline), so don't run it twice.
+const panelShows = useMediaQuery(READER_WIDE_QUERY);
 gsap.registerPlugin(ScrollTrigger);
 
 const activeAnimation = ref(null);
@@ -38,17 +50,19 @@ const animationList = computed(() => {
         clog("MOUNT", "renderer each figure will mount when active", {
           list: dbAnimations.value.map((a) => ({
             id: a.id,
-            renderer: usesFigureShell(a)
-              ? "Placeholder"
-              : a.fullscreen
-                ? "FullScreen"
-                : a.switch
-                  ? "Switch"
-                  : a.scroll
-                    ? "OnScroll"
-                    : a.isTransition
-                      ? "Transition"
-                      : "Inline",
+            renderer: isPanelWidget(a)
+              ? "FigureWidget"
+              : usesFigureShell(a)
+                ? "Placeholder"
+                : a.fullscreen
+                  ? "FullScreen"
+                  : a.switch
+                    ? "Switch"
+                    : a.scroll
+                      ? "OnScroll"
+                      : a.isTransition
+                        ? "Transition"
+                        : "Inline",
             states: a.states?.length || 0,
           })),
         });
@@ -72,17 +86,19 @@ watch(activeAnimation, (id) => {
     );
     return;
   }
-  const renderer = usesFigureShell(a)
-    ? "IllustrationPlaceholder"
-    : a.fullscreen
-      ? "FullScreenIllustration"
-      : a.switch
-        ? "IllustrationSwitch"
-        : a.scroll
-          ? "IllustrationOnScroll"
-          : a.isTransition
-            ? "IllustrationTransition"
-            : "Illustration (inline)";
+  const renderer = isPanelWidget(a)
+    ? "FigureWidget"
+    : usesFigureShell(a)
+      ? "IllustrationPlaceholder"
+      : a.fullscreen
+        ? "FullScreenIllustration"
+        : a.switch
+          ? "IllustrationSwitch"
+          : a.scroll
+            ? "IllustrationOnScroll"
+            : a.isTransition
+              ? "IllustrationTransition"
+              : "Illustration (inline)";
   clog("MOUNT", `mount → ${renderer}`, {
     figure: a.id,
     states: a.states?.length || 0,
@@ -183,19 +199,23 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  ScrollTrigger.getById("scrollTriggerAnimation")?.kill();
-  ScrollTrigger.getById("scrollTriggerFull")?.kill();
+  // One trigger per figure anchor shares each id, and getById only finds the
+  // first; kill them all so a remount (Change figure) doesn't leave
+  // triggers behind.
+  for (const t of ScrollTrigger.getAll())
+    if (["scrollTriggerAnimation", "scrollTriggerFull"].includes(t.vars.id))
+      t.kill();
 });
 </script>
 
 <template>
   <div
     v-if="!store.isScrolling"
-    class="hidden xl:block xl:fixed xl:left-0 xl:w-illus xl:z-30 pointer-events-none font-mono xl:top-[var(--reader-topbar-h)] xl:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
+    class="hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
   >
     <template v-for="animation in animationList" :key="animation.id">
       <!-- Figure shell: image artwork, or the typed placeholder until it lands -->
-      <template v-if="usesFigureShell(animation)">
+      <template v-if="!isPanelWidget(animation) && usesFigureShell(animation)">
         <transition name="fade" mode="out-in">
           <IllustrationPlaceholder
             v-if="activeAnimation === animation.id.toLowerCase()"
@@ -204,8 +224,36 @@ onBeforeUnmount(() => {
           />
         </transition>
       </template>
+      <!-- A figure rebuilt as a figure widget (OPENBRAIN-82) -->
+      <template v-if="isPanelWidget(animation)">
+        <transition name="fade" mode="out-in">
+          <div
+            v-if="panelShows && activeAnimation === animation.id.toLowerCase()"
+            class="w-full h-full pointer-events-auto"
+          >
+            <FigureWidget
+              :record="animation"
+              :progress="
+                figureWidgetFor(animation.id)?.schema.scrub ? progress : null
+              "
+            />
+          </div>
+        </transition>
+      </template>
+      <!-- An interactive widget as the figure (OPENBRAIN-70 B5) -->
+      <template v-if="animation.widgetId && !isPanelWidget(animation)">
+        <transition name="fade" mode="out-in">
+          <IllustrationWidget
+            v-if="activeAnimation === animation.id.toLowerCase()"
+            :animation="animation"
+            class="w-full h-full"
+          />
+        </transition>
+      </template>
       <template
         v-if="
+          !animation.widgetId &&
+          !isPanelWidget(animation) &&
           !usesFigureShell(animation) &&
           !animation.fullscreen &&
           !animation.scroll &&
@@ -223,7 +271,10 @@ onBeforeUnmount(() => {
       </template>
       <template
         v-if="
-          !animation.fullscreen && animation.scroll && !animation.isTransition
+          !animation.fullscreen &&
+          animation.scroll &&
+          !animation.isTransition &&
+          !isPanelWidget(animation)
         "
       >
         <transition name="fade" mode="out-in">
@@ -238,7 +289,10 @@ onBeforeUnmount(() => {
       </template>
       <template
         v-if="
-          !animation.fullscreen && !animation.scroll && animation.isTransition
+          !animation.fullscreen &&
+          !animation.scroll &&
+          animation.isTransition &&
+          !isPanelWidget(animation)
         "
       >
         <transition name="fade" mode="out-in">

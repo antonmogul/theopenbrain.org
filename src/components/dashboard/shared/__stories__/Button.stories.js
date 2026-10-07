@@ -1,7 +1,7 @@
 /*
  * Button — pilot story for the Storybook migration.
  *
- * Demonstrates the thing /styleguide cannot do: every prop is an interactive
+ * Demonstrates the thing the retired /styleguide could not do: every prop is an interactive
  * control, so a reviewer can dial through variant × size × state without
  * anyone hand-writing a specimen for each combination.
  */

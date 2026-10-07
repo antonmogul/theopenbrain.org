@@ -51,7 +51,7 @@ const options = [
   padding: 0;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 0.5rem;
+  border-radius: var(--radius-control);
   cursor: pointer;
   overflow: hidden;
   transition:
@@ -98,7 +98,7 @@ const options = [
   height: 0.375rem;
   width: 60%;
   background: rgb(var(--color-accent));
-  border-radius: 0.1875rem;
+  border-radius: var(--radius-control);
 }
 
 .preview-body {
@@ -114,7 +114,7 @@ const options = [
   width: 100%;
   background: currentColor;
   opacity: 0.4;
-  border-radius: 0.125rem;
+  border-radius: var(--radius-control);
 }
 
 .preview-line.short {
@@ -132,13 +132,13 @@ const options = [
 }
 
 .label {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 
 .hint {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   margin-top: 0.125rem;
 }

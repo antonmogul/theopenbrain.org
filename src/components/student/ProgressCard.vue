@@ -8,9 +8,11 @@ const props = defineProps({
   },
 });
 
-const hasContent = computed(() => {
-  return props.continueReading?.module;
-});
+// A card needs somewhere to go: a module without a slug has no reader route,
+// and a router-link to null breaks the whole dashboard.
+const hasContent = computed(
+  () => !!props.continueReading?.module && !!continueRoute.value
+);
 
 const module = computed(() => props.continueReading?.module || {});
 const course = computed(() => props.continueReading?.course || {});
@@ -132,7 +134,7 @@ function formatRelativeTime(date) {
 <style scoped>
 .progress-card {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   padding: 0.9375rem;
   display: flex;
   align-items: center;
@@ -156,7 +158,7 @@ function formatRelativeTime(date) {
 
 .progress-card.empty {
   background: white;
-  border: 2px dashed #e5e7eb;
+  border: 2px dashed rgb(var(--color-line));
   cursor: default;
   justify-content: center;
   min-height: 180px;
@@ -194,7 +196,7 @@ function formatRelativeTime(date) {
 
 .module-title {
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   font-weight: 600;
   color: white;
   margin: 0 0 0.15625rem 0;
@@ -217,14 +219,14 @@ function formatRelativeTime(date) {
   flex: 1;
   height: 6px;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: white;
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   transition: width 0.3s ease;
 }
 
@@ -254,19 +256,19 @@ function formatRelativeTime(date) {
 
 .empty-content {
   text-align: center;
-  color: #9ca3af;
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .empty-content svg {
   margin-bottom: 0.625rem;
-  color: #d1d5db;
+  color: rgb(var(--color-ink) / 0.18);
 }
 
 .empty-content h3 {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--type-body-sm-size);
   font-weight: 600;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   margin: 0 0 0.3125rem 0;
 }
 

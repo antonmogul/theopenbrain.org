@@ -101,7 +101,10 @@ export function useChapter() {
 
       // Step 2: Get sections for this module (include animation fields for Chapter 1)
       const sectionsData = await supabaseRest(
-        `sections?module_id=eq.${moduleData.id}&select=id,title,slug,order_index,module_id,animation_id,animation_config&order=order_index.asc`
+        // select=* so box placement (parent_section_id, anchor_paragraph_id;
+        // OPENBRAIN-70) arrives once its migration is applied, without
+        // breaking the query before it is.
+        `sections?module_id=eq.${moduleData.id}&select=*&order=order_index.asc`
       );
 
       if (generation !== fetchGeneration) {

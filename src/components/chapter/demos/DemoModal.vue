@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
 
 .demo-panel {
   background: rgb(var(--color-paper));
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   width: 100%;
   max-width: 1200px;
   margin: auto;
@@ -143,7 +143,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 .demo-header {
@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-mute));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   transition: all 0.15s;
 }
 
@@ -191,7 +191,7 @@ onBeforeUnmount(() => {
   flex: 1;
   overflow-y: auto;
   padding: 32px;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 /* Wide: let the slot content own the width; widget views carry their own

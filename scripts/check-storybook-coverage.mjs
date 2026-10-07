@@ -13,6 +13,14 @@ const exclusions = new Map([
     "src/components/UI/Switch.vue",
     "Re-export-only compatibility shim; the canonical dashboard/shared/Switch.vue implementation is directly covered.",
   ],
+  [
+    "src/components/chapterEditor/nodes/InlineChip.vue",
+    "TipTap node view (citation / figure chip); it only renders inside a live editor, which the ParagraphEditor stories mount.",
+  ],
+  [
+    "src/components/chapterEditor/nodes/BlockCard.vue",
+    "TipTap node view (image / widget / block card); it only renders inside a live editor, which the ParagraphEditor stories mount.",
+  ],
 ]);
 
 async function walk(directory) {

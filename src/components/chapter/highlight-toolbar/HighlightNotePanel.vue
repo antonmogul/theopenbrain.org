@@ -18,6 +18,9 @@ onMounted(() => {
 
 <template>
   <div class="hl-panel">
+    <p class="hl-panel-hint">
+      A note is your own words about this passage. Find them in the Notebook.
+    </p>
     <textarea
       ref="noteTextarea"
       v-model="note"
@@ -41,11 +44,19 @@ onMounted(() => {
 <style scoped>
 .hl-panel {
   background: rgb(var(--color-paper));
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 10px 12px;
   box-shadow:
     0 4px 16px rgb(var(--color-ink) / 0.16),
     0 0 0 1px rgb(var(--color-line));
+}
+
+.hl-panel-hint {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-12);
+  line-height: 1.4;
+  color: rgb(var(--color-mute));
 }
 
 .hl-textarea {
@@ -54,10 +65,10 @@ onMounted(() => {
   padding: 8px 10px;
   background: rgb(var(--color-bg));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: rgb(var(--color-ink));
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   resize: none;
   transition: border-color 0.15s;
 }
@@ -83,9 +94,9 @@ onMounted(() => {
   background: rgb(var(--color-accent));
   color: rgb(var(--color-paper));
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   font-weight: 500;
   cursor: pointer;
   transition: background 0.12s;

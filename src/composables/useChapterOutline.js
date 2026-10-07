@@ -65,7 +65,15 @@ export function sectionLabelMap(sections) {
   const labels = {};
   let number = 0;
   let box = 0;
-  for (const section of sections || []) {
+  // Letters follow the authored order, not where a box is placed
+  // (OPENBRAIN-70): figure captions say "Figure A" for box A.
+  const ordered = (sections || [])
+    .map((s, i) => ({ s, i }))
+    .sort(
+      (a, b) => (a.s?.orderIndex ?? a.i) - (b.s?.orderIndex ?? b.i) || a.i - b.i
+    )
+    .map((x) => x.s);
+  for (const section of ordered) {
     if (!section) continue;
     const key = section.id || section.title;
     labels[key] =
@@ -100,16 +108,31 @@ export function buildOutline(text) {
     });
   }
   const labels = sectionLabelMap(text?.sections);
+  const byId = new Map();
   for (const s of text?.sections || []) {
     if (!s) continue;
-    out.push({
+    // A box placed under a section is a row under it, as in the Figma
+    // contents (OPENBRAIN-70 A3).
+    const parent = s.kind === "box" && s.parentId && byId.get(s.parentId);
+    if (parent) {
+      parent.subsections.push({
+        id: s.id,
+        kind: "box",
+        title: s.title,
+        anchor: `#${s.id}`,
+      });
+      continue;
+    }
+    const entry = {
       id: s.id,
       kind: s.kind === "box" ? "box" : "section",
       label: labels[s.id || s.title],
       title: s.title,
       anchor: `#${s.id}`,
       subsections: collectSubsections(s.paragraphs),
-    });
+    };
+    byId.set(s.id, entry);
+    out.push(entry);
   }
   return out;
 }

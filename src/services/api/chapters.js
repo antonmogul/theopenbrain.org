@@ -105,6 +105,9 @@ export async function createChapter(data) {
   const [created] = await post("modules", {
     title: data.title,
     slug: data.slug,
+    // The wizard collected both but they were dropped here (OPENBRAIN-54).
+    description: data.description || null,
+    ramp: data.ramp || null,
     order_index: data.order_index || 0,
     status: data.status || "draft",
     content_version_id: data.content_version_id,

@@ -226,7 +226,7 @@ onMounted(() => {
       </p>
       <button
         @click="router.push('/dashboard')"
-        class="uppercase bg-violet text-white font-mono px-8 py-3 rounded-full hover:bg-white hover:text-black transition-colors"
+        class="uppercase bg-violet text-white font-mono px-8 py-3 hover:bg-white hover:text-black transition-colors"
       >
         Go to Dashboard
       </button>
@@ -241,7 +241,7 @@ onMounted(() => {
         </div>
         <button
           @click="router.push('/dashboard')"
-          class="uppercase bg-transparent border border-light text-light font-mono px-6 py-2 rounded-full hover:bg-white hover:text-black hover:border-white transition-colors"
+          class="uppercase bg-transparent border border-light text-light font-mono px-6 py-2 hover:bg-white hover:text-black hover:border-white transition-colors"
         >
           Back to Dashboard
         </button>
@@ -262,7 +262,7 @@ onMounted(() => {
                 v-for="paragraph in paragraphs"
                 :key="paragraph.id"
                 @click="selectParagraph(paragraph)"
-                class="w-full text-left p-3 rounded-lg transition-all"
+                class="w-full text-left p-3 transition-all"
                 :class="
                   selectedParagraph?.id === paragraph.id
                     ? 'bg-violet/20 border border-violet'
@@ -309,7 +309,7 @@ onMounted(() => {
                 <button
                   @click="saveParagraph"
                   :disabled="saving"
-                  class="uppercase bg-violet text-white font-mono px-6 py-2 rounded-full hover:bg-white hover:text-black transition-colors disabled:opacity-50"
+                  class="uppercase bg-violet text-white font-mono px-6 py-2 hover:bg-white hover:text-black transition-colors disabled:opacity-50"
                 >
                   {{ saving ? "Saving..." : "Save Changes" }}
                 </button>
@@ -323,7 +323,7 @@ onMounted(() => {
             />
 
             <!-- Preview Info -->
-            <div class="mt-6 p-4 bg-white/5 rounded-lg">
+            <div class="mt-6 p-4 bg-white/5">
               <h4 class="font-semibold mb-2">Content Info</h4>
               <div class="grid grid-cols-2 gap-4 text-sm text-light">
                 <div>
@@ -359,12 +359,12 @@ aside ::-webkit-scrollbar {
 
 aside ::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
+  border-radius: var(--radius-control);
 }
 
 aside ::-webkit-scrollbar-thumb {
   background: rgba(151, 71, 255, 0.5);
-  border-radius: 2px;
+  border-radius: var(--radius-control);
 }
 
 aside ::-webkit-scrollbar-thumb:hover {

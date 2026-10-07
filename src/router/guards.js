@@ -84,13 +84,13 @@ export function createAuthGuard({
 
     // Default-route redirect: signed-in users land on the chapter library, not
     // the anonymous marketing home. Anonymous users keep HomeView at /.
-    if (to.path === "/" && getSession()) {
+    if (to.path === "/" && (await getSession())) {
       return { path: "/chapters" };
     }
 
     if (!meta.requiresAuth) return undefined;
 
-    const session = getSession();
+    const session = await getSession();
     if (!session) {
       return { path: "/" };
     }

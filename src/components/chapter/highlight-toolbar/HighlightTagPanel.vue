@@ -15,6 +15,10 @@ defineEmits(["remove", "keydown"]);
 
 <template>
   <div class="hl-panel">
+    <p class="hl-panel-hint">
+      Tags are short labels, like <em>exam</em> or <em>confusing</em>, to group
+      highlights. Filter by them in the Notebook.
+    </p>
     <div class="hl-tags-list">
       <span v-for="(tag, i) in tags" :key="tag" class="hl-tag-chip">
         {{ tag }}
@@ -40,7 +44,7 @@ defineEmits(["remove", "keydown"]);
 <style scoped>
 .hl-panel {
   background: rgb(var(--color-paper));
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 10px 12px;
   box-shadow:
     0 4px 16px rgb(var(--color-ink) / 0.16),
@@ -63,8 +67,8 @@ defineEmits(["remove", "keydown"]);
   padding: 3px 8px;
   background: rgb(var(--color-ink) / 0.06);
   color: rgb(var(--color-ink));
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: var(--radius-control);
+  font-size: var(--ui-size-12);
   font-family: "IBM Plex Sans", sans-serif;
 }
 
@@ -75,7 +79,7 @@ defineEmits(["remove", "keydown"]);
   background: transparent;
   color: rgb(var(--color-mute));
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--ui-size-14);
   line-height: 1;
   display: flex;
   align-items: center;
@@ -89,16 +93,24 @@ defineEmits(["remove", "keydown"]);
   color: rgb(var(--color-warn));
 }
 
+.hl-panel-hint {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-12);
+  line-height: 1.4;
+  color: rgb(var(--color-mute));
+}
+
 .hl-tag-input {
   flex: 1;
   min-width: 80px;
   padding: 4px 8px;
   background: rgb(var(--color-bg));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: rgb(var(--color-ink));
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
 }
 
 .hl-tag-input:focus {

@@ -7,6 +7,7 @@ import { useAuth } from "@/composables/useAuth";
 import FlashcardCard from "@/components/flashcard/FlashcardCard.vue";
 import FlashcardRating from "@/components/flashcard/FlashcardRating.vue";
 import FlashcardStats from "@/components/flashcard/FlashcardStats.vue";
+import FlashcardGuide from "@/components/flashcard/FlashcardGuide.vue";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const route = useRoute();
@@ -224,8 +225,8 @@ const formattedDuration = computed(() => {
         <path d="M7 8h10"></path>
         <path d="M7 12h4"></path>
       </svg>
-      <h2>No Flashcards Available</h2>
-      <p>There are no flashcards for this module yet.</p>
+      <h2>No flashcards yet</h2>
+      <p>This chapter doesn't have a flashcard deck yet.</p>
       <button @click="handleExit" class="btn-primary">Go Back</button>
     </div>
 
@@ -259,6 +260,12 @@ const formattedDuration = computed(() => {
           ></div>
         </div>
       </div>
+
+      <!-- How flashcards work, and a draft deck's notice (OPENBRAIN-102) -->
+      <FlashcardGuide
+        class="guide"
+        :draft="!!currentCard?.tags?.includes('draft')"
+      />
 
       <!-- Card -->
       <div class="card-area">
@@ -386,7 +393,7 @@ const formattedDuration = computed(() => {
   height: 40px;
   border: 1px solid rgb(var(--color-line));
   background: transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -451,6 +458,10 @@ const formattedDuration = computed(() => {
   transition: width 0.3s ease;
 }
 
+.guide {
+  margin-bottom: 1.25rem;
+}
+
 .card-area {
   margin-bottom: 1.25rem;
 }
@@ -470,7 +481,7 @@ const formattedDuration = computed(() => {
   padding: 0.078125rem 0.234375rem;
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.625rem;
   color: rgb(var(--color-ink));
@@ -500,7 +511,7 @@ const formattedDuration = computed(() => {
 .confirm-modal {
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 0.9375rem;
   max-width: 400px;
   width: 100%;
@@ -533,7 +544,7 @@ const formattedDuration = computed(() => {
   justify-content: center;
   gap: 0.3125rem;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;

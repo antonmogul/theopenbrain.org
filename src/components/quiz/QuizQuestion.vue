@@ -64,7 +64,7 @@ const isAnswerCorrect = computed(() => {
 
 // Get option styling based on state
 function getOptionClass(option) {
-  const classes = ["w-full text-left p-4 rounded-lg border-2 transition-all"];
+  const classes = ["w-full text-left p-4 border-2 transition-all"];
 
   if (props.showResult) {
     // Show correct answer
@@ -235,7 +235,7 @@ function getOptionClass(option) {
 .question-type,
 .question-number {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -258,7 +258,7 @@ function getOptionClass(option) {
 
 .options-list button {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   cursor: pointer;
 }
 
@@ -281,7 +281,7 @@ function getOptionClass(option) {
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   flex-shrink: 0;
 }
@@ -317,9 +317,9 @@ function getOptionClass(option) {
   width: 100%;
   padding: 0.546875rem 0.625rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   transition: border-color 0.12s ease;
@@ -347,7 +347,7 @@ function getOptionClass(option) {
 .correct-answer-hint {
   margin: 0.46875rem 0 0 0;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-complete));
 }
 
@@ -355,7 +355,7 @@ function getOptionClass(option) {
   margin-top: 0.9375rem;
   padding: 0.625rem 0.75rem;
   background: rgb(var(--color-ink) / 0.03);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   border-left: 3px solid rgb(var(--color-complete));
 }
 
@@ -364,7 +364,7 @@ function getOptionClass(option) {
   align-items: center;
   gap: 0.3125rem;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-ink));
@@ -372,7 +372,7 @@ function getOptionClass(option) {
 }
 
 .explanation-text {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink) / 0.8);
   line-height: 1.55;
   margin: 0;
@@ -382,7 +382,7 @@ function getOptionClass(option) {
    teal = correct, magenta = wrong/selected. */
 .options-list button {
   padding: 0.625rem 0.75rem !important;
-  border-radius: 4px !important;
+  border-radius: var(--radius-control) !important;
   border-width: 1px !important;
   transition:
     border-color 0.12s ease,

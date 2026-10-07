@@ -1,15 +1,22 @@
 <script setup>
-import { onMounted, watch, computed, ref, nextTick, provide } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  computed,
+  ref,
+  nextTick,
+  provide,
+} from "vue";
+import { useFeedback } from "@/composables/useFeedback";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
 import ChapterOpener from "@/components/chapter/opener/ChapterOpener.vue";
-import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 import { useGeneral, useText, useCom } from "@/stores";
 import Comment from "../components/chapter/text/CommentComp.vue";
 import FootNotesWindow from "../components/chapter/text/FootNotesWindow.vue";
-import MenuTutorial from "../components/Navigation/MenuTutorial.vue";
 import { useChapter } from "@/composables/useChapter";
 import { useReferences } from "@/composables/useReferences";
 
@@ -24,12 +31,13 @@ import EndOfChapterCallout from "@/components/chapter/EndOfChapterCallout.vue";
 
 // Phase 3A: Composables for highlighting
 import { useTextSelection } from "@/composables/useTextSelection";
+import { referenceFromChapter } from "@/helper/chapterReferences";
+import { useFigureLinks } from "@/composables/useFigureLinks";
 import { useHighlights } from "@/composables/useHighlights";
 import { useHighlightRenderer } from "@/composables/useHighlightRenderer";
 import { useNotes } from "@/composables/useNotes";
 import { useReadingProgress } from "@/composables/useReadingProgress";
 import { useAuth } from "@/composables/useAuth";
-import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
 import { applyChapterRamp } from "@/helper/chapterTheme";
@@ -46,8 +54,9 @@ const commentStore = useCom();
 
 // Phase 3A: Authentication and highlighting composables
 const { isAuthenticated } = useAuth();
-const { toggle: toggleStudentTools, isOpen: studentToolsOpen } =
-  useReaderSidebar();
+
+// "(Figure N)" in the text scrolls to that figure (OPENBRAIN-91).
+useFigureLinks();
 
 // Text selection for highlighting
 const {
@@ -107,9 +116,13 @@ provide("notes", {
   updateNote,
   deleteNote,
 });
+// A structured reference row when there is one, else the chapter's own
+// reference list (its Footnotes or References section), so a click on a
+// superscript always shows the reference (OPENBRAIN-90).
 provide("references", {
   references,
-  getReference,
+  getReference: (n) =>
+    getReference(n) || referenceFromChapter(storeText.text, n),
 });
 provide("readingProgress", {
   progress: readingScrollPercent,
@@ -197,6 +210,23 @@ const { fetchChapter, chapterData, transformedData, loading, error } =
 watch(chapterData, (module) => {
   if (module && module.slug === route.params.slug) applyChapterRamp(module);
 });
+
+// Feedback sent from anywhere on this page is about this chapter.
+const { setFeedbackContext } = useFeedback();
+watch(
+  chapterData,
+  (module) =>
+    setFeedbackContext(
+      module
+        ? {
+            moduleId: module.id,
+            label: `Chapter ${module.order_index} · ${module.title}`,
+          }
+        : null
+    ),
+  { immediate: true }
+);
+onBeforeUnmount(() => setFeedbackContext(null));
 
 function nextAnimationFrame() {
   return new Promise((resolve) => requestAnimationFrame(resolve));
@@ -342,6 +372,8 @@ watch(
   }
 );
 
+const figureVersion = ref(0);
+
 // Load chapter data from Supabase by slug
 async function loadChapter() {
   const currentNumber = route.params.number;
@@ -379,7 +411,7 @@ async function loadChapter() {
   if (data) {
     storeText.updateText("*", data);
     if (typeof document !== "undefined" && data.title) {
-      document.title = `The Open Brain – ${data.title}`;
+      document.title = `${data.title} · The Open Brain`;
     }
     await nextTick();
     chapterDataLoaded.value = true;
@@ -459,14 +491,26 @@ onBeforeRouteLeave(async () => {
 // === Phase 3A: Highlighting System Handlers ===
 
 // Handle creating a highlight from the toolbar
-async function handleCreateHighlight({ color, isPublic }) {
+// The note of the highlight the toolbar is on (notes are their own rows).
+const activeNote = computed(() => {
+  const id = activeHighlight.value?.id;
+  return id ? notes.value?.find((n) => n.highlight_id === id) || null : null;
+});
+// Set by the selection's "Note": the toolbar reopens on the new highlight
+// with the note open (OPENBRAIN-103).
+const noteOnOpen = ref(false);
+watch(showToolbar, (open) => {
+  if (!open) noteOnOpen.value = false;
+});
+
+async function handleCreateHighlight({ color, isPublic, withNote }) {
   if (!selection.value || !isAuthenticated.value) {
     clearSelection();
     return;
   }
 
   try {
-    await createHighlight({
+    const created = await createHighlight({
       paragraphId: selection.value.paragraphId,
       startOffset: selection.value.startOffset,
       endOffset: selection.value.endOffset,
@@ -475,6 +519,7 @@ async function handleCreateHighlight({ color, isPublic }) {
       isPublic: isPublic,
     });
 
+    const position = { ...toolbarPosition.value };
     clearSelection();
 
     // Refresh highlights and re-render visual marks
@@ -482,6 +527,22 @@ async function handleCreateHighlight({ color, isPublic }) {
       await fetchHighlights();
       await nextTick();
       renderAllHighlights();
+    }
+
+    // "Note": straight into the new highlight's note.
+    if (withNote && created?.id) {
+      activeHighlight.value = {
+        id: created.id,
+        color: created.color,
+        note: null,
+        tags: created.tags || [],
+        selected_text: created.selected_text,
+        paragraph_id: created.paragraph_id,
+        is_public: created.is_public,
+      };
+      toolbarPosition.value = position;
+      noteOnOpen.value = true;
+      showToolbar.value = true;
     }
   } catch (err) {
     console.error("ChapterView: Error creating highlight:", err);
@@ -506,11 +567,16 @@ async function handleUpdateHighlight({ id, updates }) {
 }
 
 // Handle saving a note inline from the toolbar
-async function handleSaveNote({ highlightId, paragraphId, content }) {
+async function handleSaveNote({ highlightId, paragraphId, noteId, content }) {
   if (!isAuthenticated.value) return;
 
   try {
-    if (content) {
+    // One note per highlight: edit it (or remove it when emptied). Saving
+    // used to add another row every time.
+    if (noteId) {
+      if (content) await updateNote(noteId, content);
+      else await deleteNote(noteId);
+    } else if (content) {
       await createNote({
         content,
         highlightId,
@@ -596,6 +662,16 @@ async function handleDeleteHighlight(highlightId) {
         :is-authenticated="isAuthenticated"
       />
 
+      <!-- Only creators can open a draft (useChapter gate + RLS), so this
+           reminds them readers can't see it yet (OPENBRAIN-51). -->
+      <p
+        v-if="chapterData && chapterData.status !== 'published'"
+        class="draft-ribbon"
+        role="status"
+      >
+        <strong>Draft</strong> · only creators can see this chapter
+      </p>
+
       <div v-if="readingSaveError" class="save-error" role="alert">
         <span>{{ readingSaveError }}</span>
         <button type="button" @click="retryReadingProgressSave">Retry</button>
@@ -610,13 +686,16 @@ async function handleDeleteHighlight(highlightId) {
         class="pointer-events-none bg-gray-900/20 fixed inset-0 z-[50] duration-Fix"
       ></div>
       <!-- text -->
-      <Illustration />
+      <!-- Re-keyed when Edit mode changes a paragraph's figure, so the pane
+           re-wires its scroll triggers (OPENBRAIN-65). -->
+      <Illustration :key="figureVersion" />
       <!-- Dark opener: cover, title, numbered TOC (OPENBRAIN-32). Publishes
            its height as --opener-h so the text column starts below it. -->
       <ChapterOpener :module="chapterData" :text="storeText.text" />
       <Text
         :key="`chapter-${chapterNumber}-${chapterSlug || 'default'}`"
         :module="chapterData"
+        @figure-changed="figureVersion++"
       >
         <!-- End-of-chapter callout slot (Track 3) — rendered inside
                      TextComp so absolute positioning doesn't pull it to the
@@ -640,10 +719,8 @@ async function handleDeleteHighlight(highlightId) {
       <FootNotesWindow />
       <Comment v-if="commentStore.activeCom" />
 
-      <MenuTutorial
-        class="fixed z-40 bottom-2 right-2 xl:bottom-4 xl:right-6"
-        :class="store.imgActive ? 'opacity-0' : ''"
-      />
+      <!-- The 2023 "prototype" help button that sat bottom-right is gone:
+           its copy was out of date and it opened nothing (OPENBRAIN-101). -->
 
       <!-- Phase 3A: Highlight Toolbar (appears on text selection or highlight click) -->
       <HighlightToolbar
@@ -653,6 +730,8 @@ async function handleDeleteHighlight(highlightId) {
         :selection="selection"
         :mode="toolbarMode"
         :active-highlight="activeHighlight"
+        :note="activeNote"
+        :open-note="noteOnOpen"
         @highlight="handleCreateHighlight"
         @cancel="clearSelection"
         @update-highlight="handleUpdateHighlight"
@@ -663,32 +742,9 @@ async function handleDeleteHighlight(highlightId) {
       <!-- Citation tooltip for Supabase chapters -->
       <CitationTooltip v-if="isSupabaseChapter" />
 
-      <!-- Student Tools toggle button -->
-      <button
-        v-if="isAuthenticated && isSupabaseChapter"
-        class="student-tools-toggle"
-        :class="{ open: studentToolsOpen }"
-        @click="toggleStudentTools()"
-      >
-        <svg
-          v-if="!studentToolsOpen"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect x="2" y="4" width="20" height="16" rx="2" />
-          <path d="M7 8h10" />
-          <path d="M7 12h4" />
-        </svg>
-        <CloseIcon v-else :width="16" :height="16" />
-        <span>Student Tools</span>
-      </button>
-
+      <!-- The reader's tools (Info / Notebook / Chat) open from the top bar;
+           the second "Student Tools" button here duplicated them (Stuart,
+           24 Sep, OPENBRAIN-90). -->
       <!-- Unified Reader Sidebar (Supabase chapters only) -->
       <ReaderSidebar
         v-if="isAuthenticated && isSupabaseChapter"
@@ -701,7 +757,7 @@ async function handleDeleteHighlight(highlightId) {
 
 <script>
 export default {
-  components: { Comment, FootNotesWindow, MenuTutorial, CitationTooltip },
+  components: { Comment, FootNotesWindow, CitationTooltip },
 };
 </script>
 
@@ -711,28 +767,22 @@ export default {
   transition-delay: 0;
 }
 
-.student-tools-toggle {
+.draft-ribbon {
   position: fixed;
-  bottom: 1.25rem;
-  right: 1.25rem;
   z-index: 180;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.125rem;
-  border-radius: 12px;
-  border: 1.5px solid rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  color: #343434;
-  font-family: "IBM Plex Mono", monospace;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-warn));
+  color: rgb(10 10 10);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  pointer-events: none;
 }
 
 .save-error {
@@ -746,7 +796,7 @@ export default {
   gap: 0.75rem;
   padding: 0.75rem 0.875rem;
   border: 1px solid rgb(var(--color-warn));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   box-shadow: 0 8px 24px rgb(var(--color-ink) / 0.14);
@@ -759,7 +809,7 @@ export default {
   min-height: 44px;
   padding: 0 0.875rem;
   border: 1px solid rgb(var(--color-ink));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
   font: inherit;
@@ -768,26 +818,9 @@ export default {
 }
 
 @media (max-width: 767px) {
-  .student-tools-toggle {
-    min-height: 44px;
-    right: 0.75rem;
-    bottom: 0.75rem;
-  }
-
   .save-error {
     left: 0.75rem;
     right: 0.75rem;
   }
-}
-
-.student-tools-toggle:hover {
-  border-color: rgba(0, 0, 0, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.student-tools-toggle.open {
-  background: rgb(var(--color-paper));
-  border-color: rgb(var(--color-accent));
-  color: rgb(var(--color-accent));
 }
 </style>

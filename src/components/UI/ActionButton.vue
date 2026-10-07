@@ -7,7 +7,7 @@
       <span v-html="help" />
     </div>
     <button
-      class="uppercase text-medium bg-white text-black border border-black font-mono z-50 px-3 rounded-full hover:bg-violet hover:text-white hover:border-violet"
+      class="uppercase text-medium bg-white text-black border border-black font-mono z-50 px-3 hover:bg-violet hover:text-white hover:border-violet"
       @click="$emit('action')"
       @mouseenter="helpIsActive = true"
       @mouseleave="helpIsActive = false"

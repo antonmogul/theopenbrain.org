@@ -271,13 +271,13 @@ const performanceMessage = computed(() => {
 
 .score-number {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
 
 .score-percent {
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   font-weight: 500;
   color: rgb(var(--color-mute));
   margin-left: 2px;
@@ -289,7 +289,7 @@ const performanceMessage = computed(() => {
 
 .result-title {
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   margin: 0 0 0.15625rem 0;
 }
@@ -304,7 +304,7 @@ const performanceMessage = computed(() => {
 
 .performance-message {
   font-style: italic;
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: rgb(var(--color-ink) / 0.7);
   margin: 0;
 }
@@ -322,7 +322,7 @@ const performanceMessage = computed(() => {
   gap: 0.3125rem;
   padding: 0.46875rem 0.625rem;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 
 .stat-icon {
@@ -357,7 +357,7 @@ const performanceMessage = computed(() => {
 
 .stat-value {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   font-weight: 500;
   color: rgb(var(--color-ink));
 }
@@ -372,7 +372,7 @@ const performanceMessage = computed(() => {
 
 .passing-info {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   color: rgb(var(--color-mute));
   margin: 0 0 0.9375rem 0;
 }
@@ -395,9 +395,9 @@ const performanceMessage = computed(() => {
   justify-content: center;
   gap: 0.3125rem;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;

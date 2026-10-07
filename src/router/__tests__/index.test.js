@@ -16,6 +16,7 @@ const { stubView } = vi.hoisted(() => ({
 vi.mock("@/views/HomeView.vue", () => ({ default: stubView }));
 vi.mock("@/views/ChaptersView.vue", () => ({ default: stubView }));
 vi.mock("@/views/EditorView.vue", () => ({ default: stubView }));
+vi.mock("@/views/DashboardView.vue", () => ({ default: stubView }));
 
 vi.mock("@/stores", async () => {
   const { reactive } = await vi.importActual("vue");
@@ -23,9 +24,15 @@ vi.mock("@/stores", async () => {
   return { useGeneral: () => general };
 });
 
-vi.mock("@/utils/authHelpers", () => ({
-  getSessionFromStorage: vi.fn(() => null),
-}));
+vi.mock("@/utils/authHelpers", () => {
+  const getSessionFromStorage = vi.fn(() => null);
+  // The guard awaits a fresh session (OPENBRAIN-77); in these tests it is
+  // whatever the stored-session mock returns.
+  return {
+    getSessionFromStorage,
+    ensureFreshSession: vi.fn(async () => getSessionFromStorage()),
+  };
+});
 
 vi.mock("@/services/api/client", () => ({
   apiRequest: vi.fn(),
@@ -114,13 +121,24 @@ describe("router wiring", () => {
     warn.mockRestore();
   });
 
-  it("lets a creator onto /editor", async () => {
+  it("passes a creator through /editor to Dashboard → Chapters", async () => {
     getSessionFromStorage.mockReturnValue(SESSION);
     apiRequest.mockResolvedValue([{ role: "creator" }]);
 
     const router = makeRouter();
     await router.push("/editor");
 
-    expect(router.currentRoute.value.path).toBe("/editor");
+    expect(router.currentRoute.value.fullPath).toBe(
+      "/dashboard?section=chapters"
+    );
+  });
+});
+
+describe("tab titles (OPENBRAIN-56)", () => {
+  it("names non-reader routes and resets the chapter title", async () => {
+    const router = makeRouter();
+    document.title = "The Open Brain – The Retina";
+    await router.push("/chapters");
+    expect(document.title).toBe("Chapters · The Open Brain");
   });
 });

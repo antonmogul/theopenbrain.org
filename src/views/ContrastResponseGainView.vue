@@ -195,10 +195,10 @@ function onSlider(e) {
 </script>
 
 <template>
-  <div class="crg-wrap">
+  <div class="widget-root crg-wrap">
     <div class="crg-head">
-      <h1 class="t-label">Contrast Gain vs. Response Gain</h1>
-      <span class="crg-sub t-caption">
+      <h1 class="t-widget-title">Contrast Gain vs. Response Gain</h1>
+      <span class="crg-sub t-widget-sub">
         Reynolds, Pasternak &amp; Desimone (2000), Fig.&nbsp;1 — two models of
         how attention modulates the contrast&ndash;response function
       </span>
@@ -372,7 +372,7 @@ function onSlider(e) {
         </div>
 
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <p class="crg-note t-caption" v-html="noteHtml" />
+        <p class="crg-note t-widget-sub" v-html="noteHtml" />
       </div>
     </div>
 

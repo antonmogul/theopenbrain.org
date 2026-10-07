@@ -61,9 +61,16 @@ npm run storybook:coverage:student-views  # Same, scoped to student components +
 npm run storybook:smoke:all        # Mount every story in Chromium; fail on console errors / non-localhost requests
 npm run storybook:smoke:ci         # Serve storybook-static on :6010 and run smoke:all (what CI runs)
 npm run storybook:smoke:chapter    # Chapter-only subset of the story smoke
+npm run storybook:snapshots:ci     # Screenshot Guides/Foundations/chapter-block stories at 390 + 1280 into storybook-snapshots/ (CI artifact)
+# Before/after visual check of a refactor (OPENBRAIN-118): SNAPSHOT_PREFIXES='*' SNAPSHOT_OUT=<dir> npm run storybook:snapshots:ci
+# on each build, then BEFORE=<dir> AFTER=<dir> [NOISE=<diff.json of two same-code runs>] npm run storybook:diff
 ```
 
-Story naming follows `.storybook/taxonomy.md` (Foundations / Student / Chapter / Dashboard / Views).
+Story naming follows `.storybook/taxonomy.md` (Guides / Foundations / Chapter / Student / Dashboard / Widgets / Views / Legacy). Storybook is the design-system reference (the in-app `/styleguide` was retired in OPENBRAIN-114):
+
+- **Guides** are MDX pages in `src/docs/` (Introduction, Designing for the book, Writing a chapter, Widget kit, Figma, Contributing). They embed their sources with `?raw` + `<Markdown>` (the chapter template, the widget kit's SKILL/design.md, taxonomy.md) so they can't drift. Plain MDX has no GFM tables here (no remark-gfm): put tables inside a `<Markdown>` block.
+- **Theme**: `.storybook/theme.js` (manager + docs; brand.css values as hex), `manager-head.html` (IBM Plex faces), `brand/logo-white.svg` (static dirs: `brand/`, plus the brain atlas model folder for `/brain`).
+- **Toolbar**: Chapter (sets `data-chapter`), viewports at the breakpoints (390/768/1024/1280/1440), Motion, Theme, Accent, and a **Figma** button (local addon in `.storybook/manager.js`) that opens `parameters.design.url`. Links live in one map, `FIGMA_BY_TITLE` in `.storybook/figma.js` (story title → node id; `parameters.design.url` overrides); the Figma file is "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`), whose variables mirror brand.css.
 
 ### Linting and Formatting
 
@@ -87,7 +94,7 @@ See `docs/architecture/README.md`. These run via `npx -y`; nothing is added to `
 
 ### What CI runs
 
-`.github/workflows/ci.yml` runs on every pull request and on pushes to `main` and `dev`, on Node 20.20.0 with `npm ci --legacy-peer-deps`, in this order: `format:check` → `lint:ci` → `test:ci` → `build` → `storybook:coverage` → `build-storybook` → `storybook:smoke:ci` → `test:smoke`. Cypress is deliberately excluded (its specs would need a seeded Supabase). `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are read from repository secrets; without them the build still passes but the smoke test drops its chapter-content assertions and keeps the structural ones (no horizontal scroll, no unexpected console errors, HTTP < 400).
+`.github/workflows/ci.yml` runs on every pull request and on pushes to `main` and `dev`, on Node 20.20.0 with `npm ci --legacy-peer-deps`, in this order: `format:check` → `lint:ci` → `graph:check` → `test:ci` → `build` → `storybook:coverage` → `build-storybook` → `storybook:smoke:ci` → `storybook:snapshots:ci` (uploaded as the `storybook-snapshots` artifact) → `test:smoke`. Cypress is deliberately excluded (its specs would need a seeded Supabase). `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are read from repository secrets; without them the build still passes but the smoke test drops its chapter-content assertions and keeps the structural ones (no horizontal scroll, no unexpected console errors, HTTP < 400).
 
 ### Deployment
 
@@ -116,7 +123,7 @@ npm run clean              # Clear cache, remove node_modules, reinstall with --
 - **Routing**: Vue Router 4
 - **Styling**: Tailwind CSS 3 over CSS custom properties in `src/styles/brand.css`
 - **Backend**: Supabase (Postgres + Auth + REST). Almost all access is hand-rolled `fetch` against the REST API (`src/services/api/client.js`, `src/utils/authHelpers.js`); a `supabase-js` client exists in `src/lib/supabase.js` and is used only by `useModules`, `useProfile` and `EditorView`.
-- **Animations**: GSAP, Lottie (`lottie-web`); `three` + `@google/model-viewer` for the 3D skull prototype (`/phrenology-3d`). `@formkit/auto-animate` is in `package.json` but nothing in `src/` imports it.
+- **Animations**: GSAP, Lottie (`lottie-web`); `three` for the 3D skull prototype (`/phrenology-3d`) and the brain atlas (`/brain`); `@google/model-viewer` is still installed but nothing imports it. `@formkit/auto-animate` is in `package.json` but nothing in `src/` imports it.
 - **Content tooling**: TipTap (block editor), `marked` (markdown import), `mammoth` (DOCX import), Pyodide (Python playground and labs), Chart.js (dashboards)
 - **Testing**: Vitest (unit, `src/**/__tests__/`, happy-dom) + Storybook 10 (story build and exhaustive story smoke, both in CI) + Playwright browser smoke (`scripts/smoke.mjs`, in CI) + 3 Cypress specs (stubbed with `cy.intercept`, excluded from CI)
 - **Tooling**: ESLint 8, Prettier 3, Node 20.20 (`.nvmrc`)
@@ -142,7 +149,6 @@ src/
 │   ├── UI/                 # Legacy reader controls (some are re-export shims to dashboard/shared)
 │   ├── Navigation/         # Menus
 │   ├── quiz/  flashcard/  student/  settings/  lab/  ai/   # Student-facing features
-│   ├── styleguide/         # /styleguide reference page
 │   ├── Editor/             # TipTap editor
 │   └── dev/                # Dev-only helpers (role override, debug)
 ├── composables/            # ~40 composables: useAuth, useChapter, useHighlights, usePreferences, ...
@@ -203,7 +209,7 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 - `/chapter/break/:video?` — break video.
 - `/playground` — Pyodide Python playground.
 - `/widgets` — widget library gallery (not in nav; shared with authors).
-- `/styleguide` — design-system reference (not in nav).
+- `/styleguide` — retired (OPENBRAIN-114); redirects to `/storybook/index.html`, which is the design-system reference (Foundations/Colours, Typography, Layout read the live tokens).
 
 **Role-gated routes** (`meta.requiresAuth` + `meta.requiredRole`)
 
@@ -220,10 +226,13 @@ Routes are defined in `src/router/index.js`. All views except `HomeView` are laz
 
 - `/case-cabinet` (History chapter prototype, mock data in `src/mocks/caseFiles.js`)
 - `/phrenology`, `/phrenology-3d` (History chapter, 2D SVG and model-viewer GLB)
-- Attention chapter widgets: `/sdt`, `/biased-competition`, `/contrast-response`, `/posner-cueing`, `/feature-attention`
+- Attention chapter widgets: `/sdt`, `/biased-competition`, `/contrast-response`, `/posner-cueing`, `/feature-attention`, `/corbetta-pet`, `/hillyard-erp`, `/normalization-model`, `/psychometric-function`
 - Retina/V1 chapter widgets: `/color-vision`, `/visual-pathway`, `/direction-selectivity` (Pyodide), `/v1-camera` (WebGL2), `/retinabox`
+- `/brain` — 3D brain atlas (OPENBRAIN-127), the candidate home cover: the book's contents as a brain, each chapter a part of it. `BrainAtlas.vue` wires `src/helper/brain/`: `brainStage.js` (three.js stage), `areas.js` (the nine areas, and `CHAPTER_PARTS`: which part each chapter owns, merged with the catalog by slug), `dopeframe.js` (Tyler's keyframe-table format for camera, book opening and highlights). The model, `public/publicAssets/models/brain/brain-v1.glb` (~0.7 MB, meshopt), is built by `scripts/brain/build-brain-asset.mjs` from github.com/antonmogul/open-brain-explorer (FreeSurfer fsaverage pial + Destrieux areas). FreeSurfer's licence must travel with every copy: it lives in `NOTICE.txt` beside the model, the build embeds it in the GLB, and the page's credit line links to it, so keep all three if the model moves. Storybook serves that one folder through a `staticDirs` entry. Unlike the other prototypes it is smoke-checked at every width, phones included.
 
 Every widget is registered in `src/widgets/catalog.js`; the library renders the Vue port next to the author's original HTML from `src/widgets/source/` (kept byte-for-byte, excluded from Prettier). **To put a widget inside a chapter**, add a placement to `src/widgets/placements.js` (chapter slug + section slug + text anchors, `kind: "breakout"` card or `"inline"` stage) and a lazy loader to `src/widgets/embeds.js`; a DB-authored `{ type: "widget" }` paragraph block wins over a code placement for the same widget. At desktop widths an inline stage is Teleported out of the prose column (which clips horizontal overflow) into TextComp's `#reader-stage-layer` (`src/helper/stageLayer.js`) so it can paint full-bleed; the card keeps a same-height slot in the flow (OPENBRAIN-37).
+
+**Uploaded widgets (OPENBRAIN-105).** Authors build widgets in Claude with the Open Brain widget skill (`public/widget-kit/open-brain-widget/`: `SKILL.md`, `design.md`, `template.html`; `npm run widget-kit` rebuilds the `.zip` the dashboard offers). A creator uploads the single `.html` in the creator dashboard (Widgets → Upload, `src/widgets/uploaded/WidgetStudio.vue`), which runs it at 390/768/1280 px and checks it, then saves it to `widget_uploads` (draft or published; RLS: readers see published, creators everything). A chapter places it like any widget, as widgetId `upload:<slug>` (the chapter editor's picker lists uploads); `embeds.js` `embedLoader()` resolves that to `UploadedWidgetEmbed`. Uploads always run in `WidgetFrame`: a `sandbox="allow-scripts"` iframe (no same-origin) whose srcdoc `widgetHost.buildWidgetDoc` builds with a CSP (scripts only from cdnjs/jsDelivr, Google Fonts, no network), the `--ob-*` tokens in the chapter's colour, and the `window.OB` bridge that reports size, overflow, errors and blocked requests. New interactives should come in this way rather than as Vue ports.
 
 **`router.beforeEach`** (in order):
 
@@ -248,7 +257,10 @@ Live modules today (`/chapter/<number>/<slug>`):
 
 - `foundations-of-neuroscience` — chapter 1, the "History" chapter, seeded by the `20260605*_seed_chapter_foundations*` migrations (generated with `scripts/import_foundations_chapter.py`).
 - `the-retina` — chapter 2, imported from `text.json` by `scripts/import-chapter-1-to-supabase.mjs`; figures/animation states seeded by the `2026*_seed_chapter1_*` migrations. Files, scripts and docs named "chapter1" refer to this chapter: it was chapter 1 until the book was reordered on 2026-09-17.
-- `attention-and-working-memory` — chapter 3, `status = 'draft'` (creator-only in the reader), seeded by `20260903000100_seed_chapter_attention_draft.sql`.
+- `attention-and-working-memory` — chapter 3, `status = 'draft'` (creator-only in the reader). Re-seeded from the authors' September manuscript by `20260925020000_attention_chapter_manuscript.sql`, which parks the 3 Sep draft (`20260903000100`) as the archived module `attention-and-working-memory-2026-09-03`. Its nine widgets are database blocks.
+- `stress` — chapter 4, `status = 'draft'`, seeded by `20260925030000_seed_chapter_stress_draft.sql` (Sandi & Schmidt). Figures are placeholders until artwork arrives.
+
+Chapter seeds come from `scripts/seed/gen-chapter-from-markdown.mjs` (chapter-template markdown; `### BREAK OUT BOX:` headings and `[[widget: id | inline]]` lines become widget blocks).
 
 The chapter number is `modules.order_index` and is display-only: the reader resolves by slug, so never hard-code `/chapter/<n>/<slug>` in app code (link to `/chapters`, or build the path from the module row). `modules` has `UNIQUE(content_version_id, order_index)`, so renumbering needs the park-then-assign pattern in `20260917000000_reorder_chapters_history_first.sql`.
 
@@ -277,7 +289,7 @@ Schema and seeds live in `supabase/migrations/` (initial schema, RLS fixes, refe
 #### Styling
 
 - **Tailwind Configuration** (`tailwind.config.js`):
-  - Breakpoints: `xs` 480px, `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1300px, `2xl` 1500px. The reader switches to the pinned two-column (text + figure pane) layout at `xl`; between `md` and `xl` the figure pane is hidden.
+  - Breakpoints: `xs` 480px, `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1300px, `2xl` 1500px. The reader has its own screen, `reader` (1024px, from `src/helper/readerLayout.js`): from there up it is the pinned two-column layout (text + figure pane); below it, one column with the figures inline. `--reader-prose-w` gives the text column a 35rem floor and `--reader-gutter-*` tighten its padding below 1280px, so lines stay around 50–55 characters on laptops (OPENBRAIN-89). JS media queries import the constant; CSS queries repeat the number, and `src/__tests__/readerLayout.test.js` keeps them in step.
   - `width: text` / `width: illus` derive from `--reader-prose-w` in `brand.css` (50vw prose, capped at the legacy 890px measure; figure pane fills the rest) so the two panes cannot drift. Everything that used to hardcode the old 50vw maths (trigger markers, full-bleed blocks) derives from that token.
   - Colours and fonts come from the tokens below, not from literal values.
 
@@ -287,12 +299,15 @@ CSS custom properties in `src/styles/brand.css` are the single source of truth f
 
 Conventions:
 
-- **Chapter ramp** — `[data-chapter="fund|perc|move|lear|deve"]` on `<html>` switches `--color-chapter{,-deep,-soft,-pale}`. Keys and values mirror the Figma Assets Library variables `book/<key>/{main,dark,medium,light}` (`WNnPvBkixODGsiYmIZKSWw`, node 3:37); the router sets the key from the module's subject ramp, never from the chapter number. Inside a chapter the ramp is the chapter's identity colour (opener title, TOC numbers, section badges); the global `--color-accent` (magenta) stays the interaction accent everywhere — breakout cards, highlight tools, links, dashboards.
+- **UI sizes** — `--ui-size-10` … `--ui-size-32` in brand.css are the fixed sizes interface components use (controls, labels, badges, panels); components set `font-size: var(--ui-size-11)`, never a literal. They are separate from the responsive reading scale (`--type-*` / `.t-*`) and map one to one onto the Figma `UI/*` text styles (OPENBRAIN-118).
+- **Chapter ramp** — `[data-chapter="fund|perc|move|lear|deve"]` on `<html>` switches `--color-chapter{,-deep,-soft,-pale}`. Keys and values mirror the Figma Assets Library variables `book/<key>/{main,dark,medium,light}` (`WNnPvBkixODGsiYmIZKSWw`, node 3:37); the router sets the key from the module's subject ramp, never from the chapter number. Inside a chapter the ramp is the chapter's identity colour (opener title, TOC numbers, section badges); widget breakout cards and the widgets inside them use it too (OPENBRAIN-98); the global `--color-accent` (magenta) stays the interaction accent for highlight tools, links and dashboards.
 - **Theme** — `[data-theme="light|dark"]` on `<html>`. System mode resolved live via `matchMedia`.
 - **Accent** — `[data-accent="magenta|teal|amber|mono"]` on `<html>` overrides `--color-accent`.
 - **Font pair** — `[data-fontpair="ibm-plex-legacy|newsreader|literata|georgia|sans"]` on `<html>` overrides `--font-body`, `--font-ui`, `--font-mono`. Default `:root` binds these to IBM Plex (today's behavior); `data-fontpair="newsreader"` etc. swap them.
 - **Reduce motion** — `[data-reduce-motion="1"]` on `<html>` zeroes animation durations globally.
 - **Pre-paint** — Inline `<script>` in `index.html` reads localStorage and sets the `data-*` attributes + reading-size/measure CSS vars before CSS loads, preventing flash. Maps in that script must stay in sync with `usePreferences.js`.
+
+**Tokens contract (OPENBRAIN-117).** `npm run tokens:export` writes `tokens/tokens.json` from brand.css and the `.t-*` classes; `src/__tests__/tokens.test.js` fails when they disagree, so regenerate and commit it with any token change. The Figma design system file ("Open Brain — Design System", `NAjmvySrMHLtWYqn2zi4h4`) mirrors these as variables; after a token change update Figma and run the drift check (`npm run tokens:figma-expected` + `scripts/tokens/figma-check.js` through the Figma MCP) — see `docs/design-system/figma-sync.md`.
 
 Variable web fonts (Newsreader, Inter Tight, JetBrains Mono, Literata) self-hosted under `public/publicAssets/fonts/`. Latin subset only (~260KB total). Declared in `src/styles/fonts.css`.
 
@@ -313,7 +328,7 @@ Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `ac
 - The router is injected into Pinia stores using `markRaw()` to prevent reactivity issues.
 - Window scroll position for the reader is tracked in the store, not in browser history.
 - Text highlighting injects `<mark>` tags into the rendered paragraph DOM.
-- The reader is desktop-first: the two-column layout needs 1300px+. Public routes (`/`, `/chapters`, chapter pages) must still render without horizontal scroll at 390px — the smoke test checks them at 390/1280/1440/1920. Internal and widget routes (`/styleguide`, `/case-cabinet`, `/sdt`, ...) are checked at desktop widths only and are allowed to overflow on phones by design.
+- The reader's two-column layout starts at 1024px. Public routes (`/`, `/chapters`, chapter pages) must still render without horizontal scroll at 390px — the smoke test checks them at 390/1024/1280/1440/1920. Internal and widget routes (`/case-cabinet`, `/sdt`, ...) are checked at desktop widths only and are allowed to overflow on phones by design.
 - Do not reformat `src/widgets/source/` — those files are the authors' originals and are excluded from Prettier on purpose.
 
 ## Environment Variables

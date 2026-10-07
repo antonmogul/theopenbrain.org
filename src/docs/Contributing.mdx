@@ -1,0 +1,20 @@
+import { Meta, Markdown } from "@storybook/addon-docs/blocks";
+import taxonomy from "../../.storybook/taxonomy.md?raw";
+
+<Meta title="Guides/Contributing" />
+
+# Contributing
+
+## Adding or changing a component
+
+1. **Tokens first.** Use the tokens in `brand.css` (colour, type, radius, layout). If a value doesn't exist as a token, add the token, not a one-off value.
+2. **One component, one story file**, next to the component in `__stories__/`. Every state a user can reach gets a story; data-aware components use the Storybook mocks (`.storybook/mocks/`), never the real database.
+3. **Name it by the taxonomy below**, with the component's real name, so the sidebar can be searched back to a file.
+4. **Link it to Figma** once the Figma component exists (`parameters.design.url`, see [Figma](?path=/docs/guides-figma--docs)).
+5. **Check it**: `npm run storybook:coverage` fails if a component has no story; CI mounts every story and fails on console errors or outside requests.
+
+## How the sidebar is organised
+
+This is `.storybook/taxonomy.md`, shown as it is:
+
+<Markdown>{taxonomy}</Markdown>

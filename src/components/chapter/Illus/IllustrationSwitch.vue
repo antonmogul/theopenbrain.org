@@ -1,10 +1,15 @@
 <template>
-  <div class="w-full h-full flex justify-end items-start">
-    <div class="absolute top-40 left-20 z-50">
+  <!-- Inline (scopeId) the switches sit under the figure, not beside it. -->
+  <div
+    class="w-full h-full flex"
+    :class="scopeId ? 'flex-col-reverse gap-4' : 'justify-end items-start'"
+  >
+    <div :class="scopeId ? 'relative w-full' : 'absolute top-40 left-20 z-50'">
       <StateElement
         v-if="!info.blockSwitches"
         :states="info.switches"
         :activeState="activeState"
+        :inline="!!scopeId"
         @onClick="setState"
       />
       <StateElementBlock
@@ -12,6 +17,7 @@
         :states="info.switches"
         :activeState="activeState"
         :praefix="info.iconPraefix"
+        :inline="!!scopeId"
         @onClick="setState"
       />
       <LegendElement

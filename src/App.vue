@@ -2,6 +2,7 @@
 import { RouterView, useRoute } from "vue-router";
 import NavDrawer from "./components/Navigation/NavDrawer.vue";
 import MenuAuth from "./components/Navigation/MenuAuth.vue";
+import FeedbackDialog from "./components/feedback/FeedbackDialog.vue";
 import { onBeforeUnmount, ref, watch } from "vue";
 import { watchDebounced } from "@vueuse/core";
 import { useGeneral } from "@/stores";
@@ -58,6 +59,8 @@ onBeforeUnmount(() => {
     </RouterView>
     <NavDrawer />
     <MenuAuth />
+    <!-- "Send feedback", opened from anywhere (useFeedback) -->
+    <FeedbackDialog />
   </div>
 </template>
 

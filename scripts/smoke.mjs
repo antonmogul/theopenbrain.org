@@ -40,7 +40,8 @@ const ONLY = (flag("only", "") || "").split(",").filter(Boolean);
  * (where the figure pane is hidden), and above xl:1300 where the reader
  * switches to the pinned two-column layout.
  */
-const WIDTHS = [390, 1280, 1440, 1920];
+// 1024: the reader's two-column layout starts here (src/helper/readerLayout.js).
+const WIDTHS = [390, 1024, 1280, 1440, 1920];
 
 /*
  * minText guards against a route rendering its chrome but no content — the
@@ -79,13 +80,84 @@ function hasSupabaseCredentials() {
 }
 
 const HAS_SUPABASE = hasSupabaseCredentials();
+
+/* The Supabase URL and publishable key, from the environment or .env. */
+function supabaseCredentials() {
+  let url = process.env.VITE_SUPABASE_URL;
+  let key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) {
+    try {
+      const env = readFileSync(path.resolve(".env"), "utf8");
+      url ||= env.match(/^VITE_SUPABASE_URL=(.+)$/m)?.[1]?.trim();
+      key ||= env.match(/^VITE_SUPABASE_PUBLISHABLE_KEY=(.+)$/m)?.[1]?.trim();
+    } catch {
+      /* no .env */
+    }
+  }
+  return url && key ? { url, key } : null;
+}
+
+/*
+ * Data check (OPENBRAIN-76): every figure a published chapter uses must have
+ * its artwork. A placeholder card is not an error the browser can see, so
+ * History shipped with 26 of 29 figures blank and every check green.
+ * Returns failure messages (empty when all figures have artwork).
+ */
+async function checkFigureArtwork() {
+  const creds = supabaseCredentials();
+  if (!creds) return [];
+  const get = async (q) => {
+    const res = await fetch(`${creds.url}/rest/v1/${q}`, {
+      headers: { apikey: creds.key },
+    });
+    if (!res.ok) throw new Error(`${q.split("?")[0]}: HTTP ${res.status}`);
+    return res.json();
+  };
+  const inList = (ids) => `(${ids.map((id) => `"${id}"`).join(",")})`;
+  const modules = await get("modules?status=eq.published&select=id,slug");
+  if (!modules.length) return [];
+  const sections = await get(
+    `sections?module_id=in.${inList(modules.map((m) => m.id))}&select=id,module_id`
+  );
+  const rows = sections.length
+    ? await get(
+        `paragraphs?section_id=in.${inList(sections.map((x) => x.id))}&animation_id=not.is.null&select=animation_id,section_id`
+      )
+    : [];
+  const ids = [...new Set(rows.map((r) => r.animation_id))];
+  if (!ids.length) return [];
+  const media = await get(
+    `animations?id=in.${inList(ids)}&select=id,animation_key,title,media_type,image_file_url,lottie_file_url,video_file_url,youtube_id,config`
+  );
+  const slugOf = new Map(
+    sections.map((x) => [x.id, modules.find((m) => m.id === x.module_id)?.slug])
+  );
+  const chaptersFor = (id) =>
+    [
+      ...new Set(
+        rows
+          .filter((r) => r.animation_id === id)
+          .map((r) => slugOf.get(r.section_id))
+      ),
+    ].join(", ");
+  const blank = media.filter((m) => {
+    const frames = Array.isArray(m.config?.images) ? m.config.images.length : 0;
+    if (m.media_type === "image") return !m.image_file_url && !frames;
+    if (m.media_type === "video") return !m.video_file_url;
+    if (m.media_type === "youtube") return !m.youtube_id;
+    return false; // lottie loads by key; widgets by config
+  });
+  return blank.map(
+    (m) =>
+      `figure "${m.title || m.animation_key}" (${m.animation_key}) in ${chaptersFor(m.id)} has no artwork — readers see a placeholder`
+  );
+}
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
- * /styleguide and /case-cabinet are unlisted internal routes — a design
- * reference and an interaction prototype — with fixed-pixel layouts that
- * overflow at phone width by design. They still get checked on desktop, so a
- * regression there is caught; they just don't block on a mobile layout nobody
- * has built yet. Student- and professor-facing routes are checked everywhere.
+ * /case-cabinet is an unlisted internal route — an interaction prototype —
+ * with a fixed-pixel layout that overflows at phone width by design. It is
+ * still checked on desktop, so a regression there is caught; it just doesn't
+ * block on a mobile layout nobody has built yet. Student- and professor-facing routes are checked everywhere.
  */
 const ROUTES = [
   { path: "/", name: "home", minText: 50 },
@@ -129,12 +201,6 @@ const ROUTES = [
   },
   { path: "/chapters", name: "chapters", minText: 50 },
   {
-    path: "/styleguide",
-    name: "styleguide",
-    minText: 200,
-    widths: [1280, 1440, 1920],
-  },
-  {
     path: "/case-cabinet",
     name: "case-cabinet",
     minText: 50,
@@ -153,6 +219,19 @@ const ROUTES = [
     name: "phrenology-3d",
     minText: 30,
     widths: [1280, 1440, 1920],
+  },
+  /*
+   * The brain atlas (OPENBRAIN-127) is the candidate home cover, so unlike
+   * the other prototypes it is checked at every width, phones included: no
+   * horizontal scroll, no console errors, and the stage must reach "ready"
+   * (a missing model comes back as index.html with a 200, which the stage
+   * reports only on the page, never in the console).
+   */
+  {
+    path: "/brain",
+    name: "brain",
+    minText: 200,
+    expectCount: { selector: '.atlas__stage[data-status="ready"]', min: 1 },
   },
   /*
    * Interactive widgets (OPENBRAIN-13/14). Every widget route in the catalog
@@ -194,8 +273,22 @@ const ROUTES = [
     widths: [1280, 1440, 1920],
   },
   {
+    // Unlike its siblings this port is built to fit a phone (OPENBRAIN-88),
+    // so it is also held to the 390px no-horizontal-scroll check.
+    path: "/psychometric-function",
+    name: "widget-psychometric-function",
+    minText: 50,
+    widths: [390, 1280, 1440, 1920],
+  },
+  {
     path: "/feature-attention",
     name: "widget-feature-attention",
+    minText: 50,
+    widths: [1280, 1440, 1920],
+  },
+  {
+    path: "/hillyard-erp",
+    name: "widget-hillyard-erp",
     minText: 50,
     widths: [1280, 1440, 1920],
   },
@@ -288,6 +381,21 @@ async function main() {
   const browser = await chromium.launch();
   const failures = [];
   let checks = 0;
+
+  if (HAS_SUPABASE && !ONLY.length) {
+    checks++;
+    try {
+      const blank = await checkFigureArtwork();
+      failures.push(...blank);
+      console.log(
+        blank.length
+          ? `  ✗ figures: ${blank.length} without artwork`
+          : "  ✓ figures: every figure in a published chapter has artwork"
+      );
+    } catch (err) {
+      failures.push(`figure artwork check failed: ${err.message}`);
+    }
+  }
   let skippedContent = 0;
 
   for (const route of ROUTES) {
@@ -462,6 +570,37 @@ async function main() {
             wheelOk = false;
             failures.push(
               `${label}: a mouse wheel at the top of the page did not scroll it`
+            );
+          }
+        }
+        // Inline figures must paint inside themselves (OPENBRAIN-68): their
+        // label layers are position: fixed for the desktop pane, and below
+        // xl they escaped to the top of the viewport, over the opener. At the
+        // top of the page, nothing from a figure that starts below the first
+        // screen may be visible in it.
+        if (!route.needsData || HAS_SUPABASE) {
+          const escaped = await page.evaluate(() => {
+            window.scrollTo(0, 0);
+            const vh = window.innerHeight;
+            let n = 0;
+            for (const fig of document.querySelectorAll("figure.illu-inline")) {
+              if (fig.getBoundingClientRect().top < vh) continue;
+              for (const el of fig.querySelectorAll("*")) {
+                const r = el.getBoundingClientRect();
+                if (r.width && r.height && r.bottom > 0 && r.top < vh) {
+                  const cs = getComputedStyle(el);
+                  if (cs.visibility !== "hidden" && cs.opacity !== "0") {
+                    n++;
+                    break;
+                  }
+                }
+              }
+            }
+            return n;
+          });
+          if (escaped > 0) {
+            failures.push(
+              `${label}: ${escaped} inline figure(s) paint outside themselves, over the top of the page`
             );
           }
         }

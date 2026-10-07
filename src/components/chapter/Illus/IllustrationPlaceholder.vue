@@ -7,8 +7,9 @@
 // the diagram area shows a labelled placeholder ("Artwork pending"). The shell
 // is what every real diagram slots into: once the row carries artwork
 // (config.images, or image_file_url for a single image; see
-// helper/figureCycle.js) the same frame shows it, cycling through a set when
-// there are several (OPENBRAIN-41). IllustrationsComp routes both states here.
+// helper/figureCycle.js) the same frame shows it, as a gallery when there are
+// several (OPENBRAIN-41, OPENBRAIN-97). IllustrationsComp routes both states
+// here.
 //
 // Expected props on `animation` (spread from animations.config in useAnimations.js):
 //   placeholder: true        — routes IllustrationsComp here
@@ -24,6 +25,9 @@ import { figureImages } from "@/helper/figureCycle";
 
 const props = defineProps({
   animation: { type: Object, required: true },
+  /* Rendered in the text column (IllustrationInline), where the shell takes
+     the height its content needs rather than filling a fixed pane. */
+  inline: { type: Boolean, default: false },
 });
 
 const DIAGRAM_TYPES = {
@@ -35,6 +39,9 @@ const DIAGRAM_TYPES = {
   map: { label: "Map", glyph: "⊕" },
   interactive: { label: "Interactive", glyph: "⊙" },
   chart: { label: "Chart", glyph: "▤" },
+  // A video still to come, e.g. an interview the manuscript marks
+  // (OPENBRAIN-107).
+  video: { label: "Video", glyph: "▶" },
 };
 
 const type = computed(
@@ -109,6 +116,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           :caption="caption"
           :label="figureLabel"
           :title="title"
+          :fit="!inline"
         />
         <div v-else class="fig-placeholder">
           <span class="fig-type-chip">
@@ -244,7 +252,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   display: grid;
   place-items: center;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: rgb(var(--color-ink));
   cursor: pointer;
@@ -288,7 +296,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   letter-spacing: 0.1em;
   color: rgb(var(--color-accent));
   border: 1px solid rgb(var(--color-accent) / 0.5);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   padding: 0.1875rem 0.5625rem;
 }
 .fig-glyph {
@@ -299,7 +307,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .fig-title {
   font-family: var(--font-body);
-  font-size: 1.25rem;
+  font-size: var(--ui-size-20);
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -308,20 +316,20 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
 }
 .fig-caption {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   line-height: 1.45;
   color: rgb(var(--color-mute));
   margin: 0;
 }
 .fig-status {
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: rgb(var(--color-mute) / 0.8);
   margin: 0.125rem 0 0;
 }
 .fig-note {
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   line-height: 1.5;
   color: rgb(var(--color-mute));
   margin: 0.625rem 0 0;
@@ -353,7 +361,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
   display: flex;
   flex-direction: column;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   overflow: hidden;
 }

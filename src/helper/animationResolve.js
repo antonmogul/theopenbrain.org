@@ -68,12 +68,29 @@ export function isConfigBearing(animation) {
  * figure renders an empty stage. Checking status AND content-type catches
  * both the honest-404 (vite preview) and the SPA-rewrite (production) cases.
  */
-export async function lottieAssetOk(id, fetchImpl = fetch) {
-  if (!id) return false;
+/**
+ * Where a figure's Lottie file lives: its own URL when it was uploaded in the
+ * CMS (animations.lottie_file_url → animation.lottieUrl, OPENBRAIN-70 B4),
+ * else the file named after its key in public/publicAssets/animations.
+ */
+export function lottiePath(animation) {
+  // The row's own URL wins. For bundled figures it equals the key's path,
+  // except animationRetinalCellTypes3, whose key has no file of its own and
+  // whose row points at animationRetinalCellTypes.json.
+  if (animation?.lottieUrl) return animation.lottieUrl;
+  return animation?.id ? `/publicAssets/animations/${animation.id}.json` : "";
+}
+
+/**
+ * `target` is a figure id (key) or a full path/URL from lottiePath().
+ */
+export async function lottieAssetOk(target, fetchImpl = fetch) {
+  if (!target) return false;
+  const url = /^(\/|https?:)/.test(target)
+    ? target
+    : `/publicAssets/animations/${target}.json`;
   try {
-    const res = await fetchImpl(`/publicAssets/animations/${id}.json`, {
-      method: "HEAD",
-    });
+    const res = await fetchImpl(url, { method: "HEAD" });
     return res.ok && (res.headers.get("content-type") || "").includes("json");
   } catch {
     return false;

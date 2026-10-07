@@ -6,8 +6,13 @@
 // live elsewhere / are hidden everywhere per product decision).
 import { ref } from "vue";
 import ToggleRow from "@/components/dashboard/shared/ToggleRow.vue";
+import Button from "@/components/dashboard/shared/Button.vue";
 import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
+import { isBetaHidden } from "@/constants/beta";
+
+const showNotifications = !isBetaHidden("settings.notifications");
+const showData = !isBetaHidden("settings.data");
 
 // --- Presentational toggle state (visual only this round) ---
 const emailPrefs = ref({
@@ -24,10 +29,10 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
   <div class="settings-panels">
     <SettingsProfileSection />
 
-    <hr class="rule" />
+    <hr v-if="showNotifications" class="rule" />
 
     <!-- EMAIL PREFERENCES (presentational) -->
-    <section id="notifications" class="section">
+    <section v-if="showNotifications" id="notifications" class="section">
       <header class="section-header">
         <p class="eyebrow">
           02 · Email preferences <span class="soon">· preview</span>
@@ -66,10 +71,10 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
       </div>
     </section>
 
-    <hr class="rule" />
+    <hr v-if="showData" class="rule" />
 
     <!-- DATA & PRIVACY (presentational) -->
-    <section id="data" class="section">
+    <section v-if="showData" id="data" class="section">
       <header class="section-header">
         <p class="eyebrow">
           03 · Data &amp; privacy <span class="soon">· preview</span>
@@ -118,10 +123,8 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
       </div>
 
       <div class="data-actions">
-        <button class="btn" type="button" disabled>Download my data</button>
-        <button class="btn" type="button" disabled>
-          Delete reading history
-        </button>
+        <Button variant="outline" disabled>Download my data</Button>
+        <Button variant="outline" disabled>Delete reading history</Button>
       </div>
     </section>
 
@@ -148,7 +151,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -159,7 +162,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .section-header h2 {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.012em;
@@ -167,7 +170,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 }
 .subtitle {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--ui-size-16);
   line-height: 1.5;
   color: rgb(var(--color-mute));
   margin: 0;
@@ -183,7 +186,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 /* Email prefs bordered card */
 .bordered-card {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: rgb(var(--color-paper));
   padding: 0 20px;
@@ -213,7 +216,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 .stat-value {
   display: block;
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -221,7 +224,7 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
 .stat-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -232,22 +235,6 @@ const privacyPrefs = ref({ shareNotes: false, analytics: true, improve: true });
   display: flex;
   gap: 8px;
   margin-top: 24px;
-}
-.btn {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-ink) / 0.85);
-  cursor: pointer;
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 @media (max-width: 767px) {

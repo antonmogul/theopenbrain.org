@@ -18,11 +18,23 @@ vi.mock("@/widgets/embeds", async () => {
     "color-vision": fake("ColorVision"),
     retinabox: fake("RetINaBox"),
   };
+  const isUpload = (id) => /^upload:.+/.test(id || "");
   return {
     WIDGET_EMBEDS,
-    hasEmbed: (id) => Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, id),
+    hasEmbed: (id) =>
+      isUpload(id) || Object.prototype.hasOwnProperty.call(WIDGET_EMBEDS, id),
+    embedLoader: (id) =>
+      isUpload(id) ? fake("Uploaded") : WIDGET_EMBEDS[id] || null,
   };
 });
+
+/* Uploaded widgets: "upload:built" is published, anything else isn't yet. */
+vi.mock("@/widgets/uploaded/useUploadedWidgets", () => ({
+  uploadSlug: (id) =>
+    typeof id === "string" && id.startsWith("upload:") ? id.slice(7) : null,
+  fetchUploadedWidget: async (slug) =>
+    slug === "built" ? { slug, html: "<p>hi</p>" } : null,
+}));
 
 /* The stage refreshes ScrollTrigger when its slot height changes; gsap
    itself is not under test here. */
@@ -213,18 +225,22 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     // Out of the clipping column: nothing of the stage remains in the card.
     expect(wrapper.find(".wb-slot .wb-stage").exists()).toBe(false);
     const slot = wrapper.find(".wb-slot");
-    expect(slot.classes()).toContain("wb-slot--vacated");
+    expect(slot.classes()).toContain("fb-slot--vacated");
     expect(slot.attributes("style")).toMatch(/height: \d+px/);
     // Geometry: fake rects (happy-dom lays nothing out) and let a resize
     // drive one sync — the slot takes the stage's height and the stage
     // sits at the slot's offset from the layer; ScrollTrigger re-measures.
+    // FullBleed (OPENBRAIN-72) positions its own stage box, which wraps the
+    // widget's stage.
+    const box = stage.closest(".fb-stage");
+    expect(box.classList.contains("fb-stage--floating")).toBe(true);
     layer.getBoundingClientRect = () => ({ top: 100, height: 0 });
     slot.element.getBoundingClientRect = () => ({ top: 1000, height: 0 });
-    stage.getBoundingClientRect = () => ({ top: 0, height: 300 });
+    box.getBoundingClientRect = () => ({ top: 0, height: 300 });
     window.dispatchEvent(new Event("resize"));
     await flushPromises();
     expect(slot.attributes("style")).toBe("height: 300px;");
-    expect(stage.style.top).toBe("900px");
+    expect(box.style.top).toBe("900px");
     expect(refreshSpy).toHaveBeenCalledTimes(1);
     // Same height again: no second refresh.
     window.dispatchEvent(new Event("resize"));
@@ -235,7 +251,9 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     await vi.waitFor(() =>
       expect(layer.querySelector(".fake-widget")?.textContent).toBe("RetINaBox")
     );
-    await wrapper.find("button.wb-btn--primary").trigger("click");
+    // The footer travels with the band (OPENBRAIN-112), so its button is in
+    // the layer too.
+    layer.querySelector("button.wb-btn--primary").click();
     await flushPromises();
     expect(layer.querySelector(".fake-widget")).toBeNull();
     wrapper.unmount();
@@ -281,7 +299,7 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     desktop.matches = true;
     const wrapper = mountBreakout(inline);
     await flushPromises();
-    const stage = layer.querySelector(".wb-stage");
+    const stage = layer.querySelector(".fb-stage");
     stage.getBoundingClientRect = () => ({ top: 0, height: 480 });
     // Queue a sync (microtask) and unmount before it runs.
     window.dispatchEvent(new Event("resize"));
@@ -319,5 +337,31 @@ describe("WidgetBreakout — unknown widget", () => {
     expect(wrapper.find("button.wb-btn--primary").exists()).toBe(false);
     expect(wrapper.find("a.router-link-stub").exists()).toBe(false);
     wrapper.unmount();
+  });
+});
+
+// A marker for a widget still to be built (OPENBRAIN-110).
+describe("WidgetBreakout for an uploaded widget", () => {
+  const card = (widgetId) => ({
+    placementId: "attn-x",
+    widgetId,
+    kind: "breakout",
+    title: "Helmholtz's black room",
+  });
+
+  it("says coming soon, with nothing to open, until it is published", async () => {
+    const w = mountBreakout(card("upload:attn-helmholtz"));
+    await flushPromises();
+    expect(w.find(".wb-kicker").text()).toContain("coming soon");
+    expect(w.find(".wb-btn--primary").exists()).toBe(false);
+    w.unmount();
+  });
+
+  it("opens like any widget once it is published", async () => {
+    const w = mountBreakout(card("upload:built"));
+    await flushPromises();
+    expect(w.find(".wb-kicker").text()).not.toContain("coming soon");
+    expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
+    w.unmount();
   });
 });

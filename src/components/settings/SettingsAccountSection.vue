@@ -6,6 +6,9 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
+import { isBetaHidden } from "@/constants/beta";
+import FormField from "@/components/dashboard/shared/FormField.vue";
+import Button from "@/components/dashboard/shared/Button.vue";
 
 const router = useRouter();
 const { signOut, updatePassword } = useAuth();
@@ -39,7 +42,12 @@ async function changePassword() {
   }, 1800);
 }
 
-// Presentational rows (no backend in this reskin).
+// Presentational rows (no backend in this reskin). Hidden for the beta along
+// with the danger zone, so every control on the page does what it says.
+const showExtras = !isBetaHidden("settings.account-extras");
+// Section numbers follow what's shown: Profile, [Email, Data,] Account.
+const eyebrowNumber = isBetaHidden("settings.notifications") ? "02" : "04";
+
 const presentationalRows = [
   {
     label: "Two-factor authentication",
@@ -67,8 +75,8 @@ async function handleSignOut() {
 <template>
   <section id="account" class="section">
     <header class="section-header">
-      <p class="eyebrow">06 · Account</p>
-      <h2>Sign-in &amp; subscription</h2>
+      <p class="eyebrow">{{ eyebrowNumber }} · Account</p>
+      <h2>{{ showExtras ? "Sign-in & subscription" : "Sign-in" }}</h2>
     </header>
 
     <div class="rows-card">
@@ -78,34 +86,37 @@ async function handleSignOut() {
           <div class="row-label">Change password</div>
           <div class="row-hint">Use at least 8 characters.</div>
         </div>
-        <button
-          class="btn"
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           @click="showPasswordForm = !showPasswordForm"
         >
           {{ showPasswordForm ? "Close" : "Update" }}
-        </button>
+        </Button>
       </div>
-
       <div v-if="showPasswordForm" class="pw-form">
-        <input
-          v-model="newPassword"
-          class="input"
-          type="password"
-          placeholder="New password"
-          autocomplete="new-password"
-        />
-        <input
-          v-model="confirmPassword"
-          class="input"
-          type="password"
-          placeholder="Confirm new password"
-          autocomplete="new-password"
-        />
+        <FormField label="New password">
+          <input
+            v-model="newPassword"
+            type="password"
+            autocomplete="new-password"
+          />
+        </FormField>
+        <FormField label="Confirm new password">
+          <input
+            v-model="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+          />
+        </FormField>
         <div class="pw-actions">
-          <button class="btn-solid" type="button" @click="changePassword">
+          <Button
+            variant="solid"
+            :loading="pwStatus === 'saving'"
+            @click="changePassword"
+          >
             {{ pwStatus === "saving" ? "Saving…" : "Save password" }}
-          </button>
+          </Button>
           <span v-if="pwStatus === 'done'" class="pw-status ok"
             >✓ Password updated</span
           >
@@ -119,17 +130,19 @@ async function handleSignOut() {
       </div>
 
       <!-- Presentational rows -->
-      <div v-for="r in presentationalRows" :key="r.label" class="row">
-        <div class="row-text">
-          <div class="row-label">{{ r.label }}</div>
-          <div class="row-hint">{{ r.hint }}</div>
+      <template v-if="showExtras">
+        <div v-for="r in presentationalRows" :key="r.label" class="row">
+          <div class="row-text">
+            <div class="row-label">{{ r.label }}</div>
+            <div class="row-hint">{{ r.hint }}</div>
+          </div>
+          <Button variant="outline" size="sm" disabled>{{ r.action }}</Button>
         </div>
-        <button class="btn" type="button" disabled>{{ r.action }}</button>
-      </div>
+      </template>
     </div>
 
     <!-- Danger zone (presentational delete) -->
-    <div class="danger-zone">
+    <div v-if="showExtras" class="danger-zone">
       <p class="danger-eyebrow">● Danger zone</p>
       <div class="danger-row">
         <div>
@@ -139,13 +152,13 @@ async function handleSignOut() {
             be undone.
           </div>
         </div>
-        <button class="btn-danger" type="button" disabled>Delete</button>
+        <Button variant="danger" size="sm" disabled>Delete</Button>
       </div>
     </div>
 
-    <button class="btn-ghost signout" type="button" @click="handleSignOut">
+    <Button variant="outline" class="signout" @click="handleSignOut">
       Sign out
-    </button>
+    </Button>
   </section>
 </template>
 
@@ -155,7 +168,7 @@ async function handleSignOut() {
 }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-mute));
@@ -163,7 +176,7 @@ async function handleSignOut() {
 }
 .section-header h2 {
   font-family: var(--font-body);
-  font-size: 2rem;
+  font-size: var(--ui-size-32);
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.012em;
@@ -172,7 +185,7 @@ async function handleSignOut() {
 
 .rows-card {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   overflow: hidden;
   background: rgb(var(--color-paper));
 }
@@ -189,12 +202,12 @@ async function handleSignOut() {
 }
 .row-label {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--ui-size-15);
   color: rgb(var(--color-ink));
 }
 .row-hint {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   margin-top: 2px;
   line-height: 1.45;
@@ -207,20 +220,6 @@ async function handleSignOut() {
   padding: 16px 20px;
   border-bottom: 1px solid rgb(var(--color-line));
 }
-.input {
-  width: 100%;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
-  background: transparent;
-  padding: 10px 12px;
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  color: rgb(var(--color-ink));
-  outline: none;
-}
-.input:focus {
-  border-color: rgb(var(--color-ink));
-}
 .pw-actions {
   display: flex;
   align-items: center;
@@ -228,7 +227,7 @@ async function handleSignOut() {
 }
 .pw-status {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
 }
 .pw-status.ok {
   color: rgb(var(--color-complete));
@@ -242,11 +241,11 @@ async function handleSignOut() {
   padding: 20px 24px;
   border: 1px solid rgb(var(--color-accent) / 0.4);
   background: rgb(var(--color-accent) / 0.06);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 .danger-eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgb(var(--color-accent));
@@ -261,56 +260,5 @@ async function handleSignOut() {
 
 .signout {
   margin-top: 28px;
-}
-
-.btn,
-.btn-solid,
-.btn-ghost,
-.btn-danger {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  border-radius: 999px;
-  padding: 6px 14px;
-  transition:
-    background 0.12s ease,
-    color 0.12s ease,
-    border-color 0.12s ease;
-}
-.btn {
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-ink) / 0.85);
-}
-.btn:hover:not(:disabled) {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-}
-.btn-solid {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-ink));
-  padding: 8px 16px;
-}
-.btn-ghost {
-  background: transparent;
-  color: rgb(var(--color-ink));
-  border: 1px solid rgb(var(--color-ink) / 0.85);
-}
-.btn-ghost:hover {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-}
-.btn-danger {
-  background: transparent;
-  color: rgb(var(--color-accent));
-  border: 1px solid rgb(var(--color-accent));
-}
-.btn:disabled,
-.btn-danger:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

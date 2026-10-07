@@ -37,6 +37,7 @@
             tag="p"
             class-name="subSubP pt-0"
             @save="handleSave"
+            can-figure
           />
           <div
             v-else
@@ -72,6 +73,7 @@
                 :is-creator="isCreator"
                 tag="p"
                 class-name="subSubParP"
+                can-figure
                 @save="handleSave"
               />
               <div
@@ -101,13 +103,17 @@
                 :paragraph="subSubParagraph"
                 v-if="subSubParagraph.img"
               />
+              <VideoEmbed
+                v-if="subSubParagraph.video"
+                :video="subSubParagraph.video"
+              />
               <FullScreenIllustration
                 :key="subSubParagraph.id"
                 v-if="subSubParagraph.animationFull"
                 :paragraph="subSubParagraph"
               />
               <IllustrationInline
-                v-if="isMobile && subSubParagraph?.animation?.id"
+                v-if="inlineFigureFor(subSubParagraph)"
                 :key="'inline' + subSubParagraph.id"
                 :animation-id="subSubParagraph.animation.id"
               />
@@ -132,7 +138,7 @@
           :paragraph="subSubSection"
         />
         <IllustrationInline
-          v-if="isMobile && subSubSection?.animation?.id"
+          v-if="inlineFigureFor(subSubSection)"
           :key="'inline' + subSubSection.id"
           :animation-id="subSubSection.animation.id"
         />
@@ -148,10 +154,11 @@ import { inject } from "vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import FullScreenIllustration from "../Illus/FullScreenIllustration.vue";
 import IllustrationInline from "../Illus/IllustrationInline.vue";
-import { useMediaQuery } from "@/composables/useMediaQuery";
+import { useInlineFigureFor } from "@/composables/useInlineFigures";
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
 import InlineImages from "./InlineImages.vue";
+import VideoEmbed from "./VideoEmbed.vue";
 import EditableBlock from "./EditableBlock.vue";
 import WidgetBreakout from "./WidgetBreakout.vue";
 
@@ -166,21 +173,19 @@ defineProps({
 });
 
 // Below the desktop pane's breakpoint, render trigger figures inline.
-const isMobile = useMediaQuery("(max-width: 1299px)");
+// Inline below the two-column breakpoint, and inside a floating breakout box
+// (it covers the figure pane): OPENBRAIN-91.
+// Draw a figure here only where it first appears (below 1024px).
+const inlineFigureFor = useInlineFigureFor();
 
 // Inject save handler from parent
 const saveContent = inject("saveContent", null);
 
 // Handle save from editable block
-const handleSave = async ({ paragraphId, content }) => {
-  if (saveContent) {
-    await saveContent({
-      paragraphId,
-      content,
-      type: "subSubParagraph",
-    });
-  }
-};
+// Level-2 subsection paragraphs are ordinary paragraph rows; TextComp's
+// saveContent now handles this type (these edits used to be dropped).
+const handleSave = ({ paragraphId, content }) =>
+  saveContent({ paragraphId, content, type: "subSubParagraph" });
 </script>
 
 <style lang="scss" scoped></style>

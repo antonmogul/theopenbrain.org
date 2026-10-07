@@ -46,6 +46,15 @@ export function extractChapter1Meta(blocks) {
       meta.img = block.src;
       if (block.caption) meta.imgCap = block.caption;
       if (block.closed) meta.imgClosed = block.closed;
+      if (block.wide) meta.imgWide = true; // FullBleed (OPENBRAIN-72)
+    }
+    if (block.type === "video" && block.youtubeId) {
+      // A YouTube video in the prose (OPENBRAIN-70 D2); VideoEmbed renders it.
+      meta.video = {
+        youtubeId: block.youtubeId,
+        title: block.title || "",
+        start: block.start || 0,
+      };
     }
     if (block.type === "widget" && block.widgetId) {
       // Author-placed interactive (OPENBRAIN-21). Same paragraph shape as
@@ -134,7 +143,9 @@ export function contentBlocksToHTML(blocks) {
         // via data-figure so it can later deep-link / scroll-sync.
         const n = block.number;
         const label = n === undefined || n === null ? "Figure" : `Figure ${n}`;
-        return `<span class="figure-ref" data-figure="${n ?? ""}">${label}</span>`;
+        // A link to the figure (useFigureLinks scrolls to it): focusable,
+        // announced as a link (OPENBRAIN-91).
+        return `<span class="figure-ref" data-figure="${n ?? ""}" role="link" tabindex="0">${label}</span>`;
       }
       // Chapter 1-specific types — metadata only, no HTML
       if (
@@ -159,8 +170,67 @@ export function contentBlocksToHTML(blocks) {
 }
 
 /**
+ * The reader's figure object for a paragraph row with an animation_key:
+ * `id` is the full key (IllustrationsComp matches activeAnimation on it) and
+ * `name` drops the leading "animation" (the DOM trigger id is
+ * `triggerAnimation` + name). Display flags (start/middel/end/stage) round-trip
+ * through content.animationFlags (scripts/import-chapter-1-to-supabase.mjs).
+ * Also used by the reader's Change figure to update a paragraph in place.
+ */
+export function figureFor(p) {
+  const flags = p.content?.animationFlags || {};
+  return {
+    name: p.animation_key.replace(/^animation/, ""),
+    id: p.animation_key,
+    title: p.animation_title || "",
+    // Transition figures: the flag round-trips via animationFlags; the
+    // legacy 'scroll' trigger value is kept as back-compat for rows seeded
+    // before the flags existed.
+    transition: flags.transition === true || p.animation_trigger === "scroll",
+    // start/middel/end drive StartEndIcon.vue. stage has no consumer yet;
+    // carried so nothing is lost across a re-seed.
+    ...(flags.start ? { start: true } : {}),
+    ...(flags.middel ? { middel: true } : {}),
+    ...(flags.end ? { end: true } : {}),
+    ...(flags.stage ? { stage: flags.stage } : {}),
+  };
+}
+
+/**
  * Transform a single DB paragraph row into a legacy JSON paragraph object.
  */
+/**
+ * Put breakout boxes where they belong (OPENBRAIN-70 A3, A4). A box with a
+ * parent section follows that section in reading order (after the parent's
+ * earlier boxes); if its anchor paragraph is one of the parent's top-level
+ * paragraphs it is also marked `anchored`, and SectionComp renders it right
+ * after that paragraph instead of on its own. Unplaced boxes keep their
+ * order. Returns a new array; `parentId` stays on each box for the contents.
+ */
+export function placeBoxes(sections) {
+  const byId = new Map(sections.map((s) => [s.id, s]));
+  const children = new Map();
+  const top = [];
+  for (const s of sections) {
+    const parent = s.kind === "box" && s.parentId && byId.get(s.parentId);
+    if (parent && parent !== s && parent.kind !== "box") {
+      if (!children.has(parent.id)) children.set(parent.id, []);
+      children.get(parent.id).push(s);
+    } else top.push(s);
+  }
+  const out = [];
+  for (const s of top) {
+    out.push(s);
+    const kids = children.get(s.id) || [];
+    const ids = new Set((s.paragraphs || []).map((p) => p.id));
+    for (const box of kids) {
+      box.anchored = !!box.anchorParagraphId && ids.has(box.anchorParagraphId);
+      out.push(box);
+    }
+  }
+  return out;
+}
+
 export function transformParagraph(p) {
   const blocks = p.content?.blocks || [];
   const contentResult = contentBlocksToHTML(blocks);
@@ -170,6 +240,9 @@ export function transformParagraph(p) {
     id: p.id,
     text: contentResult.text,
     hasHeading: contentResult.hasHeading,
+    // The stored blocks, so the reader's Edit mode can edit them losslessly
+    // (OPENBRAIN-64); rendering still uses `text` above.
+    blocks: blocks,
     // Spread Chapter 1-specific metadata (animationFull, type, img, etc.)
     ...meta,
   };
@@ -188,25 +261,7 @@ export function transformParagraph(p) {
   // *and* IllustrationInline for the same paragraph. Static fullscreen paragraphs carry
   // only animationFull.
   if (p.animation_id && p.animation_key && !para.animationFull) {
-    // Display flags (start/middel/end/stage) round-trip through the content
-    // JSONB — written by scripts/import-chapter-1-to-supabase.mjs.
-    const flags = p.content?.animationFlags || {};
-
-    para.animation = {
-      name: p.animation_key.replace(/^animation/, ""),
-      id: p.animation_key,
-      title: p.animation_title || "",
-      // Transition figures: the flag round-trips via animationFlags; the
-      // legacy 'scroll' trigger value is kept as back-compat for rows seeded
-      // before the flags existed.
-      transition: flags.transition === true || p.animation_trigger === "scroll",
-      // start/middel/end drive StartEndIcon.vue. stage has no consumer yet;
-      // carried so nothing is lost across a re-seed.
-      ...(flags.start ? { start: true } : {}),
-      ...(flags.middel ? { middel: true } : {}),
-      ...(flags.end ? { end: true } : {}),
-      ...(flags.stage ? { stage: flags.stage } : {}),
-    };
+    para.animation = figureFor(p);
   }
 
   return para;
@@ -251,26 +306,14 @@ export function reconstructNesting(flatParagraphs) {
       currentSubSection = {
         id: p.id,
         title: p.content_text || "",
+        // The header row's blocks, for editing the title in the reader.
+        blocks: p.content?.blocks || [],
         paragraphs: [],
       };
       // Add animation from the section-header paragraph (keyed off the real
       // animation_key — see transformParagraph for the contract).
       if (p.animation_id && p.animation_key) {
-        // Same flags round-trip as transformParagraph above.
-        const flags = p.content?.animationFlags || {};
-
-        currentSubSection.animation = {
-          name: p.animation_key.replace(/^animation/, ""),
-          id: p.animation_key,
-          title: p.animation_title || "",
-          // Same flags round-trip + legacy back-compat as transformParagraph.
-          transition:
-            flags.transition === true || p.animation_trigger === "scroll",
-          ...(flags.start ? { start: true } : {}),
-          ...(flags.middel ? { middel: true } : {}),
-          ...(flags.end ? { end: true } : {}),
-          ...(flags.stage ? { stage: flags.stage } : {}),
-        };
+        currentSubSection.animation = figureFor(p);
       }
       continue;
     }
@@ -435,6 +478,11 @@ export function transformModuleToChapterFormat(module) {
       // Foundations seeds its sidebars as sections slugged box-*; the reader
       // letters those as breakout boxes instead of numbering them.
       kind: section.slug?.startsWith("box-") ? "box" : "section",
+      // Box placement (OPENBRAIN-70 A3, A4): the section a box belongs to,
+      // and the paragraph it follows. placeBoxes() applies them.
+      orderIndex: section.order_index,
+      parentId: section.parent_section_id || null,
+      anchorParagraphId: section.anchor_paragraph_id || null,
       paragraphs,
     };
 
@@ -445,6 +493,8 @@ export function transformModuleToChapterFormat(module) {
 
     return sectionObj;
   });
+
+  const placedSections = placeBoxes(sections);
 
   // Build furtherReading from its section's paragraphs
   let furtherReading = {
@@ -497,7 +547,7 @@ export function transformModuleToChapterFormat(module) {
     title: module.title || "",
     slug: module.slug || "",
     intro,
-    sections,
+    sections: placedSections,
     furtherReading,
     footNotes,
   };

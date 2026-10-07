@@ -32,7 +32,9 @@ jobs:
   quality:
     name: Lint, test, build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Typical run is ~10.5 min; 15 cancelled a green run during the final smoke
+    # step (PR #53, 23 Sep 2026).
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v5
@@ -98,6 +100,21 @@ jobs:
       - name: Smoke test every Storybook story
         run: npm run storybook:smoke:ci
 
+      # Screenshots of the design-system stories (Guides, Foundations, the
+      # chapter blocks) at 390 and 1280, for review: open index.html in the
+      # artifact. Not a gate (OPENBRAIN-115).
+      - name: Snapshot the design-system stories
+        run: npm run storybook:snapshots:ci
+
+      - name: Upload Storybook snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-snapshots
+          path: storybook-snapshots/
+          retention-days: 14
+          if-no-files-found: ignore
+
       # A production build that scrolls sideways or throws on load is the class
       # of bug unit tests miss — see OPENBRAIN-4, where the reader scrolled
       # horizontally at every desktop width and nothing caught it.
@@ -113,5 +130,7 @@ jobs:
         with:
           name: smoke-screenshots
           path: .smoke/
+          # .smoke/ is a dot-folder; upload-artifact@v4 skips those unless asked.
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: ignore

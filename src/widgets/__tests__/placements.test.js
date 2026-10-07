@@ -249,6 +249,17 @@ describe("applyWidgetPlacements", () => {
     expect(JSON.stringify(chapter)).toBe(before);
   });
 
+  it("carries narrowKind, for a desktop-sized tool shown as a card on phones", () => {
+    const p = widgetParagraph({
+      id: "rb",
+      widgetId: "retinabox",
+      kind: "inline",
+      narrowKind: "breakout",
+    });
+    expect(p.widget.kind).toBe("inline");
+    expect(p.widget.narrowKind).toBe("breakout");
+  });
+
   it("skips a placement when the chapter already carries that widget (DB-authored block wins)", () => {
     const section = circuitSection();
     section.paragraphs[0] = {
@@ -416,7 +427,7 @@ function attentionSections() {
 }
 
 describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () => {
-  it("places the four route-only widgets at their passages, in reading order", () => {
+  it("places the route-only widget at its passage", () => {
     const chapter = chapterWith(...attentionSections());
     const result = applyWidgetPlacements(
       chapter,
@@ -424,35 +435,32 @@ describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () =
     );
     expect(result.unresolved).toEqual([]);
     expect(result.skipped).toEqual([]);
-    expect(result.applied).toEqual([
-      "attention-posner-cueing",
-      "attention-contrast-response-gain",
-      "attention-biased-competition",
-      "attention-feature-attention",
-    ]);
-    // Posner right after the paradigm paragraph, inside the SDT subsection.
+    expect(result.applied).toEqual(["attention-biased-competition"]);
+    // Nothing is placed in the SDT subsection any more (Posner is a DB block
+    // pointing at its kit rebuild, OPENBRAIN-113).
     const sdt = chapter.sections[0].paragraphs[0].subSection[1];
-    expect(ids(sdt.paragraphs)).toEqual([
-      "a2",
-      "widget-attention-posner-cueing",
-      "a3",
-      "db-sdt",
-    ]);
-    // Gain model after response gain; biased competition after its
-    // paragraph; feature attention after the gain principle.
+    expect(ids(sdt.paragraphs)).toEqual(["a2", "a3", "db-sdt"]);
+    // Biased competition after its paragraph.
     expect(ids(chapter.sections[1].paragraphs)).toEqual([
       "b1",
       "b2",
       "b3",
-      "widget-attention-contrast-response-gain",
       "b4",
       "widget-attention-biased-competition",
       "b5",
-      "widget-attention-feature-attention",
       "b6",
       "b7",
       "db-normalization",
     ]);
+  });
+
+  it("does not configure the widgets rebuilt as kit uploads (DB blocks, OPENBRAIN-113)", () => {
+    const ids = placementsForChapter("attention-and-working-memory").map(
+      (p) => p.widgetId
+    );
+    expect(ids).not.toContain("posner-cueing");
+    expect(ids).not.toContain("contrast-response-gain");
+    expect(ids).not.toContain("tmt-feature-attention");
   });
 
   it("skips a config placement for a widget the DB already carries (hasWidget)", () => {
@@ -497,14 +505,10 @@ describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () =
     );
     expect(result.unresolved).toEqual([]);
     const order = ids(chapter.sections[1].paragraphs);
-    const gain = order.indexOf("widget-attention-contrast-response-gain");
     const biased = order.indexOf("widget-attention-biased-competition");
-    const feature = order.indexOf("widget-attention-feature-attention");
     const norm = order.indexOf("db-normalization");
-    expect(gain).toBeGreaterThan(-1);
-    expect(gain).toBeLessThan(biased);
-    expect(biased).toBeLessThan(feature);
-    expect(feature).toBeLessThan(norm);
+    expect(biased).toBeGreaterThan(-1);
+    expect(biased).toBeLessThan(norm);
   });
 
   it("falls back to the end of the section only when nothing in it matches", () => {
@@ -518,9 +522,7 @@ describe("WIDGET_PLACEMENTS — Attention & Working Memory (OPENBRAIN-34)", () =
     expect(result.unresolved).toEqual([]);
     expect(ids(chapter.sections[1].paragraphs)).toEqual([
       "only",
-      "widget-attention-contrast-response-gain",
       "widget-attention-biased-competition",
-      "widget-attention-feature-attention",
     ]);
   });
 });
@@ -540,10 +542,8 @@ describe("endOfSection and trailing widget blocks (OPENBRAIN-34, Codex pass 2)",
     );
     expect(result.unresolved).toEqual([]);
     const order = ids(chapter.sections[1].paragraphs);
-    expect(order.slice(-4)).toEqual([
-      "widget-attention-contrast-response-gain",
+    expect(order.slice(-2)).toEqual([
       "widget-attention-biased-competition",
-      "widget-attention-feature-attention",
       "db-normalization",
     ]);
   });

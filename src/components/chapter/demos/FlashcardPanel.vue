@@ -5,6 +5,7 @@ import { useFlashcards } from "@/composables/useFlashcards";
 import FlashcardCard from "@/components/flashcard/FlashcardCard.vue";
 import FlashcardRating from "@/components/flashcard/FlashcardRating.vue";
 import FlashcardStats from "@/components/flashcard/FlashcardStats.vue";
+import FlashcardGuide from "@/components/flashcard/FlashcardGuide.vue";
 
 const props = defineProps({
   moduleId: { type: String, required: true },
@@ -142,7 +143,7 @@ const formattedDuration = computed(() => {
 
     <!-- Empty -->
     <div v-else-if="viewState === 'empty'" class="state-center">
-      <p>No flashcards available for this module.</p>
+      <p>This chapter doesn't have a flashcard deck yet.</p>
       <button @click="emit('close')" class="btn-primary">Close</button>
     </div>
 
@@ -165,6 +166,9 @@ const formattedDuration = computed(() => {
           ></div>
         </div>
       </div>
+
+      <!-- How flashcards work, and a draft deck's notice (OPENBRAIN-102) -->
+      <FlashcardGuide :draft="!!currentCard?.tags?.includes('draft')" />
 
       <div class="card-area">
         <FlashcardCard
@@ -206,7 +210,7 @@ const formattedDuration = computed(() => {
 <style scoped>
 .flashcard-panel {
   min-height: 400px;
-  font-size: 16px;
+  font-size: var(--ui-size-16);
 }
 
 .state-center {
@@ -216,14 +220,14 @@ const formattedDuration = computed(() => {
   justify-content: center;
   min-height: 300px;
   gap: 16px;
-  color: #6b7280;
-  font-size: 16px;
+  color: rgb(var(--color-mute));
+  font-size: var(--ui-size-16);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e5e7eb;
+  border: 3px solid rgb(var(--color-line));
   border-top-color: #8b5cf6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -254,9 +258,9 @@ const formattedDuration = computed(() => {
 }
 
 .timer {
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   font-weight: 500;
-  color: #6b7280;
+  color: rgb(var(--color-mute));
   font-variant-numeric: tabular-nums;
 }
 
@@ -264,7 +268,7 @@ const formattedDuration = computed(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   font-weight: 600;
 }
 
@@ -275,7 +279,7 @@ const formattedDuration = computed(() => {
   color: #dc2626;
 }
 .sep {
-  color: #d1d5db;
+  color: rgb(var(--color-ink) / 0.18);
 }
 
 .progress-bar-wrap {
@@ -285,14 +289,14 @@ const formattedDuration = computed(() => {
 .progress-bar {
   height: 4px;
   background: rgba(139, 92, 246, 0.2);
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: #8b5cf6;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   transition: width 0.3s ease;
 }
 
@@ -306,18 +310,18 @@ const formattedDuration = computed(() => {
 
 .kbd-hints {
   text-align: center;
-  font-size: 13px;
-  color: #9ca3af;
+  font-size: var(--ui-size-13);
+  color: rgb(var(--color-mute) / 0.6);
 }
 
 .kbd-hints kbd {
   display: inline-block;
   padding: 2px 6px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-ink) / 0.18);
+  border-radius: var(--radius-control);
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
 }
 
 /* Complete */
@@ -331,9 +335,9 @@ const formattedDuration = computed(() => {
 /* Buttons */
 .btn-primary {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 15px;
+  font-size: var(--ui-size-15);
   font-weight: 500;
   cursor: pointer;
   background: #8b5cf6;

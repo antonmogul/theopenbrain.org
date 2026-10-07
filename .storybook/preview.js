@@ -27,6 +27,7 @@ import { configureSupabaseMock } from "./mocks/supabase";
 import { configureAuthMock } from "./mocks/auth";
 
 import "@/index.css";
+import { docsTheme } from "./theme";
 
 // CommentComp still reads its legacy Pinia store at module evaluation time,
 // before Storybook creates the Vue app. Activate the catalog Pinia here so
@@ -36,7 +37,7 @@ import "@/index.css";
  * callouts, nav, anything with a CTA). Storybook has no router, so those
  * components throw on mount. Installing a memory-history router app-wide is
  * the one-time fix — otherwise every such story needs its own stub, which is
- * the per-component special-casing that made /styleguide hard to extend.
+ * the per-component special-casing that made the old /styleguide hard to extend.
  *
  * Memory history keeps navigation in memory, so a story clicking a link cannot
  * navigate the Storybook shell away from itself. The catch-all route means any
@@ -104,6 +105,52 @@ installSupabaseFetchMock();
 /** Mirrors the accent options in usePreferences.js. */
 const ACCENTS = ["magenta", "teal", "amber", "mono"];
 
+/*
+ * Chapter ramps (brand.css [data-chapter]): a chapter's identity colour comes
+ * from its subject, never its number. "none" leaves the neutral default.
+ */
+const CHAPTER_RAMPS = [
+  { value: "none", title: "No chapter (neutral)" },
+  { value: "fund", title: "fund · Fundamentals" },
+  { value: "perc", title: "perc · Perception" },
+  { value: "move", title: "move · Movement" },
+  { value: "lear", title: "lear · Learning & memory" },
+  { value: "deve", title: "deve · Development" },
+];
+
+/*
+ * Viewports at the book's breakpoints (src/helper/readerLayout.js and
+ * brand.css): phone, tablet, the two-column reader from 1024, the desktop
+ * type scale from 1280, and a common wide laptop.
+ */
+const VIEWPORTS = {
+  phone: {
+    name: "Phone · 390",
+    styles: { width: "390px", height: "844px" },
+    type: "mobile",
+  },
+  tablet: {
+    name: "Tablet · 768",
+    styles: { width: "768px", height: "1024px" },
+    type: "tablet",
+  },
+  laptop: {
+    name: "Laptop · 1024 (two columns)",
+    styles: { width: "1024px", height: "768px" },
+    type: "desktop",
+  },
+  desktop: {
+    name: "Desktop · 1280 (desktop type)",
+    styles: { width: "1280px", height: "800px" },
+    type: "desktop",
+  },
+  wide: {
+    name: "Wide · 1440",
+    styles: { width: "1440px", height: "900px" },
+    type: "desktop",
+  },
+};
+
 export const globalTypes = {
   theme: {
     description: "Colour theme (app pins light; dark is for inspection only)",
@@ -128,6 +175,16 @@ export const globalTypes = {
       dynamicTitle: true,
     },
   },
+  chapter: {
+    description: "Chapter ramp: the colour a chapter takes from its subject",
+    defaultValue: "none",
+    toolbar: {
+      title: "Chapter",
+      icon: "bookmark",
+      items: CHAPTER_RAMPS,
+      dynamicTitle: true,
+    },
+  },
   reduceMotion: {
     description: "Disable motion for deterministic review and screenshots",
     defaultValue: true,
@@ -149,8 +206,10 @@ export const globalTypes = {
  * here is sufficient to theme every story.
  */
 const withDesignTokens = (story, context) => {
-  const { theme, accent, reduceMotion } = context.globals;
+  const { theme, accent, reduceMotion, chapter } = context.globals;
   const root = document.documentElement;
+  if (chapter && chapter !== "none") root.setAttribute("data-chapter", chapter);
+  else root.removeAttribute("data-chapter");
   root.setAttribute("data-theme", theme || "light");
   root.setAttribute("data-accent", accent || "magenta");
   // The app pins the legacy IBM Plex pairing; match it so type in Storybook
@@ -202,6 +261,7 @@ const preview = {
   initialGlobals: {
     theme: "light",
     accent: "magenta",
+    chapter: "none",
     reduceMotion: true,
   },
   parameters: {
@@ -210,6 +270,15 @@ const preview = {
         // Mirrors .storybook/taxonomy.md; "*" catches anything mis-titled so
         // it is visible at the bottom rather than hidden.
         order: [
+          "Guides",
+          [
+            "Introduction",
+            "Designing for the book",
+            "Writing a chapter",
+            "Widget kit",
+            "Figma",
+            "Contributing",
+          ],
           "Foundations",
           "Chapter",
           "Student",
@@ -231,6 +300,8 @@ const preview = {
     // The token background is applied by the decorator; Storybook's own
     // backgrounds addon would fight it.
     backgrounds: { disable: true },
+    viewport: { options: VIEWPORTS },
+    docs: { theme: docsTheme },
   },
 };
 

@@ -87,6 +87,47 @@
     font-weight: 400;
     font-family: var(--font-mono);
   }
+  /* Section labels inside widgets ("Evidence axis", "Model"): the widget
+     ports used these two roles before they existed, so their headings fell
+     back to the book's h2 (OPENBRAIN-75). */
+  .t-overline {
+    font-size: var(--type-label-size);
+    line-height: var(--type-label-lh);
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .t-mono {
+    font-family: var(--font-mono);
+  }
+  /* Widget titles and prose where the authors' originals are set in sans
+     (SDT, Posner, Biased competition, Contrast gain), rather than the
+     site's uppercase mono labels (OPENBRAIN-75). */
+  .t-widget-title {
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+    margin: 0;
+    padding: 0;
+  }
+  .t-widget-body {
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    letter-spacing: normal;
+  }
+  .t-widget-sub {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    letter-spacing: normal;
+  }
   .t-label {
     font-size: var(--type-label-size);
     line-height: var(--type-label-lh);
@@ -131,10 +172,11 @@
   letter-spacing: -0.00625rem;
 }
 
+/* Captions and figure notes: the scale's caption step (OPENBRAIN-93). */
 .text-small {
-  font-size: 0.84375rem;
-  line-height: 1.1875rem;
-  letter-spacing: -0.0125rem;
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-lh);
+  letter-spacing: 0;
 }
 
 .text-medium {
@@ -147,9 +189,13 @@
   line-height: 1.75rem;
 }
 
+/* The reader's body text: the scale's body step (20px desktop, 17px phone,
+   easing between), times the reader's size preference (OPENBRAIN-93). */
 .text-base {
-  font-size: calc(1.25rem * var(--reading-size, 1));
-  line-height: calc(1.9375rem * var(--reading-size, 1));
+  font-size: calc(var(--type-body-size) * var(--reading-size, 1));
+  line-height: calc(
+    var(--type-body-size) * var(--type-body-lh) * var(--reading-size, 1)
+  );
   letter-spacing: 0.5px;
 }
 .text-h2 {
@@ -181,12 +227,6 @@
     letter-spacing: -0.00625rem;
   }
 
-  .text-small {
-    font-size: 0.75rem;
-    line-height: 1rem;
-    letter-spacing: 0.0125rem;
-  }
-
   .text-medium {
     font-size: 0.9375rem;
     line-height: 1.65625rem;
@@ -197,10 +237,6 @@
     line-height: 1.75rem;
   }
 
-  .text-base {
-    font-size: calc(1.1875rem * var(--reading-size, 1));
-    line-height: calc(1.875rem * var(--reading-size, 1));
-  }
   .text-h2 {
     font-size: 2.5rem;
     line-height: 3.625rem;
@@ -224,17 +260,12 @@
   }
 }
 
-/* Tablet: 768px - 1299px */
-@media (max-width: 1299px) {
+/* Tablet: 768px - 1023px */
+@media (max-width: 1023px) {
   .text-smaller {
     font-size: 0.6875rem;
     line-height: 0.875rem;
     letter-spacing: -0.00625rem;
-  }
-  .text-small {
-    font-size: 0.6875rem;
-    line-height: 0.9375rem;
-    letter-spacing: 0.0125rem;
   }
   .text-medium {
     font-size: 0.84375rem;
@@ -243,10 +274,6 @@
   .text-baseMono {
     font-size: 1rem;
     line-height: 1.5rem;
-  }
-  .text-base {
-    font-size: calc(1.0625rem * var(--reading-size, 1));
-    line-height: calc(1.6875rem * var(--reading-size, 1));
   }
   .text-h2 {
     font-size: 1.875rem;
@@ -268,19 +295,6 @@
     font-size: 3.125rem;
     line-height: 3.125rem;
   }
-  h1 {
-    font-size: 2.1875rem;
-    line-height: 2.5rem;
-    padding-bottom: 1.875rem;
-  }
-  h2 {
-    font-size: 2rem;
-    line-height: 2.5rem;
-  }
-  h3 {
-    font-size: 1.5rem;
-    line-height: 1.875rem;
-  }
 }
 
 /* Phone: below 768px */
@@ -289,10 +303,6 @@
     font-size: 0.625rem;
     line-height: 0.8125rem;
   }
-  .text-small {
-    font-size: 0.625rem;
-    line-height: 0.875rem;
-  }
   .text-medium {
     font-size: 0.75rem;
     line-height: 1.25rem;
@@ -300,10 +310,6 @@
   .text-baseMono {
     font-size: 0.875rem;
     line-height: 1.375rem;
-  }
-  .text-base {
-    font-size: calc(0.9375rem * var(--reading-size, 1));
-    line-height: calc(1.5rem * var(--reading-size, 1));
   }
   .text-h2 {
     font-size: 1.5rem;
@@ -324,19 +330,6 @@
   .text-big {
     font-size: 2.1875rem;
     line-height: 2.1875rem;
-  }
-  h1 {
-    font-size: 1.75rem;
-    line-height: 2rem;
-    padding-bottom: 1.25rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-    line-height: 1.875rem;
-  }
-  h3 {
-    font-size: 1.25rem;
-    line-height: 1.625rem;
   }
 }
 
@@ -386,10 +379,33 @@ input {
 }
 
 /* Scoped to .chapter-reader so it doesn't pollute Settings, dashboards,
-   etc. The original design used full-viewport sections for the scroll-paged
-   reader layout. */
-.chapter-reader section {
-  min-height: 100vh;
+   etc. The original design used full-viewport sections (and 15rem below
+   each) so the pinned figure pane had scroll room for its states. Only the
+   two-column reader has that pane: below 1024px, with the figures inline,
+   it was a blank screen before every section (OPENBRAIN-95). */
+@media (min-width: 1024px) {
+  .chapter-reader section {
+    min-height: 100vh;
+    padding-bottom: 15rem;
+  }
+}
+@media (max-width: 1023px) {
+  .chapter-reader section {
+    padding-bottom: 4rem;
+  }
+  /* The pane's section-transition spacer (200vh) has nothing to drive. */
+  .chapter-reader .section-transition-spacer {
+    display: none;
+  }
+  /* The section number and the intro's eye sit above the title instead of
+     hanging off the column's left edge, where the column clips them. */
+  .chapter-reader main#text .TN {
+    position: relative;
+    transform: none;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1rem;
+  }
 }
 
 /* Anchor targets (sections, subsection spans, intro heading) land below the
@@ -435,10 +451,6 @@ body {
   overscroll-behavior: none;
 }
 
-.chapter-reader section {
-  padding-bottom: 15rem;
-}
-
 h1,
 h2,
 h3,
@@ -446,34 +458,69 @@ h4 {
   hyphens: none;
 }
 
+/* Headings on the modular scale (brand.css), so they step down on phones
+   and tablets with it (OPENBRAIN-93). They used to be fixed sizes, set
+   after (and so over) the old per-breakpoint rules: a section title was
+   48px on a phone. */
 h1 {
-  font-size: 3.125rem;
-  line-height: 3.125rem;
-  padding-bottom: 3.125rem;
+  font-size: var(--type-h3-size);
+  line-height: var(--type-h3-lh);
+  padding-bottom: 1em;
 }
 
 h2 {
-  font-size: 3rem;
-  line-height: 3.625rem;
-  padding-bottom: 1.25rem;
+  font-size: var(--type-h3-size);
+  line-height: var(--type-h3-lh);
+  padding-bottom: 0.42em;
 }
 
 h2.TN {
-  font-size: 2.375rem;
+  font-size: var(--type-subhead-size);
+  line-height: 1;
   padding-bottom: 0.125rem;
   z-index: 90;
 }
 
 h3 {
-  font-size: 1.875rem;
-  line-height: 2.375rem;
-  padding-top: 1.25rem;
-  padding-bottom: 0.75rem;
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-lh);
+  padding-top: 0.66em;
+  padding-bottom: 0.4em;
 }
 
 h4 {
-  font-size: 1.25rem;
-  line-height: 1.4375rem;
+  font-size: var(--type-body-size);
+  line-height: 1.2;
+}
+
+/*
+ * Widget views (src/views/*View.vue, ported from the authors' standalone
+ * HTML) carry `widget-root` on their root. The originals were written
+ * against browser defaults; the book's reading metrics (.text-base: 19px,
+ * 30px leading, 0.5px tracking), hyphenation and h1–h4 sizes/padding must
+ * not reach inside them (OPENBRAIN-75). Each rule here is one class deep, so
+ * a widget's own scoped styles still win.
+ */
+.widget-root {
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: normal;
+  hyphens: manual;
+}
+.widget-root :where(h1, h2, h3, h4, h5, h6) {
+  padding: 0;
+  hyphens: manual;
+}
+/* The global `canvas { position: fixed }` above (a legacy full-screen
+   reader effect) pinned every widget canvas to the window: RetINaBox's
+   signal monitor was laid out 1440px wide and never scrolled. */
+.widget-root canvas {
+  position: static;
+  z-index: auto;
+}
+.widget-root :where(h1, h2, h3, h4, h5, h6):not([class*="t-"]) {
+  font-size: revert;
+  line-height: 1.25;
 }
 
 .T,
@@ -523,8 +570,9 @@ h4 {
 
 .animationMarkerClick.active {
   border: solid black;
-  background: rgb(var(--color-accent));
-  color: white;
+  /* As .highlightText: tied to the figure, readable in every ramp. */
+  background: rgb(var(--color-chapter-soft));
+  color: rgb(var(--color-ink));
   padding: 0.125rem 0.25rem;
   stroke: rgb(var(--color-accent));
 }
@@ -540,11 +588,14 @@ h4 {
     stroke-opacity 0.5s;
 }
 
+/* A figure's lit part takes the chapter's colour, as v0.2.3 painted it in
+   the Retina's (OPENBRAIN-84); the global accent stays for the reader's own
+   highlight tools. */
 .highlighterIlluFill.highlightIllu > *,
 .highlightIllu > .highlighterIlluFill > *,
 .highlightIllu > .highlighterIlluFill,
 .highlighterIlluFill.highlightIllu > * > * {
-  fill: rgb(var(--color-accent));
+  fill: rgb(var(--color-chapter));
   fill-opacity: 1;
   stroke-width: 0;
 }
@@ -553,7 +604,7 @@ h4 {
 .highlightIllu > .highlighterIlluFill > *.highlighterIlluFill,
 .highlightIllu > .highlighterIlluFill,
 .highlightIllu > * > *.highlighterIlluFill {
-  fill: rgb(var(--color-accent));
+  fill: rgb(var(--color-chapter));
   fill-opacity: 1;
   stroke-width: 0;
 }
@@ -565,7 +616,7 @@ h4 {
 .highlightIllu > .highlighterIlluStroke > *,
 .highlightIllu > .highlighterIlluStroke,
 .highlighterIlluStroke.highlightIllu > * > * {
-  stroke: rgb(var(--color-accent));
+  stroke: rgb(var(--color-chapter));
   stroke-width: 3;
   stroke-opacity: 1;
 }
@@ -582,8 +633,11 @@ h4 {
 .active > * > .highlightText,
 .active > * > * > .highlightText,
 .active > * > * > * > .highlightText {
-  background: rgb(var(--color-accent));
-  color: white;
+  /* Text tied to the figure on show, in the chapter's colour. The soft
+     shade with ink keeps it readable in every ramp (teal and amber are too
+     light for white). */
+  background: rgb(var(--color-chapter-soft));
+  color: rgb(var(--color-ink));
 }
 #triggeranimationColorOpponency {
   min-height: 80vh;
@@ -619,7 +673,7 @@ h4 {
   transition: none;
 }
 
-@media (max-width: 1299px) {
+@media (max-width: 1023px) {
   .punkt,
   .punktComment {
     display: none;
@@ -752,10 +806,60 @@ sup:hover {
   top: 50vh;
 }
 
-@media (max-width: 1299px) {
+@media (max-width: 1023px) {
   .marker-start,
   .marker-end,
   .marker-center {
+    display: none;
+  }
+}
+
+/* Figure marks on the divider (OPENBRAIN-91). Stuart, 24 Sep: "I liked in
+   the demo chapter how there was some indicator in the center divider line
+   when the visual elements on the left would change." Each paragraph that
+   brings a figure into the pane (an .animationTrigger span) gets a tick on
+   the divider at its top; it turns the chapter's colour while its figure is
+   showing (.active, set by IllustrationsComp). The reading line is where
+   figures switch: the viewport's middle, where the triggers fire. Same x
+   formula as the divider (--reader-prose-w). */
+.animationTrigger[id]:not([id=""])::before {
+  content: "";
+  position: absolute;
+  margin-top: 0.4rem;
+  left: calc(100vw - var(--reader-prose-w) - 0.5rem);
+  width: 1rem;
+  height: 2px;
+  background: rgb(var(--color-ink));
+  pointer-events: none;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+.animationTrigger.active[id]:not([id=""])::before {
+  background: rgb(var(--color-chapter));
+  transform: scaleX(1.5);
+}
+.reading-line {
+  position: fixed;
+  z-index: 31;
+  top: 50vh;
+  left: calc(100vw - var(--reader-prose-w) - 0.4375rem);
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: -0.4375rem;
+  border: 1.5px solid rgb(var(--color-ink));
+  border-radius: 50%;
+  background: rgb(var(--color-paper));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.reading-line.is-on {
+  opacity: 1;
+}
+@media (max-width: 1023px) {
+  .animationTrigger[id]:not([id=""])::before,
+  .reading-line {
     display: none;
   }
 }
@@ -822,7 +926,7 @@ sup:hover {
   20%,
   60% {
     background: rgb(var(--color-accent) / 0.18);
-    border-radius: 3px;
+    border-radius: var(--radius-control);
   }
 }
 
@@ -838,6 +942,11 @@ sup:hover {
 .figure-ref:hover {
   text-decoration: underline;
   text-decoration-color: rgb(var(--color-complete));
+}
+.figure-ref:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
 /* Full-bleed breakout: pull a block out of the right-pinned prose column so it
@@ -863,7 +972,7 @@ sup:hover {
   transform: none;
 }
 
-@media (min-width: 1300px) {
+@media (min-width: 1024px) {
   .-translate-x-custom {
     width: calc(100% + 6.875rem);
   }

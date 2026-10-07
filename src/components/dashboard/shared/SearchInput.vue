@@ -81,11 +81,11 @@ function clear() {
 .search-input {
   width: 100%;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: transparent;
   padding: 9px 34px 9px 36px;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   outline: none;
   transition: border-color 0.12s ease;
@@ -103,7 +103,7 @@ function clear() {
   background: transparent;
   color: rgb(var(--color-mute));
   cursor: pointer;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   line-height: 1;
 }
 .search-clear:hover {

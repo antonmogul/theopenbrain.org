@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Selective attention changes the auditory ERP</title>
+<style>
+  :root{
+    --bg:#eef0f0; --panel:#f8f8f7; --ink:#1a1a1a; --dim:#6b7280;
+    --line:#dcdedd; --teal:#1fb3a3; --teal-soft:#cdeee9;
+    --yellow:#f5d90a; --yellow-soft:rgba(245,217,10,.28);
+    --coral:#e76f51; --coral-soft:#f6d9d1;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+  body{padding:22px}
+  .wrap{max-width:680px;margin:0 auto}
+  .head{margin-bottom:14px}
+  .head h1{font-size:15px;font-weight:700;margin:0 0 4px}
+  .head .sub{font-size:12px;color:var(--dim);line-height:1.45}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:18px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  text{font-family:var(--sans)}
+  .label{fill:var(--ink);font-size:11px;font-weight:650}
+  .small{fill:var(--dim);font-size:9.5px}
+  .tiny{fill:var(--dim);font-size:8.5px}
+  .teal{fill:var(--teal)}
+  .coral{fill:var(--coral)}
+
+  .head-shape{fill:#f1f2f0;stroke:var(--ink);stroke-width:2}
+  .ear{fill:#fff;stroke:var(--ink);stroke-width:1.6}
+  .neck{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+  .nose{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round}
+  .eye{fill:var(--ink)}
+  .brain{fill:none;stroke:#a9adab;stroke-width:1.2;stroke-dasharray:3 3}
+  .electrode{fill:#fff;stroke:var(--teal);stroke-width:2}
+  .lead{fill:none;stroke:var(--teal);stroke-width:2}
+  .ref{fill:#fff;stroke:#8a8d8c;stroke-width:1.8}
+  .reflead{fill:none;stroke:#8a8d8c;stroke-width:1.7}
+
+  .source{fill:#fff;stroke:var(--ink);stroke-width:1.6}
+  .source-cone{fill:#d7d9d8;stroke:var(--ink);stroke-width:1.4}
+  .sound-arc{fill:none;stroke:var(--coral);stroke-width:2;stroke-linecap:round;opacity:.25}
+  .sound-arc.on{animation:soundPulse 1.45s ease-out infinite}
+  .sound-arc.delay{animation-delay:.48s}
+  @keyframes soundPulse{0%{opacity:.12;stroke-width:1.5}35%{opacity:1;stroke-width:2.5}75%,100%{opacity:.12;stroke-width:1.5}}
+
+  .attention-halo{fill:var(--yellow-soft);stroke:var(--yellow);stroke-width:2;opacity:0;transition:opacity .35s ease}
+  .attention-halo.on{opacity:1}
+  .focus-ray{fill:none;stroke:var(--yellow);stroke-width:2;stroke-dasharray:4 5;opacity:0;transition:opacity .35s ease;animation:dash 1.1s linear infinite}
+  .focus-ray.on{opacity:.9}
+  @keyframes dash{to{stroke-dashoffset:-18}}
+
+  .plot-bg{fill:#fff;stroke:var(--line);stroke-width:1.2}
+  .axis{stroke:#9ca09e;stroke-width:1}
+  .tick{stroke:#b9bcba;stroke-width:1}
+  .grid{stroke:#e8e9e8;stroke-width:1}
+  .wave-shadow{fill:none;stroke:var(--teal-soft);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+  .wave{fill:none;stroke:var(--teal);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:520;stroke-dashoffset:520;animation:drawWave 2.7s ease-in-out infinite}
+  @keyframes drawWave{0%,12%{stroke-dashoffset:520}65%,100%{stroke-dashoffset:0}}
+  .marker{stroke:var(--yellow);stroke-width:1.5;stroke-dasharray:3 3}
+  .n1-tag{fill:var(--yellow);stroke:#d3b900;stroke-width:.7}
+  .n1-text{fill:var(--ink);font-size:9px;font-weight:750;text-anchor:middle}
+  .state-copy{fill:var(--ink);font-size:11px;font-weight:650}
+
+  .controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  button{background:#fff;border:1.5px solid var(--line);color:var(--ink);font:600 12px var(--sans);
+    border-radius:5px;padding:8px 13px;cursor:pointer;transition:.15s}
+  button:hover:not(.active){border-color:var(--teal)}
+  button.active{background:var(--teal);border-color:var(--teal);color:#fff}
+  button.secondary{color:var(--dim);min-width:92px}
+  .takeaway{margin:14px 2px 0;padding-top:12px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;color:var(--dim)}
+  .takeaway strong{color:var(--ink);font-weight:700}
+  .source-note{margin:8px 2px 0;font-size:9.5px;color:#858987}
+  @media (prefers-reduced-motion:reduce){.sound-arc,.focus-ray,.wave{animation:none}.wave{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <h1>Selective attention changes the auditory ERP</h1>
+    <div class="sub">The same left-ear tone evokes a larger early response when the listener attends left.</div>
+  </header>
+
+  <section class="card" aria-label="Interactive explanation of Hillyard and colleagues' 1973 auditory attention experiment">
+    <svg id="figure" viewBox="0 0 620 455" role="img" aria-labelledby="svgTitle svgDesc">
+      <title id="svgTitle">Auditory selective attention and the N1 event-related potential</title>
+      <desc id="svgDesc">Tone streams enter both ears. A vertex electrode and mastoid reference record an ERP to left-ear tones. Switching attention changes the N1 amplitude.</desc>
+
+      <!-- sources -->
+      <g aria-hidden="true">
+        <rect class="source" x="18" y="124" width="28" height="44" rx="4"/>
+        <path class="source-cone" d="M46 132 L67 120 L67 172 L46 160 Z"/>
+        <text class="label coral" x="42" y="105" text-anchor="middle">800 Hz</text>
+        <text class="small" x="42" y="116" text-anchor="middle">left-ear stream</text>
+        <path class="sound-arc on" d="M77 130 Q91 146 77 162"/>
+        <path class="sound-arc on delay" d="M86 121 Q108 146 86 171"/>
+
+        <rect class="source" x="574" y="124" width="28" height="44" rx="4"/>
+        <path class="source-cone" d="M574 132 L553 120 L553 172 L574 160 Z"/>
+        <text class="label coral" x="578" y="105" text-anchor="middle">1500 Hz</text>
+        <text class="small" x="578" y="116" text-anchor="middle">right-ear stream</text>
+        <path class="sound-arc on" d="M543 130 Q529 146 543 162"/>
+        <path class="sound-arc on delay" d="M534 121 Q512 146 534 171"/>
+      </g>
+
+      <!-- head -->
+      <g aria-hidden="true">
+        <path class="neck" d="M278 248 Q279 276 259 291 M342 248 Q341 276 361 291"/>
+        <path class="head-shape" d="M310 36 C245 36 230 91 237 151 C241 197 265 247 310 260 C355 247 379 197 383 151 C390 91 375 36 310 36 Z"/>
+        <ellipse class="ear" cx="236" cy="148" rx="15" ry="28"/>
+        <ellipse class="ear" cx="384" cy="148" rx="15" ry="28"/>
+        <path class="brain" d="M267 113 C274 77 348 77 355 113 C365 145 345 168 310 169 C275 168 255 145 267 113 Z"/>
+        <circle class="eye" cx="285" cy="151" r="2.8"/><circle class="eye" cx="335" cy="151" r="2.8"/>
+        <path class="nose" d="M310 151 L305 179 L314 180"/>
+        <path class="nose" d="M293 205 Q310 214 327 205"/>
+
+        <ellipse id="leftHalo" class="attention-halo on" cx="226" cy="148" rx="30" ry="43"/>
+        <ellipse id="rightHalo" class="attention-halo" cx="394" cy="148" rx="30" ry="43"/>
+        <path id="leftRay" class="focus-ray on" d="M271 123 Q248 130 230 143"/>
+        <path id="rightRay" class="focus-ray" d="M349 123 Q372 130 390 143"/>
+
+        <!-- vertex + mastoid reference -->
+        <circle class="electrode" cx="310" cy="41" r="8"/>
+        <circle cx="310" cy="41" r="3" fill="var(--teal)"/>
+        <path class="lead" d="M310 33 C310 13 402 17 438 49 C462 71 459 244 476 282"/>
+        <text class="small teal" x="322" y="25">vertex electrode</text>
+        <circle class="ref" cx="389" cy="171" r="6"/>
+        <path class="reflead" d="M394 174 C422 184 439 232 462 283"/>
+        <text class="tiny" x="404" y="174">mastoid reference</text>
+      </g>
+
+      <text id="attentionLabel" class="state-copy" x="310" y="306" text-anchor="middle">Attention: left ear</text>
+
+      <!-- ERP plot -->
+      <g transform="translate(72 326)">
+        <rect class="plot-bg" x="0" y="0" width="476" height="112" rx="5"/>
+        <text class="label" x="14" y="18">ERP to the left-ear tone</text>
+        <text id="conditionLabel" class="small teal" x="462" y="18" text-anchor="end">left ear attended</text>
+        <line class="grid" x1="66" y1="37" x2="458" y2="37"/>
+        <line class="axis" x1="66" y1="67" x2="458" y2="67"/>
+        <line class="axis" x1="66" y1="31" x2="66" y2="100"/>
+        <line class="tick" x1="66" y1="67" x2="66" y2="72"/>
+        <line class="tick" x1="164" y1="67" x2="164" y2="72"/>
+        <line class="tick" x1="262" y1="67" x2="262" y2="72"/>
+        <line class="tick" x1="360" y1="67" x2="360" y2="72"/>
+        <line class="tick" x1="458" y1="67" x2="458" y2="72"/>
+        <text class="tiny" x="66" y="84" text-anchor="middle">0</text>
+        <text class="tiny" x="164" y="84" text-anchor="middle">100</text>
+        <text class="tiny" x="262" y="84" text-anchor="middle">200</text>
+        <text class="tiny" x="360" y="84" text-anchor="middle">300</text>
+        <text class="tiny" x="458" y="84" text-anchor="middle">400 ms</text>
+        <text class="tiny" x="57" y="42" text-anchor="end">−</text>
+        <text class="tiny" x="57" y="96" text-anchor="end">+</text>
+        <text class="tiny" x="18" y="70" transform="rotate(-90 18 70)" text-anchor="middle">voltage (negative up)</text>
+        <line class="marker" x1="154" y1="31" x2="154" y2="100"/>
+        <rect class="n1-tag" x="142" y="23" width="24" height="14" rx="7"/>
+        <text class="n1-text" x="154" y="33">N1</text>
+        <path id="waveShadow" class="wave-shadow" d="" opacity=".65"/>
+        <path id="wave" class="wave" d=""/>
+      </g>
+    </svg>
+
+    <div class="controls" role="group" aria-label="Choose which ear is attended">
+      <button id="attendLeft" class="active" aria-pressed="true">Attend left</button>
+      <button id="attendRight" aria-pressed="false">Attend right</button>
+      <button id="autoSwitch" class="secondary" aria-pressed="true">Pause switching</button>
+    </div>
+    <p id="takeaway" class="takeaway"><strong>Larger N1:</strong> attending the tone's ear enhances the early sensory response, about 80–110 ms after onset.</p>
+    <p class="source-note">Concept and waveform based on Hillyard, Hink, Schwent &amp; Picton (1973), <em>Science</em> 182:177–180, Fig. 1. Amplitudes are exaggerated for clarity.</p>
+  </section>
+</main>
+
+<script>
+(function(){
+  const leftBtn=document.getElementById('attendLeft');
+  const rightBtn=document.getElementById('attendRight');
+  const autoBtn=document.getElementById('autoSwitch');
+  const leftHalo=document.getElementById('leftHalo');
+  const rightHalo=document.getElementById('rightHalo');
+  const leftRay=document.getElementById('leftRay');
+  const rightRay=document.getElementById('rightRay');
+  const attentionLabel=document.getElementById('attentionLabel');
+  const conditionLabel=document.getElementById('conditionLabel');
+  const takeaway=document.getElementById('takeaway');
+  const wave=document.getElementById('wave');
+  const shadow=document.getElementById('waveShadow');
+  let attended='left', auto=true, timer=null;
+
+  // Negative voltage is plotted upward, matching the convention in Fig. 1.
+  // Only N1 amplitude changes strongly; P2 remains broadly similar.
+  function waveform(large){
+    const n1=large ? 31 : 14;
+    return `M66 67 C78 66 83 68 91 64 C102 59 110 72 121 69
+      C133 67 143 ${67-n1*.68} 154 ${67-n1}
+      C166 ${67-n1*.72} 177 61 190 67
+      C205 77 218 89 235 91 C251 91 266 78 282 68
+      C301 62 318 65 337 68 C357 72 373 73 390 69
+      C410 65 432 67 458 67`;
+  }
+
+  function render(userAction){
+    const isLeft=attended==='left';
+    leftBtn.classList.toggle('active',isLeft); rightBtn.classList.toggle('active',!isLeft);
+    leftBtn.setAttribute('aria-pressed',String(isLeft)); rightBtn.setAttribute('aria-pressed',String(!isLeft));
+    leftHalo.classList.toggle('on',isLeft); rightHalo.classList.toggle('on',!isLeft);
+    leftRay.classList.toggle('on',isLeft); rightRay.classList.toggle('on',!isLeft);
+    attentionLabel.textContent='Attention: '+(isLeft?'left':'right')+' ear';
+    conditionLabel.textContent=isLeft?'left ear attended':'left ear ignored';
+    conditionLabel.setAttribute('class','small '+(isLeft?'teal':'coral'));
+    takeaway.innerHTML=isLeft
+      ? '<strong>Larger N1:</strong> attending the tone\'s ear enhances the early sensory response, about 80–110 ms after onset.'
+      : '<strong>Smaller N1:</strong> the identical left-ear tone evokes less activity when attention is directed to the other ear.';
+    const d=waveform(isLeft); wave.setAttribute('d',d); shadow.setAttribute('d',d);
+    wave.style.animation='none'; void wave.getBoundingClientRect(); wave.style.animation='';
+    if(userAction && auto){ auto=false; syncAuto(); }
+  }
+  function schedule(){ clearInterval(timer); if(auto) timer=setInterval(()=>{attended=attended==='left'?'right':'left';render(false)},4200); }
+  function syncAuto(){
+    autoBtn.textContent=auto?'Pause switching':'Auto switch';
+    autoBtn.setAttribute('aria-pressed',String(auto));
+    autoBtn.classList.toggle('active',auto);
+    schedule();
+  }
+  leftBtn.addEventListener('click',()=>{attended='left';render(true)});
+  rightBtn.addEventListener('click',()=>{attended='right';render(true)});
+  autoBtn.addEventListener('click',()=>{auto=!auto;syncAuto()});
+  render(false); syncAuto();
+})();
+</script>
+</body>
+</html>

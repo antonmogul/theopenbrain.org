@@ -46,11 +46,24 @@ function toggleColorFilter(color) {
   selectedColor.value = selectedColor.value === color ? null : color;
 }
 
-// Filtered highlights based on selected color
+// Tag filter: tags are labels for grouping highlights, so the Notebook can
+// show one group at a time (OPENBRAIN-103). null means every tag.
+const selectedTag = ref(null);
+const allTags = computed(() =>
+  [...new Set((highlights?.value || []).flatMap((h) => h.tags || []))].sort()
+);
+function toggleTagFilter(tag) {
+  selectedTag.value = selectedTag.value === tag ? null : tag;
+}
+
+// Filtered highlights based on the selected color and tag
 const filteredHighlights = computed(() => {
   if (!highlights?.value) return [];
-  if (!selectedColor.value) return highlights.value;
-  return highlights.value.filter((h) => h.color === selectedColor.value);
+  return highlights.value.filter(
+    (h) =>
+      (!selectedColor.value || h.color === selectedColor.value) &&
+      (!selectedTag.value || (h.tags || []).includes(selectedTag.value))
+  );
 });
 
 // Notes UI state (migrated from NotesSidebar)
@@ -203,6 +216,21 @@ async function executeDelete() {
         </button>
       </div>
 
+      <!-- Tag filter -->
+      <div v-if="allTags.length" class="tag-filter" aria-label="Filter by tag">
+        <button
+          v-for="tag in allTags"
+          :key="tag"
+          type="button"
+          class="tag-chip tag-chip--filter"
+          :class="{ active: selectedTag === tag }"
+          :aria-pressed="selectedTag === tag"
+          @click="toggleTagFilter(tag)"
+        >
+          {{ tag }}
+        </button>
+      </div>
+
       <EmptyState
         v-if="!highlights || highlights.length === 0"
         title="No highlights yet"
@@ -210,8 +238,8 @@ async function executeDelete() {
       />
       <EmptyState
         v-else-if="filteredHighlights.length === 0"
-        :title="`No ${selectedColor} highlights`"
-        message="Try a different color filter"
+        title="No highlights match"
+        message="Try a different colour or tag"
       />
       <div v-else class="items-list">
         <div
@@ -233,9 +261,16 @@ async function executeDelete() {
               }}"
             </p>
             <div v-if="h.tags?.length" class="tag-list">
-              <span v-for="tag in h.tags" :key="tag" class="tag-chip">{{
-                tag
-              }}</span>
+              <button
+                v-for="tag in h.tags"
+                :key="tag"
+                type="button"
+                class="tag-chip"
+                :title="`Show highlights tagged ${tag}`"
+                @click.stop="toggleTagFilter(tag)"
+              >
+                {{ tag }}
+              </button>
             </div>
             <span class="item-date">{{ formatDate(h.created_at) }}</span>
           </div>
@@ -364,7 +399,7 @@ async function executeDelete() {
       <EmptyState
         v-if="!isAddingNote && (!notes || notes.length === 0)"
         title="No notes yet"
-        message='Highlight text or click "Add Note" to get started'
+        message='Select text and choose Note, or click "Add Note"'
       />
     </div>
 
@@ -440,7 +475,7 @@ async function executeDelete() {
   border: none;
   border-bottom: 2px solid transparent;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
@@ -468,7 +503,7 @@ async function executeDelete() {
   background: rgb(var(--color-complete));
   color: #0a3d33;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
 }
 
 /* View content */
@@ -518,7 +553,7 @@ async function executeDelete() {
 
 .dot-all {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   color: rgb(var(--color-mute));
 }
 
@@ -540,12 +575,28 @@ async function executeDelete() {
   margin: 0 0 6px;
 }
 
+.tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0.75rem 0;
+}
+.tag-chip--filter {
+  padding: 3px 8px;
+  font-size: var(--ui-size-10);
+}
+.tag-chip.active {
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-paper));
+}
 .tag-chip {
   display: inline-block;
+  border: 0;
+  cursor: pointer;
   padding: 1px 8px;
   background: rgb(var(--color-accent) / 0.12);
   color: rgb(var(--color-accent));
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.5625rem;
   text-transform: uppercase;
@@ -568,7 +619,7 @@ async function executeDelete() {
 
 .color-border {
   width: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   flex-shrink: 0;
 }
 
@@ -576,7 +627,7 @@ async function executeDelete() {
   width: 3px;
   height: 100%;
   min-height: 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   flex-shrink: 0;
 }
 
@@ -586,7 +637,7 @@ async function executeDelete() {
 }
 
 .item-text {
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
   line-height: 1.5;
   margin: 0 0 6px 0;
@@ -616,9 +667,9 @@ async function executeDelete() {
   background: rgb(var(--color-ink));
   color: rgb(var(--color-paper));
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: var(--ui-size-11);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -631,7 +682,7 @@ async function executeDelete() {
 
 .note-editor {
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   padding: 12px;
   margin-bottom: 12px;
 }
@@ -646,9 +697,9 @@ async function executeDelete() {
   width: 100%;
   padding: 10px;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   resize: none;
   transition: border-color 0.12s ease;
 }
@@ -676,9 +727,9 @@ async function executeDelete() {
   gap: 8px;
   padding: 6px 8px;
   background: rgb(var(--color-bg));
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   margin-bottom: 8px;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-mute));
   font-style: italic;
 }
@@ -688,7 +739,7 @@ async function executeDelete() {
 }
 
 .note-content {
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   line-height: 1.55;
   margin: 0;
@@ -723,7 +774,7 @@ async function executeDelete() {
   color: rgb(var(--color-mute));
   cursor: pointer;
   padding: 3px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   transition: color 0.12s ease;
 }
 
@@ -741,7 +792,7 @@ async function executeDelete() {
 
 .delete-confirm p {
   margin: 0 0 8px 0;
-  font-size: 0.8125rem;
+  font-size: var(--ui-size-13);
   color: rgb(var(--color-ink));
 }
 

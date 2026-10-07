@@ -42,6 +42,8 @@ module.exports = {
       // => @media (min-width: 1024px) { ... }
 
       xl: "1300px",
+      // The chapter reader's two-column layout (src/helper/readerLayout.js).
+      reader: "1024px",
       // => @media (min-width: 1300px) { ... }
 
       "2xl": "1500px",
@@ -76,9 +78,9 @@ module.exports = {
         // the prose column leaves and the two can never drift.
         /* Fallbacks must mirror --reader-prose-w exactly. When they disagreed
            (OPENBRAIN-4) the split silently shifted and the panes overlapped. */
-        text: "var(--reader-prose-w, min(50vw, calc(780px + 6.875rem)))",
+        text: "var(--reader-prose-w, clamp(35rem, 50vw, calc(780px + 6.875rem)))",
         illus:
-          "calc(100% - var(--reader-prose-w, min(50vw, calc(780px + 6.875rem))))",
+          "calc(100% - var(--reader-prose-w, clamp(35rem, 50vw, calc(780px + 6.875rem))))",
         menu: "35vw",
         "1/8": " calc(100% / 8 * 1)",
         "2/8": " calc(100% / 8 * 2)",
@@ -92,7 +94,7 @@ module.exports = {
         // Left edge of the prose column (= figure pane width). Used for fixed
         // elements that sit on the divider (left-text). Derived from the same
         // token as the widths so it lands on the divider at every width.
-        text: "calc(100vw - var(--reader-prose-w, min(50vw, calc(780px + 6.875rem))))",
+        text: "calc(100vw - var(--reader-prose-w, clamp(35rem, 50vw, calc(780px + 6.875rem))))",
       },
       maxWidth: {
         /* Prose-block maxima, clamped to the containing column.
@@ -120,6 +122,14 @@ module.exports = {
         accent: "rgb(var(--color-accent) / <alpha-value>)",
         complete: "rgb(var(--color-complete) / <alpha-value>)",
         warn: "rgb(var(--color-warn) / <alpha-value>)",
+        // The chapter's subject ramp ([data-chapter] on <html>): figure
+        // controls take it, so one figure matches whichever chapter it's in.
+        chapter: {
+          DEFAULT: "rgb(var(--color-chapter) / <alpha-value>)",
+          deep: "rgb(var(--color-chapter-deep) / <alpha-value>)",
+          soft: "rgb(var(--color-chapter-soft) / <alpha-value>)",
+          pale: "rgb(var(--color-chapter-pale) / <alpha-value>)",
+        },
 
         // Legacy aliases — keep existing classes working through the migration
         lightest: "rgb(var(--color-bg) / <alpha-value>)",

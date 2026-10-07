@@ -156,7 +156,7 @@ const someSelected = computed(
 thead th {
   text-align: left;
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: var(--ui-size-10);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgb(var(--color-mute));
@@ -183,7 +183,7 @@ thead th.sortable:hover {
 }
 tbody td {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--ui-size-14);
   color: rgb(var(--color-ink));
   padding: 14px 16px;
   border-bottom: 1px solid rgb(var(--color-line));

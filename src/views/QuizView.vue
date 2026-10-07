@@ -386,7 +386,7 @@ function handleGoToQuestion(index) {
   height: 40px;
   border: 1px solid rgb(var(--color-line));
   background: transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -429,7 +429,7 @@ function handleGoToQuestion(index) {
   background: transparent;
   color: rgb(var(--color-ink));
   border: 1px solid rgb(var(--color-ink) / 0.85);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -475,7 +475,7 @@ function handleGoToQuestion(index) {
 .confirm-modal {
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 0.9375rem;
   max-width: 400px;
   width: 100%;
@@ -518,7 +518,7 @@ function handleGoToQuestion(index) {
   justify-content: center;
   gap: 0.3125rem;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;

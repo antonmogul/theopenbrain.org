@@ -24,7 +24,7 @@ defineEmits(["cancel", "confirm"]);
 <style scoped>
 .hl-panel {
   background: rgb(var(--color-paper));
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 10px 12px;
   box-shadow:
     0 4px 16px rgb(var(--color-ink) / 0.16),
@@ -43,9 +43,9 @@ defineEmits(["cancel", "confirm"]);
   background: transparent;
   color: rgb(var(--color-mute));
   border: 1px solid rgb(var(--color-line));
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   cursor: pointer;
   transition: all 0.12s;
 }
@@ -60,9 +60,9 @@ defineEmits(["cancel", "confirm"]);
   background: rgb(var(--color-warn));
   color: rgb(var(--color-paper));
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   font-family: "IBM Plex Sans", sans-serif;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   font-weight: 500;
   cursor: pointer;
   transition: background 0.12s;
@@ -81,7 +81,7 @@ defineEmits(["cancel", "confirm"]);
 
 .hl-delete-text {
   color: rgb(var(--color-warn));
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   font-family: "IBM Plex Sans", sans-serif;
   white-space: nowrap;
 }

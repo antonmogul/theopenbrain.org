@@ -1,25 +1,25 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, inject, nextTick } from "vue";
+import {
+  computed,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  inject,
+  nextTick,
+} from "vue";
+import { referenceDisplay } from "@/helper/chapterReferences";
 
 const refsCtx = inject("references", null);
 
 const visible = ref(false);
 const tooltipRef = ref(null);
 const currentRef = ref(null);
+// A click pins the tooltip: hovering shows it, and a click used to toggle
+// it, so clicking a reference you were hovering closed it (OPENBRAIN-90).
+// Pinned, it stays until a click elsewhere or Escape, so its links work.
+const pinned = ref(false);
+const display = computed(() => referenceDisplay(currentRef.value));
 const position = ref({ top: 0, left: 0 });
-
-function formatAuthors(authors) {
-  if (!authors) return "";
-  return authors;
-}
-
-function formatReference(r) {
-  if (!r) return "";
-  let parts = [];
-  parts.push(formatAuthors(r.authors));
-  if (r.year) parts.push(`(${r.year})`);
-  return parts.join(" ");
-}
 
 function show(refData, rect) {
   currentRef.value = refData;
@@ -52,11 +52,12 @@ function show(refData, rect) {
 function hide() {
   visible.value = false;
   currentRef.value = null;
+  pinned.value = false;
 }
 
 function handleMouseEnter(e) {
   const target = e.target.closest(".citation-ref");
-  if (!target || !refsCtx) return;
+  if (!target || !refsCtx || pinned.value) return;
 
   const num = parseInt(target.dataset.ref, 10);
   const refData = refsCtx.getReference(num);
@@ -67,7 +68,7 @@ function handleMouseEnter(e) {
 
 function handleMouseLeave(e) {
   const target = e.target.closest(".citation-ref");
-  if (!target) return;
+  if (!target || pinned.value) return;
 
   // Check if we're moving to the tooltip itself
   const related = e.relatedTarget;
@@ -77,6 +78,7 @@ function handleMouseLeave(e) {
 }
 
 function handleTooltipLeave(e) {
+  if (pinned.value) return;
   // Check if we're moving back to a citation-ref
   const related = e.relatedTarget;
   if (related && related.closest && related.closest(".citation-ref")) return;
@@ -91,11 +93,13 @@ function handleClick(e) {
   const refData = refsCtx.getReference(num);
   if (!refData) return;
 
-  if (visible.value && currentRef.value?.number === num) {
-    hide();
-  } else {
+  pinned.value = true;
+  if (!(visible.value && currentRef.value?.number === num))
     show(refData, target.getBoundingClientRect());
-  }
+}
+
+function handleKeydown(e) {
+  if (e.key === "Escape" && visible.value) hide();
 }
 
 function handleDocumentClick(e) {
@@ -110,6 +114,7 @@ onMounted(() => {
   document.addEventListener("mouseout", handleMouseLeave);
   document.addEventListener("click", handleClick);
   document.addEventListener("click", handleDocumentClick, true);
+  document.addEventListener("keydown", handleKeydown);
 });
 
 onBeforeUnmount(() => {
@@ -117,6 +122,7 @@ onBeforeUnmount(() => {
   document.removeEventListener("mouseout", handleMouseLeave);
   document.removeEventListener("click", handleClick);
   document.removeEventListener("click", handleDocumentClick, true);
+  document.removeEventListener("keydown", handleKeydown);
 });
 </script>
 
@@ -129,21 +135,18 @@ onBeforeUnmount(() => {
       :style="{ top: position.top + 'px', left: position.left + 'px' }"
       @mouseleave="handleTooltipLeave"
     >
-      <div class="ct-authors">{{ formatReference(currentRef) }}</div>
-      <div class="ct-title">"{{ currentRef.title }}"</div>
-      <div v-if="currentRef.journal" class="ct-journal">
-        <em>{{ currentRef.journal }}</em
-        ><span v-if="currentRef.volume">, {{ currentRef.volume }}</span
-        ><span v-if="currentRef.pages">, {{ currentRef.pages }}</span>
-      </div>
+      <!-- The authors' own reference text, with a link to its source
+           (OPENBRAIN-92). -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div class="ct-text" v-html="display.html" />
       <a
-        v-if="currentRef.doi"
-        :href="`https://doi.org/${currentRef.doi}`"
+        v-if="display.href"
+        :href="display.href"
         target="_blank"
         rel="noopener noreferrer"
         class="ct-doi"
       >
-        DOI: {{ currentRef.doi }}
+        {{ display.hrefLabel }}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="12"
@@ -166,14 +169,24 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.ct-text {
+  font-size: var(--ui-size-13);
+  line-height: 1.5;
+  color: rgb(var(--color-ink));
+  overflow-wrap: anywhere;
+}
+.ct-text :deep(a) {
+  color: rgb(var(--color-accent));
+  text-decoration: underline;
+}
 .citation-tooltip {
   position: fixed;
   z-index: 9999;
   max-width: 360px;
   padding: 14px 16px;
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.06);
@@ -183,21 +196,21 @@ onBeforeUnmount(() => {
 }
 
 .ct-authors {
-  font-size: 13px;
+  font-size: var(--ui-size-13);
   font-weight: 600;
-  color: #374151;
+  color: rgb(var(--color-ink) / 0.8);
   margin-bottom: 4px;
 }
 
 .ct-title {
-  font-size: 13px;
-  color: #4b5563;
+  font-size: var(--ui-size-13);
+  color: rgb(var(--color-ink) / 0.7);
   margin-bottom: 4px;
 }
 
 .ct-journal {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: var(--ui-size-12);
+  color: rgb(var(--color-mute));
   margin-bottom: 4px;
 }
 
@@ -205,7 +218,7 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--ui-size-12);
   color: #7c3aed;
   text-decoration: none;
 }

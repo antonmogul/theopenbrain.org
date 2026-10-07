@@ -590,7 +590,7 @@ watch(severity, applySim);
 </script>
 
 <template>
-  <div class="cv-root">
+  <div class="widget-root cv-root">
     <!-- Masthead -->
     <header class="cv-mast">
       <p class="cv-kicker">Chapter — The Retina</p>
