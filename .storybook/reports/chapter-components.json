@@ -1,12 +1,12 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 58,
-  "coveredCount": 58,
+  "sourceCount": 62,
+  "coveredCount": 62,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 13,
+    "ReaderShell": 17,
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 16,
@@ -302,6 +302,26 @@
       "source": "src/components/chapter/text/WidgetBreakout.vue",
       "storyFile": "src/components/chapter/text/__stories__/WidgetBreakout.stories.js",
       "story": "BreakoutCard"
+    },
+    {
+      "source": "src/components/chapter/timeline/ChapterTimeline.vue",
+      "storyFile": "src/components/chapter/timeline/__stories__/ChapterTimeline.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/timeline/TimelineBars.vue",
+      "storyFile": "src/components/chapter/timeline/__stories__/TimelineBars.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/timeline/TimelineMap.vue",
+      "storyFile": "src/components/chapter/timeline/__stories__/TimelineMap.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/timeline/TimelinePreview.vue",
+      "storyFile": "src/components/chapter/timeline/__stories__/TimelinePreview.stories.js",
+      "story": "Default"
     }
   ]
 }

@@ -69,7 +69,7 @@ npm run storybook:snapshots:ci     # Screenshot Guides/Foundations/chapter-block
 Story naming follows `.storybook/taxonomy.md` (Guides / Foundations / Chapter / Student / Dashboard / Widgets / Views / Legacy). Storybook is the design-system reference (the in-app `/styleguide` was retired in OPENBRAIN-114):
 
 - **Guides** are MDX pages in `src/docs/` (Introduction, Designing for the book, Writing a chapter, Widget kit, Figma, Contributing). They embed their sources with `?raw` + `<Markdown>` (the chapter template, the widget kit's SKILL/design.md, taxonomy.md) so they can't drift. Plain MDX has no GFM tables here (no remark-gfm): put tables inside a `<Markdown>` block.
-- **Theme**: `.storybook/theme.js` (manager + docs; brand.css values as hex), `manager-head.html` (IBM Plex faces), `brand/logo-white.svg` (static dirs: `brand/`, plus the brain atlas model folder for `/brain`).
+- **Theme**: `.storybook/theme.js` (manager + docs; brand.css values as hex), `manager-head.html` (IBM Plex faces), `brand/logo-white.svg` (static dirs: `brand/`, plus the brain atlas model folder for `/brain` and the widget thumbnails for the chapter timeline).
 - **Toolbar**: Chapter (sets `data-chapter`), viewports at the breakpoints (390/768/1024/1280/1440), Motion, Theme, Accent, and a **Figma** button (local addon in `.storybook/manager.js`) that opens `parameters.design.url`. Links live in one map, `FIGMA_BY_TITLE` in `.storybook/figma.js` (story title → node id; `parameters.design.url` overrides); the Figma file is "Open Brain — Design System" (`NAjmvySrMHLtWYqn2zi4h4`), whose variables mirror brand.css.
 
 ### Linting and Formatting
@@ -95,6 +95,8 @@ See `docs/architecture/README.md`. These run via `npx -y`; nothing is added to `
 ### What CI runs
 
 `.github/workflows/ci.yml` runs on every pull request and on pushes to `main` and `dev`, on Node 20.20.0 with `npm ci --legacy-peer-deps`, in this order: `format:check` → `lint:ci` → `graph:check` → `test:ci` → `build` → `storybook:coverage` → `build-storybook` → `storybook:smoke:ci` → `storybook:snapshots:ci` (uploaded as the `storybook-snapshots` artifact) → `test:smoke`. Cypress is deliberately excluded (its specs would need a seeded Supabase). `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are read from repository secrets; without them the build still passes but the smoke test drops its chapter-content assertions and keeps the structural ones (no horizontal scroll, no unexpected console errors, HTTP < 400).
+
+The SQL execution tests (`src/__tests__/*.sql.test.js`) run migrations in PGlite and skip unless `HISTORY_SQL_HARNESS` points at `@electric-sql/pglite`. `.github/workflows/history-fixture-browser.yml` (every pull request, pushes to `main` and `dev`) installs PGlite 0.5.8 and runs them, `trendingHighlightsSync.sql.test.js` included, which applies the real schema migrations and checks RLS as `anon` and `authenticated`.
 
 ### Deployment
 
@@ -141,6 +143,7 @@ src/
 │   │   ├── Illus/          # Illustration/Lottie figure components
 │   │   ├── sidebar/        # Reader sidebar panels
 │   │   ├── highlight-toolbar/
+│   │   ├── timeline/       # The chapter timeline dock + its map (ChapterTimeline, TimelineBars, ...)
 │   │   └── demos/          # Story-only demo catalog
 │   ├── dashboard/
 │   │   ├── shared/         # Design-system primitives (Button, Switch, FormField, Badge, ...)
@@ -156,7 +159,7 @@ src/
 ├── stores/                 # Pinia: index.js (useGeneral, useText), animation.js, comments.js, auth.js, student.js
 ├── widgets/                # catalog.js (widget registry), source/ (authors' original HTML), python/
 ├── styles/                 # brand.css (tokens), fonts.css, dashboard-sections.css
-├── helper/                 # animationResolve, chapterTheme, readingProgress, widget maths (sdt, retinabox, ...), perlin.ts
+├── helper/                 # animationResolve, chapterTheme, readingProgress, chapterTimeline, readerJump, widget maths (sdt, retinabox, ...), perlin.ts
 ├── utils/                  # authHelpers.js (REST auth), format.js
 ├── lib/                    # supabase.js (supabase-js client, limited use)
 ├── mocks/                  # caseFiles.js, phrenology.js — prototype data
@@ -186,7 +189,7 @@ Other top-level folders: `supabase/migrations/` (schema + seeds), `scripts/` (sm
 
 - **useAuth** is the real auth source: `user`, `session`, `profile`, `loading`, sign-in/up/out. It is built on `src/utils/authHelpers.js`, which talks to Supabase Auth over REST and stores the session in localStorage under `sb-<project-ref>-auth-token` (it bypasses `supabase-js` because of issues with `sb_publishable_*` keys). It also keeps `services/api/client.js` in sync so authenticated REST calls carry the token. `devRoleOverride` (DEV only) lets you view the app as another role.
 - **useChapter** loads and transforms a chapter (see Data Architecture). **useChapterCatalog** lists published modules for `/chapters`.
-- **useHighlights** persists highlights to the Supabase `highlights` table per user; **useHighlightRenderer** / **useTextSelection** drive the reader UI.
+- **useHighlights** persists highlights to the Supabase `highlights` table per user; **useHighlightRenderer** / **useTextSelection** drive the reader UI. **useTrendingSharing** gates the highlight toolbar's "Share with readers" switch: one `rpc/trending_sharing_ready` call per page load, signed-in readers only, so the switch stays hidden until `20261007000000_trending_highlights_sync.sql` is pushed.
 - **usePreferences** (`src/composables/usePreferences.js`):
   - Owns user-facing display prefs: `theme`, `accent`, `fontPair`, `readingSize`, `lineLength`, `reduceMotion`.
   - Module-scope refs (single source of truth, not a Pinia store).
@@ -254,6 +257,8 @@ sections → paragraphs → subSection → paragraphs → subSubSection
 
 `reconstructNesting` rebuilds `subSection` / `subSubSection` from `subsection_level` / `is_subsection_header`, and `mergeConsecutiveSubSections` folds consecutive subsection headers into one wrapper. `ChapterView` pushes the result into `useText`. Unpublished modules (`status !== "published"`) throw the same not-found as a missing slug unless the reader is a creator; since `20260923000000_rls_lockdown_content_and_profiles.sql` the database enforces it too (OPENBRAIN-38/46): anon reads published chapters only, creators read drafts and are the only writers of modules/sections/paragraphs/content_versions, profiles are readable by signed-in users only, and a trigger lets only a creator (or the SQL editor) change `profiles.role`. Role checks in policies go through the SECURITY DEFINER helpers `public.is_creator()` / `public.has_any_role(text[])` — a policy on `profiles` that queries `profiles` directly recurses. Every chapter opens with `ChapterOpener` (cover + dark title/TOC block, built from `useChapterOutline`), which publishes its height as `--opener-h`; reading progress is measured over the body below it.
 
+**Reader chrome.** The fixed top bar (`ReaderTopBar`, 63px, covered by `--reader-topbar-h: 4rem`) and the **chapter timeline** docked at the bottom (OPENBRAIN-128, see `docs/chapter-timeline.md`). On a draft the top bar shows a creator-only Draft badge beside the chapter number (OPENBRAIN-51; an amber dot below 400px, its word kept for screen readers), which replaced the fixed bottom-left ribbon. The timeline is the chapter as bars, SoundCloud-waveform style: one per paragraph, widget or break in reading order, as tall as the paragraph is long, the part read filled in the chapter colour (`--color-chapter`; `--color-chapter-deep` for `perc` and `deve` in the light theme, whose main step is as light as the unread grey; magenta only when no ramp is set), with lanes for figures/widgets/videos, the reader's highlights and notes, and the community's trending passages. It rests as a 20px strip, peeks to 104px on hover over the dock, keyboard focus or a tap, with a preview card and section labels, and opens a full-screen chapter map (its own chunk, loaded on first open). `helper/chapterTimeline.js` builds the model (pure), `useChapterTimeline` measures it against the page and gathers the layers, and `components/chapter/timeline/` draws it; `ChapterView` wires them (it replaced the top bar's 2px progress line). The dock publishes `--reader-timeline-h` (20px) on `<html>` while mounted: the figure pane and the opener's tool buttons stop above it (`var(--reader-timeline-h, 0px)`); the floating reader sidebar keeps clear of the dock's peek height instead (`PEEK_H`, 104px, through `useDraggablePanel`'s `bottomInset`) and of the top bar, shrinking to fit; the phone bottom sheet covers it. Widgets and breaks carry `data-timeline-id="<paragraph id>"` so it can find them. Every jump in the reader (timeline, top-bar section menu, sidebar Info/Notebook/Trending, opener TOC) goes through `helper/readerJump.js`: the anchor by id (then `[data-timeline-id]`, `[data-paragraph-id]`), landed `--reader-topbar-h` + 16px below the top, smooth unless `reducedMotionPreferred()` (`scrollToY` still lands a smooth jump that a ScrollTrigger refresh cut short), optionally flashed with `.ob-flash` and focused (`focus: true`, which timeline and map jumps use: a target that can't take focus gets `tabindex="-1"` and `data-jump-target` until blur, and `[data-jump-target]:focus` in `index.css` paints no ring). `readingStartOf(el)` lands past a section's 200vh transition spacer; the timeline uses it for section headings, and the opener TOC, top-bar menu and InfoTab can adopt it. Don't add another `scrollIntoView` or hard-coded top-bar offset.
+
 Live modules today (`/chapter/<number>/<slug>`):
 
 - `foundations-of-neuroscience` — chapter 1, the "History" chapter, seeded by the `20260605*_seed_chapter_foundations*` migrations (generated with `scripts/import_foundations_chapter.py`).
@@ -316,10 +321,10 @@ Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `ac
 
 #### Key Features
 
-1. **Text Highlighting**: select text in the reader to create highlights, saved per user to Supabase (`useHighlights`), with tags, notes and a trending-highlights view.
+1. **Text Highlighting**: select text in the reader to create highlights, saved per user to Supabase (`useHighlights`), with tags, notes and a trending-highlights view. A highlight is private until its owner turns on "Share with readers" in the highlight toolbar. `20261007000000_trending_highlights_sync.sql` keeps highlight rows to their owner (creators can also read shared ones) and counts each passage in `trending_highlights` as distinct readers whose text is in the paragraph, readable for published chapters (and by creators). The switch shows only once that migration is pushed (`useTrendingSharing`).
 2. **Study tools**: quizzes, flashcards, Python labs (Pyodide) and an AI tutor (`VITE_AI_API_*`, mock responses when unset).
 3. **Roles**: creator (dashboard, editor, Chapter Wizard), professor (courses, students, analytics), student (courses, progress).
-4. **Reading progress and scroll memory**: progress is tracked per user; leaving and returning to a chapter restores the position.
+4. **Reading progress and scroll memory**: progress is tracked per user; leaving and returning to a chapter restores the position. The chapter timeline at the bottom of the reader shows it (see Reader chrome), and is how a reader jumps around the chapter.
 5. **Interactive figures**: Lottie/GSAP illustrations driven by scroll and click triggers stored on paragraphs.
 6. **Widget library**: research widgets ported to Vue and rendered beside the authors' originals for verification.
 
@@ -331,6 +336,7 @@ Tailwind exposes semantic color names (`bg`, `paper`, `ink`, `mute`, `line`, `ac
 - Text highlighting injects `<mark>` tags into the rendered paragraph DOM.
 - The reader's two-column layout starts at 1024px. Public routes (`/`, `/chapters`, chapter pages) must still render without horizontal scroll at 390px — the smoke test checks them at 390/1024/1280/1440/1920. Internal and widget routes (`/case-cabinet`, `/sdt`, ...) are checked at desktop widths only and are allowed to overflow on phones by design.
 - Do not reformat `src/widgets/source/` — those files are the authors' originals and are excluded from Prettier on purpose.
+- Widget thumbnails (`public/publicAssets/images/widgets/thumbs/`, mapped by the generated `src/widgets/thumbnails.js`) are stills the timeline's preview and map show. Re-capture them with `npm run widget-thumbs` against a `vite preview` of a fresh build when a widget changes or a new one is uploaded (header of `scripts/timeline/capture-widget-thumbs.mjs`); Storybook serves that folder through a `staticDirs` entry.
 
 ## Environment Variables
 

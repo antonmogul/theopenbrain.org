@@ -977,3 +977,11 @@ sup:hover {
     box-shadow 0.2s ease,
     background 0.2s ease;
 }
+
+/* Where a jump moved focus (readerJump.focusElement): a paragraph or section
+   focusable only until focus leaves it, so Tab and screen readers carry on
+   from there. It paints no focus ring, from the keyboard either: the flash,
+   or the heading at the top of the screen, marks where the reader landed. */
+[data-jump-target]:focus {
+  outline: none;
+}

@@ -130,7 +130,8 @@
      laptop widths so the floor above still gives a readable line. */
   --reader-gutter-l: 2rem;
   --reader-gutter-r: 2rem;
-  /* Matches the rendered app-bar height (progress track + bar-row content).
+  /* Matches the rendered app-bar height (bar-row content + hairline, 63px;
+     the progress track moved to the chapter timeline, OPENBRAIN-128).
      Keep in sync if the bar's padding / button size changes. */
   --reader-topbar-h: 4rem;
 

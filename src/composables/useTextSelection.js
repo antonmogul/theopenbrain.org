@@ -1,5 +1,59 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 
+// The toolbar's width for centring; HighlightToolbar's pill is about this.
+const TOOLBAR_W = 300;
+// Room the edit toolbar wants under a highlight before it goes above.
+const ROOM_BELOW = 200;
+// Gaps between the passage and the toolbar (px): 10, or 8 under a highlight.
+const GAP = 10;
+const GAP_UNDER_HIGHLIGHT = 8;
+
+function toolbarX(rect) {
+  const x = rect.left + rect.width / 2 - TOOLBAR_W / 2;
+  return Math.max(10, Math.min(x, window.innerWidth - TOOLBAR_W - 10));
+}
+
+// Above a passage, `y` is where the toolbar's bottom edge goes and
+// `above: true` has HighlightToolbar grow it upward from there, by its real
+// rendered height. The edit toolbar is no longer a 40px pill (the share row
+// sits with it, and a panel can open), so a top edge guessed from the pill
+// put the rest of it over the passage (review of #119).
+function above(rect) {
+  return {
+    x: toolbarX(rect),
+    y: rect.top - GAP + window.scrollY,
+    above: true,
+  };
+}
+
+function below(rect, gap) {
+  return {
+    x: toolbarX(rect),
+    y: rect.bottom + gap + window.scrollY,
+    above: false,
+  };
+}
+
+/**
+ * Where the toolbar goes over an existing highlight at `rect` (viewport
+ * px): under it (Readwise-style), or above it when there is no room below
+ * and more above. `{ x, y, above }`, in document px.
+ */
+export function editToolbarPosition(rect) {
+  const roomBelow = window.innerHeight - rect.bottom;
+  return roomBelow < ROOM_BELOW && rect.top > roomBelow
+    ? above(rect)
+    : below(rect, GAP_UNDER_HIGHLIGHT);
+}
+
+/**
+ * Where the toolbar goes over a fresh selection at `rect`: above it, or
+ * under it when it is at the top of the window. `{ x, y, above }`.
+ */
+export function createToolbarPosition(rect) {
+  return rect.top < 60 ? below(rect, GAP) : above(rect);
+}
+
 export function useTextSelection() {
   const selection = ref(null);
   const toolbarPosition = ref({ x: 0, y: 0 });
@@ -56,22 +110,9 @@ export function useTextSelection() {
     return element;
   }
 
-  // Position the toolbar given a bounding rect
+  // Position the edit toolbar given the highlight's bounding rect
   function positionToolbar(rect) {
-    const toolbarWidth = 300;
-
-    let x = rect.left + rect.width / 2 - toolbarWidth / 2;
-    x = Math.max(10, Math.min(x, window.innerWidth - toolbarWidth - 10));
-
-    // Position below the element for edit mode (Readwise-style)
-    let y = rect.bottom + 8 + window.scrollY;
-
-    // If not enough room below, position above
-    if (rect.bottom + 200 > window.innerHeight) {
-      y = rect.top - 50 + window.scrollY;
-    }
-
-    toolbarPosition.value = { x, y };
+    toolbarPosition.value = editToolbarPosition(rect);
   }
 
   // Handle click on an existing highlight <mark>
@@ -171,18 +212,9 @@ export function useTextSelection() {
         };
 
         // Position toolbar above selection for create mode
-        const rect = range.getBoundingClientRect();
-        const toolbarWidth = 300;
-
-        let x = rect.left + rect.width / 2 - toolbarWidth / 2;
-        x = Math.max(10, Math.min(x, window.innerWidth - toolbarWidth - 10));
-
-        let y = rect.top - 50 + window.scrollY;
-        if (rect.top < 60) {
-          y = rect.bottom + 10 + window.scrollY;
-        }
-
-        toolbarPosition.value = { x, y };
+        toolbarPosition.value = createToolbarPosition(
+          range.getBoundingClientRect()
+        );
         showToolbar.value = true;
       } catch (e) {
         console.error("useTextSelection: Error processing selection:", e);

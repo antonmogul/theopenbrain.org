@@ -22,7 +22,14 @@ vi.mock("@/composables/useReaderSidebar", async () => {
 
 vi.mock("@/composables/useDraggablePanel", async () => {
   const { ref } = await import("vue");
-  return { useDraggablePanel: () => ({ x: ref(16), y: ref(16) }) };
+  return {
+    useDraggablePanel: () => ({
+      x: ref(16),
+      y: ref(16),
+      height: ref(620),
+      refit: () => {},
+    }),
+  };
 });
 
 vi.mock("@/composables/useAuth", async () => {

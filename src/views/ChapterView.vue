@@ -28,14 +28,19 @@ import ReaderTopBar from "@/components/chapter/ReaderTopBar.vue";
 import ReaderSidebar from "@/components/chapter/ReaderSidebar.vue";
 import CitationTooltip from "@/components/chapter/CitationTooltip.vue";
 import EndOfChapterCallout from "@/components/chapter/EndOfChapterCallout.vue";
+import ChapterTimeline from "@/components/chapter/timeline/ChapterTimeline.vue";
 
 // Phase 3A: Composables for highlighting
-import { useTextSelection } from "@/composables/useTextSelection";
+import {
+  useTextSelection,
+  editToolbarPosition,
+} from "@/composables/useTextSelection";
 import { referenceFromChapter } from "@/helper/chapterReferences";
 import { useHighlights } from "@/composables/useHighlights";
 import { useHighlightRenderer } from "@/composables/useHighlightRenderer";
 import { useNotes } from "@/composables/useNotes";
 import { useReadingProgress } from "@/composables/useReadingProgress";
+import { useChapterTimeline } from "@/composables/useChapterTimeline";
 import { useAuth } from "@/composables/useAuth";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
@@ -432,6 +437,31 @@ const showContent = computed(() => {
 });
 
 const chapterNotFound = computed(() => error.value?.includes("not found"));
+
+// Only creators can open a draft (useChapter gate + RLS); the top bar marks
+// it (OPENBRAIN-51).
+const isDraft = computed(
+  () => !!chapterData.value && chapterData.value.status !== "published"
+);
+
+// The timeline docked at the bottom (OPENBRAIN-128): the chapter as bars,
+// the part read in the chapter colour, with the reader's highlights and
+// notes and the community's trending passages. It measures the page only
+// while the content is shown, and replaces the top bar's progress line.
+const {
+  model: timelineModel,
+  position: timelinePosition,
+  layers: timelineLayers,
+  jumpTo: jumpToTimelineItem,
+  refreshTrending,
+} = useChapterTimeline({
+  text: computed(() => storeText.text),
+  moduleId: currentModuleId,
+  highlights,
+  notes,
+  enabled: showContent,
+});
+
 let chapterExperienceGeneration = 0;
 
 // Load chapter on mount and when route changes
@@ -507,6 +537,15 @@ async function handleCreateHighlight({ color, isPublic, withNote }) {
     return;
   }
 
+  // "Note" reopens the toolbar on the new highlight with its note open,
+  // placed as for any highlight (under it, or above it growing upward):
+  // the selection's pill spot would put the taller toolbar over the passage
+  // or off the top of the window. Measured now, before the selection goes.
+  const passage = withNote
+    ? selection.value.range?.getBoundingClientRect?.()
+    : null;
+  const notePosition = passage ? editToolbarPosition(passage) : null;
+
   try {
     const created = await createHighlight({
       paragraphId: selection.value.paragraphId,
@@ -517,7 +556,7 @@ async function handleCreateHighlight({ color, isPublic, withNote }) {
       isPublic: isPublic,
     });
 
-    const position = { ...toolbarPosition.value };
+    const position = notePosition || { ...toolbarPosition.value };
     clearSelection();
 
     // Refresh highlights and re-render visual marks
@@ -548,20 +587,37 @@ async function handleCreateHighlight({ color, isPublic, withNote }) {
   }
 }
 
-// Handle updating a highlight (color, tags, etc.)
-async function handleUpdateHighlight({ id, updates }) {
-  if (!isAuthenticated.value) return;
+// Handle updating a highlight (color, tags, sharing). Resolves whether the
+// update was saved and tells the toolbar through `done`, so the share switch
+// can go back and say so when it wasn't (it used to be only logged).
+async function handleUpdateHighlight({ id, updates, done }) {
+  if (!isAuthenticated.value) {
+    done?.(false);
+    return false;
+  }
 
   try {
     await updateHighlight(id, updates);
+  } catch (err) {
+    console.error("ChapterView: Error updating highlight:", err);
+    done?.(false);
+    return false;
+  }
+  done?.(true);
+
+  try {
     if (currentModuleId.value) {
       await fetchHighlights();
       await nextTick();
       renderAllHighlights();
     }
+    // Sharing or unsharing changes the passage's trending count (the
+    // trigger in 20261007000000_trending_highlights_sync.sql).
+    if (updates && "is_public" in updates) refreshTrending();
   } catch (err) {
-    console.error("ChapterView: Error updating highlight:", err);
+    console.error("ChapterView: Error refreshing highlights:", err);
   }
+  return true;
 }
 
 // Handle saving a note inline from the toolbar
@@ -591,6 +647,8 @@ async function handleSaveNote({ highlightId, paragraphId, noteId, content }) {
 
 // Handle deleting a highlight
 async function handleDeleteHighlight(highlightId) {
+  const wasShared = !!highlights.value?.find((h) => h.id === highlightId)
+    ?.is_public;
   try {
     await deleteHighlight(highlightId);
     clearSelection();
@@ -599,6 +657,7 @@ async function handleDeleteHighlight(highlightId) {
       await nextTick();
       renderAllHighlights();
     }
+    if (wasShared) refreshTrending();
   } catch (err) {
     console.error("ChapterView: Error deleting highlight:", err);
   }
@@ -656,19 +715,9 @@ async function handleDeleteHighlight(highlightId) {
         :chapter-title="chapterTitle"
         :chapter-number="chapterNumber"
         :sections="breadcrumbSections"
-        :progress-percent="readingScrollPercent"
         :is-authenticated="isAuthenticated"
+        :is-draft="isDraft"
       />
-
-      <!-- Only creators can open a draft (useChapter gate + RLS), so this
-           reminds them readers can't see it yet (OPENBRAIN-51). -->
-      <p
-        v-if="chapterData && chapterData.status !== 'published'"
-        class="draft-ribbon"
-        role="status"
-      >
-        <strong>Draft</strong> · only creators can see this chapter
-      </p>
 
       <div v-if="readingSaveError" class="save-error" role="alert">
         <span>{{ readingSaveError }}</span>
@@ -717,6 +766,18 @@ async function handleDeleteHighlight(highlightId) {
       <FootNotesWindow />
       <Comment v-if="commentStore.activeCom" />
 
+      <!-- The chapter timeline, docked at the bottom (OPENBRAIN-128). Out of
+           the way while the footnote sheet slides up over it. -->
+      <ChapterTimeline
+        :model="timelineModel"
+        :position="timelinePosition"
+        :read-percent="readingScrollPercent"
+        :layers="timelineLayers"
+        :chapter-title="chapterTitle"
+        :hidden="store.superScriptActive"
+        @jump="jumpToTimelineItem"
+      />
+
       <!-- The 2023 "prototype" help button that sat bottom-right is gone:
            its copy was out of date and it opened nothing (OPENBRAIN-101). -->
 
@@ -763,24 +824,6 @@ export default {
 .duration-Fix {
   transition: all 0s !important;
   transition-delay: 0;
-}
-
-.draft-ribbon {
-  position: fixed;
-  z-index: 180;
-  bottom: 1.25rem;
-  left: 1.25rem;
-  margin: 0;
-  padding: 0.5rem 0.875rem;
-  border-radius: var(--radius-control);
-  background: rgb(var(--color-warn));
-  color: rgb(10 10 10);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
-  pointer-events: none;
 }
 
 .save-error {

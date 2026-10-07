@@ -2,6 +2,7 @@
 import { ref, computed, nextTick } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
+import { jumpToId } from "@/helper/readerJump";
 import AccountMenu from "@/components/Navigation/AccountMenu.vue";
 
 const props = defineProps({
@@ -17,11 +18,12 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  progressPercent: {
-    type: Number,
-    default: 0,
-  },
   isAuthenticated: {
+    type: Boolean,
+    default: false,
+  },
+  /** An unpublished chapter: only creators can open it (OPENBRAIN-51). */
+  isDraft: {
     type: Boolean,
     default: false,
   },
@@ -63,11 +65,11 @@ async function closeDropdown({ restoreFocus = true } = {}) {
   if (restoreFocus) sectionButtonRef.value?.focus();
 }
 
+// Through readerJump, like every jump in the reader (OPENBRAIN-128): below
+// the bar, no smooth scroll under reduced motion. By id: a slug can start
+// with a digit, which a querySelector('#' + slug) can't take.
 async function scrollToSection(slug) {
-  const el = document.querySelector("#" + slug);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  jumpToId(slug, { align: "top" });
   await closeDropdown();
 }
 
@@ -92,22 +94,8 @@ function onDropdownKeydown(event) {
 
 <template>
   <div class="reader-top-bar" data-testid="reader-top-bar">
-    <!-- Progress bar (kept along the top edge) -->
-    <div
-      class="progress-track"
-      role="progressbar"
-      aria-label="Chapter reading progress"
-      aria-valuemin="0"
-      aria-valuemax="100"
-      :aria-valuenow="Math.round(progressPercent)"
-    >
-      <div
-        class="progress-fill"
-        :style="{ width: progressPercent + '%' }"
-      ></div>
-    </div>
-
-    <!-- Single app-bar row (prototype AppBar) -->
+    <!-- Single app-bar row (prototype AppBar). Reading progress lives in the
+         chapter timeline docked at the bottom (OPENBRAIN-128). -->
     <div class="bar-row">
       <!-- Menu -->
       <button
@@ -149,6 +137,21 @@ function onDropdownKeydown(event) {
 
       <!-- Chapter + section (section is click-to-jump) -->
       <span class="chapter-eyebrow">Ch {{ chapterNumber }}</span>
+      <!-- Only creators can open a draft (useChapter gate + RLS), so this
+           reminds them readers can't see it yet (OPENBRAIN-51). In the bar,
+           where it collides with nothing: as a ribbon under the bar it hid
+           TextComp's Edit chapter toggle and edit bar. Below 400px it is an
+           amber dot, its word kept for screen readers, so the bar fits. -->
+      <span
+        v-if="isDraft"
+        class="draft-badge"
+        role="status"
+        title="Draft · only creators can see this chapter"
+        data-testid="draft-badge"
+      >
+        <span class="draft-badge-label">Draft</span
+        ><span class="sr-only">, only creators can see this chapter</span>
+      </span>
       <button
         v-if="currentSectionTitle"
         ref="sectionButtonRef"
@@ -238,7 +241,8 @@ function onDropdownKeydown(event) {
 
 <style scoped>
 /* Reader app bar — prototype AppBar: single row, paper, bottom hairline,
-   wordmark + chapter/section + tool buttons. Progress track kept on top edge. */
+   wordmark + chapter/section + tool buttons. The progress line that ran
+   along its top edge is now the chapter timeline (OPENBRAIN-128). */
 .reader-top-bar {
   position: fixed;
   top: 0;
@@ -246,31 +250,21 @@ function onDropdownKeydown(event) {
   right: 0;
   /* The bar sizes to its content; the token (brand.css) is tuned to match this
      rendered height so the figure pane / prose offsets stay aligned. Use a
-     box that exactly fits: progress track (2px) + bar-row content. */
+     box that exactly fits: bar-row content + the 1px hairline. */
   z-index: 45;
   background: rgb(var(--color-paper));
   border-bottom: 1px solid rgb(var(--color-line));
   color: rgb(var(--color-ink));
 }
 
-/* Progress bar — thin strip along the very top edge */
-.progress-track {
-  height: 2px;
-  background: rgb(var(--color-ink) / 0.06);
-}
-
-.progress-fill {
-  height: 100%;
-  background: rgb(var(--color-accent));
-  transition: width 0.15s ease;
-}
-
-/* Single bar row */
+/* Single bar row. 9px of padding took over the 2px progress track's share,
+   so the bar still renders 63px tall (9 + 44 + 9 + the hairline) and
+   --reader-topbar-h (4rem) still clears it. */
 .bar-row {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 8px 18px;
+  padding: 9px 18px;
 }
 
 .reader-menu-btn {
@@ -331,6 +325,23 @@ function onDropdownKeydown(event) {
   letter-spacing: 0.08em;
   color: rgb(var(--color-mute));
   flex-shrink: 0;
+}
+
+/* Draft: the warn amber the old bottom-left ribbon used, with near-black
+   text in both themes (the amber does not change with the theme). */
+.draft-badge {
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-warn));
+  color: rgb(10 10 10);
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-10);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* Section jump (keeps the click-to-jump dropdown affordance) */
@@ -504,7 +515,7 @@ function onDropdownKeydown(event) {
 @media (max-width: 900px) {
   .bar-row {
     gap: 8px;
-    padding: 4px 8px;
+    padding: 5px 8px;
   }
 
   .wordmark-text,
@@ -536,6 +547,12 @@ function onDropdownKeydown(event) {
     flex: 1;
   }
 
+  /* The section button already fills the free space; a spacer beside it
+     took half of it (and a gap) from the section name. */
+  .section-jump + .spacer {
+    display: none;
+  }
+
   .section-name {
     max-width: none;
   }
@@ -544,6 +561,33 @@ function onDropdownKeydown(event) {
     left: 8px;
     right: 8px;
     max-width: none;
+  }
+}
+
+/* At 320px the 47px Draft badge pushed the account menu off the bar, and at
+   360-390px it left the section name 0px wide (OPENBRAIN-128). Below 400px
+   it is an amber dot, its word hidden the .sr-only way so screen readers
+   still hear "Draft". */
+@media (max-width: 399px) {
+  .draft-badge {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: 50%;
+    /* A dark rim: amber alone is ~2:1 on light paper (3:1 for a graphic). */
+    box-shadow: inset 0 0 0 1px rgb(10 10 10 / 0.5);
+  }
+
+  .draft-badge-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }
 </style>

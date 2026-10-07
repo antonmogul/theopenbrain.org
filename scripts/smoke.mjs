@@ -152,12 +152,23 @@ async function checkFigureArtwork() {
       `figure "${m.title || m.animation_key}" (${m.animation_key}) in ${chaptersFor(m.id)} has no artwork — readers see a placeholder`
   );
 }
+
+/*
+ * The chapter timeline docked at the bottom of every chapter (OPENBRAIN-128).
+ * It renders with the chapter content, so it is a data assertion like
+ * minText; its width is covered by the horizontal-scroll check.
+ */
+const TIMELINE = { selector: '[data-testid="chapter-timeline"]', min: 1 };
+
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
  * /case-cabinet is an unlisted internal route — an interaction prototype —
  * with a fixed-pixel layout that overflows at phone width by design. It is
  * still checked on desktop, so a regression there is caught; it just doesn't
  * block on a mobile layout nobody has built yet. Student- and professor-facing routes are checked everywhere.
+ *
+ * `expectCount` is one { selector, min } or a list of them (data assertions:
+ * skipped without credentials on `needsData` routes).
  */
 const ROUTES = [
   { path: "/", name: "home", minText: 50 },
@@ -166,6 +177,7 @@ const ROUTES = [
     name: "foundations",
     minText: 2000,
     needsData: true,
+    expectCount: [TIMELINE],
   },
   {
     path: "/chapter/2/the-retina",
@@ -177,7 +189,7 @@ const ROUTES = [
      * prose. Their anchors depend on chapter content, so this is a data
      * assertion and is skipped without credentials like minText.
      */
-    expectCount: { selector: "[data-widget-breakout]", min: 3 },
+    expectCount: [{ selector: "[data-widget-breakout]", min: 3 }, TIMELINE],
     /*
      * The scroll-trigger markers are dev chrome behind ?markers=1
      * (OPENBRAIN-31). Without the flag none may render — they were the
@@ -471,8 +483,9 @@ async function main() {
           route.expectStage && width >= (route.expectStage.minWidth || 0)
             ? route.expectStage
             : null;
+        const expectCounts = [].concat(route.expectCount || []);
         const result = await page.evaluate(
-          async ([countSelector, absentSelector, stage]) => {
+          async ([countSelectors, absentSelector, stage]) => {
             const measureScrollX = () => {
               const before = window.scrollX;
               window.scrollTo(9999, window.scrollY);
@@ -561,9 +574,9 @@ async function main() {
                 document.documentElement.scrollHeight >
                 window.innerHeight + 600,
               textLength: document.body.innerText.trim().length,
-              count: countSelector
-                ? document.querySelectorAll(countSelector).length
-                : null,
+              counts: countSelectors.map(
+                (selector) => document.querySelectorAll(selector).length
+              ),
               absent: absentSelector
                 ? document.querySelectorAll(absentSelector).length
                 : null,
@@ -571,7 +584,7 @@ async function main() {
             };
           },
           [
-            route.expectCount?.selector || null,
+            expectCounts.map(({ selector }) => selector),
             route.expectAbsent || null,
             stageCheck,
           ]
@@ -649,14 +662,15 @@ async function main() {
             `${label}: rendered ${result.textLength} chars, expected >= ${route.minText}`
           );
         }
-        const countOk =
-          !checkContent ||
-          !route.expectCount ||
-          result.count >= route.expectCount.min;
-        if (!countOk) {
-          failures.push(
-            `${label}: found ${result.count} × ${route.expectCount.selector}, expected >= ${route.expectCount.min}`
-          );
+        let countOk = true;
+        if (checkContent) {
+          expectCounts.forEach(({ selector, min }, i) => {
+            if (result.counts[i] >= min) return;
+            countOk = false;
+            failures.push(
+              `${label}: found ${result.counts[i]} × ${selector}, expected >= ${min}`
+            );
+          });
         }
         // Inline stage visibility (OPENBRAIN-37): full content width, at
         // x = 0, and hit-testable well left of the prose divider.

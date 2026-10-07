@@ -118,10 +118,13 @@
             paragraph?.type != 'breakVideo' && paragraph.type != 'breakSection'
           "
         >
-          <!-- Interactive widget placed in the prose (OPENBRAIN-21) -->
+          <!-- Interactive widget placed in the prose (OPENBRAIN-21).
+               data-timeline-id: the chapter timeline finds widgets and
+               breaks by it (they render no paragraph id; OPENBRAIN-128). -->
           <WidgetBreakout
             v-if="paragraph.type === 'widget'"
             :placement="paragraph.widget"
+            :data-timeline-id="paragraph.id"
           />
           <!-- section paragraph - editable for creators -->
           <EditableBlock
@@ -174,11 +177,13 @@
           :title="paragraph.title"
           :text="paragraph.text"
           :slug="paragraph.videoSlug || 'placeholder'"
+          :data-timeline-id="paragraph.id"
         />
         <BreakSection
           :key="'breakSection' + paragraph.id"
           v-else-if="paragraph.type === 'breakSection'"
           :content="paragraph"
+          :data-timeline-id="paragraph.id"
         />
         <StartEndIcon :paragraph="paragraph" art="end" />
         <!-- A breakout box placed right after this paragraph (OPENBRAIN-70) -->

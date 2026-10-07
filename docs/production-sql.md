@@ -43,6 +43,29 @@ To move this into CI later: run `supabase db push` in the workflow behind a `SUP
 
 `migration repair` only writes rows to `supabase_migrations.schema_migrations`; it executes nothing from the files. Marking a file applied means it will never run, so only do it for a migration you have verified is live. When unsure and the file is idempotent, leave it pending and let `db push` run it: that is how the reading-progress migration turned out to have been missing all along.
 
+## Pending
+
+Committed, not yet pushed. `supabase migration list` is the authority: any other local-only row it shows is pending too.
+
+| Migration                                                 | What it does, and what the reader does until it is live                                                                                                                                                                                                                                                           |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261007000000_trending_highlights_sync` (OPENBRAIN-128) | Makes shared highlights private to their owner and creators, recounts Trending as distinct readers, limits Trending to published chapters, and adds the probe the "Share with readers" switch waits for. Details below. Until it is pushed the switch stays hidden and Trending keeps its old insert-only counts. |
+
+### `20261007000000_trending_highlights_sync`
+
+- **Highlight rows.** Drops every permissive SELECT policy on `highlights` except an owner one, which removes the initial-schema "Users can view public highlights" (it returned a shared row, with `user_id`, tags and the legacy note, to anyone). Owners keep their rows through "Users manage own highlights"; the new "Creators read shared highlights" lets creators read `is_public` rows only.
+- **Reading Trending.** "Anyone reads trending highlights" (`USING (true)`) becomes "Read trending passages of published chapters": a row is visible when its paragraph's module is published, or to a creator.
+- **The count.** Triggers on insert, update and delete recompute the affected passage: the number of distinct readers whose shared `selected_text`, whitespace-normalised, occurs in the paragraph's reader text (`trending_paragraph_text`, which mirrors `contentBlocksToHTML`) or in its `content_text`. The shown text is the normalised text most of those readers chose (a tie goes to the shortest, then byte order). The file then rebuilds the table, dropping drifted counts, one reader's duplicates, text that is not in its paragraph and the `seed_dashboard_data.sql` fixture rows. The helpers (`trending_squash`, `trending_paragraph_text`, `trending_text_in_paragraph`, `trending_refresh_passage`) are not callable over RPC.
+- **The probe.** `public.trending_sharing_ready()` returns true, for signed-in readers only. The highlight toolbar asks it once per page load (`useTrendingSharing`) and shows "Share with readers" only on a true answer, so a frontend deployed before this push never offers sharing while the old policy stands. Readers see the switch from their next page load after the push. Supabase reloads the PostgREST schema cache on DDL; if the switch is still hidden, run `NOTIFY pgrst, 'reload schema';`.
+- **Self-check.** The push fails, and changes nothing, if there is no owner policy on `highlights` (FOR ALL or FOR SELECT, `USING` `auth.uid() = user_id` either way round, the `(select auth.uid())` form included), if any other permissive SELECT or ALL policy there could expose rows (the error names it), if `trending_highlights` has any other policy, if the probe is callable by `anon` or not by `authenticated`, or if the table does not match the recount.
+- **Before pushing,** look at what production has, since dashboard edits are not in the migrations:
+
+  ```sql
+  select tablename, policyname, cmd, permissive, roles, qual
+    from pg_policies
+   where schemaname = 'public' and tablename in ('highlights', 'trending_highlights');
+  ```
+
 ## Fallback: the dashboard SQL editor
 
 `https://supabase.com/dashboard/project/ocenwbkdzmxhsvwlornp/sql/new`. If you paste a migration there, also run `supabase migration repair --status applied <version>` afterwards or the next `db push` will try to apply it again. When copying a large file from a terminal use `LC_ALL=en_US.UTF-8 pbcopy < file.sql`: plain `pbcopy` in a non-interactive shell runs in the C locale and turned curly quotes into mojibake in nine Chapter 1 rows on 2026-09-03. Check the pasted text for `‚Ä` before running.

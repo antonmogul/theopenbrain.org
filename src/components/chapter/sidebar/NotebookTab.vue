@@ -2,6 +2,7 @@
 import { ref, computed, inject, onMounted } from "vue";
 import { HIGHLIGHT_COLORS, HIGHLIGHT_HEX } from "@/composables/useHighlights";
 import { useTrendingHighlights } from "@/composables/useTrendingHighlights";
+import { jumpToId } from "@/helper/readerJump";
 import { dateTime as formatDate } from "@/utils/format";
 import {
   EmptyState,
@@ -78,19 +79,11 @@ onMounted(() => {
 });
 
 // === Highlight helpers ===
+// The highlight's paragraph under the top bar, flashed (accent token, not
+// legacy violet). readerJump reads the bar's height and the reader's
+// reduced-motion setting (OPENBRAIN-128).
 function scrollToHighlightInText(highlight) {
-  const el = document.querySelector(
-    `[data-paragraph-id="${highlight.paragraph_id}"]`
-  );
-  if (el) {
-    // Account for fixed top bar (~50px) + some breathing room
-    const topBarOffset = 60;
-    const y = el.getBoundingClientRect().top + window.scrollY - topBarOffset;
-    window.scrollTo({ top: y, behavior: "smooth" });
-    // Brief flash effect (accent token, not legacy violet)
-    el.classList.add("ob-flash");
-    setTimeout(() => el.classList.remove("ob-flash"), 2000);
-  }
+  jumpToId(highlight.paragraph_id, { align: "top", flash: true });
 }
 
 function getColorBorder(color) {
