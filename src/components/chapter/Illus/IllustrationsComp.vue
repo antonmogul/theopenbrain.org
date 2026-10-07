@@ -119,6 +119,9 @@ watch(activeAnimation, (id) => {
 const ownedTriggers = [];
 const activeTriggers = new Set();
 let setupTimer = null;
+let refreshTimer = null;
+let layoutObserver = null;
+let fontSet = null;
 let unmounted = false;
 
 function updateActiveFigure() {
@@ -131,6 +134,14 @@ function updateActiveFigure() {
     ? current.trigger.id.replace(/^trigger/i, "").toLowerCase()
     : null;
   store.animationActive = !!activeAnimation.value;
+}
+
+function refreshAfterLayout() {
+  if (unmounted || refreshTimer !== null) return;
+  refreshTimer = setTimeout(() => {
+    refreshTimer = null;
+    if (!unmounted) ScrollTrigger.refresh();
+  }, 0);
 }
 
 function setupTriggers() {
@@ -202,6 +213,24 @@ function setupTriggers() {
         },
       })
     );
+  // Text wrapping and late font subsets can move prose after initial setup.
+  // Keep ScrollTrigger's cached positions aligned with the actual reader.
+  const content = reader.querySelector("#container");
+  if (content && typeof ResizeObserver === "function") {
+    let previousSize = null;
+    layoutObserver = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      if (previousSize?.width === width && previousSize?.height === height)
+        return;
+      previousSize = { width, height };
+      refreshAfterLayout();
+    });
+    layoutObserver.observe(content);
+  }
+  fontSet = document.fonts;
+  fontSet?.addEventListener?.("loadingdone", refreshAfterLayout);
+  fontSet?.ready?.then(refreshAfterLayout);
 }
 
 onMounted(async () => {
@@ -221,6 +250,9 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   unmounted = true;
   clearTimeout(setupTimer);
+  clearTimeout(refreshTimer);
+  layoutObserver?.disconnect();
+  fontSet?.removeEventListener?.("loadingdone", refreshAfterLayout);
   for (const trigger of ownedTriggers.splice(0)) {
     trigger.trigger?.classList.remove("active");
     trigger.kill();

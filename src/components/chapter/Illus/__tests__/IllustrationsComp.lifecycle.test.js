@@ -45,6 +45,7 @@ vi.mock("@/helper/chapterDebug", () => ({
   announce: vi.fn(),
 }));
 import IllustrationsComp from "../IllustrationsComp.vue";
+import ScrollTrigger from "gsap/ScrollTrigger";
 
 const wrappers = [];
 const mountPane = (options = {}) => {
@@ -62,6 +63,7 @@ async function settle() {
 }
 beforeEach(() => {
   fixtures.triggers.length = 0;
+  ScrollTrigger.refresh.mockClear();
   fixtures.fetch.mockReset().mockResolvedValue([]);
   fixtures.store.animationActive = false;
   vi.useFakeTimers();
@@ -143,6 +145,53 @@ describe("reader figure lifecycle", () => {
     expect(fixtures.triggers).toHaveLength(0);
   });
 
+  it("refreshes cached positions after reader reflow and late fonts, then detaches", async () => {
+    const originalFonts = Object.getOwnPropertyDescriptor(document, "fonts");
+    const fonts = new EventTarget();
+    fonts.ready = Promise.resolve();
+    Object.defineProperty(document, "fonts", {
+      configurable: true,
+      value: fonts,
+    });
+    const disconnect = vi.fn();
+    let resized;
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback) {
+          resized = callback;
+        }
+        observe() {}
+        disconnect() {
+          disconnect();
+        }
+      }
+    );
+    try {
+      const pane = mountPane();
+      await settle();
+      await vi.advanceTimersByTimeAsync(1);
+      ScrollTrigger.refresh.mockClear();
+      resized([{ contentRect: { width: 600, height: 3000 } }]);
+      fonts.dispatchEvent(new Event("loadingdone"));
+      await vi.advanceTimersByTimeAsync(1);
+      expect(ScrollTrigger.refresh).toHaveBeenCalledTimes(1);
+      resized([{ contentRect: { width: 600, height: 3000 } }]);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(ScrollTrigger.refresh).toHaveBeenCalledTimes(1);
+      resized([{ contentRect: { width: 600, height: 3200 } }]);
+      pane.unmount();
+      fonts.dispatchEvent(new Event("loadingdone"));
+      await vi.advanceTimersByTimeAsync(1);
+      expect(ScrollTrigger.refresh).toHaveBeenCalledTimes(1);
+      expect(disconnect).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+      if (originalFonts)
+        Object.defineProperty(document, "fonts", originalFonts);
+      else delete document.fonts;
+    }
+  });
   it("kills only this pane's triggers during interrupted Back/Forward remounts", async () => {
     const oldPane = mountPane();
     await settle();
