@@ -469,7 +469,9 @@ onMounted(() => {
             srub: 0,
             markers: false,
             onUpdate: () => {
-              store.activeMenu = false;
+              // Opening the modal drawer changes scroll/layout state and can
+              // update this trigger. The drawer owns dismissal on navigation,
+              // backdrop and Escape; a layout update must not close it again.
               store.superScriptActive = false;
             },
           })

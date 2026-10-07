@@ -196,42 +196,85 @@ async function assertNoBoxLeakage(page) {
 async function timing(page, result, number) {
   const trigger = page.locator(`#triggerAnimationFoundationsFig${number}`);
   await expect(trigger).toHaveCount(1);
-  const geometry = await trigger.evaluate((element) => {
-    const rect = element.getBoundingClientRect();
-    const top = rect.top + scrollY;
-    const bottom = rect.bottom + scrollY;
-    const section = element.closest("section");
-    const boundaries = [
-      ...section.querySelectorAll(".animationTrigger[id], .fb-slot, .wb"),
-    ]
-      .filter(
-        (item) => item !== element && !item.closest("[data-breakout-box]")
-      )
-      .map((item) => item.getBoundingClientRect().top + scrollY)
-      .filter((y) => y > top + 1);
-    return {
-      top,
-      bottom,
-      boundary: Math.min(
-        section.getBoundingClientRect().bottom + scrollY,
-        ...boundaries
-      ),
-      readingLine: innerHeight / 2,
-    };
-  });
+  const measure = () =>
+    trigger.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const top = rect.top + scrollY;
+      const bottom = rect.bottom + scrollY;
+      const section = element.closest("section");
+      const boundaries = [
+        ...section.querySelectorAll(".animationTrigger[id], .fb-slot, .wb"),
+      ]
+        .filter(
+          (item) => item !== element && !item.closest("[data-breakout-box]")
+        )
+        .map((item) => item.getBoundingClientRect().top + scrollY)
+        .filter((y) => y > top + 1);
+      return {
+        top,
+        bottom,
+        boundary: Math.min(
+          section.getBoundingClientRect().bottom + scrollY,
+          ...boundaries
+        ),
+        readingLine: innerHeight / 2,
+        scrollY,
+      };
+    });
   const label = `FIG ${String(number).padStart(2, "0")}`;
-  for (const position of [
-    geometry.top + 5,
-    Math.min(geometry.bottom - 3, geometry.boundary - 3),
+  const sample = async (name, position) => {
+    const before = await measure();
+    let target = position(before) - before.readingLine;
+    await scrollTo(page, target);
+    let live = await measure();
+    // Earlier full-width artwork can settle after a long jump. Re-align only
+    // when live geometry changed, keeping the same prose-relative sample.
+    const correctedTarget = position(live) - live.readingLine;
+    const realigned = Math.abs(correctedTarget - target) > 1;
+    if (realigned) {
+      target = correctedTarget;
+      await scrollTo(page, target);
+      live = await measure();
+    }
+    const next = await page
+      .locator(`#triggerAnimationFoundationsFig${number + 1}`)
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const rect = element.getBoundingClientRect();
+          return { top: rect.top + scrollY, bottom: rect.bottom + scrollY };
+        })
+      );
+    result.measurements.push({
+      kind: "static-figure-sample",
+      number,
+      name,
+      target,
+      realigned,
+      before,
+      live,
+      next,
+    });
+    expect(
+      Math.abs(live.scrollY - (position(live) - live.readingLine)),
+      "sample must remain at its intended live prose position"
+    ).toBeLessThanOrEqual(1);
+    return live;
+  };
+  for (const [name, position] of [
+    ["opening", (geometry) => geometry.top + 5],
+    [
+      "last-lines",
+      (geometry) => Math.min(geometry.bottom - 3, geometry.boundary - 3),
+    ],
   ]) {
-    await scrollTo(page, position - geometry.readingLine);
+    await sample(name, position);
     await expect
       .poll(() => page.locator(`${paneSelector} .fig-label`).allTextContents())
       .toEqual([label]);
     await expect(trigger).toHaveClass(/active/);
   }
   await shot(page, result, `static-figure-${number}-last-lines`);
-  await scrollTo(page, geometry.boundary - geometry.readingLine + 5);
+  await sample("after-boundary", (geometry) => geometry.boundary + 5);
   await expect(trigger).not.toHaveClass(/active/);
   await expect
     .poll(async () =>
@@ -241,7 +284,10 @@ async function timing(page, result, number) {
     )
     .toBe(false);
   // Re-enter in reverse, exercising GSAP's active-trigger ownership too.
-  await scrollTo(page, geometry.top - geometry.readingLine + 5);
+  const geometry = await sample(
+    "reverse-entry",
+    (geometry) => geometry.top + 5
+  );
   await expect
     .poll(() => page.locator(`${paneSelector} .fig-label`).allTextContents())
     .toEqual([label]);

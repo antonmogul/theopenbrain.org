@@ -66,6 +66,7 @@ beforeEach(() => {
   state.store.activeMenu = false;
   state.route.name = "chapter";
   state.route.params.slug = "foundations-of-neuroscience";
+  state.route.fullPath = "/chapter/1/foundations-of-neuroscience";
   state.push.mockReset();
   state.text.text = {
     sections: [
@@ -135,6 +136,15 @@ describe("reader menu outline", () => {
     await flushPromises();
     expect(state.push).toHaveBeenCalledWith("/chapter/2/the-retina");
     expect(state.store.activeMenu).toBe(false);
+  });
+
+  it("closes on an actual route change independently of reader scroll updates", async () => {
+    await open();
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    state.route.fullPath = "/chapter/2/the-retina";
+    await flushPromises();
+    expect(state.store.activeMenu).toBe(false);
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it("returns focus to the menu opener on Escape after repeated opens", async () => {
