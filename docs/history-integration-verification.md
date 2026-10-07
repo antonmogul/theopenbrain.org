@@ -8,16 +8,17 @@ of live AI service delivery.
 
 Fresh local checks on 7 October 2026, using Node 20.19.5:
 
-- 1,381 tests passed in 152 files, including all 16 isolated SQL execution tests
+- 1,399 tests passed in 154 files, including all 16 isolated SQL execution tests
   with PGlite 0.5.8 supplied explicitly.
 - ESLint passed with zero errors and seven existing warnings; formatting passed.
 - Architecture check passed with zero errors and one existing orphan warning.
 - Application production build and Storybook build passed.
-- Storybook coverage: 238/238 components/views, 207 story files.
-- Independent code and migration reviews found no actionable blocking defect.
+- Storybook coverage: 241/241 components/views, 210 story files.
+- Independent code and migration reviews completed; browser-driven cabinet focus
+  and layout corrections have corresponding regression coverage.
 
 The new History browser workflow exercises mocked, isolated fixtures and retains
-screenshots for review. Hosted checks and screenshot inspection must be assessed
+settled-state screenshots and timestamped motion traces for review. Hosted checks and screenshot inspection must be assessed
 on the PR head; local unit/build results do not establish visual acceptance or
 live Supabase parity. There is no separate TypeScript check script in this project.
 

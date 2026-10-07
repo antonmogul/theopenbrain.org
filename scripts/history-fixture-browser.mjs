@@ -89,12 +89,20 @@ const viewports = [
 
 async function snapshot(state, name) {
   const file = `${state.id}-${name}.png`;
+  const startedAt = Date.now();
   await state.page.screenshot({
     path: path.join(output, file),
     fullPage: false,
     animations: "disabled",
+    timeout: 30_000,
   });
-  state.result.screenshots.push({ state: name, file, viewportOnly: true });
+  state.result.screenshots.push({
+    state: name,
+    file,
+    viewportOnly: true,
+    captureStartedAt: new Date(startedAt).toISOString(),
+    milliseconds: Date.now() - startedAt,
+  });
 }
 async function step(state, name, fn) {
   state.result.currentStep = name;
@@ -292,18 +300,8 @@ async function testCabinet(state) {
           ? "storyboard"
           : "immediate"
       );
-      if (state.viewport.width > 760 && !state.reduced) {
-        // Preserve actual intermediate GSAP frames for storyboard review.
-        // These are timed observations, not assertions about frame contents.
-        for (const [delay, name] of [
-          [180, "cabinet-lift"],
-          [420, "cabinet-quarter-turn"],
-          [850, "cabinet-hinged-cover"],
-        ]) {
-          await page.waitForTimeout(delay);
-          await snapshot(state, name);
-        }
-      }
+      // Motion frames are retained by the timestamped trace screencast.
+      // Sequential screenshots cannot reliably capture intermediate GSAP phases.
       await expect(cabinet).toHaveAttribute("data-phase", "open", {
         timeout: 8_000,
       });

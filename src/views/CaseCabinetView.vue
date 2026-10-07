@@ -118,22 +118,24 @@ function revealWorkspace() {
 function opened() {
   if (disposed || phase.value !== "opening") return;
   phase.value = "open";
-  revealWorkspace();
   const token = generation;
   nextTick(() => {
     if (disposed || phase.value !== "open" || token !== generation) return;
+    revealWorkspace();
     fileHeading.value?.focus({ preventScroll: true });
-    // Chromium can retain the former inert subtree for focus until its next
-    // rendering update. Retry once after that update, only while focus still
-    // belongs to our opening control; never steal a subsequent user focus.
-    if (document.activeElement === closeButton.value) {
+    // A browser can drop focus to body while releasing an inert subtree.
+    // Retry after its rendering update only if no other control gained focus.
+    const needsFocus = () =>
+      document.activeElement === closeButton.value ||
+      document.activeElement === document.body;
+    if (needsFocus()) {
       focusFrame = requestAnimationFrame(() => {
         focusFrame = null;
         if (
           !disposed &&
           phase.value === "open" &&
           token === generation &&
-          document.activeElement === closeButton.value
+          needsFocus()
         )
           fileHeading.value?.focus({ preventScroll: true });
       });
@@ -509,7 +511,7 @@ function onKeydown(e) {
               <div class="map-zoom" aria-label="Map magnification">
                 <button
                   type="button"
-                  :disabled="mapZoom === 100"
+                  :aria-disabled="mapZoom === 100"
                   aria-label="Reduce map magnification"
                   @click="mapZoom = Math.max(100, mapZoom - 50)"
                 >
@@ -518,7 +520,7 @@ function onKeydown(e) {
                 <span>{{ mapZoom }}%</span>
                 <button
                   type="button"
-                  :disabled="mapZoom === 250"
+                  :aria-disabled="mapZoom === 250"
                   aria-label="Enlarge map"
                   @click="mapZoom = Math.min(250, mapZoom + 50)"
                 >
@@ -917,6 +919,13 @@ button:focus-visible {
 .folder__action {
   font-size: 0.85rem;
 }
+.casefile,
+.casefile * {
+  /* The global reduced-motion rule implicitly transitions every property,
+     including inherited visibility on each child. Keep this whole subtree
+     immediately focusable when GSAP reveals it. */
+  transition-property: none;
+}
 .casefile {
   /* GSAP owns inline visibility throughout the handoff. Keeping the initial
      state in CSS prevents Vue style patches from hiding the opened file. */
@@ -1013,7 +1022,7 @@ button:focus-visible {
   border-radius: 0.25rem;
   cursor: pointer;
 }
-.map-zoom button:disabled {
+.map-zoom button[aria-disabled="true"] {
   opacity: 0.4;
   cursor: default;
 }

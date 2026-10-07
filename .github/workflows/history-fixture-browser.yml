@@ -49,12 +49,14 @@ jobs:
         shell: bash
         run: npm run history:fixture:prepare 2>&1 | tee history-fixture-browser-artifacts/fixture-assets.log
       - name: Supply and verify complete reader artwork
+        id: prepare-full-reader
         shell: bash
         run: node scripts/history-full-reader-prepare.mjs 2>&1 | tee history-fixture-browser-artifacts/full-reader-assets.log
       - name: Run fixture-only browser assertions
         shell: bash
         run: npm run history:fixture:browser:ci 2>&1 | tee history-fixture-browser-artifacts/browser.log
       - name: Run complete reader fixture assertions
+        if: ${{ !cancelled() && steps.prepare-full-reader.outcome == 'success' }}
         shell: bash
         run: npx start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 'node scripts/history-full-reader-browser.mjs' 2>&1 | tee history-fixture-browser-artifacts/full-reader-browser.log
       - name: Upload screenshots, measurements and failure context
