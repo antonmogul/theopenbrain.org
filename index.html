@@ -17,6 +17,10 @@
       and used regardless).
       Note the GLB now uses KHR_mesh_quantization (no draco/meshopt decoder),
       so no CDN decoder hosts are needed in this CSP.
+      The /brain atlas model (OPENBRAIN-127) is meshopt-compressed. Its
+      decoder is bundled from three (examples/jsm/libs), so no CDN host is
+      needed, but it instantiates WebAssembly, so it too depends on
+      'wasm-unsafe-eval'.
       cdn.jsdelivr.net (script-src + connect-src) is required by Pyodide, which
       src/composables/usePyodide.js loads at runtime for the
       /direction-selectivity widget (OPENBRAIN-14). Pyodide fetches its own
