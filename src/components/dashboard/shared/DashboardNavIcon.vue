@@ -49,6 +49,12 @@ defineProps({ name: { type: String, required: true } });
       <line x1="4" y1="17" x2="20" y2="17" />
       <circle cx="15" cy="17" r="2" />
     </template>
+    <!-- slides: a screen on a stand (Decks, OPENBRAIN-129) -->
+    <template v-else-if="name === 'slides'">
+      <rect x="3" y="4" width="18" height="12" rx="1" />
+      <line x1="12" y1="16" x2="12" y2="21" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+    </template>
     <template v-else-if="name === 'quiz'">
       <circle cx="12" cy="12" r="10" />
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />

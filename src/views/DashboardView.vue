@@ -4,7 +4,7 @@
 // library. All fetch/CRUD/wizard logic is preserved verbatim; supabaseRest is
 // kept local. Only chrome/markup changed. The abandoned DashboardViewRefactored
 // stays dead code — this is the live monolith, reskinned in place.
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, defineAsyncComponent } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useVersions } from "@/composables/useVersions";
 import { useDashboardMedia } from "@/composables/useDashboardMedia";
@@ -52,6 +52,12 @@ import WizardStepReview from "@/components/dashboard/chapters/WizardStepReview.v
 // Wizard API functions
 import { fetchChapters as apiFetchChapters } from "@/services/api/chapters";
 
+// Decks (OPENBRAIN-129) loads on first open: its slide thumbnails bring the
+// 16 deck layouts and deck.css, which the rest of the dashboard never needs.
+const DecksSection = defineAsyncComponent(
+  () => import("@/components/dashboard/sections/DecksSection.vue")
+);
+
 const router = useRouter();
 const route = useRoute();
 const { user, profile, loading, profileLoading, isAuthenticated } = useAuth();
@@ -76,6 +82,7 @@ const creatorNavItems = [
   { id: "users", label: "Users", icon: "users" },
   { id: "analytics", label: "Analytics", icon: "chart" },
   { id: "feedback", label: "Feedback", icon: "notes" },
+  { id: "decks", label: "Decks", icon: "slides" },
 ].filter((item) => !isBetaHidden(`dashboard.${item.id}`));
 
 // Filter/segmented-control option sets (shared components)
@@ -1217,6 +1224,8 @@ onMounted(() => {
       @chapter-change="feedbackChapter = $event"
       @kind-change="feedbackKind = $event"
     />
+
+    <DecksSection v-else-if="activeSection === 'decks'" />
 
     <!-- Publish / unpublish: changes who can read the chapter. -->
     <ConfirmDialog

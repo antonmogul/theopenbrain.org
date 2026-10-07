@@ -28,6 +28,9 @@ function resolveFixture(endpoint, options) {
   return typeof value === "function" ? value(endpoint, options) : value;
 }
 
+// Stories always have a (mock) database, so DeckView takes the fetch path.
+export const isApiConfigured = () => true;
+
 export function setSession(session) {
   currentSession = session;
 }
@@ -72,6 +75,7 @@ export function buildInFilter(ids) {
 }
 
 export default {
+  isApiConfigured,
   setSession,
   getSession,
   apiRequest,

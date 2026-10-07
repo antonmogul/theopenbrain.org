@@ -11,6 +11,8 @@ const ICONS = [
   "book",
   "layers",
   "image",
+  "widget",
+  "slides",
   "quiz",
   "flashcard",
   "highlight",
@@ -58,3 +60,6 @@ export const AllIcons = {
 };
 
 export const Fallback = { args: { name: "unknown" } };
+
+/** Decks (OPENBRAIN-129): a screen on a stand. */
+export const Slides = { args: { name: "slides" } };

@@ -9,6 +9,14 @@
  *
  * Lottie animations (OPENBRAIN-70 B4) upload the same way as JSON files; the
  * bucket accepts application/json once its migration is applied.
+ *
+ * Deck images (OPENBRAIN-129) go in the same bucket under decks/<deck id>/
+ * and add no media-library row: headshots and screenshots for a funder deck
+ * stay out of the chapter media library. The folder is the deck's uuid, not
+ * its slug, so an image address in a shared deck never names the deck. The
+ * bucket's creator-only write policy covers that path. Anyone who has an
+ * image's address can open it (public URLs); only creators can list the
+ * bucket (20261007010200_chapter_media_no_listing.sql).
  */
 import { authedRequest, getSession } from "./client";
 
@@ -58,7 +66,8 @@ export async function lottieProblem(file) {
   return null;
 }
 
-async function putObject(path, file, contentType) {
+// `noun` names the files in the creator-only error ("images", "files").
+async function putObject(path, file, contentType, { noun = "files" } = {}) {
   const token = getSession()?.access_token;
   if (!token)
     throw new Error("Your session has expired. Sign in again to upload.");
@@ -84,7 +93,7 @@ async function putObject(path, file, contentType) {
       /* not JSON */
     }
     if (res.status === 403 || /row-level security/i.test(detail))
-      throw new Error("Only creators can upload files.");
+      throw new Error(`Only creators can upload ${noun}.`);
     if (/mime type|not supported/i.test(detail))
       throw new Error(
         "The media library doesn't accept this file type yet (it needs the OPENBRAIN-70 update)."
@@ -188,4 +197,24 @@ export async function uploadChapterImage(file, { slug, title }) {
   if (!rows?.length)
     throw new Error("The image uploaded but couldn't be added to the library.");
   return rows[0];
+}
+
+const DECK_ID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * Upload an image for deck `deckId` (its uuid) to
+ * decks/<deckId>/<uuid>.<ext>. Returns { src, path }: the public URL a slide
+ * stores, and the object path. Same checks and messages as
+ * uploadChapterImage; no `animations` row.
+ * @param {File} file
+ * @param {{ deckId: string }} opts
+ */
+export async function uploadDeckImage(file, { deckId } = {}) {
+  const problem = uploadProblem(file);
+  if (problem) throw new Error(problem);
+  const folder = DECK_ID.test(deckId || "") ? deckId : "unfiled";
+  const path = `decks/${folder}/${uuid()}.${IMAGE_TYPES[file.type]}`;
+  await putObject(path, file, file.type, { noun: "images" });
+  return { src: publicUrl(path), path };
 }
