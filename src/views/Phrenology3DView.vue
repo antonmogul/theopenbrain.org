@@ -1053,13 +1053,17 @@ function onKeydown(e) {
 @media (max-width: 760px) {
   .body {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .stage {
+    height: auto;
     min-height: 0;
   }
+  .stage {
+    /* Keep the skull viewport intact and give the source instructions their
+       own row below it, clear of the canvas interaction hint. */
+    height: 65vh;
+    min-height: 420px;
+  }
   .card-instruction {
-    position: absolute;
-    bottom: 0;
+    position: static;
     margin: 0;
     padding: 1rem;
     font-size: 0.75rem;

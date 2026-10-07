@@ -481,6 +481,17 @@ async function testSkull(state) {
             (canvas) => canvas.width > 100 && canvas.height > 100
           )
         ).toBe(true);
+        if (state.viewport.width <= 760) {
+          const hint = await widget.locator(".stage__hint").boundingBox();
+          const instruction = await widget
+            .locator(".card-instruction")
+            .boundingBox();
+          assert(
+            hint && instruction,
+            "Mobile skull instructions must be rendered"
+          );
+          expect(hint.y + hint.height).toBeLessThanOrEqual(instruction.y);
+        }
       } else {
         await imageReady(stage);
         await expect(widget.locator(".region").first()).toBeVisible();
