@@ -26,6 +26,8 @@ import {
 } from "@/composables/chapterTransform.mjs";
 
 import Section from "./text/SectionComp.vue";
+import IllustrationInline from "@/components/chapter/Illus/IllustrationInline.vue";
+import { useInlineFigureFor } from "@/composables/useInlineFigures";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
 import FurtherReading from "./text/FurtherReading.vue";
@@ -77,6 +79,23 @@ const introTriggerId = (section) => {
   if (!name) return null;
   return `triggerAnimation${name.charAt(0).toUpperCase()}${name.slice(1)}`;
 };
+
+// An intro paragraph with a figure of its own gets the scroll trigger the
+// pinned pane listens for, `triggerAnimation` + the figure's name, exactly
+// as SectionComp gives one to a section's paragraphs (OPENBRAIN-131). Without
+// a figure the wrapper is a bare span, as there.
+const paragraphTrigger = (paragraph) => {
+  const name = paragraph?.animation?.name;
+  return name
+    ? {
+        id: `triggerAnimation${name}`,
+        class: "animationTrigger block noHighlight",
+      }
+    : {};
+};
+// Below 1024px there is no pane: the figure is drawn in the text, at its
+// first paragraph (useInlineFigures).
+const inlineFigureFor = useInlineFigureFor();
 
 // Use computed property for reactivity - this will update when store changes
 const source = computed(() => {
@@ -610,7 +629,7 @@ onBeforeUnmount(() => {
           v-for="section in source['intro']"
           :key="section.id"
           :id="section.id"
-          class="overflow-y-visible prose-measure"
+          class="reader-section overflow-y-visible prose-measure"
         >
           <div
             class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[5.375rem] -translate-y-[0.5625rem] w-28 h-28 flex items-center justify-center"
@@ -686,7 +705,11 @@ onBeforeUnmount(() => {
           <br v-if="authors.length" />
 
           <!-- Intro paragraphs. A section with an intro animation (Retina's
-               "dragon") wraps them in that animation's scroll trigger. -->
+               "dragon") wraps them in that animation's scroll trigger. A
+               paragraph with a figure of its own (Attention's and Stress's
+               Figure 1) gets its own trigger for the pane, and draws the
+               figure inline below 1024px, as SectionComp does
+               (OPENBRAIN-131). -->
           <span
             v-if="introTriggerId(section)"
             :id="introTriggerId(section)"
@@ -696,25 +719,32 @@ onBeforeUnmount(() => {
               v-for="paragraph in section.paragraphs"
               :key="paragraph.id"
             >
-              <EditableBlock
-                v-if="canEdit"
-                :content="paragraph.text"
-                :paragraph-id="paragraph.id"
-                :is-creator="canEdit"
-                tag="p"
-                class-name="P"
-                @save="
-                  ({ paragraphId, content }) =>
-                    saveContent({ paragraphId, content, type: 'intro' })
-                "
-              />
-              <div
-                v-else
-                :id="paragraph.id"
-                :data-paragraph-id="paragraph.id"
-                class="P"
-                v-html="paragraph.text"
-              />
+              <span v-bind="paragraphTrigger(paragraph)">
+                <EditableBlock
+                  v-if="canEdit"
+                  :content="paragraph.text"
+                  :paragraph-id="paragraph.id"
+                  :is-creator="canEdit"
+                  tag="p"
+                  class-name="P"
+                  @save="
+                    ({ paragraphId, content }) =>
+                      saveContent({ paragraphId, content, type: 'intro' })
+                  "
+                />
+                <div
+                  v-else
+                  :id="paragraph.id"
+                  :data-paragraph-id="paragraph.id"
+                  class="P"
+                  v-html="paragraph.text"
+                />
+                <IllustrationInline
+                  v-if="inlineFigureFor(paragraph)"
+                  :key="'inline' + paragraph.id"
+                  :animation-id="paragraph.animation.id"
+                />
+              </span>
             </template>
           </span>
           <span v-else class="block noHighlight">
@@ -722,48 +752,55 @@ onBeforeUnmount(() => {
               v-for="paragraph in section.paragraphs"
               :key="paragraph.id"
             >
-              <!-- If paragraph contains a heading, render it without wrapping in <p> -->
-              <template v-if="canEdit">
-                <EditableBlock
-                  v-if="!paragraph.hasHeading"
-                  :content="paragraph.text"
-                  :paragraph-id="paragraph.id"
-                  :is-creator="canEdit"
-                  tag="p"
-                  class-name="P text-black"
-                  @save="
-                    ({ paragraphId, content }) =>
-                      saveContent({ paragraphId, content, type: 'intro' })
-                  "
+              <span v-bind="paragraphTrigger(paragraph)">
+                <!-- If paragraph contains a heading, render it without wrapping in <p> -->
+                <template v-if="canEdit">
+                  <EditableBlock
+                    v-if="!paragraph.hasHeading"
+                    :content="paragraph.text"
+                    :paragraph-id="paragraph.id"
+                    :is-creator="canEdit"
+                    tag="p"
+                    class-name="P text-black"
+                    @save="
+                      ({ paragraphId, content }) =>
+                        saveContent({ paragraphId, content, type: 'intro' })
+                    "
+                  />
+                  <EditableBlock
+                    v-else
+                    :content="paragraph.text"
+                    :paragraph-id="paragraph.id"
+                    :is-creator="canEdit"
+                    tag="div"
+                    class-name=""
+                    @save="
+                      ({ paragraphId, content }) =>
+                        saveContent({ paragraphId, content, type: 'intro' })
+                    "
+                  />
+                </template>
+                <template v-else>
+                  <div
+                    v-if="paragraph.hasHeading"
+                    :id="paragraph.id"
+                    :data-paragraph-id="paragraph.id"
+                    v-html="paragraph.text"
+                  />
+                  <div
+                    v-else
+                    :id="paragraph.id"
+                    :data-paragraph-id="paragraph.id"
+                    class="P text-black"
+                    v-html="paragraph.text"
+                  />
+                </template>
+                <IllustrationInline
+                  v-if="inlineFigureFor(paragraph)"
+                  :key="'inline' + paragraph.id"
+                  :animation-id="paragraph.animation.id"
                 />
-                <EditableBlock
-                  v-else
-                  :content="paragraph.text"
-                  :paragraph-id="paragraph.id"
-                  :is-creator="canEdit"
-                  tag="div"
-                  class-name=""
-                  @save="
-                    ({ paragraphId, content }) =>
-                      saveContent({ paragraphId, content, type: 'intro' })
-                  "
-                />
-              </template>
-              <template v-else>
-                <div
-                  v-if="paragraph.hasHeading"
-                  :id="paragraph.id"
-                  :data-paragraph-id="paragraph.id"
-                  v-html="paragraph.text"
-                />
-                <div
-                  v-else
-                  :id="paragraph.id"
-                  :data-paragraph-id="paragraph.id"
-                  class="P text-black"
-                  v-html="paragraph.text"
-                />
-              </template>
+              </span>
             </template>
           </span>
         </section>

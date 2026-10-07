@@ -408,6 +408,25 @@ input {
   }
 }
 
+/* Breathing room (OPENBRAIN-131), from the --reader-*-gap tokens in
+   brand.css. Only the chapter's own sections take the new gap: the intro
+   and SectionComp's <section> (not a breakout box's body) carry
+   .reader-section. The rule above still sizes the opener's contents, the
+   end-of-chapter callout and Further Reading, so --opener-h, and every
+   scroll position below the opener, stay where they were. */
+.chapter-reader section.reader-section {
+  padding-bottom: var(--reader-section-gap);
+}
+/* More room under a section title than the 20px between paragraphs. */
+.chapter-reader h2.subChapter {
+  padding-bottom: var(--reader-title-gap);
+}
+/* More room above a subsection. The legacy scroll anchor keeps its
+   pt-[100vh] (SubSection.vue). */
+.chapter-reader h3.subT:not(.animationScrollAnchor) {
+  padding-top: var(--reader-subsection-gap);
+}
+
 /* Anchor targets (sections, subsection spans, intro heading) land below the
    fixed top bar when reached from the opener's TOC or a hash (OPENBRAIN-32). */
 .chapter-reader section,
