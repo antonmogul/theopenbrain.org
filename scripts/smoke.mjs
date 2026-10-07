@@ -221,6 +221,19 @@ const ROUTES = [
     widths: [1280, 1440, 1920],
   },
   /*
+   * The brain atlas (OPENBRAIN-127) is the candidate home cover, so unlike
+   * the other prototypes it is checked at every width, phones included: no
+   * horizontal scroll, no console errors, and the stage must reach "ready"
+   * (a missing model comes back as index.html with a 200, which the stage
+   * reports only on the page, never in the console).
+   */
+  {
+    path: "/brain",
+    name: "brain",
+    minText: 200,
+    expectCount: { selector: '.atlas__stage[data-status="ready"]', min: 1 },
+  },
+  /*
    * Interactive widgets (OPENBRAIN-13/14). Every widget route in the catalog
    * gets a check: these are the pages shown to the authors, and ~15k lines of
    * them shipped with only /sdt guarded. The CSP bug that blocked Pyodide on
