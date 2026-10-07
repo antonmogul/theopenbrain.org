@@ -15,7 +15,10 @@
  *   _ATLAS  — vec4 uint8 per vertex: x = area index (0 = unlabelled, the
  *             medial wall), y = sulcal depth 0..255 (0 = gyral crown,
  *             255 = deepest sulcus), z/w unused (keeps 4-byte alignment)
- * and scene extras: { areas: [<id per index>], source }.
+ * and scene extras: { areas: [<id per index>], source, notice }. The notice
+ * (FreeSurfer's licence terms and the citations, from NOTICE.txt beside the
+ * model) travels inside the GLB too, as FreeSurfer's licence asks for its
+ * terms with every copy; asset.copyright points to it.
  * The runtime (src/helper/brain/) maps area ids to names, colours and
  * chapters; the GLB only carries geometry and labels.
  *
@@ -29,6 +32,13 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+
+const NOTICE = readFileSync(
+  new URL("../../public/publicAssets/models/brain/NOTICE.txt", import.meta.url),
+  "utf8"
+);
+const COPYRIGHT =
+  "Modified from FreeSurfer fsaverage6 and the Destrieux atlas, The General Hospital Corporation (MGH). Licence and sources: scenes[0].extras.notice, or NOTICE.txt beside this file.";
 
 const [srcDir, outFile] = process.argv.slice(2);
 if (!srcDir || !outFile) {
@@ -157,7 +167,11 @@ function writeGlb(file, meshes, extras) {
     };
   });
   const json = {
-    asset: { version: "2.0", generator: "scripts/brain/build-brain-asset.mjs" },
+    asset: {
+      version: "2.0",
+      generator: "scripts/brain/build-brain-asset.mjs",
+      copyright: COPYRIGHT,
+    },
     scene: 0,
     scenes: [{ nodes: meshes.map((_, i) => i), extras }],
     nodes: meshes.map((m, i) => ({ name: m.name, mesh: i })),
@@ -461,5 +475,6 @@ writeGlb(outFile, meshes, {
   areas: ["", ...AREAS.map(([, id]) => id)],
   source:
     "FreeSurfer fsaverage6 pial surface; Destrieux atlas (nilearn) grouped into areas; via github.com/antonmogul/open-brain-explorer",
+  notice: NOTICE,
 });
 console.log(`wrote ${outFile}`);

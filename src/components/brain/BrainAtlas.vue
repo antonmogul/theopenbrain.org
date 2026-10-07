@@ -34,7 +34,7 @@ import { useGeneral } from "@/stores/index";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { reducedMotionK } from "@/helper/motion";
-import { READER_WIDE_QUERY } from "@/helper/readerLayout";
+import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 import {
   AREAS,
   SURFACE,
@@ -82,9 +82,13 @@ const hoveredId = ref(null); // area under the pointer or legend focus
 const labelId = ref(null);
 const selection = ref(null); // { kind: "chapter", slug } | { kind: "area", id }
 const resumeTourOnClose = ref(false);
-// Wide: the card goes after the contents, so the rows do not move under the
-// pointer when it opens. Narrow: under the title, close to the stage above.
-const wide = useMediaQuery(READER_WIDE_QUERY);
+// Where the card sits: under the title when it opens on a narrow screen,
+// close to the stage above; after the contents on a wide one, so the rows do
+// not move under the pointer. It is settled when the card opens, so a
+// resize or a tablet rotation does not remount it and drop the focus inside
+// it. The query is the one the layout CSS switches on.
+const narrow = useMediaQuery(READER_NARROW_QUERY);
+const cardTop = ref(false);
 
 const chapters = computed(() => bookChapters(modules.value));
 const unclaimed = computed(() => unclaimedAreas(chapters.value));
@@ -117,7 +121,7 @@ const areaStyles = computed(() =>
 const announcement = computed(() => {
   const name = selectedChapter.value?.title || selectedArea.value?.name;
   if (!name) return "";
-  return `${name} selected. Its card is ${wide.value ? "after the contents" : "under the title"}.`;
+  return `${name} selected. Its card is ${cardTop.value ? "under the title" : "after the contents"}.`;
 });
 const loadingCopy = computed(() =>
   progress.value == null
@@ -136,20 +140,26 @@ function choose(next) {
   if (next && !selection.value) resumeTourOnClose.value = playing.value;
   selection.value = next;
   if (next) {
+    cardTop.value = narrow.value;
     playing.value = false;
   } else if (resumeTourOnClose.value) {
     resumeTourOnClose.value = false;
     playing.value = true;
   }
 }
-/* Bring the card into view once it renders. */
-function revealCard() {
-  nextTick(() =>
-    panelEl.value?.querySelector(".card")?.scrollIntoView({
+/* Bring the card into view once it renders. With `focus`, move focus to its
+   title too: under the title the card sits above the row that opened it,
+   where Tab would never reach it. Closing gives focus back to the row. */
+function revealCard(focus = false) {
+  nextTick(() => {
+    const card = panelEl.value?.querySelector(".card");
+    if (focus)
+      card?.querySelector(".card__title")?.focus({ preventScroll: true });
+    card?.scrollIntoView({
       block: "nearest",
       behavior: reducedMotion ? "auto" : "smooth",
-    })
-  );
+    });
+  });
 }
 /* Chosen in the contents: turn the brain to show it (book open for the
    medial parts, closed for the lateral ones), then show its card. */
@@ -161,7 +171,7 @@ function toggle(next) {
       ? chapters.value.find((c) => c.slug === next.slug)?.areas || []
       : [next.id];
   stage.value?.setOpen(viewForAreas(ids) === "open");
-  revealCard();
+  revealCard(cardTop.value);
 }
 /* A part of the brain chosen on the canvas: its chapter, or the bare area.
    It is already in view, so the camera stays put. */
@@ -270,7 +280,7 @@ onBeforeUnmount(() => {
       <p class="sr-only" aria-live="polite">{{ announcement }}</p>
 
       <BrainAtlasCard
-        v-if="!wide"
+        v-if="cardTop"
         :chapter="selectedChapter"
         :area="selectedArea"
         :chapters="chapters"
@@ -355,7 +365,7 @@ onBeforeUnmount(() => {
       </nav>
 
       <BrainAtlasCard
-        v-if="wide"
+        v-if="!cardTop"
         :chapter="selectedChapter"
         :area="selectedArea"
         :chapters="chapters"
@@ -365,9 +375,11 @@ onBeforeUnmount(() => {
       />
 
       <p class="atlas__credit">
-        Cortex: FreeSurfer fsaverage pial surface, areas from the Destrieux
-        atlas, grouped. The cerebellum, brainstem and deep structures such as
-        the hippocampus and amygdala are not modelled yet.
+        Cortex: FreeSurfer's fsaverage pial surface (Fischl et al., 1999), areas
+        from the Destrieux atlas (Destrieux et al., 2010), grouped and modified;
+        <a href="/publicAssets/models/brain/NOTICE.txt">licence and sources</a>.
+        The cerebellum, brainstem and deep structures such as the hippocampus
+        and amygdala are not modelled yet.
       </p>
     </div>
 
@@ -578,11 +590,19 @@ onBeforeUnmount(() => {
 }
 .contents__chapter:focus-visible,
 .unclaimed__area:focus-visible,
-.ctl:focus-visible {
+.ctl:focus-visible,
+.atlas__credit a:focus-visible {
   outline: 2px solid rgb(var(--color-chapter));
   outline-offset: 3px;
 }
 
+.atlas__credit a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+.atlas__credit a:hover {
+  color: rgb(255 255 255 / 0.8);
+}
 .atlas__credit {
   margin: auto 0 0;
   max-width: 34rem;

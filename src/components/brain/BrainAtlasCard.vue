@@ -5,7 +5,8 @@
  * the brain, names its parts and links to the reader; an area no chapter
  * covers yet says what it does and which part of the book it belongs to.
  * BrainAtlas places it (under the title on phones, after the contents on
- * wide screens) and owns the selection; the card only asks to be closed.
+ * wide screens), owns the selection and may focus the title (tabindex -1)
+ * when the card opens; the card only asks to be closed.
  */
 import { computed } from "vue";
 import { RAMP_NAMES } from "@/helper/chapterTheme";
@@ -51,7 +52,7 @@ const eyebrow = computed(() => {
       {{ eyebrow }}
     </p>
     <template v-if="chapter">
-      <h2 class="card__title">{{ chapter.title }}</h2>
+      <h2 class="card__title" tabindex="-1">{{ chapter.title }}</h2>
       <p class="card__blurb">{{ chapter.why }}</p>
       <ul class="card__parts">
         <li v-for="id in chapter.areas" :key="id">
@@ -67,7 +68,7 @@ const eyebrow = computed(() => {
       </p>
     </template>
     <template v-else>
-      <h2 class="card__title">{{ area.name }}</h2>
+      <h2 class="card__title" tabindex="-1">{{ area.name }}</h2>
       <p class="card__where">{{ area.where }}</p>
       <p class="card__blurb">{{ area.blurb }}</p>
       <p class="card__soon">
@@ -186,6 +187,10 @@ const eyebrow = computed(() => {
 .card__close:hover {
   color: #fff;
 }
+.card__title:focus {
+  outline: none;
+}
+.card__title:focus-visible,
 .card__close:focus-visible,
 .card__cta:focus-visible {
   outline: 2px solid rgb(var(--color-chapter));
