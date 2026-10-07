@@ -28,6 +28,31 @@ describe("source-backed case cabinet", () => {
     expect(w.findAll(".note")).toHaveLength(3);
     expect(w.find(".transcript").text()).toContain('"I had a dream.');
   });
+  it("retries focus after a browser delays releasing the inert subtree", async () => {
+    const w = await cabinet();
+    let retry;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      retry = callback;
+      return 1;
+    });
+    const focus = HTMLElement.prototype.focus;
+    let blocked = true;
+    vi.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (
+      ...args
+    ) {
+      if (this.classList.contains("casefile__title") && blocked) {
+        blocked = false;
+        return;
+      }
+      return focus.apply(this, args);
+    });
+    await w.find('[data-id="rw"]').trigger("click");
+    await flushPromises();
+    expect(document.activeElement).toBe(w.find(".back-button").element);
+    expect(retry).toBeTypeOf("function");
+    retry();
+    expect(document.activeElement).toBe(w.find(".casefile__title").element);
+  });
   it("attributes R.W. 24 correctly and keeps A.Bra. repeat events", async () => {
     const w = await cabinet();
     await w.find('[data-id="rw"]').trigger("click");

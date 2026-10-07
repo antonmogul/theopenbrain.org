@@ -332,7 +332,7 @@ try {
         "load actual App/ChapterView/TextComp with a nonzero classic scrollbar gutter",
         async () => {
           const response = await page.goto(
-            `${base}/iframe.html?id=${story}&viewMode=story&globals=reduceMotion:true`,
+            `${base}/iframe.html?id=${story}&viewMode=story&globals=reduceMotion:!true`,
             { waitUntil: "networkidle" }
           );
           expect(response.ok()).toBe(true);

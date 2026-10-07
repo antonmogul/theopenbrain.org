@@ -79,6 +79,7 @@ let motionObserver = null;
 let desktopQuery = null;
 let motionQuery = null;
 let queuedCase = null;
+let focusFrame = null;
 const { fetchCases } = useCaseFiles();
 const point = computed(
   () => openCase.value?.points.find((p) => p.id === selectedPoint.value) ?? null
@@ -118,8 +119,25 @@ function opened() {
   if (disposed || phase.value !== "opening") return;
   phase.value = "open";
   revealWorkspace();
+  const token = generation;
   nextTick(() => {
-    if (!disposed && phase.value === "open") fileHeading.value?.focus();
+    if (disposed || phase.value !== "open" || token !== generation) return;
+    fileHeading.value?.focus({ preventScroll: true });
+    // Chromium can retain the former inert subtree for focus until its next
+    // rendering update. Retry once after that update, only while focus still
+    // belongs to our opening control; never steal a subsequent user focus.
+    if (document.activeElement === closeButton.value) {
+      focusFrame = requestAnimationFrame(() => {
+        focusFrame = null;
+        if (
+          !disposed &&
+          phase.value === "open" &&
+          token === generation &&
+          document.activeElement === closeButton.value
+        )
+          fileHeading.value?.focus({ preventScroll: true });
+      });
+    }
   });
 }
 async function returnedToDrawer() {
@@ -182,6 +200,7 @@ onBeforeUnmount(() => {
   disposed = true;
   generation++;
   queuedCase = null;
+  cancelAnimationFrame(focusFrame);
   resizeObserver?.disconnect();
   motionObserver?.disconnect();
   desktopQuery?.removeEventListener?.("change", layoutChanged);

@@ -961,7 +961,7 @@ try {
             "load local fixture, real fonts and responsive reader frame",
             async () => {
               const response = await page.goto(
-                `${baseUrl}/iframe.html?id=${scenario.story}&viewMode=story&globals=reduceMotion:${reduced}`,
+                `${baseUrl}/iframe.html?id=${scenario.story}&viewMode=story&globals=reduceMotion:!${reduced}`,
                 { waitUntil: "networkidle", timeout: 30_000 }
               );
               expect(response?.ok()).toBe(true);

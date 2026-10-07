@@ -578,7 +578,9 @@ function onKeydown(e) {
 .card {
   position: relative;
   width: 100%;
-  max-height: 65vh;
+  /* Fit inside the body's reserved height, including its vertical padding.
+     Long source text must scroll rather than grow the row and shift the skull. */
+  max-height: calc(65vh - 2rem);
   box-sizing: border-box;
   padding: 2.25rem 1.5rem;
   border-radius: var(--radius-control);
