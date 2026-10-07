@@ -4,13 +4,13 @@ import { shallowMount, flushPromises } from "@vue/test-utils";
 const { stubComponent } = vi.hoisted(() => ({
   stubComponent: { template: "<div />" },
 }));
-const { testInitForModule, testStopTracking, testLeaveState } = vi.hoisted(
-  () => ({
+const { testInitForModule, testStopTracking, testLeaveState, timeline } =
+  vi.hoisted(() => ({
     testInitForModule: vi.fn(),
     testStopTracking: vi.fn(),
     testLeaveState: { guard: null },
-  })
-);
+    timeline: { opts: null, jumpTo: null, refreshTrending: null },
+  }));
 vi.mock("@/components/chapter/TextComp.vue", () => ({
   default: stubComponent,
 }));
@@ -42,6 +42,45 @@ vi.mock("@/components/chapter/CitationTooltip.vue", () => ({
 vi.mock("@/components/chapter/EndOfChapterCallout.vue", () => ({
   default: stubComponent,
 }));
+vi.mock("@/components/chapter/timeline/ChapterTimeline.vue", () => ({
+  default: {
+    name: "ChapterTimeline",
+    props: [
+      "model",
+      "position",
+      "readPercent",
+      "layers",
+      "chapterTitle",
+      "hidden",
+    ],
+    emits: ["jump"],
+    template: '<div data-testid="chapter-timeline" />',
+  },
+}));
+// The timeline's own behaviour is tested with the composable; here only
+// what ChapterView hands it, and that nothing fetches for real.
+vi.mock("@/composables/useChapterTimeline", async () => {
+  const { computed, ref } = await vi.importActual("vue");
+  return {
+    useChapterTimeline: (opts) => {
+      timeline.opts = opts;
+      timeline.jumpTo = vi.fn();
+      timeline.refreshTrending = vi.fn();
+      return {
+        model: computed(() => ({ items: [], sections: [], byId: new Map() })),
+        position: ref(0),
+        layers: computed(() => ({
+          highlights: new Map(),
+          notes: new Map(),
+          trending: new Map(),
+        })),
+        measure: vi.fn(),
+        jumpTo: timeline.jumpTo,
+        refreshTrending: timeline.refreshTrending,
+      };
+    },
+  };
+});
 
 vi.mock("vue-router", async () => {
   const { reactive } = await vi.importActual("vue");
@@ -64,6 +103,7 @@ vi.mock("@/stores", async () => {
     progress: 0,
     isScrolling: false,
     imgActive: false,
+    superScriptActive: false,
   });
   const text = reactive({
     text: null,
@@ -211,6 +251,7 @@ vi.mock("@/composables/useChapterCatalog", () => ({
 }));
 
 import { testRoute } from "vue-router";
+import { useGeneral } from "@/stores";
 import ChapterView from "@/views/ChapterView.vue";
 
 describe("ChapterView route changes", () => {
@@ -288,6 +329,48 @@ describe("ChapterView route changes", () => {
 
     wrapper.unmount();
     log.mockRestore();
+    vi.unstubAllGlobals();
+  });
+  it("docks the timeline once the chapter shows and jumps through it", async () => {
+    const storage = new Map();
+    vi.stubGlobal("localStorage", {
+      getItem: (key) => storage.get(key) ?? null,
+      setItem: (key, value) => storage.set(key, String(value)),
+      removeItem: (key) => storage.delete(key),
+      clear: () => storage.clear(),
+    });
+    testRoute.params.number = "1";
+    testRoute.params.slug = "the-retina";
+    testRoute.query = {};
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    // useFigureLinks' animation fetch has no Supabase URL here.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const wrapper = shallowMount(ChapterView, {
+      global: { stubs: { RouterLink: stubComponent } },
+    });
+    await flushPromises();
+
+    // Measuring only while the content is shown, for this chapter's module.
+    expect(timeline.opts.enabled.value).toBe(true);
+    expect(timeline.opts.moduleId.value).toBe("module-retina");
+    expect(timeline.opts.text.value?.moduleId).toBe("module-retina");
+
+    const dock = wrapper.findComponent({ name: "ChapterTimeline" });
+    expect(dock.exists()).toBe(true);
+    expect(dock.props("hidden")).toBe(false);
+    dock.vm.$emit("jump", 3);
+    expect(timeline.jumpTo).toHaveBeenCalledWith(3);
+
+    // Out of the way while the footnote sheet is up.
+    useGeneral().superScriptActive = true;
+    await flushPromises();
+    expect(dock.props("hidden")).toBe(true);
+    useGeneral().superScriptActive = false;
+
+    wrapper.unmount();
+    log.mockRestore();
+    error.mockRestore();
     vi.unstubAllGlobals();
   });
 });

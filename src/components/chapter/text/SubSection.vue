@@ -100,10 +100,12 @@
               class="transition left-0 w-full h-[50vh] bg-green-"
             />
 
-            <!-- Interactive widget placed in the prose (OPENBRAIN-21) -->
+            <!-- Interactive widget placed in the prose (OPENBRAIN-21);
+                 data-timeline-id for the chapter timeline (OPENBRAIN-128) -->
             <WidgetBreakout
               v-if="subParagraph.type === 'widget'"
               :placement="subParagraph.widget"
+              :data-timeline-id="subParagraph.id"
             />
             <!-- SubSection paragraph - editable for creators -->
             <EditableBlock
@@ -160,11 +162,13 @@
             :title="subParagraph.title"
             :text="subParagraph.text"
             :slug="subParagraph.videoSlug || 'placeholder'"
+            :data-timeline-id="subParagraph.id"
           />
           <BreakSection
             v-else-if="subParagraph.type === 'breakSection'"
             :key="subParagraph.title"
             :content="subParagraph"
+            :data-timeline-id="subParagraph.id"
           />
         </span>
         <StartEndIcon :paragraph="subParagraph" art="end" />

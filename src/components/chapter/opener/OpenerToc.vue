@@ -11,6 +11,8 @@
  * body below is light. Accent = --color-chapter (set per module by the
  * router), never the global magenta.
  */
+import { jumpToElement } from "@/helper/readerJump";
+
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: "" },
@@ -26,9 +28,8 @@ function go(anchor, event) {
   const el = document.getElementById(anchor.replace(/^#/, ""));
   if (!el) return; // fall back to the default hash navigation
   event.preventDefault();
-  const reduce =
-    document.documentElement.getAttribute("data-reduce-motion") === "1";
-  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  // Under the top bar, smooth unless motion is reduced (OPENBRAIN-128).
+  jumpToElement(el, { align: "top" });
 }
 </script>
 

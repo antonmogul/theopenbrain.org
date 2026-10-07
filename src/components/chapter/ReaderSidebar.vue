@@ -3,6 +3,7 @@ import { computed, ref, onBeforeUnmount, nextTick, watch } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useDraggablePanel } from "@/composables/useDraggablePanel";
 import { useAuth } from "@/composables/useAuth";
+import { PEEK_H } from "@/helper/chapterTimeline";
 import InfoTab from "./sidebar/InfoTab.vue";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 import NotebookTab from "./sidebar/NotebookTab.vue";
@@ -30,14 +31,32 @@ let panelTrigger = null;
 let demoRequestGeneration = 0;
 
 // Floating-panel drag: the handle scopes dragging to the grip only, so tabs
-// and content stay clickable. Position persists + clamps (brief §6.7).
+// and content stay clickable. Position persists + clamps (brief §6.7),
+// between the top bar and the chapter timeline docked at the bottom
+// (OPENBRAIN-128). The dock rests as a 20px strip (--reader-timeline-h) but
+// grows to PEEK_H under the pointer, with its map button at the right end,
+// right where the panel sits: the panel keeps clear of the dock at that
+// height, shrinking on a short window rather than covering it.
 const panelRef = ref(null);
 const handleRef = ref(null);
-const { x: panelX, y: panelY } = useDraggablePanel(panelRef, handleRef, {
+function rootLength(name) {
+  const style = getComputedStyle(document.documentElement);
+  const raw = style.getPropertyValue(name).trim();
+  const n = parseFloat(raw) || 0;
+  return raw.endsWith("rem") ? n * (parseFloat(style.fontSize) || 16) : n;
+}
+const {
+  x: panelX,
+  y: panelY,
+  height: panelH,
+  refit: refitPanel,
+} = useDraggablePanel(panelRef, handleRef, {
   storageKey: "ob.toolkitPos",
   width: 380,
   height: 620,
   margin: 16,
+  topInset: () => rootLength("--reader-topbar-h"),
+  bottomInset: () => (rootLength("--reader-timeline-h") > 0 ? PEEK_H : 0),
 });
 
 const tabs = [
@@ -50,6 +69,8 @@ const tabRefs = ref([]);
 watch(isOpen, async (open) => {
   if (open) {
     panelTrigger = document.activeElement;
+    // The dock may have mounted (or gone) since the panel last measured.
+    refitPanel();
     await nextTick();
     const activeIndex = tabs.findIndex((tab) => tab.key === activeTab.value);
     tabRefs.value[Math.max(0, activeIndex)]?.focus();
@@ -186,7 +207,11 @@ function demoModalTitle() {
         class="toolkit-panel"
         data-testid="reader-sidebar"
         aria-label="Student tools"
-        :style="{ left: `${panelX}px`, top: `${panelY}px` }"
+        :style="{
+          left: `${panelX}px`,
+          top: `${panelY}px`,
+          '--toolkit-h': `${panelH}px`,
+        }"
         @keydown.esc.stop="close"
       >
         <!-- Drag handle + tab bar -->
@@ -384,12 +409,14 @@ export default {
 <style scoped>
 /* Floating draggable panel — matches prototype FloatingPanel (tools.jsx):
    380×620, paper, radius 10, soft shadow, no backdrop. Positioned via inline
-   left/top from useDraggablePanel. */
+   left/top from useDraggablePanel, which also sets --toolkit-h: shorter than
+   620 on a short window, so it stays clear of the top bar and of the
+   timeline dock at its peek height. */
 .toolkit-panel {
   position: fixed;
   z-index: 190;
   width: 380px;
-  height: 620px;
+  height: var(--toolkit-h, 620px);
   max-height: calc(100vh - 2rem);
   background: rgb(var(--color-paper));
   border: 1px solid rgb(var(--color-ink) / 0.85);

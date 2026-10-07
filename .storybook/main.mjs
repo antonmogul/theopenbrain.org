@@ -20,14 +20,19 @@ const config = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs)"],
   addons: ["@storybook/addon-a11y", "@storybook/addon-docs"],
   // Only the white logo the themed sidebar shows (.storybook/theme.js); the
-  // app's public/ stays out so Storybook doesn't copy its media. The one
-  // exception is the brain atlas model (~0.7 MB), so its stories render the
-  // brain rather than an error (OPENBRAIN-127).
+  // app's public/ stays out so Storybook doesn't copy its media. The
+  // exceptions are the brain atlas model (~0.7 MB), so its stories render the
+  // brain rather than an error (OPENBRAIN-127), and the widget thumbnails
+  // (~270 KB) the chapter timeline's preview and map show (OPENBRAIN-128).
   staticDirs: [
     "./brand",
     {
       from: "../public/publicAssets/models/brain",
       to: "/publicAssets/models/brain",
+    },
+    {
+      from: "../public/publicAssets/images/widgets/thumbs",
+      to: "/publicAssets/images/widgets/thumbs",
     },
   ],
   framework: "@storybook/vue3-vite",

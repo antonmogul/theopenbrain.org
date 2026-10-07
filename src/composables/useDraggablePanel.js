@@ -1,4 +1,4 @@
-import { watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { useDraggable } from "@vueuse/core";
 
 /**
@@ -16,6 +16,20 @@ import { useDraggable } from "@vueuse/core";
  * @param {number} opts.width           panel width (px) for clamping
  * @param {number} opts.height          panel height (px) for clamping
  * @param {number} opts.margin          min gap from viewport edge (px)
+ * @param {() => number} [opts.bottomInset]  px of the viewport's bottom edge
+ *                                     taken by something fixed there (the
+ *                                     reader's timeline dock); the panel
+ *                                     keeps `margin` above it. Read on every
+ *                                     clamp, so it can change.
+ * @param {() => number} [opts.topInset]  the same for the top edge (the
+ *                                     reader's top bar).
+ * @param {number} [opts.minHeight]     the least the panel shrinks to when
+ *                                     the room between the insets is less
+ *                                     than `height`.
+ * @returns {{ x: Ref<number>, y: Ref<number>, height: Ref<number>,
+ *   refit: () => void, resetPosition: () => void }} `height` is what the
+ *   panel should be drawn at (≤ opts.height); `refit` re-clamps now, for
+ *   when an inset changed without a resize.
  */
 export function useDraggablePanel(panelRef, handleRef, opts = {}) {
   const {
@@ -23,15 +37,30 @@ export function useDraggablePanel(panelRef, handleRef, opts = {}) {
     width = 380,
     height = 620,
     margin = 16,
+    bottomInset = () => 0,
+    topInset = () => 0,
+    minHeight = 240,
   } = opts;
+
+  const lengthOf = (read) => Math.max(0, Number(read()) || 0);
+  const inset = () => lengthOf(bottomInset);
+  const top = () => lengthOf(topInset);
+
+  // The panel's height: `height`, or the room between the insets when that
+  // is less (it scrolls inside), but not below `minHeight`.
+  function fitHeight() {
+    const room = window.innerHeight - top() - inset() - 2 * margin;
+    return Math.max(Math.min(height, minHeight), Math.min(height, room));
+  }
+  const panelHeight = ref(fitHeight());
 
   // Default position: bottom-right, a comfortable inset from the edges.
   function defaultPos() {
     const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const vh = window.innerHeight - inset();
     return {
       x: Math.max(margin, vw - width - 24),
-      y: Math.max(margin, vh - height - 24),
+      y: Math.max(top() + margin, vh - fitHeight() - 24),
     };
   }
 
@@ -65,20 +94,23 @@ export function useDraggablePanel(panelRef, handleRef, opts = {}) {
     },
   });
 
-  // Keep the panel fully on-screen with `margin` px of gap on every edge.
-  // When the viewport is smaller than the panel (maxX < margin), the range
-  // collapses — pin to the top-left margin so the drag handle stays reachable.
+  // Keep the panel fully on-screen with `margin` px of gap on every edge
+  // (inside the insets). When the viewport is smaller than the panel, the
+  // range collapses — pin to the top-left margin (under the top inset) so
+  // the drag handle stays reachable.
   function clamp(px, py) {
+    const minY = top() + margin;
     const maxX = window.innerWidth - width - margin;
-    const maxY = window.innerHeight - height - margin;
+    const maxY = window.innerHeight - inset() - fitHeight() - margin;
     const x = maxX < margin ? margin : Math.min(Math.max(px, margin), maxX);
-    const y = maxY < margin ? margin : Math.min(Math.max(py, margin), maxY);
+    const y = maxY < minY ? minY : Math.min(Math.max(py, minY), maxY);
     return { x, y };
   }
 
-  // Re-clamp whenever the window resizes so the panel can never get lost
-  // off-screen (brief §6.7).
+  // Re-fit and re-clamp whenever the window resizes so the panel can never
+  // get lost off-screen (brief §6.7).
   function onResize() {
+    panelHeight.value = fitHeight();
     const c = clamp(x.value, y.value);
     x.value = c.x;
     y.value = c.y;
@@ -119,5 +151,5 @@ export function useDraggablePanel(panelRef, handleRef, opts = {}) {
     y.value = d.y;
   }
 
-  return { x, y, resetPosition };
+  return { x, y, height: panelHeight, refit: onResize, resetPosition };
 }

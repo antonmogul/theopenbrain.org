@@ -264,10 +264,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <!-- Between the top bar and the timeline docked at the bottom
+       (--reader-timeline-h, OPENBRAIN-128), so a figure's foot isn't under it. -->
   <div
     v-if="!store.isScrolling"
     ref="paneElement"
-    class="hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h))] bg-bg"
+    class="hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h)-var(--reader-timeline-h,0px))] bg-bg"
   >
     <template v-for="animation in animationList" :key="animation.id">
       <!-- Figure shell: image artwork, or the typed placeholder until it lands -->

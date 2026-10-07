@@ -62,6 +62,8 @@ export const courseFixture = {
 };
 
 export const apiFixtures = {
+  // The share switch's probe (OPENBRAIN-128): true, as after the migration.
+  "rpc/trending_sharing_ready": true,
   "modules?": [moduleFixture],
   "quizzes?": [quizFixture],
   "quiz_questions?": quizQuestions,

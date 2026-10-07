@@ -23,10 +23,12 @@
             subSubSection.type != 'breakSection'
           "
         >
-          <!-- Interactive widget placed in the prose (OPENBRAIN-21) -->
+          <!-- Interactive widget placed in the prose (OPENBRAIN-21);
+               data-timeline-id for the chapter timeline (OPENBRAIN-128) -->
           <WidgetBreakout
             v-if="subSubSection.type === 'widget'"
             :placement="subSubSection.widget"
+            :data-timeline-id="subSubSection.id"
           />
           <!-- Inline editing for sub-sub-section text -->
           <EditableBlock
@@ -93,11 +95,13 @@
                 :title="subSubParagraph.title"
                 :text="subSubParagraph.text"
                 :slug="subSubParagraph.videoSlug || 'placeholder'"
+                :data-timeline-id="subSubParagraph.id"
               />
               <BreakSection
                 v-else-if="subSubParagraph?.type === 'breakSection'"
                 :key="subSubParagraph"
                 :content="subSubParagraph"
+                :data-timeline-id="subSubParagraph.id"
               />
               <InlineImages
                 :paragraph="subSubParagraph"
@@ -127,10 +131,12 @@
           :title="subSubSection.title"
           :text="subSubSection.text"
           :slug="subSubSection.videoSlug || 'placeholder'"
+          :data-timeline-id="subSubSection.id"
         />
         <BreakSection
           v-if="subSubSection.type === 'breakSection'"
           :content="subSubSection"
+          :data-timeline-id="subSubSection.id"
         />
         <FullScreenIllustration
           :key="subSubSection.id"

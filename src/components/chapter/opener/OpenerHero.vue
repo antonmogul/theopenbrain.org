@@ -193,11 +193,13 @@ function onTool(tool) {
   border-radius: 999px;
 }
 
-/* Utility row bottom-right: small mono pills, as in the frame. */
+/* Utility row bottom-right: small mono pills, as in the frame. 1.25rem above
+   the chapter timeline docked at the bottom (--reader-timeline-h), not on
+   its edge, where hovering the "?" would open the timeline over it. */
 .opener-hero__tools {
   position: absolute;
   right: 1.25rem;
-  bottom: 1.25rem;
+  bottom: calc(1.25rem + var(--reader-timeline-h, 0px));
   display: flex;
   gap: 0.375rem;
 }

@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import { useGeneral, useText } from "@/stores";
 import { toSlug } from "@/helper/general.js";
 import { referenceDisplay } from "@/helper/chapterReferences";
+import { jumpToElement, jumpToId } from "@/helper/readerJump";
 
 const route = useRoute();
 const store = useGeneral();
@@ -95,11 +96,10 @@ function isSectionActive(slug) {
   return slug === store.currentSubChapter;
 }
 
+// Jumps go through readerJump (OPENBRAIN-128): below the top bar, no smooth
+// scroll under reduced motion, and by id (a slug can start with a digit).
 function scrollToSection(slug) {
-  const el = document.querySelector("#" + slug);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  jumpToId(slug, { align: "top" });
 }
 
 // The first place the text cites `number`: a citation superscript, or the
@@ -117,8 +117,7 @@ function citationEl(number) {
 
 function scrollToCitation(number) {
   const el = citationEl(number);
-  if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (!jumpToElement(el, { align: "center" })) return;
   // Flash the citation so it's easy to spot
   el.classList.add("citation-flash");
   setTimeout(() => el.classList.remove("citation-flash"), 1500);
