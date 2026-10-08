@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import gsap from "gsap";
 import CaseCabinetView from "@/views/CaseCabinetView.vue";
 const wrappers = [];
 async function cabinet() {
@@ -15,6 +16,7 @@ afterEach(() => {
   wrappers.splice(0).forEach((w) => w.unmount());
   delete document.documentElement.dataset.reduceMotion;
   vi.restoreAllMocks();
+  gsap.ticker.lagSmoothing(500, 33);
 });
 
 describe("source-backed case cabinet", () => {
@@ -156,7 +158,12 @@ function mediaState({ desktop = true, reduced = false } = {}) {
   });
   return queries;
 }
+/* Animated tests let the real timeline run. GSAP's lag smoothing advances it
+ * only 33ms after a frame that arrives over 500ms late, so a CI worker starved
+ * of CPU can leave the 3.35s opening stuck past its wait; with it off the
+ * timeline follows the wall clock (restored in afterEach). */
 async function animatedCabinet() {
+  gsap.ticker.lagSmoothing(0);
   delete document.documentElement.dataset.reduceMotion;
   mediaState();
   return cabinet();
