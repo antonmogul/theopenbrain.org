@@ -22,11 +22,36 @@ export function figureImages(animation) {
   return raw
     .map((item) => (typeof item === "string" ? { src: item } : item))
     .filter((item) => item && typeof item.src === "string" && item.src)
-    .map((item) => ({
-      src: item.src,
-      caption: item.caption || "",
-      alt: item.alt || "",
-    }));
+    .map((item) => {
+      const out = {
+        src: item.src,
+        caption: item.caption || "",
+        alt: item.alt || "",
+      };
+      // A gallery item can loop a muted YouTube clip in the viewer, with
+      // `src` as its poster and thumbnail (Stuart, 8 Oct: H.M.'s brain).
+      if (youtubeId(item.youtube)) out.youtube = item.youtube;
+      return out;
+    });
+}
+
+/** A YouTube video id (11 characters), or "" for anything else. */
+export function youtubeId(value) {
+  return typeof value === "string" && /^[\w-]{11}$/.test(value) ? value : "";
+}
+
+/**
+ * The embed URL for a silent loop: muted autoplay (browsers only allow
+ * autoplay muted), looping one video (loop needs playlist=<id>), no controls,
+ * inline on iOS, on the privacy-enhanced domain the CSP allows.
+ */
+export function youtubeLoopUrl(id) {
+  const v = youtubeId(id);
+  if (!v) return "";
+  return (
+    `https://www.youtube-nocookie.com/embed/${v}` +
+    `?autoplay=1&mute=1&loop=1&playlist=${v}&controls=0&playsinline=1&rel=0`
+  );
 }
 
 /**

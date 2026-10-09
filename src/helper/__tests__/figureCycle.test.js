@@ -50,3 +50,27 @@ describe("stepIndex", () => {
     expect(stepIndex(0, 0, 1)).toBe(0);
   });
 });
+
+describe("gallery video items", () => {
+  it("keeps a valid YouTube id on an item and drops an invalid one", async () => {
+    const out = figureImages({
+      images: [
+        { src: "/still.jpg", youtube: "OmmH4Rp9-to" },
+        { src: "/b.jpg", youtube: "not an id" },
+      ],
+    });
+    expect(out[0].youtube).toBe("OmmH4Rp9-to");
+    expect(out[1]).not.toHaveProperty("youtube");
+  });
+
+  it("builds a muted, looping, privacy-enhanced embed URL", async () => {
+    const { youtubeLoopUrl } = await import("../figureCycle");
+    const url = youtubeLoopUrl("OmmH4Rp9-to");
+    expect(url).toMatch(
+      /^https:\/\/www\.youtube-nocookie\.com\/embed\/OmmH4Rp9-to\?/
+    );
+    expect(url).toContain("mute=1");
+    expect(url).toContain("loop=1&playlist=OmmH4Rp9-to");
+    expect(youtubeLoopUrl("x")).toBe("");
+  });
+});
