@@ -228,6 +228,13 @@ function passCount(row) {
   const c = Array.isArray(row.checks) ? row.checks : [];
   return c.length ? `${c.filter((x) => x.ok).length}/${c.length} checks` : "";
 }
+
+// A published upload has a Storybook story at once: "Widgets/Uploads from the
+// book" reads widget_uploads live (OPENBRAIN-135). Storybook is served at
+// /storybook beside the app (plain link, not a router-link).
+function storybookLink(slug) {
+  return `/storybook/index.html?path=/story/widgets-uploads-from-the-book--published&args=slug:${encodeURIComponent(slug)}`;
+}
 </script>
 
 <template>
@@ -408,7 +415,13 @@ function passCount(row) {
             {{ saved.status === "published" ? "published" : "a draft" }}.
             <template v-if="saved.status === 'published'">
               Place it in a chapter from the chapter editor: Add widget →
-              Uploaded.</template
+              Uploaded.
+              <a
+                :href="storybookLink(saved.slug)"
+                target="_blank"
+                rel="noopener"
+                >Open it in Storybook ↗</a
+              ></template
             >
           </p>
           <div class="ws-actions">
@@ -460,6 +473,16 @@ function passCount(row) {
           <div class="ws-row-actions">
             <Button variant="ghost" size="sm" @click="openSaved(w)"
               >Open</Button
+            >
+            <Button
+              v-if="w.status === 'published'"
+              as="a"
+              :to="storybookLink(w.slug)"
+              variant="ghost"
+              size="sm"
+              target="_blank"
+              rel="noopener"
+              >Storybook ↗<span class="sr-only"> {{ w.title }}</span></Button
             >
             <Button variant="ghost" size="sm" @click="toggle(w)">{{
               w.status === "published" ? "Unpublish" : "Publish"

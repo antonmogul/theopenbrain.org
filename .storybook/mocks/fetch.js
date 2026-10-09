@@ -1,6 +1,9 @@
 /* Blocks direct Supabase fetches that have not yet moved to the API client. */
 
 const nativeFetch = globalThis.fetch.bind(globalThis);
+// The one way past the mock: stories tagged `live` (Widgets/Uploads from the
+// book) read the real database on purpose, and the smoke test skips them.
+globalThis.__liveFetch = nativeFetch;
 let fixtures = {};
 
 export function configureSupabaseFetchMock(nextFixtures = {}) {

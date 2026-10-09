@@ -6,6 +6,9 @@ const concurrency = Number(process.env.STORYBOOK_SMOKE_CONCURRENCY || 4);
 const index = JSON.parse(await readFile("storybook-static/index.json", "utf8"));
 const stories = Object.values(index.entries || {})
   .filter((entry) => entry.type === "story")
+  // `live` stories read the real database (Widgets/Uploads from the book);
+  // this test allows no outside requests, so it leaves them out.
+  .filter((entry) => !(entry.tags || []).includes("live"))
   .map((entry) => entry.id)
   .sort();
 const expectedConsoleErrors = new Map([

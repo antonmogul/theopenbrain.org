@@ -1,0 +1,1251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Signal detection theory</title>
+    <!--
+  The Open Brain, chapter 3 "Attention and Working Memory", box "Signal
+  detection theory". Figma R7AjPuac7z7OZ7xcd2t7OR, "BOB. 01 | Signal
+  Detection Theory" (21:3503), widget state 21:4030, rebuilt on the widget
+  kit. The box text (four paragraphs and the two equations) stays in the
+  chapter; this file is the widget only.
+
+  Science, modes and numbers are the author's original,
+  src/widgets/source/sdt_widget.html (Arjun Krishnaswamy):
+
+  - Equal-variance Gaussian model: noise N(0, 1), signal + noise N(d', 1).
+    k is the criterion's position on the evidence axis.
+    H = Phi(d' - k), F = Phi(-k), so z(H) = d' - k and z(F) = -k,
+    d' = z(H) - z(F) and c = -1/2 [z(H) + z(F)] = k - d'/2
+    (positive c = cautious, negative = liberal).
+  - Defaults: d' = 1.50, k = 0.75 (c = 0, H = 0.773, F = 0.227).
+    d' slider 0 to 3 in 0.01 steps; criterion clamped to -3.8 ... 5.8.
+  - Mode "Two observers, same d'": d' = 1.50; observers at k = -0.4 and
+    k = 1.4, both on the one ROC curve.
+  - Mode "Same H, different d'": d' = 1.80 and a second curve at d' = 0.80;
+    one observer on each, both at H = 0.75.
+    The design renamed this mode "two observers, different d'"; that is a
+    different comparison, so the author's is kept here.
+  - Moving d' leaves a mode (the author's rule); the criterion does not.
+  - Normal CDF and its inverse are the author's (Abramowitz-Stegun 7.1.26
+    and Acklam), copied unchanged so the numbers match.
+
+  ADDED, not in the author's widget: the observers' criteria on the
+  evidence axis (A and B), a table of their H, F, d' and c, the worked
+  equations under the readouts, "cautious / liberal" beside c, keyboard
+  control of the criterion, and a short slide of d' when a mode sets it.
+-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* The book sets these; the fallbacks make the file work on its own.
+         Attention is the Learning, Cognition & Memory ramp. */
+      :root {
+        --accent: var(--ob-accent, #ff3351);
+        --accent-deep: var(--ob-accent-deep, #c1062a);
+        /* text on an accent fill: dark on this red */
+        --on-accent: var(--ob-on-accent, #1c1c1c);
+        --plate: var(--ob-plate, #1c1c1c);
+        --plate-2: var(--ob-plate-2, #2a2a2a);
+        --on: var(--ob-on-plate, #ffffff);
+        --mute: var(--ob-on-plate-mute, rgba(255, 255, 255, 0.62));
+        --line: var(--ob-line-plate, rgba(255, 255, 255, 0.18));
+        --sans: var(--ob-font-sans, "IBM Plex Sans", system-ui, sans-serif);
+        --mono: var(--ob-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+        --radius: var(--ob-radius, 0);
+        /* the noise distribution: greys mixed from the plate and its ink */
+        --noise: color-mix(in srgb, var(--on) 70%, var(--plate));
+        --cr: color-mix(in srgb, var(--on) 16%, var(--plate));
+        --fa: color-mix(in srgb, var(--on) 58%, var(--plate));
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--plate);
+        color: var(--on);
+        font-family: var(--sans);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .w {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 900px) {
+        .w {
+          padding: 32px 40px;
+          gap: 20px;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .hint {
+        margin: 4px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--mute);
+      }
+      /* d′, c, H, F keep their case inside uppercase labels */
+      .sym {
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      .group-label {
+        margin: 0 0 8px;
+        font: 500 12px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+
+      /* ---- Layout: stacked on phones, figure pair from 720 px, legend
+         column from 1100 px (as in the frame) ------------------------- */
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "controls" "dist" "legend" "reads" "roc";
+      }
+      .controls {
+        grid-area: controls;
+      }
+      .dist {
+        grid-area: dist;
+      }
+      .legend {
+        grid-area: legend;
+      }
+      .numbers {
+        grid-area: reads;
+      }
+      .rocp {
+        grid-area: roc;
+      }
+      @media (min-width: 720px) {
+        .grid {
+          column-gap: 24px;
+          grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+          grid-template-areas:
+            "controls controls"
+            "dist roc"
+            "reads roc"
+            "legend legend";
+        }
+        .rocp {
+          align-self: start;
+        }
+      }
+      @media (min-width: 1100px) {
+        .grid {
+          column-gap: 32px;
+          grid-template-columns: 176px minmax(0, 1.35fr) minmax(0, 1fr);
+          grid-template-areas:
+            "legend controls controls"
+            "legend dist roc"
+            "legend reads roc";
+        }
+      }
+
+      /* ---- Controls -------------------------------------------------- */
+      .controls {
+        display: grid;
+        gap: 14px;
+      }
+      .tabs {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        border: 1px solid var(--line);
+      }
+      .tabs button {
+        min-height: 44px;
+        padding: 8px 10px;
+        border: 0;
+        border-left: 1px solid var(--line);
+        background: transparent;
+        color: var(--on);
+        cursor: pointer;
+        border-radius: var(--radius);
+        /* sentence case, not uppercase: "d′" must not become "D′" */
+        font: 500 13px/1.25 var(--mono);
+        letter-spacing: 0.02em;
+        text-wrap: balance;
+        transition:
+          background-color 0.18s ease-out,
+          color 0.18s ease-out;
+      }
+      .tabs button:first-child {
+        border-left: 0;
+      }
+      .tabs button:hover {
+        background: var(--plate-2);
+      }
+      .tabs button[aria-pressed="true"] {
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        position: relative;
+        z-index: 1;
+      }
+      /* the handle stays absolutely placed when focused */
+      .crit:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        z-index: 1;
+      }
+      .field {
+        display: grid;
+        gap: 2px;
+      }
+      .field-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .field label {
+        font: 500 12px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .field output {
+        font: 500 15px/1.2 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      input[type="range"] {
+        width: 100%;
+        min-height: 44px;
+        margin: 0;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      /* ---- Figures --------------------------------------------------- */
+      .panel-head {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 4px 12px;
+        margin-bottom: 8px;
+      }
+      .panel-head .group-label {
+        margin: 0;
+      }
+      .panel-note {
+        font: 12px/1.3 var(--mono);
+        color: var(--mute);
+      }
+      .plot {
+        position: relative;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      #dist {
+        /* horizontal drags move the criterion; vertical swipes scroll */
+        touch-action: pan-y;
+        cursor: ew-resize;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .lbl {
+        font: 12px var(--mono);
+        fill: var(--mute);
+      }
+      .lbl-on {
+        font: 500 12px var(--mono);
+        fill: var(--on);
+      }
+      /* a halo in the plate colour keeps labels readable over curves */
+      .halo {
+        paint-order: stroke;
+        stroke: var(--plate);
+        stroke-width: 4px;
+        stroke-linejoin: round;
+      }
+      .it {
+        font-style: italic;
+      }
+
+      /* The criterion handle: a real focusable slider over the figure */
+      .crit {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 44px;
+        height: 44px;
+        margin: 0;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        cursor: ew-resize;
+        touch-action: none;
+      }
+      .crit svg {
+        width: 26px;
+        height: 26px;
+        pointer-events: none;
+      }
+
+      /* ---- Legend ------------------------------------------------------ */
+      .legend ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 16px;
+      }
+      @media (min-width: 720px) {
+        .legend ul {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 1100px) {
+        .legend ul {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 14px;
+        }
+      }
+      .legend li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font: 13px/1.3 var(--mono);
+      }
+      .legend li svg {
+        flex: none;
+        width: 22px;
+        height: 16px;
+      }
+
+      /* ---- Readouts ---------------------------------------------------- */
+      .numbers {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+      }
+      .reads {
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        border-top: 1px solid var(--line);
+      }
+      .reads div {
+        padding: 10px 0 10px 12px;
+        min-width: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .reads div:nth-child(odd) {
+        padding-left: 0;
+      }
+      .reads div:nth-child(even) {
+        border-left: 1px solid var(--line);
+      }
+      @media (min-width: 480px) {
+        .reads {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        .reads div:nth-child(n) {
+          padding-left: 12px;
+        }
+        .reads div:first-child {
+          padding-left: 0;
+        }
+        .reads div + div {
+          border-left: 1px solid var(--line);
+        }
+      }
+      .reads dt {
+        font: 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .reads dd {
+        margin: 4px 0 0;
+        font: 500 20px/1.1 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .reads dd.hit {
+        color: var(--accent);
+      }
+      .reads dd small {
+        display: block;
+        margin-top: 3px;
+        font: 11px/1.2 var(--mono);
+        letter-spacing: 0.04em;
+        color: var(--mute);
+      }
+      .eq {
+        margin: 0;
+        font: 12px/1.7 var(--mono);
+        color: var(--mute);
+        font-variant-numeric: tabular-nums;
+      }
+      .eq .ln {
+        display: block;
+      }
+      .eq i {
+        font-style: italic;
+        color: var(--on);
+      }
+      .half {
+        font-size: 13px;
+      }
+
+      .obs {
+        width: 100%;
+        border-collapse: collapse;
+        font: 13px/1.3 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .obs caption {
+        text-align: left;
+        padding-bottom: 6px;
+        font: 500 12px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .obs th,
+      .obs td {
+        padding: 7px 8px 7px 0;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .obs thead th {
+        font: 11px/1.3 var(--mono);
+        color: var(--mute);
+        border-top: 1px solid var(--line);
+      }
+      .obs td small {
+        display: block;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .badge {
+        display: inline-grid;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        border: 1.5px solid var(--on);
+        border-radius: 50%;
+        font: 500 11px/1 var(--mono);
+      }
+
+      /* ---- Takeaway and caption --------------------------------------- */
+      .info {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        margin: 0;
+        padding: 12px 14px;
+        background: var(--plate-2);
+        border: 1px solid var(--line);
+        font: 13px/1.55 var(--mono);
+      }
+      .info > svg {
+        width: 20px;
+        height: 20px;
+        margin-top: 1px;
+      }
+      .info b {
+        font-weight: 500;
+      }
+      .cap {
+        margin: 0;
+        font: 12px/1.55 var(--mono);
+        color: var(--mute);
+        max-width: 110ch;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+      html[data-ob-reduce-motion] * {
+        transition: none !important;
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Fill patterns shared by the figure and the legend. Noise outcomes
+         are hatched and signal outcomes solid, so the four regions differ
+         by texture and lightness, not colour alone. -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <pattern id="pCR" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="6" height="6" fill="var(--cr)" />
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--on)" stroke-opacity=".22" stroke-width="1.5" />
+        </pattern>
+        <pattern id="pFA" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="6" height="6" fill="var(--fa)" />
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--plate)" stroke-opacity=".45" stroke-width="1.5" />
+        </pattern>
+      </defs>
+    </svg>
+
+    <main class="w">
+      <header>
+        <h1>Signal detection theory</h1>
+        <p class="hint">
+          Drag the criterion along the evidence axis and change d′. Watch the
+          hit and false-alarm rates, and the point on the ROC curve.
+        </p>
+      </header>
+
+      <div class="grid">
+        <div class="controls">
+          <div>
+            <p class="group-label" id="mode-label">Compare two observers</p>
+            <div class="tabs" role="group" aria-labelledby="mode-label">
+              <button type="button" id="p1" data-preset="1" aria-pressed="false">
+                Two observers, same d′
+              </button>
+              <button type="button" id="p2" data-preset="2" aria-pressed="false">
+                Same H, different d′
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-head">
+              <label for="dp">Sensitivity <span class="sym">d′</span></label>
+              <output id="dpOut" for="dp">1.50</output>
+            </div>
+            <input id="dp" type="range" min="0" max="3" step="0.01" value="1.5" />
+          </div>
+        </div>
+
+        <section class="dist" aria-labelledby="dist-label">
+          <div class="panel-head">
+            <p class="group-label" id="dist-label">Evidence axis</p>
+          </div>
+          <div class="plot" id="distPlot">
+            <svg id="dist" role="img" aria-label=""></svg>
+            <div
+              class="crit"
+              id="crit"
+              role="slider"
+              tabindex="0"
+              aria-label="Criterion"
+              aria-orientation="horizontal"
+              aria-valuemin="-3.8"
+              aria-valuemax="5.8"
+            >
+              <svg viewBox="0 0 26 26" aria-hidden="true">
+                <circle cx="13" cy="13" r="11.5" fill="var(--on)" stroke="var(--plate)" stroke-width="1.5" />
+                <path d="M10.5 9 L6.5 13 L10.5 17 M15.5 9 L19.5 13 L15.5 17" fill="none" stroke="var(--plate)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <aside class="legend" aria-label="Legend">
+          <p class="group-label">Legend</p>
+          <ul>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><path d="M1 14 C6 14 7 2 11 2 C15 2 16 14 21 14" fill="none" stroke="var(--noise)" stroke-width="2" /></svg>
+              noise
+            </li>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><path d="M1 14 C6 14 7 2 11 2 C15 2 16 14 21 14" fill="none" stroke="var(--accent)" stroke-width="2" /></svg>
+              signal + noise
+            </li>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><rect x="10" y="0" width="2.5" height="16" fill="var(--on)" /></svg>
+              criterion
+            </li>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><rect x="1" y="2" width="20" height="12" fill="var(--accent)" fill-opacity=".78" /></svg>
+              hit
+            </li>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><rect x="1" y="2" width="20" height="12" fill="var(--accent-deep)" /></svg>
+              miss
+            </li>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><rect x="1" y="2" width="20" height="12" fill="url(#pFA)" /></svg>
+              false alarm
+            </li>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><rect x="1" y="2" width="20" height="12" fill="url(#pCR)" stroke="var(--line)" /></svg>
+              correct reject
+            </li>
+            <li>
+              <svg viewBox="0 0 22 16" aria-hidden="true"><circle cx="11" cy="8" r="6" fill="var(--accent)" stroke="var(--plate)" stroke-width="1.5" /></svg>
+              this criterion on the ROC
+            </li>
+          </ul>
+        </aside>
+
+        <div class="numbers">
+          <dl class="reads">
+            <div>
+              <dt>Hit rate <span class="sym">H</span></dt>
+              <dd class="hit" id="rH">0.773</dd>
+            </div>
+            <div>
+              <dt>False alarm <span class="sym">F</span></dt>
+              <dd id="rF">0.227</dd>
+            </div>
+            <div>
+              <dt><span class="sym">d′</span></dt>
+              <dd id="rD">1.50</dd>
+            </div>
+            <div>
+              <dt>Criterion <span class="sym">c</span></dt>
+              <dd><span id="rC">+0.00</span><small id="rCw">neutral</small></dd>
+            </div>
+          </dl>
+          <p class="eq" id="eq" aria-label=""></p>
+          <table class="obs" id="obs" hidden>
+            <caption>The two observers</caption>
+            <thead>
+              <tr>
+                <th scope="col">Observer</th>
+                <th scope="col"><span class="sym">H</span></th>
+                <th scope="col"><span class="sym">F</span></th>
+                <th scope="col"><span class="sym">d′</span></th>
+                <th scope="col"><span class="sym">c</span></th>
+              </tr>
+            </thead>
+            <tbody id="obsBody"></tbody>
+          </table>
+        </div>
+
+        <section class="rocp" aria-labelledby="roc-label">
+          <div class="panel-head">
+            <p class="group-label" id="roc-label">ROC space</p>
+            <span class="panel-note" id="rocNote"></span>
+          </div>
+          <div class="plot" id="rocPlot">
+            <svg id="roc" role="img" aria-label=""></svg>
+          </div>
+        </section>
+      </div>
+
+      <p class="info" aria-live="polite">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="10" cy="10" r="8.5" fill="none" stroke="var(--on)" stroke-width="1.2" />
+          <line x1="10" y1="8.5" x2="10" y2="14.5" stroke="var(--on)" stroke-width="1.6" />
+          <circle cx="10" cy="5.8" r="1.1" fill="var(--on)" />
+        </svg>
+        <span id="note"></span>
+      </p>
+
+      <p class="cap">
+        Equal-variance Gaussian model: noise and signal + noise are normal
+        distributions with the same spread, d′ standard deviations apart on
+        the evidence axis. The observer says "yes" to evidence above the
+        criterion, so H is the area of signal + noise above it and F the area
+        of noise above it. d′ = z(H) − z(F) and c = −½ [z(H) + z(F)], where z
+        is the inverse of the normal distribution; positive c is a cautious
+        criterion, negative c a liberal one. The ROC plots H against F as the
+        criterion sweeps; the dashed diagonal is chance (d′ = 0). Illustrative
+        model, not recorded data. Widget after Arjun Krishnaswamy; model after
+        Green &amp; Swets, 1966.
+      </p>
+    </main>
+
+    <script>
+      "use strict";
+      // The book injects window.OB before this runs; this fallback keeps the
+      // file working on its own (in Claude, or opened in a browser).
+      window.OB = window.OB || {
+        reducedMotion:
+          matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-ob-reduce-motion"),
+        onTheme(fn) {
+          fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
+        },
+        resize() {},
+      };
+
+      /* ---------- maths: the author's functions, unchanged ---------- */
+      function erf(x) {
+        // Abramowitz-Stegun 7.1.26
+        const s = x < 0 ? -1 : 1;
+        x = Math.abs(x);
+        const t = 1 / (1 + 0.3275911 * x);
+        const y =
+          1 -
+          ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) *
+            t *
+            Math.exp(-x * x);
+        return s * y;
+      }
+      const Phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2)); // normal CDF
+      function Phinv(p) {
+        // inverse normal (Acklam)
+        if (p <= 0) return -6;
+        if (p >= 1) return 6;
+        const a = [-3.969683028665376e1, 2.209460984245205e2, -2.759285104469687e2, 1.38357751867269e2, -3.066479806614716e1, 2.506628277459239];
+        const b = [-5.447609879822406e1, 1.615858368580409e2, -1.556989798598866e2, 6.680131188771972e1, -1.328068155288572e1];
+        const c = [-7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
+        const d = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996, 3.754408661907416];
+        const pl = 0.02425,
+          ph = 1 - pl;
+        let q, r;
+        if (p < pl) {
+          q = Math.sqrt(-2 * Math.log(p));
+          return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+        }
+        if (p <= ph) {
+          q = p - 0.5;
+          r = q * q;
+          return ((((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q) / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+        }
+        q = Math.sqrt(-2 * Math.log(1 - p));
+        return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+      }
+      const pdf = (x) => Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+
+      /* ---------- state (the author's defaults) ---------- */
+      let dp = 1.5; // d′: signal mean (noise mean = 0), in noise SDs
+      let k = 0.75; // the criterion's position on the evidence axis
+      let preset = 0; // 0 none, 1 two observers same d′, 2 same H different d′
+
+      const EX0 = -4,
+        EX1 = 6; // evidence axis range, as the author's
+      const K_MIN = EX0 + 0.2,
+        K_MAX = EX1 - 0.2; // the author's clamp
+      const clampK = (v) => Math.max(K_MIN, Math.min(K_MAX, v));
+
+      // The author's two comparisons.
+      const MODE1 = { dp: 1.5, ks: [-0.4, 1.4] }; // two criteria, one curve
+      const MODE2 = { dp: 1.8, other: 0.8, H: 0.75 }; // one H, two curves
+
+      function observers() {
+        if (preset === 1)
+          return MODE1.ks.map((kk, i) => ({ id: "AB"[i], d: dp, k: kk, F: Phi(-kk), H: Phi(dp - kk) }));
+        if (preset === 2)
+          return [dp, MODE2.other].map((d, i) => {
+            const kk = d - Phinv(MODE2.H);
+            return { id: "AB"[i], d, k: kk, F: Phi(-kk), H: MODE2.H };
+          });
+        return [];
+      }
+
+      /* ---------- formatting ---------- */
+      const MINUS = "−";
+      function num(v, n, signed) {
+        const z = Math.abs(v) < 0.5 * Math.pow(10, -n) ? 0 : v;
+        const s = Math.abs(z).toFixed(n);
+        if (z < 0) return MINUS + s;
+        return (signed ? "+" : "") + s;
+      }
+      const paren = (v, n) => (v < 0 && num(v, n) !== num(0, n) ? "(" + num(v, n) + ")" : num(v, n));
+      function bias(c) {
+        const s = num(c, 2, true);
+        if (s === "+0.00") return "neutral";
+        return c > 0 ? "cautious" : "liberal";
+      }
+
+      /* ---------- svg helpers ---------- */
+      const NS = "http://www.w3.org/2000/svg";
+      const $ = (id) => document.getElementById(id);
+      function el(parent, tag, attrs, text) {
+        const n = document.createElementNS(NS, tag);
+        for (const a in attrs) n.setAttribute(a, attrs[a]);
+        if (text != null) n.textContent = text;
+        parent.appendChild(n);
+        return n;
+      }
+      const f1 = (v) => v.toFixed(1);
+
+      /* ---------- evidence axis ---------- */
+      const distSVG = $("dist");
+      const crit = $("crit");
+      let G = null; // current geometry of the evidence axis
+
+      function distGeom() {
+        const W = Math.max(280, $("distPlot").getBoundingClientRect().width);
+        const H = Math.round(Math.max(230, Math.min(320, W * 0.56)));
+        const padL = 12,
+          padR = 12,
+          top = 52, // below the label and marker rows
+          base = H - 44;
+        const x = (v) => padL + ((v - EX0) / (EX1 - EX0)) * (W - padL - padR);
+        const xInv = (px) => EX0 + ((px - padL) / (W - padL - padR)) * (EX1 - EX0);
+        const y = (d) => base - (d / pdf(0)) * (base - top);
+        return { W, H, padL, padR, top, base, x, xInv, y };
+      }
+      function areaPath(g, mean, a, b) {
+        const step = (b - a) / 80;
+        let d = `M ${f1(g.x(a))} ${f1(g.y(0))}`;
+        for (let v = a; v <= b + 1e-9; v += step) d += ` L ${f1(g.x(v))} ${f1(g.y(pdf(v - mean)))}`;
+        return d + ` L ${f1(g.x(b))} ${f1(g.y(0))} Z`;
+      }
+      function curvePath(g, mean) {
+        let d = "";
+        for (let v = EX0; v <= EX1 + 1e-9; v += 0.05) d += (d ? " L " : "M ") + f1(g.x(v)) + " " + f1(g.y(pdf(v - mean)));
+        return d;
+      }
+      /* Labels and markers never overlap. The top of the axis has fixed rows:
+         the "criterion" label (row 1), then the observers' A/B markers (row
+         2); the curves start below them. Curve labels sit beside their curve,
+         below row 2, and each tries a list of places (one line, then two;
+         at 1, 1.4 and 0.7 SD out) until one is inside the figure and clear
+         of everything already placed. */
+      const ROW1 = 13, // baseline of the "criterion" label
+        ROW2 = 32; // centre of the A/B markers
+      const hits = (a, b, pad = 2) =>
+        a.x < b.x + b.width + pad && b.x < a.x + a.width + pad && a.y < b.y + b.height + pad && b.y < a.y + a.height + pad;
+      function placeLabel(g, lines, mean, side, cls, avoid) {
+        const t = el(distSVG, "text", { class: cls + " halo cl" });
+        const variants = [[lines.join(" ")]];
+        if (lines.length > 1) variants.push(lines);
+        const floor = ROW2 + 12; // nothing above the marker row
+        let bb = null;
+        for (const v of variants)
+          for (const sd of [1, 1.4, 0.7]) {
+            const xx = side < 0 ? g.x(mean - sd) - 8 : g.x(mean + sd) + 8;
+            const yc = g.y(pdf(sd)); // height of the curve at that point
+            t.textContent = "";
+            v.forEach((line, i) =>
+              el(t, "tspan", { x: f1(xx), y: f1(yc + 4 + (i - (v.length - 1) / 2) * 15) }, line)
+            );
+            t.setAttribute("text-anchor", side < 0 ? "end" : "start");
+            bb = t.getBBox();
+            const inside = bb.x >= g.padL && bb.x + bb.width <= g.W - g.padR && bb.y >= floor && bb.y + bb.height <= g.base - 2;
+            if (inside && !avoid.some((o) => hits(bb, o))) {
+              avoid.push(bb);
+              return bb;
+            }
+          }
+        avoid.push(bb); // nothing clear: keep the last try (never seen in testing)
+        return bb;
+      }
+      function dashedCrit(g, kk) {
+        const cx = g.x(kk);
+        el(distSVG, "line", { x1: f1(cx), y1: g.base, x2: f1(cx), y2: ROW2 + 9, stroke: "var(--on)", "stroke-width": 1.5, "stroke-dasharray": "4 3", "stroke-opacity": 0.8 });
+      }
+      // A marker at mx on row 2; a short leader joins it to its criterion
+      // line at cx when the two had to be spread apart.
+      function marker(g, cx, mx, id) {
+        const m = el(distSVG, "g", { class: "mk" });
+        if (Math.abs(mx - cx) > 0.5)
+          el(distSVG, "line", { x1: f1(mx), y1: ROW2 + 9, x2: f1(cx), y2: ROW2 + 17, stroke: "var(--on)", "stroke-width": 1.2, "stroke-opacity": 0.8 });
+        el(m, "circle", { cx: f1(mx), cy: ROW2, r: 9, fill: "var(--plate)", stroke: "var(--on)", "stroke-width": 1.5 });
+        el(m, "text", { class: "lbl-on", x: f1(mx), y: ROW2 + 4, "text-anchor": "middle" }, id);
+        return m.getBBox();
+      }
+      // Spread marker centres at least GAP apart, inside the figure.
+      function spread(g, xs) {
+        const GAP = 22,
+          lo = g.padL + 10,
+          hi = g.W - g.padR - 10;
+        const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
+        const out = xs.slice();
+        for (let pass = 0; pass < 4; pass++)
+          for (let j = 1; j < order.length; j++) {
+            const a = order[j - 1],
+              b = order[j];
+            const need = GAP - (out[b] - out[a]);
+            if (need > 0) {
+              out[a] -= need / 2;
+              out[b] += need / 2;
+            }
+            out[a] = Math.max(lo, Math.min(hi, out[a]));
+            out[b] = Math.max(lo, Math.min(hi, out[b]));
+          }
+        return out;
+      }
+
+      function drawDist() {
+        const g = (G = distGeom());
+        distSVG.setAttribute("viewBox", `0 0 ${g.W} ${g.H}`);
+        distSVG.innerHTML = "";
+        const base = g.y(0);
+        // the four outcomes (the author's drawing order)
+        el(distSVG, "path", { d: areaPath(g, 0, EX0, k), fill: "url(#pCR)" }); // correct reject
+        el(distSVG, "path", { d: areaPath(g, 0, k, EX1), fill: "url(#pFA)" }); // false alarm
+        el(distSVG, "path", { d: areaPath(g, dp, EX0, k), fill: "var(--accent-deep)", "fill-opacity": 0.95 }); // miss
+        el(distSVG, "path", { d: areaPath(g, dp, k, EX1), fill: "var(--accent)", "fill-opacity": 0.78 }); // hit
+        // mode 2: observer B's signal distribution (d′ = 0.80), dashed
+        if (preset === 2)
+          el(distSVG, "path", { d: curvePath(g, MODE2.other), fill: "none", stroke: "var(--on)", "stroke-width": 1.5, "stroke-dasharray": "5 4", "stroke-opacity": 0.85 });
+        // outlines
+        el(distSVG, "path", { d: curvePath(g, 0), fill: "none", stroke: "var(--noise)", "stroke-width": 2 });
+        el(distSVG, "path", { d: curvePath(g, dp), fill: "none", stroke: "var(--accent)", "stroke-width": 2 });
+        // baseline and the means
+        el(distSVG, "line", { x1: g.x(EX0), y1: base, x2: g.x(EX1), y2: base, stroke: "var(--mute)", "stroke-width": 1 });
+        [0, dp].forEach((m) => el(distSVG, "line", { x1: f1(g.x(m)), y1: base, x2: f1(g.x(m)), y2: base + 6, stroke: "var(--on)", "stroke-width": 1.5 }));
+        // d′ bracket between the means
+        const ay = base + 16;
+        el(distSVG, "line", { x1: f1(g.x(0)), y1: ay, x2: f1(g.x(dp)), y2: ay, stroke: "var(--mute)", "stroke-width": 1 });
+        [0, dp].forEach((m) => el(distSVG, "line", { x1: f1(g.x(m)), y1: ay - 4, x2: f1(g.x(m)), y2: ay + 4, stroke: "var(--mute)", "stroke-width": 1 }));
+        el(distSVG, "text", { class: "lbl", x: f1(g.x(dp / 2)), y: ay + 18, "text-anchor": "middle" }, "d′ = " + dp.toFixed(2));
+        el(distSVG, "text", { class: "lbl", x: g.padL, y: ay + 18 }, "evidence →");
+        // the observers' criteria in a mode (dashed), then the criterion
+        const obs = observers();
+        obs.forEach((o) => dashedCrit(g, o.k));
+        const cx = g.x(k);
+        el(distSVG, "line", { x1: f1(cx), y1: base + 6, x2: f1(cx), y2: ROW1 + 6, stroke: "var(--on)", "stroke-width": 2.5 });
+        // row 2: the A/B markers, drawn over the lines
+        const cxs = obs.map((o) => g.x(o.k));
+        const mxs = spread(g, cxs);
+        const avoid = obs.map((o, i) => marker(g, cxs[i], mxs[i], o.id));
+        // row 1: the "criterion" label
+        const lx = Math.max(g.padL + 36, Math.min(g.W - g.padR - 36, cx));
+        el(distSVG, "text", { class: "lbl-on halo", id: "critLbl", x: f1(lx), y: ROW1, "text-anchor": "middle" }, "criterion");
+        // curve labels, clear of the markers and of each other
+        placeLabel(g, ["noise"], 0, -1, "lbl", avoid);
+        placeLabel(g, ["signal", "+ noise"], dp, 1, "lbl-on", avoid);
+        // the handle sits on the line, halfway up
+        const hy = (g.top + base) / 2 + 10;
+        crit.style.transform = `translate(${f1(cx - 22)}px, ${f1(hy - 22)}px)`;
+
+        const F = Phi(-k),
+          H = Phi(dp - k),
+          c = k - dp / 2;
+        distSVG.setAttribute(
+          "aria-label",
+          `Noise and signal + noise distributions, d′ = ${dp.toFixed(2)} apart, with the criterion at c = ${num(c, 2, true)}. ` +
+            `Hits ${H.toFixed(3)} and false alarms ${F.toFixed(3)} are the areas above the criterion.`
+        );
+      }
+
+      /* ---------- ROC ---------- */
+      const rocSVG = $("roc");
+      function rocGeom() {
+        const W = Math.max(260, $("rocPlot").getBoundingClientRect().width);
+        const S = Math.min(W, 460); // square plot, capped on very wide screens
+        const L = 46,
+          B = 46,
+          T = 12,
+          R = 14;
+        const side = S - L - R;
+        const rx = (f) => L + f * side;
+        const ry = (h) => T + (1 - h) * (S - T - B);
+        return { W, S, L, B, T, R, rx, ry };
+      }
+      function rocCurve(g, d) {
+        let s = "";
+        for (let c = 6; c >= -6; c -= 0.06) {
+          const F = Phi(-c),
+            H = Phi(d - c);
+          s += (s ? " L " : "M ") + g.rx(F).toFixed(1) + " " + g.ry(H).toFixed(1);
+        }
+        return s;
+      }
+      function drawROC() {
+        const g = rocGeom();
+        rocSVG.setAttribute("viewBox", `0 0 ${g.W} ${g.S}`);
+        rocSVG.innerHTML = "";
+        // frame, ticks and axis titles
+        el(rocSVG, "rect", { x: g.rx(0), y: g.ry(1), width: g.rx(1) - g.rx(0), height: g.ry(0) - g.ry(1), fill: "none", stroke: "var(--line)" });
+        [0, 0.5, 1].forEach((v) => {
+          el(rocSVG, "line", { x1: g.rx(v), y1: g.ry(0), x2: g.rx(v), y2: g.ry(0) + 5, stroke: "var(--mute)" });
+          el(rocSVG, "text", { class: "lbl", x: g.rx(v), y: g.ry(0) + 18, "text-anchor": v === 0 ? "start" : v === 1 ? "end" : "middle" }, v === 0.5 ? "0.5" : String(v));
+          el(rocSVG, "line", { x1: g.rx(0) - 5, y1: g.ry(v), x2: g.rx(0), y2: g.ry(v), stroke: "var(--mute)" });
+          el(rocSVG, "text", { class: "lbl", x: g.rx(0) - 8, y: g.ry(v) + (v === 1 ? 9 : v === 0 ? -1 : 4), "text-anchor": "end" }, v === 0.5 ? "0.5" : String(v));
+        });
+        el(rocSVG, "text", { class: "lbl", x: (g.rx(0) + g.rx(1)) / 2, y: g.S - 6, "text-anchor": "middle" }, "false-alarm rate F");
+        const my = (g.ry(0) + g.ry(1)) / 2;
+        el(rocSVG, "text", { class: "lbl", x: 12, y: my, "text-anchor": "middle", transform: `rotate(-90 12 ${my})` }, "hit rate H");
+        // chance diagonal
+        el(rocSVG, "line", { x1: g.rx(0), y1: g.ry(0), x2: g.rx(1), y2: g.ry(1), stroke: "var(--mute)", "stroke-dasharray": "4 4" });
+        el(rocSVG, "text", { class: "lbl halo", x: g.rx(0.97), y: g.ry(0.86), "text-anchor": "end" }, "chance");
+        // mode 2: observer B's curve (d′ = 0.80), dashed
+        if (preset === 2)
+          el(rocSVG, "path", { d: rocCurve(g, MODE2.other), fill: "none", stroke: "var(--on)", "stroke-width": 1.5, "stroke-dasharray": "5 4", "stroke-opacity": 0.85 });
+        // the curve for the current d′
+        el(rocSVG, "path", { d: rocCurve(g, dp), fill: "none", stroke: "var(--on)", "stroke-width": 2 });
+        // the observers: circles first, then letters placed clear of the
+        // circles, the "chance" label and each other
+        const chance = [...rocSVG.querySelectorAll("text")].find((t) => t.textContent === "chance");
+        const avoid = [chance.getBBox()];
+        const pts = observers().map((o) => ({ o, px: g.rx(o.F), py: g.ry(o.H) }));
+        pts.forEach(({ px, py }) => {
+          const c = el(rocSVG, "circle", { class: "mk", cx: f1(px), cy: f1(py), r: 6, fill: "var(--plate)", stroke: "var(--on)", "stroke-width": 1.75 });
+          avoid.push(c.getBBox());
+        });
+        pts.forEach(({ o, px, py }) => {
+          const t = el(rocSVG, "text", { class: "lbl-on halo cl" }, o.id);
+          // below-right (off the curve, toward the diagonal) first
+          const spots = [
+            [11, 16, "start"],
+            [-11, 16, "end"],
+            [11, -8, "start"],
+            [-11, -8, "end"],
+            [14, 4, "start"],
+            [-14, 4, "end"],
+          ];
+          for (const [dx, dy, anchor] of spots) {
+            t.setAttribute("x", f1(px + dx));
+            t.setAttribute("y", f1(py + dy));
+            t.setAttribute("text-anchor", anchor);
+            const bb = t.getBBox();
+            const inside = bb.x >= g.rx(0) + 2 && bb.x + bb.width <= g.rx(1) - 2 && bb.y >= g.ry(1) + 2 && bb.y + bb.height <= g.ry(0) - 2;
+            if (inside && !avoid.some((q) => hits(bb, q))) break;
+          }
+          avoid.push(t.getBBox());
+        });
+        // this criterion
+        const F = Phi(-k),
+          H = Phi(dp - k);
+        el(rocSVG, "circle", { cx: f1(g.rx(F)), cy: f1(g.ry(H)), r: 6.5, fill: "var(--accent)", stroke: "var(--plate)", "stroke-width": 2 });
+
+        const obs = observers()
+          .map((o) => `observer ${o.id} at F ${o.F.toFixed(3)}, H ${o.H.toFixed(3)} (d′ ${o.d.toFixed(2)})`)
+          .join("; ");
+        rocSVG.setAttribute(
+          "aria-label",
+          `ROC curve for d′ = ${dp.toFixed(2)}${preset === 2 ? " and a dashed curve for d′ = 0.80" : ""}. ` +
+            `This criterion is at F ${F.toFixed(3)}, H ${H.toFixed(3)}.` +
+            (obs ? " Comparison: " + obs + "." : "")
+        );
+        $("rocNote").textContent = preset === 2 ? "solid d′ " + dp.toFixed(2) + " · dashed d′ 0.80" : "";
+      }
+
+      /* ---------- readouts ---------- */
+      function readouts() {
+        const F = Phi(-k),
+          H = Phi(dp - k),
+          c = k - dp / 2; // = −½ [z(H) + z(F)]
+        const zH = dp - k,
+          zF = -k; // z(H) and z(F) in this model
+        $("rH").textContent = H.toFixed(3);
+        $("rF").textContent = F.toFixed(3);
+        $("rD").textContent = dp.toFixed(2);
+        $("rC").textContent = num(c, 2, true);
+        $("rCw").textContent = bias(c);
+        $("dpOut").textContent = dp.toFixed(2);
+        $("eq").innerHTML =
+          `<span class="ln"><i>d′</i> = <i>z</i>(<i>H</i>) − <i>z</i>(<i>F</i>) = ${num(zH, 2)} − ${paren(zF, 2)} = ${dp.toFixed(2)}</span>` +
+          `<span class="ln"><i>c</i> = −<span class="half">½</span> [<i>z</i>(<i>H</i>) + <i>z</i>(<i>F</i>)] = −<span class="half">½</span> [${num(zH, 2)} + ${paren(zF, 2)}] = ${num(c, 2, true)}</span>`;
+        $("eq").setAttribute(
+          "aria-label",
+          `d prime equals z of H minus z of F: ${num(zH, 2)} minus ${num(zF, 2)} equals ${dp.toFixed(2)}. ` +
+            `c equals minus one half of z of H plus z of F: ${num(c, 2, true)}.`
+        );
+        crit.setAttribute("aria-valuenow", k.toFixed(2));
+        crit.setAttribute("aria-valuetext", `c = ${num(c, 2, true)}, ${bias(c)}; hit rate ${H.toFixed(3)}, false-alarm rate ${F.toFixed(3)}`);
+
+        const obs = observers();
+        $("obs").hidden = !obs.length;
+        $("obsBody").innerHTML = obs
+          .map((o) => {
+            const oc = o.k - o.d / 2;
+            return `<tr><th scope="row"><span class="badge" aria-hidden="true">${o.id}</span><span class="sr">Observer ${o.id}</span></th>` +
+              `<td>${o.H.toFixed(3)}</td><td>${o.F.toFixed(3)}</td><td>${o.d.toFixed(2)}</td>` +
+              `<td>${num(oc, 2, true)}<small>${bias(oc)}</small></td></tr>`;
+          })
+          .join("");
+      }
+
+      /* ---------- the takeaway (the author's notes) ---------- */
+      const NOTES = {
+        0: "Drag the criterion line to sweep along one ROC curve — sensitivity holds, only bias moves. Change d′ to jump to a different curve.",
+        1: "<b>Two observers, identical d′.</b> Same sensitivity, different criteria — their hit and false-alarm rates diverge, yet both sit on the <em>same</em> curve. Raw performance would call them different; d′ does not.",
+        2: "<b>Same hit rate, different d′.</b> Both observers report the signal equally often, but one sits on a curve bowed further from the diagonal. Equal H, unequal sensitivity — the hit rate alone hides it.",
+      };
+      const WHERE = {
+        0: "",
+        1: " A and B mark their criteria and their points on the ROC.",
+        2: " Observer B’s signal distribution and ROC curve are dashed.",
+      };
+      function setMode() {
+        $("note").innerHTML = NOTES[preset] + WHERE[preset];
+        document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.preset === preset)));
+      }
+
+      function render() {
+        drawDist();
+        drawROC();
+        readouts();
+        OB.resize();
+      }
+
+      /* ---------- d′: the slider, and a short slide when a mode sets it ---------- */
+      const reduced = () =>
+        !!OB.reducedMotion ||
+        document.documentElement.hasAttribute("data-ob-reduce-motion") ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let tween = 0;
+      function slideDp(target) {
+        cancelAnimationFrame(tween);
+        const from = dp;
+        const done = () => {
+          dp = target;
+          $("dp").value = String(target);
+          render();
+        };
+        if (reduced() || Math.abs(target - from) < 0.005) return done();
+        const t0 = performance.now(),
+          DUR = 260;
+        const step = (now) => {
+          const t = Math.min(1, (now - t0) / DUR);
+          dp = from + (target - from) * (1 - Math.pow(1 - t, 3)); // ease-out
+          $("dp").value = String(dp);
+          render();
+          if (t < 1) tween = requestAnimationFrame(step);
+          else done();
+        };
+        tween = requestAnimationFrame(step);
+        // if frames are throttled (a hidden tab), still land on the value
+        setTimeout(() => {
+          if (dp !== target) {
+            cancelAnimationFrame(tween);
+            done();
+          }
+        }, DUR + 200);
+      }
+
+      $("dp").addEventListener("input", (e) => {
+        cancelAnimationFrame(tween);
+        dp = +e.target.value;
+        if (preset) {
+          preset = 0; // the author's rule: moving d′ leaves a mode
+          setMode();
+        }
+        render();
+      });
+      document.querySelectorAll(".tabs button").forEach((b) =>
+        b.addEventListener("click", () => {
+          const p = +b.dataset.preset;
+          if (preset === p) {
+            preset = 0; // pressing the active mode again leaves it
+            setMode();
+            render();
+            return;
+          }
+          preset = p;
+          setMode();
+          slideDp(p === 1 ? MODE1.dp : MODE2.dp);
+        })
+      );
+
+      /* ---------- the criterion: drag anywhere on the axis, or the handle ---------- */
+      // Mouse and pen: press anywhere on the axis to move the criterion
+      // there and drag (the author's behaviour). Touch: the handle drags at
+      // once; elsewhere on the axis a sideways drag moves the criterion and a
+      // tap places it, so a vertical swipe still scrolls the page.
+      let dragging = null;
+      let pending = null; // a touch on the axis that has not yet moved sideways
+      function kFromEvent(e) {
+        const r = distSVG.getBoundingClientRect();
+        const px = ((e.clientX - r.left) / r.width) * G.W;
+        return clampK(G.xInv(px));
+      }
+      function beginDrag(e) {
+        dragging = e.pointerId;
+        pending = null;
+        try {
+          $("distPlot").setPointerCapture(e.pointerId);
+        } catch (err) {}
+        k = kFromEvent(e);
+        render();
+      }
+      $("distPlot").addEventListener("pointerdown", (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        const onHandle = !!e.target.closest?.("#crit");
+        if (onHandle) crit.focus({ preventScroll: true });
+        if (e.pointerType === "touch" && !onHandle) {
+          pending = { id: e.pointerId, x: e.clientX, y: e.clientY };
+          return;
+        }
+        e.preventDefault();
+        beginDrag(e);
+      });
+      $("distPlot").addEventListener("pointermove", (e) => {
+        if (pending && pending.id === e.pointerId) {
+          const dx = Math.abs(e.clientX - pending.x),
+            dy = Math.abs(e.clientY - pending.y);
+          if (dx > 8 && dx > dy) beginDrag(e);
+          else if (dy > 8) pending = null;
+          return;
+        }
+        if (dragging !== e.pointerId) return;
+        k = kFromEvent(e);
+        render();
+      });
+      $("distPlot").addEventListener("pointerup", (e) => {
+        if (pending && pending.id === e.pointerId) {
+          // a tap: put the criterion where the finger was
+          k = kFromEvent(e);
+          render();
+        }
+        pending = null;
+        if (dragging === e.pointerId) dragging = null;
+      });
+      $("distPlot").addEventListener("pointercancel", (e) => {
+        pending = null;
+        if (dragging === e.pointerId) dragging = null;
+      });
+
+      crit.addEventListener("keydown", (e) => {
+        const big = 0.5,
+          small = e.shiftKey ? 0.25 : 0.05;
+        let next = null;
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") next = k + small;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowDown") next = k - small;
+        else if (e.key === "PageUp") next = k + big;
+        else if (e.key === "PageDown") next = k - big;
+        else if (e.key === "Home") next = K_MIN;
+        else if (e.key === "End") next = K_MAX;
+        if (next === null) return;
+        e.preventDefault();
+        k = clampK(Math.round(next * 100) / 100);
+        render();
+      });
+
+      /* ---------- start ---------- */
+      if (window.ResizeObserver) {
+        let lastW = "";
+        new ResizeObserver(() => {
+          const w = $("distPlot").clientWidth + "x" + $("rocPlot").clientWidth;
+          if (w === lastW) return;
+          lastW = w;
+          render();
+        }).observe(document.querySelector(".grid"));
+      } else {
+        window.addEventListener("resize", render);
+      }
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+      OB.onTheme(() => render());
+      setMode();
+      render();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contrast gain or response gain</title>
+    <!--
+  The Open Brain, chapter 3 "Attention and Working Memory", Figure 4.
+  Figma "Wid. 05 | Contrast gain vs. Response Gain" (R7AjPuac7z7OZ7xcd2t7OR,
+  21:13323, attn/control-gain), rebuilt on the widget kit. The model is the
+  author's original, src/widgets/source/contrast_response_gain_widget.html
+  (Arjun Krishnaswamy), after Reynolds, Pasternak & Desimone (2000), Fig. 1:
+
+  - A hypothetical V4 neuron's contrast-response function, Naka-Rushton:
+      R(c) = BASE + (RMAX - BASE) * c^N / (c^N + C50^N)
+    with RMAX 40 spikes/s, BASE 3 spikes/s, C50 20 % contrast, N 2.2.
+  - Contrast gain:  R_att(c) = R(s * c)                  (curve shifts left)
+    Response gain:  R_att(c) = BASE + s * (R(c) - BASE)   (curve stretches up)
+    s = attention strength, 1.00-2.20, default 1.51 (the author's values).
+  - % increase = (R_att - R) / R * 100, on the right axis.
+  - Dynamic range band: contrasts where the unattended response is 10 % to
+    90 % of the way from BASE to RMAX (7.4 % to 54.3 %).
+  - The peak is found on the author's grid (161 log-spaced contrasts,
+    1-100 %), so the peak readouts match the author's widget exactly.
+
+  Differences from the author, for the author to confirm:
+  - Axes are fixed per model (spikes/s 0-50 and % 0-160 for contrast gain;
+    0-100 and 0-120 for response gain) so the curves visibly move as the
+    slider moves; the author rescales both axes on every change.
+  - At strength 1.00 (no attention) the readouts say "no effect"; the
+    author's reads "high contrast (no interior peak)".
+-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* The book sets these; the fallbacks make the file work on its own.
+         Attention and Working Memory = Learning, Cognition & Memory ramp. */
+      :root {
+        --accent: var(--ob-accent, #ff3351);
+        /* text on an accent fill: dark on this red */
+        --on-accent: var(--ob-on-accent, #1c1c1c);
+        --plate: var(--ob-plate, #1c1c1c);
+        --plate-2: var(--ob-plate-2, #2a2a2a);
+        --on: var(--ob-on-plate, #ffffff);
+        --mute: var(--ob-on-plate-mute, rgba(255, 255, 255, 0.62));
+        --line: var(--ob-line-plate, rgba(255, 255, 255, 0.18));
+        --sans: var(--ob-font-sans, "IBM Plex Sans", system-ui, sans-serif);
+        --mono: var(--ob-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+        --radius: var(--ob-radius, 0);
+        /* the unattended curve: a light grey, so the attended red leads */
+        --unatt: color-mix(in srgb, var(--on) 70%, var(--plate));
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--plate);
+        color: var(--on);
+        font-family: var(--sans);
+      }
+      .w {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 900px) {
+        .w {
+          padding: 32px 40px;
+          gap: 20px;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .hint {
+        margin: 4px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--mute);
+      }
+
+      /* Phones and the figure pane: one column, controls above the chart.
+         Wide screens: the chart on the left, controls beside it. */
+      .lay {
+        display: grid;
+        gap: 16px;
+        grid-template-areas: "tabs" "slider" "fig" "reads" "info";
+      }
+      @media (min-width: 1000px) {
+        .lay {
+          grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+          grid-template-rows: auto auto auto 1fr;
+          grid-template-areas: "fig tabs" "fig slider" "fig reads" "fig info";
+          column-gap: 32px;
+          align-items: start;
+        }
+      }
+      .a-tabs {
+        grid-area: tabs;
+      }
+      .a-slider {
+        grid-area: slider;
+      }
+      .a-fig {
+        grid-area: fig;
+        margin: 0;
+        min-width: 0;
+      }
+      .a-reads {
+        grid-area: reads;
+      }
+      .a-info {
+        grid-area: info;
+      }
+
+      .group-label {
+        margin: 0 0 6px;
+        font: 500 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+
+      /* Tabs: equal cells, hairline dividers, the active one in the accent */
+      .tabs {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        border: 1px solid var(--line);
+      }
+      .tabs button {
+        min-height: 44px;
+        padding: 8px 6px;
+        border: 0;
+        border-left: 1px solid var(--line);
+        background: transparent;
+        color: var(--on);
+        cursor: pointer;
+        border-radius: var(--radius);
+        font: 500 12px/1.25 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: background-color 0.18s ease-out, color 0.18s ease-out;
+      }
+      .tabs button:first-child {
+        border-left: 0;
+      }
+      .tabs button:hover {
+        background: var(--plate-2);
+      }
+      .tabs button[aria-pressed="true"] {
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+      .tabs .sub {
+        display: block;
+        text-transform: none;
+        letter-spacing: 0.02em;
+        font-weight: 400;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Slider: a thin track and a round thumb, 44 px tall to touch */
+      .slider-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+      }
+      .slider-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      output#sVal {
+        font: 500 20px/1 var(--mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--accent);
+        min-width: 4.2ch;
+        text-align: right;
+      }
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        min-height: 44px;
+        margin: 0;
+        background: transparent;
+        cursor: pointer;
+        accent-color: var(--accent);
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 2px;
+        background: var(--on);
+        opacity: 0.9;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 22px;
+        height: 22px;
+        margin-top: -10px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--plate);
+        box-shadow: 0 0 0 1px var(--accent);
+      }
+      input[type="range"]::-moz-range-track {
+        height: 2px;
+        background: var(--on);
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--plate);
+        box-shadow: 0 0 0 1px var(--accent);
+      }
+      .ends {
+        display: flex;
+        justify-content: space-between;
+        font: 11px/1.2 var(--mono);
+        color: var(--mute);
+        margin-top: -4px;
+      }
+
+      /* Chart: redrawn at its real pixel width, so text stays 11 px+ */
+      #chartBox {
+        width: 100%;
+        min-width: 0;
+      }
+      svg {
+        display: block;
+      }
+      #chart {
+        width: 100%;
+        height: auto;
+        overflow: visible;
+      }
+      .tick {
+        font: 11px var(--mono);
+        fill: var(--mute);
+      }
+      .ax-title {
+        font: 500 11px var(--mono);
+        fill: var(--mute);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .grid {
+        stroke: var(--line);
+        stroke-width: 1;
+      }
+      .band {
+        fill: var(--on);
+        fill-opacity: 0.07;
+      }
+      .band-mark {
+        stroke: var(--mute);
+        stroke-width: 1;
+        fill: none;
+      }
+      .c-unatt {
+        fill: none;
+        stroke: var(--unatt);
+        stroke-width: 2;
+      }
+      .c-att {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 3;
+      }
+      .c-pct {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 1.5;
+        stroke-dasharray: 6 4;
+      }
+      .peak-line {
+        stroke: var(--on);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+        opacity: 0.7;
+      }
+      .peak-dot {
+        fill: var(--accent);
+        stroke: var(--plate);
+        stroke-width: 2;
+      }
+      .halo {
+        paint-order: stroke;
+        stroke: var(--plate);
+        stroke-width: 4px;
+        stroke-linejoin: round;
+      }
+      .lab {
+        font: 500 12px var(--mono);
+        fill: var(--on);
+      }
+      .lab-mute {
+        font: 12px var(--mono);
+        fill: var(--mute);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+        font: 12px/1.3 var(--mono);
+        color: var(--mute);
+      }
+      .legend li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .legend svg {
+        width: 24px;
+        height: 12px;
+        flex: none;
+      }
+
+      .reads {
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .reads div {
+        padding: 10px 0;
+        min-width: 0;
+      }
+      .reads div + div {
+        border-left: 1px solid var(--line);
+        padding-left: 12px;
+      }
+      .reads dt {
+        font: 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .reads dd {
+        margin: 4px 0 0;
+        font: 500 20px/1.1 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .reads dd small {
+        display: block;
+        margin-top: 4px;
+        font: 12px/1.35 var(--mono);
+        color: var(--mute);
+      }
+
+      .info {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        margin: 0;
+        padding: 12px 14px;
+        background: var(--plate-2);
+        border: 1px solid var(--line);
+        font: 13px/1.55 var(--mono);
+      }
+      .info svg {
+        width: 20px;
+        height: 20px;
+        margin-top: 1px;
+      }
+      .info strong {
+        font-weight: 600;
+      }
+
+      .cap {
+        margin: 0;
+        font: 12px/1.55 var(--mono);
+        color: var(--mute);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+      html[data-ob-reduce-motion] * {
+        transition: none !important;
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="w">
+      <header>
+        <h1>Contrast gain or response gain</h1>
+        <p class="hint">
+          Pick a model of attention, then drag the attention strength and
+          watch at which contrast attention helps the neuron most.
+        </p>
+      </header>
+
+      <div class="lay">
+        <div class="a-tabs">
+          <p class="group-label" id="model-label">Model</p>
+          <div class="tabs" id="modelTabs" role="group" aria-labelledby="model-label">
+            <button type="button" data-mode="shift" aria-pressed="true">
+              Contrast gain <span class="sub">(shift)</span>
+            </button>
+            <button type="button" data-mode="scale" aria-pressed="false">
+              Response gain <span class="sub">(scale)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="a-slider">
+          <div class="slider-head">
+            <label class="group-label" for="strength">Attention strength</label>
+          </div>
+          <div class="slider-row">
+            <input
+              id="strength"
+              type="range"
+              min="1"
+              max="2.2"
+              step="0.01"
+              value="1.51"
+              aria-valuetext="1.51 times"
+            />
+            <output id="sVal" for="strength">1.51×</output>
+          </div>
+          <div class="ends" aria-hidden="true">
+            <span>1.00× no attention</span><span>2.20×</span>
+          </div>
+        </div>
+
+        <figure class="a-fig">
+          <p class="group-label">Contrast-response function</p>
+          <div id="chartBox">
+            <svg id="chart" role="img" aria-label=""></svg>
+          </div>
+          <ul class="legend" aria-hidden="true">
+            <li>
+              <svg viewBox="0 0 24 12"><line x1="1" y1="6" x2="23" y2="6" stroke="var(--unatt)" stroke-width="2" /></svg>
+              Unattended
+            </li>
+            <li>
+              <svg viewBox="0 0 24 12"><line x1="1" y1="6" x2="23" y2="6" stroke="var(--accent)" stroke-width="3" /></svg>
+              Attended
+            </li>
+            <li>
+              <svg viewBox="0 0 24 12"><line x1="0" y1="6" x2="24" y2="6" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 4" /></svg>
+              % increase (right axis)
+            </li>
+            <li>
+              <svg viewBox="0 0 24 12"><rect x="1" y="1" width="22" height="10" fill="var(--on)" fill-opacity=".14" stroke="var(--mute)" stroke-width="1" /></svg>
+              Dynamic range
+            </li>
+          </ul>
+        </figure>
+
+        <dl class="reads a-reads" aria-live="polite">
+          <div>
+            <dt>Peak effect location</dt>
+            <dd><span id="peakLoc">9%</span><small id="peakLocNote">contrast</small></dd>
+          </div>
+          <div>
+            <dt>Peak % increase</dt>
+            <dd><span id="peakVal">+67%</span><small id="peakValNote">over unattended</small></dd>
+          </div>
+        </dl>
+
+        <p class="info a-info">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <circle cx="10" cy="10" r="8.5" fill="none" stroke="var(--on)" stroke-width="1.2" />
+            <line x1="10" y1="8.5" x2="10" y2="14.5" stroke="var(--on)" stroke-width="1.6" />
+            <circle cx="10" cy="5.8" r="1.1" fill="var(--on)" />
+          </svg>
+          <span id="info"></span>
+        </p>
+      </div>
+
+      <p class="cap">
+        A hypothetical V4 neuron's firing (spikes/s) against stimulus contrast
+        (%, log axis), with attention outside (unattended) or inside
+        (attended) its receptive field. Contrast gain multiplies the effective
+        contrast by the attention strength; response gain multiplies the
+        response above baseline. The dashed curve is the attended response's
+        % increase over the unattended one (right axis). The shaded band is
+        the dynamic range, where the unattended response climbs from 10% to
+        90% of its range (7–54% contrast). Naka–Rushton function: maximum
+        40 spikes/s, baseline 3 spikes/s, half-maximum at 20% contrast,
+        exponent 2.2. Model after Reynolds, Pasternak &amp; Desimone (2000),
+        Fig. 1 · illustrative, not recorded data.
+      </p>
+    </main>
+
+    <script>
+      // The book injects window.OB before this runs; this fallback keeps the
+      // file working on its own (in Claude, or opened in a browser).
+      window.OB = window.OB || {
+        reducedMotion:
+          matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-ob-reduce-motion"),
+        onTheme(fn) {
+          fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
+        },
+        resize() {},
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      // ---- The author's model (contrast_response_gain_widget.html) ----
+      // Naka-Rushton contrast-response function, hypothetical V4 neuron.
+      const RMAX = 40, // spikes/s
+        BASE = 3, // spikes/s
+        C50 = 20, // % contrast
+        N = 2.2;
+      function naka(c) {
+        const cn = Math.pow(c, N),
+          c50n = Math.pow(C50, N);
+        return BASE + ((RMAX - BASE) * cn) / (cn + c50n);
+      }
+      // contrast at which the response is fraction p of the way BASE -> RMAX
+      const invNaka = (p) => C50 * Math.pow(p / (1 - p), 1 / N);
+      const BAND_LO = invNaka(0.1), // 7.4 %
+        BAND_HI = invNaka(0.9); // 54.3 %
+
+      const N_PTS = 160; // the author's grid: 161 points, log10 c from 0 to 2
+      const X_MIN = 0,
+        X_MAX = 2;
+
+      function attended(c, s, mode) {
+        return mode === "shift" ? naka(c * s) : BASE + s * (naka(c) - BASE);
+      }
+
+      function compute(mode, s) {
+        const cs = [],
+          base = [],
+          att = [],
+          pct = [];
+        for (let i = 0; i <= N_PTS; i++) {
+          const c = Math.pow(10, X_MIN + ((X_MAX - X_MIN) * i) / N_PTS);
+          const b = naka(c),
+            a = attended(c, s, mode);
+          cs.push(c);
+          base.push(b);
+          att.push(a);
+          pct.push(((a - b) / b) * 100);
+        }
+        let peakI = 0;
+        for (let i = 1; i < pct.length; i++) if (pct[i] > pct[peakI]) peakI = i;
+        return {
+          cs,
+          base,
+          att,
+          pct,
+          peakI,
+          peakC: cs[peakI],
+          peakP: pct[peakI],
+          interior: peakI > 3 && peakI < N_PTS - 3, // the author's test
+          none: pct[peakI] < 0.5,
+        };
+      }
+
+      // Fixed axes per model, sized to the slider's maximum (2.20x):
+      // contrast gain peaks at +158 %, response gain reaches 82 spikes/s
+      // and +111 %.
+      const AXES = {
+        shift: { r: 50, rStep: 10, p: 160, pStep: 40 },
+        scale: { r: 100, rStep: 20, p: 120, pStep: 30 },
+      };
+
+      const INFO = {
+        shift: (s) =>
+          `<strong>Contrast gain:</strong> attention multiplies effective contrast by <strong>${s}×</strong>, shifting the curve leftward. The % increase is largest for stimuli near the low-to-mid end of the dynamic range and falls off at high contrast, where both curves have already saturated.`,
+        scale: (s) =>
+          `<strong>Response gain:</strong> attention multiplies the response above baseline by <strong>${s}×</strong>, stretching the curve vertically. The % increase grows monotonically with contrast and is largest for the strongest stimuli — the opposite diagnostic signature from contrast gain.`,
+      };
+
+      let mode = "shift";
+      let strength = 1.51;
+      let width = 0;
+      let last = null; // last drawn pixel geometry, for the tab tween
+      let tween = 0;
+
+      function geom(W) {
+        const H = Math.round(Math.min(440, Math.max(290, W * 0.62)));
+        const ML = 46,
+          MR = 50,
+          MT = 34,
+          MB = 46;
+        return { W, H, ML, MR, MT, MB, PW: W - ML - MR, PH: H - MT - MB };
+      }
+      const xPix = (g, logc) => g.ML + ((logc - X_MIN) / (X_MAX - X_MIN)) * g.PW;
+      const yPix = (g, v, max) => g.MT + g.PH - (Math.min(v, max * 1.02) / max) * g.PH;
+
+      // Everything that moves, in pixels
+      function layout(d, g) {
+        const ax = AXES[mode];
+        const xs = d.cs.map((c) => xPix(g, Math.log10(c)));
+        return {
+          xs,
+          base: d.base.map((v) => yPix(g, v, ax.r)),
+          att: d.att.map((v) => yPix(g, v, ax.r)),
+          pct: d.pct.map((v) => yPix(g, v, ax.p)),
+          px: xs[d.peakI],
+          py: yPix(g, d.peakP, ax.p),
+        };
+      }
+      const lerp = (a, b, t) => a + (b - a) * t;
+      function mix(A, B, t) {
+        const m = (k) => A[k].map((v, i) => lerp(v, B[k][i], t));
+        return {
+          xs: B.xs,
+          base: m("base"),
+          att: m("att"),
+          pct: m("pct"),
+          px: lerp(A.px, B.px, t),
+          py: lerp(A.py, B.py, t),
+        };
+      }
+
+      const f1 = (v) => v.toFixed(1);
+      const pathOf = (xs, ys) =>
+        ys.map((y, i) => (i ? "L" : "M") + f1(xs[i]) + " " + f1(y)).join(" ");
+
+      function svgChart(g, P, d) {
+        const ax = AXES[mode];
+        const top = g.MT,
+          bot = g.MT + g.PH,
+          left = g.ML,
+          right = g.ML + g.PW;
+        let s = "";
+
+        // dynamic-range band, with a bracket and label above the plot
+        const bl = xPix(g, Math.log10(BAND_LO)),
+          bh = xPix(g, Math.log10(BAND_HI));
+        s += `<rect class="band" x="${f1(bl)}" y="${top}" width="${f1(bh - bl)}" height="${g.PH}"/>`;
+        s += `<path class="band-mark" d="M${f1(bl)} ${top - 4} V${top - 10} H${f1(bh)} V${top - 4}"/>`;
+        s += `<text class="tick" x="${f1((bl + bh) / 2)}" y="${top - 15}" text-anchor="middle">dynamic range</text>`;
+
+        // x: contrast, log axis
+        [1, 3, 10, 30, 100].forEach((c) => {
+          const x = xPix(g, Math.log10(c));
+          s += `<line class="grid" x1="${f1(x)}" y1="${top}" x2="${f1(x)}" y2="${bot}" opacity=".6"/>`;
+          s += `<text class="tick" x="${f1(x)}" y="${bot + 17}" text-anchor="middle">${c}</text>`;
+        });
+        s += `<text class="ax-title" x="${f1(left + g.PW / 2)}" y="${g.H - 6}" text-anchor="middle">Contrast (%)</text>`;
+
+        // left y: spikes/s
+        for (let v = 0; v <= ax.r; v += ax.rStep) {
+          const y = yPix(g, v, ax.r);
+          s += `<line class="grid" x1="${left}" y1="${f1(y)}" x2="${right}" y2="${f1(y)}" opacity="${v === 0 ? 1 : 0.45}"/>`;
+          s += `<text class="tick" x="${left - 8}" y="${f1(y + 4)}" text-anchor="end">${v}</text>`;
+        }
+        s += `<text class="ax-title" transform="translate(12 ${f1(top + g.PH / 2)}) rotate(-90)" text-anchor="middle">Spikes/s</text>`;
+
+        // right y: % increase
+        for (let v = 0; v <= ax.p; v += ax.pStep) {
+          const y = yPix(g, v, ax.p);
+          s += `<text class="tick" x="${right + 8}" y="${f1(y + 4)}" text-anchor="start">${v}</text>`;
+        }
+        s += `<text class="ax-title" transform="translate(${g.W - 10} ${f1(top + g.PH / 2)}) rotate(90)" text-anchor="middle">% increase</text>`;
+
+        // curves: % increase behind, unattended, attended on top
+        s += `<path class="c-pct" d="${pathOf(P.xs, P.pct)}"/>`;
+        s += `<path class="c-unatt" d="${pathOf(P.xs, P.base)}"/>`;
+        s += `<path class="c-att" d="${pathOf(P.xs, P.att)}"/>`;
+
+        // Labels are placed where they cover the fewest curve points and
+        // stay inside the plot: the peak first, then the curve names (direct
+        // labels, so attended and unattended differ by more than colour).
+        const placed = [];
+        const box = (t, x, y, anchor) => {
+          const w = t.length * 7.3; // 12 px IBM Plex Mono
+          const x0 = anchor === "end" ? x - w : anchor === "middle" ? x - w / 2 : x;
+          return { x0: x0 - 2, x1: x0 + w + 2, y0: y - 11, y1: y + 4 };
+        };
+        const cost = (b) => {
+          let c = 0;
+          if (b.x0 < left + 2 || b.x1 > right - 2 || b.y0 < top + 1 || b.y1 > bot - 2) c += 1000;
+          for (let i = 0; i <= N_PTS; i++) {
+            const x = P.xs[i];
+            if (x < b.x0 || x > b.x1) continue;
+            if (P.att[i] > b.y0 - 2 && P.att[i] < b.y1 + 2) c += 6;
+            if (P.base[i] > b.y0 - 2 && P.base[i] < b.y1 + 2) c += 6;
+            if (P.pct[i] > b.y0 - 1 && P.pct[i] < b.y1 + 1) c += 3;
+          }
+          if (!d.none && P.px > b.x0 && P.px < b.x1) c += 1; // the peak line
+          placed.forEach((o) => {
+            const ox = Math.min(b.x1, o.x1) - Math.max(b.x0, o.x0),
+              oy = Math.min(b.y1, o.y1) - Math.max(b.y0, o.y0);
+            if (ox > 0 && oy > 0) c += 500;
+          });
+          return c;
+        };
+        const place = (t, cands, cls) => {
+          let best = null;
+          cands.forEach(([x, y, a, bias = 0]) => {
+            const b = box(t, x, y, a);
+            const c = cost(b) + bias;
+            if (!best || c < best.c) best = { x, y, a, b, c };
+          });
+          placed.push(best.b);
+          return `<text class="${cls} halo" x="${f1(best.x)}" y="${f1(best.y)}" text-anchor="${best.a}">${t}</text>`;
+        };
+
+        // the peak of the % increase
+        if (!d.none) {
+          s += `<line class="peak-line" x1="${f1(P.px)}" y1="${top}" x2="${f1(P.px)}" y2="${bot}"/>`;
+          s += `<circle class="peak-dot" cx="${f1(P.px)}" cy="${f1(P.py)}" r="5.5"/>`;
+          placed.push({ x0: P.px - 7, x1: P.px + 7, y0: P.py - 7, y1: P.py + 7 });
+          const txt = `+${d.peakP.toFixed(0)}% at ${d.peakC.toFixed(0)}%`;
+          const { px, py } = P;
+          s += place(
+            txt,
+            [
+              [px + 10, py - 8, "start"],
+              [px - 10, py - 8, "end"],
+              [px, py - 14, "middle"],
+              [px + 10, py + 18, "start", 0.5],
+              [px - 10, py + 18, "end", 0.5],
+              [px - 12, py + 4, "end", 0.5],
+              [px + 12, py + 4, "start", 0.5],
+              [px - 10, py - 22, "end", 1],
+              [px - 10, py + 30, "end", 1],
+            ],
+            "lab"
+          );
+        }
+
+        // the curve names, near the widest gap between the curves
+        let gi = 40;
+        for (let i = 40; i <= 130; i++)
+          if (P.base[i] - P.att[i] > P.base[gi] - P.att[gi]) gi = i;
+        const near = (i) => Math.abs(i - gi) * 0.04;
+        const idx = [];
+        for (let i = 30; i <= 150; i += 4) idx.push(i);
+        if (P.base[gi] - P.att[gi] < 4) {
+          s += place(
+            "attended = unattended",
+            idx.flatMap((i) => [
+              [P.xs[i] - 8, P.base[i] - 10, "end", Math.abs(i - 118) * 0.04],
+              [P.xs[i] + 8, P.base[i] + 18, "start", Math.abs(i - 118) * 0.04],
+            ]),
+            "lab"
+          );
+        } else {
+          s += place(
+            "attended",
+            idx.flatMap((i) => [
+              [P.xs[i] - 8, P.att[i] - 8, "end", near(i)],
+              [P.xs[i], P.att[i] - 12, "middle", near(i) + 0.3],
+            ]),
+            "lab"
+          );
+          s += place(
+            "unattended",
+            idx.flatMap((i) => [
+              [P.xs[i] + 8, P.base[i] + 18, "start", near(i)],
+              [P.xs[i], P.base[i] + 20, "middle", near(i) + 0.3],
+            ]),
+            "lab-mute"
+          );
+        }
+        return s;
+      }
+
+      function readouts(d) {
+        const s = strength.toFixed(2);
+        if (d.none) {
+          $("peakLoc").textContent = "—";
+          $("peakLocNote").textContent = "no attention effect";
+          $("peakVal").textContent = "+0%";
+          $("peakValNote").textContent = "attended = unattended";
+        } else if (d.interior) {
+          $("peakLoc").textContent = d.peakC.toFixed(0) + "%";
+          $("peakLocNote").textContent = "contrast";
+          $("peakVal").textContent = "+" + d.peakP.toFixed(0) + "%";
+          $("peakValNote").textContent = "over unattended";
+        } else {
+          $("peakLoc").textContent = d.peakC.toFixed(0) + "%";
+          $("peakLocNote").textContent = "high contrast, no interior peak";
+          $("peakVal").textContent = "+" + d.peakP.toFixed(0) + "%";
+          $("peakValNote").textContent = "and still rising";
+        }
+        $("sVal").textContent = s + "×";
+        $("strength").setAttribute("aria-valuetext", s + " times");
+        $("info").innerHTML = INFO[mode](s);
+
+        const what =
+          mode === "shift"
+            ? `Contrast gain at ${s}×: the attended curve is the unattended one shifted left along the contrast axis.`
+            : `Response gain at ${s}×: the attended curve is the unattended one stretched upward.`;
+        const peak = d.none
+          ? "The two curves coincide; there is no attention effect."
+          : d.interior
+            ? `The % increase peaks at +${d.peakP.toFixed(0)}% at ${d.peakC.toFixed(0)}% contrast, then falls at high contrast.`
+            : `The % increase grows with contrast, reaching +${d.peakP.toFixed(0)}% at 100% contrast.`;
+        $("chart").setAttribute(
+          "aria-label",
+          `Contrast-response function of a model V4 neuron: spikes per second against contrast, 1 to 100 percent on a log axis. The unattended response rises from 3 to about 39 spikes/s, most steeply between 7 and 54% contrast (the dynamic range). ${what} ${peak}`
+        );
+      }
+
+      const reduced = () =>
+        !!OB.reducedMotion ||
+        document.documentElement.hasAttribute("data-ob-reduce-motion") ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function paint(g, P, d) {
+        const svg = $("chart");
+        svg.setAttribute("viewBox", `0 0 ${g.W} ${g.H}`);
+        svg.setAttribute("width", g.W);
+        svg.setAttribute("height", g.H);
+        svg.innerHTML = svgChart(g, P, d);
+      }
+
+      // animate: true only when the model changes (a 250 ms glide)
+      function render(animate) {
+        width = Math.floor($("chartBox").clientWidth) || 320;
+        const g = geom(width);
+        const d = compute(mode, strength);
+        const P = layout(d, g);
+        readouts(d);
+        cancelAnimationFrame(tween);
+        const from = last && last.W === g.W ? last.P : null;
+        last = { W: g.W, P };
+        if (!animate || !from || reduced()) {
+          paint(g, P, d);
+          OB.resize();
+          return;
+        }
+        const DUR = 250,
+          t0 = performance.now();
+        const step = (now) => {
+          const t = Math.min(1, (now - t0) / DUR);
+          const e = 1 - Math.pow(1 - t, 3); // ease-out
+          paint(g, t < 1 ? mix(from, P, e) : P, d);
+          if (t < 1) tween = requestAnimationFrame(step);
+        };
+        tween = requestAnimationFrame(step);
+        // if frames are not delivered (a hidden tab), land on the end state
+        setTimeout(() => {
+          if (last && last.P === P) paint(g, P, d);
+        }, DUR + 120);
+        OB.resize();
+      }
+
+      $("modelTabs").addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b || b.dataset.mode === mode) return;
+        mode = b.dataset.mode;
+        document
+          .querySelectorAll("#modelTabs button")
+          .forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+        render(true);
+      });
+      $("strength").addEventListener("input", (e) => {
+        strength = parseFloat(e.target.value);
+        render(false);
+      });
+      if (window.ResizeObserver) {
+        new ResizeObserver(() => {
+          if (Math.floor($("chartBox").clientWidth) !== width) render(false);
+        }).observe($("chartBox"));
+      } else {
+        window.addEventListener("resize", () => render(false));
+      }
+
+      OB.onTheme(() => render(false));
+      render(false);
+    </script>
+  </body>
+</html>

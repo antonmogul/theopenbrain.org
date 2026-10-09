@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Posner cueing task</title>
+    <!--
+  The Open Brain, chapter 3 "Attention and Working Memory", Wid. 04
+  "Posner Invalid Cueing task". Figma R7AjPuac7z7OZ7xcd2t7OR, section
+  21:4371, component set attn/posner type=01 ... 04 (21:5433-21:5436).
+  Task logic, trial counts, timings, cue validity and the results come from
+  the author's original, src/widgets/source/posner_cueing_widget.html
+  (Arjun Krishnaswamy). Every constant marked AUTHOR is his value.
+
+  Kept from the author, against the design:
+  - The target is his FAINT grey dot (#888780 at 30 % opacity, 6 px), not
+    the frames' bright white one: brightness changes detection time and the
+    size of the effect. On this darker stage it has a Weber contrast of
+    about +0.4 (the author's, on white: about -0.3). Authors to confirm.
+  - The cue tail points at the box it cues, computed from the layout, so a
+    "Valid" trial always has the dot in the box the tail points to (the
+    frames draw an upper-left tail with an upper-right target, labelled
+    "Valid").
+
+  Added, not in the author's widget (defaults to confirm):
+  - A count of missed trials, and the invalid - valid difference.
+  - A condition with no answered trials shows "no trials", not a 0 ms bar.
+  - Held-down keys (auto-repeat) do not count as responses.
+  - The block pauses if the widget is hidden, scrolled off screen or loses
+    focus; the interrupted trial is discarded and rerun.
+  - OFFER_NEW_BLOCK: a "New block" button on the results. The design drops
+    "Run again"; without it the only way to retry is to reload the page.
+
+  Timing. Reaction times use performance.now(). The target is drawn in a
+  requestAnimationFrame callback and its onset is stamped there; the
+  response uses the key or touch event's own timestamp (same clock), so a
+  busy main thread does not add to it. The cue-target gap is counted in
+  screen frames. See the caption for how precise this is.
+-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* The book sets these; the fallbacks make the file work on its own.
+         Attention is the Learning, Cognition & Memory ramp. */
+      :root {
+        --accent: var(--ob-accent, #ff3351);
+        --accent-pale: var(--ob-accent-pale, #ffc7d2);
+        /* text on an accent fill: dark on this red */
+        --on-accent: var(--ob-on-accent, #1c1c1c);
+        --plate: var(--ob-plate, #1c1c1c);
+        --plate-2: var(--ob-plate-2, #2a2a2a);
+        --on: var(--ob-on-plate, #ffffff);
+        --mute: var(--ob-on-plate-mute, rgba(255, 255, 255, 0.62));
+        --line: var(--ob-line-plate, rgba(255, 255, 255, 0.18));
+        --sans: var(--ob-font-sans, "IBM Plex Sans", system-ui, sans-serif);
+        --mono: var(--ob-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+        --radius: var(--ob-radius, 0);
+        /* The display: a mid grey mixed from the plate and its ink (the
+           frames' grey stage), so it follows the book's tokens. */
+        --screen: color-mix(in srgb, var(--on) 26%, var(--plate));
+        --box: 60px;
+        --inset: 12px;
+      }
+      @media (min-width: 720px) {
+        :root {
+          --box: 76px;
+          --inset: 18px;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--plate);
+        color: var(--on);
+        font-family: var(--sans);
+      }
+      .w {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 900px) {
+        .w {
+          padding: 32px 40px;
+          gap: 20px;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .hint {
+        margin: 4px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--mute);
+      }
+
+      button {
+        font: inherit;
+        color: inherit;
+        border-radius: var(--radius);
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+      /* Kit buttons: mono uppercase, square, 1 px border; primary is white */
+      .btn {
+        min-height: 44px;
+        padding: 10px 18px;
+        border: 1px solid var(--on);
+        background: transparent;
+        color: var(--on);
+        font: 500 12px/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .btn.primary {
+        background: var(--on);
+        color: var(--plate);
+      }
+      /* hover only where there is a real pointer, so a tap does not leave
+         the response button grey */
+      @media (hover: hover) {
+        .btn.primary:hover:not([disabled]) {
+          background: color-mix(in srgb, var(--on) 86%, var(--plate));
+        }
+        .btn:not(.primary):hover {
+          background: var(--plate-2);
+        }
+      }
+      .btn[disabled] {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      /* ---- Task area: instruction panel over the room ----------------- */
+      .stage {
+        display: grid;
+        gap: 16px;
+      }
+      .stage:focus {
+        outline: none;
+      }
+      .room {
+        display: grid;
+        justify-items: center;
+        align-content: center;
+        gap: 12px;
+        border: 1px solid var(--line);
+        padding: 16px 12px 20px;
+        min-width: 0;
+      }
+      @media (min-width: 720px) {
+        .room {
+          padding: 32px 24px;
+        }
+      }
+      .trialbox,
+      .results {
+        width: 100%;
+        max-width: 760px;
+        display: grid;
+        gap: 12px;
+        justify-items: center;
+      }
+      .counter {
+        justify-self: start;
+        margin: 0;
+        font: 12px/1.3 var(--mono);
+        color: var(--mute);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* The display: four boxes in the corners, a fixation dot at center */
+      .screen {
+        position: relative;
+        width: 100%;
+        height: 300px; /* AUTHOR: a 300 px tall display */
+        background: var(--screen);
+        border: 1px solid var(--line);
+        overflow: hidden;
+      }
+      @media (min-width: 720px) {
+        .screen {
+          height: auto;
+          aspect-ratio: 2 / 1;
+        }
+      }
+      .bx {
+        position: absolute;
+        width: var(--box);
+        height: var(--box);
+        border: 1.5px solid var(--on);
+        display: grid;
+        place-items: center;
+      }
+      .bx[data-k="tl"] {
+        top: var(--inset);
+        left: var(--inset);
+      }
+      .bx[data-k="tr"] {
+        top: var(--inset);
+        right: var(--inset);
+      }
+      .bx[data-k="bl"] {
+        bottom: var(--inset);
+        left: var(--inset);
+      }
+      .bx[data-k="br"] {
+        bottom: var(--inset);
+        right: var(--inset);
+      }
+      /* AUTHOR: the target is a faint grey dot, 6 px, #888780 at 30 % */
+      .target {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #888780;
+        opacity: 0.3;
+        visibility: hidden;
+      }
+      .target[data-on] {
+        visibility: visible;
+      }
+      .fix {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0;
+        height: 0;
+      }
+      .dot {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        transform: translate(-50%, -50%);
+      }
+      /* AUTHOR: the cue is a 3 x 20 px tail that grows from the dot */
+      .tail {
+        position: absolute;
+        left: 0;
+        top: -1.5px;
+        height: 3px;
+        width: 20px;
+        background: var(--accent);
+        transform-origin: 0 50%;
+        transform: rotate(var(--a, 0deg)) scaleX(0);
+      }
+      /* grows over 40 ms (AUTHOR); goes at once when the target appears */
+      .tail[data-on] {
+        transform: rotate(var(--a, 0deg)) scaleX(1);
+        transition: transform 40ms linear;
+      }
+
+      .respond {
+        width: 100%;
+        min-height: 56px;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      @media (min-width: 720px) {
+        .respond {
+          width: auto;
+          min-width: 320px;
+        }
+      }
+      .respond .k {
+        display: none;
+        margin-left: 10px;
+        padding: 2px 6px;
+        border: 1px solid currentColor;
+        font-size: 11px;
+        opacity: 0.7;
+      }
+      @media (hover: hover) and (pointer: fine) {
+        .respond .k {
+          display: inline-block;
+        }
+      }
+      .respond:active:not([disabled]) {
+        background: color-mix(in srgb, var(--on) 78%, var(--plate));
+      }
+      .fb {
+        margin: 0;
+        min-height: 20px;
+        font: 13px/1.5 var(--mono);
+        color: var(--on);
+        text-align: center;
+      }
+
+      /* ---- Results: bar chart and takeaway ---------------------------- */
+      .chart {
+        width: 100%;
+      }
+      .chart svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+      }
+      .tick {
+        font: 11px var(--mono);
+        fill: var(--mute);
+      }
+      .axis {
+        font: 12px var(--mono);
+        fill: var(--mute);
+      }
+      .cat {
+        font: 12px var(--mono);
+        fill: var(--on);
+      }
+      .val {
+        font: 500 14px var(--mono);
+        fill: var(--on);
+      }
+      .bar.grow {
+        transform-box: fill-box;
+        transform-origin: 50% 100%;
+        animation: grow 300ms ease-out both;
+      }
+      @keyframes grow {
+        from {
+          transform: scaleY(0);
+        }
+      }
+      .note {
+        width: 100%;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        padding: 14px 16px;
+        background: var(--plate-2);
+        border: 1px solid var(--line);
+      }
+      .note svg {
+        margin-top: 2px;
+      }
+      .note p {
+        margin: 0;
+        font: 13px/1.55 var(--mono);
+      }
+      .note p + p {
+        margin-top: 8px;
+        color: var(--mute);
+      }
+      .note strong {
+        font-weight: 600;
+        color: var(--on);
+      }
+
+      /* ---- Instruction panel (as in the Helmholtz widget) --------------- */
+      .panel {
+        display: none;
+        background: var(--plate-2);
+        border: 1px solid var(--line);
+        padding: 20px;
+      }
+      .panel[data-open] {
+        display: grid;
+        gap: 12px;
+        align-content: start;
+        animation: rise 200ms ease-out;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+        }
+      }
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 12px;
+      }
+      .panel h2 {
+        margin: 0;
+        padding-top: 10px;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .panel .eyebrow {
+        display: block;
+        margin-bottom: 4px;
+        font: 500 12px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .panel p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .close {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        margin: -8px -10px 0 0;
+        border: 0;
+        background: transparent;
+        display: grid;
+        place-items: center;
+      }
+      .close:hover {
+        background: var(--plate);
+      }
+      .panel .actions {
+        display: flex;
+        justify-content: end;
+        margin-top: 8px;
+      }
+      /* Wide screens: the panel covers the left half of the task, as in the
+         frames. It shares the room's grid cell, so the room grows to fit a
+         long text instead of cutting it off. Narrower: it stacks above. */
+      @media (min-width: 900px) {
+        .stage {
+          gap: 0;
+        }
+        .stage > .panel,
+        .stage > .room {
+          grid-area: 1 / 1;
+        }
+        .panel {
+          z-index: 1;
+          width: 50%;
+          justify-self: start;
+          padding: 32px;
+          background: color-mix(in srgb, var(--plate-2) 92%, transparent);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+        }
+      }
+      @media (min-width: 1100px) {
+        .panel {
+          padding: 40px;
+        }
+        .panel p {
+          font-size: 16px;
+          max-width: 34em;
+        }
+      }
+
+      /* ---- Readouts and caption --------------------------------------- */
+      .reads {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin: 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .reads div {
+        padding: 10px 0 10px 12px;
+        min-width: 0;
+        border-left: 1px solid var(--line);
+      }
+      .reads div:nth-child(odd) {
+        border-left: 0;
+        padding-left: 0;
+      }
+      .reads div:nth-child(n + 3) {
+        border-top: 1px solid var(--line);
+      }
+      @media (min-width: 720px) {
+        .reads {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        .reads div:nth-child(odd) {
+          border-left: 1px solid var(--line);
+          padding-left: 12px;
+        }
+        .reads div:first-child {
+          border-left: 0;
+          padding-left: 0;
+        }
+        .reads div:nth-child(n + 3) {
+          border-top: 0;
+        }
+      }
+      .reads dt {
+        font: 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .reads dd {
+        margin: 4px 0 0;
+        font: 500 16px/1.2 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      @media (min-width: 720px) {
+        .reads dd {
+          font-size: 18px;
+        }
+      }
+      .cap {
+        margin: 0;
+        font: 12px/1.5 var(--mono);
+        color: var(--mute);
+        max-width: 90ch;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+
+      /* Reduced motion: the tail appears at full length, no fades, bars
+         drawn at their height. The trial timings stay: they are the
+         experiment, not decoration. */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+      html[data-ob-reduce-motion] * {
+        transition: none !important;
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="w">
+      <header>
+        <h1>Posner cueing task</h1>
+        <p class="hint">
+          Keep your eyes on the center dot and respond the moment a faint dot
+          appears in any of the four boxes.
+        </p>
+      </header>
+
+      <section class="stage" id="stage" tabindex="-1" aria-label="Task">
+        <div class="panel" id="panel" role="region" aria-labelledby="p-title">
+          <div class="panel-head">
+            <h2 id="p-title">
+              <span class="eyebrow" id="p-eyebrow"></span>
+              <span id="p-heading"></span>
+            </h2>
+            <button
+              type="button"
+              class="close"
+              id="p-close"
+              aria-label="Close the instructions and start"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path
+                  d="M3 3l12 12M15 3L3 15"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                />
+              </svg>
+            </button>
+          </div>
+          <div id="p-body"></div>
+          <div class="actions">
+            <button type="button" class="btn primary" id="p-ready">
+              Ready
+            </button>
+          </div>
+        </div>
+
+        <div class="room" id="room" data-phase="panel">
+          <div class="trialbox" id="trialbox">
+            <p class="counter" id="counter" aria-live="off">0/50</p>
+            <div
+              class="screen"
+              id="screen"
+              role="img"
+              aria-label="Four empty boxes in the corners of a grey display, with a red fixation dot at its center"
+            >
+              <div class="bx" data-k="tl"><div class="target"></div></div>
+              <div class="bx" data-k="tr"><div class="target"></div></div>
+              <div class="bx" data-k="bl"><div class="target"></div></div>
+              <div class="bx" data-k="br"><div class="target"></div></div>
+              <div class="fix">
+                <div class="tail" id="tail"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn primary respond"
+              id="respond"
+              disabled
+            >
+              Tap when you see the dot<span class="k" aria-hidden="true"
+                >Space</span
+              >
+            </button>
+            <p class="fb" id="fb"></p>
+          </div>
+
+          <div class="results" id="results" hidden>
+            <div class="chart" id="chart"></div>
+            <div class="note">
+              <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path d="M10 8.6v5.6" stroke="currentColor" stroke-width="1.6" />
+                <circle cx="10" cy="5.9" r="1" fill="currentColor" />
+              </svg>
+              <div>
+                <p id="yours"></p>
+                <p>
+                  Faster responses to valid cues than invalid ones show that
+                  attention shifted covertly to the cued location before the
+                  target appeared, so detection was quicker there and slower
+                  when attention had to be redirected.
+                </p>
+              </div>
+            </div>
+            <button type="button" class="btn" id="again" hidden>
+              New block
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <dl class="reads">
+        <div>
+          <dt>Valid cue</dt>
+          <dd id="r-valid">–</dd>
+        </div>
+        <div>
+          <dt>Invalid cue</dt>
+          <dd id="r-invalid">–</dd>
+        </div>
+        <div>
+          <dt>Invalid − valid</dt>
+          <dd id="r-diff">–</dd>
+        </div>
+        <div>
+          <dt>Missed</dt>
+          <dd id="r-miss">–</dd>
+        </div>
+      </dl>
+
+      <p class="cap" id="cap"></p>
+      <p class="sr" id="live" aria-live="polite"></p>
+    </main>
+
+    <script>
+      // The book injects window.OB before this runs; this fallback keeps the
+      // file working on its own (in Claude, or opened in a browser).
+      window.OB = window.OB || {
+        reducedMotion:
+          matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-ob-reduce-motion"),
+        onTheme(fn) {
+          fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
+        },
+        resize() {},
+      };
+
+      // ---- Task parameters ----------------------------------------------
+      // AUTHOR = Arjun's values in posner_cueing_widget.html. With reduced
+      // motion they stay the same: they are the experiment.
+      const NUM_TRIALS = 50; // AUTHOR
+      const VALID_ONLY_FIRST = 20; // AUTHOR: trials 1-20 are always valid
+      const P_VALID = 0.8; // AUTHOR: after that, 80 % valid
+      const FIX_MIN = 500, FIX_RANGE = 500; // AUTHOR: fixation 500-1000 ms
+      const SOA_MIN = 70, SOA_RANGE = 110; // AUTHOR: cue-target gap 70-180 ms
+      const MISS_MS = 1200; // AUTHOR: no response within 1.2 s = missed
+      const MIN_RT = 130; // AUTHOR: faster = "too fast", trial continues
+      const ITI_MS = 400; // AUTHOR: pause after a response or a miss
+      const GET_READY_MS = 800; // AUTHOR: "Get ready" before trial 1
+      // DEFAULT, to confirm: a New block button on the results
+      const OFFER_NEW_BLOCK = true;
+      // A frame is shown when at least the gap minus half a 60 Hz frame
+      // has passed since the cue's frame, so the gap is the nearest frame.
+      const HALF_FRAME = 8;
+
+      const KEYS = ["tl", "tr", "bl", "br"];
+      const NAMES = {
+        tl: "upper left",
+        tr: "upper right",
+        bl: "lower left",
+        br: "lower right",
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const room = $("room");
+      const screenEl = $("screen");
+      const tail = $("tail");
+      const respondBtn = $("respond");
+      const fb = $("fb");
+      const live = $("live");
+      const box = (k) => screenEl.querySelector(`.bx[data-k="${k}"]`);
+
+      const st = {
+        phase: "panel", // panel | ready | running | paused | done
+        trials: [], // { valid, cue, target, soa, rt } ; rt null = missed
+        run: 0, // increments to cancel everything scheduled
+        timers: [],
+        awaiting: false,
+        targetOn: false,
+        onset: 0,
+        cur: null,
+        lastKey: -1e9,
+        lastPointer: -1e9,
+      };
+
+      function later(ms, fn) {
+        const id = st.run;
+        const t = setTimeout(() => {
+          if (id === st.run) fn();
+        }, ms);
+        st.timers.push(t);
+        return t;
+      }
+      function cancelAll() {
+        st.run++;
+        st.timers.forEach(clearTimeout);
+        st.timers = [];
+        st.awaiting = false;
+        st.targetOn = false;
+      }
+      // The next screen frame. If none comes (the widget is hidden or
+      // scrolled off screen, where browsers stop drawing it), pause.
+      function nextFrame(fn) {
+        const id = st.run;
+        let fired = false;
+        const wd = setTimeout(() => {
+          if (!fired && id === st.run && st.phase === "running")
+            pause("offscreen");
+        }, 300);
+        st.timers.push(wd);
+        requestAnimationFrame((ts) => {
+          fired = true;
+          clearTimeout(wd);
+          if (id === st.run) fn(ts);
+        });
+      }
+
+      function say(msg) {
+        live.textContent = "";
+        setTimeout(() => (live.textContent = msg), 30);
+      }
+      function setPhase(p) {
+        st.phase = p;
+        room.dataset.phase = p;
+        OB.resize();
+      }
+      function resetScreen() {
+        screenEl
+          .querySelectorAll(".target")
+          .forEach((t) => t.removeAttribute("data-on"));
+        tail.removeAttribute("data-on");
+        st.targetOn = false;
+      }
+      function counter(n) {
+        $("counter").textContent = `${n}/${NUM_TRIALS}`;
+        $("counter").setAttribute(
+          "aria-label",
+          `Trial ${n} of ${NUM_TRIALS}`
+        );
+      }
+
+      // The tail points from the fixation dot to the center of the cued box
+      function aim(k) {
+        const s = screenEl.getBoundingClientRect();
+        const b = box(k).getBoundingClientRect();
+        const dx = b.left + b.width / 2 - (s.left + s.width / 2);
+        const dy = b.top + b.height / 2 - (s.top + s.height / 2);
+        tail.style.setProperty("--a", `${(Math.atan2(dy, dx) * 180) / Math.PI}deg`);
+      }
+
+      // ---- The instruction panel ---------------------------------------
+      const PANELS = {
+        intro: {
+          eyebrow: `${NUM_TRIALS} trials · about 2 minutes`,
+          heading: "Before you start",
+          body: [
+            "Watch the dot at the center. It will briefly grow a small tail pointing toward one of the four boxes: that’s the cue. Shortly after, a faint gray dot will appear in one of the four boxes.",
+            "Press Space (or tap the button below the boxes) the instant you see it, no matter which box it’s in. The gap between cue and target varies from trial to trial, so don’t try to anticipate it: wait until you actually see the dot.",
+            `The first ${VALID_ONLY_FIRST} trials are always valid; invalid trials can appear after that. ${NUM_TRIALS} trials in all, run automatically.`,
+          ],
+        },
+        paused: () => ({
+          eyebrow: `Paused · trial ${st.trials.length + 1} of ${NUM_TRIALS}`,
+          heading: "The task paused",
+          body: [
+            "The task left the screen or lost focus, so that trial did not count. Keep your eyes on the center dot and press Ready to carry on.",
+          ],
+        }),
+      };
+
+      function showPanel(kind) {
+        const p = typeof PANELS[kind] === "function" ? PANELS[kind]() : PANELS[kind];
+        $("p-eyebrow").textContent = p.eyebrow;
+        $("p-heading").textContent = p.heading;
+        $("p-body").innerHTML = p.body
+          .map((t) => `<p>${t}</p>`)
+          .join('<div style="height:10px"></div>');
+        $("panel").setAttribute("data-open", "");
+        $("panel").dataset.kind = kind;
+      }
+
+      function closePanelAndGo() {
+        if (!$("panel").hasAttribute("data-open")) return;
+        $("panel").removeAttribute("data-open");
+        // keep keyboard focus inside the widget, so Space reaches it
+        $("stage").focus({ preventScroll: true });
+        if (st.phase === "panel") st.trials = [];
+        startRunning();
+      }
+
+      // ---- The block -----------------------------------------------------
+      function startRunning() {
+        cancelAll();
+        $("trialbox").hidden = false;
+        $("results").hidden = true;
+        resetScreen();
+        respondBtn.disabled = false;
+        setPhase("ready");
+        fb.textContent = "Get ready";
+        counter(st.trials.length);
+        readouts();
+        say("Get ready. Keep your eyes on the center dot.");
+        later(GET_READY_MS, () => {
+          fb.textContent = "";
+          setPhase("running");
+          runTrial();
+        });
+      }
+
+      function runTrial() {
+        const i = st.trials.length;
+        if (i >= NUM_TRIALS) return finish();
+        counter(i + 1);
+        resetScreen();
+        st.awaiting = true;
+
+        // AUTHOR: random cued box; valid for the first 20, then 80 % valid;
+        // an invalid target goes to one of the three other boxes at random
+        const cue = KEYS[Math.floor(Math.random() * 4)];
+        const valid = i < VALID_ONLY_FIRST ? true : Math.random() < P_VALID;
+        const others = KEYS.filter((k) => k !== cue);
+        const target = valid ? cue : others[Math.floor(Math.random() * 3)];
+        const fix = FIX_MIN + Math.random() * FIX_RANGE;
+        const soa = SOA_MIN + Math.random() * SOA_RANGE;
+        st.cur = { valid, cue, target, soa: null };
+        aim(cue); // while the tail is hidden, so it does not swing round
+        screenEl.setAttribute(
+          "aria-label",
+          "Four boxes and the fixation dot. Keep your eyes on the dot."
+        );
+
+        later(fix, () => {
+          nextFrame((cueTs) => {
+            tail.setAttribute("data-on", "");
+            const wait = () =>
+              nextFrame((ts) => {
+                if (ts - cueTs < soa - HALF_FRAME) return wait();
+                // AUTHOR: the tail goes as the target appears
+                tail.removeAttribute("data-on");
+                box(target).querySelector(".target").setAttribute("data-on", "");
+                st.onset = performance.now();
+                st.targetOn = true;
+                st.cur.soa = Math.round(ts - cueTs);
+                later(MISS_MS, miss);
+              });
+            wait();
+          });
+        });
+      }
+
+      function miss() {
+        if (!st.awaiting) return;
+        st.awaiting = false;
+        st.trials.push({ ...st.cur, rt: null });
+        resetScreen();
+        fb.textContent = "Missed that one, moving on.";
+        readouts();
+        later(ITI_MS, runTrial);
+      }
+
+      // t: when the response happened, on the performance.now() clock
+      function respond(t) {
+        if (st.phase !== "running" || !st.awaiting || !st.targetOn) return;
+        const rt = Math.round(t - st.onset);
+        if (rt < MIN_RT) {
+          fb.textContent =
+            "Too fast to be a real response. Wait until you actually see it.";
+          return;
+        }
+        st.awaiting = false;
+        st.timers.forEach(clearTimeout);
+        st.timers = [];
+        st.trials.push({ ...st.cur, rt });
+        resetScreen();
+        fb.textContent = `${st.cur.valid ? "Valid" : "Invalid"} — ${rt} ms`;
+        readouts();
+        later(ITI_MS, runTrial);
+      }
+
+      // Use the event's own timestamp (same clock as performance.now()) when
+      // it is one; it is taken when the key or finger went down, before any
+      // wait for the page's script to run.
+      function eventTime(e) {
+        const now = performance.now();
+        const t = e && e.timeStamp;
+        return typeof t === "number" && t > now - 2000 && t <= now + 1 ? t : now;
+      }
+
+      function pause(why) {
+        if (st.phase !== "running" && st.phase !== "ready") return;
+        cancelAll();
+        resetScreen();
+        respondBtn.disabled = true;
+        setPhase("paused");
+        fb.textContent = "";
+        counter(st.trials.length);
+        showPanel("paused");
+        say(
+          `Paused at trial ${st.trials.length + 1} of ${NUM_TRIALS}. Press Ready to carry on.`
+        );
+      }
+
+      // ---- Results -------------------------------------------------------
+      const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
+      function summary() {
+        const done = st.trials;
+        const v = done.filter((t) => t.valid && t.rt !== null).map((t) => t.rt);
+        const inv = done.filter((t) => !t.valid && t.rt !== null).map((t) => t.rt);
+        return {
+          v,
+          inv,
+          vMean: v.length ? Math.round(mean(v)) : null, // AUTHOR: rounded mean
+          iMean: inv.length ? Math.round(mean(inv)) : null,
+          diff: v.length && inv.length ? Math.round(mean(inv) - mean(v)) : null,
+          missed: done.filter((t) => t.rt === null).length,
+          n: done.length,
+        };
+      }
+
+      function readouts() {
+        const s = summary();
+        const final = st.phase === "done";
+        $("r-valid").textContent = final && s.vMean !== null ? `${s.vMean} ms` : "–";
+        $("r-invalid").textContent = final && s.iMean !== null ? `${s.iMean} ms` : "–";
+        $("r-diff").textContent =
+          final && s.diff !== null ? `${s.diff > 0 ? "+" : s.diff < 0 ? "−" : ""}${Math.abs(s.diff)} ms` : "–";
+        $("r-miss").textContent = s.n ? `${s.missed} of ${s.n}` : "–";
+      }
+
+      function finish() {
+        cancelAll();
+        resetScreen();
+        respondBtn.disabled = true;
+        setPhase("done");
+        $("trialbox").hidden = true;
+        $("results").hidden = false;
+        $("again").hidden = !OFFER_NEW_BLOCK;
+        const s = summary();
+        const yours = $("yours");
+        if (s.diff === null) {
+          yours.innerHTML = `<strong>Block complete.</strong> There were no answered ${
+            s.inv.length ? "valid" : "invalid"
+          }-cue trials this time, so the two can’t be compared.`;
+        } else if (s.diff > 0) {
+          yours.innerHTML = `<strong>Block complete.</strong> Your invalid-cue responses were ${s.diff} ms slower on average than your valid-cue ones.`;
+        } else {
+          yours.innerHTML = `<strong>Block complete.</strong> This time your invalid-cue responses were not slower (${
+            s.diff === 0 ? "no difference" : `${Math.abs(s.diff)} ms faster`
+          }). With only ${s.inv.length} invalid trial${s.inv.length === 1 ? "" : "s"}, one block is noisy.`;
+        }
+        readouts();
+        drawChart(true);
+        say(
+          `Block complete. ${yours.textContent} Valid cue: ${
+            s.vMean ?? "no"
+          } ms from ${s.v.length} trials. Invalid cue: ${s.iMean ?? "no"} ms from ${
+            s.inv.length
+          } trials. Missed ${s.missed}.`
+        );
+        OB.resize();
+      }
+
+      // Bar chart, redrawn at its real width so the labels stay readable
+      let lastW = 0;
+      function drawChart(grow = false) {
+        if (st.phase !== "done") return;
+        const s = summary();
+        const wrap = $("chart");
+        lastW = Math.round(wrap.clientWidth);
+        const W = Math.max(280, lastW);
+        const narrow = W < 520;
+        const H = narrow ? 280 : 360;
+        const m = { l: 58, r: 8, t: 26, b: narrow ? 44 : 34 };
+        const pw = W - m.l - m.r, ph = H - m.t - m.b;
+        const top = Math.max(s.vMean || 0, s.iMean || 0);
+        const step = top <= 300 ? 50 : top <= 800 ? 100 : 200;
+        const yMax = Math.max(300, Math.ceil((top * 1.12) / step) * step);
+        const y = (v) => m.t + ph - (v / yMax) * ph;
+        let g = "";
+        for (let v = 0; v <= yMax; v += step) {
+          g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>`;
+          g += `<text class="tick" x="${m.l - 8}" y="${y(v)}" text-anchor="end" dominant-baseline="central">${v}</text>`;
+        }
+        g += `<text class="axis" transform="translate(14 ${m.t + ph / 2}) rotate(-90)" text-anchor="middle" dominant-baseline="central">Your average reaction time (ms)</text>`;
+        const bw = Math.min(110, pw * 0.3);
+        const bars = [
+          { label: "Valid cue", n: s.v.length, v: s.vMean, fill: "var(--accent)", cx: m.l + pw * 0.28 },
+          { label: "Invalid cue", n: s.inv.length, v: s.iMean, fill: "var(--accent-pale)", cx: m.l + pw * 0.72 },
+        ];
+        bars.forEach((b) => {
+          if (b.v !== null) {
+            g += `<rect class="bar${grow && !OB.reducedMotion ? " grow" : ""}" x="${b.cx - bw / 2}" y="${y(b.v)}" width="${bw}" height="${y(0) - y(b.v)}" fill="${b.fill}"/>`;
+            g += `<text class="val" x="${b.cx}" y="${y(b.v) - 8}" text-anchor="middle">${b.v} ms</text>`;
+          } else {
+            g += `<text class="tick" x="${b.cx}" y="${y(0) - 10}" text-anchor="middle">no trials</text>`;
+          }
+          const n = `(n=${b.n})`;
+          if (narrow) {
+            g += `<text class="cat" x="${b.cx}" y="${H - m.b + 18}" text-anchor="middle">${b.label}</text>`;
+            g += `<text class="tick" x="${b.cx}" y="${H - m.b + 34}" text-anchor="middle">${n}</text>`;
+          } else {
+            g += `<text class="cat" x="${b.cx}" y="${H - m.b + 22}" text-anchor="middle">${b.label} ${n}</text>`;
+          }
+        });
+        g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--mute)" stroke-width="1"/>`;
+        wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Bar chart of your average reaction time: valid cue ${
+          s.vMean ?? "no trials"
+        }${s.vMean !== null ? " ms" : ""} (${s.v.length} trials), invalid cue ${s.iMean ?? "no trials"}${
+          s.iMean !== null ? " ms" : ""
+        } (${s.inv.length} trials)">${g}</svg>`;
+      }
+      // redraw at the new width (next frame, outside the observer's own
+      // callback), without replaying the bars' growth
+      let redraw = 0;
+      new ResizeObserver(() => {
+        cancelAnimationFrame(redraw);
+        redraw = requestAnimationFrame(() => {
+          const w = Math.round($("chart").clientWidth);
+          if (w && w !== lastW) drawChart();
+        });
+      }).observe($("chart"));
+
+      // ---- Input ---------------------------------------------------------
+      $("p-ready").addEventListener("click", closePanelAndGo);
+      // As in the Helmholtz widget, the frames' × closes the panel and
+      // starts, the same as Ready
+      $("p-close").addEventListener("click", closePanelAndGo);
+      $("panel").addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closePanelAndGo();
+      });
+      $("again").addEventListener("click", () => {
+        st.trials = [];
+        cancelAll();
+        $("results").hidden = true;
+        $("trialbox").hidden = false;
+        resetScreen();
+        fb.textContent = "";
+        counter(0);
+        setPhase("panel");
+        readouts();
+        showPanel("intro");
+        $("p-ready").focus({ preventScroll: true });
+      });
+
+      // AUTHOR: Space responds. Enter does too (a keyboard user on the
+      // button). Held-down keys repeat and are ignored.
+      document.addEventListener("keydown", (e) => {
+        if (st.phase !== "running" && st.phase !== "ready") return;
+        if (e.code !== "Space" && e.key !== " " && e.key !== "Enter") return;
+        e.preventDefault();
+        st.lastKey = performance.now();
+        if (e.repeat) return;
+        respond(eventTime(e));
+      });
+      // Touch, pen and mouse: count the moment the finger goes down, not
+      // when it lifts (a click would add the whole press to the time)
+      respondBtn.addEventListener("pointerdown", (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        st.lastPointer = performance.now();
+        respond(eventTime(e));
+      });
+      // Assistive tech can press a button without a key or a pointer event
+      respondBtn.addEventListener("click", (e) => {
+        const now = performance.now();
+        if (now - st.lastKey < 1000 || now - st.lastPointer < 1000) return;
+        respond(now);
+      });
+
+      // A trial the reader could not see is not a trial: pause and rerun it
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) pause("hidden");
+      });
+      window.addEventListener("blur", () => pause("blur"));
+
+      $("cap").textContent =
+        `After Posner (1980). Each trial: the dot at center, 500–1000 ms; a cue (the tail) toward one box; ${SOA_MIN}–${SOA_MIN + SOA_RANGE} ms later a faint target in one box. ` +
+        `Trials 1–${VALID_ONLY_FIRST} are always valid, then ${Math.round(P_VALID * 100)}\u00a0% are. The cue–target gap is too brief for your eyes to move there, so a speed difference reflects covert attention, not gaze. ` +
+        `Reaction times are timed in your browser with performance.now(): each is good to about one screen frame (≈17 ms at 60 Hz) plus your keyboard's or touchscreen's own delay (≈10–50 ms), a lag that is the same for valid and invalid trials, so their difference is not affected. ` +
+        `Missed = no response within ${MISS_MS / 1000} s. Your times stay on this page and are not saved. Task: Arjun Krishnaswamy.`;
+
+      OB.onTheme(() => {
+        drawChart();
+        OB.resize();
+      });
+      counter(0);
+      showPanel("intro");
+    </script>
+  </body>
+</html>
