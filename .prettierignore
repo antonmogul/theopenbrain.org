@@ -30,3 +30,5 @@ src/widgets/source/
 content/
 storybook-snapshots/
 scripts/tokens/figma-check.js
+# Uploaded widgets (widget kit): kept byte-for-byte as uploaded (OPENBRAIN-135)
+src/widgets/uploads/*.html

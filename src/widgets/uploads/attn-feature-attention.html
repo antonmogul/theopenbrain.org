@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Feature-based attention</title>
+    <!--
+  The Open Brain, chapter 3 "Attention and Working Memory", Figure 6.
+  Figma "Wid. 06 | Feature-based attention" (R7AjPuac7z7OZ7xcd2t7OR,
+  section 21:14156; component set 14:2188, mistitled "Contrast vs Response
+  gain"; instances 21:14527-21:14529), rebuilt on the widget kit.
+
+  Science from the author's original (Arjun Krishnaswamy),
+  src/widgets/source/tmt_feature_attention_widget.html, "adapted from
+  Treue & Martinez-Trujillo (1999), Fig. 2":
+
+  - The receptive-field (RF) stimulus is fixed: a patch moving in the MT
+    neuron's preferred direction (drawn upward, as the author's arrow).
+  - Three conditions: attend fixation; attend a patch outside the RF moving
+    in the same (preferred) direction; attend one moving in the opposite
+    (null) direction.
+  - One trial per condition. Spike counts and spike times are the author's,
+    unchanged (x positions in the author's 300-unit raster): fixation 30,
+    preferred 50, null 17. The author's note: "differences exaggerated for
+    legibility, not to scale". No time scale in the author's widget, so the
+    readouts are spikes per trial, not spikes/s.
+  - The gain readout (spikes / fixation spikes) is ours, to tie the result
+    to the chapter's "gain factor". It inherits the exaggeration.
+
+  Ours, following the brief (ch3-widget-specs.md, section 7):
+  - Both patches are present in every condition; only the attention ring
+    moves. In "attend fixation" the outside patch moves in the preferred
+    direction, like the RF patch (the author drew a plain dot there).
+  - The red ring marks what is attended in every state; the raster stays
+    white and its rate carries the result.
+  - Dot counts, speed and patch sizes are illustrative (DEFAULT, below).
+-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* The book sets these; the fallbacks make the file work on its own.
+         Attention and Working Memory = Learning, Cognition & Memory ramp. */
+      :root {
+        --accent: var(--ob-accent, #ff3351);
+        /* text on an accent fill: dark on this red */
+        --on-accent: var(--ob-on-accent, #1c1c1c);
+        --plate: var(--ob-plate, #1c1c1c);
+        --plate-2: var(--ob-plate-2, #2a2a2a);
+        --on: var(--ob-on-plate, #ffffff);
+        --mute: var(--ob-on-plate-mute, rgba(255, 255, 255, 0.62));
+        --line: var(--ob-line-plate, rgba(255, 255, 255, 0.18));
+        /* the dot patches: a near-black disc, as in the Figma frames */
+        --patch: var(--ob-ink, #0a0a0a);
+        --sans: var(--ob-font-sans, "IBM Plex Sans", system-ui, sans-serif);
+        --mono: var(--ob-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+        --radius: var(--ob-radius, 0);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--plate);
+        color: var(--on);
+        font-family: var(--sans);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .w {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 900px) {
+        .w {
+          padding: 32px 40px;
+          gap: 20px;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .hint {
+        margin: 4px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--mute);
+      }
+
+      .group-label {
+        margin: 0 0 6px;
+        font: 500 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      /* Tabs: equal cells, hairline dividers, the active one in the accent */
+      .tabs {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        border: 1px solid var(--line);
+      }
+      .tabs button {
+        min-height: 44px;
+        padding: 8px 6px;
+        border: 0;
+        border-left: 1px solid var(--line);
+        background: transparent;
+        color: var(--on);
+        cursor: pointer;
+        border-radius: var(--radius);
+        font: 500 12px/1.25 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: background-color 0.18s ease-out, color 0.18s ease-out;
+      }
+      .tabs button:first-child {
+        border-left: 0;
+      }
+      .tabs button:hover {
+        background: var(--plate-2);
+      }
+      .tabs button[aria-pressed="true"] {
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Stimulus left, response right from 760 px; stacked on phones */
+      .body {
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 760px) {
+        .body {
+          grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+          gap: 24px;
+          align-items: center;
+        }
+      }
+      .side {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .label {
+        font: 13px var(--mono);
+        fill: var(--mute);
+      }
+      .label-on {
+        font: 500 13px var(--mono);
+        fill: var(--on);
+      }
+      .tick {
+        font: 12px var(--mono);
+        fill: var(--mute);
+      }
+      .ring {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 2.2;
+        transition: opacity 0.2s ease-out;
+      }
+      .patch {
+        fill: var(--patch);
+        stroke: var(--on);
+        stroke-width: 1.5;
+      }
+      .dot {
+        fill: var(--on);
+      }
+      .arrow {
+        stroke: var(--on);
+        stroke-width: 2;
+        stroke-linecap: round;
+        fill: none;
+      }
+      .arrow-head {
+        fill: var(--on);
+      }
+      .spike {
+        stroke: var(--on);
+        stroke-width: 1.6;
+        stroke-linecap: round;
+      }
+
+      .raster-box {
+        border: 1px solid var(--line);
+        background: var(--plate-2);
+        padding: 8px 8px 6px;
+      }
+      .raster-title {
+        margin: 2px 0 2px;
+        text-align: center;
+        font: 12px/1.3 var(--mono);
+        color: var(--mute);
+      }
+
+      .reads {
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .reads div {
+        padding: 10px 0;
+        min-width: 0;
+      }
+      .reads div + div {
+        border-left: 1px solid var(--line);
+        padding-left: 12px;
+      }
+      .reads dt {
+        font: 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .reads dd {
+        margin: 4px 0 0;
+        font: 500 20px/1.1 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .reads dd small {
+        font: 11px var(--mono);
+        color: var(--mute);
+        letter-spacing: 0.04em;
+      }
+      .btn {
+        justify-self: start;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 16px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--on);
+        cursor: pointer;
+        font: 500 12px/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .btn:hover {
+        border-color: var(--on);
+      }
+
+      .info {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        margin: 0;
+        padding: 12px 14px;
+        background: var(--plate-2);
+        border: 1px solid var(--line);
+        font: 13px/1.5 var(--mono);
+      }
+      .info svg {
+        width: 20px;
+        height: 20px;
+        margin-top: 1px;
+      }
+
+      .cap {
+        margin: 0;
+        font: 12px/1.55 var(--mono);
+        color: var(--mute);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+      html[data-ob-reduce-motion] * {
+        transition: none !important;
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="w">
+      <header>
+        <h1>Feature-based attention</h1>
+        <p class="hint">
+          The neuron's receptive field always holds the same dots, moving in
+          its preferred direction. Choose what the monkey attends and watch the
+          MT neuron's response change.
+        </p>
+      </header>
+
+      <div>
+        <p class="group-label" id="attend-label">The monkey attends</p>
+        <div class="tabs" id="tabs" role="group" aria-labelledby="attend-label">
+          <button type="button" data-cond="fixation" aria-pressed="true">
+            Attend fixation
+          </button>
+          <button type="button" data-cond="preferred" aria-pressed="false">
+            Attend preferred direction
+          </button>
+          <button type="button" data-cond="null" aria-pressed="false">
+            Attend null direction
+          </button>
+        </div>
+      </div>
+
+      <div class="body">
+        <!-- The screen: RF patch, fixation cross, patch outside the RF -->
+        <svg id="stage" viewBox="0 0 360 206" role="img" aria-label="">
+          <defs>
+            <clipPath id="clipRF"><circle cx="0" cy="0" r="39" /></clipPath>
+            <clipPath id="clipOut"><circle cx="0" cy="0" r="39" /></clipPath>
+          </defs>
+
+          <!-- receptive field of the recorded MT neuron -->
+          <circle cx="80" cy="96" r="54" fill="none" stroke="var(--on)" stroke-opacity=".7" stroke-width="1.2" stroke-dasharray="4 3" />
+          <text class="label" x="80" y="36" text-anchor="middle" id="rfTag">receptive field</text>
+
+          <!-- RF patch: preferred direction, fixed -->
+          <g transform="translate(80 96)">
+            <circle class="patch" r="40" />
+            <g clip-path="url(#clipRF)" id="dotsRF"></g>
+          </g>
+          <!-- direction arrow beside the patch (reads without motion) -->
+          <g id="arrowRF"></g>
+
+          <!-- fixation cross -->
+          <circle class="ring" id="ringFix" cx="180" cy="96" r="17" />
+          <g stroke="var(--on)" stroke-width="1.8">
+            <line x1="172" y1="96" x2="188" y2="96" />
+            <line x1="180" y1="88" x2="180" y2="104" />
+          </g>
+          <text class="label" id="fixLabel" x="180" y="134" text-anchor="middle">fixation</text>
+          <text class="label-on" id="fixL2" x="180" y="153" text-anchor="middle">attended</text>
+
+          <!-- patch outside the RF, in the opposite hemifield -->
+          <circle class="ring" id="ringOut" cx="280" cy="96" r="47" />
+          <g transform="translate(280 96)">
+            <circle class="patch" r="40" />
+            <g clip-path="url(#clipOut)" id="dotsOut"></g>
+          </g>
+          <g id="arrowOut"></g>
+
+          <!-- labels under the patches -->
+          <text class="label-on" x="80" y="174" text-anchor="middle">RF stimulus</text>
+          <text class="label" x="80" y="192" text-anchor="middle">preferred, fixed</text>
+          <text id="outL1" class="label" x="280" y="174" text-anchor="middle">unattended</text>
+          <text id="outL2" class="label" x="280" y="192" text-anchor="middle">same direction</text>
+        </svg>
+
+        <div class="side">
+          <div class="raster-box">
+            <svg id="raster" viewBox="0 0 300 96" role="img" aria-label="">
+              <line x1="4" y1="42" x2="296" y2="42" stroke="var(--mute)" stroke-width="1" />
+              <g id="spikes"></g>
+              <line id="cursor" x1="8" y1="8" x2="8" y2="76" stroke="var(--accent)" stroke-width="1.2" opacity="0" />
+              <text class="tick" x="4" y="92">time →</text>
+              <text class="tick" x="296" y="92" text-anchor="end">one trial</text>
+            </svg>
+            <p class="raster-title" aria-hidden="true">Response to RF stimulus</p>
+          </div>
+
+          <dl class="reads">
+            <div>
+              <dt>This trial</dt>
+              <dd><span id="rNow">30</span> <small>spikes</small></dd>
+            </div>
+            <div>
+              <dt>Attend fixation</dt>
+              <dd><span id="rFix">30</span> <small>spikes</small></dd>
+            </div>
+            <div>
+              <dt>Gain</dt>
+              <dd>×<span id="rGain">1.00</span></dd>
+            </div>
+          </dl>
+          <button type="button" class="btn" id="play" aria-pressed="false">Pause motion</button>
+        </div>
+      </div>
+
+      <p class="info" aria-live="polite">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="10" cy="10" r="8.5" fill="none" stroke="var(--on)" stroke-width="1.2" />
+          <line x1="10" y1="8.5" x2="10" y2="14.5" stroke="var(--on)" stroke-width="1.6" />
+          <circle cx="10" cy="5.8" r="1.1" fill="var(--on)" />
+        </svg>
+        <span id="info"></span>
+      </p>
+
+      <p class="cap">
+        An MT neuron's receptive field (dashed) holds a patch of dots moving
+        in the neuron's preferred direction (up). The monkey keeps its eyes on
+        the cross and attends either the cross or a second patch in the
+        opposite hemifield, outside the receptive field; the red ring marks
+        what it attends. Attending the preferred direction out there raises
+        the response to the unchanged stimulus in the receptive field;
+        attending the null (opposite) direction lowers it. Gain is spikes
+        relative to attend fixation. Single-unit spike train, one trial per
+        condition; differences exaggerated for legibility, not to scale.
+        Illustrative, not recorded data. Adapted from Treue &amp;
+        Martinez-Trujillo (1999), Fig. 2.
+      </p>
+    </main>
+
+    <script>
+      // The book injects window.OB before this runs; this fallback keeps the
+      // file working on its own (in Claude, or opened in a browser).
+      window.OB = window.OB || {
+        reducedMotion:
+          matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-ob-reduce-motion"),
+        onTheme(fn) {
+          fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
+        },
+        resize() {},
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const NS = "http://www.w3.org/2000/svg";
+
+      // ---- The author's data (tmt_feature_attention_widget.html) ----------
+      // Spike times: x positions in the author's 300-unit raster (8-292),
+      // copied unchanged. Counts: fixation 30, preferred 50, null 17.
+      const SPIKES = {
+        fixation: [12.3, 16.5, 19.9, 24.9, 34.7, 52.7, 60.4, 76.7, 87, 94.2, 97.5, 133.1, 136.5, 140.2, 152.2, 158.1, 167, 174.8, 182.8, 186.9, 193.7, 204.9, 209, 233.2, 237.9, 247.2, 270.5, 282, 286.9, 291.3],
+        preferred: [8.2, 12.7, 19, 27.9, 32.7, 36.7, 41.5, 45.2, 51.8, 58.5, 62.2, 67.6, 73.2, 78, 81.4, 84.6, 90.1, 94.4, 98.6, 102.5, 113.6, 117.8, 121.7, 127.5, 135.1, 141.5, 145.4, 166.8, 170.5, 173.5, 178.8, 182.5, 186.8, 190.8, 194.6, 204.3, 208.1, 212.6, 215.9, 225.6, 229.1, 234.4, 240.3, 248.4, 254.1, 259.3, 266.5, 275.1, 280.1, 286.4],
+        null: [29.4, 107.9, 116.6, 126.5, 163.1, 170.7, 180.9, 185.5, 189.6, 202.6, 207.8, 217.3, 233.3, 255.4, 263.7, 267.9, 291.8],
+      };
+      // Direction of the patch outside the RF (+1 = preferred/up, -1 = null/down).
+      // The RF patch is always +1. In "fixation" the author drew no
+      // direction; the brief keeps the patch, moving like the RF patch.
+      const OUT_DIR = { fixation: 1, preferred: 1, null: -1 };
+
+      const INFO = {
+        fixation: "Neither stimulus behaviorally relevant. This is the baseline response to the RF stimulus.",
+        preferred: "Attended target is outside the RF, moving in the cell's preferred direction. The response rises above baseline.",
+        null: "Attended target is outside the RF, moving in the cell's anti-preferred direction. The response falls below baseline.",
+      };
+
+      // ---- Dots (illustrative; DEFAULT) -----------------------------------
+      const R = 39; // patch radius for dots (the disc is 40)
+      const N_DOTS = 64; // per patch
+      const SPEED = 22; // units per second (about 3.5 s across the patch)
+
+      // Seeded PRNG so every load (and every screenshot) starts the same.
+      function mulberry32(a) {
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      function makeDots(seed) {
+        const rnd = mulberry32(seed);
+        return Array.from({ length: N_DOTS }, () => {
+          const r = R * Math.sqrt(rnd());
+          const a = rnd() * Math.PI * 2;
+          return { x: r * Math.cos(a), y: r * Math.sin(a), s: 1.1 + rnd() * 0.9 };
+        });
+      }
+      function mountDots(g, dots) {
+        g.textContent = "";
+        return dots.map((d) => {
+          const c = document.createElementNS(NS, "circle");
+          c.setAttribute("class", "dot");
+          c.setAttribute("r", d.s.toFixed(2));
+          c.setAttribute("cx", d.x.toFixed(2));
+          c.setAttribute("cy", d.y.toFixed(2));
+          g.appendChild(c);
+          return c;
+        });
+      }
+      const patches = [
+        { dots: makeDots(7), g: $("dotsRF"), dir: () => 1 },
+        { dots: makeDots(19), g: $("dotsOut"), dir: () => OUT_DIR[cond] },
+      ];
+      patches.forEach((p) => (p.els = mountDots(p.g, p.dots)));
+
+      // Coherent motion along y; a dot leaving the disc re-enters on the
+      // opposite edge of its own chord, so the density stays even.
+      function stepDots(dt) {
+        patches.forEach((p) => {
+          const dir = p.dir(); // +1 up, -1 down
+          p.dots.forEach((d, i) => {
+            d.y -= dir * SPEED * dt;
+            const h = Math.sqrt(Math.max(0, R * R - d.x * d.x));
+            if (dir > 0 && d.y < -h) d.y += 2 * h;
+            if (dir < 0 && d.y > h) d.y -= 2 * h;
+            p.els[i].setAttribute("cy", d.y.toFixed(2));
+          });
+        });
+      }
+
+      // Direction arrows on the outer side of each patch, so the direction
+      // reads when the dots are still (reduced motion, paused, no rAF).
+      function drawArrow(gId, x, dir) {
+        const
+          y0 = 96 + dir * 26,
+          y1 = 96 - dir * 26;
+        const head = dir > 0 ? `${x - 5},${y1 + 8} ${x + 5},${y1 + 8} ${x},${y1}` : `${x - 5},${y1 - 8} ${x + 5},${y1 - 8} ${x},${y1}`;
+        $(gId).innerHTML =
+          `<line class="arrow" x1="${x}" y1="${y0}" x2="${x}" y2="${y1 + (dir > 0 ? 6 : -6)}"/>` +
+          `<polygon class="arrow-head" points="${head}"/>`;
+      }
+
+      // ---- Raster ----------------------------------------------------------
+      const Y_TOP = 12,
+        Y_BOT = 72;
+      const X0 = 4,
+        X1 = 296;
+      const SWEEP = 2400, // ms to draw one trial
+        HOLD = 900; // ms the full trial stays before the next sweep
+      function drawSpikes(upToX) {
+        $("spikes").innerHTML = SPIKES[cond]
+          .filter((x) => x <= upToX)
+          .map((x) => `<line class="spike" x1="${x}" x2="${x}" y1="${Y_TOP}" y2="${Y_BOT}"/>`)
+          .join("");
+      }
+
+      // ---- Motion ----------------------------------------------------------
+      const reduced = () =>
+        !!OB.reducedMotion ||
+        document.documentElement.hasAttribute("data-ob-reduce-motion") ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let cond = "fixation";
+      let playing = true;
+      let raf = 0,
+        tSweep = 0,
+        tLast = 0;
+
+      function stopAnim() {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        tLast = 0;
+        $("cursor").setAttribute("opacity", "0");
+      }
+      function frame(now) {
+        if (!tSweep) tSweep = now;
+        const dt = tLast ? Math.min(0.1, (now - tLast) / 1000) : 0;
+        tLast = now;
+        stepDots(dt);
+        const e = (now - tSweep) % (SWEEP + HOLD);
+        if (e < SWEEP) {
+          const x = X0 + (e / SWEEP) * (X1 - X0);
+          drawSpikes(x);
+          $("cursor").setAttribute("x1", x);
+          $("cursor").setAttribute("x2", x);
+          $("cursor").setAttribute("opacity", "1");
+        } else {
+          drawSpikes(Infinity);
+          $("cursor").setAttribute("opacity", "0");
+        }
+        raf = requestAnimationFrame(frame);
+      }
+      // The still state is drawn first and is complete on its own: dots in
+      // place, arrows, the whole trial. Motion only starts if rAF fires.
+      function start(restartSweep) {
+        stopAnim();
+        const rm = reduced();
+        $("play").hidden = rm;
+        drawSpikes(Infinity);
+        if (rm || !playing || document.hidden) return;
+        if (restartSweep) tSweep = 0;
+        raf = requestAnimationFrame(frame);
+      }
+
+      // ---- Render ----------------------------------------------------------
+      function render() {
+        document
+          .querySelectorAll("#tabs button")
+          .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cond === cond)));
+
+        const onFix = cond === "fixation";
+        $("ringFix").style.opacity = onFix ? 1 : 0;
+        $("ringOut").style.opacity = onFix ? 0 : 1;
+        $("fixL2").style.display = onFix ? "" : "none";
+        $("outL1").textContent = onFix ? "unattended" : "attended";
+        $("outL1").setAttribute("class", onFix ? "label" : "label-on");
+        $("outL2").textContent = OUT_DIR[cond] > 0 ? "same direction" : "opposite direction";
+
+        drawArrow("arrowRF", 14, 1);
+        drawArrow("arrowOut", 342, OUT_DIR[cond]);
+
+        const n = SPIKES[cond].length,
+          base = SPIKES.fixation.length;
+        $("rNow").textContent = n;
+        $("rFix").textContent = base;
+        $("rGain").textContent = (n / base).toFixed(2);
+        $("info").textContent = INFO[cond];
+
+        const att = onFix
+          ? "The monkey attends the fixation cross (red ring)."
+          : `The monkey attends the patch outside the receptive field (red ring), moving ${OUT_DIR[cond] > 0 ? "in the same, preferred direction" : "in the opposite, null direction"}.`;
+        $("stage").setAttribute(
+          "aria-label",
+          `Left: the MT neuron's receptive field holds a patch of dots moving up, the preferred direction. Centre: a fixation cross. Right: a second patch outside the receptive field, moving ${OUT_DIR[cond] > 0 ? "up" : "down"}. ${att}`
+        );
+        $("raster").setAttribute(
+          "aria-label",
+          `Spike train of the MT neuron for one trial: ${n} spikes, against ${base} when attending fixation (gain ${(n / base).toFixed(2)}).`
+        );
+        start(true);
+        OB.resize();
+      }
+
+      $("tabs").addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        cond = b.dataset.cond;
+        render();
+      });
+      $("play").addEventListener("click", () => {
+        playing = !playing;
+        $("play").textContent = playing ? "Pause motion" : "Play motion";
+        $("play").setAttribute("aria-pressed", String(!playing));
+        start(false);
+      });
+      document.addEventListener("visibilitychange", () => (document.hidden ? stopAnim() : start(false)));
+      matchMedia("(prefers-reduced-motion: reduce)").addEventListener?.("change", () => start(false));
+
+      OB.onTheme(() => start(false));
+      render();
+    </script>
+  </body>
+</html>

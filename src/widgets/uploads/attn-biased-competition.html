@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attention biases competition between stimuli</title>
+    <!--
+  The Open Brain, chapter 3 "Attention and Working Memory", Figure 5.
+  Figma "Wid. 06 | Attention Biased Competition" (R7AjPuac7z7OZ7xcd2t7OR,
+  21:13486), rebuilt on the widget kit. Science from the author's original,
+  src/widgets/source/biased_competition_widget.html (Arjun):
+
+  - Stim 1 is the "good" stimulus (drives the V4 neuron strongly), stim 2
+    the "poor" one (drives it weakly).
+  - The author's raster shows 10 spikes for stim 1 alone and 4 for stim 2
+    alone, in a fixed window with no time scale; with both stimuli in the
+    receptive field the response equals the attended stimulus's response
+    alone (10 when attending stim 1, 4 when attending stim 2).
+  - ADDED, not in the author's widget: "Attend away" (attention outside the
+    receptive field). The chapter says the pair response then "fell to a
+    level between that evoked by either stimulus alone"; the midpoint (7) is
+    our choice, illustrative, for the author to confirm.
+  - Spike counts are schematic (no units in the author's widget), so the
+    readouts are spikes per window, not spikes/s.
+  - The banana and snake are the designers' stand-ins for the experiment's
+    stimuli, which differed in color and orientation (chapter text).
+-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* The book sets these; the fallbacks make the file work on its own.
+         Attention and Working Memory = Learning, Cognition & Memory ramp. */
+      :root {
+        --accent: var(--ob-accent, #ff3351);
+        --on-accent: var(--ob-on-accent, #1c1c1c);
+        --attn: var(--ob-series-2, #fbeb00);
+        --plate: var(--ob-plate, #1c1c1c);
+        --plate-2: var(--ob-plate-2, #2a2a2a);
+        --on: var(--ob-on-plate, #ffffff);
+        --mute: var(--ob-on-plate-mute, rgba(255, 255, 255, 0.62));
+        --line: var(--ob-line-plate, rgba(255, 255, 255, 0.18));
+        --sans: var(--ob-font-sans, "IBM Plex Sans", system-ui, sans-serif);
+        --mono: var(--ob-font-mono, "IBM Plex Mono", ui-monospace, monospace);
+        --radius: var(--ob-radius, 0);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--plate);
+        color: var(--on);
+        font-family: var(--sans);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .w {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 900px) {
+        .w {
+          padding: 32px 40px;
+          gap: 20px;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .hint {
+        margin: 4px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--mute);
+      }
+
+      .controls {
+        display: grid;
+        gap: 10px;
+      }
+      .group-label {
+        margin: 0 0 6px;
+        font: 500 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      /* Tabs: equal cells, hairline dividers, the active one in the accent */
+      .tabs {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        border: 1px solid var(--line);
+      }
+      .tabs button {
+        min-height: 44px;
+        padding: 8px 6px;
+        border: 0;
+        border-left: 1px solid var(--line);
+        background: transparent;
+        color: var(--on);
+        cursor: pointer;
+        border-radius: var(--radius);
+        font: 500 12px/1.25 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: background-color 0.18s ease-out, color 0.18s ease-out;
+      }
+      .tabs button:first-child {
+        border-left: 0;
+      }
+      .tabs button:hover {
+        background: var(--plate-2);
+      }
+      .tabs button[aria-pressed="true"] {
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* The two figures: stacked on phones, side by side from 760 px */
+      .figs {
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 760px) {
+        .figs {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 24px;
+          align-items: start;
+        }
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .label {
+        font: 12px var(--mono);
+        fill: var(--mute);
+      }
+      .label-on {
+        font: 500 12px var(--mono);
+        fill: var(--on);
+      }
+      .badge {
+        font: 500 12px var(--mono);
+        fill: var(--plate);
+      }
+
+      /* Stimuli: white line drawings; the attended one in color, the
+         unattended one faded. The pictures never move or change shape. */
+      .stim {
+        transition: opacity 0.22s ease-out;
+      }
+      .stim .o {
+        stroke: var(--on);
+        transition: stroke 0.22s ease-out, fill 0.22s ease-out;
+      }
+      .stim .f {
+        fill: var(--plate-2);
+        transition: fill 0.22s ease-out, stroke 0.22s ease-out;
+      }
+      .stim .fs {
+        stroke: var(--plate-2);
+        transition: stroke 0.22s ease-out;
+      }
+      .stim .oc {
+        fill: var(--on);
+        transition: fill 0.22s ease-out;
+      }
+      .stim.attended .o {
+        stroke: var(--plate);
+      }
+      .stim.attended .f {
+        fill: var(--attn);
+      }
+      .stim.attended .fs {
+        stroke: var(--attn);
+      }
+      .stim.attended .oc {
+        fill: var(--plate);
+      }
+      .stim.unattended {
+        opacity: 0.32;
+      }
+      .ring {
+        fill: none;
+        stroke: var(--attn);
+        stroke-width: 2;
+        transition: opacity 0.22s ease-out;
+      }
+
+      .brain .cortex {
+        fill: var(--plate);
+        stroke: var(--on);
+        stroke-width: 1.6;
+        stroke-linejoin: round;
+      }
+      .brain .sulcus {
+        fill: none;
+        stroke: var(--on);
+        stroke-width: 1.1;
+        stroke-linecap: round;
+        opacity: 0.75;
+      }
+      .spike {
+        stroke: var(--on);
+        stroke-width: 1.5;
+      }
+
+      .under {
+        display: grid;
+        gap: 12px;
+      }
+      @media (min-width: 760px) {
+        .under {
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 24px;
+        }
+      }
+      .reads {
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .reads div {
+        padding: 10px 0;
+        min-width: 0;
+      }
+      .reads div + div {
+        border-left: 1px solid var(--line);
+        padding-left: 12px;
+      }
+      .reads dt {
+        font: 11px/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .reads dd {
+        margin: 4px 0 0;
+        font: 500 20px/1.1 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .reads dd small {
+        font: 11px var(--mono);
+        color: var(--mute);
+        letter-spacing: 0.04em;
+      }
+      .btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 16px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--on);
+        cursor: pointer;
+        font: 500 12px/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .btn:hover {
+        border-color: var(--on);
+      }
+
+      .info {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        margin: 0;
+        padding: 12px 14px;
+        background: var(--plate-2);
+        border: 1px solid var(--line);
+        font: 13px/1.5 var(--mono);
+      }
+      .info svg {
+        width: 20px;
+        height: 20px;
+        margin-top: 1px;
+      }
+
+      .cap {
+        margin: 0;
+        font: 12px/1.55 var(--mono);
+        color: var(--mute);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+      html[data-ob-reduce-motion] * {
+        transition: none !important;
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="w">
+      <header>
+        <h1>Attention biases competition between stimuli</h1>
+        <p class="hint">
+          Two stimuli, one receptive field. Choose what is on the screen and
+          where the monkey attends, and watch which stimulus the V4 neuron
+          reports.
+        </p>
+      </header>
+
+      <div class="controls">
+        <div>
+          <p class="group-label" id="stim-label">On the screen</p>
+          <div class="tabs" id="stimTabs" role="group" aria-labelledby="stim-label">
+            <button type="button" data-stim="s1" aria-pressed="false">
+              Stim 1 alone
+            </button>
+            <button type="button" data-stim="s2" aria-pressed="false">
+              Stim 2 alone
+            </button>
+            <button type="button" data-stim="both" aria-pressed="true">
+              Both stimuli
+            </button>
+          </div>
+        </div>
+        <div id="attendRow">
+          <p class="group-label" id="attend-label">Attention</p>
+          <div class="tabs" id="attendTabs" role="group" aria-labelledby="attend-label">
+            <button type="button" data-attend="a1" aria-pressed="true">
+              Attend stim 1
+            </button>
+            <button type="button" data-attend="a2" aria-pressed="false">
+              Attend stim 2
+            </button>
+            <button type="button" data-attend="away" aria-pressed="false">
+              Attend away
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="figs">
+        <!-- The screen the monkey looks at -->
+        <svg id="screen" viewBox="0 0 360 200" role="img" aria-label="">
+          <rect x="4" y="4" width="352" height="190" fill="var(--plate-2)" stroke="var(--line)" />
+          <text class="label" x="14" y="21">Screen</text>
+
+          <!-- attention outside the receptive field -->
+          <g id="awayMark">
+            <circle class="ring" cx="44" cy="96" r="22" stroke-dasharray="5 4" />
+            <text class="label-on" x="44" y="136" text-anchor="middle">attention</text>
+          </g>
+
+          <!-- fixation cross -->
+          <g stroke="var(--on)" stroke-width="1.6">
+            <line x1="97" y1="96" x2="111" y2="96" />
+            <line x1="104" y1="89" x2="104" y2="103" />
+          </g>
+          <text class="label" x="104" y="120" text-anchor="middle">fixation</text>
+
+          <!-- receptive field of the recorded V4 neuron -->
+          <rect x="160" y="16" width="186" height="146" fill="var(--on)" fill-opacity=".04" stroke="var(--on)" stroke-opacity=".7" stroke-width="1.2" stroke-dasharray="4 3" />
+          <text class="label" x="253" y="180" text-anchor="middle">Receptive field</text>
+
+          <!-- Stim 1, the good stimulus: a bunch of bananas -->
+          <g id="stim1" class="stim">
+            <circle class="ring" id="ring1" cx="218" cy="72" r="44" />
+            <g transform="translate(240 64) scale(.9)">
+              <!-- a hand of three bananas on one stalk, back to front -->
+              <g stroke-width="1.8" stroke-linejoin="round">
+                <g transform="rotate(-30) scale(0.94)">
+                  <path class="o f" d="M0 0 C-6 26 -40 34 -56 12 C-57.5 10 -56.5 7.5 -54 8 C-40 16 -14 10 -7 -3 Z" />
+                  <path class="o" d="M-4 3 C-12 20 -36 25 -52 11" fill="none" stroke-width="1" />
+                  <circle class="oc" cx="-55" cy="10" r="2.4" />
+                </g>
+                <g transform="rotate(0) scale(1)">
+                  <path class="o f" d="M0 0 C-6 26 -40 34 -56 12 C-57.5 10 -56.5 7.5 -54 8 C-40 16 -14 10 -7 -3 Z" />
+                  <path class="o" d="M-4 3 C-12 20 -36 25 -52 11" fill="none" stroke-width="1" />
+                  <circle class="oc" cx="-55" cy="10" r="2.4" />
+                </g>
+                <g transform="rotate(30) scale(1.04)">
+                  <path class="o f" d="M0 0 C-6 26 -40 34 -56 12 C-57.5 10 -56.5 7.5 -54 8 C-40 16 -14 10 -7 -3 Z" />
+                  <path class="o" d="M-4 3 C-12 20 -36 25 -52 11" fill="none" stroke-width="1" />
+                  <circle class="oc" cx="-55" cy="10" r="2.4" />
+                </g>
+              </g>
+              <path class="o" d="M-3 2 C0 -8 6 -14 14 -17" fill="none" stroke-width="9" stroke-linecap="round" />
+              <path class="fs" d="M-3 2 C0 -8 6 -14 14 -17" fill="none" stroke-width="6" stroke-linecap="round" />
+            </g>
+            <circle cx="184" cy="38" r="9" fill="var(--on)" />
+            <text class="badge" x="184" y="42.2" text-anchor="middle">1</text>
+          </g>
+
+          <!-- Stim 2, the poor stimulus: a coiled snake -->
+          <g id="stim2" class="stim">
+            <circle class="ring" id="ring2" cx="301" cy="114" r="40" />
+            <g transform="translate(292 114)">
+              <!-- tail -->
+              <path class="o" d="M-16 10 C-6 9 -2 14 -7 19 C-10 22 -14 22 -16 20" fill="none" stroke-width="6" stroke-linecap="round" />
+              <path class="fs" d="M-16 10 C-6 9 -2 14 -7 19 C-10 22 -14 22 -16 20" fill="none" stroke-width="3" stroke-linecap="round" />
+              <!-- body: an outlined tube, with a line of scales -->
+              <path class="o" d="M18 -26 C4 -34 -18 -26 -14 -10 C-10 4 22 -2 23 16 C24 32 -2 36 -18 29 C-28 24 -28 12 -16 10" fill="none" stroke-width="11" stroke-linecap="round" />
+              <path class="fs" d="M18 -26 C4 -34 -18 -26 -14 -10 C-10 4 22 -2 23 16 C24 32 -2 36 -18 29 C-28 24 -28 12 -16 10" fill="none" stroke-width="8" stroke-linecap="round" />
+              <path class="o" d="M16 -27 C4 -33 -16 -26 -13 -11 C-9 3 21 -2 22 16 C23 31 -2 35 -17 28" fill="none" stroke-width="1" stroke-dasharray="1.5 3" />
+              <!-- head, eye, forked tongue -->
+              <path class="o f" d="M16 -30 C22 -35 32 -33 34 -28 C35 -24 28 -21 20 -21 C15 -21 13 -27 16 -30 Z" stroke-width="1.6" />
+              <circle class="oc" cx="26" cy="-28.5" r="1.4" />
+              <path d="M34 -27 L40 -27 M40 -27 L43 -30 M40 -27 L43 -24" fill="none" stroke="var(--on)" stroke-width="1.1" stroke-linecap="round" />
+            </g>
+            <circle cx="331" cy="146" r="9" fill="var(--on)" />
+            <text class="badge" x="331" y="150.2" text-anchor="middle">2</text>
+          </g>
+        </svg>
+
+        <!-- The recorded neuron and its spikes -->
+        <svg id="neuron" viewBox="0 0 360 176" role="img" aria-label="">
+          <text class="label" x="8" y="14">V4 neuron spikes</text>
+          <text class="label" x="356" y="14" text-anchor="end">macaque brain, side view</text>
+          <rect x="8" y="24" width="176" height="120" fill="var(--plate-2)" stroke="var(--line)" />
+          <line x1="8" y1="84" x2="184" y2="84" stroke="var(--mute)" stroke-width="1" />
+          <g id="spikes"></g>
+          <line id="cursor" x1="18" y1="28" x2="18" y2="140" stroke="var(--accent)" stroke-width="1" opacity="0" />
+          <text class="label" x="8" y="160">time →</text>
+          <text class="label" x="184" y="160" text-anchor="end">one window</text>
+
+          <!-- lateral view: occipital pole left, frontal pole right -->
+          <g class="brain" transform="translate(196 24)">
+            <!-- brainstem and cerebellum, behind the cortex -->
+            <path class="cortex" d="M50 100 C55 112 57 122 55 132 L65 132 C67 120 67 108 63 96 Z" />
+            <ellipse class="cortex" cx="36" cy="100" rx="24" ry="15" />
+            <g class="sulcus" style="opacity: 0.5">
+              <path d="M16 98 C26 94 44 94 58 99" />
+              <path d="M17 104 C28 101 44 101 57 105" />
+              <path d="M21 110 C30 108 42 108 52 111" />
+            </g>
+            <!-- cerebral cortex -->
+            <path class="cortex" d="M10 62 C6 36 30 10 70 8 C108 6 146 20 156 46 C162 62 152 76 138 78 C126 80 118 80 112 84 C106 92 100 100 88 102 C70 106 50 100 38 92 C26 84 12 78 10 62 Z" />
+            <path class="sulcus" d="M112 83 C100 72 86 64 68 60" />
+            <path class="sulcus" d="M101 95 C88 86 70 78 52 74" />
+            <path class="sulcus" d="M88 9 C84 24 92 36 86 52" />
+            <path class="sulcus" d="M80 30 C64 32 50 38 42 46" />
+            <path class="sulcus" d="M124 18 C112 30 112 46 122 60" />
+            <path class="sulcus" d="M151 48 C144 46 136 44 129 40" />
+            <path class="sulcus" d="M29 22 C21 38 23 56 31 72" />
+          </g>
+          <!-- signal from the V4 neuron to the raster -->
+          <line x1="230" y1="84" x2="194" y2="84" stroke="var(--accent)" stroke-width="1.5" />
+          <path d="M188 84 L196 80 L196 88 Z" fill="var(--accent)" />
+          <circle cx="236" cy="84" r="5" fill="var(--accent)" stroke="var(--plate)" stroke-width="1.5" />
+          <circle cx="258" cy="166" r="4" fill="var(--accent)" />
+          <text class="label-on" x="266" y="170">V4 neuron</text>
+        </svg>
+      </div>
+
+      <div class="under">
+        <dl class="reads">
+          <div>
+            <dt>This condition</dt>
+            <dd><span id="rNow">10</span> <small>spikes</small></dd>
+          </div>
+          <div>
+            <dt>Stim 1 alone</dt>
+            <dd><span id="rS1">10</span> <small>good</small></dd>
+          </div>
+          <div>
+            <dt>Stim 2 alone</dt>
+            <dd><span id="rS2">4</span> <small>poor</small></dd>
+          </div>
+        </dl>
+        <button type="button" class="btn" id="play" aria-pressed="false">Pause spikes</button>
+      </div>
+
+      <p class="info" aria-live="polite">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="10" cy="10" r="8.5" fill="none" stroke="var(--on)" stroke-width="1.2" />
+          <line x1="10" y1="8.5" x2="10" y2="14.5" stroke="var(--on)" stroke-width="1.6" />
+          <circle cx="10" cy="5.8" r="1.1" fill="var(--on)" />
+        </svg>
+        <span id="info"></span>
+      </p>
+
+      <p class="cap">
+        A V4 neuron's receptive field holds a "good" stimulus (stim 1), which
+        drives the cell strongly on its own, and a "poor" one (stim 2), which
+        drives it weakly. The monkey keeps its eyes on the fixation cross; the
+        yellow ring marks where it attends. With both stimuli present, the
+        response resembles the response to the attended stimulus alone, as if
+        the other had been filtered out; with attention outside the receptive
+        field it falls between the two. The pictures stand in for stimuli that
+        differed in color and orientation. Illustrative model, not recorded
+        data: spike counts per window are schematic, with no time scale. After
+        Moran &amp; Desimone, 1985.
+      </p>
+    </main>
+
+    <script>
+      // The book injects window.OB before this runs; this fallback keeps the
+      // file working on its own (in Claude, or opened in a browser).
+      window.OB = window.OB || {
+        reducedMotion:
+          matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-ob-reduce-motion"),
+        onTheme(fn) {
+          fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
+        },
+        resize() {},
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      // Spikes per window for each stimulus alone: the author's 10 and 4.
+      const ALONE = { 1: 10, 2: 4 };
+      // Weight given to stim 1 when both share the receptive field. Attending
+      // a stimulus gives it all the weight (the author's model); attention
+      // outside the receptive field splits it evenly (our addition, from the
+      // chapter text: "a level between").
+      const WEIGHT_S1 = { a1: 1, a2: 0, away: 0.5 };
+
+      function response(stim, attend) {
+        if (stim === "s1") return ALONE[1];
+        if (stim === "s2") return ALONE[2];
+        const w = WEIGHT_S1[attend];
+        return Math.round(w * ALONE[1] + (1 - w) * ALONE[2]);
+      }
+
+      const INFO = {
+        s1: "Stim 1, the good stimulus, alone in the receptive field: the neuron fires strongly.",
+        s2: "Stim 2, the poor stimulus, alone in the receptive field: the neuron fires weakly.",
+        a1: "Both stimuli, attention on stim 1: the response rises to resemble the response to stim 1 alone, as if stim 2 were filtered out.",
+        a2: "Both stimuli, attention on stim 2: the response falls to resemble the response to stim 2 alone, as if stim 1 were filtered out.",
+        away: "Both stimuli, attention outside the receptive field: the response falls between the responses to either stimulus alone.",
+      };
+
+      let stim = "both";
+      let attend = "a1";
+      let playing = true;
+
+      // Raster geometry (viewBox units of #neuron)
+      const X0 = 18,
+        X1 = 174,
+        Y_TOP = 34,
+        Y_BOT = 134;
+      const SWEEP = 1800, // ms to draw one window
+        HOLD = 700; // ms the full window stays before the next sweep
+
+      // Spike times in one window: evenly spread like the author's raster,
+      // with a small fixed jitter so it reads as a spike train. The count is
+      // exact; only the rate carries the result (same height every spike).
+      function spikeXs(n) {
+        const step = (X1 - X0) / (n - 1);
+        return Array.from({ length: n }, (_, i) => {
+          const j = i === 0 || i === n - 1 ? 0 : (Math.sin(i * 12.9898 + n * 78.233) * 0.5) * 0.36 * step;
+          return +(X0 + i * step + j).toFixed(2);
+        });
+      }
+
+      let xs = [];
+      function drawSpikes(upToX) {
+        const shown = xs.filter((x) => x <= upToX);
+        $("spikes").innerHTML = shown
+          .map((x) => `<line class="spike" x1="${x}" x2="${x}" y1="${Y_TOP}" y2="${Y_BOT}"/>`)
+          .join("");
+      }
+
+      const reduced = () =>
+        !!OB.reducedMotion ||
+        document.documentElement.hasAttribute("data-ob-reduce-motion") ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let raf = 0,
+        t0 = 0;
+      function stopAnim() {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        $("cursor").setAttribute("opacity", "0");
+      }
+      function frame(now) {
+        if (!t0) t0 = now;
+        const e = (now - t0) % (SWEEP + HOLD);
+        if (e < SWEEP) {
+          const x = X0 - 2 + (e / SWEEP) * (X1 - X0 + 4);
+          drawSpikes(x);
+          $("cursor").setAttribute("x1", x);
+          $("cursor").setAttribute("x2", x);
+          $("cursor").setAttribute("opacity", "1");
+        } else {
+          drawSpikes(Infinity);
+          $("cursor").setAttribute("opacity", "0");
+        }
+        raf = requestAnimationFrame(frame);
+      }
+      function startRaster() {
+        stopAnim();
+        const still = reduced() || !playing;
+        $("play").hidden = reduced();
+        if (still) {
+          drawSpikes(Infinity);
+          return;
+        }
+        t0 = 0;
+        raf = requestAnimationFrame(frame);
+      }
+
+      function setPressed(groupId, key, value) {
+        document
+          .querySelectorAll(`#${groupId} button`)
+          .forEach((b) => b.setAttribute("aria-pressed", String(b.dataset[key] === value)));
+      }
+
+      function render() {
+        const both = stim === "both";
+        setPressed("stimTabs", "stim", stim);
+        setPressed("attendTabs", "attend", attend);
+        $("attendRow").hidden = !both;
+
+        // stimuli on the screen
+        $("stim1").style.display = stim === "s2" ? "none" : "";
+        $("stim2").style.display = stim === "s1" ? "none" : "";
+        const state = (n) =>
+          !both || attend === "away" ? "" : attend === "a" + n ? "attended" : "unattended";
+        $("stim1").setAttribute("class", "stim " + state(1));
+        $("stim2").setAttribute("class", "stim " + state(2));
+        $("ring1").style.opacity = both && attend === "a1" ? 1 : 0;
+        $("ring2").style.opacity = both && attend === "a2" ? 1 : 0;
+        $("awayMark").style.display = both && attend === "away" ? "" : "none";
+
+        const n = response(stim, attend);
+        xs = spikeXs(n);
+        $("rNow").textContent = n;
+        $("rS1").textContent = ALONE[1];
+        $("rS2").textContent = ALONE[2];
+        const key = both ? attend : stim;
+        $("info").textContent = INFO[key];
+
+        const where = !both
+          ? ""
+          : attend === "away"
+            ? " Attention is outside the receptive field."
+            : ` A yellow ring marks attention on stim ${attend === "a1" ? 1 : 2}.`;
+        const on =
+          stim === "s1"
+            ? "Stim 1, a bunch of bananas, alone"
+            : stim === "s2"
+              ? "Stim 2, a coiled snake, alone"
+              : "Stim 1, bananas, and stim 2, a snake, together";
+        $("screen").setAttribute(
+          "aria-label",
+          `Screen with a fixation cross and, to its right, the neuron's receptive field. ${on} in the receptive field.${where}`
+        );
+        $("neuron").setAttribute(
+          "aria-label",
+          `A macaque brain in side view with a V4 neuron marked; its spike raster shows ${n} spikes in one window (stim 1 alone ${ALONE[1]}, stim 2 alone ${ALONE[2]}).`
+        );
+        startRaster();
+        OB.resize();
+      }
+
+      $("stimTabs").addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        stim = b.dataset.stim;
+        render();
+      });
+      $("attendTabs").addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        attend = b.dataset.attend;
+        render();
+      });
+      $("play").addEventListener("click", () => {
+        playing = !playing;
+        $("play").textContent = playing ? "Pause spikes" : "Play spikes";
+        $("play").setAttribute("aria-pressed", String(!playing));
+        startRaster();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopAnim();
+        else startRaster();
+      });
+      matchMedia("(prefers-reduced-motion: reduce)").addEventListener?.("change", startRaster);
+
+      OB.onTheme(() => startRaster());
+      render();
+    </script>
+  </body>
+</html>
