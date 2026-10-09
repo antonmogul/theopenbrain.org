@@ -84,6 +84,21 @@ export const FIGMA_BY_TITLE = {
   "Dashboard/DashboardNavIcon": FIGMA_NODES.icons,
   "Student/Dashboard Cards/ProgressCard": "80-88",
   "Student/Dashboard Cards/StudyStats": "80-129",
+  // Chapter timeline (OPENBRAIN-128)
+  "Chapter/ReaderShell/ChapterTimeline": "136-866",
+  "Chapter/ReaderShell/TimelineBars": "131-65",
+  "Chapter/ReaderShell/TimelinePreview": "136-867",
+  "Chapter/ReaderShell/TimelineMap": "136-878",
+  // Decks and the deck editor (OPENBRAIN-129)
+  "Dashboard/Sections/Decks": "137-162",
+  "Deck/Editor/NewDeckDialog": "137-63",
+  "Deck/Editor/DeckShareDialog": "137-106",
+  "Deck/Editor/AddSlideDialog": "137-133",
+  "Deck/Editor/DeckSlideRail": "138-129",
+  "Deck/Editor/DeckProblems": "138-134",
+  "Views/Admin/DeckEditorView": "138-135",
+  // Brain atlas (OPENBRAIN-127)
+  "Widgets/BrainAtlasCard": "138-253",
   // Page templates composed from the components
   "Views/Student/StudentDashboardView": "83-2",
   "Views/Student/ChaptersView": "88-425",

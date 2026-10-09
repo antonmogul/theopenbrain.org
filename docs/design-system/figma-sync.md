@@ -21,6 +21,7 @@ Writing Figma variables from CI would need Figma's REST Variables API, which req
 
 ## Last check
 
+- 9 Oct 2026 (after the section-gap variables, OPENBRAIN-131): 130 values, 0 drift.
 - 30 Sep 2026 (after the Laptop and Tablet Type modes): 128 values, 0 drift.
 - 30 Sep 2026: 88 values with `scripts/tokens/figma-check.js` (after OPENBRAIN-118 added the 10 `ui/size-*` sizes in both Type modes), 0 drift. First, manual run: 70 values (Theme light/dark, all 20 chapter-ramp steps, 10 type roles × 2 sizes, radius, layout), 0 drift.
 
