@@ -28,6 +28,16 @@ A chapter is stored as sections, subsections and paragraphs, and every chapter i
 - `### BREAK OUT BOX: Title` starts a **breakout box**.
 - A line `[[widget: id | inline]]` places a **widget** (for an uploaded widget, the id is `upload:<slug>`).
 
+## When a figure shows
+
+On wide screens (1024px and up) a paragraph's figure appears in the figure pane when the paragraph reaches the middle of the screen.
+
+- A **still image** then stays while the text after it is read: until the next figure, a full-width band (a widget, a breakout box, a break, a full-width image or a full-screen figure) or the end of the section. An image in the text column is not a band, and nothing inside the figure's own paragraph or subsection ends it early.
+- **Animations, widgets and "Artwork pending" placeholders** leave with their paragraph.
+- To change it for one figure, use **Stays** in the paragraph's toolbar in the chapter editor (Dashboard → Chapters → Edit chapter): Automatic, With its paragraph, + ½ screen, + 1 screen, + 2 screens or Until the next figure. The figure's card on the block says what applies. Whatever you choose, the figure never leaves before its paragraph does, and still gives way to the next figure, a full-width band and the end of the section.
+- Figures in a breakout box are drawn in the box, not the pane, so they have no **Stays**.
+- Phones draw each figure once, inline after its paragraph, so this does not apply there.
+
 ## Getting a chapter in
 
 Creators use the **Chapter Wizard** (Dashboard → Chapters → New chapter). It takes the metadata, then markdown or a Word file plus an optional bibliography (`.bib` / `.ris`), and lets you fix the section structure before it is saved as a draft. Drafts are visible only to creators until published.

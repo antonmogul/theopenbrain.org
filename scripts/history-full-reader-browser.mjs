@@ -193,6 +193,12 @@ async function assertNoBoxLeakage(page) {
     .evaluateAll((imgs) => imgs.map((img) => new URL(img.src).pathname));
   expect(paneImages.filter((src) => boxImages.includes(src))).toEqual([]);
 }
+// The boundary below is figureEnd's (src/helper/historyFigureTiming.js) for a
+// still image on Automatic: the next trigger or full-width band (FIGURE_BANDS)
+// outside this one, else the section's end, never before its own bottom. An
+// authored hold (content.animationFlags.hold, OPENBRAIN-131) adds `bottom +
+// hold screens` to it: History rows carry none, so if one ever does, add that
+// term here in the same change.
 async function timing(page, result, number) {
   const trigger = page.locator(`#triggerAnimationFoundationsFig${number}`);
   await expect(trigger).toHaveCount(1);
@@ -203,19 +209,27 @@ async function timing(page, result, number) {
       const bottom = rect.bottom + scrollY;
       const section = element.closest("section");
       const boundaries = [
-        ...section.querySelectorAll(".animationTrigger[id], .fb-slot, .wb"),
+        ...section.querySelectorAll(
+          ".animationTrigger[id], .fb-slot:not(.fb-slot--column), .wb"
+        ),
       ]
         .filter(
-          (item) => item !== element && !item.closest("[data-breakout-box]")
+          (item) =>
+            item !== element &&
+            !element.contains(item) &&
+            !item.closest("[data-breakout-box]")
         )
         .map((item) => item.getBoundingClientRect().top + scrollY)
         .filter((y) => y > top + 1);
       return {
         top,
         bottom,
-        boundary: Math.min(
-          section.getBoundingClientRect().bottom + scrollY,
-          ...boundaries
+        boundary: Math.max(
+          bottom,
+          Math.min(
+            section.getBoundingClientRect().bottom + scrollY,
+            ...boundaries
+          )
         ),
         readingLine: innerHeight / 2,
         scrollY,

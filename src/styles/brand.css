@@ -134,6 +134,16 @@
      the progress track moved to the chapter timeline, OPENBRAIN-128).
      Keep in sync if the bar's padding / button size changes. */
   --reader-topbar-h: 4rem;
+  /* Breathing room in the reader (OPENBRAIN-131); index.css applies it.
+     The space after each chapter section is its bottom padding: 6rem in one
+     column, 20rem from 1024px (the block below), where the pinned figure
+     pane needs scroll room. Padding, not margin, so a held figure stays up
+     through the gap and a jump still lands on the next title. The other two
+     are in ems of their heading: a section title to its text, and the space
+     above a subsection title. */
+  --reader-section-gap: 6rem;
+  --reader-title-gap: 0.75em;
+  --reader-subsection-gap: 1.25em;
 
   /* Font roles — IBM Plex is the :root default, matching today's behavior.
      [data-fontpair="newsreader"] etc. override these per-pair. */
@@ -204,6 +214,13 @@
     --type-body-lg-size: 1.3125rem;
     --type-body-size: 1.0625rem;
     --type-body-sm-size: 0.9375rem;
+  }
+}
+
+/* The two-column reader starts at 1024px (src/helper/readerLayout.js). */
+@media (min-width: 1024px) {
+  :root {
+    --reader-section-gap: 20rem;
   }
 }
 

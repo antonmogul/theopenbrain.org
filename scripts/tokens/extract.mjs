@@ -133,6 +133,8 @@ export function extractTokens(brandCss, indexCss) {
   );
 
   const wide = pick(":root", "(min-width:1280px)");
+  // The two-column reader (src/helper/readerLayout.js).
+  const twoColumn = pick(":root", "(min-width:1024px)");
   const layout = {
     "reading-measure": base["--reading-measure"],
     "reader-prose-w": base["--reader-prose-w"],
@@ -141,6 +143,12 @@ export function extractTokens(brandCss, indexCss) {
     "reader-gutter-l@1280": wide["--reader-gutter-l"],
     "reader-gutter-r@1280": wide["--reader-gutter-r"],
     "reader-topbar-h": base["--reader-topbar-h"],
+    // Breathing room (OPENBRAIN-131): the space after a section, a section
+    // title to its text and above a subsection (the last two in ems).
+    "reader-section-gap": base["--reader-section-gap"],
+    "reader-section-gap@1024": twoColumn["--reader-section-gap"],
+    "reader-title-gap": base["--reader-title-gap"],
+    "reader-subsection-gap": base["--reader-subsection-gap"],
   };
 
   const fontPairs = {};

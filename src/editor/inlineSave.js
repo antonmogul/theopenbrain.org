@@ -19,6 +19,26 @@ export const PARAGRAPH_SAVES = new Set([
 export const stripTags = (html) => String(html ?? "").replace(/<[^>]*>/g, "");
 
 /**
+ * Undo a blocks edit: put back the blocks and plain text it replaced
+ * (saveInlineEdit's `previous`) into the row as it is now, so a key changed
+ * since in another tab (a figure's hold set in the chapter editor) is kept.
+ * Edits only ever replace `blocks`, so this is their exact inverse.
+ * @returns {Promise<object>} the content now stored.
+ */
+export async function undoInlineEdit(rest, paragraphId, previous) {
+  const [row] = await rest(`paragraphs?id=eq.${paragraphId}&select=content`);
+  if (!row)
+    throw new Error("This paragraph no longer exists. Reload the chapter.");
+  const content = withBlocks(row.content, previous?.content?.blocks ?? []);
+  const saved = await rest(`paragraphs?id=eq.${paragraphId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ content, content_text: previous?.content_text }),
+  });
+  if (!saved?.length) throw new Error("The database didn't allow this change.");
+  return content;
+}
+
+/**
  * @returns {Promise<{ previous: object, content?: object }>} what was stored
  *   before (for Undo) and, for paragraph edits, the content now stored.
  */

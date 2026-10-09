@@ -12,7 +12,8 @@
  */
 import { computed, ref } from "vue";
 import { authedRequest } from "@/services/api/client";
-import { withBlocks } from "@/editor/editability.mjs";
+import { withBlocks, withFigureHold } from "@/editor/editability.mjs";
+import { normalizeFigureHold } from "@/helper/historyFigureTiming";
 import { blocksToPlainText } from "@/editor/plainText";
 
 export { blocksToPlainText };
@@ -125,7 +126,11 @@ export function useChapterEditor(slug) {
     return rows[0];
   }
 
-  /** Replace a paragraph's blocks (keeping other content keys); undoable. */
+  /**
+   * Replace a paragraph's blocks (keeping other content keys); undoable. Undo
+   * re-reads the row and puts back only the blocks and their plain text, so
+   * a key changed since (a figure's hold set in another tab) is kept.
+   */
   async function saveBlocks(paragraphId, blocks, label = "Edit") {
     return withSaving(async () => {
       const [stored] = await authedRequest(
@@ -136,12 +141,16 @@ export function useChapterEditor(slug) {
         content: withBlocks(stored.content, blocks),
         content_text: blocksToPlainText(blocks),
       });
-      pushUndo(label, () =>
-        patchParagraph(paragraphId, {
-          content: stored.content,
+      pushUndo(label, async () => {
+        const [current] = await authedRequest(
+          `paragraphs?id=eq.${paragraphId}&select=content`
+        );
+        if (!current) throw new Error("This paragraph no longer exists.");
+        return patchParagraph(paragraphId, {
+          content: withBlocks(current.content, stored.content?.blocks ?? []),
           content_text: stored.content_text,
-        })
-      );
+        });
+      });
     });
   }
 
@@ -390,6 +399,39 @@ export function useChapterEditor(slug) {
       });
       pushUndo(animationId ? "Set figure" : "Remove figure", () =>
         patchParagraph(id, before)
+      );
+    });
+  }
+
+  /**
+   * How long a paragraph's figure stays in the reader's left pane
+   * (OPENBRAIN-131): 0 | 0.5 | 1 | 2 screens, "next" (until the next
+   * figure), or null for Automatic (the figure kind's default). Stored as
+   * content.animationFlags.hold, merged into the stored row so blocks and the
+   * other flags survive; undoable. Undo re-reads the row and puts back only
+   * the hold, so an edit made since is kept.
+   */
+  async function setFigureHold(paragraphId, hold) {
+    const value = normalizeFigureHold(hold);
+    if (hold !== null && hold !== undefined && hold !== "" && value === null)
+      throw new Error("That isn't one of the figure timings.");
+    return withSaving(async () => {
+      const readContent = async () => {
+        const [stored] = await authedRequest(
+          `paragraphs?id=eq.${paragraphId}&select=content`
+        );
+        if (!stored) throw new Error("This paragraph no longer exists.");
+        return stored.content;
+      };
+      const content = await readContent();
+      const before = content?.animationFlags?.hold ?? null;
+      await patchParagraph(paragraphId, {
+        content: withFigureHold(content, value),
+      });
+      pushUndo("Figure timing", async () =>
+        patchParagraph(paragraphId, {
+          content: withFigureHold(await readContent(), before),
+        })
       );
     });
   }
@@ -898,6 +940,7 @@ export function useChapterEditor(slug) {
     deleteParagraph,
     moveParagraph,
     setFigure,
+    setFigureHold,
     insertSubsection,
     canIndent,
     shiftLevel,

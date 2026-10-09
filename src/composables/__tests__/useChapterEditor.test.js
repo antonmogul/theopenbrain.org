@@ -228,6 +228,130 @@ describe("useChapterEditor structure edits (OPENBRAIN-61)", () => {
   });
 });
 
+describe("useChapterEditor figure timing (OPENBRAIN-131)", () => {
+  beforeEach(() => vi.clearAllMocks());
+  const blocks = [{ type: "text", content: "Figure 1. The guru." }];
+  const figureRow = () => [
+    {
+      id: "f",
+      section_id: "s1",
+      order_index: 0,
+      content: { blocks, animationFlags: { transition: true } },
+      content_text: "Figure 1. The guru.",
+      animation_id: "img-guru",
+      animation_trigger: "auto",
+    },
+  ];
+  const patchCount = () =>
+    authedRequest.mock.calls.filter(([, init]) => init?.method === "PATCH")
+      .length;
+
+  it("merges the hold into animationFlags, keeping blocks and flags; undo restores", async () => {
+    const t = fakeTable(figureRow());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setFigureHold("f", 1);
+    expect(t.rows[0].content).toEqual({
+      blocks,
+      animationFlags: { transition: true, hold: 1 },
+    });
+    // The block page shows it straight away.
+    expect(ed.paragraphs.value[0].content.animationFlags.hold).toBe(1);
+    expect(ed.undoStack.value.at(-1).label).toBe("Figure timing");
+
+    // An authored 0 ("with its paragraph") is stored as 0, not dropped.
+    await ed.setFigureHold("f", 0);
+    expect(t.rows[0].content.animationFlags).toEqual({
+      transition: true,
+      hold: 0,
+    });
+    await ed.undo();
+    expect(t.rows[0].content.animationFlags.hold).toBe(1);
+    await ed.undo();
+    expect(t.rows[0].content).toEqual(figureRow()[0].content);
+    expect(ed.undoStack.value).toHaveLength(0);
+  });
+
+  it("Automatic (null or the select's empty value) removes the hold", async () => {
+    const t = fakeTable(figureRow());
+    t.rows[0].content.animationFlags.hold = "next";
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setFigureHold("f", null);
+    expect(t.rows[0].content).toEqual(figureRow()[0].content);
+    t.rows[0].content.animationFlags.hold = 2;
+    await ed.setFigureHold("f", "");
+    expect(t.rows[0].content.animationFlags).not.toHaveProperty("hold");
+    await ed.undo();
+    expect(t.rows[0].content.animationFlags.hold).toBe(2);
+  });
+
+  it("undo puts back only the hold, keeping an edit made since", async () => {
+    const t = fakeTable(figureRow());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setFigureHold("f", "next");
+    // Someone edits the text in the reader meanwhile.
+    const edited = [{ type: "text", content: "Figure 1. The guru, again." }];
+    t.rows[0].content = { ...t.rows[0].content, blocks: edited };
+    await ed.undo();
+    expect(t.rows[0].content).toEqual({
+      blocks: edited,
+      animationFlags: { transition: true },
+    });
+  });
+
+  it("refuses a value that isn't a timing, saving nothing", async () => {
+    fakeTable(figureRow());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const before = patchCount();
+    await expect(ed.setFigureHold("f", 5)).rejects.toThrow(/figure timings/);
+    await expect(ed.setFigureHold("f", "forever")).rejects.toThrow();
+    expect(patchCount()).toBe(before);
+    expect(ed.undoStack.value).toHaveLength(0);
+  });
+
+  it("a text undo keeps a hold set since in another tab", async () => {
+    const t = fakeTable(figureRow());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.saveBlocks("f", [{ type: "text", content: "New words" }]);
+    // Another tab (or the reader) sets the figure's hold meanwhile.
+    const other = useChapterEditor("s");
+    await other.load();
+    await other.setFigureHold("f", "next");
+    await ed.undo();
+    expect(t.rows[0].content).toEqual({
+      blocks,
+      animationFlags: { transition: true, hold: "next" },
+    });
+    expect(t.rows[0].content_text).toBe("Figure 1. The guru.");
+  });
+
+  it("a later text save keeps the hold", async () => {
+    const t = fakeTable(figureRow());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setFigureHold("f", 0.5);
+    await ed.saveBlocks("f", [{ type: "text", content: "New words" }]);
+    expect(t.rows[0].content.animationFlags).toEqual({
+      transition: true,
+      hold: 0.5,
+    });
+  });
+
+  it("a figure swap keeps the hold: it belongs to the paragraph", async () => {
+    const t = fakeTable(figureRow());
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await ed.setFigureHold("f", 2);
+    await ed.setFigure("f", "img-other", "auto");
+    expect(t.rows[0].animation_id).toBe("img-other");
+    expect(t.rows[0].content.animationFlags.hold).toBe(2);
+  });
+});
+
 // Sections with UNIQUE (module_id, order_index) and (module_id, slug).
 function fakeSections(initial, paragraphs = []) {
   const rows = initial.map((r) => ({ ...r }));

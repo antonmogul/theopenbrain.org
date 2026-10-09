@@ -4,13 +4,20 @@
  * (OPENBRAIN-60). Text uses the reader's own HTML (contentBlocksToHTML), so
  * citations, figure refs, hover-image spans and bold look as they do in the
  * book; widgets mount through the reader's WidgetBreakout, so they run; the
- * paragraph's figure (animation_id) shows as a card with its title.
+ * paragraph's figure (animation_id) shows as a card with its title, when it
+ * shows and how long it stays in the left pane (OPENBRAIN-131).
  */
 import { computed, defineAsyncComponent } from "vue";
 import { contentBlocksToHTML } from "@/composables/chapterTransform.mjs";
 import { blockSegments, BLOCK_LABELS } from "@/editor/segments";
 import { imageUrl } from "@/editor/media.mjs";
 import VideoEmbed from "@/components/chapter/text/VideoEmbed.vue";
+import {
+  figureHoldLabel,
+  figureRecordOfMedia,
+  holdableFigure,
+  resolveFigureHold,
+} from "@/helper/historyFigureTiming";
 
 const WidgetBreakout = defineAsyncComponent(
   () => import("@/components/chapter/text/WidgetBreakout.vue")
@@ -20,6 +27,11 @@ const props = defineProps({
   paragraph: { type: Object, required: true },
   /** Map of animation id → media row, for the figure card. */
   mediaById: { type: Object, default: () => new Map() },
+  /**
+   * Whether the paragraph's figure shows in the reader's left pane. False in
+   * a breakout box, which draws its figures in the box: no "stays …" there.
+   */
+  inPane: { type: Boolean, default: true },
 });
 
 const blocks = computed(() => props.paragraph.content?.blocks || []);
@@ -33,6 +45,27 @@ const figure = computed(() =>
       }
     : null
 );
+
+// "shows when reached · stays until the next figure": the hold is the
+// author's "Stays", else the figure kind's default. The rule is the
+// reader's (figureEnd): by the figure, whatever the paragraph's
+// trigger; scroll-scrubbed, full-screen and transition figures have none.
+const triggerLabel = computed(() => {
+  const trigger = props.paragraph.animation_trigger;
+  const parts = trigger
+    ? [`shows ${trigger === "scroll" ? "on scroll" : "when reached"}`]
+    : [];
+  const record = figureRecordOfMedia(
+    props.mediaById.get(props.paragraph.animation_id)
+  );
+  if (figure.value && props.inPane && holdableFigure(record))
+    parts.push(
+      `stays ${figureHoldLabel(
+        resolveFigureHold(record, props.paragraph.content?.animationFlags?.hold)
+      )}`
+    );
+  return parts.join(" · ");
+});
 
 const inlineHtml = (seg) => contentBlocksToHTML(seg.blocks).text;
 const headingLevel = (level) => Math.min(Math.max(level || 3, 2), 6);
@@ -123,14 +156,9 @@ const plain = (html) => String(html || "").replace(/<[^>]*>/g, "");
         >Figure · {{ figure.media_type || "media" }}</span
       >
       <span class="bp-figure-title">{{ figure.title }}</span>
-      <span v-if="paragraph.animation_trigger" class="bp-figure-trigger"
-        >shows
-        {{
-          paragraph.animation_trigger === "scroll"
-            ? "on scroll"
-            : "when reached"
-        }}</span
-      >
+      <span v-if="triggerLabel" class="bp-figure-trigger">{{
+        triggerLabel
+      }}</span>
     </div>
   </div>
 </template>

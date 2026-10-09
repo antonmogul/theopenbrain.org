@@ -15,12 +15,14 @@
     />
   </BreakoutBox>
   <!-- section (a div in a box: the reader gives every <section> a full
-       screen's height, which left short boxes mostly empty) -->
+       screen's height, which left short boxes mostly empty). reader-section
+       gives a chapter section its space after (OPENBRAIN-131, index.css). -->
   <component
     :is="boxBody ? 'div' : 'section'"
     v-else
     :id="boxBody ? undefined : section.id"
     class="overflow-y-visible"
+    :class="{ 'reader-section': !boxBody }"
   >
     <!-- section titel -->
     <!-- Trigger markers are dev chrome (?markers=1), see OPENBRAIN-31 -->
@@ -101,6 +103,7 @@
       :class="
         section?.animation?.name ? 'animationTrigger block noHighlight' : ''
       "
+      :data-figure-hold="section?.animation?.hold"
     >
       <template v-for="paragraph in section['paragraphs']" :key="paragraph.id">
         <StartEndIcon :paragraph="paragraph" art="start" />
@@ -114,6 +117,7 @@
               ? 'animationTrigger block noHighlight'
               : ''
           "
+          :data-figure-hold="paragraph?.animation?.hold"
           v-if="
             paragraph?.type != 'breakVideo' && paragraph.type != 'breakSection'
           "

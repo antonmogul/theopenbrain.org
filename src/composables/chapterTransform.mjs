@@ -12,6 +12,8 @@
  * `animation_key` / `animation_title` already attached (fetch step 3b).
  * Output shape: Chapter 1's text.json paragraph tree.
  */
+// Relative and alias-free like this file, so plain `node` can still import it.
+import { normalizeFigureHold } from "../helper/figureHold.mjs";
 
 /**
  * Convert JSONB content blocks to HTML text
@@ -183,6 +185,7 @@ export function contentBlocksToHTML(blocks) {
  */
 export function figureFor(p) {
   const flags = p.content?.animationFlags || {};
+  const hold = normalizeFigureHold(flags.hold);
   return {
     name: p.animation_key.replace(/^animation/, ""),
     id: p.animation_key,
@@ -197,6 +200,13 @@ export function figureFor(p) {
     ...(flags.middel ? { middel: true } : {}),
     ...(flags.end ? { end: true } : {}),
     ...(flags.stage ? { stage: flags.stage } : {}),
+    // How long the figure stays in the pane (OPENBRAIN-131; the chapter
+    // editor's "Stays"). Normalised here, the one place rows become figures,
+    // so the page only ever carries 0 | 0.5 | 1 | 2 | "next" and a malformed
+    // value is Automatic in the reader as in the editor (an array would
+    // otherwise stringify into a valid data-figure-hold). 0 is a choice of
+    // its own, so test for null. historyFigureTiming reads the attribute.
+    ...(hold !== null ? { hold } : {}),
   };
 }
 

@@ -11,7 +11,7 @@
  * the library, or a widget. Every change saves straight to the chapter with
  * Undo; on a published chapter the first change asks once.
  */
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useChapterEditor } from "@/composables/useChapterEditor";
 import BlockPreview from "@/components/chapterEditor/BlockPreview.vue";
@@ -29,6 +29,14 @@ import { placementsForChapter } from "@/widgets/placements";
 import { coverForModule } from "@/helper/chapterCover";
 import { imageUrl } from "@/editor/media.mjs";
 import { planPlacementConversion } from "@/editor/placementsToBlocks";
+import {
+  FIGURE_HOLD_OPTIONS,
+  defaultFigureHold,
+  figureHoldLabel,
+  figureRecordOfMedia,
+  holdableFigure,
+  normalizeFigureHold,
+} from "@/helper/historyFigureTiming";
 import {
   StatusBadge,
   Button,
@@ -502,6 +510,84 @@ async function saveWidgetFigure(value) {
   clearAnimationsCache();
 }
 
+// ---- figure timing: how long a figure stays in the left pane (OPENBRAIN-131) ----
+const figureRecord = (p) =>
+  figureRecordOfMedia(ed.mediaById.value.get(p.animation_id));
+// The reader's rule (figureEnd): by the figure, whatever the paragraph's
+// trigger, so not for scroll-scrubbed, full-screen or transition figures.
+// Not in a breakout box either: a box draws its figures in the box, never in
+// the pane, so a hold would change nothing.
+const canHold = (p, s) =>
+  !!p.animation_id && !ed.isBox(s) && holdableFigure(figureRecord(p));
+function holdValue(p) {
+  const hold = normalizeFigureHold(p.content?.animationFlags?.hold);
+  return hold === null ? "" : String(hold);
+}
+// The select's description and tooltip: what Automatic resolves to for this
+// kind of figure (the figure card below says what applies), and where a hold
+// always stops. Not drawn in the toolbar, which keeps to one row.
+const holdHint = (p) =>
+  `Automatic: ${figureHoldLabel(defaultFigureHold(figureRecord(p)))}. ` +
+  "Wide screens only. Always stops at the next figure, a full-width band or the end of the section.";
+
+// The select shows a draft while the author chooses and while it saves.
+// Arrow keys on a closed select fire `change` at every step, so a choice is
+// saved once: after a pause, on Enter, or when the select loses focus. One
+// save and one undo entry, and on a published chapter the confirmation opens
+// only then, not at the first arrow key.
+const HOLD_SAVE_MS = 800;
+const holdDrafts = ref({}); // paragraph id → the select's value, not yet stored
+const holdTimers = new Map();
+const holdSaving = new Map(); // paragraph id → the draft handed to the save
+const holdShown = (p) => holdDrafts.value[p.id] ?? holdValue(p);
+function dropHoldDraft(id) {
+  clearTimeout(holdTimers.get(id));
+  holdTimers.delete(id);
+  if (!(id in holdDrafts.value)) return;
+  const rest = { ...holdDrafts.value };
+  delete rest[id];
+  holdDrafts.value = rest;
+}
+// Saved, the row holds the value; refused or cancelled, the select goes back
+// to what is stored. A newer choice made meanwhile keeps its own draft.
+function settleHold(id, draft) {
+  if (holdSaving.get(id) === draft) holdSaving.delete(id);
+  if (holdDrafts.value[id] === draft) dropHoldDraft(id);
+}
+function chooseHold(p, event) {
+  holdDrafts.value = { ...holdDrafts.value, [p.id]: event.target.value };
+  clearTimeout(holdTimers.get(p.id));
+  holdTimers.set(
+    p.id,
+    setTimeout(() => saveHold(p), HOLD_SAVE_MS)
+  );
+}
+function saveHold(p) {
+  clearTimeout(holdTimers.get(p.id));
+  holdTimers.delete(p.id);
+  const draft = holdDrafts.value[p.id];
+  if (draft === undefined || holdSaving.get(p.id) === draft) return;
+  if (draft === holdValue(p)) return dropHoldDraft(p.id);
+  holdSaving.set(p.id, draft);
+  const run = async () => {
+    run.ran = true;
+    await attempt(
+      () => ed.setFigureHold(p.id, normalizeFigureHold(draft)),
+      "Figure timing saved."
+    );
+    settleHold(p.id, draft);
+  };
+  run.holdOf = { id: p.id, draft };
+  whenLive(run);
+}
+// On a published chapter the save waits for the confirmation. Cancelled (or
+// replaced by another change's question), it never ran: nothing was saved.
+watch(pendingAction, (now, before) => {
+  if (before?.holdOf && !before.ran && now !== before)
+    settleHold(before.holdOf.id, before.holdOf.draft);
+});
+onBeforeUnmount(() => holdTimers.forEach((timer) => clearTimeout(timer)));
+
 async function onRemoveFigure() {
   const { paragraphId } = pickerFor.value;
   pickerFor.value = null;
@@ -960,6 +1046,7 @@ onMounted(async () => {
                   <BlockPreview
                     :paragraph="p"
                     :media-by-id="ed.mediaById.value"
+                    :in-pane="!ed.isBox(s)"
                   />
                 </div>
                 <div
@@ -1017,6 +1104,38 @@ onMounted(async () => {
                   <button type="button" @click="chooseFigure(p)">
                     {{ p.animation_id ? "Figure…" : "+ Figure" }}
                   </button>
+                  <!-- How long the figure stays in the left pane
+                       (OPENBRAIN-131). Where a hold always stops is its
+                       description (the hidden hint below) and its tooltip,
+                       so the toolbar keeps to one row over the text. -->
+                  <span v-if="canHold(p, s)" class="ce-hold">
+                    <label
+                      :for="`ce-hold-${p.id}`"
+                      title="How long this figure stays in the left panel after its paragraph. It belongs to this paragraph: another figure here keeps it."
+                      >Stays</label
+                    >
+                    <select
+                      :id="`ce-hold-${p.id}`"
+                      :value="holdShown(p)"
+                      :aria-describedby="`ce-hold-hint-${p.id}`"
+                      :title="holdHint(p)"
+                      @change="chooseHold(p, $event)"
+                      @keydown.enter="saveHold(p)"
+                      @blur="saveHold(p)"
+                    >
+                      <option value="">Automatic</option>
+                      <option
+                        v-for="o in FIGURE_HOLD_OPTIONS"
+                        :key="o.value"
+                        :value="String(o.value)"
+                      >
+                        {{ o.label }}
+                      </option>
+                    </select>
+                    <span :id="`ce-hold-hint-${p.id}`" class="ce-hold-hint">{{
+                      holdHint(p)
+                    }}</span>
+                  </span>
                   <button
                     type="button"
                     title="Show an interactive widget in the left panel beside this paragraph"
@@ -1750,6 +1869,50 @@ onMounted(async () => {
 }
 .ce-tools .is-danger {
   color: rgb(var(--color-accent));
+}
+/* "Stays": the figure's time in the left pane (OPENBRAIN-131). */
+.ce-tools .ce-hold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 9px;
+  color: rgb(var(--color-ink));
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-10);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ce-tools .ce-hold select {
+  /* As wide as the choice shown, where supported, so the toolbar keeps to
+     one row; otherwise as wide as the longest choice. */
+  field-sizing: content;
+  max-width: 11rem;
+  padding: 1px 4px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-12);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.ce-tools .ce-hold select:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 1px;
+}
+/* The select's description (aria-describedby; its title says the same):
+   read, not drawn, so the toolbar keeps to one row over the block's text. */
+.ce-tools .ce-hold-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 .ce-section-row {
   display: flex;

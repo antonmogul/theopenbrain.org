@@ -18,6 +18,8 @@ vi.mock("@/composables/useAnimations", async () => {
       animations: ref([
         { id: "animationFoundationsFig1", mediaType: "image" },
         { id: "animationFoundationsFig2", mediaType: "image" },
+        // A key the chapter editor made: no "animation" prefix.
+        { id: "image-ab12", mediaType: "image", imageUrl: "/up/ab12.jpg" },
       ]),
       fetchAnimations: fixtures.fetch,
     }),
@@ -192,6 +194,23 @@ describe("reader figure lifecycle", () => {
       else delete document.fonts;
     }
   });
+  it("shows a figure the chapter editor made (`image-…` key) in the pane", async () => {
+    // Sections build its trigger as triggerAnimation + the key, so it reads
+    // `triggerAnimationimage-ab12`; the record's id is `image-ab12`.
+    document.body.innerHTML = `<div id="container"><span id="triggerAnimationimage-ab12" class="animationTrigger"></span></div>`;
+    const pane = mountPane();
+    await settle();
+    const shown = () =>
+      pane
+        .findAllComponents({ name: "IllustrationPlaceholder" })
+        .map((c) => c.props("animation").id);
+    expect(shown()).toEqual([]);
+    toggle(fixtures.triggers[0], true);
+    await flushPromises();
+    expect(shown()).toEqual(["image-ab12"]);
+    expect(fixtures.store.animationActive).toBe(true);
+  });
+
   it("kills only this pane's triggers during interrupted Back/Forward remounts", async () => {
     const oldPane = mountPane();
     await settle();

@@ -4,8 +4,9 @@
  * The reader is not a 12-column grid: it is one text column whose margins
  * change with the screen, plus a pinned figure pane from 1024px. The global
  * layout tokens (--reader-prose-w, --reader-gutter-*, --reading-measure,
- * --reader-topbar-h) are read live from brand.css, including the 1280px
- * gutters inside their media block. The two narrow-screen margins live in
+ * --reader-topbar-h, --reader-section-gap) are read live from brand.css,
+ * including the 1280px gutters and the 1024px section gap inside their
+ * media blocks. The two narrow-screen margins live in
  * TextComp's scoped CSS (.ml-text), so they are quoted here with their
  * source; keep them in step with that file.
  *
@@ -70,6 +71,7 @@ function layout() {
   const t = rootTokens();
   const base = t[""] || {};
   const wide = t[`(min-width:${DESKTOP_PX}px)`] || {};
+  const twoColumn = t[`(min-width:${READER_TWO_COLUMN_PX}px)`] || {};
   const measure = toPx(base["--reading-measure"] || "780px");
   const prose = proseBounds(base["--reader-prose-w"]);
   const gl = toPx(base["--reader-gutter-l"] || "2rem");
@@ -77,6 +79,11 @@ function layout() {
   const glW = toPx(wide["--reader-gutter-l"] || base["--reader-gutter-l"]);
   const grW = toPx(wide["--reader-gutter-r"] || base["--reader-gutter-r"]);
   const topbar = toPx(base["--reader-topbar-h"] || "4rem");
+  // The space after each chapter section (OPENBRAIN-131).
+  const sectionGap = toPx(base["--reader-section-gap"] || "6rem");
+  const sectionGapWide = toPx(
+    twoColumn["--reader-section-gap"] || base["--reader-section-gap"] || "6rem"
+  );
   const proseAt = (w) =>
     prose
       ? Math.min(prose.max, Math.max(prose.min, (w * prose.vw) / 100))
@@ -124,7 +131,7 @@ function layout() {
       note: `Same split, text column capped at ${prose?.max}px.`,
     },
   ];
-  return { bands, topbar, measure, prose };
+  return { bands, topbar, measure, prose, sectionGap, sectionGapWide };
 }
 
 export default {
@@ -173,6 +180,7 @@ export const Breakpoints = {
       </table>
       <p style="font-family:var(--font-mono); font-size:11px; color:rgb(var(--color-mute)); margin-top:16px;">
         Top bar {{ px(topbar) }} (--reader-topbar-h) · reading measure {{ px(measure) }} (--reading-measure)
+        · space after a section {{ px(sectionGap) }}, {{ px(sectionGapWide) }} from ${READER_TWO_COLUMN_PX}px (--reader-section-gap)
       </p>`,
   }),
 };

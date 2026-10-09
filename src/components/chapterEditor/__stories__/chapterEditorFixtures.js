@@ -74,6 +74,14 @@ export const citedParagraphBlocks = [
   },
 ];
 
+const heldFigureBlocks = [
+  {
+    type: "text",
+    content:
+      "Trepanation is the oldest surgery we have evidence for: skulls with healed openings are found across the ancient world.",
+  },
+];
+
 export const editorParagraphs = [
   row("p-1", "sec-story", 0, citedParagraphBlocks, {
     animation_id: "anim-lateral",
@@ -117,6 +125,14 @@ export const editorParagraphs = [
       content: "Posner, M. I. Orienting of attention. (1980).",
     },
   ]),
+  // An image figure an author set to stay one more screen in the left pane
+  // (OPENBRAIN-131, content.animationFlags.hold), so the block page shows its
+  // "Stays" select and BlockPreview its timing.
+  row("p-7", "sec-measure", 3, heldFigureBlocks, {
+    animation_id: "img-skull",
+    animation_trigger: "auto",
+    content: { blocks: heldFigureBlocks, animationFlags: { hold: 1 } },
+  }),
 ];
 
 export const editorMedia = [

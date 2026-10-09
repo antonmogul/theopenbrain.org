@@ -33,3 +33,9 @@ export const Image = { args: { paragraph: byId["p-3"] } };
 export const Widget = { args: { paragraph: byId["p-4"] } };
 
 export const Footnote = { args: { paragraph: byId["p-5"] } };
+
+/**
+ * A paragraph whose image figure an author set to stay one more screen in
+ * the left pane (OPENBRAIN-131): "shows when reached · stays 1 screen more".
+ */
+export const HeldFigure = { args: { paragraph: byId["p-7"] } };
