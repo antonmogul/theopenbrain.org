@@ -26,7 +26,8 @@ import {
   useId,
   watch,
 } from "vue";
-import { stepIndex } from "@/helper/figureCycle";
+import { stepIndex, youtubeLoopUrl } from "@/helper/figureCycle";
+import { reducedMotionPreferred } from "@/helper/readerJump";
 import { lockReaderScroll } from "@/helper/readerScrollLock";
 
 const props = defineProps({
@@ -51,6 +52,12 @@ const GAP_PX = 12;
 const LABEL_PX = 22;
 
 const isSet = computed(() => props.images.length > 1);
+// A video item loops silently in place of its still, unless the reader
+// asked for reduced motion: then the still stays, with a link to the video.
+const loopSrc = (img) =>
+  img?.youtube && !reducedMotionPreferred() ? youtubeLoopUrl(img.youtube) : "";
+const watchHref = (img) =>
+  img?.youtube ? `https://www.youtube.com/watch?v=${img.youtube}` : "";
 const first = computed(() => props.images[0] || {});
 const figureName = computed(
   () => [props.label, props.title].filter(Boolean).join(": ") || "Figure"
@@ -309,7 +316,17 @@ onBeforeUnmount(() => {
   <!-- One image: as large as the shell allows, with its caption. -->
   <div v-if="!isSet" class="figimg" :class="{ 'figimg--large': large }">
     <div class="figimg-stage">
+      <iframe
+        v-if="loopSrc(first)"
+        :key="first.youtube"
+        class="figimg-video"
+        :src="loopSrc(first)"
+        :title="altFor(first) || 'Video'"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        loading="lazy"
+      />
       <img
+        v-else
         :key="first.src"
         class="figimg-img"
         :src="first.src"
@@ -355,6 +372,9 @@ onBeforeUnmount(() => {
                 draggable="false"
               />
             </span>
+            <span v-if="img.youtube" class="figimg-play" aria-hidden="true"
+              >▶</span
+            >
             <span class="figimg-thumb-label" aria-hidden="true">
               <span class="figimg-thumb-num">{{ pad(i) }}</span>
               <span v-if="shortCaption(img)" class="figimg-thumb-cap">
@@ -423,7 +443,16 @@ onBeforeUnmount(() => {
             @click.self="close()"
           >
             <transition name="figview-fade" mode="out-in">
+              <iframe
+                v-if="loopSrc(current)"
+                :key="current.youtube + index"
+                class="figview-img figview-video"
+                :src="loopSrc(current)"
+                :title="altFor(current) || 'Video'"
+                allow="autoplay; encrypted-media; picture-in-picture"
+              />
               <img
+                v-else
                 :key="current.src + index"
                 class="figview-img"
                 :src="current.src"
@@ -476,6 +505,14 @@ onBeforeUnmount(() => {
 
           <p v-if="currentCaption" class="figview-caption">
             {{ currentCaption }}
+            <a
+              v-if="current.youtube"
+              class="figview-watch"
+              :href="watchHref(current)"
+              target="_blank"
+              rel="noopener"
+              >Watch the video on YouTube ↗</a
+            >
           </p>
 
           <div ref="strip" class="figview-strip">
@@ -575,7 +612,38 @@ onBeforeUnmount(() => {
 .figimg-grid > li {
   min-width: 0;
 }
+/* A video item's thumbnail: its still, marked as a clip. */
+.figimg-play {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 6px;
+  background: rgb(var(--color-ink) / 0.75);
+  color: rgb(var(--color-paper));
+  font-size: var(--ui-size-10);
+  line-height: 1.4;
+  pointer-events: none;
+}
+.figimg-video,
+.figview-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+  background: #000;
+}
+.figview-video {
+  width: min(100%, calc((100vh - 220px) * 16 / 9));
+}
+.figview-watch {
+  display: inline-block;
+  margin-left: 0.5em;
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
 .figimg-thumb {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 6px;

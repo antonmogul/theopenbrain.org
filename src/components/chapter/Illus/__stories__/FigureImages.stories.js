@@ -92,3 +92,38 @@ export const GalleryInline = {
 export const SingleImage = {
   args: { images: FIG7_IMAGES.slice(0, 1), caption: FIG7_LEGEND },
 };
+
+/** A set with a video item (OPENBRAIN-134): the last still loops a muted
+ *  YouTube clip in the viewer. Reduced motion keeps the still and adds a
+ *  link to the video. */
+export const GalleryWithVideoLoop = {
+  args: {
+    images: [
+      {
+        src: "/publicAssets/images/foundations/hm-brenda-milner.jpg",
+        alt: "Black-and-white portrait of Brenda Milner.",
+        caption: "Brenda Milner.",
+      },
+      {
+        src: "/publicAssets/images/foundations/hm-scoville-surgery.jpg",
+        alt: "Surgeons operating.",
+        caption: "William Beecher Scoville performing surgery.",
+      },
+      {
+        src: "/publicAssets/images/foundations/hm-smoking-1958.jpg",
+        alt: "Henry Molaison seated outside, smoking.",
+        caption: "Henry Molaison (H.M.), 1958.",
+      },
+      {
+        src: "/publicAssets/images/foundations/hm-brain-slicing.jpg",
+        alt: "H.M.'s frozen brain being cut into thin sections.",
+        caption: "H.M.'s brain being sectioned after his death.",
+        youtube: "OmmH4Rp9-to",
+      },
+    ],
+    caption:
+      "Brenda Milner, William Beecher Scoville, and Henry Molaison (H.M.).",
+    label: "FIG",
+    title: "Brenda Milner and H.M.",
+  },
+};
