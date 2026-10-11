@@ -74,3 +74,30 @@ describe("gallery video items", () => {
     expect(youtubeLoopUrl("x")).toBe("");
   });
 });
+
+describe("gallery video players", () => {
+  it("keeps play: player and a start time; defaults to loop", async () => {
+    const out = figureImages({
+      images: [
+        { src: "/a.jpg", youtube: "WgkAR-vrJpM", play: "player", start: 2 },
+        { src: "/b.jpg", youtube: "OmmH4Rp9-to" },
+        { src: "/c.jpg", youtube: "OmmH4Rp9-to", play: "weird", start: -5 },
+      ],
+    });
+    expect(out[0]).toMatchObject({ play: "player", start: 2 });
+    expect(out[1].play).toBe("loop");
+    expect(out[2].play).toBe("loop");
+    expect(out[2]).not.toHaveProperty("start");
+  });
+
+  it("builds a player URL with sound and controls, from a start time", async () => {
+    const { youtubePlayerUrl } = await import("../figureCycle");
+    const url = youtubePlayerUrl("WgkAR-vrJpM", 2);
+    expect(url).toBe(
+      "https://www.youtube-nocookie.com/embed/WgkAR-vrJpM?rel=0&playsinline=1&start=2"
+    );
+    expect(url).not.toContain("mute=1");
+    expect(url).not.toContain("autoplay");
+    expect(youtubePlayerUrl("bad")).toBe("");
+  });
+});
