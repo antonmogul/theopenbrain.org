@@ -30,7 +30,15 @@ export function figureImages(animation) {
       };
       // A gallery item can loop a muted YouTube clip in the viewer, with
       // `src` as its poster and thumbnail (Stuart, 8 Oct: H.M.'s brain).
-      if (youtubeId(item.youtube)) out.youtube = item.youtube;
+      if (youtubeId(item.youtube)) {
+        out.youtube = item.youtube;
+        // "loop" (default): a silent loop in place of the still. "player":
+        // an ordinary player, sound and controls, that the reader starts
+        // (interviews and films; Stuart's manuscript comments, 11 Oct).
+        out.play = item.play === "player" ? "player" : "loop";
+        const start = Number(item.start);
+        if (Number.isFinite(start) && start > 0) out.start = Math.floor(start);
+      }
       return out;
     });
 }
@@ -69,4 +77,14 @@ export function usesFigureShell(animation) {
 export function stepIndex(index, count, direction = 1) {
   if (!count) return 0;
   return (((index + direction) % count) + count) % count;
+}
+
+/** The embed URL for a video the reader plays: controls, sound, no
+ *  autoplay, optionally from `start` seconds, privacy-enhanced domain. */
+export function youtubePlayerUrl(id, start = 0) {
+  const v = youtubeId(id);
+  if (!v) return "";
+  const from =
+    Number.isFinite(start) && start > 0 ? `&start=${Math.floor(start)}` : "";
+  return `https://www.youtube-nocookie.com/embed/${v}?rel=0&playsinline=1${from}`;
 }

@@ -127,3 +127,25 @@ export const GalleryWithVideoLoop = {
     title: "Brenda Milner and H.M.",
   },
 };
+
+/** A single video the reader plays (play: "player"): controls and sound, no
+ *  autoplay, from 0:02 (OPENBRAIN-136, the NGF box). */
+export const VideoPlayer = {
+  // Embeds YouTube: `live`, so the story smoke (no outside requests) skips it.
+  tags: ["live"],
+  args: {
+    images: [
+      {
+        src: "https://i.ytimg.com/vi/WgkAR-vrJpM/hqdefault.jpg",
+        youtube: "WgkAR-vrJpM",
+        play: "player",
+        start: 2,
+        alt: "Video: History of Neuroscience, Rita Levi-Montalcini.",
+      },
+    ],
+    caption:
+      "History of Neuroscience: Rita Levi-Montalcini. Video: Society for Neuroscience.",
+    label: "FIG",
+    title: "Rita Levi-Montalcini",
+  },
+};

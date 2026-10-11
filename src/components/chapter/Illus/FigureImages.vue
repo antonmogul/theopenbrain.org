@@ -26,7 +26,11 @@ import {
   useId,
   watch,
 } from "vue";
-import { stepIndex, youtubeLoopUrl } from "@/helper/figureCycle";
+import {
+  stepIndex,
+  youtubeLoopUrl,
+  youtubePlayerUrl,
+} from "@/helper/figureCycle";
 import { reducedMotionPreferred } from "@/helper/readerJump";
 import { lockReaderScroll } from "@/helper/readerScrollLock";
 
@@ -52,10 +56,14 @@ const GAP_PX = 12;
 const LABEL_PX = 22;
 
 const isSet = computed(() => props.images.length > 1);
-// A video item loops silently in place of its still, unless the reader
-// asked for reduced motion: then the still stays, with a link to the video.
-const loopSrc = (img) =>
-  img?.youtube && !reducedMotionPreferred() ? youtubeLoopUrl(img.youtube) : "";
+// A video item: a player the reader starts (play: "player"), or a silent
+// loop in place of its still, unless the reader asked for reduced motion:
+// then the still stays, with a link to the video.
+const loopSrc = (img) => {
+  if (!img?.youtube) return "";
+  if (img.play === "player") return youtubePlayerUrl(img.youtube, img.start);
+  return reducedMotionPreferred() ? "" : youtubeLoopUrl(img.youtube);
+};
 const watchHref = (img) =>
   img?.youtube ? `https://www.youtube.com/watch?v=${img.youtube}` : "";
 const first = computed(() => props.images[0] || {});
@@ -322,7 +330,8 @@ onBeforeUnmount(() => {
         class="figimg-video"
         :src="loopSrc(first)"
         :title="altFor(first) || 'Video'"
-        allow="autoplay; encrypted-media; picture-in-picture"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowfullscreen
         loading="lazy"
       />
       <img
@@ -449,7 +458,13 @@ onBeforeUnmount(() => {
                 class="figview-img figview-video"
                 :src="loopSrc(current)"
                 :title="altFor(current) || 'Video'"
-                allow="autoplay; encrypted-media; picture-in-picture"
+                allow="
+                  autoplay;
+                  encrypted-media;
+                  picture-in-picture;
+                  fullscreen;
+                "
+                allowfullscreen
               />
               <img
                 v-else
