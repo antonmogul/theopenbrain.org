@@ -30,6 +30,7 @@ import gsap from "gsap";
 import {
   PHRENOLOGY_CITATION,
   PHRENOLOGY_FACULTIES,
+  organTitle,
   usePhrenology,
 } from "@/mocks/phrenology";
 import labelAnchors from "@/data/history/phrenologyLabelAnchors.json";
@@ -280,7 +281,6 @@ function onKeydown(e) {
 <template>
   <div class="widget-root phreno" @keydown="onKeydown">
     <header class="phreno__chrome">
-      <span class="phreno__eyebrow">Phrenology</span>
       <nav class="tabs" aria-label="Skull view">
         <button
           v-for="(v, i) in views"
@@ -293,25 +293,21 @@ function onKeydown(e) {
         </button>
       </nav>
       <label class="faculty-picker"
-        >Browse a faculty
+        >Browse an organ
         <select
           :value="activeRegion?.n || ''"
           @change="selectRegion({ n: Number($event.target.value) })"
         >
-          <option value="" disabled>Select a number and faculty</option>
+          <option value="" disabled>Select a numbered organ</option>
           <option
             v-for="faculty in PHRENOLOGY_FACULTIES"
             :key="faculty.n"
             :value="faculty.n"
           >
-            {{ faculty.n }} · {{ faculty.name }}
+            {{ faculty.n }} · {{ organTitle(faculty) }}
           </option>
         </select>
       </label>
-      <p class="historical-note">
-        Historical phrenology claims, reproduced from the 1815 source. These are
-        not accepted neuroscience.
-      </p>
     </header>
 
     <div class="phreno__body">
@@ -382,7 +378,7 @@ function onKeydown(e) {
         v-if="activeRegion"
         ref="panelEl"
         class="card"
-        :aria-label="`${activeRegion.n}. ${activeRegion.name}`"
+        :aria-label="`${activeRegion.n}. ${organTitle(activeRegion)}`"
       >
         <button
           class="card__close"
@@ -393,7 +389,7 @@ function onKeydown(e) {
           ✕
         </button>
         <h3 class="card__badge">
-          {{ activeRegion.n }} · {{ activeRegion.name }}
+          {{ activeRegion.n }} · {{ organTitle(activeRegion) }}
         </h3>
         <p
           v-for="note in activeRegion.editorialNotes"
@@ -410,25 +406,11 @@ function onKeydown(e) {
         >
           {{ quote.text }}
         </p>
-        <figure
-          v-for="img in activeRegion.images"
-          :key="img.src"
-          class="source-image"
-        >
-          <img
-            :src="img.src"
-            :width="img.width"
-            :height="img.height"
-            :alt="img.caption"
-            loading="lazy"
-          />
-          <figcaption>{{ img.caption }}</figcaption>
-        </figure>
       </aside>
       <p v-else class="card-instruction">
-        Select a numbered skull region to read the original quotation and see
-        its associated illustrations. Faculty 22 (Weight) is available in the
-        list; the source provides no labelled skull location.
+        Select a numbered region of the skull to read what the 1815 source says
+        about its organ. Organ 22 (Weight) is in the list: the source gives it
+        no place on the skull.
       </p>
     </div>
 
@@ -459,12 +441,6 @@ function onKeydown(e) {
 /* ── chrome ── */
 .phreno__chrome {
   padding: 1.25rem 2rem 0;
-}
-.phreno__eyebrow {
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.55;
 }
 .tabs {
   display: grid;
@@ -610,11 +586,6 @@ function onKeydown(e) {
   background: #f8f6f1;
   border-radius: 0.25rem;
 }
-.historical-note {
-  font-size: 0.75rem;
-  line-height: 1.5;
-  opacity: 0.7;
-}
 .region-label {
   pointer-events: none;
 }
@@ -627,19 +598,6 @@ function onKeydown(e) {
   fill: #24202a;
   font: 19px sans-serif;
   font-weight: 600;
-}
-.source-image {
-  margin: 1.5rem 0;
-}
-.source-image img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.source-image figcaption {
-  font-size: 0.75rem;
-  line-height: 1.5;
-  margin-top: 0.5rem;
 }
 .card__editorial {
   border-left: 3px solid #8464ae;

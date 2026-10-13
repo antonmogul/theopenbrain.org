@@ -48,7 +48,7 @@ afterEach(() => {
 });
 
 describe("source-backed embedded skull", () => {
-  it("labels every anterior region and opens source quotation and image", async () => {
+  it("labels every anterior region and opens the organ's source quotation", async () => {
     const w = await skull();
     expect(w.findAll(".region-label text")).toHaveLength(27);
     const r19 = w
@@ -56,20 +56,19 @@ describe("source-backed embedded skull", () => {
       .find((r) => r.attributes("aria-label") === "19. Individuality");
     await r19.trigger("click");
     await flushPromises();
-    expect(w.find(".card__badge").text()).toBe("19 · Individuality");
+    expect(w.find(".card__badge").text()).toBe("19 · Organ of Individuality");
     expect(w.find('[data-source-block="675"]').text()).toContain(
       "Dr. Gall observed, in society"
     );
-    expect(w.find(".source-image img").attributes("src")).toContain(
-      "image67.png"
-    );
+    // Stuart, 13 Oct: the skull art replaces the source's scans in the card.
+    expect(w.find(".card img").exists()).toBe(false);
     expect(w.find(".card").text()).not.toContain("still to come");
   });
   it("provides Weight source text without a fabricated region", async () => {
     const w = await skull();
     await w.find("select").setValue("22");
     await flushPromises();
-    expect(w.find(".card__badge").text()).toBe("22 · Weight");
+    expect(w.find(".card__badge").text()).toBe("22 · Organ of Weight");
     expect(w.find(".card__editorial").text()).toContain(
       "not labelled by Spurzheim"
     );
@@ -112,7 +111,7 @@ describe("source-backed embedded skull", () => {
     await ideality.trigger("keydown", { key: " " });
     // Native browser handling is complemented by explicit Vue space key support.
     await ideality.trigger("click");
-    expect(w.find(".card__badge").text()).toContain("16 · Ideality");
+    expect(w.find(".card__badge").text()).toContain("16 · Organ of Ideality");
   });
   it("keeps source panels out of the 3D stage sizing contract", () => {
     const code = readFileSync(
