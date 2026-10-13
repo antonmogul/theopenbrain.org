@@ -5,6 +5,18 @@ import appendix from "@/data/history/phrenologyAppendix.json";
 export const PHRENOLOGY_CITATION = appendix.source.citation;
 export const PHRENOLOGY_SOURCE_SHA256 = appendix.source.sha256;
 export const PHRENOLOGY_FACULTIES = appendix.faculties;
+
+/** The organ's heading as the 1815 source gives it, without its numeral:
+ * "XIV. Organ of Veneration" → "Organ of Veneration". */
+export function organTitle(faculty) {
+  const title = String(faculty?.sourceTitle || "")
+    .replace(/^[IVXLC]+\.\s*/, "")
+    .replace(/^The\s+/, "")
+    .replace(/\.$/, "")
+    .replace(/^Organ Of\b/, "Organ of")
+    .trim();
+  return title || (faculty?.name ? `Organ of ${faculty.name}` : "");
+}
 const MAP_NUMBERS = {
   anterior: [13, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33],
   lateral: [

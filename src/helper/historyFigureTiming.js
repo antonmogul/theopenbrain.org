@@ -20,7 +20,10 @@ export { FIGURE_HOLDS, normalizeFigureHold };
  *   image in the text column is not one, nor is a band inside the held
  *   figure's own trigger (its paragraph, or the subsection its header
  *   wraps): that is text the figure belongs to,
- * - the end of its section.
+ * - the end of its section, or, for the last section before the chapter's
+ *   back matter (BACK_MATTER: References, Further reading) when that has no
+ *   figures of its own, the end of the back matter: so the closing figure
+ *   stays beside the references (Stuart, 13 Oct).
  * A hold only ever lengthens a figure: it never ends before its trigger's
  * bottom (its paragraph's window).
  *
@@ -43,6 +46,30 @@ export { FIGURE_HOLDS, normalizeFigureHold };
 
 /** Full-width bands a hold stops at (see above). */
 export const FIGURE_BANDS = ".fb-slot:not(.fb-slot--column), .wb";
+
+/** Section slugs a closing figure may hold beside (see above). */
+export const BACK_MATTER = ["references", "further-reading"];
+
+/** Where a hold in `section` must end: its bottom, or that of the figureless
+ * back matter right after it. */
+function holdLimit(section) {
+  let end = section.getBoundingClientRect().bottom;
+  const all = [
+    ...(section.ownerDocument?.querySelectorAll("section.reader-section") ||
+      []),
+  ];
+  const at = all.indexOf(section);
+  if (at < 0) return end;
+  for (const next of all.slice(at + 1)) {
+    if (
+      !BACK_MATTER.includes(next.dataset?.sectionSlug) ||
+      next.querySelector(".animationTrigger")
+    )
+      break;
+    end = next.getBoundingClientRect().bottom;
+  }
+  return end;
+}
 
 /** The chapter editor's choices, in FIGURE_HOLDS order. */
 export const FIGURE_HOLD_OPTIONS = [
@@ -149,7 +176,7 @@ export function figureEnd(trigger, triggers, records, win = window) {
   if (!section) return fallback;
   const rect = trigger.getBoundingClientRect();
   const top = rect.top;
-  const boundaries = [section.getBoundingClientRect().bottom];
+  const boundaries = [holdLimit(section)];
   if (Number.isFinite(hold))
     boundaries.push(rect.bottom + hold * win.innerHeight);
   // What lies inside the held trigger is the text it belongs to: a held

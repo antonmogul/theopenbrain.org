@@ -354,7 +354,7 @@ describe("WidgetBreakout for an uploaded widget", () => {
   it("says coming soon, with nothing to open, until it is published", async () => {
     const w = mountBreakout(card("upload:attn-helmholtz"));
     await flushPromises();
-    expect(w.find(".wb-kicker").text()).toContain("coming soon");
+    expect(w.find(".wb-kicker").text()).toContain("Coming soon");
     expect(w.find(".wb-btn--primary").exists()).toBe(false);
     w.unmount();
   });
@@ -362,7 +362,7 @@ describe("WidgetBreakout for an uploaded widget", () => {
   it("opens like any widget once it is published", async () => {
     const w = mountBreakout(card("upload:built"));
     await flushPromises();
-    expect(w.find(".wb-kicker").text()).not.toContain("coming soon");
+    expect(w.find(".wb-kicker").text()).not.toContain("Coming soon");
     expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
     w.unmount();
   });

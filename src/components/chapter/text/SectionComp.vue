@@ -21,6 +21,7 @@
     :is="boxBody ? 'div' : 'section'"
     v-else
     :id="boxBody ? undefined : section.id"
+    :data-section-slug="boxBody ? undefined : section.slug"
     class="overflow-y-visible"
     :class="{ 'reader-section': !boxBody }"
   >

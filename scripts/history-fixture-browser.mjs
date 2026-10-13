@@ -453,6 +453,12 @@ async function assertFaculty(state, number, widget) {
     await expect(
       card.locator(`[data-source-block="${quote.sourceBlock}"]`)
     ).toHaveText(quote.text);
+  // The 2D widget dropped the source scans for the drawn skull (Stuart,
+  // 13 Oct, OPENBRAIN-138); the 3D prototype still shows them.
+  if (state.name !== "skull-3d") {
+    await expect(card.locator(".source-image")).toHaveCount(0);
+    return;
+  }
   await expect(card.locator(".source-image")).toHaveCount(record.images.length);
   for (const image of record.images)
     await expect(card.locator(`img[src="${image.src}"]`)).toHaveAttribute(

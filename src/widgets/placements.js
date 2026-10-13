@@ -168,9 +168,9 @@ export const WIDGET_PLACEMENTS = [
       { after: { textIncludes: "Gall" } },
       { endOfSection: true },
     ],
-    title: "Phrenology — the skull that mapped the mind",
+    title: "Explore phrenology",
     blurb:
-      "Gall pinned 27 faculties to bumps on the skull. Explore the map, then see why localisation survived even though phrenology did not.",
+      "Click on different parts of the skull to explore Gall and Spurzheim's model of localization of brain function.",
     credit: "Interactive by The Open Brain",
     route: "/phrenology",
   },
@@ -180,8 +180,7 @@ export const WIDGET_PLACEMENTS = [
     chapterSlug: "foundations-of-neuroscience",
     sectionSlug: "box-penfield",
     kind: "breakout",
-    // The box shares the widget's title ("Wilder Penfield and the Montreal
-    // Procedure"). The folders are Penfield and Perot's patients, so the
+    // The folders are Penfield and Perot's patients, so the
     // cabinet follows the paragraph where stimulation "triggered memory
     // recall"; else after the Montreal Procedure paragraph; else box end.
     anchors: [
@@ -189,9 +188,9 @@ export const WIDGET_PLACEMENTS = [
       { after: { textIncludes: "Montreal Procedure" } },
       { endOfSection: true },
     ],
-    title: "Penfield’s case files — what stimulation brought back",
+    title: "Be Penfield",
     blurb:
-      "Pull a patient’s folder from the drawer: the numbered points Penfield stimulated, and what the patient reported. From Penfield and Perot, Brain, 1963.",
+      "Explore what having your brain electrically stimulated by Penfield was like.",
     credit: "Interactive by The Open Brain",
     route: "/case-cabinet",
   },

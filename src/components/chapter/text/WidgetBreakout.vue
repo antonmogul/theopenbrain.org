@@ -196,11 +196,12 @@ const headingId = computed(
         }"
       >
         <header class="wb-head">
-          <p class="wb-kicker">
+          <!-- No "Interactive" label (Stuart, 13 Oct): the book doesn't
+               label its other figures by kind. A kicker only says what the
+               reader needs to know: it isn't built yet, or it opens. -->
+          <p v-if="comingSoon || kind === 'breakout'" class="wb-kicker">
             <span class="wb-dot" aria-hidden="true"></span>
-            Interactive
-            <span v-if="comingSoon"> · coming soon</span>
-            <span v-else-if="kind === 'breakout'"> · breakout box</span>
+            {{ comingSoon ? "Coming soon" : "Breakout box" }}
           </p>
           <!-- A kit-built upload carries its own title and instructions, so
                in the band ours is for screen readers only. -->

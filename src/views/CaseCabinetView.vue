@@ -330,7 +330,6 @@ function onKeydown(e) {
     @keydown="onKeydown"
   >
     <header class="cabinet__head">
-      <h2>Wilder Penfield and the Montreal Procedure</h2>
       <button
         v-if="openCase"
         type="button"

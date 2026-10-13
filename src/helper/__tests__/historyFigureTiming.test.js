@@ -491,3 +491,52 @@ describe("figure hold values", () => {
     expect(figureRecordOfMedia(undefined)).toBeNull();
   });
 });
+
+/* Stuart, 13 Oct: H.M.'s brain stays up beside the references. The last
+   section's figure may hold through figureless back matter. */
+describe("figureEnd: the closing figure and the back matter", () => {
+  function closing(nextSlugs, { figureIn } = {}) {
+    document.body.innerHTML =
+      `<section class="reader-section" data-section-slug="closing-words"><span id="triggerAnimationFoundationsClosingHM"></span></section>` +
+      nextSlugs
+        .map(
+          (slug) =>
+            `<section class="reader-section" data-section-slug="${slug}">${
+              slug === figureIn
+                ? '<span class="animationTrigger" id="triggerAnimationX"></span>'
+                : ""
+            }</section>`
+        )
+        .join("");
+    const [section, ...rest] = document.querySelectorAll("section");
+    section.getBoundingClientRect = () => ({ top: 0, bottom: 1000 });
+    rest.forEach((el, i) => {
+      el.getBoundingClientRect = () => ({
+        top: 1000 + i * 500,
+        bottom: 1500 + i * 500,
+      });
+    });
+    const trigger = section.querySelector("span");
+    trigger.getBoundingClientRect = () => ({ top: 300, bottom: 340 });
+    return trigger;
+  }
+  const hm = {
+    id: "animationFoundationsClosingHM",
+    images: [{ src: "/publicAssets/images/foundations/hm-brain.jpg" }],
+  };
+  it("holds through References and Further reading", () => {
+    const trigger = closing(["references", "further-reading"]);
+    // To the end of Further reading (2000), less the reading line and scroll.
+    expect(figureEnd(trigger, [trigger], [hm], viewport)).toBe(1800);
+  });
+  it("stops at a back-matter section that has its own figure", () => {
+    const trigger = closing(["references", "further-reading"], {
+      figureIn: "further-reading",
+    });
+    expect(figureEnd(trigger, [trigger], [hm], viewport)).toBe(1300);
+  });
+  it("stops at its own section before ordinary text", () => {
+    const trigger = closing(["next-chapter-part", "references"]);
+    expect(figureEnd(trigger, [trigger], [hm], viewport)).toBe(800);
+  });
+});
