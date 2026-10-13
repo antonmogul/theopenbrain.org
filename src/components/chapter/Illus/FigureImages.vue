@@ -46,6 +46,10 @@ const props = defineProps({
   large: { type: Boolean, default: false },
   /* The container has a fixed height: size the gallery grid to fit it. */
   fit: { type: Boolean, default: true },
+  /* The shell shows the legend above the artwork (with the title), so the
+     figure-level caption here is left out (OPENBRAIN-138). A gallery
+     image's own caption still shows in the viewer. */
+  legendAbove: { type: Boolean, default: false },
 });
 
 /* A caption this short sits under its thumbnail; longer ones are for the
@@ -74,6 +78,9 @@ const figureName = computed(
 function captionFor(img) {
   return img?.caption || props.caption;
 }
+const shownCaption = computed(() =>
+  props.legendAbove ? "" : captionFor(first.value)
+);
 /* The viewer (and the single image) describe the artwork itself. */
 function altFor(img) {
   return img?.alt || captionFor(img) || figureName.value;
@@ -322,7 +329,11 @@ onBeforeUnmount(() => {
 
 <template>
   <!-- One image: as large as the shell allows, with its caption. -->
-  <div v-if="!isSet" class="figimg" :class="{ 'figimg--large': large }">
+  <div
+    v-if="!isSet"
+    class="figimg"
+    :class="{ 'figimg--large': large, 'figimg--flow': !fit }"
+  >
     <div class="figimg-stage">
       <iframe
         v-if="loopSrc(first)"
@@ -344,8 +355,8 @@ onBeforeUnmount(() => {
         draggable="false"
       />
     </div>
-    <p v-if="captionFor(first)" class="figimg-caption">
-      {{ captionFor(first) }}
+    <p v-if="shownCaption" class="figimg-caption">
+      {{ shownCaption }}
     </p>
   </div>
 
@@ -400,7 +411,9 @@ onBeforeUnmount(() => {
         {{ images.length }} images <span aria-hidden="true">·</span> select one
         to enlarge
       </p>
-      <p v-if="caption" class="figimg-caption">{{ caption }}</p>
+      <p v-if="caption && !legendAbove" class="figimg-caption">
+        {{ caption }}
+      </p>
     </div>
 
     <Teleport to="body">
@@ -579,6 +592,19 @@ onBeforeUnmount(() => {
   height: 100%;
   object-fit: scale-down;
   user-select: none;
+}
+/* In the text column (fit off): the image sizes the figure, full width,
+   so on a phone it runs edge to edge. */
+.figimg--flow .figimg-stage {
+  flex: none;
+  min-height: 0;
+}
+.figimg--flow .figimg-img {
+  position: static;
+  display: block;
+  height: auto;
+  max-height: 85vh;
+  object-fit: contain;
 }
 .figimg-caption {
   flex: none;
