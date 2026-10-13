@@ -283,10 +283,9 @@ const youtubeSrc = computed(() =>
     margin-left: calc(50% - var(--app-w, 100vw) / 2);
   }
 }
+/* The image sizes an image figure (FigureImages' flow mode), so a phone
+   gets it full width rather than letterboxed in a fixed box. */
 .illu-inline--shell {
-  height: min(75vh, 36rem);
-}
-.illu-inline--shell.illu-inline--gallery {
   height: auto;
 }
 

@@ -27,6 +27,16 @@ const TOP_GAP = 16;
 
 const flashTimers = new WeakMap();
 
+// Back after a jump (OPENBRAIN-138): ChapterView registers how to add a
+// history entry for the place the reader is leaving, so the browser's Back
+// button returns there. Kept as a hook so this file stays framework-free.
+let jumpHistory = null;
+
+/** Register (or clear, with null) what a jump calls before it scrolls. */
+export function setJumpHistory(fn) {
+  jumpHistory = typeof fn === "function" ? fn : null;
+}
+
 /** "1" → true, "0" → false, otherwise the OS prefers-reduced-motion query. */
 export function reducedMotionPreferred(
   root = globalThis.document?.documentElement
@@ -237,14 +247,28 @@ export function scrollToY(topOf) {
  * ("center") or the reading line at 50vh ("reading-line"); smooth unless
  * reduced motion (scrollToY). An element too tall to centre below the top
  * bar lands at the top instead, so its start isn't hidden. `flash` marks it,
- * `focus` moves focus to it (focusElement, with `focusVisible`). Returns
- * false if !el.
+ * `focus` moves focus to it (focusElement, with `focusVisible`).
+ * `remember` (default) first gives the place being left a history entry
+ * (setJumpHistory), so Back returns to it. Returns false if !el.
  */
 export function jumpToElement(
   el,
-  { align = "top", flash = false, focus = false, focusVisible } = {}
+  {
+    align = "top",
+    flash = false,
+    focus = false,
+    focusVisible,
+    remember = true,
+  } = {}
 ) {
   if (!el?.getBoundingClientRect) return false;
+  if (remember && jumpHistory) {
+    try {
+      jumpHistory(window.scrollY || window.pageYOffset || 0);
+    } catch (err) {
+      console.warn("[readerJump] could not record the jump", err);
+    }
+  }
   // A section that opens with a figure transition starts with a blank
   // 200vh spacer: land where its reading starts (the opener TOC, the top
   // bar's section menu and the Info tab jump here too).

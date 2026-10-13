@@ -9,7 +9,7 @@ import {
   provide,
 } from "vue";
 import { useFeedback } from "@/composables/useFeedback";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
 import ChapterOpener from "@/components/chapter/opener/ChapterOpener.vue";
@@ -45,6 +45,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
 import { applyChapterRamp } from "@/helper/chapterTheme";
+import { setJumpHistory } from "@/helper/readerJump";
 import {
   restoreAfterLayout,
   scrollTopForReadingPercent,
@@ -52,7 +53,18 @@ import {
 } from "@/helper/readingProgress";
 
 const route = useRoute();
+const router = useRouter();
 const store = useGeneral();
+
+// Back after a jump (contents, section menu, timeline, sidebar): the entry
+// being left keeps the reader's place, and the jump adds one for the same
+// chapter, so the browser's Back returns there (router scrollBehavior).
+setJumpHistory((y) => {
+  if (route.name !== "chapter") return;
+  window.history.replaceState({ ...window.history.state, obReturnY: y }, "");
+  router.push({ ...route, force: true }).catch(() => {});
+});
+onBeforeUnmount(() => setJumpHistory(null));
 const storeText = useText();
 const commentStore = useCom();
 

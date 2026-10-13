@@ -62,6 +62,13 @@ const images = computed(() => figureImages(props.animation));
 const caption = computed(
   () => props.animation.caption || props.animation.description || ""
 );
+// The legend sits with the title above the artwork (OPENBRAIN-138): one
+// image's own caption, else the figure's.
+const legend = computed(() =>
+  images.value.length === 1
+    ? images.value[0].caption || caption.value
+    : caption.value
+);
 
 // Fullscreen expand — overlay the diagram over the whole viewport.
 const isFullscreen = ref(false);
@@ -76,11 +83,16 @@ function closeFullscreen() {
 <template>
   <div class="fig-pane pointer-events-auto">
     <!-- Diagram container: toolbar + diagram area -->
-    <figure class="fig-shell">
+    <figure class="fig-shell" :class="{ 'fig-shell--inline': inline }">
       <header class="fig-toolbar">
         <div class="fig-toolbar-left">
-          <span class="fig-label">{{ figureLabel }}</span>
-          <span class="fig-name">{{ title }}</span>
+          <p class="fig-heading">
+            <span class="fig-label">{{ figureLabel }}</span>
+            <span class="fig-name">{{ title }}</span>
+          </p>
+          <figcaption v-if="images.length && legend" class="fig-legend">
+            {{ legend }}
+          </figcaption>
         </div>
         <button
           class="fig-fs-btn"
@@ -112,6 +124,7 @@ function closeFullscreen() {
           :label="figureLabel"
           :title="title"
           :fit="!inline"
+          legend-above
         />
         <div v-else class="fig-placeholder">
           <span class="fig-type-chip">
@@ -186,6 +199,22 @@ function closeFullscreen() {
   background: rgb(var(--color-paper));
   overflow: hidden;
 }
+/* In the text column the figure has no frame of its own: no surface, and
+   below the two-column reader it runs edge to edge, the title and legend
+   kept on the prose's gutters (OPENBRAIN-138). */
+.fig-shell--inline {
+  background: transparent;
+  overflow: visible;
+}
+@media (max-width: 1023px) {
+  .fig-shell--inline {
+    width: var(--app-w, 100vw);
+    margin-left: calc(50% - var(--app-w, 100vw) / 2);
+  }
+  .fig-shell--inline .fig-toolbar {
+    padding-inline: var(--reader-gutter-l) var(--reader-gutter-r);
+  }
+}
 
 /* Toolbar */
 .fig-toolbar {
@@ -193,15 +222,38 @@ function closeFullscreen() {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.625rem 0.875rem;
-  border-bottom: 1px solid rgb(var(--color-line));
+  align-items: flex-start;
+  padding: 0.875rem 0.875rem 0.75rem;
   flex-shrink: 0;
+  /* A long legend (Figure 6's runs to 900 characters) scrolls rather than
+     squeezing the artwork out of the pane. */
+  max-height: 45%;
+  overflow-y: auto;
+}
+.fig-shell--inline .fig-toolbar {
+  max-height: none;
+  padding-inline: 0;
 }
 .fig-toolbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.fig-heading {
   display: flex;
   align-items: baseline;
   gap: 0.625rem;
   min-width: 0;
+  margin: 0;
+}
+.fig-legend {
+  margin: 0;
+  max-width: 62ch;
+  font-family: var(--font-body);
+  font-size: var(--ui-size-13);
+  line-height: 1.45;
+  color: rgb(var(--color-mute));
 }
 .fig-label {
   font-size: 0.65625rem;
@@ -215,9 +267,6 @@ function closeFullscreen() {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: rgb(var(--color-ink));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .fig-fs-btn {
   width: 28px;
@@ -248,9 +297,13 @@ function closeFullscreen() {
   justify-content: center;
   padding: 1.25rem;
 }
-/* With artwork the viewer owns the whole area (image, caption, controls). */
+/* With artwork the viewer owns the whole area, edge to edge. */
 .fig-area--art {
   align-items: stretch;
+  padding: 0;
+}
+.fs-area.fig-area--art {
+  padding: 1.25rem;
 }
 .fig-placeholder {
   display: flex;

@@ -104,7 +104,11 @@ vi.mock("vue-router", async () => {
     params: { number: "4", slug: "stress" },
     query: {},
   });
-  return { useRoute: () => route, onBeforeRouteLeave: () => {} };
+  return {
+    useRoute: () => route,
+    useRouter: () => ({ push: () => Promise.resolve() }),
+    onBeforeRouteLeave: () => {},
+  };
 });
 
 vi.mock("@/stores", async () => {
