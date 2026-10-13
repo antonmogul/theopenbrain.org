@@ -30,13 +30,18 @@ describe("1 October reader layout contracts", () => {
     );
     expect(text).toContain('class="absolute left-0 top-start');
   });
-  it("lets a short breakout share one viewport with its text, without a title-only scroll hold", () => {
+  it("lets a short breakout share one viewport with its text, and pauses the whole box, never a title card alone", () => {
     const css = source("../text/BreakoutBox.vue");
     expect(css).toContain(
       "min-height: calc(100dvh - var(--reader-topbar-h, 4rem))"
     );
+    // The 7 Oct review: no title-only hold (the old sticky .bx-intro).
     expect(css).not.toContain("35vh");
-    expect(css).not.toContain("position: sticky");
+    expect(css).not.toMatch(/\.bx-intro\s*\{[^}]*position: sticky/);
+    // Stuart, 13 Oct: the scroll pauses on arriving in a box. The whole
+    // box (heading and text) sticks while a spacer scrolls past.
+    expect(css).toMatch(/\.bx-pause--on > \.bx\s*\{[^}]*position: sticky/);
+    expect(css).toMatch(/\.bx-pause-room\s*\{[^}]*height: 45vh/);
   });
   it("keeps figure references bold without link visual affordances", () => {
     const css = source("../../../index.css");
