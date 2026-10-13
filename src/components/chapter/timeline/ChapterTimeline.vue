@@ -55,6 +55,11 @@ import TimelinePreview, {
 
 // Most readers never open the map: its code and styles load on first open.
 const TimelineMap = defineAsyncComponent(() => import("./TimelineMap.vue"));
+// Phones get the SoundCloud-style scrubber instead of the peek and the map
+// (OPENBRAIN-137): loaded the same way, on first open.
+const TimelineScrubber = defineAsyncComponent(
+  () => import("./TimelineScrubber.vue")
+);
 
 const props = defineProps({
   /** buildTimeline() result. */
@@ -98,6 +103,10 @@ const barsRef = ref(null);
 const mapButton = ref(null);
 
 const finePointer = useMediaQuery("(hover: hover) and (pointer: fine)");
+// A phone-width screen: the whole chapter in one screen width is too fine to
+// aim at, so a tap opens the scrubber (TimelineScrubber) rather than the peek.
+const phone = useMediaQuery("(max-width: 767px)");
+const scrubOpen = ref(false);
 const lastPointer = ref(""); // "mouse" | "touch", from the last press
 // Touch behaviour: no hover to peek with, or the reader just used a finger.
 const touchUI = computed(
@@ -238,7 +247,8 @@ function onPointerDown(e) {
 }
 
 function onPointerEnter(e) {
-  if (e.pointerType === "touch") return;
+  // A phone-width screen opens the scrubber on a tap, never a hover peek.
+  if (e.pointerType === "touch" || phone.value) return;
   hovered.value = true;
   open.value = true;
 }
@@ -253,8 +263,28 @@ function onPointerLeave(e) {
 // Touch at rest: the whole strip is one target that opens the peek. (A
 // tap in the peek is the bars' to handle, even one that just closed it.)
 function onClick() {
+  // Phone width: a tap (or a click, in a narrow window) opens the scrubber.
+  if (phone.value) {
+    if (!scrubOpen.value) scrubOpen.value = true;
+    return;
+  }
   if (openAtPress || open.value || !touchUI.value) return;
   open.value = true;
+}
+
+/* ---- Phone: the scrubber -------------------------------------------- */
+
+function onScrubJump(index, how) {
+  scrubOpen.value = false;
+  jump(index, how);
+}
+
+async function closeScrubber() {
+  scrubOpen.value = false;
+  fold();
+  pointerDownAt = performance.now();
+  await nextTick();
+  rootEl.value?.focus({ preventScroll: true });
 }
 
 function onFocusIn() {
@@ -499,7 +529,7 @@ onBeforeUnmount(() => {
       :expanded="open"
       :cursor="open ? cursor : -1"
       :layers="layers"
-      :interactive="open || !touchUI"
+      :interactive="!phone && (open || !touchUI)"
       role="slider"
       tabindex="0"
       aria-label="Chapter timeline"
@@ -520,6 +550,7 @@ onBeforeUnmount(() => {
       ref="mapButton"
       type="button"
       class="ctl-map-button"
+      v-show="!phone"
       :tabindex="open ? 0 : -1"
       aria-label="Open chapter map"
       aria-haspopup="dialog"
@@ -546,6 +577,18 @@ onBeforeUnmount(() => {
     />
 
     <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+
+    <Teleport to="body">
+      <TimelineScrubber
+        v-if="scrubOpen"
+        :model="model"
+        :position="position"
+        :layers="layers"
+        :chapter-title="chapterTitle"
+        @jump="onScrubJump"
+        @close="closeScrubber"
+      />
+    </Teleport>
 
     <Teleport to="body">
       <TimelineMap
