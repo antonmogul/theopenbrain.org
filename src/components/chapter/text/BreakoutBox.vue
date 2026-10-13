@@ -1,7 +1,15 @@
 <script setup>
 /* Breakouts occupy the reader width and keep their artwork inside their
  * own stage. Short boxes read as one viewport-sized panel; long manuscript
- * text remains in normal vertical flow until horizontal paging is designed. */
+ * text remains in normal vertical flow until horizontal paging is designed.
+ *
+ * The pause (Stuart, 24 Sep and 13 Oct: "pause in the vertical scroll when
+ * we enter a breakout box"). From the two-column breakpoint up, once the
+ * box reaches the top bar it stays put, heading and opening text together,
+ * for a short scroll (BX_PAUSE) before the page moves on: the box is a
+ * different space, and the reader notices arriving in it. It is the whole
+ * box that holds, never a title card on its own (the 7 Oct review), and
+ * reduced motion turns it off. */
 import { computed } from "vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 
@@ -20,25 +28,28 @@ const titleId = computed(() => `box-title-${props.section.id}`);
     v-slot="{ floating }"
     :stage-attrs="{ 'data-breakout-box': section.id }"
   >
-    <aside
-      :id="section.id"
-      class="bx"
-      :class="{ 'bx--floating': floating }"
-      :aria-labelledby="titleId"
-    >
-      <div class="bx-hold">
-        <header class="bx-intro">
-          <span v-if="label" class="bx-badge" aria-hidden="true">{{
-            label
-          }}</span>
-          <p class="bx-kicker">Breakout box{{ label ? ` ${label}` : "" }}</p>
-          <h2 :id="titleId" class="bx-title">{{ section.title }}</h2>
-        </header>
-      </div>
-      <div class="bx-body">
-        <slot />
-      </div>
-    </aside>
+    <div class="bx-pause" :class="{ 'bx-pause--on': floating }">
+      <aside
+        :id="section.id"
+        class="bx"
+        :class="{ 'bx--floating': floating }"
+        :aria-labelledby="titleId"
+      >
+        <div class="bx-hold">
+          <header class="bx-intro">
+            <span v-if="label" class="bx-badge" aria-hidden="true">{{
+              label
+            }}</span>
+            <p class="bx-kicker">Breakout box{{ label ? ` ${label}` : "" }}</p>
+            <h2 :id="titleId" class="bx-title">{{ section.title }}</h2>
+          </header>
+        </div>
+        <div class="bx-body">
+          <slot />
+        </div>
+      </aside>
+      <div v-if="floating" class="bx-pause-room" aria-hidden="true"></div>
+    </div>
   </FullBleed>
 </template>
 
@@ -115,6 +126,39 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   max-width: calc(var(--reading-measure, 780px) + 4rem);
   margin: 0 auto;
   padding: 0 2rem;
+}
+
+/* The pause: the box sticks below the top bar while the room after it
+   (BX_PAUSE, on the box's own colour, so the box just reads as
+   taller) scrolls past, then leaves with it. */
+.bx-pause--on {
+  --bx-bg: rgb(var(--color-chapter-pale, var(--color-paper)));
+  border-bottom: 1px solid rgb(var(--color-ink));
+  background: var(--bx-bg);
+}
+.bx-pause-room {
+  height: 45vh; /* BX_PAUSE */
+}
+.bx-pause--on > .bx {
+  position: sticky;
+  top: var(--reader-topbar-h, 4rem);
+  border-bottom: 0;
+}
+/* Reduced motion: no pause. The reader's own setting decides
+   (data-reduce-motion "1" on, "0" off); the OS setting only when unset. */
+:global(:root[data-reduce-motion="1"]) .bx-pause-room {
+  display: none;
+}
+:global(:root[data-reduce-motion="1"]) .bx-pause--on > .bx {
+  position: relative;
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(:root:not([data-reduce-motion="0"])) .bx-pause-room {
+    display: none;
+  }
+  :global(:root:not([data-reduce-motion="0"])) .bx-pause--on > .bx {
+    position: relative;
+  }
 }
 
 /* The box covers the divider, so its paragraphs' figure marks (index.css)

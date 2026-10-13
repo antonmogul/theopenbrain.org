@@ -295,7 +295,15 @@ const handleSectionTitleSave = ({ content }) =>
 <style scoped>
 /* A breakout box placed inside its section (OPENBRAIN-70 A4); the box
    brings its own spacing (BreakoutBox). */
+/* Room between the text and a box, either side (Stuart, 13 Oct): in the
+   column the box card has its own margin; full width, it would otherwise
+   meet the paragraphs edge to edge. */
 .anchored-box {
   margin: 0;
+}
+@media (min-width: 1024px) {
+  .anchored-box {
+    margin: 5rem 0;
+  }
 }
 </style>
