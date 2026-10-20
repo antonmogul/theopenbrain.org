@@ -260,6 +260,18 @@ describe("applyWidgetPlacements", () => {
     expect(p.widget.narrowKind).toBe("breakout");
   });
 
+  it("carries fallbackWidgetId, the view shown until an upload is published", () => {
+    const p = widgetParagraph({
+      id: "rb",
+      widgetId: "upload:retina-retinabox",
+      fallbackWidgetId: "retinabox",
+    });
+    expect(p.widget.fallbackWidgetId).toBe("retinabox");
+    expect(
+      widgetParagraph({ id: "x", widgetId: "sdt" }).widget
+    ).not.toHaveProperty("fallbackWidgetId");
+  });
+
   it("skips a placement when the chapter already carries that widget (DB-authored block wins)", () => {
     const section = circuitSection();
     section.paragraphs[0] = {

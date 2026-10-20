@@ -102,7 +102,13 @@ export const WIDGET_PLACEMENTS = [
   },
   {
     id: "retina-retinabox",
-    widgetId: "retinabox",
+    // Stuart's 1 October 2026 RetINaBox v3 (upload:retina-retinabox, with
+    // the guided tutorials) replaced the Vue port here in OPENBRAIN-141. The
+    // port stays at /retinabox and in the widget library.
+    widgetId: "upload:retina-retinabox",
+    // Until 20261021000000_retina_stuart_widgets is pushed the upload isn't
+    // published; the band shows the port rather than "Coming soon".
+    fallbackWidgetId: "retinabox",
     chapterSlug: "the-retina",
     sectionSlug: "amacrine-and-ganglion-cells-circuits-computations-and-output",
     kind: "inline",
@@ -116,9 +122,8 @@ export const WIDGET_PLACEMENTS = [
     anchors: [{ beforeSubSection: "Rod and cone pathways" }],
     title: "RetINaBox — build a retinal circuit",
     blurb:
-      "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes. Based on the Trenholm lab's outreach tool.",
+      "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials. Based on the Trenholm lab's outreach tool.",
     credit: "Interactive by Stuart Trenholm",
-    route: "/retinabox",
   },
 
   // ── Attention & Working Memory — Arjun Krishnaswamy's widgets (OPENBRAIN-34)
@@ -228,6 +233,10 @@ export function widgetParagraph(placement) {
       kind: placement.kind || "breakout",
       // Below the two-column reader, a card instead (a desktop-sized tool).
       ...(placement.narrowKind ? { narrowKind: placement.narrowKind } : {}),
+      // A built-in view to show while an upload isn't published yet.
+      ...(placement.fallbackWidgetId
+        ? { fallbackWidgetId: placement.fallbackWidgetId }
+        : {}),
       title: placement.title || "",
       blurb: placement.blurb || "",
       credit: placement.credit || "",
