@@ -3,6 +3,8 @@ import {
   coverForModule,
   COVER_BY_SLUG,
   DEFAULT_COVER,
+  normalizeReactiveCover,
+  reactiveCoverForModule,
 } from "@/helper/chapterCover";
 
 describe("coverForModule", () => {
@@ -43,5 +45,70 @@ describe("coverForModule", () => {
         cover_image_url: "https://x/cover.jpg",
       })
     ).toBe("https://x/cover.jpg");
+  });
+});
+
+describe("reactiveCoverForModule (OPENBRAIN-146)", () => {
+  const EYE = {
+    lottie: "/publicAssets/animations/covers/matisse-eyes.json",
+    axis: "x",
+    reverse: false,
+    fit: "slice",
+    idle: 14,
+  };
+
+  it("gives Retina and History the eye Lottie, scrubbed on x, defaults filled", () => {
+    expect(reactiveCoverForModule({ slug: "the-retina" })).toEqual(EYE);
+    expect(
+      reactiveCoverForModule({ slug: "foundations-of-neuroscience" })
+    ).toEqual(EYE);
+  });
+
+  it("has none for other chapters or a missing module", () => {
+    expect(reactiveCoverForModule({ slug: "stress" })).toBeNull();
+    expect(
+      reactiveCoverForModule({ slug: "attention-and-working-memory" })
+    ).toBeNull();
+    expect(reactiveCoverForModule(null)).toBeNull();
+  });
+
+  it("lets a module's own reactive_cover record win over the slug map", () => {
+    expect(
+      reactiveCoverForModule({
+        slug: "the-retina",
+        reactive_cover: {
+          lottie: " https://x/cover.json ",
+          axis: "y",
+          reverse: true,
+          fit: "slice",
+          idle: 0,
+        },
+      })
+    ).toEqual({
+      lottie: "https://x/cover.json",
+      axis: "y",
+      reverse: true,
+      fit: "slice",
+      idle: 0,
+    });
+  });
+
+  it("ignores a record without a Lottie and normalises odd values", () => {
+    expect(normalizeReactiveCover({ axis: "y" })).toBeNull();
+    expect(normalizeReactiveCover("eye.json")).toBeNull();
+    expect(
+      reactiveCoverForModule({
+        slug: "the-retina",
+        reactive_cover: { lottie: " " },
+      })
+    ).toEqual(EYE);
+    expect(
+      normalizeReactiveCover({
+        lottie: "/a.json",
+        idle: "nope",
+        axis: "z",
+        reverse: "yes",
+      })
+    ).toEqual({ ...EYE, lottie: "/a.json", fit: "meet" });
   });
 });

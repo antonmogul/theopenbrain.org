@@ -4,6 +4,7 @@
  * only engages when the page scrolls.
  */
 import OpenerHero from "../OpenerHero.vue";
+import { reactiveCoverForModule } from "@/helper/chapterCover";
 
 export default {
   title: "Chapter/Opener/OpenerHero",
@@ -13,6 +14,7 @@ export default {
   argTypes: {
     cover: { control: "text" },
     title: { control: "text" },
+    reactive: { control: "object" },
   },
   args: {
     cover: "/publicAssets/images/00-matisse-bg.jpg",
@@ -31,5 +33,43 @@ export const AttentionCover = {
   args: {
     cover: "/publicAssets/images/attention-matisse-reader.jpg",
     title: "Attention and Working Memory",
+  },
+};
+
+/* Sweep the pointer across the hero so the eye lands on a late frame. */
+const sweep = async ({ canvasElement }) => {
+  const hero = canvasElement.querySelector(".opener-hero");
+  if (!hero) return;
+  for (const t of [0.1, 0.5, 0.9]) {
+    window.dispatchEvent(
+      new PointerEvent("pointermove", {
+        clientX: Math.round(window.innerWidth * t),
+        clientY: Math.round(window.innerHeight / 2),
+      })
+    );
+    await new Promise((r) => setTimeout(r, 120));
+  }
+};
+
+/* The reactive cover (OPENBRAIN-146): the 2023 Retina eye over the still,
+   scrubbed from pointer x. History recycles it for now (Stuart, 13 Oct). */
+export const Reactive = {
+  args: {
+    cover: "/publicAssets/images/attention-matisse-reader.jpg",
+    title: "Foundations of Neuroscience",
+    reactive: reactiveCoverForModule({ slug: "foundations-of-neuroscience" }),
+  },
+  play: sweep,
+};
+
+/* A record whose Lottie isn't there: the still cover stands in, nothing is
+   logged (lottieAssetOk HEAD-checks before lottie-web gets to fetch). */
+export const ReactiveMissingFile = {
+  args: {
+    ...Reactive.args,
+    reactive: {
+      ...Reactive.args.reactive,
+      lottie: "/publicAssets/animations/covers/not-there.json",
+    },
   },
 };

@@ -34,6 +34,12 @@ const config = {
       from: "../public/publicAssets/images/widgets/thumbs",
       to: "/publicAssets/images/widgets/thumbs",
     },
+    // The reactive cover Lotties and their images (OPENBRAIN-146; ~0.6 MB), so the
+    // opener stories scrub a real file rather than fall back to the still.
+    {
+      from: "../public/publicAssets/animations/covers",
+      to: "/publicAssets/animations/covers",
+    },
   ],
   framework: "@storybook/vue3-vite",
   async viteFinal(cfg) {
