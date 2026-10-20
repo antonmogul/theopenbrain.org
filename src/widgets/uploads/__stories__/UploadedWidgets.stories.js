@@ -77,3 +77,61 @@ export const AttnBiasedCompetition = {
   ...story("attn-biased-competition"),
   name: "Biased competition",
 };
+
+// The Retina: Stuart's 1 October 2026 set (OPENBRAIN-141).
+export const RetinaPhotoreceptors = {
+  ...story("retina-photoreceptors"),
+  name: "Retina: Photoreceptors",
+};
+export const RetinaRefractionErrors = {
+  ...story("retina-refraction-errors"),
+  name: "Retina: Refractive errors",
+};
+export const RetinaPupillaryLightReflex = {
+  ...story("retina-pupillary-light-reflex"),
+  name: "Retina: Pupillary light reflex",
+};
+export const RetinaPhototransduction = {
+  ...story("retina-phototransduction"),
+  name: "Retina: Phototransduction",
+};
+export const RetinaVisualCycle = {
+  ...story("retina-visual-cycle"),
+  name: "Retina: The visual cycle",
+};
+export const RetinaOnOffBipolarCells = {
+  ...story("retina-on-off-bipolar-cells"),
+  name: "Retina: ON and OFF bipolar cells",
+};
+export const RetinaCenterSurround = {
+  ...story("retina-center-surround"),
+  name: "Retina: Center-surround",
+};
+export const RetinaDirectionSelectivity = {
+  ...story("retina-direction-selectivity"),
+  name: "Retina: Direction selectivity",
+};
+export const RetinaObjectMotionSensitivity = {
+  ...story("retina-object-motion-sensitivity"),
+  name: "Retina: Object motion sensitivity",
+};
+export const RetinaLightSensitiveGanglionCells = {
+  ...story("retina-light-sensitive-ganglion-cells"),
+  name: "Retina: Light-sensitive ganglion cells",
+};
+export const RetinaRodVsConeCircuits = {
+  ...story("retina-rod-vs-cone-circuits"),
+  name: "Retina: Rod and cone circuits",
+};
+export const RetinaRetinalCellTypes = {
+  ...story("retina-retinal-cell-types"),
+  name: "Retina: Retinal cell types",
+};
+export const RetinaSynapticArchitecture = {
+  ...story("retina-synaptic-architecture"),
+  name: "Retina: Synaptic architecture",
+};
+export const RetinaRetinabox = {
+  ...story("retina-retinabox"),
+  name: "Retina: RetINaBox",
+};
