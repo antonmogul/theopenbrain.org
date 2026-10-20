@@ -615,14 +615,20 @@ async function testSkull(state) {
 async function testGallery(state) {
   const { page } = state;
   const count = (scope) => scope.locator(".figimg-count-n");
+  // With motion on, the leaving slide stays through the 300 ms crossfade:
+  // only the arriving one is the shown image.
+  const slideImg = (scope) =>
+    scope.locator(
+      ".figimg-slide:not(.figimg-x-leave-active) .figimg-gallery-img"
+    );
   await step(
     state,
     "the rotating gallery shows one Figure 6 plate with a dot per plate",
     async () => {
       const pane = page.locator(".history-fixture .figimg--gallery");
       await expect(pane.locator(".figimg-dot")).toHaveCount(10);
-      await expect(pane.locator(".figimg-gallery-img")).toHaveCount(1);
-      await imageReady(pane.locator(".figimg-gallery-img"));
+      await expect(slideImg(pane)).toHaveCount(1);
+      await imageReady(slideImg(pane));
       // This lane runs with motion on, so the clock is running (and may
       // already have stepped); a manual step stops it for good, which keeps
       // the measurements below still.
@@ -672,11 +678,11 @@ async function testGallery(state) {
         await expect(gallery.locator(".figimg-legend")).toHaveText(
           source.images[index].caption
         );
-        await expect(gallery.locator(".figimg-gallery-img")).toHaveAttribute(
+        await expect(slideImg(gallery)).toHaveAttribute(
           "src",
           source.images[index].src
         );
-        await imageReady(gallery.locator(".figimg-gallery-img"));
+        await imageReady(slideImg(gallery));
         await expect(gallery.locator(".figimg-dot").nth(index)).toHaveAttribute(
           "aria-current",
           "true"
