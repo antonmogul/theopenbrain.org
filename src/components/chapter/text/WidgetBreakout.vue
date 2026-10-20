@@ -25,6 +25,14 @@
  * responsive CSS); this component only decides when and where to mount them.
  * Every view in src/widgets/embeds.js was smoke-tested down to 390px, so the
  * prose column is a width they already handle.
+ *
+ * A full-screen inline widget (placement `fullScreen`, OPENBRAIN-147: the
+ * History chapter's phrenology skull and Penfield case cabinet) is one
+ * screen of the chapter. While its band floats full width it is as tall as
+ * the viewport below the top bar, the widget fills it (`.widget-root` grows;
+ * `--widget-body-min-h: 0` lets a view drop its own content floor), and the
+ * scroll pauses on it the way BreakoutBox pauses (the band sticks under the
+ * top bar while a room in its colour scrolls past; off with reduced motion).
  */
 import {
   computed,
@@ -37,6 +45,7 @@ import {
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
+import { fullScreenOf } from "@/widgets/placements";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 import {
@@ -59,6 +68,10 @@ const kind = computed(() => {
   return k === "inline" ? "inline" : "breakout";
 });
 const title = computed(() => props.placement?.title || widgetId.value);
+// One screen of the chapter, with the pause (see the notes at the top).
+const fullScreen = computed(
+  () => kind.value === "inline" && fullScreenOf(props.placement)
+);
 // An uploaded widget ("upload:<slug>") that isn't published yet is a marker
 // for a widget still to be built: the card says "Coming soon" and has
 // nothing to open (OPENBRAIN-110).
@@ -188,77 +201,85 @@ const headingId = computed(
       class="wb-fb"
       :class="{ 'wb-slot': kind === 'inline' }"
     >
-      <div
-        class="wb-body"
-        :class="{
-          'wb-band': kind === 'inline',
-          'wb-body--floating': floating,
-        }"
-      >
-        <header class="wb-head">
-          <!-- No "Interactive" label (Stuart, 13 Oct): the book doesn't
+      <div class="wb-pause" :class="{ 'wb-pause--on': floating && fullScreen }">
+        <div
+          class="wb-body"
+          :class="{
+            'wb-band': kind === 'inline',
+            'wb-body--floating': floating,
+            'wb-body--full': floating && fullScreen,
+          }"
+        >
+          <header class="wb-head">
+            <!-- No "Interactive" label (Stuart, 13 Oct): the book doesn't
                label its other figures by kind. A kicker only says what the
                reader needs to know: it isn't built yet, or it opens. -->
-          <p v-if="comingSoon || kind === 'breakout'" class="wb-kicker">
-            <span class="wb-dot" aria-hidden="true"></span>
-            {{ comingSoon ? "Coming soon" : "Breakout box" }}
-          </p>
-          <!-- A kit-built upload carries its own title and instructions, so
-               in the band ours is for screen readers only. -->
-          <div :class="{ 'wb-sr': ownsHeading }">
-            <h3 :id="headingId" class="wb-title">{{ title }}</h3>
-            <p v-if="placement.blurb" class="wb-blurb">
-              {{ placement.blurb }}
+            <p v-if="comingSoon || kind === 'breakout'" class="wb-kicker">
+              <span class="wb-dot" aria-hidden="true"></span>
+              {{ comingSoon ? "Coming soon" : "Breakout box" }}
             </p>
-          </div>
-          <p v-if="narrowed" class="wb-note">
-            Made for a larger screen: it opens full screen.
-          </p>
-        </header>
+            <!-- A kit-built upload carries its own title and instructions, so
+               in the band ours is for screen readers only. -->
+            <div :class="{ 'wb-sr': ownsHeading }">
+              <h3 :id="headingId" class="wb-title">{{ title }}</h3>
+              <p v-if="placement.blurb" class="wb-blurb">
+                {{ placement.blurb }}
+              </p>
+            </div>
+            <p v-if="narrowed" class="wb-note">
+              Made for a larger screen: it opens full screen.
+            </p>
+          </header>
 
-        <!-- inline: the widget lives here once it is near the viewport. -->
-        <div
-          v-if="kind === 'inline'"
-          class="wb-stage"
-          :class="{ 'wb-stage--floating': floating }"
-          :data-widget-stage="widgetId"
-          :aria-labelledby="headingId"
-        >
-          <component :is="Widget" v-if="inlineMounted && Widget" />
-          <div v-else-if="comingSoon" class="wb-missing">
-            This interactive is being built. It will appear here when it's
-            ready.
+          <!-- inline: the widget lives here once it is near the viewport. -->
+          <div
+            v-if="kind === 'inline'"
+            class="wb-stage"
+            :class="{ 'wb-stage--floating': floating }"
+            :data-widget-stage="widgetId"
+            :aria-labelledby="headingId"
+          >
+            <component :is="Widget" v-if="inlineMounted && Widget" />
+            <div v-else-if="comingSoon" class="wb-missing">
+              This interactive is being built. It will appear here when it's
+              ready.
+            </div>
+            <div v-else-if="!embeddable" class="wb-missing">
+              This interactive is not available in the reader yet.
+            </div>
+            <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
           </div>
-          <div v-else-if="!embeddable" class="wb-missing">
-            This interactive is not available in the reader yet.
-          </div>
-          <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
+
+          <footer class="wb-foot">
+            <p v-if="placement.credit" class="wb-credit">
+              {{ placement.credit }}
+            </p>
+            <div class="wb-actions">
+              <button
+                v-if="embeddable"
+                type="button"
+                class="wb-btn wb-btn--primary"
+                @click="openModal"
+              >
+                {{ kind === "inline" ? "Full screen" : "Open interactive" }}
+              </button>
+              <RouterLink
+                v-if="placement.route"
+                :to="placement.route"
+                class="wb-btn"
+                target="_blank"
+                rel="noopener"
+              >
+                Open in new tab
+              </RouterLink>
+            </div>
+          </footer>
         </div>
-
-        <footer class="wb-foot">
-          <p v-if="placement.credit" class="wb-credit">
-            {{ placement.credit }}
-          </p>
-          <div class="wb-actions">
-            <button
-              v-if="embeddable"
-              type="button"
-              class="wb-btn wb-btn--primary"
-              @click="openModal"
-            >
-              {{ kind === "inline" ? "Full screen" : "Open interactive" }}
-            </button>
-            <RouterLink
-              v-if="placement.route"
-              :to="placement.route"
-              class="wb-btn"
-              target="_blank"
-              rel="noopener"
-            >
-              Open in new tab
-            </RouterLink>
-          </div>
-        </footer>
+        <div
+          v-if="floating && fullScreen"
+          class="wb-pause-room"
+          aria-hidden="true"
+        ></div>
       </div>
     </FullBleed>
 
@@ -472,6 +493,70 @@ const headingId = computed(
  * so the document's scrollable width is unchanged.
  */
 /* FullBleed positions the whole band; its gutter is --wb-gutter above. */
+
+/* A full-screen widget (OPENBRAIN-147): the floating band is one screen
+   below the top bar and the widget fills it. The views' own floors
+   (--widget-body-min-h) give way to the flex height. */
+.wb-body--full {
+  display: flex;
+  flex-direction: column;
+  /* A height, not a min-height: only a definite height reaches the widget
+     through the flex chain (stage → widget root → its body), and the
+     cabinet's drawer and the skull's row size by it. Taller content paints
+     on over the pause room below. */
+  height: calc(100vh - var(--reader-topbar-h, 4rem));
+  height: calc(100dvh - var(--reader-topbar-h, 4rem));
+}
+.wb-body--full .wb-head {
+  padding-top: 1rem;
+  padding-bottom: 0.75rem;
+}
+.wb-body--full .wb-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  --widget-body-min-h: 0px;
+}
+.wb-body--full .wb-stage > :deep(.widget-root) {
+  flex: 1;
+}
+.wb-body--full .wb-foot {
+  margin-top: 0.5rem;
+}
+
+/* The pause, as in BreakoutBox: the band sticks under the top bar while
+   the room after it (WB_PAUSE, in the band's colour, so the band just
+   reads as taller) scrolls past, then leaves with it. */
+.wb-pause--on {
+  background: rgb(var(--color-dark-surface));
+}
+.wb-pause-room {
+  height: 45vh; /* WB_PAUSE */
+}
+.wb-pause--on > .wb-body {
+  position: sticky;
+  top: var(--reader-topbar-h, 4rem);
+}
+/* Reduced motion: no pause. The reader's own setting decides (data-reduce-
+   motion "1" on, "0" off); the OS setting only when unset. Plain selectors,
+   never :global() — see BreakoutBox. */
+:root[data-reduce-motion="1"] .wb-pause-room {
+  display: none;
+}
+:root[data-reduce-motion="1"] .wb-pause--on > .wb-body {
+  position: relative;
+  top: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion="0"]) .wb-pause-room {
+    display: none;
+  }
+  :root:not([data-reduce-motion="0"]) .wb-pause--on > .wb-body {
+    position: relative;
+    top: auto;
+  }
+}
 
 .wb-stage-placeholder {
   min-height: 12rem;

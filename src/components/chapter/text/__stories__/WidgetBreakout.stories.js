@@ -80,6 +80,30 @@ export const InlineStageFullBleed = {
   render: readerFrame(WidgetBreakoutComponent),
 };
 
+/*
+ * A full-screen inline widget (OPENBRAIN-147): the History chapter's
+ * phrenology skull, as the DB block places it (inline, the placement id of
+ * the code placement that carries `fullScreen`). From 1300px the band is
+ * one screen below the top bar, the skull fills it, and a 45vh room after
+ * it is the scroll pause; below that it is the ordinary band.
+ */
+export const FullScreenBand = {
+  args: {
+    placement: {
+      placementId: "foundations-phrenology",
+      widgetId: "phrenology",
+      kind: "inline",
+      title: "Explore phrenology",
+      blurb:
+        "Click on different parts of the skull to explore Gall and Spurzheim's model of localization of brain function.",
+      credit: "Interactive by The Open Brain",
+      route: "/phrenology",
+    },
+  },
+  globals: { chapter: "fund" },
+  render: readerFrame(WidgetBreakoutComponent),
+};
+
 /* Attention (OPENBRAIN-34). Placed inline since OPENBRAIN-37; this is the
    card as it looks in the modal-only breakout form for comparison. */
 export const AttentionBreakout = {

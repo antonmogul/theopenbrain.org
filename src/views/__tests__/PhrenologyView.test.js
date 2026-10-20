@@ -123,7 +123,25 @@ describe("source-backed embedded skull", () => {
       "grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr)"
     );
     expect(code).toContain("selected.quotes");
-    expect(code).toContain("selected.images");
+    // Text only in the card (Stuart, 13 Oct); the scans stay in the data.
+    expect(code).not.toContain("selected.images");
     expect(code).not.toContain("selected.blurb");
+  });
+  it("sizes itself by the height it is given, with no disclaimer (OPENBRAIN-147)", async () => {
+    const w = await skull();
+    // The chapter's full-screen band sets --widget-body-min-h: 0 and the
+    // view fills its flex height; alone, the floors below stand.
+    const code = readFileSync(
+      path.resolve("src/views/PhrenologyView.vue"),
+      "utf8"
+    );
+    expect(code).toContain("min-height: var(--widget-body-min-h, 65vh)");
+    expect(code).toContain("var(--skull-h) * 450 / 435");
+    expect(w.text()).not.toContain("not accepted neuroscience");
+    expect(w.find(".card-instruction").text()).toContain(
+      "Select a region of the skull"
+    );
+    // The tabs and the organ list share one row; no title of their own.
+    expect(w.find(".phreno__chrome h2").exists()).toBe(false);
   });
 });

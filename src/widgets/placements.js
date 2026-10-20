@@ -54,6 +54,14 @@
  * @property {string} blurb         One or two sentences under the title
  * @property {string} credit        Author credit line
  * @property {string} route         Standalone route of the widget
+ * @property {boolean} [fullScreen] An inline widget that is one screen of the
+ *                                  chapter: from the two-column breakpoint up
+ *                                  its band is as tall as the viewport and the
+ *                                  scroll pauses on it like a breakout box
+ *                                  (Stuart, 1 Oct: "make that a full screen
+ *                                  breakout box that stops vertical scrolling
+ *                                  for a bit"). A DB-authored block with the
+ *                                  same placementId inherits it (fullScreenOf).
  */
 
 /** @type {WidgetPlacement[]} */
@@ -173,6 +181,7 @@ export const WIDGET_PLACEMENTS = [
       "Click on different parts of the skull to explore Gall and Spurzheim's model of localization of brain function.",
     credit: "Interactive by The Open Brain",
     route: "/phrenology",
+    fullScreen: true,
   },
   {
     id: "foundations-case-cabinet",
@@ -193,6 +202,7 @@ export const WIDGET_PLACEMENTS = [
       "Explore what having your brain electrically stimulated by Penfield was like.",
     credit: "Interactive by The Open Brain",
     route: "/case-cabinet",
+    fullScreen: true,
   },
 ];
 
@@ -232,8 +242,24 @@ export function widgetParagraph(placement) {
       blurb: placement.blurb || "",
       credit: placement.credit || "",
       route: placement.route || "",
+      ...(placement.fullScreen ? { fullScreen: true } : {}),
     },
   };
+}
+
+/**
+ * Whether a widget paragraph's placement is one screen of the chapter (see
+ * `fullScreen`). A DB-authored block carries the placementId of the code
+ * placement it replaced and nothing else of it, so the flag is read from the
+ * block first and from the code placement with that id second.
+ * @param {Object} placement  The `widget` object of a widget paragraph
+ * @param {WidgetPlacement[]} [placements]
+ */
+export function fullScreenOf(placement, placements = WIDGET_PLACEMENTS) {
+  if (!placement) return false;
+  if (typeof placement.fullScreen === "boolean") return placement.fullScreen;
+  const id = placement.placementId;
+  return !!(id && placements.find((p) => p.id === id)?.fullScreen);
 }
 
 const stripTags = (html) =>

@@ -14,6 +14,10 @@
  *     used to be numbered dots).
  *   • Opening a region lights it and slides in a paper detail
  *     card without changing the skull’s displayed dimensions.
+ *   • The skull is sized by the height it has (60vh on its own route; the
+ *     chapter's full-screen band hands it its flex height through
+ *     --widget-body-min-h: 0), so it fills the stage at any screen
+ *     (Stuart, 24 Sep: "the skull feels small for no reason").
  *
  * Art: the real Figma engravings live in
  *   public/publicAssets/images/phrenology/skull-{anterior|lateral|posterior}.png
@@ -408,9 +412,9 @@ function onKeydown(e) {
         </p>
       </aside>
       <p v-else class="card-instruction">
-        Select a numbered region of the skull to read what the 1815 source says
-        about its organ. Organ 22 (Weight) is in the list: the source gives it
-        no place on the skull.
+        Select a region of the skull to read what Gall and Spurzheim’s 1815
+        source says about its organ. Organ 22, Weight, is in the list only: the
+        source gives it no place on the skull.
       </p>
     </div>
 
@@ -427,6 +431,11 @@ function onKeydown(e) {
   --accent-rgb: var(--color-chapter, 139 92 246);
   --violet: rgb(var(--accent-rgb));
   --violet-soft: rgb(var(--color-chapter-soft, 167 139 250));
+  /* The skull's height, and the detail card's cap beside it. 56vh, or on a
+     short screen what is left of one once the chrome, the chapter band's
+     header and footer and the citation (about 25rem together) have theirs,
+     so the band stays one screen. */
+  --skull-h: min(56vh, calc(100vh - 25rem));
   position: relative;
   /* A full screen on its own route; a host can set less (WidgetBreakout). */
   min-height: var(--widget-min-h, 100vh);
@@ -439,14 +448,20 @@ function onKeydown(e) {
 }
 
 /* ── chrome ── */
+/* The view tabs and the organ list share one row where there is room, so
+   the stage below gets the height. */
 .phreno__chrome {
-  padding: 1.25rem 2rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  padding: 1rem 2rem 0;
 }
 .tabs {
+  flex: 1 1 320px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
-  margin-top: 0.75rem;
   border: 1px solid rgb(255 255 255 / 0.14);
 }
 .tab {
@@ -482,11 +497,15 @@ function onKeydown(e) {
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 2rem;
-  min-height: 65vh;
+  /* The view's own floor; a host that sizes the view by flex (the
+     chapter's full-screen band) sets it to 0. */
+  min-height: var(--widget-body-min-h, 65vh);
 }
 .stage {
   perspective: 1200px;
-  width: min(100%, 560px, 60vh);
+  /* As tall as the screen allows: the engraving's height is 435/450 of its
+     width, so this is the skull at --skull-h tall, capped by the column. */
+  width: min(100%, calc(var(--skull-h) * 450 / 435));
   margin: auto;
 }
 .skull {
@@ -554,9 +573,9 @@ function onKeydown(e) {
 .card {
   position: relative;
   width: 100%;
-  /* Fit inside the body's reserved height, including its vertical padding.
-     Long source text must scroll rather than grow the row and shift the skull. */
-  max-height: calc(65vh - 2rem);
+  /* No taller than the skull beside it: long source text scrolls rather
+     than growing the row and moving the skull. */
+  max-height: var(--skull-h);
   box-sizing: border-box;
   padding: 2.25rem 1.5rem;
   border-radius: var(--radius-control);
@@ -576,7 +595,6 @@ function onKeydown(e) {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 1rem;
   font-size: 0.8rem;
 }
 .faculty-picker select {
@@ -652,7 +670,7 @@ function onKeydown(e) {
   .phreno__body {
     grid-template-columns: minmax(0, 1fr);
     padding: 1rem;
-    min-height: 65vh;
+    min-height: var(--widget-body-min-h, 65vh);
   }
   .stage {
     width: min(460px, 90vw);

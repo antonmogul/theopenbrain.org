@@ -98,9 +98,11 @@ describe("3D skull source fallback", () => {
     expect(w.find('[data-source-block="675"]').text()).toContain(
       "Dr. Gall observed, in society"
     );
-    expect(w.find(".source-image img").attributes("src")).toContain(
-      "image67.png"
-    );
+    // Stuart, 13 Oct: the organ's full title, the text only, no disclaimer.
+    expect(w.find(".card__badge").text()).toContain("Organ of Individuality");
+    expect(w.find(".card img").exists()).toBe(false);
+    expect(w.find(".phreno3d__title").text()).toBe("Explore phrenology");
+    expect(w.text()).not.toContain("not accepted neuroscience");
     await w.find("select").setValue("22");
     expect(w.find(".card__editorial").text()).toContain(
       "not labelled by Spurzheim"

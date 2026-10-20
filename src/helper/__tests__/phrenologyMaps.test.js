@@ -70,4 +70,26 @@ describe("phrenologyMaps", () => {
       "translate(375 362.5) scale(1 1) translate(-375 -362.5)"
     );
   });
+
+  it("keeps the front and side maps on the skull (OPENBRAIN-147)", () => {
+    // Measured against the engravings' alpha in the 750 × 725 frame: the
+    // skull's top is at y 39 on the front view, its face ends at x 703 on
+    // the side view. The maps' own extents (y 34 → 501 drawn at the old
+    // front fit, x 78 → 714 at the old side fit) must land inside.
+    const edge = (fit, v, axis) => {
+      const c = axis === "x" ? 375 : 362.5;
+      const s = axis === "x" ? fit.sx : fit.sy;
+      const t = axis === "x" ? fit.tx : fit.ty;
+      return c + t + (v - c) * s;
+    };
+    // Front map top edge, in the unfitted SVG: 34 was drawn at sy .954,
+    // ty -8.5 → back-solve to the source edge, then apply the new fit.
+    const frontTopSrc = (34 - 362.5 + 8.5) / 0.954 + 362.5;
+    expect(edge(MAP_FIT.front, frontTopSrc, "y")).toBeGreaterThanOrEqual(39);
+    const sideFrontSrc = (714 - 375 - 29.5) / 0.94 + 375;
+    expect(edge(MAP_FIT.side, sideFrontSrc, "x")).toBeLessThanOrEqual(703);
+    // …without sliding the back of the side map off the skull (x 46).
+    const sideBackSrc = (78 - 375 - 29.5) / 0.94 + 375;
+    expect(edge(MAP_FIT.side, sideBackSrc, "x")).toBeGreaterThanOrEqual(46);
+  });
 });

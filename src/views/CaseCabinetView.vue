@@ -634,7 +634,9 @@ function onKeydown(e) {
   min-width: 0;
 }
 .cabinet-body--desktop {
-  min-height: min(760px, 76vh);
+  /* The drawer's floor; the chapter's full-screen band sizes the cabinet by
+     flex instead and sets it to 0 (OPENBRAIN-147). */
+  min-height: var(--widget-body-min-h, min(760px, 76vh));
 }
 .storyboard {
   position: absolute;
@@ -843,6 +845,10 @@ function onKeydown(e) {
   color: #fff;
   font-family: var(--font-ui, var(--font-body));
   box-sizing: border-box;
+  /* The root is a <section>: inside the chapter the reader pads every
+     section 15rem at the bottom (index.css), which left the drawer a third
+     of its band (OPENBRAIN-147). */
+  padding: 0;
 }
 .cabinet__head {
   display: flex;
