@@ -90,6 +90,7 @@ vi.mock("vue-router", async () => {
   });
   return {
     useRoute: () => route,
+    useRouter: () => ({ push: () => Promise.resolve() }),
     onBeforeRouteLeave: (guard) => {
       testLeaveState.guard = guard;
     },
