@@ -623,8 +623,16 @@ async function testGallery(state) {
       await expect(pane.locator(".figimg-dot")).toHaveCount(10);
       await expect(pane.locator(".figimg-gallery-img")).toHaveCount(1);
       await imageReady(pane.locator(".figimg-gallery-img"));
+      // This lane runs with motion on, so the clock is running (and may
+      // already have stepped); a manual step stops it for good, which keeps
+      // the measurements below still.
+      await expect(pane).toHaveAttribute("data-autoplay", /running|paused/);
+      await pane.getByRole("button", { name: /^Image 2 of 10/ }).click();
+      await expect(count(pane)).toHaveText("2 / 10");
+      await pane
+        .getByRole("button", { name: "Previous image", exact: true })
+        .click();
       await expect(count(pane)).toHaveText("1 / 10");
-      // Storybook runs with reduced motion: no automatic steps.
       await expect(pane).toHaveAttribute("data-autoplay", "paused");
       await snapshot(state, "gallery-reader");
     }
