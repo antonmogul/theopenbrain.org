@@ -18,6 +18,8 @@ const FLASH_MS = 1600;
 // A smooth jump cut short tries again this many times, within this long.
 const RESUME_TRIES = 3;
 const RESUME_MS = 3000;
+// How often a landing jump checks it is still moving (OPENBRAIN-148).
+const WATCH_MS = 250;
 // The reader taking over the scroll: a jump stops trying to land.
 const READER_INPUT = ["wheel", "touchstart", "pointerdown", "keydown"];
 // --reader-topbar-h's value in brand.css (4rem), for when it can't be read.
@@ -198,6 +200,14 @@ let stopLanding = null;
  * stops the scroll where it was. So at each scrollend short of `topOf()`,
  * asked again in case the page moved, it scrolls on, a few times at most;
  * the reader's own wheel, touch, click or key lets it go.
+ *
+ * scrollend alone wasn't enough (OPENBRAIN-148): the opener's TOC jump on
+ * a fresh page got one scrollend at once (the browser's own scroll of the
+ * link into view ending), decided it had landed at the page's top, and the
+ * refresh a second later, with no further scrollend while the page sat
+ * still, left it at the opener. So a landing jump also watches itself: a
+ * tick that finds the page where it was last, short of the target, scrolls
+ * on, under the same limit of tries.
  */
 export function scrollToY(topOf) {
   const y = () => {
@@ -213,28 +223,45 @@ export function scrollToY(topOf) {
 
   let tries = 0;
   const until = Date.now() + RESUME_MS;
+  const scrollNow = () => window.scrollY || window.pageYOffset || 0;
+  let lastSeen = scrollNow();
   const stop = () => {
     window.removeEventListener("scrollend", onEnd);
+    clearInterval(watch);
     for (const type of READER_INPUT)
       window.removeEventListener(type, stop, true);
     if (stopLanding === stop) stopLanding = null;
   };
-  function onEnd() {
+  // True when the jump is done with: arrived, out of tries, or out of time.
+  function settled(now) {
     const top = y();
     const max = Math.max(
       0,
       document.documentElement.scrollHeight - window.innerHeight
     );
-    const now = window.scrollY || window.pageYOffset || 0;
-    if (
+    return (
       top === null ||
       Math.abs(now - Math.min(top, max)) <= 2 ||
-      ++tries > RESUME_TRIES ||
       Date.now() > until
-    )
-      return stop();
-    window.scrollTo({ top, behavior: "smooth" });
+    );
   }
+  function resume() {
+    if (++tries > RESUME_TRIES) return stop();
+    window.scrollTo({ top: y(), behavior: "smooth" });
+  }
+  function onEnd() {
+    const now = scrollNow();
+    lastSeen = now;
+    if (settled(now)) return stop();
+    resume();
+  }
+  const watch = setInterval(() => {
+    const now = scrollNow();
+    if (settled(now)) return stop();
+    const stalled = now === lastSeen;
+    lastSeen = now;
+    if (stalled) resume();
+  }, WATCH_MS);
   window.addEventListener("scrollend", onEnd);
   for (const type of READER_INPUT)
     window.addEventListener(type, stop, { capture: true, passive: true });

@@ -493,8 +493,13 @@ onMounted(async () => {
   }
 });
 
+// One string, not an array: a getter that returns a new array fires on every
+// navigation, including the jump's own entry for the same chapter
+// (setJumpHistory's forced push), which tore the chapter down mid-jump and
+// left every jump at the opener (OPENBRAIN-148).
 watch(
-  () => [route.params.number, route.params.slug, route.query.courseId],
+  () =>
+    `${route.params.number}/${route.params.slug}/${route.query.courseId ?? ""}`,
   async () => {
     const generation = ++chapterExperienceGeneration;
     clearUserReaderState();
