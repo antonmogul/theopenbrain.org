@@ -181,6 +181,19 @@ const ROUTES = [
     minText: 2000,
     needsData: true,
     expectCount: [TIMELINE],
+    /*
+     * The first breakout box must paint from the viewport's left edge at
+     * every two-column width (Stuart, 1 Oct: "the 'full screen' breakout
+     * box doesn't cover about 1cm on the leftmost side of the screen",
+     * OPENBRAIN-145): left = 0, as wide as the window, hit-testable at
+     * x = 4. A data assertion like the Retina stage below.
+     */
+    expectStage: {
+      selector: "[data-breakout-box]",
+      minWidthRatio: 0.98,
+      probeX: 4,
+      minWidth: 1024,
+    },
   },
   {
     path: "/chapter/2/the-retina",
