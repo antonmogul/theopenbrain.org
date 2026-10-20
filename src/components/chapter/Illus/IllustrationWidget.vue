@@ -5,14 +5,44 @@
  * media_type "widget" with config.widgetId; the view comes from the same
  * lazy loaders the prose uses (src/widgets/embeds.js), so it is fetched only
  * when the figure is active.
+ *
+ * The stage is the pane's height, so an uploaded widget (which sizes its
+ * frame to its own document) is told how tall it may be: the stage's height
+ * is measured and provided as WIDGET_FIT, which UploadedWidgetEmbed passes
+ * to its frame (OPENBRAIN-148). Vue widget views size themselves.
  */
-import { computed, defineAsyncComponent } from "vue";
+import {
+  computed,
+  defineAsyncComponent,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  ref,
+} from "vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
+import { WIDGET_FIT } from "@/widgets/uploaded/widgetHost";
 
 const props = defineProps({
   /** The figure: { id, title?, widgetId } from useAnimations. */
   animation: { type: Object, required: true },
 });
+
+const stage = ref(null);
+const stageHeight = ref(0);
+provide(WIDGET_FIT, stageHeight);
+
+let observer = null;
+function measure() {
+  stageHeight.value = Math.floor(stage.value?.clientHeight || 0);
+}
+onMounted(() => {
+  measure();
+  if (typeof ResizeObserver !== "undefined" && stage.value) {
+    observer = new ResizeObserver(measure);
+    observer.observe(stage.value);
+  }
+});
+onBeforeUnmount(() => observer?.disconnect());
 
 const available = computed(() => hasEmbed(props.animation.widgetId));
 const view = computed(() =>
@@ -27,7 +57,7 @@ const view = computed(() =>
     class="iw pointer-events-auto"
     :aria-label="animation.title || 'Interactive'"
   >
-    <div class="iw-stage">
+    <div ref="stage" class="iw-stage">
       <component :is="view" v-if="view" />
       <p v-else class="iw-missing">
         This interactive ({{ animation.widgetId || "unknown" }}) isn't available

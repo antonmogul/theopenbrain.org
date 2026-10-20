@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   CSP,
   buildWidgetDoc,
+  fitHeight,
+  fitMessage,
+  fitScale,
   staticChecks,
   themeMessage,
   widgetSlug,
@@ -103,5 +106,90 @@ describe("tokens and ids", () => {
     expect(hasEmbed("retinabox")).toBe(true);
     expect(typeof embedLoader("upload:x")).toBe("function");
     expect(embedLoader("nope")).toBeNull();
+  });
+});
+
+// In the figure pane the frame is told its height (OPENBRAIN-148): the
+// Loewi widget's controls were cut off on a 900px-tall screen because the
+// widget sized its scene to the frame, which it could then grow past.
+describe("fitHeight", () => {
+  it("follows the widget between 80 and 6000 px when nothing is fixed", () => {
+    expect(fitHeight(700)).toBe(700);
+    expect(fitHeight(10)).toBe(80);
+    expect(fitHeight(9000)).toBe(6000);
+    expect(fitHeight(0)).toBe(240);
+    expect(fitHeight(0, { minHeight: 300 })).toBe(300);
+  });
+
+  it("never grows past the pane's height", () => {
+    expect(fitHeight(1200, { maxHeight: 776 })).toBe(776);
+    expect(fitHeight(500, { maxHeight: 776 })).toBe(500);
+    expect(fitHeight(1000.4, { maxHeight: 676.6 })).toBe(677);
+  });
+
+  it("starts at the pane's height, not minHeight, so the box doesn't jump", () => {
+    expect(fitHeight(0, { minHeight: 240, maxHeight: 776 })).toBe(776);
+    expect(fitHeight(0, { minHeight: 240, maxHeight: 0 })).toBe(240);
+    expect(fitHeight(0, { minHeight: 240, maxHeight: null })).toBe(240);
+  });
+});
+
+describe("fitMessage and the bridge's fit handling", () => {
+  it("sends a rounded height, or null to release the frame", () => {
+    expect(fitMessage(776.4)).toEqual({ __ob: 1, type: "fit", maxHeight: 776 });
+    expect(fitMessage(null).maxHeight).toBeNull();
+    expect(fitMessage(0).maxHeight).toBeNull();
+    expect(fitMessage("abc").maxHeight).toBeNull();
+  });
+
+  it("gives the widget OB.maxHeight, --ob-max-height and html[data-ob-fit]", () => {
+    const doc = buildWidgetDoc("<p>hi</p>");
+    expect(doc).toContain('m.type==="fit"');
+    expect(doc).toContain("--ob-max-height");
+    expect(doc).toContain("data-ob-fit");
+    expect(doc).toContain("onFit:");
+    expect(doc).toContain("maxHeight:window.__obFit||null");
+  });
+});
+
+describe("fitScale", () => {
+  it("is 1 when the widget fits or nothing is fixed", () => {
+    expect(fitScale(700, 776)).toBe(1);
+    expect(fitScale(776, 776)).toBe(1);
+    expect(fitScale(900, null)).toBe(1);
+    expect(fitScale(0, 776)).toBe(1);
+  });
+
+  it("shrinks a taller widget to the box, never under a half", () => {
+    expect(fitScale(910, 764)).toBe(0.84);
+    expect(fitScale(1552, 776)).toBe(0.5);
+    expect(fitScale(4000, 776)).toBe(0.5);
+  });
+});
+
+describe("buildWidgetDoc with a fixed height", () => {
+  it("lays the widget out for the box from its first paint", () => {
+    const doc = buildWidgetDoc("<html><head></head><body>x</body></html>", {
+      maxHeight: 776.4,
+    });
+    expect(doc).toMatch(/<html data-ob-fit>/);
+    expect(doc).toContain("--ob-max-height:776px");
+    expect(doc).toContain("window.__obFit=776;");
+  });
+
+  it("leaves a free frame alone", () => {
+    const doc = buildWidgetDoc("<html><head></head><body>x</body></html>");
+    expect(doc).not.toMatch(/<html[^>]*data-ob-fit/);
+    expect(doc).not.toContain("--ob-max-height:");
+    expect(doc).not.toContain("__obFit=");
+  });
+
+  it("keeps reduced motion beside it", () => {
+    expect(
+      buildWidgetDoc("<html><head></head></html>", {
+        reduceMotion: true,
+        maxHeight: 500,
+      })
+    ).toMatch(/<html data-ob-reduce-motion data-ob-fit>/);
   });
 });

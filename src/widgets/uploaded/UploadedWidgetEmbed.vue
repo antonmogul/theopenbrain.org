@@ -4,15 +4,21 @@
  * what embeds.js renders for widgetId "upload:<slug>", in a breakout, an
  * inline stage or the figure panel. It loads the widget by slug and runs it
  * in a WidgetFrame, in the chapter's colour (the ramp on <html>, set by the
- * router), else the colour it was uploaded with.
+ * router), else the colour it was uploaded with. In the figure pane the
+ * host provides the height to fit (WIDGET_FIT, OPENBRAIN-148); elsewhere
+ * the frame grows with the widget.
  */
-import { computed, onMounted, ref } from "vue";
+import { computed, inject, onMounted, ref } from "vue";
 import WidgetFrame from "./WidgetFrame.vue";
 import { fetchUploadedWidget } from "./useUploadedWidgets";
+import { WIDGET_FIT } from "./widgetHost";
 
 const props = defineProps({
   slug: { type: String, required: true },
 });
+
+const fit = inject(WIDGET_FIT, null);
+const maxHeight = computed(() => (fit && fit.value > 0 ? fit.value : null));
 
 const widget = ref(null);
 const state = ref("loading"); // loading | ready | missing
@@ -43,6 +49,7 @@ const ramp = computed(
       :html="widget.html"
       :ramp="ramp"
       :title="widget.title"
+      :max-height="maxHeight"
     />
     <p v-else-if="state === 'missing'" class="uw-note">
       This interactive isn't available yet.
