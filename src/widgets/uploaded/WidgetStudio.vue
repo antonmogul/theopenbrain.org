@@ -72,7 +72,7 @@ function open(html, { fileName = "", row = null } = {}) {
   draftId.value += 1;
   const bytes = new Blob([html]).size;
   if (bytes > MAX_WIDGET_BYTES) {
-    fileError.value = `That file is ${(bytes / 1024 / 1024).toFixed(1)} MB; the book takes up to 2 MB.`;
+    fileError.value = `That file is ${(bytes / 1024 / 1024).toFixed(1)} MB; the book takes up to 4 MB.`;
     return;
   }
   const title =
@@ -309,7 +309,7 @@ function storybookLink(slug) {
           />
           <span class="ws-drop-main">Drop the widget's .html here</span>
           <span class="ws-drop-sub"
-            >or click to choose a file · up to 2 MB</span
+            >or click to choose a file · up to 4 MB</span
           >
         </label>
         <p v-if="fileError" class="ws-error" role="alert">{{ fileError }}</p>

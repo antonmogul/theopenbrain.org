@@ -24,7 +24,7 @@ images (SVG inline, or `data:` URIs). The only outside resources allowed are:
 
 Anything else (other CDNs, APIs, `fetch`, images by URL, iframes) is blocked
 by the book and the widget will fail its checks. No `localStorage` for
-anything that matters: the frame may not keep it. Keep the file under 2 MB.
+anything that matters: the frame may not keep it. Keep the file under 4 MB.
 
 ## How it must behave
 
@@ -96,7 +96,7 @@ opened on its own, in Claude or in a browser.
 
 ## Checks before you hand it over
 
-- [ ] One `.html` file, only the allowed outside resources, under 2 MB
+- [ ] One `.html` file, only the allowed outside resources, under 4 MB
 - [ ] No horizontal scroll at 360 px; nothing cut off at 1440 px
 - [ ] Colours, fonts and corners from `--ob-*` tokens; one accent colour,
       with `--ob-on-accent` for text on it

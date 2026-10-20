@@ -16,7 +16,7 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 import OpenerHero from "./OpenerHero.vue";
 import OpenerToc from "./OpenerToc.vue";
 import { buildOutline } from "@/composables/useChapterOutline";
-import { coverForModule } from "@/helper/chapterCover";
+import { coverForModule, reactiveCoverForModule } from "@/helper/chapterCover";
 
 const props = defineProps({
   /* The module row (title, description, slug, ramp, cover_image_url). */
@@ -30,6 +30,9 @@ const title = computed(
 );
 const subtitle = computed(() => props.module?.description || "");
 const cover = computed(() => coverForModule(props.module));
+// The pointer-scrubbed Lottie over the still, when the chapter has one
+// (OPENBRAIN-146); keyed by slug so a chapter switch remounts it.
+const reactive = computed(() => reactiveCoverForModule(props.module));
 const outline = computed(() => buildOutline(props.text));
 
 gsap.registerPlugin(ScrollTrigger);
@@ -70,7 +73,13 @@ watch(outline, () => requestAnimationFrame(publishHeight));
 
 <template>
   <div ref="rootEl" class="chapter-opener" data-chapter-opener>
-    <OpenerHero :cover="cover" :title="title" scroll-target="chapter-toc" />
+    <OpenerHero
+      :key="module?.slug || 'none'"
+      :cover="cover"
+      :reactive="reactive"
+      :title="title"
+      scroll-target="chapter-toc"
+    />
     <OpenerToc
       id="chapter-toc"
       :title="title"

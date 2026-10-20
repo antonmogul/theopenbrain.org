@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   applyWidgetPlacements,
+  fullScreenOf,
   placementsForChapter,
   widgetParagraph,
   WIDGET_PLACEMENTS,
@@ -104,6 +105,47 @@ describe("widgetParagraph", () => {
     expect(widgetParagraph({ id: "x", widgetId: "w" }).widget.kind).toBe(
       "breakout"
     );
+  });
+
+  it("carries the full-screen flag only when set", () => {
+    expect(
+      widgetParagraph({ id: "x", widgetId: "w", fullScreen: true }).widget
+        .fullScreen
+    ).toBe(true);
+    expect(
+      widgetParagraph({ id: "x", widgetId: "w" }).widget
+    ).not.toHaveProperty("fullScreen");
+  });
+});
+
+describe("fullScreenOf (OPENBRAIN-147)", () => {
+  const list = [
+    { id: "a", widgetId: "w", chapterSlug: "c", fullScreen: true },
+    { id: "b", widgetId: "w", chapterSlug: "c" },
+  ];
+  it("reads the block's own flag first", () => {
+    expect(fullScreenOf({ placementId: "b", fullScreen: true }, list)).toBe(
+      true
+    );
+    expect(fullScreenOf({ placementId: "a", fullScreen: false }, list)).toBe(
+      false
+    );
+  });
+  it("falls back to the code placement a DB block replaced, by placementId", () => {
+    expect(fullScreenOf({ placementId: "a", widgetId: "w" }, list)).toBe(true);
+    expect(fullScreenOf({ placementId: "b", widgetId: "w" }, list)).toBe(false);
+    expect(fullScreenOf({ widgetId: "w" }, list)).toBe(false);
+    expect(fullScreenOf(null, list)).toBe(false);
+  });
+  it("marks the History chapter's two interactives, which the DB places as inline blocks", () => {
+    for (const id of ["foundations-phrenology", "foundations-case-cabinet"]) {
+      const p = WIDGET_PLACEMENTS.find((x) => x.id === id);
+      expect(p.kind).toBe("breakout");
+      expect(fullScreenOf({ placementId: id, kind: "inline" })).toBe(true);
+    }
+    expect(
+      WIDGET_PLACEMENTS.filter((p) => p.fullScreen).map((p) => p.id)
+    ).toEqual(["foundations-phrenology", "foundations-case-cabinet"]);
   });
 });
 
@@ -258,6 +300,18 @@ describe("applyWidgetPlacements", () => {
     });
     expect(p.widget.kind).toBe("inline");
     expect(p.widget.narrowKind).toBe("breakout");
+  });
+
+  it("carries fallbackWidgetId, the view shown until an upload is published", () => {
+    const p = widgetParagraph({
+      id: "rb",
+      widgetId: "upload:retina-retinabox",
+      fallbackWidgetId: "retinabox",
+    });
+    expect(p.widget.fallbackWidgetId).toBe("retinabox");
+    expect(
+      widgetParagraph({ id: "x", widgetId: "sdt" }).widget
+    ).not.toHaveProperty("fallbackWidgetId");
   });
 
   it("skips a placement when the chapter already carries that widget (DB-authored block wins)", () => {

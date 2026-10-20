@@ -71,7 +71,7 @@ export const WIDGETS = [
   {
     id: "retinabox",
     title: "RetINaBox — Interactive retinal circuit",
-    desc: "Explore how different retinal cell types process a visual stimulus. Adjust parameters to see how photoreceptors, bipolar cells, and ganglion cells respond.",
+    desc: "Explore how different retinal cell types process a visual stimulus. Adjust parameters to see how photoreceptors, bipolar cells, and ganglion cells respond. The original shown here is Stuart's 1 October 2026 v3 (guided tutorials), which the chapter runs as the upload retina-retinabox (OPENBRAIN-141); the Vue port is the earlier v2.",
     chapter: "The Retina",
     author: "Stuart Trenholm",
     srcHtml: retinaboxHtml,

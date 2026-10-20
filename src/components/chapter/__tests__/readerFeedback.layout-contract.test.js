@@ -4,12 +4,17 @@ import { describe, expect, it } from "vitest";
 // still requires a real browser at the supported desktop and phone widths.
 const source = (file) => readFileSync(new URL(file, import.meta.url), "utf8");
 describe("1 October reader layout contracts", () => {
-  it("anchors gallery arrows to the viewport regardless of caption/image height", () => {
+  it("centres gallery arrows on the stage box regardless of caption/image height", () => {
+    // OPENBRAIN-144: the arrows are positioned on the stage box, whose size
+    // does not depend on the image in it (fixed height in the pane and the
+    // dialog, a fixed aspect ratio inline), never on the image.
     const css = source("../Illus/FigureImages.vue");
     expect(css).toMatch(
-      /\.figview-nav\s*\{[^}]*position: fixed;[^}]*top: 50dvh;/
+      /\.figimg-nav\s*\{[^}]*position: absolute;[^}]*top: 50%;[^}]*transform: translateY\(-50%\);/
     );
-    expect(css).toMatch(/\.figview\s*\{[^}]*z-index: 1200;/);
+    expect(css).toMatch(
+      /\.figimg--flow \.figimg-stage--gallery\s*\{[^}]*aspect-ratio: 4 \/ 3;/
+    );
   });
   it("removes every perimeter gap on wide interactive dialogs", () => {
     const css = source("../demos/DemoModal.vue");

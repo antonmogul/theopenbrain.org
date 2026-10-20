@@ -4,10 +4,11 @@
  * A figure's artwork lives on its `animations` row: `config.images` is a list
  * of { src, caption?, alt? } (or bare src strings), and `image_file_url`
  * (mapped to `imageUrl` by useAnimations) is the single-image shorthand. One
- * image is a static figure; several are a set the shell shows as a gallery
- * (History Figures 2, 6 and 7; OPENBRAIN-97 replaced the auto-advancing
- * slider). Pure functions, so the rules are testable without mounting
- * anything.
+ * image is a static figure; several are a set the shell shows as a rotating
+ * gallery (History Figures 2, 6 and 7, the portraits, Milner and H.M.):
+ * one image at a time with dots and arrows, stepping every 10 s until the
+ * reader takes over (OPENBRAIN-144, after OPENBRAIN-97's thumbnail grid).
+ * Pure functions, so the rules are testable without mounting anything.
  */
 
 /** Normalise whatever the row carries into [{ src, caption, alt }]. */
