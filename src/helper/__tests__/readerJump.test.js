@@ -11,6 +11,7 @@ import {
   readingStartOf,
   reducedMotionPreferred,
   scrollToY,
+  setJumpHistory,
 } from "@/helper/readerJump";
 
 const root = document.documentElement;
@@ -172,6 +173,24 @@ describe("flashElement", () => {
 });
 
 describe("jumpToElement", () => {
+  it("records the place being left before it scrolls, unless told not to", () => {
+    setViewport({ scrollY: 1000 });
+    const record = vi.fn();
+    setJumpHistory(record);
+    try {
+      jumpToElement(placed(500));
+      expect(record).toHaveBeenCalledWith(1000);
+      expect(record.mock.invocationCallOrder[0]).toBeLessThan(
+        window.scrollTo.mock.invocationCallOrder[0]
+      );
+      record.mockClear();
+      jumpToElement(placed(500), { remember: false });
+      expect(record).not.toHaveBeenCalled();
+    } finally {
+      setJumpHistory(null);
+    }
+  });
+
   it("lands the element's top below the top bar, smoothly", () => {
     setViewport({ scrollY: 1000 });
     const el = placed(500);

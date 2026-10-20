@@ -398,6 +398,16 @@ export function createAppRouter({
         return { top: 0 };
       }
 
+      // A reader jump (readerJump's history hook) adds an entry for the same
+      // chapter: the jump does its own scrolling, and Back to the entry it
+      // left returns to the place recorded on it (OPENBRAIN-138).
+      if (to.name === "chapter" && to.fullPath === from.fullPath) {
+        store.savedPosition = undefined;
+        if (!savedPosition) return false;
+        const y = window.history.state?.obReturnY;
+        return typeof y === "number" ? { top: y } : savedPosition;
+      }
+
       if (savedPosition) return savedPosition;
 
       // The legacy store position is a one-shot return target. It must never be
@@ -459,6 +469,8 @@ export function createAppRouter({
     // the route names a module it does not know, the previous chapter's colour
     // must not survive. The catalog is cached after its first fetch, so on
     // chapter-to-chapter navigation the re-apply below lands a tick later.
+    // A reader jump's history entry is the same page: keep its ramp.
+    if (to.fullPath === from.fullPath && to.name === "chapter") return;
     clearChapterRamp();
     if (to.name !== "chapter" && to.name !== "chapter-overview") return;
     const catalog = useChapterCatalog();

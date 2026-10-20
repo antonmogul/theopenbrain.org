@@ -572,7 +572,10 @@ async function testSkull(state) {
     state,
     "unmapped faculty remains source-readable without an invented hotspot",
     async () => {
-      const picker = widget.getByRole("combobox", { name: "Browse a faculty" });
+      // The 2D widget says "organ", the source's word (OPENBRAIN-138).
+      const picker = widget.getByRole("combobox", {
+        name: is3d ? "Browse a faculty" : "Browse an organ",
+      });
       await picker.selectOption("22");
       await assertFaculty(state, 22, widget);
       await expect(
