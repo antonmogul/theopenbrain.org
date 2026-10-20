@@ -117,13 +117,15 @@ const youtubeSrc = computed(() =>
   <!-- Interactive figures collapse only on a CONFIRMED missing asset
        (assetOk === false). While the check runs the figure renders with its
        reserved empty stage, so slow connections see no layout pop-in. -->
-  <!-- A widget figure opens as its breakout card inline (OPENBRAIN-70 B5) -->
+  <!-- A widget figure opens as its breakout card inline (OPENBRAIN-70 B5);
+       a kit-built upload is made for a phone, so it runs in the text
+       (Loewi's, OPENBRAIN-140). -->
   <WidgetBreakout
     v-if="animation && mode === 'widget'"
     :placement="{
       placementId: animation.id,
       widgetId: animation.widgetId,
-      kind: 'breakout',
+      kind: animation.widgetId.startsWith('upload:') ? 'inline' : 'breakout',
       title: animation.title || '',
     }"
   />
