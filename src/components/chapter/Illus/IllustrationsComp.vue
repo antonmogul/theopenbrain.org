@@ -77,11 +77,22 @@ const animationList = computed(() => {
         });
       }
     );
-    return dbAnimations.value;
+    return dbAnimations.value.filter((a) => !isBlankFigure(a));
   }
   clog("MOUNT", "source = STATIC JSON fallback (Supabase empty/failed)");
-  return animationJSON.animations;
+  return animationJSON.animations.filter((a) => !isBlankFigure(a));
 });
+
+/*
+ * The 2023 seed's "Placeholder" Lottie (animationPlaceholder, an empty
+ * animation titled "Placeholder") is what the Retina's closing sections
+ * trigger to clear the pane; as a listed figure it drew a tile that said
+ * "Placeholder" beside the references (OPENBRAIN-148). Left out of the
+ * list, its trigger matches nothing and the pane simply empties.
+ */
+function isBlankFigure(a) {
+  return /^animationPlaceholder$/i.test(a?.id || "");
+}
 
 // [4 MOUNT] when a figure becomes active, log which renderer branch the template
 // takes for it — the placeholder/fullscreen/switch/scroll/inline decision.
