@@ -1,17 +1,23 @@
 /*
  * Chapter/Illustrations/FigureImages — the artwork inside the figure shell:
- * one image, or a set shown as a gallery grid whose thumbnails open a
- * full-viewport viewer (arrows, Esc, filmstrip; OPENBRAIN-97). Purely
+ * one image, or a set shown as a rotating gallery (OPENBRAIN-144): one
+ * full-size image at a time, dots under it, arrows at the sides of the
+ * stage box, a step every 10 s until the reader takes over. Purely
  * prop-driven.
+ *
+ * Storybook's Motion toolbar defaults to Reduced, which keeps the clock
+ * off; the Autoplay story switches it to app motion so the gallery turns.
  */
 import FigureImages from "../FigureImages.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
 import {
   FIG2_IMAGES,
   FIG2_LEGEND,
-  FIG6_IMAGES,
+  FIG6_ALL_IMAGES,
   FIG7_IMAGES,
   FIG7_LEGEND,
+  HM_IMAGES,
+  HM_LEGEND,
 } from "./figureImageFixtures";
 
 export default {
@@ -20,26 +26,36 @@ export default {
   tags: ["autodocs"],
   parameters: { layout: "fullscreen" },
   args: {
-    images: FIG6_IMAGES,
+    images: FIG6_ALL_IMAGES,
     caption: "",
     label: "FIG 06",
     title: "The medieval cell doctrine",
     large: false,
     fit: true,
+    legendAbove: false,
+    index: 0,
   },
   argTypes: {
     images: {
       control: "object",
       description:
-        "[{ src, caption?, alt? }] as normalised by figureImages(). One image renders on its own; several render as a gallery.",
+        "[{ src, caption?, alt?, youtube?, play? }] as normalised by figureImages(). One image renders on its own; several render as a rotating gallery.",
     },
     caption: {
       description: "Figure-level caption, used when an image has none.",
     },
-    large: { description: "Fullscreen overlay sizing." },
+    large: { description: "Fullscreen dialog sizing: bigger arrows and dots." },
     fit: {
       description:
-        "The container has a fixed height (the pinned pane): size the grid to fit it. Off inline, where the grid flows.",
+        "The container has a fixed height (the pinned pane, the dialog): the stage takes what the dots and legend leave. Off inline, where the stage is a 4:3 box.",
+    },
+    legendAbove: {
+      description:
+        "The shell shows the figure legend above the artwork, so only an image's own caption shows under the dots.",
+    },
+    index: {
+      control: { type: "number", min: 0 },
+      description: "The shown image (v-model:index).",
     },
   },
   render: chapterFrame(FigureImages, {
@@ -47,12 +63,31 @@ export default {
   }),
 };
 
-/** A gallery where every plate has its own (long) caption, shown in the
- *  viewer only (History Figure 6). */
-export const GalleryWithCaptions = {};
+/** Ten plates, each with its own long legend (History Figure 6). Reduced
+ *  motion (the Storybook default): the clock is off, so step with the
+ *  arrows, the dots or the arrow keys. */
+export const TenImages = {};
 
-/** A gallery under one shared legend (History Figure 7). Select a plate to
- *  open the viewer. */
+/** The same set turning on its own: a step every 10 s, paused while the
+ *  pointer or focus is on it, stopped by any manual step. Set Motion to
+ *  "App motion" in the toolbar, as this story does. */
+export const Autoplay = {
+  globals: { reduceMotion: false },
+};
+
+/** Two images under one shared legend: the smallest set that is a gallery
+ *  (History's Figure A, Figure E). */
+export const TwoImages = {
+  args: {
+    images: FIG7_IMAGES.slice(0, 2),
+    caption: FIG7_LEGEND,
+    label: "FIG 07",
+    title: "Vesalius, De humani corporis fabrica",
+  },
+};
+
+/** Four plates under one shared legend (History Figure 7); the legend is
+ *  the figure's, the same under every dot. */
 export const GallerySharedLegend = {
   args: {
     images: FIG7_IMAGES,
@@ -62,19 +97,29 @@ export const GallerySharedLegend = {
   },
 };
 
-/** Animation frames: the same skull, a hand demonstrating each method in
- *  turn (History Figure 2). Short captions sit under their thumbnails. */
-export const AnimationFrames = {
+/** As the shell renders it: the figure legend sits above the artwork, so
+ *  only an image's own caption shows under the dots. */
+export const LegendAbove = {
   args: {
     images: FIG2_IMAGES,
     caption: FIG2_LEGEND,
     label: "FIG 02",
     title: "Methods of trepanation",
+    legendAbove: true,
   },
 };
 
-/** Inline in the text column (below 1024px): the grid takes the height it
- *  needs instead of fitting a fixed box. */
+/** In the fullscreen dialog (`large`): bigger arrows and dots, a wider
+ *  legend, the stage taking most of the height. */
+export const Large = {
+  args: { large: true },
+  render: chapterFrame(FigureImages, {
+    template: `<div style="height:100vh;padding:20px;background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
+  }),
+};
+
+/** Inline in the text column (below 1024px): the stage is a 4:3 box the
+ *  width of the column, so the arrows stay put as the plates change. */
 export const GalleryInline = {
   args: {
     images: FIG7_IMAGES,
@@ -88,14 +133,14 @@ export const GalleryInline = {
   }),
 };
 
-/** A single image: no grid, no viewer. */
+/** A single image: no dots, no arrows, no clock. */
 export const SingleImage = {
   args: { images: FIG7_IMAGES.slice(0, 1), caption: FIG7_LEGEND },
 };
 
-/** A set with a video item (OPENBRAIN-134): the last still loops a muted
- *  YouTube clip in the viewer. Reduced motion keeps the still and adds a
- *  link to the video. */
+/** A set with a video item (OPENBRAIN-134): the last slide loops a muted
+ *  YouTube clip. Under reduced motion (here) the still stays, with a link to
+ *  the video; switch Motion to "App motion" and step to it for the loop. */
 export const GalleryWithVideoLoop = {
   args: {
     images: [
@@ -121,8 +166,23 @@ export const GalleryWithVideoLoop = {
         youtube: "OmmH4Rp9-to",
       },
     ],
-    caption:
-      "Brenda Milner, William Beecher Scoville, and Henry Molaison (H.M.).",
+    caption: HM_LEGEND,
+    label: "FIG",
+    title: "Brenda Milner and H.M.",
+    index: 3,
+  },
+};
+
+/** The live H.M. gallery: stills, the Milner interview the reader plays
+ *  (where the clock stops), and the sectioning loop. Embeds YouTube and
+ *  loads a YouTube poster: `live`, so the story smoke (no outside
+ *  requests) skips it. */
+export const MilnerAndHM = {
+  tags: ["live"],
+  globals: { reduceMotion: false },
+  args: {
+    images: HM_IMAGES,
+    caption: HM_LEGEND,
     label: "FIG",
     title: "Brenda Milner and H.M.",
   },

@@ -11,56 +11,56 @@ const animation = {
     { src: "/two.jpg", caption: "A longer caption ".repeat(50) },
   ],
 };
-async function openShell() {
+async function mountShell() {
   wrapper = mount(IllustrationPlaceholder, {
     props: { animation },
     attachTo: document.body,
     global: { stubs: { Transition: true } },
   });
-  const opener = wrapper.get('[aria-label="Expand to full screen"]');
+  document.documentElement.setAttribute("data-reduce-motion", "1");
+  await flushPromises();
+  return wrapper.get('[aria-label="Expand to full screen"]');
+}
+async function openShell() {
+  const opener = await mountShell();
   opener.element.focus();
   await opener.trigger("click");
   await flushPromises();
   return opener;
 }
+const paneImg = () =>
+  document.querySelector(".fig-shell .figimg-gallery-img")?.getAttribute("src");
+const dialogImg = () =>
+  document.querySelector(".demo-body .figimg-gallery-img")?.getAttribute("src");
 afterEach(() => {
   wrapper?.unmount();
   document.body.innerHTML = "";
+  document.documentElement.removeAttribute("data-reduce-motion");
 });
 
 describe("figure shell dialog", () => {
-  it.each([false, true])(
-    "keeps a nested gallery's interior Tab navigation above the shell (shift=%s)",
-    async (shiftKey) => {
-      await openShell();
-      document.querySelector(".demo-body .figimg-thumb").click();
-      await flushPromises();
-      const active = document.querySelector(
-        shiftKey ? ".figview-nav--next" : ".figview-close"
-      );
-      active.focus();
-      const event = new KeyboardEvent("keydown", {
-        key: "Tab",
-        shiftKey,
-        bubbles: true,
-        cancelable: true,
-      });
-      active.dispatchEvent(event);
-      // happy-dom does not emulate the browser's native Tab move; verify it
-      // remains available and no lower dialog steals focus in its handler.
-      expect(event.defaultPrevented).toBe(false);
-      expect(document.activeElement).toBe(active);
-      expect(
-        document.querySelector(".figview").contains(document.activeElement)
-      ).toBe(true);
-    }
-  );
-
-  it("keeps the reader locked when a nested gallery closes, then restores focus and scroll", async () => {
-    const opener = await openShell();
-    document.querySelector(".demo-body .figimg-thumb").click();
+  it("opens full screen on the image the pane is showing, and the pane follows the dialog", async () => {
+    const opener = await mountShell();
+    document.querySelector(".fig-shell [aria-label='Next image']").click();
     await flushPromises();
-    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(2);
+    expect(paneImg()).toBe("/two.jpg");
+    await opener.trigger("click");
+    await flushPromises();
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    expect(dialogImg()).toBe("/two.jpg");
+    // The dialog's arrows sit inside its stage box, like the pane's.
+    const stage = document.querySelector(".demo-body .figimg-stage");
+    expect(stage.querySelector(".figimg-nav--prev")).not.toBeNull();
+    expect(stage.querySelector(".figimg-nav--next")).not.toBeNull();
+    stage.querySelector(".figimg-nav--next").click();
+    await flushPromises();
+    expect(dialogImg()).toBe("/one.jpg");
+    expect(paneImg()).toBe("/one.jpg");
+  });
+
+  it("closes on Esc, then restores focus and scroll", async () => {
+    const opener = await openShell();
+    expect(document.body.getAttribute("style")).toContain("overflow: hidden");
     document.dispatchEvent(
       new KeyboardEvent("keydown", {
         key: "Escape",
@@ -69,20 +69,13 @@ describe("figure shell dialog", () => {
       })
     );
     await flushPromises();
-    expect(document.querySelector(".figview")).toBeNull();
-    expect(document.querySelector(".demo-panel")).not.toBeNull();
-    expect(document.body.getAttribute("style")).toContain("overflow: hidden");
-    document.querySelector(".demo-close").click();
-    await flushPromises();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
     expect(document.body.style.overflow).toBe("");
     expect(document.activeElement).toBe(opener.element);
   });
 
-  it("cleans both overlays when navigation unmounts the reader", async () => {
+  it("cleans the overlay when navigation unmounts the reader", async () => {
     await openShell();
-    document.querySelector(".demo-body .figimg-thumb").click();
-    await flushPromises();
     wrapper.unmount();
     await flushPromises();
     expect(document.querySelector('[role="dialog"]')).toBeNull();

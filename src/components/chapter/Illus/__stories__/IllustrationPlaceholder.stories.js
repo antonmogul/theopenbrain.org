@@ -6,7 +6,11 @@
  */
 import IllustrationPlaceholder from "../IllustrationPlaceholder.vue";
 import { illustrationFrame } from "../../__stories__/chapterFixtures";
-import { FIG6_IMAGES, FIG7_IMAGES, FIG7_LEGEND } from "./figureImageFixtures";
+import {
+  FIG6_ALL_IMAGES,
+  FIG7_IMAGES,
+  FIG7_LEGEND,
+} from "./figureImageFixtures";
 
 const DIAGRAM_TYPES = [
   "photo",
@@ -101,7 +105,7 @@ export const WithCyclingArtwork = {
       figureNumber: 6,
       diagramType: "manuscript",
       title: "The cell doctrine (ventricular theory)",
-      images: FIG6_IMAGES,
+      images: FIG6_ALL_IMAGES,
     },
   },
 };
