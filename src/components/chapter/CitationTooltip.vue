@@ -175,7 +175,10 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-ink));
   overflow-wrap: anywhere;
 }
-.ct-text :deep(a) {
+/* Reference links are the accent in both states: a visited DOI took the
+   browser's purple beside unvisited magenta (Stuart, 1 Oct, OPENBRAIN-145). */
+.ct-text :deep(a),
+.ct-text :deep(a:visited) {
   color: rgb(var(--color-accent));
   text-decoration: underline;
 }
@@ -214,7 +217,8 @@ onBeforeUnmount(() => {
   margin-bottom: 4px;
 }
 
-.ct-doi {
+.ct-doi,
+.ct-doi:visited {
   display: inline-flex;
   align-items: center;
   gap: 4px;

@@ -116,18 +116,41 @@ describe("reader menu outline", () => {
     ).toContain("History");
   });
 
-  it("jumps within the reader and closes the drawer without changing chapters", async () => {
+  it("jumps within the reader through readerJump and closes the drawer without changing chapters", async () => {
+    // readerJump lands the anchor below the top bar with window.scrollTo,
+    // never scrollIntoView (OPENBRAIN-145); reduced motion makes it instant.
+    document.documentElement.setAttribute("data-reduce-motion", "1");
+    const scrollTo = vi.fn();
+    const originalScrollTo = window.scrollTo;
+    window.scrollTo = scrollTo;
     const target = document.createElement("h3");
     target.id = "localisation";
     target.scrollIntoView = vi.fn();
+    target.getBoundingClientRect = () => ({
+      top: 1200,
+      bottom: 1300,
+      height: 100,
+      left: 0,
+      right: 0,
+      width: 0,
+    });
     document.body.appendChild(target);
-    await open();
-    document.querySelector(".outline-subsection").click();
-    await flushPromises();
-    expect(state.store.activeMenu).toBe(false);
-    expect(state.push).not.toHaveBeenCalled();
-    expect(target.scrollIntoView).toHaveBeenCalled();
-    expect(document.activeElement).toBe(target);
+    try {
+      await open();
+      document.querySelector(".outline-subsection").click();
+      await flushPromises();
+      expect(state.store.activeMenu).toBe(false);
+      expect(state.push).not.toHaveBeenCalled();
+      expect(target.scrollIntoView).not.toHaveBeenCalled();
+      expect(scrollTo).toHaveBeenCalledTimes(1);
+      const { top } = scrollTo.mock.calls[0][0];
+      // 1200 from the top, landed 64 + 16 below the viewport's top edge.
+      expect(top).toBe(1200 - 80);
+      expect(document.activeElement).toBe(target);
+    } finally {
+      window.scrollTo = originalScrollTo;
+      document.documentElement.removeAttribute("data-reduce-motion");
+    }
   });
 
   it("still navigates to a different chapter", async () => {

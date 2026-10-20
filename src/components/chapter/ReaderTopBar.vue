@@ -2,6 +2,7 @@
 import { ref, computed, nextTick } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
+import { useHomeRoute } from "@/composables/useHomeRoute";
 import { jumpToId } from "@/helper/readerJump";
 import AccountMenu from "@/components/Navigation/AccountMenu.vue";
 
@@ -30,6 +31,8 @@ const props = defineProps({
 });
 
 const store = useGeneral();
+// Where the logo goes: /chapters when signed in, the home page otherwise.
+const homeRoute = useHomeRoute();
 const {
   toggle: toggleSidebar,
   isOpen: sidebarOpen,
@@ -66,10 +69,13 @@ async function closeDropdown({ restoreFocus = true } = {}) {
 }
 
 // Through readerJump, like every jump in the reader (OPENBRAIN-128): below
-// the bar, no smooth scroll under reduced motion. By id: a slug can start
-// with a digit, which a querySelector('#' + slug) can't take.
-async function scrollToSection(slug) {
-  jumpToId(slug, { align: "top" });
+// the bar, no smooth scroll under reduced motion. By the section's own id
+// when it has one (every section and breakout box renders it), else the
+// title slug (TextComp's .trigger wrapper): a breakout box has no wrapper,
+// so the slug found nothing for it (OPENBRAIN-145). An id can start with
+// a digit, which a querySelector('#' + id) can't take.
+async function scrollToSection(section) {
+  jumpToId(section.id || section.slug, { align: "top" });
   await closeDropdown();
 }
 
@@ -97,7 +103,12 @@ function onDropdownKeydown(event) {
     <!-- Single app-bar row (prototype AppBar). Reading progress lives in the
          chapter timeline docked at the bottom (OPENBRAIN-128). -->
     <div class="bar-row">
-      <!-- Menu -->
+      <!-- Menu: the three lines open the drawer (chapter list + this
+           chapter's outline). The wordmark beside it was part of this same
+           button, so the two did one thing (Stuart, 1 Oct: "clicking both
+           seems to do about the same thing ... just need 1 of these"). Now
+           it is the book's logo: a link home, /chapters when signed in
+           (OPENBRAIN-145). -->
       <button
         type="button"
         class="reader-menu-btn"
@@ -116,22 +127,28 @@ function onDropdownKeydown(event) {
         >
           <path d="M2 4h10M2 7h10M2 10h10" />
         </svg>
-        <span class="wordmark" aria-hidden="true">
-          <svg
-            class="wordmark-logo"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
-          </svg>
-          <span class="wordmark-text">the open brain</span>
-        </span>
       </button>
+      <router-link
+        :to="homeRoute"
+        class="wordmark"
+        aria-label="The Open Brain, home"
+        title="The Open Brain"
+      >
+        <svg
+          class="wordmark-logo"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
+        </svg>
+        <span class="wordmark-text" aria-hidden="true">the open brain</span>
+      </router-link>
 
       <div class="divider"></div>
 
@@ -222,7 +239,7 @@ function onDropdownKeydown(event) {
           :aria-current="
             store.currentSubChapter === section.slug ? 'location' : undefined
           "
-          @click="scrollToSection(section.slug)"
+          @click="scrollToSection(section)"
         >
           <span class="dropdown-num">{{ idx + 1 }}</span>
           <span class="dropdown-title">{{ section.title }}</span>
@@ -271,7 +288,6 @@ function onDropdownKeydown(event) {
   min-width: 44px;
   min-height: 44px;
   padding: 0 0.5rem;
-  gap: 0.625rem;
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   background: transparent;
@@ -288,14 +304,24 @@ function onDropdownKeydown(event) {
   border-color: rgb(var(--color-ink));
 }
 
-/* Wordmark */
+/* Wordmark: the logo, a link home (OPENBRAIN-145). Its own 44px target,
+   no frame, so it reads as a logo rather than a second menu button. */
 .wordmark {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 44px;
+  padding: 0 0.375rem;
+  margin-left: -0.375rem;
+  border-radius: var(--radius-control);
   text-decoration: none;
   color: rgb(var(--color-ink));
   flex-shrink: 0;
+  transition: background 0.12s ease;
+}
+
+.wordmark:hover {
+  background: rgb(var(--color-ink) / 0.05);
 }
 
 .wordmark-logo {
@@ -505,6 +531,7 @@ function onDropdownKeydown(event) {
 }
 
 .reader-menu-btn:focus-visible,
+.wordmark:focus-visible,
 .section-jump:focus-visible,
 .tool-btn:focus-visible,
 .dropdown-item:focus-visible {

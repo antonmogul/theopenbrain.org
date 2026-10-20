@@ -48,10 +48,16 @@ onBeforeUnmount(() => {
 <template>
   <div class="text-base cursor-default font-sans">
     <div class="bg-img" />
+    <!-- No blur-md / grayscale-0 on the page while the menu is open
+         (OPENBRAIN-145): a `filter` on this zero-height root, together with
+         the drawer's overflow lock on <html>, collapsed the document to one
+         screen and the reader lost its place (Stuart, 7 Oct: closing the
+         menu "brings me back to the very top of the chapter"). The drawer's
+         backdrop blurs the page with backdrop-filter instead. -->
     <RouterView
       v-slot="{ Component }"
       class="z-0 duration-300"
-      :class="store.activeMenu ? 'blur-md grayscale-0 pointer-events-none' : ''"
+      :class="store.activeMenu ? 'pointer-events-none' : ''"
     >
       <transition :name="route.meta?.transitionName || 'routeT'">
         <component :is="Component" />
