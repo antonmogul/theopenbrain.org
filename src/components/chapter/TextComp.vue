@@ -92,6 +92,7 @@ const paragraphTrigger = (paragraph) => {
         id: `triggerAnimation${name}`,
         class: "animationTrigger block noHighlight",
         "data-figure-hold": paragraph.animation.hold,
+        "data-figure-room": paragraph.animation.room,
       }
     : {};
 };
@@ -715,6 +716,7 @@ onBeforeUnmount(() => {
             :id="introTriggerId(section)"
             class="animationTrigger block noHighlight"
             :data-figure-hold="section.animation?.hold"
+            :data-figure-room="section.animation?.room"
           >
             <template
               v-for="paragraph in section.paragraphs"

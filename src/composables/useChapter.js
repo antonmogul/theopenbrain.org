@@ -268,6 +268,7 @@ export function useChapter() {
 export {
   extractChapter1Meta,
   contentBlocksToHTML,
+  exploreFor,
   transformParagraph,
   reconstructNesting,
   mergeConsecutiveSubSections,
