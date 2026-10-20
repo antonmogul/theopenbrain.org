@@ -388,6 +388,18 @@ input {
     min-height: 100vh;
     padding-bottom: 15rem;
   }
+  /* Reading room below a figure's paragraph (OPENBRAIN-143): the authored
+     `animationFlags.room`, in screens, bound as data-figure-room
+     (figureHold.mjs). The pane figure stays up through it (figureEnd
+     measures the trigger's bottom) and the next figure's trigger moves
+     down with it. Wide reader only: below 1024px the figure is in the
+     text. */
+  .chapter-reader .animationTrigger[data-figure-room="0.5"] {
+    padding-bottom: 50vh;
+  }
+  .chapter-reader .animationTrigger[data-figure-room="1"] {
+    padding-bottom: 100vh;
+  }
 }
 @media (max-width: 1023px) {
   .chapter-reader section {

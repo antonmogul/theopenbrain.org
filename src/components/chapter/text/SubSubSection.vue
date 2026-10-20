@@ -3,6 +3,7 @@
     :id="subParagraph.animation ? 'trigger' + subParagraph.animation?.id : ''"
     :class="subParagraph.animation ? 'animationTrigger' : ''"
     :data-figure-hold="subParagraph.animation?.hold"
+    :data-figure-room="subParagraph.animation?.room"
   >
     <StartEndIcon :paragraph="subParagraph" art="start" />
     <template
@@ -17,6 +18,7 @@
         "
         :class="subSubSection.animation ? 'animationTrigger' : ''"
         :data-figure-hold="subSubSection.animation?.hold"
+        :data-figure-room="subSubSection.animation?.room"
       >
         <template
           v-if="
@@ -65,6 +67,7 @@
               "
               :class="subSubParagraph.animation ? 'animationTrigger' : ''"
               :data-figure-hold="subSubParagraph.animation?.hold"
+              :data-figure-room="subSubParagraph.animation?.room"
             >
               <!-- Inline editing for sub-sub-paragraph text -->
               <EditableBlock
