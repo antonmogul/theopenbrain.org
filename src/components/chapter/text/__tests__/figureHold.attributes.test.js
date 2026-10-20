@@ -123,6 +123,50 @@ describe("data-figure-hold on every figure trigger", () => {
     });
   });
 
+  // A figure's reading room (OPENBRAIN-143) rides on the same element: the
+  // padding index.css draws from data-figure-room lengthens the trigger
+  // figureEnd measures.
+  it("binds each level's room beside its hold, and none without one", () => {
+    const withRoom = (figure, room) => ({ ...figure, room });
+    const wrapper = mountSection({
+      section: {
+        ...section,
+        animation: withRoom(section.animation, 1),
+        paragraphs: [
+          text("p0", withRoom(fig("ParaFig", 0.5), 0.5)),
+          text("p1", fig("AutoFig")),
+          {
+            subSection: [
+              {
+                id: "h1",
+                title: "A subsection",
+                animation: fig("HeaderFig", "next"),
+                paragraphs: [text("sp0", withRoom(fig("SubFig"), 1))],
+              },
+            ],
+          },
+        ],
+      },
+      index: 0,
+      label: "1",
+    });
+    const rooms = Object.fromEntries(
+      wrapper
+        .findAll(".animationTrigger[id]")
+        .map((el) => [el.attributes("id"), el.attributes("data-figure-room")])
+    );
+    expect(rooms).toEqual({
+      triggerAnimationSectionFig: "1",
+      triggerAnimationParaFig: "0.5",
+      triggerAnimationAutoFig: undefined,
+      triggerAnimationHeaderFig: undefined,
+      triggerAnimationSubFig: "1",
+    });
+    expect(
+      wrapper.find("#triggerAnimationSubFig").attributes()
+    ).not.toHaveProperty("data-figure-hold");
+  });
+
   it("leaves the attribute off a figure on Automatic, and off the text", () => {
     const wrapper = mountSection();
     expect(

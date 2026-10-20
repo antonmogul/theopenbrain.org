@@ -39,6 +39,12 @@ export { FIGURE_HOLDS, normalizeFigureHold };
  *   `data-figure-hold`. Anything else counts as Automatic.
  * - Wide screens only: below 1024px the pane is hidden and figures are drawn
  *   in the text, so every figure keeps its paragraph's window there.
+ * - A hold never outlasts the next figure's trigger, so a short paragraph
+ *   followed straight by another figure stays short however it is held.
+ *   `animationFlags.room` (figureHold.mjs, data-figure-room; OPENBRAIN-143)
+ *   pads the trigger below the paragraph instead, which this measures as
+ *   part of the trigger: the figure stays through the room and the next
+ *   trigger moves down.
  *
  * figureEnd is called by ScrollTrigger on every refresh, so font, image and
  * viewport reflow is measured.
