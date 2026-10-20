@@ -415,12 +415,9 @@ const IGNORED_ERRORS = [
   // inline figures render YT embeds): its permissions-policy probes are not
   // ours to fix.
   /Permissions policy violation.*youtube\.com/i,
-  // /deck asks rpc/get_pinned_deck first (OPENBRAIN-129). Until the decks
-  // migration is in production the function doesn't exist, PostgREST answers
-  // 404 and the browser logs it; the page falls back to the bundled deck with
-  // a console.warn, which is the intended behaviour. Temporary: remove once
-  // 20261007010000_decks.sql is pushed (docs/production-sql.md).
-  /status of 404.*@ .*\/rest\/v1\/rpc\/get_pinned_deck/,
+  // The 404 on rpc/get_pinned_deck that /deck logged before the decks
+  // migration was pushed is no longer ignored (OPENBRAIN-148): the function
+  // is live, so a 404 there is a real failure.
 ];
 
 const isRealError = (text) => !IGNORED_ERRORS.some((re) => re.test(text));

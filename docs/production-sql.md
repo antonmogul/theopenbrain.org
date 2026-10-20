@@ -41,94 +41,38 @@ To move this into CI later: run `supabase db push` in the workflow behind a `SUP
 | `20260911000300_strip_markdown_bold`                      | **pushed 2026-09-17.** Two Foundations paragraphs had stray `**`; now 0, all 382 `content` values still JSON |
 | `20260917000000_reorder_chapters_history_first`           | **pushed 2026-09-17.** Foundations 1, Retina 2, Attention 3 (still `draft`)                                  |
 
+## State on 2026-10-20
+
+`supabase migration list` shows every local file up to `20261013000000` applied; only `20261013010000` is local-only (see Pending). Anton pushed the rows below between 7 and 13 Oct; each was verified read-only on 2026-10-20 with the publishable key (REST, `curl -H "apikey: $KEY"`) unless noted.
+
+| Migration                                                  | How it got there, and what was checked                                                                                                                                                                                                                                 |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20260923…` to `20261005010000` (25 files)                 | pushed with `db push` on their day; in the remote history                                                                                                                                                                                                              |
+| `20261007000000_trending_highlights_sync` (OPENBRAIN-128)  | **pushed.** `rpc/trending_sharing_ready` answers `42501 permission denied` to `anon` (the probe is signed-in only, as designed), so the "Share with readers" switch is live for readers. The highlight rows themselves can't be checked without a session.             |
+| `20261007010000_decks` (OPENBRAIN-129)                     | **pushed.** `decks?select=id` → `42501 permission denied for table decks`; `rpc/get_shared_deck?p_token=000…` → `null`; `rpc/get_pinned_deck` returns a deck with 9 slides, no `notes` on any slide and `slug` null (the creator-only fields are stripped for `anon`). |
+| `20261007010100_seed_funding_deck` (OPENBRAIN-129)         | **pushed.** `rpc/get_pinned_deck` is "The Open Brain — Funding deck"; `/deck` on production renders it with `data-deck-source="db"`; Dashboard → Decks lists it as published (1 deck, 1 published, 0 drafts) on 2026-10-20.                                            |
+| `20261007010200_chapter_media_no_listing` (OPENBRAIN-129)  | **pushed.** `POST storage/v1/object/list/chapter-media` with `{"prefix":"decks/"}` and the publishable key → `[]`.                                                                                                                                                     |
+| `20261009000000_history_stuart_images` (OPENBRAIN-134)     | **pushed.** `animations` has `animationFoundationsIntroWoodcut` (1 image), `…LocalizationPortraits` (4), `…MilnerHM` (5), `…ClosingHM` (1), all with artwork URLs.                                                                                                     |
+| `20261009010000_history_loewi_widget` (OPENBRAIN-134)      | **pushed.** `widget_uploads` has `loewi-vagusstoff`, published, updated 2026-10-09 (7 published uploads in all: the six Attention ones and Loewi).                                                                                                                     |
+| `20261011000000_history_manuscript_videos` (OPENBRAIN-136) | **pushed.** `animationFoundationsNgfLeviMontalcini` (1 image + video) and `animationFoundationsFig19` (3 entries) exist; the Milner/H.M. gallery has 5 entries (the YouTube loop among them).                                                                          |
+| `20261013000000_history_stuart_13_oct` (OPENBRAIN-138)     | **pushed.** The portrait gallery hangs on do-different-parts ¶5 (after the Descartes box); `?v=2` on the re-cut Fig 1 / Fig 16 / H.M. brain URLs; Phrenology and Penfield cards carry the "Explore phrenology" / "Be Penfield" headings on production.                 |
+
 `migration repair` only writes rows to `supabase_migrations.schema_migrations`; it executes nothing from the files. Marking a file applied means it will never run, so only do it for a migration you have verified is live. When unsure and the file is idempotent, leave it pending and let `db push` run it: that is how the reading-progress migration turned out to have been missing all along.
 
 ## Pending
 
 Committed, not yet pushed. `supabase migration list` is the authority: any other local-only row it shows is pending too.
 
-| Migration                                                 | What it does, and what the reader does until it is live                                                                                                                                                                                                                                                                                                                                   |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261007000000_trending_highlights_sync` (OPENBRAIN-128) | Makes shared highlights private to their owner and creators, recounts Trending as distinct readers, limits Trending to published chapters, and adds the probe the "Share with readers" switch waits for. Details below. Until it is pushed the switch stays hidden and Trending keeps its old insert-only counts.                                                                         |
-| `20261007010000_decks` (OPENBRAIN-129)                    | Adds `decks` and `deck_revisions` (creators only), the public read functions `get_pinned_deck()` / `get_shared_deck(token)` and the editor's `publish_deck()` / `discard_deck_changes()` / `set_pinned_deck()`. Details below. Until it is pushed `/deck` shows the bundled October copy, `/deck/s/<token>` links don't exist, and Dashboard → Decks says "Decks need a database update". |
-| `20261007010100_seed_funding_deck` (OPENBRAIN-129)        | Generated from `src/data/decks/funding.js` (`npm run deck:seed-sql`). Inserts the funding deck (slug `funding`) as published and shows it at `/deck`. Until it is pushed (with the table) `/deck` keeps the bundled copy.                                                                                                                                                                 |
-| `20261007010200_chapter_media_no_listing` (OPENBRAIN-129) | Replaces the `chapter-media` bucket's "Anyone reads chapter media" SELECT policy with "Creators read chapter media". Public image URLs keep working; until it is pushed, the publishable key can list every folder and file in the bucket (draft chapters' and decks' uploads included).                                                                                                  |
+| Migration                                                  | What it does, and what the reader does until it is live                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261013010000_history_loewi_beside_text` (OPENBRAIN-140) | Makes Loewi's animation the pane figure of how-neurons-communicate ¶5 (held one screen) and removes the full-width band ¶6. **Its content is already live** (checked 2026-10-20: `animationFoundationsLoewiWidget` exists, ¶5 carries it with `hold: 1`, ¶6 is gone), so it was run by hand without `migration repair`. Either `supabase migration repair --status applied 20261013010000` or a plain `db push` is safe: the file is idempotent (the row upserts, the figure attaches only to a paragraph without one or with this one, the delete finds nothing). Until the history row exists every `db push` will re-run it.                                                                                                              |
+| `20261021030000_history_loewi_widget_fit` (OPENBRAIN-148)  | Replaces `widget_uploads.html` for `loewi-vagusstoff` with `src/widgets/uploads/loewi-vagusstoff.html`, which now lays itself out for the height the book gives it (`html[data-ob-fit]`), so in the pane the drawing shrinks and the caption, transport and step buttons stay in view. The SQL is the file in a `$w$` string: regenerate from the file rather than edit it. Until it is pushed the reader shows the old file shrunk whole to the pane by `WidgetFrame`'s scale fallback (about 84% on a 1440×900 screen). Verify after: `widget_uploads?slug=eq.loewi-vagusstoff&select=updated_at` shows the push day, and the pane beside "The experiment he dashed off…" in `/chapter/1/foundations-of-neuroscience` has no side margins. |
 
-### `20261007000000_trending_highlights_sync`
+| `20261021040000_editor_test_artefacts` (OPENBRAIN-148) | Removes two editor tests left in the live text: " THis is now editable" at the end of History's first paragraph (blocks and `content_text`), and " (EDIT)" from the Retina's section title "Story of the eye (EDIT)". Until it is pushed both are on screen (the first under the Oliver Sacks quote, the second in the Retina's opener TOC and section menu); the creator editor can also fix them by hand. |
 
-- **Highlight rows.** Drops every permissive SELECT policy on `highlights` except an owner one, which removes the initial-schema "Users can view public highlights" (it returned a shared row, with `user_id`, tags and the legacy note, to anyone). Owners keep their rows through "Users manage own highlights"; the new "Creators read shared highlights" lets creators read `is_public` rows only.
-- **Reading Trending.** "Anyone reads trending highlights" (`USING (true)`) becomes "Read trending passages of published chapters": a row is visible when its paragraph's module is published, or to a creator.
-- **The count.** Triggers on insert, update and delete recompute the affected passage: the number of distinct readers whose shared `selected_text`, whitespace-normalised, occurs in the paragraph's reader text (`trending_paragraph_text`, which mirrors `contentBlocksToHTML`) or in its `content_text`. The shown text is the normalised text most of those readers chose (a tie goes to the shortest, then byte order). The file then rebuilds the table, dropping drifted counts, one reader's duplicates, text that is not in its paragraph and the `seed_dashboard_data.sql` fixture rows. The helpers (`trending_squash`, `trending_paragraph_text`, `trending_text_in_paragraph`, `trending_refresh_passage`) are not callable over RPC.
-- **The probe.** `public.trending_sharing_ready()` returns true, for signed-in readers only. The highlight toolbar asks it once per page load (`useTrendingSharing`) and shows "Share with readers" only on a true answer, so a frontend deployed before this push never offers sharing while the old policy stands. Readers see the switch from their next page load after the push. Supabase reloads the PostgREST schema cache on DDL; if the switch is still hidden, run `NOTIFY pgrst, 'reload schema';`.
-- **Self-check.** The push fails, and changes nothing, if there is no owner policy on `highlights` (FOR ALL or FOR SELECT, `USING` `auth.uid() = user_id` either way round, the `(select auth.uid())` form included), if any other permissive SELECT or ALL policy there could expose rows (the error names it), if `trending_highlights` has any other policy, if the probe is callable by `anon` or not by `authenticated`, or if the table does not match the recount.
-- **Before pushing,** look at what production has, since dashboard edits are not in the migrations:
+Other migrations were in flight on the night of 2026-10-20 (`20261021000000_retina_stuart_widgets`, `20261021010000_history_breakout_boxes`, `20261021020000_history_figures_round3`, a `widget_uploads` 4 MB limit); their PRs add their own rows here when they land. Push in version order: the CLI refuses a pending file older than the newest applied one without `--include-all`, which does not arise as long as `20261013010000` goes first.
 
-  ```sql
-  select tablename, policyname, cmd, permissive, roles, qual
-    from pg_policies
-   where schemaname = 'public' and tablename in ('highlights', 'trending_highlights');
-  ```
-
-### `20261007010000_decks`, `20261007010100_seed_funding_deck` and `20261007010200_chapter_media_no_listing`
-
-**Push them with the timeline file, in one `supabase db push`.** The CLI applies them in version order: `20261007000000_trending_highlights_sync` → `20261007010000_decks` → `20261007010100_seed_funding_deck` → `20261007010200_chapter_media_no_listing`. Each file is its own transaction and a failure stops the push, so if the trending self-check fails, the deck files wait too. The seed needs the table: never paste it on its own.
-
-```bash
-supabase migration list
-supabase db push --dry-run     # should list exactly these four
-supabase db push
-```
-
-- **Tables.** `decks` holds one row per deck: `slides` (the working copy the editor autosaves), `published_slides` (the snapshot the public sees), `share_token`, `pinned` (at most one row, by a partial unique index) and `version` (the editor's compare-and-swap). The table checks only that `slides` is an array of at most 100 entries and 1 MB; layouts are validated in the app. `deck_revisions` gets a row per publish and has no update policy. Both tables are creators only (`public.is_creator()`), with no anon policy and no anon grant, so the publishable key cannot list decks.
-- **Read functions.** `get_pinned_deck()` (for `/deck`) and `get_shared_deck(p_token)` (for `/deck/s/<token>`) are SECURITY DEFINER and executable by `anon` and `authenticated`. They are `stable`, so the app calls them with GET. Each returns the published snapshot without hidden slides and, unless the caller is a creator, without speaker notes and with `slug` null (a slug may name a funder), or `null` when there is no match. Their shared helper `deck_public_slides` is not callable over RPC.
-- **Write functions.** `publish_deck(p_id, p_version)` (snapshot plus revision row in one transaction; raises `deck_conflict` when the version moved), `discard_deck_changes(p_id, p_version)` (copies the row's own published snapshot and title back into the working copy at version n+1, `published_version` with it; raises `deck_conflict` on a stale version or a deck never published) and `set_pinned_deck(p_id)` are SECURITY INVOKER, so RLS still applies, and refuse non-creators with `42501`. None is executable by `anon`. The editor's "off" switch for `/deck` does not call `set_pinned_deck(null)`: it PATCHes its own row's `pinned`, so it never unpins another deck.
-- **Self-check.** The push fails, and changes nothing, if RLS is off on either table, a policy reaches `anon` or `public` or lacks `is_creator()`, `anon` can select either table, the read functions are not SECURITY DEFINER or not executable by `anon`, a write function is SECURITY DEFINER or executable by `anon`, or notes and hidden slides are not stripped.
-- **The seed.** Inserts the deck `funding` ("The Open Brain — Funding deck", 9 slides) as published, with its first `deck_revisions` row, and pins it to `/deck` unless another deck already is. It is `on conflict (slug) do nothing`, so it never overwrites a deck edited in the dashboard. It is generated (`npm run deck:seed-sql`); see `docs/funding-deck.md`.
-- **Storage.** Deck images go to the existing `chapter-media` bucket under `decks/<deck id>/` (the uuid, not the slug), which its write policies already cover. `20261007010200_chapter_media_no_listing` closes listing: the bucket's anon/authenticated SELECT policy only ever let the publishable key call `POST /storage/v1/object/list/chapter-media` and walk every folder (Supabase advisor lint 0025), since `/object/public/` downloads skip RLS. SELECT becomes creators only. Its self-check fails the push if the bucket isn't public, if a SELECT policy naming `chapter-media` reaches `anon`/`public` or lacks `is_creator()`, or if a SELECT policy naming no bucket reaches `anon`/`public`. Before pushing, look for dashboard-made policies:
-
-  ```sql
-  select policyname, cmd, roles, qual
-    from pg_policies
-   where schemaname = 'storage' and tablename = 'objects';
-  ```
-
-**Checks after the push:**
-
-1. `supabase migration list` shows all four versions on both sides.
-2. In the SQL editor:
-
-   ```sql
-   select slug, status, pinned, slide_count, version, published_version
-     from public.decks;
-   -- funding | published | true | 9 | 1 | 1
-   select note from public.deck_revisions;
-   -- one row: Seeded from src/data/decks/funding.js
-   ```
-
-3. With the publishable key only (what an anonymous visitor has):
-
-   ```bash
-   KEY=<VITE_SUPABASE_PUBLISHABLE_KEY>
-   API=https://ocenwbkdzmxhsvwlornp.supabase.co/rest/v1
-   curl -s "$API/rpc/get_pinned_deck" -H "apikey: $KEY" \
-     | jq '.slides | length, (map(has("notes")) | any)'   # 9, false
-   curl -s "$API/rpc/get_shared_deck?p_token=00000000000000000000000000000000" \
-     -H "apikey: $KEY"                                    # null
-   curl -s "$API/decks?select=id" -H "apikey: $KEY"       # permission denied, never rows
-   curl -s "$API/rpc/get_pinned_deck" -H "apikey: $KEY" | jq '.slug'   # null
-   curl -s -X POST "https://ocenwbkdzmxhsvwlornp.supabase.co/storage/v1/object/list/chapter-media" \
-     -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
-     -d '{"prefix":"decks/"}'                             # []
-   ```
-
-4. Open `/deck` on production (`https://theopenbrainorg-production.up.railway.app/deck`): `document.querySelector('.deck-view').dataset.deckSource` is `"db"` and the console has no `[deck]` warning. Signed in as a creator, Dashboard → Decks lists the funding deck with "Shown at /deck".
-5. If a function still answers 404, reload the PostgREST schema cache: `NOTIFY pgrst, 'reload schema';`.
-
-**Then, in a follow-up PR:**
-
-- Remove the temporary `get_pinned_deck` entry from `IGNORED_ERRORS` in `scripts/smoke.mjs`. It covers the 404 the browser logs while the function is missing; once it exists, a 404 there is a real failure.
-- Add a smoke route for `/deck/s/00000000000000000000000000000000` that expects the "isn't available" text and no console errors (the function answers `null` with a 200).
-- Move the four rows out of Pending into this ledger, with how each was verified.
+**Done after the October push (OPENBRAIN-148, 2026-10-20):** the temporary `get_pinned_deck` entry is out of `IGNORED_ERRORS` in `scripts/smoke.mjs`, and the four 7 Oct rows are in the ledger above with how each was verified. Still open: a smoke route for `/deck/s/00000000000000000000000000000000` that expects the "isn't available" text and no console errors (the function answers `null` with a 200).
 
 ## Fallback: the dashboard SQL editor
 
