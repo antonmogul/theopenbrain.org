@@ -51,6 +51,20 @@ describe("figureFor: the figure's hold", () => {
     expect(figureFor(row({ hold: "0" })).hold).toBe(0);
   });
 
+  // Reading room below the paragraph (OPENBRAIN-143): 0.5 or 1 screen,
+  // normalised like the hold; anything else is none.
+  it.each([0.5, 1, "1", "0.5"])("carries room %j", (room) => {
+    expect(figureFor(row({ room })).room).toBe(Number(room));
+  });
+
+  it.each([[0], [2], ["next"], [[1]], [null], [true]])(
+    "leaves a malformed or absent room (%j) out",
+    (room) => {
+      expect(figureFor(row({ room }))).not.toHaveProperty("room");
+      expect(figureFor(row({ hold: 1, room }))).toHaveProperty("hold", 1);
+    }
+  );
+
   it("keeps the other flags beside it", () => {
     const figure = figureFor(row({ hold: 1, transition: true, start: true }));
     expect(figure).toMatchObject({
