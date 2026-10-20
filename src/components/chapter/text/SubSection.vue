@@ -20,6 +20,7 @@
         subSections?.animation?.name ? 'animationTrigger block noHighlight' : ''
       "
       :data-figure-hold="subSections?.animation?.hold"
+      :data-figure-room="subSections?.animation?.room"
     >
       <!-- subSection title -->
       <span :id="subSections?.title ? toSlug(subSections?.title) : ''" />
@@ -75,6 +76,7 @@
               : ''
           "
           :data-figure-hold="subParagraph?.animation?.hold"
+          :data-figure-room="subParagraph?.animation?.room"
         >
           <template
             v-if="

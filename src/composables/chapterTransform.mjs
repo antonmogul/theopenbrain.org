@@ -13,7 +13,10 @@
  * Output shape: Chapter 1's text.json paragraph tree.
  */
 // Relative and alias-free like this file, so plain `node` can still import it.
-import { normalizeFigureHold } from "../helper/figureHold.mjs";
+import {
+  normalizeFigureHold,
+  normalizeFigureRoom,
+} from "../helper/figureHold.mjs";
 
 /**
  * Convert JSONB content blocks to HTML text
@@ -186,6 +189,7 @@ export function contentBlocksToHTML(blocks) {
 export function figureFor(p) {
   const flags = p.content?.animationFlags || {};
   const hold = normalizeFigureHold(flags.hold);
+  const room = normalizeFigureRoom(flags.room);
   return {
     name: p.animation_key.replace(/^animation/, ""),
     id: p.animation_key,
@@ -207,6 +211,10 @@ export function figureFor(p) {
     // otherwise stringify into a valid data-figure-hold). 0 is a choice of
     // its own, so test for null. historyFigureTiming reads the attribute.
     ...(hold !== null ? { hold } : {}),
+    // Reading room below the paragraph in the two-column reader, in
+    // screens (OPENBRAIN-143; data-figure-room, index.css). Normalised the
+    // same way; absent = none.
+    ...(room !== null ? { room } : {}),
   };
 }
 
