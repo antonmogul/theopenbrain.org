@@ -145,18 +145,20 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   border-bottom: 0;
 }
 /* Reduced motion: no pause. The reader's own setting decides
-   (data-reduce-motion "1" on, "0" off); the OS setting only when unset. */
-:global(:root[data-reduce-motion="1"]) .bx-pause-room {
+   (data-reduce-motion "1" on, "0" off); the OS setting only when unset.
+   Plain selectors, never the global() wrapper: scoped CSS keeps only
+   what is inside it, so the rule hit :root and hid the whole page. */
+:root[data-reduce-motion="1"] .bx-pause-room {
   display: none;
 }
-:global(:root[data-reduce-motion="1"]) .bx-pause--on > .bx {
+:root[data-reduce-motion="1"] .bx-pause--on > .bx {
   position: relative;
 }
 @media (prefers-reduced-motion: reduce) {
-  :global(:root:not([data-reduce-motion="0"])) .bx-pause-room {
+  :root:not([data-reduce-motion="0"]) .bx-pause-room {
     display: none;
   }
-  :global(:root:not([data-reduce-motion="0"])) .bx-pause--on > .bx {
+  :root:not([data-reduce-motion="0"]) .bx-pause--on > .bx {
     position: relative;
   }
 }

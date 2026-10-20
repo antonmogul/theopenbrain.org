@@ -42,6 +42,10 @@ describe("1 October reader layout contracts", () => {
     // box (heading and text) sticks while a spacer scrolls past.
     expect(css).toMatch(/\.bx-pause--on > \.bx\s*\{[^}]*position: sticky/);
     expect(css).toMatch(/\.bx-pause-room\s*\{[^}]*height: 45vh/);
+    // Scoped CSS keeps only what is inside a global() wrapper, so one
+    // followed by more selector hit :root and hid the whole page for
+    // reduced-motion readers (OPENBRAIN-140).
+    expect(css).not.toMatch(/:global\([^)]*\)\s+[.#\w]/);
   });
   it("keeps figure references bold without link visual affordances", () => {
     const css = source("../../../index.css");
