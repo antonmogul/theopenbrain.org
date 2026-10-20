@@ -58,7 +58,21 @@ const props = defineProps({
   placement: { type: Object, required: true },
 });
 
-const widgetId = computed(() => props.placement?.widgetId || "");
+const requestedId = computed(() => props.placement?.widgetId || "");
+// While an upload isn't published, a placement may name a built-in view to
+// show in its place (fallbackWidgetId): RetINaBox's Vue port stands in for
+// Stuart's v3 until its migration is pushed (OPENBRAIN-141).
+const fallbackId = computed(() => props.placement?.fallbackWidgetId || "");
+const usingFallback = computed(
+  () =>
+    !!upload.value &&
+    uploadReady.value === false &&
+    !!fallbackId.value &&
+    hasEmbed(fallbackId.value)
+);
+const widgetId = computed(() =>
+  usingFallback.value ? fallbackId.value : requestedId.value
+);
 // A placement can ask to be the card below the two-column reader, where a
 // desktop-sized tool would be squeezed into the column (narrowKind).
 const narrow = useMediaQuery(READER_NARROW_QUERY);
@@ -75,7 +89,7 @@ const fullScreen = computed(
 // An uploaded widget ("upload:<slug>") that isn't published yet is a marker
 // for a widget still to be built: the card says "Coming soon" and has
 // nothing to open (OPENBRAIN-110).
-const upload = computed(() => uploadSlug(widgetId.value));
+const upload = computed(() => uploadSlug(requestedId.value));
 const uploadReady = ref(null); // null while checking
 watch(
   upload,
@@ -92,7 +106,7 @@ watch(
   { immediate: true }
 );
 const comingSoon = computed(
-  () => !!upload.value && uploadReady.value === false
+  () => !!upload.value && uploadReady.value === false && !usingFallback.value
 );
 // A published upload shows its own title (the kit's layout), so the band
 // doesn't repeat it.

@@ -412,4 +412,32 @@ describe("WidgetBreakout for an uploaded widget", () => {
     expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
     w.unmount();
   });
+
+  // RetINaBox's Vue port stands in for Stuart's v3 until its migration is
+  // pushed (OPENBRAIN-141).
+  it("shows the fallback view while the upload isn't published", async () => {
+    const w = mountBreakout({
+      ...card("upload:retina-retinabox"),
+      fallbackWidgetId: "retinabox",
+    });
+    await flushPromises();
+    expect(w.find(".wb-kicker").text()).not.toContain("Coming soon");
+    expect(
+      w.find("[data-widget-breakout]").attributes("data-widget-breakout")
+    ).toBe("retinabox");
+    expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
+    w.unmount();
+  });
+
+  it("prefers the upload over its fallback once it is published", async () => {
+    const w = mountBreakout({
+      ...card("upload:built"),
+      fallbackWidgetId: "retinabox",
+    });
+    await flushPromises();
+    expect(
+      w.find("[data-widget-breakout]").attributes("data-widget-breakout")
+    ).toBe("upload:built");
+    w.unmount();
+  });
 });
