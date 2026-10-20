@@ -249,15 +249,11 @@ async function historyDismissal(state) {
     );
   });
   await openDialog(state);
-  if (state.name === "figure-6")
-    await page.locator(".demo-panel .figimg-thumb").first().click();
   await page.goBack();
   await expect(page).toHaveURL(/#fixture-first$/);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expectLock(page, false, state.originalScroll);
   await openDialog(state);
-  if (state.name === "figure-6")
-    await page.locator(".demo-panel .figimg-thumb").first().click();
   await page.goForward();
   await expect(page).toHaveURL(/#fixture-second$/);
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -612,34 +608,43 @@ async function testSkull(state) {
 
 async function testGallery(state) {
   const { page } = state;
+  const count = (scope) => scope.locator(".figimg-count-n");
+  // With motion on, the leaving slide stays through the 300 ms crossfade:
+  // only the arriving one is the shown image.
+  const slideImg = (scope) =>
+    scope.locator(
+      ".figimg-slide:not(.figimg-x-leave-active) .figimg-gallery-img"
+    );
   await step(
     state,
-    "all ten authentic Figure 6 plates render in reader frame",
+    "the rotating gallery shows one Figure 6 plate with a dot per plate",
     async () => {
-      await expect(page.locator(".history-fixture .figimg-thumb")).toHaveCount(
-        10
-      );
-      for (const image of await page
-        .locator(".history-fixture .figimg-thumb-img")
-        .all())
-        await imageReady(image);
+      const pane = page.locator(".history-fixture .figimg--gallery");
+      await expect(pane.locator(".figimg-dot")).toHaveCount(10);
+      await expect(slideImg(pane)).toHaveCount(1);
+      await imageReady(slideImg(pane));
+      // This lane runs with motion on, so the clock is running (and may
+      // already have stepped); a manual step stops it for good, which keeps
+      // the measurements below still.
+      await expect(pane).toHaveAttribute("data-autoplay", /running|paused/);
+      await pane.getByRole("button", { name: /^Image 2 of 10/ }).click();
+      await expect(count(pane)).toHaveText("2 / 10");
+      await pane
+        .getByRole("button", { name: "Previous image", exact: true })
+        .click();
+      await expect(count(pane)).toHaveText("1 / 10");
+      await expect(pane).toHaveAttribute("data-autoplay", "paused");
       await snapshot(state, "gallery-reader");
     }
   );
   await step(
     state,
-    "nested full-viewport gallery, focus trap and shared scroll lock",
+    "full-viewport gallery dialog, focus trap and shared scroll lock",
     async () => {
-      const outer = await openDialog(state);
-      await outer.locator(".figimg-thumb").first().click();
-      const viewer = page.locator(".figview");
-      await expect(viewer).toBeVisible();
-      await viewportDialog(page, ".figview");
-      await expect(page.getByRole("dialog")).toHaveCount(2);
-      await expect(
-        viewer.getByRole("button", { name: "Close viewer" })
-      ).toBeFocused();
-      await focusContained(page, viewer, 30);
+      const dialog = await openDialog(state);
+      await expect(dialog.locator(".figimg--gallery")).toBeVisible();
+      await expect(page.getByRole("dialog")).toHaveCount(1);
+      await focusContained(page, dialog, 30);
       await expectLock(page, true);
     }
   );
@@ -647,31 +652,35 @@ async function testGallery(state) {
     state,
     "gallery arrows stay fixed across all ten unequal captions",
     async () => {
-      const viewer = page.locator(".figview");
-      const next = viewer.getByRole("button", {
+      const dialog = page.locator(".demo-panel");
+      const gallery = dialog.locator(".figimg--gallery");
+      const next = gallery.getByRole("button", {
         name: "Next image",
         exact: true,
       });
-      const previous = viewer.getByRole("button", {
+      const previous = gallery.getByRole("button", {
         name: "Previous image",
         exact: true,
       });
+      await next.focus();
       const before = {
         next: await bounds(next),
         previous: await bounds(previous),
       };
       for (let index = 0; index < source.images.length; index++) {
-        await expect(viewer.locator(".figview-count")).toHaveText(
-          `${index + 1} / 10`
-        );
-        await expect(viewer.locator(".figview-caption")).toHaveText(
+        await expect(count(gallery)).toHaveText(`${index + 1} / 10`);
+        await expect(gallery.locator(".figimg-legend")).toHaveText(
           source.images[index].caption
         );
-        await expect(viewer.locator(".figview-img")).toHaveAttribute(
+        await expect(slideImg(gallery)).toHaveAttribute(
           "src",
           source.images[index].src
         );
-        await imageReady(viewer.locator(".figview-img"));
+        await imageReady(slideImg(gallery));
+        await expect(gallery.locator(".figimg-dot").nth(index)).toHaveAttribute(
+          "aria-current",
+          "true"
+        );
         const after = {
           next: await bounds(next),
           previous: await bounds(previous),
@@ -691,26 +700,21 @@ async function testGallery(state) {
           await snapshot(state, `gallery-image-${index + 1}`);
         await page.keyboard.press("ArrowRight");
       }
-      await expect(viewer.locator(".figview-count")).toHaveText("1 / 10");
+      await expect(count(gallery)).toHaveText("1 / 10");
       await page.keyboard.press("ArrowLeft");
-      await expect(viewer.locator(".figview-count")).toHaveText("10 / 10");
-      await viewer
-        .getByRole("button", { name: "Show image 3 of 10", exact: true })
-        .click();
-      await expect(viewer.locator(".figview-count")).toHaveText("3 / 10");
+      await expect(count(gallery)).toHaveText("10 / 10");
+      await gallery.getByRole("button", { name: /^Image 3 of 10/ }).click();
+      await expect(count(gallery)).toHaveText("3 / 10");
+      // The pane shows the plate the dialog was left on.
+      await expect(
+        count(page.locator(".history-fixture .figimg--gallery"))
+      ).toHaveText("3 / 10");
     }
   );
   await step(
     state,
-    "Escape closes one layer at a time and restores each opener",
+    "Escape closes the dialog and restores its opener",
     async () => {
-      await page.keyboard.press("Escape");
-      await expect(page.locator(".figview")).toHaveCount(0);
-      await expect(page.locator(".demo-panel")).toBeVisible();
-      await expect(
-        page.locator(".demo-panel .figimg-thumb").first()
-      ).toBeFocused();
-      await expectLock(page, true);
       await page.keyboard.press("Escape");
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await expectLock(page, false, state.originalScroll);
@@ -719,24 +723,21 @@ async function testGallery(state) {
   );
   await step(
     state,
-    "repeated nested open and close leaves no stale listeners",
+    "repeated open and close leaves no stale listeners",
     async () => {
       for (let repeat = 0; repeat < 2; repeat++) {
         await openDialog(state);
-        await page.locator(".demo-panel .figimg-thumb").nth(repeat).click();
         await page
-          .getByRole("button", { name: "Close viewer", exact: true })
+          .locator(".demo-panel")
+          .getByRole("button", { name: "Next image", exact: true })
           .click();
-        await expect(page.locator(".figview")).toHaveCount(0);
         await expectLock(page, true);
         await closeDialog(state);
       }
     }
   );
-  await step(
-    state,
-    "real browser Back and Forward dismiss both nested layers",
-    () => historyDismissal(state)
+  await step(state, "real browser Back and Forward dismiss the dialog", () =>
+    historyDismissal(state)
   );
 }
 

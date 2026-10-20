@@ -70,6 +70,10 @@ const legend = computed(() =>
     : caption.value
 );
 
+// The gallery's current image, shared by the pane and the fullscreen
+// dialog so expanding opens on the same plate (OPENBRAIN-144).
+const galleryIndex = ref(0);
+
 // Fullscreen expand — overlay the diagram over the whole viewport.
 const isFullscreen = ref(false);
 function openFullscreen() {
@@ -123,6 +127,7 @@ function closeFullscreen() {
           :caption="caption"
           :label="figureLabel"
           :title="title"
+          v-model:index="galleryIndex"
           :fit="!inline"
           legend-above
         />
@@ -159,6 +164,7 @@ function closeFullscreen() {
             :caption="caption"
             :label="figureLabel"
             :title="title"
+            v-model:index="galleryIndex"
             large
           />
           <div v-else class="fig-placeholder">
