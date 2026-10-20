@@ -7,12 +7,19 @@
  * As the reader scrolls the first viewport the cover blurs and darkens
  * slightly (skipped under reduce-motion). The chapter title is NOT printed
  * here any more: it lives in the dark title/TOC block that follows.
+ *
+ * With a `reactive` record (OPENBRAIN-146) a Lottie the pointer scrubs is
+ * laid over the still cover; the still stays underneath as the poster and
+ * takes over when the file is missing (`data-reactive-cover` says which).
  */
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
+import ReactiveCover from "./ReactiveCover.vue";
 
 const props = defineProps({
   cover: { type: String, required: true },
+  /* reactiveCoverForModule()'s record, or null for a still cover only. */
+  reactive: { type: Object, default: null },
   /* Used only for the image's accessible name. */
   title: { type: String, default: "" },
   /* Where the down-arrow scrolls to (an element id, without "#"). */
@@ -47,6 +54,13 @@ const scrimOpacity = computed(() =>
   reduceMotion() ? 0 : (scrollProgress.value * 0.25).toFixed(3)
 );
 const arrowHidden = computed(() => scrollProgress.value > 0.1);
+
+// "loading" | "ready" | "unavailable" — from ReactiveCover; null when the
+// chapter has no reactive cover. Bound as data-reactive-cover on the hero.
+const reactiveState = ref(null);
+const showReactive = computed(
+  () => !!props.reactive && reactiveState.value !== "unavailable"
+);
 
 onMounted(() => {
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -89,13 +103,24 @@ function onTool(tool) {
 </script>
 
 <template>
-  <section class="opener-hero" aria-label="Chapter cover">
+  <section
+    class="opener-hero"
+    aria-label="Chapter cover"
+    :data-reactive-cover="reactive ? reactiveState || 'loading' : null"
+  >
     <div
       class="opener-hero__cover"
       role="img"
       :aria-label="title ? `Cover image for ${title}` : 'Chapter cover image'"
       :style="coverStyle"
-    />
+    >
+      <!-- Inside the cover so the scroll blur and the scrim cover it too. -->
+      <ReactiveCover
+        v-if="showReactive"
+        :spec="reactive"
+        @state="reactiveState = $event"
+      />
+    </div>
     <div class="opener-hero__scrim" :style="{ opacity: scrimOpacity }" />
 
     <button
