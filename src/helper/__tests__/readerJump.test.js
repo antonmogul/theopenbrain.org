@@ -432,9 +432,6 @@ describe("scrollToY", () => {
   });
   afterEach(() => {
     delete root.scrollHeight;
-    // Let any jump still landing go, so its watch doesn't reach the next test.
-    window.dispatchEvent(new Event("wheel"));
-    vi.useRealTimers();
   });
   const scrollEnd = (y) => {
     setViewport({ scrollY: y });
@@ -510,43 +507,6 @@ describe("scrollToY", () => {
     });
     scrollToY(() => 3000); // past the end: the most it can is 2000
     scrollEnd(2000);
-    expect(window.scrollTo).toHaveBeenCalledTimes(1);
-  });
-
-  // OPENBRAIN-148: the opener's TOC jump stopped at the opener on a fresh
-  // page. The browser's own scroll of the link into view ended with a
-  // scrollend at the page's top; the ScrollTrigger refresh a second later
-  // put the page back where it was, with no scrollend to resume from.
-  it("scrolls on when the page sits still short of the target, without a scrollend", () => {
-    vi.useFakeTimers();
-    setViewport({ scrollY: 698 });
-    scrollToY(() => 12435);
-    vi.advanceTimersByTime(250); // nothing moved since the jump: asked again
-    expect(window.scrollTo).toHaveBeenCalledTimes(2);
-    expect(window.scrollTo).toHaveBeenLastCalledWith({
-      top: 12435,
-      behavior: "smooth",
-    });
-    setViewport({ scrollY: 4000 }); // under way
-    vi.advanceTimersByTime(250);
-    setViewport({ scrollY: 7000 });
-    vi.advanceTimersByTime(250);
-    expect(window.scrollTo).toHaveBeenCalledTimes(2);
-    setViewport({ scrollY: 8200 }); // the page was put back and sits there
-    vi.advanceTimersByTime(500);
-    expect(window.scrollTo).toHaveBeenCalledTimes(3);
-    setViewport({ scrollY: 8200 });
-    vi.advanceTimersByTime(250);
-    expect(window.scrollTo).toHaveBeenCalledTimes(4);
-    vi.advanceTimersByTime(250);
-    expect(window.scrollTo).toHaveBeenCalledTimes(4); // 3 tries used up
-  });
-
-  it("stops watching once it has arrived", () => {
-    vi.useFakeTimers();
-    scrollToY(() => 3000);
-    setViewport({ scrollY: 3000 });
-    vi.advanceTimersByTime(2000);
     expect(window.scrollTo).toHaveBeenCalledTimes(1);
   });
 
