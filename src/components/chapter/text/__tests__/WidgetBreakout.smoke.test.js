@@ -287,6 +287,52 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     wrapper.unmount();
   });
 
+  it("is one screen with the pause when the placement is full-screen (OPENBRAIN-147)", async () => {
+    const layer = addStageLayer();
+    desktop.matches = true;
+    // A DB-authored block: inline, no flag of its own, the History
+    // placement's id. The flag comes from src/widgets/placements.js.
+    const wrapper = mountBreakout({
+      placementId: "foundations-phrenology",
+      widgetId: "phrenology",
+      kind: "inline",
+      title: "Explore phrenology",
+      blurb: "Click on different parts of the skull.",
+      credit: "Interactive by The Open Brain",
+      route: "/phrenology",
+    });
+    await flushPromises();
+    const band = layer.querySelector(".wb-body");
+    expect(band.classList.contains("wb-body--full")).toBe(true);
+    const pause = band.parentElement;
+    expect(pause.classList.contains("wb-pause--on")).toBe(true);
+    expect(pause.querySelector(".wb-pause-room")).not.toBeNull();
+    // The header is the band's: Stuart's title and line, no kicker.
+    expect(band.querySelector(".wb-title").textContent).toBe(
+      "Explore phrenology"
+    );
+    expect(band.querySelector(".wb-kicker")).toBeNull();
+
+    // Back in the column there is no full-screen band and no pause.
+    desktop.fire(false);
+    await flushPromises();
+    expect(wrapper.find(".wb-body--full").exists()).toBe(false);
+    expect(wrapper.find(".wb-pause--on").exists()).toBe(false);
+    expect(wrapper.find(".wb-pause-room").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("gives an ordinary inline band no pause (OPENBRAIN-147)", async () => {
+    const layer = addStageLayer();
+    desktop.matches = true;
+    const wrapper = mountBreakout(inline);
+    await flushPromises();
+    expect(layer.querySelector(".wb-body--full")).toBeNull();
+    expect(layer.querySelector(".wb-pause--on")).toBeNull();
+    expect(layer.querySelector(".wb-pause-room")).toBeNull();
+    wrapper.unmount();
+  });
+
   it("stays in the card when no stage layer exists (Storybook, other hosts)", async () => {
     desktop.matches = true;
     const wrapper = mountBreakout(inline);

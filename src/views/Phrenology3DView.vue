@@ -28,7 +28,11 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import gsap from "gsap";
-import { PHRENOLOGY_CITATION, PHRENOLOGY_FACULTIES } from "@/mocks/phrenology";
+import {
+  PHRENOLOGY_CITATION,
+  PHRENOLOGY_FACULTIES,
+  organTitle,
+} from "@/mocks/phrenology";
 import { MAP_H, MAP_SRC, MAP_W, loadRegionMap } from "@/helper/phrenologyMaps";
 import { reducedMotionK } from "@/helper/motion";
 
@@ -646,23 +650,24 @@ function onKeydown(e) {
 <template>
   <section class="phreno3d" aria-label="Phrenology, 3D" @keydown="onKeydown">
     <header class="phreno3d__head">
-      <h2 class="phreno3d__title">Phrenology</h2>
-      <p class="historical-note">
-        Historical claims from 1815, not accepted neuroscience.
+      <h2 class="phreno3d__title">Explore phrenology</h2>
+      <p class="phreno3d__lede">
+        Click on different parts of the skull to explore Gall and Spurzheim's
+        model of localization of brain function.
       </p>
       <label class="faculty-picker"
-        >Browse a faculty
+        >Browse an organ
         <select
           :value="selected?.n || ''"
           @change="select(Number($event.target.value))"
         >
-          <option value="" disabled>Select a number and faculty</option>
+          <option value="" disabled>Select a numbered organ</option>
           <option
             v-for="faculty in PHRENOLOGY_FACULTIES"
             :key="faculty.n"
             :value="faculty.n"
           >
-            {{ faculty.n }} · {{ faculty.name }}
+            {{ faculty.n }} · {{ organTitle(faculty) }}
           </option>
         </select>
       </label>
@@ -734,7 +739,7 @@ function onKeydown(e) {
           </button>
           <span class="card__badge">
             <i class="card__num">{{ selected.n }}</i>
-            {{ selected.name || `Faculty ${selected.n}` }}
+            {{ organTitle(selected) || `Organ ${selected.n}` }}
           </span>
           <p
             v-for="note in selected.editorialNotes"
@@ -751,26 +756,14 @@ function onKeydown(e) {
           >
             {{ quote.text }}
           </p>
-          <figure
-            v-for="img in selected.images"
-            :key="img.src"
-            class="source-image"
-          >
-            <img
-              :src="img.src"
-              :width="img.width"
-              :height="img.height"
-              :alt="img.caption"
-              loading="lazy"
-            />
-            <figcaption>{{ img.caption }}</figcaption>
-          </figure>
+          <!-- Text only (Stuart, 13 Oct): the skull art stands in for the
+               source's scans, which stay in the appendix data. -->
         </aside>
       </transition>
       <p v-if="!selected" class="card-instruction">
-        Select a numbered region to read the source and see its illustrations.
-        Faculty 22 is available in the list; the source gives no labelled
-        location.
+        Select a region of the skull to read what Gall and Spurzheim’s 1815
+        source says about its organ. Organ 22, Weight, is in the list only: the
+        source gives it no place on the skull.
       </p>
     </div>
 
@@ -801,23 +794,11 @@ function onKeydown(e) {
   color: #222;
   background: #f8f6f1;
 }
-.historical-note {
-  font-size: 0.75rem;
+.phreno3d__lede {
+  max-width: 60ch;
+  font-size: 0.9rem;
   line-height: 1.5;
-  opacity: 0.7;
-}
-.source-image {
-  margin: 1.5rem 0;
-}
-.source-image img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.source-image figcaption {
-  font-size: 0.75rem;
-  line-height: 1.5;
-  margin-top: 0.5rem;
+  opacity: 0.8;
 }
 .card__editorial {
   border-left: 3px solid #8464ae;

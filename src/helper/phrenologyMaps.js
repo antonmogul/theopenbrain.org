@@ -48,10 +48,18 @@ export const VIEW_MAP = {
  * overlap it has) lands it on the cranium but is approximate. The 2D widget
  * therefore draws the maps' own outlines, so what is drawn is what can be
  * clicked (OPENBRAIN-98).
+ *
+ * Checked against the engravings' alpha (OPENBRAIN-147, Stuart 1 Oct: "on
+ * front view the purple overshoots the top of the skull a tiny bit; on
+ * lateral view it overshoots the front quite a bit"): the front map's top
+ * edge sat 5 px above the skull's, the side map's front edge 11 px past the
+ * face. With these fits every map edge is on the skull (0.2 % of region
+ * pixels off it, down from 1.5 %), and the widget also masks the map with
+ * the engraving so nothing paints outside the bone.
  */
 export const MAP_FIT = {
-  front: { sx: 0.978, sy: 0.954, tx: 3, ty: -8.5 },
-  side: { sx: 0.94, sy: 0.916, tx: 29.5, ty: 4 },
+  front: { sx: 0.978, sy: 0.945, tx: 3, ty: -4 },
+  side: { sx: 0.93, sy: 0.916, tx: 21, ty: 4 },
   back: { sx: 0.984, sy: 1.008, tx: 5, ty: 22 },
 };
 /** MAP_FIT as an SVG transform. */
