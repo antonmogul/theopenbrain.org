@@ -5,6 +5,7 @@ import {
   findReaderAnchor,
   flashElement,
   focusElement,
+  holdLanding,
   jumpToElement,
   jumpToId,
   readerTopInset,
@@ -123,6 +124,18 @@ describe("findReaderAnchor", () => {
     expect(findReaderAnchor("p1").dataset.which).toBe("id");
     expect(findReaderAnchor("widget-sdt").dataset.which).toBe("timeline");
     expect(findReaderAnchor("p2").dataset.which).toBe("paragraph");
+  });
+
+  it("falls back to a section's or box's slug (data-section-slug)", () => {
+    // Sections render their database id; the overview page and a chapter
+    // URL's #hash name them by slug (OPENBRAIN-145).
+    document.body.innerHTML = `
+      <section id="3ee91a2c" data-section-slug="where-is-my-mind"></section>
+      <aside id="5a5989ca" data-section-slug="box-rete-mirabile"></aside>
+      <div id="where-is-my-mind" data-which="id"></div>`;
+    expect(findReaderAnchor("where-is-my-mind").dataset.which).toBe("id");
+    expect(findReaderAnchor("box-rete-mirabile").id).toBe("5a5989ca");
+    expect(findReaderAnchor("box-missing")).toBeNull();
   });
 
   it("matches ids that aren't valid selectors as they are", () => {
@@ -585,5 +598,89 @@ describe("jumpToElement and transition sections", () => {
     expect(top).toBe(1700 - readerTopInset());
     scrollTo.mockRestore();
     section.remove();
+  });
+});
+
+describe("holdLanding (a chapter opened at a #hash, OPENBRAIN-145)", () => {
+  // A document tall enough that nothing clamps, and a window whose
+  // scrollTo moves it (so a landing that holds doesn't scroll again).
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document.documentElement, "scrollHeight", {
+      value: 50000,
+      configurable: true,
+    });
+    window.scrollTo = vi.fn(({ top }) => setViewport({ scrollY: top }));
+  });
+
+  /** An element at document position `docTop()`, whatever the scroll. */
+  function anchored(docTop) {
+    const el = placed(0);
+    el.getBoundingClientRect = () => ({
+      top: docTop() - window.scrollY,
+      height: 100,
+    });
+    return el;
+  }
+
+  it("lands instantly at the top inset and re-lands when the anchor moves", () => {
+    let docTop = 3000;
+    const stop = holdLanding(anchored(() => docTop));
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 3000 - 80,
+      behavior: "auto",
+    });
+    // Late layout pushes the anchor 600px down: held, instantly.
+    docTop = 3600;
+    vi.advanceTimersByTime(100);
+    expect(window.scrollTo).toHaveBeenLastCalledWith({
+      top: 3600 - 80,
+      behavior: "auto",
+    });
+    expect(window.scrollTo).toHaveBeenCalledTimes(2);
+    // Nothing moved: no scroll.
+    vi.advanceTimersByTime(300);
+    expect(window.scrollTo).toHaveBeenCalledTimes(2);
+    stop();
+    docTop = 9000;
+    vi.advanceTimersByTime(500);
+    expect(window.scrollTo).toHaveBeenCalledTimes(2);
+  });
+
+  it("lets go when the reader scrolls, and after its time is up", () => {
+    let docTop = 3000;
+    const el = anchored(() => docTop);
+    holdLanding(el);
+    window.dispatchEvent(new Event("wheel"));
+    docTop = 4000;
+    vi.advanceTimersByTime(200);
+    expect(window.scrollTo).toHaveBeenCalledTimes(1);
+
+    window.scrollTo.mockClear();
+    holdLanding(el, { ms: 1000 });
+    expect(window.scrollTo).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(1100);
+    docTop = 5000;
+    vi.advanceTimersByTime(300);
+    expect(window.scrollTo).toHaveBeenCalledTimes(1);
+  });
+
+  it("lands past a transition spacer and is false without an element", () => {
+    expect(holdLanding(null)).toBe(false);
+    const section = document.createElement("section");
+    const spacer = document.createElement("div");
+    spacer.className = "section-transition-spacer";
+    spacer.getBoundingClientRect = () => ({ top: 100, height: 1600 });
+    const heading = document.createElement("h2");
+    heading.getBoundingClientRect = () => ({ top: 1700, height: 40 });
+    section.append(spacer, heading);
+    section.getBoundingClientRect = () => ({ top: 100, height: 3000 });
+    document.body.appendChild(section);
+    const stop = holdLanding(section);
+    expect(window.scrollTo).toHaveBeenLastCalledWith({
+      top: 1700 - 80,
+      behavior: "auto",
+    });
+    stop();
   });
 });

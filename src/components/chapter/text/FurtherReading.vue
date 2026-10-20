@@ -52,7 +52,8 @@ function safeLink(url) {
   padding-left: 1.25rem;
   list-style: disc;
 }
-a {
+a,
+a:visited {
   color: rgb(var(--color-accent));
   text-decoration: underline;
   overflow-wrap: anywhere;

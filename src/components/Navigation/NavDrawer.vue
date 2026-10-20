@@ -18,6 +18,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useGeneral, useText } from "@/stores";
 import { buildOutline } from "@/composables/useChapterOutline";
 import { lockReaderScroll } from "@/helper/readerScrollLock";
+import { findReaderAnchor, jumpToElement } from "@/helper/readerJump";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
@@ -141,23 +142,17 @@ function go(path) {
   close({ restoreFocus: false });
   router.push(path);
 }
+// Through readerJump like every jump in the reader (OPENBRAIN-145): the
+// section lands below the top bar, past a figure transition's spacer, no
+// smooth scroll under reduced motion, focus moved to it (focusElement).
+// The drawer closes first so its scroll lock is off when the jump scrolls.
 async function jumpTo(anchor) {
-  const target = document.getElementById(anchor.slice(1));
+  const target = findReaderAnchor(anchor.slice(1));
   if (!target) return;
   close({ restoreFocus: false });
   await nextTick();
   if (unmounted || !target.isConnected) return;
-  const pref = document.documentElement.dataset.reduceMotion;
-  const reduce =
-    pref === "1" ||
-    (pref !== "0" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
-  target.scrollIntoView({
-    behavior: reduce ? "auto" : "smooth",
-    block: "start",
-  });
-  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
-  target.focus({ preventScroll: true });
+  jumpToElement(target, { align: "top", focus: true, focusVisible: false });
 }
 function goChapter(chapter) {
   if (chapter.slug === currentSlug.value) jumpTo("#chapter-toc");
@@ -437,6 +432,10 @@ onBeforeUnmount(() => {
   inset: 0;
   z-index: 300;
   background: rgba(0, 0, 0, 0.4);
+  /* The page softens behind the drawer here, not with a filter on the
+     page itself, which collapsed the scrolled document (OPENBRAIN-145). */
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 .drawer {

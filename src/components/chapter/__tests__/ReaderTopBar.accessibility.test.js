@@ -81,13 +81,18 @@ describe("ReaderTopBar accessibility", () => {
     wrapper.unmount();
   });
 
-  it("has one chapter-menu control including the wordmark, without a home link", async () => {
+  // The wordmark used to be inside the menu button (one control, no home
+  // link). Stuart found the two indistinguishable, so the wordmark is the
+  // logo, a link home, and the lines alone open the menu (OPENBRAIN-145;
+  // ReaderTopBar.wordmark.test.js).
+  it("the chapter-menu control is a button on its own", async () => {
     generalStore.activeMenu = false;
-    const wrapper = mount(ReaderTopBar);
+    const wrapper = mount(ReaderTopBar, {
+      global: { stubs: { RouterLink: true } },
+    });
     const menu = wrapper.get('[aria-label="Open chapter menu"]');
     expect(menu.element.tagName).toBe("BUTTON");
-    expect(menu.find(".wordmark").exists()).toBe(true);
-    expect(wrapper.find("a.wordmark").exists()).toBe(false);
+    expect(menu.find(".wordmark").exists()).toBe(false);
     await menu.trigger("click");
     expect(generalStore.activeMenu).toBe(true);
     wrapper.unmount();

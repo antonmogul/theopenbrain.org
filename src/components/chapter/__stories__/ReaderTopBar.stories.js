@@ -1,5 +1,7 @@
 /*
- * Chapter/ReaderShell/ReaderTopBar — the reader's app bar: menu, wordmark,
+ * Chapter/ReaderShell/ReaderTopBar — the reader's app bar: the menu button
+ * (opens the drawer: chapter list + this chapter's outline), the wordmark
+ * (the logo, a link home: /chapters when signed in; OPENBRAIN-145),
  * chapter and current section (a jump menu), the Info / Notebook / Chat
  * tools and the account menu. Reading progress is no longer a line along
  * its top edge: it is the chapter timeline docked at the bottom

@@ -45,7 +45,11 @@ import { useAuth } from "@/composables/useAuth";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
 import { applyChapterRamp } from "@/helper/chapterTheme";
-import { setJumpHistory } from "@/helper/readerJump";
+import {
+  findReaderAnchor,
+  holdLanding,
+  setJumpHistory,
+} from "@/helper/readerJump";
 import {
   restoreAfterLayout,
   scrollTopForReadingPercent,
@@ -162,8 +166,13 @@ const currentModuleId = computed(() => {
 const isSupabaseChapter = computed(() => true);
 
 // Breadcrumb sections for ReaderTopBar
+// The top bar's section menu. `slug` (the title's) is what TextComp's
+// .trigger wrappers are named, which store.currentSubChapter reports; `id`
+// is the section's own, which every section and breakout box renders, so a
+// jump finds a box too (boxes have no wrapper of their own; OPENBRAIN-145).
 const breadcrumbSections = computed(() => {
   return (storeText.text?.sections || []).map((s) => ({
+    id: s.id,
     title: s.title,
     slug: toSlug(s.title),
   }));
@@ -321,6 +330,30 @@ async function restorePersistedReadingPosition({
       }),
   });
 }
+
+// A chapter URL with a #hash lands on that section (OPENBRAIN-145). The
+// overview page's section links are /chapter/<n>/<slug>#<section slug>,
+// and Stuart (24 Sep): "it always takes me to chapter start, not that
+// section". The router scrolls to the top (scrollBehavior); once fonts and
+// images have settled, like ?resume=1, this jumps to the anchor: a section
+// or box by its slug (data-section-slug), a subsection by its id, through
+// readerJump so it lands below the top bar and past a transition spacer.
+// Not when resuming a saved position, which wins.
+let stopHashLanding = null;
+async function landOnHash(generation) {
+  stopHashLanding?.();
+  stopHashLanding = null;
+  const hash = decodeURIComponent((route.hash || "").slice(1));
+  if (!hash || route.query.resume === "1") return;
+  await settleChapterContent();
+  if (generation !== chapterExperienceGeneration) return;
+  const el = findReaderAnchor(hash);
+  if (!el) return;
+  // Held, not a one-off jump: figures and stages still mount after the
+  // settle and move the anchor (holdLanding).
+  stopHashLanding = holdLanding(el, { align: "top" }) || null;
+}
+onBeforeUnmount(() => stopHashLanding?.());
 
 async function initializeChapterExperience() {
   const moduleId = currentModuleId.value;
@@ -491,15 +524,19 @@ onMounted(async () => {
   if (currentModuleId.value) {
     await initializeChapterExperience();
   }
+  if (generation !== chapterExperienceGeneration) return;
+  void landOnHash(generation);
 });
 
-// One string, not an array: a getter that returns a new array fires on every
-// navigation, including the jump's own entry for the same chapter
-// (setJumpHistory's forced push), which tore the chapter down mid-jump and
-// left every jump at the opener (OPENBRAIN-148).
+// One string, not an array: a getter that returns a new array fires on
+// every route update, including the same-chapter history entry a reader
+// jump pushes (readerJump's jumpHistory), and reloaded the chapter under
+// the jump (OPENBRAIN-145). A string only changes when a part does.
 watch(
   () =>
-    `${route.params.number}/${route.params.slug}/${route.query.courseId ?? ""}`,
+    [route.params.number, route.params.slug, route.query.courseId].join(
+      "\u0000"
+    ),
   async () => {
     const generation = ++chapterExperienceGeneration;
     clearUserReaderState();
@@ -523,6 +560,8 @@ watch(
     if (currentModuleId.value) {
       await initializeChapterExperience();
     }
+    if (generation !== chapterExperienceGeneration) return;
+    void landOnHash(generation);
   }
 );
 
