@@ -91,7 +91,10 @@ const quoted = (value) =>
 /**
  * The element for an id: getElementById, else [data-timeline-id] (widgets
  * and breaks), else [data-paragraph-id] (a paragraph in the creator's
- * editor, which renders no id). Null when nothing matches.
+ * editor, which renders no id), else [data-section-slug] (a section or
+ * breakout box by its slug: the overview page's section links and a
+ * chapter URL's #hash name sections that way, OPENBRAIN-145). Null when
+ * nothing matches.
  */
 export function findReaderAnchor(id) {
   const doc = globalThis.document;
@@ -101,7 +104,8 @@ export function findReaderAnchor(id) {
   return (
     doc.getElementById(key) ||
     doc.querySelector(`[data-timeline-id="${attr}"]`) ||
-    doc.querySelector(`[data-paragraph-id="${attr}"]`)
+    doc.querySelector(`[data-paragraph-id="${attr}"]`) ||
+    doc.querySelector(`[data-section-slug="${attr}"]`)
   );
 }
 
@@ -293,4 +297,61 @@ export function jumpToElement(
 /** jumpToElement for the anchor findReaderAnchor(id) finds. */
 export function jumpToId(id, opts) {
   return jumpToElement(findReaderAnchor(id), opts);
+}
+
+// How long a landing is held against late layout, and how often it looks.
+const HOLD_MS = 5000;
+const HOLD_EVERY_MS = 100;
+
+/**
+ * Land `el` at the top inset now, instantly, and keep it there while the
+ * page is still settling (OPENBRAIN-145). A chapter opened at a #hash
+ * lands once fonts and images are in, but figures, widgets and full-bleed
+ * stages keep mounting after that and ScrollTrigger refreshes with each
+ * (every refresh scrolls to 0 and back, which cuts a smooth scroll short),
+ * so a single jump drifted thousands of pixels short. This one re-lands,
+ * instantly, whenever the anchor has moved, for `ms` at most, and lets go
+ * as soon as the reader scrolls, touches or presses a key. Returns a stop
+ * function (false if !el); `align` as jumpToElement, "top" by default.
+ */
+export function holdLanding(el, { ms = HOLD_MS, align = "top" } = {}) {
+  if (!el?.getBoundingClientRect) return false;
+  if (align === "top") el = readingStartOf(el);
+  const want = () => {
+    const rect = el.getBoundingClientRect();
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const inset = readerTopInset();
+    const viewport =
+      window.innerHeight || document.documentElement.clientHeight || 0;
+    const docTop = rect.top + scrollY;
+    const max = Math.max(0, document.documentElement.scrollHeight - viewport);
+    const top =
+      align === "center" && rect.height <= viewport - 2 * inset
+        ? docTop + rect.height / 2 - viewport / 2
+        : docTop - inset;
+    return Math.min(max, Math.max(0, Math.round(top)));
+  };
+  let timer = null;
+  const stop = () => {
+    clearInterval(timer);
+    timer = null;
+    for (const type of READER_INPUT)
+      window.removeEventListener(type, stop, true);
+  };
+  const land = () => {
+    if (!el.isConnected) return stop();
+    const top = want();
+    const now = window.scrollY || window.pageYOffset || 0;
+    if (Math.abs(now - top) > 2) window.scrollTo({ top, behavior: "auto" });
+  };
+  stopLanding?.();
+  land();
+  const until = Date.now() + ms;
+  timer = setInterval(() => {
+    if (Date.now() > until) return stop();
+    land();
+  }, HOLD_EVERY_MS);
+  for (const type of READER_INPUT)
+    window.addEventListener(type, stop, { capture: true, passive: true });
+  return stop;
 }

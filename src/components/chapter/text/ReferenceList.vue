@@ -58,8 +58,11 @@ defineProps({
 .ref-list__item:target {
   background: rgb(var(--color-chapter-pale, var(--color-paper)));
 }
+/* One colour for every reference link, visited or not (OPENBRAIN-145). */
 .ref-list__text :deep(a),
-.ref-list__source {
+.ref-list__text :deep(a:visited),
+.ref-list__source,
+.ref-list__source:visited {
   color: rgb(var(--color-accent));
   overflow-wrap: anywhere;
 }

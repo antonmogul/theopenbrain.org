@@ -31,6 +31,7 @@ const titleId = computed(() => `box-title-${props.section.id}`);
     <div class="bx-pause" :class="{ 'bx-pause--on': floating }">
       <aside
         :id="section.id"
+        :data-section-slug="section.slug"
         class="bx"
         :class="{ 'bx--floating': floating }"
         :aria-labelledby="titleId"
