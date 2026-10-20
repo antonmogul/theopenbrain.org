@@ -71,6 +71,14 @@ The book injects a small `window.OB` object before your scripts run:
   system setting or the book's);
 - `OB.resize()`: call after you change the layout without a DOM change
   the browser can see (the book also watches size on its own).
+- `OB.maxHeight` and `OB.onFit(fn)`: when the book shows the widget in a
+  box of fixed height (the figure pane beside the text), the frame is that
+  height and never grows past it. The book sets `--ob-max-height` and
+  `html[data-ob-fit]` and calls `fn(maxHeight)`; `null` means the frame
+  grows with the content as usual. Size the main picture to what the
+  title, caption and controls leave, so nothing is cut off: for example
+  `html[data-ob-fit] body { height: 100% }`, a grid with
+  `auto minmax(0,1fr) auto` rows, and the picture at `height: 100%`.
 
 `template.html` includes a fallback so these calls are safe when the file is
 opened on its own, in Claude or in a browser.

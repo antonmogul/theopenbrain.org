@@ -13,6 +13,12 @@
  *   - the bridge: window.OB for the widget, and messages back to the host
  *     with its size, horizontal overflow, errors and blocked requests,
  *     which the Studio's checks and the frame's auto-height read.
+ *
+ * A widget normally sets its own height and the frame follows it. In the
+ * figure pane the box is fixed (OPENBRAIN-148): the host then sends a `fit`
+ * message with the height it has, the frame never grows past it, and the
+ * bridge gives the widget OB.maxHeight, `--ob-max-height` and
+ * `html[data-ob-fit]` so it can size its picture to what is left.
  */
 
 /** Outside origins a widget may load from (SKILL.md says the same). */
@@ -111,10 +117,15 @@ export function widgetTokens(ramp) {
 const BRIDGE = `(function(){
   var post=function(m){try{m.__ob=1;parent.postMessage(m,"*")}catch(e){}};
   var rm=document.documentElement.hasAttribute("data-ob-reduce-motion")||!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
-  var subs=[];
-  window.OB={reducedMotion:rm,
+  var subs=[],fits=[];
+  window.OB={reducedMotion:rm,maxHeight:window.__obFit||null,
     onTheme:function(fn){subs.push(fn);try{fn(window.OB.theme||{reduceMotion:rm})}catch(e){}},
+    onFit:function(fn){fits.push(fn);try{fn(window.OB.maxHeight)}catch(e){}},
     resize:function(){report()},theme:null};
+  function fit(h){var d=document.documentElement;h=h>0?Math.round(h):null;window.OB.maxHeight=h;
+    if(h){d.style.setProperty("--ob-max-height",h+"px");d.setAttribute("data-ob-fit","")}
+    else{d.style.removeProperty("--ob-max-height");d.removeAttribute("data-ob-fit")}
+    fits.forEach(function(fn){try{fn(h)}catch(err){post({type:"error",message:String(err.message||err)})}});}
   var last="";
   function report(){var d=document.documentElement,b=document.body;
     var h=Math.ceil(Math.max(d.scrollHeight,b?b.scrollHeight:0));
@@ -125,7 +136,9 @@ const BRIDGE = `(function(){
   window.addEventListener("unhandledrejection",function(e){post({type:"error",message:String(e.reason&&e.reason.message||e.reason)})});
   var ce=console.error;console.error=function(){post({type:"error",message:[].slice.call(arguments).join(" ").slice(0,300)});return ce.apply(console,arguments)};
   document.addEventListener("securitypolicyviolation",function(e){post({type:"blocked",url:e.blockedURI,directive:e.violatedDirective})});
-  window.addEventListener("message",function(e){var m=e.data;if(!m||!m.__ob||m.type!=="theme")return;
+  window.addEventListener("message",function(e){var m=e.data;if(!m||!m.__ob)return;
+    if(m.type==="fit"){fit(m.maxHeight);report();return}
+    if(m.type!=="theme")return;
     var s=document.documentElement.style;for(var k in m.tokens)s.setProperty(k,m.tokens[k]);
     if(m.reduceMotion)document.documentElement.setAttribute("data-ob-reduce-motion","");
     else document.documentElement.removeAttribute("data-ob-reduce-motion");
@@ -144,19 +157,23 @@ const escapeAttr = (s) => String(s).replace(/"/g, "&quot;");
  */
 export function buildWidgetDoc(
   html,
-  { ramp = "fund", reduceMotion = false } = {}
+  { ramp = "fund", reduceMotion = false, maxHeight = null } = {}
 ) {
   const tokens = widgetTokens(ramp);
+  const fit = Number(maxHeight) > 0 ? Math.round(maxHeight) : 0;
+  if (fit) tokens["--ob-max-height"] = `${fit}px`;
   const vars = Object.entries(tokens)
     .map(([k, v]) => `${k}:${v}`)
     .join(";");
   const head =
     `<meta http-equiv="Content-Security-Policy" content="${escapeAttr(CSP)}">` +
     `<style>:root{${vars}}html,body{overflow-x:hidden}</style>` +
-    `<script>${BRIDGE}</scr` +
+    `<script>${fit ? `window.__obFit=${fit};` : ""}${BRIDGE}</scr` +
     `ipt>`;
   let doc = String(html || "");
-  const attrs = reduceMotion ? " data-ob-reduce-motion" : "";
+  const attrs =
+    (reduceMotion ? " data-ob-reduce-motion" : "") +
+    (fit ? " data-ob-fit" : "");
   if (/<head[^>]*>/i.test(doc)) {
     doc = doc.replace(/<head([^>]*)>/i, (m, a) => `<head${a}>${head}`);
   } else if (/<html[^>]*>/i.test(doc)) {
@@ -167,7 +184,7 @@ export function buildWidgetDoc(
   } else {
     doc = `<!doctype html><html><head>${head}</head><body>${doc}</body></html>`;
   }
-  if (reduceMotion)
+  if (attrs)
     doc = doc.replace(/<html([^>]*)>/i, (m, a) => `<html${a}${attrs}>`);
   return doc;
 }
@@ -182,6 +199,54 @@ export function themeMessage(ramp, reduceMotion) {
     reduceMotion: !!reduceMotion,
   };
 }
+
+/**
+ * The message the host sends the frame with the height it must fit, or
+ * null when it may grow again (an inline band, a breakout).
+ */
+export function fitMessage(maxHeight) {
+  const h = Number(maxHeight);
+  return { __ob: 1, type: "fit", maxHeight: h > 0 ? Math.round(h) : null };
+}
+
+/** The frame's floor and ceiling, whatever a widget reports. */
+export const FRAME_MIN_HEIGHT = 80;
+export const FRAME_MAX_HEIGHT = 6000;
+
+/**
+ * The height the frame takes for the height a widget reports: never under
+ * 80 px or over 6000 px, and never over `maxHeight` when the host has one
+ * (the figure pane). Before the first report the frame is `minHeight` tall,
+ * or, in a pane, the pane's height, so the box doesn't jump when the widget
+ * fills it.
+ */
+export function fitHeight(
+  reported,
+  { minHeight = 240, maxHeight = null } = {}
+) {
+  const fixed = Number(maxHeight) > 0;
+  const cap = fixed
+    ? Math.min(FRAME_MAX_HEIGHT, Math.round(maxHeight))
+    : FRAME_MAX_HEIGHT;
+  const want = Number(reported) > 0 ? reported : fixed ? cap : minHeight;
+  return Math.max(FRAME_MIN_HEIGHT, Math.min(Math.round(want), cap));
+}
+
+/**
+ * How much to shrink a frame that must fit `maxHeight` but whose widget
+ * still reports taller (a file uploaded before the kit had `fit`, or one
+ * that ignores it): 1 when it fits, else the ratio, never under 0.5 (a
+ * widget twice as tall as the pane is better scrolled than unreadable).
+ */
+export function fitScale(reported, maxHeight) {
+  const max = Number(maxHeight);
+  const h = Number(reported);
+  if (!(max > 0) || !(h > max)) return 1;
+  return Math.max(0.5, Math.round((max / h) * 1000) / 1000);
+}
+
+/** The provide/inject key for the height a widget must fit (IllustrationWidget → UploadedWidgetEmbed). */
+export const WIDGET_FIT = Symbol("widgetFit");
 
 /**
  * Checks we can make from the file alone (the Studio adds the ones that
