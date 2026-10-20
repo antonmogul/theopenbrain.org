@@ -22,7 +22,9 @@ export const ALLOWED_SCRIPT_ORIGINS = [
 ];
 export const ALLOWED_STYLE_ORIGINS = ["https://fonts.googleapis.com"];
 export const ALLOWED_FONT_ORIGINS = ["https://fonts.gstatic.com"];
-export const MAX_WIDGET_BYTES = 2 * 1024 * 1024;
+// 4 MB since OPENBRAIN-141 (RetINaBox v3 carries 61 narration clips);
+// widget_uploads.html has the same check (20261020230000_widget_uploads_4mb).
+export const MAX_WIDGET_BYTES = 4 * 1024 * 1024;
 
 export const CSP = [
   "default-src 'none'",
@@ -207,7 +209,7 @@ export function staticChecks(html, bytes = new Blob([html || ""]).size) {
   return [
     {
       id: "size",
-      label: "Under 2 MB",
+      label: "Under 4 MB",
       ok: bytes <= MAX_WIDGET_BYTES,
       detail: `${(bytes / 1024).toFixed(0)} KB`,
     },
