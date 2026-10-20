@@ -215,11 +215,14 @@ export function figureFor(p) {
  */
 /**
  * Put breakout boxes where they belong (OPENBRAIN-70 A3, A4). A box with a
- * parent section follows that section in reading order (after the parent's
- * earlier boxes); if its anchor paragraph is one of the parent's top-level
- * paragraphs it is also marked `anchored`, and SectionComp renders it right
- * after that paragraph instead of on its own. Unplaced boxes keep their
- * order. Returns a new array; `parentId` stays on each box for the contents.
+ * parent section follows that section in reading order; if its anchor
+ * paragraph is one of the parent's top-level paragraphs it is also marked
+ * `anchored`, and SectionComp renders it right after that paragraph instead
+ * of on its own. A parent's boxes come out in the order the reader meets
+ * them, by anchor paragraph, unanchored ones last in their authored order
+ * (OPENBRAIN-142; Stuart, 7 Oct: "reletter them in order"), and
+ * sectionLabelMap letters that order. Unplaced boxes keep their order.
+ * Returns a new array; `parentId` stays on each box for the contents.
  */
 export function placeBoxes(sections) {
   const byId = new Map(sections.map((s) => [s.id, s]));
@@ -236,13 +239,58 @@ export function placeBoxes(sections) {
   for (const s of top) {
     out.push(s);
     const kids = children.get(s.id) || [];
-    const ids = new Set((s.paragraphs || []).map((p) => p.id));
-    for (const box of kids) {
-      box.anchored = !!box.anchorParagraphId && ids.has(box.anchorParagraphId);
+    const at = new Map((s.paragraphs || []).map((p, i) => [p.id, i]));
+    const position = (box) =>
+      box.anchorParagraphId && at.has(box.anchorParagraphId)
+        ? at.get(box.anchorParagraphId)
+        : Infinity;
+    const placed = kids.map((box, i) => ({ box, i }));
+    placed.sort((a, b) => position(a.box) - position(b.box) || a.i - b.i);
+    for (const { box } of placed) {
+      box.anchored = position(box) !== Infinity;
       out.push(box);
     }
   }
   return out;
+}
+
+/**
+ * An "Explore more" segment (OPENBRAIN-142): a paragraph a breakout box
+ * keeps folded behind a card, its image beside a prompt, until the reader
+ * opens it (Stuart, 7 Oct: "a picture of Hippocrates on the left … text
+ * that says something like 'Explore more about Hippocrates' view on
+ * epilepsy' … when you click on one then it reveals the relevant text and
+ * another related image"). Authored on the row as
+ * `content.explore = { title, prompt?, image?: { src, alt? }, legend? }`,
+ * beside `blocks` and `animationFlags`, which both editors keep
+ * (editability.withBlocks). The paragraph's own figure and images open with
+ * its text, so the "related image" is the row's figure. Returns null for
+ * anything without a title: a malformed value reads as a plain paragraph.
+ */
+export function exploreFor(content) {
+  const raw = content?.explore;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const title = typeof raw.title === "string" ? raw.title.trim() : "";
+  if (!title) return null;
+  const src = typeof raw.image?.src === "string" ? raw.image.src.trim() : "";
+  const prompt =
+    typeof raw.prompt === "string" && raw.prompt.trim()
+      ? raw.prompt.trim()
+      : `Explore more about ${title}`;
+  const legend = typeof raw.legend === "string" ? raw.legend.trim() : "";
+  return {
+    title,
+    prompt,
+    ...(src
+      ? {
+          image: {
+            src,
+            alt: typeof raw.image.alt === "string" ? raw.image.alt : "",
+          },
+        }
+      : {}),
+    ...(legend ? { legend } : {}),
+  };
 }
 
 export function transformParagraph(p) {
@@ -260,6 +308,9 @@ export function transformParagraph(p) {
     // Spread Chapter 1-specific metadata (animationFull, type, img, etc.)
     ...meta,
   };
+  // Folded behind an "Explore more" card (OPENBRAIN-142; ExploreCard.vue).
+  const explore = exploreFor(p.content);
+  if (explore) para.explore = explore;
 
   // Add animation if present. The left column matches on the animation KEY
   // (IllustrationsComp compares activeAnimation === animation.id.toLowerCase()),

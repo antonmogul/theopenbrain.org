@@ -56,30 +56,30 @@ function collectSubsections(paragraphs) {
 
 /**
  * Section labels keyed by section id (or title): numbered sections count
- * from 1, breakout boxes (kind "box", Foundations' sidebars) are lettered
- * A, B, C… so they read as asides rather than steps. This is the ONE place
- * the numbering lives — TextComp/SectionComp print these labels in the
- * prose and the opener's TOC prints the same ones.
+ * from 1 in their authored order; breakout boxes (kind "box", Foundations'
+ * sidebars) are lettered A, B, C… so they read as asides rather than steps.
+ * Letters follow reading order, the array as placeBoxes() lays it out, each
+ * box after the paragraph it is anchored to (OPENBRAIN-142; Stuart, 7 Oct:
+ * "reletter them in order (e.g., Descartes is A, but it comes in middle of
+ * chapter)"). Figure letters ("Figure A") are the manuscript's and stay.
+ * This is the ONE place the numbering lives — TextComp/SectionComp print
+ * these labels in the prose and the opener's TOC prints the same ones.
  */
 export function sectionLabelMap(sections) {
   const labels = {};
   let number = 0;
   let box = 0;
-  // Letters follow the authored order, not where a box is placed
-  // (OPENBRAIN-70): figure captions say "Figure A" for box A.
-  const ordered = (sections || [])
+  const list = (sections || []).filter(Boolean);
+  const numbered = list
+    .filter((s) => s.kind !== "box")
     .map((s, i) => ({ s, i }))
     .sort(
-      (a, b) => (a.s?.orderIndex ?? a.i) - (b.s?.orderIndex ?? b.i) || a.i - b.i
-    )
-    .map((x) => x.s);
-  for (const section of ordered) {
-    if (!section) continue;
-    const key = section.id || section.title;
-    labels[key] =
-      section.kind === "box"
-        ? String.fromCharCode(65 + (box++ % 26))
-        : String(++number);
+      (a, b) => (a.s.orderIndex ?? a.i) - (b.s.orderIndex ?? b.i) || a.i - b.i
+    );
+  for (const { s } of numbered) labels[s.id || s.title] = String(++number);
+  for (const s of list) {
+    if (s.kind !== "box") continue;
+    labels[s.id || s.title] = String.fromCharCode(65 + (box++ % 26));
   }
   return labels;
 }
