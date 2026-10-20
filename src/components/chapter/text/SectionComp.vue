@@ -125,57 +125,70 @@
             paragraph?.type != 'breakVideo' && paragraph.type != 'breakSection'
           "
         >
-          <!-- Interactive widget placed in the prose (OPENBRAIN-21).
-               data-timeline-id: the chapter timeline finds widgets and
-               breaks by it (they render no paragraph id; OPENBRAIN-128). -->
-          <WidgetBreakout
-            v-if="paragraph.type === 'widget'"
-            :placement="paragraph.widget"
-            :data-timeline-id="paragraph.id"
-          />
-          <!-- section paragraph - editable for creators -->
-          <EditableBlock
-            v-else-if="!paragraph.subSection && isCreator"
-            :content="paragraph.text"
-            :paragraph-id="paragraph.id"
-            :is-creator="isCreator"
-            tag="p"
-            class-name="P"
-            @save="handleParagraphSave"
-            can-figure
-          />
-          <div
-            v-else-if="!paragraph.subSection"
-            :key="paragraph.id"
-            :id="paragraph.id"
-            :data-paragraph-id="paragraph.id"
-            class="P"
-            v-html="paragraph.text"
-          />
-          <SubSection
-            v-else
-            :key="paragraph"
-            :paragraph="paragraph"
-            :index="index + 1"
-            :is-creator="isCreator"
-            @save="handleParagraphSave"
-          />
-          <InlineImages
-            :paragraph="paragraph"
-            :key="'images' + paragraph.id"
-            v-if="paragraph.img"
-          />
-          <VideoEmbed v-if="paragraph.video" :video="paragraph.video" />
-          <FullScreenIllustration
-            :key="paragraph.id"
-            v-if="paragraph.animationFull"
-            :paragraph="paragraph"
-          />
-          <IllustrationInline
-            v-if="inlineFigureFor(paragraph)"
-            :key="'inline' + paragraph.id"
-            :animation-id="paragraph.animation.id"
-          />
+          <!-- An "Explore more" paragraph (content.explore, OPENBRAIN-142)
+               folds its text, figure and images behind an ExploreCard;
+               every other paragraph renders unwrapped (Unwrapped is a
+               fragment), so the markup below is written once. -->
+          <component
+            :is="paragraph.explore ? ExploreCard : Unwrapped"
+            v-bind="
+              paragraph.explore
+                ? { explore: paragraph.explore, paragraphId: paragraph.id }
+                : undefined
+            "
+          >
+            <!-- Interactive widget placed in the prose (OPENBRAIN-21).
+                 data-timeline-id: the chapter timeline finds widgets and
+                 breaks by it (they render no paragraph id; OPENBRAIN-128). -->
+            <WidgetBreakout
+              v-if="paragraph.type === 'widget'"
+              :placement="paragraph.widget"
+              :data-timeline-id="paragraph.id"
+            />
+            <!-- section paragraph - editable for creators -->
+            <EditableBlock
+              v-else-if="!paragraph.subSection && isCreator"
+              :content="paragraph.text"
+              :paragraph-id="paragraph.id"
+              :is-creator="isCreator"
+              tag="p"
+              class-name="P"
+              @save="handleParagraphSave"
+              can-figure
+            />
+            <div
+              v-else-if="!paragraph.subSection"
+              :key="paragraph.id"
+              :id="paragraph.id"
+              :data-paragraph-id="paragraph.id"
+              class="P"
+              v-html="paragraph.text"
+            />
+            <SubSection
+              v-else
+              :key="paragraph"
+              :paragraph="paragraph"
+              :index="index + 1"
+              :is-creator="isCreator"
+              @save="handleParagraphSave"
+            />
+            <InlineImages
+              :paragraph="paragraph"
+              :key="'images' + paragraph.id"
+              v-if="paragraph.img"
+            />
+            <VideoEmbed v-if="paragraph.video" :video="paragraph.video" />
+            <FullScreenIllustration
+              :key="paragraph.id"
+              v-if="paragraph.animationFull"
+              :paragraph="paragraph"
+            />
+            <IllustrationInline
+              v-if="inlineFigureFor(paragraph)"
+              :key="'inline' + paragraph.id"
+              :animation-id="paragraph.animation.id"
+            />
+          </component>
         </span>
         <!-- section Break -->
         <BreakImages
@@ -240,6 +253,11 @@ import VideoEmbed from "./VideoEmbed.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
 import EditableBlock from "./EditableBlock.vue";
 import WidgetBreakout from "./WidgetBreakout.vue";
+import ExploreCard from "./ExploreCard.vue";
+
+// A paragraph with content.explore renders inside an ExploreCard; the rest
+// go through this fragment, so the template keeps one copy of the markup.
+const Unwrapped = (_, { slots }) => slots.default?.();
 
 const boxesAfter = inject("boxesAfter", () => []);
 const sectionLabels = inject("sectionLabels", null);
