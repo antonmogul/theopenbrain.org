@@ -221,7 +221,10 @@ const ROUTES = [
      * exists only once the chapter content places it).
      */
     expectStage: {
-      selector: '[data-widget-stage="retinabox"]',
+      // The placement is Stuart's upload since OPENBRAIN-141; the Vue port
+      // is its fallback until the upload is published.
+      selector:
+        '[data-widget-stage="upload:retina-retinabox"], [data-widget-stage="retinabox"]',
       minWidthRatio: 0.95,
       probeX: 300,
       minWidth: 1300,
