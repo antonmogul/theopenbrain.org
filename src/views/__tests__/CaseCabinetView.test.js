@@ -257,33 +257,53 @@ describe("restored desktop folder storyboard", () => {
     }
   });
 
-  it("returns the old folder before opening another case and allows Escape to cancel that queue", async () => {
+  it("switches readable cases immediately and reverses into the new folder", async () => {
     const w = await animatedCabinet();
-    let timeline = await finishOpen(w);
+    const original = await finishOpen(w);
     await w.find('[data-point="24"]').trigger("click");
-    await w
+    await w.find('[aria-label="Enlarge map"]').trigger("click");
+    const next = w
       .findAll(".case-tabs button")
-      .find((b) => b.text().includes("G.E."))
-      .trigger("click");
-    expect(document.activeElement).toBe(w.find(".back-button").element);
-    timeline.pause().progress(0);
+      .find((b) => b.text().includes("G.E."));
+    next.element.focus();
+    await next.trigger("click");
     await flushPromises();
-    expect(w.attributes("data-phase")).toBe("opening");
+    expect(w.attributes("data-phase")).toBe("open");
     expect(w.find(".casefile__title").text()).toBe("Case 32 · G.E.");
-    timeline = window.__cc.tl;
-    timeline.pause().progress(1);
-    await flushPromises();
+    expect(document.activeElement).toBe(next.element);
     expect(w.findAll(".note")).toHaveLength(0);
+    expect(w.find(".map-zoom span").text()).toBe("100%");
     expect(w.find(".brain-map img").attributes("src")).toContain("image85.png");
-    await w
-      .findAll(".case-tabs button")
-      .find((b) => b.text().includes("R.W."))
-      .trigger("click");
+    const reverse = window.__cc.tl;
+    expect(reverse).not.toBe(original);
+    expect(reverse.progress()).toBe(1);
     await w.find(".cabinet").trigger("keydown", { key: "Escape" });
-    timeline.pause().progress(0);
+    expect(reverse.reversed()).toBe(true);
+    reverse.pause().progress(0);
     await flushPromises();
     expect(w.attributes("data-phase")).toBe("closed");
-    expect(w.find(".casefile").exists()).toBe(false);
+    expect(document.activeElement).toBe(w.find('[data-id="ge"]').element);
+  });
+
+  it("animates fixed silhouettes without changing SVG paths or layout dimensions", async () => {
+    const w = await animatedCabinet();
+    await w.find('[data-id="ge"]').trigger("click");
+    await flushPromises();
+    const timeline = window.__cc.tl.pause();
+    const flyer = w.find(".story-flyer").element;
+    const paths = w.findAll(".story-flyer path").map((p) => p.attributes("d"));
+    const width = flyer.style.width,
+      height = flyer.style.height;
+    timeline.progress(0.15);
+    const transform = flyer.style.transform;
+    timeline.progress(0.5);
+    await flushPromises();
+    expect(flyer.style.transform).not.toBe(transform);
+    expect(flyer.style.width).toBe(width);
+    expect(flyer.style.height).toBe(height);
+    expect(
+      w.findAll(".story-flyer path").map((p) => p.attributes("d"))
+    ).toEqual(paths);
   });
 
   it("settles into readable mobile panes when the viewport changes mid-open", async () => {
@@ -307,6 +327,28 @@ describe("restored desktop folder storyboard", () => {
     await w.find(".back-button").trigger("click");
     await flushPromises();
     expect(w.findAll(".folder")).toHaveLength(7);
+  });
+
+  it("moves mobile point selection into visible notes and keeps the map return available", async () => {
+    mediaState({ desktop: false });
+    const w = await cabinet();
+    await w.find('[data-id="ge"]').trigger("click");
+    await flushPromises();
+    const choice = w.find('[data-point-option="1b"]');
+    choice.element.focus();
+    await choice.trigger("click");
+    await flushPromises();
+    expect(w.find(".casefile__spread").attributes("data-mobile-view")).toBe(
+      "notes"
+    );
+    expect(document.activeElement).toBe(w.find(".transcript").element);
+    await w.findAll(".reading-views button")[0].trigger("click");
+    expect(w.find(".casefile__spread").attributes("data-mobile-view")).toBe(
+      "map"
+    );
+    expect(w.find('[data-point-option="1b"]').attributes("aria-pressed")).toBe(
+      "true"
+    );
   });
 
   it("deliberately skips spatial motion for reduced-motion and narrow viewports", async () => {

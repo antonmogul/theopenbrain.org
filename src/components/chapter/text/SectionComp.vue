@@ -27,29 +27,13 @@
   >
     <!-- section titel -->
     <!-- Trigger markers are dev chrome (?markers=1), see OPENBRAIN-31 -->
+    <div v-if="showMarkers && transitionId" class="marker-start" />
     <div
-      v-if="showMarkers && section['paragraphs'][0]?.animation?.transition"
-      class="marker-start"
-    />
-    <div
-      v-if="section['paragraphs'][0]?.animation?.transition"
-      :id="
-        section['paragraphs'][0]?.animation &&
-        'triggerAnimation' +
-          section['paragraphs'][0]?.animation?.name +
-          'Transition'
-      "
-      :class="
-        section['paragraphs'][0]?.animation?.name + 'Transition'
-          ? 'animationTrigger animationScrollAnchor block noHighlight'
-          : ''
-      "
-      class="section-transition-spacer transition left-0 w-full h-[200vh]"
+      v-if="transitionId"
+      :id="'trigger' + transitionId"
+      class="animationTrigger animationScrollAnchor block noHighlight section-transition-spacer transition left-0 w-full h-[200vh]"
     ></div>
-    <div
-      v-if="showMarkers && section['paragraphs'][0]?.animation?.transition"
-      class="marker-end"
-    />
+    <div v-if="showMarkers && transitionId" class="marker-end" />
 
     <h2
       v-if="!boxBody"
@@ -235,6 +219,7 @@ import { computed, inject } from "vue";
 // <SectionComp> in the template is this component (an SFC can use itself by
 // its file name without importing it): an anchored breakout box renders as a
 // nested section.
+import { sectionTransitionId } from "@/helper/figureTransitions";
 import { markersEnabled } from "@/helper/debugFlags";
 import BreakImages from "./BreakImages.vue";
 
@@ -263,6 +248,8 @@ const boxesAfter = inject("boxesAfter", () => []);
 const sectionLabels = inject("sectionLabels", null);
 
 const store = useGeneral();
+
+const transitionId = computed(() => sectionTransitionId(props.section));
 
 // Inline below the two-column breakpoint, and inside a floating breakout box
 // (it covers the figure pane): OPENBRAIN-91.

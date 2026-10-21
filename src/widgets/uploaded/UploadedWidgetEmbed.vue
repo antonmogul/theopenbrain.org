@@ -11,13 +11,16 @@
 import { computed, inject, onMounted, ref } from "vue";
 import WidgetFrame from "./WidgetFrame.vue";
 import { fetchUploadedWidget } from "./useUploadedWidgets";
-import { WIDGET_FIT } from "./widgetHost";
+import { WIDGET_FIT, WIDGET_SCROLLABLE } from "./widgetHost";
 
 const props = defineProps({
   slug: { type: String, required: true },
+  eager: { type: Boolean, default: false },
 });
+const emit = defineEmits(["ready"]);
 
 const fit = inject(WIDGET_FIT, null);
+const scrollable = inject(WIDGET_SCROLLABLE, ref(false));
 const maxHeight = computed(() => (fit && fit.value > 0 ? fit.value : null));
 
 const widget = ref(null);
@@ -50,6 +53,11 @@ const ramp = computed(
       :ramp="ramp"
       :title="widget.title"
       :max-height="maxHeight"
+      :shrink-to-fit="!scrollable"
+      :initial-explanation="slug === 'retina-refraction-errors'"
+      :eager="eager"
+      :wait-for-artwork="slug === 'retina-retinal-cell-types'"
+      @report="(report) => report.ready && emit('ready')"
     />
     <p v-else-if="state === 'missing'" class="uw-note">
       This interactive isn't available yet.

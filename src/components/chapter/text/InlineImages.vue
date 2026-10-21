@@ -3,12 +3,12 @@
   <FullBleed
     v-if="paragraph?.img"
     :key="paragraph.id + 'img'"
-    v-slot="{ floating }"
     :enabled="!!paragraph.imgWide"
+    :viewport="!!paragraph.imgWide"
   >
     <div
       class="no-select z-[60] mb-20 right-0 duration-100 border-y border-black flex flex-col justify-center items-center bg-white"
-      :class="floating ? 'w-full ii-wide' : 'w-text -ml-20'"
+      :class="paragraph.imgWide ? 'w-full ii-wide' : 'w-text -ml-20'"
     >
       <figure class="overflow-hidden flex flex-col h-full w-full">
         <img class="imageH object-contain" :src="imageUrl(paragraph.img)" />
@@ -26,15 +26,20 @@
 <script setup>
 import { imageUrl } from "@/editor/media.mjs";
 import FullBleed from "@/components/chapter/FullBleed.vue";
-const props = defineProps({
+defineProps({
   paragraph: Object,
 });
 </script>
 
 <style scoped>
+.ii-wide {
+  margin-bottom: 0;
+}
 /* A full-width image keeps a readable height and centres in the reader. */
 .ii-wide :deep(.imageH) {
-  max-height: 85vh;
+  min-height: 0;
+  flex: 1;
+  height: 0;
   width: auto;
   max-width: 100%;
   margin: 0 auto;

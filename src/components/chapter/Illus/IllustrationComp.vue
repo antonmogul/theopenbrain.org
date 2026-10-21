@@ -23,9 +23,9 @@
       <!-- Below the reader's top bar, in the original's title style. Inline
            (scopeId, below xl) the figure's caption already names it. -->
       <span
-        v-if="!scopeId"
+        v-if="!scopeId && presentation.title"
         class="pb-0 font-sans font-bold text-[1.25rem] leading-[1.55]"
-        >{{ animation.title }}</span
+        >{{ presentation.title }}</span
       >
       <div
         v-if="animation.multiple"
@@ -125,7 +125,13 @@
         </div>
       </div>
     </div>
-    <div class="flex flex-row min-w-full" :class="inline ? 'order-1' : ''">
+    <div
+      class="flex flex-row min-w-full"
+      :class="[
+        inline ? 'order-1' : '',
+        { 'illustration-captioned': presentation.caption },
+      ]"
+    >
       <template v-if="animation.illuImage">
         <div
           v-if="!animation.youtubeID"
@@ -170,11 +176,20 @@
         </div>
       </template>
       <template v-else>
-        <div
+        <figure
           v-if="!animation.multiple && !animation.flip && !animation.switch"
-          :id="scopeId || animation.id"
           class="w-full"
-        />
+          :class="{ 'illustration-figure': presentation.caption }"
+          :aria-label="presentation.accessibleName"
+        >
+          <div
+            :id="scopeId || animation.id"
+            :class="{ 'illustration-art': presentation.caption }"
+          />
+          <figcaption v-if="presentation.caption" class="illustration-caption">
+            {{ presentation.caption }}
+          </figcaption>
+        </figure>
         <IllustrationFlip
           v-else-if="!animation.multiple && animation.flip"
           :animation="animation"
@@ -216,6 +231,7 @@ const prefersReducedMotion = window.matchMedia(
 ).matches;
 import animationJSON from "@/assets/json_backend/animations.json";
 import { lottiePath, resolveAnimationConfig } from "@/helper/animationResolve";
+import { figurePresentation } from "@/helper/figurePresentation";
 import PlayIcon from "@/icons/custom/PlayIcon.vue";
 import PauseIcon from "@/icons/custom/PauseIcon.vue";
 import IllustrationFlip from "./IllustrationFlip.vue";
@@ -235,6 +251,7 @@ const props = defineProps({
 });
 // Rendered in the text rather than the pane (see the template's note).
 const inline = computed(() => !!props.scopeId);
+const presentation = computed(() => figurePresentation(props.animation));
 let animationLottie;
 let isPaused = ref(false);
 
@@ -419,6 +436,36 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.illustration-captioned {
+  height: 100%;
+  min-height: 0;
+}
+.illustration-figure {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  gap: 1rem;
+  padding-block: 4rem 2rem;
+}
+.illustration-art {
+  min-height: 0;
+  flex: 0 1 auto;
+}
+.illustration-art :deep(svg) {
+  max-height: 100%;
+}
+.illustration-caption {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  line-height: 1.5;
+}
+@media (max-width: 1023px) {
+  .illustration-figure {
+    padding-block: 2rem 0;
+  }
+}
 .blockState {
   border: black solid 1px;
 }

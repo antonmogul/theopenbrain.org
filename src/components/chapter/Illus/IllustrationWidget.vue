@@ -25,7 +25,9 @@ import { WIDGET_FIT } from "@/widgets/uploaded/widgetHost";
 const props = defineProps({
   /** The figure: { id, title?, widgetId } from useAnimations. */
   animation: { type: Object, required: true },
+  preload: { type: Boolean, default: false },
 });
+const emit = defineEmits(["ready"]);
 
 const stage = ref(null);
 const stageHeight = ref(0);
@@ -58,7 +60,12 @@ const view = computed(() =>
     :aria-label="animation.title || 'Interactive'"
   >
     <div ref="stage" class="iw-stage">
-      <component :is="view" v-if="view" />
+      <component
+        :is="view"
+        v-if="view"
+        :eager="preload"
+        @ready="emit('ready')"
+      />
       <p v-else class="iw-missing">
         This interactive ({{ animation.widgetId || "unknown" }}) isn't available
         in the reader yet.

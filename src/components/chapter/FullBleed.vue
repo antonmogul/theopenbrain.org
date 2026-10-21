@@ -32,6 +32,8 @@ import { STAGE_DESKTOP_QUERY, STAGE_LAYER_ID } from "@/helper/stageLayer";
 const props = defineProps({
   /** Full width at desktop sizes; false keeps the content in the column. */
   enabled: { type: Boolean, default: true },
+  /** One viewport of artwork with a short, natural scroll hold. */
+  viewport: { type: Boolean, default: false },
   /** Extra attributes for the stage element (e.g. data-* for tests). */
   stageAttrs: { type: Object, default: () => ({}) },
 });
@@ -40,6 +42,21 @@ const layer = ref(null);
 const wide = ref(false);
 const slotEl = ref(null);
 const stageEl = ref(null);
+const screenEl = ref(null);
+const immersive = ref(false);
+// Local DOM state, removed automatically with the stage. Reader chrome
+// returns as soon as the full-screen hold leaves; keyboard focus can always
+// reveal the navigation. No scroll locks or shared mutable page state.
+function measureImmersive() {
+  const r = screenEl.value?.getBoundingClientRect();
+  immersive.value = !!(
+    r &&
+    r.width >= document.documentElement.clientWidth - 1 &&
+    r.top <= 1 &&
+    r.bottom >= window.innerHeight - 1
+  );
+}
+watch(screenEl, measureImmersive, { flush: "post" });
 const stageTop = ref(0);
 const stageLeft = ref(0);
 const slotHeight = ref(0);
@@ -90,7 +107,10 @@ function schedule() {
   syncPending = true;
   Promise.resolve().then(() => {
     syncPending = false;
-    if (!unmounted) sync();
+    if (!unmounted) {
+      sync();
+      measureImmersive();
+    }
   });
 }
 function observe() {
@@ -118,6 +138,7 @@ onMounted(() => {
     else mql.addListener?.(onMediaChange);
   }
   window.addEventListener("resize", schedule);
+  window.addEventListener("scroll", measureImmersive, { passive: true });
 });
 watch(floating, async () => {
   await nextTick();
@@ -130,6 +151,7 @@ onBeforeUnmount(() => {
     mql.removeEventListener("change", onMediaChange);
   else mql?.removeListener?.(onMediaChange);
   window.removeEventListener("resize", schedule);
+  window.removeEventListener("scroll", measureImmersive);
   resizeObserver?.disconnect();
   resizeObserver = null;
 });
@@ -145,7 +167,11 @@ defineExpose({ sync: schedule, floating });
   <div
     ref="slotEl"
     class="fb-slot"
-    :class="{ 'fb-slot--vacated': floating, 'fb-slot--column': !enabled }"
+    :class="{
+      'fb-slot--vacated': floating,
+      'fb-slot--column': !enabled,
+      'fb-slot--viewport': viewport,
+    }"
     :style="slotStyle"
   >
     <Teleport :to="layer" :disabled="!floating">
@@ -156,7 +182,17 @@ defineExpose({ sync: schedule, floating });
         :style="stageStyle"
         v-bind="stageAttrs"
       >
-        <slot :floating="floating" />
+        <div v-if="viewport" class="fb-screen-hold">
+          <div
+            ref="screenEl"
+            class="fb-screen"
+            :data-reader-immersive="immersive ? '' : undefined"
+          >
+            <slot :floating="floating" />
+          </div>
+          <div class="fb-screen-room" aria-hidden="true" />
+        </div>
+        <slot v-else :floating="floating" />
       </div>
     </Teleport>
   </div>
@@ -172,5 +208,49 @@ defineExpose({ sync: schedule, floating });
      overflow stays visible (clip + visible is a valid pair). */
   overflow-x: clip;
   overflow-y: visible;
+}
+@media (max-width: 1023px) {
+  .fb-slot--viewport {
+    width: var(--app-w, 100vw);
+    margin-left: calc(50% - var(--app-w, 100vw) / 2);
+  }
+}
+/* The widget itself fills the screen; reader chrome yields during the hold. */
+.fb-screen-hold {
+  background: rgb(var(--color-dark-surface));
+}
+.fb-screen {
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
+}
+.fb-screen > :deep(*) {
+  flex: 1;
+  min-height: 0;
+}
+.fb-screen-room {
+  height: 25vh;
+  height: 25dvh;
+}
+:root[data-reduce-motion="1"] .fb-screen {
+  position: relative;
+}
+:root[data-reduce-motion="1"] .fb-screen-room {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion="0"]) .fb-screen {
+    position: relative;
+  }
+  :root:not([data-reduce-motion="0"]) .fb-screen-room {
+    display: none;
+  }
 }
 </style>

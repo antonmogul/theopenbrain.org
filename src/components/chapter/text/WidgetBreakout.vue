@@ -26,26 +26,23 @@
  * Every view in src/widgets/embeds.js was smoke-tested down to 390px, so the
  * prose column is a width they already handle.
  *
- * A full-screen inline widget (placement `fullScreen`, OPENBRAIN-147: the
- * History chapter's phrenology skull and Penfield case cabinet) is one
- * screen of the chapter. While its band floats full width it is as tall as
- * the viewport below the top bar, the widget fills it (`.widget-root` grows;
- * `--widget-body-min-h: 0` lets a view drop its own content floor), and the
- * scroll pauses on it the way BreakoutBox pauses (the band sticks under the
- * top bar while a room in its colour scrolls past; off with reduced motion).
+ * Every inline placement is a viewport of the chapter. FullBleed owns the
+ * edge-to-edge plate and short scroll hold; the measured widget area drives
+ * uploaded-frame fitting. Breakout cards still open on demand in a modal.
  */
 import {
   computed,
   defineAsyncComponent,
   onBeforeUnmount,
   onMounted,
+  provide,
   ref,
   watch,
 } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
-import { fullScreenOf } from "@/widgets/placements";
+import { WIDGET_FIT, WIDGET_SCROLLABLE } from "@/widgets/uploaded/widgetHost";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 import {
@@ -83,9 +80,24 @@ const kind = computed(() => {
 });
 const title = computed(() => props.placement?.title || widgetId.value);
 // One screen of the chapter, with the pause (see the notes at the top).
-const fullScreen = computed(
-  () => kind.value === "inline" && fullScreenOf(props.placement)
-);
+const fullScreen = computed(() => kind.value === "inline");
+const widgetStage = ref(null);
+const stageHeight = ref(0);
+provide(WIDGET_FIT, stageHeight);
+provide(WIDGET_SCROLLABLE, fullScreen);
+let stageObserver = null;
+watch(widgetStage, (el) => {
+  stageObserver?.disconnect();
+  const measure = () => {
+    stageHeight.value = Math.floor(el?.clientHeight || 0);
+  };
+  measure();
+  if (el && typeof ResizeObserver === "function") {
+    stageObserver = new ResizeObserver(measure);
+    stageObserver.observe(el);
+  }
+});
+onBeforeUnmount(() => stageObserver?.disconnect());
 // An uploaded widget ("upload:<slug>") that isn't published yet is a marker
 // for a widget still to be built: the card says "Coming soon" and has
 // nothing to open (OPENBRAIN-110).
@@ -110,8 +122,11 @@ const comingSoon = computed(
 );
 // A published upload shows its own title (the kit's layout), so the band
 // doesn't repeat it.
+const modalContentOwnsHeading = computed(
+  () => !!upload.value && uploadReady.value === true
+);
 const ownsHeading = computed(
-  () => kind.value === "inline" && !!upload.value && uploadReady.value === true
+  () => kind.value === "inline" && modalContentOwnsHeading.value
 );
 const embeddable = computed(
   () => hasEmbed(widgetId.value) && !comingSoon.value
@@ -212,19 +227,20 @@ const headingId = computed(
       ref="fullBleed"
       v-slot="{ floating }"
       :enabled="kind === 'inline'"
+      :viewport="fullScreen"
       class="wb-fb"
       :class="{ 'wb-slot': kind === 'inline' }"
     >
-      <div class="wb-pause" :class="{ 'wb-pause--on': floating && fullScreen }">
+      <div class="wb-layout">
         <div
           class="wb-body"
           :class="{
             'wb-band': kind === 'inline',
             'wb-body--floating': floating,
-            'wb-body--full': floating && fullScreen,
+            'wb-body--full': fullScreen,
           }"
         >
-          <header class="wb-head">
+          <header class="wb-head" :class="{ 'wb-head--owned': ownsHeading }">
             <!-- No "Interactive" label (Stuart, 13 Oct): the book doesn't
                label its other figures by kind. A kicker only says what the
                reader needs to know: it isn't built yet, or it opens. -->
@@ -248,6 +264,7 @@ const headingId = computed(
           <!-- inline: the widget lives here once it is near the viewport. -->
           <div
             v-if="kind === 'inline'"
+            ref="widgetStage"
             class="wb-stage"
             :class="{ 'wb-stage--floating': floating }"
             :data-widget-stage="widgetId"
@@ -265,20 +282,34 @@ const headingId = computed(
           </div>
 
           <footer class="wb-foot">
-            <p v-if="placement.credit" class="wb-credit">
-              {{ placement.credit }}
-            </p>
             <div class="wb-actions">
               <button
                 v-if="embeddable"
                 type="button"
                 class="wb-btn wb-btn--primary"
+                :class="{ 'wb-btn--expand': kind === 'inline' }"
+                :aria-label="kind === 'inline' ? 'Full screen' : undefined"
+                :title="kind === 'inline' ? 'Full screen' : undefined"
                 @click="openModal"
               >
-                {{ kind === "inline" ? "Full screen" : "Open interactive" }}
+                <svg
+                  v-if="kind === 'inline'"
+                  aria-hidden="true"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                >
+                  <path
+                    d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"
+                  />
+                </svg>
+                <span v-else>Open interactive</span>
               </button>
               <RouterLink
-                v-if="placement.route"
+                v-if="placement.route && kind !== 'inline'"
                 :to="placement.route"
                 class="wb-btn"
                 target="_blank"
@@ -289,15 +320,16 @@ const headingId = computed(
             </div>
           </footer>
         </div>
-        <div
-          v-if="floating && fullScreen"
-          class="wb-pause-room"
-          aria-hidden="true"
-        ></div>
       </div>
     </FullBleed>
 
-    <DemoModal :show="modalOpen" :title="title" wide @close="closeModal">
+    <DemoModal
+      :show="modalOpen"
+      :title="title"
+      wide
+      :content-owns-heading="modalContentOwnsHeading"
+      @close="closeModal"
+    >
       <component :is="Widget" v-if="modalOpen && Widget" />
     </DemoModal>
   </aside>
@@ -313,7 +345,7 @@ const headingId = computed(
   margin: 2.5rem 0;
   border: 1px solid rgb(var(--color-line));
   border-left: 4px solid rgb(var(--wb-accent));
-  border-radius: var(--radius-control);
+  border-radius: 0;
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   font-family: var(--font-ui);
@@ -344,7 +376,7 @@ const headingId = computed(
   color: #fff;
 }
 
-/* Full width: the gutter the floating stage used to have. The band is keyed
+/* Full width: titles keep a readable inset; the widget itself is flush. The band is keyed
    on its own class, not on .wb--inline: at desktop widths it is teleported
    out of the aside. */
 .wb-band.wb-body--floating {
@@ -383,7 +415,7 @@ const headingId = computed(
   margin: 0;
   border: 0;
   background: transparent;
-  padding: 0 var(--wb-gutter);
+  padding: 0;
 }
 
 .wb-band .wb-stage-placeholder {
@@ -508,22 +540,18 @@ const headingId = computed(
  */
 /* FullBleed positions the whole band; its gutter is --wb-gutter above. */
 
-/* A full-screen widget (OPENBRAIN-147): the floating band is one screen
-   below the top bar and the widget fills it. The views' own floors
-   (--widget-body-min-h) give way to the flex height. */
-.wb-body--full {
+/* FullBleed owns the viewport and the short scroll hold for every inline
+   placement, including blocks authored directly in the database. */
+.wb-layout {
   display: flex;
   flex-direction: column;
-  /* A height, not a min-height: only a definite height reaches the widget
-     through the flex chain (stage → widget root → its body), and the
-     cabinet's drawer and the skull's row size by it. Taller content paints
-     on over the pause room below. */
-  height: calc(100vh - var(--reader-topbar-h, 4rem));
-  height: calc(100dvh - var(--reader-topbar-h, 4rem));
 }
-.wb-body--full .wb-head {
-  padding-top: 1rem;
-  padding-bottom: 0.75rem;
+.wb-body--full {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 .wb-body--full .wb-stage {
   flex: 1;
@@ -532,44 +560,35 @@ const headingId = computed(
   min-height: 0;
   --widget-body-min-h: 0px;
 }
-.wb-body--full .wb-stage > :deep(.widget-root) {
+.wb-body--full .wb-stage > :deep(*) {
   flex: 1;
+  min-height: 0;
+}
+.wb-body--full .wb-head--owned {
+  padding: 0;
 }
 .wb-body--full .wb-foot {
-  margin-top: 0.5rem;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
-
-/* The pause, as in BreakoutBox: the band sticks under the top bar while
-   the room after it (WB_PAUSE, in the band's colour, so the band just
-   reads as taller) scrolls past, then leaves with it. */
-.wb-pause--on {
-  background: rgb(var(--color-dark-surface));
+.wb-body--full .wb-head:not(.wb-head--owned) {
+  padding-right: 4rem;
 }
-.wb-pause-room {
-  height: 45vh; /* WB_PAUSE */
+.wb-btn--expand {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
 }
-.wb-pause--on > .wb-body {
-  position: sticky;
-  top: var(--reader-topbar-h, 4rem);
-}
-/* Reduced motion: no pause. The reader's own setting decides (data-reduce-
-   motion "1" on, "0" off); the OS setting only when unset. Plain selectors,
-   never :global() — see BreakoutBox. */
-:root[data-reduce-motion="1"] .wb-pause-room {
-  display: none;
-}
-:root[data-reduce-motion="1"] .wb-pause--on > .wb-body {
-  position: relative;
-  top: auto;
-}
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-reduce-motion="0"]) .wb-pause-room {
-    display: none;
-  }
-  :root:not([data-reduce-motion="0"]) .wb-pause--on > .wb-body {
-    position: relative;
-    top: auto;
-  }
+.wb-body :deep(button),
+.wb-body :deep([role="button"]) {
+  border-radius: 0;
 }
 
 .wb-stage-placeholder {
@@ -579,7 +598,7 @@ const headingId = computed(
     rgb(var(--color-line) / 0.25) 0 8px,
     transparent 8px 16px
   );
-  border-radius: var(--radius-control);
+  border-radius: 0;
 }
 
 .wb-missing {
@@ -609,7 +628,7 @@ const headingId = computed(
   gap: 0.4rem;
   padding: 0.55rem 1rem;
   border: 1px solid rgb(var(--color-ink));
-  border-radius: var(--radius-control);
+  border-radius: 0;
   background: transparent;
   color: rgb(var(--color-ink));
   font-family: var(--font-mono);

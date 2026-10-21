@@ -146,10 +146,51 @@ const BRIDGE = `(function(){
     else document.documentElement.removeAttribute("data-ob-reduce-motion");
     window.OB.reducedMotion=!!m.reduceMotion||!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);window.OB.theme={accent:m.tokens["--ob-accent"],reduceMotion:window.OB.reducedMotion,ramp:m.ramp};
     subs.forEach(function(fn){try{fn(window.OB.theme)}catch(err){post({type:"error",message:String(err.message||err)})}});report();});
-  window.addEventListener("load",function(){report();post({type:"ready"});
+  window.addEventListener("load",function(){
+    // Apply the host's first-view preference through the widget's own
+    // controller, once. Later fit/theme reports never reopen dismissed info.
+    if(window.__obInitialExplanation&&window.tobWidget&&typeof window.tobWidget.setInfo==="function")window.tobWidget.setInfo(true);
+    report();
+    function ready(){
+      if(window.__obWaitForArtwork){
+        var a=window.tobWidget&&window.tobWidget.anim;
+        if(!a||!a.isLoaded||!document.querySelector('.tob-canvas svg path')){requestAnimationFrame(ready);return;}
+        requestAnimationFrame(function(){requestAnimationFrame(function(){post({type:"ready"})})});
+      }else post({type:"ready"});
+    }
+    ready();
     if(window.ResizeObserver){new ResizeObserver(report).observe(document.documentElement)}});
   setInterval(report,1000);
 })();`;
+
+// Host presentation lives here so already-published uploads receive the
+// same treatment without rewriting their scripts or database content.
+// Only controls are squared; scientific circles and slider/radio handles
+// keep their authored geometry. The .tob rules adapt the legacy Retina
+// template's fixed 700px canvas to the measured host box using flex/grid.
+const HOST_STYLE = `
+button, [role="button"], input[type="button"], input[type="submit"],
+input[type="reset"], select, .tob-seg { border-radius: 0 !important; }
+.tob-info-open .tob-info-btn { transform: none !important; }
+.tob-info-open .tob-info-btn > svg { transform: rotate(45deg); }
+[data-ob-author-credit], .rb-foot { display: none !important; }
+html[data-ob-fit] body { margin: 0 !important; padding: 0 !important; }
+html[data-ob-fit] .rb { max-width: none; margin: 0; border-radius: 0; min-height: var(--ob-max-height); }
+html[data-ob-fit] .rb-tabs { flex-wrap: wrap; }
+@media (min-width: 1024px) {
+  html[data-ob-fit] .rb-bar { padding-right: 64px; }
+}
+html[data-ob-fit] .tob { height: var(--ob-max-height); min-height: var(--ob-max-height); }
+html[data-ob-fit] .tob-stage { height: 100%; min-height: 0; }
+html[data-ob-fit] .tob-body { min-height: 0; }
+html[data-ob-fit] .tob-head, html[data-ob-fit] .tob-caption,
+html[data-ob-fit] .tob-legend, html[data-ob-fit] .tob-dots { flex-shrink: 0; }
+html[data-ob-fit] .tob-view { flex: 1; min-height: 120px; display: flex; }
+html[data-ob-fit] .tob-canvas { height: 100% !important; min-height: 120px; flex: 1; }
+html[data-ob-fit] .tob-steps { max-height: var(--ob-max-height); overflow-y: auto; }
+html[data-ob-fit].tob-choices .tob-stage { align-content: stretch; }
+html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
+`;
 
 const escapeAttr = (s) => String(s).replace(/"/g, "&quot;");
 
@@ -159,7 +200,13 @@ const escapeAttr = (s) => String(s).replace(/"/g, "&quot;");
  */
 export function buildWidgetDoc(
   html,
-  { ramp = "fund", reduceMotion = false, maxHeight = null } = {}
+  {
+    ramp = "fund",
+    reduceMotion = false,
+    maxHeight = null,
+    initialExplanation = false,
+    waitForArtwork = false,
+  } = {}
 ) {
   const tokens = widgetTokens(ramp);
   const fit = Number(maxHeight) > 0 ? Math.round(maxHeight) : 0;
@@ -169,8 +216,8 @@ export function buildWidgetDoc(
     .join(";");
   const head =
     `<meta http-equiv="Content-Security-Policy" content="${escapeAttr(CSP)}">` +
-    `<style>:root{${vars}}html,body{overflow-x:hidden}</style>` +
-    `<script>${fit ? `window.__obFit=${fit};` : ""}${BRIDGE}</scr` +
+    `<style>:root{${vars}}html,body{overflow-x:hidden}${HOST_STYLE}</style>` +
+    `<script>${fit ? `window.__obFit=${fit};` : ""}${initialExplanation ? "window.__obInitialExplanation=true;" : ""}${waitForArtwork ? "window.__obWaitForArtwork=true;" : ""}${BRIDGE}</scr` +
     `ipt>`;
   let doc = String(html || "");
   const attrs =
@@ -217,8 +264,9 @@ export const FRAME_MAX_HEIGHT = 6000;
 
 /**
  * The height the frame takes for the height a widget reports: never under
- * 80 px or over 6000 px, and never over `maxHeight` when the host has one
- * (the figure pane). Before the first report the frame is `minHeight` tall,
+ * 80 px or over 6000 px. A measured host supplies its exact height, so
+ * old uploads cannot leave a short fixed-height frame inside a viewport.
+ * Before the first report a free frame is `minHeight` tall,
  * or, in a pane, the pane's height, so the box doesn't jump when the widget
  * fills it.
  */
@@ -230,7 +278,7 @@ export function fitHeight(
   const cap = fixed
     ? Math.min(FRAME_MAX_HEIGHT, Math.round(maxHeight))
     : FRAME_MAX_HEIGHT;
-  const want = Number(reported) > 0 ? reported : fixed ? cap : minHeight;
+  const want = fixed ? cap : Number(reported) > 0 ? reported : minHeight;
   return Math.max(FRAME_MIN_HEIGHT, Math.min(Math.round(want), cap));
 }
 
@@ -249,6 +297,8 @@ export function fitScale(reported, maxHeight) {
 
 /** The provide/inject key for the height a widget must fit (IllustrationWidget → UploadedWidgetEmbed). */
 export const WIDGET_FIT = Symbol("widgetFit");
+/** Viewport stages keep full width and allow tall tools to scroll naturally. */
+export const WIDGET_SCROLLABLE = Symbol("widgetScrollable");
 
 /**
  * Checks we can make from the file alone (the Studio adds the ones that
