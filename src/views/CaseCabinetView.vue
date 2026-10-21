@@ -9,14 +9,14 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
-  reactive,
+  watch,
   ref,
 } from "vue";
 import gsap from "gsap";
 import { CASE_SOURCE, useCaseFiles } from "@/mocks/caseFiles";
 import { folderPath } from "@/helper/folderPath";
 import { readSpeed } from "@/helper/debugFlags";
-import { reducedMotionK } from "@/helper/motion";
+import { reducedMotionPreferred } from "@/helper/readerJump";
 
 // Geometry and tab positions retained from the baseline storyboard.
 const STAGE_W = 1729;
@@ -60,7 +60,17 @@ const folderEls = new Map();
 const scale = ref(1);
 const offsetX = ref(0);
 const offsetY = ref(0);
-const fly = reactive({
+const flyerEl = ref(null);
+const flyShapeEl = ref(null);
+const uprightShapeEl = ref(null);
+const bookEl = ref(null);
+const mapScrollEl = ref(null);
+const mapBaseWidth = ref(0);
+const mobileView = ref("map");
+const loadState = ref("loading");
+let mapObserver = null;
+// GSAP owns this decorative model. It must never schedule Vue renders.
+const fly = {
   visible: 0,
   book: 0,
   x: 0,
@@ -70,7 +80,8 @@ const fly = reactive({
   rot: 0,
   tab: DRAWER.tab,
   r: DRAWER.r,
-});
+  morph: 0,
+};
 let disposed = false;
 let generation = 0;
 let tl = null;
@@ -101,13 +112,67 @@ function tabStyle(c, w, tab) {
 const drawerOutlines = computed(() =>
   cases.value.map((c) => outline(c, STAGE_W, DRAWER.h, DRAWER.tab, DRAWER.r))
 );
+// Two immutable silhouettes crossfade while their common layer transforms.
 const flyOutline = computed(() =>
-  openCase.value ? outline(openCase.value, fly.w, fly.h, fly.tab, fly.r) : ""
+  openCase.value
+    ? outline(openCase.value, STAGE_W, DRAWER.h, DRAWER.tab, DRAWER.r)
+    : ""
 );
+const uprightOutline = computed(() =>
+  openCase.value
+    ? outline(openCase.value, UPRIGHT.w, UPRIGHT.h, UPRIGHT.tab, UPRIGHT.r)
+    : ""
+);
+function renderFly() {
+  if (
+    !flyerEl.value ||
+    !bookEl.value ||
+    !flyShapeEl.value ||
+    !uprightShapeEl.value
+  )
+    return;
+  flyerEl.value.style.transform = `translate3d(${fly.x + (fly.w - STAGE_W) / 2}px, ${fly.y + (fly.h - DRAWER.h) / 2}px, 0) rotate(${fly.rot}deg) scale(${fly.w / STAGE_W}, ${fly.h / DRAWER.h})`;
+  flyerEl.value.style.visibility = fly.visible ? "visible" : "hidden";
+  bookEl.value.style.visibility = fly.book ? "visible" : "hidden";
+  flyShapeEl.value.style.opacity = String(1 - fly.morph);
+  uprightShapeEl.value.style.opacity = String(fly.morph);
+}
+function fitMap() {
+  const el = mapScrollEl.value,
+    image = openCase.value?.image;
+  if (!el || !image) return;
+  const width = Math.floor(
+    Math.min(el.clientWidth, (el.clientHeight * image.width) / image.height)
+  );
+  if (width > 0 && width !== mapBaseWidth.value) mapBaseWidth.value = width;
+}
+watch(mapScrollEl, (el) => {
+  mapObserver?.disconnect();
+  if (el && typeof ResizeObserver !== "undefined") {
+    mapObserver = new ResizeObserver(fitMap);
+    mapObserver.observe(el);
+  }
+  nextTick(fitMap);
+});
+watch(mapZoom, async (zoom) => {
+  if (zoom !== 100) return;
+  await nextTick();
+  mapScrollEl.value?.scrollTo?.(0, 0);
+});
+async function resetReading() {
+  selectedPoint.value = null;
+  mapZoom.value = 100;
+  mobileView.value = "map";
+  await nextTick();
+  if (mapScrollEl.value) mapScrollEl.value.scrollTo?.(0, 0);
+  if (transcriptEl.value) transcriptEl.value.scrollTop = 0;
+  fitMap();
+}
 function fit() {
   const w = bodyEl.value?.clientWidth || window.innerWidth;
   const h = bodyEl.value?.clientHeight || window.innerHeight * 0.76;
-  scale.value = Math.min(w / STAGE_W, h / STAGE_H);
+  const nextScale = Math.min(w / STAGE_W, h / STAGE_H);
+  if (scale.value !== nextScale) scale.value = nextScale;
   offsetX.value = Math.max(0, (w - STAGE_W * scale.value) / 2);
   offsetY.value = Math.max(0, (h - STAGE_H * scale.value) / 2);
 }
@@ -166,7 +231,7 @@ function layoutChanged() {
   desktop.value = desktopQuery.matches;
   fit();
   // A viewport/motion-preference change cannot strand a half-open folder.
-  if (!desktop.value || reducedMotionK() < 1) {
+  if (!desktop.value || reducedMotionPreferred()) {
     if (import.meta.env.DEV && window.__cc?.tl === tl) delete window.__cc;
     tl?.kill();
     tl = null;
@@ -187,9 +252,20 @@ onMounted(async () => {
       attributeFilter: ["data-reduce-motion"],
     });
   }
-  const result = await fetchCases();
-  if (disposed) return;
-  cases.value = result;
+  try {
+    const result = await fetchCases();
+    if (disposed) return;
+    cases.value = result;
+    loadState.value = result.length ? "ready" : "empty";
+    // Decode the original maps before their folder reaches the reading view.
+    for (const c of result) {
+      const image = new Image();
+      image.src = c.illustration;
+      image.decode?.().catch(() => {});
+    }
+  } catch {
+    loadState.value = "error";
+  }
   await nextTick();
   if (disposed) return;
   fit();
@@ -204,6 +280,7 @@ onBeforeUnmount(() => {
   queuedCase = null;
   cancelAnimationFrame(focusFrame);
   resizeObserver?.disconnect();
+  mapObserver?.disconnect();
   motionObserver?.disconnect();
   desktopQuery?.removeEventListener?.("change", layoutChanged);
   motionQuery?.removeEventListener?.("change", layoutChanged);
@@ -213,6 +290,27 @@ onBeforeUnmount(() => {
 
 async function open(c) {
   if (disposed) return;
+  if (openCase.value && phase.value === "open") {
+    if (openCase.value.id === c.id) return;
+    const token = ++generation;
+    tl?.kill();
+    tl = null;
+    openCase.value = c;
+    await resetReading();
+    if (disposed || token !== generation || phase.value !== "open") return;
+    if (
+      animationMode.value === "storyboard" &&
+      desktop.value &&
+      !reducedMotionPreferred()
+    ) {
+      prepareFly(c);
+      createTimeline();
+      tl.pause().progress(1, true);
+      renderFly();
+    }
+    revealWorkspace();
+    return;
+  }
   if (openCase.value) {
     if (openCase.value.id === c.id && phase.value !== "closing") return;
     queuedCase = c;
@@ -221,11 +319,21 @@ async function open(c) {
   }
   const token = ++generation;
   openCase.value = c;
-  mapZoom.value = 100;
-  selectedPoint.value = null;
+  resetReading();
   phase.value = "opening";
   animationMode.value =
-    desktop.value && reducedMotionK() === 1 ? "storyboard" : "immediate";
+    desktop.value && !reducedMotionPreferred() ? "storyboard" : "immediate";
+  prepareFly(c);
+  await nextTick();
+  if (disposed || token !== generation || phase.value !== "opening") return;
+  closeButton.value?.focus();
+  if (animationMode.value === "immediate") {
+    opened();
+    return;
+  }
+  createTimeline();
+}
+function prepareFly(c) {
   Object.assign(fly, {
     visible: 0,
     book: 0,
@@ -236,15 +344,12 @@ async function open(c) {
     rot: 0,
     tab: DRAWER.tab,
     r: DRAWER.r,
+    morph: 0,
   });
-  await nextTick();
-  if (disposed || token !== generation || phase.value !== "opening") return;
-  closeButton.value?.focus();
-  if (animationMode.value === "immediate") {
-    opened();
-    return;
-  }
+}
+function createTimeline() {
   fit();
+  renderFly();
   gsap.set(sceneEl.value, { autoAlpha: 1 });
   gsap.set(workspaceEl.value, { autoAlpha: 0 });
   gsap.set(pullEl.value, { x: 0 });
@@ -262,6 +367,7 @@ async function open(c) {
   tl = gsap.timeline({
     onComplete: opened,
     onReverseComplete: returnedToDrawer,
+    onUpdate: renderFly,
   });
   tl.set(fly, { visible: 1 })
     .to(fly, {
@@ -270,7 +376,12 @@ async function open(c) {
       duration: 0.4 * speed,
       ease: "power2.out",
     })
-    .to(fly, { ...upright, duration: 0.95 * speed, ease: "power2.inOut" })
+    .to(fly, {
+      ...upright,
+      morph: 1,
+      duration: 0.95 * speed,
+      ease: "power2.inOut",
+    })
     .set(fly, { book: 1 })
     .to(coverEl.value, {
       rotationY: -180,
@@ -293,7 +404,7 @@ function close({ keepQueue = false } = {}) {
   if (phase.value === "closing") return;
   closeButton.value?.focus({ preventScroll: true });
   phase.value = "closing";
-  if (!desktop.value || reducedMotionK() < 1) {
+  if (!desktop.value || reducedMotionPreferred()) {
     returnedToDrawer();
     return;
   }
@@ -310,8 +421,12 @@ function close({ keepQueue = false } = {}) {
 async function selectPoint(id) {
   if (phase.value !== "open") return;
   selectedPoint.value = id;
+  if (!desktop.value) mobileView.value = "notes";
   await nextTick();
-  if (transcriptEl.value) transcriptEl.value.scrollTop = 0;
+  if (transcriptEl.value) {
+    transcriptEl.value.scrollTop = 0;
+    if (!desktop.value) transcriptEl.value.focus({ preventScroll: true });
+  }
 }
 function onKeydown(e) {
   if (e.key === "Escape" && openCase.value) {
@@ -337,8 +452,22 @@ function onKeydown(e) {
         ref="closeButton"
         @click="close()"
       >
-        Back to cases
+        ← Back to cases
       </button>
+      <p v-else class="cabinet__eyebrow">
+        Penfield’s case files <span>Penfield &amp; Perot · 1963</span>
+      </p>
+      <p class="cabinet__status" role="status">
+        {{
+          phase === "opening"
+            ? "Opening the folder…"
+            : phase === "closing"
+              ? "Returning the folder…"
+              : openCase
+                ? `${openCase.tab} · ${openCase.points.length} stimulation points`
+                : "Seven patients. Their words, on record."
+        }}
+      </p>
     </header>
 
     <div
@@ -346,6 +475,15 @@ function onKeydown(e) {
       class="cabinet-body"
       :class="{ 'cabinet-body--desktop': desktop }"
     >
+      <p v-if="loadState !== 'ready'" class="cabinet-state" role="status">
+        {{
+          loadState === "loading"
+            ? "Preparing the case files…"
+            : loadState === "empty"
+              ? "No case files are available."
+              : "The case files could not load. Reload to try again."
+        }}
+      </p>
       <div
         v-if="desktop"
         ref="sceneEl"
@@ -370,7 +508,7 @@ function onKeydown(e) {
               type="button"
               class="story-folder"
               :class="{
-                'story-folder--out': openCase?.id === c.id && fly.visible,
+                'story-folder--out': openCase?.id === c.id,
               }"
               :data-id="c.id"
               :style="{
@@ -405,22 +543,31 @@ function onKeydown(e) {
             aria-hidden="true"
           >
             <div
-              v-show="fly.visible"
+              ref="flyerEl"
               class="story-flyer"
-              :style="{
-                left: `${fly.x}px`,
-                top: `${fly.y}px`,
-                width: `${fly.w}px`,
-                height: `${fly.h}px`,
-                transform: `rotate(${fly.rot}deg)`,
-              }"
+              :style="{ width: `${STAGE_W}px`, height: `${DRAWER.h}px` }"
             >
-              <svg class="story-folder__svg" :width="fly.w" :height="fly.h">
+              <svg
+                ref="flyShapeEl"
+                class="story-folder__svg"
+                :width="STAGE_W"
+                :height="DRAWER.h"
+              >
                 <path :d="flyOutline" />
+              </svg>
+              <svg
+                ref="uprightShapeEl"
+                class="story-folder__svg"
+                :width="STAGE_W"
+                :height="DRAWER.h"
+                :viewBox="`0 0 ${UPRIGHT.w} ${UPRIGHT.h}`"
+                preserveAspectRatio="none"
+              >
+                <path :d="uprightOutline" />
               </svg>
               <span
                 class="story-tab"
-                :style="tabStyle(openCase, fly.w, fly.tab)"
+                :style="tabStyle(openCase, STAGE_W, DRAWER.tab)"
                 ><span class="story-tab__number">{{ openCase.caseNo }}</span
                 ><span class="story-tab__initials">{{
                   openCase.tab
@@ -428,7 +575,7 @@ function onKeydown(e) {
               >
             </div>
             <div
-              v-show="fly.book"
+              ref="bookEl"
               class="story-book"
               :style="{
                 left: `${BODY.left}px`,
@@ -502,12 +649,37 @@ function onKeydown(e) {
             {{ c.caseNo }} · {{ c.tab }}
           </button>
         </nav>
-        <h3 ref="fileHeading" class="casefile__title" tabindex="-1">
+        <h3
+          ref="fileHeading"
+          class="casefile__title"
+          tabindex="-1"
+          aria-live="polite"
+        >
           Case {{ openCase.caseNo }} · {{ openCase.tab }}
         </h3>
-        <div class="casefile__spread">
+        <div v-if="!desktop" class="reading-views" aria-label="Reading view">
+          <button
+            type="button"
+            :aria-pressed="mobileView === 'map'"
+            @click="mobileView = 'map'"
+          >
+            Brain map
+          </button>
+          <button
+            type="button"
+            :aria-pressed="mobileView === 'notes'"
+            @click="mobileView = 'notes'"
+          >
+            {{ point ? `Point ${point.id} · notes` : "Original notes" }}
+          </button>
+        </div>
+        <div class="casefile__spread" :data-mobile-view="mobileView">
           <div class="map-pane">
             <figure class="brain-map">
+              <div class="map-heading">
+                <span>Original brain map</span
+                ><span>{{ openCase.points.length }} points</span>
+              </div>
               <div class="map-zoom" aria-label="Map magnification">
                 <button
                   type="button"
@@ -526,8 +698,17 @@ function onKeydown(e) {
                 >
                   +
                 </button>
+                <button
+                  type="button"
+                  class="map-reset"
+                  :aria-disabled="mapZoom === 100"
+                  @click="mapZoom = 100"
+                >
+                  Fit
+                </button>
               </div>
               <div
+                ref="mapScrollEl"
                 class="map-scroll"
                 tabindex="0"
                 aria-label="Brain map; enlarge for closely spaced labels"
@@ -536,11 +717,14 @@ function onKeydown(e) {
                   class="brain-map__image"
                   :style="{
                     aspectRatio: `${openCase.image.width} / ${openCase.image.height}`,
-                    width: `${mapZoom}%`,
+                    width: mapBaseWidth
+                      ? `${(mapBaseWidth * mapZoom) / 100}px`
+                      : `${mapZoom}%`,
                   }"
                 >
                   <img
                     :src="openCase.illustration"
+                    @load="fitMap"
                     :width="openCase.image.width"
                     :height="openCase.image.height"
                     :alt="`Original brain map for case ${openCase.caseNo}, ${openCase.tab}, with stimulation points labelled`"
@@ -570,6 +754,7 @@ function onKeydown(e) {
               Select a number on the map or in the list. Repeated stimulations
               appear in their original order.
             </p>
+            <p class="points-label">Stimulation points</p>
             <nav class="point-list" aria-label="Stimulation points">
               <button
                 v-for="p in openCase.points"
@@ -600,6 +785,10 @@ function onKeydown(e) {
             tabindex="0"
           >
             <template v-if="point">
+              <p class="note-label">
+                Original stimulation notes · {{ point.events.length }}
+                {{ point.events.length === 1 ? "entry" : "entries" }}
+              </p>
               <h4 aria-live="polite">
                 Point {{ point.id }} · {{ openCase.tab }}
               </h4>
@@ -615,10 +804,22 @@ function onKeydown(e) {
                 <p class="note__text">{{ event.text }}</p>
               </article>
             </template>
-            <p v-else class="transcript__instruction">
-              Select a numbered stimulation point to read the patient’s reports
-              and Penfield’s annotations
-            </p>
+            <div v-else class="transcript__instruction">
+              <p class="note-label">From the operating room</p>
+              <h4>What did the patient experience?</h4>
+              <p>
+                Choose a numbered point on the map or in the list to read the
+                patient’s reports and Penfield’s original annotations.
+              </p>
+              <button
+                v-if="openCase.points.length"
+                type="button"
+                class="start-reading"
+                @click="selectPoint(openCase.points[0].id)"
+              >
+                Read point {{ openCase.points[0].id }} →
+              </button>
+            </div>
           </section>
         </div>
       </div>
@@ -632,11 +833,12 @@ function onKeydown(e) {
   position: relative;
   flex: 1;
   min-width: 0;
+  min-height: 0;
 }
 .cabinet-body--desktop {
   /* The drawer's floor; the chapter's full-screen band sizes the cabinet by
      flex instead and sets it to 0 (OPENBRAIN-147). */
-  min-height: var(--widget-body-min-h, min(760px, 76vh));
+  min-height: 0;
 }
 .storyboard {
   position: absolute;
@@ -670,7 +872,6 @@ function onKeydown(e) {
   color: #fff;
   cursor: pointer;
   pointer-events: none;
-  transition: transform 0.2s;
 }
 .story-folder__svg {
   position: absolute;
@@ -684,7 +885,7 @@ function onKeydown(e) {
 }
 .story-folder:hover,
 .story-folder:focus-visible {
-  transform: translateY(-12px);
+  filter: brightness(1.12);
 }
 .story-folder:focus-visible {
   outline: none;
@@ -731,14 +932,17 @@ function onKeydown(e) {
 .story-flyer {
   position: absolute;
   transform-origin: 50% 50%;
+  visibility: hidden;
+  will-change: transform;
 }
 .story-flyer .story-folder__svg {
-  filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.35));
+  filter: none;
 }
 .story-flyer .story-folder__svg path {
   pointer-events: none;
 }
 .story-book {
+  visibility: hidden;
   position: absolute;
   perspective: 2600px;
 }
@@ -797,34 +1001,6 @@ function onKeydown(e) {
   width: 120px;
   transform: rotate(-6deg);
 }
-.casefile--desktop {
-  position: absolute;
-  inset: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  background: var(--cc-stage);
-}
-.casefile--desktop .casefile__spread {
-  background: var(--tint);
-  padding: clamp(0.75rem, 2vw, 1.5rem);
-  border-radius: 0.4rem;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
-}
-.casefile--desktop .map-pane {
-  position: relative;
-}
-.casefile--desktop .map-pane::before {
-  content: "";
-  position: absolute;
-  top: -1.5rem;
-  left: 55%;
-  width: 50px;
-  height: 70px;
-  background: url("/publicAssets/images/case-cabinet/paper-clip.png") center /
-    contain no-repeat;
-  pointer-events: none;
-  z-index: 1;
-}
 @media (prefers-reduced-motion: reduce) {
   .story-folder {
     transition: none;
@@ -839,7 +1015,8 @@ function onKeydown(e) {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: var(--widget-min-h, 100dvh);
+  height: var(--widget-min-h, 100dvh);
+  min-height: 0;
   width: 100%;
   background: var(--cc-stage);
   color: #fff;
@@ -855,25 +1032,48 @@ function onKeydown(e) {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem clamp(1rem, 3vw, 2.5rem);
+  height: 76px;
+  flex: 0 0 76px;
+  padding: 12px clamp(1rem, 3vw, 2.5rem);
+  box-sizing: border-box;
 }
-.cabinet__head h2 {
+.cabinet__eyebrow {
   margin: 0;
-  font-size: clamp(1.05rem, 2vw, 1.5rem);
-  color: inherit;
+  font-size: 1rem;
+}
+.cabinet__eyebrow span {
+  display: block;
+  font: 12px var(--font-mono);
+  opacity: 0.65;
+  margin-top: 4px;
+}
+.cabinet__status {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+  text-align: right;
+}
+.cabinet-state {
+  padding: 2rem;
 }
 .back-button,
 .case-tabs button,
-.point-list button {
+.point-list button,
+.reading-views button,
+.start-reading {
   border: 1px solid currentColor;
-  border-radius: 0.35rem;
-  padding: 0.6rem 0.75rem;
+  border-radius: 0;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
   background: transparent;
   color: inherit;
+  font: inherit;
   cursor: pointer;
 }
-button:focus-visible {
-  outline: 3px solid #f5dc80;
+button:focus-visible,
+.map-scroll:focus-visible,
+.transcript:focus-visible {
+  outline: 3px solid #a08ac4;
   outline-offset: 3px;
 }
 .drawer {
@@ -935,75 +1135,134 @@ button:focus-visible {
   transition-property: none;
 }
 .casefile {
-  /* GSAP owns inline visibility throughout the handoff. Keeping the initial
-     state in CSS prevents Vue style patches from hiding the opened file. */
+  /* GSAP owns only the workspace handoff; reading content stays unscaled. */
   opacity: 0;
   visibility: hidden;
-  flex: 1;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  padding: 0 clamp(1rem, 3vw, 2.5rem) 1.5rem;
+  min-height: 0;
+  padding: 0 clamp(1rem, 3vw, 2.5rem) 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--cc-stage);
 }
 .case-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  flex: none;
+  overflow-x: auto;
+  gap: 0.35rem;
+  padding: 3px;
 }
 .case-tabs button {
-  font-size: 0.8rem;
+  flex: none;
+  font: 13px var(--font-mono);
+  border-color: #777;
 }
 .case-tabs [aria-pressed="true"] {
-  background: #fff;
-  color: #333;
+  background: var(--tint);
+  border-color: var(--tint);
+  color: #fff;
 }
 .casefile__title {
-  font-size: 1.25rem;
+  align-self: flex-start;
+  margin: 14px 0;
+  font-size: 20px;
   color: inherit;
+  font-weight: 500;
 }
 .casefile__spread {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(1rem, 3vw, 2rem);
-  align-items: start;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(1rem, 2vw, 1.75rem);
+  flex: 1;
+  min-height: 0;
+  border-top: 4px solid var(--tint);
+  padding-top: 1rem;
 }
 .map-pane {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
 .brain-map {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100px;
   margin: 0;
-  padding: 1rem;
+  padding: 12px;
   background: #fff;
-  color: #222;
-  border-radius: 0.2rem;
+  color: #252329;
+}
+.map-heading {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  gap: 1rem;
+}
+.map-heading span:last-child {
+  color: #666;
 }
 .brain-map__image {
   position: relative;
-  width: 100%;
+  margin-inline: auto;
+  flex: none;
 }
 .brain-map img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
 }
 .brain-map figcaption {
-  margin-top: 0.75rem;
-  font-size: 0.75rem;
+  flex: none;
+  margin-top: 8px;
+  font-size: 11px;
   line-height: 1.4;
+}
+.map-zoom {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 8px;
+  margin: 6px 0;
+  font: 12px var(--font-mono);
+  flex: none;
+}
+.map-zoom button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  background: #f8f6f1;
+  color: #342348;
+  border: 1px solid #aaa;
+  border-radius: 0;
+  cursor: pointer;
+}
+.map-zoom button[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.map-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 .marker {
   position: absolute;
   transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 22px;
+  height: 22px;
+  padding: 0;
   border: 1px solid var(--tint);
-  border-radius: 50%;
+  border-radius: 0;
   background: transparent;
-  color: #312149;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 700;
   cursor: pointer;
 }
 .marker span {
@@ -1013,117 +1272,170 @@ button:focus-visible {
   overflow: hidden;
   clip-path: inset(50%);
 }
-.map-zoom {
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-}
-.map-zoom button {
-  width: 2rem;
-  height: 2rem;
-  background: #f4f0fa;
-  color: #342348;
-  border: 1px solid #8e78aa;
-  border-radius: 0.25rem;
-  cursor: pointer;
-}
-.map-zoom button[aria-disabled="true"] {
-  opacity: 0.4;
-  cursor: default;
-}
-.map-scroll {
-  overflow: auto;
-  max-height: 62dvh;
-}
 .marker:hover,
 .marker--selected {
-  background: var(--tint);
-  color: #fff;
-  box-shadow: 0 0 0 3px #fff;
+  background: color-mix(in srgb, var(--tint) 40%, transparent);
+  box-shadow: 0 0 0 2px #fff;
+  border-width: 2px;
 }
 .map-help {
-  font-size: 0.85rem;
+  margin: 10px 0;
+  font-size: 12px;
   line-height: 1.5;
+}
+.points-label,
+.note-label {
+  font: 11px var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
 }
 .point-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 6px;
+  max-height: 100px;
+  overflow-y: auto;
+  flex: none;
+  padding: 3px;
 }
 .point-list button {
-  min-width: 2.5rem;
+  min-width: 44px;
+  font-size: 13px;
 }
 .point-list [aria-pressed="true"] {
   background: #fff;
   color: #333;
 }
 .point-list__unmapped {
-  font-size: 0.7rem;
+  font-size: 11px;
 }
 .source-note {
-  font-size: 0.8rem;
+  margin: 8px 0 0;
+  font-size: 12px;
   line-height: 1.5;
   border-left: 3px solid #aa91ce;
-  padding-left: 0.75rem;
+  padding-left: 10px;
 }
 .transcript {
-  padding: clamp(1rem, 3vw, 2rem);
+  min-height: 0;
+  height: 100%;
+  padding: clamp(1rem, 2.5vw, 2rem);
   background: #f8f6f1;
   color: #252329;
-  border-radius: 0.2rem;
-  max-height: 72dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
   box-sizing: border-box;
 }
 .transcript h4 {
-  margin: 0 0 1.5rem;
-  color: #252329;
-  font-size: 1.1rem;
+  margin: 0 0 20px;
+  color: inherit;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.transcript .note-label {
+  color: #69606d;
+  margin-bottom: 12px;
 }
 .transcript__instruction {
-  line-height: 1.6;
+  max-width: 38ch;
+  margin-block: clamp(0px, 4vh, 40px);
+}
+.transcript__instruction p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+.transcript__instruction .note-label {
+  font-size: 11px;
+}
+.start-reading {
+  margin-top: 12px;
+  font-size: 14px;
 }
 .note + .note {
   border-top: 1px solid #d6d2ca;
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
+  margin-top: 20px;
+  padding-top: 20px;
 }
 .note__text {
   margin: 0;
-  font-size: 1rem;
+  font-size: 16px;
   line-height: 1.7;
   white-space: pre-wrap;
 }
 .cabinet__source {
-  padding: 1rem clamp(1rem, 3vw, 2.5rem);
-  border-top: 1px solid rgb(255 255 255 / 0.2);
-  font-size: 0.75rem;
+  flex: none;
+  padding: 10px clamp(1rem, 3vw, 2.5rem);
+  border-top: 1px solid #666;
+  font-size: 11px;
   line-height: 1.5;
+}
+.reading-views {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.reading-views button {
+  flex: 1;
+  font-size: 13px;
+}
+.reading-views [aria-pressed="true"] {
+  color: #333;
+  background: #fff;
 }
 @media (max-width: 760px) {
   .cabinet__head {
-    align-items: start;
+    height: 68px;
+    flex-basis: 68px;
+    gap: 8px;
+  }
+  .cabinet__status {
+    font-size: 11px;
+    max-width: 44%;
+  }
+  .cabinet__eyebrow {
+    font-size: 14px;
   }
   .back-button {
     flex: none;
-    font-size: 0.8rem;
+    font-size: 13px;
   }
-  .casefile__spread {
-    grid-template-columns: 1fr;
+  .drawer {
+    height: 100%;
+    overflow-y: auto;
+    padding-top: 0;
   }
-  .transcript {
-    max-height: 65dvh;
+  .drawer__instruction {
+    font-size: 14px;
+  }
+  .folder {
+    min-height: 60px;
+    padding: 10px 16px;
   }
   .folder__action {
     display: none;
   }
-  .marker {
-    width: 0.75rem;
-    height: 0.75rem;
+  .casefile__title {
+    align-self: flex-start;
+    font-size: 18px;
+    margin: 10px 0;
+  }
+  .casefile__spread {
+    grid-template-columns: 1fr;
+    padding-top: 10px;
+  }
+  .casefile__spread[data-mobile-view="map"] .transcript,
+  .casefile__spread[data-mobile-view="notes"] .map-pane {
+    display: none;
+  }
+  .point-list {
+    max-height: 106px;
+  }
+  .cabinet__source {
+    font-size: 10px;
+    padding-block: 8px;
   }
 }
 </style>
