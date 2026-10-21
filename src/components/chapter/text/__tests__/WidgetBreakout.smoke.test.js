@@ -128,7 +128,7 @@ describe("WidgetBreakout — breakout card", () => {
     expect(root.classes()).toContain("wb--breakout");
     expect(wrapper.text()).toContain("Colour vision starts in the retina");
     expect(wrapper.text()).toContain("Three pigment classes");
-    expect(wrapper.text()).toContain("Interactive by Stuart Trenholm");
+    expect(wrapper.text()).not.toContain("Interactive by Stuart Trenholm");
     expect(document.querySelector(".fake-widget")).toBeNull();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
 
@@ -188,7 +188,10 @@ describe("WidgetBreakout — inline stage", () => {
     );
     expect(wrapper.find(".wb-stage .fake-widget").text()).toBe("RetINaBox");
     const full = wrapper.find("button.wb-btn--primary");
-    expect(full.text()).toBe("Full screen");
+    expect(full.text()).toBe("");
+    expect(full.attributes("aria-label")).toBe("Full screen");
+    expect(full.attributes("title")).toBe("Full screen");
+    expect(full.find('svg[aria-hidden="true"]').exists()).toBe(true);
 
     await full.trigger("click");
     await flushPromises();
@@ -304,33 +307,58 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     await flushPromises();
     const band = layer.querySelector(".wb-body");
     expect(band.classList.contains("wb-body--full")).toBe(true);
-    const pause = band.parentElement;
-    expect(pause.classList.contains("wb-pause--on")).toBe(true);
-    expect(pause.querySelector(".wb-pause-room")).not.toBeNull();
+    const pause = band.closest(".fb-screen-hold");
+    expect(pause).not.toBeNull();
+    expect(pause.querySelector(".fb-screen-room")).not.toBeNull();
     // The header is the band's: Stuart's title and line, no kicker.
     expect(band.querySelector(".wb-title").textContent).toBe(
       "Explore phrenology"
     );
     expect(band.querySelector(".wb-kicker")).toBeNull();
 
-    // Back in the column there is no full-screen band and no pause.
+    // Small screens keep the full-width viewport treatment.
     desktop.fire(false);
     await flushPromises();
-    expect(wrapper.find(".wb-body--full").exists()).toBe(false);
-    expect(wrapper.find(".wb-pause--on").exists()).toBe(false);
-    expect(wrapper.find(".wb-pause-room").exists()).toBe(false);
+    expect(wrapper.find(".wb-body--full").exists()).toBe(true);
+    expect(wrapper.find(".fb-screen-hold").exists()).toBe(true);
     wrapper.unmount();
   });
 
-  it("gives an ordinary inline band no pause (OPENBRAIN-147)", async () => {
+  it("gives every inline band a viewport and short hold, without a placement flag", async () => {
     const layer = addStageLayer();
     desktop.matches = true;
     const wrapper = mountBreakout(inline);
     await flushPromises();
-    expect(layer.querySelector(".wb-body--full")).toBeNull();
-    expect(layer.querySelector(".wb-pause--on")).toBeNull();
-    expect(layer.querySelector(".wb-pause-room")).toBeNull();
+    expect(layer.querySelector(".wb-body--full")).not.toBeNull();
+    expect(layer.querySelector(".fb-screen-hold")).not.toBeNull();
+    expect(layer.querySelector(".fb-screen-room")).not.toBeNull();
     wrapper.unmount();
+  });
+
+  it("yields reader chrome only while the viewport covers the screen", async () => {
+    const layer = addStageLayer();
+    desktop.matches = true;
+    const wrapper = mountBreakout(inline);
+    await flushPromises();
+    const screen = layer.querySelector(".fb-screen");
+    screen.getBoundingClientRect = () => ({
+      width: document.documentElement.clientWidth,
+      top: 0,
+      bottom: window.innerHeight,
+    });
+    window.dispatchEvent(new Event("scroll"));
+    await flushPromises();
+    expect(screen.hasAttribute("data-reader-immersive")).toBe(true);
+    screen.getBoundingClientRect = () => ({
+      width: document.documentElement.clientWidth,
+      top: -100,
+      bottom: window.innerHeight - 100,
+    });
+    window.dispatchEvent(new Event("scroll"));
+    await flushPromises();
+    expect(screen.hasAttribute("data-reader-immersive")).toBe(false);
+    wrapper.unmount();
+    expect(document.querySelector("[data-reader-immersive]")).toBeNull();
   });
 
   it("stays in the card when no stage layer exists (Storybook, other hosts)", async () => {
@@ -410,6 +438,13 @@ describe("WidgetBreakout for an uploaded widget", () => {
     await flushPromises();
     expect(w.find(".wb-kicker").text()).not.toContain("Coming soon");
     expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
+    expect(w.find(".wb-title").text()).toBe("Helmholtz's black room");
+    expect(w.find(".wb-title").element.closest(".wb-sr")).toBeNull();
+    await w.find(".wb-btn--primary").trigger("click");
+    await flushPromises();
+    expect(
+      document.querySelector(".demo-title").classList.contains("sr-only")
+    ).toBe(true);
     w.unmount();
   });
 

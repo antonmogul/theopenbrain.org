@@ -40,6 +40,12 @@ const props = defineProps({
    * with the widget (an inline band, a breakout, the Studio).
    */
   maxHeight: { type: Number, default: null },
+  /** A full-width stage keeps its width; long content remains scrollable. */
+  shrinkToFit: { type: Boolean, default: true },
+  /** Open an explanation once through a compatible widget's own controller. */
+  initialExplanation: { type: Boolean, default: false },
+  eager: { type: Boolean, default: false },
+  waitForArtwork: { type: Boolean, default: false },
 });
 const emit = defineEmits(["report"]);
 
@@ -72,6 +78,8 @@ const doc = computed(() =>
     ramp: props.ramp,
     reduceMotion: reduceMotion(),
     maxHeight: initialFit,
+    initialExplanation: props.initialExplanation,
+    waitForArtwork: props.waitForArtwork,
   })
 );
 
@@ -93,7 +101,9 @@ function decide() {
   clearTimeout(decideTimer);
   decideTimer = null;
   deciding = false;
-  const s = fitScale(report.value.height, props.maxHeight);
+  const s = props.shrinkToFit
+    ? fitScale(report.value.height, props.maxHeight)
+    : 1;
   scale.value = s;
   frameHeight.value =
     s < 1 ? Math.round(fitHeight(report.value.height, sizing()) / s) : 0;
@@ -190,7 +200,7 @@ onBeforeUnmount(() => {
       :srcdoc="doc"
       sandbox="allow-scripts"
       :title="title"
-      loading="lazy"
+      :loading="eager ? 'eager' : 'lazy'"
       referrerpolicy="no-referrer"
       :style="{
         height: `${scale < 1 ? frameHeight : height}px`,
@@ -205,7 +215,8 @@ onBeforeUnmount(() => {
 .widget-box {
   display: block;
   max-width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #1c1c1c;
 }
 .widget-frame {

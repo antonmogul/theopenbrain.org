@@ -26,6 +26,7 @@ import animationJSON from "@/assets/json_backend/animations.json";
 import { mobileMode } from "@/helper/illustrationMobile";
 import { figureWidgetFor } from "@/widgets/figures/registry";
 import { figureImages } from "@/helper/figureCycle";
+import { figurePresentation } from "@/helper/figurePresentation";
 
 import IllustrationComp from "@/components/chapter/Illus/IllustrationComp.vue";
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
@@ -102,7 +103,7 @@ const fsParagraph = computed(() => ({ animationId: props.animationId }));
 // height it needs inline instead of fitting a fixed box.
 const isGallery = computed(() => figureImages(animation.value).length > 1);
 
-const title = computed(() => animation.value?.title || "");
+const title = computed(() => figurePresentation(animation.value).title);
 const posterSrc = computed(
   () => `/publicAssets/images/illuImages/${props.animationId}.png`
 );
@@ -163,7 +164,7 @@ const youtubeSrc = computed(() =>
     class="illu-inline my-12 font-mono text-small"
   >
     <figcaption
-      v-if="title"
+      v-if="title || mode === 'interactive'"
       class="mb-2 flex items-center justify-between gap-2"
     >
       <span>{{ title }}</span>

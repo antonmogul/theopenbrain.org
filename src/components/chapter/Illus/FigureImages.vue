@@ -541,7 +541,7 @@ onBeforeUnmount(() => {
   height: 40px;
   padding: 0;
   border: 1px solid rgb(var(--color-line));
-  border-radius: 999px;
+  border-radius: 0;
   background: rgb(var(--color-paper) / 0.85);
   color: rgb(var(--color-ink));
   cursor: pointer;

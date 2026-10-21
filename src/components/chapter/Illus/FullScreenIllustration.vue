@@ -177,14 +177,18 @@ const openInfo = () => {
        column (below xl, or without the stage layer) it keeps the old span. -->
   <!-- Below xl a widget fills the prose column (which clips anything
        wider); either way it pins below the reader's top bar. -->
-  <FullBleed v-if="thisAnimation && asWidget">
+  <FullBleed v-if="thisAnimation && asWidget" :viewport="!scrollLength">
     <div
       ref="widgetScroll"
-      class="mb-32 w-full"
-      :style="{ height: scrollLength || '150vh' }"
+      class="w-full"
+      :style="scrollLength ? { height: scrollLength } : undefined"
     >
       <div
-        class="sticky w-full top-[var(--reader-topbar-h,0px)] h-[calc(100svh-var(--reader-topbar-h,0px))]"
+        :class="
+          scrollLength
+            ? 'sticky w-full top-[var(--reader-topbar-h,0px)] h-[calc(100svh-var(--reader-topbar-h,0px))]'
+            : 'h-full w-full'
+        "
       >
         <FigureWidget
           :record="thisAnimation"

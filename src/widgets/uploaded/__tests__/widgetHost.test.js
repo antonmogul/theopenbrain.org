@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   CSP,
   buildWidgetDoc,
@@ -15,6 +15,54 @@ import { embedLoader, hasEmbed } from "../../embeds.js";
 
 // Uploaded widgets run in a sandbox the book builds (OPENBRAIN-105).
 describe("buildWidgetDoc", () => {
+  it("waits for an authored Lottie and two paint opportunities before a prewarmed handoff", () => {
+    const handlers = {},
+      frames = [],
+      postMessage = vi.fn();
+    const anim = { isLoaded: false };
+    const frameWindow = {
+      tobWidget: { anim },
+      addEventListener: (name, fn) => (handlers[name] = fn),
+    };
+    const frameDocument = {
+      documentElement: document.createElement("html"),
+      body: document.createElement("body"),
+      addEventListener: vi.fn(),
+      querySelector: vi.fn(() => (anim.isLoaded ? {} : null)),
+    };
+    const script = buildWidgetDoc("<p>widget</p>", {
+      waitForArtwork: true,
+    }).match(/<script>([\s\S]*?)<\/script>/)[1];
+    new Function(
+      "window",
+      "document",
+      "parent",
+      "console",
+      "setInterval",
+      "requestAnimationFrame",
+      script
+    )(
+      frameWindow,
+      frameDocument,
+      { postMessage },
+      { error: vi.fn() },
+      vi.fn(),
+      (fn) => frames.push(fn)
+    );
+    const ready = () =>
+      postMessage.mock.calls.some(([m]) => m.type === "ready");
+    handlers.load();
+    expect(ready()).toBe(false);
+    frames.shift()();
+    expect(ready()).toBe(false);
+    anim.isLoaded = true;
+    frames.shift()();
+    frames.shift()();
+    expect(ready()).toBe(false);
+    frames.shift()();
+    expect(ready()).toBe(true);
+  });
+
   it("puts the policy, tokens and bridge first in <head>", () => {
     const doc = buildWidgetDoc(
       '<!doctype html><html><head><title>T</title><script src="https://cdnjs.cloudflare.com/x.js"></script></head><body>hi</body></html>',
@@ -47,6 +95,48 @@ describe("buildWidgetDoc", () => {
     expect(CSP).toContain("https://cdnjs.cloudflare.com");
     expect(CSP).not.toMatch(/script-src[^;]*\*/);
   });
+
+  it.each([false, true])(
+    "applies initial explanation preference %s only at load, preserving dismissal on fit/theme",
+    (initialExplanation) => {
+      const handlers = {};
+      const setInfo = vi.fn();
+      const frameWindow = {
+        addEventListener: (name, handler) => (handlers[name] = handler),
+        tobWidget: { setInfo },
+      };
+      const frameDocument = {
+        documentElement: document.createElement("html"),
+        body: document.createElement("body"),
+        addEventListener: vi.fn(),
+      };
+      const script = buildWidgetDoc("<p>widget</p>", {
+        initialExplanation,
+      }).match(/<script>([\s\S]*?)<\/script>/)[1];
+      new Function(
+        "window",
+        "document",
+        "parent",
+        "console",
+        "setInterval",
+        script
+      )(
+        frameWindow,
+        frameDocument,
+        { postMessage: vi.fn() },
+        { error: vi.fn() },
+        vi.fn()
+      );
+      expect(setInfo).not.toHaveBeenCalled();
+      handlers.load();
+      expect(setInfo).toHaveBeenCalledTimes(initialExplanation ? 1 : 0);
+      if (initialExplanation) expect(setInfo).toHaveBeenCalledWith(true);
+      setInfo.mockClear();
+      handlers.message({ data: fitMessage(844) });
+      handlers.message({ data: themeMessage("perc", true) });
+      expect(setInfo).not.toHaveBeenCalled();
+    }
+  );
 });
 
 describe("staticChecks", () => {
@@ -121,9 +211,9 @@ describe("fitHeight", () => {
     expect(fitHeight(0, { minHeight: 300 })).toBe(300);
   });
 
-  it("never grows past the pane's height", () => {
+  it("fills the measured host even when an older widget reports a shorter height", () => {
     expect(fitHeight(1200, { maxHeight: 776 })).toBe(776);
-    expect(fitHeight(500, { maxHeight: 776 })).toBe(500);
+    expect(fitHeight(500, { maxHeight: 776 })).toBe(776);
     expect(fitHeight(1000.4, { maxHeight: 676.6 })).toBe(677);
   });
 

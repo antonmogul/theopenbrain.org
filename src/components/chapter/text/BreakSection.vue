@@ -1,130 +1,238 @@
 <script setup>
-import gsap from "gsap";
-import { ref } from "vue";
+import { computed, ref, useId } from "vue";
 import { toSlug } from "@/helper/general.js";
-import PlusIcon from "@/icons/custom/PlusIcon.vue";
+import { breakSectionDirections } from "@/helper/breakSectionPresentation";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 
-const props = defineProps({
-  content: Object,
-});
+const props = defineProps({ content: Object });
 const infoIsOpen = ref(true);
-const openInfo = () => {
-  const el = document.getElementById("info-" + toSlug(props.content.title));
-  infoIsOpen.value = !infoIsOpen.value;
-  if (infoIsOpen.value) {
-    gsap.to(el, {
-      duration: 0.3,
-      height: "auto",
-    });
-  } else {
-    gsap.to(el, {
-      duration: 0.3,
-      height: 0,
-    });
-  }
-};
+const infoId = `break-info-${useId()}`;
+const titleId = `break-title-${useId()}`;
+const blindSpot = computed(() => props.content.title === "Blind spot");
+const colorBlindness = computed(
+  () => props.content.title === "Color blindness"
+);
+const hasExperiment = computed(() => blindSpot.value || colorBlindness.value);
+const steps = computed(() => breakSectionDirections(props.content));
 </script>
 
 <template>
-  <!-- Full screen over the figure pane and divider, as on theopenbrain.org,
-       holding while the reader scrolls on (OPENBRAIN-91). Its old
-       w-screen/-translate-x offset stopped working once the prose column
-       clipped overflow, so it had shrunk to the text column. -->
-  <FullBleed v-slot="{ floating }">
-    <div
-      ref="trigger"
-      class="border-y border-light bg-dark my-[0] mb-32 text-base"
-      :class="floating ? 'w-full h-[180vh]' : 'w-full'"
+  <FullBleed viewport>
+    <section
+      class="break-demo noHighlight"
+      :class="{ 'break-demo--plate': colorBlindness && !infoIsOpen }"
+      :data-break-demo="toSlug(content.title)"
+      :aria-labelledby="titleId"
     >
       <div
-        class="sticky flex w-full py-10"
-        :class="
-          floating
-            ? 'pl-24 top-[var(--reader-topbar-h)] h-[calc(100vh-var(--reader-topbar-h))]'
-            : 'top-0 min-h-[70vh] pl-8'
-        "
+        v-if="hasExperiment"
+        class="break-art"
+        :class="{ 'break-art--muted': infoIsOpen }"
+        :aria-hidden="infoIsOpen"
       >
-        <div class="w-full text-white">
-          <div
-            class="flex flex-col justify-strat"
-            v-if="content.title === 'Blind spot' || 'Color blindness'"
+        <div v-if="blindSpot" class="blind-targets">
+          <img
+            class="blind-man"
+            src="/publicAssets/images/blindSpot/Man_A.png"
+            alt="Man: left fixation target"
+          />
+          <img
+            class="blind-dragon"
+            src="/publicAssets/images/blindSpot/Dragon_B.png"
+            alt="Dragon: right fixation target"
+          />
+        </div>
+        <img
+          v-else-if="colorBlindness"
+          class="color-plate"
+          src="/publicAssets/images/eyeDots.svg"
+          alt="Colour vision test plate"
+        />
+      </div>
+      <header class="break-header">
+        <h4 :id="titleId">{{ content.title }}</h4>
+        <button
+          v-if="hasExperiment"
+          type="button"
+          class="break-toggle"
+          :aria-expanded="infoIsOpen"
+          :aria-controls="infoId"
+          :aria-label="infoIsOpen ? 'Hide explanation' : 'Show explanation'"
+          @click="infoIsOpen = !infoIsOpen"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            :class="{ 'is-open': infoIsOpen }"
           >
-            <h4
-              :class="
-                !infoIsOpen && content.title === 'Color blindness'
-                  ? 'text-black z-[100]'
-                  : ''
-              "
-            >
-              {{ content.title }}
-            </h4>
-            <div class="flex gap-6 z-50 pt-12">
-              <PlusIcon
-                :class="!infoIsOpen ? '' : 'rotate-45'"
-                class="icon iconBig duration-300"
-                @click="openInfo()"
-              />
-              <div
-                :id="'info-' + toSlug(content.title)"
-                class="flex justify-between w-full h-auto max-h-[80vh] overflow-scroll pb-2 overscroll-auto pr-32"
-              >
-                <div
-                  class="flex flex-col justify-start gap-16 w-full max-w-[800px]"
-                >
-                  <p class=" " v-html="content.text" />
-                  <div v-if="content.steps" class="">
-                    <p class="font-semibold">Directions:</p>
-                    <ol class="pl-12">
-                      <li
-                        v-for="step in content.steps"
-                        class="pb-6 last:pb-0 list-decimal list-outside"
-                        :key="step"
-                      >
-                        {{ step }}
-                      </li>
-                    </ol>
-                  </div>
-                </div>
-                <div class="w-[25vw] h-[24vw] -mt-2">
-                  <img
-                    class="h-full w-full object-contain object-right-top"
-                    v-if="content.title === 'Blind spot'"
-                    :src="`/publicAssets/images/${toSlug(content.title)}.png`"
-                  />
-                </div>
-              </div>
-            </div>
-            <div
-              class="absolute duration-300 top-0 left-0 p-32 pl-80 py-72 flex justify-around items-center w-full h-full pointer-events-none"
-              :class="infoIsOpen ? 'opacity-10 blur-sm' : 'opacity-100'"
-            >
-              <div
-                class="absolute top-0 left-0 p-32 pl-44 py-72 flex justify-around items-center w-full h-full pointer-events-none"
-                v-if="content.title === 'Blind spot'"
-              >
-                <div class="text-blindness">A</div>
-                <div class="text-blindness">B</div>
-              </div>
-              <div
-                v-if="content.title === 'Color blindness'"
-                class="absolute top-0 left-0 p-32 pl-44 py-72 flex justify-around items-center w-full h-full bg-lightest"
-              >
-                <img
-                  class="w-full h-full object-contain"
-                  src="/publicAssets/images/eyeDots.svg"
-                />
-              </div>
-            </div>
+            <path
+              d="M12 5v14M5 12h14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+          </svg>
+        </button>
+      </header>
+      <div
+        v-show="infoIsOpen"
+        :id="infoId"
+        class="break-info"
+        role="region"
+        :aria-labelledby="titleId"
+        tabindex="0"
+      >
+        <div class="break-copy">
+          <p v-html="content.text" />
+          <div v-if="steps.length" class="break-directions">
+            <p><strong>Directions:</strong></p>
+            <ol>
+              <li v-for="step in steps" :key="step">{{ step }}</li>
+            </ol>
           </div>
         </div>
+        <img
+          v-if="blindSpot"
+          class="blind-diagram"
+          src="/publicAssets/images/blind-spot.png"
+          alt="Eye cross-section showing the blind spot where the optic nerve exits the retina"
+        />
       </div>
-    </div>
+    </section>
   </FullBleed>
 </template>
 
 <style scoped>
-.z-60 {
-  z-index: 60;
+.break-demo {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #333;
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-16);
+  line-height: 1.55;
+  padding: clamp(1rem, 2vw, 2rem);
+}
+.break-demo--plate {
+  background: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+}
+.break-header {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.break-header h4 {
+  margin: 0;
+  font-size: var(--ui-size-20);
+  font-weight: 600;
+}
+.break-toggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-block: 1.5rem 1rem;
+  padding: 0;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 0;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+}
+.break-toggle:focus-visible,
+.break-info:focus-visible {
+  outline: 2px solid rgb(var(--color-chapter));
+  outline-offset: 3px;
+}
+.break-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+.break-toggle svg.is-open {
+  transform: rotate(45deg);
+}
+.break-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.break-art--muted {
+  opacity: 0.12;
+  filter: blur(3px);
+}
+.blind-targets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  height: 100%;
+}
+.blind-man {
+  height: clamp(64px, 12vw, 150px);
+  width: auto;
+}
+.blind-dragon {
+  width: clamp(95px, 22vw, 280px);
+  height: auto;
+}
+.color-plate {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6rem 2rem 2rem;
+}
+.break-info {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 5vw, 5rem);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  align-content: start;
+}
+.break-copy {
+  max-width: 52rem;
+}
+.break-copy p {
+  margin: 0;
+}
+.break-directions {
+  margin-top: 1.25rem;
+}
+.break-directions ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin: 0;
+}
+.break-directions li {
+  padding-left: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+.blind-diagram {
+  width: 100%;
+  max-width: 28rem;
+  height: auto;
+  object-fit: contain;
+  align-self: start;
+}
+@media (max-width: 767px) {
+  .break-info {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .blind-diagram {
+    max-width: 20rem;
+    justify-self: center;
+  }
 }
 </style>

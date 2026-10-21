@@ -545,6 +545,14 @@ h4 {
 /* The global `canvas { position: fixed }` above (a legacy full-screen
    reader effect) pinned every widget canvas to the window: RetINaBox's
    signal monitor was laid out 1440px wide and never scrolled. */
+/* Widget controls share the book's square geometry. Keep circular science
+   artwork, radio controls, and range handles untouched. */
+.widget-root button,
+.widget-root [role="button"],
+.widget-root select {
+  border-radius: 0 !important;
+}
+
 .widget-root canvas {
   position: static;
   z-index: auto;
@@ -1050,4 +1058,30 @@ sup:hover {
    or the heading at the top of the screen, marks where the reader landed. */
 [data-jump-target]:focus {
   outline: none;
+}
+
+/* A held viewport stage owns all four edges. Navigation returns on leaving
+   the hold; keyboard focus reveals it immediately even while immersed. */
+:root:has([data-reader-immersive]) .reader-top-bar:not(:has(:focus-visible)),
+:root:has([data-reader-immersive])
+  .ctl:not(:focus-visible):not(:has(:focus-visible)) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Consecutive viewport widgets form one continuous run. Only their touching
+   margins disappear; the first/last band keeps its spacing from prose.
+   Chapter renderers wrap each widget in a paragraph span (or .subSub). */
+.chapter-reader .wb--inline:has(+ .wb--inline),
+.chapter-reader
+  :is(span, .subSub):has(+ :is(span, .subSub) > .wb--inline)
+  > .wb--inline {
+  margin-bottom: 0;
+}
+.chapter-reader .wb--inline + .wb--inline,
+.chapter-reader
+  :is(span, .subSub):has(> .wb--inline)
+  + :is(span, .subSub)
+  > .wb--inline {
+  margin-top: 0;
 }

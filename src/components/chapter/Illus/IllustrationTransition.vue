@@ -1,52 +1,57 @@
 <template>
   <div class="pl-32 pr-14 w-full flex flex-col h-full pointer-events-auto">
-    <div :id="animation.id" class="w-full h-full" />
+    <div :id="animation.id" ref="container" class="w-full h-full" />
   </div>
 </template>
 
 <script setup>
-import { watch, onMounted } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { loadLottie } from "@/composables/useLottie";
-
-let lottie;
+import { reducedMotionPreferred } from "@/helper/readerJump";
+import { lottiePath } from "@/helper/animationResolve";
 
 const props = defineProps({
   animation: Object,
   activeAnimation: String,
-  progress: Number,
+  progress: { type: Number, default: 0 },
 });
+const container = ref(null);
 let animationLottie;
+let ready = false;
+let unmounted = false;
+const reducedMotion = reducedMotionPreferred();
 
-watch(
-  () => props.progress,
-  (newP) => {
-    const map = (value, x1, y1, x2, y2) =>
-      ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
-    let totalFrames = animationLottie.totalFrames;
-    let newMap = map(newP, 0.1, 0.9, 0, totalFrames);
-    let frame =
-      totalFrames > newMap ? (0 < newMap ? newMap : 1) : totalFrames - 1;
-    animationLottie.goToAndStop(frame, true);
-  }
-);
+function seek() {
+  if (!ready || !animationLottie || unmounted) return;
+  const total = animationLottie.totalFrames;
+  // Preserve the original authored 10–90% scroll interval. Reduced motion
+  // shows the finished drawing without scrubbing through the zoom.
+  const frame = reducedMotion
+    ? total - 1
+    : Math.min(total - 1, Math.max(1, ((props.progress - 0.1) / 0.8) * total));
+  animationLottie.goToAndStop(frame, true);
+}
+watch(() => props.progress, seek);
 
 onMounted(async () => {
-  lottie = await loadLottie();
-  let svgContainer = document.getElementById(props.animation.id);
+  const lottie = await loadLottie();
+  if (unmounted || !container.value) return;
   animationLottie = lottie.loadAnimation({
-    rendererSettings: {
-      progressiveLoad: true,
-    },
-    id: props.animation.id,
-    speed: 3,
-    wrapper: svgContainer,
+    rendererSettings: { progressiveLoad: true },
+    wrapper: container.value,
     animType: "svg",
     loop: false,
     autoplay: false,
-    path: "/publicAssets/animations/" + props.animation.id + ".json",
+    path: lottiePath(props.animation),
   });
   animationLottie.setSubframe(true);
+  animationLottie.addEventListener("DOMLoaded", () => {
+    ready = true;
+    seek(); // Latest progress, including jumps made while the asset loaded.
+  });
+});
+onBeforeUnmount(() => {
+  unmounted = true;
+  animationLottie?.destroy();
 });
 </script>
-
-<style lang="scss" scoped></style>

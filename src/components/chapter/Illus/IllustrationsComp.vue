@@ -20,6 +20,8 @@ import animationJSON from "@/assets/json_backend/animations.json";
 
 import Illustration from "@/components/chapter/Illus/IllustrationComp.vue";
 import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScroll.vue";
+import TransitionWidgetSequence from "./TransitionWidgetSequence.vue";
+import { FIGURE_TRANSITIONS } from "@/helper/figureTransitions";
 import IllustrationTransition from "@/components/chapter/Illus/IllustrationTransition.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 import IllustrationWidget from "./IllustrationWidget.vue";
@@ -42,6 +44,25 @@ const activeAnimation = ref(null);
 const paneElement = ref(null);
 const store = useGeneral();
 const progress = ref(0);
+const transitionProgress = ref({});
+const visitedSequences = ref(new Set());
+const sequences = computed(() =>
+  Object.entries(FIGURE_TRANSITIONS).flatMap(([next, before]) => {
+    const successor = animationList.value.find((a) => a.id === next);
+    const transition = animationList.value.find((a) => a.id === before);
+    return successor && transition ? [{ successor, transition }] : [];
+  })
+);
+const inSequence = (id) =>
+  sequences.value.some((s) => s.successor.id === id || s.transition.id === id);
+const sequenceActive = (s) =>
+  [s.successor.id.toLowerCase(), s.transition.id.toLowerCase()].includes(
+    activeAnimation.value
+  );
+watch(activeAnimation, () => {
+  for (const s of sequences.value)
+    if (sequenceActive(s)) visitedSequences.value.add(s.successor.id);
+});
 
 // Use Supabase animations composable
 const { animations: dbAnimations, fetchAnimations } = useAnimations();
@@ -179,7 +200,30 @@ function setupTriggers() {
       // Its paragraph's window, or longer for a figure that holds (still
       // images, an author's "Stays"; OPENBRAIN-131). A function, so every
       // refresh re-measures it.
-      end: () => figureEnd(trigger, animationTriggers, animationList.value),
+      end: () => {
+        // The title between an entrance and its successor is part of the
+        // handoff: retain the finished drawing until that figure takes over.
+        const pair = sequences.value.find(
+          (s) =>
+            s.transition.id.toLowerCase() ===
+            trigger.id.replace(/^trigger/i, "").toLowerCase()
+        );
+        const next =
+          pair &&
+          animationTriggers.find(
+            (candidate) =>
+              candidate !== trigger &&
+              figureRecordFor(
+                candidate.id.replace(/^trigger/i, ""),
+                animationList.value
+              )?.id === pair.successor.id
+          );
+        return next
+          ? next.getBoundingClientRect().top +
+              window.scrollY -
+              window.innerHeight / 2
+          : figureEnd(trigger, animationTriggers, animationList.value);
+      },
       markers: false,
       onToggle: (self) => {
         trigger.classList.toggle("active", self.isActive);
@@ -206,6 +250,9 @@ function setupTriggers() {
         markers: false,
         onUpdate: (self) => {
           progress.value = self.progress;
+          transitionProgress.value[
+            trigger.id.replace(/^trigger/i, "").toLowerCase()
+          ] = self.progress;
         },
       })
     );
@@ -287,7 +334,22 @@ onBeforeUnmount(() => {
     ref="paneElement"
     class="hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h)-var(--reader-timeline-h,0px))] bg-bg"
   >
-    <template v-for="animation in animationList" :key="animation.id">
+    <template v-for="sequence in sequences" :key="sequence.successor.id">
+      <TransitionWidgetSequence
+        v-if="panelShows && visitedSequences.has(sequence.successor.id)"
+        v-show="sequenceActive(sequence)"
+        :transition="sequence.transition"
+        :successor="sequence.successor"
+        :active="activeAnimation"
+        :progress="
+          transitionProgress[sequence.transition.id.toLowerCase()] || 0
+        "
+      />
+    </template>
+    <template
+      v-for="animation in animationList.filter((a) => !inSequence(a.id))"
+      :key="animation.id"
+    >
       <!-- Figure shell: image artwork, or the typed placeholder until it lands -->
       <template v-if="!isPanelWidget(animation) && usesFigureShell(animation)">
         <transition name="fade" mode="out-in">
@@ -373,7 +435,7 @@ onBeforeUnmount(() => {
           <IllustrationTransition
             v-if="activeAnimation === animation.id.toLowerCase()"
             :animation="animation"
-            :progress="progress"
+            :progress="transitionProgress[animation.id.toLowerCase()] || 0"
             :active-animation="activeAnimation"
             class="max-w-[1000px] m-auto"
           />

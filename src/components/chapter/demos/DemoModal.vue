@@ -1,7 +1,17 @@
 <script setup>
-import { ref, watch, onBeforeUnmount, nextTick, useId, inject } from "vue";
+import {
+  computed,
+  ref,
+  watch,
+  onBeforeUnmount,
+  nextTick,
+  useId,
+  inject,
+  provide,
+} from "vue";
 import { routerKey } from "vue-router";
 import { lockReaderScroll } from "@/helper/readerScrollLock";
+import { WIDGET_FIT, WIDGET_SCROLLABLE } from "@/widgets/uploaded/widgetHost";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const props = defineProps({
@@ -10,10 +20,30 @@ const props = defineProps({
   /* Full-viewport panel for content that brings its own page layout, such as
      an embedded widget view (see WidgetBreakout). */
   wide: { type: Boolean, default: false },
+  contentOwnsHeading: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["close"]);
 const panelRef = ref(null);
+const bodyRef = ref(null);
+const bodyHeight = ref(0);
+provide(WIDGET_FIT, bodyHeight);
+provide(
+  WIDGET_SCROLLABLE,
+  computed(() => props.wide)
+);
+let bodyObserver = null;
+watch(bodyRef, (el) => {
+  bodyObserver?.disconnect();
+  const measure = () => {
+    bodyHeight.value = props.wide ? Math.floor(el?.clientHeight || 0) : 0;
+  };
+  measure();
+  if (el && typeof ResizeObserver === "function") {
+    bodyObserver = new ResizeObserver(measure);
+    bodyObserver.observe(el);
+  }
+});
 const closeButtonRef = ref(null);
 let triggerElement = null;
 const titleId = `demo-modal-title-${useId()}`;
@@ -110,6 +140,7 @@ watch(
 watch(() => router?.currentRoute.value.fullPath, onNavigation);
 onBeforeUnmount(() => {
   unmounted = true;
+  bodyObserver?.disconnect();
   deactivate();
 });
 </script>
@@ -126,14 +157,23 @@ onBeforeUnmount(() => {
         <div
           ref="panelRef"
           class="demo-panel"
-          :class="{ 'demo-panel--wide': wide }"
+          :class="{
+            'demo-panel--wide': wide,
+            'demo-panel--owned-heading': contentOwnsHeading,
+          }"
           role="dialog"
           aria-modal="true"
           :aria-labelledby="titleId"
           tabindex="-1"
         >
           <header class="demo-header">
-            <h2 :id="titleId" class="demo-title">{{ title }}</h2>
+            <h2
+              :id="titleId"
+              class="demo-title"
+              :class="{ 'sr-only': contentOwnsHeading }"
+            >
+              {{ title }}
+            </h2>
             <button
               ref="closeButtonRef"
               type="button"
@@ -144,7 +184,7 @@ onBeforeUnmount(() => {
               <CloseIcon :width="20" :height="20" />
             </button>
           </header>
-          <div class="demo-body">
+          <div ref="bodyRef" class="demo-body">
             <slot />
           </div>
         </div>
@@ -166,8 +206,9 @@ onBeforeUnmount(() => {
 }
 
 .demo-panel {
+  position: relative;
   background: rgb(var(--color-paper));
-  border-radius: var(--radius-control);
+  border-radius: 0;
   width: 100%;
   max-width: 1200px;
   margin: auto;
@@ -205,7 +246,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-mute));
-  border-radius: var(--radius-control);
+  border-radius: 0;
   transition: all 0.15s;
 }
 
@@ -250,6 +291,27 @@ onBeforeUnmount(() => {
   background: rgb(var(--color-bg));
 }
 
+.demo-panel--wide .demo-body :deep(button),
+.demo-panel--wide .demo-body :deep([role="button"]) {
+  border-radius: 0;
+}
+
+/* The authored widget owns its title and full canvas. Keep the dialog name
+   available to assistive technology and float only its close control. */
+.demo-panel--owned-heading .demo-header {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  padding: 0;
+  border: 0;
+}
+.demo-panel--owned-heading .demo-close {
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-line));
+}
+
 /* Transition */
 .demo-modal-enter-active,
 .demo-modal-leave-active {
@@ -292,5 +354,8 @@ onBeforeUnmount(() => {
   .demo-body {
     padding: 1rem;
   }
+}
+.demo-panel--wide .demo-body {
+  padding: 0;
 }
 </style>

@@ -29,6 +29,24 @@ afterEach(() => {
 });
 
 describe("DemoModal accessibility", () => {
+  it("keeps an accessible dialog name when authored content owns the visible heading", async () => {
+    const wrapper = mountModal(
+      { wide: true, contentOwnsHeading: true },
+      { default: "<h1>Cone explorer</h1>" }
+    );
+    await flushPromises();
+    const dialog = document.querySelector('[role="dialog"]');
+    const label = document.getElementById(
+      dialog.getAttribute("aria-labelledby")
+    );
+    expect(label.textContent).toBe("Cone explorer");
+    expect(label.classList.contains("sr-only")).toBe(true);
+    expect(dialog.classList.contains("demo-panel--owned-heading")).toBe(true);
+    expect(document.activeElement).toBe(document.querySelector(".demo-close"));
+    await wrapper.setProps({ contentOwnsHeading: false });
+    expect(label.classList.contains("sr-only")).toBe(false);
+  });
+
   it("labels the modal, moves focus inside and restores the trigger on close", async () => {
     const trigger = addTrigger();
     const wrapper = mountModal(
