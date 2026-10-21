@@ -19,28 +19,11 @@ const config = {
   // Stories live next to the components they document, in src/**/__stories__/.
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs)"],
   addons: ["@storybook/addon-a11y", "@storybook/addon-docs"],
-  // Only the white logo the themed sidebar shows (.storybook/theme.js); the
-  // app's public/ stays out so Storybook doesn't copy its media. The
-  // exceptions are the brain atlas model (~0.7 MB), so its stories render the
-  // brain rather than an error (OPENBRAIN-127), and the widget thumbnails
-  // (~270 KB) the chapter timeline's preview and map show (OPENBRAIN-128).
-  staticDirs: [
-    "./brand",
-    {
-      from: "../public/publicAssets/models/brain",
-      to: "/publicAssets/models/brain",
-    },
-    {
-      from: "../public/publicAssets/images/widgets/thumbs",
-      to: "/publicAssets/images/widgets/thumbs",
-    },
-    // The reactive cover Lotties and their images (OPENBRAIN-146; ~0.6 MB), so the
-    // opener stories scrub a real file rather than fall back to the still.
-    {
-      from: "../public/publicAssets/animations/covers",
-      to: "/publicAssets/animations/covers",
-    },
-  ],
+  // Vite copies public/ into the build, including fonts, figure artwork and
+  // cover Lotties. Storybook only owns the separate sidebar brand assets.
+  // Listing public/ subdirectories here races Storybook's fs.cp against Vite's
+  // copy and can fail with EEXIST (observed for animations/covers in CI).
+  staticDirs: ["./brand"],
   framework: "@storybook/vue3-vite",
   async viteFinal(cfg) {
     cfg.resolve = cfg.resolve || {};
