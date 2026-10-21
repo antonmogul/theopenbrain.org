@@ -452,7 +452,7 @@ function onKeydown(e) {
         ref="closeButton"
         @click="close()"
       >
-        ← Back to cases
+        <span aria-hidden="true">←</span> Back to cases
       </button>
       <p v-else class="cabinet__eyebrow">
         Penfield’s case files <span>Penfield &amp; Perot · 1963</span>

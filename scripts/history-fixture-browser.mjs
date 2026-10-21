@@ -323,6 +323,15 @@ async function testCabinet(state) {
         "true"
       );
       await snapshot(state, "rw-point-24");
+      if (state.viewport.width <= 760) {
+        await expect(cabinet.locator(".transcript")).toBeFocused();
+        await cabinet
+          .getByRole("button", { name: "Brain map", exact: true })
+          .click();
+        await expect(
+          cabinet.locator('[data-point-option="24"]')
+        ).toHaveAttribute("aria-pressed", "true");
+      }
       await cabinet
         .getByRole("button", { name: "Enlarge map", exact: true })
         .click();
@@ -342,7 +351,7 @@ async function testCabinet(state) {
   );
   await step(
     state,
-    "repeated opening, interruption and queued-case cancellation",
+    "repeated opening, interruption, direct case switch and reverse return",
     async () => {
       const folder = cabinet.locator('[data-id="ge"]');
       for (let repeat = 0; repeat < 2; repeat++) {
@@ -359,23 +368,49 @@ async function testCabinet(state) {
       await expect(cabinet).toHaveAttribute("data-phase", "open", {
         timeout: phaseTimeout,
       });
-      if (!state.reduced && state.viewport.width > 760) {
-        await cabinet
-          .getByRole("navigation", { name: "Switch patient case" })
-          .getByRole("button", { name: "3 · R.W.", exact: true })
-          .click();
-        await expect(cabinet).toHaveAttribute("data-phase", "closing");
-        await page.keyboard.press("Escape");
-        await expect(cabinet).toHaveAttribute("data-phase", "closed", {
-          timeout: phaseTimeout,
+      await cabinet
+        .getByRole("button", { name: "Enlarge map", exact: true })
+        .click();
+      const switchCase = cabinet
+        .getByRole("navigation", { name: "Switch patient case" })
+        .getByRole("button", { name: "3 · R.W.", exact: true });
+      await cabinet.evaluate((element) => {
+        window.__historyFixtureCabinetPhases = [];
+        window.__historyFixtureCabinetObserver = new MutationObserver(() => {
+          window.__historyFixtureCabinetPhases.push(element.dataset.phase);
         });
-        await expect(cabinet.locator(".casefile")).toHaveCount(0);
-        await folder.focus();
-        await folder.press("Enter");
-        await expect(cabinet).toHaveAttribute("data-phase", "open", {
-          timeout: phaseTimeout,
+        window.__historyFixtureCabinetObserver.observe(element, {
+          attributes: true,
+          attributeFilter: ["data-phase"],
         });
-      }
+      });
+      await switchCase.click();
+      await expect(cabinet.locator(".casefile__title")).toHaveText(
+        "Case 3 · R.W."
+      );
+      await expect(cabinet).toHaveAttribute("data-phase", "open");
+      await expect(switchCase).toBeFocused();
+      await expect(cabinet.locator(".map-zoom")).toContainText("100%");
+      await expect(cabinet.locator(".note")).toHaveCount(0);
+      const phases = await page.evaluate(() => {
+        window.__historyFixtureCabinetObserver.disconnect();
+        return window.__historyFixtureCabinetPhases;
+      });
+      expect(
+        phases.every((phase) => phase === "open"),
+        "switching a readable case must not return to the drawer"
+      ).toBe(true);
+      await page.keyboard.press("Escape");
+      await expect(cabinet).toHaveAttribute("data-phase", "closed", {
+        timeout: phaseTimeout,
+      });
+      await expect(cabinet.locator(".casefile")).toHaveCount(0);
+      await expect(cabinet.locator('[data-id="rw"]')).toBeFocused();
+      await folder.focus();
+      await folder.press("Enter");
+      await expect(cabinet).toHaveAttribute("data-phase", "open", {
+        timeout: phaseTimeout,
+      });
       await cabinet
         .getByRole("button", { name: "Back to cases", exact: true })
         .click();
