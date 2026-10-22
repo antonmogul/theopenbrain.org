@@ -27,11 +27,18 @@ import {
 
 import Section from "./text/SectionComp.vue";
 import IllustrationInline from "@/components/chapter/Illus/IllustrationInline.vue";
-import { useInlineFigureFor } from "@/composables/useInlineFigures";
+import {
+  useInlineFigureFor,
+  useInlineFigures,
+} from "@/composables/useInlineFigures";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
 import FurtherReading from "./text/FurtherReading.vue";
 import ReferenceList from "./text/ReferenceList.vue";
+import {
+  chapterEndReferences,
+  retinaLegacyReferences,
+} from "@/helper/chapterReferences";
 import EditableBlock from "./text/EditableBlock.vue";
 
 import FootNotes from "./text/FootNotes.vue";
@@ -99,6 +106,7 @@ const paragraphTrigger = (paragraph) => {
 // Below 1024px there is no pane: the figure is drawn in the text, at its
 // first paragraph (useInlineFigures).
 const inlineFigureFor = useInlineFigureFor();
+const inlineIntro = useInlineFigures();
 
 // Use computed property for reactivity - this will update when store changes
 const source = computed(() => {
@@ -120,14 +128,10 @@ const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 // isn't a section of its own (OPENBRAIN-92); a References section renders
 // them itself (SectionComp).
 const refsCtx = inject("references", null);
-const endReferences = computed(() => {
-  const rows = refsCtx?.references?.value || [];
-  if (!rows.length) return [];
-  const hasSection = (source.value?.sections || []).some(
-    (s) => s.slug === "references"
-  );
-  return hasSection ? [] : rows;
-});
+const endReferences = computed(() =>
+  chapterEndReferences(source.value, refsCtx?.references?.value || [])
+);
+const legacyReferences = computed(() => retinaLegacyReferences(source.value));
 
 // Boxes anchored to a paragraph render inside their section, right after it
 // (OPENBRAIN-70 A4); the rest render in order.
@@ -718,6 +722,15 @@ onBeforeUnmount(() => {
             :data-figure-hold="section.animation?.hold"
             :data-figure-room="section.animation?.room"
           >
+            <IllustrationInline
+              v-if="inlineIntro"
+              :animation-id="
+                introTriggerId(section).replace(
+                  /^triggerAnimation/,
+                  'animation'
+                )
+              "
+            />
             <template
               v-for="paragraph in section.paragraphs"
               :key="paragraph.id"
@@ -855,7 +868,9 @@ onBeforeUnmount(() => {
             :content="source['furtherReading']"
           />
           <FootNotes
-            v-if="source['footNotes']?.notes?.length"
+            v-if="
+              source['footNotes']?.notes?.length && !legacyReferences.length
+            "
             :content="source['footNotes']"
           />
         </div>

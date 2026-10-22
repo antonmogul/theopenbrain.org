@@ -97,3 +97,21 @@ export function referenceDisplay(ref) {
     hrefLabel: ref.doi ? `doi:${ref.doi}` : href ? "Source" : "",
   };
 }
+
+/** Retina's legacy Footnotes are its bibliography, not explanatory notes. */
+export function retinaLegacyReferences(chapter) {
+  if (chapter?.slug !== "the-retina") return [];
+  return (chapter.footNotes?.notes || []).flatMap((note, index) =>
+    note.text ? [{ number: index + 1, html: linkifyReference(note.text) }] : []
+  );
+}
+
+/** One ordered bibliography, retaining legacy entries absent from the table. */
+export function chapterEndReferences(chapter, rows = []) {
+  if ((chapter?.sections || []).some((s) => s.slug === "references")) return [];
+  const byNumber = new Map(
+    retinaLegacyReferences(chapter).map((entry) => [entry.number, entry])
+  );
+  for (const row of rows) byNumber.set(Number(row.number), row);
+  return [...byNumber.values()].sort((a, b) => a.number - b.number);
+}

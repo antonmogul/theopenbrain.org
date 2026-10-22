@@ -3,7 +3,12 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { figurePresentation } from "@/helper/figurePresentation";
 
 const playback = vi.hoisted(() => ({
-  addEventListener: vi.fn(),
+  addEventListener: vi.fn((name, fn) => {
+    if (name === "DOMLoaded") fn();
+  }),
+  totalFrames: 288,
+  setSpeed: vi.fn(),
+  goToAndStop: vi.fn(),
   setSubframe: vi.fn(),
   play: vi.fn(),
   pause: vi.fn(),

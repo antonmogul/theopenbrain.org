@@ -145,6 +145,27 @@ describe("ReactiveCover", () => {
     w.unmount();
   });
 
+  it("restarts and stops when the explicit motion preference changes without remounting", async () => {
+    reduced.mockReturnValue(true);
+    const w = await mountReady();
+    reduced.mockReturnValue(false);
+    document.documentElement.setAttribute("data-reduce-motion", "0");
+    await new Promise((r) => setTimeout(r, 10));
+    await flushPromises();
+    window.dispatchEvent(new PointerEvent("pointermove", { clientX: 1000 }));
+    expect(anim.goToAndStop).toHaveBeenLastCalledWith(66, true);
+    reduced.mockReturnValue(true);
+    document.documentElement.setAttribute("data-reduce-motion", "1");
+    await new Promise((r) => setTimeout(r, 10));
+    await flushPromises();
+    expect(anim.goToAndStop).toHaveBeenLastCalledWith(33, true);
+    const count = anim.goToAndStop.mock.calls.length;
+    window.dispatchEvent(new PointerEvent("pointermove", { clientX: 1000 }));
+    expect(anim.goToAndStop).toHaveBeenCalledTimes(count);
+    w.unmount();
+    document.documentElement.removeAttribute("data-reduce-motion");
+  });
+
   it("sweeps on its own once the pointer has been quiet, and stops when it moves", async () => {
     vi.useFakeTimers();
     const now = vi.spyOn(performance, "now");

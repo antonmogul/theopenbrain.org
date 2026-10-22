@@ -8,15 +8,15 @@
         : 'absolute top-40 left-[3.625rem] z-50'
     "
   >
-    <p
+    <button
+      type="button"
+      :aria-pressed="activeState === index"
       v-for="(state, index) in states"
       :key="state"
-      class="hover:text-chapter-deep text-small cursor-pointer"
+      class="block text-left hover:text-chapter-deep text-small cursor-pointer"
       :class="[
         inline ? 'py-1' : 'pb-6',
-        activeState == index
-          ? 'underline pointer-events-none text-chapter-deep'
-          : '',
+        activeState == index ? 'underline text-chapter-deep' : '',
       ]"
       @click="$emit('onClick', { index, activeState })"
     >
@@ -27,7 +27,7 @@
         />
       </template>
       {{ state }}
-    </p>
+    </button>
   </div>
 </template>
 
