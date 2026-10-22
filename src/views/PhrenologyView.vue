@@ -192,6 +192,10 @@ onMounted(async () => {
 /* ── View switching (the "rotation") ─────────────────────────────────────── */
 async function switchView(idx) {
   if (idx === activeIdx.value || animating.value) return;
+  // Native disabled controls lose focus. Remember only our initiating control;
+  // restore it after Vue reenables it, unless the reader has moved elsewhere.
+  const initiator = document.activeElement;
+  const restoreControl = initiator?.matches(".phreno .tab, .phreno select");
   animating.value = true;
   closePanel(true);
 
@@ -250,6 +254,15 @@ async function switchView(idx) {
   );
   addRevealTo(inTl, "-=0.25");
   await inTl.then();
+  await nextTick();
+  if (
+    !disposed &&
+    restoreControl &&
+    initiator.isConnected &&
+    document.activeElement === document.body
+  ) {
+    initiator.focus({ preventScroll: true });
+  }
 }
 
 /** Keep a valid current view; otherwise use the first loaded map that actually
@@ -462,7 +475,8 @@ function onKeydown(e) {
   flex-direction: column;
   background: var(--plate);
   color: var(--bone);
-  overflow: hidden;
+  /* Very short embedded hosts must scroll rather than clip controls/artwork. */
+  overflow: auto;
   font-family: var(--font-ui, inherit);
 }
 
@@ -470,6 +484,7 @@ function onKeydown(e) {
 /* The view tabs and the organ list share one row where there is room, so
    the stage below gets the height. */
 .phreno__chrome {
+  flex-shrink: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -516,9 +531,9 @@ function onKeydown(e) {
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 2rem;
-  /* The view's own floor; a host that sizes the view by flex (the
-     chapter's full-screen band) sets it to 0. */
-  min-height: var(--widget-body-min-h, 65vh);
+  /* A short host may shrink the body, but not below the artwork plus padding.
+     The root scrolls any excess so the citation cannot overlap the card. */
+  min-height: max(var(--widget-body-min-h, 65vh), calc(var(--skull-h) + 2rem));
 }
 .stage {
   perspective: 1200px;
@@ -688,6 +703,7 @@ function onKeydown(e) {
 
 /* ── footer citation ── */
 .phreno__foot {
+  flex-shrink: 0;
   padding: 0.75rem 2rem 1rem;
   font-size: 0.65rem;
   font-style: italic;
@@ -698,13 +714,19 @@ function onKeydown(e) {
 @media (max-width: 760px) {
   .phreno__body {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(150px, 38vh) minmax(9rem, 32vh);
     align-items: start;
     padding: 1rem;
-    min-height: var(--widget-body-min-h, 65vh);
+    min-height: max(
+      var(--widget-body-min-h, 65vh),
+      calc(150px + 9rem + 3.5rem)
+    );
   }
   .stage {
-    width: min(100%, calc(38vh * 450 / 435));
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: 450 / 435;
   }
   .card-instruction {
     margin: 0;
@@ -712,7 +734,10 @@ function onKeydown(e) {
     font-size: 0.75rem;
   }
   .card {
-    max-height: 32vh;
+    /* The full-bleed host supplies less height than the standalone viewport.
+       Constrain the scrolling box to its actual grid row, including padding. */
+    min-height: 0;
+    max-height: 100%;
     padding: 1.5rem 1.5rem 2rem;
   }
 }

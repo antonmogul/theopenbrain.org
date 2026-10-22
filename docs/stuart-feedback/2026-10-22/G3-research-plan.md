@@ -24,3 +24,16 @@ No migration or deferred Stuart decision is expected for this group. Browser QA 
 ## Browser-driven refinement
 
 The first mobile pass showed the existing detail sheet obscuring almost the entire skull at 390 × 844. The coordinator explicitly accepted a scoped visibility repair: reserve the skull above a scrolling text row, retain usable keyboard/touch controls and natural page scrolling, and check short landscape. The implemented layout keeps a 24 px gap between skull and details on mobile and a 12 rem skull floor on short screens. Controls continue using square tokens; numbered labels use the existing UI font. Original SVGs, anchors and source records remain unchanged.
+
+## Independent-review follow-up — PR 144
+
+The review at `fa232f4cb02f0281eb69fea8403c1a64f4195e4b` identified two P2 issues. Both reproduced against the reviewer's production and Storybook builds on isolated ports: selecting Organ 12 from anterior left focus on `BODY` and Escape did nothing; the real FullScreenBand at 390 × 844 placed the final paragraph bottom at y967.39 below the widget's y934 clipping edge even at maximum card scroll.
+
+Research: the [HTML focus model](https://html.spec.whatwg.org/multipage/interaction.html#focusable-area) excludes disabled form controls, while [CSS Grid sizing](https://www.w3.org/TR/css-grid/#algo-track-sizing) separates track allocation from an item's overflow. Reenabling a control and reaching a card's maximum scroll therefore do not establish usable focus or visible text. Native Chromium reproduction confirmed both mechanisms here.
+
+Implementation decisions:
+
+1. Retain native disabled controls during the transition. Remember the initiating picker/tab before disabling, await animation completion and Vue's DOM update, then restore it only if focus is still on the body. Do not steal focus from an independently focused control.
+2. Make mobile artwork/text tracks share available host height, with a 150 px artwork floor and 9 rem reading floor. Cap the card to its allocated row. Reserve body, chrome and citation space; permit local widget overflow in short hosts so content remains reachable rather than clipped. Do not alter FullBleed or WidgetBreakout.
+3. Add a G3-owned responsive Storybook fixture using the actual WidgetBreakout/FullBleed host, alongside the original reviewer fixture (whose prose wrapper is desktop-specific). Check native picker and tab focus, Escape without any refocus, final rendered line against every clipping ancestor, citation separation, and effective normal/OS/app reduced-motion settings at desktop, portrait and landscape sizes.
+4. Re-run source-preservation/artwork checks, full unit tests, format/lint and isolated production/Storybook builds. Push the same PR and return its exact new head for independent review; no merge, deployment or database action.

@@ -178,12 +178,13 @@ describe("source-backed embedded skull", () => {
   it("sizes itself by the height it is given, with no disclaimer (OPENBRAIN-147)", async () => {
     const w = await skull();
     // The chapter's full-screen band sets --widget-body-min-h: 0 and the
-    // view fills its flex height; alone, the floors below stand.
+    // view uses that height with a readable floor and local overflow. Actual
+    // clipping/final-line visibility is covered by phrenology-host-browser.mjs.
     const code = readFileSync(
       path.resolve("src/views/PhrenologyView.vue"),
       "utf8"
     );
-    expect(code).toContain("min-height: var(--widget-body-min-h, 65vh)");
+    expect(code).toContain("var(--widget-body-min-h, 65vh)");
     expect(code).toContain("var(--skull-h) * 450 / 435");
     expect(w.text()).not.toContain("not accepted neuroscience");
     expect(w.find(".card-instruction").text()).toContain(
