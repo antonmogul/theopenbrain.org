@@ -1,6 +1,6 @@
 # G2 delivery — figures, galleries and media
 
-Implementation branch: `antonmogul/Figures-media-followups`, based on main `3f1bcd8171632503ac5bea8c822ea67d3c889940` (PR #143). PR and final head are recorded in the coordinator's delivery receipt. No merge, deployment, live Supabase write or email was performed.
+Implementation branch: `antonmogul/Figures-media-followups`, based on main `3f1bcd8171632503ac5bea8c822ea67d3c889940` (PR #143). [PR #149](https://github.com/antonmogul/theopenbrain.org/pull/149); validated implementation commit `9f68e0802503e30edb369d9e522baf4602888cfa`. The delivery receipt records the final head including this report link. No merge, deployment, live Supabase write or email was performed.
 
 ## Research: code, content and deployment
 
@@ -19,7 +19,7 @@ Original reference inspected: https://theopenbrain.org/chapter and its Neitz int
 
 ## Verification
 
-- Scoped Vitest: **40 passed across 8 files**; gallery timing and pause rules, dynamic reduced motion, selected legend, actual modal sharing/focus cleanup, legacy illustration caption, shared player and original local sources, BreakView, figureCycle and PGlite migration tests.
+- Scoped Vitest: **40 passed across 8 files** (final changed-component/migration recheck: 23 passed across 4 files); gallery timing and pause rules, dynamic reduced motion, selected legend, actual modal sharing/focus cleanup, legacy illustration caption, shared player and original local sources, BreakView, figureCycle and PGlite migration tests.
 - Migration executed against isolated PGlite, including double application, caption preservation, unrelated paragraph protection, missing/duplicate Huxley guard and retained original media/provenance. **Unapplied to Supabase.**
 - Full repository `npm run lint:ci`: passed with six existing warnings, no errors. `npm run format:check`: passed. `npm run build`: passed with existing chunk-size warnings. The broad full test/Storybook suites were not run concurrently with other workers.
 - Isolated Chromium fixture at port 6102 uses actual source components and public live metadata transformed by the real migration in PGlite. Verified the exact 14,999/15,000ms boundary, keyboard thumbnail activation, reverse modal navigation, pane/modal legend agreement, explicit reduced motion, Huxley holding after 45 seconds, and original Eccles second.
