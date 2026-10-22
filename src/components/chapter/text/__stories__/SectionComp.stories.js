@@ -10,6 +10,14 @@ import {
   subsectionParagraph,
 } from "../../__stories__/chapterFixtures";
 
+import { hippocratesPair, comparativePair } from "./breakoutReviewFixtures";
+
+const pairedFrame = (args) => ({
+  components: { SectionComp },
+  setup: () => ({ args }),
+  template: `<div data-chapter="fund" class="chapter-reader" style="padding:24px;max-width:1280px;margin:auto;font:calc(var(--type-body-size) * var(--reading-size, 1))/var(--type-body-lh) var(--font-body)"><SectionComp v-bind="args" /></div>`,
+});
+
 const SECTION = retinaChapter.sections[0];
 
 export default {
@@ -75,4 +83,14 @@ export const WithSubsections = {
       ],
     },
   },
+};
+
+/** R02: the actual renderer, both complete source paragraphs and artwork. */
+export const HippocratesPair = {
+  args: { section: hippocratesPair, label: "A" },
+  render: pairedFrame,
+};
+export const ComparativePair = {
+  args: { section: comparativePair, label: "B" },
+  render: pairedFrame,
 };

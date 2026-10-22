@@ -5,6 +5,7 @@
     v-if="section.kind === 'box' && !boxBody"
     :section="section"
     :label="label"
+    :paired-explores="pairedExploreIds.size > 0"
   >
     <SectionComp
       :section="section"
@@ -78,31 +79,33 @@
       v-if="tableReferences.length"
       :references="tableReferences"
     />
-    <span
+    <div
       v-else
       :id="
         section?.animation?.name
           ? 'triggerAnimation' + section?.animation?.name
           : ''
       "
-      :class="
-        section?.animation?.name ? 'animationTrigger block noHighlight' : ''
-      "
+      :class="[
+        section?.animation?.name ? 'animationTrigger block noHighlight' : '',
+        { 'section-paragraphs--paired': pairedExploreIds.size > 0 },
+      ]"
       :data-figure-hold="section?.animation?.hold"
       :data-figure-room="section?.animation?.room"
     >
       <template v-for="paragraph in section['paragraphs']" :key="paragraph.id">
         <StartEndIcon :paragraph="paragraph" art="start" />
-        <span
+        <div
           :id="
             paragraph?.animation &&
             'triggerAnimation' + paragraph?.animation?.name
           "
-          :class="
+          :class="[
             paragraph?.animation?.name
               ? 'animationTrigger block noHighlight'
-              : ''
-          "
+              : '',
+            { 'explore-pair-item': pairedExploreIds.has(paragraph.id) },
+          ]"
           :data-figure-hold="paragraph?.animation?.hold"
           :data-figure-room="paragraph?.animation?.room"
           v-if="
@@ -117,7 +120,11 @@
             :is="paragraph.explore ? ExploreCard : Unwrapped"
             v-bind="
               paragraph.explore
-                ? { explore: paragraph.explore, paragraphId: paragraph.id }
+                ? {
+                    explore: paragraph.explore,
+                    paragraphId: paragraph.id,
+                    paired: pairedExploreIds.has(paragraph.id),
+                  }
                 : undefined
             "
           >
@@ -173,7 +180,7 @@
               :animation-id="paragraph.animation.id"
             />
           </component>
-        </span>
+        </div>
         <!-- section Break -->
         <BreakImages
           :key="'breakVideo ' + paragraph.id"
@@ -204,7 +211,7 @@
           />
         </div>
       </template>
-    </span>
+    </div>
     <StartEndIcon :paragraph="section" art="end" />
     <FullScreenIllustration
       :key="section.id"
@@ -216,6 +223,7 @@
 
 <script setup>
 import { computed, inject } from "vue";
+import { explorePairIds } from "@/helper/explorePairs";
 // <SectionComp> in the template is this component (an SFC can use itself by
 // its file name without importing it): an anchored breakout box renders as a
 // nested section.
@@ -248,6 +256,8 @@ const boxesAfter = inject("boxesAfter", () => []);
 const sectionLabels = inject("sectionLabels", null);
 
 const store = useGeneral();
+
+const pairedExploreIds = computed(() => explorePairIds(props.section));
 
 const transitionId = computed(() => sectionTransitionId(props.section));
 
@@ -300,6 +310,22 @@ const handleSectionTitleSave = ({ content }) =>
 </script>
 
 <style scoped>
+@media (min-width: 1024px) {
+  .section-paragraphs--paired {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    align-items: start;
+  }
+  .section-paragraphs--paired > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+  .section-paragraphs--paired > .explore-pair-item {
+    grid-column: auto;
+  }
+}
+
 /* A breakout box placed inside its section (OPENBRAIN-70 A4); the box
    brings its own spacing (BreakoutBox). */
 /* Room between the text and a box, either side (Stuart, 13 Oct): in the

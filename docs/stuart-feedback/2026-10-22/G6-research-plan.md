@@ -1,0 +1,25 @@
+# G6 research and implementation plan
+
+Scope: R02, R03, R05, R18. Baseline: main/origin/main `3f1bcd8171632503ac5bea8c822ea67d3c889940`, checked 22 October 2026. No production writes, publication, migration application, merge or deployment.
+
+## Research before implementation
+
+- **R02 reproduced on the demo and in current main.** At 1440px, live Hippocrates/humours cards have the same x=288 and successive y=7362/7788; comparative cards likewise stack at y=11320/11761. Clicking Hippocrates changes only its disclosure state. `ExploreCard` already owns independent state; `SectionComp` has no pairing layout. The existing `20261021010000_history_breakout_boxes.sql` supplies all four cards and the live read confirms those cards exist. Do not duplicate that migration.
+- **R03 reproduced.** Original Retina at <https://theopenbrain.org/chapter> has `.hoverImg` spans for Alcmeon, Plato, ibn Sina and others. Demo Retina retains Alcmeon/Islamic Golden Age spans, with no href or keyboard link semantics. `infosImages.json` has two prose descriptions (Alcmaeon and Islamic Golden Age), but no biography destination; `HoverImg.vue` listens only to mouseover/mouseout. Editor `SpanMark` preserves image/text metadata, while existing TipTap links and text blocks already support ordinary authored anchors. Bibliography URLs in `referenceLinks.json` are publication references, not a people directory.
+- **R05 reproduced as an absent optional mode, not a regression.** Current History Descartes is a long vertical `BreakoutBox`, deliberately documented in source as remaining vertical until paging is designed. No lateral mode exists.
+- **R18 confirmed as a design distinction.** Original Retina uses embedded experiment stages (Blind spot / Color blindness); current Retina `BreakSection` retains artwork plus show/hide explanation, whereas History uses lettered, tinted full-width narrative `BreakoutBox` sections. These serve different reading tasks. No chapter-wide unification is authorized.
+- Deployment baseline supplied by coordinator: last verified PR140; main includes PR143. This research verifies live DOM behavior, not a new deployed commit identity. PR143's Storybook asset-copy fix does not implement pairing/lateral format. The G6 layout gap exists in main and is not explained away by deployment lag.
+
+## Plan and boundaries
+
+1. Pair consecutive authored Explore paragraphs within breakout boxes only, keeping paragraph IDs, independent disclosures and normal text/figures intact. Two columns at the 1024px reader breakpoint; one column below. Compact stacked card leads with uncropped artwork, square 44px controls and existing token/fonts. Wider paired box body, readable expansion in its own column.
+2. Add fixture stories for both real pairs. Reuse committed History source text/artwork; avoid live admin save. Test independent expansion and non-paired section regressions.
+3. Add an opt-in Storybook-only Descartes horizontal-reading prototype. Native overflow, Previous/Next and region-only arrow/Home/End keys, no wheel listeners or global key interception, no auto-advance. All text stays available; vertical view and print fallback; explicit app motion preference overrides OS preference.
+4. Demonstrate manually authored ordinary links for Alcmaeon, Descartes and dualism in a story using the real SectionComp text-block pipeline. Keep source attribution visible and same-tab navigation; browser Back returns to reading. No regex auto-linking, guessed destinations or silent replacement of existing spans. No data migration needed for review-only link proposals.
+5. Run scoped unit tests, lint/format, production build, Storybook coverage and read-only browser checks at desktop/mobile widths, keyboard, touch and motion settings. Record screenshots and exact limitations, then open a focused PR for independent review.
+
+## Source checks and discussion next week
+
+Verified on 22 October: [Alcmaeon](https://plato.stanford.edu/entries/alcmaeon/), [René Descartes](https://plato.stanford.edu/entries/descartes/), [Dualism](https://plato.stanford.edu/entries/dualism/) at the Stanford Encyclopedia of Philosophy. These explicit review examples offer contextual references; they do not assert that every person/term should be linked or rewrite historical claims. Technical references: [MDN scroll-snap-type](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/scroll-snap-type), [WAI carousel controls guidance](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/). The prototype is a continuous document region rather than an auto-rotating carousel.
+
+Decision options for Stuart: keep narrative breakouts vertical and experiments as stages; offer lateral reading only for curated narrative boxes; or later unify their frame while preserving experiment behavior. Discuss text chunk boundaries, long-text effort on phones, whether inline links replace or supplement hover portraits, preferred sources and same-tab policy. Default stays unchanged until that discussion.

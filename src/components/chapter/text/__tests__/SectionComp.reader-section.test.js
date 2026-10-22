@@ -166,3 +166,29 @@ describe("reader-section in the reader's CSS and templates", () => {
       expect(source(file), file).not.toContain("reader-section");
   });
 });
+
+it("pairs authored Explore cards inside boxes and expands only the chosen paragraph", async () => {
+  const wrapper = mountSection({
+    id: "paired",
+    kind: "box",
+    title: "Two topics",
+    paragraphs: ["one", "two"].map((id) => ({
+      ...paragraph(id),
+      explore: { title: id, prompt: `Explore ${id}` },
+    })),
+  });
+  expect(wrapper.findAll(".explore-pair-item")).toHaveLength(2);
+  const cards = wrapper.findAll(".xc");
+  await cards[0].find("button").trigger("click");
+  expect(cards[0].find(".xc-panel").attributes("hidden")).toBeUndefined();
+  expect(cards[1].find(".xc-panel").attributes("hidden")).toBeDefined();
+  expect(
+    wrapper
+      .findAll("[data-paragraph-id]")
+      .map((p) => p.attributes("data-paragraph-id"))
+  ).toEqual(["one", "two"]);
+  await cards[1].find("button").trigger("click");
+  await cards[0].find("button").trigger("click");
+  expect(cards[0].find(".xc-panel").attributes("hidden")).toBeDefined();
+  expect(cards[1].find(".xc-panel").attributes("hidden")).toBeUndefined();
+});

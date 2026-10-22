@@ -33,6 +33,7 @@ const props = defineProps({
   paragraphId: { type: String, required: true },
   /** Start open (stories, print). */
   defaultOpen: { type: Boolean, default: false },
+  paired: { type: Boolean, default: false },
 });
 
 const open = ref(props.defaultOpen);
@@ -50,7 +51,11 @@ function toggle() {
        .chapter-reader a full screen's height (index.css). -->
   <div
     class="xc"
-    :class="{ 'xc--open': open, 'xc--no-image': !explore.image }"
+    :class="{
+      'xc--open': open,
+      'xc--no-image': !explore.image,
+      'xc--paired': paired,
+    }"
     :data-explore="paragraphId"
     role="group"
     :aria-labelledby="titleId"
@@ -112,7 +117,7 @@ function toggle() {
   margin: 0 0 1.5rem;
   border: 1px solid rgb(var(--color-line));
   border-left: 4px solid var(--xc-accent);
-  border-radius: var(--radius-control, 4px);
+  border-radius: 0;
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   overflow: hidden;
@@ -169,7 +174,8 @@ function toggle() {
   margin-top: auto;
   padding: 0.45rem 0.9rem;
   border: 1px solid rgb(var(--color-ink));
-  border-radius: 999px;
+  border-radius: 0;
+  min-height: 44px;
   background: transparent;
   color: rgb(var(--color-ink));
   font: 400 var(--ui-size-12) / 1.2 var(--font-mono);
@@ -264,6 +270,33 @@ function toggle() {
   }
   .xc-panel-inner {
     padding: 1.5rem 1.5rem 0.25rem;
+  }
+}
+/* Paired previews keep the complete historical artwork visible. */
+.xc--paired .xc-card {
+  grid-template-columns: minmax(0, 1fr);
+}
+.xc--paired .xc-img {
+  height: 16rem;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+.xc--paired .xc-figure {
+  border-right: 0;
+}
+.xc--paired .xc-lead {
+  padding: 1.25rem;
+}
+.xc--paired .xc-panel-inner {
+  overflow-wrap: anywhere;
+}
+@media print {
+  .xc-panel[hidden] {
+    display: block;
+  }
+  .xc-btn {
+    display: none;
   }
 }
 </style>
