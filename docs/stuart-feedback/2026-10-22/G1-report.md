@@ -35,7 +35,22 @@ Technical sources: [Lottie expression baking](https://github.com/airbnb/lottie-w
 - At 1440px and 390px with OS reduced motion and the root override absent, all four legacy figures remain visible and static. The matrix also checks the 1440px transition endpoint, the 390px explicit `data-reduce-motion="0"` override and simulated touch-pointer cover scrubbing. Touch gestures are simulated; physical phone acceptance is not claimed.
 - Original/production/main baseline screenshots and expanded local receipts are retained in `/tmp/openbrain-g1/`. Selected evidence: [mobile Dragon and original caption](G1-evidence/mobile-dragon.png), [painted gaze trace](G1-evidence/eye-movement-trace.png), [Firefox reduced-motion eye drawing](G1-evidence/reduced-eye-structure.png). Current production still needs deployment and acceptance after review.
 
-No broad full-suite or Storybook build was run, to avoid overlapping broad jobs in the supervised run. CI and the independent reviewer remain separate gates.
+The original delivery did not run the full unit suite. The correction below closes that gap; Storybook was not rebuilt. CI and the independent reviewer remain separate gates.
+
+### Independent-review correction
+
+Independent review of `438090f1c5a5aa3f8d5d521d4c7fc92fe5ae6898` found one P2 blocker: the existing `SplitTransition.test.js` fixture omitted Lottie's `addEventListener`, causing two failures and two unhandled mounted-hook rejections. The original production readiness subscription was correct and remains unchanged.
+
+Correction commit: `ffe51322c8edfe0f26354d54bdf1b895aa75be27`. Only `src/widgets/figures/__tests__/SplitTransition.test.js` changed: its animation fake now registers and delivers readiness events and clears listeners on destroy, matching the installed Lottie `BaseEvent` and `AnimationItem.destroy` contract. Tests retain initial/midpoint/end assertions, add reverse scrolling, prove that `DOMLoaded` redraws at the latest progress after frames become available, and prove destruction plus safe late readiness after unmount. Automatic wrapper teardown prevents observers surviving between tests.
+
+- Reproduced the reviewed-head regression: **7 passed / 2 failed / 2 unhandled errors** in the adjacent suite.
+- Corrected focused transition suites: **12 passed across 2 files**.
+- Full unit suite: `npm run test:ci -- --maxWorkers=1 --minWorkers=1 --cache=false` — **215 files passed / 16 skipped; 2,442 tests passed / 56 skipped; zero failures or unhandled errors**, 49.61 seconds. This includes all 3 derivative-equivalence tests and 14 animation-resolution tests. Log: `/tmp/openbrain-g1-correction-full-suite.log`. The existing skipped database-dependent coverage remains unexecuted; no live database was contacted for this correction.
+- `npm run lint:ci`: passed, **0 errors / 6 existing warnings**. `npm run format:check`: passed. `npm run graph:check`: passed, **0 errors / 1 existing orphan warning**, 1,015 modules / 2,063 dependencies. `git diff --check`: passed. Logs: `/tmp/openbrain-g1-correction-{lint,format,graph}.log`.
+- No production source, original assets, derivative, security policy, dependencies or shared `IllustrationComp` hunk changed. Original EyeMovements SHA-256 was rechecked and still matches the preservation hash above. Shared `node_modules` remained immutable; Vitest caching was disabled and npm graph-tool caching used `/tmp/openbrain-g1-correction-npm-cache`.
+- No new browser or production build was necessary for this test-only correction. The prior implementation and independent browser evidence above remain the applicable runtime evidence, rather than a claimed new browser execution. Independent review separately passed 42 Chromium/Firefox checks at the unchanged production source; its report is `/tmp/openbrain-G1-independent-review.md`.
+
+The final report-only commit and exact pushed PR head are recorded in `/tmp/openbrain-G1-correction-report.md` and the coordinator completion receipt. Independent review must target that final SHA. No merge, deployment, database writes, credential changes or email occurred.
 
 ## Coordination and release requirements
 
