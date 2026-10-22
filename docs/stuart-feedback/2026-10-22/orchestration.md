@@ -34,3 +34,18 @@ These are reservations for committed, unapplied migrations. Do not confuse file 
 - G5 PR146 at `e63a6ba6`: independent review dispatch `ctx_d43a9fd8c9e8`; implementation worker settled and released.
 
 Review reports currently at `/tmp/openbrain-G3-independent-review.md` and the corresponding G4/G5 paths when those settle. Copy final reports into these coordinator notes for durable retention before final handoff.
+
+## Final settlement
+
+All 18 dispatches settled successfully and were released; reclaimable-terminal list is empty. Every original implementation and review Task has an explicit outcome. Review success denotes a completed review, not necessarily approval of its first head.
+
+| Group | Corrected final head | Final independent review |
+|---|---|---|
+| G1 PR148 | `77d928f9` | Approved; task `task_e835a97baaac`, dispatch `ctx_2acccf1a85cb` |
+| G2 PR149 | `48de7227` | Approved; original review task |
+| G3 PR144 | `aa6d1e35` | Approved; task `task_47f06b291e5b`, dispatch `ctx_9ea9749dcbd2` |
+| G4 PR145 | `7bedea98` | Approved; original review task |
+| G5 PR146 | `e63a6ba6` | Approved; original review task |
+| G6 PR147 | `36f25bf2` | Approved; task `task_69c9b78919ad`, dispatch `ctx_723150a127fd` |
+
+Astra correction tasks: G1 `task_15aada4df6e4` / `ctx_b803f221afa3`; G3 `task_0b583db39900` / `ctx_d50c548fd7d7`; G6 `task_862f355ee655` / `ctx_df6e457d1706`. All used verified effective gpt-6-astra/high. All independent reviews used separately launched default Codex workers. Reports have been copied from temporary paths into `reviews/` for durable retention. Full CI, integration, migration and release gates are recorded in completion-log.md.
