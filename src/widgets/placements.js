@@ -1,3 +1,4 @@
+import { PENFIELD_TITLE } from "@/helper/penfieldPresentation";
 /*
  * Widget placements — where an interactive widget sits inside a chapter.
  *
@@ -202,7 +203,7 @@ export const WIDGET_PLACEMENTS = [
       { after: { textIncludes: "Montreal Procedure" } },
       { endOfSection: true },
     ],
-    title: "Be Penfield",
+    title: PENFIELD_TITLE,
     blurb:
       "Explore what having your brain electrically stimulated by Penfield was like.",
     credit: "Interactive by The Open Brain",
