@@ -1,6 +1,6 @@
 # G1 — reader and Retina follow-up report
 
-Scope: R01, R15, R16, R19. Base: main `3f1bcd8171632503ac5bea8c822ea67d3c889940` (PR #143). Implementation PR and validated commit are recorded below after creation. This is a code delivery, not a deployment or production acceptance claim.
+Scope: R01, R15, R16, R19. Base: main `3f1bcd8171632503ac5bea8c822ea67d3c889940` (PR #143). PR: [#148](https://github.com/antonmogul/theopenbrain.org/pull/148). Validated implementation commit: `b6472c0e5a5a64d3255b4430387da6af00fda8bb`; the subsequent report-only commit records this PR link without changing the validated code. The coordinator receives the final delivery head separately for exact-head review. This is a code delivery, not a deployment or production acceptance claim.
 
 ## Research: code versus deployment
 
