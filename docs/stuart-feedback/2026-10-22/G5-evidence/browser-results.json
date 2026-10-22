@@ -1,0 +1,274 @@
+[
+  {
+    "engine": "chromium",
+    "bareAudioControl": {
+      "peak": 0.7566887736320496,
+      "time": 2.975715,
+      "ready": 4,
+      "context": "running"
+    },
+    "audioAcceptance": "available"
+  },
+  {
+    "engine": "chromium",
+    "slug": "loewi",
+    "blocked": true,
+    "decodedPlayback": false,
+    "peak": 0,
+    "context": "running",
+    "audio": [
+      {
+        "time": 0.012237999999999749,
+        "ready": 0,
+        "error": 4,
+        "paused": false
+      }
+    ],
+    "violations": [
+      {
+        "directive": "media-src",
+        "url": "data"
+      },
+      {
+        "directive": "media-src",
+        "url": "data"
+      }
+    ]
+  },
+  {
+    "engine": "chromium",
+    "slug": "loewi",
+    "blocked": false,
+    "decodedPlayback": true,
+    "peak": 0.7515724897384644,
+    "context": "running",
+    "audio": [
+      {
+        "time": 1.014833,
+        "ready": 4,
+        "error": null,
+        "paused": false
+      }
+    ],
+    "violations": []
+  },
+  {
+    "engine": "chromium",
+    "slug": "retina",
+    "blocked": true,
+    "decodedPlayback": false,
+    "peak": 0,
+    "context": "running",
+    "audio": [
+      {
+        "time": 0,
+        "ready": 0,
+        "error": 4,
+        "paused": false
+      }
+    ],
+    "violations": [
+      {
+        "directive": "media-src",
+        "url": "data"
+      }
+    ]
+  },
+  {
+    "engine": "chromium",
+    "slug": "retina",
+    "blocked": false,
+    "decodedPlayback": true,
+    "peak": 0.7472320795059204,
+    "context": "running",
+    "audio": [
+      {
+        "time": 1.005587,
+        "ready": 4,
+        "error": null,
+        "paused": false
+      }
+    ],
+    "violations": []
+  },
+  {
+    "engine": "chromium",
+    "baselineLabelOverlap": 51.046875
+  },
+  {
+    "engine": "chromium",
+    "layout": "1280x800",
+    "captions": 14,
+    "minGap": 11.59375,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "layout": "900x600",
+    "captions": 14,
+    "minGap": 10,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "layout": "700x600",
+    "captions": 14,
+    "minGap": 10,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "layout": "390x600",
+    "captions": 14,
+    "minGap": 10.5,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "layout": "390x420",
+    "captions": 14,
+    "minGap": 10.5,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "bareAudioControl": {
+      "peak": 0,
+      "time": 0,
+      "ready": 1,
+      "context": "running"
+    },
+    "audioAcceptance": "INCONCLUSIVE: bare decoder control also fails"
+  },
+  {
+    "engine": "firefox",
+    "slug": "loewi",
+    "blocked": true,
+    "decodedPlayback": false,
+    "peak": 0,
+    "context": "running",
+    "audio": [
+      {
+        "time": 0.000900000000000345,
+        "ready": 0,
+        "error": 4,
+        "paused": false
+      }
+    ],
+    "violations": [
+      {
+        "directive": "media-src",
+        "url": "data"
+      },
+      {
+        "directive": "media-src",
+        "url": "data"
+      }
+    ]
+  },
+  {
+    "engine": "firefox",
+    "slug": "loewi",
+    "blocked": false,
+    "decodedPlayback": false,
+    "peak": 0,
+    "context": "running",
+    "audio": [
+      {
+        "time": 0.73844,
+        "ready": 1,
+        "error": null,
+        "paused": false
+      }
+    ],
+    "violations": []
+  },
+  {
+    "engine": "firefox",
+    "slug": "retina",
+    "blocked": true,
+    "decodedPlayback": false,
+    "peak": 0,
+    "context": "running",
+    "audio": [
+      {
+        "time": 0,
+        "ready": 0,
+        "error": 4,
+        "paused": false
+      }
+    ],
+    "violations": [
+      {
+        "directive": "media-src",
+        "url": "data"
+      }
+    ]
+  },
+  {
+    "engine": "firefox",
+    "slug": "retina",
+    "blocked": false,
+    "decodedPlayback": false,
+    "peak": 0,
+    "context": "running",
+    "audio": [
+      {
+        "time": 0,
+        "ready": 1,
+        "error": null,
+        "paused": false
+      }
+    ],
+    "violations": []
+  },
+  {
+    "engine": "firefox",
+    "baselineLabelOverlap": 50.96665954589844
+  },
+  {
+    "engine": "firefox",
+    "layout": "1280x800",
+    "captions": 14,
+    "minGap": 10.5999755859375,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "layout": "900x600",
+    "captions": 14,
+    "minGap": 9,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "layout": "700x600",
+    "captions": 14,
+    "minGap": 9,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "layout": "390x600",
+    "captions": 14,
+    "minGap": 8.75,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "layout": "390x420",
+    "captions": 14,
+    "minGap": 8.75,
+    "keyboard": "restart and step",
+    "reducedMotion": true
+  }
+]
