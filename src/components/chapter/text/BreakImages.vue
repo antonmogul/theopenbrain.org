@@ -1,54 +1,35 @@
 <script setup>
-import PlayIcon from "@/icons/custom/PlayIcon.vue";
+import { computed } from "vue";
+import VideoEmbed from "./VideoEmbed.vue";
 import jsonVideos from "@/assets/json_backend/breakVideos.json";
 
-const props = defineProps({
-  slug: String,
-  title: String,
-  text: String,
-});
-
-const currentVideo = jsonVideos.videos[props.slug];
+const props = defineProps({ slug: String, title: String, text: String });
+const currentVideo = computed(() => jsonVideos.videos[props.slug]);
+const authored = computed(() =>
+  props.slug === "placeholder"
+    ? { title: props.title, text: props.text }
+    : currentVideo.value
+);
+const video = computed(() => ({
+  src: `/publicAssets/video/breakSections/${props.slug}.mp4`,
+  poster:
+    props.slug === "placeholder"
+      ? "/publicAssets/images/placeholders/monaLisa.webp"
+      : `/publicAssets/images/breakVideos/${props.slug}.png`,
+  title: authored.value?.title || props.title,
+  caption: [
+    authored.value?.title || props.title,
+    authored.value?.text || props.text,
+  ]
+    .filter(Boolean)
+    .join(" — "),
+}));
 </script>
 
 <template>
-  <div class="text-small my-24 -ml-20 font-mono max-w-measure">
-    <RouterLink
-      :to="`chapter/break/${slug ? slug : 'placeholder'}`"
-      class="relative flex h-full justify-center items-start gap-8 bg-white"
-    >
-      <div class="relative">
-        <div class="h-64 bg-black absolute w-full opacity-20"></div>
-        <div class="h-64 bg-violet absolute w-full opacity-70"></div>
-        <img
-          v-if="slug === 'placeholder'"
-          class="bg-black h-64 mix-blend-screen grayscale"
-          src="/publicAssets/images/placeholders/monaLisa.webp"
-        />
-        <img
-          v-else
-          class="bg-black h-64 mix-blend-screen grayscale"
-          :src="`/publicAssets/images/breakVideos/${slug}.png`"
-        />
-      </div>
-      <PlayIcon class="absolute -left-8 -top-8 icon iconBig" />
-
-      <div
-        class="w-full h-full flex flex-col justify-center items-start mt-[-0.125rem] text-small"
-      >
-        <span class="block text-left font-semibold">
-          {{ slug !== "placeholder" ? currentVideo?.title : title }}
-        </span>
-        <span class="block text-left">
-          {{ slug !== "placeholder" ? currentVideo?.text : text }}
-        </span>
-      </div>
-    </RouterLink>
-  </div>
+  <VideoEmbed v-if="currentVideo" :video="video" />
+  <p v-else class="font-mono text-small my-8">
+    {{ title || "Video" }}<span v-if="text"> — {{ text }}</span>
+    <span> · Video unavailable.</span>
+  </p>
 </template>
-
-<style scoped>
-.z-60 {
-  z-index: 60;
-}
-</style>

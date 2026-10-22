@@ -1,0 +1,17 @@
+[
+  "15,000ms boundary; thumbnail Enter; reverse keyboard; modal and pane legends follow selected artwork",
+  "Huxley starts Figure21, remains after 45s, original Eccles diagram/caption remains second",
+  {
+    "fig15": {
+      "shell": 720,
+      "caption": 692,
+      "stage": 501
+    }
+  },
+  {
+    "desktopRoom": "900px"
+  },
+  "Explicit reduced-motion setting prevents automatic steps",
+  "390px: no document overflow; thumbnails/modal accessible; no desktop spacer; original Retina MP4/poster and sound-enabled controls",
+  "Neitz MP4 plays after explicit native-control click; currentTime advances"
+]

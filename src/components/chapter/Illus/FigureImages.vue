@@ -5,9 +5,9 @@
  *
  * One image renders on its own, as large as the shell allows. A set renders
  * as a rotating gallery, Stuart's "updating main image": one full-size image
- * at a time in a stage box, a row of dots under it (the current one in the
+ * at a time in a stage box, a row of thumbnails under it (the current one in the
  * chapter colour), previous/next arrows at the sides of the box, and the
- * current image's own legend below. It advances every 10 s on its own until
+ * current image's own legend below. It advances every 15 s on its own until
  * the reader takes over: hovering or focusing it pauses the clock, any
  * manual step stops it for good, and it never runs under reduced motion,
  * while the gallery is off-screen or while the tab is hidden.
@@ -18,11 +18,8 @@
  * aspect ratio inline in the text column (flow), for the same reason.
  */
 import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from "vue";
-import {
-  stepIndex,
-  youtubeLoopUrl,
-  youtubePlayerUrl,
-} from "@/helper/figureCycle";
+import { stepIndex, youtubeLoopUrl } from "@/helper/figureCycle";
+import VideoEmbed from "../text/VideoEmbed.vue";
 import { reducedMotionPreferred } from "@/helper/readerJump";
 
 const props = defineProps({
@@ -35,30 +32,32 @@ const props = defineProps({
   title: { type: String, default: "" },
   /* Fullscreen overlay: roomier caption and arrows. */
   large: { type: Boolean, default: false },
-  /* The container has a fixed height: the stage takes what the dots and
+  /* The container has a fixed height: the stage takes what the thumbnails and
      legend leave. Off inline, where the stage is an aspect-ratio box. */
   fit: { type: Boolean, default: true },
   /* The shell shows the legend above the artwork (with the title), so the
-     figure-level caption here is left out (OPENBRAIN-138). A gallery
-     image's own caption still shows under the dots. */
+     selected image caption here is left out to avoid duplicating the shell legend. */
   legendAbove: { type: Boolean, default: false },
+  /* Pause the background pane while its fullscreen viewer is open. */
+  suspended: { type: Boolean, default: false },
 });
 
 /* The shown image, two-way so the shell can open its fullscreen dialog on
    the same plate the pane is showing. */
 const index = defineModel("index", { type: Number, default: 0 });
 
-/* Stuart's "every 10s". */
-const AUTO_ADVANCE_MS = 10_000;
+/* Stuart's "every 15s". */
+const AUTO_ADVANCE_MS = 15_000;
 
+const reducedMotion = ref(reducedMotionPreferred());
 const isSet = computed(() => props.images.length > 1);
 // A video item: a player the reader starts (play: "player"), or a silent
 // loop in place of its still, unless the reader asked for reduced motion:
 // then the still stays, with a link to the video.
 const loopSrc = (img) => {
   if (!img?.youtube) return "";
-  if (img.play === "player") return youtubePlayerUrl(img.youtube, img.start);
-  return reducedMotionPreferred() ? "" : youtubeLoopUrl(img.youtube);
+  if (img.play === "player") return "";
+  return reducedMotion.value ? "" : youtubeLoopUrl(img.youtube);
 };
 const watchHref = (img) =>
   img?.youtube ? `https://www.youtube.com/watch?v=${img.youtube}` : "";
@@ -89,14 +88,13 @@ const safeIndex = computed(() => {
   return Number.isInteger(i) && i >= 0 && i < count.value ? i : 0;
 });
 const current = computed(() => props.images[safeIndex.value] || first.value);
-/* The current image's own legend; the figure's only when the shell does not
-   already show it above the artwork. */
-const currentCaption = computed(
-  () => current.value?.caption || (props.legendAbove ? "" : props.caption)
+/* The shell owns the selected legend above; standalone/modal viewers show it here. */
+const currentCaption = computed(() =>
+  props.legendAbove ? "" : captionFor(current.value)
 );
 
 /* "Image 3 of 10: Albertus Magnus, 1490." */
-function dotLabel(img, i) {
+function thumbnailLabel(img, i) {
   const base = `Image ${i + 1} of ${count.value}`;
   const text = img?.caption || img?.alt || "";
   return text ? `${base}: ${text}` : base;
@@ -169,11 +167,19 @@ const pageVisible = ref(
 );
 let timer = null;
 let intersection = null;
+let motionObserver = null;
+let motionQuery = null;
+function syncMotion() {
+  reducedMotion.value = reducedMotionPreferred();
+  if (reducedMotion.value) stopAutoplay();
+}
 
 const running = computed(
   () =>
     isSet.value &&
     autoplay.value &&
+    !props.suspended &&
+    current.value?.play !== "player" &&
     !hovered.value &&
     !focused.value &&
     inView.value &&
@@ -238,6 +244,13 @@ watch(
 );
 
 onMounted(() => {
+  motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  motionQuery.addEventListener?.("change", syncMotion);
+  motionObserver = new MutationObserver(syncMotion);
+  motionObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-reduce-motion"],
+  });
   if (!isSet.value) return;
   document.addEventListener("visibilitychange", onVisibility);
   if (typeof IntersectionObserver !== "undefined" && root.value) {
@@ -255,6 +268,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearTimer();
   intersection?.disconnect();
+  motionObserver?.disconnect();
+  motionQuery?.removeEventListener?.("change", syncMotion);
   document.removeEventListener("visibilitychange", onVisibility);
 });
 </script>
@@ -267,8 +282,20 @@ onBeforeUnmount(() => {
     :class="{ 'figimg--large': large, 'figimg--flow': !fit }"
   >
     <div class="figimg-stage">
+      <VideoEmbed
+        v-if="first.play === 'player'"
+        :key="first.youtube"
+        class="figimg-player"
+        :video="{
+          youtubeId: first.youtube,
+          title: altFor(first),
+          poster: first.src,
+          start: first.start,
+        }"
+        :show-caption="false"
+      />
       <iframe
-        v-if="loopSrc(first)"
+        v-else-if="loopSrc(first)"
         :key="first.youtube"
         class="figimg-video"
         :src="loopSrc(first)"
@@ -290,6 +317,14 @@ onBeforeUnmount(() => {
     <p v-if="shownCaption" class="figimg-caption">
       {{ shownCaption }}
     </p>
+    <a
+      v-if="first.youtube && reducedMotion"
+      class="figimg-watch"
+      :href="watchHref(first)"
+      target="_blank"
+      rel="noopener"
+      >Watch the video on YouTube ↗</a
+    >
   </div>
 
   <!-- A set: the rotating gallery. -->
@@ -321,8 +356,19 @@ onBeforeUnmount(() => {
       <!-- Crossfade: the leaving slide fades under the arriving one. -->
       <transition name="figimg-x">
         <div :key="current.src + safeIndex" class="figimg-slide">
+          <VideoEmbed
+            v-if="current.play === 'player'"
+            class="figimg-player"
+            :video="{
+              youtubeId: current.youtube,
+              title: altFor(current),
+              poster: current.src,
+              start: current.start,
+            }"
+            :show-caption="false"
+          />
           <iframe
-            v-if="loopSrc(current)"
+            v-else-if="loopSrc(current)"
             class="figimg-video figimg-gallery-video"
             :src="loopSrc(current)"
             :title="altFor(current) || 'Video'"
@@ -382,24 +428,36 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="figimg-foot">
-      <div class="figimg-dots" role="group" aria-label="Choose an image">
+      <div class="figimg-thumbnails" role="group" aria-label="Choose an image">
         <button
           v-for="(img, i) in images"
           :key="img.src + i"
           type="button"
-          class="figimg-dot"
+          class="figimg-thumbnail"
           :class="{ 'is-current': i === safeIndex }"
           :aria-current="i === safeIndex ? 'true' : undefined"
-          :aria-label="dotLabel(img, i)"
+          :aria-label="thumbnailLabel(img, i)"
           @click="showManual(i)"
         >
-          <span class="figimg-dot-mark" aria-hidden="true" />
+          <img
+            class="figimg-thumbnail-image"
+            :src="img.src"
+            alt=""
+            loading="lazy"
+            draggable="false"
+          />
+          <span
+            v-if="img.youtube"
+            class="figimg-thumbnail-video"
+            aria-hidden="true"
+            >▶</span
+          >
         </button>
       </div>
       <p
         :id="liveId"
         class="figimg-count"
-        aria-live="polite"
+        :aria-live="running ? 'off' : 'polite'"
         aria-atomic="true"
       >
         <span class="figimg-count-n">{{ safeIndex + 1 }} / {{ count }}</span>
@@ -408,16 +466,24 @@ onBeforeUnmount(() => {
         >
         <span v-if="currentCaption" class="figimg-caption figimg-legend">
           {{ currentCaption }}
-          <a
-            v-if="current.youtube"
-            class="figimg-watch"
-            :href="watchHref(current)"
-            target="_blank"
-            rel="noopener"
-            >Watch the video on YouTube ↗</a
-          >
         </span>
       </p>
+      <a
+        v-if="current.youtube"
+        class="figimg-watch"
+        :href="watchHref(current)"
+        target="_blank"
+        rel="noopener"
+        >Watch the video on YouTube ↗</a
+      >
+      <button
+        v-if="!reducedMotion && current.play !== 'player'"
+        type="button"
+        class="figimg-pause"
+        @click="autoplay ? stopAutoplay() : (autoplay = true)"
+      >
+        {{ autoplay ? "Pause gallery" : "Resume gallery" }}
+      </button>
     </div>
   </div>
 </template>
@@ -442,7 +508,7 @@ onBeforeUnmount(() => {
 .figimg-stage {
   position: relative;
   flex: 1;
-  min-height: 16rem;
+  min-height: min(16rem, 30vh);
 }
 .figimg-img {
   position: absolute;
@@ -468,7 +534,7 @@ onBeforeUnmount(() => {
 .figimg-caption {
   flex: none;
   margin: 0 auto;
-  max-width: 62ch;
+  max-width: 100%;
   font-family: var(--font-body);
   font-size: var(--ui-size-13);
   line-height: 1.45;
@@ -477,7 +543,7 @@ onBeforeUnmount(() => {
 }
 .figimg--large .figimg-caption {
   font-size: var(--ui-size-15);
-  max-width: 78ch;
+  max-width: 100%;
 }
 .figimg-video {
   display: block;
@@ -561,7 +627,7 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-chapter-deep, var(--color-accent)));
 }
 .figimg-nav:focus-visible,
-.figimg-dot:focus-visible {
+.figimg-thumbnail:focus-visible {
   outline: 2px solid rgb(var(--color-chapter, var(--color-accent)));
   outline-offset: 2px;
 }
@@ -589,55 +655,63 @@ onBeforeUnmount(() => {
   /* The shell gives the artwork its whole area, edge to edge. */
   padding: 0 1rem 0.75rem;
 }
-/* Dots: each a real button with a tappable hit area around an 8px mark. */
-.figimg-dots {
+/* A single row preserves artwork height; all thumbnails remain keyboard reachable. */
+.figimg-thumbnails {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0;
+  max-width: 100%;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding: 0.25rem;
 }
-.figimg-dot {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 0;
-  background: none;
+.figimg-thumbnail {
+  position: relative;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 44px;
+  padding: 3px;
+  border: 2px solid transparent;
+  border-radius: 0;
+  background: rgb(var(--color-paper));
   cursor: pointer;
-  color: rgb(var(--color-mute) / 0.45);
 }
-.figimg-dot-mark {
+.figimg-thumbnail-image {
   display: block;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: currentColor;
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
-.figimg-dot:hover {
-  color: rgb(var(--color-mute));
+.figimg-thumbnail:hover {
+  border-color: rgb(var(--color-line));
 }
-.figimg-dot.is-current {
-  color: rgb(var(--color-chapter, var(--color-accent)));
+.figimg-thumbnail.is-current {
+  border-color: rgb(var(--color-chapter, var(--color-accent)));
+  background: rgb(var(--color-chapter, var(--color-accent)) / 0.12);
 }
-.figimg-dot.is-current .figimg-dot-mark {
-  transform: scale(1.25);
+.figimg-thumbnail-video {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-size: var(--ui-size-10);
 }
-.figimg--large .figimg-dot {
-  width: 28px;
-  height: 28px;
+.figimg-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
 }
-.figimg--large .figimg-dot-mark {
-  width: 10px;
-  height: 10px;
+.figimg-player :deep(.ve-frame) {
+  width: 100%;
+  max-height: 100%;
 }
 .figimg-count {
   margin: 0;
   width: 100%;
-  max-width: 62ch;
+  max-width: 100%;
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
@@ -648,7 +722,7 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-mute));
 }
 .figimg--large .figimg-count {
-  max-width: 78ch;
+  max-width: 100%;
 }
 .figimg-count-n {
   flex: none;
@@ -679,7 +753,20 @@ onBeforeUnmount(() => {
 .figimg--large.figimg--fit .figimg-count {
   --legend-lines: calc(var(--ui-size-15) * 1.45 * 4);
 }
+.figimg-pause {
+  border: 1px solid rgb(var(--color-line));
+  padding: 0.25rem 0.5rem;
+  min-height: 24px;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-11);
+}
+.figimg-pause:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
 .figimg-watch {
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-12);
   display: inline-block;
   margin-left: 0.5em;
   color: inherit;
@@ -699,7 +786,7 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .figimg-x-enter-active,
   .figimg-x-leave-active,
-  .figimg-dot-mark,
+  .figimg-thumbnail-image,
   .figimg-nav {
     transition: none;
   }

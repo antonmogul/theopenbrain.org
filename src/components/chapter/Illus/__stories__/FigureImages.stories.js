@@ -1,8 +1,8 @@
 /*
  * Chapter/Illustrations/FigureImages — the artwork inside the figure shell:
  * one image, or a set shown as a rotating gallery (OPENBRAIN-144): one
- * full-size image at a time, dots under it, arrows at the sides of the
- * stage box, a step every 10 s until the reader takes over. Purely
+ * full-size image at a time, thumbnails under it, arrows at the sides of the
+ * stage box, a step every 15 s until the reader takes over. Purely
  * prop-driven.
  *
  * Storybook's Motion toolbar defaults to Reduced, which keeps the clock
@@ -44,14 +44,16 @@ export default {
     caption: {
       description: "Figure-level caption, used when an image has none.",
     },
-    large: { description: "Fullscreen dialog sizing: bigger arrows and dots." },
+    large: {
+      description: "Fullscreen dialog sizing: bigger arrows and thumbnails.",
+    },
     fit: {
       description:
-        "The container has a fixed height (the pinned pane, the dialog): the stage takes what the dots and legend leave. Off inline, where the stage is a 4:3 box.",
+        "The container has a fixed height (the pinned pane, the dialog): the stage takes what the thumbnails and legend leave. Off inline, where the stage is a 4:3 box.",
     },
     legendAbove: {
       description:
-        "The shell shows the figure legend above the artwork, so only an image's own caption shows under the dots.",
+        "The shell shows the figure legend above the artwork, so only an image's own caption shows under the thumbnails.",
     },
     index: {
       control: { type: "number", min: 0 },
@@ -65,10 +67,10 @@ export default {
 
 /** Ten plates, each with its own long legend (History Figure 6). Reduced
  *  motion (the Storybook default): the clock is off, so step with the
- *  arrows, the dots or the arrow keys. */
+ *  arrows, the thumbnails or the arrow keys. */
 export const TenImages = {};
 
-/** The same set turning on its own: a step every 10 s, paused while the
+/** The same set turning on its own: a step every 15 s, paused while the
  *  pointer or focus is on it, stopped by any manual step. Set Motion to
  *  "App motion" in the toolbar, as this story does. */
 export const Autoplay = {
@@ -98,7 +100,7 @@ export const GallerySharedLegend = {
 };
 
 /** As the shell renders it: the figure legend sits above the artwork, so
- *  only an image's own caption shows under the dots. */
+ *  only an image's own caption shows under the thumbnails. */
 export const LegendAbove = {
   args: {
     images: FIG2_IMAGES,
@@ -109,7 +111,7 @@ export const LegendAbove = {
   },
 };
 
-/** In the fullscreen dialog (`large`): bigger arrows and dots, a wider
+/** In the fullscreen dialog (`large`): bigger arrows and thumbnails, a wider
  *  legend, the stage taking most of the height. */
 export const Large = {
   args: { large: true },
@@ -133,7 +135,7 @@ export const GalleryInline = {
   }),
 };
 
-/** A single image: no dots, no arrows, no clock. */
+/** A single image: no thumbnails, no arrows, no clock. */
 export const SingleImage = {
   args: { images: FIG7_IMAGES.slice(0, 1), caption: FIG7_LEGEND },
 };

@@ -1,60 +1,51 @@
-<template>
-  <div>
-    <div
-      class="w-full absolute p-56 z-50 top-0 left-0 gap-4 flex h-screen justify-center items-start duration-300 object-fitt"
-    >
-      <!-- Unknown key: say so instead of pointing a <video> at a 404 (found
-           via a Storybook story that mounted /chapter/break/introduction). -->
-      <div
-        v-if="!info"
-        class="m-0 w-video h-full flex flex-col items-start justify-center gap-3 font-mono text-small"
-        data-testid="break-not-found"
-      >
-        <p class="font-semibold">Break video not found</p>
-        <p>There is no break video called “{{ route.params.video }}”.</p>
-        <RouterLink to="/chapters" class="underline underline-offset-4">
-          Back to the chapters
-        </RouterLink>
-      </div>
-      <div v-else class="m-0 w-video h-full object-contain">
-        <video
-          class="lazy h-full w-full bg-black object-contain"
-          autoplay
-          muted
-          controls
-          loop
-        >
-          <source
-            :src="
-              '/publicAssets/video/breakSections/' + route.params.video + '.mp4'
-            "
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-        <div class="text-left font-mono text-small pt-3 pb-24">
-          <p class="font-semibold">{{ info.title }}</p>
-          <p>{{ info.text }}</p>
-        </div>
-      </div>
-      <button @click="router.go(-1)">
-        <PlusIcon class="icon rotate-45" />
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import PlusIcon from "../icons/custom/PlusIcon.vue";
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import BreakImages from "@/components/chapter/text/BreakImages.vue";
 import infos from "@/assets/json_backend/breakVideos.json";
 const route = useRoute();
 const router = useRouter();
-const info = infos.videos?.[route.params.video];
+const info = computed(() => infos.videos?.[route.params.video]);
 </script>
 
+<template>
+  <main class="break-video-page">
+    <button class="break-video-back" type="button" @click="router.go(-1)">
+      ← Back to reading
+    </button>
+    <BreakImages
+      v-if="info"
+      :slug="route.params.video"
+      :title="info.title"
+      :text="info.text"
+    />
+    <div v-else data-testid="break-not-found">
+      <h1>Break video not found</h1>
+      <p>There is no break video called “{{ route.params.video }}”.</p>
+      <RouterLink to="/chapters" class="underline underline-offset-4"
+        >Back to the chapters</RouterLink
+      >
+    </div>
+  </main>
+</template>
+
 <style scoped>
-.w-video {
-  width: calc(100% - 3.75rem);
+.break-video-page {
+  max-width: 64rem;
+  padding: 2rem 1rem;
+  margin: 0 auto;
+}
+.break-video-back {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 0;
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  background: rgb(var(--color-paper));
+}
+.break-video-back:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
 }
 </style>

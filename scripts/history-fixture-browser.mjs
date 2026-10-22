@@ -652,10 +652,10 @@ async function testGallery(state) {
     );
   await step(
     state,
-    "the rotating gallery shows one Figure 6 plate with a dot per plate",
+    "the 15-second gallery shows one Figure 6 plate with a thumbnail per plate",
     async () => {
       const pane = page.locator(".history-fixture .figimg--gallery");
-      await expect(pane.locator(".figimg-dot")).toHaveCount(10);
+      await expect(pane.locator(".figimg-thumbnail")).toHaveCount(10);
       await expect(slideImg(pane)).toHaveCount(1);
       await imageReady(slideImg(pane));
       // This lane runs with motion on, so the clock is running (and may
@@ -712,10 +712,9 @@ async function testGallery(state) {
           source.images[index].src
         );
         await imageReady(slideImg(gallery));
-        await expect(gallery.locator(".figimg-dot").nth(index)).toHaveAttribute(
-          "aria-current",
-          "true"
-        );
+        await expect(
+          gallery.locator(".figimg-thumbnail").nth(index)
+        ).toHaveAttribute("aria-current", "true");
         const after = {
           next: await bounds(next),
           previous: await bounds(previous),

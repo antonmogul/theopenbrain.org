@@ -1,0 +1,117 @@
+{
+  "mode": "Production build of G2, actual reader; read-only live API with migrated animation config overlaid in browser only",
+  "sizes": [
+    {
+      "width": 1440,
+      "fig19": {
+        "shell": {
+          "width": 720,
+          "height": 816,
+          "scrollHeight": 816
+        },
+        "legend": "Galvani’s frog leg electrical stimulation experiment using atmospheric electricity. Source: Galvani, 1791.",
+        "stage": 537.609375,
+        "images": [
+          {
+            "src": "/publicAssets/images/foundations/fig19-02.jpg",
+            "width": 775
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig19-01.jpg",
+            "width": 770
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig19-02.jpg",
+            "width": 775
+          },
+          {
+            "src": "https://i.ytimg.com/vi/ZSCUbYyrHug/hqdefault.jpg",
+            "width": 480
+          }
+        ],
+        "inline": false
+      },
+      "fig21": {
+        "shell": {
+          "width": 720,
+          "height": 816,
+          "scrollHeight": 816
+        },
+        "legend": "Andrew Huxley interviewed by Alan Macfarlane. Video: Alan Macfarlane.",
+        "stage": 547.609375,
+        "images": [
+          {
+            "src": "https://i.ytimg.com/vi/KbA3RLz3xUQ/hqdefault.jpg",
+            "width": 480
+          },
+          {
+            "src": "https://i.ytimg.com/vi/KbA3RLz3xUQ/hqdefault.jpg",
+            "width": 480
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig21-01.jpg",
+            "width": 375
+          }
+        ],
+        "inline": false
+      },
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "fig19": {
+        "shell": {
+          "width": 375,
+          "height": 540,
+          "scrollHeight": 540
+        },
+        "legend": "Galvani’s frog leg electrical stimulation experiment using atmospheric electricity. Source: Galvani, 1791.",
+        "stage": 281.25,
+        "images": [
+          {
+            "src": "/publicAssets/images/foundations/fig19-02.jpg",
+            "width": 775
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig19-01.jpg",
+            "width": 770
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig19-02.jpg",
+            "width": 775
+          },
+          {
+            "src": "https://i.ytimg.com/vi/ZSCUbYyrHug/hqdefault.jpg",
+            "width": 480
+          }
+        ],
+        "inline": true
+      },
+      "fig21": {
+        "shell": {
+          "width": 375,
+          "height": 530,
+          "scrollHeight": 530
+        },
+        "legend": "Andrew Huxley interviewed by Alan Macfarlane. Video: Alan Macfarlane.",
+        "stage": 281.25,
+        "images": [
+          {
+            "src": "https://i.ytimg.com/vi/KbA3RLz3xUQ/hqdefault.jpg",
+            "width": 480
+          },
+          {
+            "src": "https://i.ytimg.com/vi/KbA3RLz3xUQ/hqdefault.jpg",
+            "width": 480
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig21-01.jpg",
+            "width": 375
+          }
+        ],
+        "inline": true
+      },
+      "overflow": false
+    }
+  ]
+}
