@@ -192,3 +192,47 @@ it("pairs authored Explore cards inside boxes and expands only the chosen paragr
   expect(cards[0].find(".xc-panel").attributes("hidden")).toBeDefined();
   expect(cards[1].find(".xc-panel").attributes("hidden")).toBeUndefined();
 });
+
+it("keeps ordinary prose and widget wrappers compatible with reader adjacency CSS", () => {
+  const wrapper = mountSection({
+    id: "ordinary",
+    paragraphs: [
+      paragraph("before"),
+      ...["first", "second"].map((id) => ({
+        id,
+        type: "widget",
+        widget: { kind: "inline", widgetId: "not-ported-yet" },
+      })),
+      { ...paragraph("explore"), explore: { title: "Unpaired" } },
+    ],
+  });
+  expect(wrapper.find("#before").element.parentElement.tagName).toBe("SPAN");
+  const widgets = wrapper.findAll("widget-breakout-stub");
+  expect(widgets).toHaveLength(2);
+  const [first, second] = widgets.map((w) => w.element.parentElement);
+  expect(first.tagName).toBe("SPAN");
+  expect(second.tagName).toBe("SPAN");
+  // StartEndIcon is stubbed here; actual CSS adjacency is checked in the browser.
+  expect(wrapper.find(".xc").element.parentElement.tagName).toBe("SPAN");
+  expect(wrapper.find(".section-paragraphs--paired").exists()).toBe(false);
+});
+
+it("limits block wrappers to the intended Explore pair inside a box", () => {
+  const wrapper = mountSection({
+    id: "mixed-box",
+    kind: "box",
+    paragraphs: [
+      ...["one", "two"].map((id) => ({
+        ...paragraph(id),
+        explore: { title: id },
+      })),
+      paragraph("ordinary"),
+      { ...paragraph("odd"), explore: { title: "Unpaired" } },
+    ],
+  });
+  expect(
+    wrapper.findAll(".explore-pair-item").map((w) => w.element.tagName)
+  ).toEqual(["DIV", "DIV"]);
+  expect(wrapper.find("#ordinary").element.parentElement.tagName).toBe("SPAN");
+  expect(wrapper.findAll(".xc")[2].element.parentElement.tagName).toBe("SPAN");
+});

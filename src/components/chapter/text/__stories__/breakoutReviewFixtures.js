@@ -1,5 +1,5 @@
 import { transformParagraph } from "@/composables/chapterTransform.mjs";
-import history from "@/views/__stories__/historyFullReaderData.json";
+import history from "@/stories/historyFullReaderData.json";
 
 // Review composition matches the existing 20261021010000 migration, while
 // preserving the committed prose and artwork. No network or authoring writes.

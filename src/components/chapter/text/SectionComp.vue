@@ -95,7 +95,11 @@
     >
       <template v-for="paragraph in section['paragraphs']" :key="paragraph.id">
         <StartEndIcon :paragraph="paragraph" art="start" />
-        <div
+        <!-- Preserve ordinary paragraph spans: consecutive inline widgets use
+             their sibling structure to remove touching margins. Only paired
+             Explore cards need block wrappers as grid items. -->
+        <component
+          :is="pairedExploreIds.has(paragraph.id) ? 'div' : 'span'"
           :id="
             paragraph?.animation &&
             'triggerAnimation' + paragraph?.animation?.name
@@ -180,7 +184,7 @@
               :animation-id="paragraph.animation.id"
             />
           </component>
-        </div>
+        </component>
         <!-- section Break -->
         <BreakImages
           :key="'breakVideo ' + paragraph.id"

@@ -94,3 +94,41 @@ export const ComparativePair = {
   args: { section: comparativePair, label: "B" },
   render: pairedFrame,
 };
+
+/** Real reader CSS and widget shells: adjacent bands touch, prose splits runs. */
+export const ConsecutiveWidgets = {
+  render: pairedFrame,
+  args: {
+    section: {
+      id: "widget-seams",
+      title: "Consecutive inline widgets",
+      paragraphs: [
+        { id: "before-widgets", text: "Prose before the continuous run." },
+        ...["first", "second"].map((id) => ({
+          id: `widget-${id}`,
+          type: "widget",
+          widget: {
+            kind: "inline",
+            widgetId: "not-ported-yet",
+            placementId: `seam-${id}`,
+            title: `Widget ${id}`,
+          },
+        })),
+        {
+          id: "between-widgets",
+          text: "Prose must retain its breathing room.",
+        },
+        {
+          id: "widget-separated",
+          type: "widget",
+          widget: {
+            kind: "inline",
+            widgetId: "not-ported-yet",
+            placementId: "seam-separated",
+            title: "Widget after prose",
+          },
+        },
+      ],
+    },
+  },
+};

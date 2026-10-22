@@ -209,6 +209,14 @@ function toggle() {
 .xc-panel-inner {
   padding: 1.25rem 1.25rem 0.25rem;
 }
+/* Inline figure shells normally bleed to the mobile viewport. A disclosure
+   is a narrower reading container: keep its complete artwork, legend and
+   expand control inside the panel rather than clipping that viewport bleed. */
+.xc-panel-inner :deep(.fig-shell--inline) {
+  width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+}
 .xc--open .xc-panel-inner {
   animation: xc-in 0.3s ease-out;
 }

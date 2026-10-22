@@ -4,7 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { chromium, firefox, expect } from "@playwright/test";
 
 const base = process.env.G6_STORYBOOK_URL || "http://localhost:6106";
-assert.ok(["http://localhost:6106", "http://127.0.0.1:6106"].includes(base));
+assert.ok(/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(base));
 const output = process.env.G6_OUTPUT || "/tmp/openbrain-g6/evidence";
 await mkdir(output, { recursive: true });
 const cases = [];
@@ -62,6 +62,112 @@ async function noOverflow() {
   );
 }
 try {
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await story("chapter-text-explorecard--inline-figure");
+    const panel = page.locator(".xc-panel-inner");
+    await expect(panel.locator(".figimg-img")).toBeVisible();
+    await expect
+      .poll(() =>
+        panel
+          .locator(".figimg-img")
+          .evaluate((img) => img.complete && img.naturalWidth > 0)
+      )
+      .toBe(true);
+    const geometry = await panel.evaluate((container) => {
+      const panel = container.getBoundingClientRect().toJSON();
+      const elements = [
+        ...container.querySelectorAll(
+          ".fig-shell, .fig-toolbar, .fig-legend, .figimg-img, .fig-fs-btn"
+        ),
+      ].map((el) => ({
+        className: el.className,
+        rect: el.getBoundingClientRect().toJSON(),
+        clientWidth: el.clientWidth,
+        scrollWidth: el.scrollWidth,
+      }));
+      const img = container.querySelector(".figimg-img");
+      return {
+        panel,
+        elements,
+        imageFit: getComputedStyle(img).objectFit,
+        legend: container.querySelector(".fig-legend").textContent.trim(),
+      };
+    });
+    assert.equal(geometry.elements.length, 5);
+    for (const element of geometry.elements) {
+      assert.ok(
+        element.rect.left >= geometry.panel.left - 1 &&
+          element.rect.right <= geometry.panel.right + 1,
+        `${element.className} stays horizontally inside the disclosure`
+      );
+      assert.ok(
+        element.rect.top >= geometry.panel.top - 1 &&
+          element.rect.bottom <= geometry.panel.bottom + 1,
+        `${element.className} stays vertically inside the disclosure`
+      );
+      assert.ok(
+        element.scrollWidth <= element.clientWidth + 1,
+        `${element.className} has no clipped horizontal content`
+      );
+    }
+    assert.equal(geometry.imageFit, "contain");
+    assert.ok(
+      geometry.legend.startsWith("Galen’s physiology") &&
+        geometry.legend.endsWith("Source: Wellcome Collection.")
+    );
+    await noOverflow();
+    await screenshot(`nested-figure-${width}`);
+    await panel.getByRole("button", { name: "Expand to full screen" }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    cases.push({
+      name: "nested-figure",
+      width,
+      geometry,
+      expandAndEscape: true,
+    });
+  }
+  for (const width of [1440, 1024, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await story("chapter-text-sectioncomp--consecutive-widgets");
+    const widgets = page.locator("#widget-seams .wb--inline");
+    await expect(widgets).toHaveCount(3);
+    const seams = await widgets.evaluateAll((elements) =>
+      elements.map((el) => ({
+        top: parseFloat(getComputedStyle(el).marginTop),
+        bottom: parseFloat(getComputedStyle(el).marginBottom),
+        rect: el.getBoundingClientRect().toJSON(),
+      }))
+    );
+    assert.equal(
+      seams[0].bottom,
+      0,
+      "first widget has no touching bottom margin"
+    );
+    assert.equal(seams[1].top, 0, "second widget has no touching top margin");
+    assert.ok(
+      Math.abs(seams[1].rect.top - seams[0].rect.bottom) < 1,
+      "adjacent rendered widget bands touch"
+    );
+    assert.ok(seams[0].top > 0, "run keeps its leading prose spacing");
+    assert.ok(seams[1].bottom > 0, "run keeps its trailing prose spacing");
+    assert.ok(
+      seams[2].top > 0 && seams[2].bottom > 0,
+      "prose-separated widget retains both margins"
+    );
+    assert.ok(
+      seams[2].rect.top > seams[1].rect.bottom,
+      "intervening prose separates widget runs"
+    );
+    await expect(page.locator("#widget-seams .explore-pair-item")).toHaveCount(
+      0
+    );
+    await noOverflow();
+    await screenshot(`widget-seams-${width}`);
+    cases.push({ name: "widget-seams", width, seams });
+  }
   for (const width of [1440, 1024, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const name of ["hippocrates", "comparative"]) {

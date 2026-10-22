@@ -1,0 +1,629 @@
+[
+  {
+    "width": 1440,
+    "box": "86ea3bec-48c6-4b51-a2d3-00ce0b063052",
+    "rects": [
+      {
+        "x": 144,
+        "y": 346.75,
+        "width": 564,
+        "height": 476.8125,
+        "top": 346.75,
+        "right": 708,
+        "bottom": 823.5625,
+        "left": 144
+      },
+      {
+        "x": 732,
+        "y": 346.75,
+        "width": 564,
+        "height": 492.203125,
+        "top": 346.75,
+        "right": 1296,
+        "bottom": 838.953125,
+        "left": 732
+      }
+    ],
+    "bothOpen": true,
+    "figures": []
+  },
+  {
+    "width": 1440,
+    "box": "5a5989ca-6489-4c1b-b6b4-b10acb4f3e32",
+    "rects": [
+      {
+        "x": 144,
+        "y": 354.4375,
+        "width": 564,
+        "height": 476.8125,
+        "top": 354.4375,
+        "right": 708,
+        "bottom": 831.25,
+        "left": 144
+      },
+      {
+        "x": 732,
+        "y": 354.4375,
+        "width": 564,
+        "height": 476.8125,
+        "top": 354.4375,
+        "right": 1296,
+        "bottom": 831.25,
+        "left": 732
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 148,
+          "y": -1711.484375,
+          "width": 559,
+          "height": 2740.375,
+          "top": -1711.484375,
+          "right": 707,
+          "bottom": 1028.890625,
+          "left": 148
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 172,
+              "y": 5.515625,
+              "width": 511,
+              "height": 989.375,
+              "top": 5.515625,
+              "right": 683,
+              "bottom": 994.890625,
+              "left": 172
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 172,
+              "y": 57.515625,
+              "width": 471,
+              "height": 75.375,
+              "top": 57.515625,
+              "right": 643,
+              "bottom": 132.890625,
+              "left": 172
+            },
+            "clientWidth": 471,
+            "scrollWidth": 471
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 655,
+              "y": 19.515625,
+              "width": 28,
+              "height": 28,
+              "top": 19.515625,
+              "right": 683,
+              "bottom": 47.515625,
+              "left": 655
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 172,
+              "y": 144.890625,
+              "width": 511,
+              "height": 850,
+              "top": 144.890625,
+              "right": 683,
+              "bottom": 994.890625,
+              "left": 172
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      {
+        "panel": {
+          "x": 736,
+          "y": -1408.484375,
+          "width": 559,
+          "height": 2442.53125,
+          "top": -1408.484375,
+          "right": 1295,
+          "bottom": 1034.046875,
+          "left": 736
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 760,
+              "y": 29.515625,
+              "width": 511,
+              "height": 970.53125,
+              "top": 29.515625,
+              "right": 1271,
+              "bottom": 1000.046875,
+              "left": 760
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 760,
+              "y": 81.515625,
+              "width": 471,
+              "height": 56.53125,
+              "top": 81.515625,
+              "right": 1231,
+              "bottom": 138.046875,
+              "left": 760
+            },
+            "clientWidth": 471,
+            "scrollWidth": 471
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 1243,
+              "y": 43.515625,
+              "width": 28,
+              "height": 28,
+              "top": 43.515625,
+              "right": 1271,
+              "bottom": 71.515625,
+              "left": 1243
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 760,
+              "y": 150.046875,
+              "width": 511,
+              "height": 850,
+              "top": 150.046875,
+              "right": 1271,
+              "bottom": 1000.046875,
+              "left": 760
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Top-down views of a human and chimpanzee brain. On the right side a transverse section is shown, revealing the ventricles. The hippocampus minor is indicated in both brains with an ‘x.’ Source: Huxley, 1863."
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "box": "86ea3bec-48c6-4b51-a2d3-00ce0b063052",
+    "rects": [
+      {
+        "x": 35,
+        "y": 117.609375,
+        "width": 320,
+        "height": 484.3125,
+        "top": 117.609375,
+        "right": 355,
+        "bottom": 601.921875,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 625.921875,
+        "width": 320,
+        "height": 500.703125,
+        "top": 625.921875,
+        "right": 355,
+        "bottom": 1126.625,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": []
+  },
+  {
+    "width": 390,
+    "box": "5a5989ca-6489-4c1b-b6b4-b10acb4f3e32",
+    "rects": [
+      {
+        "x": 35,
+        "y": 131.9375,
+        "width": 320,
+        "height": 500.703125,
+        "top": 131.9375,
+        "right": 355,
+        "bottom": 632.640625,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 656.640625,
+        "width": 320,
+        "height": 485.3125,
+        "top": 656.640625,
+        "right": 355,
+        "bottom": 1141.953125,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 39,
+          "y": -2249.46875,
+          "width": 315,
+          "height": 3125.96875,
+          "top": -2249.46875,
+          "right": 354,
+          "bottom": 876.5,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 59.75,
+              "width": 275,
+              "height": 782.75,
+              "top": 59.75,
+              "right": 334,
+              "bottom": 842.5,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 106.09375,
+              "width": 235,
+              "height": 150.75,
+              "top": 106.09375,
+              "right": 294,
+              "bottom": 256.84375,
+              "left": 59
+            },
+            "clientWidth": 235,
+            "scrollWidth": 235
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 306,
+              "y": 73.75,
+              "width": 28,
+              "height": 28,
+              "top": 73.75,
+              "right": 334,
+              "bottom": 101.75,
+              "left": 306
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 268.84375,
+              "width": 275,
+              "height": 573.65625,
+              "top": 268.84375,
+              "right": 334,
+              "bottom": 842.5,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      {
+        "panel": {
+          "x": 39,
+          "y": -1794.34375,
+          "width": 315,
+          "height": 2709.5,
+          "top": -1794.34375,
+          "right": 354,
+          "bottom": 915.15625,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 119.71875,
+              "width": 275,
+              "height": 761.4375,
+              "top": 119.71875,
+              "right": 334,
+              "bottom": 881.15625,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 192.40625,
+              "width": 235,
+              "height": 113.0625,
+              "top": 192.40625,
+              "right": 294,
+              "bottom": 305.46875,
+              "left": 59
+            },
+            "clientWidth": 235,
+            "scrollWidth": 235
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 306,
+              "y": 133.71875,
+              "width": 28,
+              "height": 28,
+              "top": 133.71875,
+              "right": 334,
+              "bottom": 161.71875,
+              "left": 306
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 317.46875,
+              "width": 275,
+              "height": 563.6875,
+              "top": 317.46875,
+              "right": 334,
+              "bottom": 881.15625,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Top-down views of a human and chimpanzee brain. On the right side a transverse section is shown, revealing the ventricles. The hippocampus minor is indicated in both brains with an ‘x.’ Source: Huxley, 1863."
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "box": "86ea3bec-48c6-4b51-a2d3-00ce0b063052",
+    "rects": [
+      {
+        "x": 35,
+        "y": 82.984375,
+        "width": 250,
+        "height": 522.703125,
+        "top": 82.984375,
+        "right": 285,
+        "bottom": 605.6875,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 629.6875,
+        "width": 250,
+        "height": 531.484375,
+        "top": 629.6875,
+        "right": 285,
+        "bottom": 1161.171875,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": []
+  },
+  {
+    "width": 320,
+    "box": "5a5989ca-6489-4c1b-b6b4-b10acb4f3e32",
+    "rects": [
+      {
+        "x": 35,
+        "y": 127.984375,
+        "width": 250,
+        "height": 500.703125,
+        "top": 127.984375,
+        "right": 285,
+        "bottom": 628.6875,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 652.6875,
+        "width": 250,
+        "height": 522.703125,
+        "top": 652.6875,
+        "right": 285,
+        "bottom": 1175.390625,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 39,
+          "y": -3151.9375,
+          "width": 245,
+          "height": 3924.65625,
+          "top": -3151.9375,
+          "right": 284,
+          "bottom": 772.71875,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 0.28125,
+              "width": 205,
+              "height": 738.4375,
+              "top": 0.28125,
+              "right": 264,
+              "bottom": 738.71875,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 72.96875,
+              "width": 165,
+              "height": 226.125,
+              "top": 72.96875,
+              "right": 224,
+              "bottom": 299.09375,
+              "left": 59
+            },
+            "clientWidth": 165,
+            "scrollWidth": 165
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 236,
+              "y": 14.28125,
+              "width": 28,
+              "height": 28,
+              "top": 14.28125,
+              "right": 264,
+              "bottom": 42.28125,
+              "left": 236
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 311.09375,
+              "width": 205,
+              "height": 427.625,
+              "top": 311.09375,
+              "right": 264,
+              "bottom": 738.71875,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      {
+        "panel": {
+          "x": 39,
+          "y": -2476.125,
+          "width": 245,
+          "height": 3360.171875,
+          "top": -2476.125,
+          "right": 284,
+          "bottom": 884.046875,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 149.21875,
+              "width": 205,
+              "height": 700.828125,
+              "top": 149.21875,
+              "right": 264,
+              "bottom": 850.046875,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 248.25,
+              "width": 165,
+              "height": 169.59375,
+              "top": 248.25,
+              "right": 224,
+              "bottom": 417.84375,
+              "left": 59
+            },
+            "clientWidth": 165,
+            "scrollWidth": 165
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 236,
+              "y": 163.21875,
+              "width": 28,
+              "height": 28,
+              "top": 163.21875,
+              "right": 264,
+              "bottom": 191.21875,
+              "left": 236
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 429.84375,
+              "width": 205,
+              "height": 420.203125,
+              "top": 429.84375,
+              "right": 264,
+              "bottom": 850.046875,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Top-down views of a human and chimpanzee brain. On the right side a transverse section is shown, revealing the ventricles. The hippocampus minor is indicated in both brains with an ‘x.’ Source: Huxley, 1863."
+      }
+    ]
+  }
+]

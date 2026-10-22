@@ -1,7 +1,7 @@
 import BreakoutRail from "../BreakoutRail.vue";
 import BreakoutBox from "../BreakoutBox.vue";
 import { contentBlocksToHTML } from "@/composables/chapterTransform.mjs";
-import history from "@/views/__stories__/historyFullReaderData.json";
+import history from "@/stories/historyFullReaderData.json";
 
 // Reuse the complete committed source, including citations and poem lines.
 // Chunk boundaries are a review choice, never a write to chapter content.

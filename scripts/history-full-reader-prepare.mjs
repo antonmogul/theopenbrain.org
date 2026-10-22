@@ -11,7 +11,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 const fixture = JSON.parse(
-  await readFile("src/views/__stories__/historyFullReaderData.json", "utf8")
+  await readFile("src/stories/historyFullReaderData.json", "utf8")
 );
 const assets = new Map();
 async function copy(relative) {
