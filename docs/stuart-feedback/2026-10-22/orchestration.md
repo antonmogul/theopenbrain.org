@@ -18,3 +18,19 @@ Run: `run_1ea7be7d10b3`. Implementation workers verified as `gpt-6-astra`, high 
 | G6 independent PR review | `task_4109d02c7e37` | ["task_81b9d6c05580"] |
 
 Independent reviewers start only after the relevant implementation PR/head is available. They do not edit source. Findings go back to an Astra fix owner and a fresh review of the corrected head. No merge/deploy/email is authorized by this execution phase.
+
+## Reserved migration versions
+
+- G2 figures/media: `20261022010000`.
+- G4 Penfield title: `20261022020000`.
+- G5 Loewi upload: `20261022030000`.
+
+These are reservations for committed, unapplied migrations. Do not confuse file creation with database execution.
+
+## Review routing
+
+- G3 PR144 at `fa232f4c`: independent review requested changes for lost native-control keyboard focus and clipped mobile detail text in the real widget host. Review settled; reviewer released. Astra fix task `task_0b583db39900`, dispatch `ctx_d50c548fd7d7`, in the same G3 checkout; requires exact-new-head re-review.
+- G4 PR145 at `7bedea98`: independent review dispatch `ctx_b2f21023e70f`; implementation worker settled and released.
+- G5 PR146 at `e63a6ba6`: independent review dispatch `ctx_d43a9fd8c9e8`; implementation worker settled and released.
+
+Review reports currently at `/tmp/openbrain-G3-independent-review.md` and the corresponding G4/G5 paths when those settle. Copy final reports into these coordinator notes for durable retention before final handoff.
