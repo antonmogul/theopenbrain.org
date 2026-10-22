@@ -1,6 +1,6 @@
 # G4 — Penfield maps and labels
 
-R09 and R10 implemented on main baseline `3f1bcd8171632503ac5bea8c822ea67d3c889940` (PR143). PR link will be added after creation; the coordinator receives the exact final head separately for independent review. Not merged, deployed or applied to Supabase.
+R09 and R10 implemented on main baseline `3f1bcd8171632503ac5bea8c822ea67d3c889940` (PR143). [PR #145](https://github.com/antonmogul/theopenbrain.org/pull/145), implementation commit `b0fc2242742fb8ad1ece6fa32626f3811128aff5`; the coordinator receives the final head after this documentation follow-up for independent review. Not merged, deployed or applied to Supabase.
 
 ## Research: code versus deployment
 
@@ -16,6 +16,16 @@ R09 and R10 implemented on main baseline `3f1bcd8171632503ac5bea8c822ea67d3c8899
 - **Original scan** removes the entire presentation layer. **View original scan** opens the original file. Neither changes the point list, notes or selected point. Case changes restore the default presentation.
 - All seven patients, 47 transcript points, 45 mapped positions and 82 events remain intact. G.P. 16 and G.E. 4 retain their unconfirmed-location disclosures and have no invented map buttons; G.P.'s original `17d` label remains black and unaltered.
 - Kept PR143's fit calculation, immediate case switches and reversible spatial storyboard. Fixed a browser-observed phone hit-test issue: glyph overflow from S. Be. 25 intercepted point 24. The label span now ignores pointer events so its coordinate-positioned native button owns the hit target, consistent with [MDN pointer-events](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/pointer-events). SVG source-pixel alignment follows the [viewBox coordinate mapping](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/viewBox).
+
+## Files changed
+
+- `src/views/CaseCabinetView.vue`: visible labels, reversible presentation layer, original-scan access and title.
+- `src/helper/penfieldPresentation.js`: shared title and source-pixel mask geometry.
+- `src/widgets/placements.js`, `src/widgets/catalog.js`: case-cabinet title only.
+- `src/views/__tests__/CaseCabinetView.test.js`, `src/__tests__/penfieldPresentation.test.js`, `src/__tests__/penfieldTitle.sql.test.js`: source, component and migration coverage.
+- `scripts/penfield-browser.mjs`: focused read-only browser acceptance.
+- `supabase/migrations/20261022020000_penfield_experience_title.sql`: unapplied title update.
+- This report, `G4-research-plan.md` and `G4-evidence/`: research and browser receipts.
 
 ## Validation
 
