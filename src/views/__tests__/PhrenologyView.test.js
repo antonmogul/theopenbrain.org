@@ -48,6 +48,54 @@ afterEach(() => {
 });
 
 describe("source-backed embedded skull", () => {
+  it("moves the picker to a loaded view, retains a valid view and leaves Weight unmapped", async () => {
+    const w = await skull();
+    await w.find("select").setValue("12");
+    await flushPromises();
+    expect(w.find(".tab--on").text()).toBe("Lateral");
+    expect(w.findAll(".region--on")).toHaveLength(1);
+    expect(w.find(".card__badge").text()).toContain("12 ·");
+    expect(w.find("select").attributes("disabled")).toBeUndefined();
+    await w.findAll(".tab")[2].trigger("click");
+    await flushPromises();
+    await w.find("select").setValue("12");
+    await flushPromises();
+    expect(w.find(".tab--on").text()).toBe("Posterior");
+    expect(w.findAll(".region--on")).toHaveLength(2);
+    await w.find("select").setValue("21");
+    await flushPromises();
+    expect(w.find(".tab--on").text()).toBe("Anterior");
+    expect(w.findAll(".region--on").length).toBeGreaterThan(0);
+    await w.find("select").setValue("22");
+    await flushPromises();
+    expect(w.find(".tab--on").text()).toBe("Anterior");
+    expect(w.findAll(".region--on")).toHaveLength(0);
+    expect(w.find(".card__editorial").text()).toBe(
+      "Region not labelled by Spurzheim in an image plate nor on the manuscript's frontispiece. No skull position is assigned here."
+    );
+  });
+
+  it("renders the requested paragraph joins with all source references", async () => {
+    const w = await skull();
+    await w.find("select").setValue("12");
+    await flushPromises();
+    expect(w.findAll(".card__text")).toHaveLength(2);
+    expect(w.find('[data-source-blocks="583 584"]').text()).toContain(
+      "One day in a public place"
+    );
+    await w.find("select").setValue("24");
+    await flushPromises();
+    expect(w.findAll(".card__text")).toHaveLength(3);
+    expect(w.find('[data-source-blocks="788 789 790"]').text()).toContain(
+      "it seems to me that it is the faculty of space in general."
+    );
+    for (const n of [6, 11]) {
+      await w.find("select").setValue(String(n));
+      await flushPromises();
+      expect(w.findAll(".card__editorial")).toHaveLength(0);
+    }
+  });
+
   it("labels every anterior region and opens the organ's source quotation", async () => {
     const w = await skull();
     expect(w.findAll(".region-label text")).toHaveLength(27);

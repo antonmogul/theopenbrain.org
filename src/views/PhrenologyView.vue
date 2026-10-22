@@ -39,6 +39,7 @@ import {
 } from "@/mocks/phrenology";
 import labelAnchors from "@/data/history/phrenologyLabelAnchors.json";
 import { reducedMotionK } from "@/helper/motion";
+import { presentFaculty } from "@/helper/phrenologyContent";
 import {
   MAP_H,
   MAP_SRC,
@@ -50,8 +51,8 @@ import {
   regionShapes,
 } from "@/helper/phrenologyMaps";
 
-// Narrow viewports get the detail card as a bottom sheet (media query below),
-// so the slide animation runs on the y axis and the stage doesn't cede ground.
+// Narrow viewports reserve a skull row above the scrolling detail card.
+// Reading an organ must never cover the region the reader just selected.
 
 /* ── Motion recipe ──────────────────────────────────────────────────────────
  * All feel-tuning lives here. Durations in seconds, angles in degrees.
@@ -248,6 +249,21 @@ async function switchView(idx) {
     }
   );
   addRevealTo(inTl, "-=0.25");
+  await inTl.then();
+}
+
+/** Keep a valid current view; otherwise use the first loaded map that actually
+ * contains the organ. Weight (22) remains text-only in the current view. */
+async function selectFromPicker(n) {
+  if (animating.value) return;
+  hoverN.value = null;
+  if (!activeMap.value?.regions.some((r) => r.n === n)) {
+    const idx = views.value.findIndex((v) =>
+      mapsByView.value[v.id]?.regions.some((r) => r.n === n)
+    );
+    if (idx !== -1) await switchView(idx);
+  }
+  if (!disposed) await selectRegion({ n });
 }
 
 /* Detail panels never transform or resize the skull stage. */
@@ -255,7 +271,7 @@ async function selectRegion(shape) {
   if (animating.value || !facultyInfo.has(shape.n)) return;
   panelTween?.kill();
   if (!activeRegion.value) previousRegionElement = document.activeElement;
-  activeRegion.value = facultyInfo.get(shape.n);
+  activeRegion.value = presentFaculty(facultyInfo.get(shape.n));
   await nextTick();
   if (disposed || !panelEl.value) return;
   panelEl.value.scrollTop = 0;
@@ -291,6 +307,7 @@ function onKeydown(e) {
           :key="v.id"
           class="tab"
           :class="{ 'tab--on': i === activeIdx }"
+          :disabled="animating"
           @click="switchView(i)"
         >
           {{ v.label }}
@@ -300,7 +317,8 @@ function onKeydown(e) {
         >Browse an organ
         <select
           :value="activeRegion?.n || ''"
-          @change="selectRegion({ n: Number($event.target.value) })"
+          :disabled="animating || !activeMap"
+          @change="selectFromPicker(Number($event.target.value))"
         >
           <option value="" disabled>Select a numbered organ</option>
           <option
@@ -407,6 +425,7 @@ function onKeydown(e) {
           :key="quote.sourceBlock"
           class="card__text"
           :data-source-block="quote.sourceBlock"
+          :data-source-blocks="quote.sourceBlocks.join(' ')"
         >
           {{ quote.text }}
         </p>
@@ -435,7 +454,7 @@ function onKeydown(e) {
      short screen what is left of one once the chrome, the chapter band's
      header and footer and the citation (about 25rem together) have theirs,
      so the band stays one screen. */
-  --skull-h: min(56vh, calc(100vh - 25rem));
+  --skull-h: max(12rem, min(56vh, calc(100vh - 25rem)));
   position: relative;
   /* A full screen on its own route; a host can set less (WidgetBreakout). */
   min-height: var(--widget-min-h, 100vh);
@@ -565,8 +584,15 @@ function onKeydown(e) {
   stroke: var(--violet);
   stroke-width: 3;
 }
-[data-reduce-motion="1"] .region path {
+:global([data-reduce-motion="1"]) .region path,
+:global([data-reduce-motion="1"]) .tab {
   transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .region path,
+  .tab {
+    transition: none;
+  }
 }
 
 /* ── detail card ── */
@@ -582,7 +608,7 @@ function onKeydown(e) {
   background: #f2f0ec;
   color: #2b2a2e;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
 }
 .card-instruction {
   padding: 2rem;
@@ -602,7 +628,7 @@ function onKeydown(e) {
   padding: 0.5rem;
   color: #222;
   background: #f8f6f1;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-control);
 }
 .region-label {
   pointer-events: none;
@@ -614,7 +640,7 @@ function onKeydown(e) {
 }
 .region-label text {
   fill: #24202a;
-  font: 19px sans-serif;
+  font: 19px var(--font-ui, sans-serif);
   font-weight: 600;
 }
 .card__editorial {
@@ -627,6 +653,8 @@ function onKeydown(e) {
   position: absolute;
   top: 0.9rem;
   right: 0.9rem;
+  width: 2rem;
+  height: 2rem;
   border: none;
   background: transparent;
   font-size: 0.9rem;
@@ -639,6 +667,7 @@ function onKeydown(e) {
 .card__badge {
   display: inline-flex;
   align-items: center;
+  max-width: calc(100% - 2rem);
   padding: 0.35rem 0.9rem;
   border-radius: var(--radius-control);
   background: var(--violet);
@@ -665,35 +694,25 @@ function onKeydown(e) {
   opacity: 0.4;
 }
 
-/* ── narrow viewports: detail card becomes a bottom sheet ── */
+/* ── narrow viewports: keep artwork and details visible together ── */
 @media (max-width: 760px) {
   .phreno__body {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: start;
     padding: 1rem;
     min-height: var(--widget-body-min-h, 65vh);
   }
   .stage {
-    width: min(460px, 90vw);
+    width: min(100%, calc(38vh * 450 / 435));
   }
   .card-instruction {
-    position: absolute;
-    bottom: 0;
     margin: 0;
     padding: 1rem;
     font-size: 0.75rem;
   }
   .card {
-    position: absolute;
-    z-index: 2;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: auto;
-    /* Within the widget, which is shorter than the screen inline. */
-    max-height: min(55vh, 100%);
-    border-radius: var(--radius-control);
-    box-shadow: 0 -12px 40px rgb(0 0 0 / 0.45);
+    max-height: 32vh;
     padding: 1.5rem 1.5rem 2rem;
   }
 }
