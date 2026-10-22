@@ -2,7 +2,38 @@
 
 [PR #144](https://github.com/antonmogul/theopenbrain.org/pull/144), targeting `main` from `antonmogul/Phrenology-followups`.
 
-Validated implementation and browser-evidence commit: `259113d4d2ee6544f2564ae2501fccfa6610484a`. This report is a subsequent documentation-only commit; the exact final PR head is supplied in the orchestration handoff for independent review.
+Original implementation and browser-evidence commit: `259113d4d2ee6544f2564ae2501fccfa6610484a`; independently reviewed head: `fa232f4cb02f0281eb69fea8403c1a64f4195e4b`. The follow-up below supersedes the original focus and embedded-layout acceptance claims. The exact final PR head is supplied in the settled orchestration handoff and its companion report, because a committed report cannot contain its own commit hash.
+
+## Independent review findings addressed
+
+Validated follow-up implementation and evidence commit: `3775ad5d727fd0cb963296757c09d62a8b21af50`. The following report update is documentation-only.
+
+Both P2 findings reproduced on the reviewed production and Storybook builds before editing. Organ 12 from anterior left `document.activeElement` on `BODY`; Escape left the card open. At 390 × 844 in the actual FullScreenBand, the final paragraph bottom was y967.39 while the widget clipped at y934, despite maximum card scroll.
+
+- **Picker/tab focus:** `switchView` captures the initiating native control, waits for GSAP completion and Vue's reenable render, and restores that control only while focus remains on the body. Independently moving focus to another control is respected. The browser regression focuses once before selecting Organ 12, waits for the automatic switch, then presses Escape without any intervening refocus. Keyboard-activated view tabs are checked independently.
+- **Embedded card/citation visibility:** mobile grid tracks share the host height and retain minimum artwork/reading space; the scrolling card is constrained to its allocated row. Header and citation do not shrink. A body floor and local widget scrolling preserve reachable artwork, text and citation in short landscape hosts. FullBleed and WidgetBreakout are unchanged.
+- **Integration evidence:** `scripts/phrenology-host-browser.mjs` covers the standalone route, original real FullScreenBand, and a new G3-owned responsive story using the real WidgetBreakout/FullBleed components. The original story's desktop prose wrapper still limits mobile horizontal positioning; the responsive story verifies full final-line width without modifying shared host code. Tests measure the final rendered text line against every vertical clipping ancestor and viewport at maximum card scroll, check actual citation reachability, and verify effective motion preferences. Screenshot capture occurs with the final line visible.
+
+Additional changed files: `src/views/__stories__/PhrenologyView.stories.js` (responsive integration story), `src/views/__tests__/PhrenologyView.test.js` (relax an obsolete exact CSS-string assertion while retaining the host-variable contract), the new browser script, and G3 documentation/evidence. Scientific assets, source coordinates, maps, appendix text, security, dependencies and shared hosts remain unchanged.
+
+### Follow-up validation
+
+- **27/27 Chromium host/viewport/motion cases passed:** standalone + original FullScreenBand + responsive real-host story, each at 1440 × 1000, 390 × 844 and 844 × 390, with normal, OS reduced and app reduced motion. Picker and tab focus, Escape without refocus, no focus stealing, complete final-line visibility at maximum card scroll, artwork/card separation and reachable citation all pass; no uncaught browser errors.
+- **21/21 selected-artwork cases passed again** on the final production build, including all seven reported regions, source-path counts/anchor containment, pointer/touch, deterministic switching, content repairs and motion preferences.
+- **Measured phone repair:** in the real 390 × 844 FullScreenBand, the card is now 200.03 px high. After scrolling to its end, the last rendered line ends at y599.95 inside the visible clipping edge at y634.61. The responsive real-host fixture also shows the complete line horizontally (x40–229.53) and vertically (bottom y609.95 inside y644.61). All 27 cases prove the complete citation can be scrolled into view.
+- **Production and Storybook builds passed.** Full repository format and lint passed (zero errors, six pre-existing unrelated lint warnings); changed-file lint and diff whitespace checks passed. The original maps/scans, appendix JSON and anchor JSON compare byte-for-byte unchanged against the PR base.
+- **Unit suite:** an initial full pass had 2,439 passing tests and 56 skips. A later run hit one unrelated CaseCabinetView GSAP timing timeout; its focused rerun plus Phrenology passed 27/27. The final full-suite rerun after browser QA passed **2,439 tests across 212 files**, with 56 tests in 16 files skipped (including the unavailable SQL harness); log: `/tmp/openbrain-g3fix-final-tests.log`.
+
+Production and Storybook builds use unique `/tmp/openbrain-g3fix-*` caches and outputs, served on loopback ports 6123/6124. Browser requests permit GET/HEAD only. Final measurements are in [host-regression.json](G3-evidence/review-fixes/host-regression.json), with [desktop](G3-evidence/review-fixes/responsive-host-desktop-normal-final-line.png), [portrait](G3-evidence/review-fixes/responsive-host-mobile-normal-final-line.png), [landscape](G3-evidence/review-fixes/responsive-host-landscape-normal-final-line.png) and [original reviewer fixture](G3-evidence/review-fixes/embedded-mobile-normal-final-line.png) screenshots; full screenshots/build/test logs remain under `/tmp/openbrain-g3fix-*`.
+
+Reproduce with a production preview and built Storybook:
+
+```sh
+BASE_URL=http://127.0.0.1:6123 STORY_URL=http://127.0.0.1:6124 OUT_DIR=/tmp/openbrain-g3fix-evidence node scripts/phrenology-host-browser.mjs
+BASE_URL=http://127.0.0.1:6123 OUT_DIR=/tmp/openbrain-g3fix-evidence/artwork node scripts/phrenology-feedback-browser.mjs
+```
+
+No migration, production write, merge, deployment, credential change or external message is required or performed. Exact-new-head independent review, CI, merge/deployment and authenticated live acceptance remain separate coordinator-owned gates.
 
 ## Findings and delivery
 
