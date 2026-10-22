@@ -1,6 +1,33 @@
 # G6 — Breakout pairs and review proposals
 
-[PR #147](https://github.com/antonmogul/theopenbrain.org/pull/147) targets `main`. Implementation/evidence commit: `27f9848eb360449a0d1b62da03e93c6065773e49`; this report is a subsequent documentation-only commit. The worker handoff pins the final PR head for independent review. No self-approval, merge, deployment or production write.
+[PR #147](https://github.com/antonmogul/theopenbrain.org/pull/147) targets `main`. Corrected source/evidence commit: `9e4af1de3edf0cf968c55fc9360b01fee9b99035`; this report and research-plan update are a subsequent documentation-only commit. The worker handoff pins the final PR head for a new independent review. No self-approval, merge, deployment or production write.
+
+## Independent-review fixes and current verification
+
+The independent review of `d3fcf1295a6c6e5575bbc1045af9caffb9bf44c6` requested changes. Both findings are addressed in the corrected source SHA above, along with the coordinator's subsequent bounded mobile artwork request:
+
+- **P1 dependency architecture:** moved the unchanged canonical History fixture to `src/stories/historyFullReaderData.json`; updated component/view story imports, fixture tests and all three generator/prepare/browser script paths. Git records a 100% rename; bytes remain identical, SHA-256 `9a753b0a6b4d5310c633843c202a103591aa880fb4a8aee40b8ee9ab32a3c720`. No dependency rule changed. `npm run graph:check` now passes: **0 errors**, existing `retinabox.js` orphan warning only, 1,018 modules / 2,067 dependencies.
+- **P2 consecutive-widget seams:** only paired Explore paragraphs use a `div` grid item; ordinary prose, widget and unpaired Explore paragraphs retain the existing span wrapper. Shared reader CSS is unchanged. Two added mounted tests cover the wrapper boundary. A new real SectionComp/WidgetBreakout story and browser assertions prove **0px touching margins / 0px gap**, while the run's outer margins and a prose-separated widget retain 40px spacing at 1440/1024/390 in both engines. A controlled browser negative test restoring the previous div structure returns 40px touching margins and a 40px gap.
+- **Inherited mobile figure clipping, now corrected:** ExploreCard's scoped parent rule contains nested `.fig-shell--inline` elements to the disclosure width and removes their mobile viewport-bleed offset. The original IllustrationPlaceholder, IllustrationInline, FigureImages and global figure rules remain unchanged. Complete source figures/legends and fullscreen controls now fit within expanded cards at 320/390, with desktop pairing retained. This was inherited from main, not introduced by pairing. The new real figure story and `scripts/g6-reader-review.mjs` assert full shell/legend/image/control geometry, no clipped horizontal content, image loading/contain fit, expand/Escape and no page overflow; screenshots were visually inspected.
+
+Current validation after all source fixes:
+
+- **26/26 tests, six files:** the five original G6 suites plus `historyFullReaderFixture`; includes unchanged source/migration fingerprints, both new SectionComp regressions and pairing/disclosure/rail coverage. `vitest run --no-cache` avoids shared dependency caches.
+- **Lint/format/build:** full lint passed (0 errors / 6 existing warnings); every changed source/JSON/report file passes Prettier; `git diff --check` passes. Production build and isolated four-story-file static Storybook build passed; existing bundle-size warnings remain. Storybook inventory **285/285** and chapter inventory **67/67**.
+- **Chromium 17/17 + Firefox 17/17 Storybook scenarios:** prior pair/rail/link checks plus three widget-seam cases and full nested-figure containment at 320/390/1440. The fixture uses the canonical source figure and complete legend, not a replacement drawing.
+- **Chromium 6/6 + Firefox 6/6 actual production-build reader cases:** both real boxes at 1440/390/320, current published content fetched read-only, independent keyboard/touch disclosures, retained paragraph text, loaded artwork, full nested figure bounds and expand/Escape, desktop pairing/mobile stacking, no page overflow and no prototype markup. Request guards block all non-GET/HEAD requests; none occurred. An initial temporary test used an ambiguous generic button selector; the committed runner explicitly selects `.xc-btn` and both final runs pass.
+
+Current evidence supersedes the initial screenshots below for the repaired areas: [Chromium](G6-evidence/review-fixes/chromium.json), [Firefox](G6-evidence/review-fixes/firefox.json), [actual reader Chromium](G6-evidence/review-fixes/reader-chromium.json), [actual reader Firefox](G6-evidence/review-fixes/reader-firefox.json), [seam negative control](G6-evidence/review-fixes/seam-negative-control.json), [continuous widget run](G6-evidence/review-fixes/widget-seams-desktop.png), [complete hippocampus figure at 320](G6-evidence/review-fixes/hippocampus-320.png), [complete rete figure at 390 in Firefox](G6-evidence/review-fixes/rete-390-firefox.png).
+
+Reproduce with a static Storybook server on a free localhost port and a local production preview:
+
+```sh
+G6_STORYBOOK_URL=http://127.0.0.1:6116 G6_OUTPUT=/tmp/g6-story-evidence node scripts/g6-breakout-review.mjs
+G6_READER_URL=http://127.0.0.1:6117 G6_OUTPUT=/tmp/g6-reader-evidence node scripts/g6-reader-review.mjs
+# Repeat either command with G6_BROWSER=firefox.
+```
+
+Correction-pass builds, logs, temporary Storybook config and isolated Vite cache are under `/tmp/openbrain-g6-repair/`; used only owned ports 6116/6117. Shared dependencies were not mutated. The prototypes remain Storybook-only. Full repository CI/full catalog smoke, new independent exact-head approval, sibling integration, Safari/assistive technology/physical touch, merge, deployment and live acceptance remain separate gates. No new database requirements or source-content changes.
 
 ## Findings and delivered behavior
 
@@ -21,7 +48,7 @@ Deployment is separate: the supplied last-verified deployment was PR140 while ma
 - Updated both chapter component inventory/count tests and normal Storybook coverage. Added focused tests and `scripts/g6-breakout-review.mjs`.
 - No new migrations required. The existing `20261021010000_history_breakout_boxes.sql` is a prerequisite for authored card metadata in another environment; this run neither altered nor applied it. Live read-only inspection confirmed all four cards in the demo.
 
-## Verification
+## Initial verification before independent review
 
 - **18/18 unit tests:** `vitest run --no-cache` for `explorePairs`, `ExploreCard`, `SectionComp.reader-section`, `BreakoutRail` and chapter `storybookCoverage`.
 - **Lint/format:** full `npm run lint:ci` passed, 0 errors / 6 pre-existing warnings; changed JS/Vue/CSS/Markdown/JSON pass Prettier; `git diff --check` passed.
