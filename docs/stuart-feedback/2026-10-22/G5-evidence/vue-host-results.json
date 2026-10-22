@@ -1,0 +1,23 @@
+[
+  {
+    "width": 900,
+    "height": 600,
+    "scroll": false,
+    "scale": 1,
+    "gap": 10
+  },
+  {
+    "width": 700,
+    "height": 600,
+    "scroll": false,
+    "scale": 1,
+    "gap": 10
+  },
+  {
+    "width": 390,
+    "height": 420,
+    "scroll": true,
+    "scale": 1,
+    "gap": 10.5
+  }
+]

@@ -1,6 +1,8 @@
 # G5 delivery: Loewi layout and authored narration
 
-PR: pending creation. Implementation base: `3f1bcd8171632503ac5bea8c822ea67d3c889940`
+PR: [#146](https://github.com/antonmogul/theopenbrain.org/pull/146).
+Implementation commit: `123bb6ebf2aec0bc7a0338b0605752f11a61df87` (subsequent report-only commit records this link).
+Implementation base: `3f1bcd8171632503ac5bea8c822ea67d3c889940`
 (main, PR #143). Scope: R12a, R12b, R12c.
 
 ## Findings and changes
@@ -86,6 +88,11 @@ npm run format:check
 npm run lint:ci
 npm run build
 ```
+
+A further Vite-mounted check of the actual `WidgetFrame.vue` under the parent
+CSP verified 900×600 and 700×600 with default shrink-to-fit, and 390×420 with
+the reader's scrollable-stage setting: scale remained 1, with 10/10/10.5 px
+caption-to-transport gaps ([results](G5-evidence/vue-host-results.json)).
 
 The explicit browser flag continues policy/layout checks after a failing bare
 engine control; the JSON marks Firefox audio **INCONCLUSIVE**, not passed.
