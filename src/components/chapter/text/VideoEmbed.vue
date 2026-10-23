@@ -5,26 +5,46 @@
  * presses play: the card is local, then a youtube-nocookie player replaces
  * it (allowed by the CSP in index.html).
  */
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { youTubeEmbedUrl } from "@/editor/video.mjs";
 
 const props = defineProps({
-  /** { youtubeId, title?, start? } */
+  /** { youtubeId?, src?, poster?, title?, caption?, start? } */
   video: { type: Object, required: true },
+  showCaption: { type: Boolean, default: true },
 });
 
 const playing = ref(false);
+watch(
+  () => [props.video.youtubeId, props.video.src, props.video.start],
+  () => {
+    playing.value = false;
+  }
+);
 const src = computed(() =>
   youTubeEmbedUrl(props.video.youtubeId, props.video.start || 0)
 );
 const title = computed(() => props.video.title || "Video");
+const caption = computed(() => props.video.caption || props.video.title || "");
 </script>
 
 <template>
   <figure class="ve noHighlight">
     <div class="ve-frame">
+      <video
+        v-if="video.src"
+        :key="video.src"
+        controls
+        playsinline
+        preload="none"
+        :poster="video.poster"
+        :aria-label="title"
+      >
+        <source :src="video.src" type="video/mp4" />
+        Your browser does not support this video.
+      </video>
       <iframe
-        v-if="playing"
+        v-else-if="playing"
         :src="src"
         :title="title"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -38,13 +58,19 @@ const title = computed(() => props.video.title || "Video");
         :aria-label="`Play video: ${title}`"
         @click="playing = true"
       >
+        <img
+          v-if="video.poster"
+          class="ve-poster-image"
+          :src="video.poster"
+          alt=""
+        />
         <span class="ve-play" aria-hidden="true">▶</span>
         <span class="ve-title">{{ title }}</span>
         <span class="ve-note">YouTube · plays here</span>
       </button>
     </div>
-    <figcaption v-if="video.title" class="ve-caption">
-      {{ video.title }}
+    <figcaption v-if="showCaption && caption" class="ve-caption">
+      {{ caption }}
     </figcaption>
   </figure>
 </template>
@@ -60,7 +86,8 @@ const title = computed(() => props.video.title || "Video");
   background: rgb(var(--color-dark-surface, 28 28 28));
   overflow: hidden;
 }
-.ve-frame iframe {
+.ve-frame iframe,
+.ve-frame video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -83,14 +110,25 @@ const title = computed(() => props.video.title || "Video");
   font-family: var(--font-ui);
   text-align: center;
 }
+.ve-poster-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.4;
+}
+.ve-poster > span {
+  position: relative;
+}
 .ve-play {
   display: grid;
   place-items: center;
   width: 64px;
   height: 64px;
-  border-radius: 999px;
+  border-radius: 0;
   background: rgb(var(--color-accent));
-  font-size: 1.5rem;
+  font-size: var(--ui-size-20);
   padding-left: 4px;
   transition: transform 0.15s ease;
 }
@@ -104,7 +142,7 @@ const title = computed(() => props.video.title || "Video");
 }
 .ve-title {
   max-width: 36ch;
-  font-size: 1.0625rem;
+  font-size: var(--ui-size-16);
   line-height: 1.35;
 }
 .ve-note {
@@ -119,5 +157,18 @@ const title = computed(() => props.video.title || "Video");
   font-family: var(--font-mono);
   font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
+}
+@media (prefers-reduced-motion: reduce) {
+  .ve-play {
+    transition: none;
+  }
+  .ve-poster:hover .ve-play,
+  .ve-poster:focus-visible .ve-play {
+    transform: none;
+  }
+}
+:global([data-reduce-motion="1"]) .ve-play {
+  transition: none;
+  transform: none;
 }
 </style>

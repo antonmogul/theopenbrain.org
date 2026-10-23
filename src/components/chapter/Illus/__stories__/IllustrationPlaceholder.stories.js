@@ -4,6 +4,7 @@
  * state (type chip, caption, authoring note) or, once the row carries images,
  * the artwork itself (OPENBRAIN-41). Purely prop-driven.
  */
+import { FIG19, FIG21, FIG15 } from "./g2MediaFixtures";
 import IllustrationPlaceholder from "../IllustrationPlaceholder.vue";
 import { illustrationFrame } from "../../__stories__/chapterFixtures";
 import {
@@ -123,4 +124,15 @@ export const WithSharedLegendArtwork = {
       images: FIG7_IMAGES,
     },
   },
+};
+
+// Stuart follow-ups, 22 October: review the exact artwork and slide legends.
+export const GalvaniSlideLegends = {
+  render: paneFrame,
+  args: { animation: FIG19 },
+};
+export const HuxleyFirst = { render: paneFrame, args: { animation: FIG21 } };
+export const GrowthConeLegendWidth = {
+  render: paneFrame,
+  args: { animation: FIG15 },
 };

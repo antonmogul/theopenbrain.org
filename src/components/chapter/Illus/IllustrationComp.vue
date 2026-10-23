@@ -157,24 +157,15 @@
             source="Stare at the cross for 30 seconds. Then immediately look at a white wall (or close your eyes) to see after-images. Notice that each color gets 'replaced' by its opponent color in the after-image."
           />
         </div>
-        <div class="w-full h-[80vh]" v-else>
-          <iframe
-            class="w-full h-full"
-            :src="`https://www.youtube.com/embed/${animation.youtubeID}`"
-            title="YouTube video player"
-            frameborder="0"
-            allow="
-              accelerometer;
-              autoplay;
-              clipboard-write;
-              encrypted-media;
-              gyroscope;
-              picture-in-picture;
-              web-share;
-            "
-            allowfullscreen
-          ></iframe>
-        </div>
+        <VideoEmbed
+          v-else
+          class="w-full"
+          :video="{
+            youtubeId: animation.youtubeID,
+            title: animation.title,
+            caption: presentation.caption || animation.title,
+          }"
+        />
       </template>
       <template v-else>
         <figure
@@ -240,6 +231,7 @@ import IllustrationFlip from "./IllustrationFlip.vue";
 import IllustrationSwitch from "./IllustrationSwitch.vue";
 import StateElement from "@/components/UI/StateElement.vue";
 import StateElementBlock from "@/components/UI/StateElementBlock.vue";
+import VideoEmbed from "../text/VideoEmbed.vue";
 import SourceElement from "@/components/UI/SourceElement.vue";
 
 const props = defineProps({

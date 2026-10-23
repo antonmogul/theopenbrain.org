@@ -8,7 +8,7 @@ const SET = [
   { src: "/two.jpg", caption: "", alt: "" },
   { src: "/three.jpg", caption: "Third plate", alt: "Alt three" },
 ];
-const TEN_S = 10_000;
+const FIFTEEN_S = 15_000;
 
 let wrapper;
 const mountSet = (props = {}) => {
@@ -29,7 +29,7 @@ const mountSet = (props = {}) => {
 const gallery = () => wrapper.find(".figimg--gallery");
 const shown = () => wrapper.find(".figimg-gallery-img").attributes("src");
 const counter = () => wrapper.find(".figimg-count-n").text();
-const dots = () => wrapper.findAll(".figimg-dot");
+const dots = () => wrapper.findAll(".figimg-thumbnail");
 const currentDot = () =>
   dots().findIndex((d) => d.attributes("aria-current") === "true");
 const state = () => gallery().attributes("data-autoplay");
@@ -44,6 +44,7 @@ const advance = async (ms) => {
 describe("FigureImages", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    window.happyDOM.settings.disableIframePageLoading = true;
     document.documentElement.removeAttribute("data-reduce-motion");
   });
   afterEach(() => {
@@ -63,12 +64,12 @@ describe("FigureImages", () => {
     expect(imgs[0].attributes("src")).toBe("/one.jpg");
     expect(imgs[0].attributes("alt")).toBe("First plate");
     expect(wrapper.find(".figimg-caption").text()).toBe("First plate");
-    expect(wrapper.find(".figimg-dots").exists()).toBe(false);
+    expect(wrapper.find(".figimg-thumbnails").exists()).toBe(false);
     expect(wrapper.find("button").exists()).toBe(false);
     expect(wrapper.find('[role="group"]').exists()).toBe(false);
   });
 
-  it("shows one full-size image with a dot per image and arrows at the sides", () => {
+  it("shows one full-size image with a thumbnail per image and arrows at the sides", () => {
     const w = mountSet();
     expect(gallery().attributes("role")).toBe("group");
     expect(gallery().attributes("aria-label")).toBe("FIG 06: Cell doctrine");
@@ -80,7 +81,9 @@ describe("FigureImages", () => {
     // Dots: real buttons with a label that names the image.
     const d = dots();
     expect(d).toHaveLength(3);
-    d.forEach((b) => {
+    d.forEach((b, i) => {
+      expect(b.find("img").attributes("src")).toBe(SET[i].src);
+      expect(b.find("img").attributes("alt")).toBe("");
       expect(b.element.tagName).toBe("BUTTON");
       expect(b.attributes("type")).toBe("button");
     });
@@ -127,16 +130,16 @@ describe("FigureImages", () => {
     expect(shown()).toBe("/three.jpg");
   });
 
-  it("advances every 10 s on its own", async () => {
+  it("advances every 15 s on its own", async () => {
     mountSet();
     expect(state()).toBe("running");
-    await advance(TEN_S - 1);
+    await advance(FIFTEEN_S - 1);
     expect(shown()).toBe("/one.jpg");
     await advance(1);
     expect(shown()).toBe("/two.jpg");
-    await advance(TEN_S);
+    await advance(FIFTEEN_S);
     expect(shown()).toBe("/three.jpg");
-    await advance(TEN_S);
+    await advance(FIFTEEN_S);
     expect(shown()).toBe("/one.jpg");
   });
 
@@ -145,12 +148,12 @@ describe("FigureImages", () => {
     await advance(6000);
     await gallery().trigger("pointerenter");
     expect(state()).toBe("paused");
-    await advance(TEN_S * 2);
+    await advance(FIFTEEN_S * 2);
     expect(shown()).toBe("/one.jpg");
     await gallery().trigger("pointerleave");
     expect(state()).toBe("running");
     // The clock restarts from the resume, not from where it was.
-    await advance(TEN_S - 1);
+    await advance(FIFTEEN_S - 1);
     expect(shown()).toBe("/one.jpg");
     await advance(1);
     expect(shown()).toBe("/two.jpg");
@@ -159,7 +162,7 @@ describe("FigureImages", () => {
     next.element.focus();
     await gallery().trigger("focusin");
     expect(state()).toBe("paused");
-    await advance(TEN_S * 2);
+    await advance(FIFTEEN_S * 2);
     expect(shown()).toBe("/two.jpg");
     next.element.blur();
     await gallery().trigger("focusout", { relatedTarget: document.body });
@@ -171,13 +174,13 @@ describe("FigureImages", () => {
     await w.find('[aria-label="Next image"]').trigger("click");
     expect(shown()).toBe("/two.jpg");
     expect(state()).toBe("paused");
-    await advance(TEN_S * 3);
+    await advance(FIFTEEN_S * 3);
     expect(shown()).toBe("/two.jpg");
     await dots()[0].trigger("click");
-    await advance(TEN_S * 3);
+    await advance(FIFTEEN_S * 3);
     expect(shown()).toBe("/one.jpg");
     await key("ArrowRight");
-    await advance(TEN_S * 3);
+    await advance(FIFTEEN_S * 3);
     expect(shown()).toBe("/two.jpg");
   });
 
@@ -185,18 +188,31 @@ describe("FigureImages", () => {
     document.documentElement.setAttribute("data-reduce-motion", "1");
     mountSet();
     expect(state()).toBe("paused");
-    await advance(TEN_S * 3);
+    await advance(FIFTEEN_S * 3);
     expect(shown()).toBe("/one.jpg");
   });
 
   it("stops when the reader turns reduced motion on mid-way", async () => {
     mountSet();
-    await advance(TEN_S);
+    await advance(FIFTEEN_S);
     expect(shown()).toBe("/two.jpg");
     document.documentElement.setAttribute("data-reduce-motion", "1");
-    await advance(TEN_S * 3);
+    await advance(FIFTEEN_S * 3);
     expect(shown()).toBe("/two.jpg");
     expect(state()).toBe("paused");
+  });
+
+  it("switches a running loop to its poster when explicit reduced motion changes", async () => {
+    mountSet({
+      images: [{ src: "/still.jpg", youtube: "OmmH4Rp9-to" }, SET[0]],
+    });
+    expect(wrapper.find("iframe").exists()).toBe(true);
+    document.documentElement.setAttribute("data-reduce-motion", "1");
+    await vi.advanceTimersByTimeAsync(1);
+    await nextTick();
+    expect(wrapper.find("iframe").exists()).toBe(false);
+    expect(shown()).toBe("/still.jpg");
+    expect(wrapper.find(".figimg-watch").exists()).toBe(true);
   });
 
   it("waits while the tab is hidden", async () => {
@@ -211,13 +227,13 @@ describe("FigureImages", () => {
       document.dispatchEvent(new Event("visibilitychange"));
       await nextTick();
       expect(state()).toBe("paused");
-      await advance(TEN_S * 2);
+      await advance(FIFTEEN_S * 2);
       expect(shown()).toBe("/one.jpg");
       visibility = "visible";
       document.dispatchEvent(new Event("visibilitychange"));
       await nextTick();
       expect(state()).toBe("running");
-      await advance(TEN_S);
+      await advance(FIFTEEN_S);
       expect(shown()).toBe("/two.jpg");
     } finally {
       delete document.visibilityState;
@@ -227,11 +243,11 @@ describe("FigureImages", () => {
   it("stops the clock when it unmounts", async () => {
     const onIndex = vi.fn();
     const w = mountSet({ "onUpdate:index": onIndex });
-    await advance(TEN_S);
+    await advance(FIFTEEN_S);
     expect(onIndex).toHaveBeenCalledTimes(1);
     w.unmount();
     wrapper = null;
-    await advance(TEN_S * 3);
+    await advance(FIFTEEN_S * 3);
     expect(onIndex).toHaveBeenCalledTimes(1);
   });
 
@@ -263,18 +279,39 @@ describe("FigureImages", () => {
     };
     const loop = { src: "/still.jpg", caption: "Loop", youtube: "OmmH4Rp9-to" };
     mountSet({ images: [SET[0], loop, player, SET[2]] });
-    await advance(TEN_S);
+    await advance(FIFTEEN_S);
     expect(wrapper.find(".figimg-gallery-video").attributes("src")).toContain(
       "loop=1"
     );
     expect(state()).toBe("running");
-    await advance(TEN_S);
-    expect(wrapper.find(".figimg-gallery-video").attributes("src")).toContain(
+    await advance(FIFTEEN_S);
+    expect(wrapper.findComponent({ name: "VideoEmbed" }).exists()).toBe(true);
+    await wrapper.find(".ve-poster").trigger("click");
+    expect(wrapper.find(".ve-frame iframe").attributes("src")).toContain(
       "g4-6A8u8QBc"
     );
     expect(state()).toBe("paused");
-    await advance(TEN_S * 3);
+    await advance(FIFTEEN_S * 3);
     expect(counter()).toBe("3 / 4");
+  });
+
+  it("does not advance away from a player-first gallery or a suspended pane", async () => {
+    mountSet({
+      images: [
+        { src: "/huxley.jpg", youtube: "KbA3RLz3xUQ", play: "player" },
+        SET[0],
+      ],
+    });
+    expect(state()).toBe("paused");
+    await advance(FIFTEEN_S * 3);
+    expect(counter()).toBe("1 / 2");
+    wrapper.unmount();
+    mountSet({ suspended: true });
+    await advance(FIFTEEN_S * 3);
+    expect(counter()).toBe("1 / 3");
+    await wrapper.setProps({ suspended: false });
+    await advance(FIFTEEN_S);
+    expect(counter()).toBe("2 / 3");
   });
 
   it("keeps a video item as a looping slide, with a link under reduced motion", async () => {

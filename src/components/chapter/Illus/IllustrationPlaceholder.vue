@@ -64,10 +64,10 @@ const caption = computed(
 );
 // The legend sits with the title above the artwork (OPENBRAIN-138): one
 // image's own caption, else the figure's.
-const legend = computed(() =>
-  images.value.length === 1
-    ? images.value[0].caption || caption.value
-    : caption.value
+const legend = computed(
+  () =>
+    (images.value[galleryIndex.value] || images.value[0])?.caption ||
+    caption.value
 );
 
 // The gallery's current image, shared by the pane and the fullscreen
@@ -94,9 +94,6 @@ function closeFullscreen() {
             <span class="fig-label">{{ figureLabel }}</span>
             <span class="fig-name">{{ title }}</span>
           </p>
-          <figcaption v-if="images.length && legend" class="fig-legend">
-            {{ legend }}
-          </figcaption>
         </div>
         <button
           class="fig-fs-btn"
@@ -117,6 +114,9 @@ function closeFullscreen() {
             <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
           </svg>
         </button>
+        <figcaption v-if="images.length && legend" class="fig-legend">
+          {{ legend }}
+        </figcaption>
       </header>
 
       <!-- Diagram area: the artwork, or a placeholder until it lands -->
@@ -129,6 +129,7 @@ function closeFullscreen() {
           :title="title"
           v-model:index="galleryIndex"
           :fit="!inline"
+          :suspended="isFullscreen"
           legend-above
         />
         <div v-else class="fig-placeholder">
@@ -224,7 +225,8 @@ function closeFullscreen() {
 
 /* Toolbar */
 .fig-toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
@@ -255,7 +257,8 @@ function closeFullscreen() {
 }
 .fig-legend {
   margin: 0;
-  max-width: 62ch;
+  grid-column: 1 / -1;
+  width: 100%;
   font-family: var(--font-body);
   font-size: var(--ui-size-13);
   line-height: 1.45;

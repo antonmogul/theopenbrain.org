@@ -1,0 +1,61 @@
+{
+  "fig19": {
+    "trigger": {
+      "rect": 454,
+      "text": "Intrinsic animal electricity was first demonstrated in the nervous system in the 1780s by "
+    },
+    "shells": 1,
+    "text": "FIG 19\nGALVANI'S FROG LEG PREPARATION\n\nPlates outlining various versions of Galvani’s frog leg electrical stimulation experiment, using a friction machine (top) and atmospheric electricity (bottom). Source: Galvani, 1791.\n\n1 / 3",
+    "images": [
+      "https://theopenbrainorg-production.up.railway.app/publicAssets/images/foundations/fig19-01.jpg"
+    ],
+    "secondLegend": "Plates outlining various versions of Galvani’s frog leg electrical stimulation experiment, using a friction machine (top) and atmospheric electricity (bottom). Source: Galvani, 1791."
+  },
+  "fig15": {
+    "trigger": {
+      "rect": 640,
+      "text": "Then, one day in 1887, while visiting his colleague Luis Simarro in Madrid, Spanish physic"
+    },
+    "shells": 1,
+    "text": "FIG 15\nRAMÓN Y CAJAL'S GROWTH CONE\n\nRamón y Cajal’s drawings of growth cones along with photographs from his original histological slides. A, Photograph of E3 chick embryo spinal cord showing commissural cells and their fibers ending in growth cones. B, Drawing summarizing spinal cord observations from several Golgi preparations. C, Photograph of E3 chick embryo spinal cord showing commissural neurons and their fibers with growth cones. Neuroepithelial cells are attached to the midline. D, Drawings of growth cones from the spinal cord of chick embryos. E, Photograph of growth cones from commissural fibers of E4 chick embryo spinal cord. Source: de Castro et al., Brain Research Reviews, 2007.",
+    "images": [
+      "https://theopenbrainorg-production.up.railway.app/publicAssets/images/foundations/fig15-01.jpg"
+    ]
+  },
+  "fig11": {
+    "trigger": {
+      "rect": 795,
+      "text": "Fritsch and Hitzig’s work was validated soon afterwards in primates by David Ferrier who w"
+    },
+    "shells": 1,
+    "text": "FIG 11\nGOLTZ'S DOG VS. FERRIER'S MONKEY\n\nAnatomical drawings of Goltz’s dog (left, A and B) and Ferrier’s monkey (right, C) that were presented at the Seventh International Medical Congress in 1881. Modified from Gowers WR, Klein E, Schaefer AE, Langley JN. Preliminary report. Transactions of the International Medical Congress 1881. Volume 1.",
+    "images": [
+      "https://theopenbrainorg-production.up.railway.app/publicAssets/images/foundations/fig11-01-abc.jpg"
+    ]
+  },
+  "fig21": {
+    "trigger": {
+      "rect": 1446,
+      "text": "But seeing as autonomic innervations can operate on relatively slow timescales, there was "
+    },
+    "shells": 1,
+    "text": "FIG 21\nECCLES' STRETCH-REFLEX CIRCUIT\n\nA model, from Brooks and Eccles (Nature, 1947) proposing how interneuron ‘G’, as part of inhibitory pathway ‘I’, could theoretically inhibit motorneuron ‘M’ via an electric field effect when it receives subthreshold input.\n\n1 / 2",
+    "images": [
+      "https://theopenbrainorg-production.up.railway.app/publicAssets/images/foundations/fig21-01.jpg"
+    ]
+  },
+  "retinaLinks": [
+    {
+      "text": "Tom Badendiscussing 'Is our retina really upside down?'",
+      "href": "/chapter/2/chapter/break/placeholder"
+    },
+    {
+      "text": "John DowlingRetinal cell types, connectivity and responses.",
+      "href": "/chapter/2/chapter/break/dowling-and-werblin"
+    },
+    {
+      "text": "Dennis Baylortalking about visual threshold and single photon detection",
+      "href": "/chapter/2/chapter/break/placeholder"
+    }
+  ]
+}
