@@ -18,6 +18,7 @@ const props = defineProps({
   section: { type: Object, required: true },
   /** Its letter ("A", "B", …). */
   label: { type: String, default: "" },
+  pairedExplores: { type: Boolean, default: false },
 });
 
 const titleId = computed(() => `box-title-${props.section.id}`);
@@ -33,7 +34,7 @@ const titleId = computed(() => `box-title-${props.section.id}`);
         :id="section.id"
         :data-section-slug="section.slug"
         class="bx"
-        :class="{ 'bx--floating': floating }"
+        :class="{ 'bx--floating': floating, 'bx--paired': pairedExplores }"
         :aria-labelledby="titleId"
       >
         <div class="bx-hold">
@@ -127,6 +128,10 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   max-width: calc(var(--reading-measure, 780px) + 4rem);
   margin: 0 auto;
   padding: 0 2rem;
+}
+
+.bx--paired .bx-body {
+  max-width: 76rem;
 }
 
 /* The pause: the box sticks below the top bar while the room after it
