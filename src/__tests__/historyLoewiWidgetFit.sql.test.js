@@ -13,7 +13,8 @@ const sql = readFileSync(
   "supabase/migrations/20261021030000_history_loewi_widget_fit.sql",
   "utf8"
 );
-const file = readFileSync("src/widgets/uploads/loewi-vagusstoff.html", "utf8");
+// Historical migration remains immutable when a later guarded reupload changes the file.
+const file = sql.split("$w$")[1];
 const schema = `
 create table public.widget_uploads (id uuid primary key default gen_random_uuid(), slug text unique not null,
   html text not null, updated_at timestamptz default now());

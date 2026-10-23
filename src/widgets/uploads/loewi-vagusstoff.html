@@ -37,12 +37,13 @@ h1{margin:0;font-size:20px;font-weight:600;line-height:1.3}
 /* In the book's figure pane (html[data-ob-fit], the widget kit's bridge) the frame is the pane's
    height: the drawing takes what the title, caption, transport and source leave, so nothing is cut off. */
 html[data-ob-fit],html[data-ob-fit] body{height:100%}
-html[data-ob-fit] .wrap{height:100%;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:16px 20px}
+html[data-ob-fit] .wrap{height:100%;grid-template-rows:auto minmax(min-content,1fr) auto;gap:10px;padding:16px 20px}
 html[data-ob-fit] .stage{display:flex;flex-direction:column;min-height:0}
-html[data-ob-fit] .screen{flex:1 1 auto;min-height:160px}
+html[data-ob-fit] .screen{flex:1 1 0;min-height:160px;contain:size}
 html[data-ob-fit] #scene{height:100%;max-height:none;min-height:0}
-/* A short pane (a 1280×800 laptop): the drawing keeps the room the source line would take. */
-@media (max-height:720px){html[data-ob-fit] .cite{display:none}}
+/* Text and controls keep their full content height. Short panes scroll instead of
+   shrinking the caption under the transport; the source remains reachable too. */
+html[data-ob-fit] .stage > :not(.screen){flex-shrink:0}
 .bigplay{position:absolute;left:50%;top:32%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;min-height:44px;padding:12px 20px;border-radius:var(--radius);border:1px solid #fff;cursor:pointer;background:#fff;color:#1c1c1c}
 .bigplay:hover{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .bigplay:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
@@ -240,7 +241,7 @@ html[data-ob-reduce-motion] *{transition:none!important}
           <ellipse cx="812" cy="486" rx="112" ry="8" fill="#F4EDDD" stroke="#2E1E1A" stroke-width="1.4"/>
           <rect x="809" y="266" width="6" height="22" fill="#F4EDDD" stroke="#2E1E1A" stroke-width="1.1"/><rect x="812" y="266" width="3" height="22" fill="url(#hv)"/>
           <ellipse cx="812" cy="266" rx="6" ry="2" fill="#F4EDDD" stroke="#2E1E1A" stroke-width="1.1"/>
-          
+
         </g>
 
         <!-- lever: pivot post at the left, writing point on the drum -->
@@ -517,6 +518,8 @@ $("drum-img").setAttribute("width", 1193 * S); $("drum-img").setAttribute("heigh
 /* chapters */
 const chG = $("chapters");
 TL.chapters.forEach(([name, at]) => {
+  // The record already identifies Figure 1; omit only its redundant timeline label.
+  if (name === "Figure 1") return;
   const b = document.createElement("button"); b.type = "button"; b.textContent = name;
   b.style.left = (100 * at / TL.total) + "%"; b.addEventListener("click", () => seek(at)); chG.appendChild(b);
 });

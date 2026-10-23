@@ -106,3 +106,19 @@ opened on its own, in Claude or in a browser.
 - [ ] Title, one-line instruction, labels, caption with units and sources
 - [ ] No errors in the console
 - [ ] Every scientific claim matches the chapter or a cited source
+
+## Narration in the book
+
+Embed recorded audio as `data:audio/...;base64,...` or local `blob:` media and
+start playback from a real button/keyboard activation. Handle `play()` rejection
+and retain the complete transcript; a pressed sound button alone is not proof
+of playback. Do not fetch external narration: the frame keeps `connect-src
+'none'` and runs with `sandbox="allow-scripts"` (no same-origin permission).
+
+The frame inherits the reader's CSP as well as widgetHost's injected policy.
+Both policies must permit `data:` / `blob:` in `media-src`. Test from the book
+or the HTTP browser harness (`node scripts/widget-narration-browser.mjs`);
+opening an HTML file directly or testing Storybook alone misses the parent
+policy. No autoplay permission is needed for a user-initiated narration click.
+Keep captions and transport rows non-shrinking in fixed-height flex layouts,
+and allow vertical scrolling when the content cannot fit.
