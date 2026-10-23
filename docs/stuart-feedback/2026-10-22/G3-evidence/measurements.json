@@ -1,0 +1,401 @@
+[
+  {
+    "size": "desktop",
+    "view": "Lateral",
+    "n": 31,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 98.140625,
+      "y": 216.421875,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "card": {
+      "x": 767.578125,
+      "y": 354.4375,
+      "width": 640.421875,
+      "height": 283.953125
+    }
+  },
+  {
+    "size": "desktop",
+    "view": "Posterior",
+    "n": 5,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 98.140625,
+      "y": 216.421875,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "card": {
+      "x": 767.578125,
+      "y": 273.140625,
+      "width": 640.421875,
+      "height": 446.546875
+    }
+  },
+  {
+    "size": "desktop",
+    "view": "Posterior",
+    "n": 2,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 98.140625,
+      "y": 216.421875,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "card": {
+      "x": 767.578125,
+      "y": 320.671875,
+      "width": 640.421875,
+      "height": 351.484375
+    }
+  },
+  {
+    "size": "desktop",
+    "view": "Posterior",
+    "n": 4,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 98.140625,
+      "y": 216.421875,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "card": {
+      "x": 767.578125,
+      "y": 296.90625,
+      "width": 640.421875,
+      "height": 399.015625
+    }
+  },
+  {
+    "size": "desktop",
+    "view": "Posterior",
+    "n": 3,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 98.140625,
+      "y": 216.421875,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "card": {
+      "x": 767.578125,
+      "y": 286.90625,
+      "width": 640.421875,
+      "height": 419.015625
+    }
+  },
+  {
+    "size": "desktop",
+    "view": "Posterior",
+    "n": 11,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 98.140625,
+      "y": 216.421875,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "card": {
+      "x": 767.578125,
+      "y": 300.671875,
+      "width": 640.421875,
+      "height": 391.484375
+    }
+  },
+  {
+    "size": "desktop",
+    "view": "Posterior",
+    "n": 10,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 98.140625,
+      "y": 216.421875,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "card": {
+      "x": 767.578125,
+      "y": 342.5625,
+      "width": 640.421875,
+      "height": 307.71875
+    }
+  },
+  {
+    "size": "mobile",
+    "view": "Lateral",
+    "n": 31,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 29.109375,
+      "y": 142.15625,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "card": {
+      "x": 16,
+      "y": 486.859375,
+      "width": 358,
+      "height": 270.078125
+    }
+  },
+  {
+    "size": "mobile",
+    "view": "Posterior",
+    "n": 5,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 29.109375,
+      "y": 142.15625,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "card": {
+      "x": 16,
+      "y": 486.859375,
+      "width": 358,
+      "height": 270.078125
+    }
+  },
+  {
+    "size": "mobile",
+    "view": "Posterior",
+    "n": 2,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 29.109375,
+      "y": 142.15625,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "card": {
+      "x": 16,
+      "y": 486.859375,
+      "width": 358,
+      "height": 270.078125
+    }
+  },
+  {
+    "size": "mobile",
+    "view": "Posterior",
+    "n": 4,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 29.109375,
+      "y": 142.15625,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "card": {
+      "x": 16,
+      "y": 486.859375,
+      "width": 358,
+      "height": 270.078125
+    }
+  },
+  {
+    "size": "mobile",
+    "view": "Posterior",
+    "n": 3,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 29.109375,
+      "y": 142.15625,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "card": {
+      "x": 16,
+      "y": 486.859375,
+      "width": 358,
+      "height": 270.078125
+    }
+  },
+  {
+    "size": "mobile",
+    "view": "Posterior",
+    "n": 11,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 29.109375,
+      "y": 142.15625,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "card": {
+      "x": 16,
+      "y": 486.859375,
+      "width": 358,
+      "height": 270.078125
+    }
+  },
+  {
+    "size": "mobile",
+    "view": "Posterior",
+    "n": 10,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 29.109375,
+      "y": 142.15625,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "card": {
+      "x": 16,
+      "y": 486.859375,
+      "width": 358,
+      "height": 270.078125
+    }
+  },
+  {
+    "size": "landscape",
+    "view": "Lateral",
+    "n": 31,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 131.640625,
+      "y": 95.421875,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "card": {
+      "x": 453.890625,
+      "y": 95.421875,
+      "width": 358.109375,
+      "height": 192
+    }
+  },
+  {
+    "size": "landscape",
+    "view": "Posterior",
+    "n": 5,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 131.640625,
+      "y": 95.421875,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "card": {
+      "x": 453.890625,
+      "y": 95.421875,
+      "width": 358.109375,
+      "height": 192
+    }
+  },
+  {
+    "size": "landscape",
+    "view": "Posterior",
+    "n": 2,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 131.640625,
+      "y": 95.421875,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "card": {
+      "x": 453.890625,
+      "y": 95.421875,
+      "width": 358.109375,
+      "height": 192
+    }
+  },
+  {
+    "size": "landscape",
+    "view": "Posterior",
+    "n": 4,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 131.640625,
+      "y": 95.421875,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "card": {
+      "x": 453.890625,
+      "y": 95.421875,
+      "width": 358.109375,
+      "height": 192
+    }
+  },
+  {
+    "size": "landscape",
+    "view": "Posterior",
+    "n": 3,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 131.640625,
+      "y": 95.421875,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "card": {
+      "x": 453.890625,
+      "y": 95.421875,
+      "width": 358.109375,
+      "height": 192
+    }
+  },
+  {
+    "size": "landscape",
+    "view": "Posterior",
+    "n": 11,
+    "paths": 2,
+    "labelsInside": true,
+    "skull": {
+      "x": 131.640625,
+      "y": 95.421875,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "card": {
+      "x": 453.890625,
+      "y": 95.421875,
+      "width": 358.109375,
+      "height": 192
+    }
+  },
+  {
+    "size": "landscape",
+    "view": "Posterior",
+    "n": 10,
+    "paths": 1,
+    "labelsInside": true,
+    "skull": {
+      "x": 131.640625,
+      "y": 95.421875,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "card": {
+      "x": 453.890625,
+      "y": 95.421875,
+      "width": 358.109375,
+      "height": 192
+    }
+  }
+]

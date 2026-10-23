@@ -35,6 +35,7 @@ import {
 } from "@/mocks/phrenology";
 import { MAP_H, MAP_SRC, MAP_W, loadRegionMap } from "@/helper/phrenologyMaps";
 import { reducedMotionK } from "@/helper/motion";
+import { presentFaculty } from "@/helper/phrenologyContent";
 
 const MODEL_SRC = "/publicAssets/models/skull.glb";
 const K = reducedMotionK();
@@ -330,7 +331,7 @@ async function select(n) {
   const info = facultyInfo.get(n);
   if (!info) return;
   if (!selected.value) previousRegionElement = document.activeElement;
-  selected.value = info;
+  selected.value = presentFaculty(info);
   if (uniforms) uniforms.uSel.value = n;
   await nextTick();
   if (detailEl.value) detailEl.value.scrollTop = 0;
@@ -753,6 +754,7 @@ function onKeydown(e) {
             :key="quote.sourceBlock"
             class="card__text"
             :data-source-block="quote.sourceBlock"
+            :data-source-blocks="quote.sourceBlocks.join(' ')"
           >
             {{ quote.text }}
           </p>

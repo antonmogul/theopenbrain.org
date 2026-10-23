@@ -77,6 +77,18 @@ export function mapOutlines(svgText) {
     .filter(Boolean);
 }
 
+/** The supplied maps explicitly fill anatomical regions; their nested dotted
+ * border segments only have a stroke. Filling those open segments implicitly
+ * closes them, creating wedges and overlapping purple patches (R06).
+ * Keep this source-format distinction for both 2D targets and 3D picking. */
+function filledRegionPaths(el) {
+  const paths = el.matches("path") ? [el] : [...el.querySelectorAll("path")];
+  return paths.filter((p) => {
+    const fill = p.getAttribute("fill");
+    return fill && fill !== "none";
+  });
+}
+
 /**
  * One view's regions as vector shapes, for the 2D widget: every named region
  * (both halves of a paired one) with the path data of its shapes.
@@ -88,7 +100,7 @@ export function regionShapes(svgText) {
   for (const el of doc.querySelectorAll("[id]")) {
     const id = parseRegionId(el.getAttribute("id"));
     if (!id) continue;
-    const shapes = el.matches("path") ? [el] : [...el.querySelectorAll("path")];
+    const shapes = filledRegionPaths(el);
     const d = shapes.map((s) => s.getAttribute("d")).filter(Boolean);
     if (d.length) out.push({ key: el.getAttribute("id"), ...id, d });
   }
@@ -140,16 +152,14 @@ function canvasOf(img) {
 }
 
 /** Recolour every region with its id colour and drop the outlines. */
-function idMarkup(svgText) {
+export function idMarkup(svgText) {
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  const filled = new Set();
   for (const el of doc.querySelectorAll("[id]")) {
     const id = parseRegionId(el.getAttribute("id"));
-    const shapes = [
-      el,
-      ...el.querySelectorAll("path, rect, circle, ellipse, polygon"),
-    ];
-    for (const s of shapes) {
-      if (!id) continue;
+    if (!id) continue;
+    for (const s of filledRegionPaths(el)) {
+      filled.add(s);
       s.setAttribute("fill", `rgb(${id.n},${id.part},0)`);
       s.setAttribute("stroke", "none");
     }
@@ -159,7 +169,7 @@ function idMarkup(svgText) {
   for (const s of doc.querySelectorAll(
     "path, rect, circle, ellipse, polygon"
   )) {
-    if (!/^rgb\(\d+,\d,0\)$/.test(s.getAttribute("fill") || "")) {
+    if (!filled.has(s)) {
       s.setAttribute("fill", "none");
       s.setAttribute("stroke", "none");
     }

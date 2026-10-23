@@ -1,0 +1,1325 @@
+[
+  {
+    "host": "standalone",
+    "size": "desktop",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 1000,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 1000
+    },
+    "card": {
+      "top": 308.796875,
+      "bottom": 684.046875,
+      "left": 767.578125,
+      "right": 1408,
+      "width": 640.421875,
+      "height": 375.25
+    },
+    "skull": {
+      "top": 216.421875,
+      "bottom": 776.40625,
+      "left": 98.140625,
+      "right": 677.4375,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "footer": {
+      "top": 941.84375,
+      "bottom": 1000,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 626.28125,
+      "bottom": 645.28125,
+      "left": 791.578125,
+      "right": 1063.28125
+    },
+    "visibleTop": 308.796875,
+    "visibleBottom": 684.046875,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "desktop",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 1000,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 1000
+    },
+    "card": {
+      "top": 308.796875,
+      "bottom": 684.046875,
+      "left": 767.578125,
+      "right": 1408,
+      "width": 640.421875,
+      "height": 375.25
+    },
+    "skull": {
+      "top": 216.421875,
+      "bottom": 776.40625,
+      "left": 98.140625,
+      "right": 677.4375,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "footer": {
+      "top": 941.84375,
+      "bottom": 1000,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 626.28125,
+      "bottom": 645.28125,
+      "left": 791.578125,
+      "right": 1063.28125
+    },
+    "visibleTop": 308.796875,
+    "visibleBottom": 684.046875,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "desktop",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 1000,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 1000
+    },
+    "card": {
+      "top": 308.796875,
+      "bottom": 684.046875,
+      "left": 767.578125,
+      "right": 1408,
+      "width": 640.421875,
+      "height": 375.25
+    },
+    "skull": {
+      "top": 216.421875,
+      "bottom": 776.40625,
+      "left": 98.140625,
+      "right": 677.4375,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "footer": {
+      "top": 941.84375,
+      "bottom": 1000,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 626.28125,
+      "bottom": 645.28125,
+      "left": 791.578125,
+      "right": 1063.28125
+    },
+    "visibleTop": 308.796875,
+    "visibleBottom": 684.046875,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "mobile",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": -32,
+      "bottom": 844.34375,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 876.34375
+    },
+    "card": {
+      "top": 454.875,
+      "bottom": 724.953125,
+      "left": 16,
+      "right": 374,
+      "width": 358,
+      "height": 270.078125
+    },
+    "skull": {
+      "top": 110.15625,
+      "bottom": 430.859375,
+      "left": 29.109375,
+      "right": 360.875,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "footer": {
+      "top": 740.953125,
+      "bottom": 844.34375,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 671.25,
+      "bottom": 690.25,
+      "left": 40,
+      "right": 229.53125
+    },
+    "visibleTop": 454.875,
+    "visibleBottom": 724.953125,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "mobile",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 876.34375,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 876.34375
+    },
+    "card": {
+      "top": 486.875,
+      "bottom": 756.953125,
+      "left": 16,
+      "right": 374,
+      "width": 358,
+      "height": 270.078125
+    },
+    "skull": {
+      "top": 142.15625,
+      "bottom": 462.859375,
+      "left": 29.109375,
+      "right": 360.875,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "footer": {
+      "top": 772.953125,
+      "bottom": 876.34375,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 703.25,
+      "bottom": 722.25,
+      "left": 40,
+      "right": 229.53125
+    },
+    "visibleTop": 486.875,
+    "visibleBottom": 756.953125,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "mobile",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 876.34375,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 876.34375
+    },
+    "card": {
+      "top": 486.875,
+      "bottom": 756.953125,
+      "left": 16,
+      "right": 374,
+      "width": 358,
+      "height": 270.078125
+    },
+    "skull": {
+      "top": 142.15625,
+      "bottom": 462.859375,
+      "left": 29.109375,
+      "right": 360.875,
+      "width": 331.765625,
+      "height": 320.703125
+    },
+    "footer": {
+      "top": 772.953125,
+      "bottom": 876.34375,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 703.25,
+      "bottom": 722.25,
+      "left": 40,
+      "right": 229.53125
+    },
+    "visibleTop": 486.875,
+    "visibleBottom": 756.953125,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "landscape",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 390,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 390
+    },
+    "card": {
+      "top": 95.421875,
+      "bottom": 287.421875,
+      "left": 453.890625,
+      "right": 812,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 95.421875,
+      "bottom": 287.40625,
+      "left": 131.640625,
+      "right": 330.25,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 331.84375,
+      "bottom": 390,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 229.796875,
+      "bottom": 248.796875,
+      "left": 477.890625,
+      "right": 667.421875
+    },
+    "visibleTop": 95.421875,
+    "visibleBottom": 287.421875,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "landscape",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 390,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 390
+    },
+    "card": {
+      "top": 95.421875,
+      "bottom": 287.421875,
+      "left": 453.890625,
+      "right": 812,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 95.421875,
+      "bottom": 287.40625,
+      "left": 131.640625,
+      "right": 330.25,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 331.84375,
+      "bottom": 390,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 229.796875,
+      "bottom": 248.796875,
+      "left": 477.890625,
+      "right": 667.421875
+    },
+    "visibleTop": 95.421875,
+    "visibleBottom": 287.421875,
+    "atScrollEnd": true
+  },
+  {
+    "host": "standalone",
+    "size": "landscape",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 0,
+      "bottom": 390,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 390
+    },
+    "card": {
+      "top": 95.421875,
+      "bottom": 287.421875,
+      "left": 453.890625,
+      "right": 812,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 95.421875,
+      "bottom": 287.40625,
+      "left": 131.640625,
+      "right": 330.25,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 331.84375,
+      "bottom": 390,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 229.796875,
+      "bottom": 248.796875,
+      "left": 477.890625,
+      "right": 667.421875
+    },
+    "visibleTop": 95.421875,
+    "visibleBottom": 287.421875,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "desktop",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 47.59375,
+      "bottom": 920,
+      "left": 400,
+      "right": 1040,
+      "width": 640,
+      "height": 872.40625
+    },
+    "card": {
+      "top": 214.984375,
+      "bottom": 774.984375,
+      "left": 728,
+      "right": 1008,
+      "width": 280,
+      "height": 560
+    },
+    "skull": {
+      "top": 363.515625,
+      "bottom": 626.4375,
+      "left": 432,
+      "right": 704,
+      "width": 272,
+      "height": 262.921875
+    },
+    "footer": {
+      "top": 846.765625,
+      "bottom": 920,
+      "left": 400,
+      "right": 1040,
+      "width": 640,
+      "height": 73.234375
+    },
+    "finalLine": {
+      "top": 716.71875,
+      "bottom": 735.71875,
+      "left": 752,
+      "right": 894.984375
+    },
+    "visibleTop": 214.984375,
+    "visibleBottom": 774.984375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "desktop",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 207.59375,
+      "bottom": 1080,
+      "left": 400,
+      "right": 1040,
+      "width": 640,
+      "height": 872.40625
+    },
+    "card": {
+      "top": 374.984375,
+      "bottom": 934.984375,
+      "left": 728,
+      "right": 1008,
+      "width": 280,
+      "height": 560
+    },
+    "skull": {
+      "top": 523.515625,
+      "bottom": 786.4375,
+      "left": 432,
+      "right": 704,
+      "width": 272,
+      "height": 262.921875
+    },
+    "footer": {
+      "top": 1006.765625,
+      "bottom": 1080,
+      "left": 400,
+      "right": 1040,
+      "width": 640,
+      "height": 73.234375
+    },
+    "finalLine": {
+      "top": 876.71875,
+      "bottom": 895.71875,
+      "left": 752,
+      "right": 894.984375
+    },
+    "visibleTop": 374.984375,
+    "visibleBottom": 934.984375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "desktop",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 207.59375,
+      "bottom": 1080,
+      "left": 400,
+      "right": 1040,
+      "width": 640,
+      "height": 872.40625
+    },
+    "card": {
+      "top": 374.984375,
+      "bottom": 934.984375,
+      "left": 728,
+      "right": 1008,
+      "width": 280,
+      "height": 560
+    },
+    "skull": {
+      "top": 523.515625,
+      "bottom": 786.4375,
+      "left": 432,
+      "right": 704,
+      "width": 272,
+      "height": 262.921875
+    },
+    "footer": {
+      "top": 1006.765625,
+      "bottom": 1080,
+      "left": 400,
+      "right": 1040,
+      "width": 640,
+      "height": 73.234375
+    },
+    "finalLine": {
+      "top": 876.71875,
+      "bottom": 895.71875,
+      "left": 752,
+      "right": 894.984375
+    },
+    "visibleTop": 374.984375,
+    "visibleBottom": 934.984375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "mobile",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 72.390625,
+      "bottom": 764,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 691.609375
+    },
+    "card": {
+      "top": 444.578125,
+      "bottom": 644.609375,
+      "left": 16,
+      "right": 374,
+      "width": 358,
+      "height": 200.03125
+    },
+    "skull": {
+      "top": 214.546875,
+      "bottom": 420.5625,
+      "left": 88.4375,
+      "right": 301.5625,
+      "width": 213.125,
+      "height": 206.015625
+    },
+    "footer": {
+      "top": 660.609375,
+      "bottom": 764,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 590.953125,
+      "bottom": 609.953125,
+      "left": 40,
+      "right": 229.53125
+    },
+    "visibleTop": 444.578125,
+    "visibleBottom": 644.609375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "mobile",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 232.390625,
+      "bottom": 924,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 691.609375
+    },
+    "card": {
+      "top": 604.578125,
+      "bottom": 804.609375,
+      "left": 16,
+      "right": 374,
+      "width": 358,
+      "height": 200.03125
+    },
+    "skull": {
+      "top": 374.546875,
+      "bottom": 580.5625,
+      "left": 88.4375,
+      "right": 301.5625,
+      "width": 213.125,
+      "height": 206.015625
+    },
+    "footer": {
+      "top": 820.609375,
+      "bottom": 924,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 750.953125,
+      "bottom": 769.953125,
+      "left": 40,
+      "right": 229.53125
+    },
+    "visibleTop": 604.578125,
+    "visibleBottom": 804.609375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "mobile",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 232.390625,
+      "bottom": 924,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 691.609375
+    },
+    "card": {
+      "top": 604.578125,
+      "bottom": 804.609375,
+      "left": 16,
+      "right": 374,
+      "width": 358,
+      "height": 200.03125
+    },
+    "skull": {
+      "top": 374.546875,
+      "bottom": 580.5625,
+      "left": 88.4375,
+      "right": 301.5625,
+      "width": 213.125,
+      "height": 206.015625
+    },
+    "footer": {
+      "top": 820.609375,
+      "bottom": 924,
+      "left": 0,
+      "right": 390,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 750.953125,
+      "bottom": 769.953125,
+      "left": 40,
+      "right": 229.53125
+    },
+    "visibleTop": 604.578125,
+    "visibleBottom": 804.609375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "landscape",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 47.09375,
+      "bottom": 309.5,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 262.40625
+    },
+    "card": {
+      "top": 114.09375,
+      "bottom": 306.09375,
+      "left": 453.890625,
+      "right": 812,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 114.09375,
+      "bottom": 306.078125,
+      "left": 131.640625,
+      "right": 330.25,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 322.09375,
+      "bottom": 380.25,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 248.46875,
+      "bottom": 267.46875,
+      "left": 477.890625,
+      "right": 667.421875
+    },
+    "visibleTop": 114.09375,
+    "visibleBottom": 306.09375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "landscape",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 166.59375,
+      "bottom": 429,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 262.40625
+    },
+    "card": {
+      "top": 233.59375,
+      "bottom": 425.59375,
+      "left": 453.890625,
+      "right": 812,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 233.59375,
+      "bottom": 425.578125,
+      "left": 131.640625,
+      "right": 330.25,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 441.59375,
+      "bottom": 499.75,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 367.96875,
+      "bottom": 386.96875,
+      "left": 477.890625,
+      "right": 667.421875
+    },
+    "visibleTop": 233.59375,
+    "visibleBottom": 390,
+    "atScrollEnd": true
+  },
+  {
+    "host": "responsive-host",
+    "size": "landscape",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 166.59375,
+      "bottom": 429,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 262.40625
+    },
+    "card": {
+      "top": 233.59375,
+      "bottom": 425.59375,
+      "left": 453.890625,
+      "right": 812,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 233.59375,
+      "bottom": 425.578125,
+      "left": 131.640625,
+      "right": 330.25,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 441.59375,
+      "bottom": 499.75,
+      "left": 0,
+      "right": 844,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 367.96875,
+      "bottom": 386.96875,
+      "left": 477.890625,
+      "right": 667.421875
+    },
+    "visibleTop": 233.59375,
+    "visibleBottom": 390,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "desktop",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 37.59375,
+      "bottom": 910,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 872.40625
+    },
+    "card": {
+      "top": 282.59375,
+      "bottom": 657.84375,
+      "left": 767.578125,
+      "right": 1408,
+      "width": 640.421875,
+      "height": 375.25
+    },
+    "skull": {
+      "top": 190.21875,
+      "bottom": 750.203125,
+      "left": 98.140625,
+      "right": 677.4375,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "footer": {
+      "top": 851.84375,
+      "bottom": 910,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 600.078125,
+      "bottom": 619.078125,
+      "left": 791.578125,
+      "right": 1063.28125
+    },
+    "visibleTop": 282.59375,
+    "visibleBottom": 657.84375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "desktop",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 217.59375,
+      "bottom": 1090,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 872.40625
+    },
+    "card": {
+      "top": 462.59375,
+      "bottom": 837.84375,
+      "left": 767.578125,
+      "right": 1408,
+      "width": 640.421875,
+      "height": 375.25
+    },
+    "skull": {
+      "top": 370.21875,
+      "bottom": 930.203125,
+      "left": 98.140625,
+      "right": 677.4375,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "footer": {
+      "top": 1031.84375,
+      "bottom": 1090,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 780.078125,
+      "bottom": 799.078125,
+      "left": 791.578125,
+      "right": 1063.28125
+    },
+    "visibleTop": 462.59375,
+    "visibleBottom": 837.84375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "desktop",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 217.59375,
+      "bottom": 1090,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 872.40625
+    },
+    "card": {
+      "top": 462.59375,
+      "bottom": 837.84375,
+      "left": 767.578125,
+      "right": 1408,
+      "width": 640.421875,
+      "height": 375.25
+    },
+    "skull": {
+      "top": 370.21875,
+      "bottom": 930.203125,
+      "left": 98.140625,
+      "right": 677.4375,
+      "width": 579.296875,
+      "height": 559.984375
+    },
+    "footer": {
+      "top": 1031.84375,
+      "bottom": 1090,
+      "left": 0,
+      "right": 1440,
+      "width": 1440,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 780.078125,
+      "bottom": 799.078125,
+      "left": 791.578125,
+      "right": 1063.28125
+    },
+    "visibleTop": 462.59375,
+    "visibleBottom": 837.84375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "mobile",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 62.390625,
+      "bottom": 754,
+      "left": -89.5,
+      "right": 300.5,
+      "width": 390,
+      "height": 691.609375
+    },
+    "card": {
+      "top": 434.578125,
+      "bottom": 634.609375,
+      "left": -73.5,
+      "right": 284.5,
+      "width": 358,
+      "height": 200.03125
+    },
+    "skull": {
+      "top": 204.546875,
+      "bottom": 410.5625,
+      "left": -1.0625,
+      "right": 212.0625,
+      "width": 213.125,
+      "height": 206.015625
+    },
+    "footer": {
+      "top": 650.609375,
+      "bottom": 754,
+      "left": -89.5,
+      "right": 300.5,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 580.953125,
+      "bottom": 599.953125,
+      "left": -49.5,
+      "right": 140.03125
+    },
+    "visibleTop": 434.578125,
+    "visibleBottom": 634.609375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "mobile",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 242.390625,
+      "bottom": 934,
+      "left": -89.5,
+      "right": 300.5,
+      "width": 390,
+      "height": 691.609375
+    },
+    "card": {
+      "top": 614.578125,
+      "bottom": 814.609375,
+      "left": -73.5,
+      "right": 284.5,
+      "width": 358,
+      "height": 200.03125
+    },
+    "skull": {
+      "top": 384.546875,
+      "bottom": 590.5625,
+      "left": -1.0625,
+      "right": 212.0625,
+      "width": 213.125,
+      "height": 206.015625
+    },
+    "footer": {
+      "top": 830.609375,
+      "bottom": 934,
+      "left": -89.5,
+      "right": 300.5,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 760.953125,
+      "bottom": 779.953125,
+      "left": -49.5,
+      "right": 140.03125
+    },
+    "visibleTop": 614.578125,
+    "visibleBottom": 814.609375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "mobile",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 242.390625,
+      "bottom": 934,
+      "left": -89.5,
+      "right": 300.5,
+      "width": 390,
+      "height": 691.609375
+    },
+    "card": {
+      "top": 614.578125,
+      "bottom": 814.609375,
+      "left": -73.5,
+      "right": 284.5,
+      "width": 358,
+      "height": 200.03125
+    },
+    "skull": {
+      "top": 384.546875,
+      "bottom": 590.5625,
+      "left": -1.0625,
+      "right": 212.0625,
+      "width": 213.125,
+      "height": 206.015625
+    },
+    "footer": {
+      "top": 830.609375,
+      "bottom": 934,
+      "left": -89.5,
+      "right": 300.5,
+      "width": 390,
+      "height": 103.390625
+    },
+    "finalLine": {
+      "top": 760.953125,
+      "bottom": 779.953125,
+      "left": -49.5,
+      "right": 140.03125
+    },
+    "visibleTop": 614.578125,
+    "visibleBottom": 814.609375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "landscape",
+    "motion": "normal",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 37.09375,
+      "bottom": 299.5,
+      "left": 137.5,
+      "right": 981.5,
+      "width": 844,
+      "height": 262.40625
+    },
+    "card": {
+      "top": 104.09375,
+      "bottom": 296.09375,
+      "left": 591.390625,
+      "right": 949.5,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 104.09375,
+      "bottom": 296.078125,
+      "left": 269.140625,
+      "right": 467.75,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 312.09375,
+      "bottom": 370.25,
+      "left": 137.5,
+      "right": 981.5,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 238.46875,
+      "bottom": 257.46875,
+      "left": 615.390625,
+      "right": 804.921875
+    },
+    "visibleTop": 104.09375,
+    "visibleBottom": 296.09375,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "landscape",
+    "motion": "os-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 166.59375,
+      "bottom": 429,
+      "left": 137.5,
+      "right": 981.5,
+      "width": 844,
+      "height": 262.40625
+    },
+    "card": {
+      "top": 233.59375,
+      "bottom": 425.59375,
+      "left": 591.390625,
+      "right": 949.5,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 233.59375,
+      "bottom": 425.578125,
+      "left": 269.140625,
+      "right": 467.75,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 441.59375,
+      "bottom": 499.75,
+      "left": 137.5,
+      "right": 981.5,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 367.96875,
+      "bottom": 386.96875,
+      "left": 615.390625,
+      "right": 804.921875
+    },
+    "visibleTop": 233.59375,
+    "visibleBottom": 390,
+    "atScrollEnd": true
+  },
+  {
+    "host": "embedded",
+    "size": "landscape",
+    "motion": "app-reduced",
+    "focusRestored": true,
+    "footerVisible": true,
+    "escapeWithoutRefocus": true,
+    "root": {
+      "top": 166.59375,
+      "bottom": 429,
+      "left": 137.5,
+      "right": 981.5,
+      "width": 844,
+      "height": 262.40625
+    },
+    "card": {
+      "top": 233.59375,
+      "bottom": 425.59375,
+      "left": 591.390625,
+      "right": 949.5,
+      "width": 358.109375,
+      "height": 192
+    },
+    "skull": {
+      "top": 233.59375,
+      "bottom": 425.578125,
+      "left": 269.140625,
+      "right": 467.75,
+      "width": 198.609375,
+      "height": 191.984375
+    },
+    "footer": {
+      "top": 441.59375,
+      "bottom": 499.75,
+      "left": 137.5,
+      "right": 981.5,
+      "width": 844,
+      "height": 58.15625
+    },
+    "finalLine": {
+      "top": 367.96875,
+      "bottom": 386.96875,
+      "left": 615.390625,
+      "right": 804.921875
+    },
+    "visibleTop": 233.59375,
+    "visibleBottom": 390,
+    "atScrollEnd": true
+  }
+]
