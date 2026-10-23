@@ -1,0 +1,30 @@
+[
+  {
+    "engine": "chromium",
+    "chapter": "1/foundations-of-neuroscience",
+    "rootMotion": null,
+    "osReducedMotion": false,
+    "paintedCoverMoved": true
+  },
+  {
+    "engine": "chromium",
+    "chapter": "2/the-retina",
+    "rootMotion": null,
+    "osReducedMotion": false,
+    "paintedCoverMoved": true
+  },
+  {
+    "engine": "firefox",
+    "chapter": "1/foundations-of-neuroscience",
+    "rootMotion": null,
+    "osReducedMotion": false,
+    "paintedCoverMoved": true
+  },
+  {
+    "engine": "firefox",
+    "chapter": "2/the-retina",
+    "rootMotion": null,
+    "osReducedMotion": false,
+    "paintedCoverMoved": true
+  }
+]

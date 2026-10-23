@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  chapterEndReferences,
+  retinaLegacyReferences,
   linkifyReference,
   referenceDisplay,
   referenceFromChapter,
@@ -121,5 +123,33 @@ describe("referenceDisplay (OPENBRAIN-92)", () => {
       'href="https://doi.org/10.1016/B978-0-12-819896-4.00008-1"'
     );
     expect(d.href).toBeNull();
+  });
+});
+
+describe("one complete Retina bibliography", () => {
+  const chapter = {
+    slug: "the-retina",
+    footNotes: { notes: [{ text: "First." }, { text: "Second." }] },
+    furtherReading: { paragraphs: [{ text: "Keep Webvision." }] },
+  };
+  it("prefers structured metadata and retains missing legacy citation numbers", () => {
+    const row = { number: 2, raw_text: "Second.", doi: "10.1234/example" };
+    expect(chapterEndReferences(chapter, [row])).toEqual([
+      { number: 1, html: "First." },
+      row,
+    ]);
+    expect(chapter.footNotes.notes).toHaveLength(2);
+    expect(chapter.furtherReading.paragraphs[0].text).toBe("Keep Webvision.");
+  });
+  it("still supplies every citation anchor when the table is empty", () => {
+    expect(chapterEndReferences(chapter).map((r) => r.number)).toEqual([1, 2]);
+  });
+  it("does not consume genuine footnotes from other chapters or append a second References section", () => {
+    expect(retinaLegacyReferences({ ...chapter, slug: "other" })).toEqual([]);
+    expect(
+      chapterEndReferences({ ...chapter, sections: [{ slug: "references" }] }, [
+        { number: 1 },
+      ])
+    ).toEqual([]);
   });
 });

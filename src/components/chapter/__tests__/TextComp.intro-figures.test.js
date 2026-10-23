@@ -220,6 +220,23 @@ describe("TextComp: the intro's figures", () => {
     ]);
   });
 
+  it("draws Retina's section-level Dragon inline once on a phone", async () => {
+    narrow = true;
+    stubMatchMedia();
+    const chapter = transformModuleToChapterFormat(attentionModule());
+    chapter.intro[0].animation = { name: "dragon" };
+    const wrapper = mountReader(chapter);
+    await wrapper.vm.$nextTick();
+    expect(
+      wrapper.findAll('[data-inline-figure="animationDragon"]')
+    ).toHaveLength(1);
+    expect(
+      wrapper
+        .find('#triggerAnimationDragon [data-inline-figure="animationDragon"]')
+        .exists()
+    ).toBe(true);
+  });
+
   it("binds each intro figure's authored hold for the pane (data-figure-hold)", async () => {
     const module = attentionModule();
     module.sections[0].paragraphs[1].content.animationFlags = { hold: 0 };
