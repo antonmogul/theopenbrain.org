@@ -1,0 +1,17 @@
+/* Review-only presentation: no chapter-wide link policy is enabled. */
+.review-reference-links .P {
+  margin: 1.25rem 0;
+}
+.review-reference-links a[href] {
+  color: rgb(var(--color-ink));
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+.review-reference-links a[href]:hover {
+  color: rgb(var(--color-accent));
+}
+.review-reference-links a[href]:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 3px;
+}

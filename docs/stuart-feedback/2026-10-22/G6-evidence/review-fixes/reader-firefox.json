@@ -1,0 +1,783 @@
+[
+  {
+    "width": 1440,
+    "box": "86ea3bec-48c6-4b51-a2d3-00ce0b063052",
+    "rects": [
+      {
+        "x": 144,
+        "y": 346.73333740234375,
+        "width": 564,
+        "height": 476.8499755859375,
+        "top": 346.73333740234375,
+        "right": 708,
+        "bottom": 823.5833129882812,
+        "left": 144
+      },
+      {
+        "x": 732,
+        "y": 346.73333740234375,
+        "width": 564,
+        "height": 492.25,
+        "top": 346.73333740234375,
+        "right": 1296,
+        "bottom": 838.9833374023438,
+        "left": 732
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 736,
+          "y": -445.0333251953125,
+          "width": 559,
+          "height": 1198.13330078125,
+          "top": -445.0333251953125,
+          "right": 1295,
+          "bottom": 753.0999755859375,
+          "left": 736
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 760,
+              "y": 279.9666748046875,
+              "width": 511,
+              "height": 439.13336181640625,
+              "top": 279.9666748046875,
+              "right": 1271,
+              "bottom": 719.1000366210938,
+              "left": 760
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 760,
+              "y": 330.9666748046875,
+              "width": 471,
+              "height": 37.70001220703125,
+              "top": 330.9666748046875,
+              "right": 1231,
+              "bottom": 368.66668701171875,
+              "left": 760
+            },
+            "clientWidth": 471,
+            "scrollWidth": 471
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 1243,
+              "y": 293.9666748046875,
+              "width": 28,
+              "height": 28,
+              "top": 293.9666748046875,
+              "right": 1271,
+              "bottom": 321.9666748046875,
+              "left": 1243
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 760,
+              "y": 380.66668701171875,
+              "width": 511,
+              "height": 338.433349609375,
+              "top": 380.66668701171875,
+              "right": 1271,
+              "bottom": 719.1000366210938,
+              "left": 760
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "The link between the four humors and the four elements. Source: Stellmack and Stalikis, 1991."
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "box": "5a5989ca-6489-4c1b-b6b4-b10acb4f3e32",
+    "rects": [
+      {
+        "x": 144,
+        "y": 354.433349609375,
+        "width": 564,
+        "height": 476.8500061035156,
+        "top": 354.433349609375,
+        "right": 708,
+        "bottom": 831.2833557128906,
+        "left": 144
+      },
+      {
+        "x": 732,
+        "y": 354.433349609375,
+        "width": 564,
+        "height": 476.8500061035156,
+        "top": 354.433349609375,
+        "right": 1296,
+        "bottom": 831.2833557128906,
+        "left": 732
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 148,
+          "y": -1711.433349609375,
+          "width": 559,
+          "height": 2739.39990234375,
+          "top": -1711.433349609375,
+          "right": 707,
+          "bottom": 1027.966552734375,
+          "left": 148
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 172,
+              "y": 5.5666656494140625,
+              "width": 511,
+              "height": 988.4000244140625,
+              "top": 5.5666656494140625,
+              "right": 683,
+              "bottom": 993.9666900634766,
+              "left": 172
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 172,
+              "y": 56.56666564941406,
+              "width": 471,
+              "height": 75.39999389648438,
+              "top": 56.56666564941406,
+              "right": 643,
+              "bottom": 131.96665954589844,
+              "left": 172
+            },
+            "clientWidth": 471,
+            "scrollWidth": 471
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 655,
+              "y": 19.566665649414062,
+              "width": 28,
+              "height": 28,
+              "top": 19.566665649414062,
+              "right": 683,
+              "bottom": 47.56666564941406,
+              "left": 655
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 172,
+              "y": 143.96665954589844,
+              "width": 511,
+              "height": 850,
+              "top": 143.96665954589844,
+              "right": 683,
+              "bottom": 993.9666595458984,
+              "left": 172
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      {
+        "panel": {
+          "x": 736,
+          "y": -1422.433349609375,
+          "width": 559,
+          "height": 2441.550048828125,
+          "top": -1422.433349609375,
+          "right": 1295,
+          "bottom": 1019.11669921875,
+          "left": 736
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 760,
+              "y": 15.566665649414062,
+              "width": 511,
+              "height": 969.5499877929688,
+              "top": 15.566665649414062,
+              "right": 1271,
+              "bottom": 985.1166534423828,
+              "left": 760
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 760,
+              "y": 66.56666564941406,
+              "width": 471,
+              "height": 56.55000305175781,
+              "top": 66.56666564941406,
+              "right": 1231,
+              "bottom": 123.11666870117188,
+              "left": 760
+            },
+            "clientWidth": 471,
+            "scrollWidth": 471
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 1243,
+              "y": 29.566665649414062,
+              "width": 28,
+              "height": 28,
+              "top": 29.566665649414062,
+              "right": 1271,
+              "bottom": 57.56666564941406,
+              "left": 1243
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 760,
+              "y": 135.11666870117188,
+              "width": 511,
+              "height": 850,
+              "top": 135.11666870117188,
+              "right": 1271,
+              "bottom": 985.1166687011719,
+              "left": 760
+            },
+            "clientWidth": 511,
+            "scrollWidth": 511
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Top-down views of a human and chimpanzee brain. On the right side a transverse section is shown, revealing the ventricles. The hippocampus minor is indicated in both brains with an ‘x.’ Source: Huxley, 1863."
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "box": "86ea3bec-48c6-4b51-a2d3-00ce0b063052",
+    "rects": [
+      {
+        "x": 35,
+        "y": 77.21665954589844,
+        "width": 320,
+        "height": 484.41668701171875,
+        "top": 77.21665954589844,
+        "right": 355,
+        "bottom": 561.6333465576172,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 585.63330078125,
+        "width": 320,
+        "height": 500.816650390625,
+        "top": 585.63330078125,
+        "right": 355,
+        "bottom": 1086.449951171875,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 39,
+          "y": -614.4166870117188,
+          "width": 315,
+          "height": 1296.933349609375,
+          "top": -614.4166870117188,
+          "right": 354,
+          "bottom": 682.5166625976562,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 351.48333740234375,
+              "width": 275,
+              "height": 297.0333251953125,
+              "top": 351.48333740234375,
+              "right": 334,
+              "bottom": 648.5166625976562,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 397.83331298828125,
+              "width": 235,
+              "height": 56.55000305175781,
+              "top": 397.83331298828125,
+              "right": 294,
+              "bottom": 454.38331604003906,
+              "left": 59
+            },
+            "clientWidth": 235,
+            "scrollWidth": 235
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 306,
+              "y": 365.48333740234375,
+              "width": 28,
+              "height": 28,
+              "top": 365.48333740234375,
+              "right": 334,
+              "bottom": 393.48333740234375,
+              "left": 306
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 466.3833312988281,
+              "width": 275,
+              "height": 182.13333129882812,
+              "top": 466.3833312988281,
+              "right": 334,
+              "bottom": 648.5166625976562,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "The link between the four humors and the four elements. Source: Stellmack and Stalikis, 1991."
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "box": "5a5989ca-6489-4c1b-b6b4-b10acb4f3e32",
+    "rects": [
+      {
+        "x": 35,
+        "y": 91.71665954589844,
+        "width": 320,
+        "height": 500.8166809082031,
+        "top": 91.71665954589844,
+        "right": 355,
+        "bottom": 592.5333404541016,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 616.5333251953125,
+        "width": 320,
+        "height": 485.4166564941406,
+        "top": 616.5333251953125,
+        "right": 355,
+        "bottom": 1101.9499816894531,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 39,
+          "y": -2200.666748046875,
+          "width": 315,
+          "height": 3126.566650390625,
+          "top": -2200.666748046875,
+          "right": 354,
+          "bottom": 925.89990234375,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 109.08332824707031,
+              "width": 275,
+              "height": 782.816650390625,
+              "top": 109.08332824707031,
+              "right": 334,
+              "bottom": 891.8999786376953,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 155.43333435058594,
+              "width": 235,
+              "height": 150.8000030517578,
+              "top": 155.43333435058594,
+              "right": 294,
+              "bottom": 306.23333740234375,
+              "left": 59
+            },
+            "clientWidth": 235,
+            "scrollWidth": 235
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 306,
+              "y": 123.08332824707031,
+              "width": 28,
+              "height": 28,
+              "top": 123.08332824707031,
+              "right": 334,
+              "bottom": 151.0833282470703,
+              "left": 306
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 318.23333740234375,
+              "width": 275,
+              "height": 573.6666259765625,
+              "top": 318.23333740234375,
+              "right": 334,
+              "bottom": 891.8999633789062,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      {
+        "panel": {
+          "x": 39,
+          "y": -1821.88330078125,
+          "width": 315,
+          "height": 2736.333251953125,
+          "top": -1821.88330078125,
+          "right": 354,
+          "bottom": 914.449951171875,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 118.96665954589844,
+              "width": 275,
+              "height": 761.4833374023438,
+              "top": 118.96665954589844,
+              "right": 334,
+              "bottom": 880.4499969482422,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 191.6666717529297,
+              "width": 235,
+              "height": 113.09999084472656,
+              "top": 191.6666717529297,
+              "right": 294,
+              "bottom": 304.76666259765625,
+              "left": 59
+            },
+            "clientWidth": 235,
+            "scrollWidth": 235
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 306,
+              "y": 132.96665954589844,
+              "width": 28,
+              "height": 28,
+              "top": 132.96665954589844,
+              "right": 334,
+              "bottom": 160.96665954589844,
+              "left": 306
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 316.76666259765625,
+              "width": 275,
+              "height": 563.683349609375,
+              "top": 316.76666259765625,
+              "right": 334,
+              "bottom": 880.4500122070312,
+              "left": 59
+            },
+            "clientWidth": 275,
+            "scrollWidth": 275
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Top-down views of a human and chimpanzee brain. On the right side a transverse section is shown, revealing the ventricles. The hippocampus minor is indicated in both brains with an ‘x.’ Source: Huxley, 1863."
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "box": "86ea3bec-48c6-4b51-a2d3-00ce0b063052",
+    "rects": [
+      {
+        "x": 35,
+        "y": 42.616668701171875,
+        "width": 250,
+        "height": 522.816650390625,
+        "top": 42.616668701171875,
+        "right": 285,
+        "bottom": 565.4333190917969,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 589.433349609375,
+        "width": 250,
+        "height": 531.61669921875,
+        "top": 589.433349609375,
+        "right": 285,
+        "bottom": 1121.050048828125,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": []
+  },
+  {
+    "width": 320,
+    "box": "5a5989ca-6489-4c1b-b6b4-b10acb4f3e32",
+    "rects": [
+      {
+        "x": 35,
+        "y": 88.01666259765625,
+        "width": 250,
+        "height": 500.816650390625,
+        "top": 88.01666259765625,
+        "right": 285,
+        "bottom": 588.8333129882812,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 612.8333129882812,
+        "width": 250,
+        "height": 522.816650390625,
+        "top": 612.8333129882812,
+        "right": 285,
+        "bottom": 1135.6499633789062,
+        "left": 35
+      }
+    ],
+    "bothOpen": true,
+    "figures": [
+      {
+        "panel": {
+          "x": 39,
+          "y": -3048.36669921875,
+          "width": 245,
+          "height": 3951.833251953125,
+          "top": -3048.36669921875,
+          "right": 284,
+          "bottom": 903.466552734375,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 130.93333435058594,
+              "width": 205,
+              "height": 738.5333251953125,
+              "top": 130.93333435058594,
+              "right": 264,
+              "bottom": 869.4666595458984,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 203.63333129882812,
+              "width": 165,
+              "height": 226.1999969482422,
+              "top": 203.63333129882812,
+              "right": 224,
+              "bottom": 429.8333282470703,
+              "left": 59
+            },
+            "clientWidth": 165,
+            "scrollWidth": 165
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 236,
+              "y": 144.93333435058594,
+              "width": 28,
+              "height": 28,
+              "top": 144.93333435058594,
+              "right": 264,
+              "bottom": 172.93333435058594,
+              "left": 236
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 441.83331298828125,
+              "width": 205,
+              "height": 427.6333312988281,
+              "top": 441.83331298828125,
+              "right": 264,
+              "bottom": 869.4666442871094,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      {
+        "panel": {
+          "x": 39,
+          "y": -2476.316650390625,
+          "width": 245,
+          "height": 3360.85009765625,
+          "top": -2476.316650390625,
+          "right": 284,
+          "bottom": 884.533447265625,
+          "left": 39
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 59,
+              "y": 149.63333129882812,
+              "width": 205,
+              "height": 700.9000244140625,
+              "top": 149.63333129882812,
+              "right": 264,
+              "bottom": 850.5333557128906,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 59,
+              "y": 248.68333435058594,
+              "width": 165,
+              "height": 169.64999389648438,
+              "top": 248.68333435058594,
+              "right": 224,
+              "bottom": 418.3333282470703,
+              "left": 59
+            },
+            "clientWidth": 165,
+            "scrollWidth": 165
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 236,
+              "y": 163.63333129882812,
+              "width": 28,
+              "height": 28,
+              "top": 163.63333129882812,
+              "right": 264,
+              "bottom": 191.63333129882812,
+              "left": 236
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 59,
+              "y": 430.33331298828125,
+              "width": 205,
+              "height": 420.20001220703125,
+              "top": 430.33331298828125,
+              "right": 264,
+              "bottom": 850.5333251953125,
+              "left": 59
+            },
+            "clientWidth": 205,
+            "scrollWidth": 205
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Top-down views of a human and chimpanzee brain. On the right side a transverse section is shown, revealing the ventricles. The hippocampus minor is indicated in both brains with an ‘x.’ Source: Huxley, 1863."
+      }
+    ]
+  }
+]

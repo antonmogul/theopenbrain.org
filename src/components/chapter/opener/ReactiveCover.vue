@@ -15,10 +15,10 @@
  * would log and no layer at all (`state` = "unavailable"). The parent reads
  * `state` for `data-reactive-cover`; nothing here touches --opener-h.
  */
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 import { lottieAssetOk } from "@/helper/animationResolve";
-import { reducedMotionPreferred } from "@/helper/readerJump";
+import { useReducedMotion } from "@/composables/useReducedMotion";
 import {
   IDLE_AFTER_MS,
   ease,
@@ -34,6 +34,8 @@ const props = defineProps({
 const emit = defineEmits(["state"]);
 
 const stage = ref(null);
+const reducedMotion = useReducedMotion();
+let ready = false;
 let anim = null;
 let total = 1;
 let current = 0.5; // the shown position, 0..1
@@ -86,7 +88,8 @@ function sweep() {
 }
 
 function start() {
-  if (disposed) return;
+  if (disposed || !ready || reducedMotion.value || !visible) return;
+  stop();
   window.addEventListener("pointermove", onPointer, { passive: true });
   armSweep();
 }
@@ -94,6 +97,13 @@ function stop() {
   window.removeEventListener("pointermove", onPointer);
   stopSweep();
 }
+
+watch(reducedMotion, (reduced) => {
+  stop();
+  if (!ready) return;
+  if (reduced) show(0.5);
+  else start();
+});
 
 onMounted(async () => {
   emit("state", "loading");
@@ -122,7 +132,7 @@ onMounted(async () => {
     total = anim.totalFrames || 1;
     show(0.5);
     emit("state", "ready");
-    if (reducedMotionPreferred()) return; // the middle frame, fixed
+    ready = true;
     // Only run while the opener is on screen: the sweep and the listener
     // have nothing to show once the reader has scrolled into the chapter.
     if (typeof IntersectionObserver !== "undefined") {

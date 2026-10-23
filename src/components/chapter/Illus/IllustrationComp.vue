@@ -4,6 +4,7 @@
        In the pane the states are a column pinned beside the art
        (OPENBRAIN-99). -->
   <div
+    ref="root"
     class="pointer-events-auto"
     :class="
       inline
@@ -175,6 +176,7 @@
         >
           <div
             :id="scopeId || animation.id"
+            ref="art"
             :class="{ 'illustration-art': presentation.caption }"
           />
           <figcaption v-if="presentation.caption" class="illustration-caption">
@@ -197,12 +199,17 @@
       class="absolute z-40"
       :class="inline ? 'top-0 right-0' : 'top-12 right-8'"
     >
-      <PauseIcon
-        class="icon"
-        v-if="animation.loop && !isPaused"
+      <button
+        v-if="animation.loop"
+        type="button"
+        class="icon illustration-playback"
+        :disabled="!ready"
+        :aria-label="isPaused ? 'Play animation' : 'Pause animation'"
         @click="playPause()"
-      />
-      <PlayIcon class="icon" v-else-if="animation.loop" @click="playPause()" />
+      >
+        <PauseIcon v-if="!isPaused" aria-hidden="true" />
+        <PlayIcon v-else aria-hidden="true" />
+      </button>
     </div>
   </div>
 </template>
@@ -210,16 +217,11 @@
 <script setup>
 import { clog } from "@/helper/chapterDebug";
 import IllustarionMultiple from "@/components/chapter/Illus/IllustarionMultiple.vue";
-import { computed, ref, onMounted, onUnmounted } from "vue";
-import { addH, removeH, toSlug, toCamelCase } from "@/helper/general";
+import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { toSlug, toCamelCase } from "@/helper/general";
 import { loadLottie } from "@/composables/useLottie";
 
-let lottie;
-
-// Detect reduced-motion preference
-const prefersReducedMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)"
-).matches;
+import { useReducedMotion } from "@/composables/useReducedMotion";
 import animationJSON from "@/assets/json_backend/animations.json";
 import { lottiePath, resolveAnimationConfig } from "@/helper/animationResolve";
 import { figurePresentation } from "@/helper/figurePresentation";
@@ -245,7 +247,15 @@ const props = defineProps({
 const inline = computed(() => !!props.scopeId);
 const presentation = computed(() => figurePresentation(props.animation));
 let animationLottie;
-let isPaused = ref(false);
+const root = ref(null);
+const art = ref(null);
+const ready = ref(false);
+const reducedMotion = useReducedMotion();
+const isPaused = ref(reducedMotion.value);
+let disposed = false;
+let playTimer;
+const highlightListeners = [];
+const parts = (name) => root.value?.getElementsByClassName(name) || [];
 
 // Use the animation prop directly (it now contains all config from DB or JSON).
 // Fall back to JSON lookup for backward compatibility during transition —
@@ -271,6 +281,7 @@ if (info.blockStates) {
 }
 
 const playPause = () => {
+  if (!ready.value || !animationLottie) return;
   if (isPaused.value) {
     isPaused.value = false;
     if (!animationLottie) return;
@@ -286,8 +297,10 @@ const playPause = () => {
 };
 
 const setState = (event) => {
+  if (!ready.value && !props.animation.multiple) return;
   let index = event.index;
   let indexBefore = event.activeState;
+  if (index === indexBefore) return;
 
   // [5 STATE] a state step was requested. `info.highlight` decides the branch:
   // highlight figures sync DOM highlight classes; non-highlight ones drive Lottie frames.
@@ -303,11 +316,10 @@ const setState = (event) => {
     if (!props.animation.multiple) {
       animationLottie.setSpeed(6);
       let totalFrames = animationLottie.animationData.op;
-      const pos = (totalFrames / 6) * (indexBefore + 1);
-      animationLottie.playSegments([1, totalFrames], true);
+      const pos = (totalFrames / 6) * ((indexBefore ?? 0) + 1);
       const posAfter = (totalFrames / 6) * (index + 1);
       activeState.value.state = index;
-      if (info.smooth) {
+      if (info.smooth && !reducedMotion.value) {
         animationLottie.playSegments([pos, posAfter], true);
       } else {
         animationLottie.goToAndStop(posAfter, true);
@@ -317,14 +329,14 @@ const setState = (event) => {
     }
   } else {
     let state = toCamelCase(info.states[index]);
-    let els = document.getElementsByClassName(state + "Highlight");
+    let els = parts(state + "Highlight");
     for (let el of els) {
       el.classList.add("highlightIllu");
       activeState.value.state = index;
     }
     if (indexBefore === undefined) return;
     let lastState = toCamelCase(info.states[indexBefore]);
-    let lastEls = document.getElementsByClassName(lastState + "Highlight");
+    let lastEls = parts(lastState + "Highlight");
     for (let lastEl of lastEls) {
       lastEl.classList.remove("highlightIllu");
     }
@@ -335,7 +347,7 @@ const setBlockState = (index) => {
   let newState = !activeState.value[index];
   activeState.value.splice(index, 1, newState);
   let stateName = info.states[index].replaceAll(" ", "").toLowerCase();
-  let els = document.querySelectorAll("." + stateName + "Highlight");
+  let els = parts(stateName + "Highlight");
   for (let el of els) {
     if (newState) {
       el.classList.add("active");
@@ -345,89 +357,122 @@ const setBlockState = (index) => {
   }
 };
 
-onMounted(async () => {
-  if (info.switch) return;
-  if (info.illuImage || info.flip) return; // No Lottie needed for images/flips
-
-  // Skip animations entirely for users with reduced-motion preference
-  if (prefersReducedMotion) return;
-
-  let svgContainer = document.getElementById(
-    props.scopeId || props.animation.id
+// A still must retain the original artwork. Frame 24 is the authored
+// eye-structure resting state; loops use their authored loop entrance.
+function park() {
+  clearTimeout(playTimer);
+  if (!ready.value) return;
+  isPaused.value = true;
+  animationLottie.goToAndStop(
+    Math.min(
+      animationLottie.totalFrames - 1,
+      info.states ? 24 : info.loopSection?.[0] || 24
+    ),
+    true
   );
+}
+function begin() {
+  if (!ready.value || disposed) return;
+  if (reducedMotion.value) return park();
+  if (info.states && !info.hasTransition) {
+    animationLottie.goToAndStop(24, true);
+  } else {
+    isPaused.value = false;
+    animationLottie.setSpeed(info.speed || 1);
+    animationLottie.play();
+  }
+}
+watch(reducedMotion, () => {
+  clearTimeout(playTimer);
+  if (reducedMotion.value) park();
+  else begin();
+});
+
+onMounted(async () => {
+  if (info.switch || info.illuImage || info.flip) return;
+  const svgContainer = art.value;
   if (!svgContainer) return;
-
-  lottie = await loadLottie();
-
+  const lottie = await loadLottie();
+  if (disposed || !root.value) return;
   animationLottie = lottie.loadAnimation({
-    rendererSettings: {
-      progressiveLoad: true,
-    },
-    id: props.scopeId || props.animation.id,
-    speed: info.speed || 1,
-    wrapper: svgContainer,
-    animType: "svg",
-    // autoLoop: an uploaded animation with no states just plays on repeat
-    // (OPENBRAIN-70 B4). `loop` means something else to the state figures.
-    loop: props.animation.autoLoop ? true : false,
-    autoplay: props.animation.autoplay ? true : false,
+    rendererSettings: { progressiveLoad: true },
+    container: svgContainer,
+    renderer: "svg",
+    loop: !!props.animation.autoLoop,
+    autoplay: false,
     path: lottiePath(props.animation),
   });
-  animationLottie.addEventListener("DOMLoaded", () => {
-    const highligters = document.getElementsByClassName("highlighterIllu");
-    for (let highlighter of highligters) {
-      highlighter.addEventListener("mouseover", (event) => addH(event));
-      highlighter.addEventListener("mouseleave", (event) => removeH(event));
-    }
-  });
   animationLottie.setSubframe(true);
-
-  if (props.animation.set) {
-    console.log(props.animation.set, info.states);
-    let state = toCamelCase(info.states[2]);
-    let wait = setInterval(() => {
-      let els = document.getElementsByClassName(state + "Highlight");
-      if (els.length === 0) return;
-      clearInterval(wait);
-      for (let el of els) {
-        el.classList.add("highlightIllu");
-        activeState.value.state = props.animation.set;
-      }
-      console.log(state + "Highlight");
-    }, 10);
-  }
-
+  animationLottie.addEventListener("DOMLoaded", () => {
+    if (disposed) return;
+    ready.value = true;
+    for (const element of parts("highlighterIllu")) {
+      // Bind only this instance's SVG, and remove the same handlers on teardown.
+      const name = [...element.classList].find((value) =>
+        value.endsWith("Highlight")
+      );
+      const text = name
+        ? document.getElementById(name.replace(/Highlight$/, ""))
+        : null;
+      const enter = () => {
+        element.classList.add("highlightIllu");
+        text?.classList.add("highlightText");
+      };
+      const leave = () => {
+        const selected = info.states?.[activeState.value.state];
+        if (!selected || name !== `${toCamelCase(selected)}Highlight`)
+          element.classList.remove("highlightIllu");
+        text?.classList.remove("highlightText");
+      };
+      element.addEventListener("mouseenter", enter);
+      element.addEventListener("mouseleave", leave);
+      highlightListeners.push(() => {
+        element.removeEventListener("mouseenter", enter);
+        element.removeEventListener("mouseleave", leave);
+        text?.classList.remove("highlightText");
+      });
+    }
+    if (
+      Number.isInteger(props.animation.set) &&
+      info.states?.[props.animation.set]
+    ) {
+      setState({ index: props.animation.set });
+    }
+    if (info.hasTransition && !reducedMotion.value) {
+      playTimer = setTimeout(begin, 300);
+    } else begin();
+  });
   if (info.loop) {
     animationLottie.addEventListener("complete", () => {
+      if (disposed || isPaused.value) return;
       animationLottie.playSegments(
         info.loopSection || [0, animationLottie.totalFrames],
         true
       );
     });
   }
-  if (!info.hasTransition) {
-    if (!info.states) {
-      animationLottie.play();
-    } else {
-      animationLottie.goToAndStop(24, true);
-    }
-  } else {
-    setTimeout(() => {
-      animationLottie.setSpeed(info.speed || 1);
-      animationLottie.play();
-    }, 300);
-  }
 });
 
-// Release the Lottie instance on teardown. Matters most for inline/mobile
-// rendering, where many figures mount and unmount as the column scrolls;
-// without this each leaves a retained AnimationItem (and a live rAF for loops).
-onUnmounted(() => {
+onBeforeUnmount(() => {
+  disposed = true;
+  clearTimeout(playTimer);
+  highlightListeners.forEach((remove) => remove());
   animationLottie?.destroy?.();
 });
 </script>
 
 <style scoped>
+.illustration-playback {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+}
+.illustration-playback:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
 .illustration-captioned {
   height: 100%;
   min-height: 0;

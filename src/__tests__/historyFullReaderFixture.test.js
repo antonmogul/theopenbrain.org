@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import fixture from "../views/__stories__/historyFullReaderData.json";
+import fixture from "../stories/historyFullReaderData.json";
 import repairs from "../data/history/sourceContentRepairs.json";
 import { transformModuleToChapterFormat } from "../composables/chapterTransform.mjs";
 import { buildOutline } from "../composables/useChapterOutline";

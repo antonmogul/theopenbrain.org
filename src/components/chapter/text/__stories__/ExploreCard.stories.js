@@ -6,6 +6,8 @@
  * figure. Here the Hippocrates pair from the History chapter.
  */
 import ExploreCard from "../ExploreCard.vue";
+import IllustrationPlaceholder from "../../Illus/IllustrationPlaceholder.vue";
+import history from "@/stories/historyFullReaderData.json";
 
 const hippocrates = {
   title: "Hippocrates’ view on epilepsy",
@@ -89,4 +91,32 @@ export const InRetina = {
   decorators: [
     () => ({ template: `<div data-chapter="perc"><story /></div>` }),
   ],
+};
+
+/** The complete authored figure inside a disclosure, including its legend. */
+export const InlineFigure = {
+  args: {
+    explore: {
+      title: "The rete mirabile",
+      prompt: "Explore the rete mirabile",
+    },
+    paragraphId: "nested-figure",
+    defaultOpen: true,
+    paired: true,
+  },
+  render: (args) => ({
+    components: { ExploreCard, IllustrationPlaceholder },
+    setup() {
+      const row = history.animations.find(
+        (animation) => animation.animation_key === "animationFoundationsFigC"
+      );
+      return { args, animation: { ...row, ...row.config } };
+    },
+    template: `
+      <div class="chapter-reader" data-chapter="fund" style="padding:24px;max-width:640px;margin:auto;">
+        <ExploreCard v-bind="args">
+          <IllustrationPlaceholder :animation="animation" inline />
+        </ExploreCard>
+      </div>`,
+  }),
 };

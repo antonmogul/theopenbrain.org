@@ -1,5 +1,5 @@
 import HistoryFullReaderHarness from "./HistoryFullReaderHarness.vue";
-import fixture from "./historyFullReaderData.json";
+import fixture from "@/stories/historyFullReaderData.json";
 
 export default {
   title: "Chapter/History Full Reader",

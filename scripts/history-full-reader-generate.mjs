@@ -169,7 +169,7 @@ try {
       ])
     ),
   };
-  const target = "src/views/__stories__/historyFullReaderData.json";
+  const target = "src/stories/historyFullReaderData.json";
   // Prettier owns repository JSON layout; compare parsed data for --check.
   if (process.argv.includes("--check")) {
     assert.deepEqual(

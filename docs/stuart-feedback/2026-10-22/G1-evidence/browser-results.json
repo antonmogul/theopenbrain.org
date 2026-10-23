@@ -1,0 +1,230 @@
+[
+  {
+    "engine": "chromium",
+    "test": "history painted cover moves",
+    "rootMotion": null,
+    "left": "3cc24df4283e7f5207beef2ba972a7571446f140273f858929b3469d9a3c4861",
+    "right": "230b80c9aacdd70168804caeece551b941327421698afeae3eb950e7371f1c99"
+  },
+  {
+    "engine": "chromium",
+    "test": "retina painted cover moves",
+    "rootMotion": null,
+    "left": "06ff7a0ae72d5c57cb0ead3601e1631998296ce2e8126a53a4b18134e8b2e08c",
+    "right": "0db27b8165daec74a082a01f161b3166af0a71984760075232faf59fe2ce5fca"
+  },
+  {
+    "engine": "chromium",
+    "test": "live explicit preference stops/restarts painted cover"
+  },
+  {
+    "engine": "chromium",
+    "test": "Dragon original art and keyboard interaction",
+    "reverseReturn": true
+  },
+  {
+    "engine": "chromium",
+    "test": "EyeStructur original art and keyboard interaction",
+    "reverseReturn": false
+  },
+  {
+    "engine": "chromium",
+    "test": "AccommodationVergence original art and keyboard interaction",
+    "reverseReturn": false
+  },
+  {
+    "engine": "chromium",
+    "test": "EyeMovements original art and keyboard interaction",
+    "reverseReturn": false
+  },
+  {
+    "engine": "chromium",
+    "test": "Dragon original art and keyboard interaction",
+    "reverseReturn": true
+  },
+  {
+    "engine": "chromium",
+    "test": "eye entrance paints through forward/reverse scroll"
+  },
+  {
+    "engine": "chromium",
+    "test": "single complete numbered bibliography; Webvision retained",
+    "count": 106
+  },
+  {
+    "engine": "chromium",
+    "test": "reduced eye entrance stays on complete drawing during scroll"
+  },
+  {
+    "engine": "chromium",
+    "test": "1440px reduced Dragon: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "1440px reduced EyeStructur: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "1440px reduced AccommodationVergence: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "1440px reduced EyeMovements: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "390px explicit motion override resumes artwork; simulated touch pointer scrubs cover",
+    "rootMotion": "0",
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "390px reduced Dragon: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "390px reduced EyeStructur: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "390px reduced AccommodationVergence: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "390px reduced EyeMovements: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "chromium",
+    "test": "missing cover retains poster"
+  },
+  {
+    "engine": "firefox",
+    "test": "history painted cover moves",
+    "rootMotion": null,
+    "left": "29ca62278e0aa937c5832d5c72c7ecba550f6096a076f0eee9d756979f77ddbd",
+    "right": "7bb2e2e247a57ef58bf70348e1f612b848ebac23e23a8cabd944fa38645d7acf"
+  },
+  {
+    "engine": "firefox",
+    "test": "retina painted cover moves",
+    "rootMotion": null,
+    "left": "b1ecd7437f9b789ff5b90027c283ea10767dcaa17d9f25a1cd7787d6cc541529",
+    "right": "58d7fc541ff961525ae315d1339ad084f169f6492e4c26b6f6b1d6e0817de36d"
+  },
+  {
+    "engine": "firefox",
+    "test": "live explicit preference stops/restarts painted cover"
+  },
+  {
+    "engine": "firefox",
+    "test": "Dragon original art and keyboard interaction",
+    "reverseReturn": true
+  },
+  {
+    "engine": "firefox",
+    "test": "EyeStructur original art and keyboard interaction",
+    "reverseReturn": false
+  },
+  {
+    "engine": "firefox",
+    "test": "AccommodationVergence original art and keyboard interaction",
+    "reverseReturn": false
+  },
+  {
+    "engine": "firefox",
+    "test": "EyeMovements original art and keyboard interaction",
+    "reverseReturn": false
+  },
+  {
+    "engine": "firefox",
+    "test": "Dragon original art and keyboard interaction",
+    "reverseReturn": true
+  },
+  {
+    "engine": "firefox",
+    "test": "eye entrance paints through forward/reverse scroll"
+  },
+  {
+    "engine": "firefox",
+    "test": "single complete numbered bibliography; Webvision retained",
+    "count": 106
+  },
+  {
+    "engine": "firefox",
+    "test": "reduced eye entrance stays on complete drawing during scroll"
+  },
+  {
+    "engine": "firefox",
+    "test": "1440px reduced Dragon: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "1440px reduced EyeStructur: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "1440px reduced AccommodationVergence: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "1440px reduced EyeMovements: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "390px explicit motion override resumes artwork; simulated touch pointer scrubs cover",
+    "rootMotion": "0",
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "390px reduced Dragon: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "390px reduced EyeStructur: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "390px reduced AccommodationVergence: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "390px reduced EyeMovements: visible original still",
+    "rootMotion": null,
+    "osReducedMotion": true
+  },
+  {
+    "engine": "firefox",
+    "test": "missing cover retains poster"
+  }
+]
