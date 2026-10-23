@@ -1,5 +1,12 @@
 // Public figure metadata with the unapplied G2 migration represented for review.
 // Source media and figure captions retained; SQL tests independently execute the migration.
+// Only Storybook posters are synthetic: gallery thumbnails load before Play,
+// so remote YouTube posters would break the offline story contract. The actual
+// video IDs, credits and deliberate player activation remain unchanged.
+const OFFLINE_VIDEO_POSTER = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360"><rect width="480" height="360" fill="#1c1c1c"/><text x="240" y="180" text-anchor="middle" fill="white" font-family="sans-serif" font-size="20">Offline video preview</text></svg>'
+)}`;
+
 export const FIG19 = {
   id: "animationFoundationsFig19",
   title: "Galvani's frog leg preparation",
@@ -18,7 +25,7 @@ export const FIG19 = {
     },
     {
       alt: "Video: The squid and its giant nerve fibre, Part 2.",
-      src: "https://i.ytimg.com/vi/ZSCUbYyrHug/hqdefault.jpg",
+      src: OFFLINE_VIDEO_POSTER,
       play: "player",
       caption:
         "The squid and its giant nerve fibre, Part 2. Film: The Physiological Society.",
@@ -37,7 +44,7 @@ export const FIG21 = {
   images: [
     {
       alt: "Video: an interview with Andrew Huxley.",
-      src: "https://i.ytimg.com/vi/KbA3RLz3xUQ/hqdefault.jpg",
+      src: OFFLINE_VIDEO_POSTER,
       play: "player",
       caption:
         "Andrew Huxley interviewed by Alan Macfarlane. Video: Alan Macfarlane.",
