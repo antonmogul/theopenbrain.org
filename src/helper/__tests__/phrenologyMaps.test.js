@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import {
   MAP_FIT,
   VIEW_MAP,
   decodeId,
   facultyInfoByNumber,
   fitTransform,
+  idMarkup,
   mapOutlines,
   parseRegionId,
   regionShapes,
@@ -12,8 +14,8 @@ import {
 
 const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 725">
   <g id="Side">
-    <path id="OB2_W1_Side_14" d="M0 0L10 0L10 10Z"/>
-    <g id="OB2_W1_Side_11_L"><path id="Vector" d="M1 1H2"/><path d="M3 3H4"/></g>
+    <path id="OB2_W1_Side_14" d="M0 0L10 0L10 10Z" fill="#E8DEFC"/>
+    <g id="OB2_W1_Side_11_L"><path id="Vector" d="M1 1H2" fill="#E8DEFC"/><path d="M3 3H4" fill="#E8DEFC"/><g><path d="M1 1Q2 3 4 1" stroke="purple"/></g></g>
     <path id="OB2_W1_Side_empty" d="M5 5H6"/>
     <path id="Vector_9" d="M7 7H8"/>
   </g>
@@ -46,7 +48,47 @@ describe("phrenologyMaps", () => {
   });
 
   it("draws every outline, named or not", () => {
-    expect(mapOutlines(SVG)).toHaveLength(5);
+    expect(mapOutlines(SVG)).toHaveLength(6);
+  });
+
+  it.each([
+    ["side", 31, 1],
+    ["back", 5, 2],
+    ["back", 2, 1],
+    ["back", 4, 2],
+    ["back", 3, 1],
+    ["back", 11, 2],
+    ["back", 10, 1],
+  ])("fills only source regions for %s organ %i", (view, n, count) => {
+    const svg = readFileSync(
+      `public/publicAssets/images/phrenology/regions-${view}.svg`,
+      "utf8"
+    );
+    const source = new DOMParser().parseFromString(svg, "image/svg+xml");
+    const expected = [...source.querySelectorAll("path[fill]")]
+      .filter((p) => {
+        const region = p.closest('[id^="OB2_W1_"]');
+        return parseRegionId(region?.id)?.n === n;
+      })
+      .map((p) => p.getAttribute("d"));
+    expect(expected).toHaveLength(count);
+    expect(
+      regionShapes(svg)
+        .filter((r) => r.n === n)
+        .flatMap((r) => r.d)
+    ).toEqual(expected);
+    const picking = new DOMParser().parseFromString(
+      idMarkup(svg),
+      "image/svg+xml"
+    );
+    const picked = [...picking.querySelectorAll("path")].filter((p) =>
+      p.getAttribute("fill")?.startsWith(`rgb(${n},`)
+    );
+    expect(picked.map((p) => p.getAttribute("d"))).toEqual(expected);
+    // All decorative strokes stay transparent in the ID texture.
+    for (const p of source.querySelectorAll("path[stroke]:not([fill])")) {
+      expect(picking.getElementById(p.id).getAttribute("fill")).toBe("none");
+    }
   });
 
   it("keeps source-numbered records above 18 and de-duplicates shared views", () => {

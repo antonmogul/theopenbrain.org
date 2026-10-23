@@ -1,3 +1,4 @@
+import { PENFIELD_TITLE } from "@/helper/penfieldPresentation";
 /*
  * Widget catalog — the single source of truth for every interactive widget
  * in the Open Brain textbook.
@@ -246,7 +247,7 @@ export const WIDGETS = [
   // HTML to show alongside; the gallery renders the Vue route only.
   {
     id: "case-cabinet",
-    title: "Penfield’s case files — what stimulation brought back",
+    title: PENFIELD_TITLE,
     desc: "Pull a patient’s folder from the drawer: the numbered points Penfield stimulated, and what the patient reported. From Penfield and Perot, Brain, 1963.",
     chapter: "Foundations of Neuroscience",
     author: "The Open Brain (prototype)",

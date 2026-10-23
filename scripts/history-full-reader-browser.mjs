@@ -15,7 +15,7 @@ assert.equal(new URL(base).origin, "http://127.0.0.1:6010");
 const output = "history-fixture-browser-artifacts/full-reader";
 await mkdir(output, { recursive: true });
 const fixture = JSON.parse(
-  await readFile("src/views/__stories__/historyFullReaderData.json", "utf8")
+  await readFile("src/stories/historyFullReaderData.json", "utf8")
 );
 const assets = JSON.parse(
   await readFile("storybook-static/history-full-reader-assets.json", "utf8")

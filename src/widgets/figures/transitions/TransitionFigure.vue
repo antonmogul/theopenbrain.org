@@ -9,6 +9,7 @@
  * of it, as the original did (10% to 90%).
  */
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useReducedMotion } from "@/composables/useReducedMotion";
 import { useFigureLottie } from "../shared/useFigureLottie.js";
 
 const props = defineProps({
@@ -27,23 +28,32 @@ if (props.progress === null)
   );
 
 const stage = ref(null);
+const reducedMotion = useReducedMotion();
+let disposed = false;
 const lottie = useFigureLottie(stage, props.schema.id);
 
 function draw() {
   const a = lottie.anim;
   const total = a?.totalFrames;
-  if (!total) return;
+  if (!total || disposed) return;
   const { from, to } = props.schema.scrub;
-  const f = (((props.progress ?? 0) - from) / (to - from)) * total;
+  const f = reducedMotion.value
+    ? total - 1
+    : (((props.progress ?? 0) - from) / (to - from)) * total;
   a.goToAndStop(Math.min(Math.max(f, 1), total - 1), true);
 }
 
 onMounted(async () => {
-  await lottie.mount(props.lottieUrl);
+  const anim = await lottie.mount(props.lottieUrl);
+  if (!anim || disposed) return;
+  anim.addEventListener("DOMLoaded", draw);
   draw();
 });
-watch(() => props.progress, draw);
-onBeforeUnmount(() => lottie.destroy());
+watch([() => props.progress, reducedMotion], draw);
+onBeforeUnmount(() => {
+  disposed = true;
+  lottie.destroy();
+});
 </script>
 
 <template>

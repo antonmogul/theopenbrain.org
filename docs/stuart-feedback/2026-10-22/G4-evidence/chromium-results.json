@@ -1,0 +1,287 @@
+{
+  "results": [
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "id": "ge",
+      "fit": {
+        "w": 674,
+        "h": 381,
+        "sw": 674,
+        "sh": 381,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "id": "sbe",
+      "fit": {
+        "w": 674,
+        "h": 375,
+        "sw": 674,
+        "sh": 375,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "id": "gp",
+      "fit": {
+        "w": 674,
+        "h": 381,
+        "sw": 674,
+        "sh": 381,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "id": "yn",
+      "fit": {
+        "w": 674,
+        "h": 425,
+        "sw": 674,
+        "sh": 425,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "id": "nc",
+      "fit": {
+        "w": 674,
+        "h": 425,
+        "sw": 674,
+        "sh": 425,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "id": "abra",
+      "fit": {
+        "w": 674,
+        "h": 425,
+        "sw": 674,
+        "sh": 425,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1440,
+      "height": 900,
+      "id": "rw",
+      "fit": {
+        "w": 674,
+        "h": 425,
+        "sw": 674,
+        "sh": 425,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1024,
+      "height": 768,
+      "id": "ge",
+      "fit": {
+        "w": 469,
+        "h": 215,
+        "sw": 469,
+        "sh": 215,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1024,
+      "height": 768,
+      "id": "sbe",
+      "fit": {
+        "w": 469,
+        "h": 209,
+        "sw": 469,
+        "sh": 209,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1024,
+      "height": 768,
+      "id": "gp",
+      "fit": {
+        "w": 469,
+        "h": 215,
+        "sw": 469,
+        "sh": 215,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1024,
+      "height": 768,
+      "id": "yn",
+      "fit": {
+        "w": 469,
+        "h": 259,
+        "sw": 469,
+        "sh": 259,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1024,
+      "height": 768,
+      "id": "nc",
+      "fit": {
+        "w": 469,
+        "h": 259,
+        "sw": 469,
+        "sh": 259,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1024,
+      "height": 768,
+      "id": "abra",
+      "fit": {
+        "w": 469,
+        "h": 259,
+        "sw": 469,
+        "sh": 259,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 1024,
+      "height": 768,
+      "id": "rw",
+      "fit": {
+        "w": 469,
+        "h": 259,
+        "sw": 469,
+        "sh": 259,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "id": "ge",
+      "fit": {
+        "w": 334,
+        "h": 184,
+        "sw": 334,
+        "sh": 184,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "id": "sbe",
+      "fit": {
+        "w": 334,
+        "h": 246,
+        "sw": 334,
+        "sh": 246,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "id": "gp",
+      "fit": {
+        "w": 334,
+        "h": 234,
+        "sw": 334,
+        "sh": 234,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "id": "yn",
+      "fit": {
+        "w": 334,
+        "h": 296,
+        "sw": 334,
+        "sh": 296,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "id": "nc",
+      "fit": {
+        "w": 334,
+        "h": 296,
+        "sw": 334,
+        "sh": 296,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "id": "abra",
+      "fit": {
+        "w": 334,
+        "h": 246,
+        "sw": 334,
+        "sh": 246,
+        "full": true
+      }
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "height": 844,
+      "id": "rw",
+      "fit": {
+        "w": 334,
+        "h": 296,
+        "sw": 334,
+        "sh": 296,
+        "full": true
+      }
+    }
+  ],
+  "countsPerViewport": {
+    "patients": 7,
+    "points": 47,
+    "mapped": 45,
+    "events": 82
+  },
+  "keyboard": true,
+  "mobile": true,
+  "osAndAppReducedMotion": true,
+  "reversibleAnimation": true
+}

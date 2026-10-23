@@ -1,14 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
+import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
 
 const made = [];
+let totalFrames = 192;
 const loadAnimation = vi.fn(({ renderer }) => {
+  const listeners = new Map();
   const a = {
     renderer,
-    totalFrames: 192,
+    totalFrames,
     setSubframe: vi.fn(),
     goToAndStop: vi.fn(),
-    destroy: vi.fn(),
+    // Lottie registers readiness callbacks and releases them on destroy.
+    addEventListener: vi.fn((name, callback) => {
+      if (!listeners.has(name)) listeners.set(name, new Set());
+      listeners.get(name).add(callback);
+      return () => listeners.get(name)?.delete(callback);
+    }),
+    triggerEvent: (name) =>
+      listeners.get(name)?.forEach((callback) => callback()),
+    destroy: vi.fn(() => listeners.clear()),
   };
   made.push(a);
   return a;
@@ -23,8 +33,10 @@ import lateral from "../lateral-organization/schema.js";
 import cellTypes from "../transitions/retinal-cell-types.js";
 import { figureContent } from "../content.js";
 
+enableAutoUnmount(afterEach);
 beforeEach(() => {
   made.length = 0;
+  totalFrames = 192;
   vi.clearAllMocks();
   global.fetch = vi.fn(() =>
     Promise.resolve({ ok: true, json: () => Promise.resolve({ assets: [] }) })
@@ -119,6 +131,52 @@ describe("TransitionFigure", () => {
     expect(made[0].goToAndStop).toHaveBeenLastCalledWith(96, true);
     await w.setProps({ progress: 1 });
     expect(made[0].goToAndStop).toHaveBeenLastCalledWith(191, true);
+    await w.setProps({ progress: 0.5 });
+    expect(made[0].goToAndStop).toHaveBeenLastCalledWith(96, true);
+    await w.setProps({ progress: 0 });
+    expect(made[0].goToAndStop).toHaveBeenLastCalledWith(1, true);
+  });
+
+  it("redraws at the latest scroll progress on DOMLoaded, then reverses", async () => {
+    totalFrames = 0;
+    const w = mount(TransitionFigure, {
+      props: { schema: cellTypes, lottieUrl: "/t.json", progress: 0.2 },
+    });
+    await flushPromises();
+    const anim = made[0];
+    expect(anim.addEventListener).toHaveBeenCalledWith(
+      "DOMLoaded",
+      expect.any(Function)
+    );
+    await w.setProps({ progress: 0.7 });
+    expect(anim.goToAndStop).not.toHaveBeenCalled();
+
+    anim.totalFrames = 192;
+    anim.triggerEvent("DOMLoaded");
+    expect(anim.goToAndStop).toHaveBeenCalledOnce();
+    expect(anim.goToAndStop.mock.calls[0][0]).toBeCloseTo(144);
+    expect(anim.goToAndStop.mock.calls[0][1]).toBe(true);
+    await w.setProps({ progress: 0.3 });
+    expect(anim.goToAndStop.mock.calls.at(-1)[0]).toBeCloseTo(48);
+  });
+
+  it("destroys the animation and ignores late readiness after unmount", async () => {
+    totalFrames = 0;
+    const w = mount(TransitionFigure, {
+      props: { schema: cellTypes, lottieUrl: "/t.json", progress: 0.7 },
+    });
+    await flushPromises();
+    const anim = made[0];
+    const ready = anim.addEventListener.mock.calls.find(
+      ([name]) => name === "DOMLoaded"
+    )[1];
+    w.unmount();
+    expect(anim.destroy).toHaveBeenCalledOnce();
+    anim.totalFrames = 192;
+    anim.triggerEvent("DOMLoaded");
+    // Even an already queued callback must not draw into a disposed stage.
+    ready();
+    expect(anim.goToAndStop).not.toHaveBeenCalled();
   });
 
   it("warns when its host passes no progress", async () => {

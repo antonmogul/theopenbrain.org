@@ -1,0 +1,133 @@
+[
+  {
+    "width": 1440,
+    "box": 1,
+    "rects": [
+      {
+        "x": 144,
+        "y": 346.75,
+        "width": 564,
+        "height": 476.8125,
+        "top": 346.75,
+        "right": 708,
+        "bottom": 823.5625,
+        "left": 144
+      },
+      {
+        "x": 732,
+        "y": 346.75,
+        "width": 564,
+        "height": 492.203125,
+        "top": 346.75,
+        "right": 1296,
+        "bottom": 838.953125,
+        "left": 732
+      }
+    ],
+    "sourceTextLength": 1395,
+    "panelImages": [],
+    "independent": true
+  },
+  {
+    "width": 1440,
+    "box": 2,
+    "rects": [
+      {
+        "x": 144,
+        "y": 354.4375,
+        "width": 564,
+        "height": 476.8125,
+        "top": 354.4375,
+        "right": 708,
+        "bottom": 831.25,
+        "left": 144
+      },
+      {
+        "x": 732,
+        "y": 354.4375,
+        "width": 564,
+        "height": 476.8125,
+        "top": 354.4375,
+        "right": 1296,
+        "bottom": 831.25,
+        "left": 732
+      }
+    ],
+    "sourceTextLength": 2764,
+    "panelImages": [
+      {
+        "src": "/publicAssets/images/foundations/figd-01.jpg",
+        "loaded": true
+      }
+    ],
+    "independent": true
+  },
+  {
+    "width": 390,
+    "box": 1,
+    "rects": [
+      {
+        "x": 35,
+        "y": 117.609375,
+        "width": 320,
+        "height": 484.3125,
+        "top": 117.609375,
+        "right": 355,
+        "bottom": 601.921875,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 625.921875,
+        "width": 320,
+        "height": 500.703125,
+        "top": 625.921875,
+        "right": 355,
+        "bottom": 1126.625,
+        "left": 35
+      }
+    ],
+    "sourceTextLength": 1395,
+    "panelImages": [
+      {
+        "src": "/publicAssets/images/foundations/figk-01.jpg",
+        "loaded": true
+      }
+    ],
+    "independent": true
+  },
+  {
+    "width": 390,
+    "box": 2,
+    "rects": [
+      {
+        "x": 35,
+        "y": 131.765625,
+        "width": 320,
+        "height": 500.703125,
+        "top": 131.765625,
+        "right": 355,
+        "bottom": 632.46875,
+        "left": 35
+      },
+      {
+        "x": 35,
+        "y": 656.46875,
+        "width": 320,
+        "height": 485.3125,
+        "top": 656.46875,
+        "right": 355,
+        "bottom": 1141.78125,
+        "left": 35
+      }
+    ],
+    "sourceTextLength": 2764,
+    "panelImages": [
+      {
+        "src": "/publicAssets/images/foundations/figd-01.jpg",
+        "loaded": true
+      }
+    ],
+    "independent": true
+  }
+]

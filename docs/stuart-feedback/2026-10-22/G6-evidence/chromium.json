@@ -1,0 +1,217 @@
+{
+  "engine": "chromium",
+  "cases": [
+    {
+      "name": "hippocrates",
+      "width": 1440,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 124,
+          "y": 242.296875,
+          "width": 576,
+          "height": 461.421875,
+          "top": 242.296875,
+          "right": 700,
+          "bottom": 703.71875,
+          "left": 124
+        },
+        {
+          "x": 724,
+          "y": 242.296875,
+          "width": 576,
+          "height": 476.8125,
+          "top": 242.296875,
+          "right": 1300,
+          "bottom": 719.109375,
+          "left": 724
+        }
+      ]
+    },
+    {
+      "name": "comparative",
+      "width": 1440,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 124,
+          "y": 285.5,
+          "width": 576,
+          "height": 461.421875,
+          "top": 285.5,
+          "right": 700,
+          "bottom": 746.921875,
+          "left": 124
+        },
+        {
+          "x": 724,
+          "y": 285.5,
+          "width": 576,
+          "height": 461.421875,
+          "top": 285.5,
+          "right": 1300,
+          "bottom": 746.921875,
+          "left": 724
+        }
+      ]
+    },
+    {
+      "name": "hippocrates",
+      "width": 1024,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 225.625,
+          "width": 456,
+          "height": 473.921875,
+          "top": 225.625,
+          "right": 500,
+          "bottom": 699.546875,
+          "left": 44
+        },
+        {
+          "x": 524,
+          "y": 225.625,
+          "width": 456,
+          "height": 472.765625,
+          "top": 225.625,
+          "right": 980,
+          "bottom": 698.390625,
+          "left": 524
+        }
+      ]
+    },
+    {
+      "name": "comparative",
+      "width": 1024,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 225.625,
+          "width": 456,
+          "height": 457.375,
+          "top": 225.625,
+          "right": 500,
+          "bottom": 683,
+          "left": 44
+        },
+        {
+          "x": 524,
+          "y": 225.625,
+          "width": 456,
+          "height": 457.375,
+          "top": 225.625,
+          "right": 980,
+          "bottom": 683,
+          "left": 524
+        }
+      ]
+    },
+    {
+      "name": "hippocrates",
+      "width": 390,
+      "paired": false,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 284.671875,
+          "width": 302,
+          "height": 484.3125,
+          "top": 284.671875,
+          "right": 346,
+          "bottom": 768.984375,
+          "left": 44
+        },
+        {
+          "x": 44,
+          "y": 792.984375,
+          "width": 302,
+          "height": 485.3125,
+          "top": 792.984375,
+          "right": 346,
+          "bottom": 1278.296875,
+          "left": 44
+        }
+      ]
+    },
+    {
+      "name": "comparative",
+      "width": 390,
+      "paired": false,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 314.671875,
+          "width": 302,
+          "height": 469.921875,
+          "top": 314.671875,
+          "right": 346,
+          "bottom": 784.59375,
+          "left": 44
+        },
+        {
+          "x": 44,
+          "y": 808.59375,
+          "width": 302,
+          "height": 469.921875,
+          "top": 808.59375,
+          "right": 346,
+          "bottom": 1278.515625,
+          "left": 44
+        }
+      ]
+    },
+    {
+      "name": "descartes",
+      "width": 1440,
+      "keyboardAndButtons": true,
+      "motionPrecedence": true,
+      "selectedPanelSurvivesResizeAndOrientation": true,
+      "allEightParagraphs": true,
+      "verticalAlternative": true
+    },
+    {
+      "name": "descartes",
+      "width": 390,
+      "keyboardAndButtons": true,
+      "motionPrecedence": true,
+      "selectedPanelSurvivesResizeAndOrientation": true,
+      "allEightParagraphs": true,
+      "verticalAlternative": true
+    },
+    {
+      "name": "ordinary reference link",
+      "input": "mouse",
+      "href": "https://plato.stanford.edu/entries/alcmaeon/",
+      "destinationStubbed": true
+    },
+    {
+      "name": "ordinary reference link",
+      "input": "keyboard",
+      "href": "https://plato.stanford.edu/entries/descartes/",
+      "destinationStubbed": true
+    },
+    {
+      "name": "ordinary reference link",
+      "input": "touch",
+      "href": "https://plato.stanford.edu/entries/dualism/",
+      "destinationStubbed": true
+    }
+  ],
+  "errors": [],
+  "blocked": []
+}

@@ -1,0 +1,649 @@
+{
+  "engine": "chromium",
+  "cases": [
+    {
+      "name": "nested-figure",
+      "width": 320,
+      "geometry": {
+        "panel": {
+          "x": 28,
+          "y": 188.390625,
+          "width": 267,
+          "height": 716.875,
+          "top": 188.390625,
+          "right": 295,
+          "bottom": 905.265625,
+          "left": 28
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 48,
+              "y": 208.390625,
+              "width": 227,
+              "height": 692.875,
+              "top": 208.390625,
+              "right": 275,
+              "bottom": 901.265625,
+              "left": 48
+            },
+            "clientWidth": 227,
+            "scrollWidth": 227
+          },
+          {
+            "className": "fig-toolbar",
+            "rect": {
+              "x": 48,
+              "y": 208.390625,
+              "width": 227,
+              "height": 219.34375,
+              "top": 208.390625,
+              "right": 275,
+              "bottom": 427.734375,
+              "left": 48
+            },
+            "clientWidth": 227,
+            "scrollWidth": 227
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 48,
+              "y": 246.140625,
+              "width": 187,
+              "height": 169.59375,
+              "top": 246.140625,
+              "right": 235,
+              "bottom": 415.734375,
+              "left": 48
+            },
+            "clientWidth": 187,
+            "scrollWidth": 187
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 247,
+              "y": 222.390625,
+              "width": 28,
+              "height": 28,
+              "top": 222.390625,
+              "right": 275,
+              "bottom": 250.390625,
+              "left": 247
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 48,
+              "y": 427.734375,
+              "width": 227,
+              "height": 473.53125,
+              "top": 427.734375,
+              "right": 275,
+              "bottom": 901.265625,
+              "left": 48
+            },
+            "clientWidth": 227,
+            "scrollWidth": 227
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      "expandAndEscape": true
+    },
+    {
+      "name": "nested-figure",
+      "width": 390,
+      "geometry": {
+        "panel": {
+          "x": 28,
+          "y": 188.390625,
+          "width": 337,
+          "height": 825.203125,
+          "top": 188.390625,
+          "right": 365,
+          "bottom": 1013.59375,
+          "left": 28
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 48,
+              "y": 208.390625,
+              "width": 297,
+              "height": 801.203125,
+              "top": 208.390625,
+              "right": 345,
+              "bottom": 1009.59375,
+              "left": 48
+            },
+            "clientWidth": 297,
+            "scrollWidth": 297
+          },
+          {
+            "className": "fig-toolbar",
+            "rect": {
+              "x": 48,
+              "y": 208.390625,
+              "width": 297,
+              "height": 181.65625,
+              "top": 208.390625,
+              "right": 345,
+              "bottom": 390.046875,
+              "left": 48
+            },
+            "clientWidth": 297,
+            "scrollWidth": 297
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 48,
+              "y": 246.140625,
+              "width": 257,
+              "height": 131.90625,
+              "top": 246.140625,
+              "right": 305,
+              "bottom": 378.046875,
+              "left": 48
+            },
+            "clientWidth": 257,
+            "scrollWidth": 257
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 317,
+              "y": 222.390625,
+              "width": 28,
+              "height": 28,
+              "top": 222.390625,
+              "right": 345,
+              "bottom": 250.390625,
+              "left": 317
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 48,
+              "y": 390.046875,
+              "width": 297,
+              "height": 619.546875,
+              "top": 390.046875,
+              "right": 345,
+              "bottom": 1009.59375,
+              "left": 48
+            },
+            "clientWidth": 297,
+            "scrollWidth": 297
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      "expandAndEscape": true
+    },
+    {
+      "name": "nested-figure",
+      "width": 1440,
+      "geometry": {
+        "panel": {
+          "x": 428,
+          "y": 196.4375,
+          "width": 587,
+          "height": 1003.125,
+          "top": 196.4375,
+          "right": 1015,
+          "bottom": 1199.5625,
+          "left": 428
+        },
+        "elements": [
+          {
+            "className": "fig-shell fig-shell--inline",
+            "rect": {
+              "x": 452,
+              "y": 220.4375,
+              "width": 539,
+              "height": 975.125,
+              "top": 220.4375,
+              "right": 991,
+              "bottom": 1195.5625,
+              "left": 452
+            },
+            "clientWidth": 539,
+            "scrollWidth": 539
+          },
+          {
+            "className": "fig-toolbar",
+            "rect": {
+              "x": 452,
+              "y": 220.4375,
+              "width": 539,
+              "height": 125.125,
+              "top": 220.4375,
+              "right": 991,
+              "bottom": 345.5625,
+              "left": 452
+            },
+            "clientWidth": 539,
+            "scrollWidth": 539
+          },
+          {
+            "className": "fig-legend",
+            "rect": {
+              "x": 452,
+              "y": 258.1875,
+              "width": 499,
+              "height": 75.375,
+              "top": 258.1875,
+              "right": 951,
+              "bottom": 333.5625,
+              "left": 452
+            },
+            "clientWidth": 499,
+            "scrollWidth": 499
+          },
+          {
+            "className": "fig-fs-btn",
+            "rect": {
+              "x": 963,
+              "y": 234.4375,
+              "width": 28,
+              "height": 28,
+              "top": 234.4375,
+              "right": 991,
+              "bottom": 262.4375,
+              "left": 963
+            },
+            "clientWidth": 26,
+            "scrollWidth": 26
+          },
+          {
+            "className": "figimg-img",
+            "rect": {
+              "x": 452,
+              "y": 345.5625,
+              "width": 539,
+              "height": 850,
+              "top": 345.5625,
+              "right": 991,
+              "bottom": 1195.5625,
+              "left": 452
+            },
+            "clientWidth": 539,
+            "scrollWidth": 539
+          }
+        ],
+        "imageFit": "contain",
+        "legend": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection."
+      },
+      "expandAndEscape": true
+    },
+    {
+      "name": "widget-seams",
+      "width": 1440,
+      "seams": [
+        {
+          "top": 40,
+          "bottom": 0,
+          "rect": {
+            "x": 104,
+            "y": 204.296875,
+            "width": 1232,
+            "height": 1000,
+            "top": 204.296875,
+            "right": 1336,
+            "bottom": 1204.296875,
+            "left": 104
+          }
+        },
+        {
+          "top": 0,
+          "bottom": 40,
+          "rect": {
+            "x": 104,
+            "y": 1204.296875,
+            "width": 1232,
+            "height": 1000,
+            "top": 1204.296875,
+            "right": 1336,
+            "bottom": 2204.296875,
+            "left": 104
+          }
+        },
+        {
+          "top": 40,
+          "bottom": 40,
+          "rect": {
+            "x": 104,
+            "y": 2335.296875,
+            "width": 1232,
+            "height": 1000,
+            "top": 2335.296875,
+            "right": 1336,
+            "bottom": 3335.296875,
+            "left": 104
+          }
+        }
+      ]
+    },
+    {
+      "name": "widget-seams",
+      "width": 1024,
+      "seams": [
+        {
+          "top": 40,
+          "bottom": 0,
+          "rect": {
+            "x": 24,
+            "y": 188.671875,
+            "width": 976,
+            "height": 1000,
+            "top": 188.671875,
+            "right": 1000,
+            "bottom": 1188.671875,
+            "left": 24
+          }
+        },
+        {
+          "top": 0,
+          "bottom": 40,
+          "rect": {
+            "x": 24,
+            "y": 1188.671875,
+            "width": 976,
+            "height": 1000,
+            "top": 1188.671875,
+            "right": 1000,
+            "bottom": 2188.671875,
+            "left": 24
+          }
+        },
+        {
+          "top": 40,
+          "bottom": 40,
+          "rect": {
+            "x": 24,
+            "y": 2317.34375,
+            "width": 976,
+            "height": 1000,
+            "top": 2317.34375,
+            "right": 1000,
+            "bottom": 3317.34375,
+            "left": 24
+          }
+        }
+      ]
+    },
+    {
+      "name": "widget-seams",
+      "width": 390,
+      "seams": [
+        {
+          "top": 40,
+          "bottom": 0,
+          "rect": {
+            "x": 0,
+            "y": 210.96875,
+            "width": 390,
+            "height": 1000,
+            "top": 210.96875,
+            "right": 390,
+            "bottom": 1210.96875,
+            "left": 0
+          }
+        },
+        {
+          "top": 0,
+          "bottom": 40,
+          "rect": {
+            "x": 0,
+            "y": 1210.96875,
+            "width": 390,
+            "height": 1000,
+            "top": 1210.96875,
+            "right": 390,
+            "bottom": 2210.96875,
+            "left": 0
+          }
+        },
+        {
+          "top": 40,
+          "bottom": 40,
+          "rect": {
+            "x": 0,
+            "y": 2337.3125,
+            "width": 390,
+            "height": 1000,
+            "top": 2337.3125,
+            "right": 390,
+            "bottom": 3337.3125,
+            "left": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "hippocrates",
+      "width": 1440,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 124,
+          "y": 242.296875,
+          "width": 576,
+          "height": 461.421875,
+          "top": 242.296875,
+          "right": 700,
+          "bottom": 703.71875,
+          "left": 124
+        },
+        {
+          "x": 724,
+          "y": 242.296875,
+          "width": 576,
+          "height": 476.8125,
+          "top": 242.296875,
+          "right": 1300,
+          "bottom": 719.109375,
+          "left": 724
+        }
+      ]
+    },
+    {
+      "name": "comparative",
+      "width": 1440,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 124,
+          "y": 285.5,
+          "width": 576,
+          "height": 461.421875,
+          "top": 285.5,
+          "right": 700,
+          "bottom": 746.921875,
+          "left": 124
+        },
+        {
+          "x": 724,
+          "y": 285.5,
+          "width": 576,
+          "height": 461.421875,
+          "top": 285.5,
+          "right": 1300,
+          "bottom": 746.921875,
+          "left": 724
+        }
+      ]
+    },
+    {
+      "name": "hippocrates",
+      "width": 1024,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 225.625,
+          "width": 456,
+          "height": 473.921875,
+          "top": 225.625,
+          "right": 500,
+          "bottom": 699.546875,
+          "left": 44
+        },
+        {
+          "x": 524,
+          "y": 225.625,
+          "width": 456,
+          "height": 472.765625,
+          "top": 225.625,
+          "right": 980,
+          "bottom": 698.390625,
+          "left": 524
+        }
+      ]
+    },
+    {
+      "name": "comparative",
+      "width": 1024,
+      "paired": true,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 225.625,
+          "width": 456,
+          "height": 457.375,
+          "top": 225.625,
+          "right": 500,
+          "bottom": 683,
+          "left": 44
+        },
+        {
+          "x": 524,
+          "y": 225.625,
+          "width": 456,
+          "height": 457.375,
+          "top": 225.625,
+          "right": 980,
+          "bottom": 683,
+          "left": 524
+        }
+      ]
+    },
+    {
+      "name": "hippocrates",
+      "width": 390,
+      "paired": false,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 284.671875,
+          "width": 302,
+          "height": 484.3125,
+          "top": 284.671875,
+          "right": 346,
+          "bottom": 768.984375,
+          "left": 44
+        },
+        {
+          "x": 44,
+          "y": 792.984375,
+          "width": 302,
+          "height": 485.3125,
+          "top": 792.984375,
+          "right": 346,
+          "bottom": 1278.296875,
+          "left": 44
+        }
+      ]
+    },
+    {
+      "name": "comparative",
+      "width": 390,
+      "paired": false,
+      "independentKeyboardAndTouch": true,
+      "artworkLoadedAndContained": true,
+      "rects": [
+        {
+          "x": 44,
+          "y": 314.671875,
+          "width": 302,
+          "height": 469.921875,
+          "top": 314.671875,
+          "right": 346,
+          "bottom": 784.59375,
+          "left": 44
+        },
+        {
+          "x": 44,
+          "y": 808.59375,
+          "width": 302,
+          "height": 469.921875,
+          "top": 808.59375,
+          "right": 346,
+          "bottom": 1278.515625,
+          "left": 44
+        }
+      ]
+    },
+    {
+      "name": "descartes",
+      "width": 1440,
+      "keyboardAndButtons": true,
+      "motionPrecedence": true,
+      "selectedPanelSurvivesResizeAndOrientation": true,
+      "allEightParagraphs": true,
+      "verticalAlternative": true
+    },
+    {
+      "name": "descartes",
+      "width": 390,
+      "keyboardAndButtons": true,
+      "motionPrecedence": true,
+      "selectedPanelSurvivesResizeAndOrientation": true,
+      "allEightParagraphs": true,
+      "verticalAlternative": true
+    },
+    {
+      "name": "ordinary reference link",
+      "input": "mouse",
+      "href": "https://plato.stanford.edu/entries/alcmaeon/",
+      "destinationStubbed": true
+    },
+    {
+      "name": "ordinary reference link",
+      "input": "keyboard",
+      "href": "https://plato.stanford.edu/entries/descartes/",
+      "destinationStubbed": true
+    },
+    {
+      "name": "ordinary reference link",
+      "input": "touch",
+      "href": "https://plato.stanford.edu/entries/dualism/",
+      "destinationStubbed": true
+    }
+  ],
+  "errors": [],
+  "blocked": []
+}

@@ -77,6 +77,16 @@ export function lottiePath(animation) {
   // The row's own URL wins. For bundled figures it equals the key's path,
   // except animationRetinalCellTypes3, whose key has no file of its own and
   // whose row points at animationRetinalCellTypes.json.
+  // This authored asset contains one AE expression. Its reviewed derivative
+  // bakes the same trim-path values without requiring unsafe-eval; custom
+  // author URLs retain precedence and the historical source stays untouched.
+  if (
+    animation?.id === "animationEyeMovements" &&
+    (!animation.lottieUrl ||
+      animation.lottieUrl ===
+        "/publicAssets/animations/animationEyeMovements.json")
+  )
+    return "/publicAssets/animations/derived/animationEyeMovements.json";
   if (animation?.lottieUrl) return animation.lottieUrl;
   return animation?.id ? `/publicAssets/animations/${animation.id}.json` : "";
 }
