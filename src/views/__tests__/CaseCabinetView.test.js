@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import gsap from "gsap";
 import CaseCabinetView from "@/views/CaseCabinetView.vue";
+import { CASE_FILES } from "@/mocks/caseFiles";
+import { PENFIELD_TITLE } from "@/helper/penfieldPresentation";
 const wrappers = [];
 async function cabinet() {
   const w = mount(CaseCabinetView, { attachTo: document.body });
@@ -20,6 +22,50 @@ afterEach(() => {
 });
 
 describe("source-backed case cabinet", () => {
+  it("names the experience consistently and reveals an untouched original on request", async () => {
+    const w = await cabinet();
+    expect(w.attributes("aria-label")).toBe(PENFIELD_TITLE);
+    expect(w.find(".cabinet__eyebrow").text()).toContain(PENFIELD_TITLE);
+    await w.find('[data-id="ge"]').trigger("click");
+    const src = w.find(".brain-map img").attributes("src");
+    expect(w.find(".brain-map figcaption a").attributes("href")).toBe(src);
+    expect(w.findAll(".map-label-masks polygon")).toHaveLength(5);
+    expect(w.find('[data-point="1b"]').text()).toBe("1b");
+    await w.find(".map-original").trigger("click");
+    expect(w.findAll(".marker")).toHaveLength(0);
+    expect(w.find(".map-label-masks").exists()).toBe(false);
+    expect(w.find(".brain-map img").attributes("src")).toBe(src);
+    await w.find('[data-point-option="4"]').trigger("click");
+    expect(w.findAll(".note")).toHaveLength(2);
+    await w.find(".map-original").trigger("click");
+    expect(w.findAll(".marker")).toHaveLength(5);
+  });
+  it("keeps every source coordinate, transcript and unmapped disclosure", async () => {
+    const w = await cabinet();
+    await w.find('[data-id="ge"]').trigger("click");
+    let points = 0,
+      events = 0;
+    for (const [index, c] of CASE_FILES.entries()) {
+      await w.findAll(".case-tabs button")[index].trigger("click");
+      await flushPromises();
+      for (const p of c.points) {
+        for (const spot of p.hotspots) {
+          const marker = w.find(`[data-point="${p.id}"]`);
+          expect(marker.element.style.left).toBe(`${spot.x}%`);
+          expect(marker.element.style.top).toBe(`${spot.y}%`);
+        }
+        await w.find(`[data-point-option="${p.id}"]`).trigger("click");
+        expect(
+          w.findAll(".note__text").map((n) => n.element.textContent)
+        ).toEqual(p.events.map((e) => e.text));
+        if (p.mapNote)
+          expect(w.find(".transcript").text()).toContain(p.mapNote);
+        points++;
+        events += p.events.length;
+      }
+    }
+    expect([points, events]).toEqual([47, 82]);
+  });
   it("opens every original case and pairs the correct map", async () => {
     const w = await cabinet();
     expect(w.findAll(".story-folder")).toHaveLength(7);

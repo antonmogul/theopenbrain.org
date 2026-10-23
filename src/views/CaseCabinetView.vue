@@ -13,6 +13,7 @@ import {
   ref,
 } from "vue";
 import gsap from "gsap";
+import { PENFIELD_TITLE, PENFIELD_LABELS } from "@/helper/penfieldPresentation";
 import { CASE_SOURCE, useCaseFiles } from "@/mocks/caseFiles";
 import { folderPath } from "@/helper/folderPath";
 import { readSpeed } from "@/helper/debugFlags";
@@ -45,6 +46,8 @@ const cases = ref([]);
 const openCase = ref(null);
 const selectedPoint = ref(null);
 const mapZoom = ref(100);
+const originalScan = ref(false);
+const mapLabels = computed(() => PENFIELD_LABELS[openCase.value?.id]);
 const phase = ref("closed");
 const animationMode = ref("immediate");
 const desktop = ref(window.matchMedia("(min-width: 761px)").matches);
@@ -162,6 +165,7 @@ watch(mapZoom, async (zoom) => {
 async function resetReading() {
   selectedPoint.value = null;
   mapZoom.value = 100;
+  originalScan.value = false;
   mobileView.value = "map";
   await nextTick();
   if (mapScrollEl.value) mapScrollEl.value.scrollTo?.(0, 0);
@@ -441,7 +445,7 @@ function onKeydown(e) {
     class="widget-root cabinet"
     :data-phase="phase"
     :data-animation-mode="animationMode"
-    aria-label="Case cabinet: Wilder Penfield and the Montreal Procedure"
+    :aria-label="PENFIELD_TITLE"
     @keydown="onKeydown"
   >
     <header class="cabinet__head">
@@ -455,7 +459,7 @@ function onKeydown(e) {
         <span aria-hidden="true">←</span> Back to cases
       </button>
       <p v-else class="cabinet__eyebrow">
-        Penfield’s case files <span>Penfield &amp; Perot · 1963</span>
+        {{ PENFIELD_TITLE }} <span>Penfield &amp; Perot · 1963</span>
       </p>
       <p class="cabinet__status" role="status">
         {{
@@ -680,7 +684,15 @@ function onKeydown(e) {
                 <span>Original brain map</span
                 ><span>{{ openCase.points.length }} points</span>
               </div>
-              <div class="map-zoom" aria-label="Map magnification">
+              <div class="map-zoom" aria-label="Map display and magnification">
+                <button
+                  type="button"
+                  class="map-original"
+                  :aria-pressed="originalScan"
+                  @click="originalScan = !originalScan"
+                >
+                  Original scan
+                </button>
                 <button
                   type="button"
                   :aria-disabled="mapZoom === 100"
@@ -717,6 +729,7 @@ function onKeydown(e) {
                   class="brain-map__image"
                   :style="{
                     aspectRatio: `${openCase.image.width} / ${openCase.image.height}`,
+                    '--map-label-size': `${((mapBaseWidth || openCase.image.width) * mapZoom * mapLabels.fontSize) / (100 * openCase.image.width)}px`,
                     width: mapBaseWidth
                       ? `${(mapBaseWidth * mapZoom) / 100}px`
                       : `${mapZoom}%`,
@@ -727,10 +740,23 @@ function onKeydown(e) {
                     @load="fitMap"
                     :width="openCase.image.width"
                     :height="openCase.image.height"
-                    :alt="`Original brain map for case ${openCase.caseNo}, ${openCase.tab}, with stimulation points labelled`"
+                    :alt="`Brain map for case ${openCase.caseNo}, ${openCase.tab}; ${originalScan ? 'original printed labels' : 'purple numbers open stimulation notes'}`"
                   />
+                  <svg
+                    v-if="!originalScan"
+                    class="map-label-masks"
+                    :viewBox="`0 0 ${openCase.image.width} ${openCase.image.height}`"
+                    aria-hidden="true"
+                  >
+                    <polygon
+                      v-for="mask in mapLabels.masks"
+                      :key="mask.id"
+                      :points="mask.polygon"
+                      fill="white"
+                    />
+                  </svg>
                   <button
-                    v-for="spot in hotspots"
+                    v-for="spot in originalScan ? [] : hotspots"
                     :key="spot.key"
                     type="button"
                     class="marker"
@@ -746,8 +772,15 @@ function onKeydown(e) {
                 </div>
               </div>
               <figcaption>
-                {{ openCase.image.caption }} · Original illustration, Penfield
-                &amp; Perot (1963)
+                {{ openCase.image.caption }} · Penfield &amp; Perot (1963).
+                {{
+                  originalScan
+                    ? "Original scan."
+                    : "Interactive labels over the original scan."
+                }}
+                <a :href="openCase.illustration" target="_blank" rel="noopener"
+                  >View original scan</a
+                >
               </figcaption>
             </figure>
             <p class="map-help">
@@ -1032,8 +1065,8 @@ function onKeydown(e) {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  height: 76px;
-  flex: 0 0 76px;
+  min-height: 76px;
+  flex: 0 0 auto;
   padding: 12px clamp(1rem, 3vw, 2.5rem);
   box-sizing: border-box;
 }
@@ -1252,31 +1285,56 @@ button:focus-visible,
   overflow: auto;
   overscroll-behavior: contain;
 }
+.map-label-masks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 .marker {
   position: absolute;
   transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 1.5em;
+  height: 1.25em;
   padding: 0;
-  border: 1px solid var(--tint);
+  border: 0;
   border-radius: 0;
   background: transparent;
+  color: rgb(var(--color-chapter-deep));
+  font: 600 var(--map-label-size) / 1 var(--font-ui);
   cursor: pointer;
 }
 .marker span {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+  /* Glyph hit areas can extend beyond their tiny line box at fit zoom.
+     Keep pointer targeting on the button at the source coordinate. */
+  pointer-events: none;
 }
-.marker:hover,
+.marker:hover span,
+.marker--selected span {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.marker:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
 .marker--selected {
-  background: color-mix(in srgb, var(--tint) 40%, transparent);
-  box-shadow: 0 0 0 2px #fff;
-  border-width: 2px;
+  font-weight: 700;
+}
+.map-zoom .map-original {
+  margin-right: auto;
+  font-family: var(--font-ui);
+}
+.map-original[aria-pressed="true"] {
+  border-color: currentColor;
+  box-shadow: inset 0 -2px currentColor;
+}
+.brain-map figcaption a {
+  color: rgb(var(--color-chapter-deep));
+  text-decoration: underline;
 }
 .map-help {
   margin: 10px 0;
@@ -1387,8 +1445,7 @@ button:focus-visible,
 }
 @media (max-width: 760px) {
   .cabinet__head {
-    height: 68px;
-    flex-basis: 68px;
+    min-height: 68px;
     gap: 8px;
   }
   .cabinet__status {
