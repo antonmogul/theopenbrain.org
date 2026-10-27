@@ -211,6 +211,28 @@ describe("reader figure lifecycle", () => {
     expect(fixtures.store.animationActive).toBe(true);
   });
 
+  // The pane's ground (OPENBRAIN-152): the dark surface, unless a figure the
+  // chapter triggers was drawn for the paper page.
+  it("paints the dark pane for a chapter whose figures all sit on it", async () => {
+    document.body.innerHTML = `<div id="container"><span id="triggerAnimationimage-ab12" class="animationTrigger"></span></div>`;
+    // The template's leading comment survives in dev builds, so the wrapper's
+    // own element is that comment: find the pane.
+    const pane = mountPane().find(".figure-pane");
+    await settle();
+    expect(pane.attributes("data-ground")).toBe("dark");
+    expect(pane.classes()).toContain("figure-pane--dark");
+    expect(pane.classes()).not.toContain("figure-pane--paper");
+  });
+
+  it("keeps the paper pane while the chapter still triggers 2023 Lottie art", async () => {
+    // The fixtures' Fig1 and Fig2 carry no artwork, so the legacy Lottie
+    // renderer draws them: black line art that needs the paper ground.
+    const pane = mountPane().find(".figure-pane");
+    await settle();
+    expect(pane.attributes("data-ground")).toBe("paper");
+    expect(pane.classes()).toContain("figure-pane--paper");
+  });
+
   it("kills only this pane's triggers during interrupted Back/Forward remounts", async () => {
     const oldPane = mountPane();
     await settle();
