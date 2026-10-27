@@ -558,6 +558,13 @@ export function transformModuleToChapterFormat(module) {
       anchorParagraphId: section.anchor_paragraph_id || null,
       paragraphs,
     };
+    // A box's own treatment ("dark" | "violet" | "pale"), once a
+    // sections.box_treatment column exists (select=* brings it through);
+    // until then the slug map in helper/breakoutTreatment.js decides
+    // (OPENBRAIN-153). Only boxes carry it.
+    if (sectionObj.kind === "box" && section.box_treatment) {
+      sectionObj.treatment = section.box_treatment;
+    }
 
     // Restore section-level animation from animation_config
     if (section.animation_config) {
