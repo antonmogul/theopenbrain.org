@@ -152,6 +152,13 @@ provide(
   (paragraphId) => anchoredBoxes.value.get(paragraphId) || []
 );
 provide("sectionLabels", sectionLabels);
+// The module's slug, for data keyed by chapter: a breakout box picks its
+// treatment (helper/breakoutTreatment.js, OPENBRAIN-153) by chapter then
+// box slug, since box slugs are only unique within a module.
+provide(
+  "chapterSlug",
+  computed(() => props.module?.slug || null)
+);
 
 // ---- Edit mode (OPENBRAIN-58, 64) ----
 // Off until a creator switches it on (or opens ?edit=1), so reading a

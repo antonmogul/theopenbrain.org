@@ -86,6 +86,25 @@ export const WithSubsections = {
 };
 
 /** R02: the actual renderer, both complete source paragraphs and artwork. */
+/** The Hippocrates box on the dark panel (OPENBRAIN-153), as History
+ *  renders it: the Explore cards sit on the dark inside a hairline, their
+ *  images plain until the duotoned assets arrive. The section's own
+ *  `treatment` stands in for the chapter lookup here. */
+export const HippocratesPairDark = {
+  args: { section: { ...hippocratesPair, treatment: "dark" }, label: "A" },
+};
+
+/** The same box on violet, the Figma's treatment for Humoral theory
+ *  (2730:8059): the cards stay paper, images plain on white. */
+export const HippocratesPairViolet = {
+  args: { section: { ...hippocratesPair, treatment: "violet" }, label: "A" },
+};
+
+/** The comparative-neuroanatomy box on the dark panel (Figma 2730:8111). */
+export const ComparativePairDark = {
+  args: { section: { ...comparativePair, treatment: "dark" }, label: "B" },
+};
+
 export const HippocratesPair = {
   args: { section: hippocratesPair, label: "A" },
   render: pairedFrame,
