@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 import { addH, removeH } from "@/helper/general";
 
@@ -19,9 +19,13 @@ const props = defineProps({
 });
 
 let animationLottie;
+// Set on unmount so a library import that resolves afterwards creates
+// nothing, and the Lottie that was made is destroyed (OPENBRAIN-151).
+let disposed = false;
 
 onMounted(async () => {
   lottie = await loadLottie();
+  if (disposed) return;
   let svgContainer = document.getElementById(
     props.animation.id + props.state.toUpperCase()
   );
@@ -52,6 +56,12 @@ onMounted(async () => {
   animationLottie.setSubframe(true);
   animationLottie.setSpeed(1);
   animationLottie.play();
+});
+
+onBeforeUnmount(() => {
+  disposed = true;
+  animationLottie?.destroy?.();
+  animationLottie = null;
 });
 </script>
 

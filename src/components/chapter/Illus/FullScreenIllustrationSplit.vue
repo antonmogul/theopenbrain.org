@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 import { gsap } from "gsap";
 
@@ -43,9 +43,17 @@ const props = defineProps({
 let animationLottieRight, animationLottieLeft;
 let progress = ref();
 let activeLayer = ref(null);
+// Everything this mount owns, so leaving the chapter can take it all down
+// (OPENBRAIN-151). Until then nothing was torn down: both Lotties and the
+// scroll trigger outlived the component, and every scroll after a chapter
+// change still drove the dead trigger's onUpdate.
+let splitTrigger = null;
+let wait = null;
+let disposed = false;
 
 onMounted(async () => {
   lottie = await loadLottie();
+  if (disposed) return;
 
   let svgContainerLeft = document.getElementById(props.animation.id + "Left");
   if (!svgContainerLeft) return;
@@ -77,10 +85,12 @@ onMounted(async () => {
   });
   animationLottieRight.setSubframe(false);
 
-  let wait = setInterval(() => {
+  wait = setInterval(() => {
     if (!wait) return;
     clearInterval(wait);
-    ScrollTrigger.create({
+    wait = null;
+    if (disposed) return;
+    splitTrigger = ScrollTrigger.create({
       id: "scrollTriggerSplit",
       trigger: props.container,
       start: "top " + 0,
@@ -94,9 +104,24 @@ onMounted(async () => {
   }, 20);
 });
 
+onBeforeUnmount(() => {
+  disposed = true;
+  clearInterval(wait);
+  wait = null;
+  splitTrigger?.kill();
+  splitTrigger = null;
+  animationLottieLeft?.destroy?.();
+  animationLottieLeft = null;
+  animationLottieRight?.destroy?.();
+  animationLottieRight = null;
+});
+
 watch(
   () => progress.value,
   (newP) => {
+    // A scroll update can still land between the trigger firing and the
+    // teardown above, so never touch an instance that isn't there.
+    if (!animationLottieLeft || !animationLottieRight) return;
     const map = (value, x1, y1, x2, y2) =>
       ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
 

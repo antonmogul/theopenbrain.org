@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 import { toSlug, addH, removeH } from "@/helper/general";
 
@@ -10,9 +10,14 @@ const props = defineProps({
   state: String,
 });
 let animationLottie;
+// The parent swaps these per state (v-if on activeState), so every state
+// change used to leave a Lottie behind (OPENBRAIN-151). Set on unmount so a
+// library import that resolves afterwards creates nothing either.
+let disposed = false;
 
 onMounted(async () => {
   lottie = await loadLottie();
+  if (disposed) return;
   let svgContainer = document.getElementById(
     props.animation.id + "-" + toSlug(props.state)
   );
@@ -44,6 +49,12 @@ onMounted(async () => {
   animationLottie.setSubframe(true);
   animationLottie.setSpeed(1);
   animationLottie.play();
+});
+
+onBeforeUnmount(() => {
+  disposed = true;
+  animationLottie?.destroy?.();
+  animationLottie = null;
 });
 </script>
 

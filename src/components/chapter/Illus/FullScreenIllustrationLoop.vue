@@ -136,7 +136,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 import { toCamelCase } from "@/helper/general";
 
@@ -151,6 +151,10 @@ const props = defineProps({
 });
 
 let animationLottie;
+// The frame poll below ran for the life of the page, reading a Lottie that
+// had left with the chapter (OPENBRAIN-151); it and the animation go on unmount.
+let framePoll = null;
+let disposed = false;
 
 const activeState = ref(0);
 const frame = ref(0);
@@ -256,6 +260,7 @@ const isActive = ref(true);
 
 onMounted(async () => {
   lottie = await loadLottie();
+  if (disposed) return;
 
   let svgContainer = document.getElementById(props.animation.id);
   if (!svgContainer) return;
@@ -276,6 +281,7 @@ onMounted(async () => {
   }, 1000);
 
   const complete = () => {
+    if (disposed || !animationLottie) return;
     isGoingNext.value = false;
     if (isPlay.value) {
       animationLottie.playSegments([0, animationLottie.animationData.op], true);
@@ -288,7 +294,8 @@ onMounted(async () => {
   animationLottie.addEventListener("complete", complete);
   animationLottie.setSubframe(true);
   animationLottie.setSpeed(0.2);
-  setInterval(() => {
+  framePoll = setInterval(() => {
+    if (!animationLottie) return;
     frame.value = animationLottie.projectInterface.currentFrame;
     for (let state in props.animation.states) {
       if (
@@ -299,6 +306,14 @@ onMounted(async () => {
       }
     }
   }, 10);
+});
+
+onBeforeUnmount(() => {
+  disposed = true;
+  clearInterval(framePoll);
+  framePoll = null;
+  animationLottie?.destroy?.();
+  animationLottie = null;
 });
 </script>
 
