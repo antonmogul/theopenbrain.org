@@ -26,6 +26,11 @@ const stepThrough = () => import("./step-through/StepThrough.vue");
 const switchFigure = () => import("./switch/SwitchFigure.vue");
 const transition = () => import("./transitions/TransitionFigure.vue");
 
+// `ground: "paper"` marks a widget drawn on the reader's own ground with
+// black ink and black Lottie line art (no plate of its own), so the figure
+// pane keeps its paper ground for a chapter that shows it rather than the
+// dark surface (helper/figurePane.js, OPENBRAIN-152). Widgets with a plate
+// (StepThrough's #333, the split's grey, History's #333) need no mark.
 export const FIGURE_WIDGETS = {
   [refractionErrors.animationKey]: {
     schema: refractionErrors,
@@ -42,15 +47,28 @@ export const FIGURE_WIDGETS = {
   },
   [visualCycle.animationKey]: { schema: visualCycle, load: stepThrough },
   // Four panel figures, one component (OPENBRAIN-82).
-  [centerSurround.animationKey]: { schema: centerSurround, load: switchFigure },
+  [centerSurround.animationKey]: {
+    schema: centerSurround,
+    load: switchFigure,
+    ground: "paper",
+  },
   [directionSelectivity.animationKey]: {
     schema: directionSelectivity,
     load: switchFigure,
+    ground: "paper",
   },
-  [objectMotion.animationKey]: { schema: objectMotion, load: switchFigure },
-  [rodCone.animationKey]: { schema: rodCone, load: switchFigure },
+  [objectMotion.animationKey]: {
+    schema: objectMotion,
+    load: switchFigure,
+    ground: "paper",
+  },
+  [rodCone.animationKey]: {
+    schema: rodCone,
+    load: switchFigure,
+    ground: "paper",
+  },
   // On the live site; its row and paragraph links come by migration.
-  [onOff.animationKey]: { schema: onOff, load: switchFigure },
+  [onOff.animationKey]: { schema: onOff, load: switchFigure, ground: "paper" },
   // The split and the transitions, driven by the reader's scroll (OPENBRAIN-83).
   [lateralOrganization.animationKey]: {
     schema: lateralOrganization,
@@ -59,10 +77,12 @@ export const FIGURE_WIDGETS = {
   [eyeStructureTransition.animationKey]: {
     schema: eyeStructureTransition,
     load: transition,
+    ground: "paper",
   },
   [retinalCellTypesTransition.animationKey]: {
     schema: retinalCellTypesTransition,
     load: transition,
+    ground: "paper",
   },
   // History: the skull and its hands, and case 20's tabs (OPENBRAIN-87).
   [trepanation.animationKey]: {

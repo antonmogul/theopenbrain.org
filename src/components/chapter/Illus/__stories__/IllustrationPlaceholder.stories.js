@@ -136,3 +136,43 @@ export const GrowthConeLegendWidth = {
   render: paneFrame,
   args: { animation: FIG15 },
 };
+
+/* The reader's pane as IllustrationsComp paints it since the History
+   redesign (OPENBRAIN-152): the dark surface, the toolbar below the artwork,
+   the label in amber. The wrapper carries the pane's classes, which is all
+   the shell keys on; `font-mono` is the pane's own. */
+const darkPaneFrame = illustrationFrame(IllustrationPlaceholder, {
+  template: `<div class="figure-pane figure-pane--dark font-mono" style="position:relative;height:720px;overflow:hidden;display:flex;"><StoryComponent v-bind="args" /></div>`,
+});
+
+/** On the dark pane: a gallery, its toolbar below the artwork. */
+export const OnTheDarkPane = {
+  render: darkPaneFrame,
+  args: {
+    animation: {
+      id: "animationFoundationsFig6",
+      figureNumber: 6,
+      diagramType: "manuscript",
+      title: "The cell doctrine (ventricular theory)",
+      images: FIG6_ALL_IMAGES,
+    },
+  },
+};
+
+/** On the dark pane: a single plate under one legend. */
+export const OnTheDarkPaneSingle = {
+  render: darkPaneFrame,
+  args: {
+    animation: {
+      id: "animationFoundationsFig7",
+      figureNumber: 7,
+      diagramType: "manuscript",
+      title: "Vesalius, De Humani Corporis Fabrica",
+      caption: FIG7_LEGEND,
+      images: FIG7_IMAGES.slice(0, 1),
+    },
+  },
+};
+
+/** On the dark pane: artwork still pending. */
+export const OnTheDarkPanePending = { render: darkPaneFrame };

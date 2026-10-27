@@ -31,6 +31,7 @@ import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { figureWidgetFor } from "@/widgets/figures/registry";
 import { figureEnd, figureRecordFor } from "@/helper/historyFigureTiming";
+import { figurePaneGround } from "@/helper/figurePane";
 
 // Panel figures rebuilt as figure widgets (full-screen ones render in the
 // text through FullScreenIllustration).
@@ -42,6 +43,11 @@ gsap.registerPlugin(ScrollTrigger);
 
 const activeAnimation = ref(null);
 const paneElement = ref(null);
+// The pane's ground (OPENBRAIN-152): the chapter's dark surface, unless a
+// figure this chapter triggers was drawn for the paper page (the 2023 Lottie
+// line art; helper/figurePane.js). Dark until the triggers are read, which
+// the opener covers.
+const ground = ref("dark");
 const store = useGeneral();
 const progress = ref(0);
 const transitionProgress = ref({});
@@ -179,18 +185,33 @@ function refreshAfterLayout() {
   }, 0);
 }
 
+// The figure triggers in this reader's prose. During route transitions two
+// chapter roots can coexist: bind only to this reader, never the departing
+// chapter's duplicate ids. A breakout draws its own artwork inline;
+// registering it in the pinned pane too leaked that artwork as the
+// full-width box left the screen.
+function readerTriggers() {
+  const reader = paneElement.value?.closest(".chapter-reader") || document;
+  return [...reader.querySelectorAll(".animationTrigger[id]")]
+    .filter((trigger) => /^trigger/i.test(trigger.id))
+    .filter((trigger) => !trigger.closest("[data-breakout-box]"));
+}
+
+// One ground for the whole chapter, from the figures its prose triggers.
+function measureGround() {
+  if (unmounted) return;
+  ground.value = figurePaneGround(
+    readerTriggers().map((trigger) =>
+      figureRecordFor(trigger.id.replace(/^trigger/i, ""), animationList.value)
+    )
+  );
+}
+
 function setupTriggers() {
   if (unmounted) return;
-  // During route transitions two chapter roots can coexist. Bind only to
-  // this reader, never the departing chapter's duplicate ids.
   const reader = paneElement.value?.closest(".chapter-reader") || document;
-  const animationTriggers = [
-    ...reader.querySelectorAll(".animationTrigger[id]"),
-  ]
-    .filter((trigger) => /^trigger/i.test(trigger.id))
-    // A breakout draws its own artwork inline. Registering it in the pinned
-    // pane too leaked that artwork as the full-width box left the screen.
-    .filter((trigger) => !trigger.closest("[data-breakout-box]"));
+  const animationTriggers = readerTriggers();
+  measureGround();
   clog("SCROLL", `wiring ${animationTriggers.length} reader figure triggers`);
   for (const trigger of animationTriggers) {
     const scrollTrigger = ScrollTrigger.create({
@@ -305,6 +326,9 @@ onMounted(async () => {
   }
   await nextTick();
   if (unmounted) return;
+  // The ground as soon as the records are in, so a reader landing
+  // mid-chapter (?resume=1, #section) doesn't see it change at setup.
+  measureGround();
   // Let initial artwork layout settle; own this timeout so interrupted
   // navigation cannot register a second set against the next chapter.
   setupTimer = setTimeout(setupTriggers, 500);
@@ -328,11 +352,16 @@ onBeforeUnmount(() => {
 
 <template>
   <!-- Between the top bar and the timeline docked at the bottom
-       (--reader-timeline-h, OPENBRAIN-128), so a figure's foot isn't under it. -->
+       (--reader-timeline-h, OPENBRAIN-128), so a figure's foot isn't under it.
+       Its ground is the chapter's dark surface, or paper for art drawn for
+       it (OPENBRAIN-152); the children key their on-dark styles on
+       .figure-pane--dark. -->
   <div
     v-if="!store.isScrolling"
     ref="paneElement"
-    class="hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h)-var(--reader-timeline-h,0px))] bg-bg"
+    class="figure-pane hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h)-var(--reader-timeline-h,0px))]"
+    :class="`figure-pane--${ground}`"
+    :data-ground="ground"
   >
     <template v-for="sequence in sequences" :key="sequence.successor.id">
       <TransitionWidgetSequence
@@ -445,4 +474,8 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
+<!-- The pane's ground (.figure-pane--paper / --dark and --figure-pane-ink)
+     is styled in src/index.css with the other reader rules: it is the
+     contract the children's on-dark rules and the stories key on, so a
+     wrapper carrying the class must get it without this component loaded. -->
 <style scoped></style>

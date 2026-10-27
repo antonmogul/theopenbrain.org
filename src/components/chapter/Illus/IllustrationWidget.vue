@@ -102,4 +102,13 @@ const view = computed(() =>
   font-size: var(--ui-size-12);
   color: rgb(var(--color-mute));
 }
+/* On the dark pane (.figure-pane--dark, OPENBRAIN-152): the embed keeps its
+   own plate; its caption and the hairline take the pane's ink. */
+.figure-pane--dark .iw-missing,
+.figure-pane--dark .iw-caption {
+  color: rgb(var(--figure-pane-ink) / 0.62);
+}
+.figure-pane--dark .iw-caption {
+  border-top-color: rgb(var(--figure-pane-ink) / 0.12);
+}
 </style>

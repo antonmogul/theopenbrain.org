@@ -773,6 +773,42 @@ onBeforeUnmount(() => {
   text-underline-offset: 0.2em;
 }
 
+/* On the dark pane (.figure-pane--dark, OPENBRAIN-152) the gallery's chrome
+   takes the pane's ink: bare arrows (the Figma draws them without a box),
+   the thumbnails dimmed but the current one, the count and captions muted.
+   The fullscreen dialog is teleported to body, so it keeps the paper look. */
+.figure-pane--dark .figimg-caption,
+.figure-pane--dark .figimg-count {
+  color: rgb(var(--figure-pane-ink) / 0.62);
+}
+.figure-pane--dark .figimg-nav {
+  border-color: transparent;
+  background: transparent;
+  color: rgb(var(--figure-pane-ink));
+}
+.figure-pane--dark .figimg-nav:hover {
+  border-color: transparent;
+  background: rgb(var(--figure-pane-ink) / 0.08);
+  color: rgb(var(--color-chapter, var(--color-accent)));
+}
+.figure-pane--dark .figimg-thumbnail {
+  background: transparent;
+  opacity: 0.55;
+}
+.figure-pane--dark .figimg-thumbnail:hover {
+  border-color: rgb(var(--figure-pane-ink) / 0.3);
+  opacity: 1;
+}
+.figure-pane--dark .figimg-thumbnail.is-current {
+  border-color: rgb(var(--color-chapter, var(--color-accent)));
+  background: rgb(var(--color-chapter, var(--color-accent)) / 0.12);
+  opacity: 1;
+}
+.figure-pane--dark .figimg-pause {
+  border-color: rgb(var(--figure-pane-ink) / 0.3);
+  color: inherit;
+}
+
 /* Crossfade, ~300 ms; none at all under reduced motion (the
    [data-reduce-motion="1"] opt-in is zeroed globally in brand.css). */
 .figimg-x-enter-active,

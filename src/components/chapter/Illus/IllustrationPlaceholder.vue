@@ -377,6 +377,88 @@ function closeFullscreen() {
   margin-right: 0.25rem;
 }
 
+/*
+ * On the dark pane (.figure-pane--dark, IllustrationsComp; OPENBRAIN-152),
+ * as the History redesign draws the figure (Figma Yv7WvZSoabK2t5fNtsChvf,
+ * Toolbar 2730:8241): the artwork on the dark surface, and the toolbar
+ * below it as one row, the expand icon, then "FIG 05" in --color-warn, then
+ * the title with its legend under it, all IBM Plex Mono — label and title
+ * SemiBold at the sizes above (the designer traced them), the legend Text
+ * at the title's size, white. The toolbar's borders are transparent there.
+ * The text column's inline figure and the fullscreen dialog (teleported to
+ * body) never match these selectors, so they keep the paper shell.
+ */
+.figure-pane--dark .fig-shell {
+  background: transparent;
+}
+.figure-pane--dark .fig-toolbar {
+  order: 1;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+  align-items: start;
+  padding: 1.875rem 0.875rem;
+}
+/* Label and title become grid items of the toolbar, so the icon can lead
+   the row and the legend can sit under the title. */
+.figure-pane--dark .fig-toolbar-left,
+.figure-pane--dark .fig-heading {
+  display: contents;
+}
+/* The bare 14px icon flush with the padding, in the label's amber; the
+   28px hit area reaches 7px around it, into the padding. */
+.figure-pane--dark .fig-fs-btn {
+  grid-row: 1;
+  grid-column: 1;
+  margin: -7px;
+  border-color: transparent;
+  color: rgb(var(--color-warn));
+}
+.figure-pane--dark .fig-fs-btn:hover {
+  border-color: transparent;
+  background: rgb(var(--figure-pane-ink) / 0.08);
+  color: rgb(var(--figure-pane-ink));
+}
+/* The label's column is 50px in the Figma, so the title starts at 94px
+   whatever the number. */
+.figure-pane--dark .fig-label {
+  grid-row: 1;
+  grid-column: 2;
+  min-width: 3.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: rgb(var(--color-warn));
+}
+.figure-pane--dark .fig-name {
+  grid-row: 1;
+  grid-column: 3;
+  font-weight: 600;
+  line-height: 1.3;
+  color: rgb(var(--figure-pane-ink));
+}
+.figure-pane--dark .fig-legend {
+  grid-row: 2;
+  grid-column: 3;
+  font-family: var(--font-mono);
+  font-size: 0.71875rem;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  color: rgb(var(--figure-pane-ink));
+}
+/* The "artwork pending" state in the pane's ink. */
+.figure-pane--dark .fig-title {
+  color: rgb(var(--figure-pane-ink));
+}
+.figure-pane--dark .fig-caption,
+.figure-pane--dark .fig-note,
+.figure-pane--dark .fig-status {
+  color: rgb(var(--figure-pane-ink) / 0.62);
+}
+.figure-pane--dark .fig-glyph {
+  color: rgb(var(--figure-pane-ink) / 0.3);
+}
+
 /* Fill the shared full-viewport dialog's body. */
 .fs-content {
   height: 100%;
