@@ -905,7 +905,7 @@ onMounted(async () => {
                 <button
                   type="button"
                   aria-label="Move section up"
-                  :disabled="i === 0"
+                  :disabled="i === 0 || ed.saving.value"
                   @click="moveSec(s, -1)"
                 >
                   ↑
@@ -913,7 +913,9 @@ onMounted(async () => {
                 <button
                   type="button"
                   aria-label="Move section down"
-                  :disabled="i === ed.sections.value.length - 1"
+                  :disabled="
+                    i === ed.sections.value.length - 1 || ed.saving.value
+                  "
                   @click="moveSec(s, 1)"
                 >
                   ↓
@@ -1057,11 +1059,17 @@ onMounted(async () => {
                   <button type="button" title="Edit" @click="startEdit(p)">
                     Edit
                   </button>
+                  <!--
+                    A move is a park-then-assign (useChapterEditor PARK): a
+                    second one started mid-flight reads the same stale order
+                    and collides on the park slots (409, or a wrong order),
+                    so the arrows wait for the save, as the section ones do.
+                  -->
                   <button
                     type="button"
                     title="Move up"
                     aria-label="Move up"
-                    :disabled="pi === 0"
+                    :disabled="pi === 0 || ed.saving.value"
                     @click="move(p, -1)"
                   >
                     ↑
@@ -1070,7 +1078,9 @@ onMounted(async () => {
                     type="button"
                     title="Move down"
                     aria-label="Move down"
-                    :disabled="pi === rowsOf(s.id).length - 1"
+                    :disabled="
+                      pi === rowsOf(s.id).length - 1 || ed.saving.value
+                    "
                     @click="move(p, 1)"
                   >
                     ↓
