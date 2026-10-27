@@ -69,11 +69,11 @@ nearly free.
 
 In `public/publicAssets/images/covers/foundations-hero/` (1.4 MB total):
 
-| File | Source | Size | What it is |
-|---|---|---|---|
-| `hist-header-sketch.png` | `2730:6789` | 1728×1116 | resting line drawing, signed HM |
-| `hist-header-cutaway.png` | `2730:9219` (frame 884) | 2553×1640 | skull cap lifted, violet brain along the cut |
-| `hist-header-hand.png` | `2730:6790`'s fill | 1542×1338 | photographic hand holding the bone cap, already on transparency |
+| File                      | Source                  | Size      | What it is                                                      |
+| ------------------------- | ----------------------- | --------- | --------------------------------------------------------------- |
+| `hist-header-sketch.png`  | `2730:6789`             | 1728×1116 | resting line drawing, signed HM                                 |
+| `hist-header-cutaway.png` | `2730:9219` (frame 884) | 2553×1640 | skull cap lifted, violet brain along the cut                    |
+| `hist-header-hand.png`    | `2730:6790`'s fill      | 1542×1338 | photographic hand holding the bone cap, already on transparency |
 
 ### IMPORTANT: the two drawings are NOT the same artwork
 
