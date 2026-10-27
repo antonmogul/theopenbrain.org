@@ -78,7 +78,26 @@ One `supabase db push` on the morning of 2026-10-21 applied these in order; ever
 
 Committed, not yet pushed. `supabase migration list` is the authority: any other local-only row it shows is pending too.
 
-Nothing: `supabase migration list` showed local and remote in step on 2026-10-21.
+Nothing: `supabase migration list` shows local and remote in step as of 2026-10-27.
+
+> The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
+> sat unapplied for six days — merged in code, missing in the database. The ledger is
+> only true if someone writes to it after a push. Trust `supabase migration list`.
+
+## Pushed 2026-10-27
+
+One `supabase db push` applied these three, which had been committed on 22 Oct with
+"no live application by this PR" headers (PRs #146/#148/#149, Stuart's follow-ups).
+All content only: zero DDL, zero RLS, zero grants — five data statements between them.
+Backed up first to `~/ob-backups/pre-push-20261027-224515/` (the `loewi-vagusstoff`
+row and the two `animations` rows the migrations overwrite; Colima was down, so this
+was a targeted REST capture rather than a `db dump`).
+
+| Migration | How it got there, and what was checked |
+| --------- | -------------------------------------- |
+| `20261022010000_g2_figure_media_followups` (OPENBRAIN-148) | **pushed.** `animationFoundationsFig19` and `…Fig21` both carry `updated_at` 2026-10-27T22:45:37Z. |
+| `20261022020000_penfield_experience_title` (OPENBRAIN-148) | **pushed.** Presentation copy only; the predicate makes a rerun a true no-op. |
+| `20261022030000_g5_loewi_caption_layout` (OPENBRAIN-148) | **pushed.** `widget_uploads.loewi-vagusstoff` still `published`, `updated_at` 2026-10-27T22:45:40Z (was 2026-10-21T08:13Z). Its guard fails closed on unexpected content, so the push also proves the row matched the expected baseline. |
 
 **Done after the October push (OPENBRAIN-148, 2026-10-20):** the temporary `get_pinned_deck` entry is out of `IGNORED_ERRORS` in `scripts/smoke.mjs`, and the four 7 Oct rows are in the ledger above with how each was verified. Still open: a smoke route for `/deck/s/00000000000000000000000000000000` that expects the "isn't available" text and no console errors (the function answers `null` with a 200).
 
