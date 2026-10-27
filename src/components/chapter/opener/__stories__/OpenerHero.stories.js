@@ -52,8 +52,20 @@ const sweep = async ({ canvasElement }) => {
 };
 
 /* The reactive cover (OPENBRAIN-146): the 2023 Retina eye over the still,
-   scrubbed from pointer x. History recycles it for now (Stuart, 13 Oct). */
+   scrubbed from pointer x. */
 export const Reactive = {
+  args: {
+    cover: "/publicAssets/images/00-matisse-bg.jpg",
+    title: "The Retina",
+    reactive: reactiveCoverForModule({ slug: "the-retina" }),
+  },
+  play: sweep,
+};
+
+/* The History skull cutaway (OPENBRAIN-156): the record brings its own
+   poster (the sketch), so the chapter cover passed here is not what shows.
+   The sweep ends with the pointer at the right, so the crown is lifted. */
+export const HistoryCutaway = {
   args: {
     cover: "/publicAssets/images/attention-matisse-reader.jpg",
     title: "Foundations of Neuroscience",

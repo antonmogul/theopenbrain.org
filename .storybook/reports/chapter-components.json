@@ -1,12 +1,12 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 67,
-  "coveredCount": 67,
+  "sourceCount": 68,
+  "coveredCount": 68,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 19,
+    "ReaderShell": 20,
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 17,
@@ -202,6 +202,11 @@
       "source": "src/components/chapter/opener/ReactiveCover.vue",
       "storyFile": "src/components/chapter/opener/__stories__/ReactiveCover.stories.js",
       "story": "Eye"
+    },
+    {
+      "source": "src/components/chapter/opener/CutawayCover.vue",
+      "storyFile": "src/components/chapter/opener/__stories__/CutawayCover.stories.js",
+      "story": "Revealed"
     },
     {
       "source": "src/components/chapter/sidebar/ChatTab.vue",

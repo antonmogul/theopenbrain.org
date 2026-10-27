@@ -92,6 +92,25 @@ export function lottiePath(animation) {
 }
 
 /**
+ * The same check for a raster (the skull-cutaway cover's three PNGs,
+ * OPENBRAIN-156): a HEAD that comes back ok with an image type. A missing
+ * file under `serve` is index.html with a 200, which only the type reveals,
+ * and probing first keeps the <img> 404 the browser would log off the
+ * console.
+ */
+export async function imageAssetOk(url, fetchImpl = fetch) {
+  if (!url) return false;
+  try {
+    const res = await fetchImpl(url, { method: "HEAD" });
+    return (
+      res.ok && (res.headers.get("content-type") || "").startsWith("image/")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * `target` is a figure id (key) or a full path/URL from lottiePath().
  */
 export async function lottieAssetOk(target, fetchImpl = fetch) {
