@@ -97,6 +97,7 @@ onMounted(async () => {
   // doesn't exist until the DOM catches up with the resolution above.
   await nextTick();
   lottie = await loadLottie();
+  if (unmounted) return;
   const id = props.paragraph.animationId;
   var svgContainer = document.getElementById("container" + id);
   if (!svgContainer) return;
@@ -120,6 +121,10 @@ onBeforeUnmount(() => {
   window.removeEventListener("scroll", measureWidget);
   window.removeEventListener("resize", measureSoon);
   widgetResize?.disconnect();
+  // The listeners were cleaned up but the Lottie itself never was
+  // (OPENBRAIN-151).
+  animation.value?.destroy?.();
+  animation.value = null;
 });
 
 const toggleState = (index, activeState) => {
