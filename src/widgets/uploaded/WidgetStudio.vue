@@ -111,7 +111,8 @@ async function tryTemplate() {
   try {
     const res = await fetch(`${KIT}/open-brain-widget/template.html`);
     open(await res.text(), { fileName: "template.html" });
-  } catch {
+  } catch (err) {
+    console.error("WidgetStudio: kit template failed to load", err);
     fileError.value = "The template didn't load. Try again.";
   }
 }
@@ -119,7 +120,8 @@ async function openSaved(row) {
   try {
     const full = await fetchUploadedWidget(row.slug);
     if (full?.html) open(full.html, { row: full });
-  } catch {
+  } catch (err) {
+    console.error(`WidgetStudio: upload ${row.slug} failed to load`, err);
     fileError.value = "That widget didn't load. Try again.";
   }
 }
