@@ -1,8 +1,36 @@
 # History hero: the skull cutaway — implementation spec
 
-**Status:** assets exported 27 Oct, in
-`public/publicAssets/images/covers/foundations-hero/`. Ready to build.
+**Status:** built (OPENBRAIN-156): `CutawayCover.vue` in
+`src/components/chapter/opener/`, geometry in `HISTORY_CUTAWAY`
+(`src/helper/chapterCover.js`), maths in `src/helper/cutawayCover.js`.
+Assets exported 27 Oct, in `public/publicAssets/images/covers/foundations-hero/`.
 **Figma:** `Yv7WvZSoabK2t5fNtsChvf` — hero `2730:6787`, working board `2730:9185`.
+
+## How it was built (27 Oct)
+
+The two drawings were registered once, offline, by
+`scripts/covers/register-history-hero.py`: a chamfer match on the ink below
+the cut puts the cutaway on the sketch at scale 0.5785, offset (147, 38)
+sketch px, with 98% of its body ink landing on the sketch's. The head does
+not register (the cutaway's profile is ~8 px off and its hair redrawn), so
+the cutaway drawing is **never shown as a drawing**. Instead:
+
+- the sketch is the only picture of the girl. Its cap region (the crown
+  above the band's lower edge, `cap`) is clipped out of the base layer and
+  drawn again as its own layer that rotates about a pivot at the forehead
+  (`pivot`, `open` = 8°; the band is a wedge, 7 px at the forehead and 40 px
+  at the back, which is the hinge the artist implied). Face, collar, writing
+  hand and bun are untouched pixels at every position: a pixel diff between
+  rest and fully open shows zero change outside the cap and hand.
+- the cutaway contributes only the violet band (`band`), registered with
+  `brainBox`, sitting under the cap at rest and uncovered as it lifts.
+- the hand photo reaches in along its forearm from the top right and stops
+  where the storyboard (`2730:9218`) floats the cap.
+
+Pointer x drives it directly; leaving eases it shut; reduced motion rests
+closed. Open questions 1–4 below were settled as: no recording reviewed
+(the hinge geometry came from the band itself); the cut follows the band's
+lower edge; x only; touch scrubs horizontally and closes on release.
 
 ## There is no animation in the Figma file
 
@@ -69,11 +97,11 @@ nearly free.
 
 In `public/publicAssets/images/covers/foundations-hero/` (1.4 MB total):
 
-| File | Source | Size | What it is |
-|---|---|---|---|
-| `hist-header-sketch.png` | `2730:6789` | 1728×1116 | resting line drawing, signed HM |
-| `hist-header-cutaway.png` | `2730:9219` (frame 884) | 2553×1640 | skull cap lifted, violet brain along the cut |
-| `hist-header-hand.png` | `2730:6790`'s fill | 1542×1338 | photographic hand holding the bone cap, already on transparency |
+| File                      | Source                  | Size      | What it is                                                      |
+| ------------------------- | ----------------------- | --------- | --------------------------------------------------------------- |
+| `hist-header-sketch.png`  | `2730:6789`             | 1728×1116 | resting line drawing, signed HM                                 |
+| `hist-header-cutaway.png` | `2730:9219` (frame 884) | 2553×1640 | skull cap lifted, violet brain along the cut                    |
+| `hist-header-hand.png`    | `2730:6790`'s fill      | 1542×1338 | photographic hand holding the bone cap, already on transparency |
 
 ### IMPORTANT: the two drawings are NOT the same artwork
 

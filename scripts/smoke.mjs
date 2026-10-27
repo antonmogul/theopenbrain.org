@@ -159,6 +159,16 @@ async function checkFigureArtwork() {
  * minText; its width is covered by the horizontal-scroll check.
  */
 const TIMELINE = { selector: '[data-testid="chapter-timeline"]', min: 1 };
+/*
+ * The History hero's skull cutaway (OPENBRAIN-156) must reach "ready" in a
+ * real build: its three PNGs are HEAD-checked and decoded first, and a
+ * missing one degrades to the still cover without a word in the console,
+ * so only this attribute says the layers are there.
+ */
+const HERO_CUTAWAY = {
+  selector: '.opener-hero[data-reactive-cover="ready"]',
+  min: 1,
+};
 
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
@@ -180,7 +190,7 @@ const ROUTES = [
     name: "foundations",
     minText: 2000,
     needsData: true,
-    expectCount: [TIMELINE],
+    expectCount: [TIMELINE, HERO_CUTAWAY],
     /*
      * The first breakout box must paint from the viewport's left edge at
      * every two-column width (Stuart, 1 Oct: "the 'full screen' breakout

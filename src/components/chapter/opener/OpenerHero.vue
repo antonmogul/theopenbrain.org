@@ -11,10 +11,15 @@
  * With a `reactive` record (OPENBRAIN-146) a Lottie the pointer scrubs is
  * laid over the still cover; the still stays underneath as the poster and
  * takes over when the file is missing (`data-reactive-cover` says which).
+ * A `kind: "cutaway"` record (OPENBRAIN-156) mounts CutawayCover instead
+ * and brings its own poster, the sketch it lifts the skull from, so what
+ * the reader sees before it is ready, without it, or with reduced motion
+ * is the same drawing.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import ReactiveCover from "./ReactiveCover.vue";
+import CutawayCover from "./CutawayCover.vue";
 
 const props = defineProps({
   cover: { type: String, required: true },
@@ -44,8 +49,9 @@ function onScroll() {
   });
 }
 
+const poster = computed(() => props.reactive?.poster || props.cover);
 const coverStyle = computed(() => ({
-  backgroundImage: `url(${props.cover})`,
+  backgroundImage: `url(${poster.value})`,
   filter: reduceMotion()
     ? "none"
     : `blur(${(scrollProgress.value * 8).toFixed(2)}px)`,
@@ -115,8 +121,13 @@ function onTool(tool) {
       :style="coverStyle"
     >
       <!-- Inside the cover so the scroll blur and the scrim cover it too. -->
+      <CutawayCover
+        v-if="showReactive && reactive.kind === 'cutaway'"
+        :spec="reactive"
+        @state="reactiveState = $event"
+      />
       <ReactiveCover
-        v-if="showReactive"
+        v-else-if="showReactive"
         :spec="reactive"
         @state="reactiveState = $event"
       />
