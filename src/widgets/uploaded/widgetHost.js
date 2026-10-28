@@ -19,7 +19,12 @@
  * message with the height it has, the frame never grows past it, and the
  * bridge gives the widget OB.maxHeight, `--ob-max-height` and
  * `html[data-ob-fit]` so it can size its picture to what is left.
+ *
+ * Imports only plain ESM helpers (no @/ alias, extensions spelled out):
+ * scripts/timeline/capture-widget-thumbs.mjs loads this file straight into
+ * Node to build the same srcdoc the reader does.
  */
+import { RAMP_HEX } from "../../helper/chapterTheme.js";
 
 /** Outside origins a widget may load from (SKILL.md says the same). */
 export const ALLOWED_SCRIPT_ORIGINS = [
@@ -45,49 +50,11 @@ export const CSP = [
   "form-action 'none'",
 ].join("; ");
 
-/** The subject colours (design.md §2), as hex for widget authors. */
-// `on` is the text colour on a fill of `main` (4.5:1 or better): white on
-// the violet and blue, the plate's near-black on the light teal, red and
-// yellow, where white is unreadable (1.9:1 on the Retina's teal).
-export const RAMP_HEX = {
-  fund: {
-    main: "#8D4CF6",
-    deep: "#7615F5",
-    soft: "#BF97FC",
-    pale: "#DCCDF9",
-    on: "#ffffff",
-  },
-  perc: {
-    main: "#39D8BA",
-    deep: "#08AFA3",
-    soft: "#4BEACC",
-    pale: "#9BF9E7",
-    on: "#1c1c1c",
-  },
-  move: {
-    main: "#1A72F2",
-    deep: "#0E61C4",
-    soft: "#5EA7EF",
-    pale: "#9AC0EF",
-    on: "#ffffff",
-  },
-  lear: {
-    main: "#FF3351",
-    deep: "#C1062A",
-    soft: "#FC708A",
-    pale: "#FFC7D2",
-    on: "#1c1c1c",
-  },
-  deve: {
-    main: "#F2BB40",
-    deep: "#C98F1B",
-    soft: "#FFD788",
-    pale: "#FFE6BB",
-    on: "#1c1c1c",
-  },
-};
-
-/** The --ob-* tokens for a subject ramp (design.md). */
+/** The --ob-* tokens for a subject ramp (design.md). The subject colours
+ *  (design.md §2) and the `on` ink for each are RAMP_HEX in
+ *  helper/chapterTheme.js, the one ramp table (OPENBRAIN-157); the plates
+ *  are brand.css's --color-dark-surface and --color-dark-surface-2, pinned
+ *  by src/helper/__tests__/chapterRamps.test.js. */
 export function widgetTokens(ramp) {
   const r = RAMP_HEX[ramp] || RAMP_HEX.fund;
   return {

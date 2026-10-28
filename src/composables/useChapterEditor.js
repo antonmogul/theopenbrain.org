@@ -14,6 +14,7 @@ import { computed, ref } from "vue";
 import { authedRequest } from "@/services/api/client";
 import { withBlocks, withFigureHold } from "@/editor/editability.mjs";
 import { normalizeFigureHold } from "@/helper/historyFigureTiming";
+import { normalizeBoxTreatment } from "@/helper/breakoutTreatment";
 import { blocksToPlainText } from "@/editor/plainText";
 
 export { blocksToPlainText };
@@ -506,6 +507,26 @@ export function useChapterEditor(slug) {
     });
   }
 
+  /**
+   * A breakout box's colour (OPENBRAIN-157): one of BOX_TREATMENTS into
+   * sections.box_treatment, or null (Automatic: the chapter map in
+   * helper/breakoutTreatment.js, else the pale card). Undoable.
+   */
+  async function setBoxTreatment(id, treatment) {
+    const value = normalizeBoxTreatment(treatment);
+    const automatic =
+      treatment === null || treatment === undefined || treatment === "";
+    if (!automatic && value === null)
+      throw new Error("That isn't one of the box colours.");
+    return withSaving(async () => {
+      const sec = sections.value.find((x) => x.id === id);
+      if (!isBox(sec)) throw new Error("Only breakout boxes have a colour.");
+      const before = sec.box_treatment ?? null;
+      await patchSection(id, { box_treatment: value });
+      pushUndo("Box colour", () => patchSection(id, { box_treatment: before }));
+    });
+  }
+
   async function patchSection(id, body) {
     const rows = await authedRequest(`sections?id=eq.${id}`, {
       method: "PATCH",
@@ -956,6 +977,7 @@ export function useChapterEditor(slug) {
     imageToPanel,
     renameSection,
     setBoxPlacement,
+    setBoxTreatment,
     isBox,
     addSection,
     moveSection,

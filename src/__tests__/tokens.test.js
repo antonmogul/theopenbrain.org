@@ -11,6 +11,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { extractTokens } from "../../scripts/tokens/extract.mjs";
 import {
+  CHAPTER_NOT_IN_FIGMA,
   FIGMA_LAYOUT,
   LAYOUT_NOT_IN_FIGMA,
   figmaExpected,
@@ -27,7 +28,7 @@ describe("design tokens (tokens/tokens.json)", () => {
     expect(current()).toEqual(committed);
   });
 
-  it("covers the five chapter ramps with all four steps", () => {
+  it("covers the five chapter ramps with the four Figma steps, the ink and the ground", () => {
     const { chapter } = current();
     expect(Object.keys(chapter)).toEqual([
       "fund",
@@ -36,9 +37,18 @@ describe("design tokens (tokens/tokens.json)", () => {
       "lear",
       "deve",
     ]);
-    for (const ramp of Object.values(chapter))
+    for (const ramp of Object.values(chapter)) {
+      expect(Object.keys(ramp)).toEqual([
+        "chapter",
+        "chapter-deep",
+        "chapter-soft",
+        "chapter-pale",
+        "chapter-on",
+        "chapter-ground",
+      ]);
       for (const step of Object.values(ramp))
         expect(step).toMatch(/^#[0-9A-F]{6}$/);
+    }
   });
 
   it("has the fixed UI sizes the components use (OPENBRAIN-118)", () => {
@@ -87,6 +97,22 @@ describe("Figma drift check (scripts/tokens/figma-expected.mjs)", () => {
     expect([...mapped, ...excluded].sort()).toEqual(Object.keys(layout).sort());
     for (const [key, why] of Object.entries(LAYOUT_NOT_IN_FIGMA))
       expect(why, key).toMatch(/\S{8}/);
+  });
+
+  it("checks only the four Figma steps of each ramp, excluding ours by name with a reason", () => {
+    const { chapter } = figmaExpected(current());
+    for (const [ramp, steps] of Object.entries(chapter))
+      expect(Object.keys(steps), ramp).toEqual([
+        "chapter",
+        "chapter-deep",
+        "chapter-soft",
+        "chapter-pale",
+      ]);
+    const all = Object.keys(current().chapter.fund);
+    for (const key of Object.keys(CHAPTER_NOT_IN_FIGMA)) {
+      expect(all).toContain(key);
+      expect(CHAPTER_NOT_IN_FIGMA[key], key).toMatch(/\S{8}/);
+    }
   });
 
   it("checks the section gap in both layouts, in px", () => {

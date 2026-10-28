@@ -38,6 +38,11 @@
      gray/100 in the chapter frames; deliberately not --color-ink so text
      on it keeps contrast. */
   --color-dark-surface: 28 28 28; /* #1C1C1C */
+  /* A step up from it (OPENBRAIN-157): the "lighter dark" a breakout box
+     can take so it reads as a panel beside the dark figure pane and opener
+     rather than the same black (white on it is 14.35:1). The widget kit
+     hands uploaded widgets the same value as --ob-plate-2 (widgetHost.js). */
+  --color-dark-surface-2: 42 42 42; /* #2A2A2A */
 
   /* Corner radius for every control and surface (buttons, chips, badges,
      inputs, cards, panels, tooltips, modals). The book is square-cornered,
@@ -277,13 +282,29 @@
  * (file WNnPvBkixODGsiYmIZKSWw, "book colors"):
  *   book/<key>/main → --color-chapter, /dark → -deep, /medium → -soft,
  *   /light → -pale. Figma's values win; our token names stay.
- * Keep in sync with RAMPS in src/helper/chapterTheme.js.
+ * Keep in sync with RAMPS and RAMP_HEX in src/helper/chapterTheme.js.
+ *
+ * Two more steps per ramp (OPENBRAIN-157), ours rather than Figma's
+ * (CHAPTER_NOT_IN_FIGMA in scripts/tokens/figma-expected.mjs):
+ *   --color-chapter-on      the text colour on the chapter colour: white on
+ *                           the violet and blue, the dark surface on the
+ *                           light teal, red and yellow (white is 1.8:1 on
+ *                           perc). Mirrors RAMP_HEX[ramp].on.
+ *   --color-chapter-ground  the chapter colour as a ground for body text:
+ *                           main, except where main can't carry `on` at
+ *                           AA (move: white on #1A72F2 is 4.44:1), which
+ *                           takes deep (5.96:1). rampGround() derives it;
+ *                           src/helper/__tests__/chapterRamps.test.js holds
+ *                           these values to it.
+ * A breakout box in the chapter's colour paints both (BreakoutBox.vue).
  */
 :root {
   --color-chapter: 141 76 246;
   --color-chapter-deep: 118 21 245;
   --color-chapter-soft: 191 151 252;
   --color-chapter-pale: 220 205 249;
+  --color-chapter-on: 255 255 255;
+  --color-chapter-ground: 141 76 246;
 }
 
 /* book/fund — Fundamentals (purple) */
@@ -292,6 +313,8 @@
   --color-chapter-deep: 118 21 245; /* #7615F5 */
   --color-chapter-soft: 191 151 252; /* #BF97FC */
   --color-chapter-pale: 220 205 249; /* #DCCDF9 */
+  --color-chapter-on: 255 255 255; /* white, 4.67:1 on main */
+  --color-chapter-ground: 141 76 246; /* main */
 }
 
 /* book/perc — Perception (teal) */
@@ -300,6 +323,8 @@
   --color-chapter-deep: 8 175 163; /* #08AFA3 */
   --color-chapter-soft: 75 234 204; /* #4BEACC */
   --color-chapter-pale: 155 249 231; /* #9BF9E7 */
+  --color-chapter-on: 28 28 28; /* dark surface, 9.50:1 on main */
+  --color-chapter-ground: 57 216 186; /* main */
 }
 
 /* book/move — Movement (blue) */
@@ -308,6 +333,8 @@
   --color-chapter-deep: 14 97 196; /* #0E61C4 */
   --color-chapter-soft: 94 167 239; /* #5EA7EF */
   --color-chapter-pale: 154 192 239; /* #9AC0EF */
+  --color-chapter-on: 255 255 255; /* white, 4.44:1 on main, 5.96:1 on deep */
+  --color-chapter-ground: 14 97 196; /* deep: main misses AA with white */
 }
 
 /* book/lear — Learning, Cognition & Memory (red) */
@@ -316,6 +343,8 @@
   --color-chapter-deep: 193 6 42; /* #C1062A */
   --color-chapter-soft: 252 112 138; /* #FC708A */
   --color-chapter-pale: 255 199 210; /* #FFC7D2 */
+  --color-chapter-on: 28 28 28; /* dark surface, 4.74:1 on main */
+  --color-chapter-ground: 255 51 81; /* main */
 }
 
 /* book/deve — Development & Degeneration (amber) */
@@ -324,6 +353,8 @@
   --color-chapter-deep: 201 143 27; /* #C98F1B */
   --color-chapter-soft: 255 215 136; /* #FFD788 */
   --color-chapter-pale: 255 230 187; /* #FFE6BB */
+  --color-chapter-on: 28 28 28; /* dark surface, 9.70:1 on main */
+  --color-chapter-ground: 242 187 64; /* main */
 }
 
 /* Font pairs (default IBM Plex inherited from :root) */

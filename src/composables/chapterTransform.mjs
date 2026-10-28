@@ -558,10 +558,11 @@ export function transformModuleToChapterFormat(module) {
       anchorParagraphId: section.anchor_paragraph_id || null,
       paragraphs,
     };
-    // A box's own treatment ("dark" | "violet" | "pale"), once a
-    // sections.box_treatment column exists (select=* brings it through);
-    // until then the slug map in helper/breakoutTreatment.js decides
-    // (OPENBRAIN-153). Only boxes carry it.
+    // A box's own treatment ("pale" | "dark" | "plate" | "chapter"), set in
+    // the chapter editor into sections.box_treatment (OPENBRAIN-157;
+    // select=* brings it through). Unset, the slug map in
+    // helper/breakoutTreatment.js decides (OPENBRAIN-153). Only boxes carry
+    // it; the resolver reads older names ("violet") too.
     if (sectionObj.kind === "box" && section.box_treatment) {
       sectionObj.treatment = section.box_treatment;
     }

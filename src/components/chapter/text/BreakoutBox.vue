@@ -11,16 +11,21 @@
  * box that holds, never a title card on its own (the 7 Oct review), and
  * reduced motion turns it off.
  *
- * Treatment (OPENBRAIN-153). The History redesign draws a box as a colour
- * panel, dark or violet, with white text and a centred heading; the pale
- * card stays the default for every chapter the map in
- * helper/breakoutTreatment.js is silent about. Every colour the box paints
+ * Treatment (OPENBRAIN-153, 157). The History redesign draws a box as a
+ * colour panel with white text and a centred heading; the creator picks one
+ * per box in the chapter editor (sections.box_treatment), the map in
+ * helper/breakoutTreatment.js answers for a chapter, and the pale card
+ * stays the default where both are silent. Every colour the box paints
  * goes through the --bx-* custom properties set per treatment on the frame,
- * so the three looks are one set of rules, and the pause's room (also
+ * so the four looks are one set of rules, and the pause's room (also
  * painted in the box's colour) follows along. */
 import { computed, inject } from "vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
-import { boxTreatmentFor } from "@/helper/breakoutTreatment";
+import {
+  DARK_BOX_TREATMENTS,
+  boxTreatmentFor,
+  normalizeBoxTreatment,
+} from "@/helper/breakoutTreatment";
 
 const props = defineProps({
   /** The box section (kind "box"): id, slug and title. */
@@ -28,20 +33,23 @@ const props = defineProps({
   /** Its letter ("A", "B", …). */
   label: { type: String, default: "" },
   pairedExplores: { type: Boolean, default: false },
-  /** "pale" | "dark" | "violet"; unset resolves from the section and the
-   *  chapter (TextComp provides chapterSlug). Stories set it directly. */
+  /** "pale" | "dark" | "plate" | "chapter" (or the older "violet"); unset
+   *  resolves from the section and the chapter (TextComp provides
+   *  chapterSlug). Stories set it directly. */
   treatment: { type: String, default: "" },
 });
 
 const chapterSlug = inject("chapterSlug", null);
 const treatment = computed(
   () =>
-    props.treatment ||
+    normalizeBoxTreatment(props.treatment) ||
     boxTreatmentFor(props.section, chapterSlug?.value ?? chapterSlug)
 );
-/* The dark and violet panels share one layout (centred heading, no badge,
-   full bleed on phones); only their palette differs. */
+/* The panels share one layout (centred heading, no badge, full bleed on
+   phones); only their palette differs. The two dark plates also share the
+   Explore card on the plate (bx--dark). */
 const panel = computed(() => treatment.value !== "pale");
+const dark = computed(() => DARK_BOX_TREATMENTS.includes(treatment.value));
 
 const titleId = computed(() => `box-title-${props.section.id}`);
 </script>
@@ -65,6 +73,7 @@ const titleId = computed(() => `box-title-${props.section.id}`);
           'bx--floating': floating,
           'bx--paired': pairedExplores,
           'bx--panel': panel,
+          'bx--dark': dark,
         }"
         :aria-labelledby="titleId"
       >
@@ -102,6 +111,7 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   --bx-hairline: rgb(var(--color-line));
   --bx-fig-label: rgb(var(--color-mute));
   --bx-quote-rule: rgb(var(--color-chapter, var(--color-ink)));
+  --bx-wash: rgb(var(--color-ink) / 0.06);
 }
 /* Dark (Figma 2730:8031, 2730:8111): --color-dark-surface, white text
    (17.0:1), the kicker in the chapter's colour (#8D4CF6 on #1C1C1C is
@@ -117,20 +127,41 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   --bx-hairline: rgb(255 255 255 / 0.22);
   --bx-fig-label: rgb(var(--color-warn));
   --bx-quote-rule: rgb(var(--color-chapter));
+  --bx-wash: rgb(255 255 255 / 0.08);
 }
-/* Violet (Figma 2730:8059): the chapter's colour, white text (4.67:1 on
-   #8D4CF6, so every word on it is full white, legends included: white at
-   0.85 would drop to 3.8). The Figma sets the figure label in amber, which
-   is 2.3:1 on violet, so here it is white too. */
-.bx-pause[data-treatment="violet"] {
-  --bx-bg: rgb(var(--color-chapter));
+/* Plate (OPENBRAIN-157): the lighter dark, --color-dark-surface-2, the
+   rest as dark. White is 14.35:1 on it, amber 7.1:1; the kicker in the
+   chapter's colour is 3.1:1 at its tightest (fund) and 8.2:1 at its widest
+   (deve), the label's 3:1 on every ramp. */
+.bx-pause[data-treatment="plate"] {
+  --bx-bg: rgb(var(--color-dark-surface-2));
   --bx-ink: #fff;
-  --bx-ink-soft: #fff;
-  --bx-kicker: #fff;
+  --bx-ink-soft: rgb(255 255 255 / 0.7);
+  --bx-kicker: rgb(var(--color-chapter));
   --bx-rule: transparent;
-  --bx-hairline: rgb(255 255 255 / 0.35);
-  --bx-fig-label: #fff;
-  --bx-quote-rule: #fff;
+  --bx-hairline: rgb(255 255 255 / 0.22);
+  --bx-fig-label: rgb(var(--color-warn));
+  --bx-quote-rule: rgb(var(--color-chapter));
+  --bx-wash: rgb(255 255 255 / 0.08);
+}
+/* Chapter (the Figma's violet, 2730:8059, on every ramp): the chapter's
+   colour as ground, --color-chapter-ground (main, or deep for move, whose
+   main is 4.44:1 with white), and everything on it in --color-chapter-on
+   (brand.css, OPENBRAIN-157): white on fund 4.67 and move 5.96, the dark
+   surface on perc 9.50, lear 4.74 and deve 9.70. Every word is the full
+   ink, legends included: white at 0.85 on violet would drop to 3.8. The
+   Figma sets the figure label in amber, which is 2.3:1 on violet and 1.1:1
+   on yellow, so here it is the ink too. */
+.bx-pause[data-treatment="chapter"] {
+  --bx-bg: rgb(var(--color-chapter-ground, var(--color-chapter)));
+  --bx-ink: rgb(var(--color-chapter-on, 255 255 255));
+  --bx-ink-soft: rgb(var(--color-chapter-on, 255 255 255));
+  --bx-kicker: rgb(var(--color-chapter-on, 255 255 255));
+  --bx-rule: transparent;
+  --bx-hairline: rgb(var(--color-chapter-on, 255 255 255) / 0.35);
+  --bx-fig-label: rgb(var(--color-chapter-on, 255 255 255));
+  --bx-quote-rule: rgb(var(--color-chapter-on, 255 255 255));
+  --bx-wash: rgb(var(--color-chapter-on, 255 255 255) / 0.1);
 }
 
 .bx {
@@ -269,43 +300,52 @@ const titleId = computed(() => `box-title-${props.section.id}`);
 }
 .bx--panel :deep(.fig-fs-btn:hover) {
   border-color: var(--bx-ink);
-  background: rgb(255 255 255 / 0.08);
+  background: var(--bx-wash);
 }
 .bx--panel :deep(blockquote) {
   border-left-color: var(--bx-quote-rule);
   color: var(--bx-ink);
 }
-/* Citation superscripts are magenta on paper; on violet that is 1.1:1,
-   on dark 4.1:1, so in a panel they are white and keep their weight. */
-.bx--panel :deep(.citation-ref) {
+/* Citation superscripts are magenta on paper; on violet that is 1.1:1, on
+   dark 4.1:1, on the plate 3.4:1 and on the yellow ramp 2.4:1, so in a
+   panel they are the panel's ink and keep their weight; their hover
+   underline (index.css, magenta) follows. Links in the box's text the same:
+   magenta on any of these grounds is lost. */
+.bx--panel :deep(.citation-ref),
+.bx--panel :deep(.bx-body a) {
   color: var(--bx-ink);
 }
-/* An Explore card (ExploreCard.vue) on the dark panel is the panel's own
-   colour inside a hairline, its image plain on the dark as the Figma lays
-   it (duotoned art comes baked into the asset, OPENBRAIN-153); on violet
-   the card stays paper, which is where the Figma puts its images. */
-.bx[data-treatment="dark"] :deep(.xc) {
+.bx--panel :deep(.citation-ref:hover),
+.bx--panel :deep(.bx-body a) {
+  text-decoration-color: currentColor;
+}
+/* An Explore card (ExploreCard.vue) on a dark plate (dark, plate) is the
+   plate's own colour inside a hairline, its image plain on the dark as the
+   Figma lays it (duotoned art comes baked into the asset, OPENBRAIN-153);
+   on the chapter colour the card stays paper, which is where the Figma
+   puts its images. */
+.bx--dark :deep(.xc) {
   border-color: var(--bx-hairline);
   border-left-color: rgb(var(--color-chapter));
   background: transparent;
   color: var(--bx-ink);
 }
-.bx[data-treatment="dark"] :deep(.xc-figure) {
+.bx--dark :deep(.xc-figure) {
   background: transparent;
   border-right-color: var(--bx-hairline);
 }
-.bx[data-treatment="dark"] :deep(.xc-legend),
-.bx[data-treatment="dark"] :deep(.xc-kicker) {
+.bx--dark :deep(.xc-legend),
+.bx--dark :deep(.xc-kicker) {
   color: var(--bx-ink-soft);
 }
-.bx[data-treatment="dark"] :deep(.xc-btn) {
+.bx--dark :deep(.xc-btn) {
   border-color: var(--bx-ink);
   color: var(--bx-ink);
 }
-.bx[data-treatment="dark"] :deep(.xc-btn:hover) {
-  background: rgb(255 255 255 / 0.1);
+.bx--dark :deep(.xc-btn:hover) {
+  background: var(--bx-wash);
 }
-.bx[data-treatment="dark"] :deep(.xc-panel) {
+.bx--dark :deep(.xc-panel) {
   border-top-color: var(--bx-hairline);
 }
 

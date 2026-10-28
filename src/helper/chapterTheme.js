@@ -12,8 +12,74 @@
  * the migration is applied in production; the DB value wins once it is.
  */
 
+import { contrastRatio } from "./contrast.js";
+
 // Keep in sync with the [data-chapter="<ramp>"] blocks in src/styles/brand.css.
 export const RAMPS = Object.freeze(["fund", "perc", "move", "lear", "deve"]);
+
+/*
+ * The ramps as hex (OPENBRAIN-157): one table for everything that needs the
+ * values outside CSS. brand.css paints the same numbers, the widget kit
+ * hands them to uploaded widgets as --ob-* (widgetHost.js), and
+ * src/helper/__tests__/chapterRamps.test.js holds all three equal, so a ramp
+ * can't change in one place and not the others.
+ *
+ * `on` is the text colour on a fill of `main`: white on the violet and
+ * blue, the dark surface on the light teal, red and yellow, where white is
+ * unreadable (1.8:1 on the Retina's teal). Measured on main: fund 4.67,
+ * perc 9.50, move 4.44, lear 4.74, deve 9.70. Move's white is just under
+ * AA's 4.5 for body text, which is why a text panel asks rampGround().
+ */
+export const AA_TEXT = 4.5;
+export const RAMP_HEX = Object.freeze({
+  fund: Object.freeze({
+    main: "#8D4CF6",
+    deep: "#7615F5",
+    soft: "#BF97FC",
+    pale: "#DCCDF9",
+    on: "#ffffff",
+  }),
+  perc: Object.freeze({
+    main: "#39D8BA",
+    deep: "#08AFA3",
+    soft: "#4BEACC",
+    pale: "#9BF9E7",
+    on: "#1c1c1c",
+  }),
+  move: Object.freeze({
+    main: "#1A72F2",
+    deep: "#0E61C4",
+    soft: "#5EA7EF",
+    pale: "#9AC0EF",
+    on: "#ffffff",
+  }),
+  lear: Object.freeze({
+    main: "#FF3351",
+    deep: "#C1062A",
+    soft: "#FC708A",
+    pale: "#FFC7D2",
+    on: "#1c1c1c",
+  }),
+  deve: Object.freeze({
+    main: "#F2BB40",
+    deep: "#C98F1B",
+    soft: "#FFD788",
+    pale: "#FFE6BB",
+    on: "#1c1c1c",
+  }),
+});
+
+/**
+ * The step a panel of body text in the chapter's colour stands on: `main`,
+ * or `deep` where `on` can't reach AA on main (move: white on #1A72F2 is
+ * 4.44:1, on #0E61C4 it is 5.96:1). Derived, not listed, so a ramp whose
+ * Figma value moves can't keep an unreadable ground. brand.css carries the
+ * answer as --color-chapter-ground; the test pins it to this.
+ */
+export function rampGround(ramp) {
+  const r = RAMP_HEX[ramp] || RAMP_HEX.fund;
+  return contrastRatio(r.main, r.on) >= AA_TEXT ? "main" : "deep";
+}
 
 // Human names as the Assets Library labels them (chapter-primary-colors).
 export const RAMP_NAMES = Object.freeze({

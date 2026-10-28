@@ -94,10 +94,17 @@ export const HippocratesPairDark = {
   args: { section: { ...hippocratesPair, treatment: "dark" }, label: "A" },
 };
 
-/** The same box on violet, the Figma's treatment for Humoral theory
- *  (2730:8059): the cards stay paper, images plain on white. */
-export const HippocratesPairViolet = {
-  args: { section: { ...hippocratesPair, treatment: "violet" }, label: "A" },
+/** The same box on the chapter's colour (`chapter`, the Figma's violet for
+ *  Humoral theory, 2730:8059): the cards stay paper, images plain on white.
+ *  Named `violet` until OPENBRAIN-157; the resolver still reads that. */
+export const HippocratesPairChapter = {
+  args: { section: { ...hippocratesPair, treatment: "chapter" }, label: "A" },
+};
+
+/** The lighter dark (OPENBRAIN-157): the cards sit on the plate inside a
+ *  hairline, as on Dark. */
+export const HippocratesPairPlate = {
+  args: { section: { ...hippocratesPair, treatment: "plate" }, label: "A" },
 };
 
 /** The comparative-neuroanatomy box on the dark panel (Figma 2730:8111). */
