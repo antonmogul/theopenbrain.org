@@ -78,7 +78,11 @@ One `supabase db push` on the morning of 2026-10-21 applied these in order; ever
 
 Committed, not yet pushed. `supabase migration list` is the authority: any other local-only row it shows is pending too.
 
-Nothing: `supabase migration list` shows local and remote in step as of 2026-10-27.
+| Migration                                               | What it does, and what to check after the push                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261028000000_sections_box_treatment` (OPENBRAIN-157) | Adds `sections.box_treatment` (text, null or one of `pale`, `dark`, `plate`, `chapter`, CHECK-constrained): a breakout box's colour, picked per box in the chapter editor. Until it is pushed the editor shows the Colour select disabled with the reason. After: `sections?select=box_treatment&limit=1` answers (no "column does not exist"), and the select is live. |
+
+Before that: `supabase migration list` showed local and remote in step as of 2026-10-27.
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is

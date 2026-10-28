@@ -558,7 +558,8 @@ async function main() {
       file: thumbName(`upload:${u.slug}`),
       frame: UPLOAD_FRAME,
       open: async (page) => {
-        // widgetHost has no imports, so Node loads the reader's own builder.
+        // widgetHost imports only plain ESM helpers (the ramp table in
+        // helper/chapterTheme.js), so Node loads the reader's own builder.
         const { buildWidgetDoc } = await import(
           pathToFileURL(path.join(ROOT, "src/widgets/uploaded/widgetHost.js"))
             .href

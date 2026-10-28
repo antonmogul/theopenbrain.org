@@ -75,11 +75,16 @@ export function extractTokens(brandCss, indexCss) {
         .sort(([a], [b]) => a.localeCompare(b))
     );
 
+  // The four Figma steps, then the two of our own (OPENBRAIN-157: the ink on
+  // the chapter colour and the chapter colour as a text ground), which
+  // figma-expected.mjs leaves out of the drift check.
   const chapterKeys = [
     "chapter",
     "chapter-deep",
     "chapter-soft",
     "chapter-pale",
+    "chapter-on",
+    "chapter-ground",
   ];
   const chapter = {};
   for (const ramp of ["fund", "perc", "move", "lear", "deve"]) {

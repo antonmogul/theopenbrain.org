@@ -10,13 +10,16 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { readFile, mkdir, writeFile, access } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import { chromium, firefox } from "playwright";
 
 const out = process.env.G5_ARTIFACTS || ".superpowers/g5-browser";
 await mkdir(out, { recursive: true });
 const read = (p) => readFile(p, "utf8");
+// By file URL, not a data: URL: widgetHost imports the ramp table from
+// helper/chapterTheme.js (OPENBRAIN-157), which a data: module can't resolve.
 const host = await import(
-  `data:text/javascript;base64,${Buffer.from(await read("src/widgets/uploaded/widgetHost.js")).toString("base64")}`
+  pathToFileURL("src/widgets/uploaded/widgetHost.js").href
 );
 const csp = (await read("index.html")).match(
   /http-equiv="Content-Security-Policy"\s+content="([^"]+)/

@@ -49,6 +49,15 @@ export const LAYOUT_NOT_IN_FIGMA = {
     "an em of the subsection title it precedes; a Figma number variable has no em",
 };
 
+/** Chapter-ramp steps in tokens.json that are ours, not Figma's
+ *  book/<key>/{main,dark,medium,light} (OPENBRAIN-157), and why. */
+export const CHAPTER_NOT_IN_FIGMA = {
+  "chapter-on":
+    "the ink on the chapter colour, derived from the Figma steps (RAMP_HEX.on in chapterTheme.js); the Assets Library has no such variable",
+  "chapter-ground":
+    "main or deep, whichever carries the ink at AA (rampGround in chapterTheme.js); a rule over the Figma steps, not a value of its own",
+};
+
 const THEME = [
   "bg",
   "paper",
@@ -69,7 +78,14 @@ export function figmaExpected(t) {
   const D = t.color.dark;
   return {
     theme: Object.fromEntries(THEME.map((k) => [k, [L[k], D[k] ?? L[k]]])),
-    chapter: t.chapter,
+    chapter: Object.fromEntries(
+      Object.entries(t.chapter).map(([ramp, steps]) => [
+        ramp,
+        Object.fromEntries(
+          Object.entries(steps).filter(([k]) => !(k in CHAPTER_NOT_IN_FIGMA))
+        ),
+      ])
+    ),
     type: Object.fromEntries(
       Object.entries(t.type).map(([k, v]) => [k, [v.desktop, v.phone]])
     ),

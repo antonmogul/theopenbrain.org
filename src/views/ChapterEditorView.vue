@@ -38,6 +38,13 @@ import {
   normalizeFigureHold,
 } from "@/helper/historyFigureTiming";
 import {
+  BOX_TREATMENTS,
+  BOX_TREATMENT_LABELS,
+  boxTreatmentFor,
+  normalizeBoxTreatment,
+} from "@/helper/breakoutTreatment";
+import { useDraftSelect } from "@/composables/useDraftSelect";
+import {
   StatusBadge,
   Button,
   ConfirmDialog,
@@ -530,63 +537,92 @@ const holdHint = (p) =>
   `Automatic: ${figureHoldLabel(defaultFigureHold(figureRecord(p)))}. ` +
   "Wide screens only. Always stops at the next figure, a full-width band or the end of the section.";
 
-// The select shows a draft while the author chooses and while it saves.
-// Arrow keys on a closed select fire `change` at every step, so a choice is
-// saved once: after a pause, on Enter, or when the select loses focus. One
-// save and one undo entry, and on a published chapter the confirmation opens
-// only then, not at the first arrow key.
-const HOLD_SAVE_MS = 800;
-const holdDrafts = ref({}); // paragraph id → the select's value, not yet stored
-const holdTimers = new Map();
-const holdSaving = new Map(); // paragraph id → the draft handed to the save
-const holdShown = (p) => holdDrafts.value[p.id] ?? holdValue(p);
-function dropHoldDraft(id) {
-  clearTimeout(holdTimers.get(id));
-  holdTimers.delete(id);
-  if (!(id in holdDrafts.value)) return;
-  const rest = { ...holdDrafts.value };
-  delete rest[id];
-  holdDrafts.value = rest;
-}
-// Saved, the row holds the value; refused or cancelled, the select goes back
-// to what is stored. A newer choice made meanwhile keeps its own draft.
-function settleHold(id, draft) {
-  if (holdSaving.get(id) === draft) holdSaving.delete(id);
-  if (holdDrafts.value[id] === draft) dropHoldDraft(id);
-}
-function chooseHold(p, event) {
-  holdDrafts.value = { ...holdDrafts.value, [p.id]: event.target.value };
-  clearTimeout(holdTimers.get(p.id));
-  holdTimers.set(
-    p.id,
-    setTimeout(() => saveHold(p), HOLD_SAVE_MS)
-  );
-}
-function saveHold(p) {
-  clearTimeout(holdTimers.get(p.id));
-  holdTimers.delete(p.id);
-  const draft = holdDrafts.value[p.id];
-  if (draft === undefined || holdSaving.get(p.id) === draft) return;
-  if (draft === holdValue(p)) return dropHoldDraft(p.id);
-  holdSaving.set(p.id, draft);
+// The select shows a draft while the author chooses and while it saves
+// (useDraftSelect): arrow keys on a closed select fire `change` at every
+// step, so a choice is saved once, after a pause, on Enter, or when the
+// select loses focus. One save and one undo entry, and on a published
+// chapter the confirmation opens only then, not at the first arrow key.
+const SELECT_SAVE_MS = 800;
+const paragraphById = (id) => ed.paragraphs.value.find((x) => x.id === id);
+// A draft's save, through the published-chapter confirmation; the watcher
+// below settles it if the question is cancelled or replaced.
+function saveDraft(select, key, draft, write, done) {
   const run = async () => {
     run.ran = true;
-    await attempt(
-      () => ed.setFigureHold(p.id, normalizeFigureHold(draft)),
-      "Figure timing saved."
-    );
-    settleHold(p.id, draft);
+    await attempt(() => write(draft), done);
+    select.settle(key, draft);
   };
-  run.holdOf = { id: p.id, draft };
+  run.draftOf = { select, key, draft };
   whenLive(run);
 }
-// On a published chapter the save waits for the confirmation. Cancelled (or
-// replaced by another change's question), it never ran: nothing was saved.
-watch(pendingAction, (now, before) => {
-  if (before?.holdOf && !before.ran && now !== before)
-    settleHold(before.holdOf.id, before.holdOf.draft);
+const holds = useDraftSelect({
+  delay: SELECT_SAVE_MS,
+  stored: (id) => {
+    const p = paragraphById(id);
+    return p ? holdValue(p) : "";
+  },
+  save: (id, draft) =>
+    saveDraft(
+      holds,
+      id,
+      draft,
+      (d) => ed.setFigureHold(id, normalizeFigureHold(d)),
+      "Figure timing saved."
+    ),
 });
-onBeforeUnmount(() => holdTimers.forEach((timer) => clearTimeout(timer)));
+const holdShown = (p) => holds.shown(p.id);
+const chooseHold = (p, event) => holds.choose(p.id, event.target.value);
+const saveHold = (p) => holds.flush(p.id);
+
+// ---- breakout box colour (OPENBRAIN-157) ----
+// Which panel a box renders in (helper/breakoutTreatment.js): the pick is
+// stored in sections.box_treatment; Automatic leaves it to the chapter's
+// map, else the pale card. The column arrives with
+// 20261028000000_sections_box_treatment.sql; sections are fetched with
+// select=*, so its key is on every row once that is pushed, and until then
+// the select is offered disabled, saying why.
+const sectionById = (id) => ed.sections.value.find((x) => x.id === id);
+const hasBoxTreatment = (s) => "box_treatment" in s;
+const BOX_TREATMENT_NOTE =
+  "Needs a database update (sections.box_treatment, OPENBRAIN-157) before a colour can be saved.";
+const treatmentValue = (s) => normalizeBoxTreatment(s?.box_treatment) || "";
+const automaticTreatment = (s) =>
+  BOX_TREATMENT_LABELS[
+    boxTreatmentFor({ slug: s.slug }, ed.module.value?.slug)
+  ];
+const treatmentHint = (s) =>
+  hasBoxTreatment(s)
+    ? `Automatic: ${automaticTreatment(s)}, from this chapter's map or the pale card.`
+    : BOX_TREATMENT_NOTE;
+const colours = useDraftSelect({
+  delay: SELECT_SAVE_MS,
+  stored: (id) => treatmentValue(sectionById(id)),
+  save: (id, draft) =>
+    saveDraft(
+      colours,
+      id,
+      draft,
+      (d) => ed.setBoxTreatment(id, d || null),
+      "Box colour saved."
+    ),
+});
+const treatmentShown = (s) => colours.shown(s.id);
+const chooseTreatment = (s, event) => colours.choose(s.id, event.target.value);
+const saveTreatment = (s) => colours.flush(s.id);
+
+// On a published chapter a draft's save waits for the confirmation.
+// Cancelled (or replaced by another change's question), it never ran:
+// nothing was saved, and the select goes back to what is stored.
+watch(pendingAction, (now, before) => {
+  if (before?.draftOf && !before.ran && now !== before) {
+    const { select, key, draft } = before.draftOf;
+    select.settle(key, draft);
+  }
+});
+onBeforeUnmount(() => {
+  holds.dispose();
+  colours.dispose();
+});
 
 async function onRemoveFigure() {
   const { paragraphId } = pickerFor.value;
@@ -986,6 +1022,32 @@ onMounted(async () => {
                     {{ excerpt(p).slice(0, 70) }}
                   </option>
                 </select>
+              </label>
+              <!-- The panel the box renders in (OPENBRAIN-157): the
+                   creator's pick, else what the chapter's map or the pale
+                   card gives. Saved once per choice, as the figure "Stays"
+                   select is. -->
+              <label class="ce-box-colour">
+                <span>Colour</span>
+                <select
+                  :id="`ce-box-colour-${s.id}`"
+                  :value="treatmentShown(s)"
+                  :disabled="!hasBoxTreatment(s)"
+                  :title="treatmentHint(s)"
+                  @change="chooseTreatment(s, $event)"
+                  @keydown.enter="saveTreatment(s)"
+                  @blur="saveTreatment(s)"
+                >
+                  <option value="">
+                    Automatic ({{ automaticTreatment(s) }})
+                  </option>
+                  <option v-for="t in BOX_TREATMENTS" :key="t" :value="t">
+                    {{ BOX_TREATMENT_LABELS[t] }}
+                  </option>
+                </select>
+                <small v-if="!hasBoxTreatment(s)" class="ce-box-colour-note">{{
+                  BOX_TREATMENT_NOTE
+                }}</small>
               </label>
             </div>
           </header>
@@ -1766,6 +1828,18 @@ onMounted(async () => {
   border-radius: var(--radius-control);
   background: rgb(var(--color-paper));
   font: inherit;
+}
+/* The box colour (OPENBRAIN-157) is one more of the box's controls; until
+   its column is migrated the select is there but off, with the reason. */
+.ce-box-place select:disabled {
+  color: rgb(var(--color-mute));
+  cursor: not-allowed;
+}
+.ce-box-place .ce-box-colour-note {
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-11);
+  line-height: 1.4;
+  color: rgb(var(--color-mute));
 }
 .ce-box-check {
   display: inline-flex;

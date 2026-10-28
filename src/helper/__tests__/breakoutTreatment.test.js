@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
   BOX_TREATMENTS,
+  BOX_TREATMENT_ALIASES,
   BOX_TREATMENT_BY_SLUG,
+  BOX_TREATMENT_LABELS,
+  DARK_BOX_TREATMENTS,
   DEFAULT_BOX_TREATMENT,
   boxTreatmentFor,
   normalizeBoxTreatment,
@@ -24,9 +27,9 @@ describe("boxTreatmentFor (OPENBRAIN-153)", () => {
     }
   });
 
-  it("keeps the Figma's violet for the humoral-theory box (pre-fold data)", () => {
+  it("keeps the Figma's violet, now the chapter-colour panel, for the humoral-theory box (pre-fold data)", () => {
     expect(boxTreatmentFor({ slug: "box-humoral-theory" }, HISTORY)).toBe(
-      "violet"
+      "chapter"
     );
   });
 
@@ -50,13 +53,16 @@ describe("boxTreatmentFor (OPENBRAIN-153)", () => {
     expect(boxTreatmentFor(null, HISTORY)).toBe(DEFAULT_BOX_TREATMENT);
   });
 
-  it("lets the section's own treatment (a future DB column) win over the map", () => {
+  it("lets the section's own treatment (sections.box_treatment) win over the map", () => {
     expect(
-      boxTreatmentFor({ slug: "box-descartes", treatment: "violet" }, HISTORY)
-    ).toBe("violet");
+      boxTreatmentFor({ slug: "box-descartes", treatment: "chapter" }, HISTORY)
+    ).toBe("chapter");
     expect(
       boxTreatmentFor({ slug: "box-descartes", treatment: " Pale " }, HISTORY)
     ).toBe("pale");
+    expect(
+      boxTreatmentFor({ slug: "box-descartes", treatment: "plate" }, HISTORY)
+    ).toBe("plate");
     expect(
       boxTreatmentFor({ slug: "box-x", treatment: "dark" }, "the-retina")
     ).toBe("dark");
@@ -76,10 +82,20 @@ describe("boxTreatmentFor (OPENBRAIN-153)", () => {
 });
 
 describe("normalizeBoxTreatment", () => {
-  it("accepts the three treatments, trimmed and case-insensitive", () => {
+  it("accepts the four treatments, trimmed and case-insensitive", () => {
+    expect(BOX_TREATMENTS).toEqual(["pale", "dark", "plate", "chapter"]);
     for (const t of BOX_TREATMENTS) expect(normalizeBoxTreatment(t)).toBe(t);
     expect(normalizeBoxTreatment("DARK")).toBe("dark");
-    expect(normalizeBoxTreatment(" violet\n")).toBe("violet");
+    expect(normalizeBoxTreatment(" Plate\n")).toBe("plate");
+  });
+
+  it("reads the OPENBRAIN-153 name `violet` as the chapter-colour panel", () => {
+    expect(BOX_TREATMENT_ALIASES).toEqual({ violet: "chapter" });
+    expect(normalizeBoxTreatment("violet")).toBe("chapter");
+    expect(normalizeBoxTreatment(" Violet ")).toBe("chapter");
+    expect(
+      boxTreatmentFor({ slug: "box-descartes", treatment: "violet" }, HISTORY)
+    ).toBe("chapter");
   });
 
   it("returns null for anything else", () => {
@@ -87,7 +103,21 @@ describe("normalizeBoxTreatment", () => {
     expect(normalizeBoxTreatment(null)).toBeNull();
     expect(normalizeBoxTreatment("")).toBeNull();
     expect(normalizeBoxTreatment("card")).toBeNull();
+    expect(normalizeBoxTreatment("magenta")).toBeNull();
     expect(normalizeBoxTreatment({})).toBeNull();
+  });
+});
+
+describe("the treatment vocabulary the editor offers", () => {
+  it("labels every treatment, and only those, for the picker", () => {
+    expect(Object.keys(BOX_TREATMENT_LABELS)).toEqual([...BOX_TREATMENTS]);
+    for (const label of Object.values(BOX_TREATMENT_LABELS))
+      expect(label).toMatch(/^[A-Z][a-z]/);
+  });
+
+  it("knows which treatments are a dark plate (white text, cards on the plate)", () => {
+    expect(DARK_BOX_TREATMENTS).toEqual(["dark", "plate"]);
+    for (const t of DARK_BOX_TREATMENTS) expect(BOX_TREATMENTS).toContain(t);
   });
 });
 
