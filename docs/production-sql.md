@@ -74,15 +74,17 @@ One `supabase db push` on the morning of 2026-10-21 applied these in order; ever
 | `20261021040000_editor_test_artefacts` (OPENBRAIN-148)             | pushed 2026-10-21 |
 | `20261021050000_retina_placeholder_section_figure` (OPENBRAIN-148) | pushed 2026-10-21 |
 
+## Pushed 2026-10-29 (before the Stuart admin demo)
+
+| Migration                                               | How it got there, and what was checked                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261028000000_sections_box_treatment` (OPENBRAIN-157) | **pushed.** Additive DDL only: a nullable `sections.box_treatment`, CHECK-constrained to `pale`, `dark`, `plate` or `chapter`. The drop-if-exists raised its expected NOTICE. Checked over REST with the publishable key: all seven History boxes come back with `box_treatment` null, so every box still resolves through the code map in `helper/breakoutTreatment.js` and the reader is unchanged until a creator picks a colour. The editor's Colour select is now live. |
+
 ## Pending
 
 Committed, not yet pushed. `supabase migration list` is the authority: any other local-only row it shows is pending too.
 
-| Migration                                               | What it does, and what to check after the push                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261028000000_sections_box_treatment` (OPENBRAIN-157) | Adds `sections.box_treatment` (text, null or one of `pale`, `dark`, `plate`, `chapter`, CHECK-constrained): a breakout box's colour, picked per box in the chapter editor. Until it is pushed the editor shows the Colour select disabled with the reason. After: `sections?select=box_treatment&limit=1` answers (no "column does not exist"), and the select is live. |
-
-Before that: `supabase migration list` showed local and remote in step as of 2026-10-27.
+Nothing: `supabase migration list` shows local and remote in step as of 2026-10-29.
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
