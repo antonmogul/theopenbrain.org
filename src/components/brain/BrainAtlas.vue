@@ -17,6 +17,16 @@
  * breakpoint the stage comes first, as the home cover's art does, and the
  * card moves up under the title, next to the brain it describes.
  *
+ * It opens on a poster (OPENBRAIN-158): a still of the brain in its resting
+ * pose (helper/brain/poster.js) that the live brain fades in over once the
+ * model is in. The stage, and three.js with it, is fetched only when it
+ * will be used: never without WebGL2, and not under reduced motion when
+ * `stillUnderReducedMotion` is set, as the home cover sets it. Then the
+ * poster stays and the contents work on their own. The contents' "Read"
+ * links are plain router links, so a reader gets into the book from the
+ * poster alone. The home page passes its own title block through the
+ * `lead` slot.
+ *
  * The three.js work lives in helper/brain/brainStage.js; this file wires its
  * callbacks to Vue state.
  */
@@ -47,7 +57,12 @@ import {
   viewForAreas,
 } from "@/helper/brain/areas";
 import { ATLAS_DOPEFRAME } from "@/helper/brain/dopeframe";
-import { BRAIN_MODEL_URL, createBrainStage } from "@/helper/brain/brainStage";
+import {
+  BRAIN_MODEL_URL,
+  BRAIN_POSTER,
+  posterScale,
+  stageBlocker,
+} from "@/helper/brain/poster";
 import BrainAtlasCard from "./BrainAtlasCard.vue";
 
 const props = defineProps({
@@ -55,6 +70,12 @@ const props = defineProps({
   autoplay: { type: Boolean, default: true },
   /** The atlas model; override only to point a story at a fixture. */
   modelUrl: { type: String, default: BRAIN_MODEL_URL },
+  /**
+   * Under reduced motion keep the poster and never fetch the stage (the
+   * home cover). Off, the stage loads and holds still as it always did at
+   * /brain: draggable, with no easing.
+   */
+  stillUnderReducedMotion: { type: Boolean, default: false },
 });
 
 // Resting tint of a chapter's part: full once its chapter is published,
@@ -66,9 +87,13 @@ const store = useGeneral();
 const { fetchCatalog, modules, loaded } = useChapterCatalog();
 
 const panelEl = ref(null);
+const stageEl = ref(null);
 const canvasEl = ref(null);
 const labelEl = ref(null);
 const stage = shallowRef(null);
+// The poster's height as a share of the stage's: it shrinks on a narrow
+// stage the way the camera backs off, so the first live frame lands on it.
+const posterFit = ref(1);
 
 const status = ref("loading"); // loading | ready | error
 const errorKind = ref("");
@@ -128,6 +153,12 @@ const loadingCopy = computed(() =>
     ? "Loading the brain…"
     : `Loading the brain… ${Math.round(progress.value * 100)}%`
 );
+// Why the stage is not coming (status "error", by errorKind).
+const STILL_COPY = {
+  motion: "The brain holds still while reduced motion is on.",
+  webgl: "This browser can't show the 3D brain (WebGL is off or unavailable).",
+  load: "The 3D brain couldn't be loaded.",
+};
 
 function partNames(chapter) {
   return chapter.areas.map((id) => areaById(id)?.name).join(" · ");
@@ -224,9 +255,36 @@ watch(
   (open) => stage.value?.setSuspended(open)
 );
 
-onMounted(() => {
-  window.addEventListener("keydown", onKeydown);
-  fetchCatalog();
+let gone = false; // unmounted before the stage chunk arrived
+let ro = null;
+
+function fitPoster() {
+  const el = stageEl.value;
+  if (!el?.clientHeight) return;
+  posterFit.value = posterScale(el.clientWidth / el.clientHeight);
+}
+function fail(kind) {
+  status.value = "error";
+  errorKind.value = kind;
+}
+
+/* The stage is a separate chunk (three.js inside), fetched only once we
+   know it will be used; until then, and instead of it, the poster. */
+async function loadStage() {
+  const blocker = stageBlocker({
+    reducedMotion,
+    stillUnderReducedMotion: props.stillUnderReducedMotion,
+    canvas: canvasEl.value,
+  });
+  if (blocker) return fail(blocker);
+  let createBrainStage;
+  try {
+    ({ createBrainStage } = await import("@/helper/brain/brainStage"));
+  } catch (err) {
+    console.warn("BrainAtlas: the stage chunk failed to load", err);
+    return fail("load");
+  }
+  if (gone) return;
   stage.value = createBrainStage({
     canvas: canvasEl.value,
     label: labelEl.value,
@@ -240,10 +298,7 @@ onMounted(() => {
     on: {
       progress: (p) => (progress.value = p),
       ready: () => (status.value = "ready"),
-      error: (kind) => {
-        status.value = "error";
-        errorKind.value = kind;
-      },
+      error: fail,
       hover: (id) => (hoveredId.value = id),
       select: chooseArea,
       focus: (id) => {
@@ -252,10 +307,29 @@ onMounted(() => {
       open: (isOpen) => (bookOpen.value = isOpen),
     },
   });
+  // Whatever the reader chose while the chunk was on its way.
+  if (selection.value) {
+    const ids = selectedChapter.value?.areas || [selectedArea.value?.id];
+    stage.value.setSelected(ids);
+    stage.value.setOpen(viewForAreas(ids) === "open");
+  }
+}
+
+onMounted(() => {
+  window.addEventListener("keydown", onKeydown);
+  fetchCatalog();
+  fitPoster();
+  if (typeof ResizeObserver === "function") {
+    ro = new ResizeObserver(fitPoster);
+    ro.observe(stageEl.value);
+  }
+  loadStage();
 });
 
 onBeforeUnmount(() => {
+  gone = true;
   window.removeEventListener("keydown", onKeydown);
+  ro?.disconnect();
   stage.value?.dispose();
 });
 </script>
@@ -263,11 +337,13 @@ onBeforeUnmount(() => {
 <template>
   <section class="atlas" aria-label="The book as a brain">
     <div ref="panelEl" class="atlas__panel">
-      <p class="atlas__eyebrow">The Open Brain · Contents</p>
-      <h1 class="atlas__title">
-        <span class="atlas__title-lead">The brain,</span>
-        opened like a book
-      </h1>
+      <slot name="lead">
+        <p class="atlas__eyebrow">The Open Brain · Contents</p>
+        <h1 class="atlas__title">
+          <span class="atlas__title-lead">The brain,</span>
+          opened like a book
+        </h1>
+      </slot>
 
       <p class="atlas__strap">
         Every chapter of the book is a part of the brain. Point at a part to see
@@ -292,15 +368,19 @@ onBeforeUnmount(() => {
       <nav class="contents" :aria-labelledby="`${uid}-contents`">
         <p :id="`${uid}-contents`" class="atlas__head">Contents</p>
         <ol class="contents__list">
-          <li v-for="chapter in chapters" :key="chapter.slug">
+          <li
+            v-for="chapter in chapters"
+            :key="chapter.slug"
+            class="contents__row"
+            :class="{
+              'is-hovered': hoveredChapter?.slug === chapter.slug,
+              'is-selected': selectedChapter?.slug === chapter.slug,
+            }"
+            :style="{ '--area': rampHex(chapter.ramp) }"
+          >
             <button
               type="button"
               class="contents__chapter"
-              :class="{
-                'is-hovered': hoveredChapter?.slug === chapter.slug,
-                'is-selected': selectedChapter?.slug === chapter.slug,
-              }"
-              :style="{ '--area': rampHex(chapter.ramp) }"
               :aria-pressed="selectedChapter?.slug === chapter.slug"
               :data-pick="chapter.slug"
               @mouseenter="preview(chapter.areas[0])"
@@ -323,10 +403,22 @@ onBeforeUnmount(() => {
                 >
                 <span class="contents__parts">{{ partNames(chapter) }}</span>
               </span>
-              <span v-if="loaded && !chapter.to" class="contents__tag"
-                >In preparation</span
-              >
             </button>
+            <!-- A plain link into the chapter: the way in when the stage
+                 never comes (reduced motion, no WebGL). -->
+            <router-link
+              v-if="chapter.to"
+              :to="chapter.to"
+              class="contents__read"
+              :data-read="chapter.slug"
+              @mouseenter="preview(chapter.areas[0])"
+              @mouseleave="preview(null)"
+              @focus="preview(chapter.areas[0])"
+              @blur="preview(null)"
+              >Read<span class="sr-only"> {{ chapter.title }}</span>
+              →</router-link
+            >
+            <span v-else-if="loaded" class="contents__tag">In preparation</span>
           </li>
         </ol>
 
@@ -379,12 +471,32 @@ onBeforeUnmount(() => {
         from the Destrieux atlas (Destrieux et al., 2010), grouped and modified;
         <a href="/publicAssets/models/brain/NOTICE.txt">licence and sources</a>.
         The cerebellum, brainstem and deep structures such as the hippocampus
-        and amygdala are not modelled yet.
+        and amygdala are not modelled yet. Brain navigation after a prototype by
+        Tyler Sloan (<a href="https://github.com/tsloan1377">quorumetrix</a>),
+        whose dopeframe timeline and opening-book brain this rebuilds.
       </p>
     </div>
 
-    <div class="atlas__stage" :data-status="status">
+    <div
+      ref="stageEl"
+      class="atlas__stage"
+      :data-status="status"
+      :data-still="status === 'error' ? errorKind : null"
+      :data-reduced="reducedMotion ? '1' : null"
+    >
       <canvas ref="canvasEl" class="atlas__canvas" aria-hidden="true" />
+      <img
+        class="atlas__poster"
+        :src="BRAIN_POSTER.src"
+        :srcset="BRAIN_POSTER.srcset"
+        :width="BRAIN_POSTER.size"
+        :height="BRAIN_POSTER.size"
+        :style="{ '--poster-fit': posterFit }"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        fetchpriority="high"
+      />
       <div
         ref="labelEl"
         class="atlas__label"
@@ -407,11 +519,7 @@ onBeforeUnmount(() => {
         {{ loadingCopy }}
       </p>
       <p v-else-if="status === 'error'" class="atlas__status" role="status">
-        {{
-          errorKind === "webgl"
-            ? "This browser can't show the 3D brain (WebGL is off or unavailable)."
-            : "The 3D brain couldn't be loaded."
-        }}
+        {{ STILL_COPY[errorKind] || STILL_COPY.load }}
         The chapters are listed beside it.
       </p>
 
@@ -496,29 +604,52 @@ onBeforeUnmount(() => {
   margin: 0.5rem 0 0;
   padding: 0;
 }
+.contents__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border-top: 1px solid var(--area);
+  transition: background-color 0.15s;
+}
+.contents__row:hover,
+.contents__row.is-hovered {
+  background: rgb(255 255 255 / 0.06);
+}
+.contents__row.is-selected {
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: inset 3px 0 0 var(--area);
+}
 .contents__chapter {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  grid-template-columns: 2rem minmax(0, 1fr);
   align-items: center;
   gap: 0.875rem;
   width: 100%;
+  min-width: 0;
   padding: 0.75rem 0.5rem 0.75rem 0;
   border: 0;
-  border-top: 1px solid var(--area);
   background: transparent;
   color: #fff;
   font-family: var(--font-body);
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.15s;
 }
-.contents__chapter:hover,
-.contents__chapter.is-hovered {
-  background: rgb(255 255 255 / 0.06);
+.contents__read {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s;
 }
-.contents__chapter.is-selected {
-  background: rgb(255 255 255 / 0.1);
-  box-shadow: inset 3px 0 0 var(--area);
+.contents__read:hover {
+  color: var(--area);
 }
 .contents__num {
   display: grid;
@@ -549,10 +680,12 @@ onBeforeUnmount(() => {
   color: rgb(255 255 255 / 0.65);
 }
 .contents__tag {
+  padding: 0 0.5rem;
   font-family: var(--font-mono);
   font-size: var(--ui-size-10);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: rgb(255 255 255 / 0.6);
 }
 .unclaimed__list {
@@ -589,6 +722,7 @@ onBeforeUnmount(() => {
   color: #fff;
 }
 .contents__chapter:focus-visible,
+.contents__read:focus-visible,
 .unclaimed__area:focus-visible,
 .ctl:focus-visible,
 .atlas__credit a:focus-visible {
@@ -632,6 +766,31 @@ onBeforeUnmount(() => {
   display: block;
   width: 100%;
   height: 100%;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+/* The poster: the brain as the stage first draws it, centred and as tall as
+   the stage (less on a narrow one, as the camera backs off), clipped at the
+   sides like the canvas. It fades out as the canvas fades in. */
+.atlas__poster {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  width: auto;
+  max-width: none;
+  height: calc(100% * var(--poster-fit, 1));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+  opacity: 1;
+  transition: opacity 0.7s ease;
+}
+.atlas__stage[data-status="ready"] .atlas__canvas {
+  opacity: 1;
+}
+.atlas__stage[data-status="ready"] .atlas__poster {
+  opacity: 0;
 }
 .atlas__label {
   position: absolute;
@@ -662,13 +821,15 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
   color: rgb(255 255 255 / 0.65);
 }
+/* At the foot of the stage, where the controls go, so it never sits on the
+   poster's brain. */
 .atlas__status {
   position: absolute;
-  inset: 50% 1.5rem auto;
+  inset: auto 1.5rem clamp(1rem, 3vh, 2rem);
   z-index: 1;
   margin: 0;
-  transform: translateY(-50%);
   text-align: center;
+  text-wrap: balance;
   font-family: var(--font-mono);
   font-size: var(--ui-size-12);
   letter-spacing: 0.06em;
@@ -715,11 +876,19 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .atlas__label,
-  .contents__chapter,
+  .atlas__canvas,
+  .atlas__poster,
+  .contents__row,
+  .contents__read,
   .unclaimed__area,
   .ctl {
     transition: none;
   }
+}
+/* No crossfade under reduced motion (the Settings toggle or the OS). */
+.atlas__stage[data-reduced="1"] .atlas__canvas,
+.atlas__stage[data-reduced="1"] .atlas__poster {
+  transition: none;
 }
 
 @media (min-width: 1280px) {

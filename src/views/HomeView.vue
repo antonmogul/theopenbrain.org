@@ -1,25 +1,35 @@
 <script setup>
 /*
- * The home page: the book's cover (OPENBRAIN-104). Anton, 25 Sep: redesign
- * the home and chapters pages "to feel more inline with the book". It opens
- * the way a chapter does: a split cover, the title block dark on the left
- * and the cover art on the right, the chapter-colour divider between them
- * (the reader's 50/50 split), then the book's contents in the opener's TOC
- * style (BookContents), how to read it, and the colophon.
+ * The home page: the book's front door (OPENBRAIN-158, after the cover of
+ * OPENBRAIN-104). It opens on the brain atlas (components/brain/BrainAtlas,
+ * the /brain prototype of OPENBRAIN-127): the book's contents as a brain,
+ * every chapter a part of it, in the reader's split cover layout, the title
+ * block dark on the left and the brain on the right. The contents in that
+ * block are the way into the book; the brain names what each chapter is.
+ *
+ * The atlas is a separate chunk: HomeView is the one eagerly imported view,
+ * and a static import would put three.js (~780 KB) into the entry chunk.
+ * It is loaded with defineAsyncComponent, and the atlas itself fetches its
+ * three.js stage only when it will draw (never under reduced motion here,
+ * never without WebGL2); until then the stage is a poster of the brain.
+ *
+ * Below the cover: how to read the book, and the colophon (open access,
+ * funding, credits, Storybook).
  */
-import { computed } from "vue";
+import { computed, defineAsyncComponent } from "vue";
 import { useGeneral } from "@/stores/index";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
-import { useBookContents } from "@/composables/useBookContents";
-import { coverForModule } from "@/helper/chapterCover";
-import BookContents from "@/components/book/BookContents.vue";
+import { useChapterCatalog } from "@/composables/useChapterCatalog";
 
-const { parts, chapters, loading } = useBookContents();
+const BrainAtlas = defineAsyncComponent(
+  () => import("@/components/brain/BrainAtlas.vue")
+);
 
-const published = computed(() => chapters.value.filter((c) => !c.isDraft));
-const first = computed(() => published.value[0] || null);
-const cover = computed(() => coverForModule(first.value));
+const { modules, fetchCatalog } = useChapterCatalog();
+fetchCatalog();
+
+const first = computed(() => modules.value[0] || null);
 const firstRoute = computed(() =>
   first.value
     ? `/chapter/${first.value.order_index}/${first.value.slug}`
@@ -28,7 +38,7 @@ const firstRoute = computed(() =>
 // Counts the published chapters instead of hardcoding "two" (OPENBRAIN-33).
 const WORDS = ["One", "Two", "Three", "Four", "Five", "Six", "Seven"];
 const countCopy = computed(() => {
-  const n = published.value.length;
+  const n = modules.value.length;
   if (!n) return "";
   return `${WORDS[n - 1] || n} chapter${n === 1 ? "" : "s"} to read now, more on the way.`;
 });
@@ -41,14 +51,6 @@ const openAuth = () => {
   store.activeAbout = false;
   authStore.openAuth();
 };
-
-function toContents() {
-  const el = document.getElementById("contents");
-  if (!el) return;
-  const reduce =
-    document.documentElement.getAttribute("data-reduce-motion") === "1";
-  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-}
 
 // How the book reads: what makes it more than a PDF.
 const ways = [
@@ -69,52 +71,45 @@ const ways = [
 
 <template>
   <main class="home">
-    <!-- ── Cover ── -->
-    <header class="cover">
-      <div class="cover__title">
-        <img
-          src="/publicAssets/images/logo.svg"
-          alt="The Open Brain"
-          class="cover__logo"
-        />
-        <h1 class="cover__h1">
-          <span class="cover__lead">The Open Brain:</span>
-          <span class="cover__sub"
-            >an interactive, open access neuroscience textbook</span
-          >
-        </h1>
-        <p class="cover__strap">
-          Free to read, forever, for anyone. Written by neuroscientists at
-          McGill University.
-        </p>
-        <div class="cover__actions">
-          <router-link :to="firstRoute" class="btn btn--solid"
-            >Start reading</router-link
-          >
-          <button type="button" class="btn btn--ghost" @click="toContents">
-            Contents
-          </button>
-          <button
-            v-if="!isAuthenticated"
-            type="button"
-            class="btn btn--link"
-            @click="openAuth"
-          >
-            Sign in
-          </button>
-        </div>
-        <p v-if="countCopy" class="cover__count">{{ countCopy }}</p>
-      </div>
-      <div
-        class="cover__art"
-        role="img"
-        :aria-label="first ? `Cover of ${first.title}` : 'Cover image'"
-        :style="{ backgroundImage: `url(${cover})` }"
-      />
-    </header>
-
-    <!-- ── Contents ── -->
-    <BookContents :parts="parts" :loading="loading" />
+    <!-- ── Cover: the book as a brain ── -->
+    <div class="home__cover">
+      <BrainAtlas still-under-reduced-motion>
+        <template #lead>
+          <img
+            src="/publicAssets/images/logo.svg"
+            alt="The Open Brain"
+            class="cover__logo"
+          />
+          <h1 class="cover__h1">
+            <span class="cover__lead">The Open Brain:</span>
+            <span class="cover__sub"
+              >an interactive, open access neuroscience textbook</span
+            >
+          </h1>
+          <p class="cover__strap">
+            Free to read, forever, for anyone. Written by neuroscientists at
+            McGill University.
+          </p>
+          <div class="cover__actions">
+            <router-link :to="firstRoute" class="btn btn--solid"
+              >Start reading</router-link
+            >
+            <router-link to="/chapters" class="btn btn--ghost"
+              >All chapters</router-link
+            >
+            <button
+              v-if="!isAuthenticated"
+              type="button"
+              class="btn btn--link"
+              @click="openAuth"
+            >
+              Sign in
+            </button>
+          </div>
+          <p v-if="countCopy" class="cover__count">{{ countCopy }}</p>
+        </template>
+      </BrainAtlas>
+    </div>
 
     <!-- ── How to read it ── -->
     <section class="ways" aria-labelledby="ways-title">
@@ -199,33 +194,14 @@ const ways = [
   font-family: var(--font-body);
 }
 
-/* ── Cover: the reader's 50/50 split, dark title | art ── */
-.cover {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* ── Cover: holds the atlas's ground and height while its chunk arrives ── */
+.home__cover {
   min-height: 100svh;
   background: rgb(var(--color-dark-surface));
   color: #fff;
 }
-.cover::after {
-  /* the divider, as in the reader */
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  background: rgb(var(--color-chapter));
-  pointer-events: none;
-}
-.cover__title {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(1.25rem, 2.2vw, 2rem);
-  padding: clamp(3rem, 8vw, 7.5rem) clamp(1.25rem, 3.47vw, 3.75rem);
-}
+
+/* The title block, in the atlas's panel (its `lead` slot). */
 .cover__logo {
   width: clamp(9rem, 14vw, 13rem);
   height: auto;
@@ -234,8 +210,8 @@ const ways = [
 .cover__h1 {
   margin: 0;
   padding: 0;
-  font-size: clamp(var(--type-subhead-size), 3.48vw, 3.75rem);
-  line-height: 1.3;
+  font-size: clamp(var(--type-subhead-size), 3.2vw, 3.5rem);
+  line-height: 1.25;
   font-weight: 450;
   letter-spacing: 0.1px;
   text-wrap: balance;
@@ -267,10 +243,6 @@ const ways = [
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(255 255 255 / 0.55);
-}
-.cover__art {
-  background-size: cover;
-  background-position: center;
 }
 
 .btn {
@@ -425,19 +397,11 @@ const ways = [
   color: inherit;
 }
 
-/* ── Below the two-column reader: art above, title below ── */
+/* ── Below the two-column reader ── */
 @media (max-width: 1023px) {
-  .cover {
-    grid-template-columns: 1fr;
+  .home__cover {
+    /* The atlas stacks the stage over the panel and sets its own height. */
     min-height: 0;
-  }
-  .cover::after {
-    display: none;
-  }
-  .cover__art {
-    order: -1;
-    height: 52svh;
-    border-bottom: 1px solid rgb(var(--color-chapter));
   }
   .ways__list,
   .foot-cols {

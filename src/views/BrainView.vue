@@ -2,10 +2,11 @@
 /*
  * BrainView — /brain, the 3D brain atlas prototype (OPENBRAIN-127).
  *
- * Unlisted route: open the URL directly. It is the candidate for the home
- * page's cover (Tyler's opening-book brain, rebuilt in the app with the
- * open-brain-explorer surface), shown on its own page until the team decides
- * where it goes. See src/components/brain/BrainAtlas.vue.
+ * Unlisted route: open the URL directly. The same atlas is the home page's
+ * cover since OPENBRAIN-158 (Tyler's opening-book brain, rebuilt in the app
+ * with the open-brain-explorer surface); this page keeps it on its own, with
+ * the atlas's own title and, under reduced motion, the stage still loaded
+ * and draggable. See src/components/brain/BrainAtlas.vue.
  */
 import BrainAtlas from "@/components/brain/BrainAtlas.vue";
 </script>
