@@ -13,7 +13,9 @@
  *     (both halves of a paired one) and a click opens it (OPENBRAIN-98; they
  *     used to be numbered dots).
  *   • Opening a region lights it and slides in a paper detail
- *     card without changing the skull’s displayed dimensions.
+ *     card without changing the skull’s displayed dimensions. Below 760px
+ *     the card is a bottom sheet over the skull with half and full detents
+ *     (OPENBRAIN-160; useSheetDetents), the region still lit above it.
  *   • The skull is sized by the height it has (60vh on its own route; the
  *     chapter's full-screen band hands it its flex height through
  *     --widget-body-min-h: 0), so it fills the stage at any screen
@@ -29,7 +31,14 @@
  * Data seam: @/mocks/phrenology — swap for Supabase later.
  * Unlisted route (like /case-cabinet): open /phrenology directly.
  */
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from "vue";
 import gsap from "gsap";
 import {
   PHRENOLOGY_CITATION,
@@ -41,6 +50,12 @@ import labelAnchors from "@/data/history/phrenologyLabelAnchors.json";
 import { reducedMotionK } from "@/helper/motion";
 import { presentFaculty } from "@/helper/phrenologyContent";
 import {
+  SHEET_DETENTS,
+  SHEET_MEDIA_QUERY,
+  fitHalfDetent,
+} from "@/helper/sheetDetents";
+import { useSheetDetents } from "@/composables/useSheetDetents";
+import {
   MAP_H,
   MAP_SRC,
   MAP_W,
@@ -51,8 +66,10 @@ import {
   regionShapes,
 } from "@/helper/phrenologyMaps";
 
-// Narrow viewports reserve a skull row above the scrolling detail card.
-// Reading an organ must never cover the region the reader just selected.
+// Below SHEET_BREAKPOINT the detail card is a bottom sheet over the skull
+// (OPENBRAIN-160): the skull keeps the whole body for tapping and the text
+// gets a real reading surface. Its half detent sits under the selected
+// region's number, so reading an organ never covers the region just tapped.
 
 /* ── Motion recipe ──────────────────────────────────────────────────────────
  * All feel-tuning lives here. Durations in seconds, angles in degrees.
@@ -98,7 +115,81 @@ const stageEl = ref(null); // perspective wrapper
 const skullEl = ref(null); // the yawing card
 const regionsEl = ref(null); // the clickable region layer (SVG)
 const regionEls = ref([]);
+const bodyEl = ref(null); // the stage + card area; the sheet's container
 const panelEl = ref(null);
+const scrollEl = ref(null); // the card's text (the sheet scrolls it)
+
+/* ── The phone sheet ──────────────────────────────────────────────────────
+ * `narrow` follows the CSS breakpoint; the card is then an absolutely
+ * positioned sheet sized by --sheet-f, a fraction of the body's height,
+ * resting at a half or full detent (helper/sheetDetents).
+ */
+const narrowMq =
+  typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia(SHEET_MEDIA_QUERY)
+    : null;
+const narrow = ref(Boolean(narrowMq?.matches));
+const onNarrowChange = (e) => {
+  narrow.value = e.matches;
+};
+narrowMq?.addEventListener?.("change", onNarrowChange);
+onBeforeUnmount(() =>
+  narrowMq?.removeEventListener?.("change", onNarrowChange)
+);
+
+const halfDetent = ref(SHEET_DETENTS.half);
+const {
+  fraction: sheetFraction,
+  detent: sheetDetent,
+  dragging: sheetDragging,
+  open: openSheet,
+  close: closeSheet,
+  snapTo: snapSheetTo,
+  onPointerDown: onGripDown,
+  onPointerMove: onGripMove,
+  onPointerUp: onGripUp,
+  onPointerCancel: onGripCancel,
+  onKeydown: onGripKeydown,
+} = useSheetDetents({
+  containerHeight: () => bodyEl.value?.clientHeight || 0,
+  detents: () => ({ half: halfDetent.value, full: SHEET_DETENTS.full }),
+  onDismiss: () => closePanel(),
+});
+
+/** The half detent that keeps the selected region's number(s) uncovered. */
+function measureHalfDetent() {
+  const body = bodyEl.value;
+  if (!body) return SHEET_DETENTS.half;
+  const bodyRect = body.getBoundingClientRect();
+  let labelBottom = null;
+  for (const c of body.querySelectorAll(".region--on .region-label circle")) {
+    const bottom = c.getBoundingClientRect().bottom - bodyRect.top;
+    labelBottom = labelBottom == null ? bottom : Math.max(labelBottom, bottom);
+  }
+  return fitHalfDetent({ containerHeight: bodyRect.height, labelBottom });
+}
+
+/** Raise (or refit) the sheet for the region just selected and enter it. */
+function presentSheet(animate) {
+  halfDetent.value = measureHalfDetent();
+  // A forced layout records the closed height, so the rise transitions.
+  void panelEl.value.offsetHeight;
+  if (sheetDetent.value === "closed") openSheet("half", { animate });
+  else if (sheetDetent.value === "half") snapSheetTo("half");
+  panelEl.value.focus({ preventScroll: true });
+}
+
+// Crossing the breakpoint with a region open: the sheet appears or the
+// card goes back beside the skull, with no rise.
+watch(narrow, async (isNarrow) => {
+  if (!activeRegion.value) return;
+  if (!isNarrow) {
+    closeSheet();
+    return;
+  }
+  await nextTick();
+  if (!disposed && panelEl.value) presentSheet(false);
+});
 
 const activeView = computed(() => views.value[activeIdx.value] ?? null);
 const engravingSrc = computed(() =>
@@ -283,11 +374,17 @@ async function selectFromPicker(n) {
 async function selectRegion(shape) {
   if (animating.value || !facultyInfo.has(shape.n)) return;
   panelTween?.kill();
-  if (!activeRegion.value) previousRegionElement = document.activeElement;
+  // Closing returns focus to the control that opened the card, or to the
+  // last region picked while it was open (the sheet takes focus between).
+  const focused = document.activeElement;
+  if (!activeRegion.value || focused?.classList?.contains("region"))
+    previousRegionElement = focused;
   activeRegion.value = presentFaculty(facultyInfo.get(shape.n));
   await nextTick();
   if (disposed || !panelEl.value) return;
   panelEl.value.scrollTop = 0;
+  if (scrollEl.value) scrollEl.value.scrollTop = 0;
+  if (narrow.value) presentSheet(true);
   panelTween = gsap.fromTo(
     panelEl.value,
     { opacity: 0.7 },
@@ -297,6 +394,7 @@ async function selectRegion(shape) {
 function closePanel(instant = false) {
   if (!activeRegion.value) return;
   panelTween?.kill();
+  closeSheet();
   activeRegion.value = null;
   if (!instant && previousRegionElement?.isConnected)
     previousRegionElement.focus();
@@ -345,7 +443,7 @@ function onKeydown(e) {
       </label>
     </header>
 
-    <div class="phreno__body">
+    <div ref="bodyEl" class="phreno__body">
       <!-- The reserved skull stage keeps identical dimensions while details open. -->
       <div ref="stageEl" class="stage" @keydown="onStageKeydown">
         <div v-if="activeView" ref="skullEl" class="skull" :key="activeView.id">
@@ -409,12 +507,38 @@ function onKeydown(e) {
         </div>
       </div>
 
+      <!-- Beside the skull from 760px; a bottom sheet over it below, sized by
+           --sheet-f (a fraction of the body) and resting at a detent. -->
       <aside
         v-if="activeRegion"
         ref="panelEl"
         class="card"
+        :class="{ 'card--sheet': narrow, 'is-dragging': sheetDragging }"
+        :role="narrow ? 'dialog' : undefined"
+        :tabindex="narrow ? -1 : undefined"
+        :data-detent="narrow ? sheetDetent : undefined"
+        :style="narrow ? { '--sheet-f': sheetFraction } : undefined"
         :aria-label="`${activeRegion.n}. ${organTitle(activeRegion)}`"
       >
+        <div
+          v-if="narrow"
+          class="sheet__grip"
+          role="slider"
+          tabindex="0"
+          aria-label="Resize the source text"
+          aria-orientation="vertical"
+          aria-valuemin="0"
+          aria-valuemax="2"
+          :aria-valuenow="sheetDetent === 'full' ? 2 : 1"
+          :aria-valuetext="sheetDetent === 'full' ? 'Full' : 'Half'"
+          @pointerdown="onGripDown"
+          @pointermove="onGripMove"
+          @pointerup="onGripUp"
+          @pointercancel="onGripCancel"
+          @keydown="onGripKeydown"
+        >
+          <span class="sheet__handle" aria-hidden="true"></span>
+        </div>
         <button
           class="card__close"
           type="button"
@@ -423,27 +547,35 @@ function onKeydown(e) {
         >
           ✕
         </button>
-        <h3 class="card__badge">
-          {{ activeRegion.n }} · {{ organTitle(activeRegion) }}
-        </h3>
-        <p
-          v-for="note in activeRegion.editorialNotes"
-          :key="note"
-          class="card__editorial"
-        >
-          {{ note }}
-        </p>
-        <p
-          v-for="quote in activeRegion.quotes"
-          :key="quote.sourceBlock"
-          class="card__text"
-          :data-source-block="quote.sourceBlock"
-          :data-source-blocks="quote.sourceBlocks.join(' ')"
-        >
-          {{ quote.text }}
-        </p>
+        <div ref="scrollEl" class="card__body">
+          <h3 class="card__badge">
+            {{ activeRegion.n }} · {{ organTitle(activeRegion) }}
+          </h3>
+          <p
+            v-for="note in activeRegion.editorialNotes"
+            :key="note"
+            class="card__editorial"
+          >
+            {{ note }}
+          </p>
+          <p
+            v-for="quote in activeRegion.quotes"
+            :key="quote.sourceBlock"
+            class="card__text"
+            :data-source-block="quote.sourceBlock"
+            :data-source-blocks="quote.sourceBlocks.join(' ')"
+          >
+            {{ quote.text }}
+          </p>
+        </div>
       </aside>
-      <p v-else class="card-instruction">
+      <!-- Under the sheet it stays in the grid, so the stage never moves. -->
+      <p
+        v-if="!activeRegion || narrow"
+        class="card-instruction"
+        :class="{ 'card-instruction--covered': activeRegion }"
+        :aria-hidden="activeRegion ? 'true' : undefined"
+      >
         Select a region of the skull to read what Gall and Spurzheim’s 1815
         source says about its organ. Organ 22, Weight, is in the list only: the
         source gives it no place on the skull.
@@ -710,35 +842,111 @@ function onKeydown(e) {
   opacity: 0.4;
 }
 
-/* ── narrow viewports: keep artwork and details visible together ── */
-@media (max-width: 760px) {
+/* ── narrow viewports: the skull has the body; the text is a sheet over it ──
+   (OPENBRAIN-160; SHEET_MEDIA_QUERY in helper/sheetDetents repeats this) */
+@media (max-width: 759.98px) {
   .phreno__body {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(150px, 38vh) minmax(9rem, 32vh);
-    align-items: start;
+    /* The skull's row takes what the instruction leaves. */
+    grid-template-rows: minmax(150px, 1fr) auto;
+    align-items: stretch;
+    gap: 0.75rem;
     padding: 1rem;
-    min-height: max(
-      var(--widget-body-min-h, 65vh),
-      calc(150px + 9rem + 3.5rem)
-    );
+    min-height: max(var(--widget-body-min-h, 65vh), calc(150px + 7rem));
   }
   .stage {
-    height: 100%;
-    width: auto;
-    max-width: 100%;
-    aspect-ratio: 450 / 435;
+    /* The whole row, as a size container: the skull inside is as tall as
+       the row or as wide as the column, whichever is less, in the middle. */
+    width: 100%;
+    height: auto;
+    margin: 0;
+    align-self: stretch;
+    container-type: size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .skull {
+    width: min(100%, calc(100cqh * 450 / 435));
   }
   .card-instruction {
     margin: 0;
     padding: 1rem;
     font-size: 0.75rem;
   }
-  .card {
-    /* The full-bleed host supplies less height than the standalone viewport.
-       Constrain the scrolling box to its actual grid row, including padding. */
+  .card-instruction--covered {
+    visibility: hidden;
+  }
+
+  /* The sheet: the body's bottom edge up, --sheet-f of its height. */
+  .card--sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    height: calc(var(--sheet-f, 0) * 100%);
     min-height: 0;
-    max-height: 100%;
-    padding: 1.5rem 1.5rem 2rem;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-radius: var(--radius-control) var(--radius-control) 0 0;
+    box-shadow: 0 -8px 28px rgb(0 0 0 / 0.4);
+    overflow: hidden;
+    outline: none;
+    transition: height 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: height;
+  }
+  .card--sheet.is-dragging {
+    transition: none;
+  }
+  .sheet__grip {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    touch-action: none;
+    cursor: grab;
+    outline: none;
+  }
+  .card--sheet.is-dragging .sheet__grip {
+    cursor: grabbing;
+  }
+  .sheet__handle {
+    width: 2.75rem;
+    height: 4px;
+    border-radius: 2px;
+    background: rgb(43 42 46 / 0.3);
+  }
+  .sheet__grip:hover .sheet__handle,
+  .sheet__grip:focus-visible .sheet__handle {
+    background: var(--violet);
+  }
+  .sheet__grip:focus-visible .sheet__handle {
+    outline: 2px solid var(--violet);
+    outline-offset: 4px;
+  }
+  .card--sheet .card__close {
+    top: 0.35rem;
+    right: 0.6rem;
+    z-index: 1;
+  }
+  .card--sheet .card__body {
+    flex: 1;
+    min-height: 0;
+    padding: 0 1.5rem 2rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+:global([data-reduce-motion="1"]) .card--sheet {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card--sheet {
+    transition: none;
   }
 }
 </style>

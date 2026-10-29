@@ -19,6 +19,13 @@ export default {
 
 export const Default = {};
 
+// Below 760px the source text is a bottom sheet over the skull
+// (OPENBRAIN-160): tap a region to raise it to half, drag the handle to
+// full, drag it under half (or press Escape) to dismiss.
+export const Phone = {
+  globals: { viewport: { value: "phone" } },
+};
+
 // Real chapter host with a responsive prose wrapper. The shared desktop-reader
 // story intentionally pins its prose column; it cannot prove mobile line width.
 export const EmbeddedResponsive = {

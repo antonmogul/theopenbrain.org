@@ -175,6 +175,105 @@ describe("source-backed embedded skull", () => {
     expect(code).not.toContain("selected.images");
     expect(code).not.toContain("selected.blurb");
   });
+  describe("the phone sheet (OPENBRAIN-160)", () => {
+    const media = {
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    };
+    beforeEach(() => {
+      media.matches = true;
+      media.addEventListener.mockClear();
+      vi.spyOn(window, "matchMedia").mockReturnValue(media);
+      vi.stubGlobal("requestAnimationFrame", (fn) => {
+        fn();
+        return 1;
+      });
+    });
+    afterEach(() => vi.restoreAllMocks());
+
+    it("opens the text as a sheet over the lit region, takes focus and returns it on dismissal", async () => {
+      const w = await skull();
+      expect(w.find(".card--sheet").exists()).toBe(false);
+      expect(w.find(".card-instruction").exists()).toBe(true);
+      const r19 = w
+        .findAll(".region")
+        .find((r) => r.attributes("aria-label") === "19. Individuality");
+      r19.element.focus();
+      await r19.trigger("keydown", { key: "Enter" });
+      await flushPromises();
+      const sheet = w.find(".card--sheet");
+      expect(sheet.exists()).toBe(true);
+      expect(sheet.attributes("role")).toBe("dialog");
+      expect(sheet.attributes("aria-label")).toBe("19. Organ of Individuality");
+      expect(sheet.attributes("data-detent")).toBe("half");
+      expect(sheet.attributes("style")).toContain("--sheet-f: 0.5");
+      expect(document.activeElement).toBe(sheet.element);
+      // The region stays marked under the sheet, and the stage keeps the
+      // instruction's row so it does not move.
+      expect(w.findAll(".region--on")).toHaveLength(1);
+      expect(w.find(".card-instruction--covered").exists()).toBe(true);
+      // A different region replaces the text without closing.
+      const r30 = w
+        .findAll(".region")
+        .find((r) => r.attributes("aria-label") === "30. Comparison");
+      r30.element.focus(); // as a tap on the region does
+      await r30.trigger("click");
+      await flushPromises();
+      expect(w.find(".card__badge").text()).toBe("30 · Organ of Comparison");
+      expect(w.find(".card--sheet").attributes("data-detent")).toBe("half");
+      // The handle's keyboard: up to full, down to half, down again dismisses
+      // and deselects, focus back on the region picked last.
+      const grip = w.find(".sheet__grip");
+      expect(grip.attributes("role")).toBe("slider");
+      expect(grip.attributes("aria-label")).toBe("Resize the source text");
+      await grip.trigger("keydown", { key: "ArrowUp" });
+      expect(w.find(".card--sheet").attributes("data-detent")).toBe("full");
+      expect(grip.attributes("aria-valuetext")).toBe("Full");
+      await grip.trigger("keydown", { key: "ArrowDown" });
+      await grip.trigger("keydown", { key: "ArrowDown" });
+      await flushPromises();
+      expect(w.find(".card").exists()).toBe(false);
+      expect(w.findAll(".region--on")).toHaveLength(0);
+      expect(document.activeElement).toBe(r30.element);
+    });
+
+    it("dismisses from a drag below half and on Escape, and loses the sheet at desktop widths", async () => {
+      const w = await skull();
+      await w.find("select").setValue("19");
+      await flushPromises();
+      const grip = w.find(".sheet__grip");
+      const pointer = (type, clientY) =>
+        grip.trigger(type, { pointerId: 1, button: 0, clientY });
+      // happy-dom has no layout: the container is 0px tall, so a drag can't
+      // move the fraction; the tap toggle still exercises the pointer trio.
+      await pointer("pointerdown", 300);
+      await pointer("pointerup", 300);
+      expect(w.find(".card--sheet").attributes("data-detent")).toBe("full");
+      await pointer("pointerdown", 300);
+      await pointer("pointerup", 300);
+      expect(w.find(".card--sheet").attributes("data-detent")).toBe("half");
+      await w.find(".card").trigger("keydown", { key: "Escape" });
+      expect(w.find(".card").exists()).toBe(false);
+      expect(w.findAll(".region--on")).toHaveLength(0);
+
+      await w.find("select").setValue("19");
+      await flushPromises();
+      expect(w.find(".card--sheet").exists()).toBe(true);
+      // Rotating past the breakpoint: the card goes back beside the skull.
+      media.matches = false;
+      media.addEventListener.mock.calls[0][1]({ matches: false });
+      await flushPromises();
+      expect(w.find(".card").exists()).toBe(true);
+      expect(w.find(".card--sheet").exists()).toBe(false);
+      expect(w.find(".sheet__grip").exists()).toBe(false);
+      expect(w.find(".card").attributes("role")).toBeUndefined();
+      expect(w.find(".card-instruction").exists()).toBe(false);
+      w.unmount();
+      expect(media.removeEventListener).toHaveBeenCalled();
+    });
+  });
+
   it("sizes itself by the height it is given, with no disclaimer (OPENBRAIN-147)", async () => {
     const w = await skull();
     // The chapter's full-screen band sets --widget-body-min-h: 0 and the
