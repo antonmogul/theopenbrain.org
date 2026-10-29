@@ -81,11 +81,11 @@ describe("router wiring", () => {
     expect(apiRequest).not.toHaveBeenCalled();
   });
 
-  it("sends a signed-in visitor from / to /chapters", async () => {
+  it("keeps a signed-in visitor on / (the brain cover)", async () => {
     getSessionFromStorage.mockReturnValue(SESSION);
     const router = makeRouter();
     await router.push("/");
-    expect(router.currentRoute.value.path).toBe("/chapters");
+    expect(router.currentRoute.value.path).toBe("/");
   });
 
   it("fails closed on /editor when the role lookup errors", async () => {

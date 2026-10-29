@@ -82,11 +82,10 @@ export function createAuthGuard({
   return async function authGuard(to) {
     const meta = to.meta ?? {};
 
-    // Default-route redirect: signed-in users land on the chapter library, not
-    // the anonymous marketing home. Anonymous users keep HomeView at /.
-    if (to.path === "/" && (await getSession())) {
-      return { path: "/chapters" };
-    }
+    // `/` is the brain cover for everyone (OPENBRAIN-158/161): the book's
+    // contents as a brain, which is what a returning reader wants as much as
+    // a first-time one. Signed-in readers used to be sent to /chapters from
+    // here; the full outline still lives there, linked from the cover.
 
     if (!meta.requiresAuth) return undefined;
 
