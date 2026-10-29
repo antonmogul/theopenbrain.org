@@ -106,9 +106,9 @@ describe("createAuthGuard: public routes and the root redirect", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("sends a signed-in visitor from / to /chapters", async () => {
+  it("keeps a signed-in visitor on / (the brain cover)", async () => {
     const { guard } = makeGuard();
-    await expect(guard(HOME)).resolves.toEqual({ path: "/chapters" });
+    await expect(guard(HOME)).resolves.toBeUndefined();
   });
 
   it("keeps an anonymous visitor on /", async () => {
