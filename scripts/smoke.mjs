@@ -184,7 +184,16 @@ const HERO_CUTAWAY = {
  * production content, never code; IGNORED_ERRORS below is the global list.
  */
 const ROUTES = [
-  { path: "/", name: "home", minText: 50 },
+  /*
+   * The home page is the brain atlas (OPENBRAIN-158): it opens on a poster
+   * and the stage must still reach "ready" at every width, as /brain does.
+   */
+  {
+    path: "/",
+    name: "home",
+    minText: 50,
+    expectCount: { selector: '.atlas__stage[data-status="ready"]', min: 1 },
+  },
   {
     path: "/chapter/1/foundations-of-neuroscience",
     name: "foundations",

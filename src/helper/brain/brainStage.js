@@ -37,8 +37,9 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { angleDelta, sampleDopeframe } from "./dopeframe";
+import { BRAIN_MODEL_URL, fitScaleFor } from "./poster";
 
-export const BRAIN_MODEL_URL = "/publicAssets/models/brain/brain-v1.glb";
+export { BRAIN_MODEL_URL };
 
 const OPEN_ANGLE = THREE.MathUtils.degToRad(80);
 const OPEN_GAP = 1.5; // model units each hemisphere slides out as it opens
@@ -297,10 +298,8 @@ export function createBrainStage(o) {
 
   const size = { w: 1, h: 1 };
   // Pull back on narrow (portrait) stages so the whole brain stays in frame.
-  const fitScale = () =>
-    camera.aspect < 1.15
-      ? Math.min(2, Math.pow(1.15 / camera.aspect, 0.85))
-      : 1;
+  // The curve lives in poster.js so the poster shrinks with the camera.
+  const fitScale = () => fitScaleFor(camera.aspect);
   let lastFit = 1;
   function resize() {
     const w = canvas.clientWidth;
