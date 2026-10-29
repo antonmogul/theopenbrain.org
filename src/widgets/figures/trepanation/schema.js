@@ -6,9 +6,18 @@
  * The artwork is Figma's "Fig 2 Animation" (Open-Brain-Chapters, node
  * 3:1929), cut apart: the skull and the four hands are separate images, and
  * `art` places them in the frame's own units (745 × 657, the size the
- * figure's earlier five-frame export was made at). Hands were placed by
- * matching each cut-out against those frames, so they land where Figma has
- * them.
+ * figure's earlier five-frame export was made at).
+ *
+ * Since OPENBRAIN-159 the images are the designer's cut-outs for the dark
+ * treatment of the History redesign: alpha WebPs with no grey plate behind
+ * the skull and none of the drawing's printed leader lines (the widget draws
+ * its own numbered rings). The five were exported at one scale, so they sit
+ * in the frame at their own pixel size (skull 487 × 427, hands 302 × 497,
+ * 209 × 341, 236 × 354, 250 × 288); each `hole` is the opening measured on
+ * the skull image, and each hand is placed so its tool's working end lands
+ * on that opening. The arms are cut at the image's top (or, for the fourth,
+ * its right) edge and sit just past the frame's, so a hand reads as coming
+ * in from outside.
  */
 const DIR = "/publicAssets/images/foundations/trepanation/";
 
@@ -19,37 +28,41 @@ export default {
   art: {
     width: 745,
     height: 657,
-    skull: { src: `${DIR}skull.webp`, x: 0, y: 260, w: 559 },
+    skull: { src: `${DIR}skull.webp`, x: 165, y: 224, w: 487 },
     /**
      * One per method, in the legend's order. `hand` is the cut-out (x, y, w
      * in frame units; its height follows the image), `hole` the opening it
-     * works on, `callout` the numbered ring at the end of the drawing's
-     * leader line, `from` where the hand comes in from (a share of its own
-     * size).
+     * works on, `callout` the numbered ring, `from` where the hand comes in
+     * from (a share of its own size).
+     *
+     * A callout sits like a map label: just outside its opening's rim, on
+     * whichever side is clearest for that opening and nearer to it than to
+     * any other, and where no hand lands except (for 2) its own, since the
+     * four hands cover every other side of the groove.
      */
     methods: [
       {
-        hand: { src: `${DIR}hand-1.webp`, x: 6, y: 227, w: 170, h: 288 },
-        hole: { x: 195, y: 432, r: 42 },
-        callout: { x: 168, y: 324 },
+        hand: { src: `${DIR}hand-1.webp`, x: 133, y: -74, w: 302, h: 497 },
+        hole: { x: 243, y: 376, r: 50 },
+        callout: { x: 288, y: 432 },
         from: { x: -28, y: -14 },
       },
       {
-        hand: { src: `${DIR}hand-2.webp`, x: 158, y: 19, w: 191, h: 326 },
-        hole: { x: 250, y: 360, r: 34 },
-        callout: { x: 245, y: 303 },
+        hand: { src: `${DIR}hand-2.webp`, x: 240, y: -51, w: 209, h: 341 },
+        hole: { x: 318, y: 289, r: 40 },
+        callout: { x: 312, y: 225 },
         from: { x: 0, y: -26 },
       },
       {
-        hand: { src: `${DIR}hand-3.webp`, x: 336, y: 0, w: 319, h: 342 },
-        hole: { x: 339, y: 356, r: 32 },
-        callout: { x: 372, y: 308 },
+        hand: { src: `${DIR}hand-3.webp`, x: 356, y: -68, w: 236, h: 354 },
+        hole: { x: 431, y: 280, r: 35 },
+        callout: { x: 471, y: 240 },
         from: { x: 18, y: -20 },
       },
       {
-        hand: { src: `${DIR}hand-4.webp`, x: 411, y: 210, w: 294, h: 213 },
-        hole: { x: 403, y: 408, r: 34 },
-        callout: { x: 458, y: 373 },
+        hand: { src: `${DIR}hand-4.webp`, x: 482, y: 105, w: 250, h: 288 },
+        hole: { x: 517, y: 350, r: 34 },
+        callout: { x: 556, y: 389 },
         from: { x: 26, y: -6 },
       },
     ],
