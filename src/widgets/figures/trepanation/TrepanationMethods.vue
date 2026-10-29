@@ -131,7 +131,7 @@ function onImgError(e) {
           v-for="(m, i) in art.methods"
           :key="`callout-${i}`"
           type="button"
-          class="tr-callout"
+          class="tr-callout ob-round"
           :class="{ 'is-on': active === i }"
           :style="calloutStyle(m)"
           :aria-pressed="pinned === i"

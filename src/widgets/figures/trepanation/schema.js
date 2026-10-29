@@ -32,32 +32,37 @@ export default {
     /**
      * One per method, in the legend's order. `hand` is the cut-out (x, y, w
      * in frame units; its height follows the image), `hole` the opening it
-     * works on, `callout` the numbered ring beside that opening, `from`
-     * where the hand comes in from (a share of its own size).
+     * works on, `callout` the numbered ring, `from` where the hand comes in
+     * from (a share of its own size).
+     *
+     * A callout sits like a map label: just outside its opening's rim, on
+     * whichever side is clearest for that opening and nearer to it than to
+     * any other, and where no hand lands except (for 2) its own, since the
+     * four hands cover every other side of the groove.
      */
     methods: [
       {
         hand: { src: `${DIR}hand-1.webp`, x: 133, y: -74, w: 302, h: 497 },
         hole: { x: 243, y: 376, r: 50 },
-        callout: { x: 243, y: 442 },
+        callout: { x: 288, y: 432 },
         from: { x: -28, y: -14 },
       },
       {
         hand: { src: `${DIR}hand-2.webp`, x: 240, y: -51, w: 209, h: 341 },
         hole: { x: 318, y: 289, r: 40 },
-        callout: { x: 363, y: 321 },
+        callout: { x: 312, y: 225 },
         from: { x: 0, y: -26 },
       },
       {
         hand: { src: `${DIR}hand-3.webp`, x: 356, y: -68, w: 236, h: 354 },
         hole: { x: 431, y: 280, r: 35 },
-        callout: { x: 473, y: 312 },
+        callout: { x: 471, y: 240 },
         from: { x: 18, y: -20 },
       },
       {
         hand: { src: `${DIR}hand-4.webp`, x: 482, y: 105, w: 250, h: 288 },
         hole: { x: 517, y: 350, r: 34 },
-        callout: { x: 562, y: 392 },
+        callout: { x: 556, y: 389 },
         from: { x: 26, y: -6 },
       },
     ],

@@ -546,9 +546,11 @@ h4 {
    reader effect) pinned every widget canvas to the window: RetINaBox's
    signal monitor was laid out 1440px wide and never scrolled. */
 /* Widget controls share the book's square geometry. Keep circular science
-   artwork, radio controls, and range handles untouched. */
-.widget-root button,
-.widget-root [role="button"],
+   artwork, radio controls, and range handles untouched: a control that is
+   part of the artwork (a figure's numbered callout ring, OPENBRAIN-159)
+   opts out with `ob-round` and keeps its own radius. */
+.widget-root button:not(.ob-round),
+.widget-root [role="button"]:not(.ob-round),
 .widget-root select {
   border-radius: 0 !important;
 }
