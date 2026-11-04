@@ -54,7 +54,7 @@ describe("source-backed embedded skull", () => {
     await flushPromises();
     expect(w.find(".tab--on").text()).toBe("Lateral");
     expect(w.findAll(".region--on")).toHaveLength(1);
-    expect(w.find(".card__badge").text()).toContain("12 ·");
+    expect(w.find(".card__title").text()).toContain("12 ·");
     expect(w.find("select").attributes("disabled")).toBeUndefined();
     await w.findAll(".tab")[2].trigger("click");
     await flushPromises();
@@ -104,7 +104,7 @@ describe("source-backed embedded skull", () => {
       .find((r) => r.attributes("aria-label") === "19. Individuality");
     await r19.trigger("click");
     await flushPromises();
-    expect(w.find(".card__badge").text()).toBe("19 · Organ of Individuality");
+    expect(w.find(".card__title").text()).toBe("19 · Organ of Individuality");
     expect(w.find('[data-source-block="675"]').text()).toContain(
       "Dr. Gall observed, in society"
     );
@@ -116,7 +116,7 @@ describe("source-backed embedded skull", () => {
     const w = await skull();
     await w.find("select").setValue("22");
     await flushPromises();
-    expect(w.find(".card__badge").text()).toBe("22 · Organ of Weight");
+    expect(w.find(".card__title").text()).toBe("22 · Organ of Weight");
     expect(w.find(".card__editorial").text()).toContain(
       "not labelled by Spurzheim"
     );
@@ -159,7 +159,7 @@ describe("source-backed embedded skull", () => {
     await ideality.trigger("keydown", { key: " " });
     // Native browser handling is complemented by explicit Vue space key support.
     await ideality.trigger("click");
-    expect(w.find(".card__badge").text()).toContain("16 · Organ of Ideality");
+    expect(w.find(".card__title").text()).toContain("16 · Organ of Ideality");
   });
   it("keeps source panels out of the 3D stage sizing contract", () => {
     const code = readFileSync(
@@ -220,7 +220,7 @@ describe("source-backed embedded skull", () => {
       r30.element.focus(); // as a tap on the region does
       await r30.trigger("click");
       await flushPromises();
-      expect(w.find(".card__badge").text()).toBe("30 · Organ of Comparison");
+      expect(w.find(".card__title").text()).toBe("30 · Organ of Comparison");
       expect(w.find(".card--sheet").attributes("data-detent")).toBe("half");
       // The handle's keyboard: up to full, down to half, down again dismisses
       // and deselects, focus back on the region picked last.

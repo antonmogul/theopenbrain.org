@@ -18,7 +18,7 @@ const settled = (page, n) =>
   page.waitForFunction(
     (n) =>
       !document.querySelector(".phreno select")?.disabled &&
-      document.querySelector(".card__badge")?.textContent.includes(`${n} ·`),
+      document.querySelector(".card__title")?.textContent.includes(`${n} ·`),
     n
   );
 const hasFocus = (locator) =>

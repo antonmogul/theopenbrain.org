@@ -10,7 +10,14 @@ import PhrenologyView from "../PhrenologyView.vue";
 export default {
   title: "Views/Widgets/PhrenologyView",
   component: PhrenologyView,
-  parameters: { layout: "fullscreen" },
+  parameters: {
+    layout: "fullscreen",
+    // The Widget Library file, not the design system: the toolbar's Figma
+    // button opens the widget's own page there.
+    design: {
+      url: "https://www.figma.com/design/Vf62gR0eNAMJbwFje5VKry/Widget-Library?node-id=68-81",
+    },
+  },
   render: () => ({
     components: { PhrenologyView, ViewStoryShell },
     template: `<ViewStoryShell label="PhrenologyView" path="/phrenology"><PhrenologyView /></ViewStoryShell>`,

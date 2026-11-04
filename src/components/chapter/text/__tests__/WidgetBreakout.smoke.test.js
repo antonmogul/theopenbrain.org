@@ -310,11 +310,19 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     const pause = band.closest(".fb-screen-hold");
     expect(pause).not.toBeNull();
     expect(pause.querySelector(".fb-screen-room")).not.toBeNull();
-    // The header is the band's: Stuart's title and line, no kicker.
+    // The header is the band's: Stuart's title and line, under the box
+    // kicker (the Widget Library Figma, Nov; OPENBRAIN-162), and the
+    // toolbar names the credit beside the expand icon.
     expect(band.querySelector(".wb-title").textContent).toBe(
       "Explore phrenology"
     );
-    expect(band.querySelector(".wb-kicker")).toBeNull();
+    expect(band.querySelector(".wb-head").classList).toContain("wb-head--full");
+    expect(band.querySelector(".wb-kicker").textContent.trim()).toBe(
+      "Breakout box"
+    );
+    expect(band.querySelector(".wb-foot .wb-credit").textContent.trim()).toBe(
+      "Interactive by The Open Brain"
+    );
 
     // Small screens keep the full-width viewport treatment.
     desktop.fire(false);

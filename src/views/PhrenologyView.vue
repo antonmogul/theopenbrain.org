@@ -3,10 +3,15 @@
  * PhrenologyView — "Widget 1: Phrenology" prototype (History chapter).
  *
  * An engraved skull the reader can turn and interrogate:
- *   • Tab bar (ANTERIOR / LATERAL / POSTERIOR) "rotates" the skull. There is no
- *     real 3D model — each view is its own engraving, and GSAP sells the turn:
- *     the outgoing view yaws away in perspective while the incoming one yaws in
- *     from the opposite side (direction-aware, based on tab order).
+ *   • Tab switch (ANTERIOR / LATERAL / POSTERIOR) "rotates" the skull. There
+ *     is no real 3D model — each view is its own engraving, and GSAP sells the
+ *     turn: the outgoing view yaws away in perspective while the incoming one
+ *     yaws in from the opposite side (direction-aware, based on tab order).
+ *     The switch is the Widget Library Figma's (Vf62gR0eNAMJbwFje5VKry,
+ *     68:271, Nov 2026): a pill track, one pill that slides under the chosen
+ *     label the moment it is picked, while the skull turns underneath.
+ *   • The source text reads on the plate itself, white on the dark surface
+ *     (OPENBRAIN-162, the same Figma): no paper card beside the skull.
  *   • The phrenology region map (the Figma maps, helper/phrenologyMaps,
  *     drawn from their own outlines) wipes on over the skull, and its
  *     regions are the targets: a region lights up in the chapter colour under the pointer
@@ -93,6 +98,9 @@ const { fetchViews } = usePhrenology();
 
 const views = ref([]);
 const activeIdx = ref(0);
+// The view the reader has picked. It leads activeIdx by the length of the
+// turn, so the switch answers the click at once while the skull still yaws.
+const selectedIdx = ref(0);
 const activeRegion = ref(null); // { n, name, blurb } in the detail card
 const hoverN = ref(null); // faculty number under the pointer / focus
 const mapsByView = ref({}); // view id → { regions, outlines, transform }
@@ -110,6 +118,54 @@ onBeforeUnmount(() => {
     [skullEl.value, regionsEl.value, panelEl.value].filter(Boolean)
   );
 });
+
+/* ── The tab switch ───────────────────────────────────────────────────────
+ * One pill slides under the chosen label. It is measured from the tab it
+ * covers (not a third of the track), so labels of any length and a font
+ * that arrives late keep it true; a ResizeObserver on the track re-measures
+ * it. It moves on selectedIdx, before the skull turns. Until the first
+ * measurement the chosen tab paints its own fill (tabs--switch unset), so
+ * nothing is unmarked for a frame, and the pill only transitions once it
+ * has been placed, so the first paint doesn't slide in from the left.
+ */
+const tabsEl = ref(null);
+const tabEls = ref([]);
+const thumbStyle = ref(null);
+const thumbLive = ref(false);
+let tabsObserver = null;
+function setTabRef(el, i) {
+  if (el) tabEls.value[i] = el;
+}
+function placeThumb() {
+  const tab = tabEls.value[selectedIdx.value];
+  if (!tab || !tabsEl.value) return;
+  thumbStyle.value = {
+    transform: `translateX(${tab.offsetLeft}px)`,
+    width: `${tab.offsetWidth}px`,
+  };
+}
+watch(selectedIdx, () => nextTick(placeThumb));
+watch(
+  tabsEl,
+  (el) => {
+    tabsObserver?.disconnect();
+    tabsObserver = null;
+    thumbLive.value = false;
+    if (!el) return;
+    placeThumb();
+    const arm = () => {
+      if (!disposed) thumbLive.value = true;
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(arm);
+    else arm();
+    if (typeof ResizeObserver === "function") {
+      tabsObserver = new ResizeObserver(placeThumb);
+      tabsObserver.observe(el);
+    }
+  },
+  { flush: "post" }
+);
+onBeforeUnmount(() => tabsObserver?.disconnect());
 
 const stageEl = ref(null); // perspective wrapper
 const skullEl = ref(null); // the yawing card
@@ -288,6 +344,7 @@ async function switchView(idx) {
   const initiator = document.activeElement;
   const restoreControl = initiator?.matches(".phreno .tab, .phreno select");
   animating.value = true;
+  selectedIdx.value = idx;
   closePanel(true);
 
   // +1 = turning "rightward" through anterior→lateral→posterior.
@@ -412,35 +469,51 @@ function onKeydown(e) {
 <template>
   <div class="widget-root phreno" @keydown="onKeydown">
     <header class="phreno__chrome">
-      <nav class="tabs" aria-label="Skull view">
-        <button
-          v-for="(v, i) in views"
-          :key="v.id"
-          class="tab"
-          :class="{ 'tab--on': i === activeIdx }"
-          :disabled="animating"
-          @click="switchView(i)"
+      <div class="phreno__views">
+        <nav
+          v-if="views.length"
+          ref="tabsEl"
+          class="tabs"
+          :class="{ 'tabs--switch': !!thumbStyle }"
+          aria-label="Skull view"
         >
-          {{ v.label }}
-        </button>
-      </nav>
-      <label class="faculty-picker"
-        >Browse an organ
-        <select
-          :value="activeRegion?.n || ''"
-          :disabled="animating || !activeMap"
-          @change="selectFromPicker(Number($event.target.value))"
-        >
-          <option value="" disabled>Select a numbered organ</option>
-          <option
-            v-for="faculty in PHRENOLOGY_FACULTIES"
-            :key="faculty.n"
-            :value="faculty.n"
+          <span
+            class="tabs__thumb"
+            :class="{ 'tabs__thumb--live': thumbLive }"
+            :style="thumbStyle"
+            aria-hidden="true"
+          ></span>
+          <button
+            v-for="(v, i) in views"
+            :key="v.id"
+            :ref="(el) => setTabRef(el, i)"
+            class="tab"
+            :class="{ 'tab--on': i === selectedIdx }"
+            :aria-pressed="i === selectedIdx"
+            :disabled="animating"
+            @click="switchView(i)"
           >
-            {{ faculty.n }} · {{ organTitle(faculty) }}
-          </option>
-        </select>
-      </label>
+            {{ v.label }}
+          </button>
+        </nav>
+        <label class="faculty-picker"
+          >Browse an organ
+          <select
+            :value="activeRegion?.n || ''"
+            :disabled="animating || !activeMap"
+            @change="selectFromPicker(Number($event.target.value))"
+          >
+            <option value="" disabled>Select a numbered organ</option>
+            <option
+              v-for="faculty in PHRENOLOGY_FACULTIES"
+              :key="faculty.n"
+              :value="faculty.n"
+            >
+              {{ faculty.n }} · {{ organTitle(faculty) }}
+            </option>
+          </select>
+        </label>
+      </div>
     </header>
 
     <div ref="bodyEl" class="phreno__body">
@@ -548,7 +621,7 @@ function onKeydown(e) {
           ✕
         </button>
         <div ref="scrollEl" class="card__body">
-          <h3 class="card__badge">
+          <h3 class="card__title">
             {{ activeRegion.n }} · {{ organTitle(activeRegion) }}
           </h3>
           <p
@@ -587,19 +660,21 @@ function onKeydown(e) {
 </template>
 
 <style scoped>
-/* The widget is a dark plate regardless of app theme, like the Figma frames. */
+/* The widget is a dark plate regardless of app theme, like the Figma frames:
+   the chapter's dark surface, so inside the band it is one ground with the
+   band's own heading and toolbar (it was #232227, a shade off). */
 .phreno {
-  --plate: #232227;
+  --plate: rgb(var(--color-dark-surface, 28 28 28));
   --bone: #eceae4;
   /* The chapter's colour (the Figma map's violet outside a chapter). */
   --accent-rgb: var(--color-chapter, 139 92 246);
   --violet: rgb(var(--accent-rgb));
   --violet-soft: rgb(var(--color-chapter-soft, 167 139 250));
-  /* The skull's height, and the detail card's cap beside it. 56vh, or on a
+  /* The skull's height, and the source text's cap beside it. 56vh, or on a
      short screen what is left of one once the chrome, the chapter band's
-     header and footer and the citation (about 25rem together) have theirs,
-     so the band stays one screen. */
-  --skull-h: max(12rem, min(56vh, calc(100vh - 25rem)));
+     heading and toolbar and the citation (about 27.5rem together) have
+     theirs, so the band stays one screen. */
+  --skull-h: max(12rem, min(56vh, calc(100vh - 27.5rem)));
   position: relative;
   /* A full screen on its own route; a host can set less (WidgetBreakout). */
   min-height: var(--widget-min-h, 100vh);
@@ -613,45 +688,87 @@ function onKeydown(e) {
 }
 
 /* ── chrome ── */
-/* The view tabs and the organ list share one row where there is room, so
+/* The view switch with the organ list under it, as the Figma stacks them;
    the stage below gets the height. */
 .phreno__chrome {
   flex-shrink: 0;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem 1.5rem;
   padding: 1rem 2rem 0;
 }
+.phreno__views {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+/* The switch (Figma 68:271): a pill track, the labels on it, and one pill
+   that slides under the chosen label. The track is #3F3F3F in the Figma,
+   between --color-dark-surface-2 and the hairline, so it is a literal. */
 .tabs {
-  flex: 1 1 320px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  border: 1px solid rgb(255 255 255 / 0.14);
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 1000px;
+  background: #3f3f3f;
 }
-.tab {
-  padding: 0.45rem 0;
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  background: transparent;
-  border: none;
-  color: var(--bone);
-  opacity: 0.6;
-  cursor: pointer;
-  transition:
-    opacity 0.15s,
-    background-color 0.2s,
-    color 0.2s;
-}
-.tab:hover {
-  opacity: 1;
-}
-.tab--on {
+.tabs__thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  border-radius: 100px;
   background: var(--violet);
-  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+.tabs--switch .tabs__thumb {
   opacity: 1;
+}
+.tabs__thumb--live {
+  transition:
+    transform 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+    width 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* `.tabs .tab`, not `.tab`: the chapter band squares every button inside
+   it (WidgetBreakout `:deep(button)`), and the pills must win that. */
+.tabs .tab {
+  position: relative;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 100px;
+  background: transparent;
+  color: #fbf8ff;
+  font-family: var(--font-ui, inherit);
+  font-size: var(--ui-size-18, 1.125rem);
+  font-weight: 450;
+  line-height: 1;
+  letter-spacing: -0.0125em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.tabs .tab:hover:not(.tab--on) {
+  background: rgb(255 255 255 / 0.08);
+}
+.tabs .tab:disabled {
+  cursor: default;
+}
+.tabs .tab:focus-visible {
+  outline: 2px solid #fbf8ff;
+  outline-offset: 2px;
+}
+/* Before the pill is placed (and wherever it can't be measured), the
+   chosen tab is its own pill. */
+.tabs:not(.tabs--switch) .tab--on {
+  background: var(--violet);
 }
 
 /* ── stage ── */
@@ -732,50 +849,77 @@ function onKeydown(e) {
   stroke-width: 3;
 }
 :global([data-reduce-motion="1"]) .region path,
-:global([data-reduce-motion="1"]) .tab {
+:global([data-reduce-motion="1"]) .tabs .tab,
+:global([data-reduce-motion="1"]) .tabs__thumb {
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .region path,
-  .tab {
+  .tabs .tab,
+  .tabs__thumb {
     transition: none;
   }
 }
 
-/* ── detail card ── */
+/* ── the source text ──
+   On the plate itself, white on the dark surface (Figma 68:88, 68:270):
+   the organ's title, then its quotations. */
 .card {
   position: relative;
   width: 100%;
-  /* No taller than the skull beside it: long source text scrolls rather
-     than growing the row and moving the skull. */
-  max-height: var(--skull-h);
+  /* From the skull's crown down (Figma 68:88 sits 45px under the stage's
+     top), and no taller than the skull beside it: long source text scrolls
+     rather than growing the row and moving the skull. */
+  align-self: start;
+  margin-top: 2.5rem;
+  max-height: calc(var(--skull-h) - 2.5rem);
   box-sizing: border-box;
-  padding: 2.25rem 1.5rem;
-  border-radius: var(--radius-control);
-  background: #f2f0ec;
-  color: #2b2a2e;
+  padding: 0 2.75rem 0 0; /* the close button's column */
+  color: var(--bone);
   overflow-y: auto;
   overscroll-behavior: auto;
 }
 .card-instruction {
-  padding: 2rem;
-  font-size: 0.95rem;
-  line-height: 1.7;
+  align-self: start;
+  margin: 2.5rem 0 0;
+  padding: 0 2.75rem 0 0;
+  font-size: var(--type-body-sm-size, 1.0625rem);
+  line-height: 1.5;
+  color: var(--bone);
   opacity: 0.7;
 }
+/* "Browse an organ" under the switch (Figma 68:263): a small label and a
+   bare select in the plate's ink. The native list keeps its own colours. */
 .faculty-picker {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  font-size: 0.8rem;
+  gap: 0.5rem;
+  padding-left: 1rem;
+  font-size: var(--ui-size-13, 0.8125rem);
+  color: var(--bone);
 }
 .faculty-picker select {
   max-width: 100%;
-  padding: 0.5rem;
+  padding: 0.25rem 0;
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 0;
+  background: transparent;
+  color: var(--bone);
+  font: inherit;
+  cursor: pointer;
+}
+.faculty-picker select:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.faculty-picker select:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+.faculty-picker option {
   color: #222;
-  background: #f8f6f1;
-  border-radius: var(--radius-control);
 }
 .region-label {
   pointer-events: none;
@@ -791,60 +935,78 @@ function onKeydown(e) {
   font-weight: 600;
 }
 .card__editorial {
-  border-left: 3px solid #8464ae;
+  margin: 0 0 1rem;
   padding-left: 0.75rem;
-  font-size: 0.8rem;
+  border-left: 3px solid var(--violet);
+  font-size: var(--ui-size-14, 0.875rem);
   line-height: 1.5;
+  color: rgb(236 234 228 / 0.8);
 }
 .card__close {
   position: absolute;
-  top: 0.9rem;
-  right: 0.9rem;
+  top: 0;
+  right: 0;
   width: 2rem;
   height: 2rem;
   border: none;
   background: transparent;
+  color: var(--bone);
   font-size: 0.9rem;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.55;
 }
-.card__close:hover {
+.card__close:hover,
+.card__close:focus-visible {
   opacity: 1;
 }
-.card__badge {
-  display: inline-flex;
-  align-items: center;
-  max-width: calc(100% - 2rem);
-  padding: 0.35rem 0.9rem;
-  border-radius: var(--radius-control);
-  background: var(--violet);
+/* The organ's title (Figma 68:88): the UI face at 20px, regular, white. */
+.card__title {
+  margin: 0 0 1rem;
+  padding: 0; /* the global h3 rule adds some */
+  font-family: var(--font-ui, inherit);
+  font-size: var(--ui-size-20, 1.25rem);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.025em;
   color: #fff;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
+/* The quotations (Figma 68:270): the book's small body size, white. */
 .card__text {
   margin-top: 1.25rem;
-  font-size: 0.9rem;
-  line-height: 1.65;
-}
-.card__text--mute {
-  opacity: 0.55;
-  font-size: 0.8rem;
+  font-size: var(--type-body-sm-size, 1.0625rem);
+  line-height: 1.5;
+  color: #fff;
 }
 
-/* ── footer citation ── */
+/* ── footer citation ──
+   The figure legend's face on the dark pane (IllustrationPlaceholder
+   .figure-pane--dark .fig-legend), under the skull as the Figma's toolbar
+   legend sits. */
 .phreno__foot {
   flex-shrink: 0;
   padding: 0.75rem 2rem 1rem;
-  font-size: 0.65rem;
-  font-style: italic;
-  opacity: 0.4;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.71875rem;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  color: var(--bone);
+  opacity: 0.7;
 }
 
 /* ── narrow viewports: the skull has the body; the text is a sheet over it ──
    (OPENBRAIN-160; SHEET_MEDIA_QUERY in helper/sheetDetents repeats this) */
 @media (max-width: 759.98px) {
+  .phreno__chrome {
+    padding: 0.75rem 1rem 0;
+  }
+  /* Three labels in a 390px column: the pills shrink a step. */
+  .tabs .tab {
+    padding: 0.5rem 0.75rem;
+    font-size: var(--ui-size-15, 0.9375rem);
+  }
+  .faculty-picker {
+    padding-left: 0.75rem;
+  }
   .phreno__body {
     grid-template-columns: minmax(0, 1fr);
     /* The skull's row takes what the instruction leaves. */
@@ -878,7 +1040,9 @@ function onKeydown(e) {
     visibility: hidden;
   }
 
-  /* The sheet: the body's bottom edge up, --sheet-f of its height. */
+  /* The sheet: the body's bottom edge up, --sheet-f of its height. Its own
+     surface, the lighter dark (the plate reads white on dark now), lifted
+     off the skull by a hairline and a shadow. */
   .card--sheet {
     position: absolute;
     left: 0;
@@ -891,8 +1055,10 @@ function onKeydown(e) {
     display: flex;
     flex-direction: column;
     padding: 0;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
     border-radius: var(--radius-control) var(--radius-control) 0 0;
-    box-shadow: 0 -8px 28px rgb(0 0 0 / 0.4);
+    background: rgb(var(--color-dark-surface-2, 42 42 42));
+    box-shadow: 0 -8px 28px rgb(0 0 0 / 0.5);
     overflow: hidden;
     outline: none;
     transition: height 0.35s cubic-bezier(0.32, 0.72, 0, 1);
@@ -918,7 +1084,7 @@ function onKeydown(e) {
     width: 2.75rem;
     height: 4px;
     border-radius: 2px;
-    background: rgb(43 42 46 / 0.3);
+    background: rgb(255 255 255 / 0.3);
   }
   .sheet__grip:hover .sheet__handle,
   .sheet__grip:focus-visible .sheet__handle {
@@ -936,7 +1102,7 @@ function onKeydown(e) {
   .card--sheet .card__body {
     flex: 1;
     min-height: 0;
-    padding: 0 1.5rem 2rem;
+    padding: 0 1.25rem 2rem;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
