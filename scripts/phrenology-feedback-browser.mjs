@@ -55,7 +55,7 @@ try {
         (value) =>
           !document.querySelector("select").disabled &&
           document
-            .querySelector(".card__badge")
+            .querySelector(".card__title")
             ?.textContent.trim()
             .startsWith(`${value} ·`),
         n
@@ -99,7 +99,7 @@ try {
       await page.mouse.click(point.x, point.y);
       if (size !== "desktop") await page.touchscreen.tap(point.x, point.y);
       assert.ok(
-        (await page.locator(".card__badge").innerText()).startsWith(`${n} ·`)
+        (await page.locator(".card__title").innerText()).startsWith(`${n} ·`)
       );
       await page.mouse.move(0, 0);
       const skull = await page.locator(".skull").boundingBox();
@@ -242,7 +242,7 @@ try {
     await page.waitForFunction(
       () =>
         !document.querySelector("select").disabled &&
-        document.querySelector(".card__badge")?.textContent.includes("12 ·")
+        document.querySelector(".card__title")?.textContent.includes("12 ·")
     );
     assert.equal(
       (await page.locator(".tab--on").innerText()).toLowerCase(),

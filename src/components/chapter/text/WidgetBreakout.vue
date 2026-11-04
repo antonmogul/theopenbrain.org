@@ -240,12 +240,24 @@ const headingId = computed(
             'wb-body--full': fullScreen,
           }"
         >
-          <header class="wb-head" :class="{ 'wb-head--owned': ownsHeading }">
+          <header
+            class="wb-head"
+            :class="{
+              'wb-head--owned': ownsHeading,
+              'wb-head--full': fullScreen && !ownsHeading,
+            }"
+          >
             <!-- No "Interactive" label (Stuart, 13 Oct): the book doesn't
                label its other figures by kind. A kicker only says what the
-               reader needs to know: it isn't built yet, or it opens. -->
-            <p v-if="comingSoon || kind === 'breakout'" class="wb-kicker">
-              <span class="wb-dot" aria-hidden="true"></span>
+               reader needs to know: it isn't built yet, or it opens. A
+               full-screen band is a breakout box of the chapter and says so
+               over its title, as the boxes do (Widget Library Figma 68:84,
+               Nov; OPENBRAIN-162). -->
+            <p
+              v-if="comingSoon || kind === 'breakout' || fullScreen"
+              class="wb-kicker"
+            >
+              <span v-if="!fullScreen" class="wb-dot" aria-hidden="true"></span>
               {{ comingSoon ? "Coming soon" : "Breakout box" }}
             </p>
             <!-- A kit-built upload carries its own title and instructions, so
@@ -318,6 +330,11 @@ const headingId = computed(
                 Open in new tab
               </RouterLink>
             </div>
+            <!-- The full-screen band's toolbar names the credit beside the
+               expand icon, as the figure toolbar names its figure. -->
+            <p v-if="fullScreen && placement.credit" class="wb-credit">
+              {{ placement.credit }}
+            </p>
           </footer>
         </div>
       </div>
@@ -567,18 +584,80 @@ const headingId = computed(
 .wb-body--full .wb-head--owned {
   padding: 0;
 }
-.wb-body--full .wb-foot {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 2;
+/* The full-screen band's heading (Widget Library Figma 68:83, 68:87,
+   OPENBRAIN-162): centred, the kicker over the title in the subhead role,
+   the line under it at 20px, as the breakout panels centre theirs. */
+.wb-head--full {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.875rem var(--wb-gutter) 1rem;
+  text-align: center;
+}
+.wb-head--full .wb-kicker {
+  justify-content: center;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.08em;
+}
+.wb-head--full .wb-title {
   margin: 0;
-  padding: 0;
+  font-size: var(--type-subhead-size, 2.25rem);
+  line-height: var(--type-subhead-lh, 1.2);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.wb-head--full .wb-blurb {
+  max-width: 30em;
+  margin: 1rem auto 0;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-20);
+  line-height: 1.55;
+  letter-spacing: 0.025em;
+  color: rgb(255 255 255 / 0.9);
+}
+/* The band's toolbar (Figma 68:264), the figure toolbar's row on the dark
+   pane: the bare expand icon, then the credit in mono caps. It was a
+   boxed button pinned top right over the widget. */
+.wb-body--full .wb-foot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.625rem;
+  margin: 0;
+  padding: 0.75rem var(--wb-gutter) 1.5rem;
   border: 0;
   background: transparent;
 }
-.wb-body--full .wb-head:not(.wb-head--owned) {
-  padding-right: 4rem;
+.wb-body--full .wb-actions {
+  display: contents;
+}
+.wb-body--full .wb-btn--expand {
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  margin: -7px; /* the 14px icon flush with the gutter, a 28px hit area */
+  padding: 0; /* .wb-btn's padding is declared later and would squash it */
+  border-color: transparent;
+  background: transparent;
+  color: #fff;
+}
+.wb-body--full .wb-btn--expand svg {
+  width: 14px;
+  height: 14px;
+}
+.wb-body--full .wb-btn--expand:hover {
+  border-color: transparent;
+  background: rgb(255 255 255 / 0.1);
+}
+.wb-body--full .wb-credit {
+  order: 0;
+  margin: 0;
+  font-size: var(--ui-size-14);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
 }
 .wb-btn--expand {
   width: 44px;

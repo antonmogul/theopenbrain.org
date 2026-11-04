@@ -489,7 +489,7 @@ async function assertFaculty(state, number, widget) {
   // prototype); the card is the organ's full title and the text.
   await expect(card.locator(".source-image")).toHaveCount(0);
   await expect(card.locator("img")).toHaveCount(0);
-  await expect(card.locator(".card__badge")).toContainText("Organ of");
+  await expect(card.locator(".card__title")).toContainText("Organ of");
 }
 
 async function testSkull(state) {
