@@ -1,7 +1,10 @@
 <script setup>
 /* Breakouts occupy the reader width and keep their artwork inside their
  * own stage. Short boxes read as one viewport-sized panel; long manuscript
- * text remains in normal vertical flow until horizontal paging is designed.
+ * text remains in normal vertical flow. A box made only of Explore parts
+ * can instead be read sideways, on trial for the Hippocrates box: the rail
+ * (OPENBRAIN-163, helper/exploreRail.js; the script and styles for it are
+ * marked below).
  *
  * The pause (Stuart, 24 Sep and 13 Oct: "pause in the vertical scroll when
  * we enter a breakout box"). From the two-column breakpoint up, once the
@@ -19,13 +22,16 @@
  * goes through the --bx-* custom properties set per treatment on the frame,
  * so the four looks are one set of rules, and the pause's room (also
  * painted in the box's colour) follows along. */
-import { computed, inject } from "vue";
+import { computed, inject, provide, ref } from "vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import {
   DARK_BOX_TREATMENTS,
   boxTreatmentFor,
   normalizeBoxTreatment,
 } from "@/helper/breakoutTreatment";
+import { RAIL_MIN_HEIGHT_QUERY, boxIsRail } from "@/helper/exploreRail";
+import { useExploreRail } from "@/composables/useExploreRail";
+import { useMediaQuery } from "@/composables/useMediaQuery";
 
 const props = defineProps({
   /** The box section (kind "box"): id, slug and title. */
@@ -37,13 +43,17 @@ const props = defineProps({
    *  resolves from the section and the chapter (TextComp provides
    *  chapterSlug). Stories set it directly. */
   treatment: { type: String, default: "" },
+  /** Read sideways (helper/exploreRail.js). Unset resolves from the
+   *  section and the chapter; stories and tests set it directly. */
+  rail: { type: Boolean, default: undefined },
 });
 
 const chapterSlug = inject("chapterSlug", null);
+const slugOfChapter = () => chapterSlug?.value ?? chapterSlug;
 const treatment = computed(
   () =>
     normalizeBoxTreatment(props.treatment) ||
-    boxTreatmentFor(props.section, chapterSlug?.value ?? chapterSlug)
+    boxTreatmentFor(props.section, slugOfChapter())
 );
 /* The panels share one layout (centred heading, no badge, full bleed on
    phones); only their palette differs. The two dark plates also share the
@@ -52,20 +62,84 @@ const panel = computed(() => treatment.value !== "pale");
 const dark = computed(() => DARK_BOX_TREATMENTS.includes(treatment.value));
 
 const titleId = computed(() => `box-title-${props.section.id}`);
+
+/* The rail (OPENBRAIN-163): a box of Explore parts read sideways, pinned
+   while the page's scroll moves its track. Only where the box floats full
+   width (from the two-column breakpoint, in the reader) on a screen tall
+   enough for a track; anywhere else the parts stay fold-out cards. The
+   cards read the same flag (provide), so box and cards switch together. */
+const fullBleed = ref(null);
+const pauseEl = ref(null);
+const boxEl = ref(null);
+const trackEl = ref(null);
+const wantsRail = computed(
+  () => props.rail ?? boxIsRail(props.section, slugOfChapter())
+);
+const tallEnough = useMediaQuery(RAIL_MIN_HEIGHT_QUERY);
+const railOn = computed(
+  () => wantsRail.value && tallEnough.value && !!fullBleed.value?.floating
+);
+provide("exploreRail", railOn);
+const parts = computed(() =>
+  railOn.value
+    ? (props.section.paragraphs || [])
+        .filter((p) => p?.explore)
+        .map((p) => ({ id: p.id, title: p.explore.title }))
+    : []
+);
+const {
+  pinned,
+  room,
+  lead,
+  stickyTop,
+  active,
+  atStart,
+  atEnd,
+  next,
+  prev,
+  goToPart,
+} = useExploreRail({
+  enabled: railOn,
+  pauseEl,
+  boxEl,
+  scrollerEl: trackEl,
+});
+// The track's half of the contract in helper/exploreRail.js.
+const trackAttrs = computed(() =>
+  railOn.value
+    ? {
+        tabindex: 0,
+        role: "group",
+        "aria-label": `${props.section.title}: ${parts.value.length} parts, side by side`,
+        "data-rail-scroller": "",
+        "data-rail-pinned": pinned.value ? "1" : "0",
+        "data-rail-lead": lead.value,
+        "data-rail-top": stickyTop.value,
+      }
+    : {}
+);
 </script>
 
 <template>
   <FullBleed
+    ref="fullBleed"
     v-slot="{ floating }"
     :stage-attrs="{ 'data-breakout-box': section.id }"
   >
     <div
+      ref="pauseEl"
       class="bx-pause"
-      :class="{ 'bx-pause--on': floating, 'bx-pause--panel': panel }"
+      :class="{
+        'bx-pause--on': floating,
+        'bx-pause--panel': panel,
+        'bx-pause--rail': railOn,
+      }"
       :data-treatment="treatment"
+      :data-rail-pause="railOn ? '' : undefined"
     >
       <aside
         :id="section.id"
+        ref="boxEl"
         :data-section-slug="section.slug"
         :data-treatment="treatment"
         class="bx"
@@ -74,6 +148,7 @@ const titleId = computed(() => `box-title-${props.section.id}`);
           'bx--paired': pairedExplores,
           'bx--panel': panel,
           'bx--dark': dark,
+          'bx--rail': railOn,
         }"
         :aria-labelledby="titleId"
       >
@@ -88,11 +163,84 @@ const titleId = computed(() => `box-title-${props.section.id}`);
             <h2 :id="titleId" class="bx-title">{{ section.title }}</h2>
           </header>
         </div>
-        <div class="bx-body">
+        <!-- In a rail this is the track: a horizontal scroll container the
+             page's scroll moves while the box is pinned. -->
+        <div ref="trackEl" class="bx-body" v-bind="trackAttrs">
           <slot />
         </div>
+        <!-- The rail's way around: the parts by name, and Previous / Next
+             (a page at a time inside a part wider than the screen). -->
+        <nav v-if="railOn" class="bx-rail-nav" aria-label="Parts of this box">
+          <span class="bx-rail-progress" aria-hidden="true"></span>
+          <ol class="bx-rail-parts">
+            <li v-for="(part, i) in parts" :key="part.id">
+              <button
+                type="button"
+                class="bx-rail-part"
+                :aria-current="i === active ? 'true' : undefined"
+                @click="goToPart(i)"
+              >
+                <span class="bx-rail-count" aria-hidden="true">{{
+                  String(i + 1).padStart(2, "0")
+                }}</span>
+                {{ part.title }}
+              </button>
+            </li>
+          </ol>
+          <div class="bx-rail-arrows">
+            <button
+              type="button"
+              class="bx-rail-arrow"
+              aria-label="Previous"
+              title="Previous"
+              :disabled="atStart"
+              @click="prev"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M13 8H3m4-4L3 8l4 4" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="bx-rail-arrow"
+              aria-label="Next"
+              title="Next"
+              :disabled="atEnd"
+              @click="next"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 8h10M9 4l4 4-4 4" />
+              </svg>
+            </button>
+          </div>
+        </nav>
       </aside>
-      <div v-if="floating" class="bx-pause-room" aria-hidden="true"></div>
+      <div
+        v-if="floating"
+        class="bx-pause-room"
+        :style="room ? { height: `${room}px` } : undefined"
+        aria-hidden="true"
+      ></div>
     </div>
   </FullBleed>
 </template>
@@ -380,6 +528,212 @@ const titleId = computed(() => `box-title-${props.section.id}`);
   }
   :root:not([data-reduce-motion="0"]) .bx-pause--on > .bx {
     position: relative;
+  }
+}
+
+/* ── The rail (OPENBRAIN-163, helper/exploreRail.js) ──────────────────────
+   A box of Explore parts read sideways. The box is exactly the screen
+   under the top bar, so nothing in it scrolls down: the heading, the track
+   (all the room that is left) and the nav above the timeline's strip. The
+   pause spacer is as long as the track's travel (useExploreRail sets its
+   height), and the page's scroll through it moves the track. */
+.bx--floating.bx--rail {
+  --rail-gutter: clamp(1.5rem, 4vw, 4rem);
+  /* A part leaves this much of the next one showing: the way on. */
+  --rail-peek: clamp(3rem, 5vw, 6rem);
+  --rail-gap: clamp(2rem, 4vw, 4rem);
+  /* What a part has when it is at the left: the track (100cqw is its
+     width inside the left gutter) less the right gutter and the peek. */
+  --rail-view: calc(100cqw - var(--rail-gutter) - var(--rail-peek));
+  height: calc(100vh - var(--reader-topbar-h, 4rem));
+  height: calc(100dvh - var(--reader-topbar-h, 4rem));
+  min-height: 0;
+  padding: clamp(1rem, 3.5vh, 2.5rem) 0 var(--reader-timeline-h, 0px);
+  justify-content: flex-start;
+}
+.bx--floating.bx--rail .bx-intro {
+  max-width: none;
+  padding: 0 var(--rail-gutter) clamp(1rem, 3vh, 2rem);
+}
+.bx--floating.bx--rail .bx-title {
+  font-size: clamp(1.5rem, 2.2vw, 2.25rem);
+}
+/* The track. Its own scrollbar is hidden (index.css hides them all); the
+   nav below says where the reader is. A size container, so the parts can
+   size from its box (cqw / cqh) without script. */
+.bx--floating.bx--rail .bx-body {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 0 var(--rail-gutter);
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* The sideways swipe that reaches the end must not become the browser's
+     Back gesture. Only the x axis: a wheel down still scrolls the page
+     (OPENBRAIN-39). */
+  overscroll-behavior-x: contain;
+  container-type: size;
+}
+.bx--floating.bx--rail .bx-body:focus-visible {
+  outline: 2px solid var(--bx-ink);
+  outline-offset: -2px;
+}
+/* SectionComp's wrapper and its paragraph list, as one row as wide as the
+   parts; the right gutter is the row's, so it is part of the travel. */
+.bx--rail .bx-body > :deep(div) {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  height: 100%;
+}
+.bx--rail :deep(.section-paragraphs--paired) {
+  display: flex;
+  flex: 1 1 0;
+  gap: var(--rail-gap);
+  width: max-content;
+  min-height: 0;
+  padding-right: var(--rail-gutter);
+}
+/* Edit mode's own title field (SectionComp) sits above the row, takes
+   its height from it, and stays in view while the track moves. */
+.bx--rail .bx-body > :deep(div > .editable-block-wrapper) {
+  position: sticky;
+  left: 0;
+  flex: none;
+  width: var(--rail-view);
+}
+.bx--rail :deep(.explore-pair-item) {
+  flex: none;
+  height: 100%;
+  /* At least the view; the last part a full screen, so it too can reach
+     the left. */
+  min-width: var(--rail-view);
+}
+.bx--rail :deep(.explore-pair-item:last-child) {
+  min-width: calc(100cqw - var(--rail-gutter));
+}
+
+.bx-rail-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: clamp(1rem, 3vh, 1.75rem) var(--rail-gutter) 0;
+  padding: 0.5rem 0 0.75rem;
+  border-top: 1px solid var(--bx-hairline);
+}
+/* How far along the track, drawn over the nav's hairline. */
+.bx-rail-progress {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--bx-quote-rule);
+  transform: scaleX(var(--rail-progress, 0));
+  transform-origin: left center;
+}
+.bx-rail-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.75rem;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bx-rail-part {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bx-ink-soft);
+  font: 400 var(--ui-size-12) / 1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+.bx-rail-part:hover,
+.bx-rail-part[aria-current="true"] {
+  color: var(--bx-ink);
+}
+.bx-rail-part[aria-current="true"] {
+  font-weight: 600;
+}
+.bx-rail-count {
+  color: var(--bx-kicker);
+}
+.bx-rail-arrows {
+  display: flex;
+  gap: 0.5rem;
+  flex: none;
+}
+.bx-rail-arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--bx-ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--bx-ink);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.bx-rail-arrow:hover:not(:disabled) {
+  background: var(--bx-wash);
+}
+.bx-rail-arrow:disabled {
+  border-color: var(--bx-hairline);
+  color: var(--bx-ink-soft);
+  opacity: 0.5;
+  cursor: default;
+}
+.bx-rail-part:focus-visible,
+.bx-rail-arrow:focus-visible {
+  outline: 2px solid var(--bx-ink);
+  outline-offset: 2px;
+}
+/* On paper there is no sideways: the parts follow each other down the
+   page, each with its columns across it. */
+@media print {
+  .bx--floating.bx--rail {
+    height: auto;
+  }
+  .bx--floating.bx--rail .bx-body {
+    overflow: visible;
+    padding-right: var(--rail-gutter);
+    container-type: normal;
+  }
+  .bx--rail .bx-body > :deep(div),
+  .bx--rail :deep(.section-paragraphs--paired) {
+    display: block;
+    width: auto;
+    height: auto;
+    padding-right: 0;
+  }
+  .bx--rail :deep(.explore-pair-item) {
+    min-width: 0;
+    height: auto;
+    margin-bottom: 2rem;
+  }
+  .bx-rail-nav {
+    display: none;
+  }
+}
+:root[data-reduce-motion="1"] .bx-rail-arrow {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion="0"]) .bx-rail-arrow {
+    transition: none;
   }
 }
 

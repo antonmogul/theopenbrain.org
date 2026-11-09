@@ -14,6 +14,8 @@
  * tests alike.
  */
 
+import { railLandingY, revealInRail } from "./exploreRail.js";
+
 const FLASH_MS = 1600;
 // A smooth jump cut short tries again this many times, within this long.
 const RESUME_TRIES = 3;
@@ -277,7 +279,14 @@ export function jumpToElement(
   // 200vh spacer: land where its reading starts (the opener TOC, the top
   // bar's section menu and the Info tab jump here too).
   if (align === "top") el = readingStartOf(el);
+  // On a side-scrolling box's track (helper/exploreRail.js): where the
+  // page is decides where the track is, so the landing is the scrollY that
+  // brings the element's part across, whatever the alignment asked for.
+  // A track the page does not drive (reduced motion) is moved directly.
+  revealInRail(el);
   scrollToY(() => {
+    const onRail = railLandingY(el);
+    if (onRail !== null) return onRail;
     const rect = el.getBoundingClientRect();
     const scrollY = window.scrollY || window.pageYOffset || 0;
     const viewport =
@@ -325,10 +334,13 @@ export function holdLanding(el, { ms = HOLD_MS, align = "top" } = {}) {
       window.innerHeight || document.documentElement.clientHeight || 0;
     const docTop = rect.top + scrollY;
     const max = Math.max(0, document.documentElement.scrollHeight - viewport);
+    const onRail = railLandingY(el); // as jumpToElement
     const top =
-      align === "center" && rect.height <= viewport - 2 * inset
-        ? docTop + rect.height / 2 - viewport / 2
-        : docTop - inset;
+      onRail !== null
+        ? onRail
+        : align === "center" && rect.height <= viewport - 2 * inset
+          ? docTop + rect.height / 2 - viewport / 2
+          : docTop - inset;
     return Math.min(max, Math.max(0, Math.round(top)));
   };
   let timer = null;
