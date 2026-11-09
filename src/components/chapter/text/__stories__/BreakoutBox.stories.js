@@ -8,7 +8,9 @@
  * helper/breakoutTreatment.js from the chapter and box slugs).
  */
 import BreakoutBox from "../BreakoutBox.vue";
+import ExploreCard from "../ExploreCard.vue";
 import { BOX_TREATMENTS } from "@/helper/breakoutTreatment";
+import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 
 export default {
   title: "Chapter/Text/BreakoutBox",
@@ -136,4 +138,78 @@ export const InRetina = {
   decorators: [
     () => ({ template: `<div data-chapter="perc"><story /></div>` }),
   ],
+};
+
+/* The Hippocrates box's two parts, as chapterTransform hands them to the
+   reader (the extract shortened to the source's own ellipses). */
+const railSection = {
+  id: "box-sacred-disease",
+  kind: "box",
+  slug: "box-sacred-disease",
+  title: "Hippocrates: the sacred disease and the four humours",
+  paragraphs: [
+    {
+      id: "p-sacred",
+      explore: {
+        title: "Hippocrates’ view on epilepsy",
+        prompt: "Explore more about Hippocrates’ view on epilepsy",
+        image: {
+          src: "/publicAssets/images/foundations/narrative/hippocrates-bust.jpg",
+          alt: "Marble bust of Hippocrates in profile, from the British Museum.",
+        },
+        legend:
+          "Bust of Hippocrates from the British Museum. Source: The Wellcome Collection.",
+      },
+      text: `<blockquote>“It is thus with regard to the disease called Sacred [epilepsy]: it appears to me to be nowise more divine nor more sacred than other diseases, but has a natural cause from the originates like other affections… They who first referred this malady to the gods appear to me to have been just such persons as the conjurors, purificators, mountebanks, and charlatans now are, who give themselves out for being excessively religious, and as knowing more than other people… But this disease seems to me to be no more divine than others; but it has its nature such as other diseases have, and a cause whence it originates… But the brain is the cause of this affection, as it is of other very great diseases.”</blockquote>`,
+    },
+    {
+      id: "p-humours",
+      explore: {
+        title: "Humoral theory",
+        prompt: "Explore more about humoral theory",
+        image: {
+          src: "/publicAssets/images/foundations/thurneysser-four-humours-1574.jpg",
+          alt: "A 1574 woodcut: a figure split down the middle, ringed by the four humours with their elements and zodiac signs.",
+        },
+        legend:
+          "The four humours and their corresponding elements and zodiacal signs. Woodcut in Quinta Essentia by Leonhart Thurneysser (1574). Credit: Wikimedia Commons.",
+      },
+      text: `In ancient Greece, the Pythagoreans were mathematicians who were into numerology, and they had a particular reverence for the number four. Subsequently, Empedocles assembled a cosmology based on tetradic categories. The universe was comprised of four fundamental elements: earth, water, air and fire. There were four cosmic entities: sky, sun, earth and sea. There are four seasons: spring, summer, winter, fall. Hippocrates applied the four seasons to ages of human beings and linked the four elements to four fundamental humors in the body: yellow bile, black bile, phlegm, and blood<sup class="citation-ref">121</sup>. Galen continued the Hippocratic medical practice of considering that illnesses and dispositions were caused by imbalances in the four humors, and patients were treated in a manner that sought to restore humoral balance. Humoral theory would go on to impact medical practice for well over a thousand years.`,
+    },
+  ],
+};
+
+/** Read sideways (OPENBRAIN-163): a box of Explore parts on one track.
+ *  From 1024px the box pins under the top bar and the page's scroll moves
+ *  the track, a pixel across per pixel down; the names and the arrows
+ *  under it move it too, and so do a sideways swipe and the arrow keys on
+ *  the focused track. The frame below stands in for the reader: a stage
+ *  layer for the box to float in and a top bar's height to pin under.
+ *  Narrower than 1024px (the toolbar's phone and tablet viewports) it is
+ *  the fold-out cards, as everywhere the box does not float. */
+export const SideScroll = {
+  args: { section: railSection, label: "A", treatment: "dark", rail: true },
+  render: (args) => ({
+    components: { BreakoutBox, ExploreCard },
+    setup: () => ({ args, STAGE_LAYER_ID }),
+    template: `
+      <div data-chapter="fund" class="chapter-reader" style="position:relative;--reader-topbar-h:0px;background:rgb(var(--color-bg));font-family:var(--font-body);font-size:1.25rem;line-height:1.55;color:rgb(var(--color-ink));">
+        <div :id="STAGE_LAYER_ID" style="position:absolute;top:0;left:0;width:100%;height:0;z-index:1;"></div>
+        <div style="max-width:640px;margin:0 auto;padding:40px 24px;">
+          <p style="min-height:60vh">Scroll down: the box pins, and the scroll carries its two parts across. The text before the box…</p>
+          <BreakoutBox v-bind="args" paired-explores>
+            <div>
+              <div class="section-paragraphs--paired">
+                <div v-for="p in args.section.paragraphs" :key="p.id" class="explore-pair-item">
+                  <ExploreCard :explore="p.explore" :paragraph-id="p.id" paired>
+                    <div :id="p.id" :data-paragraph-id="p.id" class="P" v-html="p.text"></div>
+                  </ExploreCard>
+                </div>
+              </div>
+            </div>
+          </BreakoutBox>
+          <p style="min-height:120vh">The main text carries on after the box.</p>
+        </div>
+      </div>`,
+  }),
 };

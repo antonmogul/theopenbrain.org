@@ -41,6 +41,7 @@ import {
   readingStartOf,
   scrollToY,
 } from "@/helper/readerJump";
+import { railLandingY } from "@/helper/exploreRail";
 
 const EMPTY_MODEL = Object.freeze({
   items: [],
@@ -207,9 +208,17 @@ export function useChapterTimeline({
     const y = scrollTop();
     let last = null;
     const raw = items.map((item, i) => {
-      const rect = boxOf(findReaderAnchor(item.id));
+      const el = findReaderAnchor(item.id);
+      const rect = boxOf(el);
       if (i === items.length - 1) last = rect;
-      return rect ? rect.top + y : NaN;
+      if (!rect) return NaN;
+      // On a side-scrolling box's track (helper/exploreRail.js) the parts
+      // share one place down the page; an item there begins where the
+      // page's scroll brings it across: its landing, as the reading line.
+      const onRail = railLandingY(el);
+      return onRail !== null
+        ? onRail + window.innerHeight * READING_LINE
+        : rect.top + y;
     });
     // Nothing on the page (content not rendered yet): no tops rather than
     // all-zero ones, which would read as the whole chapter passed.

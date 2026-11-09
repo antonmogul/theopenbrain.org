@@ -216,6 +216,66 @@ describe("jumpToElement", () => {
     expect(el.classList.contains("ob-flash")).toBe(false);
   });
 
+  // OPENBRAIN-163: a paragraph in a side-scrolling box's later part.
+  describe("on a breakout box's track", () => {
+    /** A pinned box 2000px down the viewport whose part starts 1310px
+     *  along its track; `pinned` "0" is the track under reduced motion. */
+    function onTrack(pinned) {
+      const pause = document.createElement("div");
+      pause.setAttribute("data-rail-pause", "");
+      pause.getBoundingClientRect = () => ({ top: 2000 });
+      const scroller = document.createElement("div");
+      scroller.setAttribute("data-rail-scroller", "");
+      scroller.setAttribute("data-rail-pinned", pinned);
+      scroller.setAttribute("data-rail-lead", "180");
+      scroller.setAttribute("data-rail-top", "64");
+      Object.defineProperty(scroller, "clientWidth", { value: 1440 });
+      Object.defineProperty(scroller, "scrollWidth", { value: 3140 });
+      scroller.getBoundingClientRect = () => ({ left: 0 });
+      const el = document.createElement("div");
+      el.getBoundingClientRect = () => ({
+        top: 2300,
+        bottom: 2400,
+        height: 100,
+        left: 1310 - scroller.scrollLeft,
+      });
+      scroller.appendChild(el);
+      pause.appendChild(scroller);
+      document.body.appendChild(pause);
+      return { scroller, el };
+    }
+
+    it("lands where the page's scroll brings the element across", () => {
+      setViewport({ scrollY: 1000 });
+      const { el } = onTrack("1");
+      expect(jumpToElement(el)).toBe(true);
+      // The box pins at 2000 + 1000 − 64, then the lead, then the part.
+      expect(window.scrollTo).toHaveBeenCalledWith({
+        top: 2936 + 180 + 1310,
+        behavior: "smooth",
+      });
+      // Whatever the alignment: the page's position is the track's.
+      window.scrollTo.mockClear();
+      jumpToElement(el, { align: "reading-line" });
+      expect(window.scrollTo).toHaveBeenCalledWith({
+        top: 4426,
+        behavior: "smooth",
+      });
+    });
+
+    it("moves a track the page does not drive, and lands on the box", () => {
+      root.setAttribute("data-reduce-motion", "1");
+      setViewport({ scrollY: 1000 });
+      const { scroller, el } = onTrack("0");
+      jumpToElement(el);
+      expect(scroller.scrollLeft).toBe(1310);
+      expect(window.scrollTo).toHaveBeenCalledWith({
+        top: 2300 + 1000 - 80,
+        behavior: "auto",
+      });
+    });
+  });
+
   it("jumps instantly when motion is reduced", () => {
     root.setAttribute("data-reduce-motion", "1");
     jumpToElement(placed(500));

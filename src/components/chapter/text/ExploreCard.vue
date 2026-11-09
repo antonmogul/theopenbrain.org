@@ -21,8 +21,15 @@
  * Authored on the paragraph row as content.explore (chapterTransform's
  * exploreFor normalises it); SectionComp wraps the paragraph in this when
  * it is set.
+ *
+ * In a rail (OPENBRAIN-163, helper/exploreRail.js) there is nothing to
+ * open: the box lays its parts side by side on one track, and each part is
+ * its image, then its title and text flowing in columns as tall as the
+ * track (data-rail-columns; useExploreRail sizes the block to the columns
+ * it fills). BreakoutBox provides the flag, true only while the box floats
+ * full width, so below the two-column reader this is the card again.
  */
-import { computed, nextTick, ref } from "vue";
+import { computed, inject, nextTick, ref, unref } from "vue";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { imageUrl } from "@/editor/media.mjs";
 
@@ -36,6 +43,8 @@ const props = defineProps({
   paired: { type: Boolean, default: false },
 });
 
+const boxRail = inject("exploreRail", false);
+const rail = computed(() => !!unref(boxRail));
 const open = ref(props.defaultOpen);
 const panelId = computed(() => `explore-panel-${props.paragraphId}`);
 const titleId = computed(() => `explore-title-${props.paragraphId}`);
@@ -50,6 +59,31 @@ function toggle() {
   <!-- A div, not a <section>: the reader gives every section in
        .chapter-reader a full screen's height (index.css). -->
   <div
+    v-if="rail"
+    class="xc xc--rail"
+    :class="{ 'xc--no-image': !explore.image }"
+    :data-explore="paragraphId"
+    role="group"
+    :aria-labelledby="titleId"
+  >
+    <figure v-if="explore.image" class="xc-figure">
+      <img
+        class="xc-img"
+        :src="imageUrl(explore.image.src)"
+        :alt="explore.image.alt || ''"
+        decoding="async"
+      />
+      <figcaption v-if="explore.legend" class="xc-legend">
+        {{ explore.legend }}
+      </figcaption>
+    </figure>
+    <div class="xc-rail-text" data-rail-columns>
+      <h3 :id="titleId" class="xc-title">{{ explore.title }}</h3>
+      <slot />
+    </div>
+  </div>
+  <div
+    v-else
     class="xc"
     :class="{
       'xc--open': open,
@@ -230,6 +264,126 @@ function toggle() {
     transform: none;
   }
 }
+/* ── In a rail (OPENBRAIN-163) ────────────────────────────────────────────
+   One part of a side-scrolling box: no card, no button, no rule (a
+   hairline between parts is BreakoutBox's); the image keeps its whole
+   self at the top left, its legend under it; the title and text flow in
+   columns as tall as the track, as many as the text needs.
+
+   The columns are sized so a whole number of them shows beside the image
+   when the part is at the left: --rail-fit of them fill the track's view
+   (--rail-view: its width less the gutters and the next part's peek, set by
+   BreakoutBox, like the gutter and the peek themselves), so the first
+   screen of a part never ends in half a column. One column on a narrow
+   track, two from a laptop (about 1200px, where each is some 33 characters
+   wide), three on a very wide screen. Lengths in cq*
+   and the @container rules are the track's (a size container). */
+.xc--rail {
+  --rail-fit: 1;
+  --rail-figure: clamp(15rem, 22cqw, 26rem);
+  --rail-col-gap: 3rem;
+  --rail-lead: 0px; /* a later part's divider and the room after it */
+  /* Never wider than a comfortable line (36rem is about 58 characters of
+     the box's text); where one column would be, a second one shows in
+     part instead. */
+  --rail-col: min(
+    36rem,
+    calc(
+      (var(--rail-view, 100cqw) - var(--rail-lead) - var(--rail-figure)) /
+        var(--rail-fit) - var(--rail-col-gap)
+    )
+  );
+  display: flex;
+  gap: var(--rail-col-gap);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+.xc--rail.xc--no-image {
+  --rail-figure: calc(0px - var(--rail-col-gap));
+}
+@container (min-width: 1150px) {
+  .xc--rail {
+    --rail-fit: 2;
+  }
+}
+@container (min-width: 2050px) {
+  .xc--rail {
+    --rail-fit: 3;
+  }
+}
+.xc--rail .xc-figure {
+  display: block;
+  flex: none;
+  width: var(--rail-figure);
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+/* (.xc-figure too: the card's own image rules above are as specific.) */
+.xc--rail .xc-figure .xc-img {
+  flex: none;
+  width: 100%;
+  height: auto;
+  /* The legend's lines fit under it. */
+  max-height: calc(100cqh - 5.5rem);
+  aspect-ratio: auto;
+  object-fit: contain;
+  object-position: left top;
+}
+.xc--rail .xc-legend {
+  padding: 0.6rem 0 0;
+}
+/* As wide as the columns the view fits, the text balanced across them (a
+   short extract becomes two even columns, not one and a blank); a longer
+   one fills them and carries on to the right (fitRailColumns). */
+.xc--rail .xc-rail-text {
+  flex: none;
+  width: calc(
+    var(--rail-fit) * (var(--rail-col) + var(--rail-col-gap)) -
+      var(--rail-col-gap)
+  );
+  height: 100%;
+  column-width: var(--rail-col);
+  column-gap: var(--rail-col-gap);
+  column-fill: balance;
+}
+.xc--rail .xc-title {
+  margin: -0.2em 0 1rem; /* its cap height level with the image's top */
+  padding: 0; /* the global h3 rule adds some */
+  font-size: clamp(1.35rem, 1.8vw, 1.75rem);
+  break-after: avoid;
+}
+/* An extract fills its column, ragged right: justified lines this short
+   open rivers (index.css justifies them in the reader's wider column). */
+/* No rule beside it either: broken over columns it became a stripe down
+   each one. The part is the extract, so it is set as the text. */
+.xc--rail .xc-rail-text :deep(blockquote) {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: left;
+  color: inherit;
+}
+/* A figure in the text stays whole in its column, no taller than it. */
+.xc--rail .xc-rail-text :deep(.fig-shell--inline) {
+  width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+  break-inside: avoid;
+}
+.xc--rail .xc-rail-text :deep(.fig-shell--inline img) {
+  max-height: 60cqh;
+  object-fit: contain;
+}
+
 /* Reduced motion: no fade, no chevron turn. The reader's own setting
    decides (data-reduce-motion "1" on, "0" off), the OS setting when unset.
    Plain selectors, never :global() (see BreakoutBox). */
@@ -300,6 +454,18 @@ function toggle() {
   overflow-wrap: anywhere;
 }
 @media print {
+  /* A rail part on paper: its image, then its text in two columns as long
+     as it needs (the width script set for the screen is overridden). */
+  .xc--rail {
+    height: auto;
+  }
+  .xc--rail .xc-rail-text {
+    flex: 1;
+    width: auto !important;
+    height: auto;
+    column-width: auto;
+    column-count: 2;
+  }
   .xc-panel[hidden] {
     display: block;
   }

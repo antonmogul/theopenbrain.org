@@ -6,7 +6,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, ref } from "vue";
 import ExploreCard from "../ExploreCard.vue";
 
 const refresh = vi.fn();
@@ -66,5 +66,34 @@ describe("ExploreCard", () => {
     expect(w.find("figure").exists()).toBe(false);
     expect(w.find(".xc").classes()).toContain("xc--no-image");
     expect(w.find("button").attributes("aria-expanded")).toBe("true");
+  });
+
+  // OPENBRAIN-163: in a side-scrolling box there is nothing to open.
+  it("in a rail is its image, title and text laid open, with no button", async () => {
+    const rail = ref(true);
+    const w = mount(ExploreCard, {
+      props: { explore, paragraphId: "p1" },
+      slots: { default: '<div class="P" data-paragraph-id="p1">Text</div>' },
+      global: { provide: { exploreRail: rail } },
+    });
+    const part = w.find(".xc--rail");
+    expect(part.attributes("data-explore")).toBe("p1");
+    expect(part.attributes("aria-labelledby")).toBe("explore-title-p1");
+    expect(w.find("button").exists()).toBe(false);
+    expect(w.find("[hidden]").exists()).toBe(false);
+    expect(w.find("img").attributes("src")).toBe(explore.image.src);
+    expect(w.find("figcaption").text()).toBe("Woodcut, 1574.");
+    // The title leads the columns the text flows in.
+    const text = w.find("[data-rail-columns]");
+    expect(text.element.firstElementChild.id).toBe("explore-title-p1");
+    expect(text.find("h3").text()).toBe("Humoral theory");
+    expect(text.find('[data-paragraph-id="p1"]').text()).toBe("Text");
+
+    // The box stops floating (a narrower window): the card and its button.
+    rail.value = false;
+    await nextTick();
+    expect(w.find(".xc--rail").exists()).toBe(false);
+    expect(w.find("button").attributes("aria-expanded")).toBe("false");
+    expect(w.find(".xc-panel").attributes("hidden")).toBeDefined();
   });
 });
