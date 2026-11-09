@@ -265,8 +265,8 @@ function toggle() {
   }
 }
 /* ── In a rail (OPENBRAIN-163) ────────────────────────────────────────────
-   One part of a side-scrolling box: no card, no button. The chapter
-   colour's rule marks where the part starts; the image keeps its whole
+   One part of a side-scrolling box: no card, no button, no rule (a
+   hairline between parts is BreakoutBox's); the image keeps its whole
    self at the top left, its legend under it; the title and text flow in
    columns as tall as the track, as many as the text needs.
 
@@ -282,7 +282,7 @@ function toggle() {
   --rail-fit: 1;
   --rail-figure: clamp(15rem, 22cqw, 26rem);
   --rail-col-gap: 3rem;
-  --rail-lead: calc(1.5rem + 4px); /* the rule and the room after it */
+  --rail-lead: 0px; /* a later part's divider and the room after it */
   /* Never wider than a comfortable line (36rem is about 58 characters of
      the box's text); where one column would be, a second one shows in
      part instead. */
@@ -297,9 +297,8 @@ function toggle() {
   gap: var(--rail-col-gap);
   height: 100%;
   margin: 0;
-  padding-left: 1.5rem;
+  padding: 0;
   border: 0;
-  border-left: 4px solid var(--xc-accent);
   background: transparent;
   color: inherit;
   overflow: visible;
@@ -354,17 +353,24 @@ function toggle() {
   column-fill: balance;
 }
 .xc--rail .xc-title {
-  margin: 0 0 1rem;
+  margin: -0.2em 0 1rem; /* its cap height level with the image's top */
   padding: 0; /* the global h3 rule adds some */
   font-size: clamp(1.35rem, 1.8vw, 1.75rem);
   break-after: avoid;
 }
 /* An extract fills its column, ragged right: justified lines this short
    open rivers (index.css justifies them in the reader's wider column). */
+/* No rule beside it either: broken over columns it became a stripe down
+   each one. The part is the extract, so it is set as the text. */
 .xc--rail .xc-rail-text :deep(blockquote) {
   max-width: none;
-  margin-inline: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: inherit;
+  line-height: inherit;
   text-align: left;
+  color: inherit;
 }
 /* A figure in the text stays whole in its column, no taller than it. */
 .xc--rail .xc-rail-text :deep(.fig-shell--inline) {

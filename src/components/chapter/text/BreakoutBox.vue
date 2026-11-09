@@ -611,6 +611,13 @@ const trackAttrs = computed(() =>
      the left. */
   min-width: var(--rail-view);
 }
+/* Parts are told apart by a hairline with the gap's room either side,
+   not by colour (the chapter colour's rules read as stripes, Anton 9 Nov). */
+.bx--rail :deep(.explore-pair-item:not(:first-child) .xc--rail) {
+  --rail-lead: calc(var(--rail-gap) + 1px);
+  padding-left: var(--rail-gap);
+  border-left: 1px solid var(--bx-hairline);
+}
 .bx--rail :deep(.explore-pair-item:last-child) {
   min-width: calc(100cqw - var(--rail-gutter));
 }
@@ -630,8 +637,8 @@ const trackAttrs = computed(() =>
   top: -1px;
   left: 0;
   width: 100%;
-  height: 2px;
-  background: var(--bx-quote-rule);
+  height: 1px;
+  background: var(--bx-ink);
   transform: scaleX(var(--rail-progress, 0));
   transform-origin: left center;
 }
