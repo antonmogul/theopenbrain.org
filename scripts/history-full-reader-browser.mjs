@@ -10,8 +10,10 @@ assert.equal(
   "true",
   "Full-reader browser QA runs only on GitHub Actions"
 );
+// The fixture host is always loopback. CI serves it on 6010; STORYBOOK_URL
+// moves the port when a local run must not collide with another session.
 const base = process.env.STORYBOOK_URL || "http://127.0.0.1:6010";
-assert.equal(new URL(base).origin, "http://127.0.0.1:6010");
+assert.match(new URL(base).origin, /^http:\/\/127\.0\.0\.1:\d+$/);
 const output = "history-fixture-browser-artifacts/full-reader";
 await mkdir(output, { recursive: true });
 const fixture = JSON.parse(
@@ -25,15 +27,41 @@ await writeFile(
   `${JSON.stringify(assets, null, 2)}\n`
 );
 const boxes = fixture.sections.filter((s) => s.slug.startsWith("box-"));
-const story = "chapter-history-full-reader--seed-and-repairs";
+assert(boxes.length, "The published chapter has breakout boxes");
+const story = "chapter-history-full-reader--published-export";
+// What the published chapter adds to the seed this lane used to render: boxes
+// read as named Explore parts, widgets authored as database blocks, and an
+// uploaded widget as a paragraph's figure. All three come from the fixture, so
+// a refresh that adds or removes one changes what is asserted, not the script.
+const exploreParts = fixture.paragraphs.filter(
+  (p) => p.content?.explore && boxes.some((box) => box.id === p.section_id)
+);
+const widgetBlocks = fixture.paragraphs.flatMap((paragraph) =>
+  (paragraph.content?.blocks || [])
+    .filter((block) => block.type === "widget")
+    .map((block) => ({ paragraph, block }))
+);
+const figureWidgets = fixture.paragraphs.flatMap((paragraph) => {
+  const animation = fixture.animations.find(
+    (a) => a.id === paragraph.animation_id
+  );
+  const slug = animation?.config?.widgetId?.startsWith("upload:")
+    ? animation.config.widgetId.slice("upload:".length)
+    : null;
+  const upload = fixture.uploads.find((entry) => entry.slug === slug);
+  return upload ? [{ paragraph, animation, upload }] : [];
+});
+const SANDBOX_SERVICE_WORKER =
+  /^Failed to read the 'serviceWorker' property from 'Navigator': Service worker is disabled because the context is sandboxed/;
 const paneSelector = '.chapter-reader > [class~="reader:fixed"]';
 const manifest = {
   commit: process.env.GITHUB_SHA,
   runId: process.env.GITHUB_RUN_ID,
+  fixture: fixture.header,
   boundary: fixture.boundary,
   limitations: [
     ...fixture.omissions,
-    "Chromium only. Hash history substitutes for the deployed URL base; production route table, guards and scroll behavior are unchanged. Anonymous fixture auth, no RLS, real service calls, deployment or live-content assertion. Screenshots require visual review.",
+    "Chromium only. Hash history substitutes for the deployed URL base; production route table, guards and scroll behavior are unchanged. Anonymous fixture auth, no RLS, real service calls or deployment. The content is the published chapter as of the fixture's export date, not a live read. The story draws a plain stand-in for each YouTube poster and serves the committed copy of each uploaded widget without its Google Fonts links. Screenshots require visual review.",
   ],
   cases: [],
 };
@@ -80,7 +108,7 @@ async function readerReady(page) {
   await expect(page.locator(".chapter-reader #text")).toBeVisible({
     timeout: 20000,
   });
-  await expect(page.locator("[data-breakout-box]")).toHaveCount(8);
+  await expect(page.locator("[data-breakout-box]")).toHaveCount(boxes.length);
   await page.evaluate(() => document.fonts.ready);
   // Both real reader components deliberately register GSAP triggers after 500ms.
   await page.waitForTimeout(1000);
@@ -130,7 +158,7 @@ async function assertPlacements(page, result) {
       }),
     { boxes, paragraphs: fixture.paragraphs }
   );
-  expect(measurements).toHaveLength(8);
+  expect(measurements).toHaveLength(boxes.length);
   for (const measure of measurements) {
     const box = boxes.find((s) => s.id === measure.id);
     expect(
@@ -166,7 +194,7 @@ async function assertPlacements(page, result) {
     }
   }
   result.measurements.push({
-    kind: "all-eight-box-placements",
+    kind: "all-box-placements",
     boxes: measurements,
   });
 }
@@ -337,6 +365,7 @@ try {
       measurements: [],
       errors: [],
       blockedRequests: [],
+      harnessNotes: [],
     };
     manifest.cases.push(result);
     const context = await browser.newContext({
@@ -365,10 +394,54 @@ try {
       result.blockedRequests.push({ type: "websocket", url: socket.url() });
       socket.close();
     });
+    // The application hides scrollbars through both the standard property
+    // and a WebKit pseudo-element rule. Override both in this fixture so the
+    // geometry lane exercises a real classic gutter, not fake padding. The
+    // override is in place before the first layout, as a classic scrollbar
+    // is: added after load it narrows a settled page by 16px, and when that
+    // rewraps the opener (it does with the published contents list) the
+    // figure triggers keep their old positions, because under reduced motion
+    // the reader re-measures them a transition tick before the text moves.
+    // That is a reader defect outside this lane's geometry; see
+    // docs/architecture/history-fixture.md. Widget frames keep their own
+    // scrolling.
+    await context.addInitScript(() => {
+      if (window.top !== window) return;
+      const style = document.createElement("style");
+      style.textContent = `
+        html {
+          overflow-y: scroll !important;
+          scrollbar-gutter: stable;
+          scrollbar-width: auto !important;
+        }
+        html::-webkit-scrollbar {
+          display: block !important;
+          width: 16px;
+        }
+        html::-webkit-scrollbar-thumb { background: #888; }
+      `;
+      // An init script can run before the parser has made <html>.
+      const add = () => document.documentElement.appendChild(style);
+      if (document.documentElement) add();
+      else
+        new MutationObserver((_, observer) => {
+          if (!document.documentElement) return;
+          observer.disconnect();
+          add();
+        }).observe(document, { childList: true });
+    });
     const page = await context.newPage();
-    page.on("pageerror", (error) =>
-      result.errors.push({ type: "pageerror", message: error.message })
-    );
+    page.on("pageerror", (error) => {
+      // Not the page's: with serviceWorkers "block" Playwright overrides
+      // navigator.serviceWorker in every frame, and reading it throws inside
+      // an uploaded widget's sandbox (no allow-same-origin). Neither the
+      // reader nor the widget touches service workers.
+      if (SANDBOX_SERVICE_WORKER.test(error.message)) {
+        result.harnessNotes.push(error.message);
+        return;
+      }
+      result.errors.push({ type: "pageerror", message: error.message });
+    });
     page.on("console", (message) => {
       if (message.type() === "error")
         result.errors.push({ type: "console", message: message.text() });
@@ -396,23 +469,6 @@ try {
             { waitUntil: "networkidle" }
           );
           expect(response.ok()).toBe(true);
-          // The application hides scrollbars through both the standard property
-          // and a WebKit pseudo-element rule. Override both in this fixture so
-          // the geometry lane exercises a real classic gutter, not fake padding.
-          await page.addStyleTag({
-            content: `
-              html {
-                overflow-y: scroll !important;
-                scrollbar-gutter: stable;
-                scrollbar-width: auto !important;
-              }
-              html::-webkit-scrollbar {
-                display: block !important;
-                width: 16px;
-              }
-              html::-webkit-scrollbar-thumb { background: #888; }
-            `,
-          });
           await readerReady(page);
           await expect
             .poll(() =>
@@ -427,7 +483,7 @@ try {
       );
       await step(
         result,
-        "all eight breakout boxes preserve SQL anchors and full-bleed left/right edges",
+        "every breakout box keeps its published anchor and full-bleed left/right edges",
         () => assertPlacements(page, result)
       );
       await step(
@@ -530,6 +586,107 @@ try {
       );
       await step(
         result,
+        "every published Explore part is offered by name inside its box",
+        async () => {
+          for (const part of exploreParts) {
+            const card = page.locator(
+              `[data-breakout-box="${part.section_id}"] [data-explore="${part.id}"]`
+            );
+            await expect(card, part.id).toHaveCount(1);
+            await expect(card.locator(".xc-title"), part.id).toHaveText(
+              part.content.explore.title
+            );
+            // Read sideways (a rail part) or folded behind its button: either
+            // way the part's text is in the page under its own name.
+            const rail = await card.evaluate((element) =>
+              element.classList.contains("xc--rail")
+            );
+            if (!rail)
+              await expect(
+                card.locator("button.xc-btn"),
+                part.id
+              ).toHaveAttribute("aria-expanded", "false");
+            result.measurements.push({
+              kind: "explore-part",
+              id: part.id,
+              title: part.content.explore.title,
+              rail,
+            });
+          }
+        }
+      );
+      await step(
+        result,
+        "published widget blocks mount in the prose and the uploaded widget draws as its paragraph's figure",
+        async () => {
+          for (const { paragraph, block } of widgetBlocks) {
+            const band = page.locator(
+              `[data-widget-breakout="${block.widgetId}"]`
+            );
+            await expect(band, block.widgetId).toHaveCount(1);
+            await expect(band).toHaveClass(new RegExp(`wb--${block.kind}`));
+            await expect(band).toHaveAttribute(
+              "data-timeline-id",
+              paragraph.id
+            );
+            await band.scrollIntoViewIfNeeded();
+            if (block.kind === "inline") {
+              // At desktop widths the stage is teleported out of the prose
+              // column, so it is found by widget, not under the band.
+              const stage = page.locator(
+                `[data-widget-stage="${block.widgetId}"]`
+              );
+              await expect(stage, block.widgetId).toHaveCount(1);
+              await expect(
+                stage.locator(".wb-stage-placeholder, .wb-missing"),
+                `${block.widgetId} must mount its view`
+              ).toHaveCount(0, { timeout: 20000 });
+              await expect
+                .poll(() =>
+                  stage.evaluate(
+                    (element) => element.getBoundingClientRect().height
+                  )
+                )
+                .toBeGreaterThan(100);
+            }
+            await noOverflow(page);
+            await shot(page, result, `widget-${block.widgetId}`);
+          }
+          for (const { animation, upload } of figureWidgets) {
+            const key = animation.animation_key;
+            const trigger = page.locator(
+              `#trigger${key[0].toUpperCase()}${key.slice(1)}`
+            );
+            await expect(trigger, key).toHaveCount(1);
+            const top = await trigger.evaluate(
+              (element) => element.getBoundingClientRect().top + scrollY
+            );
+            // Its paragraph's first lines at the reading line: the pane shows
+            // it there, and below 1024px the figure is in the text.
+            await scrollTo(page, top + 5 - viewport.height / 2);
+            const frame =
+              viewport.width >= 1024
+                ? page.locator(`${paneSelector} iframe.widget-frame`)
+                : trigger.locator("iframe.widget-frame");
+            await expect(frame, upload.slug).toHaveCount(1, { timeout: 20000 });
+            await expect(frame).toHaveAttribute("title", upload.title);
+            await expect(frame).toHaveAttribute("sandbox", "allow-scripts");
+            await expect(frame).toBeVisible();
+            // The committed copy ran: the frame has a drawn document, and the
+            // reader's "isn't available yet" note is nowhere.
+            await expect
+              .poll(() => frame.contentFrame().locator("body *").count(), {
+                timeout: 20000,
+              })
+              .toBeGreaterThan(5);
+            await expect(page.locator(".uw-note, .iw-missing")).toHaveCount(0);
+            await noOverflow(page);
+            await shot(page, result, `figure-widget-${upload.slug}`);
+          }
+        }
+      );
+      await step(
+        result,
         "Broca and Fritsch figures survive their actual prose intervals and clear at the next barrier",
         async () => {
           if (viewport.width >= 1024) {
@@ -552,7 +709,7 @@ try {
       );
       await step(
         result,
-        "real navigation drawer nests all eight box headings under their authored sections",
+        "real navigation drawer nests every box heading under its authored section",
         async () => {
           await page
             .getByRole("button", { name: "Open chapter menu", exact: true })

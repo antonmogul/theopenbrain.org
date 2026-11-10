@@ -98,6 +98,8 @@ See `docs/architecture/README.md`. These run via `npx -y`; nothing is added to `
 
 The SQL execution tests (`src/__tests__/*.sql.test.js`) run migrations in PGlite and skip unless `HISTORY_SQL_HARNESS` points at `@electric-sql/pglite`. `.github/workflows/history-fixture-browser.yml` (every pull request, pushes to `main` and `dev`) installs PGlite 0.5.8 and runs them, `trendingHighlightsSync.sql.test.js` included, which applies the real schema migrations and checks RLS as `anon` and `authenticated`.
 
+The same workflow renders the History chapter in Storybook and runs browser assertions on it. Its fixture, `src/stories/historyFullReaderData.json`, is a dated export of the **published** chapter, not a rebuild from migrations (OPENBRAIN-167): refresh it with `npm run history:fixture:export` at the end of a History editing session and before a History widget change, as its own pull request; `npm run history:fixture:drift` reports how far it has drifted from the live chapter. Both are local, read-only commands (GET with the publishable key); CI only checks the committed file. See `docs/architecture/history-fixture.md`.
+
 ### Deployment
 
 ```bash
