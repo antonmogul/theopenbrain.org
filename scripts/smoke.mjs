@@ -250,6 +250,8 @@ const ROUTES = [
     },
   },
   { path: "/chapters", name: "chapters", minText: 50 },
+  // The widget kit page (OPENBRAIN-165): public, so every width.
+  { path: "/widget-kit", name: "widget-kit", minText: 200 },
   /*
    * Funder deck (unlisted). A fixed 1920×1080 stage scaled to the window, so
    * it is checked at every width: no horizontal scroll at 390px and the
