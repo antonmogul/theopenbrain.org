@@ -160,12 +160,12 @@ async function checkFigureArtwork() {
  */
 const TIMELINE = { selector: '[data-testid="chapter-timeline"]', min: 1 };
 /*
- * The History hero's skull cutaway (OPENBRAIN-156) must reach "ready" in a
- * real build: its three PNGs are HEAD-checked and decoded first, and a
- * missing one degrades to the still cover without a word in the console,
- * so only this attribute says the layers are there.
+ * The History hero (the head that opens, OPENBRAIN-171) must reach "ready"
+ * in a real build: its still is HEAD-checked first, and a missing one
+ * degrades to the chapter cover without a word in the console, so only
+ * this attribute says the artwork is there.
  */
-const HERO_CUTAWAY = {
+const HERO_READY = {
   selector: '.opener-hero[data-reactive-cover="ready"]',
   min: 1,
 };
@@ -199,7 +199,7 @@ const ROUTES = [
     name: "foundations",
     minText: 2000,
     needsData: true,
-    expectCount: [TIMELINE, HERO_CUTAWAY],
+    expectCount: [TIMELINE, HERO_READY],
     /*
      * The first breakout box must paint from the viewport's left edge at
      * every two-column width (Stuart, 1 Oct: "the 'full screen' breakout
