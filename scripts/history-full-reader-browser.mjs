@@ -69,7 +69,9 @@ let failures = 0;
 let browser;
 
 async function shot(page, result, name) {
-  const file = `${result.width}-${name}.png`;
+  // A name can carry a widget id ("upload:<slug>"): the artifact upload
+  // refuses a colon in a file name.
+  const file = `${result.width}-${String(name).replace(/[^\w.-]+/g, "-")}.png`;
   await page.screenshot({
     path: path.join(output, file),
     animations: "disabled",
