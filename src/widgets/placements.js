@@ -311,7 +311,12 @@ function findSection(chapter, placement) {
   );
 }
 
-function hasWidget(chapter, widgetId) {
+/* Whether the chapter's own content already places this widget: a DB block
+   with the same widget, or one that took over the placement by its id (the
+   Penfield block kept `foundations-case-cabinet` when the cabinet became the
+   uploaded binder, OPENBRAIN-168). Paragraphs this config produced don't count. */
+function hasWidget(chapter, placement) {
+  const widgetId = placement.widgetId;
   for (const section of [
     ...(chapter?.intro || []),
     ...(chapter?.sections || []),
@@ -320,7 +325,11 @@ function hasWidget(chapter, widgetId) {
     for (const list of paragraphLists(section)) {
       if (
         list.some(
-          (p) => p?.type === "widget" && p.widget?.widgetId === widgetId
+          (p) =>
+            p?.type === "widget" &&
+            (p.widget?.widgetId === widgetId ||
+              (p.widget?.placedBy !== "config" &&
+                p.widget?.placementId === placement.id))
         )
       )
         return true;
@@ -425,7 +434,7 @@ export function applyWidgetPlacements(chapter, placements) {
   if (!chapter || !Array.isArray(chapter.sections)) return result;
 
   for (const placement of placements || []) {
-    if (hasWidget(chapter, placement.widgetId)) {
+    if (hasWidget(chapter, placement)) {
       result.skipped.push(placement.id);
       continue;
     }

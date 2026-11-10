@@ -204,6 +204,7 @@ export const WIDGET_ATTRS = [
   "credit",
   "placementId",
   "route",
+  "fullScreen",
 ];
 
 /** A `widget` block (an interactive from src/widgets). */

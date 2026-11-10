@@ -73,6 +73,11 @@ export function extractChapter1Meta(blocks) {
         blurb: block.blurb || "",
         credit: block.credit || "",
         route: block.route || "",
+        // One screen of the chapter, set on the block itself; a block
+        // without it inherits its code placement's (fullScreenOf).
+        ...(typeof block.fullScreen === "boolean"
+          ? { fullScreen: block.fullScreen }
+          : {}),
       };
     }
     if (block.type === "further_reading") {
