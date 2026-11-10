@@ -120,53 +120,12 @@ onBeforeUnmount(() => {
 });
 
 /* ── The tab switch ───────────────────────────────────────────────────────
- * One pill slides under the chosen label. It is measured from the tab it
- * covers (not a third of the track), so labels of any length and a font
- * that arrives late keep it true; a ResizeObserver on the track re-measures
- * it. It moves on selectedIdx, before the skull turns. Until the first
- * measurement the chosen tab paints its own fill (tabs--switch unset), so
- * nothing is unmarked for a frame, and the pill only transitions once it
- * has been placed, so the first paint doesn't slide in from the left.
+ * One pill slides under the chosen label. The labels share the track in
+ * equal parts (Widget Library Figma 169:252), so the pill is one part wide
+ * and its place is the chosen index: CSS alone, `--i` on the track, moved
+ * by a transform. It moves on selectedIdx, before the skull turns. (It was
+ * measured from each label with a ResizeObserver, and animated its width.)
  */
-const tabsEl = ref(null);
-const tabEls = ref([]);
-const thumbStyle = ref(null);
-const thumbLive = ref(false);
-let tabsObserver = null;
-function setTabRef(el, i) {
-  if (el) tabEls.value[i] = el;
-}
-function placeThumb() {
-  const tab = tabEls.value[selectedIdx.value];
-  if (!tab || !tabsEl.value) return;
-  thumbStyle.value = {
-    transform: `translateX(${tab.offsetLeft}px)`,
-    width: `${tab.offsetWidth}px`,
-  };
-}
-watch(selectedIdx, () => nextTick(placeThumb));
-watch(
-  tabsEl,
-  (el) => {
-    tabsObserver?.disconnect();
-    tabsObserver = null;
-    thumbLive.value = false;
-    if (!el) return;
-    placeThumb();
-    const arm = () => {
-      if (!disposed) thumbLive.value = true;
-    };
-    if (typeof requestAnimationFrame === "function") requestAnimationFrame(arm);
-    else arm();
-    if (typeof ResizeObserver === "function") {
-      tabsObserver = new ResizeObserver(placeThumb);
-      tabsObserver.observe(el);
-    }
-  },
-  { flush: "post" }
-);
-onBeforeUnmount(() => tabsObserver?.disconnect());
-
 const stageEl = ref(null); // perspective wrapper
 const skullEl = ref(null); // the yawing card
 const regionsEl = ref(null); // the clickable region layer (SVG)
@@ -472,21 +431,14 @@ function onKeydown(e) {
       <div class="phreno__views">
         <nav
           v-if="views.length"
-          ref="tabsEl"
           class="tabs"
-          :class="{ 'tabs--switch': !!thumbStyle }"
+          :style="{ '--n': views.length, '--i': selectedIdx }"
           aria-label="Skull view"
         >
-          <span
-            class="tabs__thumb"
-            :class="{ 'tabs__thumb--live': thumbLive }"
-            :style="thumbStyle"
-            aria-hidden="true"
-          ></span>
+          <span class="tabs__thumb" aria-hidden="true"></span>
           <button
             v-for="(v, i) in views"
             :key="v.id"
-            :ref="(el) => setTabRef(el, i)"
             class="tab"
             :class="{ 'tab--on': i === selectedIdx }"
             :aria-pressed="i === selectedIdx"
@@ -688,31 +640,30 @@ function onKeydown(e) {
 }
 
 /* ── chrome ── */
-/* The view switch with the organ list under it, as the Figma stacks them;
-   the stage below gets the height. */
+/* The view switch with the organ list under it, centred over the skull
+   (Figma 169:252, 169:259): the chrome has the body's two columns, and the
+   switch sits in the first. The stage below gets the height. */
 .phreno__chrome {
   flex-shrink: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 0.75rem 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+  gap: 1.5rem;
   padding: 1rem 2rem 0;
 }
 .phreno__views {
+  justify-self: center;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  max-width: 100%;
+  gap: 1.25rem;
+  width: min(100%, 510px);
 }
-/* The switch (Figma 68:271): a pill track, the labels on it, and one pill
+/* The switch: a pill track, the labels in equal parts of it, and one pill
    that slides under the chosen label. The track is #3F3F3F in the Figma,
    between --color-dark-surface-2 and the hairline, so it is a literal. */
 .tabs {
   position: relative;
-  display: inline-flex;
-  max-width: 100%;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
   padding: 4px;
   border-radius: 1000px;
   background: #3f3f3f;
@@ -721,35 +672,31 @@ function onKeydown(e) {
   position: absolute;
   top: 4px;
   bottom: 4px;
-  left: 0;
-  width: 0;
+  left: 4px;
+  width: calc((100% - 8px) / var(--n, 3));
   border-radius: 100px;
   background: var(--violet);
-  opacity: 0;
+  transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform 0.42s cubic-bezier(0.3, 0.85, 0.25, 1);
+  will-change: transform;
   pointer-events: none;
-}
-.tabs--switch .tabs__thumb {
-  opacity: 1;
-}
-.tabs__thumb--live {
-  transition:
-    transform 0.35s cubic-bezier(0.32, 0.72, 0, 1),
-    width 0.35s cubic-bezier(0.32, 0.72, 0, 1);
 }
 /* `.tabs .tab`, not `.tab`: the chapter band squares every button inside
    it (WidgetBreakout `:deep(button)`), and the pills must win that. */
 .tabs .tab {
   position: relative;
-  padding: 9px 16px;
+  min-width: 0;
+  padding: 9px 8px;
   border: 0;
   border-radius: 100px;
   background: transparent;
   color: #fbf8ff;
   font-family: var(--font-ui, inherit);
   font-size: var(--ui-size-18, 1.125rem);
-  font-weight: 450;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: -0.0125em;
+  text-align: center;
   text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
@@ -764,11 +711,6 @@ function onKeydown(e) {
 .tabs .tab:focus-visible {
   outline: 2px solid #fbf8ff;
   outline-offset: 2px;
-}
-/* Before the pill is placed (and wherever it can't be measured), the
-   chosen tab is its own pill. */
-.tabs:not(.tabs--switch) .tab--on {
-  background: var(--violet);
 }
 
 /* ── stage ── */
@@ -842,19 +784,23 @@ function onKeydown(e) {
   fill: rgb(var(--accent-rgb) / 0.28);
 }
 .region--on path {
-  fill: rgb(var(--accent-rgb) / 0.5);
+  fill: rgb(var(--accent-rgb) / 0.34);
 }
 .region:focus-visible path {
   stroke: var(--violet);
   stroke-width: 3;
 }
 :global([data-reduce-motion="1"]) .region path,
+:global([data-reduce-motion="1"]) .region-label circle,
+:global([data-reduce-motion="1"]) .region-label text,
 :global([data-reduce-motion="1"]) .tabs .tab,
 :global([data-reduce-motion="1"]) .tabs__thumb {
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .region path,
+  .region-label circle,
+  .region-label text,
   .tabs .tab,
   .tabs__thumb {
     transition: none;
@@ -888,26 +834,33 @@ function onKeydown(e) {
   color: var(--bone);
   opacity: 0.7;
 }
-/* "Browse an organ" under the switch (Figma 68:263): a small label and a
-   bare select in the plate's ink. The native list keeps its own colours. */
+/* "Browse an organ" under the switch (Figma 169:259, 169:261): a small
+   label and the list as a rule that runs to the switch's edge, in the
+   plate's ink. The native list keeps its own colours. */
 .faculty-picker {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-left: 1rem;
+  align-items: baseline;
+  gap: 0.625rem;
+  padding: 0 0.5rem 0 2.75rem;
   font-size: var(--ui-size-13, 0.8125rem);
+  white-space: nowrap;
   color: var(--bone);
 }
 .faculty-picker select {
-  max-width: 100%;
-  padding: 0.25rem 0;
+  flex: 1;
+  min-width: 0;
+  padding: 0.25rem 1.25rem 0.25rem 0;
   border: 0;
-  border-bottom: 1px solid rgb(255 255 255 / 0.35);
+  border-bottom: 1px solid rgb(255 255 255 / 0.45);
   border-radius: 0;
-  background: transparent;
+  appearance: none;
+  /* A small chevron at the rule's end says it opens. */
+  background: transparent
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%23eceae4' stroke-width='1.4'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E")
+    no-repeat right 0.125rem center;
   color: var(--bone);
   font: inherit;
+  text-overflow: ellipsis;
   cursor: pointer;
 }
 .faculty-picker select:disabled {
@@ -924,15 +877,25 @@ function onKeydown(e) {
 .region-label {
   pointer-events: none;
 }
+/* The number badges (Figma 169:217): the chapter's colour on white, in the
+   mono face; the chosen organ's is filled (169:233). */
 .region-label circle {
   fill: #fff;
   stroke: var(--violet);
   stroke-width: 1.5;
+  transition: fill 0.15s;
 }
 .region-label text {
-  fill: #24202a;
-  font: 19px var(--font-ui, sans-serif);
-  font-weight: 600;
+  fill: var(--violet);
+  font: 600 17px var(--font-mono, monospace);
+  transition: fill 0.15s;
+}
+.region--on .region-label circle {
+  fill: rgb(var(--color-chapter-deep, 118 21 245));
+  stroke: rgb(var(--color-chapter-deep, 118 21 245));
+}
+.region--on .region-label text {
+  fill: #fff;
 }
 .card__editorial {
   margin: 0 0 1rem;
@@ -970,12 +933,16 @@ function onKeydown(e) {
   letter-spacing: 0.025em;
   color: #fff;
 }
-/* The quotations (Figma 68:270): the book's small body size, white. */
+/* The quotations (Figma 169:251): 15px on a 25px line, white. */
 .card__text {
-  margin-top: 1.25rem;
-  font-size: var(--type-body-sm-size, 1.0625rem);
-  line-height: 1.5;
+  margin-top: 1.5rem;
+  font-size: var(--ui-size-15, 0.9375rem);
+  line-height: 1.67;
+  letter-spacing: 0.00625em;
   color: #fff;
+}
+.card__title + .card__text {
+  margin-top: 0.75rem;
 }
 
 /* ── footer citation ──
@@ -997,11 +964,15 @@ function onKeydown(e) {
    (OPENBRAIN-160; SHEET_MEDIA_QUERY in helper/sheetDetents repeats this) */
 @media (max-width: 759.98px) {
   .phreno__chrome {
+    grid-template-columns: minmax(0, 1fr);
     padding: 0.75rem 1rem 0;
+  }
+  .phreno__views {
+    gap: 0.75rem;
   }
   /* Three labels in a 390px column: the pills shrink a step. */
   .tabs .tab {
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.25rem;
     font-size: var(--ui-size-15, 0.9375rem);
   }
   .faculty-picker {
