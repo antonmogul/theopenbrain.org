@@ -70,10 +70,14 @@ Sentence case for titles and instructions. No exclamation marks.
 ## 4. Shape
 
 - **Square corners everywhere:** `border-radius: var(--ob-radius, 0)`.
-  Circles are the only round things (cells, dots, number badges).
+  The round things are circles (cells, dots, number badges) and the tab
+  switch.
 - Hairline borders (`1px solid var(--ob-line-plate)`) instead of shadows.
-- Tabs are a row of equal cells with hairline dividers; the active tab is
-  filled with `--ob-accent` and its text is `--ob-on-accent`.
+- Tabs are a **pill switch** (the Widget Library design, Nov 2026): a pill
+  track in `#3f3f3f`, labels in mono caps, and one pill in `--ob-accent`
+  (its text `--ob-on-accent`) that slides under the chosen tab in about
+  300 ms. Measure the pill from the tab it covers, so labels of any length
+  work. The template has one.
 - Buttons: mono uppercase label, 1 px border, square; primary is filled
   white on the plate.
 
@@ -87,6 +91,13 @@ A widget is, top to bottom:
    (`viewBox` + `width: 100%`).
 4. **Readouts**: the numbers that change, in a ruled row.
 5. **Caption**: what is shown, units, the data source, in mono.
+
+In a chapter a widget appears in one of three places, and must work in all
+of them: **in the text column** on phones (360–720 px, its own height), as a
+**full-screen band** on desktop (the full page width, one screen tall), or in
+the **figure pane** beside the text (a fixed box). In the last two the book
+gives it a fixed height (`html[data-ob-fit]`, `--ob-max-height`); the figure
+then shrinks to fit and nothing else does.
 
 Padding 20–24 px on phones, up to 40 px on desktop. On wide screens,
 controls may move beside the figure (a two-column grid) but the figure

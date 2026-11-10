@@ -15,6 +15,7 @@ Two kinds of files live here. **Current reference docs** describe how the repo w
 | `design-system/figma-sync.md`        | How the Figma design system file stays in step with the code: `tokens/tokens.json`, the drift test, and the Figma drift check.                                                                                               | 2026-09-30  |
 | `funding-deck.md`                    | Slide decks (OPENBRAIN-129): `/deck` (the pinned published deck, with the bundled October copy as fallback), `/deck/templates`, share links, the Dashboard → Decks editor, publishing, images and video, the generated seed. | 2026-10-07  |
 | `design-system/cleanup-backlog.md`   | Design-system findings that need a designer's decision: failing text contrast, reader type vs the scale, semantic colours, the two highlighter palettes, legacy components.                                                  | 2026-09-30  |
+| `widget-kit-guide.md`                | For authors and designers: installing the Open Brain widget skill in Claude, building, revising and reviewing a widget with it, and handing the `.html` file over (OPENBRAIN-164).                                           | 2026-11-10  |
 
 Generated outputs, regenerate rather than edit: `architecture/graph.json` (`npm run graph:visual`, Prettier-ignored), `architecture/orphans.txt` (`npm run graph:orphans`), `architecture/cycles.txt` (`npm run graph:cycles`), `architecture/violations.txt` (`npm run graph:check`).
 
