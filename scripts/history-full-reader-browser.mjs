@@ -400,9 +400,8 @@ try {
     // override is in place before the first layout, as a classic scrollbar
     // is: added after load it narrows a settled page by 16px, and when that
     // rewraps the opener (it does with the published contents list) the
-    // figure triggers keep their old positions, because under reduced motion
-    // the reader re-measures them a transition tick before the text moves.
-    // That is a reader defect outside this lane's geometry; see
+    // figure triggers keep their old positions under reduced motion. That
+    // is a reader defect outside this lane's geometry; see
     // docs/architecture/history-fixture.md. Widget frames keep their own
     // scrolling.
     await context.addInitScript(() => {
