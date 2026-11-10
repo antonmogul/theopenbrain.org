@@ -114,136 +114,77 @@ describe("reactiveCoverForModule (OPENBRAIN-146)", () => {
   });
 });
 
-describe("the History skull cutaway (OPENBRAIN-156)", () => {
-  const HERO = "/publicAssets/images/covers/foundations-hero";
+describe("the History head (OPENBRAIN-171)", () => {
+  const HEAD = "/publicAssets/images/covers/foundations-hero/head";
 
-  it("gives History the cutaway, in fractions of the sketch, with the sketch as poster", () => {
+  it("gives History the head, as the designers' config has it", () => {
     const rec = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
     expect(rec).toMatchObject({
-      kind: "cutaway",
-      axis: "x",
-      reverse: false,
-      poster: `${HERO}/hist-header-sketch.png`,
-      base: `${HERO}/hist-header-sketch.png`,
-      brain: `${HERO}/hist-header-cutaway.png`,
-      hand: `${HERO}/hist-header-hand.png`,
-      paper: "#f8f2e3",
-      open: 8,
+      kind: "head",
+      paper: "#F8F2E4",
+      ink: "#1c1c1c",
+      size: [2680, 1732],
+      poster: `${HEAD}/poster.webp`,
+      oval: { src: `${HEAD}/oval.webp`, at: [1106, 345] },
+      brain: { src: `${HEAD}/brain.webp`, at: [1100, 321] },
+      lid: { src: `${HEAD}/lid.webp`, outline: `${HEAD}/lidS.webp` },
+      hand: { src: `${HEAD}/hand.webp`, tip: [20, 874], scale: 1.2 },
     });
-    expect(rec.ratio).toBeCloseTo(1728 / 1116);
-    // The registration: scale 0.5785, offset (147, 38) sketch px.
-    expect(rec.brainBox.left).toBeCloseTo(147 / 1728);
-    expect(rec.brainBox.top).toBeCloseTo(38 / 1116);
-    expect(rec.brainBox.width).toBeCloseTo((2553 * 0.5785) / 1728, 2);
-    expect(rec.brainBox.height).toBeCloseTo((1640 * 0.5785) / 1116, 2);
-    // Every polygon point and the pivot are inside the sketch.
-    for (const [x, y] of [...rec.cap, ...rec.band, rec.pivot]) {
-      expect(x).toBeGreaterThanOrEqual(0);
-      expect(x).toBeLessThanOrEqual(1);
-      expect(y).toBeGreaterThanOrEqual(0);
-      expect(y).toBeLessThanOrEqual(1);
-    }
-    expect(rec.cap.length).toBeGreaterThanOrEqual(3);
-    expect(rec.band.length).toBeGreaterThanOrEqual(3);
-    // The hand photo is wider than the sketch and waits up and to the right.
-    expect(rec.handBox.width).toBeGreaterThan(1);
-    expect(rec.handRest.x).toBeGreaterThan(0);
-    expect(rec.handRest.y).toBeLessThan(0);
+    expect(rec.body.frames).toHaveLength(19);
+    expect(rec.body.frames[0]).toBe(`${HEAD}/body/00.webp`);
+    expect(rec.body.frames[18]).toBe(`${HEAD}/body/18.webp`);
+    expect(rec.body.fps).toBe(12);
+    // Closed at the first key (nothing has moved), open at the last.
+    expect(rec.keys.keys[0].slice(0, 3)).toEqual([0, 0, 0]);
+    expect(rec.keys.open - rec.keys.first).toBe(rec.keys.keys.length - 1);
+    // The part that must always show is inside the artwork, and the head's
+    // ellipse is inside that.
+    const [x, y, w, h] = rec.fit;
+    expect(x).toBeGreaterThanOrEqual(0);
+    expect(y).toBeGreaterThanOrEqual(0);
+    expect(x + w).toBeLessThanOrEqual(rec.size[0]);
+    expect(y + h).toBeLessThanOrEqual(rec.size[1]);
+    expect(rec.head.x - rec.head.rx).toBeGreaterThan(x);
+    expect(rec.head.x + rec.head.rx).toBeLessThan(x + w);
   });
 
-  it("keeps the band inside the cap so it is covered at rest", () => {
-    // Every band point is above (smaller y than) the cap's cut line at that x.
-    const rec = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
-    const cut = rec.cap
-      .filter(([, y]) => y > 0.2) // the lower edge, not the top of the crown
-      .sort((a, b) => a[0] - b[0]);
-    const cutY = (x) => {
-      for (let i = 1; i < cut.length; i++) {
-        const [x0, y0] = cut[i - 1];
-        const [x1, y1] = cut[i];
-        if (x >= x0 && x <= x1) return y0 + ((y1 - y0) * (x - x0)) / (x1 - x0);
-      }
-      return Infinity;
-    };
-    for (const [x, y] of rec.band) expect(y).toBeLessThan(cutY(x));
+  it("copies the record, so a caller can't change the book's", () => {
+    const a = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
+    a.keys.keys[0][0] = 99;
+    a.zone[0][0] = 99;
+    const b = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
+    expect(b.keys.keys[0][0]).toBe(0);
+    expect(b.zone[0][0]).toBe(666);
   });
 
-  it("lets a module's own cutaway record win, and rejects a broken one", () => {
-    const raw = {
-      kind: "cutaway",
-      base: " /a.png ",
-      brain: "/b.png",
-      hand: "/c.png",
-      size: [100, 50],
-      brainBox: [10, 5, 80, 40],
-      cap: [
-        [20, 10],
-        [80, 10],
-        [50, 25],
-      ],
-      pivot: [20, 25],
-      band: [
-        [30, 15],
-        [60, 15],
-        [45, 20],
-      ],
-      handBox: [-10, -20, 120],
-      handRest: [60, -30],
-      open: "12",
-    };
+  it("lets a module's own head record win, and rejects a broken one", () => {
+    const raw = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
+    const own = { ...raw, poster: " /mine.webp " };
     expect(
-      reactiveCoverForModule({ slug: "the-retina", reactive_cover: raw })
-    ).toEqual({
-      kind: "cutaway",
-      axis: "x",
-      reverse: false,
-      poster: "/a.png",
-      base: "/a.png",
-      brain: "/b.png",
-      hand: "/c.png",
-      paper: null,
-      ratio: 2,
-      brainBox: { left: 0.1, top: 0.1, width: 0.8, height: 0.8 },
-      cap: [
-        [0.2, 0.2],
-        [0.8, 0.2],
-        [0.5, 0.5],
-      ],
-      pivot: [0.2, 0.5],
-      open: 12,
-      band: [
-        [0.3, 0.3],
-        [0.6, 0.3],
-        [0.45, 0.4],
-      ],
-      handBox: { left: -0.1, top: -0.4, width: 1.2 },
-      handRest: { x: 0.5, y: -0.25 },
-    });
-    // Missing or malformed geometry: no record, so the slug map stands.
+      reactiveCoverForModule({ slug: "the-retina", reactive_cover: own }).poster
+    ).toBe("/mine.webp");
     for (const broken of [
-      { ...raw, hand: "" },
+      { ...raw, poster: "" },
       { ...raw, size: [100] },
-      { ...raw, cap: [[1, 2]] },
-      { ...raw, band: "nope" },
-      { ...raw, brainBox: [1, 2, 3] },
-      { ...raw, handBox: [0, 0, 0] },
-      { ...raw, pivot: ["a", 1] },
+      { ...raw, fit: [0, 0, 0, 10] },
+      { ...raw, oval: { src: "/o.webp" } },
+      { ...raw, lid: { ...raw.lid, outline: "" } },
+      { ...raw, body: { ...raw.body, frames: [] } },
+      { ...raw, body: { ...raw.body, fps: 0 } },
+      { ...raw, hand: { ...raw.hand, tip: [1] } },
+      { ...raw, zone: [[1, 2]] },
+      { ...raw, head: { ...raw.head, rx: 0 } },
+      { ...raw, keys: { ...raw.keys, open: 99 } },
+      { ...raw, keys: { ...raw.keys, keys: [[0, 0, 0, 0]] } },
     ]) {
       expect(normalizeReactiveCover(broken)).toBeNull();
     }
+    // A broken own record: the slug map stands.
     expect(
       reactiveCoverForModule({
         slug: "the-retina",
         reactive_cover: { ...raw, size: null },
       }).kind
     ).toBe("lottie");
-    // Defaults: no rest offset, the standard opening, no paper.
-    const bare = normalizeReactiveCover({
-      ...raw,
-      handRest: undefined,
-      open: -3,
-    });
-    expect(bare.handRest).toEqual({ x: 0, y: 0 });
-    expect(bare.open).toBe(8);
   });
 });

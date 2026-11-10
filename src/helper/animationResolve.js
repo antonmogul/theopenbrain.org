@@ -92,8 +92,8 @@ export function lottiePath(animation) {
 }
 
 /**
- * The same check for a raster (the skull-cutaway cover's three PNGs,
- * OPENBRAIN-156): a HEAD that comes back ok with an image type. A missing
+ * The same check for a raster (the History opener's still,
+ * OPENBRAIN-171): a HEAD that comes back ok with an image type. A missing
  * file under `serve` is index.html with a 200, which only the type reveals,
  * and probing first keeps the <img> 404 the browser would log off the
  * console.

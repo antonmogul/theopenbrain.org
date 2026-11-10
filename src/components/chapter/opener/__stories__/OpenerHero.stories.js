@@ -62,10 +62,10 @@ export const Reactive = {
   play: sweep,
 };
 
-/* The History skull cutaway (OPENBRAIN-156): the record brings its own
-   poster (the sketch), so the chapter cover passed here is not what shows.
-   The sweep ends with the pointer at the right, so the crown is lifted. */
-export const HistoryCutaway = {
+/* The History head (OPENBRAIN-171): the record brings its own ground and
+   still, so the chapter cover passed here is not what shows, and the
+   arrow is ink. Rub the hand over her head to open it. */
+export const HistoryHead = {
   args: {
     cover: "/publicAssets/images/attention-matisse-reader.jpg",
     title: "Foundations of Neuroscience",

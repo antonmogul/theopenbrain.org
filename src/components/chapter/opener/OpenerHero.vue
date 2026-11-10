@@ -11,15 +11,16 @@
  * With a `reactive` record (OPENBRAIN-146) a Lottie the pointer scrubs is
  * laid over the still cover; the still stays underneath as the poster and
  * takes over when the file is missing (`data-reactive-cover` says which).
- * A `kind: "cutaway"` record (OPENBRAIN-156) mounts CutawayCover instead
- * and brings its own poster, the sketch it lifts the skull from, so what
- * the reader sees before it is ready, without it, or with reduced motion
- * is the same drawing.
+ * A `kind: "head"` record (OPENBRAIN-171) mounts HeadCover instead, which
+ * brings its own ground and still and lays them out itself, so the chapter
+ * cover is not painted behind it; if its artwork is missing the chapter
+ * cover is what shows. Its `ink` colours the down-arrow, which is white
+ * for a photograph and would vanish on paper.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import ReactiveCover from "./ReactiveCover.vue";
-import CutawayCover from "./CutawayCover.vue";
+import HeadCover from "./HeadCover.vue";
 
 const props = defineProps({
   cover: { type: String, required: true },
@@ -49,9 +50,18 @@ function onScroll() {
   });
 }
 
-const poster = computed(() => props.reactive?.poster || props.cover);
+// "loading" | "ready" | "unavailable" — from the reactive cover; null when
+// the chapter has none. Bound as data-reactive-cover on the hero.
+const reactiveState = ref(null);
+const showReactive = computed(
+  () => !!props.reactive && reactiveState.value !== "unavailable"
+);
+// A head paints its own ground and still.
+const ownGround = computed(
+  () => showReactive.value && props.reactive.kind === "head"
+);
 const coverStyle = computed(() => ({
-  backgroundImage: `url(${poster.value})`,
+  backgroundImage: ownGround.value ? "none" : `url(${props.cover})`,
   filter: reduceMotion()
     ? "none"
     : `blur(${(scrollProgress.value * 8).toFixed(2)}px)`,
@@ -60,13 +70,6 @@ const scrimOpacity = computed(() =>
   reduceMotion() ? 0 : (scrollProgress.value * 0.25).toFixed(3)
 );
 const arrowHidden = computed(() => scrollProgress.value > 0.1);
-
-// "loading" | "ready" | "unavailable" — from ReactiveCover; null when the
-// chapter has no reactive cover. Bound as data-reactive-cover on the hero.
-const reactiveState = ref(null);
-const showReactive = computed(
-  () => !!props.reactive && reactiveState.value !== "unavailable"
-);
 
 onMounted(() => {
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -121,8 +124,8 @@ function onTool(tool) {
       :style="coverStyle"
     >
       <!-- Inside the cover so the scroll blur and the scrim cover it too. -->
-      <CutawayCover
-        v-if="showReactive && reactive.kind === 'cutaway'"
+      <HeadCover
+        v-if="ownGround"
         :spec="reactive"
         @state="reactiveState = $event"
       />
@@ -137,7 +140,11 @@ function onTool(tool) {
     <button
       type="button"
       class="opener-hero__arrow"
-      :class="{ 'opener-hero__arrow--hidden': arrowHidden }"
+      :class="{
+        'opener-hero__arrow--hidden': arrowHidden,
+        'opener-hero__arrow--ink': ownGround && reactive.ink,
+      }"
+      :style="ownGround && reactive.ink ? { color: reactive.ink } : undefined"
       aria-label="Scroll to the table of contents"
       @click="scrollDown"
     >
@@ -222,6 +229,13 @@ function onTool(tool) {
   /* The exported glyph points left; the frame rotates it to point down. */
   transform: rotate(-90deg);
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5));
+}
+/* On a paper ground the arrow is ink, and needs no shadow to be seen. */
+.opener-hero__arrow--ink .opener-hero__arrow-glyph {
+  filter: none;
+}
+.opener-hero__arrow--ink:focus-visible {
+  outline-color: currentColor;
 }
 .opener-hero__arrow:focus-visible {
   outline: 2px solid #fff;
