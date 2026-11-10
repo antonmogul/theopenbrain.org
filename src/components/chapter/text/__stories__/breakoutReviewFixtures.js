@@ -1,8 +1,11 @@
 import { transformParagraph } from "@/composables/chapterTransform.mjs";
 import history from "@/stories/historyFullReaderData.json";
 
-// Review composition matches the existing 20261021010000 migration, while
-// preserving the committed prose and artwork. No network or authoring writes.
+// The prose is the published chapter's (the dated export in
+// historyFullReaderData.json), where both Hippocrates parts now live in
+// box-sacred-disease. The card titles, images and legends are set here so
+// these review stories keep their own composition whatever the box's
+// published Explore fields say. No network or authoring writes.
 const card = (sectionSlug, index, title, image, alt, legend) => {
   const row = history.paragraphs.filter(
     (p) => p.section_id === `history-section-${sectionSlug}`
@@ -31,8 +34,8 @@ export const hippocratesPair = {
       "Bust of Hippocrates from the British Museum. Source: The Wellcome Collection."
     ),
     card(
-      "box-humoral-theory",
-      0,
+      "box-sacred-disease",
+      1,
       "Humoral theory",
       "thurneysser-four-humours-1574.jpg",
       "The four humours with their elements and zodiac signs.",

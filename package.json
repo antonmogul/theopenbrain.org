@@ -47,6 +47,8 @@
     "storybook:snapshots:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 storybook:snapshots",
     "storybook:smoke:chapter": "node scripts/storybook-chapter-smoke.mjs",
     "widget-kit": "cd public/widget-kit && rm -f open-brain-widget.zip && zip -qr -X open-brain-widget.zip open-brain-widget",
+    "history:fixture:export": "node scripts/history-full-reader-export.mjs",
+    "history:fixture:drift": "node scripts/history-full-reader-export.mjs --check",
     "history:fixture:prepare": "node scripts/history-fixture-browser-prepare.mjs",
     "history:fixture:browser": "node scripts/history-fixture-browser.mjs",
     "history:fixture:browser:ci": "start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 history:fixture:browser",

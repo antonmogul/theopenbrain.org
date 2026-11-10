@@ -3,12 +3,14 @@ import BreakoutBox from "../BreakoutBox.vue";
 import { contentBlocksToHTML } from "@/composables/chapterTransform.mjs";
 import history from "@/stories/historyFullReaderData.json";
 
-// Reuse the complete committed source, including citations and poem lines.
-// Chunk boundaries are a review choice, never a write to chapter content.
+// Reuse the complete published text, including citations and the epitaph
+// (one blockquote paragraph in the published chapter, where the seed had a
+// paragraph per line). Chunk boundaries are a review choice, never a write
+// to chapter content.
 const rows = history.paragraphs.filter(
   (row) => row.section_id === "history-section-box-descartes"
 );
-const parts = [rows.slice(0, 2), rows.slice(2, 7), rows.slice(7)];
+const parts = [rows.slice(0, 2), rows.slice(2, 4), rows.slice(4)];
 const panels = [
   { id: "dualism", title: "Mind and body" },
   { id: "skull", title: "The missing skull" },
@@ -29,7 +31,7 @@ export default {
     docs: {
       description: {
         component:
-          "R05/R18 review trial only. Complete Descartes text from the committed History fixture; no reader default or live content changed. Compare lateral reading with Read vertically; decide final format with Stuart next week.",
+          "R05/R18 review trial only. Complete Descartes text from the published History chapter's fixture; no reader default or live content changed. Compare lateral reading with Read vertically; decide final format with Stuart next week.",
       },
     },
   },

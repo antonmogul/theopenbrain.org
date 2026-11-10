@@ -30,16 +30,24 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      - name: Exercise source-repair, trending, decks and storage SQL in an isolated temporary database
+      # The fixture is a dated export of the published chapter
+      # (docs/architecture/history-fixture.md). This lane has no secrets and
+      # never reads the database: it checks the committed file's shape. Drift
+      # from the live chapter is `npm run history:fixture:drift`, run locally.
+      - name: Check the committed History fixture's header, counts and links
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p history-fixture-browser-artifacts
+          npx vitest run src/__tests__/historyFullReaderFixture.test.js 2>&1 | tee history-fixture-browser-artifacts/fixture-shape.log
+      - name: Exercise the History migration replay and source-repair, trending, decks and storage SQL in an isolated temporary database
+        shell: bash
+        run: |
+          set -euo pipefail
           harness="$(mktemp -d)"
           npm install --prefix "$harness" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.5.8
           export HISTORY_SQL_HARNESS="$harness/node_modules/@electric-sql/pglite"
-          node scripts/history-full-reader-generate.mjs "$HISTORY_SQL_HARNESS" --check
-          npx vitest run --pool=forks src/__tests__/historySourceContent.test.js src/__tests__/historySourceRepair.sql.test.js src/__tests__/historyReferenceLinks.test.js src/__tests__/historyReferenceLinks.sql.test.js src/__tests__/trendingHighlightsSync.sql.test.js src/__tests__/decks.sql.test.js src/__tests__/chapterMediaListing.sql.test.js 2>&1 | tee history-fixture-browser-artifacts/isolated-sql.log
+          npx vitest run --pool=forks src/__tests__/historyMigrationReplay.sql.test.js src/__tests__/historySourceContent.test.js src/__tests__/historySourceRepair.sql.test.js src/__tests__/historyReferenceLinks.test.js src/__tests__/historyReferenceLinks.sql.test.js src/__tests__/trendingHighlightsSync.sql.test.js src/__tests__/decks.sql.test.js src/__tests__/chapterMediaListing.sql.test.js 2>&1 | tee history-fixture-browser-artifacts/isolated-sql.log
       - name: Install hosted Chromium
         run: npx playwright install --with-deps chromium
       - name: Build isolated Storybook fixtures
