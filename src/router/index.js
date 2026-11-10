@@ -283,6 +283,13 @@ export const routes = [
     component: () => import("../views/WidgetLibraryView.vue"),
   },
   {
+    // Public: the widget skill to download and the guide for building
+    // widgets in Claude (OPENBRAIN-165). Linked from the home footer.
+    path: "/widget-kit",
+    name: "widget-kit",
+    component: () => import("../views/WidgetKitView.vue"),
+  },
+  {
     // Funder slide deck. Unlisted: not in nav, and the view marks itself
     // noindex. Share /deck directly; #N opens slide N. Since OPENBRAIN-129
     // /deck shows the published deck a creator pinned in Dashboard → Decks

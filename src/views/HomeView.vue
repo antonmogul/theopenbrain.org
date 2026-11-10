@@ -178,6 +178,7 @@ const ways = [
       <p class="foot-legal">
         An open access project · Montreal Neurological Institute ·
         <!-- Plain anchor: Storybook is a static build beside the app. -->
+        <router-link to="/widget-kit">Widget kit</router-link> ·
         <a href="/storybook/index.html" target="_blank" rel="noopener"
           >Storybook</a
         >

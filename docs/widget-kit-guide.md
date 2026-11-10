@@ -1,8 +1,8 @@
 # Building Open Brain widgets in Claude
 
-For the authors and designers (Stuart, Maura, Sonia). How to set up the Open
-Brain widget skill in Claude, build or change a widget with it, and hand the
-file over. Last updated 10 Nov 2026 (OPENBRAIN-164).
+For the book's authors and designers. How to set up the Open Brain widget
+skill in Claude, build or change a widget with it, and hand the file over.
+This guide is also the page at `/widget-kit` on the site. Last updated 10 Nov 2026 (OPENBRAIN-164).
 
 ## What a widget is now
 
@@ -17,10 +17,9 @@ switch, phones to wide screens, reduced motion, narration, and what to check.
 
 ## One-time setup in Claude (claude.ai or the desktop app)
 
-1. Download the skill: `open-brain-widget.zip`, from the creator dashboard
-   (Widgets → Download the skill) or from
-   `https://theopenbrainorg-production.up.railway.app/widget-kit/open-brain-widget.zip`.
-   Don't unzip it.
+1. Download the skill, `open-brain-widget.zip`, with the button at the top
+   of the widget kit page (or from the creator dashboard, Widgets →
+   Download the skill). Don't unzip it.
 2. In Claude, open **Settings → Capabilities**. Make sure code execution and
    file creation is on (skills need it).
 3. Under **Skills**, choose **Upload skill** and pick the zip. "open-brain-widget"
