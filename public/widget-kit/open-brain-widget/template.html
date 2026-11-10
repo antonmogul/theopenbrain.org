@@ -31,6 +31,7 @@
         --sans: var(--ob-font-sans, "IBM Plex Sans", system-ui, sans-serif);
         --mono: var(--ob-font-mono, "IBM Plex Mono", ui-monospace, monospace);
         --radius: var(--ob-radius, 0);
+        --track: #3f3f3f;
       }
       * {
         box-sizing: border-box;
@@ -68,31 +69,44 @@
         color: var(--mute);
       }
 
-      /* Tabs: equal cells, hairline dividers, the active one in the accent */
+      /* Tabs: a pill switch (design.md 4). The track is a pill, the chosen
+         tab is a pill in the accent that slides to it. */
       .tabs {
-        display: grid;
-        grid-auto-flow: column;
-        grid-auto-columns: 1fr;
-        border: 1px solid var(--line);
+        position: relative;
+        display: inline-flex;
+        justify-self: start;
+        max-width: 100%;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 1000px;
+        background: var(--track);
+      }
+      .tabs .thumb {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 0;
+        border-radius: 1000px;
+        background: var(--accent);
+        transition:
+          transform 0.3s ease-out,
+          width 0.3s ease-out;
       }
       .tabs button {
-        min-height: 44px;
-        padding: 8px;
+        position: relative;
+        min-height: 36px;
+        padding: 8px 16px;
         border: 0;
-        border-left: 1px solid var(--line);
+        border-radius: 1000px;
         background: transparent;
         color: var(--on);
         cursor: pointer;
-        border-radius: var(--radius);
-        font: 500 12px/1.2 var(--mono);
+        font: 500 13px/1.2 var(--mono);
         letter-spacing: 0.08em;
         text-transform: uppercase;
-      }
-      .tabs button:first-child {
-        border-left: 0;
+        white-space: nowrap;
       }
       .tabs button[aria-pressed="true"] {
-        background: var(--accent);
         color: var(--on-accent);
       }
       button:focus-visible,
@@ -174,6 +188,40 @@
         color: var(--mute);
       }
 
+      /* A fixed height (a full-screen band, the figure pane): the book sets
+         html[data-ob-fit] and --ob-max-height. Title, controls and caption
+         keep their size; the figure takes what is left; nothing is cut. */
+      html[data-ob-fit],
+      html[data-ob-fit] body {
+        height: 100%;
+        overflow: hidden;
+      }
+      html[data-ob-fit] .w {
+        height: var(--ob-max-height, 100%);
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+      }
+      html[data-ob-fit] .body {
+        min-height: 0;
+        grid-template-rows: minmax(0, 1fr) auto;
+        overflow: hidden;
+      }
+      html[data-ob-fit] #fig {
+        height: 100%;
+        min-height: 0;
+      }
+      html[data-ob-fit] .side {
+        min-height: 0;
+        overflow-y: auto;
+      }
+      @media (min-width: 900px) {
+        html[data-ob-fit] .body {
+          grid-template-rows: minmax(0, 1fr);
+        }
+        html[data-ob-fit] .side {
+          max-height: 100%;
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         * {
           transition: none !important;
@@ -197,6 +245,7 @@
       </header>
 
       <div class="tabs" role="group" aria-label="Stimulus">
+        <span class="thumb" aria-hidden="true"></span>
         <button type="button" data-stim="spot" aria-pressed="true">
           Small spot
         </button>
@@ -329,17 +378,30 @@
         OB.resize();
       }
 
+      // The tab switch's pill sits under the chosen tab, measured from it.
+      function placeThumb() {
+        const on = document.querySelector('.tabs [aria-pressed="true"]');
+        const thumb = document.querySelector(".tabs .thumb");
+        thumb.style.width = on.offsetWidth + "px";
+        thumb.style.transform = "translateX(" + on.offsetLeft + "px)";
+      }
       document.querySelectorAll(".tabs button").forEach((b) =>
         b.addEventListener("click", () => {
           stim = b.dataset.stim;
           document
             .querySelectorAll(".tabs button")
             .forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+          placeThumb();
           draw();
         })
       );
+      new ResizeObserver(placeThumb).observe(document.querySelector(".tabs"));
+      document.fonts?.ready.then(placeThumb);
       $("pos").addEventListener("input", draw);
       OB.onTheme(draw);
+      // A fixed height: lay out again when the book gives or changes one.
+      OB.onFit(() => OB.resize());
+      placeThumb();
       draw();
     </script>
   </body>
