@@ -226,7 +226,7 @@
 </template>
 
 <script setup>
-import { computed, inject } from "vue";
+import { computed, inject, defineAsyncComponent } from "vue";
 import { explorePairIds } from "@/helper/explorePairs";
 // <SectionComp> in the template is this component (an SFC can use itself by
 // its file name without importing it): an anchored breakout box renders as a
@@ -248,7 +248,9 @@ import ReferenceList from "./ReferenceList.vue";
 import InlineImages from "./InlineImages.vue";
 import VideoEmbed from "./VideoEmbed.vue";
 import StartEndIcon from "../../UI/StartEndIcon.vue";
-import EditableBlock from "./EditableBlock.vue";
+// The editor (TipTap, ~400 KB) loads only when a creator edits: readers
+// never render it (OPENBRAIN-166).
+const EditableBlock = defineAsyncComponent(() => import("./EditableBlock.vue"));
 import WidgetBreakout from "./WidgetBreakout.vue";
 import ExploreCard from "./ExploreCard.vue";
 
