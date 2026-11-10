@@ -12,7 +12,7 @@
       "animations": 37,
       "widgetBlocks": 2,
       "references": 121,
-      "uploads": 1
+      "uploads": 2
     }
   },
   "boundary": "The published History chapter as readers get it: the module, its sections, paragraphs, the figures its paragraphs link and its reference list, exported read-only from the database and rendered by the real App, ChapterView and TextComp against Storybook's API doubles. No authentication, RLS, production route or deployment is asserted, and the export is only as fresh as its date.",
@@ -1069,10 +1069,10 @@
             "kind": "inline",
             "type": "widget",
             "blurb": "Explore what having your brain electrically stimulated by Penfield was like.",
-            "route": "/case-cabinet",
             "title": "Find out what it was like to be Dr. Wilder Penfield",
             "credit": "Interactive by The Open Brain",
-            "widgetId": "case-cabinet",
+            "widgetId": "upload:history-penfield-binder",
+            "fullScreen": true,
             "placementId": "foundations-case-cabinet"
           }
         ]
@@ -1818,6 +1818,7 @@
             "title": "Explore phrenology",
             "credit": "Interactive by The Open Brain",
             "widgetId": "phrenology",
+            "fullScreen": true,
             "placementId": "foundations-phrenology"
           }
         ]
@@ -5961,6 +5962,14 @@
     }
   ],
   "uploads": [
+    {
+      "slug": "history-penfield-binder",
+      "title": "Penfield's case binder",
+      "ramp": "fund",
+      "status": "published",
+      "bytes": 763256,
+      "sha256": "9ba5aa2a8f67151e2b176a4b5bef9c370eb4346d0e4271acc51ec13af4b98ee0"
+    },
     {
       "slug": "loewi-vagusstoff",
       "title": "Loewi's Vagusstoff, 1921",
