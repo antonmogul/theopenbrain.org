@@ -6,6 +6,7 @@ import {
   onBeforeUnmount,
   ref,
   provide,
+  defineAsyncComponent,
 } from "vue";
 import { useRoute } from "vue-router";
 import { gsap } from "gsap";
@@ -39,7 +40,11 @@ import {
   chapterEndReferences,
   retinaLegacyReferences,
 } from "@/helper/chapterReferences";
-import EditableBlock from "./text/EditableBlock.vue";
+// The editor (TipTap, ~400 KB) loads only when a creator edits: readers
+// never render it (OPENBRAIN-166).
+const EditableBlock = defineAsyncComponent(
+  () => import("./text/EditableBlock.vue")
+);
 
 import FootNotes from "./text/FootNotes.vue";
 

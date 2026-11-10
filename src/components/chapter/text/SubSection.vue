@@ -188,7 +188,7 @@
 </template>
 
 <script setup>
-import { inject } from "vue";
+import { inject, defineAsyncComponent } from "vue";
 import { markersEnabled } from "@/helper/debugFlags";
 import SubSubSection from "./SubSubSection.vue";
 
@@ -196,7 +196,9 @@ import SubSubSection from "./SubSubSection.vue";
 const showMarkers = markersEnabled();
 import BreakImages from "./BreakImages.vue";
 import BreakSection from "./BreakSection.vue";
-import EditableBlock from "./EditableBlock.vue";
+// The editor (TipTap, ~400 KB) loads only when a creator edits: readers
+// never render it (OPENBRAIN-166).
+const EditableBlock = defineAsyncComponent(() => import("./EditableBlock.vue"));
 import WidgetBreakout from "./WidgetBreakout.vue";
 
 import { toSlug } from "@/helper/general.js";
