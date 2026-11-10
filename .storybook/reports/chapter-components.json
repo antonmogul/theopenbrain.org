@@ -204,9 +204,9 @@
       "story": "Eye"
     },
     {
-      "source": "src/components/chapter/opener/CutawayCover.vue",
-      "storyFile": "src/components/chapter/opener/__stories__/CutawayCover.stories.js",
-      "story": "Revealed"
+      "source": "src/components/chapter/opener/HeadCover.vue",
+      "storyFile": "src/components/chapter/opener/__stories__/HeadCover.stories.js",
+      "story": "Live"
     },
     {
       "source": "src/components/chapter/sidebar/ChatTab.vue",

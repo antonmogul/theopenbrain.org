@@ -605,21 +605,23 @@ const headingId = computed(
   margin: 0 0 0.75rem;
   letter-spacing: 0.08em;
 }
+/* Medium, on a 45px line, with the 26px line under it (Figma 169:68,
+   169:70; it was semibold on a looser line). */
 .wb-head--full .wb-title {
   margin: 0;
   font-size: var(--type-subhead-size, 2.25rem);
-  line-height: var(--type-subhead-lh, 1.2);
-  font-weight: 600;
-  letter-spacing: 0;
+  line-height: 1.25;
+  font-weight: 500;
+  letter-spacing: 0.014em;
 }
 .wb-head--full .wb-blurb {
-  max-width: 30em;
+  max-width: 29em;
   margin: 1rem auto 0;
   font-family: var(--font-ui);
   font-size: var(--ui-size-20);
-  line-height: 1.55;
+  line-height: 1.3;
   letter-spacing: 0.025em;
-  color: rgb(255 255 255 / 0.9);
+  color: #eceae4;
 }
 /* The band's toolbar (Figma 68:264), the figure toolbar's row on the dark
    pane: the bare expand icon, then the credit in mono caps. It was a

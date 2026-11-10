@@ -54,103 +54,86 @@ export function coverForModule(module) {
  *   idle     seconds per gentle sweep when no pointer is about (0 = none)
  */
 /*
- * The second kind of reactive cover, `kind: "cutaway"` (OPENBRAIN-156): the
- * History hero's skull cutaway, three rasters CutawayCover.vue composes —
- * the sketch, the cutaway drawing with the violet brain, and the hand with
- * the lifted bone cap. The geometry is in pixels of the sketch (`size`) so
- * it can be read off the artwork; the normaliser turns it into fractions.
+ * The second kind of reactive cover, `kind: "head"` (OPENBRAIN-171): the
+ * History opener as Sonia and Maura delivered it (10 Nov 2026), drawn by
+ * HeadCover.vue on a canvas with helper/headCover.js. A girl writes in a
+ * loop; a hand with a tool follows the pointer, and rubbing it over her
+ * head slides the top off and lets the brain rise. Everything is in pixels
+ * of the artwork (`size`), as their config.json gave it.
  *
- *   base, brain, hand   the three files; `base` is also the hero's poster
- *   paper               the sketch's paper colour, behind the seam of the cut
- *   size                the sketch's pixel size; everything below is in it
- *   brainBox            [left, top, width, height] where the cutaway sits on
- *                       the sketch (scripts/covers/register-history-hero.py)
- *   cap                 the skull cap's outline, its lower edge the cut line
- *   pivot, open         where the cap hinges and how far it lifts, in degrees
- *   band                the brain band, the only part of the cutaway shown
- *   handBox             [left, top, width] of the hand photo when reached in
- *   handRest            how far [right, up] of that it waits, off the canvas
- *   axis, reverse       as for a Lottie: which pointer coordinate drives it
+ *   paper, ink   the drawing's ground, and the colour the hero's arrow takes
+ *                on it
+ *   fit          [x, y, w, h]: the part that must always show (girl and pen)
+ *   poster       the resting drawing as one still, the whole canvas: first
+ *                paint, reduced motion, and what stays if the layers fail
+ *   oval, brain  the dark opening of the head, and the brain under the lid
+ *   body         the girl, `frames` played at `fps`
+ *   lid          the top of the head: plain, and outlined (shown once it
+ *                lifts); it turns about `pivot`
+ *   hand         the photograph, its tool's `tip` (which sits on the
+ *                pointer), `scale`, and its pixel `size`
+ *   zone         where the hand may appear (the designers' red lines)
+ *   head         the ellipse in which strokes count
+ *   keys         [lid dx, lid dy, lid turn°, brain dx, brain dy] per frame of
+ *                the artist's gif, from `first` (closed) to `open`
  */
-const HISTORY_HERO = "/publicAssets/images/covers/foundations-hero";
-export const HISTORY_CUTAWAY = Object.freeze({
-  kind: "cutaway",
-  base: `${HISTORY_HERO}/hist-header-sketch.png`,
-  brain: `${HISTORY_HERO}/hist-header-cutaway.png`,
-  hand: `${HISTORY_HERO}/hist-header-hand.png`,
-  paper: "#f8f2e3",
-  size: [1728, 1116],
-  // Chamfer-matched on the body (98% of the cutaway's ink below the cut
-  // lands on the sketch's): scale 0.5785, offset (147, 38).
-  brainBox: [147, 38, 1477, 949],
-  // The crown of the head above the band's lower edge (the hairline over
-  // the forehead and ear, measured off the violet, pushed 2 px below it so
-  // the band sits inside), closed up the back of the head and round the
-  // front of the hair; the temple curls and the bun stay with the face.
-  cap: [
-    [760, 150],
-    [1010, 140],
-    [1000, 190],
-    [988, 214],
-    [972, 236],
-    [960, 258],
-    [948, 281],
-    [934, 300],
-    [919, 315],
-    [905, 328],
-    [890, 339],
-    [876, 348],
-    [861, 357],
-    [847, 364],
-    [818, 365],
-    [804, 371],
-    [789, 373],
-    [762, 374],
-    [752, 340],
-    [742, 300],
-    [738, 250],
-    [745, 200],
+const HEAD = "/publicAssets/images/covers/foundations-hero/head";
+export const HISTORY_HEAD = Object.freeze({
+  kind: "head",
+  paper: "#F8F2E4",
+  ink: "#1c1c1c",
+  size: [2680, 1732],
+  fit: [470, 40, 1540, 1660],
+  poster: `${HEAD}/poster.webp`,
+  oval: { src: `${HEAD}/oval.webp`, at: [1106, 345] },
+  brain: { src: `${HEAD}/brain.webp`, at: [1100, 321] },
+  body: {
+    frames: Array.from(
+      { length: 19 },
+      (_, i) => `${HEAD}/body/${String(i).padStart(2, "0")}.webp`
+    ),
+    fps: 12,
+    at: [783, 354],
+  },
+  lid: {
+    src: `${HEAD}/lid.webp`,
+    outline: `${HEAD}/lidS.webp`,
+    at: [991, 305],
+    pivot: [1264.6, 459.3],
+  },
+  hand: {
+    src: `${HEAD}/hand.webp`,
+    tip: [20, 874],
+    scale: 1.2,
+    size: [1102, 998],
+  },
+  zone: [
+    [666, -247],
+    [2517, -247],
+    [2517, 263],
+    [1183, 1275],
+    [1154, 1298],
+    [666, 670],
   ],
-  // The band is a wedge, 7 px at the forehead and 40 px at the back: the
-  // artist hinged the cap at the forehead. The fit says 6.75° about
-  // (730, 367); 8° opens a visible gap above the brain.
-  pivot: [748, 372],
-  open: 8,
-  // The violet band's lower edge (2 px inside the cut line) and upper edge
-  // (5 px out, to keep its black outline), tips at both ends.
-  band: [
-    [776, 365],
-    [789, 369],
-    [804, 367],
-    [818, 361],
-    [847, 360],
-    [861, 353],
-    [876, 344],
-    [890, 335],
-    [905, 324],
-    [919, 311],
-    [934, 296],
-    [948, 277],
-    [960, 254],
-    [948, 234],
-    [934, 259],
-    [919, 279],
-    [905, 294],
-    [890, 306],
-    [876, 318],
-    [861, 327],
-    [847, 336],
-    [818, 349],
-    [804, 355],
-    [789, 359],
-  ],
-  // The storyboard (Figma 2730:9218): the cap floats above and right of the
-  // crown, the forearm leaving by the top-right corner. 1.1× the sketch's
-  // width puts the photo's cap at (1050, 150).
-  handBox: [-233, -501, 1900],
-  // Along the forearm, far enough that nothing of it is on the canvas.
-  handRest: [700, -300],
-  axis: "x",
+  head: { x: 1183, y: 405, rx: 436, ry: 353 },
+  keys: {
+    first: 5,
+    open: 16,
+    keys: [
+      [0, 0, 0, 46, 74],
+      [-1.1, -1, 0, 44, 72],
+      [-5.5, -5.6, 0.16, 41, 71],
+      [-14.1, -13.8, 0.85, 37, 70],
+      [-35.2, -34.8, 2.6, 29, 63],
+      [-112.3, -106.1, 6.5, 8, 28],
+      [-195.1, -178.3, 4.7, -13, -7],
+      [-218.9, -200.1, 3.9, -20, -17],
+      [-229.4, -209.9, 3.7, -22, -21],
+      [-234.1, -214.2, 3.8, -24, -23],
+      [-235, -215.3, 3.75, -24, -24],
+      [-235, -215.3, 3.75, -24, -24],
+    ],
+  },
 });
 
 export const REACTIVE_COVER_BY_SLUG = Object.freeze({
@@ -162,10 +145,10 @@ export const REACTIVE_COVER_BY_SLUG = Object.freeze({
     axis: "x",
     fit: "slice",
   }),
-  // Sonia and Maura's History graphic (OPENBRAIN-155/156): the girl writing,
-  // whose skull the pointer lifts. It replaces the recycled Retina eye
-  // (Stuart, 13 Oct) and brings its own poster, the sketch.
-  "foundations-of-neuroscience": HISTORY_CUTAWAY,
+  // Sonia and Maura's History graphic: the girl writing, whose head the
+  // reader opens with the hand (OPENBRAIN-171; it replaced the cutaway
+  // rebuilt from two drawings, OPENBRAIN-156).
+  "foundations-of-neuroscience": HISTORY_HEAD,
 });
 
 const REACTIVE_DEFAULTS = Object.freeze({
@@ -174,7 +157,6 @@ const REACTIVE_DEFAULTS = Object.freeze({
   fit: "meet",
   idle: 14,
 });
-const CUTAWAY_OPEN_DEFAULT = 8;
 
 const numbers = (value, n) =>
   Array.isArray(value) &&
@@ -186,65 +168,97 @@ const polygon = (value) =>
   Array.isArray(value) && value.length >= 3 && value.every((p) => numbers(p, 2))
     ? value
     : null;
+const layer = (raw) =>
+  raw && isUsableUrl(raw.src) && numbers(raw.at, 2)
+    ? { src: raw.src.trim(), at: [...raw.at] }
+    : null;
 
-/** Normalise a cutaway record into fractions of the sketch; null when any part is unusable. */
-export function normalizeCutawayCover(raw) {
+/** Check a head record and copy it; null when any part is unusable. */
+export function normalizeHeadCover(raw) {
   if (!raw || typeof raw !== "object") return null;
-  if (![raw.base, raw.brain, raw.hand].every(isUsableUrl)) return null;
   const size = numbers(raw.size, 2);
-  const brainBox = numbers(raw.brainBox, 4);
-  const handBox = numbers(raw.handBox, 3);
-  const pivot = numbers(raw.pivot, 2);
-  const cap = polygon(raw.cap);
-  const band = polygon(raw.band);
-  if (!size || !(size[0] > 0 && size[1] > 0)) return null;
-  if (!brainBox || !handBox || !(handBox[2] > 0) || !pivot || !cap || !band)
+  const fit = numbers(raw.fit, 4);
+  const oval = layer(raw.oval);
+  const brain = layer(raw.brain);
+  const lid = layer(raw.lid);
+  const hand = raw.hand;
+  const body = raw.body;
+  const head = raw.head;
+  const keys = raw.keys;
+  if (!isUsableUrl(raw.poster) || !size || !fit || !oval || !brain || !lid)
     return null;
-  const [w, h] = size;
-  const point = ([x, y]) => [x / w, y / h];
-  const handRest = numbers(raw.handRest, 2) || [0, 0];
-  const open = Number(raw.open);
+  if (!(size[0] > 0 && size[1] > 0 && fit[2] > 0 && fit[3] > 0)) return null;
+  if (!isUsableUrl(raw.lid.outline) || !numbers(raw.lid.pivot, 2)) return null;
+  if (
+    !body ||
+    !Array.isArray(body.frames) ||
+    !body.frames.length ||
+    !body.frames.every(isUsableUrl) ||
+    !(body.fps > 0) ||
+    !numbers(body.at, 2)
+  )
+    return null;
+  if (
+    !hand ||
+    !isUsableUrl(hand.src) ||
+    !numbers(hand.tip, 2) ||
+    !numbers(hand.size, 2) ||
+    !(hand.scale > 0)
+  )
+    return null;
+  if (!polygon(raw.zone)) return null;
+  if (!head || ![head.x, head.y, head.rx, head.ry].every(Number.isFinite))
+    return null;
+  if (!(head.rx > 0 && head.ry > 0)) return null;
+  if (
+    !keys ||
+    !Array.isArray(keys.keys) ||
+    keys.keys.length < 3 ||
+    !keys.keys.every((k) => numbers(k, 5)) ||
+    !Number.isFinite(keys.first) ||
+    keys.open !== keys.first + keys.keys.length - 1
+  )
+    return null;
   return {
-    kind: "cutaway",
-    axis: raw.axis === "y" ? "y" : REACTIVE_DEFAULTS.axis,
-    reverse: raw.reverse === true,
-    poster: raw.base.trim(),
-    base: raw.base.trim(),
-    brain: raw.brain.trim(),
-    hand: raw.hand.trim(),
+    kind: "head",
+    poster: raw.poster.trim(),
     paper: isUsableUrl(raw.paper) ? raw.paper.trim() : null,
-    ratio: w / h,
-    brainBox: {
-      left: brainBox[0] / w,
-      top: brainBox[1] / h,
-      width: brainBox[2] / w,
-      height: brainBox[3] / h,
+    ink: isUsableUrl(raw.ink) ? raw.ink.trim() : null,
+    size: [...size],
+    fit: [...fit],
+    oval,
+    brain,
+    body: {
+      frames: body.frames.map((f) => f.trim()),
+      fps: body.fps,
+      at: [...body.at],
     },
-    cap: cap.map(point),
-    pivot: point(pivot),
-    open: Number.isFinite(open) && open > 0 ? open : CUTAWAY_OPEN_DEFAULT,
-    band: band.map(point),
-    handBox: {
-      left: handBox[0] / w,
-      top: handBox[1] / h,
-      width: handBox[2] / w,
+    lid: { ...lid, outline: raw.lid.outline.trim(), pivot: [...raw.lid.pivot] },
+    hand: {
+      src: hand.src.trim(),
+      tip: [...hand.tip],
+      scale: hand.scale,
+      size: [...hand.size],
     },
-    // Fractions of the hand's own width on both axes; the component turns
-    // y into a fraction of its height with the photo's ratio.
-    handRest: { x: handRest[0] / handBox[2], y: handRest[1] / handBox[2] },
+    zone: raw.zone.map((p) => [...p]),
+    head: { x: head.x, y: head.y, rx: head.rx, ry: head.ry },
+    keys: {
+      first: keys.first,
+      open: keys.open,
+      keys: keys.keys.map((k) => [...k]),
+    },
   };
 }
 
 /**
  * Normalise a reactive-cover record: a Lottie (`kind: "lottie"`, the
- * default) or a cutaway; null when it has no usable Lottie or artwork.
- * `poster` is an image the hero should show as its still instead of the
- * chapter cover (the cutaway's sketch, so a missing file or reduced motion
- * leaves the same drawing); null means the chapter cover.
+ * default) or a head; null when it has no usable Lottie or artwork. A head
+ * brings its own `poster` and `paper`, which HeadCover lays out itself, so
+ * the hero shows no chapter cover behind it.
  */
 export function normalizeReactiveCover(raw) {
   if (!raw || typeof raw !== "object") return null;
-  if (raw.kind === "cutaway") return normalizeCutawayCover(raw);
+  if (raw.kind === "head") return normalizeHeadCover(raw);
   if (!isUsableUrl(raw.lottie)) return null;
   const idle = Number(raw.idle);
   return {
