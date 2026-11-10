@@ -7,6 +7,8 @@
   Version:  1 (2026-11-10)
   Changes:  First version. Replaces the case cabinet (the Vue view) with the ring binder:
             a cover, seven patient tabs, the stimulation map with the probe, and the report.
+            Motion: the cover and the pages turn on the rings as real leaves, the probe
+            travels to a point and touches it, rings spread, and the report is typed on.
   Sources:  Penfield W, Perot P. The brain's record of auditory and visual experience:
             a final summary and discussion. Brain 1963;86:595–696. Case text, maps and
             point positions are the book's verified appendix data
@@ -124,7 +126,7 @@
       }
       /* Slides across as it opens, but not while it is first laid out. */
       .binder[data-ready] {
-        transition: transform 0.55s cubic-bezier(0.3, 0.1, 0.2, 1);
+        transition: transform 0.76s cubic-bezier(0.45, 0.05, 0.25, 1);
       }
       /* Closed: only the cover and its tabs show, so they sit in the middle. */
       .binder[data-open="false"] {
@@ -161,6 +163,11 @@
         background: var(--page);
         box-shadow: inset 0.5px 0 0 rgba(0, 0, 0, 0.2);
         transform-origin: 0 50%;
+        transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      /* A tab under the pointer lifts the cover a little: it opens. */
+      .binder[data-open="false"]:has(.tab:hover, .tab:focus-visible) .cover {
+        transform: rotateY(-7deg);
       }
       .cover img {
         display: block;
@@ -233,6 +240,9 @@
       .tab:hover,
       .tab:focus-visible {
         width: calc(52 * var(--u));
+      }
+      .tab:active .tab__b {
+        filter: brightness(0.92);
       }
       .tab.is-left {
         left: calc(-28 * var(--u));
@@ -349,6 +359,19 @@
         user-select: none;
         -webkit-user-drag: none;
         pointer-events: none;
+        transition:
+          transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.3),
+          filter 0.22s ease-out;
+      }
+      .eph:hover img,
+      .eph:focus-visible img {
+        transform: scale(1.02);
+        filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+      }
+      /* Picked up: it comes off the page and straightens a little. */
+      .eph.is-drag img {
+        transform: scale(1.05) rotate(calc(var(--rot, 0deg) * -0.35));
+        filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.35));
       }
       .eph.is-drag {
         cursor: grabbing;
@@ -407,6 +430,25 @@
         transform-origin: 5.84% 11.31%;
         transform: rotate(-101.79deg);
         filter: drop-shadow(calc(3 * var(--u)) calc(4 * var(--u)) calc(3 * var(--u)) rgba(0, 0, 0, 0.25));
+        transition:
+          transform 0.16s cubic-bezier(0.3, 0, 0.2, 1.5),
+          filter 0.16s ease-out;
+      }
+      /* Held above the page while it travels; it touches down on the point. */
+      .probe.is-air img {
+        transform: translateY(calc(-7 * var(--u))) rotate(-101.79deg) scale(1.03);
+        filter: drop-shadow(calc(9 * var(--u)) calc(14 * var(--u)) calc(8 * var(--u)) rgba(0, 0, 0, 0.26));
+        transition-duration: 0.3s;
+        transition-timing-function: ease-out;
+      }
+      /* The stimulation: rings spread from the point the probe touches. */
+      .pulse {
+        position: absolute;
+        width: calc(31 * var(--u));
+        height: calc(31 * var(--u));
+        border: max(1.5px, calc(2.5 * var(--u))) solid var(--c);
+        border-radius: 50%;
+        pointer-events: none;
       }
       .probe[data-off] {
         opacity: 0;
@@ -443,6 +485,12 @@
       }
       .read h2 span {
         display: block;
+        width: fit-content; /* typed on, a letter at a time */
+      }
+      /* The report waits for the probe to touch the point. */
+      .read[data-wait] h2 > span,
+      .read[data-wait] .report > * {
+        visibility: hidden;
       }
       .report {
         flex: 1;
@@ -513,21 +561,61 @@
         outline-offset: 2px;
       }
 
-      /* The page that turns between cases. */
+      /* The leaf that turns on the rings: the page it leaves on its front, the
+         page it lands as on its back. Copies of the real pages, so the turn
+         shows the real thing. */
       .leaf {
         position: absolute;
         top: 0;
+        left: calc(474 * var(--u));
+        width: calc(470 * var(--u));
         height: 100%;
         z-index: 5;
-        background: var(--page);
-        box-shadow: 0 0 calc(18 * var(--u)) rgba(0, 0, 0, 0.25);
+        transform-origin: 0 50%;
+        transform-style: preserve-3d;
         pointer-events: none;
       }
-      .leaf::after {
-        content: "";
+      .leaf__face {
+        visibility: visible;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: none;
+        transition: none;
+      }
+      .leaf__face--back {
+        transform-origin: 50% 50%;
+        transform: rotateY(180deg);
+      }
+      /* A page darkens as it turns edge on, most by the rings. */
+      .leaf__shade {
         position: absolute;
-        inset: calc(15 * var(--u)) calc(10 * var(--u)) calc(13 * var(--u)) calc(3 * var(--u));
-        background: #fff;
+        inset: 0;
+        z-index: 60;
+        opacity: 0;
+        background: linear-gradient(90deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.18));
+        pointer-events: none;
+      }
+      .leaf__face--back .leaf__shade {
+        background: linear-gradient(270deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.18));
+      }
+      /* The page the leaf will cover keeps its old face until it lands. */
+      .ghost {
+        z-index: 2;
+        pointer-events: none;
+      }
+      /* The leaf's shadow on the pages under it. */
+      .cast {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        opacity: 0;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0) 12%,
+          rgba(0, 0, 0, 0.28) 50%,
+          rgba(0, 0, 0, 0) 88%
+        );
+        pointer-events: none;
       }
 
       /* ── Phones and narrow columns: the same binder as a stack. */
@@ -541,7 +629,9 @@
       }
       .binder[data-layout="stack"] .ring,
       .binder[data-layout="stack"] .eph,
-      .binder[data-layout="stack"] .leaf {
+      .binder[data-layout="stack"] .leaf,
+      .binder[data-layout="stack"] .ghost,
+      .binder[data-layout="stack"] .cast {
         display: none;
       }
       .binder[data-layout="stack"] .tabs {
@@ -1009,17 +1099,58 @@
 
       /* ── The large photograph ── */
       let lbReturn = null;
+      let lbFrom = null; // where the photograph lies in the binder, to fly from and back to
+      function lbFlight() {
+        const img = $("lbimg");
+        const a = lbReturn?.getBoundingClientRect();
+        const b = img.getBoundingClientRect();
+        if (!a || !b.width || !lbReturn.offsetWidth) return null;
+        const k = lbReturn.offsetWidth / b.width;
+        const dx = a.left + a.width / 2 - (b.left + b.width / 2);
+        const dy = a.top + a.height / 2 - (b.top + b.height / 2);
+        return `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${k.toFixed(4)}) rotate(${lbFrom.rot}deg)`;
+      }
       function openLightbox(e, from) {
         lbReturn = from;
+        lbFrom = e;
         $("lbimg").src = ASSETS[e.id];
         $("lbimg").alt = e.alt || "";
         $("lbcap").textContent = e.caption || "";
         $("lbcap").hidden = !e.caption;
         $("lb").hidden = false;
         $("lbx").focus();
+        const flight = !reduced() && $("lb").animate && lbFlight();
+        if (!flight) return;
+        $("lbimg").animate([{ transform: flight }, { transform: "none" }], {
+          duration: 420,
+          easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        });
+        $("lb").animate(
+          [{ backgroundColor: "rgba(28, 28, 28, 0)" }, { backgroundColor: "rgba(28, 28, 28, 0.86)" }],
+          { duration: 300, easing: "ease-out" }
+        );
       }
-      function closeLightbox() {
-        if ($("lb").hidden) return;
+      let lbClosing = false;
+      async function closeLightbox() {
+        if ($("lb").hidden || lbClosing) return;
+        const flight = !reduced() && $("lb").animate && lbFlight();
+        if (flight) {
+          lbClosing = true;
+          $("lb").animate(
+            [{ backgroundColor: "rgba(28, 28, 28, 0.86)" }, { backgroundColor: "rgba(28, 28, 28, 0)" }],
+            { duration: 260, easing: "ease-in", fill: "forwards" }
+          );
+          await $("lbimg")
+            .animate([{ transform: "none" }, { transform: flight }], {
+              duration: 280,
+              easing: "cubic-bezier(0.5, 0, 0.7, 0.4)",
+              fill: "forwards",
+            })
+            .finished.catch(() => {});
+          $("lb").getAnimations().forEach((a) => a.cancel());
+          $("lbimg").getAnimations().forEach((a) => a.cancel());
+          lbClosing = false;
+        }
         $("lb").hidden = true;
         lbReturn?.focus();
       }
@@ -1079,24 +1210,129 @@
         paintPoint();
       }
       // Where the probe's tip goes: the chosen point, in the left page's pixels.
+      function pointXY(c, p) {
+        const h = p && hotspotsOf(c, p)[0];
+        if (!h) return null;
+        const box = mapBox(c);
+        return { h, x: 14 + box.x + (h.x / 100) * box.w, y: 15 + box.y + (h.y / 100) * box.h };
+      }
+      const probeAt = (x, y) =>
+        `translate(calc(${x.toFixed(1)} * var(--u)), calc(${y.toFixed(1)} * var(--u)))`;
+      const markOn = (on = true) =>
+        $("map")
+          .querySelectorAll(".mk")
+          .forEach((m) => m.toggleAttribute("data-on", on && m.dataset.p === state.p));
+      // Everything in its place at once (no motion).
       function paintPoint() {
         const c = CASES[state.c];
         if (!c) return;
-        document
-          .querySelectorAll(".mk")
-          .forEach((m) => m.toggleAttribute("data-on", m.dataset.p === state.p));
-        const p = c.points.find((q) => q.id === state.p);
-        const h = p && hotspotsOf(c, p)[0];
+        markOn();
+        const at = pointXY(c, c.points.find((q) => q.id === state.p));
         const probe = $("probe");
-        if (!h) {
+        probe.classList.remove("is-air");
+        if (!at) {
           probe.setAttribute("data-off", "");
           return;
         }
-        const box = mapBox(c);
-        const x = 14 + box.x + (h.x / 100) * box.w;
-        const y = 15 + box.y + (h.y / 100) * box.h;
-        probe.style.transform = `translate(calc(${x.toFixed(1)} * var(--u)), calc(${y.toFixed(1)} * var(--u)))`;
+        probe.style.transform = probeAt(at.x, at.y);
         probe.removeAttribute("data-off");
+      }
+      // The probe put away and no point chosen on the map: how a page looks
+      // while it turns, before the probe comes back to it.
+      function restProbe() {
+        $("probe").setAttribute("data-off", "");
+        $("probe").classList.remove("is-air");
+        markOn(false);
+      }
+
+      /* ── The stimulation: the probe travels to the point and touches it,
+         rings spread from the point, and the report is typed on. ── */
+      const wait = (ms) => new Promise((done) => setTimeout(done, ms));
+      let act = 0; // the latest stimulation; an older one stops when a newer starts
+      async function stimulate({ fromAfar = false } = {}) {
+        const me = ++act;
+        const c = CASES[state.c];
+        const at = pointXY(c, c.points.find((q) => q.id === state.p));
+        const probe = $("probe");
+        const read = $("read");
+        if (reduced() || !probe.animate) {
+          paintPoint();
+          read.removeAttribute("data-wait");
+          return;
+        }
+        read.setAttribute("data-wait", "");
+        markOn(false);
+        if (at) {
+          if (fromAfar || probe.hasAttribute("data-off")) {
+            // It comes in along its own length, from beyond the top of the page.
+            probe.style.transition = "none";
+            probe.style.transform = probeAt(at.x + 170, at.y - 260);
+            probe.getBoundingClientRect();
+            probe.style.transition = "";
+          }
+          probe.classList.add("is-air");
+          probe.removeAttribute("data-off");
+          probe.style.transform = probeAt(at.x, at.y);
+          await wait(460);
+          if (me !== act) return;
+          probe.classList.remove("is-air"); // touches down
+          markOn();
+          pulse(at.h);
+          await wait(150);
+          if (me !== act) return;
+        } else restProbe(); // a point the map doesn't show: the probe is put away
+        reveal();
+      }
+      function pulse(h) {
+        for (const delay of [0, 170]) {
+          const ring = el("span", {
+            class: "pulse",
+            "aria-hidden": "true",
+            style: `left:${h.x}%;top:${h.y}%`,
+          });
+          $("map").append(ring);
+          ring
+            .animate(
+              [
+                { transform: "translate(-50%, -50%) scale(0.5)", opacity: 0.8 },
+                { transform: "translate(-50%, -50%) scale(3.4)", opacity: 0 },
+              ],
+              { duration: 760, delay, easing: "cubic-bezier(0.2, 0.6, 0.3, 1)", fill: "both" }
+            )
+            .finished.catch(() => {})
+            .then(() => ring.remove());
+        }
+      }
+      // The heading is typed on, a letter at a time; the report follows.
+      function reveal() {
+        $("read").removeAttribute("data-wait");
+        if (reduced() || !$("read").animate) return;
+        let t = 0;
+        for (const line of $("readh").children) {
+          const n = Math.max(1, line.textContent.length);
+          const ms = Math.min(440, n * 26);
+          line.animate([{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0 0 0)" }], {
+            duration: ms,
+            delay: t,
+            easing: `steps(${n})`,
+            fill: "backwards",
+          });
+          t += ms + 50;
+        }
+        [...$("report").children].forEach((para, i) =>
+          para.animate(
+            [
+              { opacity: 0, transform: "translateY(8px)" },
+              { opacity: 1, transform: "none" },
+            ],
+            {
+              duration: 320,
+              delay: Math.max(0, t - 160) + i * 80,
+              easing: "cubic-bezier(0.2, 0.7, 0.2, 1)",
+              fill: "backwards",
+            }
+          )
+        );
       }
 
       // The point nearest the pointer, if it is within reach of one.
@@ -1185,71 +1421,155 @@
         if (state.p === id) return;
         state.p = id;
         drawReport();
-        paintPoint();
+        stimulate();
         OB.resize();
       }
 
       /* ── Opening the binder and turning to a case ── */
-      const flip = (node, from, to, ms, easing) =>
-        node.animate([{ transform: from }, { transform: to }], { duration: ms, easing, fill: "both" })
-          .finished;
+      const right = document.querySelector(".page--right");
+      // A copy of a page (or the cover) for the leaf, placed `x` Figma px from
+      // its parent's left edge. It is a picture of the page: nothing in it can
+      // be used or is read out.
+      function copyOf(node, x) {
+        const c = node.cloneNode(true);
+        for (const n of [c, ...c.querySelectorAll("[id], [aria-live], [aria-label]")]) {
+          n.removeAttribute("id");
+          n.removeAttribute("aria-live");
+          n.removeAttribute("aria-label");
+        }
+        c.setAttribute("aria-hidden", "true");
+        c.inert = true;
+        c.style.left = `calc(${x} * var(--u))`;
+        c.style.visibility = "visible";
+        return c;
+      }
+      // One leaf turns on the rings, from `from` to `to` degrees: 0 is flat on
+      // the right, -180 flat on the left.
+      async function turn({ front, back, from, to, ms, ghost }) {
+        const leaf = el("div", { class: "leaf" });
+        const shades = [front, back].map((face, n) => {
+          face.classList.add("leaf__face");
+          if (n) face.classList.add("leaf__face--back");
+          const shade = el("div", { class: "leaf__shade" });
+          face.append(shade);
+          leaf.append(face);
+          return shade;
+        });
+        const cast = el("div", { class: "cast" });
+        if (ghost) {
+          ghost.classList.add("ghost");
+          binder.append(ghost);
+        }
+        binder.append(cast, leaf);
+        const timing = { duration: ms, easing: "cubic-bezier(0.45, 0.05, 0.25, 1)", fill: "both" };
+        // Each face is darkest edge on (half way), clear when it lies flat.
+        const lit = (flatAt) => (from === flatAt ? [0, 1, 1] : [1, 1, 0]);
+        shades.forEach((shade, n) =>
+          shade.animate(
+            lit(n ? -180 : 0).map((opacity, i) => ({ opacity: opacity * 0.5, offset: i / 2 })),
+            timing
+          )
+        );
+        cast.animate([{ opacity: 0 }, { opacity: 1, offset: 0.5 }, { opacity: 0 }], timing);
+        await leaf
+          .animate([{ transform: `rotateY(${from}deg)` }, { transform: `rotateY(${to}deg)` }], timing)
+          .finished.catch(() => {});
+        leaf.remove();
+        cast.remove();
+        ghost?.remove();
+      }
       async function goTo(i) {
         if (state.busy || (state.open && i === state.c)) return;
         const from = state.c;
         const wasOpen = state.open;
+        const spread = binder.dataset.layout === "spread";
+        const still = reduced() || !binder.animate;
+        // The pages as they are now, before anything is redrawn.
+        const moving = wasOpen && spread && !still;
+        const fwd = i > from;
+        const oldLeft = moving ? copyOf(left, fwd ? 0 : 2) : null;
+        const oldRight = moving ? copyOf(right, fwd ? 2 : 476) : null;
+        const peeked = !wasOpen && getComputedStyle(cover).transform !== "none";
+        const coverCopy = !wasOpen && spread && !still ? copyOf(cover, 2) : null;
+
         state.c = i;
         state.p = CASES[i].points[0].id;
         state.open = true;
-        const spread = binder.dataset.layout === "spread";
-        if (reduced() || !spread || !binder.animate) {
+        drawLeft();
+        drawRight();
+        if (still) {
           binder.dataset.open = "true";
-          drawLeft();
-          drawRight();
+          $("read").removeAttribute("data-wait");
           paintTabs();
           OB.resize();
+          return;
+        }
+        restProbe();
+        $("read").setAttribute("data-wait", "");
+        if (!spread) {
+          // Phones: no pages to turn; the probe and the report still arrive.
+          binder.dataset.open = "true";
+          paintTabs();
+          OB.resize();
+          stimulate({ fromAfar: true });
           return;
         }
         state.busy = true;
         try {
           if (!wasOpen) {
-            // The cover swings open on the rings: first the cover, edge on,
-            // then the left page falls flat.
-            drawLeft();
-            drawRight();
-            cover.style.visibility = "visible";
+            // The cover swings over on the rings and lands as the left page,
+            // while the binder slides across to make room for it.
+            const back = copyOf(left, 2);
             left.style.visibility = "hidden";
             binder.dataset.open = "true";
             paintTabs();
-            await flip(cover, "rotateY(0deg)", "rotateY(-90deg)", 260, "ease-in");
-            cover.style.visibility = "";
+            await turn({ front: coverCopy, back, from: peeked ? -7 : 0, to: -180, ms: 780 });
             left.style.visibility = "";
-            cover.getAnimations().forEach((a) => a.cancel());
-            await flip(left, "rotateY(90deg)", "rotateY(0deg)", 320, "ease-out");
-            left.getAnimations().forEach((a) => a.cancel());
           } else {
-            // One blank leaf turns over the rings; the page it leaves shows
-            // the new case at once, the page it lands on when it arrives.
-            const fwd = i > from;
-            const leaf = el("div", { class: "leaf" });
-            leaf.style.cssText = fwd
-              ? "left:calc(476 * var(--u));width:calc(468 * var(--u));transform-origin:0 50%"
-              : "left:0;width:calc(472 * var(--u));transform-origin:100% 50%";
-            binder.append(leaf);
-            if (fwd) drawRight();
-            else drawLeft();
-            const turning = flip(leaf, "rotateY(0deg)", `rotateY(${fwd ? -180 : 180}deg)`, 520, "ease-in-out");
-            setTimeout(paintTabs, 260);
-            await turning;
-            if (fwd) drawLeft();
-            else drawRight();
-            leaf.remove();
+            // Forward, the right page turns over and lands as the new left
+            // page; back, the left page comes over as the new right one. The
+            // page it leaves shows the new case at once; the page it lands on
+            // keeps its old face until then.
+            setTimeout(paintTabs, 330);
+            await turn(
+              fwd
+                ? { front: oldRight, back: copyOf(left, 2), from: 0, to: -180, ms: 680, ghost: oldLeft }
+                : { front: copyOf(right, 2), back: oldLeft, from: -180, to: 0, ms: 680, ghost: oldRight }
+            );
           }
         } finally {
           state.busy = false;
           paintTabs();
           OB.resize();
         }
+        stimulate({ fromAfar: true });
       }
+
+      // Once, when the closed binder first comes into view: the tabs stir, top
+      // to bottom, to say they can be pressed.
+      function invite() {
+        if (state.open || reduced() || !binder.animate) return;
+        const s = Number(binder.style.getPropertyValue("--s")) || 1;
+        const stack = binder.dataset.layout === "stack";
+        const nudge = stack ? `translateY(${-4}px)` : `translateX(${(9 * s).toFixed(1)}px)`;
+        tabs.forEach((b, n) =>
+          b.querySelector(".tab__b").animate(
+            [{ transform: "none" }, { transform: nudge, offset: 0.4 }, { transform: "none" }],
+            { duration: 520, delay: 350 + n * 75, easing: "ease-in-out" }
+          )
+        );
+      }
+      if ("IntersectionObserver" in window) {
+        const seen = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            seen.disconnect();
+            invite();
+          },
+          { threshold: 0.5 }
+        );
+        seen.observe(cover);
+      } else setTimeout(invite, 600);
 
       /* ── Fitting the space there is ── */
       const stage = $("stage");
