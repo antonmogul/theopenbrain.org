@@ -57,6 +57,15 @@ export const UPLOADED_WIDGETS = [
     chapter: "foundations-of-neuroscience",
   },
   {
+    slug: "history-penfield-binder",
+    title: "Penfield's case binder",
+    description:
+      "Seven of Penfield and Perot's patients in a ring binder: open a case, touch the probe to a numbered point on the brain map and read what the patient reported.",
+    author: "Stuart Trenholm · design: Malpeso Studio",
+    ramp: "fund",
+    chapter: "foundations-of-neuroscience",
+  },
+  {
     slug: "attn-helmholtz",
     title: "Helmholtz's black room",
     description:

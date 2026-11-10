@@ -69,6 +69,10 @@ export const LoewiVagusstoff = {
   ...story("loewi-vagusstoff"),
   name: "Loewi's Vagusstoff",
 };
+export const HistoryPenfieldBinder = {
+  ...story("history-penfield-binder"),
+  name: "Penfield's case binder",
+};
 export const AttnHelmholtz = {
   ...story("attn-helmholtz"),
   name: "Helmholtz's black room",

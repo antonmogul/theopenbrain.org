@@ -335,6 +335,31 @@ describe("applyWidgetPlacements", () => {
     expect(result).toEqual({ applied: [], skipped: ["rb"], unresolved: [] });
   });
 
+  it("skips a placement a DB block took over by its id, whatever widget the block now shows", () => {
+    const section = circuitSection();
+    section.paragraphs[0] = {
+      id: "db-widget",
+      type: "widget",
+      text: "",
+      widget: {
+        widgetId: "upload:retina-retinabox",
+        placementId: "rb",
+        kind: "inline",
+      },
+    };
+    const chapter = chapterWith(section);
+    const result = applyWidgetPlacements(chapter, [
+      {
+        id: "rb",
+        widgetId: "retinabox",
+        chapterSlug: "the-retina",
+        sectionSlug: SECTION_SLUG,
+        anchors: [{ beforeSubSection: "Rod and cone pathways" }],
+      },
+    ]);
+    expect(result).toEqual({ applied: [], skipped: ["rb"], unresolved: [] });
+  });
+
   it("endOfSection appends to the section's top-level list", () => {
     const chapter = chapterWith(circuitSection());
     applyWidgetPlacements(chapter, [

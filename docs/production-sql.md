@@ -84,7 +84,9 @@ One `supabase db push` on the morning of 2026-10-21 applied these in order; ever
 
 Committed, not yet pushed. `supabase migration list` is the authority: any other local-only row it shows is pending too.
 
-Nothing: `supabase migration list` shows local and remote in step as of 2026-10-29.
+| Migration                                                | What it does, and when to push                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261110000000_history_penfield_binder` (OPENBRAIN-168) | Content only, no DDL. Upserts the upload `history-penfield-binder` (published), points History's Penfield widget block at it in place of the Vue cabinet, and writes `fullScreen: true` onto that block and the phrenology block. **Push only after the code that reads `fullScreen` from a block is deployed** (the same PR): the old code would show the old cabinet's card above the binder. Guarded and idempotent; the file's header has the one-update way back. |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is

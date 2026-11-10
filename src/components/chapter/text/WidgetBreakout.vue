@@ -582,7 +582,13 @@ const headingId = computed(
   min-height: 0;
 }
 .wb-body--full .wb-head--owned {
-  padding: 0;
+  padding: 1.875rem var(--wb-gutter) 0.5rem;
+}
+/* An upload shows its own title; the band's kicker still sits centred over
+   it, as it does over the band's own heading (OPENBRAIN-168). */
+.wb-body--full .wb-head--owned .wb-kicker {
+  justify-content: center;
+  margin: 0;
 }
 /* The full-screen band's heading (Widget Library Figma 68:83, 68:87,
    OPENBRAIN-162): centred, the kicker over the title in the subhead role,
