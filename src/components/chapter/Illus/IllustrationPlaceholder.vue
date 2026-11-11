@@ -19,10 +19,18 @@
 //   description / caption    — optional supporting line
 //   note                     — optional production note (what art to source)
 //   images: [{ src, caption?, alt? }]  — real artwork; replaces the placeholder
-import { ref, computed } from "vue";
+//   galleryStart: "grid" | "single"    — a set's opening view (else by its size)
+//
+// In the pane the legend is folded away so the artwork gets the height
+// (OPENBRAIN-177): the toolbar keeps the label and title, and a "Legend"
+// control shows the legend as a panel over the edge of the artwork, on
+// hover or focus for a look and on a click to keep it. It stays in the
+// document while folded, so screen readers read it with the figure. In the
+// text column the legend is in the flow as before.
+import { ref, computed, onBeforeUnmount, useId } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
-import { figureImages } from "@/helper/figureCycle";
+import { figureImages, galleryStartView } from "@/helper/figureCycle";
 
 const props = defineProps({
   animation: { type: Object, required: true },
@@ -62,21 +70,84 @@ const images = computed(() => figureImages(props.animation));
 const caption = computed(
   () => props.animation.caption || props.animation.description || ""
 );
-// The legend sits with the title above the artwork (OPENBRAIN-138): one
-// image's own caption, else the figure's.
-const legend = computed(
-  () =>
-    (images.value[galleryIndex.value] || images.value[0])?.caption ||
-    caption.value
+// The gallery's current image and view (all the images, or one), shared by
+// the pane and the fullscreen dialog so expanding opens on the same plate
+// in the same view (OPENBRAIN-144, OPENBRAIN-177).
+const galleryIndex = ref(0);
+const galleryView = ref(
+  galleryStartView(images.value.length, props.animation.galleryStart)
 );
 
-// The gallery's current image, shared by the pane and the fullscreen
-// dialog so expanding opens on the same plate (OPENBRAIN-144).
-const galleryIndex = ref(0);
+// The legend sits with the title (OPENBRAIN-138): the shown image's own
+// caption, else the figure's; over the grid of all the images, the figure's.
+const legend = computed(() => {
+  if (images.value.length > 1 && galleryView.value === "grid")
+    return caption.value;
+  return (
+    (images.value[galleryIndex.value] || images.value[0])?.caption ||
+    caption.value
+  );
+});
 
-// Fullscreen expand — overlay the diagram over the whole viewport.
+// In the pane the legend folds away behind its control. A hover or keyboard
+// focus is a look (`peek`): the legend floats over the edge of the artwork
+// and nothing moves. A click keeps it (`pinned`): it takes its place under
+// the title, as the redesign draws it, and the artwork gives up the room.
+const folds = computed(() => !props.inline);
+const legendId = `fig-legend-${useId()}`;
+const legendPinned = ref(false);
+const legendPeek = ref(false);
+const legendFloats = computed(() => folds.value && !legendPinned.value);
+const legendOpen = computed(() => legendFloats.value && legendPeek.value);
+let peekTimer = null;
+function clearPeekTimer() {
+  clearTimeout(peekTimer);
+  peekTimer = null;
+}
+// A pointer crossing the heading on its way elsewhere should not flash the
+// legend: it opens after a beat, and only for a mouse (a tap is a click).
+function onLegendHover(e) {
+  if (!folds.value || e.pointerType !== "mouse" || legendPeek.value) return;
+  clearPeekTimer();
+  peekTimer = setTimeout(() => {
+    peekTimer = null;
+    legendPeek.value = true;
+  }, 140);
+}
+function onToolbarLeave() {
+  clearPeekTimer();
+  legendPeek.value = false;
+}
+function toggleLegend() {
+  clearPeekTimer();
+  legendPinned.value = !legendPinned.value;
+  // Unpinning closes it even while the pointer is still on the control.
+  if (!legendPinned.value) legendPeek.value = false;
+}
+function closeLegend() {
+  clearPeekTimer();
+  legendPinned.value = false;
+  legendPeek.value = false;
+}
+onBeforeUnmount(clearPeekTimer);
+
+// Fullscreen expand — overlay the diagram over the whole viewport. The
+// dialog keeps the ground the chapter's figure pane has (OPENBRAIN-177):
+// dark, as the History redesign draws its figures, unless the chapter's
+// art was drawn for paper (figurePaneGround; the pane says so itself, and
+// a figure in the text column or a breakout box asks its reader's pane).
+const shellElement = ref(null);
 const isFullscreen = ref(false);
+const dialogGround = ref("dark");
+function paneGround() {
+  const element = shellElement.value;
+  const pane =
+    element?.closest?.(".figure-pane") ||
+    element?.closest?.(".chapter-reader")?.querySelector?.(".figure-pane");
+  return pane?.dataset?.ground === "paper" ? "paper" : "dark";
+}
 function openFullscreen() {
+  dialogGround.value = paneGround();
   isFullscreen.value = true;
 }
 function closeFullscreen() {
@@ -85,12 +156,22 @@ function closeFullscreen() {
 </script>
 
 <template>
-  <div class="fig-pane pointer-events-auto">
+  <div ref="shellElement" class="fig-pane pointer-events-auto">
     <!-- Diagram container: toolbar + diagram area -->
     <figure class="fig-shell" :class="{ 'fig-shell--inline': inline }">
-      <header class="fig-toolbar">
+      <header
+        class="fig-toolbar"
+        :class="{
+          'fig-toolbar--pane': folds,
+          'fig-toolbar--folded': legendFloats,
+        }"
+        @pointerleave="onToolbarLeave"
+        @keydown.esc="closeLegend"
+      >
         <div class="fig-toolbar-left">
-          <p class="fig-heading">
+          <!-- pointerover, not pointerenter: on the dark pane the heading
+               has no box of its own (display: contents). -->
+          <p class="fig-heading" @pointerover="onLegendHover">
             <span class="fig-label">{{ figureLabel }}</span>
             <span class="fig-name">{{ title }}</span>
           </p>
@@ -114,9 +195,46 @@ function closeFullscreen() {
             <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
           </svg>
         </button>
-        <figcaption v-if="images.length && legend" class="fig-legend">
-          {{ legend }}
-        </figcaption>
+        <template v-if="images.length && legend">
+          <button
+            v-if="folds"
+            type="button"
+            class="fig-legend-btn"
+            :aria-expanded="legendPinned ? 'true' : 'false'"
+            :aria-controls="legendId"
+            :title="legendPinned ? 'Hide the legend' : 'Show the legend'"
+            @click="toggleLegend"
+            @pointerover="onLegendHover"
+            @focus="legendPeek = true"
+            @blur="legendPeek = false"
+          >
+            <span>Legend</span>
+            <svg
+              class="fig-legend-caret"
+              width="10"
+              height="10"
+              viewBox="0 0 10 10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2 6.5l3-3 3 3" />
+            </svg>
+          </button>
+          <figcaption
+            :id="legendId"
+            class="fig-legend"
+            :class="{
+              'fig-legend--folds': legendFloats,
+              'is-open': legendOpen,
+            }"
+          >
+            {{ legend }}
+          </figcaption>
+        </template>
       </header>
 
       <!-- Diagram area: the artwork, or a placeholder until it lands -->
@@ -128,6 +246,8 @@ function closeFullscreen() {
           :label="figureLabel"
           :title="title"
           v-model:index="galleryIndex"
+          v-model:view="galleryView"
+          :start="animation.galleryStart || ''"
           :fit="!inline"
           :suspended="isFullscreen"
           legend-above
@@ -152,8 +272,15 @@ function closeFullscreen() {
       :show="isFullscreen"
       :title="`${figureLabel}: ${title}`"
       wide
+      :ground="dialogGround"
       @close="closeFullscreen"
     >
+      <!-- On the dark ground the heading is the pane's toolbar: the label
+           in amber, then the title, both mono. -->
+      <template v-if="dialogGround === 'dark'" #title>
+        <span class="fs-label">{{ figureLabel }}</span>
+        <span class="fs-name">{{ title }}</span>
+      </template>
       <div class="fs-content">
         <div
           class="fig-area fs-area"
@@ -166,6 +293,8 @@ function closeFullscreen() {
             :label="figureLabel"
             :title="title"
             v-model:index="galleryIndex"
+            v-model:view="galleryView"
+            :start="animation.galleryStart || ''"
             large
           />
           <div v-else class="fig-placeholder">
@@ -241,6 +370,105 @@ function closeFullscreen() {
 .fig-shell--inline .fig-toolbar {
   max-height: none;
   padding-inline: 0;
+}
+/* In the pane the legend is folded behind its control (OPENBRAIN-177), so
+   the toolbar is one row and the artwork has the rest. While folded the
+   toolbar is the floating panel's containing block and must not clip it;
+   with the legend kept open it is the scrolling toolbar above again. */
+.fig-toolbar--pane {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+.fig-toolbar--folded {
+  position: relative;
+  max-height: none;
+  overflow: visible;
+}
+.fig-legend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 28px;
+  padding: 0 0.5rem;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: rgb(var(--color-ink));
+  font-family: var(--font-mono);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.fig-legend-btn:hover {
+  border-color: rgb(var(--color-ink));
+  background: rgb(var(--color-ink) / 0.04);
+}
+.fig-legend-btn:focus-visible,
+.fig-fs-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.fig-legend-caret {
+  transition: transform 0.16s ease;
+}
+/* The caret points the way the panel opens: down under a toolbar at the
+   top (the paper pane), up over the artwork on the dark pane. */
+.fig-legend-btn .fig-legend-caret {
+  transform: rotate(180deg);
+}
+.fig-legend-btn[aria-expanded="true"] .fig-legend-caret {
+  transform: none;
+}
+/* Folded: out of sight, still in the document for assistive technology. */
+.fig-legend--folds:not(.is-open) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Open: a panel over the edge of the artwork, as wide as the pane. A long
+   legend (Figure 6's run to 900 characters) scrolls inside it. It takes no
+   grid area: an absolutely placed grid item measures from its area, and
+   this one must measure from the whole toolbar. */
+.fig-legend--folds.is-open {
+  position: absolute;
+  grid-area: auto;
+  z-index: 3;
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: auto;
+  max-height: min(18rem, 45vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.75rem 0.875rem;
+  border-bottom: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-paper) / 0.97);
+  animation: fig-legend-in 0.16s ease;
+}
+@keyframes fig-legend-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fig-legend--folds.is-open {
+    animation: none;
+  }
+  .fig-legend-caret {
+    transition: none;
+  }
 }
 .fig-toolbar-left {
   display: flex;
@@ -385,8 +613,11 @@ function closeFullscreen() {
  * the title with its legend under it, all IBM Plex Mono — label and title
  * SemiBold at the sizes above (the designer traced them), the legend Text
  * at the title's size, white. The toolbar's borders are transparent there.
- * The text column's inline figure and the fullscreen dialog (teleported to
- * body) never match these selectors, so they keep the paper shell.
+ * The legend is folded behind the "Legend" control that ends the row
+ * (OPENBRAIN-177). The text column's inline figure never matches these
+ * selectors and keeps the paper shell. The fullscreen dialog carries the
+ * class when the chapter's pane is dark (DemoModal `ground`), but it has no
+ * toolbar: its heading is .fs-label / .fs-name below.
  */
 .figure-pane--dark .fig-shell {
   background: transparent;
@@ -394,11 +625,15 @@ function closeFullscreen() {
 .figure-pane--dark .fig-toolbar {
   order: 1;
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   column-gap: 0.5rem;
   row-gap: 0.5rem;
   align-items: start;
   padding: 1.875rem 0.875rem;
+}
+/* The artwork keeps a little air under the top bar (Anton, 11 Nov). */
+.figure-pane--dark .fig-shell .fig-area--art {
+  padding-top: 1rem;
 }
 /* Label and title become grid items of the toolbar, so the icon can lead
    the row and the legend can sit under the title. */
@@ -439,12 +674,52 @@ function closeFullscreen() {
 }
 .figure-pane--dark .fig-legend {
   grid-row: 2;
-  grid-column: 3;
+  grid-column: 3 / -1;
   font-family: var(--font-mono);
   font-size: 0.71875rem;
   line-height: 1.3;
   letter-spacing: 0.06em;
   color: rgb(var(--figure-pane-ink));
+}
+/* The legend's control ends the row, bare like the expand icon; amber while
+   the legend is kept open. */
+.figure-pane--dark .fig-legend-btn {
+  grid-row: 1;
+  grid-column: 4;
+  margin: -8px -0.5rem -8px 0;
+  border-color: transparent;
+  color: rgb(var(--figure-pane-ink) / 0.72);
+}
+.figure-pane--dark .fig-legend-btn:hover {
+  border-color: transparent;
+  background: rgb(var(--figure-pane-ink) / 0.08);
+  color: rgb(var(--figure-pane-ink));
+}
+.figure-pane--dark .fig-legend-btn[aria-expanded="true"] {
+  color: rgb(var(--color-warn));
+}
+.figure-pane--dark .fig-legend-btn .fig-legend-caret {
+  transform: none;
+}
+.figure-pane--dark .fig-legend-btn[aria-expanded="true"] .fig-legend-caret {
+  transform: rotate(180deg);
+}
+/* The toolbar is under the artwork here, so the panel opens upwards over
+   the artwork's foot, on the pane's own ground; its text starts where the
+   title does (14px padding, the 14px icon, the label's 50px, two gaps). */
+.figure-pane--dark .fig-legend--folds.is-open {
+  grid-area: auto;
+  top: auto;
+  bottom: 100%;
+  padding: 1rem 0.875rem 1rem 5.875rem;
+  border: 0;
+  border-top: 1px solid rgb(var(--figure-pane-ink) / 0.14);
+  background: rgb(var(--color-dark-surface) / 0.94);
+  line-height: 1.45;
+  backdrop-filter: blur(8px);
+}
+:root[data-theme="dark"] .figure-pane--dark .fig-legend--folds.is-open {
+  background: rgb(var(--color-bg) / 0.94);
 }
 /* The "artwork pending" state in the pane's ink. */
 .figure-pane--dark .fig-title {
@@ -464,6 +739,25 @@ function closeFullscreen() {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+/* The dark dialog's heading, as the pane's toolbar: label in amber, title
+   after it, IBM Plex Mono SemiBold. */
+.fs-label,
+.fs-name {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+.fs-label {
+  margin-right: 0.75rem;
+  font-size: var(--ui-size-12);
+  letter-spacing: 0.12em;
+  color: rgb(var(--color-warn));
+}
+.fs-name {
+  font-size: var(--ui-size-13);
+  letter-spacing: 0.06em;
 }
 .fs-glyph {
   font-size: 5rem;
