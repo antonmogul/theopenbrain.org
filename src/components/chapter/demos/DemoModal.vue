@@ -21,6 +21,11 @@ const props = defineProps({
      an embedded widget view (see WidgetBreakout). */
   wide: { type: Boolean, default: false },
   contentOwnsHeading: { type: Boolean, default: false },
+  /* "dark": the figure pane's dark ground (OPENBRAIN-177), for a figure
+     opened full screen from it. The panel then carries .figure-pane--dark,
+     the pane's own contract (index.css), so the figure's on-dark rules
+     apply to it as they do in the pane. */
+  ground: { type: String, default: "paper" },
 });
 
 const emit = defineEmits(["close"]);
@@ -160,6 +165,7 @@ onBeforeUnmount(() => {
           :class="{
             'demo-panel--wide': wide,
             'demo-panel--owned-heading': contentOwnsHeading,
+            'demo-panel--dark figure-pane--dark': ground === 'dark',
           }"
           role="dialog"
           aria-modal="true"
@@ -172,7 +178,7 @@ onBeforeUnmount(() => {
               class="demo-title"
               :class="{ 'sr-only': contentOwnsHeading }"
             >
-              {{ title }}
+              <slot name="title">{{ title }}</slot>
             </h2>
             <button
               ref="closeButtonRef"
@@ -310,6 +316,39 @@ onBeforeUnmount(() => {
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   border: 1px solid rgb(var(--color-line));
+}
+
+/* On the figure pane's dark ground (OPENBRAIN-177). The ground and the ink
+   (--figure-pane-ink) come with .figure-pane--dark, index.css; here only
+   the dialog's own chrome: hairline, title and a close control in the
+   pane's ink, with a ring that reads on dark (the accent's magenta does
+   not). The ground is repeated because .demo-panel's own paper outranks
+   the global class. */
+.demo-panel--dark {
+  background: rgb(var(--color-dark-surface));
+}
+:root[data-theme="dark"] .demo-panel--dark {
+  background: rgb(var(--color-bg));
+}
+.demo-panel--dark .demo-header {
+  border-bottom-color: rgb(var(--figure-pane-ink) / 0.14);
+}
+.demo-panel--dark .demo-title {
+  color: rgb(var(--figure-pane-ink));
+}
+.demo-panel--dark .demo-close {
+  color: rgb(var(--figure-pane-ink));
+}
+.demo-panel--dark .demo-close:hover {
+  background: rgb(var(--figure-pane-ink) / 0.1);
+  color: rgb(var(--figure-pane-ink));
+}
+.demo-panel--dark .demo-close:focus-visible {
+  outline: 2px solid rgb(var(--figure-pane-ink));
+  outline-offset: 2px;
+}
+.demo-panel--dark.demo-panel--wide .demo-body {
+  background: transparent;
 }
 
 /* Transition */

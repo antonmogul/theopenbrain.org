@@ -1,10 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import TrepanationMethods from "../trepanation/TrepanationMethods.vue";
 import trepanation from "../trepanation/schema.js";
 import { inZone, openingAt } from "../trepanation/openings.js";
 import PapyrusCase from "../papyrus/PapyrusCase.vue";
 import papyrus from "../papyrus/schema.js";
+import {
+  SIGN_SECONDS,
+  drawDelays,
+  drawSeconds,
+  lineOf,
+} from "../papyrus/drawIn.js";
 import { figureContent } from "../content.js";
 import { figureWidgetFor } from "../registry.js";
 
@@ -257,6 +263,11 @@ describe("TrepanationMethods", () => {
 });
 
 describe("PapyrusCase", () => {
+  afterEach(() => {
+    delete document.fullscreenEnabled;
+    delete document.documentElement.dataset.reduceMotion;
+  });
+
   it("opens on the title, with its hieroglyphs and translation", () => {
     const w = mountPapyrus();
     const tabs = w.findAll('[role="tab"]');
@@ -268,9 +279,20 @@ describe("PapyrusCase", () => {
     ]);
     expect(tabs[0].attributes("aria-selected")).toBe("true");
     expect(w.find(".pc-glyphs svg").exists()).toBe(true);
+    expect(w.find(".pc-line").text()).toBe("VII 22");
     expect(w.find(".pc-translation").text()).toMatch(
       /^Instructions concerning a wound in his temple/
     );
+    w.unmount();
+  });
+
+  it("has the pane's toolbar row: label, title, legend", () => {
+    const w = mountPapyrus();
+    expect(w.find(".pc-fig").text()).toBe("Wid 02");
+    expect(w.find("h4.pc-title").text()).toBe(
+      "The Edwin Smith papyrus, case 20"
+    );
+    expect(w.find(".pc-legend").text()).toContain("Breasted (1930)");
     w.unmount();
   });
 
@@ -320,11 +342,176 @@ describe("PapyrusCase", () => {
     w.unmount();
   });
 
-  it("paints the column markers in the chapter's accent, not a fixed purple", () => {
+  it("turns the card over from its button, and says which side shows", async () => {
     const w = mountPapyrus();
-    const svg = w.find(".pc-glyphs").html();
-    expect(svg).toContain("currentColor");
-    expect(svg.toLowerCase()).not.toContain("#8d4cf6");
+    const card = w.find(".pc-card");
+    const button = w.find(".pc-flip");
+    expect(card.classes()).not.toContain("is-flipped");
+    expect(button.text()).toBe("Read the translation");
+    expect(w.find('[role="status"]').text()).toBe("");
+
+    await button.trigger("click");
+    expect(card.classes()).toContain("is-flipped");
+    expect(button.text()).toBe("See the hieroglyphs");
+    expect(w.find('[role="status"]').text()).toBe("Translation showing.");
+    expect(w.find(".pc-label").text()).toBe("Translation");
+
+    await button.trigger("click");
+    expect(card.classes()).not.toContain("is-flipped");
+    expect(button.text()).toBe("Read the translation");
+    expect(w.find('[role="status"]').text()).toBe("Hieroglyphs showing.");
     w.unmount();
+  });
+
+  it("turns on a click on the card, but not one that ends a text selection", async () => {
+    const w = mountPapyrus();
+    const card = w.find(".pc-card");
+    await card.trigger("click");
+    expect(card.classes()).toContain("is-flipped");
+
+    const selection = vi
+      .spyOn(window, "getSelection")
+      .mockReturnValue({ toString: () => "thou examinest" });
+    await card.trigger("click");
+    expect(card.classes()).toContain("is-flipped");
+    selection.mockRestore();
+
+    await card.trigger("click");
+    expect(card.classes()).not.toContain("is-flipped");
+    w.unmount();
+  });
+
+  it("turns back to the hieroglyphs on a new tab, and stays put on the same one", async () => {
+    const w = mountPapyrus();
+    const tabs = w.findAll('[role="tab"]');
+    await w.find(".pc-flip").trigger("click");
+    await tabs[0].trigger("click");
+    expect(w.find(".pc-card").classes()).toContain("is-flipped");
+    await tabs[2].trigger("click");
+    expect(w.find(".pc-card").classes()).not.toContain("is-flipped");
+    expect(w.find(".pc-flip").text()).toBe("Read the translation");
+    w.unmount();
+  });
+
+  it("keeps the translation readable to assistive technology on either side; the signs are a picture", async () => {
+    const w = mountPapyrus();
+    expect(w.find(".pc-glyphs").attributes("aria-hidden")).toBe("true");
+    const hidden = () =>
+      w.find(".pc-translation").element.closest("[aria-hidden], [inert]");
+    expect(hidden()).toBeNull();
+    // The side that is turned away takes no keyboard focus.
+    expect(w.find(".pc-text").attributes("tabindex")).toBe("-1");
+    await w.find(".pc-flip").trigger("click");
+    expect(hidden()).toBeNull();
+    expect(w.find(".pc-text").attributes("tabindex")).toBeUndefined();
+    expect(w.find(".pc-fit").attributes("tabindex")).toBe("-1");
+    w.unmount();
+  });
+
+  it("takes its label and the button's words from saved content", async () => {
+    const w = mountPapyrus({
+      figureLabel: "Fig 04",
+      translationLabel: "In English",
+      flip: ["Turn it over", null],
+    });
+    expect(w.find(".pc-fig").text()).toBe("Fig 04");
+    expect(w.find(".pc-label").text()).toBe("In English");
+    expect(w.find(".pc-flip").text()).toBe("Turn it over");
+    await w.find(".pc-flip").trigger("click");
+    expect(w.find(".pc-flip").text()).toBe("See the hieroglyphs");
+    w.unmount();
+  });
+
+  it("holds still under reduced motion", async () => {
+    document.documentElement.dataset.reduceMotion = "1";
+    const w = mountPapyrus();
+    expect(w.find(".pc").classes()).toContain("pc--still");
+    expect(w.find(".pc-glyphs").classes()).toEqual(["pc-glyphs"]);
+    await w.findAll('[role="tab"]')[1].trigger("click");
+    expect(w.find(".pc-glyphs").classes()).toEqual(["pc-glyphs"]);
+    w.unmount();
+  });
+
+  it("offers the whole screen only where the browser has it", async () => {
+    const without = mountPapyrus();
+    expect(without.find(".pc-expand").exists()).toBe(false);
+    without.unmount();
+
+    document.fullscreenEnabled = true;
+    const request = vi.fn(() => Promise.resolve());
+    HTMLElement.prototype.requestFullscreen = request;
+    const w = mountPapyrus();
+    await w.vm.$nextTick();
+    const expand = w.find(".pc-expand");
+    expect(expand.attributes("aria-label")).toBe("Expand to full screen");
+    await expand.trigger("click");
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request.mock.instances[0]).toBe(w.find(".pc").element);
+    delete HTMLElement.prototype.requestFullscreen;
+    w.unmount();
+  });
+
+  it("draws the designers' white art: no fixed purple, no layer ids, every line drawable", async () => {
+    const w = mountPapyrus();
+    const tabs = w.findAll('[role="tab"]');
+    for (let i = 0; i < tabs.length; i++) {
+      await tabs[i].trigger("click");
+      const svg = w.find(".pc-glyphs").html();
+      expect(svg.toLowerCase()).not.toContain("#8d4cf6");
+      expect(svg).not.toMatch(/\sid="/);
+      const paths = w.findAll(".pc-glyphs path");
+      expect(paths.length).toBeGreaterThan(40);
+      // A path is a line (drawn in by its dash) or a filled shape.
+      for (const path of paths)
+        expect(
+          path.attributes("pathLength") === "1" ||
+            path.attributes("stroke") === "none"
+        ).toBe(true);
+      // One child of the root group is one sign, or one stroke of it.
+      expect(
+        w.find(".pc-glyphs svg > g").element.children.length
+      ).toBeGreaterThan(10);
+    }
+    w.unmount();
+  });
+});
+
+describe("the papyrus draw-in's order", () => {
+  const box = (x, y, width = 10, height = 30) => ({ x, y, width, height });
+
+  it("sorts signs into lines, and keeps a line's small numeral with it", () => {
+    const boxes = [
+      box(0, 59), // second line
+      box(0, 11), // first line
+      box(40, 4, 8, 4), // a numeral over the first line
+      box(60, 12),
+      box(20, 107), // third line
+      box(30, 52, 8, 4), // a numeral over the second line
+    ];
+    expect(lineOf(boxes)).toEqual([1, 0, 0, 0, 2, 1]);
+  });
+
+  it("starts a line's signs left to right, and each line after the one above", () => {
+    const boxes = [box(0, 11), box(100, 11), box(200, 11), box(0, 59)];
+    const { delays, total } = drawDelays(boxes);
+    expect(delays[0]).toBeLessThan(delays[1]);
+    expect(delays[1]).toBeLessThan(delays[2]);
+    expect(delays[3]).toBeGreaterThan(delays[0]);
+    expect(delays[0]).toBeGreaterThanOrEqual(0);
+    // The last sign has finished by the end.
+    expect(Math.max(...delays) + SIGN_SECONDS).toBeLessThanOrEqual(total);
+  });
+
+  it("takes about a second for a short part and never more than 1.4 s", () => {
+    expect(drawSeconds(2)).toBeCloseTo(0.94);
+    expect(drawSeconds(13)).toBe(1.4);
+    expect(drawSeconds(40)).toBe(1.4);
+    expect(drawDelays([])).toEqual({ delays: [], total: 0 });
+  });
+
+  it("handles a part that is one sign, or signs with no width", () => {
+    expect(drawDelays([box(5, 5, 0, 10)]).delays).toEqual([0]);
+    const { delays } = drawDelays([box(5, 5, 0, 10), box(5, 60, 0, 10)]);
+    expect(delays.every((d) => Number.isFinite(d))).toBe(true);
   });
 });
