@@ -276,6 +276,15 @@ describe("the figure that is on", () => {
     expect(feet).toEqual([false, true]);
   });
 
+  it("ends the ribbon with the text column, however long the figure stays", async () => {
+    // The closing figure holds beside what follows the text (the chapter's
+    // back matter is the column's next sibling): the line ends at #text.
+    page([["AnimationFig1", 1000, 300, { end: 9000 - HALF, active: true }]]);
+    place(document.getElementById("text"), 0, 2400);
+    const rail = await mountRail();
+    expect(spans(rail)).toEqual([["1000px", "1400px"]]);
+  });
+
   it("measures again when the page's layout is refreshed", async () => {
     page([["AnimationFig1", 1000, 300]]);
     const rail = await mountRail();

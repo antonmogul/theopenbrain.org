@@ -137,6 +137,11 @@ function measure() {
     const rect = band.getBoundingClientRect();
     return [rect.top - origin, rect.bottom - origin];
   });
+  // The line is the text column's left edge and ends with it: a figure may
+  // stay on past the column (the closing figure, beside what follows the
+  // text), its ribbon does not.
+  const column = scope.querySelector?.("#text")?.getBoundingClientRect();
+  const limit = column?.height > 0 ? column.bottom - origin : Infinity;
   const found = [];
   for (const el of triggers) {
     const mark = railMarkFor(
@@ -148,9 +153,11 @@ function measure() {
     // paragraph's window.
     const end = figureEnd(el, triggers, list.value);
     const top = rect.top - origin;
-    const bottom =
+    const bottom = Math.min(
+      limit,
       (typeof end === "number" ? end + half - window.scrollY : rect.bottom) -
-      origin;
+        origin
+    );
     const before = found[found.length - 1];
     // The same figure on the paragraphs that follow (the Retina's widgets
     // stay beside several): one mark, one ribbon, as the pane never changes.
