@@ -1,8 +1,8 @@
 /*
  * Chapter/Figure widgets/History — the History chapter's two figure widgets
- * (OPENBRAIN-87): the trepanation skull, whose hands come in over their
- * openings, and case 20 of the Edwin Smith papyrus as tabs. The accent is the
- * chapter's ramp.
+ * (OPENBRAIN-87): the trepanation skull, whose arms reach in to their
+ * openings (the November sketch, OPENBRAIN-173), and case 20 of the Edwin
+ * Smith papyrus as tabs. The accent is the chapter's ramp.
  */
 import TrepanationMethods from "../trepanation/TrepanationMethods.vue";
 import trepanation from "../trepanation/schema.js";
@@ -33,12 +33,13 @@ export const Trepanation = {
   }),
 };
 
-/** Figure 2 in a phone-sized figure box. */
+/** Figure 2 in a phone's figure box: marks on the skull, a row of numbers
+ *  to press under it. */
 export const TrepanationNarrow = {
   ...Trepanation,
   decorators: [
     () => ({ template: `<div style="width: 360px"><story /></div>` }),
-    inChapter("fund", 560),
+    inChapter("fund", 640),
   ],
 };
 
