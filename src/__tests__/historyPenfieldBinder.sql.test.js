@@ -1,6 +1,6 @@
 // @vitest-environment node
 /** Runs 20261110000000_history_penfield_binder.sql in PGlite (OPENBRAIN-168),
- * then 20261111178000_history_penfield_binder_v2.sql (OPENBRAIN-178), which
+ * then 20261111180200_history_penfield_binder_v2.sql (OPENBRAIN-178), which
  * replaces the upload's HTML with the widget file as it is now.
  * HISTORY_SQL_HARNESS=/absolute/path/to/@electric-sql/pglite npm test --
  * --pool=forks src/__tests__/historyPenfieldBinder.sql.test.js (the SQL run is
@@ -18,7 +18,7 @@ const sql = readFileSync(
   "utf8"
 );
 const sqlV2 = readFileSync(
-  "supabase/migrations/20261111178000_history_penfield_binder_v2.sql",
+  "supabase/migrations/20261111180200_history_penfield_binder_v2.sql",
   "utf8"
 );
 const file = readFileSync(
