@@ -150,6 +150,16 @@ opened on its own, in Claude or in a browser.
 - `OB.resize()`: call after a layout change the browser can't see.
 - `OB.maxHeight` and `OB.onFit(fn)`: the fixed height, when there is one
   (see point 2 above); `null` means grow with the content.
+- `OB.fullScreen`: `true` when the reader opened the widget full screen (the
+  expand button under a full-screen band). That view is a fresh copy of the
+  widget in a dialog, one screen tall, and the book sets
+  `html[data-ob-fullscreen]` on it. Use it to give the screen to the
+  picture: the reader has already seen the title, the instruction and the
+  caption on the page, so you may hide them (keep them for screen readers).
+  The dialog's Close button covers a square in the top right corner,
+  `var(--ob-close-clear, 60px)` on a side: keep controls out of it. If the
+  widget uses Escape itself (to close a panel of its own), call
+  `event.preventDefault()`, or the book closes the dialog too.
 
 ## Working with the author and designer
 

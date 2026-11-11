@@ -97,7 +97,11 @@ of them: **in the text column** on phones (360–720 px, its own height), as a
 **full-screen band** on desktop (the full page width, one screen tall), or in
 the **figure pane** beside the text (a fixed box). In the last two the book
 gives it a fixed height (`html[data-ob-fit]`, `--ob-max-height`); the figure
-then shrinks to fit and nothing else does.
+then shrinks to fit and nothing else does. A band can also be opened **full
+screen**: the same widget alone on the screen (`html[data-ob-fullscreen]`).
+There it may drop its title, instruction and caption and give the room to the
+figure, leaving the top right corner (`--ob-close-clear`, 60 px square) to
+the book's Close button.
 
 Padding 20–24 px on phones, up to 40 px on desktop. On wide screens,
 controls may move beside the figure (a two-column grid) but the figure
