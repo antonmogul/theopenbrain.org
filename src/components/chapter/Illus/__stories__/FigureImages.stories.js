@@ -1,12 +1,15 @@
 /*
  * Chapter/Illustrations/FigureImages — the artwork inside the figure shell:
- * one image, or a set shown as a rotating gallery (OPENBRAIN-144): one
- * full-size image at a time, thumbnails under it, arrows at the sides of the
- * stage box, a step every 15 s until the reader takes over. Purely
- * prop-driven.
+ * one image, or a set shown as a gallery with two views (OPENBRAIN-144,
+ * OPENBRAIN-177): the grid of all its images, which is how a set of four or
+ * more opens, and one full-size image at a time, with thumbnails under it,
+ * arrows at the sides of the stage box and a step every 15 s while it plays.
+ * One row of controls under either: the counter, play/pause, view all.
+ * Purely prop-driven.
  *
  * Storybook's Motion toolbar defaults to Reduced, which keeps the clock
- * off; the Autoplay story switches it to app motion so the gallery turns.
+ * off and hides the play button; the Autoplay story switches it to app
+ * motion so the gallery turns.
  */
 import FigureImages from "../FigureImages.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
@@ -59,22 +62,51 @@ export default {
       control: { type: "number", min: 0 },
       description: "The shown image (v-model:index).",
     },
+    start: {
+      control: "inline-radio",
+      options: ["", "grid", "single"],
+      description:
+        "The opening view. Empty leaves it to the size of the set: the grid for four or more, the single view below that (galleryStartView). A figure row sets it with config.galleryStart.",
+    },
+    view: {
+      control: false,
+      description:
+        'The view the reader is in, "grid" | "single" (v-model:view); the shell shares it between the pane and the fullscreen dialog.',
+    },
   },
   render: chapterFrame(FigureImages, {
     template: `<div style="height:720px;padding:20px;background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
   }),
 };
 
-/** Ten plates, each with its own long legend (History Figure 6). Reduced
- *  motion (the Storybook default): the clock is off, so step with the
- *  arrows, the thumbnails or the arrow keys. */
+/** Ten plates (History Figure 6): a set this size opens as the grid of all
+ *  of them. A tile opens the single view on its image; the grid button in
+ *  the controls goes back. The arrow keys walk the tiles. */
 export const TenImages = {};
 
-/** The same set turning on its own: a step every 15 s, paused while the
- *  pointer or focus is on it, stopped by any manual step. Set Motion to
- *  "App motion" in the toolbar, as this story does. */
+/** The same set opened on one image (`start: "single"`), each plate with
+ *  its own long legend. Reduced motion (the Storybook default): the clock
+ *  is off, so step with the arrows, the thumbnails or the arrow keys. */
+export const TenImagesSingle = {
+  args: { start: "single" },
+};
+
+/** The single view turning on its own: a step every 15 s, paused while the
+ *  pointer or focus is on it, stopped by any manual step and started again
+ *  by the play button. Set Motion to "App motion" in the toolbar, as this
+ *  story does. */
 export const Autoplay = {
+  args: { start: "single" },
   globals: { reduceMotion: false },
+};
+
+/** On the dark ground, as in the figure pane and the fullscreen dialog:
+ *  the chrome takes the pane's ink. */
+export const GridOnDark = {
+  args: { legendAbove: true },
+  render: chapterFrame(FigureImages, {
+    template: `<div class="figure-pane--dark" style="height:720px;padding:16px 0 0;"><StoryComponent v-bind="args" /></div>`,
+  }),
 };
 
 /** Two images under one shared legend: the smallest set that is a gallery
@@ -112,11 +144,22 @@ export const LegendAbove = {
 };
 
 /** In the fullscreen dialog (`large`): bigger arrows and thumbnails, a wider
- *  legend, the stage taking most of the height. */
+ *  legend, the stage taking most of the height, and the arrow keys working
+ *  from anywhere on the page. On paper, as a chapter whose pane is paper
+ *  opens it. */
 export const Large = {
-  args: { large: true },
+  args: { large: true, start: "single" },
   render: chapterFrame(FigureImages, {
     template: `<div style="height:100vh;padding:20px;background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
+  }),
+};
+
+/** The dialog on the dark ground (History): arrows on a chip of the ground,
+ *  the legend in the pane's mono. */
+export const LargeOnDark = {
+  args: { large: true, start: "single" },
+  render: chapterFrame(FigureImages, {
+    template: `<div class="figure-pane--dark" style="height:100vh;padding:20px;"><StoryComponent v-bind="args" /></div>`,
   }),
 };
 
@@ -129,9 +172,19 @@ export const GalleryInline = {
     label: "FIG 07",
     title: "Vesalius, De humani corporis fabrica",
     fit: false,
+    start: "single",
   },
   render: chapterFrame(FigureImages, {
     template: `<div style="max-width:390px;padding:16px;background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
+  }),
+};
+
+/** The grid inline on a phone: square tiles, three to a row, the grid as
+ *  tall as they make it. */
+export const GridInline = {
+  args: { fit: false },
+  render: chapterFrame(FigureImages, {
+    template: `<div style="max-width:390px;padding:16px 0;background:rgb(var(--color-paper));"><StoryComponent v-bind="args" /></div>`,
   }),
 };
 
@@ -172,6 +225,7 @@ export const GalleryWithVideoLoop = {
     label: "FIG",
     title: "Brenda Milner and H.M.",
     index: 3,
+    start: "single",
   },
 };
 

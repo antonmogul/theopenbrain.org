@@ -7,7 +7,9 @@
  * image is a static figure; several are a set the shell shows as a rotating
  * gallery (History Figures 2, 6 and 7, the portraits, Milner and H.M.):
  * one image at a time with thumbnails and arrows, stepping every 15 s until the
- * reader takes over (OPENBRAIN-144, after OPENBRAIN-97's thumbnail grid).
+ * reader takes over (OPENBRAIN-144, after OPENBRAIN-97's thumbnail grid), or
+ * all of them at once as a grid, which is how a larger set opens
+ * (OPENBRAIN-177).
  * Pure functions, so the rules are testable without mounting anything.
  */
 
@@ -88,4 +90,38 @@ export function youtubePlayerUrl(id, start = 0) {
   const from =
     Number.isFinite(start) && start > 0 ? `&start=${Math.floor(start)}` : "";
   return `https://www.youtube-nocookie.com/embed/${v}?rel=0&playsinline=1${from}`;
+}
+
+/** A set of this many images or more opens as the grid of all of them
+ *  (Stuart, 11 Nov: the cell doctrine's ten plates, seen together first). */
+export const GRID_START_MIN = 4;
+
+/**
+ * The view a gallery opens in: "grid" (every image at once) or "single" (one
+ * image, turning on its own). A set of four or more opens as the grid; a
+ * pair or a trio keeps the rotating single view. A figure's row can say
+ * otherwise with `config.galleryStart: "grid" | "single"`.
+ */
+export function galleryStartView(count, preference) {
+  if (!(count > 1)) return "single";
+  if (preference === "grid" || preference === "single") return preference;
+  return count >= GRID_START_MIN ? "grid" : "single";
+}
+
+/** Columns for a grid of `count` images: wide (the pane, the dialog) and
+ *  narrow (a phone's text column), so no row is left with one stray tile
+ *  more often than it must be. */
+export function gridColumns(count) {
+  const wide =
+    count <= 3
+      ? Math.max(count, 1)
+      : count === 4
+        ? 2
+        : count <= 6
+          ? 3
+          : count <= 12
+            ? 4
+            : 5;
+  const narrow = count <= 4 ? Math.min(Math.max(count, 1), 2) : 3;
+  return { wide, narrow };
 }
