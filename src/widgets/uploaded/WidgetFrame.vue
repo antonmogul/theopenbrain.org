@@ -14,6 +14,10 @@
  * its picture, caption and controls into the box instead of overflowing it.
  * A widget that stays taller anyway (uploaded before the kit had `fit`) is
  * shown shrunk to the box, whole, rather than cut off.
+ *
+ * With `fullScreen` (the dialog the band's expand button opens,
+ * OPENBRAIN-178) the document is built saying so, and the widget lays itself
+ * out for a screen of its own.
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
@@ -46,6 +50,8 @@ const props = defineProps({
   initialExplanation: { type: Boolean, default: false },
   eager: { type: Boolean, default: false },
   waitForArtwork: { type: Boolean, default: false },
+  /** The frame is the full-screen dialog's: the widget is told so. */
+  fullScreen: { type: Boolean, default: false },
 });
 const emit = defineEmits(["report"]);
 
@@ -80,6 +86,7 @@ const doc = computed(() =>
     maxHeight: initialFit,
     initialExplanation: props.initialExplanation,
     waitForArtwork: props.waitForArtwork,
+    fullScreen: props.fullScreen,
   })
 );
 
@@ -148,6 +155,19 @@ function onMessage(e) {
     r.errors = [...r.errors, m.message].slice(-20);
   } else if (m.type === "blocked") {
     if (!r.blocked.includes(m.url)) r.blocked = [...r.blocked, m.url];
+  } else if (m.type === "escape") {
+    // Escape pressed in the full-screen frame: the page never saw it. Hand
+    // it on as the key press it was, so the dialog closes as it does from
+    // its own controls.
+    if (props.fullScreen)
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+    return;
   } else return;
   report.value = r;
   emit("report", r);

@@ -11,7 +11,11 @@ import {
 } from "vue";
 import { routerKey } from "vue-router";
 import { lockReaderScroll } from "@/helper/readerScrollLock";
-import { WIDGET_FIT, WIDGET_SCROLLABLE } from "@/widgets/uploaded/widgetHost";
+import {
+  WIDGET_FIT,
+  WIDGET_FULLSCREEN,
+  WIDGET_SCROLLABLE,
+} from "@/widgets/uploaded/widgetHost";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const props = defineProps({
@@ -30,6 +34,12 @@ const bodyHeight = ref(0);
 provide(WIDGET_FIT, bodyHeight);
 provide(
   WIDGET_SCROLLABLE,
+  computed(() => props.wide)
+);
+// An uploaded widget in the full-viewport panel is told it is full screen,
+// and lays itself out for that (OPENBRAIN-178).
+provide(
+  WIDGET_FULLSCREEN,
   computed(() => props.wide)
 );
 let bodyObserver = null;

@@ -688,6 +688,76 @@ try {
       );
       await step(
         result,
+        "the Penfield binder opens full screen with the screen to itself, and Escape pressed inside it closes the dialog",
+        async () => {
+          // OPENBRAIN-178. The expand button under the band opens a fresh
+          // copy of the upload in the dialog; the bridge tells it so.
+          const id = "upload:history-penfield-binder";
+          if (!widgetBlocks.some(({ block }) => block.widgetId === id)) return;
+          const band = page
+            .locator(`[data-widget-stage="${id}"]`)
+            .locator("xpath=ancestor::div[contains(@class,'wb-body')][1]");
+          const expand = band.locator(".wb-btn--expand");
+          await expect(expand).toHaveCount(1);
+          // The band at the top of the screen, as a reader lands on it.
+          await scrollTo(
+            page,
+            (await band.evaluate(
+              (element) => element.getBoundingClientRect().top + scrollY
+            )) - 64
+          );
+          await expand.click();
+          const frame = page.locator(".demo-panel iframe.widget-frame");
+          await expect(frame).toHaveCount(1, { timeout: 20000 });
+          const inner = frame.contentFrame();
+          await expect(inner.locator("html")).toHaveAttribute(
+            "data-ob-fullscreen",
+            "",
+            { timeout: 20000 }
+          );
+          await expect(inner.locator("#tabs .tab")).toHaveCount(7);
+          // Its heading and source line are not drawn, and no tab sits under
+          // the dialog's Close button.
+          const close = await page.locator(".demo-close").boundingBox();
+          const at = await frame.boundingBox();
+          const drawn = await inner.locator("#binder").evaluate(() => {
+            const box = (node) => {
+              const r = node.getBoundingClientRect();
+              return [r.left, r.top, r.right, r.bottom];
+            };
+            return {
+              head: box(document.querySelector(".head")),
+              cap: box(document.querySelector(".cap")),
+              tabs: [...document.querySelectorAll("#tabs .tab")].map(box),
+            };
+          });
+          for (const [left, top, right, bottom] of [drawn.head, drawn.cap]) {
+            expect(right - left).toBeLessThanOrEqual(1);
+            expect(bottom - top).toBeLessThanOrEqual(1);
+          }
+          for (const [left, top, right, bottom] of drawn.tabs)
+            expect(
+              left + at.x < close.x + close.width &&
+                right + at.x > close.x &&
+                top + at.y < close.y + close.height &&
+                bottom + at.y > close.y,
+              "a tab under the Close button"
+            ).toBe(false);
+          await inner.locator("#tabs .tab").first().click();
+          await expect(inner.locator("#binder")).toHaveAttribute(
+            "data-open",
+            "true"
+          );
+          await noOverflow(page);
+          await shot(page, result, "binder-full-screen");
+          // Focus is inside the sandboxed frame now: Escape still closes.
+          await page.keyboard.press("Escape");
+          await expect(page.locator(".demo-panel")).toHaveCount(0);
+          await expect(expand).toBeFocused();
+        }
+      );
+      await step(
+        result,
         "Broca and Fritsch figures survive their actual prose intervals and clear at the next barrier",
         async () => {
           if (viewport.width >= 1024) {

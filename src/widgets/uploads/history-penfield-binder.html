@@ -4,18 +4,23 @@
   Title:    Penfield's case binder
   Chapter:  History (Foundations of Neuroscience), Box "Wilder Penfield and the Montreal Procedure"
   Author:   Stuart Trenholm · Design: Malpeso Studio (Widget Library Figma, page 1.2, "Binder" frames 107:56–107:1052)
-  Version:  1 (2026-11-10)
-  Changes:  First version. Replaces the case cabinet (the Vue view) with the ring binder:
-            a cover, seven patient tabs, the stimulation map with the probe, and the report.
-            Motion: the cover and the pages turn on the rings as real leaves, the probe
-            travels to a point and touches it, rings spread, and the report is typed on.
-            Over the map the probe is the pointer. The photograph says "Open" under the pointer.
+  Version:  2 (2026-11-11)
+  Changes:  2 (11 Nov 2026). Full screen: the heading and the source line are not drawn
+            and the binder has the screen. The letter opens large like the photograph.
+            A page's index tab turns with it, on both faces of the leaf.
+            1 (10 Nov 2026). First version. Replaces the case cabinet (the Vue view) with
+            the ring binder: a cover, seven patient tabs, the stimulation map with the
+            probe, and the report. Motion: the cover and the pages turn on the rings as
+            real leaves, the probe travels to a point and touches it, rings spread, and the
+            report is typed on. Over the map the probe is the pointer. The photograph says
+            "Open" under the pointer.
   Sources:  Penfield W, Perot P. The brain's record of auditory and visual experience:
             a final summary and discussion. Brain 1963;86:595–696. Case text, maps and
             point positions are the book's verified appendix data
             (src/data/history/penfieldAppendix.json), unchanged.
   To check: 1. The typed letter behind the map is a design placeholder (a 1922 family
                letter from California, not a Penfield document). Replace or remove it.
+               Opened large, its caption says what it is.
             2. The photograph needs a caption, a source and a credit.
             3. Case 32, point 4: the design marks it on the map at the small mark between
                16 and 3. The verified data had no position for it. Confirm, or remove
@@ -259,7 +264,7 @@
         transform: rotate(180deg);
       }
       /* The open case's tab reaches onto its page. */
-      .tab[aria-pressed="true"]::before {
+      .tab.is-open::before {
         content: "";
         position: absolute;
         top: 0;
@@ -666,6 +671,29 @@
         pointer-events: none;
       }
 
+      /* A page's index tab turns with it: a picture of the tab on each face of
+         the leaf. Its place on the leaf is the tab's place on the right; turned
+         over on the rings, that is its place on the left. The tabs themselves
+         wait out of sight and take their new side as the leaf lands. */
+      .tab.is-turning {
+        visibility: hidden;
+      }
+      .leaf .tab {
+        left: calc(460 * var(--u));
+        z-index: auto;
+        transition: none;
+        cursor: default;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(1px);
+      }
+      .leaf .tab--back {
+        transform: rotateY(180deg) translateZ(1px);
+      }
+      .leaf .tab .leaf__shade {
+        background: rgba(0, 0, 0, 0.45);
+      }
+
       /* ── Phones and narrow columns: the same binder as a stack. */
       .binder[data-layout="stack"] {
         display: grid;
@@ -708,7 +736,7 @@
         letter-spacing: -0.02em;
       }
       /* The open case's tab: ruled in ink (there is no page edge to reach onto). */
-      .binder[data-layout="stack"] .tab[aria-pressed="true"]::before {
+      .binder[data-layout="stack"] .tab.is-open::before {
         content: none;
       }
       .binder[data-layout="stack"] .tab[aria-pressed="true"] .tab__b {
@@ -759,7 +787,7 @@
         min-height: 44px;
       }
 
-      /* ── The photograph, large. */
+      /* ── The photograph or the letter, large. */
       .lb {
         position: fixed;
         inset: 0;
@@ -849,6 +877,59 @@
         max-width: var(--cap-w, 280px);
       }
 
+      /* ── Full screen (the book's dialog): the binder has the screen. The
+         heading and the source line are not drawn (they stay for screen
+         readers). layout() keeps the tabs clear of the dialog's Close button
+         in the top right corner. */
+      html[data-ob-fullscreen] .head,
+      html[data-ob-fullscreen] .cap {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      html[data-ob-fullscreen] .w {
+        max-width: none;
+        grid-template-rows: minmax(0, 1fr);
+        gap: 0;
+        padding: 28px;
+      }
+      /* The large view's own control would sit under the dialog's Close
+         button, and two crosses in one corner say nothing. It moves to the
+         other corner and says where it goes. */
+      .lb__ib,
+      .lb__t {
+        display: none;
+      }
+      html[data-ob-fullscreen] .lb__x {
+        left: 12px;
+        right: auto;
+        width: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        font: 500 12px/1 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      html[data-ob-fullscreen] .lb__ix {
+        display: none;
+      }
+      html[data-ob-fullscreen] .lb__ib,
+      html[data-ob-fullscreen] .lb__t {
+        display: block;
+      }
+      /* A phone: the tabs come first, below the Close button. */
+      html[data-ob-fullscreen] .w[data-stack] {
+        grid-template-rows: auto;
+        padding: var(--ob-close-clear, 60px) 16px 24px;
+      }
+
       @media (prefers-reduced-motion: reduce) {
         * {
           transition: none !important;
@@ -920,9 +1001,13 @@
 
       <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photograph">
         <button type="button" class="lb__x" id="lbx" aria-label="Close">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+          <svg class="lb__ix" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
             <path d="M2 2l16 16M18 2L2 18" />
           </svg>
+          <svg class="lb__ib" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <path d="M7 3L2 8l5 5M2 8h12" />
+          </svg>
+          <span class="lb__t" aria-hidden="true">Back to the binder</span>
         </button>
         <img id="lbimg" alt="" />
         <p id="lbcap"></p>
@@ -959,6 +1044,7 @@
           fn({ accent: null, reduceMotion: this.reducedMotion, ramp: null });
         },
         maxHeight: null,
+        fullScreen: document.documentElement.hasAttribute("data-ob-fullscreen"),
         onFit() {},
         resize() {},
       };
@@ -995,7 +1081,8 @@
         p.hotspots.length ? p.hotspots : EXTRA_HOTSPOTS[c.id]?.[p.id] || [];
 
       // Loose things in the binder (Figma 107:130, 107:131): centre, width and
-      // tilt in the left page's pixels. Only `zoom` ones open large.
+      // tilt in the left page's pixels. Each opens large: `name` names the
+      // large view, `alt` says what it shows, `caption` is the line under it.
       const EPHEMERA = [
         {
           id: "letter",
@@ -1003,8 +1090,12 @@
           cx: 298.9,
           cy: 512.5,
           rot: 6.58,
-          zoom: false,
-          label: "A typed letter. Drag to move it.",
+          zoom: true,
+          name: "Letter",
+          label: "A typed letter. Drag to move it, or press Enter to see it large.",
+          alt: "A typed letter on a creased sheet, headed November 5, 1922, Box 169 Route 1, Van Nuys, California. It begins “Dear Children:” and gives family news: a class of young people to teach, Herbert’s new car, and a lot bought in Lankershim with walnut trees on it.",
+          caption:
+            "A family letter typed in Van Nuys, California, on 5 November 1922. A period piece: it is not one of Penfield’s papers.",
         },
         {
           id: "photo",
@@ -1013,6 +1104,7 @@
           cy: 358.8,
           rot: -10.12,
           zoom: true,
+          name: "Photograph",
           label: "Photograph. Drag to move it, or press Enter to see it large.",
           alt: "A black and white photograph: about twenty people, most in white coats, sit and stand around a long table. Two men in suits at the front look at a tray of brain slices.",
         },
@@ -1047,14 +1139,34 @@
         $("tabs").append(b);
         return b;
       });
-      function paintTabs() {
+      // `open` is the tab drawn reaching onto its page: the open case's, except
+      // while a page turns back, when the page it will cover still shows.
+      function paintTabs(open = state.open ? state.c : -1) {
         tabs.forEach((b, i) => {
           b.setAttribute("aria-pressed", String(state.open && i === state.c));
+          b.classList.toggle("is-open", i === open);
           b.classList.toggle(
             "is-left",
             state.open && i < state.c && binder.dataset.layout === "spread"
           );
         });
+      }
+      // A picture of a tab for the turning leaf: as it sits on the right of
+      // the binder (the leaf's front) or, `back`, on the left. Nothing in it
+      // can be used or is read out.
+      function tabCopy(i, { back = false, open = false } = {}) {
+        const t = el(
+          "div",
+          {
+            class: "tab" + (back ? " tab--back is-left" : "") + (open ? " is-open" : ""),
+            "aria-hidden": "true",
+            "data-tab": String(i),
+            style: tabs[i].getAttribute("style"),
+          },
+          tabs[i].innerHTML
+        );
+        t.querySelector(".tab__b").append(el("span", { class: "leaf__shade" }));
+        return t;
       }
 
       /* ── Rings (drawn once) ── */
@@ -1148,9 +1260,9 @@
         return b;
       });
 
-      /* ── The large photograph ── */
+      /* ── The photograph or the letter, large ── */
       let lbReturn = null;
-      let lbFrom = null; // where the photograph lies in the binder, to fly from and back to
+      let lbFrom = null; // where it lies in the binder, to fly from and back to
       function lbFlight() {
         const img = $("lbimg");
         const a = lbReturn?.getBoundingClientRect();
@@ -1164,6 +1276,7 @@
       function openLightbox(e, from) {
         lbReturn = from;
         lbFrom = e;
+        $("lb").setAttribute("aria-label", e.name);
         $("lbimg").src = ASSETS[e.id];
         $("lbimg").alt = e.alt || "";
         $("lbcap").textContent = e.caption || "";
@@ -1210,7 +1323,11 @@
         if (ev.target === $("lb")) closeLightbox();
       });
       document.addEventListener("keydown", (ev) => {
-        if (ev.key === "Escape") closeLightbox();
+        // Used up here, so the book's full-screen dialog stays open.
+        if (ev.key === "Escape" && !$("lb").hidden) {
+          ev.preventDefault();
+          closeLightbox();
+        }
         // The dialog has one control: keep focus on it.
         if (ev.key === "Tab" && !$("lb").hidden) {
           ev.preventDefault();
@@ -1544,7 +1661,9 @@
       }
       // One leaf turns on the rings, from `from` to `to` degrees: 0 is flat on
       // the right, -180 flat on the left.
-      async function turn({ front, back, from, to, ms, ghost }) {
+      // `tabsOn` are the cases whose pages turn with it (their tabs change
+      // sides), `openTab` the one of them drawn open on the leaf's front.
+      async function turn({ front, back, from, to, ms, ghost, tabsOn = [], openTab = -1 }) {
         const leaf = el("div", { class: "leaf" });
         const shades = [front, back].map((face, n) => {
           face.classList.add("leaf__face");
@@ -1552,8 +1671,16 @@
           const shade = el("div", { class: "leaf__shade" });
           face.append(shade);
           leaf.append(face);
-          return shade;
+          return [shade];
         });
+        for (const i of tabsOn) {
+          tabs[i].classList.add("is-turning");
+          [false, true].forEach((isBack, n) => {
+            const copy = tabCopy(i, { back: isBack, open: !isBack && i === openTab });
+            leaf.append(copy);
+            shades[n].push(copy.querySelector(".leaf__shade"));
+          });
+        }
         const cast = el("div", { class: "cast" });
         if (ghost) {
           ghost.classList.add("ghost");
@@ -1563,16 +1690,22 @@
         const timing = { duration: ms, easing: "cubic-bezier(0.45, 0.05, 0.25, 1)", fill: "both" };
         // Each face is darkest edge on (half way), clear when it lies flat.
         const lit = (flatAt) => (from === flatAt ? [0, 1, 1] : [1, 1, 0]);
-        shades.forEach((shade, n) =>
-          shade.animate(
-            lit(n ? -180 : 0).map((opacity, i) => ({ opacity: opacity * 0.5, offset: i / 2 })),
-            timing
+        shades.forEach((face, n) =>
+          face.forEach((shade) =>
+            shade.animate(
+              lit(n ? -180 : 0).map((opacity, i) => ({ opacity: opacity * 0.5, offset: i / 2 })),
+              timing
+            )
           )
         );
         cast.animate([{ opacity: 0 }, { opacity: 1, offset: 0.5 }, { opacity: 0 }], timing);
         await leaf
           .animate([{ transform: `rotateY(${from}deg)` }, { transform: `rotateY(${to}deg)` }], timing)
           .finished.catch(() => {});
+        // The tabs take their new side before the leaf goes, so no frame is
+        // without them.
+        paintTabs();
+        for (const i of tabsOn) tabs[i].classList.remove("is-turning");
         leaf.remove();
         cast.remove();
         ghost?.remove();
@@ -1614,6 +1747,11 @@
           return;
         }
         state.busy = true;
+        // The pages that turn take their tabs with them: every case between
+        // the one left and the one arrived at changes sides, as one leaf.
+        const lo = wasOpen ? Math.min(from, i) : 0;
+        const hi = wasOpen ? Math.max(from, i) : i;
+        const tabsOn = tabs.map((_, n) => n).filter((n) => n >= lo && n < hi);
         try {
           if (!wasOpen) {
             // The cover swings over on the rings and lands as the left page,
@@ -1622,18 +1760,18 @@
             left.style.visibility = "hidden";
             binder.dataset.open = "true";
             paintTabs();
-            await turn({ front: coverCopy, back, from: peeked ? -7 : 0, to: -180, ms: 780 });
+            await turn({ front: coverCopy, back, from: peeked ? -7 : 0, to: -180, ms: 780, tabsOn });
             left.style.visibility = "";
           } else {
             // Forward, the right page turns over and lands as the new left
             // page; back, the left page comes over as the new right one. The
             // page it leaves shows the new case at once; the page it lands on
-            // keeps its old face until then.
-            setTimeout(paintTabs, 330);
+            // keeps its old face until then, and so does that page's tab.
+            paintTabs(fwd ? i : from);
             await turn(
               fwd
-                ? { front: oldRight, back: copyOf(left, 2), from: 0, to: -180, ms: 680, ghost: oldLeft }
-                : { front: copyOf(right, 2), back: oldLeft, from: -180, to: 0, ms: 680, ghost: oldRight }
+                ? { front: oldRight, back: copyOf(left, 2), from: 0, to: -180, ms: 680, ghost: oldLeft, tabsOn, openTab: from }
+                : { front: copyOf(right, 2), back: oldLeft, from: -180, to: 0, ms: 680, ghost: oldRight, tabsOn, openTab: i }
             );
           }
         } finally {
@@ -1675,6 +1813,8 @@
       const w = $("w");
       function layout() {
         const fit = document.documentElement.hasAttribute("data-ob-fit");
+        // Full screen, the binder may be larger than it is on the page.
+        const full = document.documentElement.hasAttribute("data-ob-fullscreen");
         const W = stage.clientWidth;
         const stack = W < 700;
         const cap = $("cap");
@@ -1683,7 +1823,7 @@
         // out of the way, which is the same whichever place the line is in
         // now, so the choice cannot flip back and forth.
         let side = false;
-        if (fit && !stack) {
+        if (fit && !stack && !full) {
           const inFlow = w.dataset.cap !== "side";
           const gap = parseFloat(getComputedStyle(w).rowGap) || 0;
           const roomy = stage.clientHeight + (inFlow ? cap.offsetHeight + gap : 0);
@@ -1700,7 +1840,18 @@
           // 944 of pages, tabs to the right, tabs and the photograph to the left
           s = W / 1016;
           if (fit && stage.clientHeight > 0) s = Math.min(s, stage.clientHeight / 698);
-          s = Math.max(0.45, Math.min(1.25, s));
+          if (full) {
+            // The dialog's Close button covers a square in the top right
+            // corner. The tabs keep clear of it: they end to its left, or
+            // start below it. (The binder is in the middle of the screen; a
+            // tab under the pointer is 10 wider.)
+            const root = document.documentElement;
+            const clear = parseFloat(getComputedStyle(root).getPropertyValue("--ob-close-clear")) || 60;
+            const beside = (root.clientWidth / 2 - clear) / 498;
+            const below = (root.clientHeight / 2 - clear) / 314;
+            s = Math.min(s, Math.max(beside, below));
+          }
+          s = Math.max(0.45, Math.min(full ? 1.6 : 1.25, s));
         }
         binder.dataset.layout = stack ? "stack" : "spread";
         w.toggleAttribute("data-stack", stack);

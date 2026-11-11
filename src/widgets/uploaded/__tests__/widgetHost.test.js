@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   CSP,
+  FULLSCREEN_CLOSE_CLEAR,
   buildWidgetDoc,
   fitHeight,
   fitMessage,
@@ -281,5 +282,34 @@ describe("buildWidgetDoc with a fixed height", () => {
         maxHeight: 500,
       })
     ).toMatch(/<html data-ob-reduce-motion data-ob-fit>/);
+  });
+});
+
+describe("buildWidgetDoc in the full-screen dialog (OPENBRAIN-178)", () => {
+  it("tells the widget it is full screen and which corner the Close button covers", () => {
+    const doc = buildWidgetDoc("<html><head></head><body>x</body></html>", {
+      maxHeight: 900,
+      fullScreen: true,
+    });
+    expect(doc).toMatch(/<html data-ob-fit data-ob-fullscreen>/);
+    expect(doc).toContain(`--ob-close-clear:${FULLSCREEN_CLOSE_CLEAR}px`);
+    expect(doc).toContain("window.__obFull=true;");
+    expect(doc).toContain("fullScreen:!!window.__obFull");
+  });
+
+  it("says nothing of it anywhere else", () => {
+    const doc = buildWidgetDoc("<html><head></head><body>x</body></html>", {
+      maxHeight: 900,
+    });
+    expect(doc).not.toMatch(/<html[^>]*data-ob-fullscreen/);
+    expect(doc).not.toContain("--ob-close-clear:");
+    expect(doc).not.toContain("__obFull=true");
+  });
+
+  it("passes Escape on from a full-screen frame only, and only if the widget left it", () => {
+    const doc = buildWidgetDoc("<p>hi</p>", { fullScreen: true });
+    expect(doc).toContain(
+      'if(window.__obFull)window.addEventListener("keydown",function(e){if(e.key==="Escape"&&!e.defaultPrevented)post({type:"escape"})})'
+    );
   });
 });

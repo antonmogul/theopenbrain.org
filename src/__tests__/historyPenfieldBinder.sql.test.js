@@ -1,10 +1,13 @@
 // @vitest-environment node
-/** Runs 20261110000000_history_penfield_binder.sql in PGlite (OPENBRAIN-168).
+/** Runs 20261110000000_history_penfield_binder.sql in PGlite (OPENBRAIN-168),
+ * then 20261111178000_history_penfield_binder_v2.sql (OPENBRAIN-178), which
+ * replaces the upload's HTML with the widget file as it is now.
  * HISTORY_SQL_HARNESS=/absolute/path/to/@electric-sql/pglite npm test --
  * --pool=forks src/__tests__/historyPenfieldBinder.sql.test.js (the SQL run is
  * skipped without it; the file check always runs).
  */
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
@@ -14,18 +17,48 @@ const sql = readFileSync(
   "supabase/migrations/20261110000000_history_penfield_binder.sql",
   "utf8"
 );
+const sqlV2 = readFileSync(
+  "supabase/migrations/20261111178000_history_penfield_binder_v2.sql",
+  "utf8"
+);
 const file = readFileSync(
   "src/widgets/uploads/history-penfield-binder.html",
   "utf8"
 );
+const htmlIn = (text) =>
+  text.slice(text.indexOf("$w$") + "$w$".length, text.lastIndexOf("$w$"));
+// Version 1, as it was pushed on 10 Nov: the first migration is not edited.
+const fileV1 = htmlIn(sql);
 
-describe("Penfield binder migration", () => {
-  it("carries the widget file as it is in src/widgets/uploads", () => {
-    const html = sql.slice(
-      sql.indexOf("$w$") + "$w$".length,
-      sql.lastIndexOf("$w$")
+describe("Penfield binder migrations", () => {
+  it("the latest carries the widget file as it is in src/widgets/uploads", () => {
+    expect(htmlIn(sqlV2)).toBe(file);
+  });
+
+  it("states the file's size and hash", () => {
+    expect(sqlV2).toContain(
+      `-- ${Buffer.byteLength(file, "utf8")} bytes, sha256 ${createHash("sha256").update(file).digest("hex")}`
     );
-    expect(html).toBe(file);
+  });
+
+  it("the first still carries version 1", () => {
+    expect(fileV1).toContain("Version:  1 (2026-11-10)");
+    expect(file).toContain("Version:  2 (2026-11-11)");
+  });
+
+  it("version 2 changes the upload's HTML and nothing else", () => {
+    const statements = sqlV2
+      .split("\n")
+      .filter((line) =>
+        /^(insert|update|delete|alter|create|drop)\b/i.test(line)
+      );
+    expect(statements).toEqual([
+      "insert into public.widget_uploads (slug, title, description, author, ramp, html, status)",
+    ]);
+    expect(sqlV2).toContain("set html = excluded.html, updated_at = now()");
+    expect(sqlV2).toContain(
+      "where public.widget_uploads.html is distinct from excluded.html"
+    );
   });
 });
 
@@ -100,7 +133,7 @@ describe.skipIf(!harness || !existsSync(harness))(
         status: "published",
         ramp: "fund",
       });
-      expect(up[0].html).toBe(file);
+      expect(up[0].html).toBe(fileV1);
 
       const { rows } = await db.query(
         `select s.slug, p.content->'blocks'->0 first, p.content->'blocks'->1 w
@@ -134,6 +167,48 @@ describe.skipIf(!harness || !existsSync(harness))(
         route: "/case-cabinet",
       });
       expect(by.elsewhere.w).not.toHaveProperty("fullScreen");
+    });
+
+    it("version 2 replaces the upload's HTML, once, and leaves the chapter alone", async () => {
+      const db = await makeDb();
+      await db.exec(sql);
+      const paragraphs = async () =>
+        (
+          await db.query(
+            "select id, content, updated_at from paragraphs order by id"
+          )
+        ).rows;
+      const before = await paragraphs();
+      await db.exec(sqlV2);
+      const row = async () =>
+        (
+          await db.query(
+            "select slug, title, status, ramp, html, updated_at from widget_uploads"
+          )
+        ).rows;
+      const first = await row();
+      expect(first).toHaveLength(1);
+      expect(first[0]).toMatchObject({
+        slug: "history-penfield-binder",
+        title: "Penfield's case binder",
+        status: "published",
+        ramp: "fund",
+      });
+      expect(first[0].html).toBe(file);
+      await db.exec(sqlV2); // a second push changes nothing
+      expect(await row()).toEqual(first);
+      expect(await paragraphs()).toEqual(before);
+    });
+
+    it("version 2 alone, on a database without the upload, publishes it", async () => {
+      const db = await makeDb();
+      await db.exec(sqlV2);
+      const { rows } = await db.query(
+        "select slug, status, html from widget_uploads"
+      );
+      expect(rows).toHaveLength(1);
+      expect(rows[0].status).toBe("published");
+      expect(rows[0].html).toBe(file);
     });
   }
 );

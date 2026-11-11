@@ -20,6 +20,15 @@
  * bridge gives the widget OB.maxHeight, `--ob-max-height` and
  * `html[data-ob-fit]` so it can size its picture to what is left.
  *
+ * Opened full screen (the band's expand button, OPENBRAIN-178) a widget is a
+ * fresh copy in a dialog. The bridge says so (`OB.fullScreen`,
+ * `html[data-ob-fullscreen]`) so the widget can drop its heading and caption
+ * and give the room to its picture, and `--ob-close-clear` is the corner the
+ * dialog's Close button covers. The widget decides what to do with that; the
+ * host does not restyle it. Escape pressed inside that frame comes back as an
+ * `escape` message (a sandboxed frame keeps its key presses), which the frame
+ * hands to the page so the dialog closes.
+ *
  * Imports only plain ESM helpers (no @/ alias, extensions spelled out):
  * scripts/timeline/capture-widget-thumbs.mjs loads this file straight into
  * Node to build the same srcdoc the reader does.
@@ -87,7 +96,7 @@ const BRIDGE = `(function(){
   var post=function(m){try{m.__ob=1;parent.postMessage(m,"*")}catch(e){}};
   var rm=document.documentElement.hasAttribute("data-ob-reduce-motion")||!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
   var subs=[],fits=[];
-  window.OB={reducedMotion:rm,maxHeight:window.__obFit||null,
+  window.OB={reducedMotion:rm,maxHeight:window.__obFit||null,fullScreen:!!window.__obFull,
     onTheme:function(fn){subs.push(fn);try{fn(window.OB.theme||{reduceMotion:rm})}catch(e){}},
     onFit:function(fn){fits.push(fn);try{fn(window.OB.maxHeight)}catch(e){}},
     resize:function(){report()},theme:null};
@@ -105,6 +114,10 @@ const BRIDGE = `(function(){
   window.addEventListener("unhandledrejection",function(e){post({type:"error",message:String(e.reason&&e.reason.message||e.reason)})});
   var ce=console.error;console.error=function(){post({type:"error",message:[].slice.call(arguments).join(" ").slice(0,300)});return ce.apply(console,arguments)};
   document.addEventListener("securitypolicyviolation",function(e){post({type:"blocked",url:e.blockedURI,directive:e.violatedDirective})});
+  // Full screen: Escape pressed inside the frame never reaches the page, so
+  // the dialog would not close. Pass it on, unless the widget used it itself
+  // (preventDefault) to close something of its own.
+  if(window.__obFull)window.addEventListener("keydown",function(e){if(e.key==="Escape"&&!e.defaultPrevented)post({type:"escape"})});
   window.addEventListener("message",function(e){var m=e.data;if(!m||!m.__ob)return;
     if(m.type==="fit"){fit(m.maxHeight);report();return}
     if(m.type!=="theme")return;
@@ -159,6 +172,13 @@ html[data-ob-fit].tob-choices .tob-stage { align-content: stretch; }
 html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
 `;
 
+/**
+ * The square, in px, the full-screen dialog's Close button covers in the top
+ * right corner: 44 px of button, 8 px from each edge, 8 px of air. A widget
+ * reads it as `--ob-close-clear` (DemoModal's .demo-close has the button).
+ */
+export const FULLSCREEN_CLOSE_CLEAR = 60;
+
 const escapeAttr = (s) => String(s).replace(/"/g, "&quot;");
 
 /**
@@ -173,23 +193,26 @@ export function buildWidgetDoc(
     maxHeight = null,
     initialExplanation = false,
     waitForArtwork = false,
+    fullScreen = false,
   } = {}
 ) {
   const tokens = widgetTokens(ramp);
   const fit = Number(maxHeight) > 0 ? Math.round(maxHeight) : 0;
   if (fit) tokens["--ob-max-height"] = `${fit}px`;
+  if (fullScreen) tokens["--ob-close-clear"] = `${FULLSCREEN_CLOSE_CLEAR}px`;
   const vars = Object.entries(tokens)
     .map(([k, v]) => `${k}:${v}`)
     .join(";");
   const head =
     `<meta http-equiv="Content-Security-Policy" content="${escapeAttr(CSP)}">` +
     `<style>:root{${vars}}html,body{overflow-x:hidden}${HOST_STYLE}</style>` +
-    `<script>${fit ? `window.__obFit=${fit};` : ""}${initialExplanation ? "window.__obInitialExplanation=true;" : ""}${waitForArtwork ? "window.__obWaitForArtwork=true;" : ""}${BRIDGE}</scr` +
+    `<script>${fit ? `window.__obFit=${fit};` : ""}${fullScreen ? "window.__obFull=true;" : ""}${initialExplanation ? "window.__obInitialExplanation=true;" : ""}${waitForArtwork ? "window.__obWaitForArtwork=true;" : ""}${BRIDGE}</scr` +
     `ipt>`;
   let doc = String(html || "");
   const attrs =
     (reduceMotion ? " data-ob-reduce-motion" : "") +
-    (fit ? " data-ob-fit" : "");
+    (fit ? " data-ob-fit" : "") +
+    (fullScreen ? " data-ob-fullscreen" : "");
   if (/<head[^>]*>/i.test(doc)) {
     doc = doc.replace(/<head([^>]*)>/i, (m, a) => `<head${a}>${head}`);
   } else if (/<html[^>]*>/i.test(doc)) {
@@ -266,6 +289,8 @@ export function fitScale(reported, maxHeight) {
 export const WIDGET_FIT = Symbol("widgetFit");
 /** Viewport stages keep full width and allow tall tools to scroll naturally. */
 export const WIDGET_SCROLLABLE = Symbol("widgetScrollable");
+/** True inside the full-screen dialog (DemoModal → UploadedWidgetEmbed). */
+export const WIDGET_FULLSCREEN = Symbol("widgetFullScreen");
 
 /**
  * Checks we can make from the file alone (the Studio adds the ones that
