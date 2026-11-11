@@ -15,8 +15,10 @@ import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import OpenerHero from "./OpenerHero.vue";
 import OpenerToc from "./OpenerToc.vue";
+import OpenerTocArt from "./OpenerTocArt.vue";
 import { buildOutline } from "@/composables/useChapterOutline";
 import { coverForModule, reactiveCoverForModule } from "@/helper/chapterCover";
+import { sectionArtForChapter } from "@/helper/sectionArt";
 
 const props = defineProps({
   /* The module row (title, description, slug, ramp, cover_image_url). */
@@ -34,6 +36,11 @@ const cover = computed(() => coverForModule(props.module));
 // (OPENBRAIN-146); keyed by slug so a chapter switch remounts it.
 const reactive = computed(() => reactiveCoverForModule(props.module));
 const outline = computed(() => buildOutline(props.text));
+// A chapter with a picture per section gets the contents that show them
+// (OPENBRAIN-174); every other chapter keeps the numbered list.
+const hasSectionArt = computed(
+  () => !!sectionArtForChapter(props.module?.slug)
+);
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -80,7 +87,16 @@ watch(outline, () => requestAnimationFrame(publishHeight));
       :title="title"
       scroll-target="chapter-toc"
     />
+    <OpenerTocArt
+      v-if="hasSectionArt"
+      id="chapter-toc"
+      :title="title"
+      :subtitle="subtitle"
+      :outline="outline"
+      :chapter-slug="module.slug"
+    />
     <OpenerToc
+      v-else
       id="chapter-toc"
       :title="title"
       :subtitle="subtitle"

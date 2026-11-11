@@ -6,12 +6,14 @@
  * in a WidgetFrame, in the chapter's colour (the ramp on <html>, set by the
  * router), else the colour it was uploaded with. In the figure pane the
  * host provides the height to fit (WIDGET_FIT, OPENBRAIN-148); elsewhere
- * the frame grows with the widget.
+ * the frame grows with the widget. In the full-screen dialog the host says
+ * so (WIDGET_FULLSCREEN, OPENBRAIN-178) and the widget hears it through the
+ * bridge.
  */
 import { computed, inject, onMounted, ref } from "vue";
 import WidgetFrame from "./WidgetFrame.vue";
 import { fetchUploadedWidget } from "./useUploadedWidgets";
-import { WIDGET_FIT, WIDGET_SCROLLABLE } from "./widgetHost";
+import { WIDGET_FIT, WIDGET_FULLSCREEN, WIDGET_SCROLLABLE } from "./widgetHost";
 
 const props = defineProps({
   slug: { type: String, required: true },
@@ -21,6 +23,7 @@ const emit = defineEmits(["ready"]);
 
 const fit = inject(WIDGET_FIT, null);
 const scrollable = inject(WIDGET_SCROLLABLE, ref(false));
+const fullScreen = inject(WIDGET_FULLSCREEN, ref(false));
 const maxHeight = computed(() => (fit && fit.value > 0 ? fit.value : null));
 
 const widget = ref(null);
@@ -54,6 +57,7 @@ const ramp = computed(
       :title="widget.title"
       :max-height="maxHeight"
       :shrink-to-fit="!scrollable"
+      :full-screen="fullScreen"
       :initial-explanation="slug === 'retina-refraction-errors'"
       :eager="eager"
       :wait-for-artwork="slug === 'retina-retinal-cell-types'"

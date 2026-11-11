@@ -90,7 +90,7 @@ export function sectionLabelMap(sections) {
  * links to the section's own id (SectionComp renders <section :id="section.id">).
  *
  * @param {{ intro?: Array, sections?: Array } | null} text
- * @returns {Array<{ id, kind, label, title, anchor, subsections }>}
+ * @returns {Array<{ id, slug, kind, label, title, anchor, subsections }>}
  */
 export function buildOutline(text) {
   const out = [];
@@ -98,6 +98,9 @@ export function buildOutline(text) {
   if (intro) {
     out.push({
       id: intro.id,
+      // The section art and the pane's cards look a section up by slug
+      // (helper/sectionArt.js); the intro's is always "introduction".
+      slug: "introduction",
       kind: "intro",
       label: "0",
       // The transform names the intro after the module (the reader's old h1);
@@ -117,6 +120,7 @@ export function buildOutline(text) {
     if (parent) {
       parent.subsections.push({
         id: s.id,
+        slug: s.slug,
         kind: "box",
         title: s.title,
         anchor: `#${s.id}`,
@@ -125,6 +129,7 @@ export function buildOutline(text) {
     }
     const entry = {
       id: s.id,
+      slug: s.slug,
       kind: s.kind === "box" ? "box" : "section",
       label: labels[s.id || s.title],
       title: s.title,

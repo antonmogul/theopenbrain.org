@@ -4,7 +4,7 @@
  * width as the Studio previews it (OPENBRAIN-135). Use the controls to try
  * another chapter colour; open "Full width" to resize the canvas yourself.
  */
-import { ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import WidgetFrame from "../../uploaded/WidgetFrame.vue";
 import ScaledFrame from "../../uploaded/ScaledFrame.vue";
 import { UPLOADED_WIDGETS, loadWidgetHtml } from "../index.js";
@@ -138,4 +138,34 @@ export const RetinaSynapticArchitecture = {
 export const RetinaRetinabox = {
   ...story("retina-retinabox"),
   name: "Retina: RetINaBox",
+};
+
+// Full screen (OPENBRAIN-178): the binder as the dialog's frame shows it, told
+// through the bridge that it has the screen. Its heading and source line are
+// not drawn, and the tabs keep clear of the corner the Close button covers.
+export const HistoryPenfieldBinderFullScreen = {
+  ...story("history-penfield-binder"),
+  name: "Penfield's case binder, full screen",
+  render: (args) => ({
+    components: { WidgetFrame },
+    setup() {
+      const html = ref("");
+      loadWidgetHtml(args.slug).then((h) => (html.value = offline(h || "")));
+      const height = ref(window.innerHeight);
+      const onResize = () => (height.value = window.innerHeight);
+      onMounted(() => window.addEventListener("resize", onResize));
+      onBeforeUnmount(() => window.removeEventListener("resize", onResize));
+      return { args, html, height, w: byslug[args.slug] };
+    },
+    template: `
+      <WidgetFrame
+        v-if="html"
+        :html="html"
+        :ramp="args.ramp"
+        :title="w.title"
+        :max-height="height"
+        :shrink-to-fit="false"
+        full-screen
+      />`,
+  }),
 };
