@@ -8,6 +8,10 @@ import {
   nextTick,
 } from "vue";
 import { referenceDisplay } from "@/helper/chapterReferences";
+import {
+  jumpToReference,
+  referenceListOnPage,
+} from "@/composables/useReferenceJump";
 
 const refsCtx = inject("references", null);
 
@@ -20,9 +24,16 @@ const currentRef = ref(null);
 const pinned = ref(false);
 const display = computed(() => referenceDisplay(currentRef.value));
 const position = ref({ top: 0, left: 0 });
+// The citation the tooltip is open for, and whether the chapter's reference
+// list is on the page: then the tooltip can take the reader to the entry,
+// and the list can bring them back (OPENBRAIN-179).
+const citation = ref(null);
+const inList = ref(false);
 
-function show(refData, rect) {
+function show(refData, rect, from = null) {
   currentRef.value = refData;
+  citation.value = from;
+  inList.value = referenceListOnPage();
   visible.value = true;
 
   nextTick(() => {
@@ -52,7 +63,15 @@ function show(refData, rect) {
 function hide() {
   visible.value = false;
   currentRef.value = null;
+  citation.value = null;
   pinned.value = false;
+}
+
+function toList() {
+  const number = currentRef.value?.number;
+  const from = citation.value;
+  hide();
+  jumpToReference(number, from);
 }
 
 function handleMouseEnter(e) {
@@ -63,7 +82,7 @@ function handleMouseEnter(e) {
   const refData = refsCtx.getReference(num);
   if (!refData) return;
 
-  show(refData, target.getBoundingClientRect());
+  show(refData, target.getBoundingClientRect(), target);
 }
 
 function handleMouseLeave(e) {
@@ -95,7 +114,7 @@ function handleClick(e) {
 
   pinned.value = true;
   if (!(visible.value && currentRef.value?.number === num))
-    show(refData, target.getBoundingClientRect());
+    show(refData, target.getBoundingClientRect(), target);
 }
 
 function handleKeydown(e) {
@@ -164,6 +183,9 @@ onBeforeUnmount(() => {
           <line x1="10" y1="14" x2="21" y2="3" />
         </svg>
       </a>
+      <button v-if="inList" type="button" class="ct-list" @click="toList">
+        In the reference list <span aria-hidden="true">↓</span>
+      </button>
     </div>
   </Teleport>
 </template>
@@ -233,5 +255,31 @@ onBeforeUnmount(() => {
 
 .ct-doi-icon {
   flex-shrink: 0;
+}
+
+/* To this reference's entry in the chapter's list (OPENBRAIN-179). */
+.ct-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 8px 0 0;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid rgb(var(--color-line));
+  background: none;
+  color: rgb(var(--color-ink));
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ct-list:hover {
+  color: rgb(var(--color-accent));
+}
+.ct-list:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
 }
 </style>
