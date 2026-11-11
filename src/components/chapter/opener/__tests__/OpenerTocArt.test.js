@@ -7,6 +7,11 @@ import { mount } from "@vue/test-utils";
  * only once the pointer rests; the keyboard does the same without the wait;
  * a tap opens a section and the next one goes there; and a click goes
  * through readerJump like every other jump in the reader.
+ *
+ * And, since OPENBRAIN-182: the list is never moved (the first version
+ * shifted it to keep the pointed row under the pointer, and the shifts added
+ * up until the last rows were off the screen); only the pointer moving
+ * points at a section; and the gaps tighten so the tallest state fits.
  */
 
 const { jumpToElement } = vi.hoisted(() => ({ jumpToElement: vi.fn() }));
@@ -80,8 +85,12 @@ const sections = () => wrapper.findAll(".otoc__section");
 const classesOf = (i) => sections()[i].classes();
 const shownPicture = () =>
   wrapper.find(".otoc__pic.is-on").attributes("src") || "";
+// The pointer moving onto section i's row: every row at its own spot.
+const spotOf = (i) => ({ clientX: 300, clientY: 100 + i * 60 });
+const moveOn = (el, spot, pointerType = "mouse") =>
+  el.trigger("pointermove", { pointerType, ...spot });
 const enter = (i, pointerType = "mouse") =>
-  sections()[i].trigger("pointerenter", { pointerType });
+  moveOn(rows()[i], spotOf(i), pointerType);
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -167,60 +176,173 @@ describe("OpenerTocArt", () => {
       .find(".otoc__column")
       .trigger("pointerleave", { pointerType: "mouse" });
     expect(rows()[1].attributes("aria-expanded")).toBe("true");
-    expect(wrapper.vm.shift).toBe(0);
   });
 
-  describe("keeping the pointed row still", () => {
-    // happy-dom has no layout: give the parts and the column their sizes.
-    function sized(columnHeight) {
-      mountToc();
-      const heights = [76, 38]; // section 1's parts, section 2's
-      wrapper.findAll(".otoc__parts-list").forEach((list, i) => {
-        Object.defineProperty(list.element, "scrollHeight", {
-          get: () => heights[i],
-        });
-      });
-      Object.defineProperty(
-        wrapper.find(".otoc__column").element,
-        "clientHeight",
-        { get: () => columnHeight }
-      );
-    }
+  describe("the list stays where it is (OPENBRAIN-182)", () => {
     const rest = () => vi.advanceTimersByTimeAsync(200);
+    const list = () => wrapper.find(".otoc__sections");
+    const openIndex = () =>
+      sections().findIndex((s) => s.classes().includes("is-open"));
 
-    it("moves the list down by what closes above the pointer", async () => {
-      sized(900);
-      await enter(1);
-      await rest();
-      expect(wrapper.vm.shift).toBe(0); // nothing above it was open
-      await enter(2);
-      await rest();
-      expect(wrapper.vm.shift).toBe(76);
-      // Going back up needs nothing: what opens is below the pointer.
-      await enter(1);
-      await rest();
-      expect(wrapper.vm.shift).toBe(76);
-      await wrapper
-        .find(".otoc__column")
-        .trigger("pointerleave", { pointerType: "mouse" });
-      expect(wrapper.vm.shift).toBe(0);
-    });
-
-    it("stops where the list would leave its column", async () => {
-      // 40 kept at the foot, 38 for the parts opening: 22 to move in.
-      sized(100);
-      await enter(1);
-      await rest();
-      await enter(2);
-      await rest();
-      expect(wrapper.vm.shift).toBe(22);
-    });
-
-    it("does not move the list for the keyboard", async () => {
-      sized(900);
-      await rows()[1].trigger("focus");
+    it("is never shifted or transformed, whichever section is open", async () => {
+      mountToc();
+      const unmoved = () => {
+        expect(list().attributes("style")).toBeUndefined();
+        expect(list().element.style.transform).toBe("");
+        // The only thing the block sets is how much its gaps give.
+        expect(wrapper.attributes("style")).toBe("--otoc-fit: 1;");
+      };
+      unmoved();
+      // Down the list, then back up, resting on each.
+      for (const i of [0, 1, 2, 3, 2, 1, 0]) {
+        await enter(i);
+        await rest();
+        expect(openIndex()).toBe(i);
+        unmoved();
+      }
       await rows()[2].trigger("focus");
-      expect(wrapper.vm.shift).toBe(0);
+      unmoved();
+    });
+
+    it("has one section open at a time", async () => {
+      mountToc();
+      for (const i of [1, 2, 1]) {
+        await enter(i);
+        await rest();
+        expect(wrapper.findAll(".otoc__section.is-open").length).toBe(1);
+        expect(wrapper.findAll('[aria-expanded="true"]').length).toBe(1);
+      }
+    });
+
+    it("ignores a move with unchanged coordinates: the rows moved, not the pointer", async () => {
+      mountToc();
+      await enter(1);
+      await rest();
+      await enter(2);
+      await rest();
+      expect(openIndex()).toBe(2);
+      // Section 1 closed above, so section 3's row has come up under the
+      // resting pointer: the browser reports a move at the same spot.
+      await moveOn(rows()[3], spotOf(2));
+      await rest();
+      expect(classesOf(2)).toContain("is-active");
+      expect(openIndex()).toBe(2);
+      expect(shownPicture()).toMatch(/do-different-parts\.webp$/);
+      // And again, however often it is reported.
+      await moveOn(rows()[1], spotOf(2));
+      await moveOn(rows()[3], spotOf(2));
+      await rest();
+      expect(openIndex()).toBe(2);
+      // The reader moving the pointer, by a pixel, does point at it.
+      await moveOn(rows()[3], { clientX: 301, clientY: spotOf(2).clientY });
+      expect(classesOf(3)).toContain("is-active");
+      await rest();
+      expect(openIndex()).toBe(3);
+    });
+
+    it("keeps a section while the pointer is on its parts", async () => {
+      mountToc();
+      await enter(1);
+      await rest();
+      const firstPart = wrapper.find('.otoc__part[href="#b1"]');
+      await moveOn(firstPart, { clientX: 320, clientY: 190 });
+      await moveOn(firstPart, { clientX: 322, clientY: 196 });
+      await rest();
+      expect(classesOf(1)).toContain("is-active");
+      expect(openIndex()).toBe(1);
+    });
+
+    it("does not start the wait again for moves within one section", async () => {
+      mountToc();
+      await enter(1);
+      await vi.advanceTimersByTimeAsync(100);
+      await moveOn(rows()[1], { clientX: 310, clientY: 162 });
+      await vi.advanceTimersByTimeAsync(60);
+      // 160 ms on the section, though the pointer never stopped.
+      expect(openIndex()).toBe(1);
+    });
+
+    it("leaves the gaps between sections to no one", async () => {
+      mountToc();
+      await enter(1);
+      await rest();
+      await moveOn(list(), { clientX: 300, clientY: 500 });
+      await rest();
+      expect(classesOf(1)).toContain("is-active");
+      expect(openIndex()).toBe(1);
+    });
+  });
+
+  describe("fitting the column (OPENBRAIN-182)", () => {
+    const real = {
+      matchMedia: window.matchMedia,
+      getComputedStyle: window.getComputedStyle,
+    };
+    afterEach(() => Object.assign(window, real));
+
+    // happy-dom has no layout: rows of 30 with 34 between, parts of 20 with
+    // 18 between, in a column with `room` for the list.
+    function sized(room, { wide = true } = {}) {
+      window.matchMedia = (query) => ({
+        matches: /min-width/.test(query) ? wide : false,
+        addEventListener() {},
+        removeEventListener() {},
+      });
+      window.getComputedStyle = (el) => ({
+        rowGap: el.classList.contains("otoc__sections") ? "34px" : "18px",
+      });
+      mountToc();
+      const height = (el, px) =>
+        Object.defineProperty(el, "offsetHeight", { get: () => px });
+      wrapper.findAll(".otoc__row").forEach((row) => height(row.element, 30));
+      wrapper.findAll(".otoc__part").forEach((a) => height(a.element, 20));
+      Object.defineProperty(
+        wrapper.find(".otoc__nav").element,
+        "clientHeight",
+        {
+          get: () => room,
+        }
+      );
+      wrapper.vm.measure();
+    }
+    // Four rows (120), three gaps (102); the tallest parts are section 1's
+    // two: 40 of text, two gaps of 18. As drawn: 298, plus 4 kept spare.
+    const TALLEST = 120 + 102 + 40 + 36 + 4;
+
+    it("leaves the gaps as drawn when the tallest state fits", async () => {
+      sized(TALLEST);
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.fit).toBe(1);
+      expect(wrapper.classes()).not.toContain("otoc--scrolls");
+    });
+
+    it("tightens the gaps when it does not, and nothing else", async () => {
+      sized(TALLEST - 69);
+      await wrapper.vm.$nextTick();
+      // 138 of gap has 69 to lose.
+      expect(wrapper.vm.fit).toBeCloseTo(0.5, 6);
+      expect(wrapper.attributes("style")).toMatch(/^--otoc-fit: 0\.5\d*;$/);
+      expect(wrapper.classes()).not.toContain("otoc--scrolls");
+      // Measuring again, with the gaps now drawn tighter, changes nothing.
+      window.getComputedStyle = (el) => ({
+        rowGap: el.classList.contains("otoc__sections") ? "17px" : "9px",
+      });
+      wrapper.vm.measure();
+      expect(wrapper.vm.fit).toBeCloseTo(0.5, 6);
+    });
+
+    it("lets the list scroll in its column only when even that is not enough", async () => {
+      sized(180);
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.fit).toBeLessThan(0.5);
+      expect(wrapper.classes()).toContain("otoc--scrolls");
+    });
+
+    it("fits nothing below the two-column width, where the block is as tall as it needs", async () => {
+      sized(180, { wide: false });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.fit).toBe(1);
+      expect(wrapper.classes()).not.toContain("otoc--scrolls");
     });
   });
 
