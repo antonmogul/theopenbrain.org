@@ -49,7 +49,18 @@ jobs:
           export HISTORY_SQL_HARNESS="$harness/node_modules/@electric-sql/pglite"
           npx vitest run --pool=forks src/__tests__/historyMigrationReplay.sql.test.js src/__tests__/historyPenfieldBinder.sql.test.js src/__tests__/historySourceContent.test.js src/__tests__/historySourceRepair.sql.test.js src/__tests__/historyReferenceLinks.test.js src/__tests__/historyReferenceLinks.sql.test.js src/__tests__/trendingHighlightsSync.sql.test.js src/__tests__/decks.sql.test.js src/__tests__/chapterMediaListing.sql.test.js 2>&1 | tee history-fixture-browser-artifacts/isolated-sql.log
       - name: Install hosted Chromium
-        run: npx playwright install --with-deps chromium
+        # The system packages come from Ubuntu's archive. When a runner cannot
+        # reach it (11 Nov 2026: every job retried for twenty minutes, then
+        # failed), install the browser alone. The runner image already carries
+        # the libraries headless Chromium needs, and a missing one fails the
+        # first browser step loudly rather than passing by accident.
+        run: |
+          if curl -fsSI --max-time 15 http://azure.archive.ubuntu.com/ubuntu/ > /dev/null; then
+            npx playwright install --with-deps chromium
+          else
+            echo "::warning::Ubuntu's archive is unreachable; installing Chromium without system packages"
+            npx playwright install chromium
+          fi
       - name: Build isolated Storybook fixtures
         shell: bash
         run: npm run build-storybook 2>&1 | tee history-fixture-browser-artifacts/storybook-build.log
