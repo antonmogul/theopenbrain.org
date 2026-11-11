@@ -1,13 +1,16 @@
 /*
- * Case 20 of the Edwin Smith papyrus (OPENBRAIN-87): History Figure 4. The
- * case's four parts (title, examination, diagnosis, treatment) as tabs, each
- * with its hieroglyphs and Breasted's translation.
+ * Case 20 of the Edwin Smith papyrus (OPENBRAIN-87): History's second
+ * widget. The case's four parts (title, examination, diagnosis, treatment)
+ * as tabs; each is a card with its hieroglyphs on the front and Breasted's
+ * translation on the back (OPENBRAIN-176).
  *
- * The hieroglyphs are Figma's (Open-Brain-Chapters: layout 2045:21322, the
- * parts 50:7937, 50:8454, 199:9074 and 199:8379), exported as SVG with the
- * dark ground removed and the column markers in the chapter's accent. The
- * translations are the ones printed under each part in the figure's source
- * (Breasted, 1930, as adapted by Minagar et al., 2003).
+ * The hieroglyphs are the designers' (Open-Brain-Chapters, the four frames
+ * under "FInal assets": 2878:65627, 2878:65736, 2878:67004 and 2878:66706;
+ * the layout is 2879:48090). `scripts/figures/prepare-papyrus-art.mjs` turns
+ * their SVG exports into ./art: the grounds removed, the layers kept (one
+ * per sign, which the draw-in staggers), nothing redrawn. The translations
+ * are the ones printed under each part in the figure's source (Breasted,
+ * 1930, as adapted by Minagar et al., 2003).
  */
 export default {
   id: "papyrus",
@@ -20,6 +23,12 @@ export default {
   /** One per part, in the papyrus's order; the art files are in ./art. */
   parts: ["title", "examination", "diagnosis", "treatment"],
   fields: [
+    {
+      key: "figureLabel",
+      label: "Figure label",
+      type: "text",
+      hint: "The label before the title, e.g. Wid 02.",
+    },
     { key: "title", label: "Title", type: "text" },
     {
       key: "tabs",
@@ -34,7 +43,13 @@ export default {
       type: "list",
       artwork: true,
       itemLabels: ["Title", "Examination", "Diagnosis", "Treatment"],
-      hint: "Where each part sits on the papyrus, shown above its hieroglyphs.",
+      hint: "Where each part sits on the papyrus, shown on the card above its hieroglyphs.",
+    },
+    {
+      key: "translationLabel",
+      label: "Translation label",
+      type: "text",
+      hint: "Heads the back of the card.",
     },
     {
       key: "translations",
@@ -43,6 +58,14 @@ export default {
       multiline: true,
       artwork: true,
       itemLabels: ["Title", "Examination", "Diagnosis", "Treatment"],
+    },
+    {
+      key: "flip",
+      label: "Turn the card",
+      type: "list",
+      artwork: true,
+      itemLabels: ["On the hieroglyphs", "On the translation"],
+      hint: "The button under the card, on each of its sides.",
     },
     {
       key: "caption",
@@ -55,6 +78,7 @@ export default {
     },
   ],
   defaults: {
+    figureLabel: "Wid 02",
     title: "The Edwin Smith papyrus, case 20",
     tabs: ["Title", "Examination", "Diagnosis", "Treatment"],
     lines: ["VII 22", "VII 22 – VIII 3", "VIII 3 – 4", "VIII 4 – 5"],
@@ -64,6 +88,8 @@ export default {
       "Thou shouldst say concerning him: “One having a wound in his temple, penetrating to the bone, (and) perforating his temporal bone; while he discharges blood from both his nostrils, he suffers with stiffness in his neck, (and) he is speechless. An ailment not to be treated.”",
       "Now when thou findest that man speechless, his [relief] shall be sitting; soften his head with grease, (and) pour [milk] into both his ears.",
     ],
+    translationLabel: "Translation",
+    flip: ["Read the translation", "See the hieroglyphs"],
     caption:
       "Case 20 of the Edwin Smith Papyrus. Translation after Breasted (1930). Adapted from Minagar et al., 2003.",
   },
