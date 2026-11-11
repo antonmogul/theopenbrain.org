@@ -23,7 +23,10 @@ export { FIGURE_HOLDS, normalizeFigureHold };
  * - the end of its section, or, for the last section before the chapter's
  *   back matter (BACK_MATTER: References, Further reading) when that has no
  *   figures of its own, the end of the back matter: so the closing figure
- *   stays beside the references (Stuart, 13 Oct).
+ *   stays beside the references (Stuart, 13 Oct). Since OPENBRAIN-179 a
+ *   reader's references run full width below the text column (TextComp's
+ *   #chapter-back), where the pane is covered, so this only still applies
+ *   where a References section is in the column: while a creator edits it.
  * A hold only ever lengthens a figure: it never ends before its trigger's
  * bottom (its paragraph's window).
  *

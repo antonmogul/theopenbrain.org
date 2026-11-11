@@ -101,3 +101,33 @@ describe("gallery video players", () => {
     expect(youtubePlayerUrl("bad")).toBe("");
   });
 });
+
+describe("gallery views (OPENBRAIN-177)", () => {
+  it("opens four or more as the grid, fewer on the single view, unless the row says", async () => {
+    const { galleryStartView, GRID_START_MIN } = await import("../figureCycle");
+    expect(GRID_START_MIN).toBe(4);
+    expect(galleryStartView(10)).toBe("grid");
+    expect(galleryStartView(4)).toBe("grid");
+    expect(galleryStartView(3)).toBe("single");
+    expect(galleryStartView(2)).toBe("single");
+    // The row's own say (config.galleryStart)...
+    expect(galleryStartView(10, "single")).toBe("single");
+    expect(galleryStartView(2, "grid")).toBe("grid");
+    // ...which is ignored when it is not a view, or there is no set.
+    expect(galleryStartView(10, "mosaic")).toBe("grid");
+    expect(galleryStartView(1, "grid")).toBe("single");
+    expect(galleryStartView(0)).toBe("single");
+  });
+
+  it("lays a grid out in columns that suit the count, three at most on a phone", async () => {
+    const { gridColumns } = await import("../figureCycle");
+    expect(gridColumns(2)).toEqual({ wide: 2, narrow: 2 });
+    expect(gridColumns(3)).toEqual({ wide: 3, narrow: 2 });
+    expect(gridColumns(4)).toEqual({ wide: 2, narrow: 2 });
+    expect(gridColumns(5)).toEqual({ wide: 3, narrow: 3 });
+    expect(gridColumns(6)).toEqual({ wide: 3, narrow: 3 });
+    expect(gridColumns(10)).toEqual({ wide: 4, narrow: 3 });
+    expect(gridColumns(12)).toEqual({ wide: 4, narrow: 3 });
+    expect(gridColumns(20)).toEqual({ wide: 5, narrow: 3 });
+  });
+});

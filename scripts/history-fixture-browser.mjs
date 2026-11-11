@@ -656,17 +656,25 @@ async function testGallery(state) {
     );
   await step(
     state,
-    "the 15-second gallery shows one Figure 6 plate with a thumbnail per plate",
+    "Figure 6 opens as a grid of its ten plates, and a tile opens that plate with a thumbnail per plate",
     async () => {
       const pane = page.locator(".history-fixture .figimg--gallery");
+      // A set of four or more opens as the grid of all its images
+      // (OPENBRAIN-177); the clock only runs in the single view.
+      await expect(pane).toHaveAttribute("data-view", "grid");
+      await expect(pane.locator(".figimg-tile")).toHaveCount(10);
+      await expect(pane.locator(".figimg-thumbnail")).toHaveCount(0);
+      await imageReady(pane.locator(".figimg-tile-image").first());
+      await expect(pane).toHaveAttribute("data-autoplay", "paused");
+      await expect(count(pane)).toHaveText("10 images");
+      await noSidewaysScroll(page);
+      await snapshot(state, "gallery-grid");
+      // A tile opens the single view on its plate.
+      await pane.getByRole("button", { name: /^Image 2 of 10/ }).click();
+      await expect(pane).toHaveAttribute("data-view", "single");
       await expect(pane.locator(".figimg-thumbnail")).toHaveCount(10);
       await expect(slideImg(pane)).toHaveCount(1);
       await imageReady(slideImg(pane));
-      // This lane runs with motion on, so the clock is running (and may
-      // already have stepped); a manual step stops it for good, which keeps
-      // the measurements below still.
-      await expect(pane).toHaveAttribute("data-autoplay", /running|paused/);
-      await pane.getByRole("button", { name: /^Image 2 of 10/ }).click();
       await expect(count(pane)).toHaveText("2 / 10");
       await pane
         .getByRole("button", { name: "Previous image", exact: true })
@@ -747,6 +755,36 @@ async function testGallery(state) {
       await expect(
         count(page.locator(".history-fixture .figimg--gallery"))
       ).toHaveText("3 / 10");
+    }
+  );
+  await step(
+    state,
+    "view all turns the dialog and the pane to the grid, and a tile turns them back",
+    async () => {
+      const gallery = page.locator(".demo-panel .figimg--gallery");
+      const pane = page.locator(".history-fixture .figimg--gallery");
+      const viewAll = gallery.getByRole("button", {
+        name: "View all images",
+        exact: true,
+      });
+      await expect(viewAll).toHaveAttribute("aria-pressed", "false");
+      await viewAll.click();
+      await expect(viewAll).toHaveAttribute("aria-pressed", "true");
+      await expect(gallery).toHaveAttribute("data-view", "grid");
+      await expect(gallery.locator(".figimg-tile")).toHaveCount(10);
+      await expect(pane).toHaveAttribute("data-view", "grid");
+      await snapshot(state, "gallery-dialog-grid");
+      await gallery.getByRole("button", { name: /^Image 3 of 10/ }).click();
+      await expect(gallery).toHaveAttribute("data-view", "single");
+      await expect(count(gallery)).toHaveText("3 / 10");
+      await expect(pane).toHaveAttribute("data-view", "single");
+      // The tile is gone: focus must still be inside the dialog.
+      expect(
+        await page
+          .locator(".demo-panel")
+          .evaluate((element) => element.contains(document.activeElement)),
+        "focus left the dialog when the grid closed"
+      ).toBe(true);
     }
   );
   await step(
