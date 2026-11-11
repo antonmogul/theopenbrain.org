@@ -103,18 +103,18 @@ describe("gallery video players", () => {
 });
 
 describe("gallery views (OPENBRAIN-177)", () => {
-  it("opens four or more as the grid, fewer on the single view, unless the row says", async () => {
-    const { galleryStartView, GRID_START_MIN } = await import("../figureCycle");
-    expect(GRID_START_MIN).toBe(4);
-    expect(galleryStartView(10)).toBe("grid");
-    expect(galleryStartView(4)).toBe("grid");
-    expect(galleryStartView(3)).toBe("single");
+  it("opens every set on its first image, unless the row asks for the grid", async () => {
+    const { galleryStartView } = await import("../figureCycle");
+    // Every set opens on its first image, however many it has.
+    expect(galleryStartView(10)).toBe("single");
+    expect(galleryStartView(4)).toBe("single");
     expect(galleryStartView(2)).toBe("single");
     // The row's own say (config.galleryStart)...
     expect(galleryStartView(10, "single")).toBe("single");
+    expect(galleryStartView(10, "grid")).toBe("grid");
     expect(galleryStartView(2, "grid")).toBe("grid");
     // ...which is ignored when it is not a view, or there is no set.
-    expect(galleryStartView(10, "mosaic")).toBe("grid");
+    expect(galleryStartView(10, "mosaic")).toBe("single");
     expect(galleryStartView(1, "grid")).toBe("single");
     expect(galleryStartView(0)).toBe("single");
   });

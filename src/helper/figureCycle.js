@@ -92,20 +92,15 @@ export function youtubePlayerUrl(id, start = 0) {
   return `https://www.youtube-nocookie.com/embed/${v}?rel=0&playsinline=1${from}`;
 }
 
-/** A set of this many images or more opens as the grid of all of them
- *  (Stuart, 11 Nov: the cell doctrine's ten plates, seen together first). */
-export const GRID_START_MIN = 4;
-
 /**
- * The view a gallery opens in: "grid" (every image at once) or "single" (one
- * image, turning on its own). A set of four or more opens as the grid; a
- * pair or a trio keeps the rotating single view. A figure's row can say
- * otherwise with `config.galleryStart: "grid" | "single"`.
+ * The view a gallery opens in: "single" (one image, the first, turning on its
+ * own) or "grid" (every image at once). Every set opens on its first image
+ * (Anton, 11 Nov: the grid is one press away on "view all", not the start); a
+ * figure's row can ask for the grid with `config.galleryStart: "grid"`.
  */
 export function galleryStartView(count, preference) {
   if (!(count > 1)) return "single";
-  if (preference === "grid" || preference === "single") return preference;
-  return count >= GRID_START_MIN ? "grid" : "single";
+  return preference === "grid" ? "grid" : "single";
 }
 
 /** Columns for a grid of `count` images: wide (the pane, the dialog) and

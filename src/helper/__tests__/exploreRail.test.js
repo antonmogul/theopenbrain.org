@@ -34,9 +34,14 @@ describe("boxIsRail", () => {
     paragraphs,
   });
 
-  it("is the Hippocrates box in History, on trial", () => {
-    expect(RAIL_BOXES_BY_SLUG[HISTORY]).toContain("box-sacred-disease");
-    expect(boxIsRail(box([explore("a"), explore("b")]), HISTORY)).toBe(true);
+  it("is History's two boxes made of Explore parts, on trial", () => {
+    expect(RAIL_BOXES_BY_SLUG[HISTORY]).toEqual([
+      "box-sacred-disease",
+      "box-rete-mirabile",
+    ]);
+    const parts = [explore("a"), explore("b")];
+    expect(boxIsRail(box(parts), HISTORY)).toBe(true);
+    expect(boxIsRail(box(parts, "box-rete-mirabile"), HISTORY)).toBe(true);
   });
 
   it("needs two or more parts and nothing but parts", () => {
@@ -49,7 +54,7 @@ describe("boxIsRail", () => {
 
   it("leaves every box that is not listed as fold-out cards", () => {
     const parts = [explore("a"), explore("b")];
-    expect(boxIsRail(box(parts, "box-rete-mirabile"), HISTORY)).toBe(false);
+    expect(boxIsRail(box(parts, "box-descartes"), HISTORY)).toBe(false);
     expect(boxIsRail(box(parts), "the-retina")).toBe(false);
     expect(boxIsRail(box(parts), null)).toBe(false);
     expect(boxIsRail({ ...box(parts), kind: "section" }, HISTORY)).toBe(false);
