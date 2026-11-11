@@ -41,7 +41,11 @@
  * paragraphs (boxIsRail).
  */
 export const RAIL_BOXES_BY_SLUG = Object.freeze({
-  "foundations-of-neuroscience": Object.freeze(["box-sacred-disease"]),
+  "foundations-of-neuroscience": Object.freeze([
+    "box-sacred-disease",
+    // Box B, the rete mirabile and the hippocampus minor (Anton, 11 Nov).
+    "box-rete-mirabile",
+  ]),
 });
 
 /** The rail needs this much screen height: under it the track would be a

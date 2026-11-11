@@ -66,7 +66,7 @@ export default {
       control: "inline-radio",
       options: ["", "grid", "single"],
       description:
-        "The opening view. Empty leaves it to the size of the set: the grid for four or more, the single view below that (galleryStartView). A figure row sets it with config.galleryStart.",
+        "The opening view. Empty opens on the first image (galleryStartView); a figure row asks for the grid with config.galleryStart.",
     },
     view: {
       control: false,
@@ -79,12 +79,15 @@ export default {
   }),
 };
 
-/** Ten plates (History Figure 6): a set this size opens as the grid of all
- *  of them. A tile opens the single view on its image; the grid button in
- *  the controls goes back. The arrow keys walk the tiles. */
-export const TenImages = {};
+/** Ten plates (History Figure 6) in the grid of all of them ("view all", or
+ *  a row's `galleryStart: "grid"`). A tile opens the single view on its
+ *  image; the grid button in the controls goes back. The arrow keys walk the
+ *  tiles. */
+export const TenImages = {
+  args: { start: "grid" },
+};
 
-/** The same set opened on one image (`start: "single"`), each plate with
+/** The same set as a gallery opens: on its first image, each plate with
  *  its own long legend. Reduced motion (the Storybook default): the clock
  *  is off, so step with the arrows, the thumbnails or the arrow keys. */
 export const TenImagesSingle = {
@@ -103,7 +106,7 @@ export const Autoplay = {
 /** On the dark ground, as in the figure pane and the fullscreen dialog:
  *  the chrome takes the pane's ink. */
 export const GridOnDark = {
-  args: { legendAbove: true },
+  args: { legendAbove: true, start: "grid" },
   render: chapterFrame(FigureImages, {
     template: `<div class="figure-pane--dark" style="height:720px;padding:16px 0 0;"><StoryComponent v-bind="args" /></div>`,
   }),

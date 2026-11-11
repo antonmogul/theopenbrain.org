@@ -10,8 +10,9 @@
  *   a stage box, a row of thumbnails under it (the current one in the
  *   chapter colour), previous/next arrows at the sides of the box;
  * - grid, "view all": every image at once, each a button that opens the
- *   single view on it. A set of four or more opens here (Stuart, 11 Nov;
- *   galleryStartView in helper/figureCycle.js).
+ *   single view on it. A gallery opens on the single view, on its first
+ *   image (Anton, 11 Nov; galleryStartView in helper/figureCycle.js); a
+ *   figure's row can ask for the grid.
  *
  * Under them, one row of controls: the counter, play/pause and the
  * view-all switch. The single view advances every 15 s on its own in a

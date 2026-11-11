@@ -656,11 +656,20 @@ async function testGallery(state) {
     );
   await step(
     state,
-    "Figure 6 opens as a grid of its ten plates, and a tile opens that plate with a thumbnail per plate",
+    "Figure 6 opens on its first plate, view all shows the ten as a grid, and a tile opens that plate with a thumbnail per plate",
     async () => {
       const pane = page.locator(".history-fixture .figimg--gallery");
-      // A set of four or more opens as the grid of all its images
-      // (OPENBRAIN-177); the clock only runs in the single view.
+      // A gallery opens on its first image (OPENBRAIN-183); the grid of all
+      // of them (OPENBRAIN-177) is one press away, and stops the clock.
+      await expect(pane).toHaveAttribute("data-view", "single");
+      await expect(pane.locator(".figimg-thumbnail")).toHaveCount(10);
+      await expect(slideImg(pane)).toHaveCount(1);
+      await imageReady(slideImg(pane));
+      await expect(count(pane)).toHaveText("1 / 10");
+      await snapshot(state, "gallery-first-plate");
+      await pane
+        .getByRole("button", { name: "View all images", exact: true })
+        .click();
       await expect(pane).toHaveAttribute("data-view", "grid");
       await expect(pane.locator(".figimg-tile")).toHaveCount(10);
       await expect(pane.locator(".figimg-thumbnail")).toHaveCount(0);

@@ -63,8 +63,8 @@ describe("FigureImages grid and controls", () => {
     vi.useRealTimers();
   });
 
-  it("opens a set of four or more as a grid of all its images, with the clock off", async () => {
-    mountSet();
+  it("shows a set as a grid of all its images, with the clock off", async () => {
+    mountSet({ start: "grid" });
     expect(view()).toBe("grid");
     expect(gallery().classes()).toContain("figimg--grid");
     const t = tiles();
@@ -103,12 +103,21 @@ describe("FigureImages grid and controls", () => {
     expect(wrapper.emitted("update:index")).toBeUndefined();
   });
 
-  it("keeps a pair or a trio in the turning single view", () => {
-    mountSet({ images: TRIO });
-    expect(view()).toBe("single");
-    expect(tiles()).toHaveLength(0);
-    expect(state()).toBe("running");
-    expect(viewAll().attributes("aria-pressed")).toBe("false");
+  it("opens any set on its first image, turning, with the grid one press away", async () => {
+    for (const images of [FIVE, TRIO]) {
+      mountSet({ images });
+      expect(view()).toBe("single");
+      expect(tiles()).toHaveLength(0);
+      expect(shown()).toBe("/one.jpg");
+      expect(counter()).toBe(`1 / ${images.length}`);
+      expect(state()).toBe("running");
+      expect(viewAll().attributes("aria-pressed")).toBe("false");
+      await viewAll().trigger("click");
+      await settle();
+      expect(view()).toBe("grid");
+      expect(tiles()).toHaveLength(images.length);
+      wrapper.unmount();
+    }
   });
 
   it("lets the figure choose its opening view", () => {
@@ -122,7 +131,7 @@ describe("FigureImages grid and controls", () => {
   });
 
   it("opens the single view on the tile's image, stopped, with focus on the view switch", async () => {
-    mountSet();
+    mountSet({ start: "grid" });
     const tile = tiles()[2];
     tile.element.focus();
     await tile.trigger("click");
@@ -203,7 +212,7 @@ describe("FigureImages grid and controls", () => {
   });
 
   it("plays from the grid by turning to the single view", async () => {
-    mountSet();
+    mountSet({ start: "grid" });
     await play().trigger("click");
     await settle();
     expect(view()).toBe("single");
@@ -215,7 +224,7 @@ describe("FigureImages grid and controls", () => {
 
   it("offers no play button under reduced motion, and none on a video the reader plays", async () => {
     document.documentElement.setAttribute("data-reduce-motion", "1");
-    mountSet();
+    mountSet({ start: "grid" });
     expect(play().exists()).toBe(false);
     expect(viewAll().exists()).toBe(true);
     wrapper.unmount();
@@ -232,7 +241,7 @@ describe("FigureImages grid and controls", () => {
   });
 
   it("walks the tiles with the arrow keys, Home and End", async () => {
-    mountSet();
+    mountSet({ start: "grid" });
     const t = tiles();
     // happy-dom lays nothing out: every tile is on one row.
     await gallery().trigger("keydown", { key: "ArrowRight" });
@@ -280,7 +289,7 @@ describe("FigureImages grid and controls", () => {
   });
 
   it("says what is showing in a polite live region", async () => {
-    mountSet();
+    mountSet({ start: "grid" });
     const live = wrapper.find("[aria-live]");
     expect(live.classes()).toContain("sr-only");
     expect(live.attributes("aria-atomic")).toBe("true");
@@ -292,7 +301,7 @@ describe("FigureImages grid and controls", () => {
   });
 
   it("keeps the dialog's legend row in the single view, and drops an empty one over the grid", async () => {
-    mountSet({ caption: "", large: true });
+    mountSet({ caption: "", large: true, start: "grid" });
     // Over the grid there is nothing to say and no arrows to hold still.
     expect(wrapper.find(".figimg-legend").exists()).toBe(false);
     await tiles()[1].trigger("click");

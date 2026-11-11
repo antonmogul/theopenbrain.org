@@ -154,7 +154,7 @@ describe("BreakoutBox rail", () => {
 
   it("is only the boxes on trial, unless the prop says so", async () => {
     const layer = addStageLayer();
-    const other = { ...section, id: "s-b", slug: "box-rete-mirabile" };
+    const other = { ...section, id: "s-b", slug: "box-descartes" };
     const fold = mountBox({ box: other });
     await flushPromises();
     expect(layer.querySelector("[data-rail-scroller]")).toBeNull();

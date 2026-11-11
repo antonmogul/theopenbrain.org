@@ -156,8 +156,8 @@ describe("figure shell: the legend folded in the pane", () => {
 });
 
 describe("figure shell: a gallery in the pane", () => {
-  it("opens ten plates as the grid, and shows a plate's legend once it is opened", async () => {
-    mountShell(TEN);
+  it("shows ten plates as the grid when the row asks, and a plate's legend once it is opened", async () => {
+    mountShell({ ...TEN, galleryStart: "grid" });
     expect(wrapper.find(".figimg--gallery").attributes("data-view")).toBe(
       "grid"
     );
@@ -172,8 +172,8 @@ describe("figure shell: a gallery in the pane", () => {
     expect(button().exists()).toBe(true);
   });
 
-  it("follows the row's own opening view", () => {
-    mountShell({ ...TEN, galleryStart: "single" });
+  it("opens on the first plate, with its legend, unless the row says otherwise", () => {
+    mountShell(TEN);
     expect(wrapper.find(".figimg--gallery").attributes("data-view")).toBe(
       "single"
     );
@@ -181,7 +181,7 @@ describe("figure shell: a gallery in the pane", () => {
   });
 
   it("opens the dialog in the pane's view, and the two change together", async () => {
-    mountShell(TEN);
+    mountShell({ ...TEN, galleryStart: "grid" });
     await wrapper.get('[aria-label="Expand to full screen"]').trigger("click");
     await flushPromises();
     const dialogGallery = () => panel().querySelector(".figimg--gallery");
