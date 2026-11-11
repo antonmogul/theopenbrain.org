@@ -12,6 +12,7 @@ import { useFeedback } from "@/composables/useFeedback";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import Text from "@/components/chapter/TextComp.vue";
 import Illustration from "@/components/chapter/Illus/IllustrationsComp.vue";
+import SectionCards from "@/components/chapter/section-cards/SectionCards.vue";
 import ChapterOpener from "@/components/chapter/opener/ChapterOpener.vue";
 
 import { useGeneral, useText, useCom } from "@/stores";
@@ -792,6 +793,9 @@ async function handleDeleteHighlight(highlightId) {
       <!-- Re-keyed when Edit mode changes a paragraph's figure, so the pane
            re-wires its scroll triggers (OPENBRAIN-65). -->
       <Illustration :key="figureVersion" />
+      <!-- Over the pane while the reader crosses into a section, when the
+           chapter has section art (OPENBRAIN-174). -->
+      <SectionCards :module="chapterData" :text="storeText.text" />
       <!-- Dark opener: cover, title, numbered TOC (OPENBRAIN-32). Publishes
            its height as --opener-h so the text column starts below it. -->
       <ChapterOpener :module="chapterData" :text="storeText.text" />

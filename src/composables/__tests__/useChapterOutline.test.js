@@ -89,6 +89,18 @@ describe("buildOutline", () => {
     ]);
   });
 
+  it("carries each section's slug, the intro's as 'introduction'", () => {
+    // What the section art and the pane's cards look a section up by
+    // (helper/sectionArt.js, OPENBRAIN-174).
+    expect(outline.map((e) => e.slug)).toEqual([
+      "introduction",
+      "story-of-the-eye",
+      "box-descartes",
+      "photoreceptors",
+      "box-penfield",
+    ]);
+  });
+
   it("collects subsection headers with the reader's slug anchors", () => {
     expect(outline[1].subsections).toEqual([
       { id: "sub1", title: "Intromission", anchor: "#intromission" },
