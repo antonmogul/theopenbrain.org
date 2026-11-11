@@ -278,7 +278,9 @@ describe("FigureImages", () => {
       play: "player",
     };
     const loop = { src: "/still.jpg", caption: "Loop", youtube: "OmmH4Rp9-to" };
-    mountSet({ images: [SET[0], loop, player, SET[2]] });
+    // Four images would open as the grid (OPENBRAIN-177): this is about the
+    // clock, so the set opens on the single view.
+    mountSet({ images: [SET[0], loop, player, SET[2]], start: "single" });
     await advance(FIFTEEN_S);
     expect(wrapper.find(".figimg-gallery-video").attributes("src")).toContain(
       "loop=1"

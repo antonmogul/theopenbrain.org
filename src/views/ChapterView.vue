@@ -45,10 +45,12 @@ import { useChapterTimeline } from "@/composables/useChapterTimeline";
 import { useAuth } from "@/composables/useAuth";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { toSlug } from "@/helper/general.js";
-import { applyChapterRamp } from "@/helper/chapterTheme";
+import { applyChapterRamp, rampForModule } from "@/helper/chapterTheme";
+import { coverForModule } from "@/helper/chapterCover";
 import {
   findReaderAnchor,
   holdLanding,
+  scrollToY,
   setJumpHistory,
 } from "@/helper/readerJump";
 import {
@@ -194,10 +196,15 @@ const nextChapterInfo = computed(() => {
   if (!currentModuleId.value) return null;
   const next = nextAfter(currentModuleId.value);
   if (!next) return null;
+  // The close's "Up next" card: the next chapter's own words, cover and
+  // colour, from its module row.
   return {
     number: next.order_index,
     slug: next.slug,
     title: next.title,
+    description: next.description || "",
+    cover: coverForModule(next),
+    ramp: rampForModule(next),
   };
 });
 
@@ -205,8 +212,9 @@ const currentModuleMeta = computed(() =>
   currentModuleId.value ? findById(currentModuleId.value) : null
 );
 
-const calloutProgressPercent = computed(() => readingScrollPercent.value);
 const calloutTimeSpent = computed(() => readingTimeSpent.value || 0);
+// The foot's "Back to the top": smooth unless motion is reduced.
+const toTop = () => scrollToY(() => 0);
 
 watch(
   readingScrollPercent,
@@ -817,9 +825,34 @@ async function handleDeleteHighlight(highlightId) {
             :highlight-count="highlights?.length || 0"
             :note-count="notes?.length || 0"
             :time-spent-seconds="calloutTimeSpent"
-            :progress-percent="calloutProgressPercent"
+            :is-authenticated="isAuthenticated"
             :next-chapter="nextChapterInfo"
           />
+        </template>
+        <!-- The page's last line, below the references (OPENBRAIN-179):
+             the list is several screens long, and the "Up next" card is
+             above it. -->
+        <template #chapter-foot>
+          <nav v-if="showContent" class="chapter-foot" aria-label="Chapter end">
+            <button type="button" class="chapter-foot__link" @click="toTop">
+              <span aria-hidden="true">↑</span> Back to the top
+            </button>
+            <router-link
+              v-if="nextChapterInfo"
+              class="chapter-foot__link chapter-foot__link--next"
+              :to="`/chapter/${nextChapterInfo.number}/${nextChapterInfo.slug}`"
+            >
+              Next: Chapter {{ nextChapterInfo.number }},
+              {{ nextChapterInfo.title }} <span aria-hidden="true">→</span>
+            </router-link>
+            <router-link
+              v-else
+              class="chapter-foot__link chapter-foot__link--next"
+              to="/chapters"
+            >
+              All chapters <span aria-hidden="true">→</span>
+            </router-link>
+          </nav>
         </template>
       </Text>
 
@@ -923,5 +956,42 @@ export default {
     left: 0.75rem;
     right: 0.75rem;
   }
+}
+
+/* The page's last line (OPENBRAIN-179). */
+.chapter-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-top: 1rem;
+  border-top: 1px solid rgb(var(--color-ink));
+}
+.chapter-foot__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgb(var(--color-ink));
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-12);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+.chapter-foot__link--next {
+  font-weight: 600;
+}
+.chapter-foot__link:hover {
+  color: rgb(var(--color-accent));
+}
+.chapter-foot__link:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 3px;
 }
 </style>

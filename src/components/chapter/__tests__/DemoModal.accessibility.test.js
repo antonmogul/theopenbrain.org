@@ -190,3 +190,31 @@ describe("DemoModal accessibility", () => {
     expect(document.body.style.overflow).toBe("");
   });
 });
+
+describe("DemoModal ground (OPENBRAIN-177)", () => {
+  it("is paper unless asked, and carries the figure pane's dark contract when asked", async () => {
+    const wrapper = mountModal({ wide: true });
+    await flushPromises();
+    const panel = () => document.querySelector(".demo-panel");
+    expect(panel().classList.contains("demo-panel--dark")).toBe(false);
+    expect(panel().classList.contains("figure-pane--dark")).toBe(false);
+    await wrapper.setProps({ ground: "dark" });
+    expect(panel().classList.contains("demo-panel--dark")).toBe(true);
+    // The class the figure's on-dark rules key on (index.css).
+    expect(panel().classList.contains("figure-pane--dark")).toBe(true);
+  });
+
+  it("names the dialog from a title slot when it is given one", async () => {
+    mountModal(
+      { wide: true, ground: "dark", title: "FIG G: Mary Rafferty" },
+      { title: "<span>FIG G</span> <span>Mary Rafferty</span>" }
+    );
+    await flushPromises();
+    const dialog = document.querySelector('[role="dialog"]');
+    const label = document.getElementById(
+      dialog.getAttribute("aria-labelledby")
+    );
+    expect(label.tagName).toBe("H2");
+    expect(label.textContent).toBe("FIG G Mary Rafferty");
+  });
+});

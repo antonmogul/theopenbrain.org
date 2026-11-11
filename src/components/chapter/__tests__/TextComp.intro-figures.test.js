@@ -115,7 +115,6 @@ function mountReader(chapter) {
         Section: true,
         Points: true,
         HoverImg: true,
-        QuizSection: true,
         FurtherReading: true,
         FootNotes: true,
         MediaPicker: true,

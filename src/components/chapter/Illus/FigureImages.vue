@@ -1,24 +1,46 @@
 <script setup>
 /*
  * The artwork inside the figure shell (OPENBRAIN-41; gallery OPENBRAIN-97,
- * rebuilt as a rotating gallery in OPENBRAIN-144).
+ * rebuilt as a rotating gallery in OPENBRAIN-144, grid view OPENBRAIN-177).
  *
  * One image renders on its own, as large as the shell allows. A set renders
- * as a rotating gallery, Stuart's "updating main image": one full-size image
- * at a time in a stage box, a row of thumbnails under it (the current one in the
- * chapter colour), previous/next arrows at the sides of the box, and the
- * current image's own legend below. It advances every 15 s on its own until
- * the reader takes over: hovering or focusing it pauses the clock, any
- * manual step stops it for good, and it never runs under reduced motion,
- * while the gallery is off-screen or while the tab is hidden.
+ * as a gallery with two views:
+ *
+ * - single, Stuart's "updating main image": one full-size image at a time in
+ *   a stage box, a row of thumbnails under it (the current one in the
+ *   chapter colour), previous/next arrows at the sides of the box;
+ * - grid, "view all": every image at once, each a button that opens the
+ *   single view on it. A set of four or more opens here (Stuart, 11 Nov;
+ *   galleryStartView in helper/figureCycle.js).
+ *
+ * Under them, one row of controls: the counter, play/pause and the
+ * view-all switch. The single view advances every 15 s on its own in a
+ * gallery that opens on it: hovering or focusing it pauses the clock, any
+ * manual step stops it, the play button starts it again (and then a hover
+ * no longer holds it: the reader asked for it), and it never runs under
+ * reduced motion, in the grid, while the gallery is off-screen or while the
+ * tab is hidden.
  *
  * The arrows are centred on the stage box, not on the image, so they stay
  * put while plates of different heights go by (Stuart, 1 Oct). The box has
  * a fixed height in the pane and the fullscreen dialog (`fit`), and a fixed
  * aspect ratio inline in the text column (flow), for the same reason.
  */
-import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from "vue";
-import { stepIndex, youtubeLoopUrl } from "@/helper/figureCycle";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useId,
+  watch,
+} from "vue";
+import {
+  galleryStartView,
+  gridColumns,
+  stepIndex,
+  youtubeLoopUrl,
+} from "@/helper/figureCycle";
 import VideoEmbed from "../text/VideoEmbed.vue";
 import { reducedMotionPreferred } from "@/helper/readerJump";
 
@@ -30,21 +52,28 @@ const props = defineProps({
   /* "FIG 06" and the figure title, for accessible names. */
   label: { type: String, default: "" },
   title: { type: String, default: "" },
-  /* Fullscreen overlay: roomier caption and arrows. */
+  /* Fullscreen overlay: roomier caption and arrows, and the arrow keys work
+     from anywhere in the dialog. */
   large: { type: Boolean, default: false },
   /* The container has a fixed height: the stage takes what the thumbnails and
      legend leave. Off inline, where the stage is an aspect-ratio box. */
   fit: { type: Boolean, default: true },
-  /* The shell shows the legend above the artwork (with the title), so the
-     selected image caption here is left out to avoid duplicating the shell legend. */
+  /* The shell shows the legend with the title, so the selected image's
+     caption here is left out to avoid saying it twice. */
   legendAbove: { type: Boolean, default: false },
   /* Pause the background pane while its fullscreen viewer is open. */
   suspended: { type: Boolean, default: false },
+  /* The figure's own say on the opening view ("grid" | "single"); empty
+     leaves it to the size of the set. */
+  start: { type: String, default: "" },
 });
 
 /* The shown image, two-way so the shell can open its fullscreen dialog on
    the same plate the pane is showing. */
 const index = defineModel("index", { type: Number, default: 0 });
+/* "grid" | "single", two-way for the same reason; empty until the reader
+   chooses, which leaves the opening view to galleryStartView. */
+const view = defineModel("view", { type: String, default: "" });
 
 /* Stuart's "every 15s". */
 const AUTO_ADVANCE_MS = 15_000;
@@ -81,6 +110,7 @@ function altFor(img) {
 const uid = useId();
 const liveId = `figimg-live-${uid}`;
 const root = ref(null);
+const viewSwitch = ref(null);
 
 const count = computed(() => props.images.length);
 const safeIndex = computed(() => {
@@ -88,10 +118,29 @@ const safeIndex = computed(() => {
   return Number.isInteger(i) && i >= 0 && i < count.value ? i : 0;
 });
 const current = computed(() => props.images[safeIndex.value] || first.value);
-/* The shell owns the selected legend above; standalone/modal viewers show it here. */
-const currentCaption = computed(() =>
-  props.legendAbove ? "" : captionFor(current.value)
+
+const startView = computed(() => galleryStartView(count.value, props.start));
+const shownView = computed(() =>
+  view.value === "grid" || view.value === "single"
+    ? view.value
+    : startView.value
 );
+const inGrid = computed(() => shownView.value === "grid");
+const columns = computed(() => gridColumns(count.value));
+
+/* The shell owns the selected legend; standalone and dialog viewers show it
+   here: the shown image's, or in the grid the figure's own. */
+const currentCaption = computed(() => {
+  if (props.legendAbove) return "";
+  return inGrid.value ? props.caption : captionFor(current.value);
+});
+/* What a screen reader hears on a change: "Image 3 of 10: Albertus…". */
+const status = computed(() => {
+  if (inGrid.value) return `All ${count.value} images`;
+  const text = captionFor(current.value);
+  const base = `Image ${safeIndex.value + 1} of ${count.value}`;
+  return text ? `${base}: ${text}` : base;
+});
 
 /* "Image 3 of 10: Albertus Magnus, 1490." */
 function thumbnailLabel(img, i) {
@@ -99,6 +148,7 @@ function thumbnailLabel(img, i) {
   const text = img?.caption || img?.alt || "";
   return text ? `${base}: ${text}` : base;
 }
+const tileNumber = (i) => String(i + 1).padStart(2, "0");
 
 function go(direction) {
   index.value = stepIndex(safeIndex.value, count.value, direction);
@@ -116,14 +166,99 @@ function showManual(i) {
   show(i);
 }
 
+/* ── Grid ⇄ single ───────────────────────────────────────────────────── */
+/* The view-all switch stays mounted in both views, so it is where focus
+   goes when the tile that had it leaves. */
+function focusSwitch() {
+  viewSwitch.value?.focus?.({ preventScroll: true });
+}
+function toggleView() {
+  if (inGrid.value) {
+    view.value = "single";
+  } else {
+    stopAutoplay();
+    view.value = "grid";
+  }
+}
+/* A tile opens the single view on its image, growing from where the tile
+   was (not under reduced motion). */
+async function openFromGrid(i, event) {
+  const from = event?.currentTarget?.getBoundingClientRect?.();
+  const hadFocus = root.value?.contains(document.activeElement);
+  stopAutoplay();
+  show(i);
+  view.value = "single";
+  await nextTick();
+  if (hadFocus) focusSwitch();
+  growFrom(from);
+}
+function growFrom(from) {
+  if (!from?.width || reducedMotionPreferred()) return;
+  const slide = root.value?.querySelector(".figimg-slide");
+  if (typeof slide?.animate !== "function") return;
+  const to = slide.getBoundingClientRect();
+  if (!to.width || !to.height) return;
+  const scale = Math.min(from.width / to.width, from.height / to.height);
+  const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+  const dy = from.top + from.height / 2 - (to.top + to.height / 2);
+  slide.animate(
+    [
+      {
+        transform: `translate(${dx}px, ${dy}px) scale(${scale})`,
+        opacity: 0.4,
+      },
+      { transform: "none", opacity: 1 },
+    ],
+    { duration: 320, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" }
+  );
+}
+
+/* ── Keys ────────────────────────────────────────────────────────────── */
+/* Single view: left/right step. Grid: the arrows walk the tiles (up and
+   down by a row), Home and End reach the ends; Enter opens, as a button. */
+function tiles() {
+  return [...(root.value?.querySelectorAll(".figimg-tile") || [])];
+}
+function gridKey(e) {
+  const list = tiles();
+  if (!list.length) return;
+  const at = list.indexOf(document.activeElement);
+  const top = list[0].offsetTop;
+  const perRow = list.filter((t) => t.offsetTop === top).length || 1;
+  const last = list.length - 1;
+  let next = null;
+  if (e.key === "ArrowRight") next = at < 0 ? safeIndex.value : at + 1;
+  else if (e.key === "ArrowLeft") next = at < 0 ? safeIndex.value : at - 1;
+  else if (at < 0) return;
+  else if (e.key === "ArrowDown") next = at + perRow;
+  else if (e.key === "ArrowUp") next = at - perRow;
+  else if (e.key === "Home") next = 0;
+  else if (e.key === "End") next = last;
+  if (next === null) return;
+  e.preventDefault();
+  list[Math.min(Math.max(next, 0), last)]?.focus();
+}
 function onKeydown(e) {
-  if (e.key === "ArrowRight") {
+  if (inGrid.value) {
+    gridKey(e);
+  } else if (e.key === "ArrowRight") {
     e.preventDefault();
     goManual(1);
   } else if (e.key === "ArrowLeft") {
     e.preventDefault();
     goManual(-1);
   }
+}
+/* In the pane the keys belong to the gallery only while it has focus. The
+   dialog is all gallery, so there they work from anywhere in it (its close
+   button has focus when it opens): one listener or the other, never both. */
+function onRootKeydown(e) {
+  if (!props.large) onKeydown(e);
+}
+function onWindowKeydown(e) {
+  if (e.defaultPrevented || !root.value?.isConnected) return;
+  if (e.target?.closest?.("input, textarea, select, [contenteditable]")) return;
+  onKeydown(e);
 }
 
 /* Swipe left/right on the stage (touch or pen; a mouse drag is not a swipe). */
@@ -155,10 +290,13 @@ function preloadNeighbours() {
 }
 
 /* ── Auto-advance ────────────────────────────────────────────────────── */
-/* `autoplay` is the reader's standing: on until a manual step, and never
-   under reduced motion. The rest are pauses: the clock resumes when they
-   lift. */
-const autoplay = ref(!reducedMotionPreferred());
+/* `autoplay` is the reader's standing: on from the start in a gallery that
+   opens on the single view, off after a manual step, on again from the play
+   button, and never under reduced motion. `asked` is the play button: a
+   reader who pressed it is still hovering it, so hover and focus no longer
+   hold the clock. The rest are pauses: the clock resumes when they lift. */
+const autoplay = ref(!reducedMotionPreferred() && startView.value === "single");
+const asked = ref(false);
 const hovered = ref(false);
 const focused = ref(false);
 const inView = ref(true);
@@ -178,12 +316,17 @@ const running = computed(
   () =>
     isSet.value &&
     autoplay.value &&
+    !inGrid.value &&
     !props.suspended &&
     current.value?.play !== "player" &&
-    !hovered.value &&
-    !focused.value &&
+    (asked.value || (!hovered.value && !focused.value)) &&
     inView.value &&
     pageVisible.value
+);
+/* The play button is offered wherever the clock could run. */
+const canPlay = computed(
+  () =>
+    !reducedMotion.value && (inGrid.value || current.value?.play !== "player")
 );
 
 function clearTimer() {
@@ -216,7 +359,27 @@ function tick() {
 }
 function stopAutoplay() {
   autoplay.value = false;
+  asked.value = false;
   clearTimer();
+}
+/* Play from the grid turns to the single view first: that is where the
+   images go by. */
+function togglePlay() {
+  if (autoplay.value) {
+    stopAutoplay();
+    return;
+  }
+  if (reducedMotionPreferred()) return;
+  const hadFocus = root.value?.contains(document.activeElement);
+  if (inGrid.value) view.value = "single";
+  asked.value = true;
+  autoplay.value = true;
+  // The single view may open on a video the reader plays, which has no
+  // play button of ours: focus must not be left on a button that went.
+  nextTick(() => {
+    if (hadFocus && !root.value?.contains(document.activeElement))
+      focusSwitch();
+  });
 }
 function onVisibility() {
   pageVisible.value = document.visibilityState !== "hidden";
@@ -232,13 +395,15 @@ watch(running, schedule);
 watch(index, () => {
   preloadNeighbours();
 });
-/* A different figure reusing this instance starts from the top, with the
-   clock running again. */
+/* A different figure reusing this instance starts from the top, in its own
+   opening view, with the clock as that view has it. */
 watch(
   () => props.images,
   () => {
     index.value = 0;
-    autoplay.value = !reducedMotionPreferred();
+    view.value = "";
+    asked.value = false;
+    autoplay.value = !reducedMotionPreferred() && startView.value === "single";
     schedule();
   }
 );
@@ -253,6 +418,7 @@ onMounted(() => {
   });
   if (!isSet.value) return;
   document.addEventListener("visibilitychange", onVisibility);
+  if (props.large) window.addEventListener("keydown", onWindowKeydown);
   if (typeof IntersectionObserver !== "undefined" && root.value) {
     intersection = new IntersectionObserver(
       ([entry]) => {
@@ -271,6 +437,7 @@ onBeforeUnmount(() => {
   motionObserver?.disconnect();
   motionQuery?.removeEventListener?.("change", syncMotion);
   document.removeEventListener("visibilitychange", onVisibility);
+  window.removeEventListener("keydown", onWindowKeydown);
 });
 </script>
 
@@ -327,7 +494,7 @@ onBeforeUnmount(() => {
     >
   </div>
 
-  <!-- A set: the rotating gallery. -->
+  <!-- A set: the gallery, as a grid of all its images or one at a time. -->
   <div
     v-else
     ref="root"
@@ -336,18 +503,56 @@ onBeforeUnmount(() => {
       'figimg--large': large,
       'figimg--fit': fit,
       'figimg--flow': !fit,
+      'figimg--grid': inGrid,
     }"
     role="group"
     :aria-label="figureName"
     aria-roledescription="gallery"
     :data-autoplay="running ? 'running' : 'paused'"
-    @keydown="onKeydown"
+    :data-view="shownView"
+    @keydown="onRootKeydown"
     @pointerenter="hovered = true"
     @pointerleave="hovered = false"
     @focusin="onFocusIn"
     @focusout="onFocusOut"
   >
+    <!-- View all: every image, each opening the single view on itself. -->
     <div
+      v-if="inGrid"
+      class="figimg-grid"
+      role="group"
+      aria-label="All images"
+      :style="{ '--cols': columns.wide, '--cols-narrow': columns.narrow }"
+    >
+      <button
+        v-for="(img, i) in images"
+        :key="img.src + i"
+        type="button"
+        class="figimg-tile"
+        :class="{ 'is-current': i === safeIndex }"
+        :style="{ '--i': i }"
+        :aria-label="thumbnailLabel(img, i)"
+        @click="openFromGrid(i, $event)"
+      >
+        <img
+          class="figimg-tile-image"
+          :src="img.src"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          draggable="false"
+        />
+        <span class="figimg-tile-n" aria-hidden="true">{{
+          tileNumber(i)
+        }}</span>
+        <span v-if="img.youtube" class="figimg-tile-video" aria-hidden="true"
+          >▶</span
+        >
+      </button>
+    </div>
+
+    <div
+      v-else
       class="figimg-stage figimg-stage--gallery"
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
@@ -428,7 +633,12 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="figimg-foot">
-      <div class="figimg-thumbnails" role="group" aria-label="Choose an image">
+      <div
+        v-if="!inGrid"
+        class="figimg-thumbnails"
+        role="group"
+        aria-label="Choose an image"
+      >
         <button
           v-for="(img, i) in images"
           :key="img.src + i"
@@ -454,36 +664,105 @@ onBeforeUnmount(() => {
           >
         </button>
       </div>
+
+      <!-- The controls: the counter, play/pause, view all. -->
+      <div class="figimg-bar">
+        <p class="figimg-count">
+          <span class="figimg-count-n">{{
+            inGrid ? `${count} images` : `${safeIndex + 1} / ${count}`
+          }}</span>
+        </p>
+        <div class="figimg-controls" role="group" aria-label="Gallery controls">
+          <button
+            v-if="canPlay"
+            type="button"
+            class="figimg-ctl figimg-play"
+            :data-state="autoplay ? 'playing' : 'stopped'"
+            :aria-label="autoplay ? 'Pause slideshow' : 'Play slideshow'"
+            :title="autoplay ? 'Pause slideshow' : 'Play slideshow'"
+            @click="togglePlay"
+          >
+            <svg
+              v-if="autoplay"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <rect x="2" y="1.5" width="3" height="9" />
+              <rect x="7" y="1.5" width="3" height="9" />
+            </svg>
+            <svg
+              v-else
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M3 1.5v9l7.5-4.5z" />
+            </svg>
+            <!-- The 15 s to the next image, drawn along the button's foot. -->
+            <span
+              v-if="running"
+              :key="safeIndex"
+              class="figimg-clock"
+              aria-hidden="true"
+            ></span>
+          </button>
+          <button
+            ref="viewSwitch"
+            type="button"
+            class="figimg-ctl figimg-all"
+            aria-label="View all images"
+            :aria-pressed="inGrid ? 'true' : 'false'"
+            :title="inGrid ? 'Back to one image' : 'View all images'"
+            @click="toggleView"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              aria-hidden="true"
+            >
+              <rect x="1.5" y="1.5" width="4" height="4" />
+              <rect x="8.5" y="1.5" width="4" height="4" />
+              <rect x="1.5" y="8.5" width="4" height="4" />
+              <rect x="8.5" y="8.5" width="4" height="4" />
+            </svg>
+          </button>
+        </div>
+        <a
+          v-if="!inGrid && current.youtube"
+          class="figimg-watch"
+          :href="watchHref(current)"
+          target="_blank"
+          rel="noopener"
+          >Watch the video on YouTube ↗</a
+        >
+      </div>
+
+      <!-- The legend, where the shell does not show it. In a fixed-height
+           container the single view's row keeps its lines whether the image
+           has a legend or not, so the stage and its arrows stay put. -->
+      <p
+        v-if="!legendAbove && (currentCaption || (fit && !inGrid))"
+        class="figimg-caption figimg-legend"
+      >
+        {{ currentCaption }}
+      </p>
       <p
         :id="liveId"
-        class="figimg-count"
+        class="sr-only"
         :aria-live="running ? 'off' : 'polite'"
         aria-atomic="true"
       >
-        <span class="figimg-count-n">{{ safeIndex + 1 }} / {{ count }}</span>
-        <span v-if="currentCaption" class="figimg-count-sep" aria-hidden="true"
-          >·</span
-        >
-        <span v-if="currentCaption" class="figimg-caption figimg-legend">
-          {{ currentCaption }}
-        </span>
+        {{ status }}
       </p>
-      <a
-        v-if="current.youtube"
-        class="figimg-watch"
-        :href="watchHref(current)"
-        target="_blank"
-        rel="noopener"
-        >Watch the video on YouTube ↗</a
-      >
-      <button
-        v-if="!reducedMotion && current.play !== 'player'"
-        type="button"
-        class="figimg-pause"
-        @click="autoplay ? stopAutoplay() : (autoplay = true)"
-      >
-        {{ autoplay ? "Pause gallery" : "Resume gallery" }}
-      </button>
     </div>
   </div>
 </template>
@@ -627,7 +906,8 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-chapter-deep, var(--color-accent)));
 }
 .figimg-nav:focus-visible,
-.figimg-thumbnail:focus-visible {
+.figimg-thumbnail:focus-visible,
+.figimg-tile:focus-visible {
   outline: 2px solid rgb(var(--color-chapter, var(--color-accent)));
   outline-offset: 2px;
 }
@@ -643,6 +923,97 @@ onBeforeUnmount(() => {
   }
   .figimg--large .figimg-nav--next {
     right: 1rem;
+  }
+}
+
+/* ── Grid: view all ──────────────────────────────────────────────────────
+   In the pane and the dialog the grid takes the stage's place and its
+   height, the rows sharing it, so every image is on screen at once; in the
+   text column the tiles are squares and the grid is as tall as they make
+   it. The chrome draws from the ink it is given (currentColor), so it
+   reads on the dark pane, on paper and in a coloured breakout box alike. */
+.figimg-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0 1rem;
+}
+.figimg--flow .figimg-grid {
+  flex: none;
+  grid-auto-rows: auto;
+}
+@media (max-width: 639px) {
+  .figimg-grid {
+    grid-template-columns: repeat(var(--cols-narrow, 3), minmax(0, 1fr));
+  }
+}
+.figimg-tile {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  color: inherit;
+  cursor: zoom-in;
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+  animation: figimg-tile-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 22ms);
+}
+.figimg--flow .figimg-tile {
+  aspect-ratio: 1;
+}
+.figimg-tile-image {
+  position: absolute;
+  inset: 0.375rem;
+  width: calc(100% - 0.75rem);
+  height: calc(100% - 0.75rem);
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+.figimg-tile:hover,
+.figimg-tile:focus-visible {
+  border-color: rgb(var(--color-chapter, var(--color-accent)));
+  background: color-mix(in srgb, currentColor 9%, transparent);
+}
+.figimg-tile:hover .figimg-tile-image {
+  transform: scale(1.04);
+}
+/* The image's number, on a chip of its own so it reads over any plate; the
+   one last looked at carries the chapter colour. */
+.figimg-tile-n,
+.figimg-tile-video {
+  position: absolute;
+  top: 0;
+  padding: 0.125rem 0.3125rem;
+  background: rgb(var(--color-dark-surface) / 0.78);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-10);
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+.figimg-tile-n {
+  left: 0;
+}
+.figimg-tile-video {
+  right: 0;
+}
+.figimg-tile.is-current .figimg-tile-n {
+  background: rgb(var(--color-chapter, var(--color-accent)));
+}
+@keyframes figimg-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.95);
   }
 }
 
@@ -708,75 +1079,113 @@ onBeforeUnmount(() => {
   width: 100%;
   max-height: 100%;
 }
+
+/* The controls: counter, then play/pause and view all beside it. */
+.figimg-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+}
 .figimg-count {
   margin: 0;
-  width: 100%;
-  max-width: 100%;
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+  /* Wide enough for "10 / 10", so the controls beside it stay put. */
+  min-width: 4.5em;
   font-family: var(--font-mono);
   font-size: var(--ui-size-11);
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
   color: rgb(var(--color-mute));
 }
-.figimg--large .figimg-count {
-  max-width: 100%;
+.figimg-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
 }
-.figimg-count-n {
-  flex: none;
+.figimg-ctl {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
-.figimg-count-sep {
-  flex: none;
+.figimg-ctl:hover {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 8%, transparent);
 }
+.figimg-ctl:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+/* On: the slideshow is playing, the grid is showing. */
+.figimg-play[data-state="playing"],
+.figimg-all[aria-pressed="true"] {
+  border-color: rgb(var(--color-chapter, var(--color-accent)));
+  background: rgb(var(--color-chapter, var(--color-accent)) / 0.16);
+}
+/* A finger needs 44px. */
+@media (pointer: coarse) {
+  .figimg-ctl {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+.figimg-clock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgb(var(--color-chapter, var(--color-accent)));
+  transform-origin: left;
+  animation: figimg-clock 15s linear both;
+}
+@keyframes figimg-clock {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 .figimg-legend {
-  flex: 1 1 auto;
-  min-width: 0;
+  width: 100%;
   margin: 0;
-  letter-spacing: normal;
-  max-width: none;
 }
-/* The pane is not tall: a long legend (Figure 6's run to 900 characters)
-   scrolls within three lines rather than squeezing the stage. The row
-   keeps those three lines whether the image has a legend or not, so the
-   stage, and the arrows centred on it, stay put from plate to plate. */
-.figimg--fit .figimg-count {
-  --legend-lines: calc(var(--ui-size-13) * 1.45 * 3);
-  min-height: var(--legend-lines);
-}
+/* The dialog is not endless: a long legend (Figure 6's run to 900
+   characters) scrolls within its lines rather than squeezing the stage. */
 .figimg--fit .figimg-legend {
-  max-height: var(--legend-lines);
+  --legend-lines: calc(var(--ui-size-13) * 1.45 * 3);
+  height: var(--legend-lines);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.figimg--large.figimg--fit .figimg-count {
+.figimg--large.figimg--fit .figimg-legend {
   --legend-lines: calc(var(--ui-size-15) * 1.45 * 4);
-}
-.figimg-pause {
-  border: 1px solid rgb(var(--color-line));
-  padding: 0.25rem 0.5rem;
-  min-height: 24px;
-  font-family: var(--font-ui);
-  font-size: var(--ui-size-11);
-}
-.figimg-pause:focus-visible {
-  outline: 2px solid rgb(var(--color-accent));
-  outline-offset: 2px;
 }
 .figimg-watch {
   font-family: var(--font-ui);
   font-size: var(--ui-size-12);
   display: inline-block;
-  margin-left: 0.5em;
+  margin-left: auto;
   color: inherit;
   text-underline-offset: 0.2em;
 }
 
-/* On the dark pane (.figure-pane--dark, OPENBRAIN-152) the gallery's chrome
-   takes the pane's ink: bare arrows (the Figma draws them without a box),
-   the thumbnails dimmed but the current one, the count and captions muted.
-   The fullscreen dialog is teleported to body, so it keeps the paper look. */
+/* On the dark ground (.figure-pane--dark: the pane, OPENBRAIN-152, and the
+   fullscreen dialog, OPENBRAIN-177) the gallery's chrome takes the pane's
+   ink: bare arrows (the Figma draws them without a box), the thumbnails
+   dimmed but the current one, the count and captions muted. */
 .figure-pane--dark .figimg-caption,
 .figure-pane--dark .figimg-count {
   color: rgb(var(--figure-pane-ink) / 0.62);
@@ -804,9 +1213,27 @@ onBeforeUnmount(() => {
   background: rgb(var(--color-chapter, var(--color-accent)) / 0.12);
   opacity: 1;
 }
-.figure-pane--dark .figimg-pause {
-  border-color: rgb(var(--figure-pane-ink) / 0.3);
-  color: inherit;
+/* In the dialog a plate can run the whole width (a phone's always does),
+   which puts the bare white arrows on white paper: there they sit on a
+   chip of the ground. */
+.figure-pane--dark .figimg--large .figimg-nav {
+  background: rgb(var(--color-dark-surface) / 0.6);
+}
+.figure-pane--dark .figimg--large .figimg-nav:hover {
+  background: rgb(var(--color-dark-surface) / 0.85);
+}
+/* In the dialog the legend is the pane's: mono, in the pane's ink. */
+.figure-pane--dark .figimg--large .figimg-caption {
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-12);
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgb(var(--figure-pane-ink) / 0.86);
+  /* A legend is read, not scanned: no line as long as a wide screen. */
+  max-width: 62rem;
+}
+.figure-pane--dark .figimg--large.figimg--fit .figimg-legend {
+  --legend-lines: calc(var(--ui-size-12) * 1.5 * 4);
 }
 
 /* Crossfade, ~300 ms; none at all under reduced motion (the
@@ -823,8 +1250,14 @@ onBeforeUnmount(() => {
   .figimg-x-enter-active,
   .figimg-x-leave-active,
   .figimg-thumbnail-image,
-  .figimg-nav {
+  .figimg-tile-image,
+  .figimg-nav,
+  .figimg-ctl {
     transition: none;
+  }
+  .figimg-tile,
+  .figimg-clock {
+    animation: none;
   }
 }
 </style>

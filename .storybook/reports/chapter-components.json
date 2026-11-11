@@ -279,6 +279,11 @@
       "story": "Default"
     },
     {
+      "source": "src/components/chapter/text/ChapterReferences.vue",
+      "storyFile": "src/components/chapter/text/__stories__/ChapterReferences.stories.js",
+      "story": "Default"
+    },
+    {
       "source": "src/components/chapter/text/ExploreCard.vue",
       "storyFile": "src/components/chapter/text/__stories__/ExploreCard.stories.js",
       "story": "Closed"
@@ -306,11 +311,6 @@
     {
       "source": "src/components/chapter/text/InlineImages.vue",
       "storyFile": "src/components/chapter/text/__stories__/InlineImages.stories.js",
-      "story": "Default"
-    },
-    {
-      "source": "src/components/chapter/text/QuizSection.vue",
-      "storyFile": "src/components/chapter/text/__stories__/QuizSection.stories.js",
       "story": "Default"
     },
     {

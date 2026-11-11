@@ -2,7 +2,9 @@
  * Chapter/Illustrations/IllustrationPlaceholder — the figure shell: figure
  * label, title and a fullscreen toggle around either the "artwork pending"
  * state (type chip, caption, authoring note) or, once the row carries images,
- * the artwork itself (OPENBRAIN-41). Purely prop-driven.
+ * the artwork itself (OPENBRAIN-41). In a pane the legend is folded behind
+ * a "Legend" control (OPENBRAIN-177); in the text column it stays in the
+ * flow. Purely prop-driven.
  */
 import { FIG19, FIG21, FIG15 } from "./g2MediaFixtures";
 import IllustrationPlaceholder from "../IllustrationPlaceholder.vue";
@@ -92,9 +94,13 @@ export const WithoutFigureNumber = {
 };
 
 /* The reader's figure pane has a fixed height (viewport minus the top bar);
-   the artwork stories use one too, so fitting is what is on show. */
+   the artwork stories use one too, so fitting is what is on show. This is
+   the paper pane (a chapter whose art was drawn for paper, the Retina):
+   the toolbar is above the artwork, the legend opens under it, and the
+   fullscreen dialog stays on paper, which the shell reads from the pane's
+   data-ground. */
 const paneFrame = illustrationFrame(IllustrationPlaceholder, {
-  template: `<div style="position:relative;height:720px;overflow:hidden;background:rgb(var(--color-bg));"><StoryComponent v-bind="args" /></div>`,
+  template: `<div class="figure-pane figure-pane--paper" data-ground="paper" style="position:relative;height:720px;overflow:hidden;"><StoryComponent v-bind="args" /></div>`,
 });
 
 /** Artwork has landed: a cycling set, each plate with its own caption. */
@@ -145,7 +151,11 @@ const darkPaneFrame = illustrationFrame(IllustrationPlaceholder, {
   template: `<div class="figure-pane figure-pane--dark font-mono" style="position:relative;height:720px;overflow:hidden;display:flex;"><StoryComponent v-bind="args" /></div>`,
 });
 
-/** On the dark pane: a gallery, its toolbar below the artwork. */
+/** On the dark pane: a gallery of ten, opening as the grid, its toolbar
+ *  below the artwork. A tile opens the image; "Legend" at the end of the
+ *  toolbar shows that image's legend over the artwork's foot on hover or
+ *  focus, and under the title on a click. Expand opens the same view full
+ *  screen, on the same dark ground. */
 export const OnTheDarkPane = {
   render: darkPaneFrame,
   args: {

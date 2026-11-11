@@ -2,7 +2,9 @@
  * Chapter/Figure widgets/History — the History chapter's two figure widgets
  * (OPENBRAIN-87): the trepanation skull, whose arms reach in to their
  * openings (the November sketch, OPENBRAIN-173), and case 20 of the Edwin
- * Smith papyrus as tabs. The accent is the chapter's ramp.
+ * Smith papyrus: a tab per part, each a card with its hieroglyphs on the
+ * front and the translation on the back (OPENBRAIN-176). The accent is the
+ * chapter's ramp.
  */
 import TrepanationMethods from "../trepanation/TrepanationMethods.vue";
 import trepanation from "../trepanation/schema.js";
@@ -43,7 +45,8 @@ export const TrepanationNarrow = {
   ],
 };
 
-/** Figure 4: case 20's four parts as tabs. */
+/** The papyrus as the reader first sees it: the title's signs draw in on
+ *  the front of the card; "Read the translation" turns it over. */
 export const Papyrus = {
   render: () => ({
     components: { PapyrusCase },
@@ -52,8 +55,20 @@ export const Papyrus = {
   }),
 };
 
-/** Figure 4 in the Retina's teal: the same widget takes each chapter's colour. */
+/** The papyrus in the Retina's teal: the same widget takes each chapter's
+ *  colour, the back of its card included. */
 export const PapyrusInRetina = {
   ...Papyrus,
   decorators: [inChapter("perc")],
+};
+
+/** The papyrus in a phone's text column, where it is as tall as its content
+ *  (the schema's fitHeight): the card is as tall as the taller of its sides. */
+export const PapyrusNarrow = {
+  ...Papyrus,
+  decorators: [
+    () => ({
+      template: `<div data-chapter="fund" class="widget-root figure-widget figure-widget--fit" style="width: 360px"><story /></div>`,
+    }),
+  ],
 };
