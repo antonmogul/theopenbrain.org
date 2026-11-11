@@ -221,6 +221,68 @@ describe("drawHead", () => {
     expect(calls[4]).toEqual(["draw", "brain", 1100 + 46, 321 + 74]);
   });
 
+  it("passes the lid in front of the hand as it comes off", () => {
+    const run = (at, handAlpha = 1) => {
+      const draws = [];
+      const ctx = {
+        canvas: { width: 1, height: 1 },
+        setTransform() {},
+        clearRect() {},
+        save() {},
+        restore() {},
+        translate() {},
+        rotate() {},
+        globalAlpha: 1,
+        drawImage(img) {
+          draws.push([img, this.globalAlpha]);
+        },
+      };
+      const head = createHead(spec, 0);
+      head.at = at;
+      head.handAlpha = handAlpha;
+      head.hand = { x: 1500, y: 300 };
+      drawHead(
+        ctx,
+        {
+          oval: "o",
+          brain: "b",
+          body: ["g"],
+          lid: "lid",
+          lidOutline: "out",
+          hand: "hand",
+        },
+        spec,
+        head,
+        { scale: 1, left: 0, top: 0 }
+      );
+      return draws.filter(([img]) => img === "hand" || img === "lid");
+    };
+    // Closed: the tool works on top of the head.
+    expect(run(spec.keys.first)).toEqual([
+      ["lid", 1],
+      ["hand", 1],
+    ]);
+    // Open: the hand is drawn before the lid, so the lid covers it.
+    expect(run(spec.keys.open)).toEqual([
+      ["hand", 1],
+      ["lid", 1],
+    ]);
+    // On the way: both sides of the lid, the top copy fading.
+    const mid = run(spec.keys.first + 4.4);
+    expect(mid.map(([img]) => img)).toEqual(["hand", "lid", "hand"]);
+    expect(mid[0][1]).toBe(1);
+    expect(mid[2][1]).toBeGreaterThan(0);
+    expect(mid[2][1]).toBeLessThan(1);
+    // A fading hand: away from the lid the two copies add up to its opacity.
+    const [below, , above] = run(spec.keys.first + 4.4, 0.5);
+    expect(1 - (1 - below[1]) * (1 - above[1])).toBeCloseTo(0.5, 6);
+    const fadingOpen = run(spec.keys.open, 0.5);
+    expect(fadingOpen).toEqual([
+      ["hand", 0.5],
+      ["lid", 1],
+    ]);
+  });
+
   it("leaves the hand out when it is not there", () => {
     const drawn = [];
     const ctx = {

@@ -19,7 +19,7 @@
  * helper/chapterCover.js; the feel of the interaction is MOTION below.
  */
 
-/** How the interaction feels. From the delivered page, unchanged. */
+/** How the interaction feels. From the delivered page, except `lidOver`. */
 export const MOTION = Object.freeze({
   /** Strokes (a move and its reverse) that open the head fully. */
   steps: 4,
@@ -39,6 +39,13 @@ export const MOTION = Object.freeze({
   kickDecay: 5,
   /** The right edge of the hand photograph fades over this many of its px. */
   handFadePx: 260,
+  /**
+   * The lid passes in front of the hand as it comes off (Anton, 11 Nov): the
+   * tool works on top of a closed head and reaches in under a lifted one.
+   * Between these two distances of lid travel (|dx| + |dy|, artwork px) the
+   * hand's part over the lid fades out.
+   */
+  lidOver: [40, 200],
 });
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -235,10 +242,11 @@ export function fadedHand(image, spec, makeCanvas, motion = MOTION) {
 /**
  * Draw the scene. `view` is sceneFit's result plus `dpr`; `images` has
  * oval, brain, body (an array), lid, lidOutline and hand (fadedHand's
- * canvas). Bottom to top: the dark opening, the brain, the girl, the lid,
- * the hand.
+ * canvas). Bottom to top: the dark opening, the brain, the girl, the hand,
+ * the lid, and the hand once more for as long as the lid is still on (see
+ * MOTION.lidOver): a canvas has no z-index, so the order is the stacking.
  */
-export function drawHead(ctx, images, spec, head, view) {
+export function drawHead(ctx, images, spec, head, view, motion = MOTION) {
   const { scale, left, top, dpr = 1 } = view;
   const pose = lidPose(head.at, spec.keys.keys, spec.keys.first);
   const bump = Math.sin(head.kick * Math.PI);
@@ -252,6 +260,35 @@ export function drawHead(ctx, images, spec, head, view) {
     spec.brain.at[1] + pose.brainY
   );
   ctx.drawImage(images.body[head.frame], spec.body.at[0], spec.body.at[1]);
+
+  // How far the lid has come off decides which side of it the hand is on.
+  const [near, far] = motion.lidOver;
+  const u = clamp(
+    (Math.abs(pose.lidX) + Math.abs(pose.lidY) - near) / (far - near),
+    0,
+    1
+  );
+  const under = u * u * (3 - 2 * u);
+  const shown = head.handAlpha > 0.01 ? head.handAlpha : 0;
+  const drawHand = (alpha) => {
+    if (alpha <= 0.004) return;
+    const [w, h] = spec.hand.size;
+    const s = spec.hand.scale * (1 - 0.05 * bump);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(
+      images.hand,
+      head.hand.x - spec.hand.tip[0] * s,
+      head.hand.y - spec.hand.tip[1] * s,
+      w * s,
+      h * s
+    );
+    ctx.globalAlpha = 1;
+  };
+  // Two copies, one each side of the lid. Away from the lid they add up to
+  // the hand's own opacity, so its fade in and out shows no seam at the
+  // lid's edge; over the lid only the top copy shows.
+  const over = shown * (1 - under);
+  drawHand(over < 1 ? 1 - (1 - shown) / (1 - over) : 0);
 
   const [px, py] = spec.lid.pivot;
   ctx.save();
@@ -268,17 +305,5 @@ export function drawHead(ctx, images, spec, head, view) {
   ctx.globalAlpha = 1;
   ctx.restore();
 
-  if (head.handAlpha > 0.01) {
-    const [w, h] = spec.hand.size;
-    const s = spec.hand.scale * (1 - 0.05 * bump);
-    ctx.globalAlpha = head.handAlpha;
-    ctx.drawImage(
-      images.hand,
-      head.hand.x - spec.hand.tip[0] * s,
-      head.hand.y - spec.hand.tip[1] * s,
-      w * s,
-      h * s
-    );
-    ctx.globalAlpha = 1;
-  }
+  drawHand(over);
 }
