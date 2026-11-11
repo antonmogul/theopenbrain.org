@@ -38,7 +38,7 @@ describe("1 October reader layout contracts", () => {
   it("lets a short breakout share one viewport with its text, and pauses the whole box, never a title card alone", () => {
     const css = source("../text/BreakoutBox.vue");
     expect(css).toContain(
-      "min-height: calc(100dvh - var(--reader-topbar-h, 4rem))"
+      "min-height: calc(100svh - var(--reader-topbar-h, 4rem))"
     );
     // The 7 Oct review: no title-only hold (the old sticky .bx-intro).
     expect(css).not.toContain("35vh");

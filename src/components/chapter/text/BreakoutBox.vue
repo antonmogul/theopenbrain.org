@@ -361,7 +361,9 @@ const trackAttrs = computed(() =>
 .bx--floating {
   margin: 0;
   min-height: calc(100vh - var(--reader-topbar-h, 4rem));
-  min-height: calc(100dvh - var(--reader-topbar-h, 4rem));
+  /* svh, not dvh: a height that follows the phone's address bar moves the
+     page under the reader (OPENBRAIN-185, see FullBleed's .fb-screen). */
+  min-height: calc(100svh - var(--reader-topbar-h, 4rem));
   padding: clamp(1.5rem, 4vh, 3rem) 0;
   display: flex;
   flex-direction: column;
@@ -546,7 +548,7 @@ const trackAttrs = computed(() =>
      width inside the left gutter) less the right gutter and the peek. */
   --rail-view: calc(100cqw - var(--rail-gutter) - var(--rail-peek));
   height: calc(100vh - var(--reader-topbar-h, 4rem));
-  height: calc(100dvh - var(--reader-topbar-h, 4rem));
+  height: calc(100svh - var(--reader-topbar-h, 4rem));
   min-height: 0;
   padding: clamp(1rem, 3.5vh, 2.5rem) 0 var(--reader-timeline-h, 0px);
   justify-content: flex-start;
