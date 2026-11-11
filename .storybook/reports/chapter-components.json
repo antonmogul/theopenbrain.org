@@ -1,12 +1,12 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 68,
-  "coveredCount": 68,
+  "sourceCount": 71,
+  "coveredCount": 71,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 20,
+    "ReaderShell": 23,
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 17,
@@ -199,6 +199,11 @@
       "story": "Attention"
     },
     {
+      "source": "src/components/chapter/opener/OpenerTocArt.vue",
+      "storyFile": "src/components/chapter/opener/__stories__/OpenerTocArt.stories.js",
+      "story": "History"
+    },
+    {
       "source": "src/components/chapter/opener/ReactiveCover.vue",
       "storyFile": "src/components/chapter/opener/__stories__/ReactiveCover.stories.js",
       "story": "Eye"
@@ -207,6 +212,16 @@
       "source": "src/components/chapter/opener/HeadCover.vue",
       "storyFile": "src/components/chapter/opener/__stories__/HeadCover.stories.js",
       "story": "Live"
+    },
+    {
+      "source": "src/components/chapter/section-cards/SectionCard.vue",
+      "storyFile": "src/components/chapter/section-cards/__stories__/SectionCards.stories.js",
+      "story": "Card"
+    },
+    {
+      "source": "src/components/chapter/section-cards/SectionCards.vue",
+      "storyFile": "src/components/chapter/section-cards/__stories__/SectionCards.stories.js",
+      "story": "InAReader"
     },
     {
       "source": "src/components/chapter/sidebar/ChatTab.vue",
