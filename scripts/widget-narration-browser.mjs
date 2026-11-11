@@ -25,7 +25,13 @@ const csp = (await read("index.html")).match(
   /http-equiv="Content-Security-Policy"\s+content="([^"]+)/
 )[1];
 const uploads = {
-  loewi: await read("src/widgets/uploads/loewi-vagusstoff.html"),
+  // The G5 acceptance is about the October widget (its `window.__loewi` hooks,
+  // caption and transport), so it reads that payload from its migration. The
+  // file in src/widgets/uploads is now Maura's redraw (OPENBRAIN-180,
+  // 20261111180100), a different document with its own checks.
+  loewi: (
+    await read("supabase/migrations/20261022030000_g5_loewi_caption_layout.sql")
+  ).split("$loewi$")[1],
   retina: await read("src/widgets/uploads/retina-center-surround.html"),
   baseline: (
     await read(

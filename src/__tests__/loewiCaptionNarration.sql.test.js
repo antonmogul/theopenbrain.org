@@ -10,10 +10,13 @@ const read = (path) => readFileSync(path, "utf8");
 const old = read(
   "supabase/migrations/20261021030000_history_loewi_widget_fit.sql"
 ).split("$w$")[1];
-const html = read("src/widgets/uploads/loewi-vagusstoff.html");
 const sql = read(
   "supabase/migrations/20261022030000_g5_loewi_caption_layout.sql"
 );
+// The payload this migration carried. The file in src/widgets/uploads has
+// since moved on to Maura's redraw (20261111180100, historyLoewiV3.sql.test.js),
+// so the G5 checks read the payload from the migration itself.
+const html = sql.split("$loewi$")[1];
 const digest = (s) => createHash("sha256").update(s).digest("hex");
 
 it("preserves every embedded source asset, narration, timeline and credit", () => {
@@ -30,7 +33,9 @@ it("preserves every embedded source asset, narration, timeline and credit", () =
   const svg = (s) =>
     s.match(/<svg id="scene"[\s\S]*?<\/svg>/)[0].replace(/^[\t ]+$/gm, "");
   expect(svg(html)).toBe(svg(old));
-  expect(sql.split("$loewi$")[1]).toBe(html);
+  expect(digest(html)).toBe(
+    "d487508b48a86b7d75fdf90333767b27b19898f75585c0bb0d317d83e5f89f38"
+  );
 });
 
 it("permits embedded narration in the inherited parent policy without widening other directives", () => {
