@@ -439,7 +439,7 @@ function onKeydown(e) {
           <button
             v-for="(v, i) in views"
             :key="v.id"
-            class="tab"
+            class="tab ob-round"
             :class="{ 'tab--on': i === selectedIdx }"
             :aria-pressed="i === selectedIdx"
             :disabled="animating"
@@ -682,7 +682,10 @@ function onKeydown(e) {
   pointer-events: none;
 }
 /* `.tabs .tab`, not `.tab`: the chapter band squares every button inside
-   it (WidgetBreakout `:deep(button)`), and the pills must win that. */
+   it (WidgetBreakout `:deep(button)`), and the pills must win that. The
+   buttons also carry `ob-round`: index.css squares every `.widget-root`
+   button with `!important`, which left the hover fill with sharp corners
+   inside the pill track (OPENBRAIN-180). */
 .tabs .tab {
   position: relative;
   min-width: 0;
