@@ -1,12 +1,12 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 71,
-  "coveredCount": 71,
+  "sourceCount": 72,
+  "coveredCount": 72,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 23,
+    "ReaderShell": 24,
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 17,
@@ -127,6 +127,11 @@
       "source": "src/components/chapter/ReaderTopBar.vue",
       "storyFile": "src/components/chapter/__stories__/ReaderTopBar.stories.js",
       "story": "Desktop"
+    },
+    {
+      "source": "src/components/chapter/ReadingRail.vue",
+      "storyFile": "src/components/chapter/__stories__/ReadingRail.stories.js",
+      "story": "Default"
     },
     {
       "source": "src/components/chapter/TextComp.vue",

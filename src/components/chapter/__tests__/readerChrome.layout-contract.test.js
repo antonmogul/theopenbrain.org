@@ -30,6 +30,7 @@ const app = read("App.vue");
 const drawer = read("components/Navigation/NavDrawer.vue");
 const indexCss = read("index.css");
 const textComp = read("components/chapter/TextComp.vue");
+const rail = read("components/chapter/ReadingRail.vue");
 
 describe("the chapter menu keeps the reader's place (7 Oct, item 1)", () => {
   it("puts no filter on the page while the menu is open", () => {
@@ -51,8 +52,9 @@ describe("the chapter menu keeps the reader's place (7 Oct, item 1)", () => {
 
 describe("the divider, its dot and the figure marks share one x (1 Oct, item 3; 24 Sep marks)", () => {
   // The prose column's left edge is the divider: --app-w minus the prose
-  // width. The reading-line dot, the figure marks and the dev centre marker
-  // must derive from the same two tokens, or they drift apart on a wide
+  // width. The reading-line dot, the figure marks (the reading rail) and the
+  // dev centre marker must derive from the same two tokens, or they drift
+  // apart on a wide
   // screen (the dot "lies about 1 cm to the left of the vertical center
   // line" was a 50vw dot beside an 890px-capped column).
   const divider = /calc\(var\(--app-w, 100vw\) - var\(--reader-prose-w\)/;
@@ -72,26 +74,50 @@ describe("the divider, its dot and the figure marks share one x (1 Oct, item 3; 
     expect(dot).toMatch(/- 0\.4375rem\)/);
   });
 
-  it("every pane figure's trigger gets a mark on the divider, chapter-coloured while its figure shows", () => {
-    const mark = rule(indexCss, '.animationTrigger[id]:not([id=""])::before');
-    expect(mark).toMatch(/content:\s*""/);
-    expect(mark).toMatch(/position:\s*absolute/); // no layout shift
-    expect(mark).toMatch(divider);
-    expect(mark).toMatch(/width:\s*1rem/);
-    expect(mark).toMatch(/- 0\.5rem\)/); // centred like the dot
-    const active = rule(
-      indexCss,
-      '.animationTrigger.active[id]:not([id=""])::before'
+  it("the figures' marks are the reading rail's, on the divider and out of the flow (OPENBRAIN-175)", () => {
+    // The 24 Sep tick each trigger drew (::before) is gone: one layer on
+    // the divider draws a mark per figure, the ribbon and the pulse.
+    expect(indexCss).not.toContain(".animationTrigger[id]");
+    const layer = rule(rail, ".reading-rail");
+    expect(layer).toMatch(/position:\s*absolute/); // no layout shift
+    expect(layer).toMatch(
+      /left:\s*calc\(var\(--app-w, 100vw\) - var\(--reader-prose-w\)\);/
     );
-    expect(active).toMatch(/rgb\(var\(--color-chapter\)\)/);
+    expect(layer).toMatch(/width:\s*0/);
+    // The pulse is fixed at the reading point, on the same x.
+    expect(rule(rail, ".rr-point")).toMatch(divider);
+    expect(rule(rail, ".rr-point")).toMatch(/top:\s*50vh/);
+    // It mounts before the reading point, which its state restyles.
+    expect(textComp).toMatch(
+      /<ReadingRail \/>\s*<div class="reading-line" aria-hidden="true" \/>/
+    );
   });
 
-  it("marks and dot are desktop-only: hidden below the two-column breakpoint", () => {
+  it("the figure that is on takes the chapter's colour: its mark, its ribbon, the reading point", () => {
+    expect(rule(rail, ".rr-mark[data-showing] .rr-pill")).toMatch(
+      /background:\s*rgb\(var\(--color-chapter-ground\)\)/
+    );
+    expect(rule(rail, ".rr-span")).toMatch(/rgb\(var\(--color-chapter\)\)/);
+    expect(
+      rule(indexCss, ".reading-rail[data-showing] ~ .reading-line")
+    ).toMatch(/background:\s*rgb\(var\(--color-chapter\)\)/);
+  });
+
+  it("a mark's button is the gutter beside its pill, so a press on the pane's edge stays the pane's", () => {
+    expect(rule(rail, ".rr-mark")).toMatch(
+      /width:\s*calc\(var\(--reader-gutter-l\) - 0\.5rem\)/
+    );
+    expect(rule(rail, ".rr-mark")).toMatch(/pointer-events:\s*auto/);
+    expect(rule(rail, ".rr-pill")).toMatch(/pointer-events:\s*none/);
+  });
+
+  it("the dot is desktop-only: hidden below the two-column breakpoint (the rail draws nothing there)", () => {
     const narrow = mediaBlocks(indexCss, "(max-width: 1023px)").find((b) =>
-      b.includes('.animationTrigger[id]:not([id=""])::before')
+      b.includes(".reading-line")
     );
     expect(narrow).toBeDefined();
-    expect(narrow).toMatch(/::before,\s*\.reading-line\s*{\s*display:\s*none/);
+    expect(narrow).toMatch(/\.reading-line\s*{\s*display:\s*none/);
+    expect(rail).toContain('<template v-if="wide">');
   });
 
   it("the dev centre marker (?markers=1) sits on the same line", () => {
