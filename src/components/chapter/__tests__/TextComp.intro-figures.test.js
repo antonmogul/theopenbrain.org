@@ -119,6 +119,9 @@ function mountReader(chapter) {
         FurtherReading: true,
         FootNotes: true,
         MediaPicker: true,
+        // The divider's marks measure the page and fetch the figure
+        // records; they have their own tests.
+        ReadingRail: true,
         IllustrationInline,
       },
     },

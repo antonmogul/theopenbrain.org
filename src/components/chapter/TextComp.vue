@@ -34,6 +34,7 @@ import {
 } from "@/composables/useInlineFigures";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
+import ReadingRail from "@/components/chapter/ReadingRail.vue";
 import FurtherReading from "./text/FurtherReading.vue";
 import ReferenceList from "./text/ReferenceList.vue";
 import {
@@ -630,7 +631,9 @@ onBeforeUnmount(() => {
     <HoverImg />
     <!-- Viewport-centre trigger line: dev chrome behind ?markers=1 (OPENBRAIN-31) -->
     <div v-if="showMarkers" class="marker-center" />
-    <!-- The reading line on the divider, where figures switch (OPENBRAIN-91) -->
+    <!-- The figures' marks on the divider (OPENBRAIN-175), then the reading
+         line on it, where figures switch (OPENBRAIN-91) -->
+    <ReadingRail />
     <div class="reading-line" aria-hidden="true" />
     <!-- Full-bleed stage layer: inline widget stages teleport here at desktop
          widths because main#text clips its horizontal overflow (OPENBRAIN-37).

@@ -890,31 +890,14 @@ sup:hover {
   }
 }
 
-/* Figure marks on the divider (OPENBRAIN-91). Stuart, 24 Sep: "I liked in
-   the demo chapter how there was some indicator in the center divider line
-   when the visual elements on the left would change." Each paragraph that
-   brings a figure into the pane (an .animationTrigger span) gets a tick on
-   the divider at its top; it turns the chapter's colour while its figure is
-   showing (.active, set by IllustrationsComp). The reading line is where
+/* The reading point on the divider (OPENBRAIN-91). Stuart, 24 Sep: "I liked
+   in the demo chapter how there was some indicator in the center divider
+   line when the visual elements on the left would change." It is where
    figures switch: the viewport's middle, where the triggers fire. Same x
-   formula as the divider (--reader-prose-w). */
-.animationTrigger[id]:not([id=""])::before {
-  content: "";
-  position: absolute;
-  margin-top: 0.4rem;
-  left: calc(var(--app-w, 100vw) - var(--reader-prose-w) - 0.5rem);
-  width: 1rem;
-  height: 2px;
-  background: rgb(var(--color-ink));
-  pointer-events: none;
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
-}
-.animationTrigger.active[id]:not([id=""])::before {
-  background: rgb(var(--color-chapter));
-  transform: scaleX(1.5);
-}
+   formula as the divider (--reader-prose-w). The marks for the figures
+   themselves, and the ribbon of the one that is on, are ReadingRail's
+   (OPENBRAIN-175; components/chapter/ReadingRail.vue), which replaced the
+   tick each trigger used to draw here. */
 .reading-line {
   position: fixed;
   z-index: 31;
@@ -928,13 +911,21 @@ sup:hover {
   background: rgb(var(--color-paper));
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 .reading-line.is-on {
   opacity: 1;
 }
+/* While a figure is on, the reading point is a bead on its ribbon
+   (ReadingRail sets data-showing on its root, the element before this). */
+.reading-rail[data-showing] ~ .reading-line {
+  border-color: rgb(var(--color-chapter));
+  background: rgb(var(--color-chapter));
+}
 @media (max-width: 1023px) {
-  .animationTrigger[id]:not([id=""])::before,
   .reading-line {
     display: none;
   }
