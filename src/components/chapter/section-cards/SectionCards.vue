@@ -30,7 +30,7 @@ import { buildOutline } from "@/composables/useChapterOutline";
 import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { reducedMotionPreferred } from "@/helper/readerJump";
 import { hasSectionCard, sectionArtFor } from "@/helper/sectionArt";
-import { cardState, titleShare } from "@/helper/sectionCard";
+import { FIGURE_LINE, cardState, titleShare } from "@/helper/sectionCard";
 import SectionCard from "./SectionCard.vue";
 
 const props = defineProps({
@@ -44,6 +44,11 @@ const props = defineProps({
    show, or the first full-width band (which covers the pane). */
 const ENDS =
   ".animationTrigger[id], .fb-slot:not(.fb-slot--column), .wb, [data-breakout-box]";
+/* Where the two-column reader stops (TextComp's #chapter-back,
+   OPENBRAIN-179): the close and the references run the full width from
+   there, so nothing in it has a card or an entrance, and no card is left
+   up once it reaches the figure line. */
+const READER_END = "[data-reader-end]";
 /** A section this many screens below gets its picture fetched. */
 const PRELOAD_SCREENS = 3;
 
@@ -76,14 +81,16 @@ const reader = () => rootEl.value?.closest(".chapter-reader") || document;
    ends the card. Rebuilt when the text moves; the positions themselves are
    read fresh on every scroll. */
 let places = [];
+let readerEnd = null;
 let stale = true;
 function place() {
   stale = false;
+  readerEnd = reader().querySelector(READER_END);
   const sections = [...reader().querySelectorAll("section.reader-section")];
   places = cards.value.flatMap((card) => {
     const el = document.getElementById(card.id);
     const at = sections.indexOf(el);
-    if (at < 0) return [];
+    if (at < 0 || el.closest(READER_END)) return [];
     const before = sections[at - 1] || null;
     const end =
       [...el.querySelectorAll(ENDS)].find(
@@ -130,6 +137,12 @@ function update() {
         title: titleShare(box.top, screen),
       };
   }
+  if (
+    next &&
+    readerEnd?.isConnected &&
+    readerEnd.getBoundingClientRect().top <= screen * FIGURE_LINE
+  )
+    next = null;
   showing.value = next;
 }
 
@@ -189,7 +202,7 @@ function armEntrance() {
     const heading = [...section.children].find((el) =>
       el.matches("h2.subChapter")
     );
-    if (!heading) continue;
+    if (!heading || section.closest(READER_END)) continue;
     if (heading.getBoundingClientRect().top < window.innerHeight * 0.9)
       continue;
     section.setAttribute("data-section-enter", "wait");

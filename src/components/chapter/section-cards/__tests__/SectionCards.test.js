@@ -197,6 +197,42 @@ describe("SectionCards", () => {
     expect(card().exists()).toBe(false);
   });
 
+  describe("where the two-column reader ends", () => {
+    // TextComp's #chapter-back: the close and the references, full width.
+    function withReaderEnd() {
+      const back = document.createElement("div");
+      back.setAttribute("data-reader-end", "");
+      reader.querySelector("#container").appendChild(back);
+      return back;
+    }
+
+    it("takes the card down once the reader's end reaches the figure line", async () => {
+      const back = withReaderEnd();
+      mountCards();
+      layOut(600);
+      box(back, 700, 2000);
+      await scrolled();
+      expect(card().exists()).toBe(true);
+      box(back, 450, 2000);
+      await scrolled();
+      expect(card().exists()).toBe(false);
+    });
+
+    it("gives no card or entrance to a section inside it", async () => {
+      const back = withReaderEnd();
+      back.appendChild(reader.querySelector("#two"));
+      box(reader.querySelector("#two > h2.subChapter"), 1400, 80);
+      mountCards();
+      layOut(600);
+      box(back, 2000, 2000);
+      await scrolled();
+      expect(card().exists()).toBe(false);
+      expect(
+        reader.querySelector("#two").hasAttribute("data-section-enter")
+      ).toBe(false);
+    });
+  });
+
   it("has no card below the two-column width", async () => {
     wide = false;
     mountCards();
