@@ -1,6 +1,10 @@
 /*
  * Chapter/Text/ReferenceList — a chapter's references from the references
- * table (OPENBRAIN-92): the authors' own text, a link to each source.
+ * table (OPENBRAIN-92): the authors' own text with its authors and title
+ * told apart, and each link taken out of the sentence into a label that
+ * opens the source (OPENBRAIN-179). One column in a text column; two and
+ * three as its box widens (Chapter/Text/ChapterReferences shows it full
+ * width).
  */
 import ReferenceList from "../ReferenceList.vue";
 
@@ -11,6 +15,9 @@ export default {
     references: [
       {
         number: 1,
+        authors: "Finger, S",
+        title:
+          "Origins of neuroscience: a history of explorations into brain function",
         raw_text:
           "Finger, S. <em>Origins of neuroscience: a history of explorations into brain function</em>. (Oxford Univ. Press, 2001).",
         doi: null,
@@ -18,12 +25,16 @@ export default {
       },
       {
         number: 6,
+        authors: "Masland, R. H",
+        title: "The neuronal organization of the retina",
         raw_text:
           "Masland, R. H. The neuronal organization of the retina. <em>Neuron</em> <strong>76</strong>, 266–280 (2012).",
         doi: "10.1016/j.neuron.2012.10.002",
       },
       {
         number: 7,
+        authors: "Weschler, L",
+        title: "A Rare, Personal Look at Oliver Sacks’s Early Career",
         raw_text:
           "Weschler, L. A Rare, Personal Look at Oliver Sacks’s Early Career. <em>Vanity Fair</em> https://www.vanityfair.com/culture/2015/04/oliver-sacks-autobiography-before-cancer (2015).",
         url: "https://www.vanityfair.com/culture/2015/04/oliver-sacks-autobiography-before-cancer",

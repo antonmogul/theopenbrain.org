@@ -35,9 +35,9 @@ import {
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
 import FurtherReading from "./text/FurtherReading.vue";
-import ReferenceList from "./text/ReferenceList.vue";
+import ChapterReferences from "./text/ChapterReferences.vue";
 import {
-  chapterEndReferences,
+  chapterBackReferences,
   retinaLegacyReferences,
 } from "@/helper/chapterReferences";
 // The editor (TipTap, ~400 KB) loads only when a creator edits: readers
@@ -49,7 +49,6 @@ const EditableBlock = defineAsyncComponent(
 import FootNotes from "./text/FootNotes.vue";
 
 import Perlin from "@/helper/perlin.ts";
-import QuizSection from "./text/QuizSection.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
 
 // Seed value is optional, default is 0.
@@ -68,6 +67,9 @@ const textStore = useText();
 const { isCreator, session } = useAuth();
 
 const triggers = ref(null);
+// The references' wrapper in the back matter: a section's trigger too, so
+// the top bar names it while it is being read.
+const backTrigger = ref(null);
 const ownedScrollTriggers = [];
 const markerListeners = [];
 let waitInterval = null;
@@ -129,19 +131,28 @@ const source = computed(() => {
 // (useChapterOutline, OPENBRAIN-32) so the prose and the contents agree.
 const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 
-// The references table's rows, listed at the chapter's end when its list
-// isn't a section of its own (OPENBRAIN-92); a References section renders
-// them itself (SectionComp).
+// The chapter's references, full width in the back matter below the text
+// (OPENBRAIN-179): its References section when it has one (History), else
+// the references table's rows over the Retina's footnotes (OPENBRAIN-92).
+// While a creator edits, a References section stays in the text column,
+// where its own text is edited (SectionComp).
 const refsCtx = inject("references", null);
-const endReferences = computed(() =>
-  chapterEndReferences(source.value, refsCtx?.references?.value || [])
-);
+const backReferences = computed(() => {
+  const back = chapterBackReferences(
+    source.value,
+    refsCtx?.references?.value || []
+  );
+  return back && !(back.section && canEdit.value) ? back : null;
+});
 const legacyReferences = computed(() => retinaLegacyReferences(source.value));
 
 // Boxes anchored to a paragraph render inside their section, right after it
-// (OPENBRAIN-70 A4); the rest render in order.
+// (OPENBRAIN-70 A4); the references go to the back matter; the rest render
+// in order.
 const topSections = computed(() =>
-  (source.value?.sections || []).filter((s) => !s.anchored)
+  (source.value?.sections || []).filter(
+    (s) => !s.anchored && s !== backReferences.value?.section
+  )
 );
 const anchoredBoxes = computed(() => {
   const map = new Map();
@@ -454,11 +465,14 @@ onMounted(() => {
       }
 
       triggerSetupTimeout = setTimeout(() => {
-        const sectionTriggers = Array.isArray(triggers.value)
-          ? triggers.value
-          : triggers.value
-            ? [triggers.value]
-            : [];
+        const sectionTriggers = [
+          ...(Array.isArray(triggers.value)
+            ? triggers.value
+            : triggers.value
+              ? [triggers.value]
+              : []),
+          ...(backTrigger.value ? [backTrigger.value] : []),
+        ];
 
         for (const [index, trigger] of sectionTriggers.entries()) {
           ownedScrollTriggers.push(
@@ -849,44 +863,62 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <!-- The chapter's references, from the references table, for a
-             chapter whose list isn't a section of its own (the Retina keeps
-             it in Footnotes): every entry links to its source (OPENBRAIN-92). -->
+        <!-- A chapter's explanatory footnotes stay with its text (the
+             Retina's are its bibliography, and go to the back matter). -->
         <div
-          v-if="endReferences.length"
-          id="references"
-          class="trigger prose-measure chapter-references"
+          v-if="source['footNotes']?.notes?.length && !legacyReferences.length"
+          class="chapter-end-blocks"
         >
-          <h2 class="T subChapter">References</h2>
-          <ReferenceList :references="endReferences" />
+          <FootNotes :content="source['footNotes']" />
         </div>
+      </main>
 
-        <!-- End-of-chapter blocks only cancel the wide desktop column's left
-             padding. On mobile/tablet they remain within the centered prose
-             shell so they cannot introduce horizontal overflow. -->
-        <div class="chapter-end-blocks">
-          <QuizSection />
-          <!-- End-of-chapter callout slot — ChapterView fills this with
-               EndOfChapterCallout. Inside TextComp so absolute positioning
-               doesn't pull it to the top of the document. -->
-          <slot name="end-of-chapter" />
-          <!-- Downloads is off until there are real files: its links were
-               2023 placeholders (stock videos on Dropbox) shown under every
-               chapter. Further reading and footnotes render only for a
-               chapter that has them (today only The Retina); the further-
-               reading copy is the Retina's Webvision pointer. -->
+      <!-- Where the two-column reader ends (OPENBRAIN-179): the chapter's
+           close and its back matter run the full width, over the figure
+           pane, below the text column. [data-reader-end] is that boundary
+           for anything that belongs to the two columns (the divider's
+           marks stop at #text's bottom, which is this element's top). -->
+      <div id="chapter-back" class="chapter-back" data-reader-end>
+        <!-- The close: ChapterView fills this with EndOfChapterCallout.
+             Inside TextComp so it sits in the document's flow, below the
+             text (#container is positioned). -->
+        <slot name="end-of-chapter" />
+        <!-- Back matter, on paper: what to read first, then every source.
+             Downloads is off until there are real files (its links were
+             2023 placeholders). -->
+        <div
+          v-if="backReferences || source['furtherReading']?.paragraphs?.length"
+          class="chapter-back__matter"
+        >
           <FurtherReading
             v-if="source['furtherReading']?.paragraphs?.length"
             :content="source['furtherReading']"
           />
-          <FootNotes
-            v-if="
-              source['footNotes']?.notes?.length && !legacyReferences.length
-            "
-            :content="source['footNotes']"
-          />
+          <div
+            v-if="backReferences"
+            :id="toSlug(backReferences.title)"
+            ref="backTrigger"
+            class="trigger"
+          >
+            <ChapterReferences
+              :references="backReferences.entries"
+              :title="backReferences.title"
+              :label="
+                backReferences.section
+                  ? sectionLabels[
+                      backReferences.section.id || backReferences.section.title
+                    ]
+                  : ''
+              "
+              :section-id="backReferences.section?.id"
+              :section-slug="backReferences.section?.slug"
+            />
+          </div>
+          <!-- The page's last line: ChapterView's way on, below a list
+               several screens long. -->
+          <slot name="chapter-foot" />
         </div>
-      </main>
+      </div>
       <Points />
     </div>
   </div>
@@ -1013,6 +1045,28 @@ onBeforeUnmount(() => {
 .chapter-end-blocks {
   width: 100%;
   margin-left: 0;
+}
+
+/* The full-width end of the chapter (OPENBRAIN-179). #scroller lets
+   pointers through to the figure pane; this takes them back. It paints over
+   the pane (the pane is fixed, this scrolls up across it) and stops above
+   the timeline dock. */
+.chapter-back {
+  position: relative;
+  z-index: 32;
+  width: 100%;
+  pointer-events: auto;
+  background: rgb(var(--color-paper));
+}
+.chapter-back__matter {
+  --back-gutter: clamp(1.25rem, 4.17vw, 3.75rem);
+  padding: clamp(3rem, 6vw, 5.5rem) var(--back-gutter)
+    calc(clamp(3rem, 5vw, 4.5rem) + var(--reader-timeline-h, 0px));
+}
+.chapter-back__matter > * {
+  max-width: 82.5rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .reader-stage-layer {
