@@ -90,7 +90,12 @@ One `supabase db push` on the morning of 2026-10-21 applied these in order; ever
 
 Committed, not yet pushed. `supabase migration list` is the authority: any other local-only row it shows is pending too.
 
-Nothing: `supabase migration list` shows local and remote in step as of 2026-11-10.
+Committed on 2026-11-11 (OPENBRAIN-180), to push once the pull request that carries them is deployed:
+
+| Migration                               | What it does, and what must be true first                                                                                                                                                                                                                                  |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261111180000_history_cutout_figures` | Fig 1 and Fig 3 point at the designers' cut-out images and "Plato and Aristotle" hangs on where-is-my-mind ¶7. **Push only after the deploy serves the three new files** (`fig01-skull-cutout.webp`, `fig03-papyrus-cutout.webp`, `plato-aristotle.webp`) as `image/webp`. |
+| `20261111180100_history_loewi_v3`       | `widget_uploads.loewi-vagusstoff` becomes Maura's 9 Nov redraw. Guarded: it fails closed unless the row still holds the 20261022030000 payload. Content only; no code depends on it.                                                                                       |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
