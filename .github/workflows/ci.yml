@@ -55,7 +55,18 @@ jobs:
       # Chromium only — the smoke test doesn't check cross-browser rendering,
       # and pulling all three engines roughly triples this step.
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        # The system packages come from Ubuntu's archive. When a runner cannot
+        # reach it (11 Nov 2026: every job retried for twenty minutes, then
+        # failed), install the browser alone. The runner image already carries
+        # the libraries headless Chromium needs, and a missing one fails the
+        # first browser step loudly rather than passing by accident.
+        run: |
+          if curl -fsSI --max-time 15 http://azure.archive.ubuntu.com/ubuntu/ > /dev/null; then
+            npx playwright install --with-deps chromium
+          else
+            echo "::warning::Ubuntu's archive is unreachable; installing Chromium without system packages"
+            npx playwright install chromium
+          fi
 
       - name: Check formatting
         run: npm run format:check
