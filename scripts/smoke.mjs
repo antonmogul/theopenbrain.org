@@ -213,6 +213,15 @@ const ROUTES = [
       probeX: 4,
       minWidth: 1024,
     },
+    /*
+     * The opener's contents (OPENBRAIN-182; Anton, 11 Nov: "when opening
+     * things the content is moving down and then cut off"). At every
+     * two-column width, with each section opened in turn: the list is not
+     * moved, its top stays where it was, and its last row and the open
+     * parts end inside the block, clear of the timeline's dock; the block
+     * stays one screen tall. A data assertion: the list is the chapter's.
+     */
+    expectContents: { selector: "#chapter-toc", minWidth: 1024 },
   },
   {
     path: "/chapter/2/the-retina",
@@ -768,6 +777,71 @@ async function main() {
           }
         }
 
+        // The opener's contents fit their screen in every state
+        // (OPENBRAIN-182). Sections are opened by keyboard focus, which
+        // opens at once and needs no pointer.
+        let contentsOk = true;
+        if (
+          checkContent &&
+          route.expectContents &&
+          width >= (route.expectContents.minWidth || 0)
+        ) {
+          const problems = await page.evaluate(async (selector) => {
+            const block = document.querySelector(selector);
+            const list = block?.querySelector(".otoc__sections");
+            const rows = [...(block?.querySelectorAll(".otoc__row") || [])];
+            if (!list || rows.length < 2)
+              return [`${selector}: no contents list`];
+            const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+            const dock =
+              parseFloat(
+                getComputedStyle(document.documentElement).getPropertyValue(
+                  "--reader-timeline-h"
+                )
+              ) || 0;
+            const found = [];
+            let top = null;
+            for (const [i, row] of rows.entries()) {
+              row.focus({ preventScroll: true });
+              await wait(450); // the parts' opening is 280 ms
+              const box = block.getBoundingClientRect();
+              const foot = Math.round(box.height - dock);
+              const at = (el) =>
+                Math.round(el.getBoundingClientRect().bottom - box.top);
+              const listTop = Math.round(
+                list.getBoundingClientRect().top - box.top
+              );
+              if (top === null) top = listTop;
+              const parts = block.querySelector(
+                ".otoc__section.is-open .otoc__parts-list"
+              );
+              const say = (what) => found.push(`section ${i} open: ${what}`);
+              if (getComputedStyle(list).transform !== "none")
+                say("the list is transformed");
+              if (listTop !== top)
+                say(`the list's top moved from ${top} to ${listTop}`);
+              if (Math.round(box.height) !== window.innerHeight)
+                say(
+                  `the block is ${Math.round(box.height)} tall, the screen ${window.innerHeight}`
+                );
+              if (at(rows[rows.length - 1]) > foot)
+                say(
+                  `the last row ends at ${at(rows[rows.length - 1])}, past ${foot}`
+                );
+              if (parts && at(parts) > foot)
+                say(`its parts end at ${at(parts)}, past ${foot}`);
+            }
+            document.activeElement?.blur?.();
+            return found;
+          }, route.expectContents.selector);
+          if (problems.length) {
+            contentsOk = false;
+            problems
+              .slice(0, 4)
+              .forEach((p) => failures.push(`${label}: contents: ${p}`));
+          }
+        }
+
         // Without credentials the chapter fetch gets index.html back and throws
         // a JSON parse error. Expected on an unconfigured runner; still a real
         // failure anywhere the keys exist.
@@ -793,6 +867,7 @@ async function main() {
           countOk &&
           absentOk &&
           stageOk &&
+          contentsOk &&
           wheelOk &&
           !real.length;
         if (!ok) {

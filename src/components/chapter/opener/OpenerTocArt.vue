@@ -14,16 +14,23 @@
  * tap (or a tap on a part) goes there. Below the two-column width the
  * picture sits above the list.
  *
- * Two things keep the list still under the pointer:
- * - Parts open only once the pointer rests on a row (REST_MS), so sweeping
- *   down the list changes pictures, not the layout.
- * - Closing a section above the pointer would pull the row out from under
- *   it, so the list is shifted down by what closed (`shift`, a transform
- *   with the same timing as the close) and let back when the pointer leaves.
- *   The shift stops where the list would leave its column.
- * The block's height never changes with any of this (the list reserves the
- * tallest set of parts), because ChapterOpener publishes that height to the
- * reader and every change re-measures the figures' scroll positions.
+ * The list is anchored at its top, as in every frame of the Figma: only the
+ * rows below the open section move (OPENBRAIN-182; the first version moved
+ * the whole list to keep the pointed row under the pointer, and the moves
+ * added up until the last rows left the screen). What keeps it calm:
+ * - Parts open only once the pointer has stayed on a section (REST_MS), so
+ *   sweeping down the list changes pictures, not the layout.
+ * - Only the pointer moving points at a section. When a section above
+ *   closes, the rows under a resting pointer move up and another row ends
+ *   up beneath it; the browser reports that as a move with the same
+ *   coordinates, which is ignored, so one change never sets off the next.
+ * - The block is exactly one screen and never changes height, because
+ *   ChapterOpener publishes that height to the reader and every change
+ *   re-measures the figures' scroll positions. So that the tallest state
+ *   (the section with the most parts open) still fits, the gaps between
+ *   rows and between parts tighten with the room there is (`fit`,
+ *   helper/tocFit.js); on a window too short even for that, the list
+ *   scrolls inside its column.
  *
  * A chapter with no section art keeps OpenerToc (ChapterOpener decides).
  */
@@ -36,7 +43,9 @@ import {
   watch,
 } from "vue";
 import { jumpToElement, reducedMotionPreferred } from "@/helper/readerJump";
+import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { sectionArtFor } from "@/helper/sectionArt";
+import { listFit, listFits } from "@/helper/tocFit";
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -49,10 +58,10 @@ const props = defineProps({
   id: { type: String, default: "chapter-toc" },
 });
 
-/** How long the pointer rests on a row before its parts open. */
+/** How long the pointer stays on a section before its parts open. */
 const REST_MS = 140;
-/** Room kept under the list when it is shifted, px. */
-const SHIFT_FOOT = 40;
+/** px kept spare when fitting the list to its column. */
+const ROOM_SLACK = 4;
 
 /* The pictures, one per distinct file, and which one each section shows: its
    own, or the first for a section that has none. */
@@ -73,9 +82,8 @@ const pictureOf = (entry) => {
 const active = ref(0); // the section pointed at: full strength, its picture
 const open = ref(0); // the section whose parts show
 const under = ref(-1); // the picture the new one fades in over
-const shift = ref(0); // px the list is moved down, see above
-const closed = ref(0); // px the list is tall with nothing open
-const reserve = ref(0); // px kept under it for the tallest set of parts
+const fit = ref(1); // what every gap is multiplied by, so the list fits
+const scrolls = ref(false); // too short even so: the list scrolls in itself
 const armed = ref(false); // the other pictures may load
 const still = ref(false); // reduced motion
 
@@ -86,73 +94,88 @@ watch(shown, (now, before) => {
 
 const rootEl = ref(null);
 const listEl = ref(null);
-const columnEl = ref(null);
+const navEl = ref(null);
 const partsEls = new Map(); // section index → its parts' inner list
 
 function setParts(i, el) {
   if (el) partsEls.set(i, el);
   else partsEls.delete(i);
 }
-const partsHeight = (i) => partsEls.get(i)?.scrollHeight || 0;
 
-/* The list's height with nothing open, and the tallest set of parts: the
-   list keeps room for both, so opening a section never makes the block
-   taller. */
+const heights = (els) => els.reduce((sum, el) => sum + el.offsetHeight, 0);
+const rowGap = (el) => parseFloat(getComputedStyle(el).rowGap) || 0;
+
+/* How much the gaps must give for the tallest state to fit the column
+   (helper/tocFit.js). The gaps are read as drawn: what is on the page now,
+   over the factor it was drawn with. Below the two-column width the block
+   takes the height it needs, so nothing gives. */
 function measure() {
   const list = listEl.value;
-  if (!list) return;
+  const nav = navEl.value;
+  if (!list || !nav) return;
+  if (!window.matchMedia?.(READER_WIDE_QUERY).matches) {
+    fit.value = 1;
+    scrolls.value = false;
+    return;
+  }
+  const drawn = fit.value || 1;
   const rows = [...list.querySelectorAll(".otoc__row")];
-  const gap = parseFloat(getComputedStyle(list).rowGap) || 0;
-  closed.value =
-    rows.reduce((sum, row) => sum + row.offsetHeight, 0) +
-    gap * Math.max(0, rows.length - 1);
-  let tallest = 0;
-  for (const i of partsEls.keys()) tallest = Math.max(tallest, partsHeight(i));
-  reserve.value = tallest;
-}
-
-/* How far the list may be shifted with section `i` open before it would
-   leave its column. */
-function shiftLimit(i) {
-  const column = columnEl.value;
-  const list = listEl.value;
-  if (!column || !list) return 0;
-  return Math.max(
-    0,
-    column.clientHeight -
-      list.offsetTop -
-      closed.value -
-      partsHeight(i) -
-      SHIFT_FOOT
-  );
+  const measured = {
+    // A few px in hand: heights are whole numbers, the layout's are not.
+    room: nav.clientHeight - ROOM_SLACK,
+    rows: heights(rows),
+    gaps: (rowGap(list) / drawn) * Math.max(0, rows.length - 1),
+    parts: [...partsEls.values()].map((partsList) => {
+      const links = [...partsList.querySelectorAll(".otoc__part")];
+      // One gap above the first part, one between each two.
+      return {
+        text: heights(links),
+        gaps: (rowGap(partsList) / drawn) * links.length,
+      };
+    }),
+  };
+  const next = listFit(measured);
+  // A hair's difference is not worth another layout (and another measure).
+  if (Math.abs(next - fit.value) > 0.004) fit.value = next;
+  scrolls.value = !listFits(measured, next);
 }
 
 let restTimer = null;
-function openSection(i, { hold = false } = {}) {
+function openSection(i) {
   clearTimeout(restTimer);
-  if (i === open.value) return;
-  // The section closing is above the pointer: keep the pointed row where it
-  // is by moving the list down by what closes.
-  const closing = hold && open.value < i ? partsHeight(open.value) : 0;
-  // Never past the column's foot, whichever way the pointer came.
-  shift.value = Math.min(shift.value + closing, shiftLimit(i));
+  restTimer = null;
   open.value = i;
 }
 
-function onEnter(i, event) {
-  if (event.pointerType === "touch") return;
+/* Point at section `i`: its picture at once, its parts once the pointer
+   has stayed REST_MS (also under reduced motion: the wait is what keeps a
+   sweep down the list from opening everything on the way). */
+function point(i) {
+  if (i === active.value && (i === open.value || restTimer)) return;
   active.value = i;
   clearTimeout(restTimer);
-  // Also under reduced motion: the wait is what keeps the list still.
-  restTimer = setTimeout(() => openSection(i, { hold: true }), REST_MS);
+  restTimer =
+    i === open.value ? null : setTimeout(() => openSection(i), REST_MS);
+}
+
+/* Where the pointer last was. Rows that move under a resting pointer make
+   the browser report a move to the same spot; only a move to a new spot is
+   the reader's. */
+let spot = null;
+function onMove(event) {
+  if (event.pointerType === "touch") return;
+  const { clientX: x, clientY: y } = event;
+  if (spot && spot.x === x && spot.y === y) return;
+  spot = { x, y };
+  // On a row or its parts; the gaps between sections belong to no one.
+  const section = event.target.closest?.(".otoc__section");
+  if (section) point(Number(section.dataset.index));
 }
 function onLeave(event) {
   if (event.pointerType === "touch") return;
-  clearTimeout(restTimer);
-  // The pointer has gone: bring what it settled on up to date and let the
-  // list back to its place.
-  open.value = active.value;
-  shift.value = 0;
+  spot = null;
+  // The pointer has gone: bring what it settled on up to date.
+  openSection(active.value);
 }
 
 /* A press focuses the row before its click arrives (after its pointerup,
@@ -175,7 +198,6 @@ function onPressEnd() {
 function onFocus(i) {
   if (press) return;
   active.value = i;
-  shift.value = 0;
   openSection(i);
 }
 
@@ -196,7 +218,6 @@ function onRow(i, entry, event) {
     // First tap: open it. The second goes there.
     event.preventDefault();
     active.value = i;
-    shift.value = 0;
     openSection(i);
     return;
   }
@@ -209,9 +230,12 @@ let resizer = null;
 onMounted(() => {
   still.value = reducedMotionPreferred();
   measure();
-  if (typeof ResizeObserver === "function" && listEl.value) {
+  // The column's room changes with the window, the rows' heights with the
+  // width and the fonts arriving.
+  if (typeof ResizeObserver === "function" && listEl.value && navEl.value) {
     resizer = new ResizeObserver(measure);
     resizer.observe(listEl.value);
+    resizer.observe(navEl.value);
   }
   // The other pictures load once the contents are on screen, not with the
   // hero above them.
@@ -238,14 +262,13 @@ watch(
   () => props.outline,
   async () => {
     active.value = 0;
-    open.value = 0;
-    shift.value = 0;
+    openSection(0);
     await nextTick();
     measure();
   }
 );
 
-defineExpose({ active, open, shift });
+defineExpose({ active, open, fit, scrolls, measure });
 </script>
 
 <template>
@@ -253,7 +276,8 @@ defineExpose({ active, open, shift });
     :id="id"
     ref="rootEl"
     class="otoc"
-    :class="{ 'otoc--still': still }"
+    :class="{ 'otoc--still': still, 'otoc--scrolls': scrolls }"
+    :style="{ '--otoc-fit': fit }"
     aria-labelledby="opener-toc-title"
   >
     <!-- The pictures repeat what the list says, so they are not announced. -->
@@ -270,21 +294,14 @@ defineExpose({ active, open, shift });
       />
     </div>
 
-    <div ref="columnEl" class="otoc__column" @pointerleave="onLeave">
+    <div class="otoc__column" @pointerleave="onLeave">
       <h1 id="opener-toc-title" class="otoc__title">
         <span class="otoc__lead">{{ title }}</span>
         <span v-if="subtitle" class="otoc__sub">{{ subtitle }}</span>
       </h1>
 
-      <nav aria-label="Chapter contents">
-        <ol
-          ref="listEl"
-          class="otoc__sections"
-          :style="{
-            '--otoc-shift': `${shift}px`,
-            '--otoc-room': `${closed + reserve}px`,
-          }"
-        >
+      <nav ref="navEl" class="otoc__nav" aria-label="Chapter contents">
+        <ol ref="listEl" class="otoc__sections" @pointermove="onMove">
           <li
             v-for="(entry, i) in outline"
             :key="entry.id"
@@ -294,7 +311,7 @@ defineExpose({ active, open, shift });
               'is-open': i === open,
               [`otoc__section--${entry.kind}`]: true,
             }"
-            @pointerenter="onEnter(i, $event)"
+            :data-index="i"
           >
             <a
               class="otoc__row"
@@ -373,10 +390,17 @@ defineExpose({ active, open, shift });
   --otoc-inset: clamp(1.25rem, 2.5vw, 2.25rem);
   --otoc-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --otoc-ms: 280ms;
+  /* The parts' gap as drawn; like the rows' it is multiplied by --otoc-fit
+     (the component sets it: 1, or less on a window the list would not
+     otherwise fit). */
+  --otoc-part-gap: 1.125rem;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 100vh;
+  grid-template-rows: minmax(0, 1fr);
+  /* One screen, exactly: nothing the list does may change it. */
+  height: 100vh;
+  min-height: 0;
   /* The reader pads every <section> (index.css); this one is its own
      screen, edge to edge. */
   padding: 0;
@@ -423,8 +447,22 @@ defineExpose({ active, open, shift });
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   padding: clamp(5.5rem, 11vh, 7rem) 0 clamp(2.5rem, 6vh, 4rem);
   overflow: hidden;
+}
+/* The room the list has: what is left of the column under the title. */
+.otoc__nav {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* A window too short for the list even with its gaps at their tightest:
+   the list scrolls here, in its column. Only then, so that a list that
+   fits never takes the wheel from the page. */
+.otoc--scrolls .otoc__nav {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.3) transparent;
 }
 
 /* The chapter's name, small: the list is the page here, and the hero above
@@ -463,11 +501,7 @@ defineExpose({ active, open, shift });
 .otoc__sections {
   display: flex;
   flex-direction: column;
-  gap: var(--otoc-gap);
-  /* Room for the tallest set of parts, so the block keeps its height. */
-  min-height: var(--otoc-room, 0px);
-  transform: translateY(var(--otoc-shift, 0px));
-  transition: transform var(--otoc-ms) var(--otoc-ease);
+  gap: calc(var(--otoc-gap) * var(--otoc-fit, 1));
   /* The reader hyphenates prose; titles in the contents break at words. */
   hyphens: manual;
 }
@@ -510,8 +544,7 @@ defineExpose({ active, open, shift });
   transform: rotate(180deg);
 }
 
-/* Opening is a row growing from nothing (0fr to 1fr), which runs in step
-   with the list's shift: same time, same curve. */
+/* Opening is a row growing from nothing (0fr to 1fr). */
 .otoc__parts {
   display: grid;
   grid-template-rows: 0fr;
@@ -532,14 +565,15 @@ defineExpose({ active, open, shift });
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 1.125rem;
+  gap: calc(var(--otoc-part-gap) * var(--otoc-fit, 1));
   /* Under the title, past the number and its gap (62 from the divide in
      Figma). */
   padding: 0 3.75rem 0
     calc(var(--otoc-inset) + 0.9 * var(--otoc-row) + 0.375rem);
 }
+/* The same gap again between the row and its first part. */
 .otoc__parts-list > li:first-child {
-  padding-top: 1.125rem;
+  padding-top: calc(var(--otoc-part-gap) * var(--otoc-fit, 1));
 }
 .otoc__part {
   display: block;
@@ -576,7 +610,6 @@ defineExpose({ active, open, shift });
 .otoc--still .otoc__pic.is-on {
   animation: none;
 }
-.otoc--still .otoc__sections,
 .otoc--still .otoc__section,
 .otoc--still .otoc__chevron,
 .otoc--still .otoc__parts,
@@ -588,7 +621,6 @@ defineExpose({ active, open, shift });
   .otoc__pic.is-on {
     animation: none;
   }
-  .otoc__sections,
   .otoc__section,
   .otoc__chevron,
   .otoc__parts,
@@ -598,8 +630,8 @@ defineExpose({ active, open, shift });
   }
 }
 
-/* Below the two-column reader: the picture above the list, which takes the
-   height it needs (nothing is reserved or shifted: a tap opens a section). */
+/* Below the two-column reader: the picture above the list, and the block
+   takes the height it needs (a tap opens a section; nothing has to fit). */
 @media (max-width: 1023px) {
   .otoc {
     --otoc-row: 1.125rem;
@@ -607,7 +639,8 @@ defineExpose({ active, open, shift });
     --otoc-gap: 1.375rem;
     --otoc-inset: 1.25rem;
     grid-template-columns: 1fr;
-    min-height: 0;
+    grid-template-rows: none;
+    height: auto;
   }
   .otoc__art {
     aspect-ratio: 4 / 3;
@@ -626,10 +659,6 @@ defineExpose({ active, open, shift });
   .otoc__row,
   .otoc__parts-list {
     padding-right: 1.25rem;
-  }
-  .otoc__sections {
-    min-height: 0;
-    transform: none;
   }
 }
 </style>
