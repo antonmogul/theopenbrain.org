@@ -3,79 +3,129 @@
  * Lisowski (1967) with its four healed openings; pointing at one brings in
  * the hand that made it, holding its tool.
  *
- * The artwork is Figma's "Fig 2 Animation" (Open-Brain-Chapters, node
- * 3:1929), cut apart: the skull and the four hands are separate images, and
- * `art` places them in the frame's own units (745 × 657, the size the
- * figure's earlier five-frame export was made at).
+ * The artwork and its places are the designers' November sketch (OPENBRAIN-173,
+ * Figma Yv7WvZSoabK2t5fNtsChvf, component set 2875:35801): a 720-wide frame
+ * with the skull low in it and four long arms that reach in from past the
+ * frame's top (the fourth from its right). `art` is in that frame's units;
+ * the stage is its top 800 (the figure's toolbar is below, outside it).
  *
- * Since OPENBRAIN-159 the images are the designer's cut-outs for the dark
- * treatment of the History redesign: alpha WebPs with no grey plate behind
- * the skull and none of the drawing's printed leader lines (the widget draws
- * its own numbered rings). The five were exported at one scale, so they sit
- * in the frame at their own pixel size (skull 487 × 427, hands 302 × 497,
- * 209 × 341, 236 × 354, 250 × 288); each `hole` is the opening measured on
- * the skull image, and each hand is placed so its tool's working end lands
- * on that opening. The arms are cut at the image's top (or, for the fourth,
- * its right) edge and sit just past the frame's, so a hand reads as coming
- * in from outside.
+ * The five images are alpha WebPs cut to their painted area, so each box
+ * below is where that cut sits in the frame. An arm ends where its image
+ * does, above the frame's top (or right of it): the widget clips at its own
+ * edge, so an arm always reads as coming in from outside. Their file names
+ * carry `-v2` because the boxes changed with the artwork; a browser holding
+ * the older files would otherwise draw them in the new places.
  */
 const DIR = "/publicAssets/images/foundations/trepanation/";
+
+/** The stage, in frame units. Everything in `art` is measured in these. */
+export const STAGE = Object.freeze({ width: 720, height: 800 });
 
 export default {
   id: "trepanation",
   name: "Methods of trepanation",
   animationKey: "animationFoundationsFig2",
   art: {
-    width: 745,
-    height: 657,
-    skull: { src: `${DIR}skull.webp`, x: 165, y: 224, w: 487 },
+    width: STAGE.width,
+    height: STAGE.height,
+    /** The stage may lose this much off its top in a short pane: arms only. */
+    spare: 150,
+    skull: { src: `${DIR}skull-v2.webp`, x: 120.9, y: 284.8, w: 479, h: 422.9 },
     /**
-     * One per method, in the legend's order. `hand` is the cut-out (x, y, w
-     * in frame units; its height follows the image), `hole` the opening it
-     * works on, `callout` the numbered ring, `from` where the hand comes in
-     * from (a share of its own size).
-     *
-     * A callout sits like a map label: just outside its opening's rim, on
-     * whichever side is clearest for that opening and nearer to it than to
-     * any other, and where no hand lands except (for 2) its own, since the
-     * four hands cover every other side of the groove.
+     * One per method, in the legend's order.
+     * - `hand`: the cut-out's box.
+     * - `at`: the opening on the skull, where the tool works and the
+     *   number's leader line ends.
+     * - `disc`: the centre of the numbered disc.
+     * - `zone`: the ellipse a pointer shows the method from (centre, radii,
+     *   `turn` in degrees clockwise). Where two zones meet, openingAt gives
+     *   the spot to the nearer opening.
+     * - `from`: where the hand comes in from, a share of its own size.
+     * - `work`: the small movement it repeats once there: a slide (frame
+     *   units) and a turn (degrees) about `at`, each way from rest.
      */
     methods: [
       {
-        hand: { src: `${DIR}hand-1.webp`, x: 133, y: -74, w: 302, h: 497 },
-        hole: { x: 243, y: 376, r: 50 },
-        callout: { x: 288, y: 432 },
-        from: { x: -28, y: -14 },
+        hand: {
+          src: `${DIR}hand-1-v2.webp`,
+          x: 31.5,
+          y: 0,
+          w: 281.9,
+          h: 465.5,
+        },
+        at: { x: 165.5, y: 402.1 },
+        disc: { x: 115, y: 356 },
+        zone: { x: 161.9, y: 411.3, rx: 61.45, ry: 116.45, turn: -43.02 },
+        from: { x: -16, y: -14 },
+        work: { x: 5, y: 5, turn: 1.2 },
       },
       {
-        hand: { src: `${DIR}hand-2.webp`, x: 240, y: -51, w: 209, h: 341 },
-        hole: { x: 318, y: 289, r: 40 },
-        callout: { x: 312, y: 225 },
-        from: { x: 0, y: -26 },
+        hand: {
+          src: `${DIR}hand-2-v2.webp`,
+          x: 153.7,
+          y: -68,
+          w: 287.6,
+          h: 444.1,
+        },
+        at: { x: 275, y: 326 },
+        disc: { x: 273, y: 257 },
+        zone: { x: 278, y: 304, rx: 53, ry: 97, turn: 0 },
+        from: { x: -4, y: -20 },
+        work: { x: 4, y: 0, turn: 2 },
       },
       {
-        hand: { src: `${DIR}hand-3.webp`, x: 356, y: -68, w: 236, h: 354 },
-        hole: { x: 431, y: 280, r: 35 },
-        callout: { x: 471, y: 240 },
-        from: { x: 18, y: -20 },
+        hand: {
+          src: `${DIR}hand-3-v2.webp`,
+          x: 390.6,
+          y: -123,
+          w: 384.1,
+          h: 467.7,
+        },
+        at: { x: 396, y: 330.6 },
+        disc: { x: 424, y: 268 },
+        zone: { x: 396, y: 306, rx: 67, ry: 92, turn: 0 },
+        from: { x: 8, y: -18 },
+        work: { x: 0, y: 2, turn: 3 },
       },
       {
-        hand: { src: `${DIR}hand-4.webp`, x: 482, y: 105, w: 250, h: 288 },
-        hole: { x: 517, y: 350, r: 34 },
-        callout: { x: 556, y: 389 },
-        from: { x: 26, y: -6 },
+        hand: {
+          src: `${DIR}hand-4-v2.webp`,
+          x: 478.5,
+          y: 105,
+          w: 328.5,
+          h: 323.5,
+        },
+        at: { x: 485, y: 400.7 },
+        disc: { x: 543, y: 360 },
+        zone: { x: 505.1, y: 401.45, rx: 87.5, ry: 59.5, turn: -51.57 },
+        from: { x: 20, y: -7 },
+        work: { x: 6, y: -2, turn: 0.6 },
       },
     ],
   },
   fields: [
+    {
+      key: "figureLabel",
+      label: "Figure label",
+      type: "text",
+      hint: "The amber label before the title, e.g. Fig 02.",
+    },
     { key: "title", label: "Title", type: "text" },
     {
-      key: "methods",
-      label: "Methods",
+      key: "labels",
+      label: "Method names",
       type: "list",
       artwork: true,
       itemLabels: ["Opening 1", "Opening 2", "Opening 3", "Opening 4"],
-      hint: "Shown when the reader points at each numbered opening.",
+      hint: "One or two words, set large under the skull while a method shows.",
+    },
+    {
+      key: "methods",
+      label: "Methods, in full",
+      type: "list",
+      artwork: true,
+      itemLabels: ["Opening 1", "Opening 2", "Opening 3", "Opening 4"],
+      hint: "Read out by screen readers for each numbered opening.",
     },
     {
       key: "prompt",
@@ -91,14 +141,16 @@ export default {
     },
   ],
   defaults: {
+    figureLabel: "Fig 02",
     title: "Methods of trepanation",
+    labels: ["Scraping", "Grooving", "Drilling", "Cutting"],
     methods: [
       "Scraping",
       "Grooving",
       "Drilling a perimeter around the hole",
       "Cutting a rectangular opening",
     ],
-    prompt: "Point at a numbered opening to see how it was made.",
+    prompt: "Choose an opening to see how it was made.",
     caption:
       "Different trepanation methods, including scraping (1), grooving (2), drilling a perimeter around the hole (3) and cutting a rectangular opening (4) (Lisowski, 1967).",
   },
