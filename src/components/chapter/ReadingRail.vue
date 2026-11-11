@@ -115,6 +115,21 @@ function readShowing() {
     (on && marks.value.find((mark) => mark.els.includes(on))?.key) || null;
 }
 
+/* The figure records, once and only when there is a figure to name (a
+   phone, or a chapter with no pane figures, asks for nothing). It is the
+   pane's own request, cached and shared; when the rows arrive `list`
+   changes and the rail measures again. */
+let asked = false;
+async function askForRecords() {
+  if (asked || props.records) return;
+  asked = true;
+  try {
+    await fetchAnimations();
+  } catch (err) {
+    console.warn("ReadingRail: using the JSON fallback:", err);
+  }
+}
+
 function measure() {
   if (unmounted) return;
   classObserver?.disconnect();
@@ -133,6 +148,7 @@ function measure() {
   triggers = [...scope.querySelectorAll(".animationTrigger[id]")]
     .filter((trigger) => /^trigger/i.test(trigger.id))
     .filter((trigger) => !trigger.closest("[data-breakout-box]"));
+  if (triggers.length) askForRecords();
   bands.value = [...scope.querySelectorAll(FIGURE_BANDS)].map((band) => {
     const rect = band.getBoundingClientRect();
     return [rect.top - origin, rect.bottom - origin];
@@ -270,7 +286,7 @@ function onKey(event, index) {
 }
 
 onMounted(async () => {
-  ScrollTrigger.addEventListener("refresh", remeasure);
+  ScrollTrigger.addEventListener?.("refresh", remeasure);
   window.addEventListener("resize", remeasure);
   const scope = reader();
   const content = root.value?.parentElement;
@@ -292,20 +308,13 @@ onMounted(async () => {
   }
   for (const ms of [400, 1200, 2500]) settle.push(setTimeout(remeasure, ms));
   armTimer = setTimeout(() => (armed = true), 1500);
-  if (!props.records) {
-    try {
-      await fetchAnimations();
-    } catch (err) {
-      console.warn("ReadingRail: using the JSON fallback:", err);
-    }
-  }
   await nextTick();
   measure();
 });
 
 onBeforeUnmount(() => {
   unmounted = true;
-  ScrollTrigger.removeEventListener("refresh", remeasure);
+  ScrollTrigger.removeEventListener?.("refresh", remeasure);
   window.removeEventListener("resize", remeasure);
   classObserver?.disconnect();
   layoutObserver?.disconnect();
