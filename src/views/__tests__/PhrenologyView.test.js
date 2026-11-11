@@ -48,6 +48,15 @@ afterEach(() => {
 });
 
 describe("source-backed embedded skull", () => {
+  it("keeps the view tabs out of the book's square-button rule", async () => {
+    // index.css squares `.widget-root button:not(.ob-round)` with !important,
+    // which gave the hover fill sharp corners in the pill track.
+    const w = await skull();
+    const tabs = w.findAll(".tabs .tab");
+    expect(tabs).toHaveLength(3);
+    for (const tab of tabs) expect(tab.classes()).toContain("ob-round");
+  });
+
   it("moves the picker to a loaded view, retains a valid view and leaves Weight unmapped", async () => {
     const w = await skull();
     await w.find("select").setValue("12");
