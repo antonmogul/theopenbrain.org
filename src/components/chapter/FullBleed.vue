@@ -215,7 +215,14 @@ defineExpose({ sync: schedule, floating });
     margin-left: calc(50% - var(--app-w, 100vw) / 2);
   }
 }
-/* The widget itself fills the screen; reader chrome yields during the hold. */
+/* The widget itself fills the screen; reader chrome yields during the hold.
+   Sized in svh, not dvh (OPENBRAIN-185): on a phone dvh changes every time
+   the address bar slides in or out, which happens whenever the reader turns
+   the scroll round. Two bands this tall plus their room changed the page's
+   height by a couple of hundred px each time, and with no scroll anchoring
+   on iOS everything below them jumped under the finger. svh is the screen
+   with the bar showing and never changes; with the bar away the band is a
+   bar's height short of the screen, which reads as nothing. */
 .fb-screen-hold {
   background: rgb(var(--color-dark-surface));
 }
@@ -224,9 +231,9 @@ defineExpose({ sync: schedule, floating });
   top: 0;
   box-sizing: border-box;
   height: 100vh;
-  height: 100dvh;
+  height: 100svh;
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
 
   display: flex;
   flex-direction: column;
@@ -237,7 +244,7 @@ defineExpose({ sync: schedule, floating });
 }
 .fb-screen-room {
   height: 25vh;
-  height: 25dvh;
+  height: 25svh;
 }
 :root[data-reduce-motion="1"] .fb-screen {
   position: relative;
