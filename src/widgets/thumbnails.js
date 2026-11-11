@@ -56,6 +56,8 @@ export const WIDGET_THUMBS = Object.freeze({
     "/publicAssets/images/widgets/thumbs/upload-attn-sdt.jpg?v=59ef4a28",
   "upload:history-penfield-binder":
     "/publicAssets/images/widgets/thumbs/upload-history-penfield-binder.jpg?v=18fc5cd7",
+  "upload:loewi-vagusstoff":
+    "/publicAssets/images/widgets/thumbs/upload-loewi-vagusstoff.jpg?v=3d499f95",
   "v1-camera": "/publicAssets/images/widgets/thumbs/v1-camera.jpg?v=84af428b",
   "visual-pathway-lesions":
     "/publicAssets/images/widgets/thumbs/visual-pathway-lesions.jpg?v=5b779a24",

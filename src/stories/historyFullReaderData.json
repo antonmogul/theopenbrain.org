@@ -2,14 +2,14 @@
   "header": {
     "source": "published chapter export",
     "chapter": "foundations-of-neuroscience",
-    "exportedAt": "2026-11-10",
+    "exportedAt": "2026-11-11",
     "exportedBy": "scripts/history-full-reader-export.mjs",
     "counts": {
       "sections": 15,
       "boxes": 7,
       "paragraphs": 81,
-      "figureLinks": 37,
-      "animations": 37,
+      "figureLinks": 38,
+      "animations": 38,
       "widgetBlocks": 2,
       "references": 121,
       "uploads": 2
@@ -2771,9 +2771,9 @@
       },
       "content_text": "Plato held an encephalocentric view, relaying from Socrates that the brain conveys sensation and generates knowledge. He argued for a tripartite soul, favouring the head partly for idealistic reasons: it was our most spherical, and thus most divine, structure.",
       "order_index": 7,
-      "has_animation": false,
-      "animation_id": null,
-      "animation_trigger": null,
+      "has_animation": true,
+      "animation_id": "history-animation-animationFoundationsPlatoAristotle",
+      "animation_trigger": "auto",
       "is_subsection_header": false,
       "subsection_level": 0
     },
@@ -2934,7 +2934,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig01-01.jpg?v=2",
+      "image_file_url": "/publicAssets/images/foundations/fig01-skull-cutout.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -2945,7 +2945,7 @@
         "images": [
           {
             "alt": "An Incan skull with a square trepanation opening in the forehead.",
-            "src": "/publicAssets/images/foundations/fig01-01.jpg?v=2"
+            "src": "/publicAssets/images/foundations/fig01-skull-cutout.webp"
           }
         ],
         "caption": "An Incan skull, acquired by Squier and studied by Broca. It is now housed at the American Museum of Natural History (Squier, 1877).",
@@ -3367,7 +3367,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig03-01.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig03-papyrus-cutout.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3378,7 +3378,7 @@
         "images": [
           {
             "alt": "Two columns of hieratic script on aged papyrus.",
-            "src": "/publicAssets/images/foundations/fig03-01.jpg"
+            "src": "/publicAssets/images/foundations/fig03-papyrus-cutout.webp"
           }
         ],
         "caption": "Plates 6 and 7 of the Edwin Smith Papyrus, which is housed at the New York Academy of Medicine. Source: Wikipedia.",
@@ -4138,6 +4138,35 @@
         "diagramType": "photo",
         "placeholder": true,
         "figureNumber": "H"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low"
+    },
+    {
+      "id": "history-animation-animationFoundationsPlatoAristotle",
+      "animation_key": "animationFoundationsPlatoAristotle",
+      "title": "Plato and Aristotle",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/plato-aristotle.webp",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "Two robed philosophers walk side by side under an arch. Plato, older and white-bearded, in red and purple, holds up a brain; Aristotle, in blue and brown, holds a heart in his open hand.",
+            "src": "/publicAssets/images/foundations/plato-aristotle.webp"
+          }
+        ],
+        "caption": "Plato and his pupil Aristotle, after Raphael's The School of Athens (1509–1511). Plato, who placed the mind in the head, holds a brain; Aristotle, who placed it in the heart, holds a heart.",
+        "diagramType": "illustration",
+        "placeholder": true
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
