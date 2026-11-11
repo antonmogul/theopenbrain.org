@@ -74,14 +74,19 @@ const caption = computed(
 // the pane and the fullscreen dialog so expanding opens on the same plate
 // in the same view (OPENBRAIN-144, OPENBRAIN-177).
 const galleryIndex = ref(0);
-const galleryView = ref(
-  galleryStartView(images.value.length, props.animation.galleryStart)
+// Empty until the reader chooses a view: until then the set's opening view
+// stands, the same rule the gallery itself applies.
+const galleryView = ref("");
+const shownGalleryView = computed(
+  () =>
+    galleryView.value ||
+    galleryStartView(images.value.length, props.animation.galleryStart)
 );
 
 // The legend sits with the title (OPENBRAIN-138): the shown image's own
 // caption, else the figure's; over the grid of all the images, the figure's.
 const legend = computed(() => {
-  if (images.value.length > 1 && galleryView.value === "grid")
+  if (images.value.length > 1 && shownGalleryView.value === "grid")
     return caption.value;
   return (
     (images.value[galleryIndex.value] || images.value[0])?.caption ||
