@@ -101,6 +101,11 @@ beforeEach(() => {
   });
   window.getComputedStyle = (el) => ({
     paddingBottom: el.classList?.contains("reader-section") ? "320px" : "0px",
+    fontFamily: '"IBM Plex Sans", sans-serif',
+  });
+  Object.defineProperty(document, "fonts", {
+    configurable: true,
+    value: { load: vi.fn() },
   });
   reader = document.createElement("div");
   reader.className = "chapter-reader";
@@ -246,6 +251,22 @@ describe("SectionCards", () => {
     layOut(600);
     await scrolled();
     expect(wrapper.find(".section-cards").exists()).toBe(false);
+    expect(document.fonts.load).not.toHaveBeenCalled();
+  });
+
+  it("asks for the number's light face up front, not when a card comes in", async () => {
+    // A font finishing mid-scroll makes the pane refresh its triggers,
+    // which stops a smooth jump from the contents where it is.
+    mountCards();
+    expect(document.fonts.load).toHaveBeenCalledTimes(1);
+    expect(document.fonts.load).toHaveBeenCalledWith(
+      '300 1em "IBM Plex Sans", sans-serif',
+      "0123456789"
+    );
+    layOut(600);
+    await scrolled();
+    expect(card().exists()).toBe(true);
+    expect(document.fonts.load).toHaveBeenCalledTimes(1);
   });
 
   it("goes with the pane while the reader's scroll is driven", async () => {

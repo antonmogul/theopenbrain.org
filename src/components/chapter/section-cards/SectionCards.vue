@@ -228,10 +228,23 @@ function attach(triesLeft = 12) {
   onLayout();
   armEntrance();
 }
+/* The card's number is set light, a face nothing else on the page uses.
+   Fetched when the first card came in, it finished mid-scroll, and the pane
+   answers every font load with a ScrollTrigger refresh (IllustrationsComp),
+   which stops a smooth jump where it is: a jump from the contents to a
+   later section never arrived. So the face is asked for now, with the
+   page's other fonts. */
+function fetchNumberFace() {
+  const root = rootEl.value;
+  if (!root || typeof document.fonts?.load !== "function") return;
+  const family = getComputedStyle(root).fontFamily;
+  if (family) document.fonts.load(`300 1em ${family}`, "0123456789");
+}
 function start() {
   stop();
   if (!cards.value.length) return;
   still.value = reducedMotionPreferred();
+  fetchNumberFace();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onLayout);
   attach();
@@ -287,6 +300,9 @@ defineExpose({ update, current });
 <style>
 .section-cards {
   overflow: hidden;
+  /* The card's own family, here so the number's face can be asked for
+     before any card is up (fetchNumberFace). */
+  font-family: var(--font-ui);
 }
 .section-card-enter-active {
   transition: opacity 420ms ease-out;
