@@ -1816,7 +1816,11 @@
         // Full screen, the binder may be larger than it is on the page.
         const full = document.documentElement.hasAttribute("data-ob-fullscreen");
         const W = stage.clientWidth;
-        const stack = W < 700;
+        // Stacked or spread, from the widget's own width less the padding it
+        // has on the page: the same number whichever way it is laid out now
+        // (full screen pads the two differently), so the choice cannot flip
+        // back and forth.
+        const stack = w.offsetWidth - 32 < 700;
         const cap = $("cap");
         // The source line sits in the corner when there is room beside the
         // binder. Decided from the height the binder would have with the line

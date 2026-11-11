@@ -70,7 +70,10 @@ describe("WidgetFrame in the full-screen dialog", () => {
     );
   function keysSeen() {
     const seen = [];
-    const on = (event) => seen.push(event.key);
+    // A key press has an element for its target: listeners on the page read
+    // attributes off it.
+    const on = (event) =>
+      seen.push(`${event.key} from ${event.target.tagName}`);
     window.addEventListener("keydown", on);
     return { seen, stop: () => window.removeEventListener("keydown", on) };
   }
@@ -91,7 +94,7 @@ describe("WidgetFrame in the full-screen dialog", () => {
     const keys = keysSeen();
     escapeFrom(wrapper);
     keys.stop();
-    expect(keys.seen).toEqual(["Escape"]);
+    expect(keys.seen).toEqual(["Escape from IFRAME"]);
   });
 
   it("leaves the page alone when the frame is not the dialog's", () => {

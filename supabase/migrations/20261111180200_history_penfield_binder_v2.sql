@@ -7,7 +7,7 @@
 --     `html[data-ob-fullscreen]`, which the reader's code must already send);
 --   - the letter opens large, like the photograph, with a caption;
 --   - a page's index tab turns with the page.
--- 770157 bytes, sha256 6b0dfce98cf199d580a0357470e75bf131b050279272cccf1dff476859129cbd
+-- 770433 bytes, sha256 f12f433d59c21e877a765ebb6825ae4bfece1e61ab56454f9d0e79886857e84f
 -- (this file must carry the widget file exactly: historyPenfieldBinder.sql.test.js).
 --
 -- Push after the code of OPENBRAIN-178 is deployed. Without that code the new
@@ -1843,7 +1843,11 @@ values (
         // Full screen, the binder may be larger than it is on the page.
         const full = document.documentElement.hasAttribute("data-ob-fullscreen");
         const W = stage.clientWidth;
-        const stack = W < 700;
+        // Stacked or spread, from the widget's own width less the padding it
+        // has on the page: the same number whichever way it is laid out now
+        // (full screen pads the two differently), so the choice cannot flip
+        // back and forth.
+        const stack = w.offsetWidth - 32 < 700;
         const cap = $("cap");
         // The source line sits in the corner when there is room beside the
         // binder. Decided from the height the binder would have with the line

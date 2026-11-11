@@ -157,10 +157,11 @@ function onMessage(e) {
     if (!r.blocked.includes(m.url)) r.blocked = [...r.blocked, m.url];
   } else if (m.type === "escape") {
     // Escape pressed in the full-screen frame: the page never saw it. Hand
-    // it on as the key press it was, so the dialog closes as it does from
-    // its own controls.
+    // it on as the key press it was, from the frame (a key press has an
+    // element for its target, and listeners read it), so the dialog closes
+    // as it does from its own controls.
     if (props.fullScreen)
-      window.dispatchEvent(
+      frame.value.dispatchEvent(
         new KeyboardEvent("keydown", {
           key: "Escape",
           bubbles: true,
