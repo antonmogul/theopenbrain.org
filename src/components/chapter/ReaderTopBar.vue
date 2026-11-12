@@ -3,8 +3,10 @@ import { ref, computed, nextTick } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useHomeRoute } from "@/composables/useHomeRoute";
+import { useMotionPreference } from "@/composables/useMotionPreference";
 import { jumpToId } from "@/helper/readerJump";
 import AccountMenu from "@/components/Navigation/AccountMenu.vue";
+import ReaderHelp from "./ReaderHelp.vue";
 
 const props = defineProps({
   chapterTitle: {
@@ -82,6 +84,7 @@ async function scrollToSection(section) {
 async function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
   if (showDropdown.value) {
+    showHelp.value = false;
     await nextTick();
     dropdownRef.value?.querySelector("button")?.focus();
   }
@@ -95,6 +98,52 @@ function onBackdropClick() {
 function onDropdownKeydown(event) {
   if (event.key !== "Escape") return;
   closeDropdown();
+}
+
+// Help (OPENBRAIN-189): the "?" at the bar's right end, on every screen.
+// It was a button on the chapter cover, which scrolled away with it
+// (Stuart, 12 Nov: "it scrolls up and disappears"). It opens ReaderHelp
+// under the bar. While the device asks for less motion and the reader has
+// not been asked about it, the button carries a dot: the notice itself is
+// on the cover, which a reader who lands mid-chapter never sees.
+const { noticePending } = useMotionPreference();
+const showHelp = ref(false);
+const helpButtonRef = ref(null);
+const helpRef = ref(null);
+const helpLabel = computed(() =>
+  noticePending.value
+    ? "Help and animations. Animations are off on this device."
+    : "Help and animations"
+);
+
+async function closeHelp({ restoreFocus = true } = {}) {
+  if (!showHelp.value) return;
+  showHelp.value = false;
+  await nextTick();
+  if (restoreFocus) helpButtonRef.value?.focus();
+}
+
+async function toggleHelp() {
+  if (showHelp.value) return closeHelp();
+  showDropdown.value = false;
+  showHelp.value = true;
+  await nextTick();
+  // The panel itself, so a screen reader starts at its name.
+  helpRef.value?.$el?.focus?.();
+}
+
+function onHelpKeydown(event) {
+  if (event.key !== "Escape") return;
+  event.stopPropagation();
+  closeHelp();
+}
+
+// Tabbing out of the panel closes it; focus goes where the reader sent it.
+function onHelpFocusOut(event) {
+  const next = event.relatedTarget;
+  if (!next || event.currentTarget.contains(next)) return;
+  if (next === helpButtonRef.value) return;
+  closeHelp({ restoreFocus: false });
 }
 </script>
 
@@ -216,9 +265,46 @@ function onDropdownKeydown(event) {
         </button>
       </div>
 
+      <!-- Help: how the book reads, and the animations setting
+           (OPENBRAIN-189). Here, not on the cover, so it is always in
+           reach; a 44px target around a 32px key. -->
+      <button
+        ref="helpButtonRef"
+        type="button"
+        class="help-btn"
+        :class="{ open: showHelp }"
+        :aria-label="helpLabel"
+        aria-haspopup="dialog"
+        :aria-expanded="showHelp"
+        aria-controls="reader-help"
+        title="Help"
+        data-testid="reader-help-button"
+        @click="toggleHelp"
+      >
+        <span class="help-btn-key" aria-hidden="true">?</span>
+        <span
+          v-if="noticePending"
+          class="help-btn-dot"
+          aria-hidden="true"
+          data-testid="reader-help-dot"
+        ></span>
+      </button>
+
       <!-- Account: back to the dashboard, settings, log out (OPENBRAIN-90) -->
       <AccountMenu />
     </div>
+
+    <!-- Help panel -->
+    <Transition name="dropdown">
+      <ReaderHelp
+        v-if="showHelp"
+        ref="helpRef"
+        class="help-panel"
+        @close="closeHelp()"
+        @keydown="onHelpKeydown"
+        @focusout="onHelpFocusOut"
+      />
+    </Transition>
 
     <!-- Section dropdown -->
     <Transition name="dropdown">
@@ -252,6 +338,12 @@ function onDropdownKeydown(event) {
       v-if="showDropdown"
       class="dropdown-backdrop"
       @click="onBackdropClick"
+    ></div>
+    <div
+      v-if="showHelp"
+      class="dropdown-backdrop"
+      data-testid="reader-help-backdrop"
+      @click="closeHelp()"
     ></div>
   </div>
 </template>
@@ -449,6 +541,77 @@ function onDropdownKeydown(event) {
   color: rgb(var(--color-paper));
 }
 
+/* Help: the "?" (OPENBRAIN-189). A 32px key in a 44px target, framed in
+   the hairline like the menu button at the other end, so the account
+   button beside it stays the one ink-framed control. */
+.help-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  cursor: pointer;
+}
+
+.help-btn-key {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-13);
+  line-height: 1;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.help-btn:hover .help-btn-key {
+  border-color: rgb(var(--color-ink));
+}
+
+.help-btn.open .help-btn-key {
+  background: rgb(var(--color-ink));
+  border-color: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+}
+
+/* Something here wants a look: animations are off on this device and the
+   reader has not been asked (useMotionPreference). Amber with a dark rim,
+   as the draft dot: amber alone is ~2:1 on paper. */
+.help-btn-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgb(var(--color-warn));
+  box-shadow:
+    inset 0 0 0 1px rgb(10 10 10 / 0.5),
+    0 0 0 2px rgb(var(--color-paper));
+}
+
+/* Help panel: under the bar's right end; ReaderHelp draws the panel. It
+   scrolls inside itself on a short screen and stops above the timeline. */
+.help-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 18px;
+  z-index: 50;
+  width: 23rem;
+  max-width: calc(100vw - 36px);
+  max-height: calc(100dvh - 100% - var(--reader-timeline-h, 0px) - 18px);
+}
+
 /* Section dropdown */
 .section-dropdown {
   position: absolute;
@@ -531,6 +694,7 @@ function onDropdownKeydown(event) {
 }
 
 .reader-menu-btn:focus-visible,
+.help-btn:focus-visible,
 .wordmark:focus-visible,
 .section-jump:focus-visible,
 .tool-btn:focus-visible,
@@ -587,6 +751,13 @@ function onDropdownKeydown(event) {
   .section-dropdown {
     left: 8px;
     right: 8px;
+    max-width: none;
+  }
+
+  .help-panel {
+    left: 8px;
+    right: 8px;
+    width: auto;
     max-width: none;
   }
 }

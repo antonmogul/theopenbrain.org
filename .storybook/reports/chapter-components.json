@@ -1,12 +1,12 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 72,
-  "coveredCount": 72,
+  "sourceCount": 74,
+  "coveredCount": 74,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 24,
+    "ReaderShell": 26,
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 17,
@@ -372,6 +372,16 @@
       "source": "src/components/chapter/timeline/TimelineScrubber.vue",
       "storyFile": "src/components/chapter/timeline/__stories__/TimelineScrubber.stories.js",
       "story": "Phone"
+    },
+    {
+      "source": "src/components/chapter/MotionNotice.vue",
+      "storyFile": "src/components/chapter/__stories__/MotionNotice.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/ReaderHelp.vue",
+      "storyFile": "src/components/chapter/__stories__/ReaderHelp.stories.js",
+      "story": "Default"
     }
   ]
 }
