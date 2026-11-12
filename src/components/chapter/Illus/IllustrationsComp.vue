@@ -32,6 +32,7 @@ import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { figureWidgetFor } from "@/widgets/figures/registry";
 import { figureEnd, figureRecordFor } from "@/helper/historyFigureTiming";
 import { figurePaneGround } from "@/helper/figurePane";
+import { keepRefreshInstant } from "@/helper/refreshScroll";
 
 // Panel figures rebuilt as figure widgets (full-screen ones render in the
 // text through FullScreenIllustration).
@@ -40,6 +41,8 @@ const isPanelWidget = (a) => !a.fullscreen && !!figureWidgetFor(a.id);
 // inline in the text (IllustrationInline), so don't run it twice.
 const panelShows = useMediaQuery(READER_WIDE_QUERY);
 gsap.registerPlugin(ScrollTrigger);
+// A re-measure scrolls to the top and back: never as a smooth scroll.
+keepRefreshInstant(ScrollTrigger);
 
 const activeAnimation = ref(null);
 const paneElement = ref(null);

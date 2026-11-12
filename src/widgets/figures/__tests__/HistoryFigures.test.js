@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import TrepanationMethods from "../trepanation/TrepanationMethods.vue";
@@ -430,6 +432,80 @@ describe("PapyrusCase", () => {
     await w.findAll('[role="tab"]')[1].trigger("click");
     expect(w.find(".pc-glyphs").classes()).toEqual(["pc-glyphs"]);
     w.unmount();
+  });
+
+  /*
+   * Sharp at rest (OPENBRAIN-188; Stuart, 12 Nov: "did the hieroglyphics
+   * interactive thing get blurry?"). A 3D layer is painted once and then
+   * resampled, which softened the signs and the translation; the card is
+   * flat unless it is turning.
+   */
+  it("is flat at rest and 3D only while it turns", async () => {
+    const w = mountPapyrus();
+    const scene = () => w.find(".pc-scene").classes();
+    const card = w.find(".pc-card");
+    expect(scene()).not.toContain("is-3d");
+
+    await w.find(".pc-flip").trigger("click");
+    expect(scene()).toContain("is-3d");
+    expect(scene()).not.toContain("pc-from-back");
+    // A face's border fading is not the turn ending.
+    await card.trigger("transitionend", { propertyName: "border-color" });
+    expect(scene()).toContain("is-3d");
+    await card.trigger("transitionend", { propertyName: "rotate" });
+    expect(scene()).not.toContain("is-3d");
+    expect(card.classes()).toContain("is-flipped");
+
+    // Turning back starts from the translation, which faces the reader.
+    await w.find(".pc-flip").trigger("click");
+    expect(scene()).toEqual(expect.arrayContaining(["is-3d", "pc-from-back"]));
+    await card.trigger("transitionend", { propertyName: "rotate" });
+    expect(scene()).toEqual(["pc-scene"]);
+    w.unmount();
+  });
+
+  it("lies flat again even when the turn's end never comes", async () => {
+    vi.useFakeTimers();
+    const w = mountPapyrus();
+    await w.find(".pc-flip").trigger("click");
+    expect(w.find(".pc-scene").classes()).toContain("is-3d");
+    vi.advanceTimersByTime(1300);
+    await w.vm.$nextTick();
+    expect(w.find(".pc-scene").classes()).not.toContain("is-3d");
+    w.unmount();
+    vi.useRealTimers();
+  });
+
+  it("never goes 3D under reduced motion", async () => {
+    document.documentElement.dataset.reduceMotion = "1";
+    const w = mountPapyrus();
+    await w.find(".pc-flip").trigger("click");
+    expect(w.find(".pc-card").classes()).toContain("is-flipped");
+    expect(w.find(".pc-scene").classes()).not.toContain("is-3d");
+    w.unmount();
+  });
+
+  it("keeps every 3D property in its styles behind the turn", () => {
+    const css = readFileSync(
+      resolve(__dirname, "../papyrus/PapyrusCase.vue"),
+      "utf8"
+    )
+      .split("<style scoped>")[1]
+      .replace(/\/\*[\s\S]*?\*\//g, "");
+    const THREE_D =
+      /perspective|preserve-3d|backface-visibility|will-change|translateZ|rotateY|matrix3d|rotate:\s*y/;
+    const offenders = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map(([, selector, body]) => [selector.trim(), body])
+      .filter(([, body]) => THREE_D.test(body))
+      // Keyframe steps run only while the card turns; the edges are not
+      // displayed at rest.
+      .filter(([selector]) => !/^(from|to|\d+%)$/.test(selector))
+      .filter(
+        ([selector]) => !/\.is-3d|\.pc-edge--(left|right)$/.test(selector)
+      )
+      .map(([selector]) => selector);
+    expect(offenders).toEqual([]);
+    expect(css).toMatch(/\.pc-edge\s*\{[^}]*display:\s*none/);
   });
 
   it("offers the whole screen only where the browser has it", async () => {
