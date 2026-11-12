@@ -24,7 +24,7 @@ describe("chapter Storybook coverage report", () => {
     const sourceFiles = vueFiles(chapterRoot).sort();
     const reportedFiles = report.components.map(({ source }) => source).sort();
 
-    expect(sourceFiles).toHaveLength(74); // + VideoEmbed, IllustrationWidget (OPENBRAIN-70), FullBleed (72), BreakoutBox (91), ReferenceList (92); − ConeExplorerPanel (101); + the four timeline components (128), TimelineScrubber (137), ExploreCard (142), ReactiveCover (146), TransitionWidgetSequence, BreakoutRail review prototype (G6), CutawayCover (156), replaced by HeadCover (171); + OpenerTocArt, SectionCard, SectionCards (174), ReadingRail (175); + MotionNotice, ReaderHelp (189)
+    expect(sourceFiles).toHaveLength(75); // + VideoEmbed, IllustrationWidget (OPENBRAIN-70), FullBleed (72), BreakoutBox (91), ReferenceList (92); − ConeExplorerPanel (101); + the four timeline components (128), TimelineScrubber (137), ExploreCard (142), ReactiveCover (146), TransitionWidgetSequence, BreakoutRail review prototype (G6), CutawayCover (156), replaced by HeadCover (171); + OpenerTocArt, SectionCard, SectionCards (174), ReadingRail (175); + MotionNotice, ReaderHelp (189); + RailPart (187)
     expect(report.sourceCount).toBe(sourceFiles.length);
     expect(report.coveredCount).toBe(report.components.length);
     expect(report.excludedCount).toBe(report.excluded.length);

@@ -1,7 +1,8 @@
 /*
- * exploreRail (OPENBRAIN-163): which boxes read sideways, the arithmetic
- * between the page's scroll and the track's, where Previous and Next stop,
- * and the DOM contract readerJump and the timeline read.
+ * exploreRail (OPENBRAIN-163, 187): which boxes read sideways and what their
+ * parts are, the arithmetic between the page's scroll and the track's,
+ * where Previous and Next stop (on the pinned track and on a phone's swipe
+ * track), and the DOM contract readerJump and the timeline read.
  */
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -9,11 +10,15 @@ import {
   boxIsRail,
   clearRailColumns,
   fitRailColumns,
+  fitRailFigures,
   railActivePart,
   railLandingY,
+  railLayoutOf,
   railNextStop,
+  railPageStops,
   railRoom,
   railScrolledForX,
+  railStopIndex,
   railStops,
   railXForScrolled,
   railXOf,
@@ -27,38 +32,113 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-describe("boxIsRail", () => {
-  const box = (paragraphs, slug = "box-sacred-disease") => ({
-    kind: "box",
-    slug,
-    paragraphs,
-  });
+const prose = (id) => ({ id, text: `Text of ${id}` });
+const figure = (id, fig) => ({ id, text: id, animation: { id: fig } });
+const box = (paragraphs, slug = "box-sacred-disease") => ({
+  kind: "box",
+  slug,
+  paragraphs,
+});
 
-  it("is History's two boxes made of Explore parts, on trial", () => {
+describe("boxIsRail", () => {
+  it("is History's two Explore boxes and Stuart's five (12 Nov)", () => {
     expect(RAIL_BOXES_BY_SLUG[HISTORY]).toEqual([
       "box-sacred-disease",
       "box-rete-mirabile",
+      "box-descartes",
+      "box-electrical-stim",
+      "box-psychosurgery",
+      "box-penfield",
+      "box-ngf",
     ]);
     const parts = [explore("a"), explore("b")];
     expect(boxIsRail(box(parts), HISTORY)).toBe(true);
     expect(boxIsRail(box(parts, "box-rete-mirabile"), HISTORY)).toBe(true);
-  });
-
-  it("needs two or more parts and nothing but parts", () => {
-    expect(boxIsRail(box([explore("a")]), HISTORY)).toBe(false);
     expect(
-      boxIsRail(box([explore("a"), { id: "prose" }, explore("b")]), HISTORY)
-    ).toBe(false);
-    expect(boxIsRail(box([]), HISTORY)).toBe(false);
+      boxIsRail(box([prose("a"), prose("b")], "box-descartes"), HISTORY)
+    ).toBe(true);
   });
 
-  it("leaves every box that is not listed as fold-out cards", () => {
+  it("needs something a track can hold", () => {
+    expect(boxIsRail(box([]), HISTORY)).toBe(false);
+    expect(
+      boxIsRail(
+        box([prose("a"), { id: "w", type: "widget" }, prose("b")]),
+        HISTORY
+      )
+    ).toBe(false);
+    expect(
+      boxIsRail(box([prose("a"), { id: "v", type: "breakVideo" }]), HISTORY)
+    ).toBe(false);
+  });
+
+  it("leaves every box that is not listed running down the page", () => {
     const parts = [explore("a"), explore("b")];
-    expect(boxIsRail(box(parts, "box-descartes"), HISTORY)).toBe(false);
+    expect(boxIsRail(box(parts, "box-somewhere-else"), HISTORY)).toBe(false);
     expect(boxIsRail(box(parts), "the-retina")).toBe(false);
     expect(boxIsRail(box(parts), null)).toBe(false);
     expect(boxIsRail({ ...box(parts), kind: "section" }, HISTORY)).toBe(false);
     expect(boxIsRail(null, HISTORY)).toBe(false);
+  });
+});
+
+describe("railLayoutOf", () => {
+  it("makes each Explore paragraph a named part, with its figure", () => {
+    const humours = { ...explore("b"), animation: { id: "figK" } };
+    const layout = railLayoutOf(box([explore("a"), humours]));
+    expect(layout.named).toBe(true);
+    expect(layout.tail).toEqual([]);
+    expect(layout.parts.map((p) => [p.id, p.title, p.explore])).toEqual([
+      ["a", "a", true],
+      ["b", "b", true],
+    ]);
+    expect(layout.parts[0].figures).toEqual([]);
+    expect(layout.parts[1].figures).toEqual([humours]);
+  });
+
+  it("runs prose together, and starts a part at each figure (Descartes, Rafferty)", () => {
+    // Descartes: four paragraphs of text, then Figure A with its paragraph.
+    const descartes = railLayoutOf(
+      box([prose("d1"), prose("d2"), prose("d3"), figure("d4", "figA")])
+    );
+    expect(descartes.named).toBe(false);
+    expect(descartes.parts.map((p) => p.paragraphs.map((q) => q.id))).toEqual([
+      ["d1", "d2", "d3"],
+      ["d4"],
+    ]);
+    expect(descartes.parts[1].figures.map((p) => p.animation.id)).toEqual([
+      "figA",
+    ]);
+    // Rafferty: Figure G leads, the next paragraph reads on after it.
+    const rafferty = railLayoutOf(box([figure("r1", "figG"), prose("r2")]));
+    expect(rafferty.parts).toHaveLength(1);
+    expect(rafferty.parts[0].paragraphs.map((p) => p.id)).toEqual(["r1", "r2"]);
+  });
+
+  it("leaves a widget that ends the box after the track (the Penfield binder)", () => {
+    const binder = {
+      id: "w",
+      type: "widget",
+      widget: { widgetId: "upload:x" },
+    };
+    const layout = railLayoutOf(
+      box([figure("p1", "op"), figure("p2", "map"), binder])
+    );
+    expect(layout.parts.map((p) => p.id)).toEqual(["p1", "p2"]);
+    expect(layout.tail).toEqual([binder]);
+    // A box that is only a widget has nothing for a track.
+    expect(railLayoutOf(box([binder]))).toBeNull();
+  });
+
+  it("holds no breaks, full-screen figures or widgets in the text", () => {
+    expect(
+      railLayoutOf(box([prose("a"), { id: "f", animationFull: true }]))
+    ).toBeNull();
+    expect(railLayoutOf(box([{ id: "s", type: "breakSection" }]))).toBeNull();
+    expect(
+      railLayoutOf({ kind: "section", paragraphs: [prose("a")] })
+    ).toBeNull();
+    expect(railLayoutOf(null)).toBeNull();
   });
 });
 
@@ -129,6 +209,30 @@ describe("railNextStop", () => {
   });
 });
 
+describe("railPageStops", () => {
+  it("is a stop per page of a swipe track, and the end", () => {
+    // Six pages of a 390px phone, the columns half a pixel over.
+    expect(railPageStops(390, 1950.5)).toEqual([
+      0, 390, 780, 1170, 1560, 1950.5,
+    ]);
+    expect(railPageStops(390, 0)).toEqual([0]);
+    expect(railPageStops(0, 800)).toEqual([0]);
+  });
+});
+
+describe("railStopIndex", () => {
+  const stops = [0, 390, 780, 1170];
+  it("is the stop reached, or the next once past half-way", () => {
+    expect(railStopIndex(stops, 0)).toBe(0);
+    expect(railStopIndex(stops, 100)).toBe(0);
+    expect(railStopIndex(stops, 200)).toBe(1);
+    expect(railStopIndex(stops, 390)).toBe(1);
+    expect(railStopIndex(stops, 1170)).toBe(3);
+    expect(railStopIndex(stops, 5000)).toBe(3);
+    expect(railStopIndex([], 50)).toBe(0);
+  });
+});
+
 describe("railActivePart", () => {
   it("is the part leading the view, and the last at the end", () => {
     const starts = [0, 1310];
@@ -169,9 +273,9 @@ function track({
   Object.defineProperty(scroller, "scrollWidth", { value: scrollW });
   scroller.getBoundingClientRect = () => ({ left: 0 });
   pause.appendChild(scroller);
-  const els = parts.map((start, i) => {
+  const els = parts.map((start) => {
     const part = document.createElement("div");
-    part.setAttribute("data-explore", `p${i}`);
+    part.setAttribute("data-rail-part", "");
     part.getBoundingClientRect = () => ({
       left: padLeft + start - scroller.scrollLeft,
     });
@@ -209,6 +313,19 @@ describe("railXOf", () => {
   it("never passes the end of the track", () => {
     const t = track(); // max 1700
     expect(railXOf(t.inside(1, 1200), t.scroller)).toBe(1700);
+  });
+
+  it("rests a swipe track on whole pages", () => {
+    const t = track({
+      padLeft: 0,
+      client: 390,
+      scrollW: 390 * 6,
+      parts: [0, 1170],
+    });
+    t.scroller.setAttribute("data-rail-mode", "swipe");
+    expect(railXOf(t.parts[1], t.scroller)).toBe(1170);
+    // A paragraph two pages into part two: its page.
+    expect(railXOf(t.inside(1, 800), t.scroller)).toBe(1950);
   });
 });
 
@@ -291,5 +408,58 @@ describe("fitRailColumns", () => {
     fitRailColumns(scroller);
     expect(el.style.width).toBe("");
     expect(() => fitRailColumns(null)).not.toThrow();
+  });
+});
+
+describe("fitRailFigures", () => {
+  /** A figure `client` tall whose content is `scroll` tall, an image `img` tall. */
+  function figureEl({ client, scroll, img, gallery = false }) {
+    const scroller = document.createElement("div");
+    const fig = document.createElement("div");
+    fig.setAttribute("data-rail-figure", "");
+    Object.defineProperty(fig, "clientHeight", { value: client });
+    Object.defineProperty(fig, "scrollHeight", { value: scroll });
+    const stage = document.createElement("div");
+    if (gallery) stage.className = "figimg-stage--gallery";
+    stage.getBoundingClientRect = () => ({ height: img });
+    const image = document.createElement("img");
+    image.getBoundingClientRect = () => ({ height: img });
+    stage.appendChild(image);
+    // A gallery's thumbnails never give.
+    const thumbs = document.createElement("div");
+    thumbs.className = "figimg-thumbnails";
+    const thumb = document.createElement("img");
+    thumb.getBoundingClientRect = () => ({ height: 900 });
+    thumbs.appendChild(thumb);
+    fig.append(stage, thumbs);
+    scroller.appendChild(fig);
+    document.body.appendChild(scroller);
+    return { scroller, fig };
+  }
+
+  it("brings a figure's images down by what overflows the track", () => {
+    const { scroller, fig } = figureEl({ client: 520, scroll: 640, img: 400 });
+    fitRailFigures(scroller);
+    expect(fig.style.getPropertyValue("--rp-img-max")).toBe("279px");
+    clearRailColumns(scroller);
+    expect(fig.style.getPropertyValue("--rp-img-max")).toBe("");
+  });
+
+  it("fits a gallery by its stage box", () => {
+    const { scroller, fig } = figureEl({
+      client: 520,
+      scroll: 600,
+      img: 300,
+      gallery: true,
+    });
+    fitRailFigures(scroller);
+    expect(fig.style.getPropertyValue("--rp-img-max")).toBe("219px");
+  });
+
+  it("leaves a figure that fits", () => {
+    const { scroller, fig } = figureEl({ client: 520, scroll: 520, img: 300 });
+    fitRailFigures(scroller);
+    expect(fig.style.getPropertyValue("--rp-img-max")).toBe("");
+    expect(() => fitRailFigures(null)).not.toThrow();
   });
 });

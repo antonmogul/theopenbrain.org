@@ -232,6 +232,14 @@ const ROUTES = [
      */
     expectContents: { selector: "#chapter-toc", minWidth: 1024 },
     /*
+     * The breakout boxes read sideways (OPENBRAIN-163, 187): at least this
+     * many tracks at every width, each the pinned track from 1024px and a
+     * swipe track on a phone, whose pages fit the track exactly (the snap
+     * points fall on every page) and which never pins. A data assertion:
+     * the boxes are the chapter's.
+     */
+    expectRails: { min: 7 },
+    /*
      * The papyrus tabs must not move the page (OPENBRAIN-188; Stuart, 12
      * Nov, iPhone: "it scrolls me back up to the very top of the page"). On
      * a phone each part is a different height, so a tab re-measures the
@@ -868,6 +876,47 @@ async function main() {
           }
         }
 
+        // Boxes read sideways (OPENBRAIN-187): the mode the width calls for.
+        let railsOk = true;
+        if (checkContent && route.expectRails) {
+          const rails = await page.evaluate(() =>
+            [...document.querySelectorAll("[data-rail-scroller]")].map((t) => ({
+              slug: t.closest("[data-section-slug]")?.dataset.sectionSlug,
+              mode: t.getAttribute("data-rail-mode"),
+              pinned: t.getAttribute("data-rail-pinned"),
+              client: t.clientWidth,
+              max: t.scrollWidth - t.clientWidth,
+            }))
+          );
+          const want = width >= 1024 ? "track" : "swipe";
+          const problems = [];
+          if (rails.length < route.expectRails.min)
+            problems.push(
+              `${rails.length} sideways box(es), expected >= ${route.expectRails.min}`
+            );
+          for (const r of rails) {
+            if (r.mode !== want)
+              problems.push(`${r.slug} is a ${r.mode} track, expected ${want}`);
+            if (want === "swipe" && r.pinned === "1")
+              problems.push(`${r.slug} pins on a phone`);
+            // Whole pages: the travel is a multiple of the track's width
+            // (the columns are fitted half a pixel over).
+            if (want === "swipe" && r.client > 0) {
+              const rest = r.max % r.client;
+              if (rest > 2 && r.client - rest > 2)
+                problems.push(
+                  `${r.slug} travels ${r.max}px on a ${r.client}px track: not whole pages`
+                );
+            }
+          }
+          if (problems.length) {
+            railsOk = false;
+            problems
+              .slice(0, 4)
+              .forEach((p) => failures.push(`${label}: rails: ${p}`));
+          }
+        }
+
         // A tab that resizes a figure must not move the page (OPENBRAIN-188).
         let tabsOk = true;
         const steady = route.expectSteadyTabs;
@@ -961,6 +1010,7 @@ async function main() {
           absentOk &&
           stageOk &&
           contentsOk &&
+          railsOk &&
           tabsOk &&
           wheelOk &&
           !real.length;

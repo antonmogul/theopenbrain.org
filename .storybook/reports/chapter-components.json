@@ -1,8 +1,8 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 74,
-  "coveredCount": 74,
+  "sourceCount": 75,
+  "coveredCount": 75,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
@@ -10,7 +10,7 @@
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 17,
-    "Text": 21
+    "Text": 22
   },
   "components": [
     {
@@ -317,6 +317,11 @@
       "source": "src/components/chapter/text/InlineImages.vue",
       "storyFile": "src/components/chapter/text/__stories__/InlineImages.stories.js",
       "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/text/RailPart.vue",
+      "storyFile": "src/components/chapter/text/__stories__/RailPart.stories.js",
+      "story": "Track"
     },
     {
       "source": "src/components/chapter/text/ReferenceList.vue",

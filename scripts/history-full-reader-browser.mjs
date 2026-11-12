@@ -594,13 +594,15 @@ try {
               `[data-breakout-box="${part.section_id}"] [data-explore="${part.id}"]`
             );
             await expect(card, part.id).toHaveCount(1);
-            await expect(card.locator(".xc-title"), part.id).toHaveText(
-              part.content.explore.title
-            );
-            // Read sideways (a rail part) or folded behind its button: either
-            // way the part's text is in the page under its own name.
+            await expect(
+              card.locator(".xc-title, .rp-title"),
+              part.id
+            ).toHaveText(part.content.explore.title);
+            // Read sideways (a rail part, OPENBRAIN-163/187) or folded
+            // behind its button: either way the part's text is in the page
+            // under its own name.
             const rail = await card.evaluate((element) =>
-              element.classList.contains("xc--rail")
+              element.hasAttribute("data-rail-part")
             );
             if (!rail)
               await expect(
@@ -613,6 +615,30 @@ try {
               title: part.content.explore.title,
               rail,
             });
+          }
+        }
+      );
+      await step(
+        result,
+        "each picture in a breakout box shows once (OPENBRAIN-187)",
+        async () => {
+          for (const box of boxes) {
+            const sources = await page
+              .locator(`[data-breakout-box="${box.id}"] img`)
+              .evaluateAll((imgs) =>
+                imgs
+                  // A gallery's thumbnails and grid tiles repeat its slides
+                  // by design; an uploaded widget draws its own.
+                  .filter(
+                    (img) =>
+                      !img.closest(
+                        ".figimg-thumbnails, .figimg-grid, .wb-stage, iframe"
+                      )
+                  )
+                  .map((img) => new URL(img.src).pathname)
+              );
+            const twice = sources.filter((src, i) => sources.indexOf(src) < i);
+            expect(twice, `${box.slug} shows a picture twice`).toEqual([]);
           }
         }
       );

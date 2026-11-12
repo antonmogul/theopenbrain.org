@@ -14,6 +14,18 @@
       :is-creator="isCreator"
       box-body
     />
+    <!-- Read sideways, a widget that ends the box (the Penfield binder)
+         follows the track instead of riding on it (OPENBRAIN-187). -->
+    <template #after>
+      <SectionComp
+        :section="section"
+        :index="index"
+        :label="label"
+        :is-creator="isCreator"
+        box-body
+        box-tail
+      />
+    </template>
   </BreakoutBox>
   <!-- section (a div in a box: the reader gives every <section> a full
        screen's height, which left short boxes mostly empty). reader-section
@@ -30,7 +42,7 @@
     <!-- Trigger markers are dev chrome (?markers=1), see OPENBRAIN-31 -->
     <div v-if="showMarkers && transitionId" class="marker-start" />
     <div
-      v-if="transitionId"
+      v-if="transitionId && !boxTail"
       :id="'trigger' + transitionId"
       class="animationTrigger animationScrollAnchor block noHighlight section-transition-spacer transition left-0 w-full h-[200vh]"
     ></div>
@@ -47,7 +59,7 @@
 
     <!-- Section title - editable for creators -->
     <EditableBlock
-      v-if="isCreator"
+      v-if="isCreator && !boxTail"
       :content="section.title"
       :paragraph-id="`section-title-${section.id}`"
       :is-creator="isCreator"
@@ -68,9 +80,9 @@
       {{ section.title }}
     </h2>
 
-    <StartEndIcon :paragraph="section" art="start" />
+    <StartEndIcon v-if="!boxTail" :paragraph="section" art="start" />
     <IllustrationInline
-      v-if="inlineFigureFor(section)"
+      v-if="!boxTail && inlineFigureFor(section)"
       :animation-id="section.animation.id"
     />
     <!-- The References section, from the references table once it has
@@ -82,152 +94,183 @@
     <div
       v-else
       :id="
-        section?.animation?.name
+        section?.animation?.name && !boxTail
           ? 'triggerAnimation' + section?.animation?.name
           : ''
       "
       :class="[
         section?.animation?.name ? 'animationTrigger block noHighlight' : '',
-        { 'section-paragraphs--paired': pairedExploreIds.size > 0 },
+        {
+          'section-paragraphs--paired': !rail && pairedExploreIds.size > 0,
+          'bx-rail-row': rail,
+        },
       ]"
       :data-figure-hold="section?.animation?.hold"
       :data-figure-room="section?.animation?.room"
     >
-      <template v-for="paragraph in section['paragraphs']" :key="paragraph.id">
-        <StartEndIcon :paragraph="paragraph" art="start" />
-        <!-- Preserve ordinary paragraph spans: consecutive inline widgets use
+      <!-- A box read sideways is cut into parts (helper/exploreRail.js),
+           each a RailPart that draws the part's figures first; anywhere
+           else this is one group of every paragraph, unwrapped. -->
+      <component
+        :is="group.part ? RailPart : Unwrapped"
+        v-for="group in groups"
+        :key="group.key"
+        v-bind="group.part || undefined"
+      >
+        <template v-for="paragraph in group.paragraphs" :key="paragraph.id">
+          <StartEndIcon :paragraph="paragraph" art="start" />
+          <!-- Preserve ordinary paragraph spans: consecutive inline widgets use
              their sibling structure to remove touching margins. Only paired
              Explore cards need block wrappers as grid items. -->
-        <component
-          :is="pairedExploreIds.has(paragraph.id) ? 'div' : 'span'"
-          :id="
-            paragraph?.animation &&
-            'triggerAnimation' + paragraph?.animation?.name
-          "
-          :class="[
-            paragraph?.animation?.name
-              ? 'animationTrigger block noHighlight'
-              : '',
-            { 'explore-pair-item': pairedExploreIds.has(paragraph.id) },
-          ]"
-          :data-figure-hold="paragraph?.animation?.hold"
-          :data-figure-room="paragraph?.animation?.room"
-          v-if="
-            paragraph?.type != 'breakVideo' && paragraph.type != 'breakSection'
-          "
-        >
-          <!-- An "Explore more" paragraph (content.explore, OPENBRAIN-142)
+          <component
+            :is="!rail && pairedExploreIds.has(paragraph.id) ? 'div' : 'span'"
+            :id="
+              paragraph?.animation &&
+              'triggerAnimation' + paragraph?.animation?.name
+            "
+            :class="[
+              paragraph?.animation?.name
+                ? 'animationTrigger block noHighlight'
+                : '',
+              {
+                'explore-pair-item':
+                  !rail && pairedExploreIds.has(paragraph.id),
+              },
+            ]"
+            :data-figure-hold="paragraph?.animation?.hold"
+            :data-figure-room="paragraph?.animation?.room"
+            v-if="
+              paragraph?.type != 'breakVideo' &&
+              paragraph.type != 'breakSection'
+            "
+          >
+            <!-- An "Explore more" paragraph (content.explore, OPENBRAIN-142)
                folds its text, figure and images behind an ExploreCard;
                every other paragraph renders unwrapped (Unwrapped is a
                fragment), so the markup below is written once. -->
-          <component
-            :is="paragraph.explore ? ExploreCard : Unwrapped"
-            v-bind="
-              paragraph.explore
-                ? {
-                    explore: paragraph.explore,
-                    paragraphId: paragraph.id,
-                    paired: pairedExploreIds.has(paragraph.id),
-                  }
-                : undefined
-            "
-          >
-            <!-- Interactive widget placed in the prose (OPENBRAIN-21).
+            <component
+              :is="paragraph.explore && !rail ? ExploreCard : Unwrapped"
+              v-bind="
+                paragraph.explore && !rail
+                  ? {
+                      explore: paragraph.explore,
+                      paragraphId: paragraph.id,
+                      paired: pairedExploreIds.has(paragraph.id),
+                      figureId: inlineFigureFor(paragraph)
+                        ? paragraph.animation.id
+                        : '',
+                    }
+                  : undefined
+              "
+            >
+              <!-- A card's figure is the card's to place, so it shows once
+                 (ExploreCard, OPENBRAIN-187). -->
+              <template v-if="paragraph.explore && !rail" #figure>
+                <IllustrationInline
+                  v-if="inlineFigureFor(paragraph)"
+                  :key="'inline' + paragraph.id"
+                  :animation-id="paragraph.animation.id"
+                />
+              </template>
+              <!-- Interactive widget placed in the prose (OPENBRAIN-21).
                  data-timeline-id: the chapter timeline finds widgets and
                  breaks by it (they render no paragraph id; OPENBRAIN-128). -->
-            <WidgetBreakout
-              v-if="paragraph.type === 'widget'"
-              :placement="paragraph.widget"
-              :data-timeline-id="paragraph.id"
-            />
-            <!-- section paragraph - editable for creators -->
-            <EditableBlock
-              v-else-if="!paragraph.subSection && isCreator"
-              :content="paragraph.text"
-              :paragraph-id="paragraph.id"
-              :is-creator="isCreator"
-              tag="p"
-              class-name="P"
-              @save="handleParagraphSave"
-              can-figure
-            />
-            <div
-              v-else-if="!paragraph.subSection"
-              :key="paragraph.id"
-              :id="paragraph.id"
-              :data-paragraph-id="paragraph.id"
-              class="P"
-              v-html="paragraph.text"
-            />
-            <SubSection
-              v-else
-              :key="paragraph"
-              :paragraph="paragraph"
-              :index="index + 1"
-              :is-creator="isCreator"
-              @save="handleParagraphSave"
-            />
-            <InlineImages
-              :paragraph="paragraph"
-              :key="'images' + paragraph.id"
-              v-if="paragraph.img"
-            />
-            <VideoEmbed v-if="paragraph.video" :video="paragraph.video" />
-            <FullScreenIllustration
-              :key="paragraph.id"
-              v-if="paragraph.animationFull"
-              :paragraph="paragraph"
-            />
-            <IllustrationInline
-              v-if="inlineFigureFor(paragraph)"
-              :key="'inline' + paragraph.id"
-              :animation-id="paragraph.animation.id"
-            />
+              <WidgetBreakout
+                v-if="paragraph.type === 'widget'"
+                :placement="paragraph.widget"
+                :data-timeline-id="paragraph.id"
+              />
+              <!-- section paragraph - editable for creators -->
+              <EditableBlock
+                v-else-if="!paragraph.subSection && isCreator"
+                :content="paragraph.text"
+                :paragraph-id="paragraph.id"
+                :is-creator="isCreator"
+                tag="p"
+                class-name="P"
+                @save="handleParagraphSave"
+                can-figure
+              />
+              <div
+                v-else-if="!paragraph.subSection"
+                :key="paragraph.id"
+                :id="paragraph.id"
+                :data-paragraph-id="paragraph.id"
+                class="P"
+                v-html="paragraph.text"
+              />
+              <SubSection
+                v-else
+                :key="paragraph"
+                :paragraph="paragraph"
+                :index="index + 1"
+                :is-creator="isCreator"
+                @save="handleParagraphSave"
+              />
+              <InlineImages
+                :paragraph="paragraph"
+                :key="'images' + paragraph.id"
+                v-if="paragraph.img"
+              />
+              <VideoEmbed v-if="paragraph.video" :video="paragraph.video" />
+              <FullScreenIllustration
+                :key="paragraph.id"
+                v-if="paragraph.animationFull"
+                :paragraph="paragraph"
+              />
+              <!-- In a rail part the figures lead the part (RailPart). -->
+              <IllustrationInline
+                v-if="!rail && !paragraph.explore && inlineFigureFor(paragraph)"
+                :key="'inline' + paragraph.id"
+                :animation-id="paragraph.animation.id"
+              />
+            </component>
           </component>
-        </component>
-        <!-- section Break -->
-        <BreakImages
-          :key="'breakVideo ' + paragraph.id"
-          v-else-if="paragraph.type === 'breakVideo'"
-          :title="paragraph.title"
-          :text="paragraph.text"
-          :slug="paragraph.videoSlug || 'placeholder'"
-          :data-timeline-id="paragraph.id"
-        />
-        <BreakSection
-          :key="'breakSection' + paragraph.id"
-          v-else-if="paragraph.type === 'breakSection'"
-          :content="paragraph"
-          :data-timeline-id="paragraph.id"
-        />
-        <StartEndIcon :paragraph="paragraph" art="end" />
-        <!-- A breakout box placed right after this paragraph (OPENBRAIN-70) -->
-        <div
-          v-for="box in boxesAfter(paragraph.id)"
-          :key="box.id"
-          class="anchored-box"
-        >
-          <SectionComp
-            :section="box"
-            :index="0"
-            :label="sectionLabels?.[box.id || box.title]"
-            :is-creator="isCreator"
+          <!-- section Break -->
+          <BreakImages
+            :key="'breakVideo ' + paragraph.id"
+            v-else-if="paragraph.type === 'breakVideo'"
+            :title="paragraph.title"
+            :text="paragraph.text"
+            :slug="paragraph.videoSlug || 'placeholder'"
+            :data-timeline-id="paragraph.id"
           />
-        </div>
-      </template>
+          <BreakSection
+            :key="'breakSection' + paragraph.id"
+            v-else-if="paragraph.type === 'breakSection'"
+            :content="paragraph"
+            :data-timeline-id="paragraph.id"
+          />
+          <StartEndIcon :paragraph="paragraph" art="end" />
+          <!-- A breakout box placed right after this paragraph (OPENBRAIN-70) -->
+          <div
+            v-for="box in boxesAfter(paragraph.id)"
+            :key="box.id"
+            class="anchored-box"
+          >
+            <SectionComp
+              :section="box"
+              :index="0"
+              :label="sectionLabels?.[box.id || box.title]"
+              :is-creator="isCreator"
+            />
+          </div>
+        </template>
+      </component>
     </div>
-    <StartEndIcon :paragraph="section" art="end" />
+    <StartEndIcon v-if="!boxTail" :paragraph="section" art="end" />
     <FullScreenIllustration
       :key="section.id"
-      v-if="section.animationFull"
+      v-if="section.animationFull && !boxTail"
       :paragraph="section"
     />
   </component>
 </template>
 
 <script setup>
-import { computed, inject, defineAsyncComponent } from "vue";
+import { computed, inject, defineAsyncComponent, unref } from "vue";
 import { explorePairIds } from "@/helper/explorePairs";
+import { railLayoutOf } from "@/helper/exploreRail";
 // <SectionComp> in the template is this component (an SFC can use itself by
 // its file name without importing it): an anchored breakout box renders as a
 // nested section.
@@ -253,6 +296,7 @@ import StartEndIcon from "../../UI/StartEndIcon.vue";
 const EditableBlock = defineAsyncComponent(() => import("./EditableBlock.vue"));
 import WidgetBreakout from "./WidgetBreakout.vue";
 import ExploreCard from "./ExploreCard.vue";
+import RailPart from "./RailPart.vue";
 
 // A paragraph with content.explore renders inside an ExploreCard; the rest
 // go through this fragment, so the template keeps one copy of the markup.
@@ -264,6 +308,40 @@ const sectionLabels = inject("sectionLabels", null);
 const store = useGeneral();
 
 const pairedExploreIds = computed(() => explorePairIds(props.section));
+
+// A box read sideways (OPENBRAIN-163, 187): BreakoutBox provides its mode
+// ("track" | "swipe", null when it runs down the page) to the text it
+// frames, and this cuts the text into the parts its track shows.
+const boxRail = inject("exploreRail", null);
+const rail = computed(() => {
+  if (!props.boxBody || !unref(boxRail)) return null;
+  return railLayoutOf(props.section);
+});
+const groups = computed(() => {
+  const layout = rail.value;
+  if (props.boxTail)
+    return layout ? [{ key: "tail", paragraphs: layout.tail }] : [];
+  if (!layout)
+    return [{ key: "all", paragraphs: props.section?.paragraphs || [] }];
+  return layout.parts.map((part, index) => {
+    const lead = part.paragraphs[0];
+    return {
+      key: part.id,
+      // The tail is not part of the text the track shows.
+      paragraphs: part.paragraphs,
+      part: {
+        part,
+        figures: part.figures
+          .filter((p) => inlineFigureFor(p))
+          .map((p) => p.animation.id),
+        image: part.explore ? lead.explore.image || null : null,
+        legend: part.explore ? lead.explore.legend || "" : "",
+        index,
+        count: layout.parts.length,
+      },
+    };
+  });
+});
 
 const transitionId = computed(() => sectionTransitionId(props.section));
 
@@ -285,6 +363,8 @@ const props = defineProps({
   },
   /** Rendering a breakout box's text inside its BreakoutBox frame. */
   boxBody: { type: Boolean, default: false },
+  /** With boxBody: only what follows a sideways box's track (its tail). */
+  boxTail: { type: Boolean, default: false },
 });
 
 defineEmits(["save"]);

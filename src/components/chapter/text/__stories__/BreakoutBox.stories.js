@@ -8,7 +8,7 @@
  * helper/breakoutTreatment.js from the chapter and box slugs).
  */
 import BreakoutBox from "../BreakoutBox.vue";
-import ExploreCard from "../ExploreCard.vue";
+import RailPart from "../RailPart.vue";
 import { BOX_TREATMENTS } from "@/helper/breakoutTreatment";
 import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 
@@ -179,6 +179,42 @@ const railSection = {
   ],
 };
 
+/* The parts a sideways box's text is cut into, as SectionComp renders
+   them: a RailPart per part (here without figures, which need the
+   database; a part's picture stands in). `layer`: a stage layer for the
+   box to float in, as the reader has from 1024px. */
+const railFrame =
+  ({ layer, intro, outro }) =>
+  (args) => ({
+    components: { BreakoutBox, RailPart },
+    setup: () => ({ args, STAGE_LAYER_ID, layer, intro, outro }),
+    template: `
+      <div data-chapter="fund" class="chapter-reader" style="position:relative;--reader-topbar-h:0px;background:rgb(var(--color-bg));font-family:var(--font-body);font-size:1.25rem;line-height:1.55;color:rgb(var(--color-ink));">
+        <div v-if="layer" :id="STAGE_LAYER_ID" style="position:absolute;top:0;left:0;width:100%;height:0;z-index:1;"></div>
+        <div style="max-width:640px;margin:0 auto;padding:40px 24px;">
+          <p :style="{ minHeight: layer ? '60vh' : '0' }">{{ intro }}</p>
+          <BreakoutBox v-bind="args">
+            <div>
+              <div class="bx-rail-row">
+                <RailPart
+                  v-for="(p, i) in args.section.paragraphs"
+                  :key="p.id"
+                  :part="{ id: p.id, title: p.explore?.title || '', explore: !!p.explore }"
+                  :image="p.explore?.image || p.picture || null"
+                  :legend="p.explore?.legend || p.pictureLegend || ''"
+                  :index="i"
+                  :count="args.section.paragraphs.length"
+                >
+                  <div :id="p.id" :data-paragraph-id="p.id" class="P" v-html="p.text"></div>
+                </RailPart>
+              </div>
+            </div>
+          </BreakoutBox>
+          <p :style="{ minHeight: layer ? '120vh' : '0' }">{{ outro }}</p>
+        </div>
+      </div>`,
+  });
+
 /** Read sideways (OPENBRAIN-163): a box of Explore parts on one track.
  *  From 1024px the box pins under the top bar and the page's scroll moves
  *  the track, a pixel across per pixel down; the names and the arrows
@@ -186,30 +222,75 @@ const railSection = {
  *  the focused track. The frame below stands in for the reader: a stage
  *  layer for the box to float in and a top bar's height to pin under.
  *  Narrower than 1024px (the toolbar's phone and tablet viewports) it is
- *  the fold-out cards, as everywhere the box does not float. */
+ *  the phone's swipe track (Swipe, below). */
 export const SideScroll = {
   args: { section: railSection, label: "A", treatment: "dark", rail: true },
-  render: (args) => ({
-    components: { BreakoutBox, ExploreCard },
-    setup: () => ({ args, STAGE_LAYER_ID }),
-    template: `
-      <div data-chapter="fund" class="chapter-reader" style="position:relative;--reader-topbar-h:0px;background:rgb(var(--color-bg));font-family:var(--font-body);font-size:1.25rem;line-height:1.55;color:rgb(var(--color-ink));">
-        <div :id="STAGE_LAYER_ID" style="position:absolute;top:0;left:0;width:100%;height:0;z-index:1;"></div>
-        <div style="max-width:640px;margin:0 auto;padding:40px 24px;">
-          <p style="min-height:60vh">Scroll down: the box pins, and the scroll carries its two parts across. The text before the box…</p>
-          <BreakoutBox v-bind="args" paired-explores>
-            <div>
-              <div class="section-paragraphs--paired">
-                <div v-for="p in args.section.paragraphs" :key="p.id" class="explore-pair-item">
-                  <ExploreCard :explore="p.explore" :paragraph-id="p.id" paired>
-                    <div :id="p.id" :data-paragraph-id="p.id" class="P" v-html="p.text"></div>
-                  </ExploreCard>
-                </div>
-              </div>
-            </div>
-          </BreakoutBox>
-          <p style="min-height:120vh">The main text carries on after the box.</p>
-        </div>
-      </div>`,
+  render: railFrame({
+    layer: true,
+    intro:
+      "Scroll down: the box pins, and the scroll carries its two parts across. The text before the box…",
+    outro: "The main text carries on after the box.",
+  }),
+};
+
+/* Descartes' box as ordinary paragraphs (OPENBRAIN-187): no part has a
+   name, so the nav counts the stops. The skull stands in for Figure A. */
+const descartesSection = {
+  id: "box-descartes",
+  kind: "box",
+  slug: "box-descartes",
+  title: "Separating mind from body: Descartes and dualism",
+  paragraphs: [
+    {
+      id: "d-dualism",
+      text: `Descartes is often credited with popularizing the idea of dualism<sup class="citation-ref">88</sup>—the idea that most of our bodily functions and capabilities arise from our corporeal being, but that our mind, or soul, arises in an ethereal, perhaps spiritual, manner. Even hundreds of years after Descartes’ death, such ideas continue to have traction, particularly in conversations surrounding the basis of consciousness<sup class="citation-ref">89</sup>. Somewhat ironically, in death Descartes also came to embody the idea of separation of mind and body. In 1649, Descartes was invited by Queen Christina of Sweden to visit and serve as her tutor. He went to Sweden but died soon afterward of pneumonia. He was buried in a small Catholic church in the outskirts of otherwise Protestant Stockholm. Several years later, during a period of patriotic fervor, the French decided to bring back their great thinker. A team was sent to bring Descartes’ body back home. However, once back in France, something was wrong with Descartes’ remains. His skull was missing. So was his right index finger.`,
+    },
+    {
+      id: "d-skull",
+      picture: {
+        src: "/publicAssets/images/foundations/figa-01.jpg",
+        alt: "A skull covered in handwritten inscriptions, said to be Descartes'.",
+      },
+      pictureLegend:
+        "A skull, with writing all over it, purported to be Descartes’. Source: Musée de l’homme.",
+      text: `Berzilius gave the skull to the French Académie de Sciences. The skull now resides in the Musée de l’homme in Paris (<strong>Figure A</strong>), though there is controversy regarding whether or not it is truly Descartes’ skull, as a museum in Lund, Sweden, also displays a portion of what they claim is the true “Skull of the Philosopher Descartes.”`,
+    },
+  ],
+};
+
+/** A box of ordinary paragraphs on the track (Stuart, 12 Nov: Descartes,
+ *  Rafferty, the icepick, Penfield, the developing brain). Each picture
+ *  leads its part, once, with its legend and expand button; the nav says
+ *  how far along. */
+export const SideScrollProse = {
+  args: {
+    section: descartesSection,
+    label: "C",
+    treatment: "dark",
+    rail: true,
+  },
+  render: railFrame({
+    layer: true,
+    intro: "Scroll down: the box pins, and the scroll carries it across…",
+    outro: "The main text carries on after the box.",
+  }),
+};
+
+/** Below 1024px (OPENBRAIN-187): the box stays in the column and nothing
+ *  pins. The track is a native swipe, a page at a time, and the reader
+ *  decides: "Explore more" turns the page, "Keep going" carries on down.
+ *  Best seen in the toolbar's phone viewport. */
+export const Swipe = {
+  args: {
+    section: descartesSection,
+    label: "C",
+    treatment: "dark",
+    rail: true,
+  },
+  render: railFrame({
+    layer: false,
+    intro:
+      "René Descartes, a contemporary of Willis, put forward a different view…",
+    outro: "The main text carries on after the box.",
   }),
 };
