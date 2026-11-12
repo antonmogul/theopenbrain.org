@@ -3945,6 +3945,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "credit": "Stuart Trenholm, after Loewi (1921), Figure 1",
+        "kicker": "Otto’s dream experiment",
         "widgetId": "upload:loewi-vagusstoff"
       },
       "file_size_bytes": null,

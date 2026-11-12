@@ -81,7 +81,10 @@
           d.dataset.accent = localStorage.getItem("ob.accent") || "magenta";
           d.dataset.fontpair = "ibm-plex-legacy";
           var rm = localStorage.getItem("ob.reduceMotion");
+          // "on" reduces, "off" asks for motion whatever the device says
+          // (OPENBRAIN-189); "auto" leaves it to the device.
           if (rm === "on") d.dataset.reduceMotion = "1";
+          else if (rm === "off") d.dataset.reduceMotion = "0";
 
           var sizeScale = { compact: 0.95, regular: 1, comfortable: 1.1 };
           var measureMap = { tight: "64ch", standard: "72ch", wide: "80ch" };

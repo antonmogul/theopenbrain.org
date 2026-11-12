@@ -21,13 +21,21 @@
 //   images: [{ src, caption?, alt? }]  — real artwork; replaces the placeholder
 //   galleryStart: "grid" | "single"    — a set's opening view (else by its size)
 //
-// In the pane the legend is folded away so the artwork gets the height
-// (OPENBRAIN-177): the toolbar keeps the label and title, and a "Legend"
-// control shows the legend as a panel over the edge of the artwork, on
-// hover or focus for a look and on a click to keep it. It stays in the
-// document while folded, so screen readers read it with the figure. In the
-// text column the legend is in the flow as before.
-import { ref, computed, onBeforeUnmount, useId } from "vue";
+// The legend is folded behind a "Legend" control wherever the figure is
+// shown, so the artwork gets the room and legends of different lengths never
+// move it. It stays in the document while folded, so screen readers read it
+// with the figure.
+//   In the pane (OPENBRAIN-177) the control is on the toolbar: a hover or
+//   focus floats the legend over the edge of the artwork for a look, a
+//   click keeps it under the title.
+//   In the text column and in a breakout box (OPENBRAIN-190; Stuart on his
+//   phone, 12 Nov) the control sits under the artwork and a tap opens the
+//   legend below it, so nothing above it moves.
+// Kept open, a gallery's legend is as tall as its longest one (the others
+// lie unseen in the same grid cell), so stepping through the images moves
+// neither the image, the arrows, the thumbnails nor the controls.
+import { ref, computed, nextTick, onBeforeUnmount, useId } from "vue";
+import ScrollTrigger from "gsap/ScrollTrigger";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
 import { figureImages, galleryStartView } from "@/helper/figureCycle";
@@ -94,16 +102,31 @@ const legend = computed(() => {
   );
 });
 
-// In the pane the legend folds away behind its control. A hover or keyboard
-// focus is a look (`peek`): the legend floats over the edge of the artwork
-// and nothing moves. A click keeps it (`pinned`): it takes its place under
-// the title, as the redesign draws it, and the artwork gives up the room.
-const folds = computed(() => !props.inline);
+// The legend folds away behind its control. A click keeps it (`pinned`),
+// and the choice stays while the reader steps through a gallery. In the
+// pane a hover or keyboard focus is a look (`peek`): the legend floats over
+// the edge of the artwork and nothing moves, and kept open it takes its
+// place under the title, as the redesign draws it. In the text column there
+// is no look: the legend opens under the artwork on a tap.
+const inPane = computed(() => !props.inline);
 const legendId = `fig-legend-${useId()}`;
 const legendPinned = ref(false);
 const legendPeek = ref(false);
-const legendFloats = computed(() => folds.value && !legendPinned.value);
+const legendFolded = computed(() => !legendPinned.value);
+const legendFloats = computed(() => inPane.value && legendFolded.value);
 const legendOpen = computed(() => legendFloats.value && legendPeek.value);
+// The other legends of a gallery, laid under the shown one while it is kept
+// open: the box is then as tall as the longest, whichever image is showing.
+const legendSizers = computed(() => {
+  if (!legendPinned.value || images.value.length < 2) return [];
+  const all = new Set(
+    images.value.map((image) => image.caption || caption.value)
+  );
+  all.add(caption.value);
+  all.delete(legend.value);
+  all.delete("");
+  return [...all];
+});
 let peekTimer = null;
 function clearPeekTimer() {
   clearTimeout(peekTimer);
@@ -112,7 +135,7 @@ function clearPeekTimer() {
 // A pointer crossing the heading on its way elsewhere should not flash the
 // legend: it opens after a beat, and only for a mouse (a tap is a click).
 function onLegendHover(e) {
-  if (!folds.value || e.pointerType !== "mouse" || legendPeek.value) return;
+  if (!inPane.value || e.pointerType !== "mouse" || legendPeek.value) return;
   clearPeekTimer();
   peekTimer = setTimeout(() => {
     peekTimer = null;
@@ -123,16 +146,27 @@ function onToolbarLeave() {
   clearPeekTimer();
   legendPeek.value = false;
 }
+function onLegendFocus() {
+  if (inPane.value) legendPeek.value = true;
+}
+// In the text column the legend is part of the page, so opening it moves
+// what follows: scroll-linked figures re-measure, as for an Explore card.
+function pageMoved() {
+  if (props.inline) nextTick(() => ScrollTrigger.refresh());
+}
 function toggleLegend() {
   clearPeekTimer();
   legendPinned.value = !legendPinned.value;
   // Unpinning closes it even while the pointer is still on the control.
   if (!legendPinned.value) legendPeek.value = false;
+  pageMoved();
 }
 function closeLegend() {
   clearPeekTimer();
+  const wasOpen = legendPinned.value;
   legendPinned.value = false;
   legendPeek.value = false;
+  if (wasOpen) pageMoved();
 }
 onBeforeUnmount(clearPeekTimer);
 
@@ -167,7 +201,7 @@ function closeFullscreen() {
       <header
         class="fig-toolbar"
         :class="{
-          'fig-toolbar--pane': folds,
+          'fig-toolbar--pane': inPane,
           'fig-toolbar--folded': legendFloats,
         }"
         @pointerleave="onToolbarLeave"
@@ -200,9 +234,8 @@ function closeFullscreen() {
             <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
           </svg>
         </button>
-        <template v-if="images.length && legend">
+        <template v-if="inPane && images.length && legend">
           <button
-            v-if="folds"
             type="button"
             class="fig-legend-btn"
             :aria-expanded="legendPinned ? 'true' : 'false'"
@@ -210,7 +243,7 @@ function closeFullscreen() {
             :title="legendPinned ? 'Hide the legend' : 'Show the legend'"
             @click="toggleLegend"
             @pointerover="onLegendHover"
-            @focus="legendPeek = true"
+            @focus="onLegendFocus"
             @blur="legendPeek = false"
           >
             <span>Legend</span>
@@ -234,10 +267,18 @@ function closeFullscreen() {
             class="fig-legend"
             :class="{
               'fig-legend--folds': legendFloats,
+              'fig-legend--reserve': legendSizers.length,
               'is-open': legendOpen,
             }"
           >
-            {{ legend }}
+            <span class="fig-legend-text">{{ legend }}</span>
+            <span
+              v-for="text in legendSizers"
+              :key="text"
+              class="fig-legend-sizer"
+              aria-hidden="true"
+              >{{ text }}</span
+            >
           </figcaption>
         </template>
       </header>
@@ -269,6 +310,55 @@ function closeFullscreen() {
             <span class="note-tag">NOTE</span> {{ animation.note }}
           </p>
         </div>
+      </div>
+
+      <!-- In the text column: the legend's control under the artwork, and
+           the legend under it once it is opened. -->
+      <div
+        v-if="inline && images.length && legend"
+        class="fig-legend-row"
+        @keydown.esc="closeLegend"
+      >
+        <button
+          type="button"
+          class="fig-legend-btn"
+          :aria-expanded="legendPinned ? 'true' : 'false'"
+          :aria-controls="legendId"
+          @click="toggleLegend"
+        >
+          <span>Legend</span>
+          <svg
+            class="fig-legend-caret"
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M2 6.5l3-3 3 3" />
+          </svg>
+        </button>
+        <figcaption
+          :id="legendId"
+          class="fig-legend"
+          :class="{
+            'fig-legend--folds': legendFolded,
+            'fig-legend--reserve': legendSizers.length,
+          }"
+        >
+          <span class="fig-legend-text">{{ legend }}</span>
+          <span
+            v-for="text in legendSizers"
+            :key="text"
+            class="fig-legend-sizer"
+            aria-hidden="true"
+            >{{ text }}</span
+          >
+        </figcaption>
       </div>
     </figure>
 
@@ -352,7 +442,8 @@ function closeFullscreen() {
     width: var(--app-w, 100vw);
     margin-left: calc(50% - var(--app-w, 100vw) / 2);
   }
-  .fig-shell--inline .fig-toolbar {
+  .fig-shell--inline .fig-toolbar,
+  .fig-shell--inline .fig-legend-row {
     padding-inline: var(--reader-gutter-l) var(--reader-gutter-r);
   }
 }
@@ -419,6 +510,42 @@ function closeFullscreen() {
 .fig-fs-btn:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
+}
+/* Kept open in a gallery: the shown legend and every other one in the same
+   cell, so the box is the longest one's height and stepping moves nothing. */
+.fig-legend--reserve {
+  display: grid;
+}
+.fig-legend--reserve > * {
+  grid-area: 1 / 1;
+}
+.fig-legend-sizer {
+  visibility: hidden;
+}
+/* In the text column: the control under the artwork, the legend under it.
+   The control takes the ink it is given, so it reads on paper and in a
+   dark or coloured breakout box alike. */
+.fig-legend-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+.fig-legend-row .fig-legend-btn {
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  color: inherit;
+}
+.fig-legend-row .fig-legend-btn:hover {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+/* A finger needs 44px. */
+@media (pointer: coarse) {
+  .fig-legend-row .fig-legend-btn {
+    height: 2.75rem;
+    padding: 0 0.75rem;
+  }
 }
 .fig-legend-caret {
   transition: transform 0.16s ease;

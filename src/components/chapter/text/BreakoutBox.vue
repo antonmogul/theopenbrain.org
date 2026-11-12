@@ -97,6 +97,8 @@ const mode = computed(() => {
 const railOn = computed(() => mode.value === "track");
 const swipeOn = computed(() => mode.value === "swipe");
 provide("exploreRail", mode);
+// A widget band in the box names it over its title (WidgetBreakout).
+provide("breakoutBox", true);
 const parts = computed(() =>
   mode.value
     ? layout.value.parts.map((part) => ({ id: part.id, title: part.title }))

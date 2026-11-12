@@ -42,6 +42,7 @@ import {
   onMounted,
   onBeforeUnmount,
   nextTick,
+  useId,
   watch,
 } from "vue";
 import gsap from "gsap";
@@ -421,8 +422,31 @@ function onKeydown(e) {
     e.preventDefault();
     e.stopPropagation();
     closePanel();
+  } else if (e.key === "Escape" && legendOpen.value) {
+    e.preventDefault();
+    e.stopPropagation();
+    legendOpen.value = false;
   }
 }
+
+/* ── The phone legend ─────────────────────────────────────────────────────
+ * Below 760px the instruction and the citation fold behind a "Legend"
+ * control (OPENBRAIN-190), so the skull has the height. The legend and an
+ * organ's sheet lie over the same place: opening one closes the other.
+ */
+const INSTRUCTION =
+  "Select a region of the skull to read what Gall and Spurzheim’s 1815 " +
+  "source says about its organ. Organ 22, Weight, is in the list only: the " +
+  "source gives it no place on the skull.";
+const legendId = `phreno-legend-${useId()}`;
+const legendOpen = ref(false);
+function toggleLegend() {
+  legendOpen.value = !legendOpen.value;
+  if (legendOpen.value) closePanel(true);
+}
+watch(activeRegion, (region) => {
+  if (region) legendOpen.value = false;
+});
 </script>
 
 <template>
@@ -594,20 +618,55 @@ function onKeydown(e) {
           </p>
         </div>
       </aside>
-      <!-- Under the sheet it stays in the grid, so the stage never moves. -->
-      <p
-        v-if="!activeRegion || narrow"
-        class="card-instruction"
-        :class="{ 'card-instruction--covered': activeRegion }"
-        :aria-hidden="activeRegion ? 'true' : undefined"
-      >
-        Select a region of the skull to read what Gall and Spurzheim’s 1815
-        source says about its organ. Organ 22, Weight, is in the list only: the
-        source gives it no place on the skull.
+      <p v-if="!activeRegion && !narrow" class="card-instruction">
+        {{ INSTRUCTION }}
       </p>
+
+      <!-- On a phone the instruction and the citation are the widget's
+           legend, folded behind a "Legend" control as the figures' are
+           (Stuart, 12 Nov: the skull was 155px tall on his iPhone mini).
+           Opened, it lies over the foot of the skull; the control's row
+           keeps its place, so the stage never moves. Folded, it stays in
+           the document for screen readers. -->
+      <div v-if="narrow" class="phreno__legend-row">
+        <button
+          type="button"
+          class="phreno__legend-btn"
+          :aria-expanded="legendOpen ? 'true' : 'false'"
+          :aria-controls="legendId"
+          @click="toggleLegend"
+        >
+          <span>Legend</span>
+          <svg
+            class="phreno__legend-caret"
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M2 6.5l3-3 3 3" />
+          </svg>
+        </button>
+      </div>
+      <div
+        v-if="narrow"
+        :id="legendId"
+        class="phreno__legend"
+        :class="{ 'phreno__legend--folded': !legendOpen }"
+      >
+        <p class="phreno__legend-text">{{ INSTRUCTION }}</p>
+        <p class="phreno__legend-source">{{ PHRENOLOGY_CITATION }}</p>
+      </div>
     </div>
 
-    <footer class="phreno__foot">{{ PHRENOLOGY_CITATION }}</footer>
+    <footer v-if="!narrow" class="phreno__foot">
+      {{ PHRENOLOGY_CITATION }}
+    </footer>
   </div>
 </template>
 
@@ -797,7 +856,8 @@ function onKeydown(e) {
 :global([data-reduce-motion="1"]) .region-label circle,
 :global([data-reduce-motion="1"]) .region-label text,
 :global([data-reduce-motion="1"]) .tabs .tab,
-:global([data-reduce-motion="1"]) .tabs__thumb {
+:global([data-reduce-motion="1"]) .tabs__thumb,
+:global([data-reduce-motion="1"]) .phreno__legend-caret {
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -805,7 +865,8 @@ function onKeydown(e) {
   .region-label circle,
   .region-label text,
   .tabs .tab,
-  .tabs__thumb {
+  .tabs__thumb,
+  .phreno__legend-caret {
     transition: none;
   }
 }
@@ -992,7 +1053,10 @@ function onKeydown(e) {
   }
   .stage {
     /* The whole row, as a size container: the skull inside is as tall as
-       the row or as wide as the column, whichever is less, in the middle. */
+       the row or as wide as the column, whichever is less, in the middle.
+       Placed, so the legend can share its cell. */
+    grid-row: 1;
+    grid-column: 1;
     width: 100%;
     height: auto;
     margin: 0;
@@ -1005,13 +1069,97 @@ function onKeydown(e) {
   .skull {
     width: min(100%, calc(100cqh * 450 / 435));
   }
-  .card-instruction {
-    margin: 0;
-    padding: 1rem;
-    font-size: 0.75rem;
+  /* A finger needs 44px: the view pills, the organ list and the sheet's
+     close and grip (OPENBRAIN-190). */
+  .tabs .tab {
+    min-height: 2.75rem;
   }
-  .card-instruction--covered {
-    visibility: hidden;
+  .faculty-picker {
+    align-items: center;
+  }
+  .faculty-picker select {
+    min-height: 2.75rem;
+  }
+
+  /* The legend's control, in the body's second row: the figures' "Legend"
+     control on the plate. */
+  .phreno__legend-row {
+    grid-row: 2;
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+  }
+  .phreno__legend-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.75rem;
+    padding: 0 0.75rem;
+    border: 1px solid rgb(255 255 255 / 0.28);
+    background: transparent;
+    color: var(--bone);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.65625rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .phreno__legend-btn:hover {
+    border-color: var(--bone);
+    background: rgb(255 255 255 / 0.08);
+  }
+  .phreno__legend-btn:focus-visible {
+    outline: 2px solid var(--bone);
+    outline-offset: 2px;
+  }
+  /* It opens upwards, over the skull: the caret points up until it does. */
+  .phreno__legend-caret {
+    transition: transform 0.16s ease;
+  }
+  .phreno__legend-btn[aria-expanded="true"] .phreno__legend-caret {
+    transform: rotate(180deg);
+  }
+  /* Open: over the foot of the skull's row, on the sheet's surface, as
+     tall as the row at most (it scrolls past that). */
+  .phreno__legend {
+    grid-row: 1;
+    grid-column: 1;
+    align-self: end;
+    z-index: 1;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0 -1rem;
+    padding: 1rem;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+    background: rgb(var(--color-dark-surface-2, 42 42 42) / 0.97);
+  }
+  .phreno__legend-text {
+    margin: 0;
+    font-size: var(--ui-size-14, 0.875rem);
+    line-height: 1.5;
+  }
+  .phreno__legend-source {
+    margin: 0.75rem 0 0;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.71875rem;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
+    opacity: 0.75;
+  }
+  /* Folded: out of sight, still in the document. */
+  .phreno__legend--folded {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   /* The sheet: the body's bottom edge up, --sheet-f of its height. Its own
@@ -1046,7 +1194,7 @@ function onKeydown(e) {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 2.25rem;
+    height: 2.75rem;
     touch-action: none;
     cursor: grab;
     outline: none;
@@ -1069,9 +1217,11 @@ function onKeydown(e) {
     outline-offset: 4px;
   }
   .card--sheet .card__close {
-    top: 0.35rem;
-    right: 0.6rem;
+    top: 0;
+    right: 0.25rem;
     z-index: 1;
+    width: 2.75rem;
+    height: 2.75rem;
   }
   .card--sheet .card__body {
     flex: 1;

@@ -14,6 +14,12 @@
  *   turns it back to the hieroglyphs. The translation stays in the
  *   accessibility tree on either side (the signs are a picture), and each
  *   turn is announced.
+ * - At rest the card is flat (OPENBRAIN-188): no perspective, no transform,
+ *   the side that shows simply lies over the other, so the signs and the
+ *   translation are painted as plain SVG and text. A browser paints a 3D
+ *   layer once and then resamples it, which left both soft, most of all on
+ *   screens at 100% or 125%. The 3D exists only while the card moves
+ *   (`solid`), and is taken down when the turn ends.
  * - The signs draw in, line by line and left to right, when the figure
  *   comes into view and again on a new tab (./drawIn.js). After the first
  *   draw the card gives one small turn of its own, to show that it turns.
@@ -96,11 +102,44 @@ const status = ref("");
 // The card's one hint that it turns, after the signs first draw.
 const nudge = ref(false);
 let nudged = false;
+// The card as a 3D thing: only while it moves. `fromBack` says the movement
+// began on the translation, so that side is the one facing the reader at
+// no rotation and the card can start turning in the frame it becomes 3D.
+const solid = ref(false);
+const fromBack = ref(false);
+// Longer than the turn (0.7 s) and the hint (0.9 s) in the styles below.
+const SETTLE_MS = 1200;
+let settleTimer = 0;
+function lift() {
+  if (!solid.value) {
+    fromBack.value = flipped.value;
+    solid.value = true;
+  }
+  // The turn's end takes the 3D down (onTurnEnd); this is for a turn whose
+  // end never comes (a hidden pane, a tab in the background).
+  clearTimeout(settleTimer);
+  settleTimer = setTimeout(settle, SETTLE_MS);
+}
+function settle() {
+  clearTimeout(settleTimer);
+  solid.value = false;
+  fromBack.value = false;
+  nudge.value = false;
+}
+function onTurnEnd(e) {
+  if (e.propertyName === "rotate") settle();
+}
+function onAnimationEnd(e) {
+  // Scoped styles suffix the keyframes' names.
+  if (String(e.animationName).startsWith("pc-nudge")) settle();
+}
 function turn(to) {
   if (flipped.value === to) return;
   still.value = prefersReducedMotion();
   nudge.value = false;
   nudged = true;
+  if (still.value) settle();
+  else lift();
   flipped.value = to;
   turns.value += 1;
   status.value = to ? "Translation showing." : "Hieroglyphs showing.";
@@ -143,7 +182,10 @@ function startDraw(wait = 0) {
   drawTimer = setTimeout(
     () => {
       draw.value = "done";
-      if (!nudged) nudge.value = true;
+      if (!nudged) {
+        lift();
+        nudge.value = true;
+      }
       nudged = true;
     },
     (total + wait) * 1000 + 80
@@ -257,6 +299,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   clearTimeout(drawTimer);
+  clearTimeout(settleTimer);
   sizes?.disconnect();
   sight?.disconnect();
   document.removeEventListener("fullscreenchange", onFullscreenChange);
@@ -302,7 +345,10 @@ onBeforeUnmount(() => {
       :aria-labelledby="`${uid}-tab-${current}`"
       tabindex="0"
     >
-      <div class="pc-scene">
+      <div
+        class="pc-scene"
+        :class="{ 'is-3d': solid, 'pc-from-back': solid && fromBack }"
+      >
         <!-- The card is turned from the button below; a click on it is the
              pointer's shortcut for the same thing. -->
         <div
@@ -312,7 +358,8 @@ onBeforeUnmount(() => {
             turns ? (turns % 2 ? 'pc-turn-a' : 'pc-turn-b') : null,
           ]"
           @click="onCardClick"
-          @animationend.self="nudge = false"
+          @transitionend.self="onTurnEnd"
+          @animationend.self="onAnimationEnd"
         >
           <div class="pc-face pc-face--front">
             <p v-if="content.lines[current]" class="pc-line">
@@ -482,7 +529,6 @@ onBeforeUnmount(() => {
   transition:
     transform 0.42s var(--pc-ease),
     width 0.42s var(--pc-ease);
-  will-change: transform;
 }
 /* `.pc-tabs .pc-tab`: a chapter band squares the buttons inside it. */
 .pc-tabs .pc-tab {
@@ -534,7 +580,6 @@ onBeforeUnmount(() => {
   min-height: 0;
   display: grid;
   justify-items: center;
-  perspective: 2200px;
 }
 .pc-card {
   position: relative;
@@ -542,12 +587,36 @@ onBeforeUnmount(() => {
   grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   width: min(100%, 47.5rem);
   min-height: 0;
-  transform-style: preserve-3d;
-  transition: rotate 0.7s cubic-bezier(0.45, 0.05, 0.2, 1);
   cursor: pointer;
 }
-.pc-card.is-flipped {
+/* At rest the card is flat and nothing on it is transformed: its two sides
+   share one cell and the one that shows lies over the other (both grounds
+   are opaque), so the signs and the translation are painted as plain SVG and
+   text. The 3D below is put up only for a turn (`is-3d`, see `lift`). */
+.pc-face--front,
+.pc-card.is-flipped .pc-face--back {
+  z-index: 1;
+}
+.pc-card.is-flipped .pc-face--front {
+  z-index: 0;
+}
+.pc-scene.is-3d {
+  perspective: 2200px;
+}
+.is-3d .pc-card {
+  transform-style: preserve-3d;
+  transition: rotate 0.7s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+.is-3d .pc-card.is-flipped {
   rotate: y 180deg;
+}
+/* A turn that began on the translation: that side faces the reader at no
+   rotation, and the card goes the other way round to the signs. */
+.is-3d.pc-from-back .pc-card.is-flipped {
+  rotate: none;
+}
+.is-3d.pc-from-back .pc-card:not(.is-flipped) {
+  rotate: y -180deg;
 }
 /* One small turn and back, once, after the signs first draw. */
 .pc-nudge {
@@ -589,8 +658,6 @@ onBeforeUnmount(() => {
   padding: 1rem 1.25rem 1.25rem;
   border: 1px solid rgb(255 255 255 / 0.1);
   transition: border-color 0.15s;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 @media (hover: hover) {
   .pc-card:hover .pc-face {
@@ -599,19 +666,33 @@ onBeforeUnmount(() => {
 }
 .pc-face--front {
   background: var(--pc-plate);
-  transform: translateZ(var(--pc-half));
 }
 .pc-face--back {
   background: var(--pc-back);
+}
+.is-3d .pc-face {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.is-3d .pc-face--front,
+.is-3d.pc-from-back .pc-face--back {
+  transform: translateZ(var(--pc-half));
+}
+.is-3d .pc-face--back,
+.is-3d.pc-from-back .pc-face--front {
   transform: rotateY(180deg) translateZ(var(--pc-half));
 }
 /* The card's two long edges: what shows of it when it is side on. */
 .pc-edge {
+  display: none;
   position: absolute;
   top: 0;
   bottom: 0;
   width: calc(var(--pc-half) * 2);
   background: linear-gradient(#6a6a6a, #4a4a4a);
+}
+.is-3d .pc-edge {
+  display: block;
 }
 .pc-edge--left {
   left: 0;

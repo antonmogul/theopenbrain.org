@@ -20,9 +20,15 @@ describe("reducedMotionK", () => {
     expect(reducedMotionK({}, true)).toBe(0.001);
   });
 
-  it("ignores stale non-'1' dataset values", () => {
-    // The pre-paint script only ever writes "1"; anything else means off.
+  it("ignores stale dataset values", () => {
     expect(reducedMotionK({ reduceMotion: "0" }, false)).toBe(1);
     expect(reducedMotionK({ reduceMotion: "" }, false)).toBe(1);
+    expect(reducedMotionK({ reduceMotion: "" }, true)).toBe(0.001);
+  });
+
+  // "Turn animations on" (OPENBRAIN-189) writes "0": the reader's choice
+  // wins over a device that asks for less motion.
+  it("runs at full speed when the reader asked for motion over the OS", () => {
+    expect(reducedMotionK({ reduceMotion: "0" }, true)).toBe(1);
   });
 });

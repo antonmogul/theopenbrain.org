@@ -204,7 +204,9 @@ describe("source-backed embedded skull", () => {
     it("opens the text as a sheet over the lit region, takes focus and returns it on dismissal", async () => {
       const w = await skull();
       expect(w.find(".card--sheet").exists()).toBe(false);
-      expect(w.find(".card-instruction").exists()).toBe(true);
+      // On a phone the instruction is folded into the legend (OPENBRAIN-190).
+      expect(w.find(".card-instruction").exists()).toBe(false);
+      expect(w.find(".phreno__legend-row").exists()).toBe(true);
       const r19 = w
         .findAll(".region")
         .find((r) => r.attributes("aria-label") === "19. Individuality");
@@ -219,9 +221,9 @@ describe("source-backed embedded skull", () => {
       expect(sheet.attributes("style")).toContain("--sheet-f: 0.5");
       expect(document.activeElement).toBe(sheet.element);
       // The region stays marked under the sheet, and the stage keeps the
-      // instruction's row so it does not move.
+      // legend's row so it does not move.
       expect(w.findAll(".region--on")).toHaveLength(1);
-      expect(w.find(".card-instruction--covered").exists()).toBe(true);
+      expect(w.find(".phreno__legend-row").exists()).toBe(true);
       // A different region replaces the text without closing.
       const r30 = w
         .findAll(".region")
@@ -245,6 +247,41 @@ describe("source-backed embedded skull", () => {
       expect(w.find(".card").exists()).toBe(false);
       expect(w.findAll(".region--on")).toHaveLength(0);
       expect(document.activeElement).toBe(r30.element);
+    });
+
+    // Stuart on an iPhone mini, 12 Nov: the skull was 155px tall under the
+    // instruction and the citation.
+    it("folds the instruction and the citation behind a Legend control", async () => {
+      const w = await skull();
+      const button = () => w.find(".phreno__legend-btn");
+      const legend = () => w.find(".phreno__legend");
+      expect(w.find(".phreno__foot").exists()).toBe(false);
+      expect(button().text()).toBe("Legend");
+      expect(button().attributes("aria-expanded")).toBe("false");
+      expect(button().attributes("aria-controls")).toBe(
+        legend().attributes("id")
+      );
+      // Folded, still in the document: the instruction, then the source.
+      expect(legend().classes()).toContain("phreno__legend--folded");
+      expect(legend().text()).toContain("Select a region of the skull");
+      expect(legend().find(".phreno__legend-source").text()).toContain(
+        "Baldwin, Cradock and Joy"
+      );
+      await button().trigger("click");
+      expect(button().attributes("aria-expanded")).toBe("true");
+      expect(legend().classes()).not.toContain("phreno__legend--folded");
+      await w.find(".phreno").trigger("keydown", { key: "Escape" });
+      expect(button().attributes("aria-expanded")).toBe("false");
+      // The legend and an organ's sheet share the place: one closes the other.
+      await button().trigger("click");
+      await w.find("select").setValue("19");
+      await flushPromises();
+      expect(w.find(".card--sheet").exists()).toBe(true);
+      expect(button().attributes("aria-expanded")).toBe("false");
+      await button().trigger("click");
+      await flushPromises();
+      expect(w.find(".card").exists()).toBe(false);
+      expect(button().attributes("aria-expanded")).toBe("true");
     });
 
     it("dismisses from a drag below half and on Escape, and loses the sheet at desktop widths", async () => {
@@ -278,6 +315,8 @@ describe("source-backed embedded skull", () => {
       expect(w.find(".sheet__grip").exists()).toBe(false);
       expect(w.find(".card").attributes("role")).toBeUndefined();
       expect(w.find(".card-instruction").exists()).toBe(false);
+      expect(w.find(".phreno__legend").exists()).toBe(false);
+      expect(w.find(".phreno__foot").exists()).toBe(true);
       w.unmount();
       expect(media.removeEventListener).toHaveBeenCalled();
     });

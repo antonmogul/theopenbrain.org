@@ -657,6 +657,15 @@ try {
               paragraph.id
             );
             await band.scrollIntoViewIfNeeded();
+            // A band in the chapter's text has no "Breakout box" kicker; one
+            // inside a box keeps it (OPENBRAIN-190).
+            const inBox = paragraph.section_id.includes("-box-");
+            const kicker = block.kicker || (inBox ? "Breakout box" : "");
+            const kickerEl = page.locator(
+              `.wb-body:has([data-widget-stage="${block.widgetId}"]) .wb-kicker`
+            );
+            if (kicker) await expect(kickerEl).toHaveText(kicker);
+            else await expect(kickerEl).toHaveCount(0);
             if (block.kind === "inline") {
               // At desktop widths the stage is teleported out of the prose
               // column, so it is found by widget, not under the band.
@@ -697,6 +706,15 @@ try {
                 : trigger.locator("iframe.widget-frame");
             await expect(frame, upload.slug).toHaveCount(1, { timeout: 20000 });
             await expect(frame).toHaveAttribute("title", upload.title);
+            // Below 1024px the figure is a band in the text, under the
+            // record's own kicker (Loewi's "Otto's dream experiment",
+            // OPENBRAIN-190).
+            if (viewport.width < 1024) {
+              const kicker = trigger.locator(".wb-kicker");
+              if (animation.config?.kicker)
+                await expect(kicker).toHaveText(animation.config.kicker);
+              else await expect(kicker).toHaveCount(0);
+            }
             await expect(frame).toHaveAttribute("sandbox", "allow-scripts");
             await expect(frame).toBeVisible();
             // The committed copy ran: the frame has a drawn document, and the

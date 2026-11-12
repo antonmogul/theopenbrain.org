@@ -169,6 +169,15 @@ const HERO_READY = {
   selector: '.opener-hero[data-reactive-cover="ready"]',
   min: 1,
 };
+/*
+ * The reader's "?" lives in the fixed top bar, at every width (Stuart,
+ * 12 Nov: on the cover "it scrolls up and disappears", OPENBRAIN-189).
+ * The 390px no-horizontal-scroll check holds it on the bar.
+ */
+const HELP = {
+  selector: '.reader-top-bar [data-testid="reader-help-button"]',
+  min: 1,
+};
 
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
@@ -199,7 +208,7 @@ const ROUTES = [
     name: "foundations",
     minText: 2000,
     needsData: true,
-    expectCount: [TIMELINE, HERO_READY],
+    expectCount: [TIMELINE, HERO_READY, HELP],
     /*
      * The first breakout box must paint from the viewport's left edge at
      * every two-column width (Stuart, 1 Oct: "the 'full screen' breakout
@@ -230,6 +239,19 @@ const ROUTES = [
      * the boxes are the chapter's.
      */
     expectRails: { min: 7 },
+    /*
+     * The papyrus tabs must not move the page (OPENBRAIN-188; Stuart, 12
+     * Nov, iPhone: "it scrolls me back up to the very top of the page"). On
+     * a phone each part is a different height, so a tab re-measures the
+     * reader (ScrollTrigger.refresh, which scrolls to the top and back), and
+     * with the tab focused `html:focus-within` made those scrolls smooth;
+     * Safari then ran on to the top. Chromium retargets the second scroll
+     * and never shows the jump, so besides scrollY staying put the step
+     * fails on any window.scrollTo made while the document scrolls
+     * smoothly. One-column widths only: in the pane the card has a fixed
+     * height. A data assertion (the papyrus is chapter content).
+     */
+    expectSteadyTabs: { selector: ".pc", tab: '[role="tab"]', maxWidth: 1023 },
   },
   {
     path: "/chapter/2/the-retina",
@@ -241,7 +263,11 @@ const ROUTES = [
      * prose. Their anchors depend on chapter content, so this is a data
      * assertion and is skipped without credentials like minText.
      */
-    expectCount: [{ selector: "[data-widget-breakout]", min: 3 }, TIMELINE],
+    expectCount: [
+      { selector: "[data-widget-breakout]", min: 3 },
+      TIMELINE,
+      HELP,
+    ],
     /*
      * The scroll-trigger markers are dev chrome behind ?markers=1
      * (OPENBRAIN-31). Without the flag none may render — they were the
@@ -891,6 +917,73 @@ async function main() {
           }
         }
 
+        // A tab that resizes a figure must not move the page (OPENBRAIN-188).
+        let tabsOk = true;
+        const steady = route.expectSteadyTabs;
+        if (checkContent && steady && width <= steady.maxWidth) {
+          const problems = [];
+          const figure = page
+            .locator(steady.selector)
+            .filter({ visible: true });
+          if (!(await figure.count())) {
+            problems.push(`no visible ${steady.selector}`);
+          } else {
+            const fig = figure.first();
+            // Twice: figures above it may still grow as it comes into view.
+            for (let k = 0; k < 2; k++) {
+              const y = await fig.evaluate(
+                (el) => el.getBoundingClientRect().top + window.scrollY - 120
+              );
+              await page.evaluate(
+                (y) => window.scrollTo({ top: y, behavior: "instant" }),
+                y
+              );
+              await page.waitForTimeout(1500);
+            }
+            await page.evaluate(() => {
+              const own = window.scrollTo;
+              window.__smokeScrolls = [];
+              window.__smokeScrollTo = own;
+              window.scrollTo = function (...args) {
+                window.__smokeScrolls.push(
+                  getComputedStyle(document.documentElement).scrollBehavior
+                );
+                return own.apply(this, args);
+              };
+            });
+            const tabs = fig.locator(steady.tab);
+            const n = await tabs.count();
+            for (let i = 1; i <= n; i++) {
+              const from = await page.evaluate(() =>
+                Math.round(window.scrollY)
+              );
+              await tabs.nth(i % n).click();
+              await page.waitForTimeout(700);
+              const to = await page.evaluate(() => Math.round(window.scrollY));
+              if (Math.abs(to - from) > 2)
+                problems.push(
+                  `tab ${i % n} moved the page from ${from} to ${to}`
+                );
+            }
+            const smooth = await page.evaluate(() => {
+              window.scrollTo = window.__smokeScrollTo;
+              return window.__smokeScrolls.filter((b) => b === "smooth").length;
+            });
+            if (smooth)
+              problems.push(
+                `${smooth} scroll(s) during the tabs ran with scroll-behavior: smooth`
+              );
+          }
+          if (problems.length) {
+            tabsOk = false;
+            problems
+              .slice(0, 4)
+              .forEach((p) =>
+                failures.push(`${label}: ${steady.selector} tabs: ${p}`)
+              );
+          }
+        }
+
         // Without credentials the chapter fetch gets index.html back and throws
         // a JSON parse error. Expected on an unconfigured runner; still a real
         // failure anywhere the keys exist.
@@ -918,6 +1011,7 @@ async function main() {
           stageOk &&
           contentsOk &&
           railsOk &&
+          tabsOk &&
           wheelOk &&
           !real.length;
         if (!ok) {
