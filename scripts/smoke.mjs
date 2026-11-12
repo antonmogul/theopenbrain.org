@@ -222,6 +222,14 @@ const ROUTES = [
      * stays one screen tall. A data assertion: the list is the chapter's.
      */
     expectContents: { selector: "#chapter-toc", minWidth: 1024 },
+    /*
+     * The breakout boxes read sideways (OPENBRAIN-163, 187): at least this
+     * many tracks at every width, each the pinned track from 1024px and a
+     * swipe track on a phone, whose pages fit the track exactly (the snap
+     * points fall on every page) and which never pins. A data assertion:
+     * the boxes are the chapter's.
+     */
+    expectRails: { min: 7 },
   },
   {
     path: "/chapter/2/the-retina",
@@ -842,6 +850,47 @@ async function main() {
           }
         }
 
+        // Boxes read sideways (OPENBRAIN-187): the mode the width calls for.
+        let railsOk = true;
+        if (checkContent && route.expectRails) {
+          const rails = await page.evaluate(() =>
+            [...document.querySelectorAll("[data-rail-scroller]")].map((t) => ({
+              slug: t.closest("[data-section-slug]")?.dataset.sectionSlug,
+              mode: t.getAttribute("data-rail-mode"),
+              pinned: t.getAttribute("data-rail-pinned"),
+              client: t.clientWidth,
+              max: t.scrollWidth - t.clientWidth,
+            }))
+          );
+          const want = width >= 1024 ? "track" : "swipe";
+          const problems = [];
+          if (rails.length < route.expectRails.min)
+            problems.push(
+              `${rails.length} sideways box(es), expected >= ${route.expectRails.min}`
+            );
+          for (const r of rails) {
+            if (r.mode !== want)
+              problems.push(`${r.slug} is a ${r.mode} track, expected ${want}`);
+            if (want === "swipe" && r.pinned === "1")
+              problems.push(`${r.slug} pins on a phone`);
+            // Whole pages: the travel is a multiple of the track's width
+            // (the columns are fitted half a pixel over).
+            if (want === "swipe" && r.client > 0) {
+              const rest = r.max % r.client;
+              if (rest > 2 && r.client - rest > 2)
+                problems.push(
+                  `${r.slug} travels ${r.max}px on a ${r.client}px track: not whole pages`
+                );
+            }
+          }
+          if (problems.length) {
+            railsOk = false;
+            problems
+              .slice(0, 4)
+              .forEach((p) => failures.push(`${label}: rails: ${p}`));
+          }
+        }
+
         // Without credentials the chapter fetch gets index.html back and throws
         // a JSON parse error. Expected on an unconfigured runner; still a real
         // failure anywhere the keys exist.
@@ -868,6 +917,7 @@ async function main() {
           absentOk &&
           stageOk &&
           contentsOk &&
+          railsOk &&
           wheelOk &&
           !real.length;
         if (!ok) {

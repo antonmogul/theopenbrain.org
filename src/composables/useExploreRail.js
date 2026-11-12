@@ -1,30 +1,37 @@
 /*
  * useExploreRail — drives a breakout box's side-scrolling track
- * (OPENBRAIN-163; the format and its DOM contract are in
- * helper/exploreRail.js).
+ * (OPENBRAIN-163, 187; the format, its two modes and its DOM contract are
+ * in helper/exploreRail.js).
  *
- * Two scroll positions, one truth. While the box is pinned, the page's
- * scroll through the pause spacer sets the track's scrollLeft (drive). When
- * the track moves any other way (a sideways swipe, the arrow keys on the
- * focused track, focus landing on a link in a later part), the page is
- * scrolled to the matching position at once (onTrackScroll), so the next
- * wheel tick carries on from there instead of snapping back. `expected`
- * tells the two apart: it is what drive last wrote.
+ * "track" (from the two-column breakpoint): two scroll positions, one
+ * truth. While the box is pinned, the page's scroll through the pause
+ * spacer sets the track's scrollLeft (drive). When the track moves any
+ * other way (a sideways swipe, the arrow keys on the focused track, focus
+ * landing on a link in a later part), the page is scrolled to the matching
+ * position at once (onTrackScroll), so the next wheel tick carries on from
+ * there instead of snapping back. `expected` tells the two apart: it is
+ * what drive last wrote. Under reduced motion nothing is pinned
+ * (BreakoutBox's CSS already drops the pause) and the page does not drive
+ * the track: it is a plain horizontal scroller with Previous and Next.
  *
- * Under reduced motion nothing is pinned (BreakoutBox's CSS already drops
- * the pause) and the page does not drive the track: it is a plain
- * horizontal scroller with Previous and Next.
+ * "swipe" (below it): the page never drives the track and the track never
+ * moves the page. It is a native swipe with scroll snapping, a page at a
+ * time; this only sizes the columns, counts the pages (BreakoutBox draws a
+ * snap point for each) and turns them for the buttons.
  */
 import { computed, nextTick, onBeforeUnmount, ref, toValue, watch } from "vue";
 import {
   RAIL_LEAD,
   clearRailColumns,
   fitRailColumns,
+  fitRailFigures,
   railActivePart,
   railMax,
   railNextStop,
+  railPageStops,
   railRoom,
   railScrolledForX,
+  railStopIndex,
   railStops,
   railXForScrolled,
   railXOf,
@@ -33,13 +40,13 @@ import { reducedMotionPreferred, scrollToY } from "@/helper/readerJump";
 
 /**
  * @param {{
- *   enabled: import("vue").MaybeRefOrGetter<boolean>,  // the rail is laid out
+ *   mode: import("vue").MaybeRefOrGetter<"track"|"swipe"|null>, // how the rail is laid out
  *   pauseEl: import("vue").Ref<HTMLElement|null>,      // .bx-pause
  *   boxEl: import("vue").Ref<HTMLElement|null>,        // the sticky box
  *   scrollerEl: import("vue").Ref<HTMLElement|null>,   // the track
  * }} opts
  */
-export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
+export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
   const max = ref(0);
   const lead = ref(0);
   const stickyTop = ref(0);
@@ -47,8 +54,12 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
   const active = ref(0);
   const atStart = ref(true);
   const atEnd = ref(false);
+  /** Where Previous / Next stop, how many there are, and which one this is. */
+  const stop = ref(0);
+  const stopCount = ref(1);
 
   let starts = [];
+  let stops = [0];
   let view = 0;
   let expected = null;
   let listening = false;
@@ -59,9 +70,13 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
   let measureQueued = false;
   let disposed = false;
 
-  const on = computed(() => !!toValue(enabled));
+  const how = computed(() => toValue(mode) || null);
+  const on = computed(() => !!how.value);
+  const swipe = computed(() => how.value === "swipe");
   /** The page's scroll drives the track. */
-  const pinned = computed(() => on.value && !reduced.value && max.value > 0);
+  const pinned = computed(
+    () => how.value === "track" && !reduced.value && max.value > 0
+  );
   /** The pause spacer's height in px (0: leave it to the box's CSS). */
   const room = computed(() =>
     pinned.value ? railRoom({ lead: lead.value, max: max.value }) : 0
@@ -85,6 +100,8 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
     const end = x >= max.value - 1;
     if (start !== atStart.value) atStart.value = start;
     if (end !== atEnd.value) atEnd.value = end;
+    const index = railStopIndex(stops, x);
+    if (index !== stop.value) stop.value = index;
     pauseEl.value?.style.setProperty(
       "--rail-progress",
       max.value > 0 ? String(Math.min(1, Math.max(0, x / max.value))) : "0"
@@ -123,13 +140,20 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
     const scroller = scrollerEl.value;
     if (!on.value || !scroller || disposed) return;
     reduced.value = reducedMotionPreferred();
+    // Re-fitting the columns lets the track shrink for a moment, which
+    // clamps its scrollLeft; a track the page does not drive keeps where
+    // the reader left it.
+    const keep = scroller.scrollLeft;
+    fitRailFigures(scroller);
     fitRailColumns(scroller);
+    if (!pinned.value && scroller.scrollLeft !== keep)
+      scroller.scrollLeft = keep;
     view = scroller.clientWidth;
     max.value = railMax(scroller);
     lead.value = Math.round((window.innerHeight || 0) * RAIL_LEAD);
     stickyTop.value = parseFloat(getComputedStyle(boxEl.value).top) || 0;
     // Each part's start at scrollLeft 0, whatever the track is at now.
-    starts = [...scroller.querySelectorAll("[data-explore]")].map((part) => {
+    starts = [...scroller.querySelectorAll("[data-rail-part]")].map((part) => {
       const pad = parseFloat(getComputedStyle(scroller).paddingLeft) || 0;
       const x =
         part.getBoundingClientRect().left -
@@ -138,6 +162,10 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
         pad;
       return Math.min(max.value, Math.max(0, Math.round(x)));
     });
+    stops = swipe.value
+      ? railPageStops(view, max.value)
+      : railStops(starts, view, max.value);
+    if (stops.length !== stopCount.value) stopCount.value = stops.length;
     // The spacer's new height reaches the DOM on the next tick; the page's
     // position then decides the track's.
     nextTick(() => {
@@ -150,6 +178,15 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
   /* One measurement per burst of observer callbacks. A timer, not
      requestAnimationFrame, which never fires in a background tab
      (FullBleed makes the same choice). */
+  /* A phone fires resize whenever its address bar slides in or out; a
+     swipe track only cares about a change of width. */
+  let lastWidth = 0;
+  function onResize() {
+    const width = window.innerWidth || 0;
+    if (swipe.value && width === lastWidth) return;
+    lastWidth = width;
+    queueMeasure();
+  }
   function queueMeasure() {
     if (measureQueued) return;
     measureQueued = true;
@@ -173,7 +210,7 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
   }
   const step = (dir) => {
     const x = scrollerEl.value?.scrollLeft || 0;
-    goTo(railNextStop(railStops(starts, view, max.value), x, dir));
+    goTo(railNextStop(stops, x, dir));
   };
   const next = () => step(1);
   const prev = () => step(-1);
@@ -188,7 +225,8 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
     listening = true;
     bound = scroller;
     window.addEventListener("scroll", drive, { passive: true });
-    window.addEventListener("resize", queueMeasure);
+    lastWidth = window.innerWidth || 0;
+    window.addEventListener("resize", onResize);
     scroller.addEventListener("scroll", onTrackScroll, { passive: true });
     // An image arriving changes how the columns break.
     scroller.addEventListener("load", queueMeasure, true);
@@ -216,11 +254,11 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
     measure();
   }
 
-  function stop() {
+  function stopListening() {
     if (!listening) return;
     listening = false;
     window.removeEventListener("scroll", drive);
-    window.removeEventListener("resize", queueMeasure);
+    window.removeEventListener("resize", onResize);
     const scroller = bound;
     bound = null;
     scroller?.removeEventListener("scroll", onTrackScroll);
@@ -234,21 +272,24 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
     max.value = 0;
     expected = null;
     starts = [];
+    stops = [0];
+    stop.value = 0;
+    stopCount.value = 1;
   }
 
-  // After the DOM shows the rail's layout (the cards switch on the same
-  // flag), and again whenever the track element itself is replaced.
+  // After the DOM shows the rail's layout (the parts switch on the same
+  // flag), and again whenever the mode or the track element itself changes.
   watch(
-    [on, scrollerEl],
+    [how, scrollerEl],
     () => {
-      stop();
+      stopListening();
       if (on.value) nextTick(start);
     },
     { immediate: true, flush: "post" }
   );
   onBeforeUnmount(() => {
     disposed = true;
-    stop();
+    stopListening();
   });
 
   return {
@@ -259,6 +300,8 @@ export function useExploreRail({ enabled, pauseEl, boxEl, scrollerEl }) {
     active,
     atStart,
     atEnd,
+    stop,
+    stopCount,
     next,
     prev,
     goToPart,

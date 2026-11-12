@@ -129,11 +129,12 @@ const tokens = extractTokens(
 const sfc = read("src/components/chapter/text/BreakoutBox.vue");
 const css = /<style scoped>([\s\S]*?)<\/style>/.exec(sfc)[1];
 
-/** The --bx-* declarations of one rule, by selector. */
+/** The --bx-* declarations of one rule, by selector (one of its list: the
+ *  frame and what follows a sideways box's track share a palette). */
 function declarations(selector) {
   const out = {};
   postcss.parse(css).walkRules((rule) => {
-    if (rule.selector !== selector) return;
+    if (!rule.selectors.includes(selector)) return;
     rule.walkDecls((d) => {
       if (d.prop.startsWith("--bx-")) out[d.prop] = d.value.trim();
     });

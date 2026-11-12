@@ -2,12 +2,31 @@
  * ExploreCard (OPENBRAIN-142): a real disclosure. The button owns
  * aria-expanded / aria-controls, the panel keeps the paragraph in the DOM
  * while folded (hidden, so ids stay findable), and opening re-measures the
- * scroll-linked figures.
+ * scroll-linked figures. Each picture once (OPENBRAIN-187): a figure that
+ * shows the card's own image takes the image's place in the card.
  */
 import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick, ref } from "vue";
 import ExploreCard from "../ExploreCard.vue";
+
+// The figures' records, as the database would hand them over.
+const records = ref([
+  {
+    id: "figSame",
+    images: [{ src: "/publicAssets/images/foundations/x.jpg" }],
+  },
+  {
+    id: "figOther",
+    images: [{ src: "/publicAssets/images/foundations/y.jpg" }],
+  },
+]);
+vi.mock("@/composables/useAnimations", () => ({
+  useAnimations: () => ({
+    animations: records,
+    fetchAnimations: async () => ({ data: records.value }),
+  }),
+}));
 
 const refresh = vi.fn();
 vi.mock("gsap/ScrollTrigger", () => ({
@@ -68,32 +87,39 @@ describe("ExploreCard", () => {
     expect(w.find("button").attributes("aria-expanded")).toBe("true");
   });
 
-  // OPENBRAIN-163: in a side-scrolling box there is nothing to open.
-  it("in a rail is its image, title and text laid open, with no button", async () => {
-    const rail = ref(true);
-    const w = mount(ExploreCard, {
-      props: { explore, paragraphId: "p1" },
-      slots: { default: '<div class="P" data-paragraph-id="p1">Text</div>' },
-      global: { provide: { exploreRail: rail } },
+  // OPENBRAIN-187: the rete mirabile's card image is Figure C's only image.
+  const withFigure = (figureId) =>
+    mount(ExploreCard, {
+      props: { explore, paragraphId: "p1", figureId },
+      slots: {
+        default: '<div class="P" data-paragraph-id="p1">Text</div>',
+        figure: '<figure class="the-figure">Figure</figure>',
+      },
     });
-    const part = w.find(".xc--rail");
-    expect(part.attributes("data-explore")).toBe("p1");
-    expect(part.attributes("aria-labelledby")).toBe("explore-title-p1");
-    expect(w.find("button").exists()).toBe(false);
-    expect(w.find("[hidden]").exists()).toBe(false);
-    expect(w.find("img").attributes("src")).toBe(explore.image.src);
-    expect(w.find("figcaption").text()).toBe("Woodcut, 1574.");
-    // The title leads the columns the text flows in.
-    const text = w.find("[data-rail-columns]");
-    expect(text.element.firstElementChild.id).toBe("explore-title-p1");
-    expect(text.find("h3").text()).toBe("Humoral theory");
-    expect(text.find('[data-paragraph-id="p1"]').text()).toBe("Text");
 
-    // The box stops floating (a narrower window): the card and its button.
-    rail.value = false;
+  it("shows a figure of the same image once, in the image's place", async () => {
+    const w = withFigure("figSame");
     await nextTick();
-    expect(w.find(".xc--rail").exists()).toBe(false);
-    expect(w.find("button").attributes("aria-expanded")).toBe("false");
-    expect(w.find(".xc-panel").attributes("hidden")).toBeDefined();
+    // In the card, not in the panel; the plain image is not shown as well.
+    expect(w.find(".xc-card .the-figure").exists()).toBe(true);
+    expect(w.find(".xc-panel .the-figure").exists()).toBe(false);
+    expect(w.findAll(".the-figure")).toHaveLength(1);
+    expect(w.find("img").exists()).toBe(false);
+    expect(w.find(".xc").classes()).toContain("xc--figure");
+  });
+
+  it("keeps a figure with art of its own at the top of the panel", async () => {
+    const w = withFigure("figOther");
+    await nextTick();
+    expect(w.find(".xc-card img").attributes("src")).toBe(explore.image.src);
+    const panel = w.find(".xc-panel-inner");
+    expect(panel.element.firstElementChild.className).toBe("the-figure");
+    expect(w.findAll(".the-figure")).toHaveLength(1);
+  });
+
+  it("without a figure drawn here, is the image alone", () => {
+    const w = withFigure("");
+    expect(w.find(".the-figure").exists()).toBe(false);
+    expect(w.find(".xc-card img").exists()).toBe(true);
   });
 });
