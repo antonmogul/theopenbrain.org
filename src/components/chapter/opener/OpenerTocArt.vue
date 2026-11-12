@@ -618,14 +618,14 @@ defineExpose({ active, open, fit, scrolls, measure });
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .otoc__pic.is-on {
+  :root:not([data-reduce-motion="0"]) .otoc__pic.is-on {
     animation: none;
   }
-  .otoc__section,
-  .otoc__chevron,
-  .otoc__parts,
-  .otoc__section.is-open .otoc__parts,
-  .otoc__part {
+  :root:not([data-reduce-motion="0"]) .otoc__section,
+  :root:not([data-reduce-motion="0"]) .otoc__chevron,
+  :root:not([data-reduce-motion="0"]) .otoc__parts,
+  :root:not([data-reduce-motion="0"]) .otoc__section.is-open .otoc__parts,
+  :root:not([data-reduce-motion="0"]) .otoc__part {
     transition: none;
   }
 }

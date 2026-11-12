@@ -875,13 +875,13 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .atlas__label,
-  .atlas__canvas,
-  .atlas__poster,
-  .contents__row,
-  .contents__read,
-  .unclaimed__area,
-  .ctl {
+  :root:not([data-reduce-motion="0"]) .atlas__label,
+  :root:not([data-reduce-motion="0"]) .atlas__canvas,
+  :root:not([data-reduce-motion="0"]) .atlas__poster,
+  :root:not([data-reduce-motion="0"]) .contents__row,
+  :root:not([data-reduce-motion="0"]) .contents__read,
+  :root:not([data-reduce-motion="0"]) .unclaimed__area,
+  :root:not([data-reduce-motion="0"]) .ctl {
     transition: none;
   }
 }

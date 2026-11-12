@@ -957,13 +957,13 @@ onBeforeUnmount(() => {
   animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .pc-card,
-  .pc-tabs.is-ready .pc-thumb,
-  .pc-flip-icon {
+  :root:not([data-reduce-motion="0"]) .pc-card,
+  :root:not([data-reduce-motion="0"]) .pc-tabs.is-ready .pc-thumb,
+  :root:not([data-reduce-motion="0"]) .pc-flip-icon {
     transition: none;
     animation: none;
   }
-  .pc-glyphs.is-drawing :deep(path) {
+  :root:not([data-reduce-motion="0"]) .pc-glyphs.is-drawing :deep(path) {
     animation: none;
     stroke-dasharray: none;
   }

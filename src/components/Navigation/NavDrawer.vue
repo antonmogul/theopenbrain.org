@@ -710,8 +710,8 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .drawer-enter-active .drawer,
-  .drawer-leave-active .drawer {
+  :root:not([data-reduce-motion="0"]) .drawer-enter-active .drawer,
+  :root:not([data-reduce-motion="0"]) .drawer-leave-active .drawer {
     transition: none;
   }
 }

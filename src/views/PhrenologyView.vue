@@ -861,12 +861,12 @@ watch(activeRegion, (region) => {
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .region path,
-  .region-label circle,
-  .region-label text,
-  .tabs .tab,
-  .tabs__thumb,
-  .phreno__legend-caret {
+  :root:not([data-reduce-motion="0"]) .region path,
+  :root:not([data-reduce-motion="0"]) .region-label circle,
+  :root:not([data-reduce-motion="0"]) .region-label text,
+  :root:not([data-reduce-motion="0"]) .tabs .tab,
+  :root:not([data-reduce-motion="0"]) .tabs__thumb,
+  :root:not([data-reduce-motion="0"]) .phreno__legend-caret {
     transition: none;
   }
 }
@@ -1235,7 +1235,7 @@ watch(activeRegion, (region) => {
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .card--sheet {
+  :root:not([data-reduce-motion="0"]) .card--sheet {
     transition: none;
   }
 }

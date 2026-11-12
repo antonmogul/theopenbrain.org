@@ -501,11 +501,13 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .st-stage > *,
-  .st-steps,
-  .st-legend,
-  .st-info-toggle svg,
-  .st-lottie :deep(.highlighterDisplay > *) {
+  :root:not([data-reduce-motion="0"]) .st-stage > *,
+  :root:not([data-reduce-motion="0"]) .st-steps,
+  :root:not([data-reduce-motion="0"]) .st-legend,
+  :root:not([data-reduce-motion="0"]) .st-info-toggle svg,
+  :root:not([data-reduce-motion="0"])
+    .st-lottie
+    :deep(.highlighterDisplay > *) {
     transition: none;
   }
 }

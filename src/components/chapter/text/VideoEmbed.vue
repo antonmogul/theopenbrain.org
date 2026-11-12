@@ -159,11 +159,11 @@ const caption = computed(() => props.video.caption || props.video.title || "");
   color: rgb(var(--color-mute));
 }
 @media (prefers-reduced-motion: reduce) {
-  .ve-play {
+  :root:not([data-reduce-motion="0"]) .ve-play {
     transition: none;
   }
-  .ve-poster:hover .ve-play,
-  .ve-poster:focus-visible .ve-play {
+  :root:not([data-reduce-motion="0"]) .ve-poster:hover .ve-play,
+  :root:not([data-reduce-motion="0"]) .ve-poster:focus-visible .ve-play {
     transform: none;
   }
 }

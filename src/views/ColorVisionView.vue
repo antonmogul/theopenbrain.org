@@ -1461,7 +1461,7 @@ canvas {
   transition: width 0.05s linear;
 }
 @media (prefers-reduced-motion: reduce) {
-  .cv-bar div {
+  :root:not([data-reduce-motion="0"]) .cv-bar div {
     transition: none;
   }
 }

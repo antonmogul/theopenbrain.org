@@ -576,13 +576,13 @@ function onImgError(e) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tr-hand {
+  :root:not([data-reduce-motion="0"]) .tr-hand {
     translate: 0 0;
     animation: none;
     transition: opacity 0.2s;
   }
-  .tr-name,
-  .tr-prompt {
+  :root:not([data-reduce-motion="0"]) .tr-name,
+  :root:not([data-reduce-motion="0"]) .tr-prompt {
     animation: none;
   }
 }
