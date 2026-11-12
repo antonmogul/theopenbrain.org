@@ -4,8 +4,10 @@
   Title:    Penfield's case binder
   Chapter:  History (Foundations of Neuroscience), Box "Wilder Penfield and the Montreal Procedure"
   Author:   Stuart Trenholm · Design: Malpeso Studio (Widget Library Figma, page 1.2, "Binder" frames 107:56–107:1052)
-  Version:  2 (2026-11-11)
-  Changes:  2 (11 Nov 2026). Full screen: the heading and the source line are not drawn
+  Version:  3 (2026-11-12)
+  Changes:  3 (12 Nov 2026). The cases are in numerical order, top tab to bottom, so the
+            binder opens on Case 3 (Stuart's request). Each patient keeps its tab colour.
+            2 (11 Nov 2026). Full screen: the heading and the source line are not drawn
             and the binder has the screen. The letter opens large like the photograph.
             A page's index tab turns with it, on both faces of the leaf.
             1 (10 Nov 2026). First version. Replaces the case cabinet (the Vue view) with
@@ -1061,8 +1063,10 @@
       const esc = (s) =>
         String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
 
-      // The seven patients, in the binder's order, each with its tab colour (Figma).
-      const ORDER = ["ge", "sbe", "gp", "yn", "nc", "abra", "rw"];
+      // The seven patients in case-number order, top tab to bottom (3, 4, 12, 24, 29,
+      // 31, 32: Stuart, 12 Nov 2026; the Figma had them 32, 29, 24, 12, 31, 4, 3), each
+      // with the tab colour the design gave that patient.
+      const ORDER = ["rw", "abra", "yn", "gp", "sbe", "nc", "ge"];
       const COLOURS = {
         ge: "#9598df",
         sbe: "#8bb79e",

@@ -1,7 +1,8 @@
 // @vitest-environment node
 /** Runs 20261110000000_history_penfield_binder.sql in PGlite (OPENBRAIN-168),
- * then 20261111180200_history_penfield_binder_v2.sql (OPENBRAIN-178), which
- * replaces the upload's HTML with the widget file as it is now.
+ * then 20261111180200_history_penfield_binder_v2.sql (OPENBRAIN-178) and
+ * 20261112190000_history_penfield_binder_v3.sql (OPENBRAIN-191), each of which
+ * replaces the upload's HTML; the last carries the widget file as it is now.
  * HISTORY_SQL_HARNESS=/absolute/path/to/@electric-sql/pglite npm test --
  * --pool=forks src/__tests__/historyPenfieldBinder.sql.test.js (the SQL run is
  * skipped without it; the file check always runs).
@@ -21,29 +22,71 @@ const sqlV2 = readFileSync(
   "supabase/migrations/20261111180200_history_penfield_binder_v2.sql",
   "utf8"
 );
+const sqlV3 = readFileSync(
+  "supabase/migrations/20261112190000_history_penfield_binder_v3.sql",
+  "utf8"
+);
 const file = readFileSync(
   "src/widgets/uploads/history-penfield-binder.html",
   "utf8"
 );
 const htmlIn = (text) =>
   text.slice(text.indexOf("$w$") + "$w$".length, text.lastIndexOf("$w$"));
-// Version 1, as it was pushed on 10 Nov: the first migration is not edited.
+// Versions 1 and 2, as they were pushed on 10 and 11 Nov: a pushed migration
+// is not edited.
 const fileV1 = htmlIn(sql);
+const fileV2 = htmlIn(sqlV2);
 
 describe("Penfield binder migrations", () => {
   it("the latest carries the widget file as it is in src/widgets/uploads", () => {
-    expect(htmlIn(sqlV2)).toBe(file);
+    expect(htmlIn(sqlV3)).toBe(file);
   });
 
   it("states the file's size and hash", () => {
-    expect(sqlV2).toContain(
+    expect(sqlV3).toContain(
       `-- ${Buffer.byteLength(file, "utf8")} bytes, sha256 ${createHash("sha256").update(file).digest("hex")}`
     );
   });
 
-  it("the first still carries version 1", () => {
+  it("the earlier ones still carry versions 1 and 2", () => {
     expect(fileV1).toContain("Version:  1 (2026-11-10)");
-    expect(file).toContain("Version:  2 (2026-11-11)");
+    expect(fileV2).toContain("Version:  2 (2026-11-11)");
+    expect(file).toContain("Version:  3 (2026-11-12)");
+  });
+
+  it("version 3 puts the cases in numerical order and changes nothing else", () => {
+    // Top tab to bottom: 3 R.W., 4 A.Bra., 12 Y.N., 24 G.P., 29 S.Be., 31 N.C., 32 G.E.
+    expect(file).toContain(
+      'const ORDER = ["rw", "abra", "yn", "gp", "sbe", "nc", "ge"];'
+    );
+    expect(fileV2).toContain(
+      'const ORDER = ["ge", "sbe", "gp", "yn", "nc", "abra", "rw"];'
+    );
+    const ids = [
+      ...file.matchAll(/\{"id":"([a-z]+)","tab":"[^"]*","caseNo":(\d+)/g),
+    ];
+    const caseNo = Object.fromEntries(ids.map(([, id, n]) => [id, Number(n)]));
+    const order = JSON.parse(file.match(/const ORDER = (\[[^\]]+\]);/)[1]);
+    expect(order.map((id) => caseNo[id])).toEqual([3, 4, 12, 24, 29, 31, 32]);
+    // Apart from the order and the header comment the two files are the same.
+    const body = (html) =>
+      html
+        .slice(html.indexOf("-->"))
+        .replace(/\/\/ The seven patients[\s\S]*?const ORDER = [^\n]+\n/, "");
+    expect(body(file)).toBe(body(fileV2));
+    for (const text of [sqlV3]) {
+      const statements = text
+        .split("\n")
+        .filter((line) =>
+          /^(insert|update|delete|alter|create|drop)\b/i.test(line)
+        );
+      expect(statements).toEqual([
+        "insert into public.widget_uploads (slug, title, description, author, ramp, html, status)",
+      ]);
+      expect(text).toContain(
+        "where public.widget_uploads.html is distinct from excluded.html"
+      );
+    }
   });
 
   it("version 2 changes the upload's HTML and nothing else", () => {
@@ -194,9 +237,22 @@ describe.skipIf(!harness || !existsSync(harness))(
         status: "published",
         ramp: "fund",
       });
-      expect(first[0].html).toBe(file);
+      expect(first[0].html).toBe(fileV2);
       await db.exec(sqlV2); // a second push changes nothing
       expect(await row()).toEqual(first);
+      expect(await paragraphs()).toEqual(before);
+      // Version 3 on top: the file as it is now, once.
+      await db.exec(sqlV3);
+      const third = await row();
+      expect(third[0].html).toBe(file);
+      expect(third[0]).toMatchObject({
+        slug: "history-penfield-binder",
+        title: "Penfield's case binder",
+        status: "published",
+        ramp: "fund",
+      });
+      await db.exec(sqlV3);
+      expect(await row()).toEqual(third);
       expect(await paragraphs()).toEqual(before);
     });
 
@@ -208,7 +264,7 @@ describe.skipIf(!harness || !existsSync(harness))(
       );
       expect(rows).toHaveLength(1);
       expect(rows[0].status).toBe("published");
-      expect(rows[0].html).toBe(file);
+      expect(rows[0].html).toBe(fileV2);
     });
   }
 );
