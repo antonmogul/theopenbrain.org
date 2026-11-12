@@ -80,6 +80,8 @@ const railOn = computed(
   () => wantsRail.value && tallEnough.value && !!fullBleed.value?.floating
 );
 provide("exploreRail", railOn);
+// A widget band in the box names it over its title (WidgetBreakout).
+provide("breakoutBox", true);
 const parts = computed(() =>
   railOn.value
     ? (props.section.paragraphs || [])

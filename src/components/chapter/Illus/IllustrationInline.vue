@@ -128,6 +128,7 @@ const youtubeSrc = computed(() =>
       widgetId: animation.widgetId,
       kind: animation.widgetId.startsWith('upload:') ? 'inline' : 'breakout',
       title: animation.title || '',
+      kicker: animation.kicker || '',
     }"
   />
   <!-- An image figure (or its placeholder): the pane's figure shell

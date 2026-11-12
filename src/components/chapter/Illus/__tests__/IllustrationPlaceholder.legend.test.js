@@ -1,12 +1,18 @@
 /*
  * The figure shell in a pane (OPENBRAIN-177): the legend folded behind its
  * control, a gallery opening as the grid, and the fullscreen dialog keeping
- * the pane's ground.
+ * the pane's ground. In the text column the legend folds too, under the
+ * artwork (OPENBRAIN-190).
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import ScrollTrigger from "gsap/ScrollTrigger";
 import IllustrationPlaceholder from "../IllustrationPlaceholder.vue";
+
+vi.mock("gsap/ScrollTrigger", () => ({
+  default: { refresh: vi.fn() },
+}));
 
 const SINGLE = {
   id: "animationFoundationsFig1",
@@ -53,6 +59,7 @@ const panel = () => document.querySelector(".demo-panel");
 
 beforeEach(() => {
   document.documentElement.setAttribute("data-reduce-motion", "1");
+  ScrollTrigger.refresh.mockClear();
 });
 afterEach(() => {
   wrapper?.unmount();
@@ -140,18 +147,84 @@ describe("figure shell: the legend folded in the pane", () => {
     expect(legend().classes()).toContain("fig-legend--folds");
   });
 
-  it("leaves the legend in the flow, with no control, in the text column", () => {
-    mountShell(SINGLE, { inline: true, inPane: false });
-    expect(legend().text()).toBe(SINGLE.caption);
-    expect(legend().classes()).not.toContain("fig-legend--folds");
-    expect(button().exists()).toBe(false);
-    expect(toolbar().classes()).not.toContain("fig-toolbar--pane");
-  });
-
   it("has no control when the figure has no legend", () => {
     mountShell({ ...SINGLE, caption: "" });
     expect(button().exists()).toBe(false);
     expect(legend().exists()).toBe(false);
+  });
+});
+
+// Stuart on his phone, 12 Nov (OPENBRAIN-190): legends of different lengths
+// above the plate moved the image and its arrows at every step.
+describe("figure shell: the legend folded in the text column", () => {
+  const row = () => wrapper.find(".fig-legend-row");
+
+  it("folds it under the artwork, behind the same control, nothing in the toolbar", () => {
+    mountShell(SINGLE, { inline: true, inPane: false });
+    expect(toolbar().classes()).not.toContain("fig-toolbar--pane");
+    expect(toolbar().find(".fig-legend").exists()).toBe(false);
+    expect(toolbar().find(".fig-legend-btn").exists()).toBe(false);
+    // Under the artwork: the row follows the diagram area.
+    expect(row().element.previousElementSibling.classList).toContain(
+      "fig-area"
+    );
+    expect(legend().element.tagName).toBe("FIGCAPTION");
+    expect(legend().text()).toBe(SINGLE.caption);
+    expect(legend().classes()).toContain("fig-legend--folds");
+    expect(button().text()).toBe("Legend");
+    expect(button().attributes("aria-expanded")).toBe("false");
+    expect(button().attributes("aria-controls")).toBe(
+      legend().attributes("id")
+    );
+  });
+
+  it("opens on a tap, with no look on focus, and re-measures the page", async () => {
+    mountShell(SINGLE, { inline: true, inPane: false });
+    await button().trigger("focus");
+    expect(legend().classes()).toContain("fig-legend--folds");
+    await button().trigger("click");
+    await nextTick();
+    expect(button().attributes("aria-expanded")).toBe("true");
+    expect(legend().classes()).not.toContain("fig-legend--folds");
+    expect(ScrollTrigger.refresh).toHaveBeenCalledTimes(1);
+    await button().trigger("keydown", { key: "Escape" });
+    await nextTick();
+    expect(button().attributes("aria-expanded")).toBe("false");
+    expect(legend().classes()).toContain("fig-legend--folds");
+    expect(ScrollTrigger.refresh).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps a gallery's legend open while stepping, as tall as the longest", async () => {
+    const plates = {
+      ...TEN,
+      images: TEN.images.map((image, i) =>
+        i === 4
+          ? { ...image, caption: "A much longer legend. ".repeat(8) }
+          : image
+      ),
+    };
+    mountShell(plates, { inline: true, inPane: false });
+    // Folded, nothing is laid out to size it.
+    expect(wrapper.findAll(".fig-legend-sizer")).toHaveLength(0);
+    await button().trigger("click");
+    expect(legend().classes()).toContain("fig-legend--reserve");
+    expect(legend().find(".fig-legend-text").text()).toBe("Plate 1");
+    // Every other legend lies unseen in the same cell, the longest included.
+    const sizers = () =>
+      wrapper.findAll(".fig-legend-sizer").map((s) => s.text());
+    expect(sizers()).toHaveLength(9);
+    expect(sizers()).toContain(plates.images[4].caption.trim());
+    expect(
+      wrapper
+        .findAll(".fig-legend-sizer")
+        .every((s) => s.attributes("aria-hidden") === "true")
+    ).toBe(true);
+    await wrapper.get('[aria-label="Next image"]').trigger("click");
+    await flushPromises();
+    expect(button().attributes("aria-expanded")).toBe("true");
+    expect(legend().find(".fig-legend-text").text()).toBe("Plate 2");
+    expect(sizers()).not.toContain("Plate 2");
+    expect(sizers()).toContain("Plate 1");
   });
 });
 

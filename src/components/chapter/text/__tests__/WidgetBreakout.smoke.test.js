@@ -310,16 +310,15 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     const pause = band.closest(".fb-screen-hold");
     expect(pause).not.toBeNull();
     expect(pause.querySelector(".fb-screen-room")).not.toBeNull();
-    // The header is the band's: Stuart's title and line, under the box
-    // kicker (the Widget Library Figma, Nov; OPENBRAIN-162), and the
-    // toolbar names the credit beside the expand icon.
+    // The header is the band's: Stuart's title and line, with no kicker
+    // over them: the band is in the chapter's text, not a breakout box
+    // (Stuart, 12 Nov; OPENBRAIN-190). The toolbar names the credit beside
+    // the expand icon.
     expect(band.querySelector(".wb-title").textContent).toBe(
       "Explore phrenology"
     );
     expect(band.querySelector(".wb-head").classList).toContain("wb-head--full");
-    expect(band.querySelector(".wb-kicker").textContent.trim()).toBe(
-      "Breakout box"
-    );
+    expect(band.querySelector(".wb-kicker")).toBeNull();
     expect(band.querySelector(".wb-foot .wb-credit").textContent.trim()).toBe(
       "Interactive by The Open Brain"
     );
@@ -470,6 +469,53 @@ describe("WidgetBreakout for an uploaded widget", () => {
     ).toBe("retinabox");
     expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
     w.unmount();
+  });
+
+  // OPENBRAIN-190: Loewi's band on a phone said "Breakout box"; Stuart
+  // asked for "Otto's dream experiment". The figure record names it
+  // (config.kicker), and IllustrationInline hands it on as the placement's.
+  it("says the kicker its placement names, over an upload's own title", async () => {
+    const w = mountBreakout({
+      placementId: "animationFoundationsLoewiWidget",
+      widgetId: "upload:built",
+      kind: "inline",
+      title: "Loewi's Vagusstoff, 1921",
+      kicker: "Otto’s dream experiment",
+    });
+    await flushPromises();
+    expect(w.find(".wb-head").classes()).toContain("wb-head--owned");
+    expect(w.find(".wb-kicker").text()).toBe("Otto’s dream experiment");
+    expect(w.find(".wb-dot").exists()).toBe(false);
+    w.unmount();
+  });
+
+  it("names a band a breakout box only inside one", async () => {
+    const band = {
+      placementId: "box-penfield",
+      widgetId: "upload:built",
+      kind: "inline",
+      title: "Penfield's case files",
+    };
+    const loose = mountBreakout(band);
+    await flushPromises();
+    expect(loose.find(".wb-kicker").exists()).toBe(false);
+    loose.unmount();
+    const boxed = mount(WidgetBreakout, {
+      props: { placement: band },
+      attachTo: document.body,
+      global: {
+        stubs: { RouterLink: RouterLinkStub, Transition: true },
+        provide: { breakoutBox: true },
+      },
+    });
+    await flushPromises();
+    expect(boxed.find(".wb-kicker").text()).toBe("Breakout box");
+    boxed.unmount();
+    // A card says it opens, whatever it is in; its placement may say more.
+    const named = mountBreakout({ ...card("upload:built"), kicker: "Try it" });
+    await flushPromises();
+    expect(named.find(".wb-kicker").text()).toBe("Try it");
+    named.unmount();
   });
 
   it("prefers the upload over its fallback once it is published", async () => {

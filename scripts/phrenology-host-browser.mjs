@@ -164,7 +164,11 @@ try {
             root: rect(el.closest(".phreno")),
             card: rect(el),
             skull: rect(document.querySelector(".skull")),
-            footer: rect(document.querySelector(".phreno__foot")),
+            // Below 760px the citation is folded into the legend
+            // (OPENBRAIN-190): there is no footer to measure.
+            footer: document.querySelector(".phreno__foot")
+              ? rect(document.querySelector(".phreno__foot"))
+              : null,
             finalLine: {
               top: last.top,
               bottom: last.bottom,
@@ -193,7 +197,7 @@ try {
             bounds.card.top >= bounds.skull.bottom - 1
         );
         assert.ok(
-          bounds.footer.top >= bounds.card.bottom - 1,
+          !bounds.footer || bounds.footer.top >= bounds.card.bottom - 1,
           "citation must not overlap the card"
         );
         assert.ok(bounds.skull.width >= 150 && bounds.skull.height >= 150);
@@ -202,7 +206,15 @@ try {
         });
         // A short landscape host scrolls locally; its complete citation must
         // also be reachable, not merely positioned below the reading card.
-        const foot = page.locator(".phreno__foot");
+        const folded = !bounds.footer;
+        if (folded) {
+          // The legend opens over the skull and closes the organ's sheet.
+          await page.locator(".phreno__legend-btn").click();
+          await page.locator(".phreno__legend-source").waitFor();
+        }
+        const foot = page.locator(
+          folded ? ".phreno__legend-source" : ".phreno__foot"
+        );
         await foot.scrollIntoViewIfNeeded();
         const footerVisible = await foot.evaluate((el) => {
           const r = el.getBoundingClientRect();

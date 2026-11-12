@@ -712,6 +712,13 @@ onBeforeUnmount(() => {
               aria-hidden="true"
             ></span>
           </button>
+          <!-- On a video the reader plays there is nothing to play here:
+               the button's place is kept, so view all does not move. -->
+          <span
+            v-else-if="!reducedMotion"
+            class="figimg-ctl figimg-ctl--gap"
+            aria-hidden="true"
+          ></span>
           <button
             ref="viewSwitch"
             type="button"
@@ -743,7 +750,7 @@ onBeforeUnmount(() => {
           :href="watchHref(current)"
           target="_blank"
           rel="noopener"
-          >Watch the video on YouTube ↗</a
+          >Watch on YouTube ↗</a
         >
       </div>
 
@@ -1081,18 +1088,21 @@ onBeforeUnmount(() => {
   max-height: 100%;
 }
 
-/* The controls: counter, then play/pause and view all beside it. */
+/* The controls: counter, then play/pause and view all beside it. One row
+   always: the link a video brings is cut short rather than wrapped, so the
+   row is the same height on every image (OPENBRAIN-190). */
 .figimg-bar {
   width: 100%;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 0.25rem 0.75rem;
 }
 .figimg-count {
+  flex: none;
   margin: 0;
-  /* Wide enough for "10 / 10", so the controls beside it stay put. */
-  min-width: 4.5em;
+  /* Wide enough for "10 / 10" (seven characters and their spacing), so the
+     controls beside it stay put: 4.5em was 3px short of it. */
+  min-width: calc(7ch + 0.56em);
   font-family: var(--font-mono);
   font-size: var(--ui-size-11);
   letter-spacing: 0.08em;
@@ -1100,6 +1110,7 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-mute));
 }
 .figimg-controls {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -1181,6 +1192,16 @@ onBeforeUnmount(() => {
   margin-left: auto;
   color: inherit;
   text-underline-offset: 0.2em;
+}
+.figimg-bar .figimg-watch {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The play button's place while there is nothing to play. */
+.figimg-ctl--gap {
+  visibility: hidden;
 }
 
 /* On the dark ground (.figure-pane--dark: the pane, OPENBRAIN-152, and the
