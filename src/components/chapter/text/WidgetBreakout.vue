@@ -33,6 +33,7 @@
 import {
   computed,
   defineAsyncComponent,
+  inject,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -120,6 +121,22 @@ watch(
 const comingSoon = computed(
   () => !!upload.value && uploadReady.value === false && !usingFallback.value
 );
+// The line over the title. A kicker only says what the reader needs to
+// know: it isn't built yet, or what it is. The placement can name it
+// (`kicker`: a widget block's, or a figure record's config.kicker through
+// IllustrationInline; Loewi's "Otto's dream experiment", OPENBRAIN-190). A
+// card says it opens, as "Breakout box", and so does a band inside a breakout
+// box (the Widget Library Figma 68:84, OPENBRAIN-162). A band in the
+// chapter's own text says nothing: it is not a breakout box (Stuart, 12 Nov,
+// of the phrenology band and Loewi on his phone).
+const inBreakoutBox = inject("breakoutBox", false);
+const kicker = computed(() => {
+  if (comingSoon.value) return "Coming soon";
+  const named = props.placement?.kicker;
+  if (typeof named === "string" && named.trim()) return named.trim();
+  if (kind.value === "breakout" || inBreakoutBox) return "Breakout box";
+  return "";
+});
 // A published upload shows its own title (the kit's layout), so the band
 // doesn't repeat it.
 const modalContentOwnsHeading = computed(
@@ -248,17 +265,10 @@ const headingId = computed(
             }"
           >
             <!-- No "Interactive" label (Stuart, 13 Oct): the book doesn't
-               label its other figures by kind. A kicker only says what the
-               reader needs to know: it isn't built yet, or it opens. A
-               full-screen band is a breakout box of the chapter and says so
-               over its title, as the boxes do (Widget Library Figma 68:84,
-               Nov; OPENBRAIN-162). -->
-            <p
-              v-if="comingSoon || kind === 'breakout' || fullScreen"
-              class="wb-kicker"
-            >
+               label its other figures by kind. See `kicker` below. -->
+            <p v-if="kicker" class="wb-kicker">
               <span v-if="!fullScreen" class="wb-dot" aria-hidden="true"></span>
-              {{ comingSoon ? "Coming soon" : "Breakout box" }}
+              {{ kicker }}
             </p>
             <!-- A kit-built upload carries its own title and instructions, so
                in the band ours is for screen readers only. -->
@@ -794,6 +804,24 @@ const headingId = computed(
   }
   .wb-band .wb-stage {
     padding: 0;
+  }
+}
+
+/* On a phone the full-screen band's heading gives its height to the widget
+   (OPENBRAIN-190; Stuart on an iPhone mini, where the phrenology skull was
+   155px tall): the title near the top, its line a size down, and less air
+   under the toolbar. */
+@media (max-width: 767.98px) {
+  .wb-head--full {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+  }
+  .wb-head--full .wb-blurb {
+    margin-top: 0.375rem;
+    font-size: var(--ui-size-16);
+  }
+  .wb-body--full .wb-foot {
+    padding-bottom: 0.75rem;
   }
 }
 

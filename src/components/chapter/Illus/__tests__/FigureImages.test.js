@@ -297,6 +297,28 @@ describe("FigureImages", () => {
     expect(counter()).toBe("3 / 4");
   });
 
+  // OPENBRAIN-190: on a video the reader plays there is nothing to play, and
+  // view all used to slide into the empty place.
+  it("keeps the play button's place on a video the reader plays", async () => {
+    const player = {
+      src: "/interview.jpg",
+      youtube: "g4-6A8u8QBc",
+      play: "player",
+    };
+    mountSet({ images: [SET[0], player], start: "single" });
+    const controls = () =>
+      wrapper.findAll(".figimg-controls > *").map((el) => el.classes());
+    expect(controls()[0]).toContain("figimg-play");
+    await wrapper.get('[aria-label="Next image"]').trigger("click");
+    expect(wrapper.find(".figimg-play").exists()).toBe(false);
+    expect(controls()).toHaveLength(2);
+    expect(controls()[0]).toContain("figimg-ctl--gap");
+    expect(wrapper.find(".figimg-ctl--gap").attributes("aria-hidden")).toBe(
+      "true"
+    );
+    expect(controls()[1]).toContain("figimg-all");
+  });
+
   it("does not advance away from a player-first gallery or a suspended pane", async () => {
     mountSet({
       images: [
