@@ -2717,7 +2717,7 @@ table.rb-book td:last-child {
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .rb * {
+  :root:not([data-reduce-motion="0"]) .rb * {
     transition: none !important;
   }
 }

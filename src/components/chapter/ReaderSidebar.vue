@@ -607,12 +607,12 @@ export default {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .panel-enter-active,
-  .panel-leave-active {
+  :root:not([data-reduce-motion="0"]) .panel-enter-active,
+  :root:not([data-reduce-motion="0"]) .panel-leave-active {
     transition: opacity 0.12s ease;
   }
-  .panel-enter-from,
-  .panel-leave-to {
+  :root:not([data-reduce-motion="0"]) .panel-enter-from,
+  :root:not([data-reduce-motion="0"]) .panel-leave-to {
     transform: none;
   }
 }

@@ -94,7 +94,8 @@ export function widgetTokens(ramp) {
 // dependency-free; it only talks to its parent.
 const BRIDGE = `(function(){
   var post=function(m){try{m.__ob=1;parent.postMessage(m,"*")}catch(e){}};
-  var rm=document.documentElement.hasAttribute("data-ob-reduce-motion")||!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var dev=function(){return window.__obMotion==="on"?false:!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)};
+  var rm=document.documentElement.hasAttribute("data-ob-reduce-motion")||dev();
   var subs=[],fits=[];
   window.OB={reducedMotion:rm,maxHeight:window.__obFit||null,fullScreen:!!window.__obFull,
     onTheme:function(fn){subs.push(fn);try{fn(window.OB.theme||{reduceMotion:rm})}catch(e){}},
@@ -124,7 +125,7 @@ const BRIDGE = `(function(){
     var s=document.documentElement.style;for(var k in m.tokens)s.setProperty(k,m.tokens[k]);
     if(m.reduceMotion)document.documentElement.setAttribute("data-ob-reduce-motion","");
     else document.documentElement.removeAttribute("data-ob-reduce-motion");
-    window.OB.reducedMotion=!!m.reduceMotion||!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);window.OB.theme={accent:m.tokens["--ob-accent"],reduceMotion:window.OB.reducedMotion,ramp:m.ramp};
+    window.OB.reducedMotion=!!m.reduceMotion||dev();window.OB.theme={accent:m.tokens["--ob-accent"],reduceMotion:window.OB.reducedMotion,ramp:m.ramp};
     subs.forEach(function(fn){try{fn(window.OB.theme)}catch(err){post({type:"error",message:String(err.message||err)})}});report();});
   window.addEventListener("load",function(){
     // Apply the host's first-view preference through the widget's own
@@ -182,6 +183,47 @@ export const FULLSCREEN_CLOSE_CLEAR = 60;
 const escapeAttr = (s) => String(s).replace(/"/g, "&quot;");
 
 /**
+ * The reader's own motion choice, from the book's `<html data-reduce-motion>`
+ * (usePreferences): "on" when they asked for animations, "off" when they
+ * asked for less, null when the book follows the device.
+ */
+export function motionChoiceOf(root = globalThis.document?.documentElement) {
+  const pref = root?.getAttribute?.("data-reduce-motion");
+  if (pref === "0") return "on";
+  if (pref === "1") return "off";
+  return null;
+}
+
+const NEVER = "(max-width: 0px) and (min-width: 1px)";
+const ALWAYS = "(min-width: 0px)";
+const REDUCE_QUERY = /\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/gi;
+const NO_PREFERENCE_QUERY =
+  /\(\s*prefers-reduced-motion\s*:\s*no-preference\s*\)/gi;
+
+/**
+ * A sandboxed frame only knows the device's setting, so a widget that asks
+ * `@media (prefers-reduced-motion: reduce)` or `matchMedia(...)` would
+ * ignore the reader's choice made in the book (OPENBRAIN-192: Stuart's
+ * office PC had Windows' animation effects off, and "Turn animations on"
+ * did not reach the widgets). When the reader has chosen, the query is
+ * answered for them: it is rewritten in the author's HTML (styles and
+ * scripts alike) to one that always or never matches. Nothing changes while
+ * the book follows the device.
+ */
+export function answerMotionQueries(html, choice) {
+  const doc = String(html || "");
+  if (choice === "on")
+    return doc
+      .replace(REDUCE_QUERY, NEVER)
+      .replace(NO_PREFERENCE_QUERY, ALWAYS);
+  if (choice === "off")
+    return doc
+      .replace(REDUCE_QUERY, ALWAYS)
+      .replace(NO_PREFERENCE_QUERY, NEVER);
+  return doc;
+}
+
+/**
  * The document an uploaded widget runs in: the author's HTML with the
  * policy, tokens and bridge first in <head>.
  */
@@ -194,6 +236,7 @@ export function buildWidgetDoc(
     initialExplanation = false,
     waitForArtwork = false,
     fullScreen = false,
+    motionChoice = null,
   } = {}
 ) {
   const tokens = widgetTokens(ramp);
@@ -206,9 +249,9 @@ export function buildWidgetDoc(
   const head =
     `<meta http-equiv="Content-Security-Policy" content="${escapeAttr(CSP)}">` +
     `<style>:root{${vars}}html,body{overflow-x:hidden}${HOST_STYLE}</style>` +
-    `<script>${fit ? `window.__obFit=${fit};` : ""}${fullScreen ? "window.__obFull=true;" : ""}${initialExplanation ? "window.__obInitialExplanation=true;" : ""}${waitForArtwork ? "window.__obWaitForArtwork=true;" : ""}${BRIDGE}</scr` +
+    `<script>${motionChoice === "on" || motionChoice === "off" ? `window.__obMotion="${motionChoice}";` : ""}${fit ? `window.__obFit=${fit};` : ""}${fullScreen ? "window.__obFull=true;" : ""}${initialExplanation ? "window.__obInitialExplanation=true;" : ""}${waitForArtwork ? "window.__obWaitForArtwork=true;" : ""}${BRIDGE}</scr` +
     `ipt>`;
-  let doc = String(html || "");
+  let doc = answerMotionQueries(html, motionChoice);
   const attrs =
     (reduceMotion ? " data-ob-reduce-motion" : "") +
     (fit ? " data-ob-fit" : "") +

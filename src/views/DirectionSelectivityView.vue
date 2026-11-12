@@ -1024,11 +1024,11 @@ h2 {
 /*  Reduced motion                                                     */
 /* ------------------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
-  .ds-dotpulse {
+  :root:not([data-reduce-motion="0"]) .ds-dotpulse {
     animation: none;
     opacity: 0.7;
   }
-  .ds-certbar :deep(span) {
+  :root:not([data-reduce-motion="0"]) .ds-certbar :deep(span) {
     transition: none;
   }
 }

@@ -349,11 +349,14 @@ defineExpose({ update, current });
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .section-card-enter-active,
-  .section-card-leave-active {
+  :root:not([data-reduce-motion="0"]) .section-card-enter-active,
+  :root:not([data-reduce-motion="0"]) .section-card-leave-active {
     transition: none;
   }
-  .chapter-reader section.reader-section[data-section-enter] > h2 {
+  :root:not([data-reduce-motion="0"])
+    .chapter-reader
+    section.reader-section[data-section-enter]
+    > h2 {
     opacity: 1;
     animation: none;
   }

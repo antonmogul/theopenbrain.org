@@ -355,10 +355,10 @@ onBeforeUnmount(() => lottie.destroy());
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rx,
-  .rx-states,
-  .rx-stage,
-  .rx-info-toggle svg {
+  :root:not([data-reduce-motion="0"]) .rx,
+  :root:not([data-reduce-motion="0"]) .rx-states,
+  :root:not([data-reduce-motion="0"]) .rx-stage,
+  :root:not([data-reduce-motion="0"]) .rx-info-toggle svg {
     transition: none;
   }
 }

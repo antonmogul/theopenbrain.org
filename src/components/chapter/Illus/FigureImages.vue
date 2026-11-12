@@ -1269,16 +1269,16 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {
-  .figimg-x-enter-active,
-  .figimg-x-leave-active,
-  .figimg-thumbnail-image,
-  .figimg-tile-image,
-  .figimg-nav,
-  .figimg-ctl {
+  :root:not([data-reduce-motion="0"]) .figimg-x-enter-active,
+  :root:not([data-reduce-motion="0"]) .figimg-x-leave-active,
+  :root:not([data-reduce-motion="0"]) .figimg-thumbnail-image,
+  :root:not([data-reduce-motion="0"]) .figimg-tile-image,
+  :root:not([data-reduce-motion="0"]) .figimg-nav,
+  :root:not([data-reduce-motion="0"]) .figimg-ctl {
     transition: none;
   }
-  .figimg-tile,
-  .figimg-clock {
+  :root:not([data-reduce-motion="0"]) .figimg-tile,
+  :root:not([data-reduce-motion="0"]) .figimg-clock {
     animation: none;
   }
 }

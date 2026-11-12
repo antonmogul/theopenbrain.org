@@ -1035,7 +1035,7 @@ function onKeydown(e) {
   transform: rotate(-6deg);
 }
 @media (prefers-reduced-motion: reduce) {
-  .story-folder {
+  :root:not([data-reduce-motion="0"]) .story-folder {
     transition: none;
   }
 }

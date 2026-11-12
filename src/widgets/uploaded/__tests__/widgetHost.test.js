@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   CSP,
   FULLSCREEN_CLOSE_CLEAR,
+  answerMotionQueries,
   buildWidgetDoc,
+  motionChoiceOf,
   fitHeight,
   fitMessage,
   fitScale,
@@ -138,6 +140,81 @@ describe("buildWidgetDoc", () => {
       expect(setInfo).not.toHaveBeenCalled();
     }
   );
+});
+
+// OPENBRAIN-192: a sandboxed frame only knows the device's motion setting,
+// so the reader's own choice in the book has to be answered for it.
+describe("the reader's motion choice", () => {
+  const widget = `<html><head><style>
+    @media (prefers-reduced-motion: reduce){.spin{animation:none}}
+    @media (prefers-reduced-motion:no-preference){.spin{animation:spin 1s}}
+    @media screen and (PREFERS-REDUCED-MOTION : reduce){.x{transition:none}}
+  </style></head><body><script>
+    var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  </script></body></html>`;
+
+  it("reads the choice from the book's <html>", () => {
+    const root = (v) => ({
+      getAttribute: (k) => (k === "data-reduce-motion" ? v : null),
+    });
+    expect(motionChoiceOf(root("0"))).toBe("on");
+    expect(motionChoiceOf(root("1"))).toBe("off");
+    expect(motionChoiceOf(root(null))).toBe(null);
+    expect(motionChoiceOf(null)).toBe(null);
+  });
+
+  it("answers the widget's queries when the reader asked for animations", () => {
+    const doc = answerMotionQueries(widget, "on");
+    expect(doc).not.toMatch(/prefers-reduced-motion/i);
+    // In styles and in scripts alike: reduce never matches, no-preference always.
+    expect(doc).toContain(
+      "@media (max-width: 0px) and (min-width: 1px){.spin{animation:none}}"
+    );
+    expect(doc).toContain("@media (min-width: 0px){.spin{animation:spin 1s}}");
+    expect(doc).toContain(
+      "@media screen and (max-width: 0px) and (min-width: 1px){.x"
+    );
+    expect(doc).toContain(
+      'matchMedia("(max-width: 0px) and (min-width: 1px)")'
+    );
+  });
+
+  it("answers them the other way when the reader asked for less", () => {
+    const doc = answerMotionQueries(widget, "off");
+    expect(doc).toContain("@media (min-width: 0px){.spin{animation:none}}");
+    expect(doc).toContain(
+      "@media (max-width: 0px) and (min-width: 1px){.spin{animation:spin 1s}}"
+    );
+  });
+
+  it("leaves the widget alone while the book follows the device", () => {
+    expect(answerMotionQueries(widget, null)).toBe(widget);
+    expect(buildWidgetDoc(widget)).toContain(
+      "@media (prefers-reduced-motion: reduce){.spin"
+    );
+    expect(buildWidgetDoc(widget)).not.toContain('window.__obMotion="');
+  });
+
+  it("tells the bridge, which keeps its own query to the device", () => {
+    const doc = buildWidgetDoc(widget, { motionChoice: "on" });
+    expect(doc).toContain('window.__obMotion="on";');
+    // The bridge is the book's code: its device query is not rewritten,
+    // it consults __obMotion first.
+    expect(doc).toContain(
+      'window.__obMotion==="on"?false:!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)'
+    );
+    expect(doc).not.toContain("@media (prefers-reduced-motion: reduce){.spin");
+    const off = buildWidgetDoc(widget, {
+      motionChoice: "off",
+      reduceMotion: true,
+    });
+    expect(off).toContain('window.__obMotion="off";');
+    expect(off).toMatch(/<html data-ob-reduce-motion>/);
+    // Anything else is not a choice.
+    expect(buildWidgetDoc(widget, { motionChoice: "x" })).not.toContain(
+      'window.__obMotion="'
+    );
+  });
 });
 
 describe("staticChecks", () => {

@@ -198,7 +198,7 @@ const eyebrow = computed(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card__cta {
+  :root:not([data-reduce-motion="0"]) .card__cta {
     transition: none;
   }
 }

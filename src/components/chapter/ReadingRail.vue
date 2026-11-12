@@ -566,10 +566,10 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rr-span {
+  :root:not([data-reduce-motion="0"]) .rr-span {
     animation: none;
   }
-  .rr-pill {
+  :root:not([data-reduce-motion="0"]) .rr-pill {
     transition: none;
   }
 }

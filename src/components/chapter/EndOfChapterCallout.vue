@@ -750,15 +750,15 @@ onBeforeUnmount(() => observer?.disconnect());
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cc-takeaway,
-  .cc-arrow,
-  .cc-next-cover img,
-  .cc-next-go {
+  :root:not([data-reduce-motion="0"]) .cc-takeaway,
+  :root:not([data-reduce-motion="0"]) .cc-arrow,
+  :root:not([data-reduce-motion="0"]) .cc-next-cover img,
+  :root:not([data-reduce-motion="0"]) .cc-next-go {
     transition: none;
   }
-  .cc-next:hover .cc-next-cover img,
-  .cc-next:hover .cc-next-go,
-  .cc-button:hover .cc-arrow {
+  :root:not([data-reduce-motion="0"]) .cc-next:hover .cc-next-cover img,
+  :root:not([data-reduce-motion="0"]) .cc-next:hover .cc-next-go,
+  :root:not([data-reduce-motion="0"]) .cc-button:hover .cc-arrow {
     transform: none;
   }
 }

@@ -3211,13 +3211,13 @@ canvas {
 
 /* ---- prefers-reduced-motion ---- */
 @media (prefers-reduced-motion: reduce) {
-  :deep(.seg) {
+  :root:not([data-reduce-motion="0"]) :deep(.seg) {
     transition: none;
   }
-  :deep(.lz .halo) {
+  :root:not([data-reduce-motion="0"]) :deep(.lz .halo) {
     transition: none;
   }
-  :deep(.ray) {
+  :root:not([data-reduce-motion="0"]) :deep(.ray) {
     transition: none;
   }
 }

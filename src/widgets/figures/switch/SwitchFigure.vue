@@ -404,9 +404,9 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sf-option,
-  .sf-round svg,
-  .sf-drawing {
+  :root:not([data-reduce-motion="0"]) .sf-option,
+  :root:not([data-reduce-motion="0"]) .sf-round svg,
+  :root:not([data-reduce-motion="0"]) .sf-drawing {
     transition: none;
   }
 }

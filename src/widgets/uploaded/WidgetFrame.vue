@@ -26,6 +26,7 @@ import {
   fitMessage,
   fitScale,
   themeMessage,
+  motionChoiceOf,
 } from "./widgetHost";
 
 const props = defineProps({
@@ -70,10 +71,17 @@ const report = ref({
   blocked: [],
 });
 
+// The reader's motion choice in the book wins over the device's
+// (OPENBRAIN-192): "Turn animations on" must reach the widgets too. It is
+// read from <html data-reduce-motion> and followed live; a change rebuilds
+// the document, since the widget's own queries are answered in its text.
+const motionChoice = ref(motionChoiceOf());
+let motionObserver = null;
 const reduceMotion = () =>
-  typeof document !== "undefined" &&
-  (document.documentElement.getAttribute("data-reduce-motion") === "1" ||
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+  motionChoice.value === "off" ||
+  (motionChoice.value !== "on" &&
+    typeof window !== "undefined" &&
+    !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 
 // The box's height at creation goes into the document so the widget lays
 // out for it from its first paint; later changes arrive as `fit` messages
@@ -87,6 +95,7 @@ const doc = computed(() =>
     initialExplanation: props.initialExplanation,
     waitForArtwork: props.waitForArtwork,
     fullScreen: props.fullScreen,
+    motionChoice: motionChoice.value,
   })
 );
 
@@ -201,8 +210,20 @@ watch(
   }
 );
 
-onMounted(() => window.addEventListener("message", onMessage));
+onMounted(() => {
+  window.addEventListener("message", onMessage);
+  if (typeof MutationObserver !== "undefined") {
+    motionObserver = new MutationObserver(() => {
+      motionChoice.value = motionChoiceOf();
+    });
+    motionObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-reduce-motion"],
+    });
+  }
+});
 onBeforeUnmount(() => {
+  motionObserver?.disconnect();
   window.removeEventListener("message", onMessage);
   clearTimeout(decideTimer);
 });

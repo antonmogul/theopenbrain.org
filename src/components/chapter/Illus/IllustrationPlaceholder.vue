@@ -595,10 +595,10 @@ function closeFullscreen() {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fig-legend--folds.is-open {
+  :root:not([data-reduce-motion="0"]) .fig-legend--folds.is-open {
     animation: none;
   }
-  .fig-legend-caret {
+  :root:not([data-reduce-motion="0"]) .fig-legend-caret {
     transition: none;
   }
 }

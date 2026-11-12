@@ -145,12 +145,12 @@ defineProps({
   animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .sec-card__art {
+  :root:not([data-reduce-motion="0"]) .sec-card__art {
     transform: none;
     will-change: auto;
   }
-  .sec-card__num,
-  .sec-card__title {
+  :root:not([data-reduce-motion="0"]) .sec-card__num,
+  :root:not([data-reduce-motion="0"]) .sec-card__title {
     animation: none;
   }
 }

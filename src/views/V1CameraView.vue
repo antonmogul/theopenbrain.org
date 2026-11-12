@@ -1535,7 +1535,7 @@ input[type="range"]:focus-visible {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  * {
+  :root:not([data-reduce-motion="0"]) * {
     transition: none !important;
   }
 }
