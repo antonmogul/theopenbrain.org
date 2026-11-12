@@ -169,6 +169,15 @@ const HERO_READY = {
   selector: '.opener-hero[data-reactive-cover="ready"]',
   min: 1,
 };
+/*
+ * The reader's "?" lives in the fixed top bar, at every width (Stuart,
+ * 12 Nov: on the cover "it scrolls up and disappears", OPENBRAIN-189).
+ * The 390px no-horizontal-scroll check holds it on the bar.
+ */
+const HELP = {
+  selector: '.reader-top-bar [data-testid="reader-help-button"]',
+  min: 1,
+};
 
 /*
  * `widths` narrows the check for routes that are legitimately desktop-only.
@@ -199,7 +208,7 @@ const ROUTES = [
     name: "foundations",
     minText: 2000,
     needsData: true,
-    expectCount: [TIMELINE, HERO_READY],
+    expectCount: [TIMELINE, HERO_READY, HELP],
     /*
      * The first breakout box must paint from the viewport's left edge at
      * every two-column width (Stuart, 1 Oct: "the 'full screen' breakout
@@ -246,7 +255,11 @@ const ROUTES = [
      * prose. Their anchors depend on chapter content, so this is a data
      * assertion and is skipped without credentials like minText.
      */
-    expectCount: [{ selector: "[data-widget-breakout]", min: 3 }, TIMELINE],
+    expectCount: [
+      { selector: "[data-widget-breakout]", min: 3 },
+      TIMELINE,
+      HELP,
+    ],
     /*
      * The scroll-trigger markers are dev chrome behind ?markers=1
      * (OPENBRAIN-31). Without the flag none may render — they were the

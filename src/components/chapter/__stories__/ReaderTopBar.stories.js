@@ -104,3 +104,26 @@ export const DraftMobile = {
 export const Mobile = {
   globals: { viewport: { value: "phone" } },
 };
+
+/* Open the help panel the "?" opens (OPENBRAIN-189). */
+const openHelp = async ({ canvasElement }) => {
+  canvasElement.querySelector('[data-testid="reader-help-button"]')?.click();
+  await new Promise((r) => setTimeout(r, 300));
+};
+
+/**
+ * The "?" at the bar's right end opens the reader's help: how the book
+ * reads and the animations setting (OPENBRAIN-189). It moved here from the
+ * chapter cover, where it scrolled away.
+ */
+export const HelpOpen = {
+  args: { isAuthenticated: false },
+  play: openHelp,
+};
+
+/** The help panel on a phone: the bar's width less 8px each side. */
+export const HelpOpenMobile = {
+  args: { isAuthenticated: false },
+  globals: { viewport: { value: "phone" } },
+  play: openHelp,
+};

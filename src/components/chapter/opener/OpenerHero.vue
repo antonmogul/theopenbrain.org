@@ -2,11 +2,16 @@
 /*
  * Chapter opener — hero (OPENBRAIN-32, Figma attn/introduction 1495:34229).
  *
- * A full-bleed cover the height of one viewport, a thin down-arrow centred
- * near the bottom, and the reader's small utility controls bottom-right.
- * As the reader scrolls the first viewport the cover blurs and darkens
- * slightly (skipped under reduce-motion). The chapter title is NOT printed
- * here any more: it lives in the dark title/TOC block that follows.
+ * A full-bleed cover the height of one viewport and a thin down-arrow
+ * centred near the bottom. As the reader scrolls the first viewport the
+ * cover blurs and darkens slightly (skipped under reduced motion: the
+ * reader's own setting, else the device's). The chapter title is NOT
+ * printed here any more: it lives in the dark title/TOC block that follows.
+ *
+ * The "?" that sat bottom-right is in the top bar now (ReaderTopBar,
+ * OPENBRAIN-189): here it scrolled away with the cover. Under the top
+ * bar's right end the cover carries MotionNotice, which shows only while
+ * the device asks for less motion and the reader has not been asked.
  *
  * With a `reactive` record (OPENBRAIN-146) a Lottie the pointer scrubs is
  * laid over the still cover; the still stays underneath as the poster and
@@ -18,7 +23,8 @@
  * for a photograph and would vanish on paper.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { useReaderSidebar } from "@/composables/useReaderSidebar";
+import { useReducedMotion } from "@/composables/useReducedMotion";
+import MotionNotice from "../MotionNotice.vue";
 import ReactiveCover from "./ReactiveCover.vue";
 import HeadCover from "./HeadCover.vue";
 
@@ -32,12 +38,9 @@ const props = defineProps({
   scrollTarget: { type: String, default: "chapter-toc" },
 });
 
-const { open: openSidebarTab } = useReaderSidebar();
-
 const scrollProgress = ref(0); // 0 at top → 1 after one viewport scrolled
-const reduceMotion = () =>
-  typeof document !== "undefined" &&
-  document.documentElement.getAttribute("data-reduce-motion") === "1";
+// Live: "Turn animations on" in the notice below takes effect at once.
+const reducedMotion = useReducedMotion();
 
 let ticking = false;
 function onScroll() {
@@ -62,12 +65,12 @@ const ownGround = computed(
 );
 const coverStyle = computed(() => ({
   backgroundImage: ownGround.value ? "none" : `url(${props.cover})`,
-  filter: reduceMotion()
+  filter: reducedMotion.value
     ? "none"
     : `blur(${(scrollProgress.value * 8).toFixed(2)}px)`,
 }));
 const scrimOpacity = computed(() =>
-  reduceMotion() ? 0 : (scrollProgress.value * 0.25).toFixed(3)
+  reducedMotion.value ? 0 : (scrollProgress.value * 0.25).toFixed(3)
 );
 const arrowHidden = computed(() => scrollProgress.value > 0.1);
 
@@ -80,34 +83,7 @@ onBeforeUnmount(() => window.removeEventListener("scroll", onScroll));
 function scrollDown() {
   const el = document.getElementById(props.scrollTarget);
   if (!el) return;
-  el.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth" });
-}
-
-/* The frame's utility row. "?" opens the reader's Info panel; the three
-   notebook actions have no working target in the reader yet (the legacy
-   JSON export/import UI has no owner), so they render disabled with a
-   reason rather than pretending. */
-const tools = [
-  { key: "help", label: "?", title: "About this chapter", enabled: true },
-  { key: "clear", label: "Clear", title: "Not available yet", enabled: false },
-  {
-    key: "export",
-    label: "Export",
-    title: "Not available yet",
-    enabled: false,
-  },
-  {
-    key: "import",
-    label: "Import",
-    title: "Not available yet",
-    enabled: false,
-  },
-];
-// Only the working tools are shown: three disabled buttons read as broken
-// to a reader (beta, 2026-09-24). Flip `enabled` to bring one back.
-const shownTools = tools.filter((t) => t.enabled);
-function onTool(tool) {
-  if (tool.key === "help") openSidebarTab("info");
+  el.scrollIntoView({ behavior: reducedMotion.value ? "auto" : "smooth" });
 }
 </script>
 
@@ -165,20 +141,7 @@ function onTool(tool) {
       </svg>
     </button>
 
-    <div class="opener-hero__tools" role="group" aria-label="Chapter tools">
-      <button
-        v-for="tool in shownTools"
-        :key="tool.key"
-        type="button"
-        class="opener-hero__tool"
-        :class="{ 'opener-hero__tool--help': tool.key === 'help' }"
-        :disabled="!tool.enabled"
-        :title="tool.title"
-        @click="onTool(tool)"
-      >
-        {{ tool.label }}
-      </button>
-    </div>
+    <MotionNotice class="opener-hero__notice" />
   </section>
 </template>
 
@@ -243,41 +206,20 @@ function onTool(tool) {
   border-radius: 999px;
 }
 
-/* Utility row bottom-right: small mono pills, as in the frame. 1.25rem above
-   the chapter timeline docked at the bottom (--reader-timeline-h), not on
-   its edge, where hovering the "?" would open the timeline over it. */
-.opener-hero__tools {
+/* The motion notice: under the top bar's right end, by the "?" it points
+   to; across the cover's top on a phone. On the cover it is over no text
+   and none of the figure pane. */
+.opener-hero__notice {
   position: absolute;
-  right: 1.25rem;
-  bottom: calc(1.25rem + var(--reader-timeline-h, 0px));
-  display: flex;
-  gap: 0.375rem;
+  top: calc(var(--reader-topbar-h, 4rem) + 0.75rem);
+  right: 1.125rem;
+  z-index: 1;
 }
-.opener-hero__tool {
-  font-family: var(--font-mono);
-  font-size: var(--type-label-size);
-  letter-spacing: var(--type-label-ls);
-  text-transform: uppercase;
-  line-height: 1;
-  padding: 0.45rem 0.7rem;
-  border-radius: var(--radius-control);
-  border: 1px solid rgb(255 255 255 / 0.85);
-  background: rgb(var(--color-paper));
-  color: rgb(var(--color-ink));
-  cursor: pointer;
-}
-.opener-hero__tool--help {
-  width: 1.75rem;
-  padding-left: 0;
-  padding-right: 0;
-  text-align: center;
-}
-.opener-hero__tool:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.opener-hero__tool:focus-visible {
-  outline: 2px solid rgb(var(--color-chapter));
-  outline-offset: 2px;
+@media (max-width: 640px) {
+  .opener-hero .opener-hero__notice {
+    left: 0.5rem;
+    right: 0.5rem;
+    max-width: none;
+  }
 }
 </style>

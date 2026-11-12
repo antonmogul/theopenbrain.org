@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import ReaderTopBar from "@/components/chapter/ReaderTopBar.vue";
 
 const source = readFileSync(resolve(__dirname, "../ReaderTopBar.vue"), "utf8");
@@ -211,5 +211,109 @@ describe("ReaderTopBar accessibility", () => {
     wrapper.unmount();
     target.remove();
     scrollTo.mockRestore();
+  });
+  // The "?" moved from the chapter cover, where it scrolled away, to the
+  // bar's right end (Stuart, 12 Nov; OPENBRAIN-189).
+  describe("help", () => {
+    const mountBar = (props = {}) =>
+      mount(ReaderTopBar, {
+        props,
+        attachTo: document.body,
+        global: { stubs: { RouterLink: true } },
+      });
+
+    it("is a named 44px control at the bar's right end, before the account menu", () => {
+      const wrapper = mountBar();
+      const help = wrapper.get('[data-testid="reader-help-button"]');
+      expect(help.element.tagName).toBe("BUTTON");
+      expect(help.attributes("aria-label")).toMatch(/^Help/);
+      expect(help.attributes("aria-haspopup")).toBe("dialog");
+      expect(help.attributes("aria-expanded")).toBe("false");
+      expect(help.element.closest(".bar-row")).not.toBeNull();
+      // After the spacer: the right end of the bar.
+      const row = [...wrapper.get(".bar-row").element.children];
+      expect(row.indexOf(help.element)).toBeGreaterThan(
+        row.indexOf(wrapper.get(".spacer").element)
+      );
+      expect(rule(source, ".help-btn")).toMatch(/min-width:\s*44px/);
+      expect(rule(source, ".help-btn")).toMatch(/min-height:\s*44px/);
+      wrapper.unmount();
+    });
+
+    it("is there for readers who are not signed in", () => {
+      const wrapper = mountBar({ isAuthenticated: false });
+      expect(wrapper.find('[data-testid="reader-help-button"]').exists()).toBe(
+        true
+      );
+      wrapper.unmount();
+    });
+
+    it("opens a named panel, takes focus into it and gives it back on Escape", async () => {
+      const wrapper = mountBar();
+      const help = wrapper.get('[data-testid="reader-help-button"]');
+      await help.trigger("click");
+      await flushPromises();
+      const panel = wrapper.get('[data-testid="reader-help"]');
+      expect(help.attributes("aria-expanded")).toBe("true");
+      expect(help.attributes("aria-controls")).toBe(panel.attributes("id"));
+      expect(panel.attributes("role")).toBe("dialog");
+      expect(
+        document.getElementById(panel.attributes("aria-labelledby")).textContent
+      ).toMatch(/How to read this book/);
+      expect(document.activeElement).toBe(panel.element);
+      // The animations switch is in it.
+      expect(panel.find('input[type="radio"][value="device"]').exists()).toBe(
+        true
+      );
+
+      await panel.trigger("keydown", { key: "Escape" });
+      await flushPromises();
+      expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(false);
+      expect(document.activeElement).toBe(help.element);
+      wrapper.unmount();
+    });
+
+    it("closes from its own close button and from a press outside", async () => {
+      const wrapper = mountBar();
+      const help = wrapper.get('[data-testid="reader-help-button"]');
+      await help.trigger("click");
+      await flushPromises();
+      await wrapper.get('[aria-label="Close help"]').trigger("click");
+      await flushPromises();
+      expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(false);
+      expect(document.activeElement).toBe(help.element);
+
+      await help.trigger("click");
+      await flushPromises();
+      await wrapper
+        .get('[data-testid="reader-help-backdrop"]')
+        .trigger("click");
+      await flushPromises();
+      expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(false);
+      wrapper.unmount();
+    });
+
+    it("closes the section menu when it opens, and the other way round", async () => {
+      const wrapper = mountBar({
+        sections: [{ title: "Introduction", slug: "introduction" }],
+      });
+      await wrapper.get(".section-jump").trigger("click");
+      await flushPromises();
+      expect(wrapper.find("#reader-section-menu").exists()).toBe(true);
+      await wrapper.get('[data-testid="reader-help-button"]').trigger("click");
+      await flushPromises();
+      expect(wrapper.find("#reader-section-menu").exists()).toBe(false);
+      await wrapper.get(".section-jump").trigger("click");
+      await flushPromises();
+      expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(false);
+      wrapper.unmount();
+    });
+
+    it("fills the bar's width less 8px each side on a phone", () => {
+      const phone = mediaBlock("(max-width: 640px)");
+      const panel = rule(phone, ".help-panel");
+      expect(panel).toMatch(/left:\s*8px/);
+      expect(panel).toMatch(/right:\s*8px/);
+    });
   });
 });
