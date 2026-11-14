@@ -1,0 +1,25 @@
+{
+  "cc": {
+    "button.back-button": "button",
+    "button.start-reading": "button",
+    "button.map-reset": "button",
+    "button.map-original": "chip"
+  },
+  "rb": { "button.rb-btn": "button" },
+  "vp": {
+    "button": "chip",
+    "button.on": "chip",
+    "button.vw": "chip",
+    "button.qm": "chip"
+  },
+  "v1": { "button.v1-btn": "button" },
+  "sdt": { "button.sdt-btn": "chip", "button.sdt-btn-on": "chip" },
+  "pf": { "button": "chip" },
+  "pn": { "button.pn-btn": "button" },
+  "bc": { "button.bc-btn": "chip" },
+  "crg": { "button.crg-toggle-btn": "chip" },
+  "tmt": { "button.tmt-toggle-btn": "chip" },
+  "cpa": { "button.cpa-btn": "chip" },
+  "nm": { "button.nm-btn": "chip" },
+  "hl": { "button.hl-btn": "chip" }
+}
