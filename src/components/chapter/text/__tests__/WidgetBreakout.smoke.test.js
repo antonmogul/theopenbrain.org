@@ -443,7 +443,8 @@ describe("WidgetBreakout for an uploaded widget", () => {
   it("opens like any widget once it is published", async () => {
     const w = mountBreakout(card("upload:built"));
     await flushPromises();
-    expect(w.find(".wb-kicker").text()).not.toContain("Coming soon");
+    // Nothing over the title: not "Coming soon", and not "Breakout box".
+    expect(w.find(".wb-kicker").exists()).toBe(false);
     expect(w.find(".wb-btn--primary").text()).toBe("Open interactive");
     expect(w.find(".wb-title").text()).toBe("Helmholtz's black room");
     expect(w.find(".wb-title").element.closest(".wb-sr")).toBeNull();
@@ -463,7 +464,7 @@ describe("WidgetBreakout for an uploaded widget", () => {
       fallbackWidgetId: "retinabox",
     });
     await flushPromises();
-    expect(w.find(".wb-kicker").text()).not.toContain("Coming soon");
+    expect(w.find(".wb-kicker").exists()).toBe(false);
     expect(
       w.find("[data-widget-breakout]").attributes("data-widget-breakout")
     ).toBe("retinabox");
@@ -489,7 +490,11 @@ describe("WidgetBreakout for an uploaded widget", () => {
     w.unmount();
   });
 
-  it("names a band a breakout box only inside one", async () => {
+  // Stuart, 14 Nov: "I'm not sure we need to label them as 'Breakout box B'
+  // etc. … can get removed from penfield widget as well, and other places
+  // if there too" (OPENBRAIN-193). The Penfield binder's band sits inside a
+  // breakout box and said "Breakout box" over its title; so did every card.
+  it("never says 'Breakout box': over a band, in a box or out, or over a card", async () => {
     const band = {
       placementId: "box-penfield",
       widgetId: "upload:built",
@@ -509,9 +514,15 @@ describe("WidgetBreakout for an uploaded widget", () => {
       },
     });
     await flushPromises();
-    expect(boxed.find(".wb-kicker").text()).toBe("Breakout box");
+    expect(boxed.find(".wb-kicker").exists()).toBe(false);
+    expect(boxed.text()).not.toMatch(/breakout box/i);
     boxed.unmount();
-    // A card says it opens, whatever it is in; its placement may say more.
+    const plain = mountBreakout(card("upload:built"));
+    await flushPromises();
+    expect(plain.find(".wb-kicker").exists()).toBe(false);
+    expect(plain.text()).not.toMatch(/breakout box/i);
+    plain.unmount();
+    // A placement can still name its own line.
     const named = mountBreakout({ ...card("upload:built"), kicker: "Try it" });
     await flushPromises();
     expect(named.find(".wb-kicker").text()).toBe("Try it");

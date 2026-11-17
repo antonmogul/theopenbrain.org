@@ -146,8 +146,16 @@ describe("buildSearchIndex", () => {
       "Case six, in hieratic. The translation by Breasted."
     );
     const box = index.find((e) => e.kind === "box");
-    expect(box.tag).toBe("Box A");
-    expect(index.find((e) => e.id === "p-box").where).toBe("Box A");
+    // A box is named by its title, shortened, never by a letter: the
+    // reader no longer prints "Breakout box A" (OPENBRAIN-193).
+    expect(box.tag).toBe("Box");
+    expect(index.find((e) => e.id === "p-box").where).toBe(
+      "Separating mind from body: Descartes and…"
+    );
+    for (const entry of index) {
+      expect(entry.tag).not.toMatch(/^Box [A-Z]$/);
+      expect(entry.where).not.toMatch(/^Box [A-Z]$/);
+    }
     expect(index.find((e) => e.kind === "widget").tag).toBe("Interactive");
   });
 

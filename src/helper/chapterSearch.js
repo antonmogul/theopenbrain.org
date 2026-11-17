@@ -34,6 +34,23 @@ export function fold(text) {
   return out;
 }
 
+/* How much of a breakout box's title names it under a result. */
+const WHERE_LENGTH = 44;
+
+/*
+ * A box is named by its title, cut at a word, never by its letter: the
+ * reader no longer shows "Breakout box C" (Stuart, 11 Nov; OPENBRAIN-193),
+ * so a letter here would point at nothing on the page.
+ */
+function shortTitle(title) {
+  const text = String(title || "").trim();
+  if (text.length <= WHERE_LENGTH) return text;
+  let cut = text.slice(0, WHERE_LENGTH - 1);
+  const space = cut.lastIndexOf(" ");
+  if (space > WHERE_LENGTH * 0.6) cut = cut.slice(0, space);
+  return cut.replace(/[\s,;:.–—-]+$/, "") + "…";
+}
+
 function recordFor(id, figures) {
   if (!id || !Array.isArray(figures)) return null;
   const bare = String(id).replace(/^animation/, "");
@@ -66,7 +83,7 @@ function legendOf(record) {
  *
  * Entry: { order, kind: "section"|"box"|"subsection"|"text"|"figure"|
  *   "widget"|"video", id (the anchor readerJump finds), tag (what the row
- *   is: "Section 2", "Box A", "Fig 05", "Interactive"), where (the section
+ *   is: "Section 2", "Box", "Fig 05", "Interactive"), where (the section
  *   it is in), title, body, titleFolded, bodyFolded }
  */
 export function buildSearchIndex(text, opts = {}) {
@@ -98,7 +115,7 @@ export function buildSearchIndex(text, opts = {}) {
   }
   const whereOf = (run) =>
     run.kind === "box"
-      ? `Box ${run.label}`.trim()
+      ? shortTitle(run.title)
       : run.kind === "intro"
         ? run.title
         : [run.label, run.title].filter(Boolean).join(" · ");
@@ -115,7 +132,7 @@ export function buildSearchIndex(text, opts = {}) {
           id: run.anchorId,
           tag:
             run.kind === "box"
-              ? `Box ${run.label}`.trim()
+              ? "Box"
               : run.kind === "intro"
                 ? "Section"
                 : `Section ${run.label}`.trim(),

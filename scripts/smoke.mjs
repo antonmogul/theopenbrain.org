@@ -248,10 +248,14 @@ const ROUTES = [
     /*
      * The opener's contents (OPENBRAIN-182; Anton, 11 Nov: "when opening
      * things the content is moving down and then cut off"). At every
-     * two-column width, with each section opened in turn: the list is not
-     * moved, its top stays where it was, and its last row and the open
-     * parts end inside the block, clear of the timeline's dock; the block
-     * stays one screen tall. A data assertion: the list is the chapter's.
+     * two-column width, with each section pointed at in turn: the list is
+     * not moved, its top stays where it was, and its last row ends inside
+     * the block, clear of the timeline's dock; the block stays one screen
+     * tall. And the list is section titles only (OPENBRAIN-193; Stuart, 14
+     * Nov: "remove all the expand/contract subsections"): one link per
+     * row, no chevron, nothing that says it expands, and no row's height
+     * changes as another is pointed at. A data assertion: the list is the
+     * chapter's.
      */
     expectContents: { selector: "#chapter-toc", minWidth: 1024 },
     /*
@@ -837,9 +841,9 @@ async function main() {
           }
         }
 
-        // The opener's contents fit their screen in every state
-        // (OPENBRAIN-182). Sections are opened by keyboard focus, which
-        // opens at once and needs no pointer.
+        // The opener's contents fit their screen, and nothing in them
+        // opens (OPENBRAIN-182, 193). Sections are pointed at by keyboard
+        // focus, which needs no pointer.
         let contentsOk = true;
         if (
           checkContent &&
@@ -860,10 +864,22 @@ async function main() {
                 )
               ) || 0;
             const found = [];
+            // Titles only: a link per section, and nothing to expand.
+            const links = block.querySelectorAll("nav a").length;
+            if (links !== rows.length)
+              found.push(`${links} links in the list, ${rows.length} sections`);
+            const expanders = block.querySelectorAll(
+              "nav svg, nav [aria-expanded], nav [aria-controls], nav button"
+            ).length;
+            if (expanders)
+              found.push(`${expanders} chevron(s) or expanding row(s)`);
+            const tall = () =>
+              rows.map((r) => Math.round(r.parentElement.offsetHeight)).join();
+            const heights = tall();
             let top = null;
             for (const [i, row] of rows.entries()) {
               row.focus({ preventScroll: true });
-              await wait(450); // the parts' opening is 280 ms
+              await wait(300); // the picture's fade is under way
               const box = block.getBoundingClientRect();
               const foot = Math.round(box.height - dock);
               const at = (el) =>
@@ -872,10 +888,11 @@ async function main() {
                 list.getBoundingClientRect().top - box.top
               );
               if (top === null) top = listTop;
-              const parts = block.querySelector(
-                ".otoc__section.is-open .otoc__parts-list"
-              );
-              const say = (what) => found.push(`section ${i} open: ${what}`);
+              const say = (what) => found.push(`section ${i} active: ${what}`);
+              if (!row.parentElement.classList.contains("is-active"))
+                say("its row is not the active one");
+              if (tall() !== heights)
+                say(`the rows' heights changed from ${heights} to ${tall()}`);
               if (getComputedStyle(list).transform !== "none")
                 say("the list is transformed");
               if (listTop !== top)
@@ -888,8 +905,6 @@ async function main() {
                 say(
                   `the last row ends at ${at(rows[rows.length - 1])}, past ${foot}`
                 );
-              if (parts && at(parts) > foot)
-                say(`its parts end at ${at(parts)}, past ${foot}`);
             }
             document.activeElement?.blur?.();
             return found;
