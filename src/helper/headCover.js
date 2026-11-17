@@ -1,42 +1,73 @@
 /*
  * The "open the head" cover (OPENBRAIN-171): the History opener as Sonia
  * and Maura delivered it on 10 Nov 2026 (layers plus a working page). A
- * girl writes, looping at 12 frames a second. A hand holding a tool comes
- * in with the pointer from the upper right; rubbing it back and forth over
- * her head (four strokes) slides the top of her head off and the brain
- * rises out. Moving off the head puts it back.
+ * girl writes, looping at 12 frames a second. A hand holding a tool rests
+ * on the crown of her head while the pointer is over the cover; working it
+ * to and fro there slides the top of her head off and the brain rises out.
+ * Leaving the cover puts it back.
  *
- * This file is their page's logic with the browser taken out, so it can be
- * tested: where the drawing sits in a box, how the pointer's strokes are
- * counted, the lid's and the brain's positions (keyframes they measured
- * from the artist's gif), and the drawing itself. HeadCover.vue feeds it
- * the pointer and a canvas. The numbers are theirs; where one of ours
- * differs, the comment says so.
+ * The hand is careful (OPENBRAIN-198, Stuart, 14 Nov: "restrict the
+ * movement of the hand to a really small region ... very carefully opening
+ * her skull", not "violently smashing her head"). In the delivered page
+ * the tool was glued to the pointer, so it swung across the whole drawing
+ * and each stroke bumped the lid. Now the pointer's place on the cover is
+ * mapped into a small ellipse on the crown (`spec.work`), the tool glides
+ * towards that spot instead of jumping, and the lid slides at a slow, eased
+ * pace however fast the reader moves.
+ *
+ * This file is the page's logic with the browser taken out, so it can be
+ * tested: where the drawing sits in a box, where the tool goes, how its
+ * strokes are counted, the lid's and the brain's positions (keyframes the
+ * designers measured from the artist's gif), and the drawing itself.
+ * HeadCover.vue feeds it the pointer and a canvas.
  *
  * Coordinates are pixels of the artwork (`spec.size`, 2680 × 1732) unless
- * a name says otherwise. The artwork-specific numbers (boxes, the hand's
- * zone, the head's ellipse, the keyframes) are the cover's record in
- * helper/chapterCover.js; the feel of the interaction is MOTION below.
+ * a name says otherwise. The artwork-specific numbers (boxes, the tool's
+ * region, the keyframes) are the cover's record in helper/chapterCover.js;
+ * the feel of the interaction is MOTION below.
  */
 
-/** How the interaction feels. From the delivered page, except `lidOver`. */
+/** How the interaction feels. */
 export const MOTION = Object.freeze({
+  /**
+   * The tool glides to its spot: each second it covers `follow` times the
+   * distance left, and never more than `maxSpeed` artwork px. A shake of
+   * the mouse is smoothed away; a slow pass is followed.
+   */
+  follow: 6,
+  maxSpeed: 150,
   /** Strokes (a move and its reverse) that open the head fully. */
-  steps: 4,
-  /** A stroke is at least this long, and counts once it reverses this far. */
-  minStroke: 140,
-  back: 70,
+  steps: 6,
+  /**
+   * A stroke of the tool is at least this long, and counts once it has
+   * come back this far. In artwork px of the tool's own small travel:
+   * about a tenth of the cover's width under the pointer.
+   */
+  minStroke: 9,
+  back: 4.5,
   /** Strokes only count this long after the hand has come in, in ms. */
   settleMs: 250,
   /** Left alone this long, a half-open head starts to sink back, in ms. */
   idleMs: 2500,
   sinkPerSec: 0.1,
-  /** Key positions a second: opening is quick, closing is slower. */
-  openSpeed: 30,
-  closeSpeed: 12,
-  /** How fast the hand fades in and out, and how long a stroke's bump lasts. */
-  handFade: 16,
-  kickDecay: 5,
+  /**
+   * How far each stroke takes the lid: progress to this power, over the
+   * keys. Below 1 the first stroke already shows (the lid loosens), and
+   * the slide itself comes with the third.
+   */
+  liftCurve: 0.8,
+  /**
+   * The lid's pace, in key positions a second. It starts and stops softly
+   * (`lidAccel`, `lidEase`: per second) and is never faster than
+   * `openSpeed` going up or `closeSpeed` coming down, so the whole lift
+   * takes about five seconds. The delivered page ran at 30 and 12.
+   */
+  openSpeed: 2.5,
+  closeSpeed: 4,
+  lidEase: 3,
+  lidAccel: 6,
+  /** How fast the hand fades in and out. */
+  handFade: 6,
   /** The right edge of the hand photograph fades over this many of its px. */
   handFadePx: 260,
   /**
@@ -69,24 +100,21 @@ export function sceneFit({ width = 0, height = 0 } = {}, fit, margin = 0.97) {
   };
 }
 
-/** Even-odd test: is (x, y) inside the polygon [[x, y], …]? */
-export function inPolygon(x, y, polygon) {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const a = polygon[i];
-    const b = polygon[j];
-    if (
-      a[1] > y !== b[1] > y &&
-      x < ((b[0] - a[0]) * (y - a[1])) / (b[1] - a[1]) + a[0]
-    )
-      inside = !inside;
+/**
+ * Where the tool's tip goes for a pointer at (u, v), each 0 to 1 across the
+ * cover: the same place in the small ellipse `work` on the crown, so the
+ * whole cover's width is the ellipse's width. Corners are pulled in to the
+ * ellipse's edge.
+ */
+export function toolSpot(u, v, work) {
+  let x = clamp(u, 0, 1) * 2 - 1;
+  let y = clamp(v, 0, 1) * 2 - 1;
+  const r = Math.hypot(x, y);
+  if (r > 1) {
+    x /= r;
+    y /= r;
   }
-  return inside;
-}
-
-/** Is (x, y) inside the ellipse { x, y, rx, ry }? */
-export function inEllipse(x, y, e) {
-  return Math.hypot((x - e.x) / e.rx, (y - e.y) / e.ry) <= 1;
+  return { x: work.x + x * work.rx, y: work.y + y * work.ry };
 }
 
 /**
@@ -117,24 +145,24 @@ export function createHead(spec, now = 0) {
     last: now,
     frame: 0, // which body frame
     frameClock: 0,
-    inside: false, // the pointer is in the hand's zone
+    inside: false, // the pointer is over the cover
     enteredAt: 0,
-    hand: { x: 0, y: 0 },
+    hand: { x: spec.work.x, y: spec.work.y }, // the tool's tip
     handAlpha: 0,
-    anchor: { x: 0, y: 0 }, // where the current stroke began
-    reach: { x: 0, y: 0 }, // the furthest it has got from there
+    anchor: { x: spec.work.x, y: spec.work.y }, // where the stroke began
+    reach: { x: spec.work.x, y: spec.work.y }, // the furthest it has got
     progress: 0, // 0 closed … 1 open
-    latched: false, // fully open: stays so until the hand leaves the head
-    kick: 0, // 1 at a stroke, decaying: the lid's small bump
+    latched: false, // fully open: stays so until the pointer leaves
     lastMove: now,
     at: spec.keys.first, // the shown key position
+    atSpeed: 0, // and how fast it is changing, keys a second
   };
 }
 
 /**
- * One frame. `pointer` is { present, x, y } in artwork px (present: over the
- * cover at all). Changes `head` in place and returns it. This is the
- * delivered page's frame() without the drawing.
+ * One frame. `pointer` is { present, u, v }: over the cover at all, and
+ * where across it (0 to 1 each way). Changes `head` in place and returns
+ * it.
  */
 export function stepHead(head, pointer, now, spec, motion = MOTION) {
   const dt = Math.min(0.05, Math.max(0, (now - head.last) / 1000));
@@ -148,29 +176,44 @@ export function stepHead(head, pointer, now, spec, motion = MOTION) {
     head.frame = (head.frame + 1) % spec.body.frames.length;
   }
 
-  // The hand is glued to the pointer, and shows only in its zone.
+  // The tool keeps to its small region on the crown and glides there.
   const was = head.inside;
-  head.inside = !!pointer.present && inPolygon(pointer.x, pointer.y, spec.zone);
-  if (pointer.present) {
-    head.hand.x = pointer.x;
-    head.hand.y = pointer.y;
-  }
-  if (head.inside && !was) {
-    head.enteredAt = now;
-    head.anchor = { ...head.hand };
-    head.reach = { ...head.hand };
+  head.inside = !!pointer.present;
+  if (head.inside) {
+    const spot = toolSpot(pointer.u, pointer.v, spec.work);
+    if (!was && head.handAlpha < 0.02) {
+      head.hand = spot; // not on show yet: it comes in where it belongs
+    } else {
+      const dx = spot.x - head.hand.x;
+      const dy = spot.y - head.hand.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 0.05) head.hand = spot;
+      else {
+        const go = Math.min(
+          d * Math.min(1, dt * motion.follow),
+          motion.maxSpeed * dt
+        );
+        head.hand = {
+          x: head.hand.x + (dx / d) * go,
+          y: head.hand.y + (dy / d) * go,
+        };
+      }
+    }
+    if (!was) {
+      head.enteredAt = now;
+      head.anchor = { ...head.hand };
+      head.reach = { ...head.hand };
+    }
   }
   head.handAlpha +=
     ((head.inside ? 1 : 0) - head.handAlpha) *
     Math.min(1, dt * motion.handFade);
 
-  // Strokes: out from the anchor, then back. Each one is a clear step.
-  const onHead = head.inside && inEllipse(head.hand.x, head.hand.y, spec.head);
-  if (!onHead) {
-    // Off the head: it closes.
+  // Strokes: out from the anchor, then back. Each one is a step.
+  if (!head.inside) {
+    // The pointer has left: the head closes.
     head.latched = false;
     head.progress = 0;
-    head.kick = 0;
     head.lastMove = now;
     head.anchor = { ...head.hand };
     head.reach = { ...head.hand };
@@ -183,11 +226,13 @@ export function stepHead(head, pointer, now, spec, motion = MOTION) {
       head.lastMove = now;
     } else if (furthest >= motion.minStroke && back >= motion.back) {
       head.progress = Math.min(1, head.progress + 1 / motion.steps);
-      head.kick = 1;
       head.lastMove = now;
       head.anchor = { ...head.reach };
       head.reach = { ...head.hand };
-      if (head.progress >= 1) head.latched = true;
+      if (head.progress > 1 - 1e-9) {
+        head.progress = 1;
+        head.latched = true;
+      }
     } else if (back > motion.back && furthest < motion.minStroke) {
       head.anchor = { ...head.hand }; // a jitter: start again
       head.reach = { ...head.hand };
@@ -195,21 +240,23 @@ export function stepHead(head, pointer, now, spec, motion = MOTION) {
     if (now - head.lastMove > motion.idleMs && !head.latched)
       head.progress = Math.max(0, head.progress - dt * motion.sinkPerSec);
   }
-  head.kick = Math.max(0, head.kick - dt * motion.kickDecay);
 
-  // The shown position follows: quickly open, slowly shut.
-  const { first, open, keys } = spec.keys;
-  const span = keys.length - 2.5; // the opening's keys, as in the page
+  // The lid follows slowly: it picks up speed, slides, and settles.
+  const { first, open } = spec.keys;
   const goal = head.latched
     ? open
     : head.progress < 0.01
       ? first
-      : first + 1 + (1 - (1 - head.progress) ** 2) * span;
-  const step = (goal > head.at ? motion.openSpeed : motion.closeSpeed) * dt;
-  head.at =
-    goal > head.at
-      ? Math.min(goal, head.at + step)
-      : Math.max(goal, head.at - step);
+      : first + head.progress ** motion.liftCurve * (open - first);
+  const left = goal - head.at;
+  const cap = left > 0 ? motion.openSpeed : motion.closeSpeed;
+  const want = clamp(left * motion.lidEase, -cap, cap);
+  head.atSpeed += (want - head.atSpeed) * Math.min(1, dt * motion.lidAccel);
+  const next = head.at + head.atSpeed * dt;
+  if (Math.abs(goal - next) < 0.002 || (goal - next) * left < 0) {
+    head.at = goal; // arrived (or would pass it)
+    head.atSpeed = 0;
+  } else head.at = next;
   return head;
 }
 
@@ -249,7 +296,6 @@ export function fadedHand(image, spec, makeCanvas, motion = MOTION) {
 export function drawHead(ctx, images, spec, head, view, motion = MOTION) {
   const { scale, left, top, dpr = 1 } = view;
   const pose = lidPose(head.at, spec.keys.keys, spec.keys.first);
-  const bump = Math.sin(head.kick * Math.PI);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.setTransform(scale * dpr, 0, 0, scale * dpr, left * dpr, top * dpr);
@@ -273,7 +319,7 @@ export function drawHead(ctx, images, spec, head, view, motion = MOTION) {
   const drawHand = (alpha) => {
     if (alpha <= 0.004) return;
     const [w, h] = spec.hand.size;
-    const s = spec.hand.scale * (1 - 0.05 * bump);
+    const s = spec.hand.scale;
     ctx.globalAlpha = alpha;
     ctx.drawImage(
       images.hand,
@@ -292,8 +338,8 @@ export function drawHead(ctx, images, spec, head, view, motion = MOTION) {
 
   const [px, py] = spec.lid.pivot;
   ctx.save();
-  ctx.translate(px + pose.lidX, py + pose.lidY + bump * 10);
-  ctx.rotate(((pose.lidTurn + bump * 1.2) * Math.PI) / 180);
+  ctx.translate(px + pose.lidX, py + pose.lidY);
+  ctx.rotate((pose.lidTurn * Math.PI) / 180);
   ctx.translate(-px, -py);
   ctx.drawImage(images.lid, spec.lid.at[0], spec.lid.at[1]);
   // The outlined lid fades in as soon as it lifts.

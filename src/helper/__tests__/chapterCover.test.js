@@ -137,24 +137,28 @@ describe("the History head (OPENBRAIN-171)", () => {
     // Closed at the first key (nothing has moved), open at the last.
     expect(rec.keys.keys[0].slice(0, 3)).toEqual([0, 0, 0]);
     expect(rec.keys.open - rec.keys.first).toBe(rec.keys.keys.length - 1);
-    // The part that must always show is inside the artwork, and the head's
-    // ellipse is inside that.
+    // The part that must always show is inside the artwork, and the tool's
+    // small region (OPENBRAIN-198) is inside that, on the lid.
     const [x, y, w, h] = rec.fit;
     expect(x).toBeGreaterThanOrEqual(0);
     expect(y).toBeGreaterThanOrEqual(0);
     expect(x + w).toBeLessThanOrEqual(rec.size[0]);
     expect(y + h).toBeLessThanOrEqual(rec.size[1]);
-    expect(rec.head.x - rec.head.rx).toBeGreaterThan(x);
-    expect(rec.head.x + rec.head.rx).toBeLessThan(x + w);
+    expect(rec.work.x - rec.work.rx).toBeGreaterThan(x);
+    expect(rec.work.x + rec.work.rx).toBeLessThan(x + w);
+    expect(rec.work.x).toBeGreaterThan(rec.lid.at[0]);
+    expect(rec.work.y).toBeGreaterThan(rec.lid.at[1]);
+    expect(rec.work.rx).toBeLessThan(60);
+    expect(rec.work.ry).toBeLessThan(60);
   });
 
   it("copies the record, so a caller can't change the book's", () => {
     const a = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
     a.keys.keys[0][0] = 99;
-    a.zone[0][0] = 99;
+    a.work.x = 99;
     const b = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
     expect(b.keys.keys[0][0]).toBe(0);
-    expect(b.zone[0][0]).toBe(666);
+    expect(b.work.x).toBe(1320);
   });
 
   it("lets a module's own head record win, and rejects a broken one", () => {
@@ -172,8 +176,9 @@ describe("the History head (OPENBRAIN-171)", () => {
       { ...raw, body: { ...raw.body, frames: [] } },
       { ...raw, body: { ...raw.body, fps: 0 } },
       { ...raw, hand: { ...raw.hand, tip: [1] } },
-      { ...raw, zone: [[1, 2]] },
-      { ...raw, head: { ...raw.head, rx: 0 } },
+      { ...raw, work: undefined },
+      { ...raw, work: { ...raw.work, x: "1320" } },
+      { ...raw, work: { ...raw.work, rx: 0 } },
       { ...raw, keys: { ...raw.keys, open: 99 } },
       { ...raw, keys: { ...raw.keys, keys: [[0, 0, 0, 0]] } },
     ]) {

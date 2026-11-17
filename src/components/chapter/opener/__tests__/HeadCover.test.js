@@ -93,6 +93,38 @@ describe("HeadCover", () => {
     w.unmount();
   });
 
+  it("waits for the pixels, not for `load` (WebKit drew an empty hand)", async () => {
+    // OPENBRAIN-198: every layer has loaded, none has decoded yet.
+    const decoded = [];
+    vi.stubGlobal(
+      "Image",
+      class extends FakeImage {
+        decode() {
+          return new Promise((resolve) => decoded.push(resolve));
+        }
+      }
+    );
+    const w = mount(HeadCover, { props: { spec }, attachTo: document.body });
+    await flushPromises();
+    expect(decoded).toHaveLength(5 + 19);
+    expect(w.find(".head-cover").attributes("data-live")).toBeUndefined();
+    decoded.forEach((done) => done());
+    await flushPromises();
+    expect(w.find(".head-cover").attributes("data-live")).toBe("");
+    w.unmount();
+  });
+
+  it("leaves the reader's cursor alone: the tool is not on the pointer", async () => {
+    const w = mount(HeadCover, { props: { spec }, attachTo: document.body });
+    await flushPromises();
+    window.dispatchEvent(
+      new MouseEvent("pointermove", { clientX: 10, clientY: 10 })
+    );
+    frames.splice(0).forEach((cb) => cb(performance.now() + 16));
+    expect(w.find(".head-cover__stage").element.style.cursor).toBe("");
+    w.unmount();
+  });
+
   it("stays on the still under reduced motion, and fetches no layers", async () => {
     reduced.mockReturnValue(true);
     const w = mount(HeadCover, { props: { spec }, attachTo: document.body });

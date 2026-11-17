@@ -57,8 +57,8 @@ export function coverForModule(module) {
  * The second kind of reactive cover, `kind: "head"` (OPENBRAIN-171): the
  * History opener as Sonia and Maura delivered it (10 Nov 2026), drawn by
  * HeadCover.vue on a canvas with helper/headCover.js. A girl writes in a
- * loop; a hand with a tool follows the pointer, and rubbing it over her
- * head slides the top off and lets the brain rise. Everything is in pixels
+ * loop; a hand with a tool rests on her crown, and working it to and fro
+ * there slides the top off and lets the brain rise. Everything is in pixels
  * of the artwork (`size`), as their config.json gave it.
  *
  *   paper, ink   the drawing's ground, and the colour the hero's arrow takes
@@ -70,10 +70,13 @@ export function coverForModule(module) {
  *   body         the girl, `frames` played at `fps`
  *   lid          the top of the head: plain, and outlined (shown once it
  *                lifts); it turns about `pivot`
- *   hand         the photograph, its tool's `tip` (which sits on the
- *                pointer), `scale`, and its pixel `size`
- *   zone         where the hand may appear (the designers' red lines)
- *   head         the ellipse in which strokes count
+ *   hand         the photograph, its tool's `tip`, `scale`, and its pixel
+ *                `size`
+ *   work         the small ellipse on the crown the tool's tip keeps to
+ *                (OPENBRAIN-198): the pointer's place on the whole cover is
+ *                mapped into it, so the tool never swings across her head.
+ *                It replaced the designers' `zone` and `head`, in which
+ *                the hand followed the pointer itself.
  *   keys         [lid dx, lid dy, lid turn°, brain dx, brain dy] per frame of
  *                the artist's gif, from `first` (closed) to `open`
  */
@@ -107,15 +110,7 @@ export const HISTORY_HEAD = Object.freeze({
     scale: 1.2,
     size: [1102, 998],
   },
-  zone: [
-    [666, -247],
-    [2517, -247],
-    [2517, 263],
-    [1183, 1275],
-    [1154, 1298],
-    [666, 670],
-  ],
-  head: { x: 1183, y: 405, rx: 436, ry: 353 },
+  work: { x: 1320, y: 360, rx: 46, ry: 28 },
   keys: {
     first: 5,
     open: 16,
@@ -164,10 +159,6 @@ const numbers = (value, n) =>
   value.every((v) => Number.isFinite(v))
     ? value
     : null;
-const polygon = (value) =>
-  Array.isArray(value) && value.length >= 3 && value.every((p) => numbers(p, 2))
-    ? value
-    : null;
 const layer = (raw) =>
   raw && isUsableUrl(raw.src) && numbers(raw.at, 2)
     ? { src: raw.src.trim(), at: [...raw.at] }
@@ -183,7 +174,7 @@ export function normalizeHeadCover(raw) {
   const lid = layer(raw.lid);
   const hand = raw.hand;
   const body = raw.body;
-  const head = raw.head;
+  const work = raw.work;
   const keys = raw.keys;
   if (!isUsableUrl(raw.poster) || !size || !fit || !oval || !brain || !lid)
     return null;
@@ -206,10 +197,9 @@ export function normalizeHeadCover(raw) {
     !(hand.scale > 0)
   )
     return null;
-  if (!polygon(raw.zone)) return null;
-  if (!head || ![head.x, head.y, head.rx, head.ry].every(Number.isFinite))
+  if (!work || ![work.x, work.y, work.rx, work.ry].every(Number.isFinite))
     return null;
-  if (!(head.rx > 0 && head.ry > 0)) return null;
+  if (!(work.rx > 0 && work.ry > 0)) return null;
   if (
     !keys ||
     !Array.isArray(keys.keys) ||
@@ -240,8 +230,7 @@ export function normalizeHeadCover(raw) {
       scale: hand.scale,
       size: [...hand.size],
     },
-    zone: raw.zone.map((p) => [...p]),
-    head: { x: head.x, y: head.y, rx: head.rx, ry: head.ry },
+    work: { x: work.x, y: work.y, rx: work.rx, ry: work.ry },
     keys: {
       first: keys.first,
       open: keys.open,
