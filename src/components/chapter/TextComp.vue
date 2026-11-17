@@ -16,6 +16,7 @@ import { toSlug, addH, removeH } from "@/helper/general";
 import { markersEnabled } from "@/helper/debugFlags";
 import { sectionLabelMap } from "@/composables/useChapterOutline";
 import { authorCardsForModule } from "@/helper/chapterAuthors";
+import { creditsForModule } from "@/helper/chapterCredits";
 
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
@@ -38,6 +39,8 @@ import ReadingRail from "@/components/chapter/ReadingRail.vue";
 import FurtherReading from "./text/FurtherReading.vue";
 import ChapterReferences from "./text/ChapterReferences.vue";
 import ChapterAuthors from "./text/ChapterAuthors.vue";
+import ChapterFunding from "./text/ChapterFunding.vue";
+import ChapterAcknowledgements from "./text/ChapterAcknowledgements.vue";
 import {
   chapterBackReferences,
   retinaLegacyReferences,
@@ -86,6 +89,7 @@ const props = defineProps({
 // wires a scroll trigger for a paragraph that had none.
 const emit = defineEmits(["figure-changed"]);
 const authors = computed(() => authorCardsForModule(props.module));
+const credits = computed(() => creditsForModule(props.module));
 
 // The intro's scroll-trigger id derives from its animation config
 // (sections.animation_config.name, e.g. "dragon" → triggerAnimationDragon)
@@ -695,6 +699,19 @@ onBeforeUnmount(() => {
             />
           </div>
 
+          <!-- Authors: chapter data (modules.authors / slug map), not a
+               Retina-only block (OPENBRAIN-33). Each with a face and a link
+               to their lab (OPENBRAIN-197). Under the contents and above
+               "Introduction", with who funded the chapter under them
+               (OPENBRAIN-200). -->
+          <div
+            v-if="authors.length || credits.funding"
+            class="chapter-front-credits"
+          >
+            <ChapterAuthors v-if="authors.length" :authors="authors" />
+            <ChapterFunding v-if="credits.funding" :funding="credits.funding" />
+          </div>
+
           <!-- Intro title - editable for creators -->
           <EditableBlock
             v-if="canEdit"
@@ -726,12 +743,6 @@ onBeforeUnmount(() => {
           >
             {{ section.sectionTitle || section.title }}
           </h1>
-
-          <!-- Authors: chapter data (modules.authors / slug map), not a
-               Retina-only block (OPENBRAIN-33). Each with a face and a link
-               to their lab (OPENBRAIN-197). -->
-          <ChapterAuthors v-if="authors.length" :authors="authors" />
-          <br v-if="authors.length" />
 
           <!-- Intro paragraphs. A section with an intro animation (Retina's
                "dragon") wraps them in that animation's scroll trigger. A
@@ -885,12 +896,21 @@ onBeforeUnmount(() => {
              Downloads is off until there are real files (its links were
              2023 placeholders). -->
         <div
-          v-if="backReferences || source['furtherReading']?.paragraphs?.length"
+          v-if="
+            backReferences ||
+            credits.acknowledgements.length ||
+            source['furtherReading']?.paragraphs?.length
+          "
           class="chapter-back__matter"
         >
           <FurtherReading
             v-if="source['furtherReading']?.paragraphs?.length"
             :content="source['furtherReading']"
+          />
+          <!-- Above the references (OPENBRAIN-200). -->
+          <ChapterAcknowledgements
+            v-if="credits.acknowledgements.length"
+            :paragraphs="credits.acknowledgements"
           />
           <div
             v-if="backReferences"
@@ -1060,6 +1080,11 @@ onBeforeUnmount(() => {
   --back-gutter: clamp(1.25rem, 4.17vw, 3.75rem);
   padding: clamp(3rem, 6vw, 5.5rem) var(--back-gutter)
     calc(clamp(3rem, 5vw, 4.5rem) + var(--reader-timeline-h, 0px));
+}
+/* Authors and funding, between the contents and "Introduction"
+   (OPENBRAIN-200): the space the authors had under the heading. */
+.chapter-front-credits {
+  margin-bottom: 3rem;
 }
 .chapter-back__matter > * {
   max-width: 82.5rem;
