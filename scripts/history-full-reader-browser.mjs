@@ -732,6 +732,100 @@ try {
       );
       await step(
         result,
+        "the Penfield binder gives each case its own document and picture, its large view can be closed without scrolling, and the binder closes again",
+        async () => {
+          // OPENBRAIN-196, Stuart's three points on the binder in its band.
+          const id = "upload:history-penfield-binder";
+          if (!widgetBlocks.some(({ block }) => block.widgetId === id)) return;
+          const stage = page.locator(`[data-widget-stage="${id}"]`);
+          const band = stage.locator(
+            "xpath=ancestor::div[contains(@class,'wb-body')][1]"
+          );
+          const top = await band.evaluate(
+            (element) => element.getBoundingClientRect().top + scrollY
+          );
+          await scrollTo(page, top);
+          const frame = stage.locator("iframe.widget-frame");
+          await expect(frame).toHaveCount(1, { timeout: 20000 });
+          const inner = frame.contentFrame();
+          const binder = inner.locator("#binder");
+          const tabs = inner.locator("#tabs .tab");
+          await expect(tabs).toHaveCount(7, { timeout: 20000 });
+          // One document and one picture to a tab, fourteen different ones.
+          const papers = inner.locator("#ephs .eph");
+          const pictures = new Set();
+          for (let index = 0; index < 7; index += 1) {
+            await tabs.nth(index).click();
+            await expect(binder).toHaveAttribute("data-open", "true");
+            await expect(papers).toHaveCount(2);
+            for (const paper of await papers.all()) {
+              await expect(paper).toBeVisible();
+              await expect(paper).toHaveAttribute(
+                "aria-label",
+                /press Enter to see it large\.$/
+              );
+            }
+            for (const src of await papers
+              .locator("img")
+              .evaluateAll((images) => images.map((image) => image.src)))
+              pictures.add(src);
+          }
+          expect(pictures.size).toBe(14);
+          // The page read on a little: the frame's first rows are above the
+          // screen or under the top bar, where the large view's Close used
+          // to be. It must be on screen, with nothing of the page over it.
+          await scrollTo(page, top + 200);
+          await papers
+            .nth(1)
+            .evaluate((element) => element.focus({ preventScroll: true }));
+          await page.keyboard.press("Enter");
+          const large = inner.locator("#lb");
+          await expect(large).toBeVisible();
+          await expect(inner.locator("#lbx")).toBeFocused();
+          await expect(inner.locator("#lbcap")).toContainText(
+            "Drawing of a brain resection."
+          );
+          await expect(inner.locator("#lbcap")).toContainText(
+            "Courtesy of the Osler Library of the History of Medicine, McGill University, Canada."
+          );
+          await expect
+            .poll(
+              async () => {
+                const box = await inner.locator("#lbx").boundingBox();
+                if (!box) return "no box";
+                if (box.y < 0 || box.y + box.height > viewport.height)
+                  return `off screen at ${Math.round(box.y)}`;
+                return page.evaluate(
+                  ([x, y]) => {
+                    const over = document.elementFromPoint(x, y);
+                    return over?.tagName === "IFRAME"
+                      ? "clear"
+                      : `under ${over?.className || over?.tagName}`;
+                  },
+                  [box.x + box.width / 2, box.y + box.height / 2]
+                );
+              },
+              { message: "the large view's Close control" }
+            )
+            .toBe("clear");
+          await noOverflow(page);
+          await shot(page, result, "binder-large-view");
+          await page.keyboard.press("Escape");
+          await expect(large).toBeHidden();
+          await expect(papers.nth(1)).toBeFocused();
+          // Closed again: the cover, no case open, focus on the tab just left.
+          await inner.locator("#shut:visible, #shutStack:visible").click();
+          await expect(binder).toHaveAttribute("data-open", "false");
+          await expect(inner.locator("#cover")).toBeVisible();
+          await expect(tabs.nth(6)).toBeFocused();
+          await expect(
+            inner.locator("#shut:visible, #shutStack:visible")
+          ).toHaveCount(0);
+          await shot(page, result, "binder-closed-again");
+        }
+      );
+      await step(
+        result,
         "the Penfield binder opens full screen with the screen to itself, and Escape pressed inside it closes the dialog",
         async () => {
           // OPENBRAIN-178. The expand button under the band opens a fresh
