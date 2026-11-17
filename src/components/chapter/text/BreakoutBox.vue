@@ -97,8 +97,6 @@ const mode = computed(() => {
 const railOn = computed(() => mode.value === "track");
 const swipeOn = computed(() => mode.value === "swipe");
 provide("exploreRail", mode);
-// A widget band in the box names it over its title (WidgetBreakout).
-provide("breakoutBox", true);
 const parts = computed(() =>
   mode.value
     ? layout.value.parts.map((part) => ({ id: part.id, title: part.title }))
@@ -222,12 +220,16 @@ onBeforeUnmount(() => arrival?.disconnect());
       >
         <div class="bx-hold">
           <header class="bx-intro">
-            <!-- The panels carry the letter in the kicker alone, as the
-                 Figma does; the card keeps its round badge. -->
+            <!-- No "Breakout box B" line over the title (Stuart, 14 Nov,
+                 OPENBRAIN-193). The letter is still how the timeline and
+                 the nav drawer name the box, so it is said, not shown; the
+                 pale card keeps its round badge. -->
             <span v-if="label && !panel" class="bx-badge" aria-hidden="true">{{
               label
             }}</span>
-            <p class="bx-kicker">Breakout box{{ label ? ` ${label}` : "" }}</p>
+            <p v-if="label" class="sr-only" data-box-label>
+              Breakout box {{ label }}
+            </p>
             <h2 :id="titleId" class="bx-title">{{ section.title }}</h2>
           </header>
         </div>
@@ -519,13 +521,6 @@ onBeforeUnmount(() => arrival?.disconnect());
   font: 1.25rem/1 var(--font-mono);
   letter-spacing: 0.04em;
 }
-.bx-kicker {
-  margin: 0;
-  font: 0.75rem/1.3 var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--bx-kicker);
-}
 .bx-title {
   margin: 0;
   font-family: var(--font-body);
@@ -578,9 +573,6 @@ onBeforeUnmount(() => arrival?.disconnect());
   align-items: center;
   gap: 0.75rem;
   text-align: center;
-}
-.bx--panel .bx-kicker {
-  letter-spacing: 0.12em;
 }
 .bx--panel .bx-title {
   width: 100%;

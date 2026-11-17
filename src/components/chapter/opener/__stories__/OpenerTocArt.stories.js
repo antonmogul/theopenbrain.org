@@ -1,9 +1,10 @@
 /*
  * Chapter/Opener/OpenerTocArt: the contents with a picture per section
  * (OPENBRAIN-174), on the History chapter's outline and art. Point at a
- * section: its picture comes in and, once the pointer rests, its parts open.
- * The Narrow story is the phone layout: picture above the list, a tap opens
- * a section.
+ * section: its picture comes in. The list is section titles only
+ * (OPENBRAIN-193): the outline below still carries each section's parts, as
+ * the real one does, and none of them is drawn. The Narrow story is the
+ * phone layout: picture above the list, a tap goes to the section.
  */
 import OpenerTocArt from "../OpenerTocArt.vue";
 
@@ -109,7 +110,7 @@ export default {
 
 export const History = {};
 
-/** Below the two-column reader: the picture above the list; tap to open. */
+/** Below the two-column reader: the picture above the list. */
 export const Narrow = {
   globals: { viewport: { value: "phone" } },
 };

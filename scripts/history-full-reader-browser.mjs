@@ -229,6 +229,17 @@ async function assertNoBoxLeakage(page) {
 // authored hold (content.animationFlags.hold, OPENBRAIN-131) adds `bottom +
 // hold screens` to it: History rows carry none, so if one ever does, add that
 // term here in the same change.
+//
+// `number` is the figure's key (animationFoundationsFig9), which is the
+// manuscript's number and an identifier. What the pane prints is the
+// record's figureNumber, the figure's place in reading order since
+// OPENBRAIN-193 (Fig9 is FIG 12).
+function figLabel(number) {
+  const record = fixture.animations.find(
+    (a) => a.animation_key === `animationFoundationsFig${number}`
+  );
+  return `FIG ${String(record.config.figureNumber).padStart(2, "0")}`;
+}
 async function timing(page, result, number) {
   const trigger = page.locator(`#triggerAnimationFoundationsFig${number}`);
   await expect(trigger).toHaveCount(1);
@@ -265,7 +276,7 @@ async function timing(page, result, number) {
         scrollY,
       };
     });
-  const label = `FIG ${String(number).padStart(2, "0")}`;
+  const label = figLabel(number);
   const sample = async (name, position) => {
     const before = await measure();
     let target = position(before) - before.readingLine;
@@ -657,10 +668,10 @@ try {
               paragraph.id
             );
             await band.scrollIntoViewIfNeeded();
-            // A band in the chapter's text has no "Breakout box" kicker; one
-            // inside a box keeps it (OPENBRAIN-190).
-            const inBox = paragraph.section_id.includes("-box-");
-            const kicker = block.kicker || (inBox ? "Breakout box" : "");
+            // No band says "Breakout box", in a box (the Penfield binder,
+            // OPENBRAIN-193) or in the chapter's text (OPENBRAIN-190); one
+            // says only what its block names.
+            const kicker = block.kicker || "";
             const kickerEl = page.locator(
               `.wb-body:has([data-widget-stage="${block.widgetId}"]) .wb-kicker`
             );
@@ -815,7 +826,7 @@ try {
               await inline.scrollIntoViewIfNeeded();
               await expect(inline).toBeVisible();
               await expect(inline.locator(".fig-label")).toHaveText(
-                `FIG ${String(number).padStart(2, "0")}`
+                figLabel(number)
               );
               await shot(page, result, `inline-figure-${number}`);
             }

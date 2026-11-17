@@ -66,6 +66,35 @@ describe("section art", () => {
     ).toMatch(/closing-words/);
   });
 
+  // Stuart, 14 Nov: "when you hover over '6. References' - change image
+  // that is displayed to the Brenda Milner photo" (OPENBRAIN-193).
+  it("shows Brenda Milner for History's references, cropped to her face", () => {
+    const art = sectionArtFor(HISTORY, { slug: "references" });
+    expect(art.src).toMatch(/\/sections\/references-milner\.webp$/);
+    expect(art.alt).toContain("Brenda Milner");
+    expect(art.position).toBe("50% 67%");
+    // The others are centred: they say nothing.
+    expect(sectionArtFor(HISTORY, { slug: "closing-words" }).position).toBe(
+      undefined
+    );
+  });
+
+  it("carries a section's own position, when it has one", () => {
+    const own = {
+      src: "/media/own.webp",
+      alt: "Its own",
+      position: " 50% 20% ",
+    };
+    expect(sectionArtFor(HISTORY, { slug: "x", art: own })).toEqual({
+      src: "/media/own.webp",
+      alt: "Its own",
+      position: "50% 20%",
+    });
+    expect(
+      sectionArtFor(HISTORY, { slug: "x", art: { ...own, position: 3 } })
+    ).toEqual({ src: "/media/own.webp", alt: "Its own" });
+  });
+
   it("gives cards to the numbered sections only", () => {
     const card = (slug, kind = "section") =>
       hasSectionCard(HISTORY, { slug, kind });

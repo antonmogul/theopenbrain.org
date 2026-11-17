@@ -15,6 +15,8 @@
  * (the intro's is "introduction"), because section slugs are only unique
  * within a module and titles get edited. A section's own `art` ({ src, alt })
  * wins once sections carry one from the database; nothing is migrated yet.
+ * `position` (a CSS object-position) says where the subject is in a picture
+ * whose subject is off centre; the contents crop to it, on a phone too.
  * A chapter with no entry here keeps the contents and the pane it had.
  */
 const FOUNDATIONS = "/publicAssets/images/foundations/sections";
@@ -45,9 +47,14 @@ export const SECTION_ART_BY_SLUG = Object.freeze({
       src: `${FOUNDATIONS}/closing-words.webp`,
       alt: "A human brain seen from the side",
     },
+    // Not a Figma export: the chapter's own photograph in the same violet
+    // (scripts/figures/make-references-art.py; Stuart, 14 Nov, OPENBRAIN-193).
+    // Her face is below the middle of the frame, so a box that crops the
+    // picture's height (a phone's 4:3) keeps to the lower part.
     references: {
-      src: `${FOUNDATIONS}/references.webp`,
-      alt: "A stained neuron under the microscope",
+      src: `${FOUNDATIONS}/references-milner.webp`,
+      alt: "Brenda Milner, a portrait photograph",
+      position: "50% 67%",
     },
   }),
 });
@@ -70,12 +77,18 @@ export function sectionArtForChapter(chapterSlug) {
 }
 
 /**
- * One section's art, { src, alt }, or null. `section` is anything with a
- * `slug` (an outline entry, a transformed section); its own `art` wins.
+ * One section's art, { src, alt, position? }, or null. `section` is anything
+ * with a `slug` (an outline entry, a transformed section); its own `art`
+ * wins.
  */
 export function sectionArtFor(chapterSlug, section) {
-  if (usable(section?.art))
-    return { src: section.art.src.trim(), alt: section.art.alt || "" };
+  if (usable(section?.art)) {
+    const { src, alt, position } = section.art;
+    const art = { src: src.trim(), alt: alt || "" };
+    if (typeof position === "string" && position.trim())
+      art.position = position.trim();
+    return art;
+  }
   const art = SECTION_ART_BY_SLUG[chapterSlug]?.[section?.slug];
   return usable(art) ? art : null;
 }
