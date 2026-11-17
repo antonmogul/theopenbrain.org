@@ -33,7 +33,6 @@
 import {
   computed,
   defineAsyncComponent,
-  inject,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -124,18 +123,15 @@ const comingSoon = computed(
 // The line over the title. A kicker only says what the reader needs to
 // know: it isn't built yet, or what it is. The placement can name it
 // (`kicker`: a widget block's, or a figure record's config.kicker through
-// IllustrationInline; Loewi's "Otto's dream experiment", OPENBRAIN-190). A
-// card says it opens, as "Breakout box", and so does a band inside a breakout
-// box (the Widget Library Figma 68:84, OPENBRAIN-162). A band in the
-// chapter's own text says nothing: it is not a breakout box (Stuart, 12 Nov,
-// of the phrenology band and Loewi on his phone).
-const inBreakoutBox = inject("breakoutBox", false);
+// IllustrationInline; Loewi's "Otto's dream experiment", OPENBRAIN-190).
+// Nothing else is said: no "Breakout box" over a card, or over a band inside
+// a breakout box (Stuart, 14 Nov: "I'm not sure we need to label them as
+// 'Breakout box B' etc. … can get removed from penfield widget as well",
+// OPENBRAIN-193; 12 Nov, the same of the phrenology band and Loewi).
 const kicker = computed(() => {
   if (comingSoon.value) return "Coming soon";
   const named = props.placement?.kicker;
-  if (typeof named === "string" && named.trim()) return named.trim();
-  if (kind.value === "breakout" || inBreakoutBox) return "Breakout box";
-  return "";
+  return typeof named === "string" ? named.trim() : "";
 });
 // A published upload shows its own title (the kit's layout), so the band
 // doesn't repeat it.

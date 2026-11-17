@@ -1061,6 +1061,10 @@
         grid-template-rows: auto auto auto;
         align-content: start;
         overflow-y: auto;
+        /* Room for the scrollbar whether or not there is one (Windows, Linux):
+           the binder's size follows its width, so a bar that came and went
+           with its height would never settle. */
+        scrollbar-gutter: stable;
         padding-top: 4px;
       }
       html[data-ob-fit] .w[data-stack] h1 {

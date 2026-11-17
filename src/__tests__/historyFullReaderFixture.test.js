@@ -247,9 +247,14 @@ describe("committed complete History reader fixture", () => {
       expect(paragraph.animation_trigger).toBe("auto");
       // The lane's boundary maths has no term for an authored hold.
       expect(paragraph.content.animationFlags?.hold).toBeUndefined();
+      // The key keeps the manuscript's number; the label and the citation
+      // are the figure's place in reading order (OPENBRAIN-193).
+      expect(animation.config.figureNumber).toBe(number + 3);
       expect(
         paragraph.content.blocks.some(
-          (b) => b.type === "figure_placeholder" && b.number === number
+          (b) =>
+            b.type === "figure_placeholder" &&
+            b.number === animation.config.figureNumber
         )
       ).toBe(true);
     }

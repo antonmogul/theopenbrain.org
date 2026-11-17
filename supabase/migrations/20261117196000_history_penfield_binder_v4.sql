@@ -11,7 +11,7 @@
 --      document from Penfield's papers (Osler Library of the History of
 --      Medicine, McGill), with Stuart's captions and the credit. They replace
 --      the stand-in photograph and the 1922 family letter.
--- 1318407 bytes, sha256 ff5d19917ec30f34215d3ea8c62e0357794fd67293abfea3273e29a7d37f529c
+-- 1318647 bytes, sha256 e91652cbff765b85817944190c2352286b821ac4a1c341861f1a1789d369d035
 -- (this file must carry the widget file exactly: historyPenfieldBinder.sql.test.js).
 --
 -- No code depends on it: it can be pushed before or after the deploy.
@@ -1090,6 +1090,10 @@ values (
         grid-template-rows: auto auto auto;
         align-content: start;
         overflow-y: auto;
+        /* Room for the scrollbar whether or not there is one (Windows, Linux):
+           the binder's size follows its width, so a bar that came and went
+           with its height would never settle. */
+        scrollbar-gutter: stable;
         padding-top: 4px;
       }
       html[data-ob-fit] .w[data-stack] h1 {

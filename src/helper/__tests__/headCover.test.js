@@ -3,15 +3,15 @@ import {
   MOTION,
   createHead,
   drawHead,
-  inEllipse,
-  inPolygon,
   lidPose,
   sceneFit,
   stepHead,
+  toolSpot,
 } from "@/helper/headCover";
 import { reactiveCoverForModule } from "@/helper/chapterCover";
 
-// OPENBRAIN-171: the History opener's logic, with the designers' numbers.
+// OPENBRAIN-171: the History opener's logic. OPENBRAIN-198: the tool keeps
+// to a small region on the crown, glides, and the lid lifts slowly.
 const spec = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
 
 describe("sceneFit", () => {
@@ -34,19 +34,31 @@ describe("sceneFit", () => {
   });
 });
 
-describe("zones", () => {
-  it("lets the hand appear over the head and the upper right, not the page", () => {
-    expect(inPolygon(1300, 400, spec.zone)).toBe(true); // on the head
-    expect(inPolygon(2300, 0, spec.zone)).toBe(true); // coming in
-    expect(inPolygon(900, 1300, spec.zone)).toBe(false); // the writing hand
-    expect(inPolygon(2400, 1200, spec.zone)).toBe(false); // lower right
+describe("toolSpot", () => {
+  const { x, y, rx, ry } = spec.work;
+  const inWork = (p) => Math.hypot((p.x - x) / rx, (p.y - y) / ry);
+
+  it("maps the whole cover into the small region on the crown", () => {
+    expect(toolSpot(0.5, 0.5, spec.work)).toEqual({ x, y });
+    expect(toolSpot(0, 0.5, spec.work)).toEqual({ x: x - rx, y });
+    expect(toolSpot(1, 0.5, spec.work)).toEqual({ x: x + rx, y });
+    expect(toolSpot(0.5, 1, spec.work)).toEqual({ x, y: y + ry });
   });
 
-  it("counts strokes only on the head", () => {
-    expect(inEllipse(spec.head.x, spec.head.y, spec.head)).toBe(true);
-    expect(
-      inEllipse(spec.head.x + spec.head.rx + 1, spec.head.y, spec.head)
-    ).toBe(false);
+  it("never leaves it: corners and wild values come to its edge", () => {
+    for (const [u, v] of [
+      [0, 0],
+      [1, 1],
+      [1, 0],
+      [-4, 0.5],
+      [9, 9],
+    ])
+      expect(inWork(toolSpot(u, v, spec.work))).toBeLessThanOrEqual(1 + 1e-9);
+  });
+
+  it("is a really small region: a twelfth of the girl's width at most", () => {
+    expect(rx * 2).toBeLessThan(spec.fit[2] / 12);
+    expect(ry).toBeLessThanOrEqual(rx);
   });
 });
 
@@ -76,35 +88,43 @@ describe("lidPose", () => {
   });
 });
 
-/* Drive the head as a reader would: a list of [x, y] the pointer visits,
-   40 ms apart. */
-function play(head, points, t0, present = true) {
+/* Drive the head as a reader would: a list of [u, v] the pointer visits
+   (0 to 1 across the cover), 40 ms apart. `seen` is called after each. */
+const STEP = 40;
+function play(head, points, t0, present = true, seen = () => {}) {
   let now = t0;
-  for (const [x, y] of points) {
-    now += 40;
-    stepHead(head, { present, x, y }, now, spec);
+  for (const [u, v] of points) {
+    now += STEP;
+    stepHead(head, { present, u, v }, now, spec);
+    seen(head);
   }
   return now;
 }
-// A walk through the given corners, five steps a leg, so a reversal is
-// seen as a reader's is. A stroke counts when the hand turns back, so a
-// walk with n turns in it is n strokes.
-const walk = (corners) =>
-  corners.flatMap(([x, y], i) => {
-    if (!i) return [[x, y]];
-    const [px, py] = corners[i - 1];
-    return [1, 2, 3, 4, 5].map((k) => [
-      px + ((x - px) * k) / 5,
-      py + ((y - py) * k) / 5,
+// A walk through the given corners, ten steps (0.4 s) a leg: an unhurried
+// hand. A stroke counts once the tool has turned back, so a walk with n
+// turns in it is n strokes.
+const walk = (corners, steps = 10) =>
+  corners.flatMap(([u, v], i) => {
+    if (!i) return [[u, v]];
+    const [pu, pv] = corners[i - 1];
+    return Array.from({ length: steps }, (_, k) => [
+      pu + ((u - pu) * (k + 1)) / steps,
+      pv + ((v - pv) * (k + 1)) / steps,
     ]);
   });
-const A = [1150, 420]; // on the head
-const B = [1370, 380]; // 224 px away, still on it
+const A = [0.35, 0.5]; // left of the middle of the cover
+const B = [0.65, 0.5]; // right of it: 28 px of the tool's travel
+const hold = (at, n) => Array(n).fill(at);
+const inWork = (p) =>
+  Math.hypot(
+    (p.x - spec.work.x) / spec.work.rx,
+    (p.y - spec.work.y) / spec.work.ry
+  );
 
 describe("stepHead", () => {
   it("plays the girl at 12 frames a second, hand or no hand", () => {
     const head = createHead(spec, 0);
-    const away = { present: false, x: 0, y: 0 };
+    const away = { present: false, u: 0.5, v: 0.5 };
     // A second of frames, 20 ms apart: twelve of the girl's.
     for (let t = 20; t <= 1000; t += 20) stepHead(head, away, t, spec);
     expect(head.frame).toBe(12);
@@ -113,60 +133,155 @@ describe("stepHead", () => {
     expect(head.frame).toBe(0);
   });
 
-  it("shows the hand only in its zone, glued to the pointer", () => {
+  it("brings the hand in on the crown, wherever the pointer came in", () => {
     const head = createHead(spec, 0);
-    const now = play(head, Array(10).fill([2300, 100]), 0);
+    stepHead(head, { present: true, u: 0.9, v: 0.1 }, STEP, spec);
+    // Not on show yet, so it starts where it belongs: no swing across.
+    expect(head.hand).toEqual(toolSpot(0.9, 0.1, spec.work));
+    const now = play(head, hold([0.9, 0.1], 20), STEP);
     expect(head.inside).toBe(true);
     expect(head.handAlpha).toBeGreaterThan(0.9);
-    expect(head.hand).toEqual({ x: 2300, y: 100 });
-    play(head, Array(10).fill([2400, 1200]), now);
+    play(head, hold([0.9, 0.1], 30), now, false);
     expect(head.inside).toBe(false);
     expect(head.handAlpha).toBeLessThan(0.1);
   });
 
-  it("opens the head in four strokes over it, and it stays open", () => {
+  it("keeps the tool in its region however far the pointer travels", () => {
     const head = createHead(spec, 0);
-    // The hand comes to rest on the head, then rubs.
-    let now = play(head, Array(10).fill(A), 0);
+    const far = walk(
+      [
+        [0, 0],
+        [1, 1],
+        [0, 1],
+        [1, 0],
+        [0.5, 0.5],
+      ],
+      6
+    );
+    play(head, far, 0, true, (h) =>
+      expect(inWork(h.hand)).toBeLessThanOrEqual(1 + 1e-9)
+    );
+  });
+
+  it("glides: a jump of the pointer is a slow, short move of the tool", () => {
+    const head = createHead(spec, 0);
+    const now = play(head, hold([0, 0.5], 20), 0);
+    let before = { ...head.hand };
+    let fastest = 0;
+    // The pointer crosses the whole cover between two frames.
+    play(head, hold([1, 0.5], 60), now, true, (h) => {
+      fastest = Math.max(
+        fastest,
+        Math.hypot(h.hand.x - before.x, h.hand.y - before.y)
+      );
+      before = { ...h.hand };
+    });
+    expect(fastest).toBeLessThanOrEqual((MOTION.maxSpeed * STEP) / 1000 + 1e-9);
+    // And it gets there.
+    expect(head.hand.x).toBeCloseTo(spec.work.x + spec.work.rx, 0);
+  });
+
+  it("opens the head in six careful strokes, slowly, and it stays open", () => {
+    const head = createHead(spec, 0);
+    // The hand comes to rest, then works to and fro.
+    let now = play(head, hold(A, 10), 0);
     expect(head.progress).toBe(0);
     now = play(head, walk([A, B, A, B]), now); // two turns
-    expect(head.progress).toBeCloseTo(0.5);
+    now = play(head, hold(B, 5), now);
+    expect(head.progress).toBeCloseTo(2 / 6);
     expect(head.latched).toBe(false);
     expect(head.at).toBeGreaterThan(spec.keys.first);
-    now = play(head, walk([B, A, B]), now); // two more
+    now = play(head, walk([B, A, B, A, B]), now); // four more
+    now = play(head, hold(B, 5), now);
     expect(head.progress).toBe(1);
     expect(head.latched).toBe(true);
-    // Holding still, it finishes opening and stays.
-    now = play(head, Array(60).fill(B), now);
+    // Six strokes took about four seconds; the lid is still on its way.
+    expect(head.at).toBeLessThan(spec.keys.open);
+    // Holding still, it finishes opening, never hurried, and stays.
+    let last = head.at;
+    let fastest = 0;
+    now = play(head, hold(B, 200), now, true, (h) => {
+      fastest = Math.max(fastest, h.at - last);
+      last = h.at;
+    });
+    expect(fastest).toBeLessThanOrEqual(
+      (MOTION.openSpeed * STEP) / 1000 + 1e-9
+    );
     expect(head.at).toBe(spec.keys.open);
-    play(head, Array(100).fill(B), now);
+    play(head, hold(B, 100), now);
     expect(head.at).toBe(spec.keys.open);
   });
 
-  it("ignores a jitter, and a stroke shorter than a stroke", () => {
+  it("lifts the lid softly: no step is a jump, and it eases to a stop", () => {
     const head = createHead(spec, 0);
-    let now = play(head, Array(10).fill(A), 0);
-    const jitter = Array.from({ length: 40 }, (_, i) => [
-      A[0] + (i % 2 ? 30 : 0),
-      A[1],
+    let now = play(head, hold(A, 10), 0);
+    const moves = [];
+    let last = head.at;
+    const seen = (h) => {
+      moves.push(h.at - last);
+      last = h.at;
+    };
+    now = play(head, walk([A, B, A, B, A, B, A, B]), now, true, seen);
+    play(head, hold(B, 200), now, true, seen);
+    // It picks up speed gradually…
+    const start = moves.findIndex((m) => m > 0);
+    expect(moves[start]).toBeLessThan((MOTION.openSpeed * STEP) / 1000 / 2);
+    // …and the last moves before it rests are the smallest.
+    const end = moves.findLastIndex((m) => m > 0);
+    expect(moves[end]).toBeLessThan(0.01);
+    expect(MOTION.openSpeed).toBeLessThanOrEqual(3);
+  });
+
+  it("is not opened by a shake of the mouse, nor by a tremble", () => {
+    const head = createHead(spec, 0);
+    let now = play(head, hold([0.5, 0.5], 10), 0);
+    // A hard shake about that spot, 40% of the cover wide, every frame.
+    const shake = Array.from({ length: 80 }, (_, i) => [
+      i % 2 ? 0.7 : 0.3,
+      0.5,
     ]);
-    play(head, jitter, now);
+    now = play(head, shake, now);
     expect(head.progress).toBe(0);
-    expect(MOTION.minStroke).toBeGreaterThan(30);
+    // A slow tremble of a few px of pointer.
+    const tremble = walk(
+      Array.from({ length: 12 }, (_, i) => [i % 2 ? 0.52 : 0.48, 0.5])
+    );
+    play(head, tremble, now);
+    expect(head.progress).toBe(0);
+    expect(head.at).toBe(spec.keys.first);
   });
 
-  it("closes when the hand leaves the head", () => {
+  it("lets a half-open head sink back when left alone", () => {
     const head = createHead(spec, 0);
-    let now = play(head, Array(10).fill(A), 0);
-    now = play(head, walk([A, B, A, B, A, B]), now);
-    now = play(head, Array(60).fill(B), now);
+    let now = play(head, hold(A, 10), 0);
+    now = play(head, walk([A, B, A, B]), now);
+    now = play(head, hold(B, 5), now);
+    const reached = head.progress;
+    expect(reached).toBeGreaterThan(0);
+    play(head, hold(B, Math.ceil(MOTION.idleMs / STEP) + 50), now);
+    expect(head.progress).toBeLessThan(reached);
+  });
+
+  it("closes, gently, when the pointer leaves the cover", () => {
+    const head = createHead(spec, 0);
+    let now = play(head, hold(A, 10), 0);
+    now = play(head, walk([A, B, A, B, A, B, A, B]), now);
+    now = play(head, hold(B, 200), now);
     expect(head.at).toBe(spec.keys.open);
-    // Off the head but still in the hand's zone: it shuts, more slowly.
-    now = play(head, Array(10).fill([2300, 100]), now);
+    // Gone: it shuts, at its own pace.
+    now = play(head, hold(B, 10), now, false);
     expect(head.latched).toBe(false);
     expect(head.at).toBeLessThan(spec.keys.open);
     expect(head.at).toBeGreaterThan(spec.keys.first);
-    play(head, Array(60).fill([2300, 100]), now);
+    let last = head.at;
+    let fastest = 0;
+    play(head, hold(B, 200), now, false, (h) => {
+      fastest = Math.max(fastest, last - h.at);
+      last = h.at;
+    });
+    expect(fastest).toBeLessThanOrEqual(
+      (MOTION.closeSpeed * STEP) / 1000 + 1e-9
+    );
     expect(head.at).toBe(spec.keys.first);
   });
 });
@@ -213,7 +328,7 @@ describe("drawHead", () => {
     ]);
     // Artwork px to device px: scale × dpr, the origin × dpr.
     expect(calls[2]).toEqual(["setTransform", 1, 0, 0, 1, 20, 40]);
-    // The tool's tip is on the pointer.
+    // The tool's tip is where the head says the hand is.
     const hand = calls.at(-1);
     expect(hand[2]).toBeCloseTo(1500 - 20 * 1.2);
     expect(hand[3]).toBeCloseTo(300 - 874 * 1.2);
@@ -281,6 +396,34 @@ describe("drawHead", () => {
       ["hand", 0.5],
       ["lid", 1],
     ]);
+  });
+
+  it("holds the lid and the hand steady: a stroke bumps neither", () => {
+    const sizes = [];
+    const turns = [];
+    const ctx = {
+      canvas: { width: 1, height: 1 },
+      setTransform() {},
+      clearRect() {},
+      save() {},
+      restore() {},
+      translate() {},
+      rotate: (a) => turns.push(a),
+      globalAlpha: 1,
+      drawImage: (img, x, y, w) => img === "hand" && sizes.push(w),
+    };
+    const head = createHead(spec, 0);
+    head.handAlpha = 1;
+    head.progress = 0.5; // mid-way through its strokes, lid not yet moved
+    drawHead(
+      ctx,
+      { oval: 1, brain: 2, body: [3], lid: 4, lidOutline: 5, hand: "hand" },
+      spec,
+      head,
+      { scale: 1, left: 0, top: 0 }
+    );
+    expect(sizes).toEqual([spec.hand.size[0] * spec.hand.scale]);
+    expect(turns).toEqual([0]);
   });
 
   it("leaves the hand out when it is not there", () => {

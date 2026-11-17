@@ -53,7 +53,8 @@ export const Creator = {
   parameters: { auth: { role: "creator" } },
 };
 
-/** A breakout box: lettered badge and the "Breakout box" kicker. */
+/** A breakout box: its lettered badge and its title (no "Breakout box"
+ *  line over it since OPENBRAIN-193). */
 export const BreakoutBox = {
   args: {
     label: "A",
