@@ -19,6 +19,10 @@ const cleanAuthors = (list) =>
     .map((a) => ({
       name: (a?.name || "").trim(),
       affiliation: (a?.affiliation || "").trim(),
+      // The lab site and face (OPENBRAIN-197) have no field here yet: carry
+      // them, or saving a name would drop them from the row.
+      ...(typeof a?.url === "string" && a.url ? { url: a.url } : {}),
+      ...(typeof a?.photo === "string" && a.photo ? { photo: a.photo } : {}),
     }))
     .filter((a) => a.name);
 

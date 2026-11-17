@@ -44,10 +44,12 @@
     "cover_image_url": null,
     "authors": [
       {
+        "url": "https://douglas.research.mcgill.ca/naguib-mechawar",
         "name": "Naguib Mechawar",
         "affiliation": "Douglas Mental Health University Institute; Department of Psychiatry, McGill University"
       },
       {
+        "url": "https://www.trenholmlab.com",
         "name": "Stuart Trenholm",
         "affiliation": "Montreal Neurological Institute, McGill University"
       }

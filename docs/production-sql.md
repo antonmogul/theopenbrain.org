@@ -109,6 +109,12 @@ Committed on 2026-11-12, to push:
 | `20261112190000_history_penfield_binder_v3` (OPENBRAIN-191) | `widget_uploads.history-penfield-binder` becomes version 3 of the file: the cases in numerical order (3, 4, 12, 24, 29, 31, 32), so the binder opens on Case 3. One row, by slug, changed only while its HTML differs. No code depends on it.                   |
 | `20261112193000_history_loewi_kicker` (OPENBRAIN-190)       | `animations.animationFoundationsLoewiWidget` gets `config.kicker` = "Otto’s dream experiment", the line over Loewi's band on phones. One row, by key, changed only while its kicker differs. Safe before or after the deploy (an older reader ignores the key). |
 
+Committed on 2026-11-17 (OPENBRAIN-197), to push:
+
+| Migration                     | What it does, and what must be true first                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20261117197000_author_links` | `modules.authors`: each author entry gets `url`, their lab site (Trenholm, Mechawar, Krishnaswamy, Cook), on the three chapters that list them, and Erik Cook is added to `attention-and-working-memory` after Arjun. Three rows; an entry that already has a `url` keeps it. Safe before or after the deploy: the reader has the same links in code by name (`AUTHOR_PROFILES`) and an older reader ignores the key. Erik Cook's name appears only once this is pushed. |
+
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
 > only true if someone writes to it after a push. Trust `supabase migration list`.

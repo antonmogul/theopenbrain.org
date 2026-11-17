@@ -68,7 +68,7 @@ The switch shows only to a signed-in reader, and only once `public.trending_shar
 - Other readers' shares appear on the next chapter load. Your own appear right away.
 - The sharing probe runs once per page load. After the push, readers see the switch from their next page load, and a probe that fails (offline) hides it until the next one.
 - The text rule checks that a shared text occurs in its paragraph, not that it is the text at its offsets. It runs when a highlight is shared, moved or changed, so a later edit to the paragraph doesn't recount it. Text the SQL doesn't model (another HTML entity, CSS-hidden text) isn't counted.
-- Only timeline and map jumps skip a transition spacer. The opener TOC, the top bar's section menu and InfoTab still land on it; they can call `jumpToElement(readingStartOf(el), …)`.
+- Only timeline and map jumps skip a transition spacer. The opener TOC and InfoTab still land on it (the top bar's section menu is gone, OPENBRAIN-197; its search lands past the spacer); they can call `jumpToElement(readingStartOf(el), …)`.
 - After a click or tap closes the map, focus sits on the dock itself (not the slider), so the page's scroll keys keep working. A screen reader that only sends pointer events lands on the dock region rather than the map button.
 - If the map's chunk fails to load, the next click tries again, but Chrome caches a failed module for the life of the page, so in practice it needs a reload.
 - Thumbnails show each widget's first state in light mode. Three Attention markers (`upload:attn-cocktail-party`, `upload:attn-top-down-bottom-up`, `upload:attn-hemispatial-neglect`) have no uploaded HTML yet, so their cards show a hatched placeholder.

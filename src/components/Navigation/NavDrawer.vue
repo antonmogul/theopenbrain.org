@@ -21,7 +21,9 @@ import { lockReaderScroll } from "@/helper/readerScrollLock";
 import { findReaderAnchor, jumpToElement } from "@/helper/readerJump";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
-import CloseIcon from "@/icons/custom/CloseIcon.vue";
+import { toSlug } from "@/helper/general";
+import BookLogo from "@/components/brand/BookLogo.vue";
+import MenuEye from "@/components/brand/MenuEye.vue";
 import AuthForm from "@/components/Navigation/AuthForm.vue";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useHomeRoute } from "@/composables/useHomeRoute";
@@ -126,8 +128,19 @@ const outline = computed(() => {
     return [];
   return buildOutline(textStore.text);
 });
+// Where the reader is, marked in the outline: the top bar's section menu
+// did this until the search field took its place (OPENBRAIN-197).
+// store.currentSubChapter is the slug of the section title TextComp's
+// trigger last crossed.
+const isReading = (section) =>
+  !!store.currentSubChapter &&
+  store.currentSubChapter === toSlug(section.title || "");
 const drawerRef = ref(null);
 const closeButtonRef = ref(null);
+// The close button is the menu's eye, closed (OPENBRAIN-197). It mounts
+// open and closes a frame later, so the eye the reader pressed is seen to
+// shut as the drawer comes in.
+const eyeClosed = ref(false);
 let opener = null;
 let releaseScroll = null;
 let restoreOnClose = true;
@@ -168,9 +181,12 @@ watch(
       restoreOnClose = true;
       releaseScroll ||= lockReaderScroll();
       await nextTick();
-      if (!unmounted && store.activeMenu && epoch === focusEpoch)
+      if (!unmounted && store.activeMenu && epoch === focusEpoch) {
         closeButtonRef.value?.focus({ preventScroll: true });
+        eyeClosed.value = true;
+      }
     } else {
+      eyeClosed.value = false;
       releaseScroll?.();
       releaseScroll = null;
       const target = opener;
@@ -252,23 +268,10 @@ onBeforeUnmount(() => {
           aria-label="Navigation"
         >
           <!-- Header -->
+          <!-- The closed eye sits where the top bar's open eye is, so the
+               button the reader pressed is the one that closes the menu
+               (Stuart, 11 Nov; OPENBRAIN-197). Then the book's logo. -->
           <div class="drawer-head">
-            <router-link :to="homeRoute" class="wordmark" @click="close">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path
-                  d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21"
-                />
-              </svg>
-              <span class="wordmark-text">the<br />open brain</span>
-            </router-link>
             <button
               ref="closeButtonRef"
               class="close-btn"
@@ -277,8 +280,16 @@ onBeforeUnmount(() => {
               title="Close"
               @click="close"
             >
-              <CloseIcon :width="16" :height="16" />
+              <MenuEye :closed="eyeClosed" />
             </button>
+            <router-link
+              :to="homeRoute"
+              class="wordmark"
+              aria-label="The Open Brain, home"
+              @click="close"
+            >
+              <BookLogo class="wordmark-logo" />
+            </router-link>
           </div>
 
           <!-- Continue -->
@@ -340,6 +351,7 @@ onBeforeUnmount(() => {
                   <button
                     type="button"
                     class="outline-section"
+                    :aria-current="isReading(section) ? 'location' : undefined"
                     @click="jumpTo(section.anchor)"
                   >
                     <span class="outline-label">{{ section.label }}</span
@@ -453,28 +465,40 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
+/* The head sits exactly over the reader's top bar: the close button on the
+   bar's menu button (18px in, 9px down; 8px and 5px below 900px), the logo
+   where the bar's is. The drawer's padding is 24px, so pull it back. */
 .drawer-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
+  margin: -15px 0 -1px -6px;
 }
 .wordmark {
   display: flex;
   align-items: center;
-  gap: 8px;
+  min-height: 44px;
+  border-radius: var(--radius-control);
   text-decoration: none;
   color: rgb(var(--color-ink));
 }
-.wordmark-text {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  line-height: 1.1;
-  text-transform: lowercase;
-  letter-spacing: 0.02em;
+.wordmark-logo {
+  --logo-h: 40px;
+}
+.wordmark:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+@media (max-width: 900px) {
+  .drawer-head {
+    gap: 8px;
+    margin: -19px 0 0 -16px;
+  }
 }
 .close-btn {
-  width: 30px;
-  height: 30px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
   background: transparent;
@@ -741,6 +765,12 @@ onBeforeUnmount(() => {
 .outline-label {
   margin-right: 0.5rem;
   font-family: var(--font-mono);
+}
+/* The section being read: the chapter's colour down its left edge. */
+.outline-section[aria-current="location"] {
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 rgb(var(--color-chapter-deep, var(--color-ink)));
+  padding-left: 0.625rem;
 }
 .outline-section:hover,
 .outline-subsection:hover {

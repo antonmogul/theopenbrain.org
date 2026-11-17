@@ -15,7 +15,7 @@ import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 import { toSlug, addH, removeH } from "@/helper/general";
 import { markersEnabled } from "@/helper/debugFlags";
 import { sectionLabelMap } from "@/composables/useChapterOutline";
-import { authorsForModule } from "@/helper/chapterAuthors";
+import { authorCardsForModule } from "@/helper/chapterAuthors";
 
 import { useText, useGeneral } from "@/stores";
 import { useAuth } from "@/composables/useAuth";
@@ -37,6 +37,7 @@ import HoverImg from "@/components/chapter/text/HoverImg.vue";
 import ReadingRail from "@/components/chapter/ReadingRail.vue";
 import FurtherReading from "./text/FurtherReading.vue";
 import ChapterReferences from "./text/ChapterReferences.vue";
+import ChapterAuthors from "./text/ChapterAuthors.vue";
 import {
   chapterBackReferences,
   retinaLegacyReferences,
@@ -84,7 +85,7 @@ const props = defineProps({
 // A paragraph's figure changed: ChapterView remounts the figure pane so it
 // wires a scroll trigger for a paragraph that had none.
 const emit = defineEmits(["figure-changed"]);
-const authors = computed(() => authorsForModule(props.module));
+const authors = computed(() => authorCardsForModule(props.module));
 
 // The intro's scroll-trigger id derives from its animation config
 // (sections.animation_config.name, e.g. "dragon" → triggerAnimationDragon)
@@ -727,15 +728,9 @@ onBeforeUnmount(() => {
           </h1>
 
           <!-- Authors: chapter data (modules.authors / slug map), not a
-               Retina-only block (OPENBRAIN-33). -->
-          <span v-if="authors.length" class="font-mono text-small">
-            <template v-for="(author, i) in authors" :key="author.name">
-              <p class="font-semibold">{{ author.name }}</p>
-              <p :class="i < authors.length - 1 ? 'pb-5' : ''">
-                {{ author.affiliation }}
-              </p>
-            </template>
-          </span>
+               Retina-only block (OPENBRAIN-33). Each with a face and a link
+               to their lab (OPENBRAIN-197). -->
+          <ChapterAuthors v-if="authors.length" :authors="authors" />
           <br v-if="authors.length" />
 
           <!-- Intro paragraphs. A section with an intro animation (Retina's

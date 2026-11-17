@@ -1,16 +1,16 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 75,
-  "coveredCount": 75,
+  "sourceCount": 77,
+  "coveredCount": 77,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 26,
+    "ReaderShell": 27,
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 17,
-    "Text": 22
+    "Text": 23
   },
   "components": [
     {
@@ -269,6 +269,11 @@
       "story": "DescartesTrial"
     },
     {
+      "source": "src/components/chapter/text/ChapterAuthors.vue",
+      "storyFile": "src/components/chapter/text/__stories__/ChapterAuthors.stories.js",
+      "story": "Default"
+    },
+    {
       "source": "src/components/chapter/text/CommentComp.vue",
       "storyFile": "src/components/chapter/text/__stories__/CommentComp.stories.js",
       "story": "Default"
@@ -387,6 +392,11 @@
       "source": "src/components/chapter/ReaderHelp.vue",
       "storyFile": "src/components/chapter/__stories__/ReaderHelp.stories.js",
       "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/ReaderSearch.vue",
+      "storyFile": "src/components/chapter/__stories__/ReaderSearch.stories.js",
+      "story": "Results"
     }
   ]
 }
