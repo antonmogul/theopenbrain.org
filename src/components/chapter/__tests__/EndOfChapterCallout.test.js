@@ -28,7 +28,6 @@ const RouterLink = {
   template: '<a :href="to" data-router-link><slot /></a>',
 };
 
-const TAKEAWAYS = ["One.", "Two.", "Three."];
 const NEXT = {
   number: 2,
   slug: "the-retina",
@@ -54,7 +53,6 @@ async function mountClose(props = {}) {
       chapterNumber: 1,
       chapterTitle: "Foundations of Neuroscience",
       moduleId: "m1",
-      keyTakeaways: TAKEAWAYS,
       nextChapter: NEXT,
       ...props,
     },
@@ -77,43 +75,28 @@ afterEach(() => {
   for (const w of wrappers.splice(0)) w.unmount();
 });
 
-describe("the chapter in short", () => {
-  it("heads the takeaways with the chapter's title and how many there are", async () => {
+describe("the chapter's name, as it ends", () => {
+  it("says the chapter is over, under its title", async () => {
     const wrapper = await mountClose();
     expect(wrapper.find(".cc-kicker").text()).toMatch(
-      /^Chapter 1\s+·\s+In short$/
+      /^Chapter 1\s+·\s+The end$/
     );
     expect(wrapper.find(".cc-title-lead").text()).toBe(
       "Foundations of Neuroscience"
     );
-    expect(wrapper.find(".cc-title-rest").text()).toBe("in three ideas");
-    expect(wrapper.findAll(".cc-takeaway-text").map((p) => p.text())).toEqual(
-      TAKEAWAYS
-    );
-    expect(wrapper.findAll(".cc-takeaway-n").map((n) => n.text())).toEqual([
-      "01",
-      "02",
-      "03",
-    ]);
-  });
-
-  it("says one idea for one, and keeps a figure past nine", async () => {
-    const one = await mountClose({ keyTakeaways: ["Only."] });
-    expect(one.find(".cc-title-rest").text()).toBe("in one idea");
-    const many = await mountClose({
-      keyTakeaways: Array.from({ length: 11 }, (_, i) => `T${i}`),
-    });
-    expect(many.find(".cc-title-rest").text()).toBe("in 11 ideas");
-  });
-
-  it("closes a chapter without takeaways without an empty list", async () => {
-    const wrapper = await mountClose({ keyTakeaways: [] });
-    expect(wrapper.find(".cc-takeaways").exists()).toBe(false);
-    expect(wrapper.find(".cc-kicker").text()).toMatch(/The end$/);
     expect(wrapper.find(".cc-title-rest").text()).toBe("ends here.");
-    // Null (the column's value for a chapter without any) is no takeaways.
-    const none = await mountClose({ keyTakeaways: null });
-    expect(none.find(".cc-takeaways").exists()).toBe(false);
+  });
+
+  // Stuart, 14 Nov: "Remove the 'Chapter in short' section at the end of
+  // the chapter", "remove the '3 ideas' section" (OPENBRAIN-193). The
+  // module still carries its takeaways; the close has no place for them.
+  it("lists no takeaways", async () => {
+    const wrapper = await mountClose();
+    expect(wrapper.find("ol").exists()).toBe(false);
+    expect(wrapper.text()).not.toMatch(/in short|\bideas?\b/i);
+    expect(
+      Object.keys(EndOfChapterCallout.props).filter((p) => /takeaway/i.test(p))
+    ).toEqual([]);
   });
 });
 
@@ -283,56 +266,5 @@ describe("the ways on", () => {
     expect(next.attributes("href")).toBe("/chapters");
     expect(next.find(".cc-next-title").text()).toBe("All chapters");
     expect(next.attributes("data-chapter")).toBeUndefined();
-  });
-});
-
-describe("arriving", () => {
-  it("shows the takeaways at once where nothing can bring them in", async () => {
-    // happy-dom has no IntersectionObserver unless a test supplies one.
-    const original = globalThis.IntersectionObserver;
-    delete globalThis.IntersectionObserver;
-    const wrapper = await mountClose();
-    expect(wrapper.find(".cc").classes()).not.toContain("cc--waiting");
-    globalThis.IntersectionObserver = original;
-  });
-
-  it("holds them until the close comes on screen, then lets them in", async () => {
-    const original = globalThis.IntersectionObserver;
-    let seen = null;
-    const disconnect = vi.fn();
-    globalThis.IntersectionObserver = class {
-      constructor(callback) {
-        seen = callback;
-      }
-      observe() {}
-      disconnect() {
-        disconnect();
-      }
-    };
-    vi.stubGlobal("matchMedia", () => ({ matches: false }));
-    const wrapper = await mountClose();
-    expect(wrapper.find(".cc").classes()).toContain("cc--waiting");
-    seen([{ isIntersecting: false }]);
-    await flushPromises();
-    expect(wrapper.find(".cc").classes()).toContain("cc--waiting");
-    seen([{ isIntersecting: true }]);
-    await flushPromises();
-    expect(wrapper.find(".cc").classes()).not.toContain("cc--waiting");
-    expect(disconnect).toHaveBeenCalled();
-    vi.unstubAllGlobals();
-    globalThis.IntersectionObserver = original;
-  });
-
-  it("does not hold them under reduced motion", async () => {
-    const original = globalThis.IntersectionObserver;
-    globalThis.IntersectionObserver = class {
-      observe() {}
-      disconnect() {}
-    };
-    document.documentElement.setAttribute("data-reduce-motion", "1");
-    const wrapper = await mountClose();
-    expect(wrapper.find(".cc").classes()).not.toContain("cc--waiting");
-    document.documentElement.removeAttribute("data-reduce-motion");
-    globalThis.IntersectionObserver = original;
   });
 });

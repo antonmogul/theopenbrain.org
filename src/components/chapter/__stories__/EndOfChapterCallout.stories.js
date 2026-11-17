@@ -1,8 +1,10 @@
 /*
  * Chapter/EndOfChapterCallout — the chapter's close (OPENBRAIN-179): where
  * the two-column reader ends and the chapter finishes across the full width,
- * on the dark surface it opened on. The chapter in short (its key
- * takeaways), one way to test yourself, and the next chapter leading out.
+ * on the dark surface it opened on. The chapter's name as it ends, one way
+ * to test yourself, and the next chapter leading out. (The takeaways, "in
+ * three ideas", were removed in OPENBRAIN-193; a full-page infographic is to
+ * take their place.)
  *
  * It renders <router-link>, so it depends on the memory router installed in
  * .storybook/preview.js. The reader's stats and the next chapter are props
@@ -11,12 +13,6 @@
  * `parameters.api`.
  */
 import EndOfChapterCallout from "../EndOfChapterCallout.vue";
-
-const TAKEAWAYS = [
-  "The history of neuroscience advances through debates where both sides were often partly right and partly wrong.",
-  "Where the mind resides shifted over millennia between heart (cardiocentric) and brain (encephalocentric) views.",
-  "Settled questions can reopen when new evidence emerges: progress is incremental and self-correcting.",
-];
 
 const cards = (n) => Array.from({ length: n }, (_, i) => ({ id: `card-${i}` }));
 const QUIZ = {
@@ -38,7 +34,6 @@ export default {
   argTypes: {
     chapterNumber: { control: "text" },
     chapterTitle: { control: "text" },
-    keyTakeaways: { control: "object" },
     isAuthenticated: {
       control: "boolean",
       description:
@@ -60,7 +55,6 @@ export default {
     chapterNumber: 1,
     chapterTitle: "Foundations of Neuroscience",
     moduleId: "module-foundations",
-    keyTakeaways: TAKEAWAYS,
     isAuthenticated: false,
     highlightCount: 0,
     noteCount: 0,
@@ -123,18 +117,11 @@ export const FinalChapter = {
   },
 };
 
-/** No takeaways authored yet: the title block alone, no empty list. */
-export const WithoutTakeaways = { args: { keyTakeaways: [] } };
-
 /** The next chapter's colour is its own: Perception's teal on a violet chapter. */
 export const AnotherChapter = {
   args: {
     chapterNumber: 2,
     chapterTitle: "The Retina",
-    keyTakeaways: [
-      "Photoreceptors convert light into electrical signals through phototransduction.",
-      "Bipolar cells split the signal into ON and OFF pathways.",
-    ],
     nextChapter: {
       number: 3,
       slug: "attention-and-working-memory",
