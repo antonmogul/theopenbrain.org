@@ -456,3 +456,45 @@ describe("markdownBoldToHtml", () => {
     expect(text).not.toContain("**");
   });
 });
+
+// Stuart, 14 Nov, on the poem on Descartes' skull: "the citation '91' hangs
+// out awkwardly under the quote. I think it can be at end of last line."
+describe("a citation after a quote (OPENBRAIN-194)", () => {
+  const cite = (n, comma = false) =>
+    `<sup class="citation-ref" data-ref="${n}">${
+      comma ? '<span aria-hidden="true">,</span>' : ""
+    }${n}</sup>`;
+
+  it("is set inside the quote, on its last line", () => {
+    const { text } = contentBlocksToHTML([
+      { type: "blockquote", content: "“And his spirit still rejoices.”" },
+      { type: "citation_ref", number: 91 },
+    ]);
+    expect(text).toBe(
+      `<blockquote>“And his spirit still rejoices.”${cite(91)}</blockquote>`
+    );
+  });
+
+  it("keeps a run of citations together, and the text after it outside", () => {
+    const { text } = contentBlocksToHTML([
+      { type: "text", content: "He wrote:" },
+      { type: "blockquote", content: "A quote." },
+      { type: "citation_ref", number: 2 },
+      { type: "citation_ref", number: 3 },
+      { type: "text", content: " Then more" },
+      { type: "citation_ref", number: 4 },
+    ]);
+    expect(text).toBe(
+      `He wrote:<blockquote>A quote.${cite(2)}${cite(3, true)}</blockquote> Then more${cite(4)}`
+    );
+  });
+
+  it("leaves a citation in running text where it was", () => {
+    const { text } = contentBlocksToHTML([
+      { type: "text", content: "dualism" },
+      { type: "citation_ref", number: 88 },
+      { type: "citation_ref", number: 89 },
+    ]);
+    expect(text).toBe(`dualism${cite(88)}${cite(89, true)}`);
+  });
+});

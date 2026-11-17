@@ -1,7 +1,8 @@
 /*
  * Chapter/Text/RailPart — one part of a breakout box read sideways
- * (OPENBRAIN-187): its picture first, once, with its legend and expand
- * button, then its text in columns as tall as the track. The frame stands
+ * (OPENBRAIN-187, 194): its picture first, once, just the image and its
+ * expand button (the legend is in the full-screen view), then its text in
+ * columns as tall as the track. The frame stands
  * in for BreakoutBox's track: a size container of a fixed height, which
  * the part's lengths (cqw, cqh) are measured against, and the mode it
  * provides ("track" from 1024px, "swipe" on a phone). Figures from the

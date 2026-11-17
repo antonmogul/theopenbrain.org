@@ -951,11 +951,13 @@ onBeforeUnmount(() => arrival?.disconnect());
    a time, snapping to the points the box draws (.bx-snap). Its height is
    in svh, never dvh: a block in the flow that follows the phone's address
    bar moves the page under the reader (OPENBRAIN-185). A size container,
-   so each page sizes from it (100cqw is a page). */
+   so each page sizes from it (100cqw is a page). --rail-extra is the line
+   or two the track grows by so that no part ends on a page of a few stray
+   words (fitRailColumns, OPENBRAIN-194). */
 .bx.bx--swipe:not(.bx--floating) .bx-body {
   position: relative;
-  height: clamp(22rem, 62vh, 40rem);
-  height: clamp(22rem, 62svh, 40rem);
+  height: calc(clamp(22rem, 62vh, 40rem) + var(--rail-extra, 0px));
+  height: calc(clamp(22rem, 62svh, 40rem) + var(--rail-extra, 0px));
   margin: 0.5rem 0 0;
   padding: 0;
   overflow-x: auto;
@@ -965,6 +967,41 @@ onBeforeUnmount(() => arrival?.disconnect());
      gesture. Only the x axis: a swipe down still scrolls the page. */
   overscroll-behavior-x: contain;
   container-type: size;
+}
+/* The stop (Stuart, 14 Nov: "have the scroll stop for a second when the
+   user hits a breakout box. Like if I swipe, and take my thumb off, that
+   shouldn't scroll me past a breakout box"). The box's top is a snap
+   position of the page that a scroll may not pass over
+   (scroll-snap-stop: always): a flick that would have carried the reader
+   past the box comes to rest with its heading under the top bar, and the
+   next one goes on (the box is taller than the screen, so inside it the
+   page scrolls freely). The browser's own scrolling does this, so nothing
+   is pinned and no script touches the page's scroll. The page is a snap
+   container only while it holds such a box, and only by proximity: away
+   from a box it never pulls (within a third of a screen above one, a
+   scroll that ends there settles on the box).
+   Only on iOS and iPadOS, where every browser is WebKit (the @supports
+   below matches nothing else). WebKit stops at a snap-stop position
+   between where a flick starts and where it would end before it looks at
+   proximity (ScrollSnapOffsetsInfo.cpp), which is what is wanted. Chromium
+   does not: with proximity a long flick passes straight over, and it
+   pulls a page resting just past the end of a snap area back to it, which
+   here would drag a reader who has left the box back up. So Android keeps
+   the plain scroll. */
+.bx.bx--swipe:not(.bx--floating) {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scroll-margin-top: calc(var(--reader-topbar-h, 4rem) + 0.5rem);
+  /* The snap area reaches well below the box, so it is always taller than
+     the screen: a snap area that covers the screen may rest anywhere, and
+     the reader who scrolls down inside the box to its buttons is not
+     pulled back to its top. */
+  scroll-margin-bottom: 75vh;
+}
+@supports (-webkit-touch-callout: none) {
+  :global(html:has(.bx--swipe[data-section-slug])) {
+    scroll-snap-type: y proximity;
+  }
 }
 .bx.bx--swipe .bx-body:focus-visible {
   outline: 2px solid var(--bx-ink);
