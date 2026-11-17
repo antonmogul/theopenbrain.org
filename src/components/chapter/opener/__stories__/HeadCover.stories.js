@@ -1,8 +1,9 @@
 /*
  * Chapter/Opener/HeadCover — the History opener (OPENBRAIN-171): a girl
- * writes in a loop; over the upper right the pointer becomes a hand with a
- * tool, and rubbing it back and forth over her head (four strokes) slides
- * the top off and lets the brain rise. Moving off the head closes it.
+ * writes in a loop; while the pointer is over the cover a hand with a tool
+ * rests on her crown, in a small region the pointer's travel is mapped into
+ * (OPENBRAIN-198), and working it to and fro (six small strokes) slowly
+ * slides the top off and lets the brain rise. Leaving the cover closes it.
  * `Live` is the cover as the chapter has it. With the Motion toolbar set to
  * reduced, only the still shows. `Missing` points at a still that isn't
  * there and so renders nothing (the opener keeps its chapter cover).
