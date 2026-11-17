@@ -2,7 +2,8 @@
  * BreakoutBox treatment (OPENBRAIN-153, 157): the frame marks itself
  * data-treatment from the chapter TextComp provides and the box's slug,
  * a section's own treatment or the prop wins, and the pale card keeps its
- * badge while a panel drops it (the kicker carries the letter).
+ * badge while a panel drops it. No box says "Breakout box B" over its
+ * title (OPENBRAIN-193); the letter is kept for screen readers.
  *
  * The second half reads the component's own stylesheet: every treatment's
  * ground and ink, resolved through brand.css for each of the five ramps,
@@ -32,7 +33,7 @@ const mountBox = ({ section, chapterSlug = null, props = {} } = {}) =>
   });
 
 describe("BreakoutBox treatment", () => {
-  it("renders a History box as the dark panel, letter in the kicker only", () => {
+  it("renders a History box as the dark panel, with its title alone over it", () => {
     const w = mountBox({
       section: { id: "s1", slug: "box-descartes", title: "Descartes" },
       chapterSlug: "foundations-of-neuroscience",
@@ -43,8 +44,18 @@ describe("BreakoutBox treatment", () => {
     expect(aside.classes()).toContain("bx--dark");
     expect(w.find(".bx-pause").attributes("data-treatment")).toBe("dark");
     expect(w.find(".bx-badge").exists()).toBe(false);
-    expect(w.find(".bx-kicker").text()).toBe("Breakout box B");
     expect(w.find("h2").text()).toBe("Descartes");
+    // Stuart, 14 Nov: "I'm not sure we need to label them as 'Breakout box
+    // B' etc. I think it's ok to not have these titles." Nothing is drawn;
+    // the timeline and the nav drawer still call the box by its letter, so
+    // a screen reader hears it.
+    expect(w.find(".bx-kicker").exists()).toBe(false);
+    const said = w.find("[data-box-label]");
+    expect(said.text()).toBe("Breakout box B");
+    expect(said.classes()).toContain("sr-only");
+    const shown = w.find(".bx-intro").element.cloneNode(true);
+    shown.querySelectorAll(".sr-only").forEach((el) => el.remove());
+    expect(shown.textContent.trim()).toBe("Descartes");
   });
 
   it("keeps another chapter's box the pale card with its badge", () => {
@@ -57,6 +68,18 @@ describe("BreakoutBox treatment", () => {
     expect(aside.classes()).not.toContain("bx--panel");
     expect(aside.classes()).not.toContain("bx--dark");
     expect(w.find(".bx-badge").text()).toBe("B");
+    expect(w.find(".bx-kicker").exists()).toBe(false);
+    expect(w.find("[data-box-label]").classes()).toContain("sr-only");
+  });
+
+  it("says nothing for a box without a letter", () => {
+    const w = mountBox({
+      section: { id: "s3", slug: "box-x", title: "Unlettered" },
+      chapterSlug: "the-retina",
+      props: { label: "" },
+    });
+    expect(w.find("[data-box-label]").exists()).toBe(false);
+    expect(w.find(".bx-intro").text()).toBe("Unlettered");
   });
 
   it("is pale with no chapter provided (stories, tests)", () => {

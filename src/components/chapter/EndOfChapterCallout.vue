@@ -2,9 +2,14 @@
 /*
  * The chapter's close (OPENBRAIN-179): where the two-column reader ends and
  * the chapter finishes across the whole width, on the dark surface it opened
- * on. It answers the opener: the chapter's title on the left and, where the
- * contents were, what to take away from them; then one way to test
- * yourself, and the next chapter leading out.
+ * on. It answers the opener: the chapter's title, said once more as it
+ * ends; then one way to test yourself, and the next chapter leading out.
+ *
+ * It no longer lists the chapter's takeaways ("Chapter 1 · In short", "… in
+ * three ideas"): Stuart, 14 Nov, "Remove the 'Chapter in short' section at
+ * the end of the chapter. We'll replace this idea at a later point with a
+ * full-page info-graphic" (OPENBRAIN-193). modules.key_takeaways stays in
+ * the database for that page; nothing here reads it.
  *
  * It replaced a card in the text column (key takeaways, four stats, three
  * buttons) and the "Quiz" block above it. What that got wrong, and this
@@ -24,19 +29,17 @@
  * Everything shown is the chapter's own data, passed in or fetched: nothing
  * here knows which chapter it is.
  */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useFeedback } from "@/composables/useFeedback";
 import { useChapterStudyTools } from "@/composables/useChapterStudyTools";
 import { useAuthStore } from "@/stores/auth";
-import { reducedMotionPreferred, scrollToY } from "@/helper/readerJump";
+import { scrollToY } from "@/helper/readerJump";
 
 const props = defineProps({
   chapterNumber: { type: [String, Number], required: true },
   chapterTitle: { type: String, default: "" },
   moduleId: { type: String, default: null },
-  /** modules.key_takeaways: one sentence each. */
-  keyTakeaways: { type: Array, default: () => [] },
   /** Is a reader signed in? Their stats show, and the test opens directly. */
   isAuthenticated: { type: Boolean, default: false },
   // The reader's own numbers (ChapterView computes them from composables).
@@ -52,33 +55,6 @@ const props = defineProps({
 
 const router = useRouter();
 const authStore = useAuthStore();
-
-/* ---- What to take away ------------------------------------------------ */
-
-const takeaways = computed(() =>
-  (Array.isArray(props.keyTakeaways) ? props.keyTakeaways : [])
-    .map((t) => String(t || "").trim())
-    .filter(Boolean)
-);
-const NUMBER_WORDS = [
-  "",
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine",
-];
-// "in three ideas"; a count without a word of its own keeps its figure.
-const ideasLine = computed(() => {
-  const n = takeaways.value.length;
-  if (!n) return "ends here.";
-  return `in ${NUMBER_WORDS[n] || n} ${n === 1 ? "idea" : "ideas"}`;
-});
-const two = (n) => String(n).padStart(2, "0");
 
 /* ---- The reader's own numbers ----------------------------------------- */
 
@@ -212,77 +188,27 @@ watch(
 const cover = computed(() =>
   coverFailed.value ? null : props.nextChapter?.cover || null
 );
-
-/* ---- Arriving ---------------------------------------------------------- */
-
-// The takeaways rise in, one after another, as the close comes on screen.
-// They are in the page from the start: the wait is only armed where it can
-// end (an observer, motion allowed).
-const root = ref(null);
-const waiting = ref(false);
-let observer = null;
-onMounted(() => {
-  if (typeof IntersectionObserver === "undefined" || reducedMotionPreferred())
-    return;
-  waiting.value = true;
-  observer = new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      waiting.value = false;
-      observer?.disconnect();
-      observer = null;
-    },
-    { rootMargin: "0px 0px -15% 0px" }
-  );
-  observer.observe(root.value);
-});
-onBeforeUnmount(() => observer?.disconnect());
 </script>
 
 <template>
-  <div
-    ref="root"
-    class="cc"
-    :class="{ 'cc--waiting': waiting }"
-    role="region"
-    aria-label="End of chapter"
-    data-chapter-close
-  >
+  <div class="cc" role="region" aria-label="End of chapter" data-chapter-close>
     <div class="cc-wrap">
-      <!-- The chapter in short: the opener's title block, and what was in it -->
-      <div class="cc-short" :class="{ 'cc-short--bare': !takeaways.length }">
-        <header class="cc-head">
-          <p class="cc-kicker">
-            Chapter {{ chapterNumber }}
-            <span aria-hidden="true">·</span>
-            {{ takeaways.length ? "In short" : "The end" }}
-          </p>
-          <h2 class="cc-title">
-            <span class="cc-title-lead">{{
-              chapterTitle || "The chapter"
-            }}</span>
-            <span class="cc-title-rest">{{ ideasLine }}</span>
-          </h2>
-          <p v-if="stats.length" class="cc-stats">
-            <span class="cc-stats-label">Your reading</span>
-            <span v-for="s in stats" :key="s" class="cc-stat">{{ s }}</span>
-          </p>
-        </header>
-
-        <ol v-if="takeaways.length" class="cc-takeaways" role="list">
-          <li
-            v-for="(t, i) in takeaways"
-            :key="i"
-            class="cc-takeaway"
-            :style="{ '--cc-i': i }"
-          >
-            <span class="cc-takeaway-n" aria-hidden="true">{{
-              two(i + 1)
-            }}</span>
-            <p class="cc-takeaway-text">{{ t }}</p>
-          </li>
-        </ol>
-      </div>
+      <!-- The chapter's name, as it ends -->
+      <header class="cc-head">
+        <p class="cc-kicker">
+          Chapter {{ chapterNumber }}
+          <span aria-hidden="true">·</span>
+          The end
+        </p>
+        <h2 class="cc-title">
+          <span class="cc-title-lead">{{ chapterTitle || "The chapter" }}</span>
+          <span class="cc-title-rest">ends here.</span>
+        </h2>
+        <p v-if="stats.length" class="cc-stats">
+          <span class="cc-stats-label">Your reading</span>
+          <span v-for="s in stats" :key="s" class="cc-stat">{{ s }}</span>
+        </p>
+      </header>
 
       <!-- One way to test yourself, when the chapter has one -->
       <div v-if="test" class="cc-test" data-chapter-test>
@@ -413,12 +339,7 @@ onBeforeUnmount(() => observer?.disconnect());
   margin: 0 auto;
 }
 
-/* ---- In short ---- */
-.cc-short {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 2.5rem;
-}
+/* ---- The end ---- */
 .cc-kicker,
 .cc-test-kicker,
 .cc-next-kicker,
@@ -460,45 +381,6 @@ onBeforeUnmount(() => observer?.disconnect());
 .cc-stats-label {
   color: #fff;
   font-weight: 600;
-}
-
-.cc-takeaways {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.cc-takeaway {
-  display: grid;
-  grid-template-columns: 2.75rem minmax(0, 1fr);
-  column-gap: 1rem;
-  align-items: baseline;
-  padding: clamp(1.25rem, 2.2cqw, 2rem) 0;
-  border-top: 1px solid var(--cc-line);
-  transition:
-    opacity 0.6s ease,
-    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
-  transition-delay: calc(var(--cc-i, 0) * 110ms);
-}
-.cc-takeaway:last-child {
-  border-bottom: 1px solid var(--cc-line);
-}
-.cc-takeaway-n {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-14);
-  letter-spacing: 0.06em;
-  color: rgb(var(--color-chapter-soft));
-  font-variant-numeric: tabular-nums;
-}
-.cc-takeaway-text {
-  margin: 0;
-  padding: 0;
-  font-size: clamp(1.1875rem, 2cqw, 1.75rem);
-  line-height: 1.4;
-  text-wrap: pretty;
-}
-.cc--waiting .cc-takeaway {
-  opacity: 0;
-  transform: translateY(1rem);
 }
 
 /* ---- Test your knowledge: the chapter's colour, the one filled thing ---- */
@@ -712,20 +594,8 @@ onBeforeUnmount(() => observer?.disconnect());
   transform: translateX(0.25rem);
 }
 
-/* ---- Wider than a tablet: the opener's two halves ---- */
+/* ---- Wider than a tablet: the test's words beside its button ---- */
 @container (min-width: 60rem) {
-  .cc-short {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    column-gap: clamp(2.5rem, 6cqw, 6rem);
-    align-items: start;
-  }
-  .cc-short--bare {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .cc-head {
-    position: sticky;
-    top: calc(var(--reader-topbar-h, 4rem) + 2rem);
-  }
   .cc-test {
     grid-template-columns: minmax(0, 1fr) auto;
     column-gap: clamp(2rem, 5cqw, 5rem);
@@ -750,7 +620,6 @@ onBeforeUnmount(() => observer?.disconnect());
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root:not([data-reduce-motion="0"]) .cc-takeaway,
   :root:not([data-reduce-motion="0"]) .cc-arrow,
   :root:not([data-reduce-motion="0"]) .cc-next-cover img,
   :root:not([data-reduce-motion="0"]) .cc-next-go {

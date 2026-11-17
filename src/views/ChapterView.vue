@@ -189,7 +189,7 @@ const chapterTitle = computed(
 );
 
 // Chapter catalog — used to look up next chapter for the end-of-chapter callout
-const { fetchCatalog, nextAfter, findById } = useChapterCatalog();
+const { fetchCatalog, nextAfter } = useChapterCatalog();
 fetchCatalog();
 
 const nextChapterInfo = computed(() => {
@@ -207,10 +207,6 @@ const nextChapterInfo = computed(() => {
     ramp: rampForModule(next),
   };
 });
-
-const currentModuleMeta = computed(() =>
-  currentModuleId.value ? findById(currentModuleId.value) : null
-);
 
 const calloutTimeSpent = computed(() => readingTimeSpent.value || 0);
 // The foot's "Back to the top": smooth unless motion is reduced.
@@ -821,7 +817,6 @@ async function handleDeleteHighlight(highlightId) {
             :chapter-number="chapterNumber"
             :chapter-title="chapterTitle"
             :module-id="currentModuleId"
-            :key-takeaways="currentModuleMeta?.key_takeaways || []"
             :highlight-count="highlights?.length || 0"
             :note-count="notes?.length || 0"
             :time-spent-seconds="calloutTimeSpent"

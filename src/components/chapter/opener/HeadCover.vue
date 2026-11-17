@@ -1,12 +1,14 @@
 <script setup>
 /*
  * "Open the head" cover (OPENBRAIN-171): the History opener as the
- * designers delivered it. A girl writes in a loop; over the upper right of
- * the drawing the pointer becomes a hand holding a tool, and rubbing it
- * back and forth over her head slides the top off and lets the brain rise.
- * Moving off the head closes it. The logic and its numbers are theirs, in
- * helper/headCover.js; this component gives it a canvas, the pointer and a
- * clock, and looks after what a page in a book needs that a demo does not:
+ * designers delivered it. A girl writes in a loop; while the pointer is
+ * over the cover a hand holding a tool rests on her crown, and working it
+ * to and fro there slides the top off and lets the brain rise. The tool
+ * keeps to a small region however far the pointer goes (OPENBRAIN-198), so
+ * the reader's own cursor stays on show. Leaving the cover closes the head.
+ * The logic is in helper/headCover.js; this component gives it a canvas,
+ * the pointer and a clock, and looks after what a page in a book needs
+ * that a demo does not:
  *
  * - First paint and reduced motion. The resting drawing is one still
  *   (`spec.poster`), laid out by the same sceneFit as the canvas, so
@@ -70,14 +72,12 @@ let raf = 0;
 let io = null;
 let ro = null;
 let dpr = 1;
-let box = { left: 0, top: 0 }; // the stage in the viewport, read on a move
 let drawn = ""; // what the canvas last showed
-const pointer = { present: false, x: 0, y: 0 };
+const pointer = { present: false, u: 0.5, v: 0.5 }; // u, v: 0 to 1 across
 
 function fit() {
   if (!stage.value) return;
   const r = stage.value.getBoundingClientRect();
-  box = { left: r.left, top: r.top };
   view.value = sceneFit(
     { width: r.width, height: Math.max(0, r.height - ARROW_ROOM) },
     props.spec.fit
@@ -92,14 +92,18 @@ function fit() {
   schedule();
 }
 
+/* An image, ready to draw. Where there is decode() we wait for it and not
+   for `load`: in WebKit `load` can come before the pixels are ready, and
+   the hand, which is drawn once into its faded copy, then came out empty
+   (the tool never showed, though the head still opened). */
 function decode(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onerror = reject;
-    img.onload = () => resolve(img);
     img.src = url;
     if (typeof img.decode === "function")
       img.decode().then(() => resolve(img), reject);
+    else img.onload = () => resolve(img);
   });
 }
 
@@ -137,9 +141,10 @@ function tick(now) {
   const sig = [
     head.frame,
     head.at.toFixed(3),
-    head.kick.toFixed(3),
     head.handAlpha.toFixed(2),
-    head.handAlpha > 0.01 ? `${head.hand.x | 0},${head.hand.y | 0}` : "",
+    head.handAlpha > 0.01
+      ? `${head.hand.x.toFixed(1)},${head.hand.y.toFixed(1)}`
+      : "",
   ].join("|");
   if (sig !== drawn) {
     drawn = sig;
@@ -148,7 +153,6 @@ function tick(now) {
       dpr,
     });
   }
-  if (stage.value) stage.value.style.cursor = head.inside ? "none" : "";
   raf = requestAnimationFrame(tick);
 }
 function schedule() {
@@ -156,17 +160,16 @@ function schedule() {
     raf = requestAnimationFrame(tick);
 }
 
-/* The pointer in the artwork's pixels. */
+/* Where the pointer is across the cover: the helper maps that into the
+   tool's small region. */
 function onPointer(e) {
-  const s = view.value.scale;
-  if (!s) return;
   const r = stage.value?.getBoundingClientRect();
-  if (r) box = { left: r.left, top: r.top };
-  const x = e.clientX - box.left;
-  const y = e.clientY - box.top;
-  pointer.present = !!r && x >= 0 && y >= 0 && x <= r.width && y <= r.height;
-  pointer.x = (x - view.value.left) / s;
-  pointer.y = (y - view.value.top) / s;
+  if (!r || !(r.width > 0 && r.height > 0)) return onLeave();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
+  pointer.present = x >= 0 && y >= 0 && x <= r.width && y <= r.height;
+  pointer.u = x / r.width;
+  pointer.v = y / r.height;
 }
 function onLeave() {
   pointer.present = false;
@@ -221,7 +224,6 @@ function goStill() {
   if (raf) cancelAnimationFrame(raf);
   raf = 0;
   live.value = false;
-  if (stage.value) stage.value.style.cursor = "";
 }
 watch(reducedMotion, (reduced) => {
   if (disposed) return;
@@ -305,7 +307,7 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: var(--reader-topbar-h, 0px) 0 var(--reader-timeline-h, 0px);
   overflow: hidden;
-  /* A vertical swipe scrolls the page; a sideways rub works the head. */
+  /* A vertical swipe scrolls the page; a sideways rub works the tool. */
   touch-action: pan-y;
 }
 .head-cover__poster {

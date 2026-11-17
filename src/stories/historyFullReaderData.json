@@ -309,7 +309,7 @@
             "type": "text",
             "content": "By the middle of the 18th century, the gross anatomy of the brain had been described in reasonable detail. Following Thomas Willis, work by anatomists across Europe such as Gennari, Pourfour du Petit, Rolando, Vicq-D’Azyr, and Gratiolet, gave rise to a clear and detailed picture of the brain as a complex organ with multiple distinct anatomical regions. But what was the substance making up the organ of thought, memory, and emotions? Early explorations with small, hand-held homemade microscopes ("
           },
-          { "type": "figure_placeholder", "number": 12 },
+          { "type": "figure_placeholder", "number": 16 },
           {
             "type": "text",
             "content": ") allowed the Dutch draper Antonie van Leeuwenhoek—who had started making his own microscopes to assess the quality of his fabrics—to examine countless biological specimens, including a cow optic nerve,"
@@ -321,7 +321,7 @@
           }
         ]
       },
-      "content_text": "By the middle of the 18th century, the gross anatomy of the brain had been described in reasonable detail. Following Thomas Willis, work by anatomists across Europe such as Gennari, Pourfour du Petit, Rolando, Vicq-D’Azyr, and Gratiolet, gave rise to a clear and detailed picture of the brain as a complex organ with multiple distinct anatomical regions. But what was the substance making up the organ of thought, memory, and emotions? Early explorations with small, hand-held homemade microscopes (Figure 12)) allowed the Dutch draper Antonie van Leeuwenhoek—who had started making his own microscop",
+      "content_text": "By the middle of the 18th century, the gross anatomy of the brain had been described in reasonable detail. Following Thomas Willis, work by anatomists across Europe such as Gennari, Pourfour du Petit, Rolando, Vicq-D’Azyr, and Gratiolet, gave rise to a clear and detailed picture of the brain as a complex organ with multiple distinct anatomical regions. But what was the substance making up the organ of thought, memory, and emotions? Early explorations with small, hand-held homemade microscopes (Figure 16)) allowed the Dutch draper Antonie van Leeuwenhoek—who had started making his own microscop",
       "order_index": 2,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig12",
@@ -380,7 +380,7 @@
           },
           { "type": "citation_ref", "number": 49 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": 13 },
+          { "type": "figure_placeholder", "number": 17 },
           {
             "type": "text",
             "content": "). However, Deiters hypothesized that these processes were fused to those of other “cells.” The idea that neuronal processes fused (or anastomosed) was formalized by German anatomist Joseph von Gerlach in 1871 when he proposed that the brain is built from specialized cells with extended fibers that fused with one another, forming a giant nerve net or syncytium"
@@ -419,7 +419,7 @@
             "type": "text",
             "content": ". This staining, which he called the “black reaction” (<em>la reazione nera</em>) involved staining nervous tissue with silver, which allowed for the unprecedented visualization of individual cells in the brain. The main advantage of this staining method, which is still used by some researchers today, is that random cells in nervous tissue are very darkly stained in their entirety. Using this approach, Golgi produced elegant and highly detailed descriptions of nervous circuitries observed in various regions of the brain. For example, his rendering of olfactory bulb neurons revealed a complex arrangement of cells, layers and structures ("
           },
-          { "type": "figure_placeholder", "number": 14 },
+          { "type": "figure_placeholder", "number": 18 },
           { "type": "text", "content": ")." }
         ]
       },
@@ -474,7 +474,7 @@
             "type": "text",
             "content": ". The advantages of studying the immature nervous system were twofold: first, it is mostly unmyelinated, allowing for better staining; second, it contains growing elements which provided insights into how neurons connect with one another. By following the fate of processes growing from cell bodies across different points in development, Ramón y Cajal was the first to describe the growth cone ("
           },
-          { "type": "figure_placeholder", "number": 15 },
+          { "type": "figure_placeholder", "number": 19 },
           {
             "type": "text",
             "content": "), the leading process of developing axons"
@@ -503,7 +503,7 @@
             "type": "text",
             "content": "Ramón y Cajal’s demonstration that nerve cells do not form a syncytium but remain as individual units meant that the brain conformed to cell theory. Ramón y Cajal made many more crucial observations, and his remarkable power of deduction allowed him to identify the flow of information within cells (the law of dynamic polarization; from dendrites to cell body to axon) and circuits (e.g., see the arrows in "
           },
-          { "type": "figure_placeholder", "number": 16 },
+          { "type": "figure_placeholder", "number": 20 },
           {
             "type": "text",
             "content": "). These observations and interpretations became known as the Neuron Doctrine, which was first laid out in 1891 by Heinrich von Waldeyer-Hartz, who coined the term <em>neuron</em>"
@@ -512,7 +512,7 @@
           { "type": "text", "content": "." }
         ]
       },
-      "content_text": "Ramón y Cajal’s demonstration that nerve cells do not form a syncytium but remain as individual units meant that the brain conformed to cell theory. Ramón y Cajal made many more crucial observations, and his remarkable power of deduction allowed him to identify the flow of information within cells (the law of dynamic polarization; from dendrites to cell body to axon) and circuits (e.g., see the arrows in (Figure 16)). These observations and interpretations became known as the Neuron Doctrine, which was first laid out in 1891 by Heinrich von Waldeyer-Hartz, who coined the term neuron.",
+      "content_text": "Ramón y Cajal’s demonstration that nerve cells do not form a syncytium but remain as individual units meant that the brain conformed to cell theory. Ramón y Cajal made many more crucial observations, and his remarkable power of deduction allowed him to identify the flow of information within cells (the law of dynamic polarization; from dendrites to cell body to axon) and circuits (e.g., see the arrows in (Figure 20)). These observations and interpretations became known as the Neuron Doctrine, which was first laid out in 1891 by Heinrich von Waldeyer-Hartz, who coined the term neuron.",
       "order_index": 9,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig16",
@@ -582,7 +582,7 @@
             "type": "text",
             "content": "Despite his contrarian view, Golgi’s contributions to biology were innumerable. In addition to the staining method he invented, he and his students and staff at the University of Pavia ("
           },
-          { "type": "figure_placeholder", "number": 17 },
+          { "type": "figure_placeholder", "number": 21 },
           {
             "type": "text",
             "content": ") made several remarkable observations, describing, for example, the muscle-associated spindle essential for proprioception (Golgi tendon organ)"
@@ -594,7 +594,7 @@
         ],
         "animationFlags": { "room": 1 }
       },
-      "content_text": "Despite his contrarian view, Golgi’s contributions to biology were innumerable. In addition to the staining method he invented, he and his students and staff at the University of Pavia (Figure 17)) made several remarkable observations, describing, for example, the muscle-associated spindle essential for proprioception (Golgi tendon organ) and the Golgi apparatus.",
+      "content_text": "Despite his contrarian view, Golgi’s contributions to biology were innumerable. In addition to the staining method he invented, he and his students and staff at the University of Pavia (Figure 21)) made several remarkable observations, describing, for example, the muscle-associated spindle essential for proprioception (Golgi tendon organ) and the Golgi apparatus.",
       "order_index": 12,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig17",
@@ -611,7 +611,7 @@
             "type": "text",
             "content": "Unfortunately for Golgi and Ramón y Cajal, the diffraction limit is approximately 0.2 μm, meaning that with their light microscopes they were unable to resolve the junctions that exist at the contact points between one neuron’s axon and another neuron’s dendrites. It wasn’t until the 1950s and the development of electron microscopy that sufficient magnification power was obtained to visualize gaps of 20-30 nm that are typical of central nervous system synapses. Sanford Palay and colleagues were the first to describe a protocol for the rapid fixation and staining of membranes that permitted visualization of the ultrastructure of nervous tissue. The images they obtained showed the synaptic structure for the first time: the presynaptic terminal, filled with vesicles and containing mitochondria, and its terminal membrane closely apposed to the postsynaptic element (a postsynaptic dendrite or cell body; "
           },
-          { "type": "figure_placeholder", "number": 18 },
+          { "type": "figure_placeholder", "number": 22 },
           {
             "type": "text",
             "content": "). In the first major paper on the topic in 1956, Palay concluded: “The absence of protoplasmic continuity across the contact surface between the two members of the synaptic apparatus is impressive confirmation of the neuron doctrine enunciated and defended by Ramón y Cajal during the early part of this century.”"
@@ -778,16 +778,16 @@
             "type": "text",
             "content": "Berzilius gave the skull to the French Académie de Sciences. The skull now resides in the Musée de l’homme in Paris ("
           },
-          { "type": "figure_placeholder", "number": "A" },
+          { "type": "figure_placeholder", "number": "D" },
           {
             "type": "text",
             "content": "), though there is controversy regarding whether or not it is truly Descartes’ skull, as a museum in Lund, Sweden, also displays a portion of what they claim is the true “Skull of the Philosopher Descartes.” ("
           },
-          { "type": "figure_placeholder", "number": "B" },
+          { "type": "figure_placeholder", "number": "E" },
           { "type": "text", "content": ")." }
         ]
       },
-      "content_text": "Berzilius gave the skull to the French Académie de Sciences. The skull now resides in the Musée de l’homme in Paris (Figure A)), though there is controversy regarding whether or not it is truly Descartes’ skull, as a museum in Lund, Sweden, also displays a portion of what they claim is the true “Skull of the Philosopher Descartes.” (Figure B)).",
+      "content_text": "Berzilius gave the skull to the French Académie de Sciences. The skull now resides in the Musée de l’homme in Paris (Figure D)), though there is controversy regarding whether or not it is truly Descartes’ skull, as a museum in Lund, Sweden, also displays a portion of what they claim is the true “Skull of the Philosopher Descartes.” (Figure E)).",
       "order_index": 8,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFigA",
@@ -812,7 +812,7 @@
           },
           { "type": "citation_ref", "number": 107 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": "G" },
+          { "type": "figure_placeholder", "number": "F" },
           {
             "type": "text",
             "content": "). Mary comes under the care of Dr. Roberts Bartholow. He is intrigued by the emerging field of electrotherapy and—having read of the experiments of Fritz and Hitzig, and Ferrier—realizes that Mary’s skull opening could allow him test out electrical stimulation in the human brain. In particular, Bartholow wants to see if he can repeat the results from dogs and monkeys, and drive motor movements in human via brain stimulation. He also wants to test out lateralization of function, and dural vs. cortical excitability. Though he later described Rafferty as “not very well nourished and rather feeble-minded,” he nonetheless sought and received her consent to perform brain stimulation experiments through her cranial cavity"
@@ -822,7 +822,7 @@
           { "type": "text", "content": "." }
         ]
       },
-      "content_text": "January 26, 1874. A 30-year-old woman, Mary Rafferty, is admitted to the Good Samaritan Hospital in Cincinnati. She presents with a hole in her head due to a cancerous ulcer: “The skull itself is eroded and has disappeared over a space two inches in diameter, where the pulsations of the brain are plainly seen (Figure G)). Mary comes under the care of Dr. Roberts Bartholow. He is intrigued by the emerging field of electrotherapy and—having read of the experiments of Fritz and Hitzig, and Ferrier—realizes that Mary’s skull opening could allow him test out electrical stimulation in the human brai",
+      "content_text": "January 26, 1874. A 30-year-old woman, Mary Rafferty, is admitted to the Good Samaritan Hospital in Cincinnati. She presents with a hole in her head due to a cancerous ulcer: “The skull itself is eroded and has disappeared over a space two inches in diameter, where the pulsations of the brain are plainly seen (Figure F)). Mary comes under the care of Dr. Roberts Bartholow. He is intrigued by the emerging field of electrotherapy and—having read of the experiments of Fritz and Hitzig, and Ferrier—realizes that Mary’s skull opening could allow him test out electrical stimulation in the human brai",
       "order_index": 1,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFigG",
@@ -1014,7 +1014,7 @@
           { "type": "citation_ref", "number": 111 },
           {
             "type": "text",
-            "content": ". They would carefully stimulate the brain surrounding an area where they thought the patient’s seizures were being generated. Then, if they were able to stimulate a seizure, they would carefully resect only the problematic piece of brain tissue. This became known as The Montreal Procedure (<strong>Figures H and I</strong>)."
+            "content": ". They would carefully stimulate the brain surrounding an area where they thought the patient’s seizures were being generated. Then, if they were able to stimulate a seizure, they would carefully resect only the problematic piece of brain tissue. This became known as The Montreal Procedure (<strong>Figures I and J</strong>)."
           }
         ]
       },
@@ -1033,7 +1033,7 @@
         "blocks": [
           {
             "type": "text",
-            "content": "At the same time as they were performing this medical procedure, Penfield and colleagues began mapping the mind of awake patients. Upon stimulating a brain region, they would put a piece of paper with a number or letter on that brain area and note what the patient’s reaction was to the stimulation (<strong>Figures H and I</strong>). Some stimulations caused motor movements, some stimulations caused sensations, some stimulations even triggered memory recall"
+            "content": "At the same time as they were performing this medical procedure, Penfield and colleagues began mapping the mind of awake patients. Upon stimulating a brain region, they would put a piece of paper with a number or letter on that brain area and note what the patient’s reaction was to the stimulation (<strong>Figures I and J</strong>). Some stimulations caused motor movements, some stimulations caused sensations, some stimulations even triggered memory recall"
           },
           { "type": "citation_ref", "number": 116 },
           {
@@ -1045,14 +1045,14 @@
             "type": "text",
             "content": ". For instance, Penfield found that in somatosensory cortex the hands and lips had a much greater cortical representation than the back and legs ("
           },
-          { "type": "figure_placeholder", "number": "J" },
+          { "type": "figure_placeholder", "number": "K" },
           {
             "type": "text",
             "content": "). These uneven maps of the body in the brain are directly related to variations in the densities of primary sensory receptors in the skin. The visualization of this distorted map with an oddly shaped cartoon human is called a cortical homunculus (little man)."
           }
         ]
       },
-      "content_text": "At the same time as they were performing this medical procedure, Penfield and colleagues began mapping the mind of awake patients. Upon stimulating a brain region, they would put a piece of paper with a number or letter on that brain area and note what the patient’s reaction was to the stimulation (Figures H and I). Some stimulations caused motor movements, some stimulations caused sensations, some stimulations even triggered memory recall. Most notably, Penfield carefully mapped the somatosensory and primary motor cortex, revealing an uneven representation of the body within each cortical are",
+      "content_text": "At the same time as they were performing this medical procedure, Penfield and colleagues began mapping the mind of awake patients. Upon stimulating a brain region, they would put a piece of paper with a number or letter on that brain area and note what the patient’s reaction was to the stimulation (Figures I and J). Some stimulations caused motor movements, some stimulations caused sensations, some stimulations even triggered memory recall. Most notably, Penfield carefully mapped the somatosensory and primary motor cortex, revealing an uneven representation of the body within each cortical are",
       "order_index": 2,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFigJ",
@@ -1099,7 +1099,7 @@
             "type": "text",
             "content": ". He selected six patients, two woman and four men, who suffered from what he considered to be severe and intractable schizophrenia. He resected small portions of brain matter—predominantly from cortical association areas to try to stop aberrant activity from propagating—in hopes of alleviating their symptoms ("
           },
-          { "type": "figure_placeholder", "number": "E" },
+          { "type": "figure_placeholder", "number": "G" },
           {
             "type": "text",
             "content": "). He resected several different brain areas from a couple of the patients, and advocated for additional surgeries for the others"
@@ -1207,7 +1207,7 @@
             "type": "text",
             "content": ". Freeman travelled widely through the US, popularizing this method to treat mental illnesses ("
           },
-          { "type": "figure_placeholder", "number": "F" },
+          { "type": "figure_placeholder", "number": "H" },
           { "type": "text", "content": ")." }
         ]
       },
@@ -1267,7 +1267,7 @@
           },
           { "type": "citation_ref", "number": 93 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": "C" },
+          { "type": "figure_placeholder", "number": "B" },
           {
             "type": "text",
             "content": "). The only issue is that humans do not have a rete mirabile. But Galen did not have access to human tissue for dissection. He did have access to ungulates—hooved animals that possess a rete mirabile. He also mentioned that Herophilus previously described the rete mirabile, and Herophilus was thought to have dissected human tissue, so Galen may have assumed that Herophilus noted this structure in humans"
@@ -1324,7 +1324,7 @@
           },
           { "type": "citation_ref", "number": 96 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": "D" },
+          { "type": "figure_placeholder", "number": "C" },
           {
             "type": "text",
             "content": "). Though Owen dug in his heels, so much evidence accumulated against his position in a short period of time that his scientific credibility quickly declined."
@@ -1387,7 +1387,7 @@
           },
           { "type": "citation_ref", "number": 121 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": "K" },
+          { "type": "figure_placeholder", "number": "A" },
           {
             "type": "text",
             "content": "). Galen continued the Hippocratic medical practice of considering that illnesses and dispositions were caused by imbalances in the four humors, and patients were treated in a manner that sought to restore humoral balance. In practice, Galen felt that the palm of the hand was the best location to assess the balance of the humors"
@@ -1469,7 +1469,7 @@
           },
           { "type": "citation_ref", "number": 20 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": 5 },
+          { "type": "figure_placeholder", "number": 7 },
           {
             "type": "text",
             "content": "). In another set of experiments Galen cut the spinal cord of animals in various locations"
@@ -1502,7 +1502,7 @@
           { "type": "citation_ref", "number": 22 },
           { "type": "citation_ref", "number": 23 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": 6 },
+          { "type": "figure_placeholder", "number": 8 },
           {
             "type": "text",
             "content": "). In general, sensory signals were thought to be received by the most frontal ventricle. From there, pneuma would be passed onto the middle ventricle for mental processing, and then the pneuma would pass to the most anterior ventricle for mental storage."
@@ -1531,7 +1531,7 @@
             "type": "text",
             "content": ". In his magnum opus <em>De Humani Corporis Fabrica</em> (1543; often referred to simply as <em>De Fabrica</em>; "
           },
-          { "type": "figure_placeholder", "number": 7 },
+          { "type": "figure_placeholder", "number": 9 },
           {
             "type": "text",
             "content": "), Vesalius provided unparalleled artistic renditions of the human brain: it’s believed the woodcut artwork was produced by students of Titian. In <em>De Fabrica</em>, Vesalius pinpointed numerous errors in Galen’s work, much of which likely arose since Galen did not have access to human tissue. Vesalius’ work was widely read and served as a foundation for future neuroanatomists to scrutinize and refine"
@@ -1749,7 +1749,7 @@
             "type": "text",
             "content": "” To assign specific faculties to specific brain regions, Gall, along with his assistant Johann Spurzheim, took humans with known skills (e.g., good memory) or behavioral excesses (e.g., violent murderers), and contrasted them with humans lacking such traits. Gall and Spurzheim generated a map outlining the location of over twenty-five brain regions underlying different faculties ("
           },
-          { "type": "figure_placeholder", "number": 8 },
+          { "type": "figure_placeholder", "number": 11 },
           {
             "type": "text",
             "content": "). Gall and Spurzheim eventually had a falling out, and Spurzheim would then coin the term phrenology, add a few more functional brain areas, and help to popularize phrenology internationally"
@@ -1851,7 +1851,7 @@
             "type": "text",
             "content": "” Leborgne died a few days after coming under Broca’s care and an autopsy revealed significant damage to the frontal cortex in the left hemisphere ("
           },
-          { "type": "figure_placeholder", "number": 9 },
+          { "type": "figure_placeholder", "number": 12 },
           {
             "type": "text",
             "content": "). Broca published this result to immediate enthusiasm from the medical and scientific communities, and a few years later published a follow-up paper with several additional people with aphasia, solidifying his claim of the left frontal cortex as the locus of speech generation"
@@ -1877,7 +1877,7 @@
             "type": "text",
             "content": "The next breakthrough came in the early 1870s. Working in Berlin, neurologist Eduard Fritsch and anatomist Gustav Hitzig used electrical stimulation of cortex in dogs to identify motor cortex. Not only did they find a specific portion of cortex that could reliably drive contralateral body movements, they found that stimulating different parts of this motor cortex led to movement of different parts of the body (e.g., hind leg vs. front leg; "
           },
-          { "type": "figure_placeholder", "number": 10 },
+          { "type": "figure_placeholder", "number": 13 },
           { "type": "text", "content": ")" },
           { "type": "citation_ref", "number": 38 },
           {
@@ -1887,7 +1887,7 @@
         ],
         "animationFlags": { "room": 1 }
       },
-      "content_text": "The next breakthrough came in the early 1870s. Working in Berlin, neurologist Eduard Fritsch and anatomist Gustav Hitzig used electrical stimulation of cortex in dogs to identify motor cortex. Not only did they find a specific portion of cortex that could reliably drive contralateral body movements, they found that stimulating different parts of this motor cortex led to movement of different parts of the body (e.g., hind leg vs. front leg; (Figure 10)). Fritsch and Hitzig then showed that lesioning this region led to contralateral motor deficits.",
+      "content_text": "The next breakthrough came in the early 1870s. Working in Berlin, neurologist Eduard Fritsch and anatomist Gustav Hitzig used electrical stimulation of cortex in dogs to identify motor cortex. Not only did they find a specific portion of cortex that could reliably drive contralateral body movements, they found that stimulating different parts of this motor cortex led to movement of different parts of the body (e.g., hind leg vs. front leg; (Figure 13)). Fritsch and Hitzig then showed that lesioning this region led to contralateral motor deficits.",
       "order_index": 15,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig10",
@@ -1916,7 +1916,7 @@
           },
           { "type": "citation_ref", "number": 39 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": 11 },
+          { "type": "figure_placeholder", "number": 14 },
           {
             "type": "text",
             "content": "). Nonetheless, subsequent work would show more notable deficits in primates lacking motor cortex than in lower mammals with similar lesions, providing at least some support to Goltz."
@@ -2040,7 +2040,7 @@
             "type": "text",
             "content": "Intrinsic animal electricity was first demonstrated in the nervous system in the 1780s by Luigi Galvani in his experiments conducted using the frog leg preparation ("
           },
-          { "type": "figure_placeholder", "number": 19 },
+          { "type": "figure_placeholder", "number": 23 },
           {
             "type": "text",
             "content": "). Electricity represented a natural force behind nerve function that replaced the notion of animal spirits flowing between the brain and the rest of the body. This discovery revolutionized biology and gave rise, early in the 19th century, to the field of electrophysiology"
@@ -2054,7 +2054,7 @@
           { "type": "text", "content": "." }
         ]
       },
-      "content_text": "Intrinsic animal electricity was first demonstrated in the nervous system in the 1780s by Luigi Galvani in his experiments conducted using the frog leg preparation (Figure 19)). Electricity represented a natural force behind nerve function that replaced the notion of animal spirits flowing between the brain and the rest of the body. This discovery revolutionized biology and gave rise, early in the 19th century, to the field of electrophysiology. Nonetheless, the characterization of fundamental phenomena such as membrane hyperpolarization and depolarization, axon potentials, and the identificat",
+      "content_text": "Intrinsic animal electricity was first demonstrated in the nervous system in the 1780s by Luigi Galvani in his experiments conducted using the frog leg preparation (Figure 23)). Electricity represented a natural force behind nerve function that replaced the notion of animal spirits flowing between the brain and the rest of the body. This discovery revolutionized biology and gave rise, early in the 19th century, to the field of electrophysiology. Nonetheless, the characterization of fundamental phenomena such as membrane hyperpolarization and depolarization, axon potentials, and the identificat",
       "order_index": 1,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig19",
@@ -2150,7 +2150,7 @@
           },
           { "type": "citation_ref", "number": 73 },
           { "type": "text", "content": " (" },
-          { "type": "figure_placeholder", "number": 20 },
+          { "type": "figure_placeholder", "number": 24 },
           {
             "type": "text",
             "content": "). This demonstrated that the vagus nerve, when stimulated, led to release of a molecule that impacted heart rate. Loewi named this molecule <em>Vagusstoff</em>. Later, he carried out a similar experiment, but this time he stimulated the accelerator nerve (sympathetic system), which resulted in both hearts displaying an increased heartbeat. He called the excitatory compound <em>Acceleransstoff</em>. Otto Loewi had demonstrated chemical neurotransmission and explained how nerve stimulation could lead to both excitation and inhibition"
@@ -2163,7 +2163,7 @@
         ],
         "animationFlags": { "hold": 1 }
       },
-      "content_text": "The experiment he dashed off to perform in the middle of the night was simple and elegant. He isolated a frog heart and stimulated the cardiac branch of the vagus nerve (parasympathetic system) which, as expected, slowed down the heartbeat. Then, he collected the solution in which the heart was bathed and applied it to a second (denervated) heart, which began beating more slowly when exposed to the solution (Figure 20)). This demonstrated that the vagus nerve, when stimulated, led to release of a molecule that impacted heart rate. Loewi named this molecule Vagusstoff. Later, he carried out a s",
+      "content_text": "The experiment he dashed off to perform in the middle of the night was simple and elegant. He isolated a frog heart and stimulated the cardiac branch of the vagus nerve (parasympathetic system) which, as expected, slowed down the heartbeat. Then, he collected the solution in which the heart was bathed and applied it to a second (denervated) heart, which began beating more slowly when exposed to the solution (Figure 24)). This demonstrated that the vagus nerve, when stimulated, led to release of a molecule that impacted heart rate. Loewi named this molecule Vagusstoff. Later, he carried out a s",
       "order_index": 5,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsLoewiWidget",
@@ -2248,12 +2248,12 @@
             "type": "text",
             "content": ". The CNS, however, was another story, and Eccles thought of a clever hypothesis that would disprove, once and for all, the notion of chemical neurotransmission in the brain and spinal cord. This hypothesis was based on the stretch reflex circuitry in the spinal cord. Eccle’s hypothesis concerned the role played by an interneuron (a Golgi cell) inhibiting the contraction of the antagonist muscle. Eccles hypothesized that this interneuron dampened the excitation received from a sensory neuron via an ephaptic mechanism ("
           },
-          { "type": "figure_placeholder", "number": 21 },
+          { "type": "figure_placeholder", "number": 25 },
           {
             "type": "text",
             "content": "). If Eccles was correct, stimulating the part of the circuit known to inhibit the motor pathway would drive a small depolarization in the motor neuron of interest (i.e., in Eccles’ model ("
           },
-          { "type": "figure_placeholder", "number": 21 },
+          { "type": "figure_placeholder", "number": 25 },
           {
             "type": "text",
             "content": "), activation of the inhibitory pathway (neuron I), would drive subthreshold activation of interneuron G, which would result in an electric field effect that would slightly depolarize neuron M but also dampen its ability to get activated by neuron E). If, on the other hand, interneuron G released an inhibitory neurotransmitter, a hyperpolarization would be detected in the motor neuron"
@@ -2458,7 +2458,7 @@
               "Vesalius and the emergence of veridical representation in Renaissance anatomy. in <em>Progress in Brain Research</em> vol. 203 3–32 (Elsevier, 2013).",
               "Gross, C. G. Hippocampus minor and man’s place in nature: A case study in the social construction of neuroanatomy. <em>Hippocampus</em> <strong>3</strong>, 403–415 (1993).",
               "Stone, J. L. Dr. Gottlieb Burckhardt the Pioneer of Psychosurgery. <em>Journal of the History of the Neurosciences</em> <strong>10</strong>, 79–92 (2001).",
-              "Burckhardt, G. Über Rindenexzisionen als Beitrag zur operativen Therapie der Psychosen. <em>Allgemeine Zeitschift fu»r Psychiatrie</em> 463–548 (1891).",
+              "Burckhardt, G. Über Rindenexzisionen als Beitrag zur operativen Therapie der Psychosen. <em>Allgemeine Zeitschrift für Psychiatrie</em> 463–548 (1891).",
               "Berrios, G. E. The origins of psychosurgery: Shaw, Burckhardt and Moniz. <em>Hist Psychiatry</em> <strong>8</strong>, 061–081 (1997).",
               "Gross, D. & Schäfer, G. Egas Moniz (1874–1955) and the “invention” of modern psychosurgery: a historical and ethical reanalysis under special consideration of Portuguese original sources. <em>Neurosurgical Focus</em> <strong>30</strong>, E8 (2011).",
               "Boettcher, L. B. & Menacho, S. T. The early argument for prefrontal leucotomy: the collision of frontal lobe theory and psychosurgery at the 1935 International Neurological Congress in London. <em>Neurosurgical Focus</em> <strong>43</strong>, E4 (2017).",
@@ -2471,7 +2471,7 @@
               "Harris, L. J. & Almerigi, J. B. Probing the human brain with stimulating electrodes: The story of Roberts Bartholow’s (1874) experiment on Mary Rafferty. <em>Brain and Cognition</em> <strong>70</strong>, 92–115 (2009).",
               "Bartholow, R. Experiments on the Functions of the Human Brain. <em>British Medical Journal</em> <strong>1</strong>, 727 (1874).",
               "Todman, D. Wilder Penfield (1891–1976). <em>J Neurol</em> <strong>255</strong>, 1104–1105 (2008).",
-              "The Mind Mappers by Eric Andrew-Gee \\| Penguin Random House Canada. https://www.penguinrandomhouse.ca/books/726132/the-mind-mappers-by-eric-andrew-gee/9781039008069.",
+              "Andrew-Gee, E. <em>The Mind Mappers</em>. (Penguin Random House Canada).",
               "Ladino, L. D., Rizvi, S. & Téllez-Zenteno, J. F. The Montreal procedure: The legacy of the great Wilder Penfield. <em>Epilepsy & Behavior</em> <strong>83</strong>, 151–161 (2018).",
               "Bacigaluppi, S., Bragazzi, N. L. & Martini, M. Fedor Krause (1857–1937): the father of neurosurgery. <em>Neurosurg Rev</em> <strong>43</strong>, 1443–1449 (2020).",
               "Leblanc, R. Cushing, Penfield, and cortical stimulation. <em>Journal of Neurosurgery</em> <strong>130</strong>, 76–83 (2018).",
@@ -2510,7 +2510,7 @@
             "type": "text",
             "content": ". The skull came from an Incan burial site and had a square hole cut in it ("
           },
-          { "type": "figure_placeholder", "number": 1 },
+          { "type": "figure_placeholder", "number": 2 },
           {
             "type": "text",
             "content": "). To Squier, the nature of the hole suggested it had been cut while the individual was alive. He presented it to the New York Academy of Medicine, but they were unconvinced. In the western world at that time, cranial opening surgeries were rare and had very high mortality rates. Squier forwarded the skull to Broca for a second opinion. This was not the first skull recovered from an ancient site with an apparently man-made hole, but the previously observed holes had generally been attributed to traumatic injuries or posthumous rituals"
@@ -2529,7 +2529,7 @@
           { "type": "text", "content": "." }
         ]
       },
-      "content_text": "What did prehistorical humans know about the brain? In the mid-1860s, Paul Broca received a trepanned Incan skull from Peru (Figure 1) and concluded the individual had survived the procedure, sparking interest in studying trepanation in ancient burial sites.",
+      "content_text": "What did prehistorical humans know about the brain? In the mid-1860s, Paul Broca received a trepanned Incan skull from Peru (Figure 2) and concluded the individual had survived the procedure, sparking interest in studying trepanation in ancient burial sites.",
       "order_index": 0,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig1",
@@ -2546,7 +2546,7 @@
             "type": "text",
             "content": "Subsequent examinations of ancient sites revealed that trepanations were relatively common throughout the prehistoric world, that they were performed in various different ways ("
           },
-          { "type": "figure_placeholder", "number": 2 },
+          { "type": "figure_placeholder", "number": 3 },
           {
             "type": "text",
             "content": "), and that they were often non-lethal"
@@ -2586,7 +2586,7 @@
           { "type": "text", "content": "." }
         ]
       },
-      "content_text": "Trepanations were relatively common throughout the prehistoric world (Figure 2), performed in various ways and often non-lethal, with survival rates over 80% at some Peruvian sites. The reasons were likely superstitious, ritualistic, or medical.",
+      "content_text": "Trepanations were relatively common throughout the prehistoric world (Figure 3), performed in various ways and often non-lethal, with survival rates over 80% at some Peruvian sites. The reasons were likely superstitious, ritualistic, or medical.",
       "order_index": 1,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig2",
@@ -2634,19 +2634,19 @@
             "type": "text",
             "content": " and is known as the Edwin Smith papyrus ("
           },
-          { "type": "figure_placeholder", "number": 3 },
+          { "type": "figure_placeholder", "number": 4 },
           {
             "type": "text",
             "content": "), named after the American Egyptologist who purchased it in 1862 from an antiquities dealer near Luxor. This papyrus describes 48 cases, mostly of severe physical traumas, along with treatment recommendations. Many of the cases involve head injuries, including the now famous case n. 20 which describes a man with a hole in his skull—likely the result of a blow to the head sustained on the battlefield—that exposed the cortical surface of his brain ("
           },
-          { "type": "figure_placeholder", "number": 4 },
+          { "type": "figure_placeholder", "number": 5 },
           {
             "type": "text",
             "content": "). The case description, titled <em>Instructions concerning a wound in his temple, penetrating to the bone, (and) perforating his temporal bone</em>, recounts the effects of applying pressure on the exposed brain: “… if thou puttest thy finger on the mouth of the wound… he shudder exceedingly.” However, instead of recommending a surgical procedure, the suggested treatment was, “Now when thou findest that man speechless, his [relief] shall be sitting; soften his head with grease, (and) pour [milk] into both his ears.”"
           }
         ]
       },
-      "content_text": "The most ancient text mentioning the brain (~1,600 BCE) is the Edwin Smith papyrus (Figure 3), a surgical treatise describing 48 cases. Case 20 (Figure 4) describes a skull wound exposing the brain, noting that pressure on it made the patient shudder.",
+      "content_text": "The most ancient text mentioning the brain (~1,600 BCE) is the Edwin Smith papyrus (Figure 4), a surgical treatise describing 48 cases. Case 20 (Figure 5) describes a skull wound exposing the brain, noting that pressure on it made the patient shudder.",
       "order_index": 3,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsFig4",
@@ -2920,7 +2920,8 @@
         ],
         "caption": "The brain of Henry Molaison (H.M.).",
         "diagramType": "diagram",
-        "placeholder": true
+        "placeholder": true,
+        "figureNumber": 26
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -2951,7 +2952,7 @@
         "caption": "An Incan skull, acquired by Squier and studied by Broca. It is now housed at the American Museum of Natural History (Squier, 1877).",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": 1
+        "figureNumber": 2
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -2981,7 +2982,7 @@
         "caption": "Top-down drawing of a dog’s brain from Fritsch and Hitzig’s 1870 paper. Symbols indicate locations of electrical brain stimulation in motor cortex. The region marked ∆ activated neck muscles. Areas marked + moved the forepaw. Areas marked # activated the hindpaw. Facial muscles were activated when the areas marked O were stimulated. Image source: Wellcome Collection.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": 10
+        "figureNumber": 13
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3011,7 +3012,7 @@
         "caption": "Anatomical drawings of Goltz’s dog (left, A and B) and Ferrier’s monkey (right, C) that were presented at the Seventh International Medical Congress in 1881. Modified from Gowers WR, Klein E, Schaefer AE, Langley JN. Preliminary report. Transactions of the International Medical Congress 1881. Volume 1.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": 11
+        "figureNumber": 14
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3041,7 +3042,7 @@
         "caption": "Replica van Leeuwenhoek microscope. Source: Wikipedia.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": 12
+        "figureNumber": 16
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3071,7 +3072,7 @@
         "caption": "Deiters’ neuron drawings. (1) A large neuron in the ventral horn of the spinal cord. (2) A medium-sized neuron cell from the dorsal horn of the spinal cord. (3) Part of another cell. (4) A smaller neuron (Dieters, 1865).",
         "diagramType": "illustration",
         "placeholder": true,
-        "figureNumber": 13
+        "figureNumber": 17
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3101,7 +3102,7 @@
         "caption": "The first-ever complete view of a brain region (dog olfactory bulb) stained by the Golgi method. Various distinct cell types are present, in different layers, as are their extensive dendritic trees. For more information, see Shepherd et al., Brain Research Reviews, 2011. Original source: Golgi, 1875.",
         "diagramType": "illustration",
         "placeholder": true,
-        "figureNumber": 14
+        "figureNumber": 18
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3131,7 +3132,7 @@
         "caption": "Ramón y Cajal’s drawings of growth cones along with photographs from his original histological slides. A, Photograph of E3 chick embryo spinal cord showing commissural cells and their fibers ending in growth cones. B, Drawing summarizing spinal cord observations from several Golgi preparations. C, Photograph of E3 chick embryo spinal cord showing commissural neurons and their fibers with growth cones. Neuroepithelial cells are attached to the midline. D, Drawings of growth cones from the spinal cord of chick embryos. E, Photograph of growth cones from commissural fibers of E4 chick embryo spinal cord. Source: de Castro et al., Brain Research Reviews, 2007.",
         "diagramType": "illustration",
         "placeholder": true,
-        "figureNumber": 15
+        "figureNumber": 19
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3161,7 +3162,7 @@
         "caption": "A Ramón y Cajal drawing from 1902 showing from showing retinal circuitry (A) retinal projections (B) to lateral geniculate nucleus (D) and superior colliculus (E) from a rodent. Thalamic neurons project (K) onward to visual cortex (G), which then projects to higher cortical areas (N). Note the arrows indicating Ramon Y Cajal’s suggestions for the directional flow of signals in the brain. Source: The Cajal Institute, Cajal Legacy, Spanish National Research Council (CSIC), Madrid, Spain.",
         "diagramType": "illustration",
         "placeholder": true,
-        "figureNumber": 16
+        "figureNumber": 20
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3191,7 +3192,7 @@
         "caption": "A photograph of Golgi’s lab in Pavia, featured in the magazine “Il Secolo XX, Rivista Popolare Illustrata”, VI, no. 1, January 1907.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": 17
+        "figureNumber": 21
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3221,7 +3222,7 @@
         "caption": "An electron microscope image of a dendrite and its surrounding region, from rat nucleus acumbens. The dendrite is the region with thing elongated lines aligned bottom left to top right. T1-T4 are end-feet from presynaptic axons, with a dark band between the axon terminal and the postsynaptic dendrite. The presynaptic end-feet are surround by small circular synaptic vesicles. Source: Sanford, J. Biophys Biochem Cytol., 1956.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": 18
+        "figureNumber": 22
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3264,7 +3265,7 @@
         "caption": "Plates outlining various versions of Galvani’s frog leg electrical stimulation experiment, using a friction machine (top) and atmospheric electricity (bottom). Source: Galvani, 1791.",
         "diagramType": "illustration",
         "placeholder": true,
-        "figureNumber": 19
+        "figureNumber": 23
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3315,7 +3316,7 @@
         "caption": "Different trepanation methods, including scraping (1), grooving (2), drilling a perimeter around the hole (3) and cutting a rectangular opening (4) (Lisowski, 1967).",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": 2
+        "figureNumber": 3
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3353,7 +3354,7 @@
         "caption": "A model, from Brooks and Eccles (Nature, 1947) proposing how interneuron ‘G’, as part of inhibitory pathway ‘I’, could theoretically inhibit motorneuron ‘M’ via an electric field effect when it receives subthreshold input.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": 21
+        "figureNumber": 25
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3384,7 +3385,7 @@
         "caption": "Plates 6 and 7 of the Edwin Smith Papyrus, which is housed at the New York Academy of Medicine. Source: Wikipedia.",
         "diagramType": "manuscript",
         "placeholder": true,
-        "figureNumber": 3
+        "figureNumber": 4
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3415,7 +3416,7 @@
         "caption": "Case 20 of the Edwin Smith Papyrus. Adapted from Minagar et al., 2003.",
         "diagramType": "manuscript",
         "placeholder": true,
-        "figureNumber": 4
+        "figureNumber": 5
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3445,7 +3446,7 @@
         "caption": "Galen dissecting a pig. From Opera omnia latine in septem classes digesta, published in 1565. Source: Wellcome Collection.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": 5
+        "figureNumber": 7
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3510,7 +3511,7 @@
         ],
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": 6
+        "figureNumber": 8
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3540,7 +3541,7 @@
         "caption": "From A. Vesalius, De Humani Corporis Fabrica Libri Septem, Basle: Joannes Oporinus, 1543. Image source, The Wellcome Collection.",
         "diagramType": "manuscript",
         "placeholder": true,
-        "figureNumber": 7
+        "figureNumber": 9
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3570,7 +3571,7 @@
         "caption": "Gall’s organology. Source: Gall and Spurzheim, Anatomie et Physiologie, 1810-1819.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": 8
+        "figureNumber": 11
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3600,7 +3601,7 @@
         "caption": "A photograph of the left side of Louis Victor Leborgne’s (aka Tan) brain. MRI analysis of Leborgne’s brain in 2007 revealed additional damage not visible from the brain surface that may have contributed to his aphasia. Source: Dronkers et al., Brain, 2007.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": 9
+        "figureNumber": 12
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3635,7 +3636,7 @@
         "caption": "A skull, with writing all over it, purported to be Descartes’. There is controversy over whether this skull, which is housed at the Musée de l’homme in Paris is really Descartes’ skull, as another museum in Lund claims to have a piece of Descartes’ real skull.  Source: Musée de l’homme.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": "A"
+        "figureNumber": "D"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3665,7 +3666,7 @@
         "caption": "Galen’s physiology in The evolution of anatomy: a short history of anatomical and physiological discovery to Harvey (Singer, 1925). The rete mirabile can be seen at the base of the brain, where it was thought to convert vital spirits into animal spirits. Source: Wellcome Collection.",
         "diagramType": "illustration",
         "placeholder": true,
-        "figureNumber": "C"
+        "figureNumber": "B"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3695,7 +3696,7 @@
         "caption": "Top-down views of a human and chimpanzee brain. On the right side a transverse section is shown, revealing the ventricles. The hippocampus minor is indicated in both brains with an ‘x.’ Source: Huxley, 1863.",
         "diagramType": "illustration",
         "placeholder": true,
-        "figureNumber": "D"
+        "figureNumber": "C"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3729,7 +3730,7 @@
         "caption": "Trepanation tools belonging to Gottlieb Burckhardt (left), and one of his patients (right) with two cortical resections. Source: Mueller, 1960.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": "E"
+        "figureNumber": "G"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3759,7 +3760,7 @@
         "caption": "Walter Freeman performing a lobotomy. Source: public domain.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": "F"
+        "figureNumber": "H"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3789,7 +3790,7 @@
         "caption": "A drawing of Mary Rafferty’s cranial erosion. Source: Bartholow, 1874.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": "G"
+        "figureNumber": "F"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3819,7 +3820,7 @@
         "caption": "Penfield’s homunculus, for somatosensory (left) and motor (right) cortex. Adapted from Penfield and Rasmussen, 1950.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": "J"
+        "figureNumber": "K"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3849,7 +3850,7 @@
         "caption": "The link between the four humors and the four elements. Source: Stellmack and Stalikis, 1991.",
         "diagramType": "diagram",
         "placeholder": true,
-        "figureNumber": "K"
+        "figureNumber": "A"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3878,7 +3879,8 @@
         ],
         "caption": "Woodcut published in Fries, Lorenz: Spiegl der Artzny des gleichen vormals nie von keinem doctor…, Strassburg: J. Grieninger, 1519.",
         "diagramType": "diagram",
-        "placeholder": true
+        "placeholder": true,
+        "figureNumber": 1
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3923,7 +3925,8 @@
         ],
         "caption": "Thinkers who argued over the localization of function in the 17th and 18th centuries.",
         "diagramType": "diagram",
-        "placeholder": true
+        "placeholder": true,
+        "figureNumber": 10
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3946,7 +3949,8 @@
       "config": {
         "credit": "Stuart Trenholm, after Loewi (1921), Figure 1",
         "kicker": "Otto’s dream experiment",
-        "widgetId": "upload:loewi-vagusstoff"
+        "widgetId": "upload:loewi-vagusstoff",
+        "figureNumber": 24
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -3999,7 +4003,8 @@
         ],
         "caption": "Brenda Milner, William Beecher Scoville, and Henry Molaison (H.M.).",
         "diagramType": "diagram",
-        "placeholder": true
+        "placeholder": true,
+        "figureNumber": 15
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -4031,7 +4036,8 @@
         ],
         "caption": "History of Neuroscience: Rita Levi-Montalcini. Video: Society for Neuroscience.",
         "diagramType": "video",
-        "placeholder": true
+        "placeholder": true,
+        "figureNumber": "L"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -4066,7 +4072,8 @@
         ],
         "caption": "Rita Levi-Montalcini and Roger Sperry.",
         "diagramType": "photo",
-        "placeholder": true
+        "placeholder": true,
+        "figureNumber": "M"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -4099,10 +4106,10 @@
           "captionBlock": 198,
           "manuscriptLabel": "I"
         },
-        "caption": "Figure I. Penfield's map of case M.B. Stimulation at A and B produced sensation in the right leg from knee to the foot. Stimulation at C produced sensation in the right hand, which was most intense in the middle finger and produced a slight clonic tremor of the hand. Stimulation at D produced slight clonic movement of the right foot. Stimulation at E produced no response. Stimulation at F produced sensation in the right foot, and stimulation at H produced sensation in the leg. The dotted line encircling the microgyria indicates the resection margins. Source: Leblanc, Journal of Neurosurgery, 2021.",
+        "caption": "Figure J. Penfield's map of case M.B. Stimulation at A and B produced sensation in the right leg from knee to the foot. Stimulation at C produced sensation in the right hand, which was most intense in the middle finger and produced a slight clonic tremor of the hand. Stimulation at D produced slight clonic movement of the right foot. Stimulation at E produced no response. Stimulation at F produced sensation in the right foot, and stimulation at H produced sensation in the leg. The dotted line encircling the microgyria indicates the resection margins. Source: Leblanc, Journal of Neurosurgery, 2021.",
         "diagramType": "map",
         "placeholder": true,
-        "figureNumber": "I"
+        "figureNumber": "J"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -4135,10 +4142,10 @@
           "captionBlock": 197,
           "manuscriptLabel": "H"
         },
-        "caption": "Figure H. Operative photo of one of Penfield’s patients (M.B.) related to removal of a microgyria. Letters indicate brain regions where electrical stimulation was performed. See Figure H for results of electrical stimulation. Source: Leblanc, Journal of Neurosurgery, 2021.",
+        "caption": "Figure I. Operative photo of one of Penfield’s patients (M.B.) related to removal of a microgyria. Letters indicate brain regions where electrical stimulation was performed. See Figure J for results of electrical stimulation. Source: Leblanc, Journal of Neurosurgery, 2021.",
         "diagramType": "photo",
         "placeholder": true,
-        "figureNumber": "H"
+        "figureNumber": "I"
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -4167,7 +4174,8 @@
         ],
         "caption": "Plato and his pupil Aristotle, after Raphael's The School of Athens (1509–1511). Plato, who placed the mind in the head, holds a brain; Aristotle, who placed it in the heart, holds a heart.",
         "diagramType": "illustration",
-        "placeholder": true
+        "placeholder": true,
+        "figureNumber": 6
       },
       "file_size_bytes": null,
       "scientific_domain": "history",
@@ -5636,14 +5644,14 @@
       "number": 98,
       "authors": "Burckhardt, G",
       "title": "Über Rindenexzisionen als Beitrag zur operativen Therapie der Psychosen",
-      "journal": "Allgemeine Zeitschift fu»r Psychiatrie",
+      "journal": "Allgemeine Zeitschrift für Psychiatrie",
       "year": 1891,
       "volume": null,
       "pages": null,
       "doi": null,
       "url": null,
       "pub_type": "book",
-      "raw_text": "Burckhardt, G. Über Rindenexzisionen als Beitrag zur operativen Therapie der Psychosen. <em>Allgemeine Zeitschift fu»r Psychiatrie</em> 463–548 (1891)."
+      "raw_text": "Burckhardt, G. Über Rindenexzisionen als Beitrag zur operativen Therapie der Psychosen. <em>Allgemeine Zeitschrift für Psychiatrie</em> 463–548 (1891)."
     },
     {
       "id": "history-reference-99",
@@ -5829,16 +5837,16 @@
       "id": "history-reference-111",
       "module_id": "history-fixture-module",
       "number": 111,
-      "authors": "The Mind Mappers by Eric Andrew-Gee \\| Penguin Random House Canada",
-      "title": "The Mind Mappers by Eric Andrew-Gee \\| Penguin Random House Canada. https://www.penguinrandomhouse.ca/books/726132/the-mind-mappers-by-eric-andrew-gee/9781039008069.",
+      "authors": "Andrew-Gee, E",
+      "title": "The Mind Mappers",
       "journal": null,
       "year": null,
       "volume": null,
       "pages": null,
       "doi": null,
       "url": "https://www.penguinrandomhouse.ca/books/726132/the-mind-mappers-by-eric-andrew-gee/9781039008069",
-      "pub_type": "web",
-      "raw_text": "The Mind Mappers by Eric Andrew-Gee \\| Penguin Random House Canada. https://www.penguinrandomhouse.ca/books/726132/the-mind-mappers-by-eric-andrew-gee/9781039008069."
+      "pub_type": "book",
+      "raw_text": "Andrew-Gee, E. <em>The Mind Mappers</em>. (Penguin Random House Canada)."
     },
     {
       "id": "history-reference-112",
