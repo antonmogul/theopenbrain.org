@@ -41,6 +41,7 @@ import {
   watch,
 } from "vue";
 import { prefersReducedMotion } from "../shared/motion.js";
+import FigureBar from "../shared/FigureBar.vue";
 import { drawDelays } from "./drawIn.js";
 /* eslint-disable import/no-unresolved -- Vite ?raw suffix is valid but not resolvable by ESLint */
 import titleArt from "./art/title.svg?raw";
@@ -424,38 +425,41 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="pc-bar" :class="{ 'pc-bar--expand': canExpand }">
-      <button
-        v-if="canExpand"
-        type="button"
-        class="pc-expand"
-        :title="expanded ? 'Leave full screen' : 'Expand to full screen'"
-        :aria-label="expanded ? 'Leave full screen' : 'Expand to full screen'"
-        @click="toggleExpand"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-          aria-hidden="true"
+    <!-- The pane's toolbar row, the legend folded behind its control. -->
+    <FigureBar
+      :label="content.figureLabel"
+      :title="content.title"
+      :legend="content.caption"
+    >
+      <template v-if="canExpand" #lead>
+        <button
+          type="button"
+          class="pc-expand"
+          :title="expanded ? 'Leave full screen' : 'Expand to full screen'"
+          :aria-label="expanded ? 'Leave full screen' : 'Expand to full screen'"
+          @click="toggleExpand"
         >
-          <path
-            :d="
-              expanded
-                ? 'M5 1v4H1M9 1v4h4M5 13V9H1M9 13V9h4'
-                : 'M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9'
-            "
-          />
-        </svg>
-      </button>
-      <span class="pc-fig">{{ content.figureLabel }}</span>
-      <h4 class="pc-title">{{ content.title }}</h4>
-      <p class="pc-legend">{{ content.caption }}</p>
-    </div>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path
+              :d="
+                expanded
+                  ? 'M5 1v4H1M9 1v4h4M5 13V9H1M9 13V9h4'
+                  : 'M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9'
+              "
+            />
+          </svg>
+        </button>
+      </template>
+    </FigureBar>
   </div>
 </template>
 
@@ -476,6 +480,7 @@ onBeforeUnmount(() => {
   --pc-sans: var(--font-ui, "IBM Plex Sans", system-ui, sans-serif);
   --pc-mono: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
   --pc-ease: cubic-bezier(0.3, 0.85, 0.25, 1);
+  --fbar-accent: var(--pc-accent-soft);
   /* Half the card's thickness. */
   --pc-half: 3px;
   position: relative;
@@ -849,20 +854,8 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-/* ── the toolbar row (Figma 2879:49064), as the pane's own: the expand
-   icon, the label, then the title with its legend under it ── */
-.pc-bar {
-  flex: none;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.5rem;
-  align-items: start;
-  padding: 1.875rem 0.875rem;
-  line-height: 1.3;
-}
-.pc-bar--expand {
-  grid-template-columns: auto auto minmax(0, 1fr);
-}
+/* ── the toolbar row (Figma 2879:49064) is the pane's own
+   (shared/FigureBar.vue); the expand icon leads it ── */
 /* The bare 14px icon flush with the padding; its 28px target reaches 7px
    around it. */
 .pc-expand {
@@ -879,30 +872,6 @@ onBeforeUnmount(() => {
 .pc-expand:hover {
   background: rgb(255 255 255 / 0.08);
   color: var(--pc-ink);
-}
-.pc-fig {
-  min-width: 3.125rem;
-  color: var(--pc-accent-soft);
-  font-size: 0.65625rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.pc .pc-title {
-  margin: 0;
-  font-family: var(--pc-mono);
-  font-size: 0.71875rem;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.pc-legend {
-  grid-column: -2 / -1;
-  max-width: 34.5rem;
-  font-size: 0.71875rem;
-  line-height: 1.3;
-  letter-spacing: 0.06em;
 }
 
 /* ── on the whole screen ── */
@@ -940,12 +909,6 @@ onBeforeUnmount(() => {
   }
   .pc-face {
     padding: 0.875rem 0.875rem 1rem;
-  }
-  .pc-bar {
-    padding: 1.25rem 0.875rem;
-  }
-  .pc-legend {
-    grid-column: 1 / -1;
   }
 }
 

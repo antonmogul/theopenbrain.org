@@ -1,8 +1,9 @@
 /*
  * Chapter/ReaderShell/ReadingRail — the marks on the line between the figure
- * pane and the text (OPENBRAIN-175), from 1024px: a pill at every paragraph
- * that brings something into the pane, saying what it is ("FIG 05", "TRY
- * IT", "WATCH", or a bare pointer for the Retina's 2023 figures), a ribbon
+ * pane and the text (OPENBRAIN-175), from 1024px: a pointer at every
+ * paragraph that brings something into the pane (no words since
+ * OPENBRAIN-195: round for a figure to look at, square for one to operate,
+ * its name in a tooltip), filled while its figure is on, a ribbon
  * down the line for as long as the figure that is on stays, and the reading
  * point at mid-screen, a bead on that ribbon. A mark is a button: it brings
  * its paragraph to the reading point; the arrow keys walk the figures.
@@ -100,7 +101,7 @@ export const Default = {
       body:
         paragraph(
           "DemoWoodcut",
-          "A figure without a number is FIG, as its label in the pane is."
+          "Every figure has the same mark: a pointer towards the pane, with no words. Point at one, or reach it with the keyboard, for its name."
         ) +
         paragraph(
           "DemoFig1",
@@ -114,9 +115,9 @@ export const Default = {
         ) +
         paragraph(
           "DemoLoewi",
-          "A widget in the pane says TRY IT rather than FIG."
+          "A widget is a figure to operate: a square mark, which fills in the interaction accent while it is on."
         ) +
-        paragraph("DemoFilm", "A film says WATCH."),
+        paragraph("DemoFilm", "A film is one too."),
     }),
 };
 
@@ -130,7 +131,7 @@ export const PaperPane = {
       body:
         paragraph(
           "DemoDragon",
-          "A 2023 figure has no FIG label in the pane, so its mark is a bare pointer.",
+          "A 2023 figure has the same pointer, filled in the chapter's colour while it is on.",
           true
         ) +
         paragraph("DemoEye", "A scroll-driven figure, the same.") +

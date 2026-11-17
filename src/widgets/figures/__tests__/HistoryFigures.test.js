@@ -112,9 +112,9 @@ describe("TrepanationMethods", () => {
     const w = mountTrepanation();
     expect(handsIn(w)).toBe("0000");
     expect(w.find(".tr-prompt").text()).toBe(trepanation.defaults.prompt);
-    expect(w.find(".tr-fig").text()).toBe("Fig 02");
-    expect(w.find(".tr-title").text()).toBe("Methods of trepanation");
-    expect(w.find(".tr-legend").text()).toContain("Lisowski, 1967");
+    expect(w.find(".fbar-fig").text()).toBe("Fig 02");
+    expect(w.find(".fbar-title").text()).toBe("Methods of trepanation");
+    expect(w.find(".fbar-legend").text()).toContain("Lisowski, 1967");
     w.unmount();
   });
 
@@ -251,8 +251,8 @@ describe("TrepanationMethods", () => {
 
   it("takes its label, title and legend from saved content", () => {
     const w = mountTrepanation({ figureLabel: "Fig 03", title: "Openings" });
-    expect(w.find(".tr-fig").text()).toBe("Fig 03");
-    expect(w.find(".tr-title").text()).toBe("Openings");
+    expect(w.find(".fbar-fig").text()).toBe("Fig 03");
+    expect(w.find(".fbar-title").text()).toBe("Openings");
     w.unmount();
   });
 
@@ -290,11 +290,11 @@ describe("PapyrusCase", () => {
 
   it("has the pane's toolbar row: label, title, legend", () => {
     const w = mountPapyrus();
-    expect(w.find(".pc-fig").text()).toBe("Wid 02");
-    expect(w.find("h4.pc-title").text()).toBe(
+    expect(w.find(".fbar-fig").text()).toBe("Wid 02");
+    expect(w.find("h4.fbar-title").text()).toBe(
       "The Edwin Smith papyrus, case 20"
     );
-    expect(w.find(".pc-legend").text()).toContain("Breasted (1930)");
+    expect(w.find(".fbar-legend").text()).toContain("Breasted (1930)");
     w.unmount();
   });
 
@@ -416,7 +416,7 @@ describe("PapyrusCase", () => {
       translationLabel: "In English",
       flip: ["Turn it over", null],
     });
-    expect(w.find(".pc-fig").text()).toBe("Fig 04");
+    expect(w.find(".fbar-fig").text()).toBe("Fig 04");
     expect(w.find(".pc-label").text()).toBe("In English");
     expect(w.find(".pc-flip").text()).toBe("Turn it over");
     await w.find(".pc-flip").trigger("click");

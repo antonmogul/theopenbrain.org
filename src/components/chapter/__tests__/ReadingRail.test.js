@@ -98,6 +98,7 @@ async function toggle(key, on) {
   await vi.advanceTimersByTimeAsync(0);
 }
 
+// A mark carries no words (OPENBRAIN-195): its tooltip is its only text.
 const labels = (wrapper) =>
   wrapper.findAll(".rr-mark").map((mark) => mark.text());
 const spans = (wrapper) =>
@@ -135,7 +136,17 @@ describe("the marks: one per figure the pane shows", () => {
       ["AnimationDragon", 4000, 300],
     ]);
     const rail = await mountRail();
-    expect(labels(rail)).toEqual(["FIG 01", "TRY IT", "WATCH", ""]);
+    expect(labels(rail)).toEqual([
+      "Figure 1: Skull",
+      "Interactive: Loewi",
+      "Video",
+      "Figure",
+    ]);
+    // The tooltip is for the eye: the button's name says the same.
+    expect(
+      rail.findAll(".rr-tip").map((tip) => tip.attributes("aria-hidden"))
+    ).toEqual(["true", "true", "true", "true"]);
+    expect(rail.find(".rr-label").exists()).toBe(false);
     const marks = rail.findAll(".rr-mark");
     expect(marks.map((m) => m.element.style.top)).toEqual([
       "1000px",
@@ -150,6 +161,10 @@ describe("the marks: one per figure the pane shows", () => {
       "Figure, shown beside this paragraph",
     ]);
     expect(marks[3].classes()).toContain("rr-mark--plain");
+    // A figure to look at, and two to operate.
+    expect(marks.map((m) => m.classes().includes("rr-mark--operable"))).toEqual(
+      [false, true, true, false]
+    );
     expect(rail.find("nav").attributes("aria-label")).toBe(
       "Figures beside the text"
     );
@@ -163,7 +178,7 @@ describe("the marks: one per figure the pane shows", () => {
       ["AnimationPlaceholder", 3000, 300],
     ]);
     const rail = await mountRail();
-    expect(labels(rail)).toEqual(["FIG 01"]);
+    expect(labels(rail)).toEqual(["Figure 1: Skull"]);
   });
 
   it("draws nothing below the two-column reader", async () => {
@@ -185,7 +200,11 @@ describe("the marks: one per figure the pane shows", () => {
       ["AnimationLoewi", 4000, 300],
     ]);
     const rail = await mountRail();
-    expect(labels(rail)).toEqual(["TRY IT", "FIG 01", "TRY IT"]);
+    expect(labels(rail)).toEqual([
+      "Interactive: Loewi",
+      "Figure 1: Skull",
+      "Interactive: Loewi",
+    ]);
     // On for any of its paragraphs, with one ribbon over all three.
     expect(rail.findAll(".rr-mark")[0].attributes("data-showing")).toBe("");
     expect(spans(rail)).toEqual([["1000px", "1000px"]]);
@@ -197,7 +216,7 @@ describe("the marks: one per figure the pane shows", () => {
       ["AnimationFig2", 1000, 300],
     ]);
     const rail = await mountRail();
-    expect(labels(rail)).toEqual(["FIG 02"]);
+    expect(labels(rail)).toEqual(["Figure 2: Methods"]);
     // The container's figure is on: its ribbon is drawn all the same.
     expect(spans(rail)).toEqual([["1000px", "2000px"]]);
     expect(rail.find(".rr-mark").attributes("data-showing")).toBeUndefined();
@@ -226,6 +245,9 @@ describe("the figure that is on", () => {
     expect(rail.find(".reading-rail").attributes("data-showing")).toBe(
       "figure"
     );
+    expect(
+      rail.find(".reading-rail").attributes("data-operable")
+    ).toBeUndefined();
     expect(spans(rail)).toEqual([["1000px", "1000px"]]);
     expect(rail.find(".rr-span").classes()).toContain("rr-span--foot");
 
@@ -238,6 +260,21 @@ describe("the figure that is on", () => {
     await toggle("AnimationFig2", false);
     expect(spans(rail)).toEqual([]);
     expect(rail.find("[data-showing]").exists()).toBe(false);
+  });
+
+  it("says when the figure that is on is one to operate, for the ribbon's colour", async () => {
+    page([
+      ["AnimationFig1", 1000, 300],
+      ["AnimationLoewi", 2000, 300],
+    ]);
+    const rail = await mountRail();
+    await toggle("AnimationLoewi", true);
+    expect(rail.find(".reading-rail").attributes("data-operable")).toBe("");
+    await toggle("AnimationLoewi", false);
+    await toggle("AnimationFig1", true);
+    expect(
+      rail.find(".reading-rail").attributes("data-operable")
+    ).toBeUndefined();
   });
 
   it("is the last active trigger, as in the pane", async () => {
@@ -308,6 +345,17 @@ describe("a mark is a control", () => {
     expect(anchor).toBe(rail.find(".rr-landing").element);
     expect(anchor.style.top).toBe("2002px");
     expect(options).toEqual({ align: "reading-line" });
+  });
+
+  it("lands a figure that waits for a box above it where the pane is clear", async () => {
+    // A band ends 80px above the paragraph: with the paragraph's top on the
+    // reading point the band still covers the pane down to y 320.
+    page([["AnimationFig1", 2000, 600]], [[1000, 920]]);
+    const rail = await mountRail();
+    await rail.find(".rr-mark").trigger("click");
+    // The band's bottom (1920) reaches the pane's top (0 here) 320px after
+    // the paragraph's top reaches the reading point.
+    expect(fixtures.jump.mock.calls[0][0].style.top).toBe("2322px");
   });
 
   it("is one tab stop: the figure that is on, else the first", async () => {

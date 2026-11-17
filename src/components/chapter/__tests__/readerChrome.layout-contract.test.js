@@ -98,6 +98,17 @@ describe("the divider, its dot and the figure marks share one x (1 Oct, item 3; 
       /background:\s*rgb\(var\(--color-chapter-ground\)\)/
     );
     expect(rule(rail, ".rr-span")).toMatch(/rgb\(var\(--color-chapter\)\)/);
+    // A figure to operate takes the interaction accent instead, and a
+    // square mark, so the two are not told apart by colour alone.
+    expect(rule(rail, ".rr-mark--operable[data-showing] .rr-pill")).toMatch(
+      /background:\s*rgb\(var\(--color-accent\)\)/
+    );
+    expect(rule(rail, ".reading-rail[data-operable] .rr-span")).toMatch(
+      /background:\s*rgb\(var\(--color-accent\)\)/
+    );
+    expect(rule(rail, ".rr-mark--operable .rr-pill")).toMatch(
+      /border-radius:\s*0\.25rem/
+    );
     expect(
       rule(indexCss, ".reading-rail[data-showing] ~ .reading-line")
     ).toMatch(/background:\s*rgb\(var\(--color-chapter\)\)/);

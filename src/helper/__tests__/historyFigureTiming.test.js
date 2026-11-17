@@ -8,6 +8,8 @@ import {
   figureHoldLabel,
   figureRecordFor,
   figureRecordOfMedia,
+  figureStart,
+  figureWait,
   historyFigureEnd,
   normalizeFigureHold,
   parseFigureHold,
@@ -538,5 +540,82 @@ describe("figureEnd: the closing figure and the back matter", () => {
   it("stops at its own section before ordinary text", () => {
     const trigger = closing(["next-chapter-part", "references"]);
     expect(figureEnd(trigger, [trigger], [hm], viewport)).toBe(800);
+  });
+});
+
+describe("a figure waits for the pane to be clear (OPENBRAIN-195)", () => {
+  // Box A ends 80px above Plato's paragraph: with the paragraph's top on
+  // the reading line (y 400 of 800) the box still covers the pane down to
+  // y 320, and the pane starts at y 64 under the top bar.
+  function page({
+    coverBottom = 320,
+    paragraph = [400, 900],
+    cls = "fb-slot",
+  }) {
+    document.body.innerHTML = `<div class="chapter-reader"><div class="figure-pane"></div><div class="${cls}"></div><section><span id="triggerAnimationFoundationsPlatoAristotle"></span></section></div>`;
+    const pane = document.querySelector(".figure-pane");
+    pane.getBoundingClientRect = () => ({ top: 64, bottom: 780 });
+    const cover = document.querySelector(`.${cls}`);
+    cover.getBoundingClientRect = () => ({ top: -2000, bottom: coverBottom });
+    const trigger = document.querySelector("span");
+    trigger.getBoundingClientRect = () => ({
+      top: paragraph[0],
+      bottom: paragraph[1],
+    });
+    return { trigger, cover };
+  }
+  const win = { innerHeight: 800, scrollY: 5000 };
+
+  it("starts once the box above has left the pane", () => {
+    const { trigger } = page({});
+    expect(figureWait(trigger, win)).toBe(256);
+    // Its top on the reading line is scroll 5000; the box clears at 5256.
+    expect(figureStart(trigger, win)).toBe(5256);
+  });
+  it.each(["wb", "chapter-opener"])("waits for a %s too", (cls) => {
+    const { trigger, cover } = page({ cls });
+    if (cls === "chapter-opener") cover.setAttribute("data-chapter-opener", "");
+    expect(figureWait(trigger, win)).toBe(256);
+  });
+  it("starts on the reading line when nothing is over the pane", () => {
+    const { trigger } = page({ coverBottom: -300 });
+    expect(figureWait(trigger, win)).toBe(0);
+    expect(figureStart(trigger, win)).toBe("top 400");
+  });
+  it("ignores a column image, a band below and the box it is in", () => {
+    const { trigger, cover } = page({});
+    cover.className = "fb-slot fb-slot--column";
+    expect(figureWait(trigger, win)).toBe(0);
+    cover.className = "fb-slot";
+    cover.getBoundingClientRect = () => ({ top: 950, bottom: 1500 });
+    expect(figureWait(trigger, win)).toBe(0);
+    cover.getBoundingClientRect = () => ({ top: -2000, bottom: 320 });
+    cover.appendChild(trigger);
+    expect(figureWait(trigger, win)).toBe(0);
+  });
+  it("keeps a quarter of a screen of a short paragraph's window", () => {
+    const { trigger } = page({ paragraph: [400, 700] });
+    expect(figureWait(trigger, win)).toBe(100);
+    const short = page({ paragraph: [400, 520] });
+    expect(figureWait(short.trigger, win)).toBe(0);
+  });
+  it("waits the cover out under a short paragraph when the figure holds past it", () => {
+    // History's Fig 16: a few lines under Box G, and a still image that
+    // stays until the next figure. figureEnd gives the scroll position at
+    // which it leaves: 5000 is its top on the reading line, so it is on
+    // for 900px, and the whole 256px wait fits.
+    const { trigger } = page({ paragraph: [400, 520] });
+    expect(figureWait(trigger, win, 5900)).toBe(256);
+    expect(figureStart(trigger, win, 5900)).toBe(5256);
+    // Still capped by its own stay.
+    expect(figureWait(trigger, win, 5300)).toBe(100);
+    // Its paragraph's window as a string: no hold.
+    expect(figureWait(trigger, win, "bottom 400")).toBe(0);
+  });
+  it("never waits below the two-column reader", () => {
+    const { trigger } = page({});
+    expect(
+      figureWait(trigger, { ...win, matchMedia: () => ({ matches: false }) })
+    ).toBe(0);
   });
 });

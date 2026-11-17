@@ -2,27 +2,32 @@
  * The reading rail (OPENBRAIN-175): the marks on the line between the figure
  * pane and the text, from 1024px. Three things, one system:
  *
- * - a mark at every paragraph that brings something into the pane, saying
- *   what it is ("FIG 05", "TRY IT", "WATCH"; a bare pointer for the Retina's
- *   2023 figures, which have no label in the pane either),
+ * - a mark at every paragraph that brings something into the pane: a
+ *   pointer towards the pane, which fills with colour while its figure is
+ *   on, one colour for a figure the reader looks at and another for one the
+ *   reader operates (a widget, a film). Its name ("Figure 6: The cell
+ *   doctrine, a gallery of 10 images") is its accessible name and the
+ *   tooltip a pointer or the keyboard brings up,
  * - a ribbon down the line while that figure is on, as long as the figure
  *   stays (the span figureEnd gives the pane's own trigger),
  * - the reading point at mid-screen, where the pane changes.
+ *
+ * The marks first read "FIG 05", "TRY IT", "WATCH". Stuart, 11 Nov: "maybe
+ * remove the word fig, and just replace it with a left-pointing arrow, and
+ * the area changes color once the element appears. With one color for
+ * non-interactive elements, and a second color for interactive elements";
+ * and 13 Nov, of a gallery: "the cell doctrine has a bunch of figures, but
+ * this labels them all as 'fig 6'" (OPENBRAIN-195). So the mark carries no
+ * words, and the name says when a figure is a set.
  *
  * It replaces the 24 Sep ticks (a 1rem line per trigger, OPENBRAIN-91),
  * which said that something changes here but not what, nor for how long.
  * Pure functions; components/chapter/ReadingRail.vue measures and draws.
  */
-import { usesFigureShell } from "./figureCycle";
+import { figureImages } from "./figureCycle";
+import { figureWidgetFor } from "@/widgets/figures/registry";
 
-/** "FIG 05" / "FIG A" / "FIG": the pane toolbar's label for a figure number. */
-export function figureLabel(number) {
-  if (number === undefined || number === null || number === "") return "FIG";
-  const text = String(number).trim();
-  return `FIG ${/^\d+$/.test(text) ? text.padStart(2, "0") : text}`;
-}
-
-/** "Figure 5" / "Figure A" / "Figure", for a screen reader. */
+/** "Figure 5" / "Figure A" / "Figure", for the name. */
 function figureName(number) {
   if (number === undefined || number === null || number === "") return "Figure";
   return `Figure ${String(number)
@@ -36,33 +41,43 @@ function figureName(number) {
  * only clears the pane), a full-screen figure (it draws in the text column)
  * or a section's entrance transition (scroll plays it over a blank spacer).
  *
- * `kind` is "figure" | "widget" | "video" | "plain"; `label` is what the
- * mark reads ("" for plain) and `name` its accessible name.
+ * - `kind` is "figure" | "widget" | "video" | "plain" (the Retina's 2023
+ *   figures, which have no label in the pane either);
+ * - `interactive` says the reader operates it: a widget (an embed, or a
+ *   figure rebuilt as a figure widget, such as History's trepanation and
+ *   papyrus) or a film. A gallery is pictures: it turns on its own, and its
+ *   arrows only choose which picture to look at;
+ * - `tip` is its name, for the tooltip; `name` the accessible name.
  */
 export function railMarkFor(record) {
   if (!record || record.fullscreen || record.isTransition) return null;
   const title = String(record.title || "").trim();
-  const named = (what) =>
-    `${what}${title ? `: ${title}` : ""}, shown beside this paragraph`;
   const numbered =
     record.figureNumber !== undefined &&
     record.figureNumber !== null &&
     record.figureNumber !== "";
-  // A numbered figure is "FIG 05" whatever draws it (History's trepanation
-  // and papyrus are interactive and still Fig 2 and Fig 4 in the text).
-  if (numbered)
+  const video = !!(record.youtubeID || record.videoUrl);
+  const widget = !!(record.widgetId || figureWidgetFor(record.id));
+  const interactive = video || widget;
+  const images = figureImages(record).length;
+  const mark = (kind, what) => {
+    let tip = `${what}${title ? `: ${title}` : ""}`;
+    if (images > 1 && !interactive) tip += `, a gallery of ${images} images`;
+    // A numbered figure keeps its number (History's trepanation and papyrus
+    // are Fig 2 and Fig 4 in the text), so the name says it is one to use.
+    else if (interactive && kind === "figure") tip += ", interactive";
     return {
-      kind: "figure",
-      label: figureLabel(record.figureNumber),
-      name: named(figureName(record.figureNumber)),
+      kind,
+      interactive,
+      tip,
+      name: `${tip}, shown beside this paragraph`,
     };
-  if (record.youtubeID || record.videoUrl)
-    return { kind: "video", label: "WATCH", name: named("Video") };
-  if (record.widgetId)
-    return { kind: "widget", label: "TRY IT", name: named("Interactive") };
-  if (usesFigureShell(record))
-    return { kind: "figure", label: "FIG", name: named("Figure") };
-  return { kind: "plain", label: "", name: named("Figure") };
+  };
+  if (numbered) return mark("figure", figureName(record.figureNumber));
+  if (video) return mark("video", "Video");
+  if (widget) return mark("widget", "Interactive");
+  if (images || record.placeholder) return mark("figure", "Figure");
+  return mark("plain", "Figure");
 }
 
 /**

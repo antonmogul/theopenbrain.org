@@ -9,7 +9,12 @@
  * - `.rr-spans`: the ribbon of the figure that is on, under the reading point,
  * - `.rr-point`: the one-off pulse and beam at the reading point when the
  *   pane changes (Web Animations, never under reduced motion),
- * - `.rr-marks`: a button per figure, over the reading point.
+ * - `.rr-marks`: a button per figure, over the reading point: a pointer
+ *   towards the pane with no words (OPENBRAIN-195), filled while its figure
+ *   is on, in the chapter's colour for a figure to look at and in the
+ *   interaction accent for one to operate (a square rather than a round
+ *   mark too, so the difference is not colour alone). A hover or keyboard
+ *   focus brings up its name.
  *
  * It measures the pane's own triggers and never decides what shows:
  * IllustrationsComp sets `.active` on a trigger while its figure is on, and
@@ -36,6 +41,7 @@ import {
   FIGURE_BANDS,
   figureEnd,
   figureRecordFor,
+  figureWait,
 } from "@/helper/historyFigureTiming";
 import { jumpToElement, reducedMotionPreferred } from "@/helper/readerJump";
 import {
@@ -62,7 +68,8 @@ const list = computed(
     (animations.value?.length ? animations.value : animationJSON.animations)
 );
 
-/** One per figure: { key, id, el, els, top, end, kind, label, name, stacked }
+/** One per figure: { key, id, el, els, top, end, wait, kind, interactive,
+ *  tip, name, stacked }
  *  (`id` is the trigger's, which a figure shown twice shares; `key` is the
  *  mark's own). */
 const marks = ref([]);
@@ -192,6 +199,9 @@ function measure() {
       els: [el],
       top,
       end: bottom,
+      // How far past the reading line its paragraph goes before the pane
+      // is clear for it (a box above still covers the pane).
+      wait: figureWait(el, window, end),
       stacked: false,
       ...mark,
     });
@@ -255,7 +265,8 @@ watch([wide, list], () => nextTick(measure));
 /* Bring a figure's paragraph to the reading point, where its figure shows.
    The landing is a hair past the paragraph's top: a trigger whose top sits
    exactly on the reading line (a fraction of a pixel short, once the
-   browser has rounded the scroll) has not fired yet. So the jump goes to
+   browser has rounded the scroll) has not fired yet; and a figure under a
+   box waits for the box to leave the pane (figureWait). So the jump goes to
    an anchor of the rail's own, put there first. */
 const LANDING_PAST_PX = 2;
 function go(mark) {
@@ -264,7 +275,7 @@ function go(mark) {
   const top =
     mark.el.getBoundingClientRect().top -
     root.value.getBoundingClientRect().top;
-  anchor.style.top = `${top + LANDING_PAST_PX}px`;
+  anchor.style.top = `${top + (mark.wait || 0) + LANDING_PAST_PX}px`;
   jumpToElement(anchor, { align: "reading-line" });
 }
 
@@ -331,6 +342,7 @@ onBeforeUnmount(() => {
     ref="root"
     class="reading-rail"
     :data-showing="showing ? current?.kind : null"
+    :data-operable="current?.interactive ? '' : null"
   >
     <template v-if="wide">
       <div class="rr-spans" aria-hidden="true">
@@ -357,7 +369,10 @@ onBeforeUnmount(() => {
           :key="mark.key"
           type="button"
           class="rr-mark"
-          :class="`rr-mark--${mark.kind}`"
+          :class="[
+            `rr-mark--${mark.kind}`,
+            { 'rr-mark--operable': mark.interactive },
+          ]"
           :style="{ top: `${mark.top}px` }"
           :data-rail-mark="mark.id"
           :data-showing="mark.key === showing ? '' : null"
@@ -378,8 +393,8 @@ onBeforeUnmount(() => {
             >
               <path d="M5 0v8L0 4z" fill="currentColor" />
             </svg>
-            <span v-if="mark.label" class="rr-label">{{ mark.label }}</span>
           </span>
+          <span class="rr-tip" aria-hidden="true">{{ mark.tip }}</span>
         </button>
       </nav>
     </template>
@@ -412,8 +427,13 @@ onBeforeUnmount(() => {
   left: -1.5px;
   width: 3px;
   background: rgb(var(--color-chapter));
+  transition: background-color 0.2s ease;
   transform-origin: top;
   animation: rr-unroll 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+/* A figure to operate: the ribbon in the interaction accent, as its mark. */
+.reading-rail[data-operable] .rr-span {
+  background: rgb(var(--color-accent));
 }
 /* Where the figure leaves: a short foot closes the bracket. */
 .rr-span--foot::after {
@@ -481,13 +501,13 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-/* The marks: a pill on the line at the top of each paragraph that brings a
-   figure in, in the section badge's manner (paper, an ink hairline), with
-   a pointer towards the pane.
+/* The marks: a small disc on the line at the top of each paragraph that
+   brings a figure in, in the section badge's manner (paper, an ink
+   hairline), with a pointer towards the pane and no words (Stuart, 11 Nov).
 
-   The button is the strip of gutter beside the pill, not the pill: the
-   pill reaches over the pane's edge, and a press there belongs to the pane
-   (a gallery's "next" arrow sits on that edge). So the pill takes no
+   The button is the strip of gutter beside the disc, not the disc: the
+   disc sits half over the pane's edge, and a press there belongs to the
+   pane (a gallery's "next" arrow sits on that edge). So the disc takes no
    pointer events and the button is as wide as the column's left gutter. */
 .rr-marks {
   position: absolute;
@@ -511,72 +531,121 @@ onBeforeUnmount(() => {
   outline: none;
 }
 .rr-pill {
-  /* How far the pill leans over the pane: enough to clear the text, which
-     starts a gutter away (3.125rem from 1280px, 2rem below). */
-  --rr-lean: -36%;
   position: absolute;
   left: 0;
   top: 50%;
-  transform: translate(var(--rr-lean), -50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3125rem;
+  /* Centred on the line: half on the pane, half on the paper. */
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
   height: 1.25rem;
-  padding: 0 0.5rem 0 0.375rem;
   border: 1px solid rgb(var(--color-ink));
-  border-radius: 999px;
+  border-radius: 50%;
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-10);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
   pointer-events: none;
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
+    border-radius 0.2s ease,
     color 0.2s ease;
 }
-.rr-mark--plain .rr-pill {
-  padding: 0 0.4375rem;
+/* A figure to operate is a square mark: the second colour is not the only
+   difference (a reader who can't tell violet from magenta, or a chapter
+   whose own colour is close to the accent). */
+.rr-mark--operable .rr-pill {
+  border-radius: 0.25rem;
 }
 .rr-arrow {
   flex: none;
+  /* The triangle's weight sits right of its box's centre. */
+  margin-right: 1px;
 }
 .rr-mark:hover .rr-pill {
   border-color: rgb(var(--color-chapter-deep));
   color: rgb(var(--color-chapter-deep));
 }
+.rr-mark--operable:hover .rr-pill {
+  border-color: rgb(var(--color-accent));
+  color: rgb(var(--color-accent));
+}
 .rr-mark:focus-visible .rr-pill {
   outline: 2px solid rgb(var(--color-accent));
   outline-offset: 2px;
 }
-/* The figure in the pane now. */
+/* The figure in the pane now: the mark fills, in the chapter's colour for a
+   figure to look at… */
 .rr-mark[data-showing] .rr-pill {
   border-color: rgb(var(--color-chapter-ground));
   background: rgb(var(--color-chapter-ground));
   color: rgb(var(--color-chapter-on));
 }
-@media (max-width: 1279px) {
-  .rr-pill {
-    --rr-lean: -60%;
-  }
+/* …and in the interaction accent for one to operate. White on the magenta
+   is 4.1:1; the accent stands 4.1:1 off the paper and 4.2:1 off the dark
+   pane, the two grounds the mark straddles. */
+.rr-mark--operable[data-showing] .rr-pill {
+  border-color: rgb(var(--color-accent));
+  background: rgb(var(--color-accent));
+  color: #fff;
+}
+
+/* The mark's name, on a hover or keyboard focus: over the start of the
+   text beside it, where the button is. Not announced (the button's name
+   says the same). */
+.rr-tip {
+  position: absolute;
+  left: 1.125rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: max-content;
+  max-width: min(20rem, var(--reader-prose-w) - 4rem);
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-ink));
+  color: rgb(var(--color-paper));
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.12s ease,
+    visibility 0s linear 0.12s;
+}
+.rr-mark:hover .rr-tip,
+.rr-mark:focus-visible .rr-tip {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.12s ease 0.25s,
+    visibility 0s linear 0.25s;
+}
+.rr-mark:focus-visible .rr-tip {
+  transition-delay: 0s;
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-reduce-motion="0"]) .rr-span {
     animation: none;
   }
-  :root:not([data-reduce-motion="0"]) .rr-pill {
+  :root:not([data-reduce-motion="0"]) .rr-pill,
+  :root:not([data-reduce-motion="0"]) .rr-span,
+  :root:not([data-reduce-motion="0"]) .rr-tip {
     transition: none;
   }
 }
 :root[data-reduce-motion="1"] .rr-span {
   animation: none;
 }
-:root[data-reduce-motion="1"] .rr-pill {
+:root[data-reduce-motion="1"] .rr-pill,
+:root[data-reduce-motion="1"] .rr-span,
+:root[data-reduce-motion="1"] .rr-tip {
   transition: none;
 }
 </style>
