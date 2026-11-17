@@ -24,6 +24,23 @@ import animationJSON from "@/assets/json_backend/animations.json";
  * @returns {import("vue").ComputedRef<Set<string>>} their images' urls
  */
 export function useFigureSources(ids) {
+  const records = useFigureRecords(ids);
+  return computed(() => {
+    const out = new Set();
+    for (const record of records.value)
+      for (const image of figureImages(record)) out.add(imageUrl(image.src));
+    return out;
+  });
+}
+
+/**
+ * The figures' records, in the order of `ids`; null for one that has not
+ * resolved (the fetch is out, or nothing has it). A rail part draws its
+ * image figures itself from these (RailFigure, OPENBRAIN-194).
+ * @param {import("vue").MaybeRefOrGetter<string[]>} ids animation ids
+ * @returns {import("vue").ComputedRef<(object | null)[]>}
+ */
+export function useFigureRecords(ids) {
   const { animations, fetchAnimations } = useAnimations();
   // Once there are figures to look up (a box's figures are drawn only once
   // it floats, after its first render). Shared and cached: the figures
@@ -36,19 +53,17 @@ export function useFigureSources(ids) {
   };
   onMounted(ask);
   watch(() => toValue(ids), ask);
-  return computed(() => {
-    const out = new Set();
-    for (const id of toValue(ids) || []) {
-      const record = resolveAnimationRecord(
-        id,
-        animations.value,
-        animationJSON.animations,
-        () => {}
-      );
-      for (const image of figureImages(record)) out.add(imageUrl(image.src));
-    }
-    return out;
-  });
+  return computed(() =>
+    (toValue(ids) || []).map(
+      (id) =>
+        resolveAnimationRecord(
+          id,
+          animations.value,
+          animationJSON.animations,
+          () => {}
+        ) || null
+    )
+  );
 }
 
 /** Whether `src` is one of `sources` (a Set from useFigureSources). */

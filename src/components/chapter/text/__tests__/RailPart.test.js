@@ -1,9 +1,11 @@
 /*
- * RailPart (OPENBRAIN-187): one part of a sideways box. Its pictures come
- * first, each once, as figures with their legend and expand button; then
- * its text, in the columns the track measures. An Explore part's own
- * picture is left out where a figure already shows that file (Stuart, 12
- * Nov, on the rete mirabile), and kept where it is art of its own.
+ * RailPart (OPENBRAIN-187, 194): one part of a sideways box. Its pictures
+ * come first, each once; then its text, in the columns the track measures.
+ * An Explore part's own picture is left out where a figure already shows
+ * that file (Stuart, 12 Nov, on the rete mirabile), and kept where it is
+ * art of its own. A picture is just the picture (Stuart, 14 Nov): an image
+ * figure of up to three stills is drawn as plates, with no legend on the
+ * track and no gallery controls; anything else is the figure shell's.
  */
 import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
@@ -12,7 +14,33 @@ import RailPart from "../RailPart.vue";
 
 const records = ref([
   { id: "figC", images: [{ src: "/publicAssets/images/foundations/c.jpg" }] },
-  { id: "figK", images: [{ src: "/publicAssets/images/foundations/k.jpg" }] },
+  {
+    id: "figK",
+    figureNumber: "K",
+    title: "The four humors",
+    caption: "The four humours, a diagram.",
+    images: [{ src: "/publicAssets/images/foundations/k.jpg" }],
+  },
+  {
+    id: "figE",
+    figureNumber: "E",
+    title: "Burckhardt's cortical excisions",
+    images: [
+      { src: "/img/e1.jpg", caption: "His instruments." },
+      { src: "/img/e2.jpg", caption: "One of his patients." },
+    ],
+  },
+  {
+    id: "figFilm",
+    title: "An interview",
+    images: [
+      { src: "/img/poster.jpg", youtube: "WgkAR-vrJpM", play: "player" },
+    ],
+  },
+  {
+    id: "figMany",
+    images: ["/img/1.jpg", "/img/2.jpg", "/img/3.jpg", "/img/4.jpg"],
+  },
 ]);
 vi.mock("@/composables/useAnimations", () => ({
   useAnimations: () => ({
@@ -29,6 +57,11 @@ const stubs = {
   DemoModal: {
     props: ["show", "title"],
     template: '<div v-if="show" class="stub-dialog"><slot /></div>',
+  },
+  FigureImages: {
+    props: ["images", "index", "caption"],
+    template:
+      '<div class="stub-viewer" :data-index="index"><img :src="images[index].src" /><p>{{ images[index].caption || caption }}</p></div>',
   },
 };
 
@@ -82,7 +115,7 @@ describe("RailPart", () => {
     expect(w.findAll("[data-rail-figure]")).toHaveLength(1);
   });
 
-  it("keeps a card image that is art of its own, first, with legend and expand", async () => {
+  it("keeps a card image that is art of its own, first: the image and its expand button, the legend for the full-screen view", async () => {
     const w = mountPart({
       part: { id: "p1", title: "Humoral theory", explore: true },
       figures: ["figK"],
@@ -96,20 +129,88 @@ describe("RailPart", () => {
     expect(figures[0].find("img").attributes("src")).toBe(
       "/publicAssets/images/foundations/woodcut.jpg"
     );
-    expect(figures[0].find("figcaption").text()).toBe("Woodcut, 1574.");
+    // No legend to see on the track; a screen reader still has it.
+    const legend = figures[0].find("figcaption");
+    expect(legend.classes()).toContain("sr-only");
+    expect(legend.text()).toBe("Woodcut, 1574.");
     expect(w.find("[data-rail-part]").attributes("style")).toContain(
       "--rail-figures: 2"
     );
-    // Its expand button opens it full screen.
+    // Two images in the part: the text beside them is one column.
+    expect(w.find("[data-rail-part]").classes()).toContain("rp--pictures");
+    // Its expand button opens it full screen, where the legend shows.
     expect(w.find(".stub-dialog").exists()).toBe(false);
-    await w.find(".rp-expand").trigger("click");
+    await figures[0].find(".rf-expand").trigger("click");
     expect(w.find(".stub-dialog img").attributes("src")).toBe(
       "/publicAssets/images/foundations/woodcut.jpg"
     );
+    expect(w.find(".stub-dialog p").text()).toBe("Woodcut, 1574.");
   });
 
-  it("lays out as pages on a phone's swipe track", () => {
-    const w = mountPart({ figures: ["figA"] }, "swipe");
+  it("draws an image figure as its label and its image: no Legend control", async () => {
+    const w = mountPart({ figures: ["figK"] });
+    await nextTick();
+    const fig = w.find('[data-rail-figure-id="figK"]');
+    expect(fig.classes()).toContain("rf");
+    expect(fig.find(".rf-label").text()).toBe("FIG K");
+    expect(fig.find(".rf-name").text()).toBe("The four humors");
+    expect(fig.findAll("[data-rail-plate]")).toHaveLength(1);
+    expect(fig.findAll("button")).toHaveLength(1);
+    expect(fig.find("button").attributes("aria-label")).toBe(
+      "Expand to full screen"
+    );
+    expect(fig.text()).not.toContain("Legend");
+    expect(fig.find("figcaption.sr-only").text()).toBe(
+      "The four humours, a diagram."
+    );
+    expect(w.find(".stub-figure").exists()).toBe(false);
+    expect(w.find("[data-rail-part]").classes()).not.toContain("rp--pictures");
+  });
+
+  it("shows a set of two as two plates, each with its own expand button (the doctor with an icepick)", async () => {
+    const w = mountPart({ figures: ["figE"] });
+    await nextTick();
+    const fig = w.find('[data-rail-figure-id="figE"]');
+    expect(fig.attributes("data-rail-plates")).toBe("2");
+    const plates = fig.findAll("[data-rail-plate]");
+    expect(plates.map((p) => p.find("img").attributes("src"))).toEqual([
+      "/img/e1.jpg",
+      "/img/e2.jpg",
+    ]);
+    // Nothing but the images and their buttons: no thumbnails, arrows,
+    // play/pause or view-all.
+    expect(
+      fig.findAll("button").map((b) => b.attributes("aria-label"))
+    ).toEqual([
+      "Expand image 1 of 2 to full screen",
+      "Expand image 2 of 2 to full screen",
+    ]);
+    expect(w.find("[data-rail-part]").classes()).toContain("rp--pictures");
+    // The second opens the viewer on the second image, with its legend.
+    await plates[1].find("button").trigger("click");
+    expect(w.find(".stub-viewer").attributes("data-index")).toBe("1");
+    expect(w.find(".stub-viewer p").text()).toBe("One of his patients.");
+  });
+
+  it("leaves a video and a larger set to the figure shell", async () => {
+    const w = mountPart({ figures: ["figFilm", "figMany"] });
+    await nextTick();
+    const figures = w.findAll("[data-rail-figure]");
+    expect(
+      figures.map((f) => f.classes().includes("rp-figure--shell"))
+    ).toEqual([true, true]);
+    expect(
+      w.findAll(".stub-figure").map((f) => f.attributes("data-id"))
+    ).toEqual(["figFilm", "figMany"]);
+  });
+
+  it("lays out as pages on a phone's swipe track", async () => {
+    const w = mountPart({ figures: ["figA", "figE"] }, "swipe");
+    await nextTick();
     expect(w.find("[data-rail-part]").classes()).toContain("rp--swipe");
+    const fig = w.find('[data-rail-figure-id="figE"]');
+    expect(fig.classes()).toContain("rf--swipe");
+    // A page for each plate.
+    expect(fig.attributes("style")).toContain("--rf-count: 2");
   });
 });

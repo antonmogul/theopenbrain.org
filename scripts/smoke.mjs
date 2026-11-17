@@ -924,6 +924,68 @@ async function main() {
                 );
             }
           }
+          // The pictures on a track (OPENBRAIN-194): just the images. No
+          // Legend control, no gallery for a set of two or three, every
+          // image inside the track's height; and on a phone no part ends
+          // on a page of one stray line.
+          problems.push(
+            ...(await page.evaluate(() => {
+              const out = [];
+              for (const track of document.querySelectorAll(
+                "[data-rail-scroller]"
+              )) {
+                const slug = track.closest("[data-section-slug]")?.dataset
+                  .sectionSlug;
+                const box = track.getBoundingClientRect();
+                for (const btn of track.querySelectorAll(".fig-legend-btn"))
+                  if (btn.getClientRects().length)
+                    out.push(`${slug} shows a Legend control on its track`);
+                for (const gallery of track.querySelectorAll(
+                  ".figimg--gallery"
+                )) {
+                  const n =
+                    gallery.querySelectorAll(".figimg-thumbnail").length;
+                  if (n > 0 && n <= 3)
+                    out.push(`${slug} shows a gallery for ${n} images`);
+                }
+                for (const img of track.querySelectorAll(
+                  "[data-rail-plate] img"
+                )) {
+                  const r = img.getBoundingClientRect();
+                  if (!r.height) continue;
+                  if (r.top < box.top - 1 || r.bottom > box.bottom + 1)
+                    out.push(
+                      `${slug}: an image is ${Math.round(r.height)}px tall, outside its ${Math.round(box.height)}px track`
+                    );
+                }
+                if (track.getAttribute("data-rail-mode") !== "swipe") continue;
+                for (const text of track.querySelectorAll(
+                  "[data-rail-columns]"
+                )) {
+                  const top = text.getBoundingClientRect().top;
+                  const line =
+                    parseFloat(getComputedStyle(text).lineHeight) || 24;
+                  const pages = new Map();
+                  for (const node of text.querySelectorAll("*"))
+                    for (const r of node.getClientRects()) {
+                      if (!r.width || !r.height) continue;
+                      const page = Math.round(r.left / (box.width || 1));
+                      pages.set(
+                        page,
+                        Math.max(pages.get(page) || 0, r.bottom - top)
+                      );
+                    }
+                  if (pages.size < 2) continue;
+                  const last = pages.get(Math.max(...pages.keys()));
+                  if (last < line * 1.5)
+                    out.push(
+                      `${slug}: a part ends on a page of ${Math.round(last)}px of text`
+                    );
+                }
+              }
+              return out;
+            }))
+          );
           if (problems.length) {
             railsOk = false;
             problems
