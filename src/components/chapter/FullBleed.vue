@@ -246,6 +246,17 @@ defineExpose({ sync: schedule, floating });
   height: 25vh;
   height: 25svh;
 }
+/* In the two-column reader the hold is a breakout box's (45vh, OPENBRAIN-140;
+   Stuart, 13 Nov, of the phrenology skull: "have the scroll freeze for a
+   second once you get to this element, like for a breakout box"). A quarter
+   of a screen was two notches of a wheel, which nobody felt. Phones keep
+   the short hold: a box is never pinned there either. */
+@media (min-width: 1024px) {
+  .fb-screen-room {
+    height: 45vh;
+    height: 45svh;
+  }
+}
 :root[data-reduce-motion="1"] .fb-screen {
   position: relative;
 }

@@ -10,7 +10,6 @@
  * would. Pure: no store, no DOM.
  */
 import { buildTimeline, plainText } from "@/helper/chapterTimeline";
-import { figureLabel } from "@/helper/readingRail";
 
 /* How much of a paragraph a result shows around its first match. */
 const SNIPPET_BEFORE = 36;
@@ -49,6 +48,13 @@ function shortTitle(title) {
   const space = cut.lastIndexOf(" ");
   if (space > WHERE_LENGTH * 0.6) cut = cut.slice(0, space);
   return cut.replace(/[\s,;:.–—-]+$/, "") + "…";
+}
+
+/* "Fig 05" / "Fig A" / "Fig": the pane toolbar's label for a figure. */
+function figureTag(number) {
+  if (number === undefined || number === null || number === "") return "Fig";
+  const text = String(number);
+  return `Fig ${/^\d+$/.test(text) ? text.padStart(2, "0") : text}`;
 }
 
 function recordFor(id, figures) {
@@ -198,7 +204,7 @@ export function buildSearchIndex(text, opts = {}) {
         add({
           kind: "figure",
           id,
-          tag: figureLabel(record?.figureNumber).replace("FIG", "Fig"),
+          tag: figureTag(record?.figureNumber),
           where,
           title,
           body,

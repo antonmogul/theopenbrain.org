@@ -30,7 +30,11 @@ import FigureWidget from "@/widgets/figures/FigureWidget.vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { figureWidgetFor } from "@/widgets/figures/registry";
-import { figureEnd, figureRecordFor } from "@/helper/historyFigureTiming";
+import {
+  figureEnd,
+  figureRecordFor,
+  figureStart,
+} from "@/helper/historyFigureTiming";
 import { figurePaneGround } from "@/helper/figurePane";
 import { keepRefreshInstant } from "@/helper/refreshScroll";
 
@@ -217,37 +221,40 @@ function setupTriggers() {
   measureGround();
   clog("SCROLL", `wiring ${animationTriggers.length} reader figure triggers`);
   for (const trigger of animationTriggers) {
+    // Its paragraph's window, or longer for a figure that holds (still
+    // images, an author's "Stays"; OPENBRAIN-131). A function, so every
+    // refresh re-measures it.
+    const end = () => {
+      // The title between an entrance and its successor is part of the
+      // handoff: retain the finished drawing until that figure takes over.
+      const pair = sequences.value.find(
+        (s) =>
+          s.transition.id.toLowerCase() ===
+          trigger.id.replace(/^trigger/i, "").toLowerCase()
+      );
+      const next =
+        pair &&
+        animationTriggers.find(
+          (candidate) =>
+            candidate !== trigger &&
+            figureRecordFor(
+              candidate.id.replace(/^trigger/i, ""),
+              animationList.value
+            )?.id === pair.successor.id
+        );
+      return next
+        ? next.getBoundingClientRect().top +
+            window.scrollY -
+            window.innerHeight / 2
+        : figureEnd(trigger, animationTriggers, animationList.value);
+    };
     const scrollTrigger = ScrollTrigger.create({
       id: "scrollTriggerAnimation",
       trigger,
-      start: () => `top ${window.innerHeight / 2}`,
-      // Its paragraph's window, or longer for a figure that holds (still
-      // images, an author's "Stays"; OPENBRAIN-131). A function, so every
-      // refresh re-measures it.
-      end: () => {
-        // The title between an entrance and its successor is part of the
-        // handoff: retain the finished drawing until that figure takes over.
-        const pair = sequences.value.find(
-          (s) =>
-            s.transition.id.toLowerCase() ===
-            trigger.id.replace(/^trigger/i, "").toLowerCase()
-        );
-        const next =
-          pair &&
-          animationTriggers.find(
-            (candidate) =>
-              candidate !== trigger &&
-              figureRecordFor(
-                candidate.id.replace(/^trigger/i, ""),
-                animationList.value
-              )?.id === pair.successor.id
-          );
-        return next
-          ? next.getBoundingClientRect().top +
-              window.scrollY -
-              window.innerHeight / 2
-          : figureEnd(trigger, animationTriggers, animationList.value);
-      },
+      // Its top on the reading line, or a little later when a box, a
+      // band or the opener above it is still over the pane (OPENBRAIN-195).
+      start: () => figureStart(trigger, window, end()),
+      end,
       markers: false,
       onToggle: (self) => {
         trigger.classList.toggle("active", self.isActive);

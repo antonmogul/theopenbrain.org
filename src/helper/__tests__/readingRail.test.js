@@ -1,24 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  cutSpan,
-  figureLabel,
-  railMarkFor,
-  showingIndex,
-  stepMark,
-} from "../readingRail";
-
-describe("figureLabel: the pane toolbar's wording", () => {
-  it("pads a number to two digits and leaves a letter as it is", () => {
-    expect(figureLabel(5)).toBe("FIG 05");
-    expect(figureLabel("12")).toBe("FIG 12");
-    expect(figureLabel("A")).toBe("FIG A");
-  });
-  it("is FIG alone without a number", () => {
-    expect(figureLabel(undefined)).toBe("FIG");
-    expect(figureLabel(null)).toBe("FIG");
-    expect(figureLabel("")).toBe("FIG");
-  });
-});
+import { cutSpan, railMarkFor, showingIndex, stepMark } from "../readingRail";
 
 describe("railMarkFor: what a paragraph's figure is", () => {
   it("has no mark for a trigger that brings nothing into the pane", () => {
@@ -40,49 +21,102 @@ describe("railMarkFor: what a paragraph's figure is", () => {
       })
     ).toEqual({
       kind: "figure",
-      label: "FIG 05",
+      interactive: false,
+      tip: "Figure 5: Galen silences a squealing pig",
       name: "Figure 5: Galen silences a squealing pig, shown beside this paragraph",
     });
   });
 
-  it("keeps the number for an interactive figure (History's Fig 2 and Fig 4)", () => {
+  it("says when a figure is a set of images (Stuart, 13 Nov: the cell doctrine's ten were all 'fig 6')", () => {
     const mark = railMarkFor({
-      id: "animationFoundationsFig4",
+      id: "animationFoundationsFig6",
+      title: "The cell doctrine",
+      figureNumber: "06",
+      images: [{ src: "/a.jpg" }, { src: "/b.jpg" }, { src: "/c.jpg" }],
+    });
+    expect(mark.tip).toBe("Figure 6: The cell doctrine, a gallery of 3 images");
+    expect(mark.name).toBe(
+      "Figure 6: The cell doctrine, a gallery of 3 images, shown beside this paragraph"
+    );
+    // A gallery is pictures to look at, not something to operate.
+    expect(mark.interactive).toBe(false);
+    // One image is not a gallery.
+    expect(
+      railMarkFor({ id: "a", figureNumber: 1, images: [{ src: "/a.jpg" }] }).tip
+    ).toBe("Figure 1");
+  });
+
+  it("keeps the number for an interactive figure (History's Fig 2 and Fig 4), and says it is one", () => {
+    const embed = railMarkFor({
+      id: "animationSomething",
       figureNumber: "04",
       widgetId: "papyrus",
     });
-    expect(mark.label).toBe("FIG 04");
-    expect(mark.name).toBe("Figure 4, shown beside this paragraph");
+    expect(embed).toMatchObject({ kind: "figure", interactive: true });
+    expect(embed.name).toBe(
+      "Figure 4, interactive, shown beside this paragraph"
+    );
+    // An uploaded widget that is given a number (Loewi's, once it is a
+    // numbered figure) is still one to operate.
+    expect(
+      railMarkFor({
+        id: "animationFoundationsLoewiWidget",
+        title: "Loewi's Vagusstoff, 1921",
+        figureNumber: 24,
+        widgetId: "upload:loewi",
+      })
+    ).toEqual({
+      kind: "figure",
+      interactive: true,
+      tip: "Figure 24: Loewi's Vagusstoff, 1921, interactive",
+      name: "Figure 24: Loewi's Vagusstoff, 1921, interactive, shown beside this paragraph",
+    });
+    // A figure rebuilt as a figure widget has no widgetId: its key says so.
+    expect(
+      railMarkFor({
+        id: "animationFoundationsFig2",
+        title: "Methods of trepanation",
+        figureNumber: 2,
+        placeholder: true,
+      })
+    ).toMatchObject({
+      kind: "figure",
+      interactive: true,
+      tip: "Figure 2: Methods of trepanation, interactive",
+    });
   });
 
-  it("says TRY IT for a widget and WATCH for a film", () => {
+  it("is an interactive for a widget and a video for a film, both to operate", () => {
     expect(
       railMarkFor({ id: "w", title: "Loewi", widgetId: "upload:loewi" })
     ).toEqual({
       kind: "widget",
-      label: "TRY IT",
+      interactive: true,
+      tip: "Interactive: Loewi",
       name: "Interactive: Loewi, shown beside this paragraph",
     });
     expect(
       railMarkFor({ id: "v", placeholder: true, youtubeID: "WgkAR-vrJpM" })
-    ).toMatchObject({ kind: "video", label: "WATCH" });
+    ).toMatchObject({ kind: "video", interactive: true, tip: "Video" });
     expect(railMarkFor({ id: "v", videoUrl: "/a.mp4" }).kind).toBe("video");
   });
 
-  it("is FIG for the figure shell without a number", () => {
+  it("is a figure for the figure shell without a number", () => {
     expect(
       railMarkFor({ id: "a", imageUrl: "/a.jpg", title: "Woodcut" })
     ).toEqual({
       kind: "figure",
-      label: "FIG",
+      interactive: false,
+      tip: "Figure: Woodcut",
       name: "Figure: Woodcut, shown beside this paragraph",
     });
   });
 
-  it("is a bare pointer for the Retina's 2023 figures, which have no label", () => {
+  it("is plain for the Retina's 2023 figures, which have no label in the pane", () => {
     expect(railMarkFor({ id: "animationDragon" })).toEqual({
       kind: "plain",
-      label: "",
+      interactive: false,
+      tip: "Figure",
       name: "Figure, shown beside this paragraph",
     });
     expect(railMarkFor({ id: "animationEye", scroll: true }).kind).toBe(

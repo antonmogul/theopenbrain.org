@@ -56,8 +56,21 @@
  *   [data-rail-columns]   a part's text, flowed in columns as tall as the
  *                         track (fitRailColumns sizes it to its columns)
  *   [data-rail-figure]    a part's picture (fitRailFigures fits it into the
- *                         track's height)
+ *                         track), and when it is drawn as plates
+ *                         (RailFigure, helper/railFigure.js):
+ *     [data-rail-figure-bar]  its label's row
+ *     [data-rail-plate]       one image of it
+ *
+ * What the fitting writes (OPENBRAIN-194), all undone by clearRailColumns:
+ *   --rp-figure-w, --rp-plates-h, data-rail-fitted   on a figure of plates
+ *   --rp-img-max                                     on a shell figure
+ *   --rail-figures-w                                 on a part
+ *   width, height, --rp-extra, data-rail-fill        on a part's text
+ *   data-rail-whole                                  on a short paragraph
+ *   --rail-extra                                     on the track
  */
+
+import { railPlatesHeight, railPlatesWidth } from "@/helper/railFigure";
 
 /**
  * Which boxes read sideways, by chapter slug then box slug (box slugs are
@@ -349,75 +362,318 @@ export function revealInRail(el) {
   return true;
 }
 
+/* ── Fitting the text ──────────────────────────────────────────────────── */
+
+/** On the pinned track a paragraph of up to this many lines is never
+ *  broken over two columns. */
+export const RAIL_WHOLE_LINES = 7;
+/** On the pinned track, text that fills no more than this much of one
+ *  column stays one column instead of being balanced over two. */
+export const RAIL_SINGLE_FILL = 0.67;
+/** On a swipe track, a last page of text with up to this many lines is a
+ *  remainder to merge into the pages before it… */
+export const RAIL_WIDOW_LINES = 4;
+/** …when that costs each of them no more than this many lines of height. */
+export const RAIL_WIDOW_GROW = 3;
+
+/**
+ * The heights to try, in px, for merging a swipe part's last page of text
+ * into the pages before it (Stuart, 14 Nov: "there is one section for a
+ * paragraph … that only has a single word"). The last page holds
+ * `remainder` px of text; the `columns - 1` pages before it share it out,
+ * each growing by whole lines. Empty when there is nothing to merge: one
+ * page, a last page that is a real page (more than RAIL_WIDOW_LINES), or
+ * a remainder that would cost more than RAIL_WIDOW_GROW lines a page. The
+ * caller tries each in turn and keeps the first that loses the page.
+ * @param {{ remainder: number, columns: number, line: number }} text
+ * @returns {number[]}
+ */
+export function railWidowRoom({ remainder, columns, line } = {}) {
+  if (!(columns >= 2) || !(remainder > 0) || !(line > 0)) return [];
+  const lines = Math.max(1, Math.round(remainder / line));
+  if (lines > RAIL_WIDOW_LINES) return [];
+  const out = [];
+  // A paragraph that starts the last page brings its margin with it: one
+  // more line of room is tried before giving up.
+  for (
+    let each = Math.ceil(lines / (columns - 1));
+    each <= RAIL_WIDOW_GROW && out.length < 2;
+    each += 1
+  )
+    out.push(Math.ceil(each * line) + 2);
+  return out;
+}
+
+const lineOf = (style) => {
+  const line = parseFloat(style.lineHeight);
+  return line > 0 ? line : (parseFloat(style.fontSize) || 16) * 1.5;
+};
+
+/* A multi-column block as it is laid out now: how many columns its content
+   fills (measured from the content's own boxes as well as scrollWidth,
+   which engines report differently for overflowing columns, and in
+   fractions of a pixel: a width a hair short of n columns lays out n - 1),
+   how many of those hold text (the block is as wide as the view's columns
+   even when its text is not), the width that holds them all, how far down the tallest column goes and
+   how far down the last one does. The block may carry side padding of its
+   own (a swipe page's gutters, with box-sizing: content-box): the columns
+   are counted inside it. */
+function columnsOf(el) {
+  const box = el.getBoundingClientRect();
+  const style = getComputedStyle(el);
+  const padLeft = parseFloat(style.paddingLeft) || 0;
+  const padRight = parseFloat(style.paddingRight) || 0;
+  const inner = box.width - padLeft - padRight;
+  const one = parseFloat(style.columnWidth) || inner;
+  if (!(one > 0)) return null;
+  const gap = parseFloat(style.columnGap) || 0;
+  const left = box.left + padLeft;
+  let right = left + Math.max(inner, el.scrollWidth - padLeft - padRight);
+  const rects = [];
+  let reach = left; // how far right the text itself goes
+  for (const node of el.querySelectorAll("*"))
+    for (const rect of node.getClientRects()) {
+      if (!(rect.width > 0) || !(rect.height > 0)) continue;
+      rects.push(rect);
+      reach = Math.max(reach, rect.right);
+    }
+  right = Math.max(right, reach);
+  const count = (to) =>
+    Math.max(1, Math.round((to - left + gap) / (one + gap)));
+  const columns = count(right);
+  const lastLeft = left + (count(reach) - 1) * (one + gap) - 1;
+  let used = 0;
+  let last = 0;
+  for (const rect of rects) {
+    const bottom = rect.bottom - box.top;
+    used = Math.max(used, bottom);
+    if (rect.left >= lastLeft) last = Math.max(last, bottom);
+  }
+  return {
+    style,
+    inner,
+    one,
+    columns,
+    filled: count(reach),
+    width: columns * one + (columns - 1) * gap,
+    height: box.height,
+    used,
+    last,
+  };
+}
+
+/* Half a pixel over, never under: the columns absorb it. */
+function widen(el, m) {
+  if (m.width > m.inner + 1) el.style.width = `${m.width + 0.5}px`;
+}
+
+/* The pinned track. The text is balanced over its columns, which leaves
+   them shorter than the track, so the block is made as tall as its text
+   and RailPart's CSS centres it (Stuart, 14 Nov: "this is ok, but then
+   maybe center them vertically"). Two things are kept from the balance
+   (same email, on the Descartes box: "the last paragraph is strangely
+   split in half"): a short paragraph is never broken over two columns
+   (data-rail-whole), and text that would fill no more than two thirds of
+   one column stays one column (data-rail-fill="auto"). */
+function fitTrackText(el) {
+  el.style.width = "";
+  el.style.height = "";
+  for (const p of el.querySelectorAll("[data-rail-whole]"))
+    p.removeAttribute("data-rail-whole");
+  // Filled column by column, to see what the text is before balancing it.
+  el.setAttribute("data-rail-fill", "auto");
+  let m = columnsOf(el);
+  if (!m) {
+    el.removeAttribute("data-rail-fill");
+    return;
+  }
+  const whole = RAIL_WHOLE_LINES * lineOf(m.style) + 1;
+  for (const p of el.querySelectorAll(".P, blockquote")) {
+    let height = 0;
+    for (const rect of p.getClientRects()) height += rect.height;
+    if (height > 0 && height <= whole) p.setAttribute("data-rail-whole", "");
+  }
+  const single = m.filled === 1 && m.used <= m.height * RAIL_SINGLE_FILL;
+  if (single) {
+    el.style.width = `${m.one + 0.5}px`;
+  } else {
+    el.removeAttribute("data-rail-fill");
+    m = columnsOf(el);
+    widen(el, m);
+  }
+  m = columnsOf(el);
+  if (m.used > 0 && m.used < m.height - 1)
+    el.style.height = `${Math.ceil(m.used) + 1}px`;
+}
+
+/* A swipe track: a page for every column. A last page that is only a few
+   lines is merged into the pages before it: they grow by a line or two
+   (--rp-extra on the text, and the track by the most any part needs,
+   --rail-extra, which fitRailColumns sets), so no page is a stray word.
+   Returns the room this part took. */
+function fitSwipeText(el) {
+  el.style.width = "";
+  el.style.height = "";
+  el.style.removeProperty("--rp-extra");
+  let m = columnsOf(el);
+  if (!m) return 0;
+  let extra = 0;
+  for (const room of railWidowRoom({
+    remainder: m.last,
+    columns: m.columns,
+    line: lineOf(m.style),
+  })) {
+    el.style.setProperty("--rp-extra", `${room}px`);
+    const merged = columnsOf(el);
+    if (merged && merged.columns < m.columns) {
+      m = merged;
+      extra = room;
+      break;
+    }
+    el.style.removeProperty("--rp-extra");
+  }
+  widen(el, m);
+  return extra;
+}
+
 /**
  * Size each part's text to the columns it fills. The text is a multi-column
  * block as tall as the track and, in CSS, as wide as the columns the view
  * fits; what does not fit flows into further columns to its right, which
  * overflow it. Its width is set to all of them, so the next part starts
- * after them. Measured from the content's own boxes as well as scrollWidth,
- * which engines report differently for overflowing columns, and in
- * fractions of a pixel: a width a hair short of n columns lays out n - 1.
- * The block may carry side padding of its own (a swipe page's gutters, with
- * box-sizing: content-box): the columns are counted inside it.
+ * after them. How the text sits in its columns is the mode's: balanced and
+ * centred on the pinned track (fitTrackText), page after page with no stray
+ * last page on a swipe track (fitSwipeText).
  */
 export function fitRailColumns(scroller) {
   if (!scroller?.querySelectorAll) return;
+  const swipe = scroller.getAttribute("data-rail-mode") === "swipe";
+  let extra = 0;
   for (const el of scroller.querySelectorAll("[data-rail-columns]")) {
-    el.style.width = "";
-    const box = el.getBoundingClientRect();
-    const style = getComputedStyle(el);
-    const padLeft = parseFloat(style.paddingLeft) || 0;
-    const padRight = parseFloat(style.paddingRight) || 0;
-    const inner = box.width - padLeft - padRight;
-    const one = parseFloat(style.columnWidth) || inner;
-    if (!(one > 0)) continue;
-    const gap = parseFloat(style.columnGap) || 0;
-    const left = box.left + padLeft;
-    let right = left + Math.max(inner, el.scrollWidth - padLeft - padRight);
-    for (const node of el.querySelectorAll("*"))
-      for (const rect of node.getClientRects())
-        right = Math.max(right, rect.right);
-    const columns = Math.max(1, Math.round((right - left + gap) / (one + gap)));
-    const width = columns * one + (columns - 1) * gap;
-    // Half a pixel over, never under: the columns absorb it.
-    if (width > inner + 1) el.style.width = `${width + 0.5}px`;
+    if (swipe) extra = Math.max(extra, fitSwipeText(el));
+    else fitTrackText(el);
+  }
+  // Written only when it changes: it sets the track's height, which the
+  // rail's ResizeObserver hears.
+  const now = extra > 0 ? `${extra}px` : "";
+  if (scroller.style.getPropertyValue("--rail-extra") !== now) {
+    if (now) scroller.style.setProperty("--rail-extra", now);
+    else scroller.style.removeProperty("--rail-extra");
+  }
+}
+
+/* ── Fitting the pictures ──────────────────────────────────────────────── */
+
+/* A figure the shell draws (IllustrationInline: a video, a larger set):
+   its toolbar and its images (and a gallery's controls), and only the
+   images can give (a single image, or a gallery's stage box): where the
+   whole is taller than the track, their cap (--rp-img-max, RailPart's CSS)
+   comes down by the overflow. A custom property on the figure, not a style
+   on the image, so a gallery's next slide (a new <img>) is capped too. */
+function fitShellFigure(fig) {
+  fig.style.removeProperty("--rp-img-max");
+  const over = fig.scrollHeight - fig.clientHeight;
+  if (!(over > 1)) return;
+  let tallest = 0;
+  for (const el of fig.querySelectorAll("img, .figimg-stage--gallery")) {
+    if (
+      el.tagName === "IMG" &&
+      el.closest(".figimg-stage--gallery, .figimg-thumbnails, .figimg-grid")
+    )
+      continue;
+    tallest = Math.max(tallest, el.getBoundingClientRect().height);
+  }
+  if (!(tallest > 0)) return;
+  const cap = Math.max(64, Math.floor(tallest - over - 1));
+  fig.style.setProperty("--rp-img-max", `${cap}px`);
+}
+
+const unfitPlates = (fig) => {
+  fig.style.removeProperty("--rp-figure-w");
+  fig.style.removeProperty("--rp-plates-h");
+  fig.removeAttribute("data-rail-fitted");
+};
+
+/* A figure of plates (RailFigure) on the pinned track: as wide as its
+   images are at the height the track leaves under its label, up to the
+   most RailPart's CSS allows it (max-width: what the text beside it can
+   spare); the row of plates is then exactly the images' height, and the
+   figure is centred in the track. Waits for every image's size. */
+function fitPlates(fig, plates) {
+  unfitPlates(fig);
+  const row = plates[0].parentElement;
+  const ratios = plates.map((plate) => {
+    const img = plate.querySelector("img");
+    return img?.naturalWidth > 0 && img.naturalHeight > 0
+      ? img.naturalWidth / img.naturalHeight
+      : 0;
+  });
+  if (!row || ratios.some((r) => !(r > 0))) return;
+  const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+  const bar = fig.querySelector("[data-rail-figure-bar]");
+  // Twice: the label's row may wrap differently at the new width.
+  for (let pass = 0; pass < 2; pass += 1) {
+    const room = fig.clientHeight - (bar?.offsetHeight || 0);
+    const width = Math.ceil(railPlatesWidth(ratios, room, gap));
+    if (!(width > 0)) return unfitPlates(fig);
+    fig.style.setProperty("--rp-figure-w", `${width}px`);
+    // The figure may have been allowed less: the plates are then shorter.
+    const height = Math.floor(
+      railPlatesHeight(ratios, row.clientWidth, gap, room)
+    );
+    if (!(height > 0)) return unfitPlates(fig);
+    fig.style.setProperty("--rp-plates-h", `${height}px`);
+    fig.setAttribute("data-rail-fitted", "");
   }
 }
 
 /**
- * Fit each picture on the track into the track's height. A figure is its
- * toolbar, its legend and its images (and a gallery's controls), and only
- * the images can give (a single image, or a gallery's stage box): where
- * the whole is taller than the track, their cap (--rp-img-max, RailPart's
- * CSS) comes down by the overflow.
- * A custom property on the figure, not a style on the image, so a gallery's
- * next slide (a new <img>) is capped too.
+ * Fit each part's pictures into the track. On the pinned track a figure of
+ * plates is sized to its images (fitPlates) and each part is told how wide
+ * its pictures came out (--rail-figures-w), which is what its columns are
+ * measured beside (RailPart's CSS). On a swipe track a plate is a page, by
+ * CSS alone. A figure the shell draws is fitted into the track's height.
  */
 export function fitRailFigures(scroller) {
   if (!scroller?.querySelectorAll) return;
+  const swipe = scroller.getAttribute("data-rail-mode") === "swipe";
   for (const fig of scroller.querySelectorAll("[data-rail-figure]")) {
-    fig.style.removeProperty("--rp-img-max");
-    const over = fig.scrollHeight - fig.clientHeight;
-    if (!(over > 1)) continue;
-    let tallest = 0;
-    for (const el of fig.querySelectorAll("img, .figimg-stage--gallery")) {
-      if (
-        el.tagName === "IMG" &&
-        el.closest(".figimg-stage--gallery, .figimg-thumbnails, .figimg-grid")
-      )
-        continue;
-      tallest = Math.max(tallest, el.getBoundingClientRect().height);
+    const plates = [...fig.querySelectorAll("[data-rail-plate]")];
+    if (!plates.length) fitShellFigure(fig);
+    else if (swipe) unfitPlates(fig);
+    else fitPlates(fig, plates);
+  }
+  for (const part of scroller.querySelectorAll("[data-rail-part]")) {
+    const figs = [...part.querySelectorAll("[data-rail-figure]")];
+    if (swipe || !figs.length) {
+      part.style.removeProperty("--rail-figures-w");
+      continue;
     }
-    if (!(tallest > 0)) continue;
-    const cap = Math.max(64, Math.floor(tallest - over - 1));
-    fig.style.setProperty("--rp-img-max", `${cap}px`);
+    const gap = parseFloat(getComputedStyle(part).columnGap) || 0;
+    const width =
+      figs.reduce((sum, fig) => sum + fig.getBoundingClientRect().width, 0) +
+      gap * (figs.length - 1);
+    if (width > 0)
+      part.style.setProperty("--rail-figures-w", `${Math.ceil(width)}px`);
+    else part.style.removeProperty("--rail-figures-w");
   }
 }
 
 /** Undo fitRailColumns and fitRailFigures (the rail turned off). */
 export function clearRailColumns(scroller) {
-  for (const el of scroller?.querySelectorAll?.("[data-rail-columns]") || [])
+  for (const el of scroller?.querySelectorAll?.("[data-rail-columns]") || []) {
     el.style.width = "";
-  for (const el of scroller?.querySelectorAll?.("[data-rail-figure]") || [])
+    el.style.height = "";
+    el.style.removeProperty("--rp-extra");
+    el.removeAttribute("data-rail-fill");
+  }
+  for (const el of scroller?.querySelectorAll?.("[data-rail-whole]") || [])
+    el.removeAttribute("data-rail-whole");
+  for (const el of scroller?.querySelectorAll?.("[data-rail-figure]") || []) {
     el.style.removeProperty("--rp-img-max");
+    unfitPlates(el);
+  }
+  for (const el of scroller?.querySelectorAll?.("[data-rail-part]") || [])
+    el.style.removeProperty("--rail-figures-w");
+  scroller?.style?.removeProperty("--rail-extra");
 }

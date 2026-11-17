@@ -56,10 +56,18 @@ export const VIEW_MAP = {
  * face. With these fits every map edge is on the skull (0.2 % of region
  * pixels off it, down from 1.5 %), and the widget also masks the map with
  * the engraving so nothing paints outside the bone.
+ *
+ * The side map then stopped short of the back of the skull (OPENBRAIN-195,
+ * Stuart 13 Nov: "there is some dead space on the skull on the far left"):
+ * a crescent of bare bone 22 to 28 px wide from the crown round to the
+ * occiput, and 10 px along the top, that no region covered. Its fit is now
+ * wider and taller about the same front edge, so the map's outline follows
+ * the skull's within 6 px all the way round (a hair outside it over the
+ * crown, where the mask trims it; 0.7 % of region pixels are off the bone).
  */
 export const MAP_FIT = {
   front: { sx: 0.978, sy: 0.945, tx: 3, ty: -4 },
-  side: { sx: 0.93, sy: 0.916, tx: 21, ty: 4 },
+  side: { sx: 0.968, sy: 0.931, tx: 8, ty: 0 },
   back: { sx: 0.984, sy: 1.008, tx: 5, ty: 22 },
 };
 /** MAP_FIT as an SVG transform. */

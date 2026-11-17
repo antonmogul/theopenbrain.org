@@ -229,6 +229,10 @@ async function assertNoBoxLeakage(page) {
 // authored hold (content.animationFlags.hold, OPENBRAIN-131) adds `bottom +
 // hold screens` to it: History rows carry none, so if one ever does, add that
 // term here in the same change.
+// Its start is figureStart's (OPENBRAIN-195): the trigger's top on the
+// reading line, or later, once the full-width band or the opener that ends
+// just above it has left the pane (Fig 9 follows the phrenology band), but
+// never so late that less than a quarter of a screen of its stay is left.
 //
 // `number` is the figure's key (animationFoundationsFig9), which is the
 // manuscript's number and an identifier. What the pane prints is the
@@ -244,7 +248,7 @@ async function timing(page, result, number) {
   const trigger = page.locator(`#triggerAnimationFoundationsFig${number}`);
   await expect(trigger).toHaveCount(1);
   const measure = () =>
-    trigger.evaluate((element) => {
+    trigger.evaluate((element, paneSelector) => {
       const rect = element.getBoundingClientRect();
       const top = rect.top + scrollY;
       const bottom = rect.bottom + scrollY;
@@ -262,20 +266,49 @@ async function timing(page, result, number) {
         )
         .map((item) => item.getBoundingClientRect().top + scrollY)
         .filter((y) => y > top + 1);
+      const covers = [
+        ...element
+          .closest(".chapter-reader")
+          .querySelectorAll(
+            ".fb-slot:not(.fb-slot--column), .wb, [data-chapter-opener]"
+          ),
+      ]
+        .filter((item) => !item.contains(element) && !element.contains(item))
+        .map((item) => item.getBoundingClientRect().bottom + scrollY)
+        .filter((y) => y <= top + 1);
+      const paneTop = document
+        .querySelector(paneSelector)
+        .getBoundingClientRect().top;
+      const cover = covers.length ? Math.max(...covers) : null;
+      const boundary = Math.max(
+        bottom,
+        Math.min(
+          section.getBoundingClientRect().bottom + scrollY,
+          ...boundaries
+        )
+      );
+      // The most it may wait: a quarter of a screen of its stay is kept.
+      const most = boundary - top - 0.25 * innerHeight;
+      const wait =
+        cover === null
+          ? 0
+          : Math.max(
+              0,
+              Math.min(cover - paneTop - (top - innerHeight / 2), most)
+            );
       return {
         top,
+        start: top + wait,
+        wait,
+        most,
+        cover,
+        paneTop,
         bottom,
-        boundary: Math.max(
-          bottom,
-          Math.min(
-            section.getBoundingClientRect().bottom + scrollY,
-            ...boundaries
-          )
-        ),
+        boundary,
         readingLine: innerHeight / 2,
         scrollY,
       };
-    });
+    }, paneSelector);
   const label = figLabel(number);
   const sample = async (name, position) => {
     const before = await measure();
@@ -315,18 +348,35 @@ async function timing(page, result, number) {
     ).toBeLessThanOrEqual(1);
     return live;
   };
+  // While a band above it is still over the pane the figure waits, so it
+  // never comes in with its head covered.
+  const waits = await measure();
+  if (waits.wait > 10) {
+    await sample("under-cover", (geometry) => geometry.top + 5);
+    await expect(trigger).not.toHaveClass(/active/);
+    await expect
+      .poll(() => page.locator(`${paneSelector} .fig-label`).allTextContents())
+      .not.toContain(label);
+  }
   for (const [name, position] of [
-    ["opening", (geometry) => geometry.top + 5],
+    ["opening", (geometry) => geometry.start + 5],
     [
       "last-lines",
       (geometry) => Math.min(geometry.bottom - 3, geometry.boundary - 3),
     ],
   ]) {
-    await sample(name, position);
+    const live = await sample(name, position);
     await expect
       .poll(() => page.locator(`${paneSelector} .fig-label`).allTextContents())
       .toEqual([label]);
     await expect(trigger).toHaveClass(/active/);
+    // Whole from the first moment: nothing above it reaches into the pane,
+    // unless its stay was too short to wait the cover out.
+    if (name === "opening" && live.cover !== null && live.wait < live.most - 1)
+      expect(
+        live.cover - live.scrollY,
+        "the band above has left the pane when the figure appears"
+      ).toBeLessThanOrEqual(live.paneTop + 1);
   }
   await shot(page, result, `static-figure-${number}-last-lines`);
   await sample("after-boundary", (geometry) => geometry.boundary + 5);
@@ -341,7 +391,7 @@ async function timing(page, result, number) {
   // Re-enter in reverse, exercising GSAP's active-trigger ownership too.
   const geometry = await sample(
     "reverse-entry",
-    (geometry) => geometry.top + 5
+    (geometry) => geometry.start + 5
   );
   await expect
     .poll(() => page.locator(`${paneSelector} .fig-label`).allTextContents())

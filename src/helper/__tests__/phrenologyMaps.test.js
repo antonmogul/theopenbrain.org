@@ -134,4 +134,24 @@ describe("phrenologyMaps", () => {
     const sideBackSrc = (78 - 375 - 29.5) / 0.94 + 375;
     expect(edge(MAP_FIT.side, sideBackSrc, "x")).toBeGreaterThanOrEqual(46);
   });
+
+  it("brings the side map to the back and top of the skull (OPENBRAIN-195)", () => {
+    // The skull's back is at x 46 and its crown at y 52 in the 750 × 725
+    // frame; the map's own back edge and top (x 73, y 62 at the fit before)
+    // left a crescent of bone no region covered.
+    const edge = (fit, v, axis) => {
+      const c = axis === "x" ? 375 : 362.5;
+      const s = axis === "x" ? fit.sx : fit.sy;
+      const t = axis === "x" ? fit.tx : fit.ty;
+      return c + t + (v - c) * s;
+    };
+    const backSrc = (73 - 375 - 21) / 0.93 + 375;
+    const back = edge(MAP_FIT.side, backSrc, "x");
+    expect(back).toBeGreaterThanOrEqual(46);
+    expect(back).toBeLessThanOrEqual(49);
+    const topSrc = (62 - 362.5 - 4) / 0.916 + 362.5;
+    const top = edge(MAP_FIT.side, topSrc, "y");
+    expect(top).toBeGreaterThanOrEqual(49);
+    expect(top).toBeLessThanOrEqual(54);
+  });
 });

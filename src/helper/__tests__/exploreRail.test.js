@@ -7,6 +7,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   RAIL_BOXES_BY_SLUG,
+  RAIL_WIDOW_GROW,
+  RAIL_WIDOW_LINES,
   boxIsRail,
   clearRailColumns,
   fitRailColumns,
@@ -20,6 +22,7 @@ import {
   railScrolledForX,
   railStopIndex,
   railStops,
+  railWidowRoom,
   railXForScrolled,
   railXOf,
   revealInRail,
@@ -364,49 +367,181 @@ describe("revealInRail", () => {
   });
 });
 
+describe("railWidowRoom", () => {
+  it("offers the lines each earlier page must take, and one more", () => {
+    // One stray line after two pages: each takes a line (28px, and 2px of
+    // slack), or two if a paragraph's margin came with it.
+    expect(railWidowRoom({ remainder: 30, columns: 3, line: 28 })).toEqual([
+      30, 58,
+    ]);
+    // Three lines after one page: that page takes all three.
+    expect(railWidowRoom({ remainder: 84, columns: 2, line: 28 })).toEqual([
+      86,
+    ]);
+  });
+
+  it("leaves a last page that is a real page, or one too dear to merge", () => {
+    expect(railWidowRoom({ remainder: 300, columns: 3, line: 28 })).toEqual([]);
+    // Four lines after one page would cost it four lines: over the limit.
+    expect(railWidowRoom({ remainder: 112, columns: 2, line: 28 })).toEqual([]);
+    expect(RAIL_WIDOW_LINES).toBe(4);
+    expect(RAIL_WIDOW_GROW).toBe(3);
+  });
+
+  it("has nothing to merge on a single page", () => {
+    expect(railWidowRoom({ remainder: 30, columns: 1, line: 28 })).toEqual([]);
+    expect(railWidowRoom()).toEqual([]);
+  });
+});
+
 describe("fitRailColumns", () => {
-  /** A text block one view of columns wide whose content reaches `right`. */
-  function columns({ width, column, gap, right }) {
+  const COLUMN = 400;
+  const GAP = 50;
+  const LINE = 30;
+  /**
+   * A text block with a made-up layout: `lay(el)` answers, for the block's
+   * state (its fill, its --rp-extra), the height of the text in each
+   * column. Every column's text is one fragment of the block's paragraph.
+   */
+  function block({ mode = "track", view = 850, height = 500, lay }) {
     const scroller = document.createElement("div");
+    scroller.setAttribute("data-rail-mode", mode);
     const el = document.createElement("div");
     el.setAttribute("data-rail-columns", "");
-    el.style.columnWidth = `${column}px`;
-    el.style.columnGap = `${gap}px`;
-    el.getBoundingClientRect = () => ({ left: 100, width });
-    Object.defineProperty(el, "scrollWidth", { value: width });
-    const child = document.createElement("p");
-    child.getClientRects = () => [{ right: 100 + right }];
-    el.appendChild(child);
+    el.style.columnWidth = `${COLUMN}px`;
+    el.style.columnGap = `${GAP}px`;
+    el.style.lineHeight = `${LINE}px`;
+    const width = () => parseFloat(el.style.width) || view;
+    el.getBoundingClientRect = () => ({
+      left: 100,
+      top: 50,
+      width: width(),
+      height: parseFloat(el.style.height) || height,
+    });
+    Object.defineProperty(el, "scrollWidth", { get: width });
+    const p = document.createElement("div");
+    p.className = "P";
+    p.getClientRects = () =>
+      lay(el).map((h, i) => ({
+        left: 100 + i * (COLUMN + GAP),
+        right: 100 + i * (COLUMN + GAP) + COLUMN,
+        top: 50,
+        bottom: 50 + h,
+        width: COLUMN,
+        height: h,
+      }));
+    el.appendChild(p);
     scroller.appendChild(el);
     document.body.appendChild(scroller);
-    return { scroller, el };
+    return { scroller, el, p };
   }
+  const filled = (el) => el.getAttribute("data-rail-fill") === "auto";
 
-  it("widens a block to all the columns its text fills", () => {
-    // Two 412.4px columns fit; the text runs into a third.
-    const { scroller, el } = columns({
-      width: 872.8,
-      column: 412.4,
-      gap: 48,
-      right: 3 * 412.4 + 2 * 48,
+  it("widens a block to all the columns its text fills, and makes it as tall as its text", () => {
+    // Filled in turn the text is two columns and part of a third; balanced
+    // it is three of 380px.
+    const { scroller, el, p } = block({
+      lay: (el) => (filled(el) ? [500, 500, 140] : [380, 380, 380]),
     });
     fitRailColumns(scroller);
     // Three whole columns, in fractions, half a pixel over: never a hair
     // under, which would lay out two.
-    expect(parseFloat(el.style.width)).toBeCloseTo(1333.7, 1);
+    expect(parseFloat(el.style.width)).toBeCloseTo(1300.5, 1);
+    // As tall as its text, so the part can centre it in the track.
+    expect(el.style.height).toBe("381px");
+    expect(el.hasAttribute("data-rail-fill")).toBe(false);
+    // A long paragraph breaks where it must.
+    expect(p.hasAttribute("data-rail-whole")).toBe(false);
     clearRailColumns(scroller);
     expect(el.style.width).toBe("");
+    expect(el.style.height).toBe("");
   });
 
-  it("leaves a block whose text fits the view alone", () => {
-    const { scroller, el } = columns({
-      width: 872.8,
-      column: 412.4,
-      gap: 48,
-      right: 860,
+  it("keeps text that fits most of one column as one column (the Descartes box's last paragraph)", () => {
+    // Nine lines: balanced it would be split five and four.
+    const { scroller, el, p } = block({
+      lay: (el) => (filled(el) ? [270] : [150, 120]),
     });
     fitRailColumns(scroller);
+    expect(el.getAttribute("data-rail-fill")).toBe("auto");
+    expect(parseFloat(el.style.width)).toBeCloseTo(400.5, 1);
+    expect(el.style.height).toBe("271px");
+    // Nine lines is more than a paragraph that is always kept whole.
+    expect(p.hasAttribute("data-rail-whole")).toBe(false);
+    clearRailColumns(scroller);
+    expect(el.hasAttribute("data-rail-fill")).toBe(false);
+  });
+
+  it("balances text that would nearly fill a column", () => {
+    const { scroller, el } = block({
+      lay: (el) => (filled(el) ? [420] : [210, 210]),
+    });
+    fitRailColumns(scroller);
+    expect(el.hasAttribute("data-rail-fill")).toBe(false);
     expect(el.style.width).toBe("");
+    expect(el.style.height).toBe("211px");
+  });
+
+  it("marks a short paragraph to be kept whole", () => {
+    const { scroller, p } = block({
+      lay: (el) => (filled(el) ? [500, 90, 90] : [340, 340]),
+    });
+    // The block's own paragraph is long; a second one is three lines over
+    // two columns.
+    const short = document.createElement("div");
+    short.className = "P";
+    short.getClientRects = () => [
+      { left: 100, right: 500, top: 500, bottom: 530, width: 400, height: 30 },
+      { left: 550, right: 950, top: 50, bottom: 110, width: 400, height: 60 },
+    ];
+    p.after(short);
+    fitRailColumns(scroller);
+    expect(short.hasAttribute("data-rail-whole")).toBe(true);
+    expect(p.hasAttribute("data-rail-whole")).toBe(false);
+    clearRailColumns(scroller);
+    expect(short.hasAttribute("data-rail-whole")).toBe(false);
+  });
+
+  it("merges a swipe part's stray last page into the pages before it", () => {
+    // Two pages and one line; a line more on each page takes it in.
+    const { scroller, el } = block({
+      mode: "swipe",
+      view: 400,
+      lay: (el) =>
+        parseFloat(el.style.getPropertyValue("--rp-extra")) >= 30
+          ? [530, 530]
+          : [500, 500, 30],
+    });
+    fitRailColumns(scroller);
+    expect(el.style.getPropertyValue("--rp-extra")).toBe("32px");
+    // The track grows by the same, and the block is its two pages wide.
+    expect(scroller.style.getPropertyValue("--rail-extra")).toBe("32px");
+    expect(parseFloat(el.style.width)).toBeCloseTo(850.5, 1);
+    // A swipe page is filled from the top, never centred.
+    expect(el.style.height).toBe("");
+    clearRailColumns(scroller);
+    expect(el.style.getPropertyValue("--rp-extra")).toBe("");
+    expect(scroller.style.getPropertyValue("--rail-extra")).toBe("");
+  });
+
+  it("leaves a swipe part whose last page is a real page, or cannot be merged", () => {
+    const real = block({
+      mode: "swipe",
+      view: 400,
+      lay: () => [500, 500, 300],
+    });
+    fitRailColumns(real.scroller);
+    expect(real.el.style.getPropertyValue("--rp-extra")).toBe("");
+    expect(real.scroller.style.getPropertyValue("--rail-extra")).toBe("");
+    expect(parseFloat(real.el.style.width)).toBeCloseTo(1300.5, 1);
+    // The room is tried and given back when the page is still there.
+    const stuck = block({
+      mode: "swipe",
+      view: 400,
+      lay: () => [500, 500, 30],
+    });
+    fitRailColumns(stuck.scroller);
+    expect(stuck.el.style.getPropertyValue("--rp-extra")).toBe("");
     expect(() => fitRailColumns(null)).not.toThrow();
   });
 });
@@ -437,7 +572,7 @@ describe("fitRailFigures", () => {
     return { scroller, fig };
   }
 
-  it("brings a figure's images down by what overflows the track", () => {
+  it("brings a shell figure's images down by what overflows the track", () => {
     const { scroller, fig } = figureEl({ client: 520, scroll: 640, img: 400 });
     fitRailFigures(scroller);
     expect(fig.style.getPropertyValue("--rp-img-max")).toBe("279px");
@@ -461,5 +596,105 @@ describe("fitRailFigures", () => {
     fitRailFigures(scroller);
     expect(fig.style.getPropertyValue("--rp-img-max")).toBe("");
     expect(() => fitRailFigures(null)).not.toThrow();
+  });
+
+  /**
+   * A part with one figure of plates (RailFigure's DOM): `sizes` are the
+   * images' natural sizes, the figure is `height` tall with a `bar` tall
+   * label row, and may be no wider than `max` (RailPart's max-width).
+   */
+  function platesEl({ sizes, height = 560, bar = 60, max = 9999, mode }) {
+    const scroller = document.createElement("div");
+    if (mode) scroller.setAttribute("data-rail-mode", mode);
+    const part = document.createElement("div");
+    part.setAttribute("data-rail-part", "");
+    part.style.columnGap = "48px";
+    const fig = document.createElement("figure");
+    fig.setAttribute("data-rail-figure", "");
+    Object.defineProperty(fig, "clientHeight", { value: height });
+    const width = () =>
+      Math.min(max, parseFloat(fig.style.getPropertyValue("--rp-figure-w")));
+    fig.getBoundingClientRect = () => ({ width: width() });
+    const head = document.createElement("header");
+    head.setAttribute("data-rail-figure-bar", "");
+    Object.defineProperty(head, "offsetHeight", { value: bar });
+    const row = document.createElement("div");
+    row.style.columnGap = "16px";
+    Object.defineProperty(row, "clientWidth", { get: width });
+    for (const [w, h] of sizes) {
+      const plate = document.createElement("div");
+      plate.setAttribute("data-rail-plate", "");
+      const img = document.createElement("img");
+      Object.defineProperty(img, "naturalWidth", { value: w });
+      Object.defineProperty(img, "naturalHeight", { value: h });
+      plate.appendChild(img);
+      row.appendChild(plate);
+    }
+    fig.append(head, row);
+    part.appendChild(fig);
+    scroller.appendChild(part);
+    document.body.appendChild(scroller);
+    return { scroller, part, fig };
+  }
+  const prop = (el, name) => el.style.getPropertyValue(name);
+
+  it("makes a figure of plates as wide as its image is at the track's height", () => {
+    // A portrait bust, 0.6 wide: 500px of room under its label.
+    const { scroller, part, fig } = platesEl({ sizes: [[600, 1000]] });
+    fitRailFigures(scroller);
+    expect(prop(fig, "--rp-figure-w")).toBe("300px");
+    expect(prop(fig, "--rp-plates-h")).toBe("500px");
+    expect(fig.hasAttribute("data-rail-fitted")).toBe(true);
+    // The part's columns are measured beside the real picture.
+    expect(prop(part, "--rail-figures-w")).toBe("300px");
+    clearRailColumns(scroller);
+    expect(prop(fig, "--rp-figure-w")).toBe("");
+    expect(prop(fig, "--rp-plates-h")).toBe("");
+    expect(fig.hasAttribute("data-rail-fitted")).toBe(false);
+    expect(prop(part, "--rail-figures-w")).toBe("");
+  });
+
+  it("makes a wide image as wide as the part allows, and only as tall as that makes it (the four humours)", () => {
+    // 1.5 wide: 750px at the track's height, but the part allows 420.
+    const { scroller, part, fig } = platesEl({
+      sizes: [[1500, 1000]],
+      max: 420,
+    });
+    fitRailFigures(scroller);
+    expect(prop(fig, "--rp-figure-w")).toBe("750px");
+    // 280px tall: the figure is centred in the track by its CSS.
+    expect(prop(fig, "--rp-plates-h")).toBe("280px");
+    expect(prop(part, "--rail-figures-w")).toBe("420px");
+  });
+
+  it("sets two plates side by side at one height (the doctor with an icepick)", () => {
+    // 1.5 and 0.75 wide with a 16px gap between: 2.25 × 500 + 16.
+    const { scroller, fig } = platesEl({
+      sizes: [
+        [1500, 1000],
+        [750, 1000],
+      ],
+    });
+    fitRailFigures(scroller);
+    expect(prop(fig, "--rp-figure-w")).toBe("1141px");
+    expect(prop(fig, "--rp-plates-h")).toBe("500px");
+  });
+
+  it("waits for an image that has not loaded", () => {
+    const { scroller, part, fig } = platesEl({ sizes: [[0, 0]] });
+    fitRailFigures(scroller);
+    expect(prop(fig, "--rp-figure-w")).toBe("");
+    expect(fig.hasAttribute("data-rail-fitted")).toBe(false);
+    expect(part).toBeTruthy();
+  });
+
+  it("leaves a swipe track's plates to their pages", () => {
+    const { scroller, part, fig } = platesEl({
+      sizes: [[600, 1000]],
+      mode: "swipe",
+    });
+    fitRailFigures(scroller);
+    expect(prop(fig, "--rp-figure-w")).toBe("");
+    expect(prop(part, "--rail-figures-w")).toBe("");
   });
 });

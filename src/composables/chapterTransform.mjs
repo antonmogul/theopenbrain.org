@@ -112,6 +112,26 @@ export function markdownBoldToHtml(html) {
     .replace(/ {2,}/g, " ");
 }
 
+/* A citation superscript. A multi-reference source such as 2,3 stays two
+   independently addressable citations without visually concatenating it
+   into 23; the first citation after a quote starts a run of its own. */
+function citationRefHtml(blocks, index) {
+  const block = blocks[index];
+  const separator =
+    blocks[index - 1]?.type === "citation_ref"
+      ? '<span aria-hidden="true">,</span>'
+      : "";
+  return `<sup class="citation-ref" data-ref="${block.number}">${separator}${block.number}</sup>`;
+}
+
+/* Whether the citation at `index` is in the run of citations that directly
+   follows a blockquote block. */
+function followsBlockquote(blocks, index) {
+  let at = index - 1;
+  while (blocks[at]?.type === "citation_ref") at -= 1;
+  return blocks[at]?.type === "blockquote";
+}
+
 export function contentBlocksToHTML(blocks) {
   if (!blocks || !Array.isArray(blocks)) {
     return { text: "", hasHeading: false };
@@ -140,19 +160,26 @@ export function contentBlocksToHTML(blocks) {
         return block.ordered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
       }
       if (block.type === "blockquote") {
-        return `<blockquote>${block.content || ""}</blockquote>`;
+        // The citations that follow a quote belong on its last line, not
+        // on a line of their own under it (Stuart, 14 Nov, on the poem on
+        // Descartes' skull: "the citation '91' hangs out awkwardly under
+        // the quote"), so they are set inside it (OPENBRAIN-194).
+        let cites = "";
+        for (
+          let next = index + 1;
+          blocks[next]?.type === "citation_ref";
+          next += 1
+        )
+          cites += citationRefHtml(blocks, next);
+        return `<blockquote>${block.content || ""}${cites}</blockquote>`;
       }
       if (block.type === "image") {
         return `<img src="${block.src || ""}" alt="${block.alt || ""}" />`;
       }
       if (block.type === "citation_ref") {
-        // Preserve a multi-reference source such as 2,3 as two independently
-        // addressable citations without visually concatenating it into 23.
-        const separator =
-          blocks[index - 1]?.type === "citation_ref"
-            ? '<span aria-hidden="true">,</span>'
-            : "";
-        return `<sup class="citation-ref" data-ref="${block.number}">${separator}${block.number}</sup>`;
+        // Already set inside the quote it follows (above).
+        if (followsBlockquote(blocks, index)) return "";
+        return citationRefHtml(blocks, index);
       }
       if (block.type === "figure_placeholder") {
         // Stuart's 1 October review supersedes the earlier scroll-link

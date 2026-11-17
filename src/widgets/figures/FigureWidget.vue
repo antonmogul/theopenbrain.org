@@ -4,10 +4,11 @@
  * pinned); this gives it the chapter's accent and its content, and nothing
  * else of the page. Widgets style themselves off the --widget-* variables.
  */
-import { computed, defineAsyncComponent, h } from "vue";
+import { computed, defineAsyncComponent, h, provide, toRef } from "vue";
 import { figureWidgetFor } from "./registry.js";
 import { figureContent, versionedUrl } from "./content.js";
 import { lottiePath } from "@/helper/animationResolve";
+import { FIGURE_WIDGET_FIT } from "./shared/figureFit.js";
 
 const props = defineProps({
   /** The resolved animation record (useAnimations / animations.json shape). */
@@ -17,6 +18,10 @@ const props = defineProps({
   /** Size to the content's height instead of filling the host's box. */
   fit: { type: Boolean, default: false },
 });
+
+// A widget's toolbar row reads this: sized to its content, it is part of
+// the page (shared/FigureBar.vue).
+provide(FIGURE_WIDGET_FIT, toRef(props, "fit"));
 
 const entry = computed(() => figureWidgetFor(props.record?.id));
 
