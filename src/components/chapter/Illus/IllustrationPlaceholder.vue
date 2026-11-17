@@ -34,11 +34,12 @@
 // Kept open, a gallery's legend is as tall as its longest one (the others
 // lie unseen in the same grid cell), so stepping through the images moves
 // neither the image, the arrows, the thumbnails nor the controls.
-import { ref, computed, nextTick, onBeforeUnmount, useId } from "vue";
+import { ref, computed, inject, nextTick, useId } from "vue";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
 import { figureImages, galleryStartView } from "@/helper/figureCycle";
+import { useFigureLegend } from "@/composables/useFigureLegend";
 
 const props = defineProps({
   animation: { type: Object, required: true },
@@ -46,6 +47,10 @@ const props = defineProps({
      the height its content needs rather than filling a fixed pane. */
   inline: { type: Boolean, default: false },
 });
+
+// A breakout box is its own column: the figure keeps to it, and its title
+// and legend start at the column's edge (see the styles).
+const inBreakoutBox = inject("breakoutBox", false);
 
 const DIAGRAM_TYPES = {
   photo: { label: "Photo", glyph: "▣" },
@@ -102,19 +107,32 @@ const legend = computed(() => {
   );
 });
 
-// The legend folds away behind its control. A click keeps it (`pinned`),
-// and the choice stays while the reader steps through a gallery. In the
-// pane a hover or keyboard focus is a look (`peek`): the legend floats over
-// the edge of the artwork and nothing moves, and kept open it takes its
-// place under the title, as the redesign draws it. In the text column there
-// is no look: the legend opens under the artwork on a tap.
+// The legend folds away behind its control (useFigureLegend, shared with
+// the figure widgets' own toolbar row). A click keeps it (`pinned`), and
+// the choice stays while the reader steps through a gallery. In the pane a
+// hover or keyboard focus is a look (`peek`): the legend floats over the
+// edge of the artwork and nothing moves, and kept open it takes its place
+// under the title, as the redesign draws it. In the text column there is no
+// look: the legend opens under the artwork on a tap.
 const inPane = computed(() => !props.inline);
 const legendId = `fig-legend-${useId()}`;
-const legendPinned = ref(false);
-const legendPeek = ref(false);
-const legendFolded = computed(() => !legendPinned.value);
-const legendFloats = computed(() => inPane.value && legendFolded.value);
-const legendOpen = computed(() => legendFloats.value && legendPeek.value);
+// In the text column the legend is part of the page, so opening it moves
+// what follows: scroll-linked figures re-measure, as for an Explore card.
+function pageMoved() {
+  if (props.inline) nextTick(() => ScrollTrigger.refresh());
+}
+const {
+  pinned: legendPinned,
+  peek: legendPeek,
+  folded: legendFolded,
+  floating: legendFloats,
+  open: legendOpen,
+  onHover: onLegendHover,
+  onLeave: onToolbarLeave,
+  onFocus: onLegendFocus,
+  toggle: toggleLegend,
+  close: closeLegend,
+} = useFigureLegend({ floats: () => inPane.value, onMove: pageMoved });
 // The other legends of a gallery, laid under the shown one while it is kept
 // open: the box is then as tall as the longest, whichever image is showing.
 const legendSizers = computed(() => {
@@ -127,48 +145,6 @@ const legendSizers = computed(() => {
   all.delete("");
   return [...all];
 });
-let peekTimer = null;
-function clearPeekTimer() {
-  clearTimeout(peekTimer);
-  peekTimer = null;
-}
-// A pointer crossing the heading on its way elsewhere should not flash the
-// legend: it opens after a beat, and only for a mouse (a tap is a click).
-function onLegendHover(e) {
-  if (!inPane.value || e.pointerType !== "mouse" || legendPeek.value) return;
-  clearPeekTimer();
-  peekTimer = setTimeout(() => {
-    peekTimer = null;
-    legendPeek.value = true;
-  }, 140);
-}
-function onToolbarLeave() {
-  clearPeekTimer();
-  legendPeek.value = false;
-}
-function onLegendFocus() {
-  if (inPane.value) legendPeek.value = true;
-}
-// In the text column the legend is part of the page, so opening it moves
-// what follows: scroll-linked figures re-measure, as for an Explore card.
-function pageMoved() {
-  if (props.inline) nextTick(() => ScrollTrigger.refresh());
-}
-function toggleLegend() {
-  clearPeekTimer();
-  legendPinned.value = !legendPinned.value;
-  // Unpinning closes it even while the pointer is still on the control.
-  if (!legendPinned.value) legendPeek.value = false;
-  pageMoved();
-}
-function closeLegend() {
-  clearPeekTimer();
-  const wasOpen = legendPinned.value;
-  legendPinned.value = false;
-  legendPeek.value = false;
-  if (wasOpen) pageMoved();
-}
-onBeforeUnmount(clearPeekTimer);
 
 // Fullscreen expand — overlay the diagram over the whole viewport. The
 // dialog keeps the ground the chapter's figure pane has (OPENBRAIN-177):
@@ -197,7 +173,13 @@ function closeFullscreen() {
 <template>
   <div ref="shellElement" class="fig-pane pointer-events-auto">
     <!-- Diagram container: toolbar + diagram area -->
-    <figure class="fig-shell" :class="{ 'fig-shell--inline': inline }">
+    <figure
+      class="fig-shell"
+      :class="{
+        'fig-shell--inline': inline,
+        'fig-shell--boxed': inline && inBreakoutBox,
+      }"
+    >
       <header
         class="fig-toolbar"
         :class="{
@@ -432,20 +414,11 @@ function closeFullscreen() {
 }
 /* In the text column the figure has no frame of its own: no surface, and
    below the two-column reader it runs edge to edge, the title and legend
-   kept on the prose's gutters (OPENBRAIN-138). */
+   kept on the prose's gutters (OPENBRAIN-138; the rules are with the
+   toolbar's, below, which they must follow). */
 .fig-shell--inline {
   background: transparent;
   overflow: visible;
-}
-@media (max-width: 1023px) {
-  .fig-shell--inline {
-    width: var(--app-w, 100vw);
-    margin-left: calc(50% - var(--app-w, 100vw) / 2);
-  }
-  .fig-shell--inline .fig-toolbar,
-  .fig-shell--inline .fig-legend-row {
-    padding-inline: var(--reader-gutter-l) var(--reader-gutter-r);
-  }
 }
 
 /* Toolbar */
@@ -466,6 +439,37 @@ function closeFullscreen() {
 .fig-shell--inline .fig-toolbar {
   max-height: none;
   padding-inline: 0;
+}
+/* Below the two-column reader the figure runs the page's full width,
+   centred, and its title and legend start where the text does
+   (OPENBRAIN-195; Stuart on his phone, 13 Nov: "the word 'FIG' … a tiny bit
+   too close to the left-most side" and "many figures hug the left side,
+   instead of being centered").
+   - The shell is a flex item, and one that may shrink was squeezed back to
+     the column's width plus its negative margin: 375px of a 390px screen,
+     starting at the left edge. `flex: none` keeps the width it is given.
+   - The title's and the legend's side padding is the text column's own
+     (TextComp .ml-text: --narrow-gutter from 768px, 0.9375rem on a phone),
+     not the two-column reader's gutters; and these rules come after the
+     toolbar's `padding-inline: 0` above, which used to win and left "FIG"
+     on the edge of the screen.
+   In a breakout box the figure keeps to the box's column (RailPart and
+   ExploreCard size it), so its title and legend have no side padding: the
+   legend's control used to start a gutter in from the label above it. */
+@media (max-width: 1023px) {
+  .fig-shell--inline {
+    flex: none;
+    width: var(--app-w, 100vw);
+    margin-left: calc(50% - var(--app-w, 100vw) / 2);
+  }
+  .fig-shell--inline .fig-toolbar,
+  .fig-shell--inline .fig-legend-row {
+    padding-inline: var(--narrow-gutter, 0.9375rem);
+  }
+  .fig-shell--boxed .fig-toolbar,
+  .fig-shell--boxed .fig-legend-row {
+    padding-inline: 0;
+  }
 }
 /* In the pane the legend is folded behind its control (OPENBRAIN-177), so
    the toolbar is one row and the artwork has the rest. While folded the

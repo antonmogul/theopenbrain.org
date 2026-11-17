@@ -12,7 +12,9 @@ export { FIGURE_HOLDS, normalizeFigureHold };
  * chapter, and an author can change it per figure.
  *
  * A figure appears when its trigger's top reaches the reading line (the
- * middle of the screen) and, by default, leaves when its bottom does. A
+ * middle of the screen; a little later when a box or band above it still
+ * covers the pane, see figureWait) and, by default, leaves when its bottom
+ * does. A
  * "hold" keeps it longer, but never past the first of:
  * - the next figure's trigger (so the next figure is never delayed),
  * - a full-width band (FIGURE_BANDS: a full-screen figure, an anchored box, a
@@ -55,6 +57,17 @@ export { FIGURE_HOLDS, normalizeFigureHold };
 
 /** Full-width bands a hold stops at (see above). */
 export const FIGURE_BANDS = ".fb-slot:not(.fb-slot--column), .wb";
+
+/**
+ * What lies over the figure pane while it passes: the full-width bands, and
+ * the chapter's opener above the first section. A figure waits for the one
+ * above it to clear the pane (figureStart).
+ */
+export const PANE_COVERS = `${FIGURE_BANDS}, [data-chapter-opener]`;
+
+/** A figure that waits still shows for at least this share of a screen
+ * before it leaves. */
+const WAIT_RESERVE = 0.25;
 
 /** Section slugs a closing figure may hold beside (see above). */
 export const BACK_MATTER = ["references", "further-reading"];
@@ -164,6 +177,66 @@ export function figureRecordFor(key, records = []) {
     records.find((item) => String(item?.id || "").toLowerCase() === id);
   const bare = wanted.replace(/^animation/, "");
   return byId(wanted) || (bare && bare !== wanted ? byId(bare) : undefined);
+}
+
+/**
+ * How far past the reading line a figure's trigger must go before the pane
+ * is clear for it, in pixels of scroll; 0 for most figures (OPENBRAIN-195).
+ *
+ * A figure appears when its trigger's top reaches the reading line. A
+ * breakout box, a widget band or the opener that ends just above that
+ * paragraph is then still on the upper half of the screen, over the pane:
+ * History's Plato and Aristotle came in with Box A across their heads, and
+ * were only whole 300px of scroll later (Stuart, 13 Nov: "figure out how to
+ * make it such that, when you scroll, the whole image pops up at the same
+ * time"). So the figure waits until the cover above it has left the pane
+ * (its bottom at the pane's top, under the top bar), and leaves at the same
+ * point on the way back up. It never waits out its own stay: a quarter of a
+ * screen is kept for it before it leaves. `end` is what figureEnd gave for
+ * it (a scroll position when it holds), else it leaves with its paragraph.
+ */
+export function figureWait(trigger, win = window, end = undefined) {
+  if (
+    typeof win.matchMedia === "function" &&
+    !win.matchMedia(READER_WIDE_QUERY).matches
+  )
+    return 0;
+  const half = win.innerHeight / 2;
+  const rect = trigger.getBoundingClientRect();
+  const scope =
+    trigger.closest?.(".chapter-reader") || trigger.ownerDocument || document;
+  let above = -Infinity;
+  for (const cover of scope.querySelectorAll(PANE_COVERS)) {
+    if (cover.contains(trigger) || trigger.contains(cover)) continue;
+    const bottom = cover.getBoundingClientRect().bottom;
+    if (bottom <= rect.top + 1 && bottom > above) above = bottom;
+  }
+  if (above === -Infinity) return 0;
+  const pane = scope.querySelector?.(".figure-pane");
+  const paneTop = pane ? pane.getBoundingClientRect().top : 0;
+  // Scroll, from where the trigger's top is on the reading line, to where
+  // the cover's bottom is at the pane's top.
+  const wait = above - paneTop - (rect.top - half);
+  // How long it is on, from its top on the reading line to where it leaves.
+  const stay =
+    typeof end === "number"
+      ? end - (rect.top + win.scrollY - half)
+      : rect.bottom - rect.top;
+  const most = stay - WAIT_RESERVE * win.innerHeight;
+  return Math.max(0, Math.min(wait, most));
+}
+
+/**
+ * ScrollTrigger `start` for a pane figure's trigger element: `top <half the
+ * viewport>` (its top on the reading line), or the scroll position a little
+ * later at which the cover above it has left the pane (figureWait; `end`
+ * as there).
+ */
+export function figureStart(trigger, win = window, end = undefined) {
+  const half = win.innerHeight / 2;
+  const wait = figureWait(trigger, win, end);
+  if (!wait) return `top ${half}`;
+  return trigger.getBoundingClientRect().top + win.scrollY - half + wait;
 }
 
 /**

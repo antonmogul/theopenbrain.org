@@ -8,7 +8,8 @@
  * Laid out as the designers' November sketch (OPENBRAIN-173): the skull low
  * on the pane's dark ground, long arms that come in from past the top edge,
  * numbered discs with leader lines, and the pane's toolbar row underneath
- * (amber label, title, legend). The widget clips at its own edge, so an arm
+ * (amber label, title, and the legend folded behind its control as every
+ * figure's is: shared/FigureBar.vue). The widget clips at its own edge, so an arm
  * always ends at the edge of the pane, never in mid-air.
  *
  * Pointing shows a method while the pointer stays; a click or tap pins it
@@ -23,6 +24,7 @@
  */
 import { computed, ref } from "vue";
 import { prefersReducedMotion } from "../shared/motion.js";
+import FigureBar from "../shared/FigureBar.vue";
 import { openingAt } from "./openings.js";
 
 const props = defineProps({
@@ -257,11 +259,13 @@ function onImgError(e) {
       </button>
     </div>
 
-    <div class="tr-bar">
-      <span class="tr-fig">{{ content.figureLabel }}</span>
-      <h4 class="tr-title">{{ content.title }}</h4>
-      <p class="tr-legend">{{ content.caption }}</p>
-    </div>
+    <!-- This figure has no larger view to open, so the row has no expand
+         button. -->
+    <FigureBar
+      :label="content.figureLabel"
+      :title="content.title"
+      :legend="content.caption"
+    />
 
     <p v-if="failed" class="tr-failed" role="alert">
       Part of this figure didn't load. Reload the page to try again.
@@ -279,6 +283,7 @@ function onImgError(e) {
   --tr-accent: var(--widget-accent, rgb(var(--color-chapter)));
   --tr-amber: rgb(var(--color-warn, 244 166 33));
   --tr-mono: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
+  --fbar-accent: var(--tr-amber);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -500,44 +505,6 @@ function onImgError(e) {
   cursor: pointer;
 }
 
-/* The pane's toolbar row (IllustrationPlaceholder on the dark pane): the
-   amber label, then the title with the legend under it. This figure has no
-   larger view to open, so the row has no expand button. */
-.tr-bar {
-  flex: none;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.5rem;
-  align-items: start;
-  padding: 1.875rem 0.875rem;
-  line-height: 1.3;
-}
-.tr-fig {
-  min-width: 3.125rem;
-  color: var(--tr-amber);
-  font-size: 0.65625rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.tr .tr-title {
-  margin: 0;
-  font-family: var(--tr-mono);
-  font-size: 0.71875rem;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.tr-legend {
-  grid-column: 2;
-  max-width: 34.5rem;
-  margin: 0;
-  font-size: 0.71875rem;
-  line-height: 1.3;
-  letter-spacing: 0.06em;
-}
-
 .tr-failed {
   position: absolute;
   z-index: 4;
@@ -566,12 +533,6 @@ function onImgError(e) {
   }
   .tr-row {
     display: flex;
-  }
-  .tr-bar {
-    padding: 1.25rem 0.875rem;
-  }
-  .tr-legend {
-    grid-column: 1 / -1;
   }
 }
 
