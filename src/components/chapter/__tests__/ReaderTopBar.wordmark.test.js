@@ -6,8 +6,13 @@ import ReaderTopBar from "@/components/chapter/ReaderTopBar.vue";
  * Stuart, 1 Oct (OPENBRAIN-145): "there is the '3 horizontal lines' thing,
  * and the drawing of a globe with the words 'The Open Brain'. Clicking both
  * seems to do about the same thing ... just need 1 of these." They were one
- * button. Now the lines open the chapter menu and the wordmark is the
- * book's logo, a link home.
+ * button; the lines opened the chapter menu and the wordmark became a link
+ * home.
+ *
+ * Stuart, 11 Nov (OPENBRAIN-197): "remove the globe and 'the open brain'
+ * and replace with our logo", and "The 3 horizontal lines, maybe replace
+ * with the open eye (from old retina chapter), and then the 'close eye'
+ * once it's open to close it?"
  */
 const generalStore = vi.hoisted(() => ({
   progress: 0,
@@ -15,7 +20,25 @@ const generalStore = vi.hoisted(() => ({
   activeMenu: false,
 }));
 
-vi.mock("@/stores", () => ({ useGeneral: () => generalStore }));
+vi.mock("@/stores", async () => {
+  const { reactive } = await import("vue");
+  const store = reactive(generalStore);
+  generalStore.reactive = store;
+  return {
+    useGeneral: () => store,
+    useText: () => ({ text: { slug: "a-chapter", intro: [], sections: [] } }),
+  };
+});
+
+vi.mock("@/composables/useAnimations", async () => {
+  const { ref } = await import("vue");
+  return {
+    useAnimations: () => ({
+      animations: ref([]),
+      fetchAnimations: () => Promise.resolve({ data: [] }),
+    }),
+  };
+});
 
 vi.mock("@/composables/useReaderSidebar", async () => {
   const { ref } = await import("vue");
@@ -23,7 +46,7 @@ vi.mock("@/composables/useReaderSidebar", async () => {
     useReaderSidebar: () => ({
       isOpen: ref(false),
       activeTab: ref("info"),
-      toggle: vi.fn(),
+      open: vi.fn(),
     }),
   };
 });
@@ -37,12 +60,8 @@ vi.mock("@/components/Navigation/AccountMenu.vue", () => ({
 }));
 
 function mountBar() {
-  generalStore.activeMenu = false;
+  generalStore.reactive.activeMenu = false;
   return mount(ReaderTopBar, {
-    props: {
-      chapterNumber: "1",
-      sections: [{ title: "Introduction", slug: "introduction" }],
-    },
     global: {
       stubs: {
         RouterLink: {
@@ -55,8 +74,8 @@ function mountBar() {
   });
 }
 
-describe("ReaderTopBar wordmark and menu", () => {
-  it("the wordmark is a link home, not part of the menu button", () => {
+describe("ReaderTopBar logo and menu", () => {
+  it("the logo is a link home, not part of the menu button", () => {
     const wrapper = mountBar();
     const wordmark = wrapper.get(".wordmark");
     expect(wordmark.attributes("href")).toBe("/chapters");
@@ -67,44 +86,44 @@ describe("ReaderTopBar wordmark and menu", () => {
     );
   });
 
-  it("only the three lines open the chapter menu", async () => {
+  it("the logo is the book's own artwork, not the globe and the typed words", () => {
+    const wrapper = mountBar();
+    const logo = wrapper.get(".wordmark").get('[data-testid="book-logo"]');
+    const svg = logo.get("svg");
+    // The designers' file: its 308.6 × 104.2 box, the book's outline paths.
+    expect(svg.attributes("viewBox")).toBe("0 0 308.6 104.2");
+    expect(svg.findAll(".st1").length).toBeGreaterThan(20);
+    // The link names it; the drawing is decorative.
+    expect(svg.attributes("aria-hidden")).toBe("true");
+    expect(wrapper.find(".wordmark-text").exists()).toBe(false);
+    expect(wrapper.get(".wordmark").text()).toBe("");
+    // The file's own <style> would restyle every other inline SVG.
+    expect(logo.find("style").exists()).toBe(false);
+  });
+
+  it("only the eye opens the chapter menu", async () => {
     const wrapper = mountBar();
     await wrapper.get(".wordmark").trigger("click");
-    expect(generalStore.activeMenu).toBe(false);
+    expect(generalStore.reactive.activeMenu).toBe(false);
     const menu = wrapper.get(".reader-menu-btn");
     expect(menu.attributes("aria-label")).toBe("Open chapter menu");
     await menu.trigger("click");
-    expect(generalStore.activeMenu).toBe(true);
+    expect(generalStore.reactive.activeMenu).toBe(true);
   });
 
-  it("the section menu jumps to a section by its own id, so a breakout box is reached too", async () => {
-    // A box renders <aside id="<uuid>"> and no .trigger wrapper named after
-    // its title, so the title slug found nothing for it.
-    document.documentElement.setAttribute("data-reduce-motion", "1");
-    const box = document.createElement("aside");
-    box.id = "b1f2bfdc-6791-41fa-8182-c4486f2c4f83";
-    box.getBoundingClientRect = () => ({ top: 900, height: 400 });
-    document.body.appendChild(box);
-    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-    const wrapper = mount(ReaderTopBar, {
-      props: {
-        chapterNumber: "1",
-        sections: [
-          { id: "intro-uuid", title: "Introduction", slug: "introduction" },
-          { id: box.id, title: "Humoral theory", slug: "humoral-theory" },
-        ],
-      },
-      attachTo: document.body,
-      global: { stubs: { RouterLink: true, Transition: false } },
-    });
-    await wrapper.get(".section-jump").trigger("click");
-    await wrapper.findAll(".dropdown-item")[1].trigger("click");
-    expect(scrollTo).toHaveBeenCalledWith(
-      expect.objectContaining({ top: 900 - 80 })
-    );
-    wrapper.unmount();
-    box.remove();
-    scrollTo.mockRestore();
-    document.documentElement.removeAttribute("data-reduce-motion");
+  it("the menu button is an open eye that closes while the menu is open", async () => {
+    const wrapper = mountBar();
+    const menu = wrapper.get(".reader-menu-btn");
+    const eye = menu.get('[data-testid="menu-eye"]');
+    expect(eye.attributes("data-eye")).toBe("open");
+    expect(eye.attributes("aria-hidden")).toBe("true");
+    expect(menu.attributes("aria-expanded")).toBe("false");
+    await menu.trigger("click");
+    expect(eye.attributes("data-eye")).toBe("closed");
+    expect(eye.classes()).toContain("menu-eye--closed");
+    expect(menu.attributes("aria-expanded")).toBe("true");
+    generalStore.reactive.activeMenu = false;
+    await wrapper.vm.$nextTick();
+    expect(eye.attributes("data-eye")).toBe("open");
   });
 });

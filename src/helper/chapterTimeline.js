@@ -175,7 +175,9 @@ function referenceWords(items) {
  * the Retina's subsections repeat RetinalCellTypes across three headers.
  *
  * @param {{intro?: object[], sections?: object[]}} text  useText().text
- * @param {{labels?: Record<string,string>}} [opts]       sectionLabelMap(text.sections)
+ * @param {{labels?: Record<string,string>, source?: boolean}} [opts]
+ *   labels: sectionLabelMap(text.sections); source: keep each item's own
+ *   paragraph as `item.source` (the chapter search reads its full text).
  * @returns {{ items: Item[], sections: Section[], subsections: Sub[],
  *   maxWords: number, byId: Map<string, number> }}
  *
@@ -275,6 +277,7 @@ export function buildTimeline(text, opts = {}) {
       marks: [...pending, ...own],
     };
     pending = [];
+    if (opts?.source) item.source = p;
     if (p.animation && figureKey(p.animation))
       lastFigure = figureKey(p.animation);
 

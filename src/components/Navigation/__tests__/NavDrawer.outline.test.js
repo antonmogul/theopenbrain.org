@@ -116,6 +116,46 @@ describe("reader menu outline", () => {
     ).toContain("History");
   });
 
+  // The top bar's section menu said where the reader was; the search field
+  // took its place, so the drawer's outline says it (OPENBRAIN-197).
+  it("marks the section being read", async () => {
+    state.store.currentSubChapter = "the-brain";
+    await open();
+    const current = document.querySelectorAll(
+      '.chapter-outline [aria-current="location"]'
+    );
+    expect(current).toHaveLength(1);
+    expect(current[0].textContent).toContain("The brain");
+    state.store.currentSubChapter = null;
+    await flushPromises();
+    expect(
+      document.querySelector('.chapter-outline [aria-current="location"]')
+    ).toBeNull();
+  });
+
+  // Stuart, 11 Nov: the open eye opens the menu "and then the 'close eye'
+  // once it's open to close it"; "remove the globe and 'the open brain' and
+  // replace with our logo."
+  it("closes from the closed eye, first in the drawer, beside the book's logo", async () => {
+    await open();
+    const head = document.querySelector(".drawer-head");
+    const close = head.firstElementChild;
+    expect(close.tagName).toBe("BUTTON");
+    expect(close.getAttribute("aria-label")).toBe("Close chapter menu");
+    expect(
+      close.querySelector('[data-testid="menu-eye"]').getAttribute("data-eye")
+    ).toBe("closed");
+    expect(document.activeElement).toBe(close);
+    const home = head.querySelector("a.wordmark");
+    expect(home.getAttribute("href")).toBe("/chapters");
+    expect(home.getAttribute("aria-label")).toMatch(/home/i);
+    expect(home.querySelector('[data-testid="book-logo"] svg')).not.toBeNull();
+    expect(head.textContent.trim()).toBe("");
+    close.click();
+    await flushPromises();
+    expect(state.store.activeMenu).toBe(false);
+  });
+
   it("jumps within the reader through readerJump and closes the drawer without changing chapters", async () => {
     // readerJump lands the anchor below the top bar with window.scrollTo,
     // never scrollIntoView (OPENBRAIN-145); reduced motion makes it instant.

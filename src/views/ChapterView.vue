@@ -44,7 +44,6 @@ import { useReadingProgress } from "@/composables/useReadingProgress";
 import { useChapterTimeline } from "@/composables/useChapterTimeline";
 import { useAuth } from "@/composables/useAuth";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
-import { toSlug } from "@/helper/general.js";
 import { applyChapterRamp, rampForModule } from "@/helper/chapterTheme";
 import { coverForModule } from "@/helper/chapterCover";
 import {
@@ -168,20 +167,7 @@ const currentModuleId = computed(() => {
 // All chapters are now Supabase chapters
 const isSupabaseChapter = computed(() => true);
 
-// Breadcrumb sections for ReaderTopBar
-// The top bar's section menu. `slug` (the title's) is what TextComp's
-// .trigger wrappers are named, which store.currentSubChapter reports; `id`
-// is the section's own, which every section and breakout box renders, so a
-// jump finds a box too (boxes have no wrapper of their own; OPENBRAIN-145).
-const breadcrumbSections = computed(() => {
-  return (storeText.text?.sections || []).map((s) => ({
-    id: s.id,
-    title: s.title,
-    slug: toSlug(s.title),
-  }));
-});
-
-// Chapter title for ReaderTopBar / callout: the module's own title. The
+// Chapter title for the callout: the module's own title. The
 // intro section's title used to double as the chapter h1; the opener now
 // prints the chapter title, so the intro heading is the section's own.
 const chapterTitle = computed(
@@ -773,9 +759,6 @@ async function handleDeleteHighlight(highlightId) {
                  Auth-only panels (Notebook/Chat) handle their own gating. -->
       <ReaderTopBar
         v-if="isSupabaseChapter"
-        :chapter-title="chapterTitle"
-        :chapter-number="chapterNumber"
-        :sections="breadcrumbSections"
         :is-authenticated="isAuthenticated"
         :is-draft="isDraft"
       />

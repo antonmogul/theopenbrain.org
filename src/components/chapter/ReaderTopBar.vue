@@ -4,23 +4,13 @@ import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useHomeRoute } from "@/composables/useHomeRoute";
 import { useMotionPreference } from "@/composables/useMotionPreference";
-import { jumpToId } from "@/helper/readerJump";
 import AccountMenu from "@/components/Navigation/AccountMenu.vue";
+import BookLogo from "@/components/brand/BookLogo.vue";
+import MenuEye from "@/components/brand/MenuEye.vue";
 import ReaderHelp from "./ReaderHelp.vue";
+import ReaderSearch from "./ReaderSearch.vue";
 
 const props = defineProps({
-  chapterTitle: {
-    type: String,
-    default: "",
-  },
-  chapterNumber: {
-    type: String,
-    default: "",
-  },
-  sections: {
-    type: Array,
-    default: () => [],
-  },
   isAuthenticated: {
     type: Boolean,
     default: false,
@@ -36,69 +26,18 @@ const store = useGeneral();
 // Where the logo goes: /chapters when signed in, the home page otherwise.
 const homeRoute = useHomeRoute();
 const {
-  toggle: toggleSidebar,
+  open: openSidebar,
   isOpen: sidebarOpen,
   activeTab,
 } = useReaderSidebar();
 
-// Panel tool buttons (Info / Notebook / Chat) — share the floating-panel toggle.
-const panelTabs = [
-  { key: "info", label: "Info" },
-  { key: "notebook", label: "Notebook" },
-  { key: "chat", label: "Chat" },
-];
-
-// A tool button is "active" only when the panel is open AND showing that tab.
-function isPanelTabActive(key) {
-  return sidebarOpen.value && activeTab.value === key;
-}
-
-const showDropdown = ref(false);
-const sectionButtonRef = ref(null);
-const dropdownRef = ref(null);
-
-// Find the current active section title
-const currentSectionTitle = computed(() => {
-  if (!store.currentSubChapter || !props.sections.length) return null;
-  const match = props.sections.find((s) => s.slug === store.currentSubChapter);
-  return match?.title || null;
-});
-
-async function closeDropdown({ restoreFocus = true } = {}) {
-  showDropdown.value = false;
-  await nextTick();
-  if (restoreFocus) sectionButtonRef.value?.focus();
-}
-
-// Through readerJump, like every jump in the reader (OPENBRAIN-128): below
-// the bar, no smooth scroll under reduced motion. By the section's own id
-// when it has one (every section and breakout box renders it), else the
-// title slug (TextComp's .trigger wrapper): a breakout box has no wrapper,
-// so the slug found nothing for it (OPENBRAIN-145). An id can start with
-// a digit, which a querySelector('#' + id) can't take.
-async function scrollToSection(section) {
-  jumpToId(section.id || section.slug, { align: "top" });
-  await closeDropdown();
-}
-
-async function toggleDropdown() {
-  showDropdown.value = !showDropdown.value;
-  if (showDropdown.value) {
-    showHelp.value = false;
-    await nextTick();
-    dropdownRef.value?.querySelector("button")?.focus();
-  }
-}
-
-// Close dropdown on outside click
-function onBackdropClick() {
-  closeDropdown();
-}
-
-function onDropdownKeydown(event) {
-  if (event.key !== "Escape") return;
-  closeDropdown();
-}
+// The bar since 11 Nov (Stuart, OPENBRAIN-197): an eye for the menu, the
+// book's logo, a search field where "Ch 1 · Where is my mind?" was, and one
+// "?" for help and the reader's tools. The section menu that stood there is
+// not lost: the eye opens the drawer, which lists every section of this
+// chapter and marks the one being read, and the timeline along the bottom
+// names it too.
+const searchRef = ref(null);
 
 // Help (OPENBRAIN-189): the "?" at the bar's right end, on every screen.
 // It was a button on the chapter cover, which scrolled away with it
@@ -106,15 +45,24 @@ function onDropdownKeydown(event) {
 // under the bar. While the device asks for less motion and the reader has
 // not been asked about it, the button carries a dot: the notice itself is
 // on the cover, which a reader who lands mid-chapter never sees.
+//
+// For a signed-in reader it is also the way to Info, Notebook and Chat
+// (OPENBRAIN-197; Stuart: "replace 'info', 'notebook', and 'chat' on the
+// top right with a question mark, which all accomplishes the same thing").
 const { noticePending } = useMotionPreference();
 const showHelp = ref(false);
 const helpButtonRef = ref(null);
 const helpRef = ref(null);
-const helpLabel = computed(() =>
-  noticePending.value
-    ? "Help and animations. Animations are off on this device."
-    : "Help and animations"
-);
+const helpLabel = computed(() => {
+  const what = props.isAuthenticated
+    ? "Help, Info, Notebook and Chat"
+    : "Help and animations";
+  return noticePending.value
+    ? `${what}. Animations are off on this device.`
+    : what;
+});
+// The tool the floating panel is showing, for the help panel's list.
+const activeTool = computed(() => (sidebarOpen.value ? activeTab.value : null));
 
 async function closeHelp({ restoreFocus = true } = {}) {
   if (!showHelp.value) return;
@@ -125,11 +73,19 @@ async function closeHelp({ restoreFocus = true } = {}) {
 
 async function toggleHelp() {
   if (showHelp.value) return closeHelp();
-  showDropdown.value = false;
   showHelp.value = true;
   await nextTick();
   // The panel itself, so a screen reader starts at its name.
   helpRef.value?.$el?.focus?.();
+}
+
+// Info / Notebook / Chat: the help closes and focus goes back to the "?"
+// first, so the panel that opens remembers the "?" as what to return to
+// (ReaderSidebar gives focus back to whatever had it), not a button that
+// is gone.
+async function openTool(key) {
+  await closeHelp();
+  openSidebar(key);
 }
 
 function onHelpKeydown(event) {
@@ -152,57 +108,32 @@ function onHelpFocusOut(event) {
     <!-- Single app-bar row (prototype AppBar). Reading progress lives in the
          chapter timeline docked at the bottom (OPENBRAIN-128). -->
     <div class="bar-row">
-      <!-- Menu: the three lines open the drawer (chapter list + this
-           chapter's outline). The wordmark beside it was part of this same
-           button, so the two did one thing (Stuart, 1 Oct: "clicking both
-           seems to do about the same thing ... just need 1 of these"). Now
-           it is the book's logo: a link home, /chapters when signed in
-           (OPENBRAIN-145). -->
+      <!-- Menu: the eye opens the drawer (chapter list + this chapter's
+           outline). It is the 2023 Retina chapter's open eye, and it
+           closes while the drawer is open; the drawer's own close button
+           is the closed eye in the same place (OPENBRAIN-197). -->
       <button
         type="button"
         class="reader-menu-btn"
         aria-label="Open chapter menu"
         aria-haspopup="dialog"
         :aria-expanded="store.activeMenu"
+        title="Chapters and sections"
         @click="store.activeMenu = true"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          stroke="currentColor"
-          stroke-width="1.4"
-          fill="none"
-        >
-          <path d="M2 4h10M2 7h10M2 10h10" />
-        </svg>
+        <MenuEye :closed="store.activeMenu" />
       </button>
+      <!-- The book's logo, a link home: /chapters when signed in
+           (OPENBRAIN-145). Below 640px it is the book alone. -->
       <router-link
         :to="homeRoute"
         class="wordmark"
         aria-label="The Open Brain, home"
         title="The Open Brain"
       >
-        <svg
-          class="wordmark-logo"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 3 C7 7 7 17 12 21 M12 3 C17 7 17 17 12 21 M3 12 H21" />
-        </svg>
-        <span class="wordmark-text" aria-hidden="true">the open brain</span>
+        <BookLogo class="wordmark-logo" />
       </router-link>
 
-      <div class="divider"></div>
-
-      <!-- Chapter + section (section is click-to-jump) -->
-      <span class="chapter-eyebrow">Ch {{ chapterNumber }}</span>
       <!-- Only creators can open a draft (useChapter gate + RLS), so this
            reminds them readers can't see it yet (OPENBRAIN-51). In the bar,
            where it collides with nothing: as a ribbon under the bar it hid
@@ -218,56 +149,20 @@ function onHelpFocusOut(event) {
         <span class="draft-badge-label">Draft</span
         ><span class="sr-only">, only creators can see this chapter</span>
       </span>
-      <button
-        v-if="currentSectionTitle"
-        ref="sectionButtonRef"
-        type="button"
-        class="section-jump"
-        :class="{ open: showDropdown }"
-        aria-haspopup="true"
-        :aria-expanded="showDropdown"
-        aria-controls="reader-section-menu"
-        @click="toggleDropdown"
-      >
-        <span class="section-name">{{ currentSectionTitle }}</span>
-        <svg
-          class="chevron"
-          :class="{ rotated: showDropdown }"
-          xmlns="http://www.w3.org/2000/svg"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </button>
+
+      <!-- Search this chapter (OPENBRAIN-197), where the chapter number
+           and the section menu were. -->
+      <ReaderSearch
+        ref="searchRef"
+        @open="closeHelp({ restoreFocus: false })"
+      />
 
       <div class="spacer"></div>
 
-      <!-- Panel tool buttons -->
-      <div v-if="isAuthenticated" class="tool-buttons">
-        <button
-          v-for="t in panelTabs"
-          :key="t.key"
-          class="tool-btn"
-          :class="{ active: isPanelTabActive(t.key) }"
-          type="button"
-          aria-controls="reader-sidebar"
-          :aria-expanded="sidebarOpen"
-          @click="toggleSidebar(t.key)"
-        >
-          {{ t.label }}
-        </button>
-      </div>
-
-      <!-- Help: how the book reads, and the animations setting
-           (OPENBRAIN-189). Here, not on the cover, so it is always in
-           reach; a 44px target around a 32px key. -->
+      <!-- Help: how the book reads, the animations setting (OPENBRAIN-189)
+           and, signed in, Info / Notebook / Chat (OPENBRAIN-197). Here, not
+           on the cover, so it is always in reach; a 44px target around a
+           32px key. -->
       <button
         ref="helpButtonRef"
         type="button"
@@ -300,45 +195,15 @@ function onHelpFocusOut(event) {
         v-if="showHelp"
         ref="helpRef"
         class="help-panel"
+        :tools="isAuthenticated"
+        :active-tool="activeTool"
         @close="closeHelp()"
+        @tool="openTool"
         @keydown="onHelpKeydown"
         @focusout="onHelpFocusOut"
       />
     </Transition>
 
-    <!-- Section dropdown -->
-    <Transition name="dropdown">
-      <nav
-        v-if="showDropdown"
-        id="reader-section-menu"
-        ref="dropdownRef"
-        class="section-dropdown"
-        aria-label="Chapter sections"
-        @keydown="onDropdownKeydown"
-      >
-        <button
-          v-for="(section, idx) in sections"
-          :key="section.slug"
-          class="dropdown-item"
-          :class="{ active: store.currentSubChapter === section.slug }"
-          type="button"
-          :aria-current="
-            store.currentSubChapter === section.slug ? 'location' : undefined
-          "
-          @click="scrollToSection(section)"
-        >
-          <span class="dropdown-num">{{ idx + 1 }}</span>
-          <span class="dropdown-title">{{ section.title }}</span>
-        </button>
-      </nav>
-    </Transition>
-
-    <!-- Backdrop for dropdown -->
-    <div
-      v-if="showDropdown"
-      class="dropdown-backdrop"
-      @click="onBackdropClick"
-    ></div>
     <div
       v-if="showHelp"
       class="dropdown-backdrop"
@@ -349,9 +214,10 @@ function onHelpFocusOut(event) {
 </template>
 
 <style scoped>
-/* Reader app bar — prototype AppBar: single row, paper, bottom hairline,
-   wordmark + chapter/section + tool buttons. The progress line that ran
-   along its top edge is now the chapter timeline (OPENBRAIN-128). */
+/* Reader app bar — prototype AppBar: single row, paper, bottom hairline:
+   the menu eye, the logo, search, help, account (OPENBRAIN-197). The
+   progress line that ran along its top edge is now the chapter timeline
+   (OPENBRAIN-128). */
 .reader-top-bar {
   position: fixed;
   top: 0;
@@ -396,12 +262,13 @@ function onHelpFocusOut(event) {
   border-color: rgb(var(--color-ink));
 }
 
-/* Wordmark: the logo, a link home (OPENBRAIN-145). Its own 44px target,
-   no frame, so it reads as a logo rather than a second menu button. */
+/* The logo, a link home (OPENBRAIN-145, 197). Its own 44px target, no
+   frame, so it reads as a logo rather than a second menu button. The
+   artwork is 40px tall in the 44px row: the book, then "the open brain
+   .org" in the designers' own lettering. */
 .wordmark {
   display: flex;
   align-items: center;
-  gap: 8px;
   min-height: 44px;
   padding: 0 0.375rem;
   margin-left: -0.375rem;
@@ -417,32 +284,7 @@ function onHelpFocusOut(event) {
 }
 
 .wordmark-logo {
-  flex-shrink: 0;
-}
-
-.wordmark-text {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-12);
-  line-height: 1.4;
-  text-transform: lowercase;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.divider {
-  width: 1px;
-  height: 18px;
-  background: rgb(var(--color-line));
-  flex-shrink: 0;
-}
-
-.chapter-eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgb(var(--color-mute));
-  flex-shrink: 0;
+  --logo-h: 40px;
 }
 
 /* Draft: the warn amber the old bottom-left ribbon used, with near-black
@@ -462,83 +304,8 @@ function onHelpFocusOut(event) {
   white-space: nowrap;
 }
 
-/* Section jump (keeps the click-to-jump dropdown affordance) */
-.section-jump {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  min-height: 44px;
-  padding: 4px 8px;
-  border-radius: var(--radius-control);
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgb(var(--color-ink));
-  transition: background 0.12s ease;
-  min-width: 0;
-}
-
-.section-jump:hover,
-.section-jump.open {
-  background: rgb(var(--color-ink) / 0.05);
-}
-
-.section-name {
-  max-width: 280px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chevron {
-  color: rgb(var(--color-mute));
-  transition: transform 0.2s;
-  flex-shrink: 0;
-}
-
-.chevron.rotated {
-  transform: rotate(180deg);
-}
-
 .spacer {
   flex: 1;
-}
-
-/* Tool buttons (Info / Notebook / Chat) */
-.tool-buttons {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.tool-btn {
-  min-height: 44px;
-  padding: 5px 10px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-10);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: rgb(var(--color-ink));
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    color 0.12s ease;
-}
-
-.tool-btn:hover {
-  background: rgb(var(--color-ink) / 0.05);
-}
-
-.tool-btn.active {
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
 }
 
 /* Help: the "?" (OPENBRAIN-189). A 32px key in a 44px target, framed in
@@ -612,69 +379,6 @@ function onHelpFocusOut(event) {
   max-height: calc(100dvh - 100% - var(--reader-timeline-h, 0px) - 18px);
 }
 
-/* Section dropdown */
-.section-dropdown {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 100%;
-  max-width: 420px;
-  background: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-line));
-  border-radius: var(--radius-control);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
-  max-height: 60vh;
-  overflow-y: auto;
-  z-index: 50;
-  padding: 6px;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
-  background: none;
-  border: none;
-  border-radius: var(--radius-control);
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.12s ease;
-}
-
-.dropdown-item:hover {
-  background: rgb(var(--color-ink) / 0.05);
-}
-
-.dropdown-item.active {
-  background: rgb(var(--color-accent) / 0.08);
-}
-
-.dropdown-item.active .dropdown-num {
-  color: rgb(var(--color-accent));
-}
-
-.dropdown-item.active .dropdown-title {
-  color: rgb(var(--color-ink));
-  font-weight: 500;
-}
-
-.dropdown-num {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  color: rgb(var(--color-mute));
-  flex-shrink: 0;
-  width: 20px;
-}
-
-.dropdown-title {
-  font-size: var(--ui-size-14);
-  color: rgb(var(--color-ink));
-  line-height: 1.35;
-}
-
 .dropdown-backdrop {
   position: fixed;
   inset: 0;
@@ -695,10 +399,7 @@ function onHelpFocusOut(event) {
 
 .reader-menu-btn:focus-visible,
 .help-btn:focus-visible,
-.wordmark:focus-visible,
-.section-jump:focus-visible,
-.tool-btn:focus-visible,
-.dropdown-item:focus-visible {
+.wordmark:focus-visible {
   outline: 3px solid rgb(var(--color-accent));
   outline-offset: 2px;
 }
@@ -708,50 +409,29 @@ function onHelpFocusOut(event) {
     gap: 8px;
     padding: 5px 8px;
   }
-
-  .wordmark-text,
-  .divider {
-    display: none;
-  }
-
-  .section-name {
-    max-width: 22vw;
-  }
 }
 
+/* A phone: the book without the words, the search behind its button
+   (ReaderSearch), and the row's free space before the search button so the
+   three controls on the right sit together. */
 @media (max-width: 640px) {
+  .wordmark {
+    padding: 0 0.125rem;
+    margin-left: 0;
+  }
+
+  .wordmark-logo {
+    --logo-crop: 1;
+  }
+
+  .spacer {
+    order: -1;
+  }
+
+  .reader-menu-btn,
   .wordmark,
-  .chapter-eyebrow {
-    display: none;
-  }
-
-  .tool-buttons {
-    gap: 2px;
-  }
-
-  .tool-btn {
-    padding-inline: 7px;
-    letter-spacing: 0.03em;
-  }
-
-  .section-jump {
-    flex: 1;
-  }
-
-  /* The section button already fills the free space; a spacer beside it
-     took half of it (and a gap) from the section name. */
-  .section-jump + .spacer {
-    display: none;
-  }
-
-  .section-name {
-    max-width: none;
-  }
-
-  .section-dropdown {
-    left: 8px;
-    right: 8px;
-    max-width: none;
+  .draft-badge {
+    order: -2;
   }
 
   .help-panel {
@@ -762,11 +442,14 @@ function onHelpFocusOut(event) {
   }
 }
 
-/* At 320px the 47px Draft badge pushed the account menu off the bar, and at
-   360-390px it left the section name 0px wide (OPENBRAIN-128). Below 400px
-   it is an amber dot, its word hidden the .sr-only way so screen readers
-   still hear "Draft". */
+/* At 320px the 47px Draft badge pushed the account menu off the bar
+   (OPENBRAIN-128). Below 400px it is an amber dot, its word hidden the
+   .sr-only way so screen readers still hear "Draft". */
 @media (max-width: 399px) {
+  .bar-row {
+    gap: 6px;
+  }
+
   .draft-badge {
     width: 8px;
     height: 8px;

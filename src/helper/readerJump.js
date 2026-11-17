@@ -1,7 +1,7 @@
 /*
  * readerJump — the one way the reader scrolls to something (OPENBRAIN-128).
  *
- * The chapter timeline, the top bar's section menu, the sidebar's notebook
+ * The chapter timeline, the top bar's search, the sidebar's notebook
  * and trending lists and the opener's contents each used to scroll their own
  * way (scrollIntoView, a hard-coded 60px top bar, querySelector('#' + slug)),
  * so a jump landed differently depending on where it started and ignored the
@@ -277,7 +277,7 @@ export function jumpToElement(
   }
   // A section that opens with a figure transition starts with a blank
   // 200vh spacer: land where its reading starts (the opener TOC, the top
-  // bar's section menu and the Info tab jump here too).
+  // bar's search and the Info tab jump here too).
   if (align === "top") el = readingStartOf(el);
   // On a side-scrolling box's track (helper/exploreRail.js): where the
   // page is decides where the track is, so the landing is the scrollY that
