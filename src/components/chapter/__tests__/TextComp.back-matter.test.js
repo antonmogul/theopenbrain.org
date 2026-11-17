@@ -94,10 +94,10 @@ const retina = () => ({
 });
 
 const wrappers = [];
-function mountReader(chapter, rows = []) {
+function mountReader(chapter, rows = [], module = null) {
   useText().updateText("*", chapter);
   const wrapper = mount(TextComp, {
-    props: { module: null },
+    props: { module },
     slots: {
       "end-of-chapter": '<div data-slot-close="" />',
       "chapter-foot": '<div data-slot-foot="" />',
@@ -127,6 +127,9 @@ const order = (el) =>
       (n) =>
         (n.hasAttribute("data-slot-close") && "close") ||
         (n.hasAttribute("data-stub-further-reading") && "further") ||
+        (n.hasAttribute("data-testid") &&
+          n.getAttribute("data-testid") === "chapter-acknowledgements" &&
+          "acknowledgements") ||
         (n.hasAttribute("data-stub-references") && "references") ||
         (n.hasAttribute("data-slot-foot") && "foot")
     )
@@ -178,6 +181,54 @@ describe("the end of the reader", () => {
       "references",
       "foot",
     ]);
+  });
+
+  it("sets History's acknowledgements above its references (OPENBRAIN-200)", () => {
+    const chapter = history();
+    chapter.furtherReading = { paragraphs: [] };
+    const wrapper = mountReader(chapter, [], {
+      slug: "foundations-of-neuroscience",
+    });
+    expect(order(wrapper.find("#chapter-back").element)).toEqual([
+      "close",
+      "acknowledgements",
+      "references",
+      "foot",
+    ]);
+    expect(
+      wrapper.find('[data-testid="chapter-acknowledgements"]').text()
+    ).toContain(
+      "Graphic design by Studio Malpeso (Sonia, Maura, Karen and Naz)"
+    );
+  });
+
+  it('puts the authors and the funding above "Introduction" (OPENBRAIN-200)', () => {
+    const chapter = history();
+    chapter.intro = [
+      {
+        id: "intro",
+        slug: "introduction",
+        title: "Introduction",
+        paragraphs: [],
+      },
+    ];
+    const wrapper = mountReader(chapter, [], {
+      slug: "foundations-of-neuroscience",
+      authors: [{ name: "Stuart Trenholm", affiliation: "The Neuro" }],
+    });
+    const credits = wrapper.find(".chapter-front-credits").element;
+    const heading = wrapper.find("#intro-heading").element;
+    expect(heading.textContent.trim()).toBe("Introduction");
+    // Before the heading in document order, with the funding under the authors.
+    expect(
+      credits.compareDocumentPosition(heading) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    const parts = [...credits.children].map((c) => c.dataset.testid);
+    expect(parts).toEqual(["chapter-authors", "chapter-funding"]);
+    expect(
+      wrapper.find('[data-testid="chapter-funding-link"]').attributes("href")
+    ).toBe("https://www.mcgill.ca/neuro/");
   });
 
   it("takes a References section out of the text column and keeps it a section", () => {

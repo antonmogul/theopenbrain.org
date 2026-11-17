@@ -113,9 +113,31 @@ Each with `supabase db push` after a dry run, content only (no DDL, RLS or grant
 
 `history:fixture:drift` reports 0 after these pushes.
 
+## Pushed 2026-11-17, afternoon (Stuart's 17 Nov feedback, OPENBRAIN-200)
+
+Stuart's two emails of 17 Nov ("Re: More feedback", 14:04 and 14:17 GMT), six items:
+
+| #   | Item                                                                                                                           | Where it lives                                                                                        | State                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1   | The NGF ("The developing brain") side-scroll opened on text with an empty right side: put the Rita Levi-Montalcini video there | `20261117200000_history_ngf_video_first` (below)                                                      | live                                                                                                                     |
+| 2   | Redo the Loewi audio with "the new AI voice Maura added"                                                                       | —                                                                                                     | **blocked**: the voice is not in the repo, the email threads, Drive or Downloads; Maura to send the voice (or its audio) |
+| 3   | Remove Further reading                                                                                                         | `20261117200100_history_remove_further_reading` (below)                                               | live                                                                                                                     |
+| 4   | Authors under the contents, above "Introduction"                                                                               | `TextComp.vue`                                                                                        | live with the PR's deploy                                                                                                |
+| 5   | Funding line and The Neuro's logo, linked, under the authors                                                                   | `helper/chapterCredits.js`, `ChapterFunding.vue`, `public/publicAssets/images/funders/the-neuro.webp` | live with the PR's deploy                                                                                                |
+| 6   | Acknowledgements above References                                                                                              | `helper/chapterCredits.js`, `ChapterAcknowledgements.vue`                                             | live with the PR's deploy                                                                                                |
+
+Both migrations with `supabase db push` after a dry run (only these two pending), content only, the box's and Further reading's rows saved over REST first to `~/Documents/openbrain-backups/2026-11-17-pre-openbrain-200/`.
+
+| Migration                                                       | How it got there, and what was checked                                                                                                                                                                 |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20261117200000_history_ngf_video_first` (OPENBRAIN-200)        | **pushed** 17 Nov. Notice: moved (1 row). Over REST box-ngf ¶1 has the video (trigger `auto`), ¶2 none, ¶3 the portraits. The track's first part is the video, then ¶1 and ¶2.                         |
+| `20261117200100_history_remove_further_reading` (OPENBRAIN-200) | **pushed** 17 Nov. Notices: 0 saved reading places moved, 1 paragraph and 1 section deleted (no reader highlight or note was on it, or it would have stopped). Over REST no `further-reading` section. |
+
+The History fixture still holds Further reading and the video on ¶2 until it is re-exported (`npm run history:fixture:export`, its own PR).
+
 ## Pending
 
-Nothing: `supabase migration list` shows local and remote in step as of 2026-11-17.
+Nothing: `supabase migration list` shows local and remote in step as of 2026-11-17 (after OPENBRAIN-200).
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
