@@ -146,3 +146,60 @@ export function groupReviewNotes(notes, modules = [], sections = []) {
     })),
   }));
 }
+
+const cell = (value, max = 160) => {
+  const text = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const cut = text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  return cut.replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
+};
+
+/**
+ * The tracker table `npm run feedback:pull` prints: one row per note, in
+ * the dashboard's chapter → section order, linked to the place on `base`.
+ */
+export function reviewNotesMarkdown(
+  notes,
+  modules = [],
+  sections = [],
+  { base = "" } = {}
+) {
+  const header = [
+    "| # | Chapter | Section | Type | Status | Place | Note | Reviewer | Link |",
+    "| - | ------- | ------- | ---- | ------ | ----- | ---- | -------- | ---- |",
+  ];
+  if (!notes.length) return [...header, "", "No notes."].join("\n");
+  const rows = [];
+  for (const chapter of groupReviewNotes(notes, modules, sections)) {
+    for (const section of chapter.sections) {
+      for (const note of section.notes) {
+        const href = reviewNoteHref(note, chapter.module);
+        const text =
+          note.note ||
+          (note.quote ? `“${note.quote}” → “${note.suggested_text}”` : "");
+        const reviewer = [note.reviewer_name, note.reviewer_role]
+          .filter(Boolean)
+          .join(", ");
+        rows.push(
+          [
+            "",
+            rows.length + 1,
+            cell(chapter.title, 60),
+            cell(section.title, 60),
+            reviewTypeLabel(note.type),
+            reviewStatusLabel(note.status),
+            cell(reviewAnchorLabel(note), 80),
+            cell(text),
+            cell(reviewer, 40),
+            href ? `[open](${base}${href})` : "",
+            "",
+          ]
+            .join(" | ")
+            .trim()
+        );
+      }
+    }
+  }
+  return [...header, ...rows].join("\n");
+}

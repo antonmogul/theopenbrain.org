@@ -4,6 +4,7 @@ import {
   matchesReviewFilters,
   reviewAnchorLabel,
   reviewNoteHref,
+  reviewNotesMarkdown,
   reviewStatusLabel,
   reviewTypeLabel,
   reviewViewLabel,
@@ -130,5 +131,32 @@ describe("reviewer notes helpers (OPENBRAIN-203)", () => {
     ]);
     expect(groups[1].module).toBe(retina);
     expect(groups[2].module).toBeNull();
+  });
+
+  it("prints the pull script's tracker table, one escaped row per note", () => {
+    const table = reviewNotesMarkdown(
+      [
+        ...REVIEW_NOTES,
+        {
+          ...retinaBug,
+          id: "pipe",
+          note: "a | b\nsecond line " + "x".repeat(300),
+        },
+      ],
+      REVIEW_MODULES,
+      REVIEW_SECTIONS,
+      { base: "https://example.test" }
+    ).split("\n");
+    expect(table).toHaveLength(6);
+    expect(table[2]).toBe(
+      "| 1 | Foundations of Neuroscience | Galen and the animal spirits | Figure | Doing | Fig 07 · Galen silences a squealing pig | The pig should face the other way, toward the text. | Maura, designer | [open](https://example.test/chapter/1/foundations-of-neuroscience#galen) |"
+    );
+    expect(table.join("\n")).toContain(
+      "| “Rods outnumber cones about 10 to 1” → “Rods outnumber cones about 20 to 1” |"
+    );
+    const pipe = table.find((row) => row.includes("a \\| b second line"));
+    expect(pipe).toMatch(/x…/);
+    expect(pipe.split(" | ")).toHaveLength(9);
+    expect(reviewNotesMarkdown([])).toMatch(/No notes\.$/);
   });
 });
