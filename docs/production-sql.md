@@ -160,7 +160,10 @@ Pushed with `supabase db push` after PR #195's deploy was serving the three file
 
 ## Pending
 
-Nothing: `supabase migration list` shows local and remote in step as of 2026-11-18 (after OPENBRAIN-201).
+| Migration                                                   | What it does                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261118120000_history_stuart_18nov` (OPENBRAIN-202)       | Stuart's 18 Nov notes: five figure titles (Figs 1, 6, 17, 22, 25), Descartes' two photographs as Figures D and E (`images[i].figureNumber`/`title`), the `credit` dropped from History's two and the Retina's four widget blocks and the Retina's nine pane widgets, Loewi's credit "After Loewi (1921), Figure 1". Data only; safe before or after the deploy (old code ignores an image's own number). |
+| `20261118120100_history_penfield_binder_v5` (OPENBRAIN-202) | The binder file with four scan typos fixed ("1"/"]" for "I"). Upload only.                                                                                                                                                                                                                                                                                                                               |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is

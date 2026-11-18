@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import {
   RAIL_PLATES_MAX,
+  platesAreFigures,
   railFigureLabel,
   railPlatesHeight,
   railPlatesOf,
@@ -85,5 +86,28 @@ describe("a row of plates", () => {
     expect(railPlatesWidth([1], 0)).toBe(0);
     expect(railPlatesHeight([1.5, NaN], 400)).toBe(0);
     expect(railPlatesHeight([1], 0)).toBe(0);
+  });
+});
+
+describe("platesAreFigures (OPENBRAIN-202)", () => {
+  it("is true when every plate of a set carries its own figure number", () => {
+    expect(
+      platesAreFigures([
+        { src: "/a.jpg", figureNumber: "D" },
+        { src: "/b.jpg", figureNumber: "E" },
+      ])
+    ).toBe(true);
+  });
+  it("is false for one plate, a set with an unnumbered plate, or nothing", () => {
+    expect(platesAreFigures([{ src: "/a.jpg", figureNumber: "D" }])).toBe(
+      false
+    );
+    expect(
+      platesAreFigures([
+        { src: "/a.jpg", figureNumber: "D" },
+        { src: "/b.jpg" },
+      ])
+    ).toBe(false);
+    expect(platesAreFigures(null)).toBe(false);
   });
 });

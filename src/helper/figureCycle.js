@@ -47,6 +47,15 @@ export function figureImages(animation) {
       // 18 Nov: Plato and Aristotle; scripts/figures/encode-figure-loop.sh).
       const loop = figureLoop(item.loop);
       if (loop && !out.youtube) out.loop = loop;
+      // A picture with a figure number of its own, in a figure that holds
+      // two figures (Descartes' box: the skull in Paris is Figure D, the
+      // piece in Lund Figure E; Stuart, 18 Nov, OPENBRAIN-202).
+      const own = item.figureNumber;
+      if ((typeof own === "string" && own.trim()) || Number.isFinite(own)) {
+        out.figureNumber = typeof own === "string" ? own.trim() : own;
+        if (typeof item.title === "string" && item.title.trim())
+          out.title = item.title.trim();
+      }
       return out;
     });
 }

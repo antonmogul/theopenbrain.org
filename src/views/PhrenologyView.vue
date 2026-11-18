@@ -434,10 +434,11 @@ function onKeydown(e) {
  * control (OPENBRAIN-190), so the skull has the height. The legend and an
  * organ's sheet lie over the same place: opening one closes the other.
  */
+/* Organ 22's note (in the list only, no place on the skull) is in its own
+   text, so it is not repeated here (Stuart, 18 Nov, OPENBRAIN-202). */
 const INSTRUCTION =
   "Select a region of the skull to read what Gall and Spurzheim’s 1815 " +
-  "source says about its organ. Organ 22, Weight, is in the list only: the " +
-  "source gives it no place on the skull.";
+  "source says about its organ.";
 const legendId = `phreno-legend-${useId()}`;
 const legendOpen = ref(false);
 function toggleLegend() {

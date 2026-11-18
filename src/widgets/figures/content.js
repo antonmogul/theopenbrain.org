@@ -48,16 +48,36 @@ function pick(field, saved, record, fallback) {
   return [saved, record, fallback].find(isText) ?? "";
 }
 
+/**
+ * The record's own figure label: "Fig 03" from its figureNumber, the number
+ * the chapter gives it. The widgets' schema defaults ("Fig 02", "Wid 02")
+ * were the manuscript's numbers, so once History was renumbered in reading
+ * order the trepanation figure still read Fig 02 after the skull's FIG 02
+ * (Stuart, 18 Nov: "there are currently two figure 2s", OPENBRAIN-202).
+ */
+function recordFigureLabel(record) {
+  if (isText(record?.figureLabel)) return record.figureLabel;
+  const n = record?.figureNumber;
+  if (Number.isFinite(n) || /^\d+$/.test(String(n ?? "")))
+    return `Fig ${String(n).padStart(2, "0")}`;
+  if (isText(n)) return `Fig ${n.trim()}`;
+  return undefined;
+}
+
 /** The widget's content for `record`, field by field. */
 export function figureContent(schema, record = {}) {
   const saved =
     record?.content && typeof record.content === "object" ? record.content : {};
   const out = {};
   for (const field of schema.fields) {
+    const own =
+      field.key === "figureLabel"
+        ? recordFigureLabel(record)
+        : record?.[field.key];
     out[field.key] = pick(
       field,
       saved[field.key],
-      field.artwork ? undefined : record?.[field.key],
+      field.artwork ? undefined : own,
       schema.defaults[field.key]
     );
   }

@@ -31,6 +31,7 @@
 import { computed, inject, ref, unref } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
+import { railFigureLabel } from "@/helper/railFigure";
 
 const props = defineProps({
   /** "FIG E"; empty for a picture with no number. */
@@ -58,6 +59,11 @@ const figureName = computed(
     props.images[0]?.alt ||
     "Figure"
 );
+/* A plate that is a figure of its own ("FIG E", OPENBRAIN-202) is named
+   on its picture; the figure then has no shared label row. */
+const plateLabel = (image) => railFigureLabel(image);
+const plateName = (image) =>
+  [plateLabel(image), image?.title].filter(Boolean).join(": ");
 const legendOf = (image) => image?.caption || props.caption || "";
 const legends = computed(() => [
   ...new Set(props.images.map(legendOf).filter(Boolean)),
@@ -151,12 +157,24 @@ function open(i) {
             draggable="false"
             @load="onLoad(i, $event)"
           />
+          <p
+            v-if="plateLabel(image)"
+            class="rf-plate-name"
+            data-rail-plate-label
+          >
+            <span class="rf-label">{{ plateLabel(image) }}</span>
+            <span v-if="image.title" class="rf-name">{{ image.title }}</span>
+          </p>
           <button
             v-if="!barExpand"
             class="rf-expand rf-expand--on"
             type="button"
             title="Expand to full screen"
-            :aria-label="expandLabel(i)"
+            :aria-label="
+              plateName(image)
+                ? `Expand ${plateName(image)} to full screen`
+                : expandLabel(i)
+            "
             @click="open(i)"
           >
             <svg
@@ -286,6 +304,27 @@ function open(i) {
 }
 .rf-expand--on:focus-visible {
   outline-color: #fff;
+}
+/* A plate's own figure name, on the picture's foot: its own dark chip like
+   the expand button, so it reads on any picture. */
+.rf-plate-name {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  max-width: calc(100% - 1rem);
+  margin: 0;
+  padding: 0.375rem 0.625rem;
+  font-family: var(--font-mono);
+  line-height: 1.35;
+  text-transform: uppercase;
+  background: rgb(20 20 20 / 0.78);
+  color: #fff;
+}
+.rf-plate-name .rf-label {
+  color: rgb(var(--color-warn));
 }
 
 /* The plates: a row as tall as the figure has left under its label, a size

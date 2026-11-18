@@ -217,3 +217,27 @@ describe("fetchLottie", () => {
     await expect(fetchLottie("/f.json")).rejects.toThrow(/HTTP 404/);
   });
 });
+
+describe("figure label from the record's number (OPENBRAIN-202)", () => {
+  const labelled = {
+    fields: [{ key: "figureLabel", type: "text" }],
+    defaults: { figureLabel: "Fig 02" },
+  };
+  it("reads the chapter's number, not the manuscript's default", () => {
+    expect(figureContent(labelled, { figureNumber: 3 }).figureLabel).toBe(
+      "Fig 03"
+    );
+    expect(figureContent(labelled, { figureNumber: "B" }).figureLabel).toBe(
+      "Fig B"
+    );
+  });
+  it("keeps a saved label first and the default without a number", () => {
+    expect(
+      figureContent(labelled, {
+        figureNumber: 3,
+        content: { figureLabel: "Figure 3a" },
+      }).figureLabel
+    ).toBe("Figure 3a");
+    expect(figureContent(labelled, {}).figureLabel).toBe("Fig 02");
+  });
+});

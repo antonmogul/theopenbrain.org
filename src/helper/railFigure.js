@@ -50,6 +50,20 @@ export function railFigureLabel(record) {
 }
 
 /**
+ * Whether every plate is a figure of its own (each image carries its own
+ * figureNumber). Such a figure is drawn without the shared label row: each
+ * plate is named on its own picture (OPENBRAIN-202).
+ * @param {{ figureNumber?: string | number }[] | null} plates
+ */
+export function platesAreFigures(plates) {
+  return (
+    Array.isArray(plates) &&
+    plates.length > 1 &&
+    plates.every((plate) => railFigureLabel(plate) !== "")
+  );
+}
+
+/**
  * How wide a row of plates is when each is `height` tall: the images'
  * widths at that height and the gaps between them. 0 when a ratio is
  * missing (an image that has not loaded).

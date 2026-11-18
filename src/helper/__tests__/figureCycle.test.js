@@ -181,3 +181,25 @@ describe("figure loops (OPENBRAIN-201)", () => {
     expect(img.loop).toBeUndefined();
   });
 });
+
+describe("an image's own figure number (OPENBRAIN-202)", () => {
+  it("keeps figureNumber and title on an image that has one", () => {
+    expect(
+      figureImages({
+        images: [
+          { src: "/a.jpg", figureNumber: "D", title: " Paris " },
+          { src: "/b.jpg", title: "Lund" },
+        ],
+      })
+    ).toEqual([
+      {
+        src: "/a.jpg",
+        caption: "",
+        alt: "",
+        figureNumber: "D",
+        title: "Paris",
+      },
+      { src: "/b.jpg", caption: "", alt: "" },
+    ]);
+  });
+});

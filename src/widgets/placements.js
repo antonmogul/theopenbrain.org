@@ -85,7 +85,6 @@ export const WIDGET_PLACEMENTS = [
     title: "Colour vision starts in the retina",
     blurb:
       "Work from the electromagnetic spectrum down to cone opponency: how three pigment classes, and their overlap, become the colours we see.",
-    credit: "Interactive by Stuart Trenholm",
     route: "/color-vision",
   },
   {
@@ -106,7 +105,6 @@ export const WIDGET_PLACEMENTS = [
     title: "What do direction selective ganglion cells respond like?",
     blurb:
       "Responses from four real retinal ganglion cells to a stimulus moving in eight directions, with the Python that draws the figure. Edit the code and re-run it.",
-    credit: "Interactive and data by Stuart Trenholm",
     route: "/direction-selectivity",
   },
   {
@@ -132,7 +130,6 @@ export const WIDGET_PLACEMENTS = [
     title: "RetINaBox — build a retinal circuit",
     blurb:
       "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials. Based on the Trenholm lab's outreach tool.",
-    credit: "Interactive by Stuart Trenholm",
   },
 
   // ── Attention & Working Memory — Arjun Krishnaswamy's widgets (OPENBRAIN-34)
@@ -185,7 +182,6 @@ export const WIDGET_PLACEMENTS = [
     title: "Explore phrenology",
     blurb:
       "Click on different parts of the skull to explore Gall and Spurzheim's model of localization of brain function.",
-    credit: "Interactive by The Open Brain",
     route: "/phrenology",
     fullScreen: true,
   },
@@ -206,7 +202,6 @@ export const WIDGET_PLACEMENTS = [
     title: PENFIELD_TITLE,
     blurb:
       "Explore what having your brain electrically stimulated by Penfield was like.",
-    credit: "Interactive by The Open Brain",
     route: "/case-cabinet",
     fullScreen: true,
   },
