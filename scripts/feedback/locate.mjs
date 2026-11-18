@@ -189,35 +189,43 @@ export async function locateAnchor({
     await page.waitForTimeout(6000);
     await page.addScriptTag({ content: await pageScript() });
 
-    const placed = await page.evaluate(
-      (a) => window.__obLocate.place(a),
-      anchor
-    );
-    report.how = placed.how;
-    if (!placed.found) {
-      report.found = false;
-      await page.screenshot({ path: shot });
-      report.screenshot = shot;
-      return report;
-    }
-    await page.waitForTimeout(900);
-    if (placed.stops?.length) {
-      // The pane shows a figure once its trigger is at the reading line (a
-      // little later when a box above it is still over the pane).
-      const want = String(anchor.figureKey || "").toLowerCase();
-      for (const y of placed.stops.slice(1)) {
-        const key = await page.evaluate(() => window.__obLocate.paneKey());
-        if (sameKey(key, want)) break;
-        await page.evaluate((top) => window.__obLocate.scrollTop(top), y);
-        await page.waitForTimeout(700);
+    // Late figures, widgets and fonts still move the page after the landing
+    // (on a phone especially), so a place that moved away under the check
+    // is gone to again, up to three times.
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      const placed = await page.evaluate(
+        (a) => window.__obLocate.place(a),
+        anchor
+      );
+      report.how = placed.how;
+      report.attempts = attempt;
+      if (!placed.found) {
+        report.found = false;
+        await page.screenshot({ path: shot });
+        report.screenshot = shot;
+        return report;
       }
+      await page.waitForTimeout(900);
+      if (placed.stops?.length) {
+        // The pane shows a figure once its trigger is at the reading line
+        // (a little later when a box above it is still over the pane).
+        const want = String(anchor.figureKey || "").toLowerCase();
+        for (const y of placed.stops.slice(1)) {
+          const key = await page.evaluate(() => window.__obLocate.paneKey());
+          if (sameKey(key, want)) break;
+          await page.evaluate((top) => window.__obLocate.scrollTop(top), y);
+          await page.waitForTimeout(700);
+        }
+      }
+      if (await page.evaluate((a) => window.__obLocate.revealPoint(a), anchor))
+        await page.waitForTimeout(700);
+      Object.assign(
+        report,
+        await page.evaluate((a) => window.__obLocate.check(a), anchor)
+      );
+      if (report.same) break;
+      await page.waitForTimeout(1500);
     }
-    if (await page.evaluate((a) => window.__obLocate.revealPoint(a), anchor))
-      await page.waitForTimeout(700);
-    Object.assign(
-      report,
-      await page.evaluate((a) => window.__obLocate.check(a), anchor)
-    );
     await page.screenshot({ path: shot });
     report.screenshot = shot;
     return report;
