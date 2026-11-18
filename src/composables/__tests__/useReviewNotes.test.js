@@ -6,6 +6,7 @@ import { REVIEW_NOTE_COLUMNS, useReviewNotes } from "../useReviewNotes";
 import {
   REVIEW_MODULES,
   REVIEW_NOTES,
+  REVIEW_REPLIES,
   REVIEW_SECTIONS,
 } from "@/stories/reviewNoteFixtures.js";
 
@@ -152,5 +153,23 @@ describe("useReviewNotes (OPENBRAIN-203)", () => {
     await denied.fetchReviewNotes();
     expect(authedRequest).not.toHaveBeenCalled();
     expect(denied.reviewAccessDenied.value).toBe(true);
+  });
+
+  it("filters notes, not replies: a reply follows its note and isn't counted", async () => {
+    mockData({ notes: [...REVIEW_NOTES, ...REVIEW_REPLIES] });
+    const r = setup();
+    await r.fetchReviewNotes();
+    expect(r.reviewFilteredCount.value).toBe(2);
+    expect(r.reviewOpenCount.value).toBe(2);
+    const maura = r.reviewGroups.value[0].sections[0].notes[0];
+    expect(maura.replies).toHaveLength(2);
+    r.reviewFilters.value = { chapter: "all", type: "all", status: "done" };
+    expect(r.reviewGroups.value.map((c) => c.title)).toEqual(["The Retina"]);
+    expect(
+      r.reviewGroups.value
+        .flatMap((c) => c.sections)
+        .flatMap((s) => s.notes)
+        .map((n) => n.reviewer_name)
+    ).toEqual(["Arjun"]);
   });
 });

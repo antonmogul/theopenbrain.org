@@ -13,6 +13,7 @@ import {
 import {
   REVIEW_MODULES,
   REVIEW_NOTES,
+  REVIEW_REPLIES,
   REVIEW_SECTIONS,
 } from "@/stories/reviewNoteFixtures.js";
 
@@ -22,19 +23,30 @@ function live(args) {
     filters: { ...args.filters },
     savingIds: [],
   });
+  // As useReviewNotes: filters pick notes, replies follow their note.
   const filtered = computed(() =>
-    state.notes.filter((n) => matchesReviewFilters(n, state.filters))
+    state.notes.filter(
+      (n) => !n.parent_id && matchesReviewFilters(n, state.filters)
+    )
   );
+  const shown = computed(() => {
+    const ids = new Set(filtered.value.map((n) => n.id));
+    return [
+      ...filtered.value,
+      ...state.notes.filter((n) => n.parent_id && ids.has(n.parent_id)),
+    ];
+  });
   return {
     state,
     groups: computed(() =>
-      groupReviewNotes(filtered.value, REVIEW_MODULES, REVIEW_SECTIONS)
+      groupReviewNotes(shown.value, REVIEW_MODULES, REVIEW_SECTIONS)
     ),
     count: computed(() => filtered.value.length),
     open: computed(
       () =>
-        state.notes.filter((n) => matchesReviewFilters(n, { status: "open" }))
-          .length
+        state.notes.filter(
+          (n) => !n.parent_id && matchesReviewFilters(n, { status: "open" })
+        ).length
     ),
     chapters: REVIEW_MODULES.map((m) => ({ slug: m.slug, title: m.title })),
     save({ id, status, reply }) {
@@ -57,7 +69,7 @@ export default {
   component: ReviewNotesPanel,
   parameters: { layout: "padded" },
   args: {
-    notes: REVIEW_NOTES,
+    notes: [...REVIEW_NOTES, ...REVIEW_REPLIES],
     filters: { chapter: "all", type: "all", status: "all" },
     loading: false,
     error: null,
@@ -77,7 +89,10 @@ export default {
   }),
 };
 
-/** Every note: History first (chapter 1), then the Retina by section. */
+/**
+ * Every note: History first (chapter 1), then the Retina by section. Sonia's
+ * and Stuart's replies sit under Maura's figure note, oldest first.
+ */
 export const Default = {};
 
 /** The dashboard's default: only what still needs someone. */

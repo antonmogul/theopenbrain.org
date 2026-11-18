@@ -96,7 +96,9 @@ export function reviewViewLabel(note) {
 
 /**
  * Notes grouped chapter → section in reading order, newest first within a
- * section. `modules` rows: { id, slug, title, order_index }; `sections` rows:
+ * section. A reply (a row with `parent_id`) sits under its note as
+ * `note.replies`, oldest first; a reply whose note isn't in `notes` stays a
+ * row of its own. `modules` rows: { id, slug, title, order_index }; `sections` rows:
  * { module_id, slug, title, order_index }. Unknown chapters and sections keep
  * their slug as title and sort after the known ones.
  */
@@ -107,8 +109,16 @@ export function groupReviewNotes(notes, modules = [], sections = []) {
     const module = modules.find((m) => m.id === s.module_id);
     if (module) sectionByKey.set(`${module.slug}/${s.slug}`, s);
   }
+  const ids = new Set(notes.map((n) => n.id));
+  const repliesOf = new Map();
+  for (const note of notes) {
+    if (!note.parent_id || !ids.has(note.parent_id)) continue;
+    if (!repliesOf.has(note.parent_id)) repliesOf.set(note.parent_id, []);
+    repliesOf.get(note.parent_id).push(note);
+  }
   const chapters = new Map();
   for (const note of notes) {
+    if (note.parent_id && ids.has(note.parent_id)) continue;
     const slug = note.chapter_slug;
     if (!chapters.has(slug)) {
       const module = moduleBySlug.get(slug);
@@ -142,7 +152,15 @@ export function groupReviewNotes(notes, modules = [], sections = []) {
     ...chapter,
     sections: [...chapter.sections.values()].sort(byOrder).map((section) => ({
       ...section,
-      notes: section.notes.slice().sort(newestFirst),
+      notes: section.notes
+        .slice()
+        .sort(newestFirst)
+        .map((note) => ({
+          ...note,
+          replies: (repliesOf.get(note.id) || [])
+            .slice()
+            .sort((a, b) => newestFirst(b, a)),
+        })),
     })),
   }));
 }
@@ -171,6 +189,7 @@ export function reviewNotesMarkdown(
   ];
   if (!notes.length) return [...header, "", "No notes."].join("\n");
   const rows = [];
+  let count = 0;
   for (const chapter of groupReviewNotes(notes, modules, sections)) {
     for (const section of chapter.sections) {
       for (const note of section.notes) {
@@ -181,10 +200,11 @@ export function reviewNotesMarkdown(
         const reviewer = [note.reviewer_name, note.reviewer_role]
           .filter(Boolean)
           .join(", ");
+        const number = ++count;
         rows.push(
           [
             "",
-            rows.length + 1,
+            number,
             cell(chapter.title, 60),
             cell(section.title, 60),
             reviewTypeLabel(note.type),
@@ -198,6 +218,14 @@ export function reviewNotesMarkdown(
             .join(" | ")
             .trim()
         );
+        for (const reply of note.replies) {
+          const who = [reply.reviewer_name, reply.reviewer_role]
+            .filter(Boolean)
+            .join(", ");
+          rows.push(
+            `| ${number}↳ | | | Reply | ${reviewStatusLabel(reply.status)} | | ${cell(reply.note || reply.quote)} | ${cell(who, 40)} | |`
+          );
+        }
       }
     }
   }

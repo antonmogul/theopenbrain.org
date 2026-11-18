@@ -6,6 +6,7 @@ import { groupReviewNotes } from "@/helper/reviewNotes.mjs";
 import {
   REVIEW_MODULES,
   REVIEW_NOTES,
+  REVIEW_REPLIES,
   REVIEW_SECTIONS,
 } from "@/stories/reviewNoteFixtures.js";
 
@@ -117,6 +118,24 @@ describe("ReviewNotesPanel (OPENBRAIN-203)", () => {
     expect(w.find("b").exists()).toBe(false);
     expect(w.text()).toContain("<img src=x onerror=alert(1)>");
   });
+});
+
+it("shows replies threaded under their note", () => {
+  const w = mountSection(ReviewNotesPanel, {
+    groups: groupReviewNotes(
+      [...REVIEW_NOTES, ...REVIEW_REPLIES],
+      REVIEW_MODULES,
+      REVIEW_SECTIONS
+    ),
+  });
+  const maura = w.find(`[data-review-note="${REVIEW_NOTES[1].id}"]`);
+  const replies = maura.findAll("[data-review-reply]");
+  expect(replies.map((r) => r.text())).toEqual([
+    expect.stringMatching(/^Sonia · Designer.*mirrored version/s),
+    expect.stringMatching(/^Stuart · Author.*keep the rope visible/s),
+  ]);
+  expect(maura.find("ol").attributes("aria-label")).toBe("Replies to Maura");
+  expect(w.findAll("[data-review-note]")).toHaveLength(3);
 });
 
 describe("FeedbackSection view switch", () => {

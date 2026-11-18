@@ -12,6 +12,7 @@ import {
 import {
   REVIEW_MODULES,
   REVIEW_NOTES,
+  REVIEW_REPLIES,
   REVIEW_SECTIONS,
 } from "@/stories/reviewNoteFixtures.js";
 
@@ -158,5 +159,43 @@ describe("reviewer notes helpers (OPENBRAIN-203)", () => {
     expect(pipe).toMatch(/x…/);
     expect(pipe.split(" | ")).toHaveLength(9);
     expect(reviewNotesMarkdown([])).toMatch(/No notes\.$/);
+  });
+
+  it("threads replies under their note, oldest first; an orphan stays a row", () => {
+    const orphan = {
+      ...REVIEW_REPLIES[0],
+      id: "orphan",
+      parent_id: "not-in-the-list",
+    };
+    const groups = groupReviewNotes(
+      [...REVIEW_NOTES, ...REVIEW_REPLIES, orphan],
+      REVIEW_MODULES,
+      REVIEW_SECTIONS
+    );
+    const history = groups[0].sections;
+    const maura = history[0].notes[0];
+    expect(maura.reviewer_name).toBe("Maura");
+    expect(maura.replies.map((r) => r.reviewer_name)).toEqual([
+      "Sonia",
+      "Stuart",
+    ]);
+    expect(history.flatMap((s) => s.notes.map((n) => n.id))).toEqual([
+      maura.id,
+      "orphan",
+    ]);
+    expect(groups[1].sections[0].notes[0].replies).toEqual([]);
+
+    const table = reviewNotesMarkdown(
+      [...REVIEW_NOTES, ...REVIEW_REPLIES],
+      REVIEW_MODULES,
+      REVIEW_SECTIONS
+    ).split("\n");
+    expect(table.slice(2, 5).map((r) => r.split(" | ")[0])).toEqual([
+      "| 1",
+      "| 1↳",
+      "| 1↳",
+    ]);
+    expect(table[3]).toContain("the mirrored version reads better");
+    expect(table[5].startsWith("| 2 |")).toBe(true);
   });
 });

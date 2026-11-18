@@ -247,6 +247,31 @@ function formatDate(value) {
                     <p v-if="note.note" class="review-message">
                       {{ note.note }}
                     </p>
+                    <ol
+                      v-if="note.replies?.length"
+                      class="review-replies"
+                      :aria-label="`Replies to ${note.reviewer_name}`"
+                    >
+                      <li
+                        v-for="reply in note.replies"
+                        :key="reply.id"
+                        :data-review-reply="reply.id"
+                      >
+                        <p class="review-meta">
+                          {{ reply.reviewer_name
+                          }}<template v-if="reply.reviewer_role">
+                            · {{ ROLE_LABELS[reply.reviewer_role] }}</template
+                          >
+                          ·
+                          <time :datetime="reply.created_at || undefined">{{
+                            formatDate(reply.created_at)
+                          }}</time>
+                        </p>
+                        <p class="review-message">
+                          {{ reply.note || reply.quote }}
+                        </p>
+                      </li>
+                    </ol>
                     <form class="review-answer" @submit.prevent="save(note)">
                       <label>
                         Status
@@ -433,6 +458,18 @@ function formatDate(value) {
   font-size: var(--ui-size-14);
   line-height: 1.6;
   margin: 0;
+}
+.review-replies {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 0 12px;
+  list-style: none;
+  border-left: 2px solid rgb(var(--color-accent) / 0.4);
+}
+.review-replies li {
+  display: grid;
+  gap: 2px;
 }
 .review-save-error {
   flex-basis: 100%;

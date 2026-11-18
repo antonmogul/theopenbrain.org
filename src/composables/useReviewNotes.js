@@ -8,7 +8,7 @@ import {
 
 /** The columns the dashboard reads (ip_hash is not granted to anyone). */
 export const REVIEW_NOTE_COLUMNS =
-  "id,created_at,updated_at,chapter_slug,section_slug,paragraph_id,type,note,quote,suggested_text,anchor,reviewer_name,reviewer_role,user_id,url,viewport,user_agent,status,reply,replied_at";
+  "id,created_at,updated_at,chapter_slug,section_slug,paragraph_id,type,note,quote,suggested_text,anchor,reviewer_name,reviewer_role,user_id,url,viewport,user_agent,status,reply,replied_at,parent_id";
 
 const isMissingTable = (err) =>
   err?.status === 404 || /PGRST20[25]/.test(String(err?.response || ""));
@@ -35,11 +35,20 @@ export function useReviewNotes(canRead, identity = ref(null)) {
   let requestId = 0;
 
   const accessDenied = computed(() => !canRead.value || denied.value);
+  // Filters pick notes; a reply (parent_id) follows its note.
+  const topLevel = computed(() => notes.value.filter((n) => !n.parent_id));
   const filtered = computed(() =>
-    notes.value.filter((note) => matchesReviewFilters(note, filters.value))
+    topLevel.value.filter((note) => matchesReviewFilters(note, filters.value))
   );
+  const shown = computed(() => {
+    const ids = new Set(filtered.value.map((n) => n.id));
+    return [
+      ...filtered.value,
+      ...notes.value.filter((n) => n.parent_id && ids.has(n.parent_id)),
+    ];
+  });
   const groups = computed(() =>
-    groupReviewNotes(filtered.value, modules.value, sections.value)
+    groupReviewNotes(shown.value, modules.value, sections.value)
   );
   const chapters = computed(() => {
     const seen = new Map();
@@ -56,7 +65,7 @@ export function useReviewNotes(canRead, identity = ref(null)) {
   });
   const openCount = computed(
     () =>
-      notes.value.filter((note) =>
+      topLevel.value.filter((note) =>
         matchesReviewFilters(note, { status: "open" })
       ).length
   );

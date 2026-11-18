@@ -30,7 +30,7 @@ import {
 
 const PRODUCTION = "https://theopenbrainorg-production.up.railway.app";
 const COLUMNS =
-  "id,created_at,updated_at,chapter_slug,section_slug,paragraph_id,type,note,quote,suggested_text,anchor,reviewer_name,reviewer_role,user_id,url,viewport,user_agent,status,reply,replied_at";
+  "id,created_at,updated_at,chapter_slug,section_slug,paragraph_id,type,note,quote,suggested_text,anchor,reviewer_name,reviewer_role,user_id,url,viewport,user_agent,status,reply,replied_at,parent_id";
 
 function parseArgs(argv) {
   const opts = {
@@ -91,13 +91,8 @@ async function viaRest(opts, token) {
     }
     return response.json();
   };
-  const filters = [
-    opts.statuses ? `status=in.(${opts.statuses.join(",")})` : "",
-    opts.chapter ? `chapter_slug=eq.${opts.chapter}` : "",
-  ]
-    .filter(Boolean)
-    .map((f) => `&${f}`)
-    .join("");
+  // Statuses are applied in JS, so replies can follow their note.
+  const filters = opts.chapter ? `&chapter_slug=eq.${opts.chapter}` : "";
   const notes = [];
   for (let offset = 0; ; offset += 1000) {
     const page = await get(
@@ -116,13 +111,8 @@ async function viaRest(opts, token) {
 }
 
 function viaPsql(opts, dbUrl) {
-  const where = [
-    opts.statuses
-      ? `status in (${opts.statuses.map((s) => `'${s}'`).join(",")})`
-      : "true",
-    opts.chapter ? `chapter_slug = '${opts.chapter}'` : "true",
-  ].join(" and ");
-  // Values are checked against fixed lists / a slug pattern in parseArgs.
+  // The slug is checked against a pattern in parseArgs.
+  const where = opts.chapter ? `chapter_slug = '${opts.chapter}'` : "true";
   const sql = `begin read only;
 select json_build_object(
   'notes', coalesce((select json_agg(r order by r.created_at, r.id) from (
@@ -157,9 +147,18 @@ if (!token && !dbUrl)
     "Set REVIEW_PULL_TOKEN (a creator's access token) or SUPABASE_DB_URL. See docs/review-feedback.md."
   );
 
-const { notes, modules, sections, source } = token
-  ? await viaRest(opts, token)
-  : viaPsql(opts, dbUrl);
+const pulled = token ? await viaRest(opts, token) : viaPsql(opts, dbUrl);
+const { modules, sections, source } = pulled;
+// Notes in the asked statuses, and every reply to them (a reply's own status
+// doesn't matter).
+const picked = pulled.notes.filter(
+  (n) => !n.parent_id && (!opts.statuses || opts.statuses.includes(n.status))
+);
+const pickedIds = new Set(picked.map((n) => n.id));
+const notes = [
+  ...picked,
+  ...pulled.notes.filter((n) => n.parent_id && pickedIds.has(n.parent_id)),
+];
 
 const moduleBySlug = new Map(modules.map((m) => [m.slug, m]));
 const withPlace = notes.map((note) => {
@@ -172,7 +171,7 @@ const withPlace = notes.map((note) => {
 });
 
 console.log(
-  `Review notes (${opts.statuses ? opts.statuses.join(", ") : "all statuses"}${opts.chapter ? `, ${opts.chapter}` : ""}): ${notes.length}, read via ${source}\n`
+  `Review notes (${opts.statuses ? opts.statuses.join(", ") : "all statuses"}${opts.chapter ? `, ${opts.chapter}` : ""}): ${picked.length}, ${notes.length - picked.length} replies, read via ${source}\n`
 );
 console.log(reviewNotesMarkdown(notes, modules, sections, { base: opts.base }));
 

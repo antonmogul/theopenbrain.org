@@ -484,6 +484,136 @@ describe.skipIf(!harness)(
       ]);
     }, 60000);
 
+    it("takes replies to a note in the same chapter only", async () => {
+      await setup();
+      const parent = await submit(NOTE);
+      const reply = await submit({
+        chapter_slug: "the-retina",
+        parent_id: parent.id,
+        type: "note",
+        note: "I disagree: 20 to 1 is the usual figure.",
+        reviewer_name: "Sonia",
+        reviewer_role: "reviewer",
+      });
+      const row = (await rows()).find((r) => r.id === reply.id);
+      expect(row).toMatchObject({ parent_id: parent.id, anchor: {} });
+
+      const bad = (p) => submit(p).catch((e) => e);
+      for (const [p, detail] of [
+        [{ ...NOTE, parent_id: "nope" }, /^parent_id$/],
+        [
+          { ...NOTE, parent_id: "00000000-0000-4000-8000-000000000000" },
+          /same chapter/,
+        ],
+        [
+          {
+            ...NOTE,
+            chapter_slug: "foundations-of-neuroscience",
+            parent_id: parent.id,
+          },
+          /same chapter/,
+        ],
+      ]) {
+        const error = await bad(p);
+        expect(error.message).toBe("review_invalid");
+        expect(error.detail).toMatch(detail);
+      }
+
+      // Deleting a note takes its replies with it.
+      await as(CREATOR, () =>
+        db.query("delete from review_feedback where id = $1", [parent.id])
+      );
+      expect(await rows()).toEqual([]);
+    }, 60000);
+
+    it("lists a chapter's notes and replies to everyone, without private fields", async () => {
+      await setup();
+      const a = await submit(
+        { ...NOTE, client_id: "a", user_agent: "UA-secret" },
+        { user: STUDENT, ip: "1.2.3.4" }
+      );
+      await db.exec(
+        "alter table review_feedback disable trigger review_feedback_touch; update review_feedback set created_at = now() - interval '1 minute', updated_at = now() - interval '1 minute'; alter table review_feedback enable trigger review_feedback_touch"
+      );
+      const r = await submit({
+        chapter_slug: "the-retina",
+        parent_id: a.id,
+        type: "note",
+        note: "Agreed.",
+        reviewer_name: "Stuart",
+      });
+      await submit({ ...NOTE, chapter_slug: "foundations-of-neuroscience" });
+
+      const list = (user, chapter, since = null) =>
+        as(user, async () =>
+          (
+            await db.query(
+              "select * from public.list_review_feedback($1, $2) as j",
+              [chapter, since]
+            )
+          ).rows.map((row) => row.j)
+        );
+      for (const user of [null, STUDENT, CREATOR]) {
+        const items = await list(user, "the-retina");
+        expect(items.map((i) => i.id)).toEqual([r.id, a.id]);
+        expect(items[0].parent_id).toBe(a.id);
+        expect(items[1].parent_id).toBeNull();
+      }
+      const [item] = await list(null, " The-Retina ").then((l) => l.slice(1));
+      expect(Object.keys(item).sort()).toEqual(
+        [
+          "anchor",
+          "chapter_slug",
+          "created_at",
+          "id",
+          "note",
+          "paragraph_id",
+          "parent_id",
+          "quote",
+          "replied_at",
+          "reply",
+          "reviewer_name",
+          "reviewer_role",
+          "section_slug",
+          "status",
+          "suggested_text",
+          "type",
+          "updated_at",
+        ].sort()
+      );
+      expect(JSON.stringify(item)).not.toMatch(
+        /UA-secret|1\.2\.3\.4|example\.test/
+      );
+
+      // p_since: rows created or changed after it (a status change counts).
+      const [{ t }] = (
+        await db.query("select now() - interval '30 seconds' as t")
+      ).rows;
+      expect((await list(null, "the-retina", t)).map((i) => i.id)).toEqual([
+        r.id,
+      ]);
+      await as(CREATOR, () =>
+        db.query("update review_feedback set status = 'done' where id = $1", [
+          a.id,
+        ])
+      );
+      expect((await list(null, "the-retina", t)).map((i) => i.status)).toEqual([
+        "new",
+        "done",
+      ]);
+      expect(await list(null, "stress")).toEqual([]);
+
+      // At most 1000 rows.
+      await db.exec(`insert into review_feedback (chapter_slug, type, note, reviewer_name)
+        select 'stress', 'note', 'n', 'bot' from generate_series(1, 1005)`);
+      expect(await list(null, "stress")).toHaveLength(1000);
+
+      const { rows: fns } = await db.query(
+        "select prosecdef, provolatile from pg_proc where proname = 'list_review_feedback'"
+      );
+      expect(fns).toEqual([{ prosecdef: true, provolatile: "s" }]);
+    }, 60000);
+
     it("reruns cleanly", async () => {
       await setup();
       const { id } = await submit({ ...NOTE, client_id: "keep" });

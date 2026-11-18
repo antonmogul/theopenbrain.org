@@ -118,3 +118,41 @@ export const REVIEW_NOTES = [
     replied_at: "2026-11-17T15:00:00Z",
   },
 ];
+
+/** Replies reviewers left on each other's notes (rows with parent_id). */
+export const REVIEW_REPLIES = [
+  {
+    id: "7c0e1a52-4a8d-4b61-9a43-0d6f2a1d5e11",
+    parent_id: "7c0e1a52-4a8d-4b61-9a43-0d6f2a1d5e02",
+    created_at: "2026-11-18T13:05:00Z",
+    updated_at: "2026-11-18T13:05:00Z",
+    chapter_slug: "foundations-of-neuroscience",
+    section_slug: null,
+    paragraph_id: null,
+    type: "note",
+    note: "Agreed, but keep the rope visible.",
+    anchor: {},
+    reviewer_name: "Stuart",
+    reviewer_role: "author",
+    status: "new",
+    reply: null,
+    replied_at: null,
+  },
+  {
+    id: "7c0e1a52-4a8d-4b61-9a43-0d6f2a1d5e12",
+    parent_id: "7c0e1a52-4a8d-4b61-9a43-0d6f2a1d5e02",
+    created_at: "2026-11-18T12:30:00Z",
+    updated_at: "2026-11-18T12:30:00Z",
+    chapter_slug: "foundations-of-neuroscience",
+    section_slug: null,
+    paragraph_id: null,
+    type: "note",
+    note: "Sonia: the mirrored version reads better beside the text.",
+    anchor: {},
+    reviewer_name: "Sonia",
+    reviewer_role: "designer",
+    status: "new",
+    reply: null,
+    replied_at: null,
+  },
+];
