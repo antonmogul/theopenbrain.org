@@ -176,13 +176,17 @@ Pushed after PR #200's deploy served all twelve `-v2.webp` files (200, `image/we
 | `20261118140000_history_maura_images`          | **pushed** 18 Nov. Notice: 11 figure records, 1 paragraph. On production at 1440 and 390 every new file loads, no 404s or console errors. |
 | `20261118140100_history_maura_images_file_url` | The same paths in `animations.image_file_url` (Figs 2, 11, 12, 15), which the chapter editor reads. Pushed with this PR's merge.          |
 
+## Pushed 2026-11-18 evening: reviewer notes, video thumbnails, reader feedback categories
+
+| Migration                                                  | How it got there, and what was checked                                                                                                                                                                                                                                                   |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261119440000_history_video_thumbnails` (OPENBRAIN-44)   | **pushed** after PR #204's deploy served the three WebPs (200). Rows backed up to `~/Documents/openbrain-backups/2026-11-18-pre-openbrain-44/`. Over REST: Rita, Brenda and Andrew Huxley items carry the new `src` and `posterPlay: "corner"`. Stuart still to confirm the picks.       |
+| `20261118150000_review_feedback` (OPENBRAIN-203)           | **pushed** with `--include-all` (its version is older than 44's, which was already applied). Read-only checks: `rpc/review_feedback_status?p_ids={}` → `[]`; `rpc/list_review_feedback?p_chapter=the-retina` → `[]`; `review_feedback?select=id` with the publishable key → 401 `42501`. |
+| `20261119450000_reader_feedback_categories` (OPENBRAIN-45) | **pushed**; its guard found the original four-value check and widened it to add `usability`, `design`, `other`.                                                                                                                                                                          |
+
 ## Pending
 
-| Migration                                                  | What it does                                                                                                                                                                                                                                                                        |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261118150000_review_feedback` (OPENBRAIN-203)           | New table (with `parent_id` replies) + three RPCs (submit, status, `list_review_feedback`), no data touched. After the push, check read-only: `rpc/review_feedback_status?p_ids={}` → `[]`; `review_feedback?select=id` with the publishable key → `42501`.                         |
-| `20261119440000_history_video_thumbnails` (OPENBRAIN-44)   | **Pushed** 18 Nov after PR #204's deploy served the three WebPs; rows backed up to `~/Documents/openbrain-backups/2026-11-18-pre-openbrain-44/`. Rita, Brenda and Andrew Huxley posters with `posterPlay: "corner"`; Stuart still to confirm the picks (old URLs in the migration). |
-| `20261119450000_reader_feedback_categories` (OPENBRAIN-45) | Pending: widen the reader `feedback.kind` check with usability, design and other; keep all legacy values and ownership policies. Apply before releasing the new category picker.                                                                                                    |
+Nothing: `supabase migration list` shows local and remote in step as of 2026-11-18 (after OPENBRAIN-45).
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
