@@ -36,6 +36,17 @@ describe("FeedbackSection", () => {
     await w.find("button").trigger("click");
     expect(w.emitted("fetch")).toHaveLength(1);
   });
+  it.each(["usability", "design", "other"])(
+    "shows and filters the %s category",
+    async (kind) => {
+      const w = mountSection(FeedbackSection, {
+        filteredFeedback: [{ ...item, kind }],
+      });
+      expect(w.find("article").text()).toContain(kind);
+      await w.findAll("select")[1].setValue(kind);
+      expect(w.emitted("kind-change")).toEqual([[kind]]);
+    }
+  );
   it("renders empty, loading, retryable error and denied states without displaying stale feedback", async () => {
     const w = mountSection(FeedbackSection);
     expect(w.text()).toContain("No feedback matches these filters");

@@ -11,10 +11,12 @@ import { ref } from "vue";
 import { authedRequest } from "@/services/api/client";
 
 export const FEEDBACK_KINDS = [
-  { value: "general", label: "General" },
-  { value: "content", label: "Text" },
+  { value: "content", label: "Content" },
+  { value: "usability", label: "Usability" },
+  { value: "design", label: "Design" },
   { value: "bug", label: "Bug" },
   { value: "idea", label: "Idea" },
+  { value: "other", label: "Other" },
 ];
 export const FEEDBACK_MAX = 4000;
 
@@ -33,7 +35,10 @@ export function feedbackRow({ kind, message, context: ctx, page }) {
   const text = String(message || "").trim();
   if (!text) return null;
   return {
-    kind: FEEDBACK_KINDS.some((k) => k.value === kind) ? kind : "general",
+    kind:
+      kind === "general" || FEEDBACK_KINDS.some((k) => k.value === kind)
+        ? kind
+        : "general",
     message: text.slice(0, FEEDBACK_MAX),
     module_id: ctx?.moduleId || null,
     section_id: ctx?.sectionId || null,
@@ -61,11 +66,11 @@ export function useFeedback() {
     open.value = false;
   }
   /** Send one message; throws on failure so the dialog can say so. */
-  async function sendFeedback({ kind, message }) {
+  async function sendFeedback({ kind, message, context: ctx }) {
     const row = feedbackRow({
       kind,
       message,
-      context: context.value,
+      context: ctx ?? context.value,
       page:
         typeof window !== "undefined" ? window.location.pathname : undefined,
     });

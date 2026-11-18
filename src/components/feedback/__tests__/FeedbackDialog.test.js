@@ -54,7 +54,7 @@ describe("Reader feedback dialog (SEP24-31)", () => {
     expect(JSON.parse(options.body)).toMatchObject({
       message: "This diagram helped",
       module_id: "chapter-1",
-      kind: "general",
+      kind: "other",
     });
     expect(wrapper.text()).toContain("Thank you");
   });

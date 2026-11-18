@@ -87,6 +87,9 @@ function formatDate(value) {
             <option value="all">All types</option>
             <option value="general">General</option>
             <option value="content">Content</option>
+            <option value="usability">Usability</option>
+            <option value="design">Design</option>
+            <option value="other">Other</option>
             <option value="bug">Bug</option>
             <option value="idea">Idea</option>
           </select>

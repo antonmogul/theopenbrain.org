@@ -169,9 +169,10 @@ Rows backed up over REST first to `~/Documents/openbrain-backups/2026-11-18-pre-
 
 ## Pending
 
-| Migration                                             | What it does                                                                                                                                                                                                                                                 |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `20261118140000_history_maura_images` (OPENBRAIN-205) | Maura's 18 Nov reworked images: 12 paths in History's figure records and one paragraph swapped to `-v2.webp` files (4 cut-outs for the dark pane, 8 with more room). Needs the deploy first (the files ship with the app). Eccles (Fig 25) waits for Stuart. |
+| Migration                                                  | What it does                                                                                                                                                                                                                                                 |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20261119450000_reader_feedback_categories` (OPENBRAIN-45) | Pending: widen the reader `feedback.kind` check with usability, design and other; keep all legacy values and ownership policies. Apply before releasing the new category picker.                                                                             |
+| `20261118140000_history_maura_images` (OPENBRAIN-205)      | Maura's 18 Nov reworked images: 12 paths in History's figure records and one paragraph swapped to `-v2.webp` files (4 cut-outs for the dark pane, 8 with more room). Needs the deploy first (the files ship with the app). Eccles (Fig 25) waits for Stuart. |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is

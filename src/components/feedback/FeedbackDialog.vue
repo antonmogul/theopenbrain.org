@@ -8,7 +8,6 @@ import { computed, ref, watch } from "vue";
 import BaseModal from "@/components/dashboard/shared/BaseModal.vue";
 import Button from "@/components/dashboard/shared/Button.vue";
 import FormField from "@/components/dashboard/shared/FormField.vue";
-import SegmentedControl from "@/components/dashboard/shared/SegmentedControl.vue";
 import {
   FEEDBACK_KINDS,
   FEEDBACK_MAX,
@@ -21,7 +20,7 @@ const { open, context, closeFeedback, sendFeedback } = useFeedback();
 const { user } = useAuth();
 const authStore = useAuthStore();
 
-const kind = ref("general");
+const kind = ref("other");
 const message = ref("");
 const status = ref("idle"); // idle | sending | sent | error
 const error = ref("");
@@ -29,7 +28,7 @@ const error = ref("");
 // A fresh form each time it opens.
 watch(open, (isOpen) => {
   if (!isOpen) return;
-  kind.value = "general";
+  kind.value = "other";
   message.value = "";
   status.value = "idle";
   error.value = "";
@@ -91,11 +90,17 @@ function signIn() {
             >About: {{ context.label }}</span
           >
         </p>
-        <SegmentedControl
-          v-model="kind"
-          :options="FEEDBACK_KINDS"
-          aria-label="What is it about"
-        />
+        <FormField label="Category">
+          <select v-model="kind">
+            <option
+              v-for="option in FEEDBACK_KINDS"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </FormField>
         <FormField
           label="Your feedback"
           :hint="`${left} characters left`"
@@ -155,6 +160,7 @@ function signIn() {
   text-transform: uppercase;
   color: rgb(var(--color-mute));
 }
+select,
 textarea {
   width: 100%;
   resize: vertical;
