@@ -288,9 +288,11 @@ async function capture(engineName, browser, width, chapter, motion) {
       motion,
     };
     try {
-      const point = await page.evaluate(
-        `(async () => { const wait = (ms) => new Promise((r) => setTimeout(r, ms)); ${target.prepare} })()`
-      );
+      const measure = () =>
+        page.evaluate(
+          `(async () => { const wait = (ms) => new Promise((r) => setTimeout(r, ms)); ${target.prepare} })()`
+        );
+      let point = await measure();
       if (!point) {
         row.skipped = "nothing to point at at this width";
         results.push(row);
@@ -299,6 +301,8 @@ async function capture(engineName, browser, width, chapter, motion) {
       await page.click('[data-testid="review-fab"]');
       await page.click('[data-testid="review-point"]');
       await page.waitForSelector('[data-testid="review-pointer"]');
+      // Measured again under the layer: late layout may have moved it.
+      point = (await measure()) || point;
       if (phone) {
         await page.touchscreen.tap(point.x, point.y);
         await page.waitForSelector('[data-testid="review-pointer-confirm"]', {
