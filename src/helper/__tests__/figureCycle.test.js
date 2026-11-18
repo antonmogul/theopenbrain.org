@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { figureImages, usesFigureShell, stepIndex } from "../figureCycle";
+import {
+  figureImages,
+  figureLoop,
+  usesFigureShell,
+  stepIndex,
+} from "../figureCycle";
 
 describe("figureImages", () => {
   it("normalises objects and bare strings, dropping entries without a src", () => {
@@ -129,5 +134,50 @@ describe("gallery views (OPENBRAIN-177)", () => {
     expect(gridColumns(10)).toEqual({ wide: 4, narrow: 3 });
     expect(gridColumns(12)).toEqual({ wide: 4, narrow: 3 });
     expect(gridColumns(20)).toEqual({ wide: 5, narrow: 3 });
+  });
+});
+
+describe("figure loops (OPENBRAIN-201)", () => {
+  const LOOP = {
+    webm: "/publicAssets/video/foundations/plato-aristotle-loop.webm",
+    mp4: "/publicAssets/video/foundations/plato-aristotle-loop.mp4",
+    width: 960,
+    height: 1280,
+  };
+
+  it("keeps a film of our own on its image, poster in src", () => {
+    const [img] = figureImages({
+      images: [{ src: "/poster.webp", alt: "Plato", loop: LOOP }],
+    });
+    expect(img).toEqual({
+      src: "/poster.webp",
+      caption: "",
+      alt: "Plato",
+      loop: LOOP,
+    });
+  });
+
+  it("takes one source, and drops a shape it can't use", () => {
+    expect(figureLoop({ mp4: "/a.mp4", width: 0, height: 10 })).toEqual({
+      mp4: "/a.mp4",
+    });
+    expect(figureLoop({ webm: "/a.webm" })).toEqual({ webm: "/a.webm" });
+  });
+
+  it("refuses anything that isn't a same-origin path", () => {
+    expect(figureLoop(null)).toBeNull();
+    expect(figureLoop("/a.mp4")).toBeNull();
+    expect(figureLoop({})).toBeNull();
+    expect(figureLoop({ mp4: "https://example.com/a.mp4" })).toBeNull();
+    expect(figureLoop({ mp4: "//example.com/a.mp4" })).toBeNull();
+    expect(figureLoop({ mp4: "javascript:alert(1)" })).toBeNull();
+  });
+
+  it("leaves a YouTube item alone", () => {
+    const [img] = figureImages({
+      images: [{ src: "/p.jpg", youtube: "abcdefghijk", loop: LOOP }],
+    });
+    expect(img.youtube).toBe("abcdefghijk");
+    expect(img.loop).toBeUndefined();
   });
 });

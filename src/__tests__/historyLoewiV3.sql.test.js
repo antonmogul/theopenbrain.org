@@ -1,10 +1,13 @@
 // @vitest-environment node
 /** Runs 20261111180100_history_loewi_v3.sql in PGlite (OPENBRAIN-180).
+ * v3 was pushed on 11 Nov and is not edited; v4 (OPENBRAIN-201) now carries
+ * the widget file, so its HTML is checked here as v3 shipped it.
  * HISTORY_SQL_HARNESS=/absolute/path/to/@electric-sql/pglite npm test --
  * --pool=forks src/__tests__/historyLoewiV3.sql.test.js (the SQL runs are
  * skipped without it; the file checks always run).
  */
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { staticChecks } from "@/widgets/uploaded/widgetHost";
@@ -13,7 +16,6 @@ const require = createRequire(import.meta.url);
 const harness = process.env.HISTORY_SQL_HARNESS;
 const read = (path) => readFileSync(path, "utf8");
 const sql = read("supabase/migrations/20261111180100_history_loewi_v3.sql");
-const file = read("src/widgets/uploads/loewi-vagusstoff.html");
 // What the row holds before this migration: the G5 reupload's payload.
 const previous = read(
   "supabase/migrations/20261022030000_g5_loewi_caption_layout.sql"
@@ -22,10 +24,12 @@ const payload = sql.slice(
   sql.indexOf("$w$") + "$w$".length,
   sql.lastIndexOf("$w$")
 );
+const file = payload;
 
 describe("Loewi v3 migration", () => {
-  it("carries the widget file as it is in src/widgets/uploads", () => {
-    expect(payload).toBe(file);
+  it("is the HTML v4 replaces", () => {
+    const v4 = read("supabase/migrations/20261118090000_history_loewi_v4.sql");
+    expect(v4).toContain(createHash("md5").update(payload).digest("hex"));
   });
 
   it("is Maura's file plus the comment and one marked block for the book", () => {

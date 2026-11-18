@@ -4161,7 +4161,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/plato-aristotle.webp",
+      "image_file_url": "/publicAssets/video/foundations/plato-aristotle-loop.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -4171,7 +4171,13 @@
         "images": [
           {
             "alt": "Two robed philosophers walk side by side under an arch. Plato, older and white-bearded, in red and purple, holds up a brain; Aristotle, in blue and brown, holds a heart in his open hand.",
-            "src": "/publicAssets/images/foundations/plato-aristotle.webp"
+            "src": "/publicAssets/video/foundations/plato-aristotle-loop.webp",
+            "loop": {
+              "mp4": "/publicAssets/video/foundations/plato-aristotle-loop.mp4",
+              "webm": "/publicAssets/video/foundations/plato-aristotle-loop.webm",
+              "width": 960,
+              "height": 1280
+            }
           }
         ],
         "caption": "Plato and his pupil Aristotle, after Raphael's The School of Athens (1509–1511). Plato, who placed the mind in the head, holds a brain; Aristotle, who placed it in the heart, holds a heart.",
@@ -6015,8 +6021,8 @@
       "title": "Loewi's Vagusstoff, 1921",
       "ramp": "fund",
       "status": "published",
-      "bytes": 1895041,
-      "sha256": "ff5a903d275c271aaf40fd6106ede94072388afd27ab667a2d130e0ed5a6d2b9"
+      "bytes": 3061838,
+      "sha256": "b02ce177e66511a49587ce36c1c41caa8c3ed4a3a1e0be6f616ff03ed817082d"
     }
   ]
 }
