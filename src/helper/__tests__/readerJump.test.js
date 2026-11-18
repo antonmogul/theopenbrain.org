@@ -97,6 +97,32 @@ describe("reducedMotionPreferred", () => {
   });
 });
 
+describe("scrollToY jump history", () => {
+  it("records the source once, only for a valid remembered jump", () => {
+    const record = vi.fn();
+    setJumpHistory(record);
+    try {
+      setViewport({ scrollY: 237.5 });
+      expect(scrollToY(() => NaN, { remember: true })).toBe(false);
+      expect(record).not.toHaveBeenCalled();
+      scrollToY(() => 900, { remember: true });
+      expect(record.mock.calls).toEqual([[237.5]]);
+      scrollToY(() => 100);
+      expect(record).toHaveBeenCalledTimes(1);
+    } finally {
+      setJumpHistory(null);
+    }
+  });
+
+  it("lets browser Back cancel a smooth landing that would otherwise resume", () => {
+    scrollToY(() => 900);
+    expect(window.scrollTo).toHaveBeenCalledTimes(1);
+    window.dispatchEvent(new Event("popstate"));
+    window.dispatchEvent(new Event("scrollend"));
+    expect(window.scrollTo).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("readerTopInset", () => {
   it("is the top bar's height plus 16px", () => {
     root.style.setProperty("--reader-topbar-h", "50px");

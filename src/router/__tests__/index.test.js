@@ -253,3 +253,39 @@ describe("tab titles (OPENBRAIN-56)", () => {
     document.documentElement.removeAttribute("data-chapter");
   });
 });
+
+describe("reader jump scroll restoration (OPENBRAIN-42)", () => {
+  it("leaves same-chapter jumps alone and restores their exact source, including resume URLs", () => {
+    const router = makeRouter();
+    const scroll = router.options.scrollBehavior;
+    const state = vi.spyOn(window.history, "state", "get");
+    try {
+      for (const suffix of ["", "?resume=1"]) {
+        const route = router.resolve(
+          `/chapter/1/foundations-of-neuroscience${suffix}`
+        );
+        state.mockReturnValue({ obReturnY: 237.5 });
+        expect(scroll(route, route, null)).toBe(false);
+        expect(scroll(route, route, { left: 0, top: 900 })).toEqual({
+          top: 237.5,
+        });
+        state.mockReturnValue(null);
+        expect(scroll(route, route, { left: 0, top: 900 })).toEqual({
+          left: 0,
+          top: 900,
+        });
+      }
+      // Initial Continue Reading still starts at the top for ChapterView's
+      // restore-after-layout flow; only same-chapter history was reordered.
+      expect(
+        scroll(
+          router.resolve("/chapter/1/foundations-of-neuroscience?resume=1"),
+          router.resolve("/chapters"),
+          null
+        )
+      ).toEqual({ top: 0 });
+    } finally {
+      state.mockRestore();
+    }
+  });
+});

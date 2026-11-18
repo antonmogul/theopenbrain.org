@@ -1,11 +1,8 @@
 <script setup>
 /*
- * TimelineBars — the chapter as bars (OPENBRAIN-128): one per paragraph,
- * widget or break, in reading order, as tall as the paragraph is long; the
- * part already read in the chapter colour, the bar being read filling from
- * the bottom. Widgets and breaks are full-height hatched blocks, objects
- * rather than text. The dock draws it small (ChapterTimeline), the map large
- * (TimelineMap), from the same model (helper/chapterTimeline.js).
+ * TimelineBars — horizontal dots and dashes (OPENBRAIN-42). Paragraphs
+ * are dashes; widgets, breaks and whole breakout/side-scrolling boxes are
+ * round dots, all the same height. The read part fills in chapter colour.
  *
  * Expanded, it adds the section labels above the bars, a trending cap on
  * the bars other readers highlight most, and two lanes under them: what the
@@ -32,7 +29,7 @@ const props = defineProps({
   model: { type: Object, required: true },
   /** The reading line as a fractional item index (0..items.length). */
   position: { type: Number, default: 0 },
-  /** px, a full-height bar. */
+  /** px, the area reserved for marks (their height comes from CSS tokens). */
   barHeight: { type: Number, default: 12 },
   /** Labels, trending caps and the two lanes. */
   expanded: { type: Boolean, default: false },
@@ -65,6 +62,11 @@ const MARK_RANK = { widget: 4, video: 3, break: 2, figure: 1, image: 1 };
 const uid = `tl${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 const rootEl = ref(null);
 const width = ref(0);
+// Unitless SVG-pixel tokens, read from CSS on mount/resize. Hosts can
+// restyle every surface with the same tokens, including teleported sheets.
+const markSize = ref(4);
+const dashRatio = ref(3);
+const dashRadius = ref(1);
 
 const items = computed(() => props.model?.items || []);
 const sections = computed(() => props.model?.sections || []);
@@ -73,7 +75,7 @@ const layers = computed(() => props.layers || {});
 /* ---- Layout -------------------------------------------------------- */
 
 const layout = computed(() =>
-  layoutBars(items.value, sections.value, width.value, props.model?.maxWords)
+  layoutBars(items.value, sections.value, width.value)
 );
 const bars = computed(() => layout.value.bars);
 
@@ -98,25 +100,52 @@ const geom = computed(() => {
 
 const px = (v) => Math.round(v * 100) / 100;
 
-// A bar with 1px-rounded top corners.
-function barPath(x, w, top, base) {
-  const r = Math.min(1, w / 2, base - top);
+// A shared size keeps dots round and every mark equally tall, even on a
+// dense resting strip. Slots remain wide enough to hit between the marks.
+const markH = computed(() =>
+  Math.min(
+    markSize.value,
+    props.barHeight,
+    ...bars.value.map((b) => b.w / dashRatio.value)
+  )
+);
+const markY = computed(
+  () => (geom.value.top + geom.value.base - markH.value) / 2
+);
+const barTop = () => markY.value;
+const markW = (bar) =>
+  bar.kind === "block"
+    ? markH.value
+    : Math.min(bar.w, markH.value * dashRatio.value);
+
+function shapeOf(bar) {
+  const h = markH.value;
+  const w = markW(bar);
+  const x = bar.x + (bar.w - w) / 2;
+  const y = markY.value;
+  const r = bar.kind === "block" ? h / 2 : Math.min(dashRadius.value, h / 2);
   return (
-    `M${px(x)} ${px(base)}V${px(top + r)}` +
-    `Q${px(x)} ${px(top)} ${px(x + r)} ${px(top)}H${px(x + w - r)}` +
-    `Q${px(x + w)} ${px(top)} ${px(x + w)} ${px(top + r)}V${px(base)}Z`
+    `M${px(x + r)} ${px(y)}H${px(x + w - r)}` +
+    `a${px(r)} ${px(r)} 0 0 1 ${px(r)} ${px(r)}V${px(y + h - r)}` +
+    `a${px(r)} ${px(r)} 0 0 1 ${px(-r)} ${px(r)}H${px(x + r)}` +
+    `a${px(r)} ${px(r)} 0 0 1 ${px(-r)} ${px(-r)}V${px(y + r)}` +
+    `a${px(r)} ${px(r)} 0 0 1 ${px(r)} ${px(-r)}Z`
   );
 }
 
-const barTop = (bar) =>
-  geom.value.base - Math.max(1, bar.height * props.barHeight);
-
-// Blocks are outlined: inset half the 1px stroke so it stays in the bar.
-function shapeOf(bar) {
-  const { base } = geom.value;
-  if (bar.kind !== "block") return barPath(bar.x, bar.w, barTop(bar), base);
-  return barPath(bar.x + 0.5, bar.w - 1, barTop(bar) + 0.5, base);
-}
+const origin = computed(() => {
+  const index = props.layers?.origin;
+  if (!(index >= 0)) return null;
+  const bar = bars.value[barOf.value[index]];
+  return bar
+    ? {
+        cx: bar.x + bar.w / 2,
+        cy: markY.value + markH.value / 2,
+        rx: markW(bar) / 2 + 2,
+        ry: markH.value / 2 + 2,
+      }
+    : null;
+});
 
 const paths = computed(() => {
   let text = "";
@@ -144,13 +173,13 @@ const progress = computed(() => {
     Math.max(0, (props.position - bar.from) / (bar.to - bar.from))
   );
   if (!fraction) return { playX: bar.x, current: null };
-  const height = (geom.value.base - barTop(bar)) * fraction;
+  const height = markH.value * fraction;
   return {
     playX: bar.x,
     current: {
       x: bar.x - 0.5,
       w: bar.w + 1,
-      y: geom.value.base - height,
+      y: markY.value + markH.value - height,
       h: height,
     },
   };
@@ -287,6 +316,14 @@ let observer = null;
 function measure() {
   const el = rootEl.value;
   if (!el) return;
+  const style = getComputedStyle(el);
+  const token = (key, fallback) => {
+    const n = parseFloat(style.getPropertyValue(key));
+    return n > 0 ? n : fallback;
+  };
+  markSize.value = token("--tl-mark-size", 4);
+  dashRatio.value = token("--tl-dash-ratio", 3);
+  dashRadius.value = token("--tl-dash-radius", 1);
   const w = el.clientWidth || el.getBoundingClientRect().width || 0;
   if (Math.abs(w - width.value) >= 0.5) width.value = w;
 }
@@ -418,17 +455,6 @@ defineExpose({ centerOf });
       focusable="false"
     >
       <defs>
-        <pattern
-          v-for="tone in ['rest', 'played', 'cursor']"
-          :id="`${uid}-hatch-${tone}`"
-          :key="tone"
-          width="3"
-          height="3"
-          patternUnits="userSpaceOnUse"
-          patternTransform="rotate(45)"
-        >
-          <rect class="tl-hatch" :class="`is-${tone}`" width="1" height="3" />
-        </pattern>
         <clipPath :id="`${uid}-played`">
           <rect x="0" y="0" :width="progress.playX" :height="geom.total" />
         </clipPath>
@@ -444,11 +470,7 @@ defineExpose({ centerOf });
 
       <g class="tl-layer">
         <path class="tl-text" :d="paths.text" />
-        <path
-          class="tl-block"
-          :d="paths.block"
-          :fill="`url(#${uid}-hatch-rest)`"
-        />
+        <path class="tl-block" :d="paths.block" />
         <path v-if="contentPath" class="tl-content" :d="contentPath" />
       </g>
       <g
@@ -458,11 +480,7 @@ defineExpose({ centerOf });
         :clip-path="`url(#${uid}-${clip})`"
       >
         <path class="tl-text" :d="paths.text" />
-        <path
-          class="tl-block"
-          :d="paths.block"
-          :fill="`url(#${uid}-hatch-played)`"
-        />
+        <path class="tl-block" :d="paths.block" />
         <path
           v-if="contentPath && clip === 'played'"
           class="tl-content"
@@ -474,10 +492,18 @@ defineExpose({ centerOf });
         class="tl-cursor"
         :class="{ 'is-block': cursorBar.kind === 'block' }"
         :d="cursorBar.d"
-        :fill="
-          cursorBar.kind === 'block' ? `url(#${uid}-hatch-cursor)` : undefined
-        "
       />
+
+      <ellipse
+        v-if="origin"
+        class="tl-origin"
+        :cx="origin.cx"
+        :cy="origin.cy"
+        :rx="origin.rx"
+        :ry="origin.ry"
+      >
+        <title>Last place jumped from — browser Back returns here</title>
+      </ellipse>
 
       <rect
         v-for="cap in caps"
@@ -505,6 +531,8 @@ defineExpose({ centerOf });
 .tl-bars {
   /* The read part: the host's accent (the chapter colour). */
   --tl-played: var(--tl-accent, var(--color-accent));
+  /* Shape tokens are unitless SVG pixels; may be set on html or a host:
+     --tl-mark-size: 4; --tl-dash-ratio: 3; --tl-dash-radius: 1. */
 
   position: relative;
   /* Whoever animates the dock animates this; the SVG stretches along. */
@@ -529,19 +557,20 @@ defineExpose({ centerOf });
   overflow: visible;
 }
 
-/* Unread: grey prose bars, outlined hatched blocks. */
-.tl-text {
-  fill: rgb(var(--color-ink) / 0.22);
-}
-
+/* Both shapes use identical tones and height; their silhouettes differ. */
+.tl-text,
 .tl-block {
-  stroke: rgb(var(--color-ink) / 0.5);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
+  fill: rgb(
+    var(--tl-unread, var(--color-ink)) / var(--tl-unread-opacity, 0.22)
+  );
 }
 
-.tl-hatch.is-rest {
-  fill: rgb(var(--color-ink) / 0.3);
+.tl-origin {
+  fill: none;
+  stroke: rgb(var(--tl-origin-color, var(--color-ink)));
+  stroke-width: var(--tl-origin-width, 1);
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
 }
 
 .tl-content {
@@ -558,31 +587,12 @@ defineExpose({ centerOf });
 }
 
 .is-played .tl-text,
-.tl-hatch.is-played {
-  fill: rgb(var(--tl-played));
-}
-
-.is-played .tl-block {
-  stroke: rgb(var(--tl-played));
-}
-
 .is-played .tl-content {
   fill: rgb(var(--tl-accent-deep));
 }
 
-/* The bar under the pointer or the keyboard cursor: ink (a block keeps
-   its hatch, in ink). */
-.tl-cursor:not(.is-block) {
-  fill: rgb(var(--color-ink));
-}
-
-.tl-cursor.is-block {
-  stroke: rgb(var(--color-ink));
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-.tl-hatch.is-cursor {
+/* The mark under the pointer or keyboard cursor. */
+.tl-cursor {
   fill: rgb(var(--color-ink));
 }
 
