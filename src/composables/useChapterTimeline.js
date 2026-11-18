@@ -122,6 +122,37 @@ export function useChapterTimeline({
   });
 
   const position = ref(0);
+  // Kept with the layers so every existing surface (including the lazy
+  // map/scrubber) receives the departure mark without another reader API.
+  const departure = ref(null);
+  let jumping = false;
+  let jumpTimer = null;
+
+  function settleJump() {
+    // An instant/reduced-motion jump can fire scrollend before the pending
+    // animation frame. Capture its landing while it still counts as a jump,
+    // otherwise that first frame would mistake the jump for reading past.
+    if (jumping) updatePosition();
+    jumping = false;
+    clearTimeout(jumpTimer);
+    jumpTimer = null;
+    window.removeEventListener("scrollend", settleJump);
+  }
+
+  function markDeparture() {
+    measure();
+    if (!tops.length) return;
+    settleJump();
+    departure.value = {
+      index: Math.min(model.value.items.length - 1, Math.floor(position.value)),
+      position: position.value,
+      y: scrollTop(),
+      left: false,
+    };
+    jumping = true;
+    window.addEventListener("scrollend", settleJump, { once: true });
+    jumpTimer = setTimeout(settleJump, 1500);
+  }
 
   /* ---- Layers ---------------------------------------------------------- */
 
@@ -141,6 +172,7 @@ export function useChapterTimeline({
       highlights: new Map(),
       notes: new Map(),
       trending: new Map(),
+      origin: departure.value?.index ?? -1,
     };
 
     // Highlights in reading order, as HighlightRenderer paints them.
@@ -198,7 +230,20 @@ export function useChapterTimeline({
       return;
     }
     const readingY = scrollTop() + window.innerHeight * READING_LINE;
+    const previous = position.value;
     position.value = Math.min(n, positionForY(tops, readingY, endY));
+    const from = departure.value;
+    if (!from) return;
+    const returned = Math.abs(scrollTop() - from.y) <= 2;
+    if (!returned) from.left = true;
+    // A smooth jump passing the departure isn't reading past it. Back can
+    // return even before the jump settles; ordinary reading clears the ring
+    // when it crosses the original reading line in the forward direction.
+    if (
+      (from.left && returned) ||
+      (!jumping && previous <= from.position && position.value > from.position)
+    )
+      departure.value = null;
   }
 
   /** Measure every item's top now (a layout read) and update `position`. */
@@ -278,6 +323,7 @@ export function useChapterTimeline({
   function stop() {
     if (!listening) return;
     listening = false;
+    settleJump();
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", onLayout);
     ScrollTrigger.removeEventListener("refresh", onLayout);
@@ -307,6 +353,8 @@ export function useChapterTimeline({
   // A new chapter, or the same one edited: the old tops describe other
   // paragraphs. While listening they serve until the next frame measures.
   watch(model, () => {
+    departure.value = null;
+    settleJump();
     if (listening) return afterRender();
     tops = [];
     endY = NaN;
@@ -335,6 +383,7 @@ export function useChapterTimeline({
     const focusVisible = pointer ? false : undefined;
     const anchor = anchorId == null ? null : findReaderAnchor(anchorId);
     if (boxOf(anchor)) {
+      markDeparture();
       jumpToElement(readingStartOf(anchor), {
         align: "top",
         focus: true,
@@ -347,10 +396,16 @@ export function useChapterTimeline({
     if (!item) return;
     // Fresh tops: figures above may have loaded since the last measure (and
     // again if the scroll is cut short, scrollToY).
-    const landed = scrollToY(() => {
-      measure();
-      return tops.length ? scrollYForIndex(tops, i, readerTopInset()) : NaN;
-    });
+    measure();
+    if (!tops.length) return;
+    markDeparture();
+    const landed = scrollToY(
+      () => {
+        measure();
+        return tops.length ? scrollYForIndex(tops, i, readerTopInset()) : NaN;
+      },
+      { remember: true }
+    );
     if (!landed) return;
     const el = findReaderAnchor(item.id);
     flashElement(el);

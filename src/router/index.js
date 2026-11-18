@@ -398,13 +398,6 @@ export function createAppRouter({
     scrollBehavior(to, from, savedPosition) {
       const store = useGeneral();
 
-      // Continue Reading is restored by ChapterView only after the chapter's
-      // fonts and images have settled. Do not race it with browser/store offsets.
-      if (to.name === "chapter" && to.query.resume === "1") {
-        store.savedPosition = undefined;
-        return { top: 0 };
-      }
-
       // A reader jump (readerJump's history hook) adds an entry for the same
       // chapter: the jump does its own scrolling, and Back to the entry it
       // left returns to the place recorded on it (OPENBRAIN-138).
@@ -413,6 +406,13 @@ export function createAppRouter({
         if (!savedPosition) return false;
         const y = window.history.state?.obReturnY;
         return typeof y === "number" ? { top: y } : savedPosition;
+      }
+
+      // Continue Reading is restored by ChapterView only after the chapter's
+      // fonts and images have settled. Do not race it with browser/store offsets.
+      if (to.name === "chapter" && to.query.resume === "1") {
+        store.savedPosition = undefined;
+        return { top: 0 };
       }
 
       if (savedPosition) return savedPosition;

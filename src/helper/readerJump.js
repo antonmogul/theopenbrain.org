@@ -21,7 +21,13 @@ const FLASH_MS = 1600;
 const RESUME_TRIES = 3;
 const RESUME_MS = 3000;
 // The reader taking over the scroll: a jump stops trying to land.
-const READER_INPUT = ["wheel", "touchstart", "pointerdown", "keydown"];
+const READER_INPUT = [
+  "wheel",
+  "touchstart",
+  "pointerdown",
+  "keydown",
+  "popstate",
+];
 // --reader-topbar-h's value in brand.css (4rem), for when it can't be read.
 const TOPBAR_FALLBACK = 64;
 // Breathing room under the top bar: the 1rem of scroll-margin-top.
@@ -205,13 +211,20 @@ let stopLanding = null;
  * asked again in case the page moved, it scrolls on, a few times at most;
  * the reader's own wheel, touch, click or key lets it go.
  */
-export function scrollToY(topOf) {
+export function scrollToY(topOf, { remember = false } = {}) {
   const y = () => {
     const top = Number(topOf());
     return Number.isFinite(top) ? Math.max(0, Math.round(top)) : null;
   };
   const first = y();
   if (first === null) return false;
+  if (remember && jumpHistory) {
+    try {
+      jumpHistory(window.scrollY || window.pageYOffset || 0);
+    } catch (err) {
+      console.warn("[readerJump] could not record the jump", err);
+    }
+  }
   stopLanding?.();
   const smooth = !reducedMotionPreferred();
   window.scrollTo({ top: first, behavior: smooth ? "smooth" : "auto" });
@@ -268,13 +281,6 @@ export function jumpToElement(
   } = {}
 ) {
   if (!el?.getBoundingClientRect) return false;
-  if (remember && jumpHistory) {
-    try {
-      jumpHistory(window.scrollY || window.pageYOffset || 0);
-    } catch (err) {
-      console.warn("[readerJump] could not record the jump", err);
-    }
-  }
   // A section that opens with a figure transition starts with a blank
   // 200vh spacer: land where its reading starts (the opener TOC, the top
   // bar's search and the Info tab jump here too).
@@ -284,20 +290,23 @@ export function jumpToElement(
   // brings the element's part across, whatever the alignment asked for.
   // A track the page does not drive (reduced motion) is moved directly.
   revealInRail(el);
-  scrollToY(() => {
-    const onRail = railLandingY(el);
-    if (onRail !== null) return onRail;
-    const rect = el.getBoundingClientRect();
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-    const viewport =
-      window.innerHeight || document.documentElement.clientHeight || 0;
-    const inset = readerTopInset();
-    const docTop = rect.top + scrollY;
-    if (align === "center" && rect.height <= viewport - 2 * inset)
-      return docTop + rect.height / 2 - viewport / 2;
-    if (align === "reading-line") return docTop - viewport / 2;
-    return docTop - inset;
-  });
+  scrollToY(
+    () => {
+      const onRail = railLandingY(el);
+      if (onRail !== null) return onRail;
+      const rect = el.getBoundingClientRect();
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const viewport =
+        window.innerHeight || document.documentElement.clientHeight || 0;
+      const inset = readerTopInset();
+      const docTop = rect.top + scrollY;
+      if (align === "center" && rect.height <= viewport - 2 * inset)
+        return docTop + rect.height / 2 - viewport / 2;
+      if (align === "reading-line") return docTop - viewport / 2;
+      return docTop - inset;
+    },
+    { remember }
+  );
   if (flash) flashElement(el);
   if (focus) focusElement(el, { focusVisible });
   return true;

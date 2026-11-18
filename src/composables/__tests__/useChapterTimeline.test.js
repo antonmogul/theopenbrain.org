@@ -16,7 +16,7 @@ vi.mock("gsap/ScrollTrigger", () => ({
 
 import { useChapterTimeline } from "@/composables/useChapterTimeline";
 import { scrollYForIndex } from "@/helper/chapterTimeline";
-import { readerTopInset } from "@/helper/readerJump";
+import { readerTopInset, setJumpHistory } from "@/helper/readerJump";
 
 /* ---- A small chapter --------------------------------------------------
    Items: 0 p1 (intro), 1 p2, 2 w1 (widget), 3 p3 (section 1), 4 p4 (section 2) */
@@ -189,6 +189,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  setJumpHistory(null);
   scope?.stop();
   scope = null;
   vi.unstubAllGlobals();
@@ -720,6 +721,85 @@ describe("useChapterTimeline: jumpTo", () => {
       1700 - readerTopInset(),
     ]);
     expect(document.activeElement).toBe(document.getElementById("p4"));
+  });
+
+  it("records the exact source scroll once for items, map headings and scrubber indices", async () => {
+    renderChapter();
+    place("s2", 1640);
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    const record = vi.fn();
+    setJumpHistory(record);
+    const { jumpTo } = setup();
+    await settle();
+    for (const target of [3, { index: 4, anchorId: "s2" }, 2]) {
+      scrollTo(237.5);
+      flushFrames();
+      jumpTo(target, { pointer: true });
+    }
+    expect(record.mock.calls).toEqual([[237.5], [237.5], [237.5]]);
+    jumpTo(999);
+    expect(record).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps the departure ring through a forward jump and clears it on Back to the exact source", async () => {
+    renderChapter();
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    const { jumpTo, layers } = setup();
+    await settle();
+    scrollTo(100);
+    flushFrames();
+    jumpTo(4);
+    expect(layers.value.origin).toBe(1);
+    scrollTo(1620);
+    flushFrames();
+    window.dispatchEvent(new Event("scrollend"));
+    expect(layers.value.origin).toBe(1);
+    // The router restores the original offset after popstate.
+    window.dispatchEvent(new Event("popstate"));
+    scrollTo(100);
+    flushFrames();
+    expect(layers.value.origin).toBe(-1);
+  });
+
+  it("keeps an instant jump's ring when scrollend arrives before the scroll frame", async () => {
+    document.documentElement.setAttribute("data-reduce-motion", "1");
+    renderChapter();
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    const { jumpTo, layers } = setup();
+    await settle();
+    scrollTo(100);
+    flushFrames();
+    jumpTo(4);
+    scrollTo(1620);
+    window.dispatchEvent(new Event("scrollend"));
+    flushFrames();
+    expect(layers.value.origin).toBe(1);
+    scrollTo(100);
+    flushFrames();
+    expect(layers.value.origin).toBe(-1);
+  });
+
+  it("keeps a backward departure until ordinary reading passes it, replacing it on another jump", async () => {
+    renderChapter();
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    const { jumpTo, layers } = setup();
+    await settle();
+    scrollTo(800);
+    flushFrames();
+    jumpTo(0);
+    expect(layers.value.origin).toBe(2);
+    scrollTo(20);
+    flushFrames();
+    window.dispatchEvent(new Event("scrollend"));
+    scrollTo(850);
+    flushFrames();
+    expect(layers.value.origin).toBe(-1);
+    jumpTo(4);
+    expect(layers.value.origin).toBe(2);
+    scrollTo(1620);
+    flushFrames();
+    jumpTo(0);
+    expect(layers.value.origin).toBe(4);
   });
 
   it("does nothing for an unknown index or an empty page", async () => {

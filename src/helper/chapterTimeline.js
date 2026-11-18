@@ -1,8 +1,8 @@
 /*
  * Chapter timeline model (OPENBRAIN-128) — the chapter as the bars of the
- * dock at the bottom of the reader, SoundCloud-waveform style: one bar per
+ * dock at the bottom of the reader, dots and dashes: one mark per
  * thing the reader passes (a paragraph, a widget, a break), in the order
- * TextComp renders them, as tall as the paragraph is long.
+ * TextComp renders them. Every mark has the same height.
  *
  * Pure functions over the transformed chapter useText holds (chapterTransform
  * output, or the legacy text.json it mirrors): no Vue, no store, no DOM, so
@@ -18,12 +18,8 @@ export const REST_H = 20;
 export const PEEK_H = 104;
 
 const EXCERPT_MAX = 140;
-const MIN_HEIGHT = 0.15;
 const BAR_GAP = 1;
 const SECTION_GAP = 4;
-// Narrower than this, neighbouring items share a bar (≈ 3px per item with
-// the 1px gap).
-const MIN_BAR_W = 2;
 // The references list is a list, not reading (ReferenceList).
 const REFERENCES_TITLE = /^(references|footnotes)$/i;
 // "Looking forward" carries an animation_config named Placeholder: a
@@ -399,12 +395,9 @@ export function buildTimeline(text, opts = {}) {
   };
 }
 
-/** Bar height 0.15..1 for an item: text → clamp(words / maxWords); widget/break → 1. */
-export function barHeight(item, maxWords) {
-  if (!item) return MIN_HEIGHT;
-  if (item.kind === "widget" || item.kind === "break") return 1;
-  const ref = maxWords > 0 ? maxWords : 1;
-  return Math.min(1, Math.max(MIN_HEIGHT, (item.words || 0) / ref));
+/** Uniform height; kept for consumers of the original model API. */
+export function barHeight() {
+  return 1;
 }
 
 /* ---- Layout ----------------------------------------------------------- */
@@ -428,73 +421,53 @@ function sectionRuns(items, sections) {
 }
 
 /**
- * Lay items out across `width` px: equal-width bars, a 1px gap between bars
- * and 4px before each section's first bar. When a bar would be narrower than
- * 2px (under ~3px per item), neighbouring items of the SAME section share a
- * bar (an even bucket), as few per bar as keep every bar ≥ 2px wide.
- *
- * Bar: { from, to, x, w, height, kind, sectionStart, sectionKey } — [from, to)
- * is the item range (like a Section's [start, end)), height the tallest
- * member's barHeight, kind "block" if any member is a widget or break.
- * indexAtX(x): the item under x (the nearest bar's `from`), clamped to
- * [0, n - 1]; -1 when there are no items.
- *
- * @param {Item[]} items
- * @param {Section[]} sections
- * @param {number} width
- * @param {number} [maxWords]  the model's maxWords; derived from `items`
- *   the same way when omitted
+ * One horizontal dash per paragraph, one round dot per widget/break or box.
+ * Box paragraphs stay in the model for map entries and personal lanes, but
+ * share a mark. No paragraph-length encoding or mixed paragraph buckets.
+ * `x`/`w` are hit slots; the renderer centres the dot or dash inside each.
+ * Gaps shrink on dense strips so every paragraph remains addressable.
  */
-export function layoutBars(items, sections, width, maxWords) {
+export function layoutBars(items, sections, width) {
   const list = items || [];
   const n = list.length;
   if (!n || !(width > 0)) return { bars: [], indexAtX: () => (n ? 0 : -1) };
 
-  const ref = maxWords > 0 ? maxWords : referenceWords(list);
   const runs = sectionRuns(list, sections);
-  const longest = Math.max(...runs.map((r) => r.end - r.start));
-
-  // Bar width for a bucket size k: what is left after the gaps, shared.
-  const count = (k) =>
-    runs.reduce((sum, r) => sum + Math.ceil((r.end - r.start) / k), 0);
-  const barWidth = (k) => {
-    const bars = count(k);
-    const gaps =
-      (bars - runs.length) * BAR_GAP + (runs.length - 1) * SECTION_GAP;
-    return (width - gaps) / bars;
-  };
-  let k = 1;
-  while (k < longest && barWidth(k) < MIN_BAR_W) k += 1;
-  const w = Math.max(0, barWidth(k));
-
+  const boxes = new Set(
+    (sections || []).filter((s) => s.kind === "box").map((s) => s.key)
+  );
   const bars = [];
-  let x = 0;
   for (const run of runs) {
-    const size = run.end - run.start;
-    const buckets = Math.ceil(size / k);
-    for (let b = 0; b < buckets; b++) {
-      // Even buckets: sizes differ by at most one item.
-      const from = run.start + Math.floor((b * size) / buckets);
-      const to = run.start + Math.floor(((b + 1) * size) / buckets);
-      if (bars.length) x += b === 0 ? SECTION_GAP : BAR_GAP;
-      let height = 0;
-      let block = false;
-      for (let i = from; i < to; i++) {
-        height = Math.max(height, barHeight(list[i], ref));
-        if (list[i].kind === "widget" || list[i].kind === "break") block = true;
-      }
+    const box = boxes.has(list[run.start].sectionKey);
+    for (let from = run.start; from < run.end; from++) {
+      const to = box ? run.end : from + 1;
       bars.push({
         from,
         to,
-        x,
-        w,
-        height,
-        kind: block ? "block" : "text",
-        sectionStart: b === 0,
+        x: 0,
+        w: 0,
+        height: 1,
+        kind:
+          box || list[from].kind === "widget" || list[from].kind === "break"
+            ? "block"
+            : "text",
+        sectionStart: from === run.start,
         sectionKey: list[from].sectionKey,
       });
-      x += w;
+      if (box) break;
     }
+  }
+  const gapTotal =
+    (bars.length - runs.length) * BAR_GAP + (runs.length - 1) * SECTION_GAP;
+  // Reserve at least half the width for marks, even for a very long chapter.
+  const gapScale = gapTotal ? Math.min(1, width / (2 * gapTotal)) : 1;
+  const w = (width - gapTotal * gapScale) / bars.length;
+  let x = 0;
+  for (const [i, bar] of bars.entries()) {
+    if (i) x += (bar.sectionStart ? SECTION_GAP : BAR_GAP) * gapScale;
+    bar.x = x;
+    bar.w = w;
+    x += w;
   }
 
   function indexAtX(px) {

@@ -32,15 +32,16 @@ const clipRect = (wrapper, name) =>
   wrapper.find(`clipPath[id$="-${name}"] rect`);
 
 describe("TimelineBars", () => {
-  it("draws prose bars and block bars in separate paths, rounded on top", async () => {
+  it("draws paragraph dashes and round object dots in separate paths", async () => {
     const wrapper = await mountBars();
     const text = wrapper.get(".tl-layer:not(.is-played) .tl-text");
     const block = wrapper.get(".tl-layer:not(.is-played) .tl-block");
     // Six prose items, two blocks (the widget and the video break).
     expect(text.attributes("d").match(/M/g)).toHaveLength(6);
     expect(block.attributes("d").match(/M/g)).toHaveLength(2);
-    expect(text.attributes("d")).toContain("Q");
-    expect(block.attributes("fill")).toMatch(/^url\(#.+-hatch-rest\)$/);
+    expect(text.attributes("d")).toContain("a");
+    expect(block.attributes("d")).toContain("a2 2");
+    expect(wrapper.find("pattern").exists()).toBe(false);
   });
 
   it("is as tall as a bar at rest and adds labels and lanes expanded", async () => {
@@ -66,7 +67,7 @@ describe("TimelineBars", () => {
     const current = clipRect(wrapper, "current");
     expect(current.exists()).toBe(true);
     // A block is full height: half of it read.
-    expect(Number(current.attributes("height"))).toBeCloseTo(6, 5);
+    expect(Number(current.attributes("height"))).toBeCloseTo(2, 5);
     expect(wrapper.findAll(".tl-layer.is-played")).toHaveLength(2);
   });
 
@@ -86,6 +87,17 @@ describe("TimelineBars", () => {
     expect(cursor.classes()).toContain("is-block");
     await wrapper.setProps({ cursor: 2 });
     expect(wrapper.get(".tl-cursor").classes()).not.toContain("is-block");
+  });
+
+  it("rings the last departure mark at rest and expanded, including box paragraphs", async () => {
+    const layers = { ...testLayers(), origin: 3 };
+    const wrapper = await mountBars({ layers });
+    expect(wrapper.find(".tl-origin").exists()).toBe(true);
+    expect(wrapper.get(".tl-origin").attributes("ry")).toBe("4");
+    await wrapper.setProps({ expanded: true });
+    expect(wrapper.find(".tl-origin").exists()).toBe(true);
+    await wrapper.setProps({ layers: { ...layers, origin: -1 } });
+    expect(wrapper.find(".tl-origin").exists()).toBe(false);
   });
 
   it("shows the layers expanded: trending caps, your dots and notes", async () => {

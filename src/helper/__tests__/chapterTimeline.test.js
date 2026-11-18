@@ -723,7 +723,7 @@ describe("buildTimeline: items", () => {
     });
     expect(ids(model)).toEqual(["p1", "picture"]);
     expect(model.items[1]).toMatchObject({ kind: "text", words: 0 });
-    expect(barHeight(model.items[1], model.maxWords)).toBe(0.15);
+    expect(barHeight(model.items[1], model.maxWords)).toBe(1);
   });
 
   it("maps every paragraph id to its item, and names items without one", () => {
@@ -836,9 +836,9 @@ describe("buildTimeline over the Retina (text.json)", () => {
 });
 
 describe("barHeight", () => {
-  it("scales text by words and clamps to 0.15..1", () => {
-    expect(barHeight({ kind: "text", words: 50 }, 100)).toBe(0.5);
-    expect(barHeight({ kind: "text", words: 1 }, 100)).toBe(0.15);
+  it("keeps every paragraph the same height regardless of word count", () => {
+    expect(barHeight({ kind: "text", words: 50 }, 100)).toBe(1);
+    expect(barHeight({ kind: "text", words: 1 }, 100)).toBe(1);
     expect(barHeight({ kind: "text", words: 400 }, 100)).toBe(1);
     expect(barHeight({ kind: "text", words: 3 }, 0)).toBe(1);
   });
@@ -911,26 +911,26 @@ describe("layoutBars", () => {
     items[1].words = 25;
     items[2] = { ...items[2], kind: "widget", words: 0 };
     const { bars } = layoutBars(items, sections, 300, 50);
-    expect(bars.map((b) => b.height)).toEqual([1, 0.5, 1]);
+    expect(bars.map((b) => b.height)).toEqual([1, 1, 1]);
     expect(bars.map((b) => b.kind)).toEqual(["text", "text", "block"]);
   });
 
-  it("derives the reference from the items when none is passed", () => {
+  it("ignores paragraph-length differences when laying out marks", () => {
     // 20 items of 1..20 words: the reference is 19, as buildTimeline's.
     const { items, sections } = fixture([20], (i) => ({ words: i + 1 }));
     const { bars } = layoutBars(items, sections, 400);
     expect(bars[18].height).toBe(1);
-    expect(bars[9].height).toBeCloseTo(10 / 19);
+    expect(bars[9].height).toBe(1);
   });
 
-  it("merges neighbours of the same section when items get narrower than 3px", () => {
+  it("keeps every paragraph addressable on dense strips", () => {
     const { items, sections } = fixture([100, 7, 93]);
     items[150].kind = "break";
     const width = 300;
     const { bars } = layoutBars(items, sections, width);
-    expect(bars.length).toBeLessThan(items.length);
+    expect(bars.length).toBe(items.length);
     for (const bar of bars) {
-      expect(bar.w).toBeGreaterThanOrEqual(2);
+      expect(bar.w).toBeGreaterThan(0);
       // A bucket never spans two sections.
       expect(items[bar.from].sectionKey).toBe(items[bar.to - 1].sectionKey);
     }
@@ -975,12 +975,39 @@ describe("layoutBars", () => {
     expect(indexAtX(NaN)).toBe(0);
   });
 
-  it("answers with a bucket's first item", () => {
+  it("answers with the paragraph under a dense mark", () => {
     const { items, sections } = fixture([400]);
     const { bars, indexAtX } = layoutBars(items, sections, 200);
     const bar = bars[10];
-    expect(bar.to - bar.from).toBeGreaterThan(1);
+    expect(bar.to - bar.from).toBe(1);
     expect(indexAtX(bar.x + bar.w / 2)).toBe(bar.from);
+  });
+
+  it("draws a whole breakout or side-scrolling box as one dot without losing its item range", () => {
+    for (const layout of ["breakout", "explore"]) {
+      const model = buildTimeline({
+        sections: [
+          { id: "s1", paragraphs: [para("p1"), para("p2", 100)] },
+          {
+            id: "box",
+            kind: "box",
+            layout,
+            paragraphs: [para("x1"), para("x2"), para("x3")],
+          },
+          { id: "s2", paragraphs: [para("p3")] },
+        ],
+      });
+      const { bars, indexAtX } = layoutBars(model.items, model.sections, 390);
+      expect(model.byId.get("x3")).toBe(4);
+      expect(bars.map((b) => [b.from, b.to, b.kind])).toEqual([
+        [0, 1, "text"],
+        [1, 2, "text"],
+        [2, 5, "block"],
+        [5, 6, "text"],
+      ]);
+      expect(indexAtX(bars[2].x + bars[2].w / 2)).toBe(2);
+      expect(bars.every((b) => b.height === 1)).toBe(true);
+    }
   });
 
   it("is empty without items or width", () => {

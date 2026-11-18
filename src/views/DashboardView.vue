@@ -10,6 +10,7 @@ import { useVersions } from "@/composables/useVersions";
 import { useDashboardMedia } from "@/composables/useDashboardMedia";
 import { useDashboardUsers } from "@/composables/useDashboardUsers";
 import { useDashboardFeedback } from "@/composables/useDashboardFeedback";
+import { useReviewNotes } from "@/composables/useReviewNotes";
 import { useDashboardAnalytics } from "@/composables/useDashboardAnalytics";
 import { useDashboardQuizzes } from "@/composables/useDashboardQuizzes";
 import { useRouter, useRoute } from "vue-router";
@@ -23,6 +24,7 @@ import { coverForModule } from "@/helper/chapterCover";
 import { importChapter } from "@/services/api/chapterImport";
 import UsersSection from "@/components/dashboard/sections/UsersSection.vue";
 import FeedbackSection from "@/components/dashboard/sections/FeedbackSection.vue";
+import ReviewNotesPanel from "@/components/dashboard/sections/ReviewNotesPanel.vue";
 import AnalyticsSection from "@/components/dashboard/sections/AnalyticsSection.vue";
 import QuizzesSection from "@/components/dashboard/sections/QuizzesSection.vue";
 import { isBetaHidden } from "@/constants/beta";
@@ -229,9 +231,41 @@ const {
   filteredFeedback,
   fetchFeedback,
 } = useDashboardFeedback(canReadCreatorData, creatorIdentity);
+// Reviewer notes (OPENBRAIN-203): Feedback → Review notes, ?view=review.
+const {
+  reviewLoading,
+  reviewError,
+  reviewMissingTable,
+  reviewAccessDenied,
+  reviewFilters,
+  reviewChapters,
+  reviewGroups,
+  reviewFilteredCount,
+  reviewOpenCount,
+  reviewSavingIds,
+  reviewSaveErrors,
+  fetchReviewNotes,
+  saveReviewNote,
+} = useReviewNotes(canReadCreatorData, creatorIdentity);
+const feedbackView = computed(() =>
+  route.query.view === "review" ? "review" : "messages"
+);
+function onFeedbackView(view) {
+  const query = { ...route.query };
+  if (view === "review") query.view = "review";
+  else delete query.view;
+  router.push({ query });
+}
+watch(feedbackView, (view) => {
+  if (activeSection.value === "feedback" && view === "review")
+    fetchReviewNotes();
+});
 watch([canReadCreatorData, creatorIdentity], ([allowed]) => {
   if (!allowed) return;
-  if (activeSection.value === "feedback") fetchFeedback();
+  if (activeSection.value === "feedback") {
+    fetchFeedback();
+    if (feedbackView.value === "review") fetchReviewNotes();
+  }
   if (activeSection.value === "analytics") fetchAnalytics();
 });
 
@@ -527,6 +561,7 @@ watch(activeSection, (section) => {
     const query = { ...route.query };
     if (wanted) query.section = wanted;
     else delete query.section;
+    if (section !== "feedback") delete query.view;
     router.push({ query });
   }
   // Each section starts at its top, not at the last section's scroll offset.
@@ -571,6 +606,7 @@ watch(activeSection, (newSection) => {
       break;
     case "feedback":
       fetchFeedback();
+      if (feedbackView.value === "review") fetchReviewNotes();
       break;
     case "quizzes":
       if (quizzes.value.length === 0) fetchQuizzes();
@@ -1223,7 +1259,28 @@ onMounted(() => {
       @fetch="fetchFeedback"
       @chapter-change="feedbackChapter = $event"
       @kind-change="feedbackKind = $event"
-    />
+      :view="feedbackView"
+      @view-change="onFeedbackView"
+    >
+      <template #review>
+        <ReviewNotesPanel
+          :groups="reviewGroups"
+          :chapters="reviewChapters"
+          :filters="reviewFilters"
+          :loading="reviewLoading"
+          :error="reviewError"
+          :missing-table="reviewMissingTable"
+          :access-denied="reviewAccessDenied"
+          :filtered-count="reviewFilteredCount"
+          :open-count="reviewOpenCount"
+          :saving-ids="reviewSavingIds"
+          :save-errors="reviewSaveErrors"
+          @fetch="fetchReviewNotes"
+          @filter-change="reviewFilters = $event"
+          @save="saveReviewNote"
+        />
+      </template>
+    </FeedbackSection>
 
     <DecksSection v-else-if="activeSection === 'decks'" />
 
