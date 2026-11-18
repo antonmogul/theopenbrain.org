@@ -1,5 +1,5 @@
 // @vitest-environment node
-/** Isolated execution test for 20261118130000_review_feedback.sql
+/** Isolated execution test for 20261118150000_review_feedback.sql
  * (OPENBRAIN-203). Run with
  *   HISTORY_SQL_HARNESS=/absolute/path/to/@electric-sql/pglite npx vitest run \
  *     --pool=forks src/__tests__/reviewFeedback.sql.test.js
@@ -23,7 +23,7 @@ const require = createRequire(import.meta.url);
 const harness = process.env.HISTORY_SQL_HARNESS;
 const migration = (name) =>
   readFileSync(`supabase/migrations/${name}.sql`, "utf8");
-const review = migration("20261118130000_review_feedback");
+const review = migration("20261118150000_review_feedback");
 const schema = [
   migration("20250101000000_initial_schema").replace(
     /^CREATE EXTENSION .*$/gm,

@@ -132,7 +132,7 @@ export function useReviewNotes(canRead, identity = ref(null)) {
       else if (isMissingTable(err)) {
         missingTable.value = true;
         error.value =
-          "Review notes need a database update: run `supabase db push` for 20261118130000_review_feedback.sql.";
+          "Review notes need a database update: run `supabase db push` for 20261118150000_review_feedback.sql.";
       } else
         error.value = "Review notes could not be loaded. Please try again.";
     } finally {

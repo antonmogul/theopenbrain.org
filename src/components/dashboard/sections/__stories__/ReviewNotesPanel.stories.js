@@ -112,7 +112,7 @@ export const MigrationMissing = {
   args: {
     missingTable: true,
     error:
-      "Review notes need a database update: run `supabase db push` for 20261118130000_review_feedback.sql.",
+      "Review notes need a database update: run `supabase db push` for 20261118150000_review_feedback.sql.",
   },
 };
 

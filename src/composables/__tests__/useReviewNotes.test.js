@@ -134,7 +134,7 @@ describe("useReviewNotes (OPENBRAIN-203)", () => {
     const r = setup();
     await r.fetchReviewNotes();
     expect(r.reviewMissingTable.value).toBe(true);
-    expect(r.reviewError.value).toMatch(/20261118130000_review_feedback/);
+    expect(r.reviewError.value).toMatch(/20261118150000_review_feedback/);
 
     mockData({ fail: Object.assign(new Error("x"), { status: 403 }) });
     await r.fetchReviewNotes();

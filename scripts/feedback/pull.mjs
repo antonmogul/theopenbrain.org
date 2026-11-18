@@ -85,7 +85,7 @@ async function viaRest(opts, token) {
         fail("REVIEW_PULL_TOKEN was refused (expired? sign in again).");
       if (/PGRST20[25]/.test(body))
         fail(
-          "review_feedback isn't in the database yet: 20261118130000_review_feedback.sql is not pushed."
+          "review_feedback isn't in the database yet: 20261118150000_review_feedback.sql is not pushed."
         );
       fail(`${endpoint.split("?")[0]}: HTTP ${response.status} ${body}`);
     }

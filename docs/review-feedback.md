@@ -6,7 +6,7 @@ Not to be confused with `public.feedback` (OPENBRAIN-101): signed-in students' m
 
 ## The table: `public.review_feedback`
 
-Migration `supabase/migrations/20261118130000_review_feedback.sql`, tested in PGlite by `src/__tests__/reviewFeedback.sql.test.js` (CI: `history-fixture-browser.yml`).
+Migration `supabase/migrations/20261118150000_review_feedback.sql`, tested in PGlite by `src/__tests__/reviewFeedback.sql.test.js` (CI: `history-fixture-browser.yml`).
 
 | Column                                        | What                                                                                                      |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
