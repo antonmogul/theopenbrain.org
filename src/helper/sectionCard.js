@@ -13,7 +13,8 @@
  * A figure still in the pane always wins (the caller checks that): a card
  * never shortens a hold. So where a held figure reaches the section's top
  * and the first figure follows its heading at once, the card would only
- * flash by. `MIN_RUN` leaves those sections without one.
+ * flash by. The caller gives short first-figure openings `MIN_RUN` of
+ * extra heading room; this guard still skips a short run into a band.
  */
 
 /** Share of the screen's height at which the last section's end brings the card in. */
