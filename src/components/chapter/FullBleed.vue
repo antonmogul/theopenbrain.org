@@ -23,6 +23,7 @@ import {
   onMounted,
   provide,
   ref,
+  useId,
   watch,
 } from "vue";
 import { FULL_BLEED_FLOATING } from "@/composables/useInlineFigures";
@@ -40,6 +41,11 @@ const props = defineProps({
 
 const layer = ref(null);
 const wide = ref(false);
+// Pairs the slot with its stage, which a floating stage leaves for the
+// stage layer: whatever reads the page by its DOM (the review widget's
+// point-at, OPENBRAIN-204) gets back from the stage to where it sits in the
+// text, and so to its section and paragraph.
+const pairId = useId();
 const slotEl = ref(null);
 const stageEl = ref(null);
 const screenEl = ref(null);
@@ -173,6 +179,7 @@ defineExpose({ sync: schedule, floating });
       'fb-slot--viewport': viewport,
     }"
     :style="slotStyle"
+    :data-fb-slot="pairId"
   >
     <Teleport :to="layer" :disabled="!floating">
       <div
@@ -180,6 +187,7 @@ defineExpose({ sync: schedule, floating });
         class="fb-stage"
         :class="{ 'fb-stage--floating': floating }"
         :style="stageStyle"
+        :data-fb-stage="pairId"
         v-bind="stageAttrs"
       >
         <div v-if="viewport" class="fb-screen-hold">

@@ -136,6 +136,7 @@ const youtubeSrc = computed(() =>
   <figure
     v-else-if="animation && mode === 'figure-shell'"
     class="illu-inline illu-inline--shell my-12"
+    :data-figure-key="animation.id"
     :class="{ 'illu-inline--gallery': isGallery }"
   >
     <IllustrationPlaceholder
@@ -148,6 +149,7 @@ const youtubeSrc = computed(() =>
   <figure
     v-else-if="animation && mode === 'figure-widget'"
     class="illu-inline illu-inline--widget my-12"
+    :data-figure-key="animation.id"
     :class="{
       'illu-inline--fit': widgetSchema?.fitHeight,
       'illu-inline--bleed': widgetSchema?.bleed,
@@ -163,6 +165,7 @@ const youtubeSrc = computed(() =>
         (mode === 'interactive' && assetOk !== false))
     "
     class="illu-inline my-12 font-mono text-small"
+    :data-figure-key="animation.id"
   >
     <figcaption
       v-if="title || mode === 'interactive'"
