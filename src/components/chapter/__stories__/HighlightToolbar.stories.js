@@ -107,3 +107,19 @@ export const ShareFailed = {
 
 /** Not visible — nothing is teleported. */
 export const Hidden = { args: { visible: false } };
+
+/**
+ * In review (OPENBRAIN-204): a signed-in reader's selection also offers
+ * "Feedback", which opens the review widget on the passage.
+ */
+export const Reviewing = {
+  args: { reviewing: true },
+};
+
+/**
+ * In review, signed out: no colours or Note (highlights need an account),
+ * only "Feedback" and the cancel.
+ */
+export const ReviewingSignedOut = {
+  args: { reviewing: true, highlighting: false },
+};

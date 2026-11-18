@@ -1,0 +1,101 @@
+/* The review widget's shared controls (OPENBRAIN-204), imported by each
+   of its components so a story of one looks as it does in the widget. */
+.rv-label {
+  display: block;
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-12);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.rv-input,
+.rv-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-15);
+  line-height: 1.4;
+}
+
+.rv-textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.rv-input:focus-visible,
+.rv-textarea:focus-visible,
+.rv-btn:focus-visible {
+  outline: 3px solid rgb(var(--color-accent));
+  outline-offset: 1px;
+}
+
+.rv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgb(var(--color-line));
+  border-radius: 6px;
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-13);
+  cursor: pointer;
+}
+
+.rv-btn:hover {
+  border-color: rgb(var(--color-mute));
+}
+
+.rv-btn--go {
+  border-color: rgb(var(--color-accent));
+  background: rgb(var(--color-accent));
+  color: #fff;
+}
+
+.rv-btn--go:hover {
+  border-color: rgb(var(--color-accent));
+  filter: brightness(1.05);
+}
+
+.rv-btn--link {
+  min-height: 28px;
+  padding: 0 4px;
+  border-color: transparent;
+  background: transparent;
+  color: rgb(var(--color-accent));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rv-btn[disabled] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.rv-error {
+  margin: 0;
+  color: #b3261e;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-13);
+}
+
+:root[data-theme="dark"] .rv-error {
+  color: #ffb4ab;
+}
+
+.rv-hint {
+  margin: 0;
+  color: rgb(var(--color-mute));
+  font-family: var(--font-ui);
+  font-size: var(--ui-size-12);
+  line-height: 1.4;
+}

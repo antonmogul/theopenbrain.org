@@ -30,6 +30,8 @@ import ReaderSidebar from "@/components/chapter/ReaderSidebar.vue";
 import CitationTooltip from "@/components/chapter/CitationTooltip.vue";
 import EndOfChapterCallout from "@/components/chapter/EndOfChapterCallout.vue";
 import ChapterTimeline from "@/components/chapter/timeline/ChapterTimeline.vue";
+import ReviewWidget from "@/components/review/ReviewWidget.vue";
+import { reviewWidgetEnabled } from "@/composables/useReviewFeedback";
 
 // Phase 3A: Composables for highlighting
 import {
@@ -578,6 +580,26 @@ watch(showToolbar, (open) => {
   if (!open) noteOnOpen.value = false;
 });
 
+// The book is in review (OPENBRAIN-204): the review widget shows for every
+// reader unless the build or this browser turned it off, and the
+// selection's toolbar offers "Feedback" (alone, for a signed-out reader).
+const reviewing = reviewWidgetEnabled({
+  env: import.meta.env.VITE_REVIEW_WIDGET,
+  search: globalThis.location?.search || "",
+  storage: (() => {
+    try {
+      return globalThis.localStorage;
+    } catch {
+      return null;
+    }
+  })(),
+});
+const reviewWidget = ref(null);
+function onSelectionFeedback(sel) {
+  reviewWidget.value?.startFromSelection(sel);
+  clearSelection();
+}
+
 async function handleCreateHighlight({ color, isPublic, withNote }) {
   if (!selection.value || !isAuthenticated.value) {
     clearSelection();
@@ -854,7 +876,7 @@ async function handleDeleteHighlight(highlightId) {
 
       <!-- Phase 3A: Highlight Toolbar (appears on text selection or highlight click) -->
       <HighlightToolbar
-        v-if="isAuthenticated && currentModuleId"
+        v-if="(isAuthenticated || reviewing) && currentModuleId"
         :visible="showToolbar"
         :position="toolbarPosition"
         :selection="selection"
@@ -862,11 +884,21 @@ async function handleDeleteHighlight(highlightId) {
         :active-highlight="activeHighlight"
         :note="activeNote"
         :open-note="noteOnOpen"
+        :highlighting="isAuthenticated"
+        :reviewing="reviewing"
         @highlight="handleCreateHighlight"
         @cancel="clearSelection"
         @update-highlight="handleUpdateHighlight"
         @delete-highlight="handleDeleteHighlight"
         @save-note="handleSaveNote"
+        @feedback="onSelectionFeedback"
+      />
+
+      <!-- Reviewers' notes on the chapter (OPENBRAIN-204): chapters only. -->
+      <ReviewWidget
+        v-if="reviewing && chapterSlug"
+        ref="reviewWidget"
+        :chapter-slug="chapterSlug"
       />
 
       <!-- Citation tooltip for Supabase chapters -->

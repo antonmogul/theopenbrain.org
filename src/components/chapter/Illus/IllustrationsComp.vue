@@ -372,6 +372,7 @@ onBeforeUnmount(() => {
     class="figure-pane hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h)-var(--reader-timeline-h,0px))]"
     :class="`figure-pane--${ground}`"
     :data-ground="ground"
+    :data-figure-key="activeAnimation || undefined"
   >
     <template v-for="sequence in sequences" :key="sequence.successor.id">
       <TransitionWidgetSequence

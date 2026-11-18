@@ -1,12 +1,12 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 80,
-  "coveredCount": 80,
+  "sourceCount": 81,
+  "coveredCount": 81,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
-    "ReaderShell": 27,
+    "ReaderShell": 28,
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 17,
@@ -406,6 +406,11 @@
     {
       "source": "src/components/chapter/ReaderHelp.vue",
       "storyFile": "src/components/chapter/__stories__/ReaderHelp.stories.js",
+      "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/ReaderListen.vue",
+      "storyFile": "src/components/chapter/__stories__/ReaderListen.stories.js",
       "story": "Default"
     },
     {

@@ -81,6 +81,23 @@ describe("gallery video items", () => {
 });
 
 describe("gallery video players", () => {
+  it("carries the corner treatment only on a valid video item", () => {
+    const images = figureImages({
+      images: [
+        {
+          src: "/rita.webp",
+          youtube: "WgkAR-vrJpM",
+          play: "player",
+          posterPlay: "corner",
+        },
+        { src: "/plain.jpg", posterPlay: "corner" },
+        { src: "/video.jpg", youtube: "WgkAR-vrJpM", posterPlay: "unknown" },
+      ],
+    });
+    expect(images[0].posterPlay).toBe("corner");
+    expect(images[1]).not.toHaveProperty("posterPlay");
+    expect(images[2]).not.toHaveProperty("posterPlay");
+  });
   it("keeps play: player and a start time; defaults to loop", async () => {
     const out = figureImages({
       images: [

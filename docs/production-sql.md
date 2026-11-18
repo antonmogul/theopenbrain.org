@@ -178,11 +178,10 @@ Pushed after PR #200's deploy served all twelve `-v2.webp` files (200, `image/we
 
 ## Pending
 
-| Migration                                        | What it does                                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261118150000_review_feedback` (OPENBRAIN-203) | New table (with `parent_id` replies) + three RPCs (submit, status, `list_review_feedback`), no data touched. Until it is pushed the review widget queues notes in the browser and Feedback → Review notes says "Database update needed". After the push, check read-only: `rpc/review_feedback_status?p_ids={}` → `[]`; `review_feedback?select=id` with the publishable key → `42501`. |
-
-Otherwise local and remote were in step on 2026-11-18 (after OPENBRAIN-205).
+| Migration                                                | What it does                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261118150000_review_feedback` (OPENBRAIN-203)         | New table (with `parent_id` replies) + three RPCs (submit, status, `list_review_feedback`), no data touched. After the push, check read-only: `rpc/review_feedback_status?p_ids={}` → `[]`; `review_feedback?select=id` with the publishable key → `42501`.                         |
+| `20261119440000_history_video_thumbnails` (OPENBRAIN-44) | **Pushed** 18 Nov after PR #204's deploy served the three WebPs; rows backed up to `~/Documents/openbrain-backups/2026-11-18-pre-openbrain-44/`. Rita, Brenda and Andrew Huxley posters with `posterPlay: "corner"`; Stuart still to confirm the picks (old URLs in the migration). |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
