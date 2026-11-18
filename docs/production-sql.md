@@ -171,6 +171,7 @@ Rows backed up over REST first to `~/Documents/openbrain-backups/2026-11-18-pre-
 
 | Migration                                             | What it does                                                                                                                                                                                                                                                 |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20261119440000_history_video_thumbnails` (OPENBRAIN-44) | **Pending.** Three exact-old-value guarded History video posters (Rita, Brenda, Andrew Huxley) and `posterPlay: "corner"`; needs the app/assets deployed first and Stuart to confirm the picks. Old URLs and reversal guidance are in the migration. |
 | `20261118140000_history_maura_images` (OPENBRAIN-205) | Maura's 18 Nov reworked images: 12 paths in History's figure records and one paragraph swapped to `-v2.webp` files (4 cut-outs for the dark pane, 8 with more room). Needs the deploy first (the files ship with the app). Eccles (Fig 25) waits for Stuart. |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below

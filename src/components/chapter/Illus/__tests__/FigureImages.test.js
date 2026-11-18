@@ -55,6 +55,23 @@ describe("FigureImages", () => {
     vi.useRealTimers();
   });
 
+  it("passes corner controls to both single and gallery video players", async () => {
+    const video = {
+      src: "/rita.webp",
+      youtube: "WgkAR-vrJpM",
+      play: "player",
+      posterPlay: "corner",
+      alt: "Rita",
+    };
+    wrapper = mount(FigureImages, { props: { images: [video] } });
+    expect(wrapper.find(".ve-poster--corner").exists()).toBe(true);
+    wrapper.unmount();
+    mountSet({ images: [SET[0], video], start: "single" });
+    await dots()[1].trigger("click");
+    expect(wrapper.find(".ve-poster--corner").exists()).toBe(true);
+    expect(wrapper.findAll(".ve-play")).toHaveLength(1);
+  });
+
   it("shows one image on its own, without a gallery or controls", () => {
     wrapper = mount(FigureImages, {
       props: { images: SET.slice(0, 1), caption: "Shared legend" },

@@ -107,3 +107,8 @@ export const InAReader = {
       </div>`,
   }),
 };
+
+/** Closing words uses exactly the same card treatment as the other sections. */
+export const ClosingWords = {
+  args: { art: art("closing-words"), label: "5", title: "Closing words" },
+};

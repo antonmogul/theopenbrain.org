@@ -39,6 +39,9 @@ export function figureImages(animation) {
         // an ordinary player, sound and controls, that the reader starts
         // (interviews and films; Stuart's manuscript comments, 11 Oct).
         out.play = item.play === "player" ? "player" : "loop";
+        // Designer-supplied clean posters can ask for the player's one
+        // play control in the corner, away from the subject's face.
+        if (item.posterPlay === "corner") out.posterPlay = "corner";
         const start = Number(item.start);
         if (Number.isFinite(start) && start > 0) out.start = Math.floor(start);
       }

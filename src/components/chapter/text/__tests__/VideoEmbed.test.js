@@ -4,6 +4,28 @@ import VideoEmbed from "../VideoEmbed.vue";
 import BreakImages from "../BreakImages.vue";
 
 describe("shared chapter video presentation", () => {
+  it("shows one corner play control on a clean poster and keeps keyboard playback", async () => {
+    const w = mount(VideoEmbed, {
+      props: {
+        video: {
+          youtubeId: "WgkAR-vrJpM",
+          title: "Rita",
+          poster: "/rita.webp",
+          posterPlay: "corner",
+          start: 2,
+        },
+      },
+    });
+    expect(w.find("button").classes()).toContain("ve-poster--corner");
+    expect(w.find("button").attributes("aria-label")).toBe("Play video: Rita");
+    expect(w.findAll(".ve-play")).toHaveLength(1);
+    expect(w.find("iframe").exists()).toBe(false);
+    await w.find("button").trigger("click");
+    expect(w.find("iframe").attributes("src")).toContain(
+      "WgkAR-vrJpM?autoplay=1&rel=0&start=2"
+    );
+    w.unmount();
+  });
   it("preserves the authored label on legacy placeholder cards", () => {
     const w = mount(BreakImages, {
       props: {
