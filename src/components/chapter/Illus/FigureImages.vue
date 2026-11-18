@@ -471,6 +471,7 @@ onBeforeUnmount(() => {
           youtubeId: first.youtube,
           title: altFor(first),
           poster: first.src,
+          posterPlay: first.posterPlay,
           start: first.start,
         }"
         :show-caption="false"
@@ -611,6 +612,7 @@ onBeforeUnmount(() => {
               youtubeId: current.youtube,
               title: altFor(current),
               poster: current.src,
+              posterPlay: current.posterPlay,
               start: current.start,
             }"
             :show-caption="false"

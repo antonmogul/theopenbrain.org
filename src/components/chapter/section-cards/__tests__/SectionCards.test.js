@@ -195,11 +195,22 @@ describe("SectionCards", () => {
     expect(card().exists()).toBe(true);
   });
 
-  it("skips a section whose first figure follows its heading at once", async () => {
-    mountCards();
+  it("gives a first-paragraph figure heading room, then shows its card", async () => {
     layOut(600, 90);
+    mountCards();
     await scrolled();
+    const section = reader.querySelector("#two");
+    expect(section.hasAttribute("data-section-card-room")).toBe(true);
+    // happy-dom has no CSS layout: apply the 200px desktop heading room.
+    layOut(400, 290);
+    await scrolled();
+    expect(card().exists()).toBe(true);
+    store.animationActive = true;
+    await nextTick();
     expect(card().exists()).toBe(false);
+    wrapper.unmount();
+    wrapper = null;
+    expect(section.hasAttribute("data-section-card-room")).toBe(false);
   });
 
   describe("where the two-column reader ends", () => {
@@ -234,6 +245,9 @@ describe("SectionCards", () => {
       expect(card().exists()).toBe(false);
       expect(
         reader.querySelector("#two").hasAttribute("data-section-enter")
+      ).toBe(false);
+      expect(
+        reader.querySelector("#two").hasAttribute("data-section-card-room")
       ).toBe(false);
     });
   });

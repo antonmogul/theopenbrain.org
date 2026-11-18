@@ -158,7 +158,7 @@ describe("the History head (OPENBRAIN-171)", () => {
     a.work.x = 99;
     const b = reactiveCoverForModule({ slug: "foundations-of-neuroscience" });
     expect(b.keys.keys[0][0]).toBe(0);
-    expect(b.work.x).toBe(1320);
+    expect(b.work.x).toBe(1470);
   });
 
   it("lets a module's own head record win, and rejects a broken one", () => {

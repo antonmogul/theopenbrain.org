@@ -57,9 +57,9 @@ export function coverForModule(module) {
  * The second kind of reactive cover, `kind: "head"` (OPENBRAIN-171): the
  * History opener as Sonia and Maura delivered it (10 Nov 2026), drawn by
  * HeadCover.vue on a canvas with helper/headCover.js. A girl writes in a
- * loop; a hand with a tool rests on her crown, and working it to and fro
- * there slides the top off and lets the brain rise. Everything is in pixels
- * of the artwork (`size`), as their config.json gave it.
+ * loop; a hand with a tool pries at the back of the skull's cut, rocking
+ * about its tip to ease the lid off and let the brain rise. Positions are
+ * pixels of the artwork (`size`), as their config.json gave them.
  *
  *   paper, ink   the drawing's ground, and the colour the hero's arrow takes
  *                on it
@@ -72,11 +72,9 @@ export function coverForModule(module) {
  *                lifts); it turns about `pivot`
  *   hand         the photograph, its tool's `tip`, `scale`, and its pixel
  *                `size`
- *   work         the small ellipse on the crown the tool's tip keeps to
- *                (OPENBRAIN-198): the pointer's place on the whole cover is
- *                mapped into it, so the tool never swings across her head.
- *                It replaced the designers' `zone` and `head`, in which
- *                the hand followed the pointer itself.
+ *   work         the contact at the back end of the cut (OPENBRAIN-40).
+ *                The pointer only nudges its tiny ellipse; the hand rocks
+ *                about the tip. Phones loop without touch (OPENBRAIN-41).
  *   keys         [lid dx, lid dy, lid turn°, brain dx, brain dy] per frame of
  *                the artist's gif, from `first` (closed) to `open`
  */
@@ -110,7 +108,9 @@ export const HISTORY_HEAD = Object.freeze({
     scale: 1.2,
     size: [1102, 998],
   },
-  work: { x: 1320, y: 360, rx: 46, ry: 28 },
+  // Back end of the cut: lid.webp's right alpha edge at local (479, 95),
+  // plus lid.at (991, 305). A 4 × 2 px nudge stays on that seam.
+  work: { x: 1470, y: 400, rx: 2, ry: 1 },
   keys: {
     first: 5,
     open: 16,

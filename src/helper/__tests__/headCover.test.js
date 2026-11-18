@@ -3,6 +3,9 @@ import {
   MOTION,
   createHead,
   drawHead,
+  headAutoplays,
+  loopPointer,
+  pryPose,
   lidPose,
   sceneFit,
   stepHead,
@@ -88,215 +91,170 @@ describe("lidPose", () => {
   });
 });
 
-/* Drive the head as a reader would: a list of [u, v] the pointer visits
-   (0 to 1 across the cover), 40 ms apart. `seen` is called after each. */
-const STEP = 40;
-function play(head, points, t0, present = true, seen = () => {}) {
-  let now = t0;
-  for (const [u, v] of points) {
-    now += STEP;
-    stepHead(head, { present, u, v }, now, spec);
+/* The clock only advances while HeadCover is visible. */
+const STEP = 20;
+const pointer = { present: true, u: 0.5, v: 0.5 };
+function play(head, ms, input = pointer, seen = () => {}) {
+  const end = head.last + ms;
+  for (let now = head.last + STEP; now <= end; now += STEP) {
+    stepHead(head, input, now, spec);
     seen(head);
   }
-  return now;
 }
-// A walk through the given corners, ten steps (0.4 s) a leg: an unhurried
-// hand. A stroke counts once the tool has turned back, so a walk with n
-// turns in it is n strokes.
-const walk = (corners, steps = 10) =>
-  corners.flatMap(([u, v], i) => {
-    if (!i) return [[u, v]];
-    const [pu, pv] = corners[i - 1];
-    return Array.from({ length: steps }, (_, k) => [
-      pu + ((u - pu) * (k + 1)) / steps,
-      pv + ((v - pv) * (k + 1)) / steps,
-    ]);
+
+describe("prying and automatic mode", () => {
+  it("uses the back end of the actual lid cut, with only a tiny nudge", () => {
+    expect(spec.work).toEqual({ x: 1470, y: 400, rx: 2, ry: 1 });
+    expect([
+      spec.work.x - spec.lid.at[0],
+      spec.work.y - spec.lid.at[1],
+    ]).toEqual([479, 95]);
+    for (const width of [1024, 1280, 1440, 1920]) {
+      for (const height of [450, 768, 900]) {
+        const view = sceneFit({ width, height }, spec.fit);
+        const canvasTip = {
+          x: view.left + spec.work.x * view.scale,
+          y: view.top + spec.work.y * view.scale,
+        };
+        expect((canvasTip.x - view.left) / view.scale).toBeCloseTo(1470);
+        expect((canvasTip.y - view.top) / view.scale).toBeCloseTo(400);
+      }
+    }
   });
-const A = [0.35, 0.5]; // left of the middle of the cover
-const B = [0.65, 0.5]; // right of it: 28 px of the tool's travel
-const hold = (at, n) => Array(n).fill(at);
-const inWork = (p) =>
-  Math.hypot(
-    (p.x - spec.work.x) / spec.work.rx,
-    (p.y - spec.work.y) / spec.work.ry
-  );
+
+  it("autoplays below 1024px or on coarse pointers", () => {
+    expect(headAutoplays(1023)).toBe(true);
+    expect(headAutoplays(1024)).toBe(false);
+    expect(headAutoplays(1920, true)).toBe(true);
+  });
+
+  it("rocks both ways about the tip, then rests after three full rocks", () => {
+    const { settleMs, rockMs, rockDegrees, steps } = MOTION;
+    expect(pryPose(settleMs - 1)).toEqual({ turn: 0, progress: 0 });
+    expect(pryPose(settleMs + rockMs / 4).turn).toBe(rockDegrees);
+    expect(pryPose(settleMs + (rockMs * 3) / 4).turn).toBe(-rockDegrees);
+    expect(pryPose(settleMs + rockMs).progress).toBe(1 / steps);
+    expect(pryPose(settleMs + rockMs * steps)).toEqual({
+      turn: 0,
+      progress: 1,
+    });
+    expect(pryPose(60000)).toEqual({ turn: 0, progress: 1 });
+  });
+
+  it("pauses, plays, closes and repeats without any finger input", () => {
+    const { loopPauseMs, loopActiveMs, loopRestMs } = MOTION;
+    const cycle = loopPauseMs + loopActiveMs + loopRestMs;
+    expect(loopPointer(0).present).toBe(false);
+    expect(loopPointer(loopPauseMs)).toEqual(pointer);
+    expect(loopPointer(loopPauseMs + loopActiveMs).present).toBe(false);
+    expect(loopPointer(cycle + loopPauseMs)).toEqual(pointer);
+    const head = createHead(spec);
+    const automatic = { automatic: true, present: false, u: 0, v: 1 };
+    play(head, loopPauseMs + loopActiveMs - 100, automatic);
+    expect(head.at).toBe(spec.keys.open);
+    expect(head.hand).toEqual({ x: 1470, y: 400 });
+    play(head, loopRestMs + 100, automatic);
+    expect(head.at).toBe(spec.keys.first);
+    expect(head.handAlpha).toBeLessThan(0.01);
+    play(head, loopPauseMs + 1400, automatic);
+    expect(head.handAlpha).toBeGreaterThan(0.99);
+    expect(Math.abs(head.handTurn)).toBeGreaterThan(0.5);
+  });
+});
 
 describe("stepHead", () => {
-  it("plays the girl at 12 frames a second, hand or no hand", () => {
-    const head = createHead(spec, 0);
-    const away = { present: false, u: 0.5, v: 0.5 };
-    // A second of frames, 20 ms apart: twelve of the girl's.
-    for (let t = 20; t <= 1000; t += 20) stepHead(head, away, t, spec);
+  it("plays the girl at 12fps without redrawing unchanged frames", () => {
+    const head = createHead(spec);
+    play(head, 1000, { ...pointer, present: false });
     expect(head.frame).toBe(12);
-    // Nineteen in all, then round again.
-    for (let t = 1020; t <= 1600; t += 20) stepHead(head, away, t, spec);
+    play(head, 600, { ...pointer, present: false });
     expect(head.frame).toBe(0);
   });
 
-  it("brings the hand in on the crown, wherever the pointer came in", () => {
-    const head = createHead(spec, 0);
-    stepHead(head, { present: true, u: 0.9, v: 0.1 }, STEP, spec);
-    // Not on show yet, so it starts where it belongs: no swing across.
-    expect(head.hand).toEqual(toolSpot(0.9, 0.1, spec.work));
-    const now = play(head, hold([0.9, 0.1], 20), STEP);
-    expect(head.inside).toBe(true);
-    expect(head.handAlpha).toBeGreaterThan(0.9);
-    play(head, hold([0.9, 0.1], 30), now, false);
-    expect(head.inside).toBe(false);
-    expect(head.handAlpha).toBeLessThan(0.1);
-  });
-
-  it("keeps the tool in its region however far the pointer travels", () => {
-    const head = createHead(spec, 0);
-    const far = walk(
-      [
-        [0, 0],
-        [1, 1],
-        [0, 1],
-        [1, 0],
-        [0.5, 0.5],
-      ],
-      6
-    );
-    play(head, far, 0, true, (h) =>
-      expect(inWork(h.hand)).toBeLessThanOrEqual(1 + 1e-9)
-    );
-  });
-
-  it("glides: a jump of the pointer is a slow, short move of the tool", () => {
-    const head = createHead(spec, 0);
-    const now = play(head, hold([0, 0.5], 20), 0);
-    let before = { ...head.hand };
-    let fastest = 0;
-    // The pointer crosses the whole cover between two frames.
-    play(head, hold([1, 0.5], 60), now, true, (h) => {
-      fastest = Math.max(
-        fastest,
-        Math.hypot(h.hand.x - before.x, h.hand.y - before.y)
+  it("opens after three gentle rocks even with a still pointer, then rests", () => {
+    const head = createHead(spec);
+    const turns = [];
+    let previous = head.at;
+    play(head, 12000, pointer, (h) => {
+      turns.push(h.handTurn);
+      expect(h.at - previous).toBeLessThanOrEqual(
+        (MOTION.openSpeed * STEP) / 1000 + 1e-9
       );
-      before = { ...h.hand };
+      expect(h.hand).toEqual({ x: 1470, y: 400 });
+      previous = h.at;
     });
-    expect(fastest).toBeLessThanOrEqual((MOTION.maxSpeed * STEP) / 1000 + 1e-9);
-    // And it gets there.
-    expect(head.hand.x).toBeCloseTo(spec.work.x + spec.work.rx, 0);
-  });
-
-  it("opens the head in six careful strokes, slowly, and it stays open", () => {
-    const head = createHead(spec, 0);
-    // The hand comes to rest, then works to and fro.
-    let now = play(head, hold(A, 10), 0);
-    expect(head.progress).toBe(0);
-    now = play(head, walk([A, B, A, B]), now); // two turns
-    now = play(head, hold(B, 5), now);
-    expect(head.progress).toBeCloseTo(2 / 6);
-    expect(head.latched).toBe(false);
-    expect(head.at).toBeGreaterThan(spec.keys.first);
-    now = play(head, walk([B, A, B, A, B]), now); // four more
-    now = play(head, hold(B, 5), now);
+    expect(Math.min(...turns)).toBeLessThan(-2);
+    expect(Math.max(...turns)).toBeGreaterThan(2);
     expect(head.progress).toBe(1);
     expect(head.latched).toBe(true);
-    // Six strokes took about four seconds; the lid is still on its way.
-    expect(head.at).toBeLessThan(spec.keys.open);
-    // Holding still, it finishes opening, never hurried, and stays.
-    let last = head.at;
-    let fastest = 0;
-    now = play(head, hold(B, 200), now, true, (h) => {
-      fastest = Math.max(fastest, h.at - last);
-      last = h.at;
-    });
-    expect(fastest).toBeLessThanOrEqual(
-      (MOTION.openSpeed * STEP) / 1000 + 1e-9
-    );
     expect(head.at).toBe(spec.keys.open);
-    play(head, hold(B, 100), now);
-    expect(head.at).toBe(spec.keys.open);
+    expect(head.handTurn).toBe(0);
   });
 
-  it("lifts the lid softly: no step is a jump, and it eases to a stop", () => {
-    const head = createHead(spec, 0);
-    let now = play(head, hold(A, 10), 0);
-    const moves = [];
-    let last = head.at;
-    const seen = (h) => {
-      moves.push(h.at - last);
-      last = h.at;
-    };
-    now = play(head, walk([A, B, A, B, A, B, A, B]), now, true, seen);
-    play(head, hold(B, 200), now, true, seen);
-    // It picks up speed gradually…
-    const start = moves.findIndex((m) => m > 0);
-    expect(moves[start]).toBeLessThan((MOTION.openSpeed * STEP) / 1000 / 2);
-    // …and the last moves before it rests are the smallest.
-    const end = moves.findLastIndex((m) => m > 0);
-    expect(moves[end]).toBeLessThan(0.01);
-    expect(MOTION.openSpeed).toBeLessThanOrEqual(3);
+  it("keeps a wild pointer to four artwork pixels of travel", () => {
+    const head = createHead(spec);
+    let before = { ...head.hand };
+    for (let i = 0; i < 200; i++) {
+      stepHead(
+        head,
+        { present: true, u: i % 2 ? -9 : 9, v: i % 2 },
+        head.last + STEP,
+        spec
+      );
+      expect(
+        Math.hypot((head.hand.x - 1470) / 2, head.hand.y - 400)
+      ).toBeLessThanOrEqual(1 + 1e-9);
+      if (i)
+        expect(
+          Math.hypot(head.hand.x - before.x, head.hand.y - before.y)
+        ).toBeLessThanOrEqual((MOTION.maxSpeed * STEP) / 1000 + 1e-9);
+      before = { ...head.hand };
+    }
   });
 
-  it("is not opened by a shake of the mouse, nor by a tremble", () => {
-    const head = createHead(spec, 0);
-    let now = play(head, hold([0.5, 0.5], 10), 0);
-    // A hard shake about that spot, 40% of the cover wide, every frame.
-    const shake = Array.from({ length: 80 }, (_, i) => [
-      i % 2 ? 0.7 : 0.3,
-      0.5,
-    ]);
-    now = play(head, shake, now);
-    expect(head.progress).toBe(0);
-    // A slow tremble of a few px of pointer.
-    const tremble = walk(
-      Array.from({ length: 12 }, (_, i) => [i % 2 ? 0.52 : 0.48, 0.5])
-    );
-    play(head, tremble, now);
-    expect(head.progress).toBe(0);
+  it("starts closed, eases the lid off, and closes gently on leave", () => {
+    const head = createHead(spec);
+    play(head, MOTION.settleMs + MOTION.rockMs - 20);
     expect(head.at).toBe(spec.keys.first);
-  });
-
-  it("lets a half-open head sink back when left alone", () => {
-    const head = createHead(spec, 0);
-    let now = play(head, hold(A, 10), 0);
-    now = play(head, walk([A, B, A, B]), now);
-    now = play(head, hold(B, 5), now);
-    const reached = head.progress;
-    expect(reached).toBeGreaterThan(0);
-    play(head, hold(B, Math.ceil(MOTION.idleMs / STEP) + 50), now);
-    expect(head.progress).toBeLessThan(reached);
-  });
-
-  it("closes, gently, when the pointer leaves the cover", () => {
-    const head = createHead(spec, 0);
-    let now = play(head, hold(A, 10), 0);
-    now = play(head, walk([A, B, A, B, A, B, A, B]), now);
-    now = play(head, hold(B, 200), now);
+    play(head, 10000);
     expect(head.at).toBe(spec.keys.open);
-    // Gone: it shuts, at its own pace.
-    now = play(head, hold(B, 10), now, false);
-    expect(head.latched).toBe(false);
-    expect(head.at).toBeLessThan(spec.keys.open);
-    expect(head.at).toBeGreaterThan(spec.keys.first);
-    let last = head.at;
-    let fastest = 0;
-    play(head, hold(B, 200), now, false, (h) => {
-      fastest = Math.max(fastest, last - h.at);
-      last = h.at;
+    let previous = head.at;
+    const changes = [];
+    play(head, 6000, { ...pointer, present: false }, (h) => {
+      changes.push(previous - h.at);
+      previous = h.at;
     });
-    expect(fastest).toBeLessThanOrEqual(
+    expect(Math.max(...changes)).toBeLessThanOrEqual(
       (MOTION.closeSpeed * STEP) / 1000 + 1e-9
     );
     expect(head.at).toBe(spec.keys.first);
+    expect(head.handAlpha).toBeLessThan(0.01);
+    expect(head.latched).toBe(false);
+  });
+
+  it("does not jump the animation when the clock resumes after a pause", () => {
+    const head = createHead(spec);
+    play(head, 1000, { automatic: true });
+    const before = head.loopClock;
+    stepHead(head, { automatic: true }, 60000, spec);
+    expect(head.loopClock - before).toBeLessThanOrEqual(50);
+    expect(head.progress).toBe(0);
   });
 });
 
 describe("drawHead", () => {
   it("draws bottom to top: opening, brain, girl, lid, outlined lid, hand", () => {
     const calls = [];
+    const translations = [];
+    const rotations = [];
     const ctx = {
       canvas: { width: 800, height: 600 },
       setTransform: (...a) => calls.push(["setTransform", ...a]),
       clearRect: () => calls.push(["clear"]),
       save: () => {},
       restore: () => {},
-      translate: () => {},
-      rotate: () => {},
+      translate: (...args) => translations.push(args),
+      rotate: (angle) => rotations.push(angle),
       drawImage: (img, ...rest) => calls.push(["draw", img, ...rest]),
       globalAlpha: 1,
     };
@@ -312,6 +270,7 @@ describe("drawHead", () => {
     head.frame = 3;
     head.handAlpha = 1;
     head.hand = { x: 1500, y: 300 };
+    head.handTurn = 3;
     drawHead(ctx, images, spec, head, {
       scale: 0.5,
       left: 10,
@@ -328,10 +287,12 @@ describe("drawHead", () => {
     ]);
     // Artwork px to device px: scale × dpr, the origin × dpr.
     expect(calls[2]).toEqual(["setTransform", 1, 0, 0, 1, 20, 40]);
-    // The tool's tip is where the head says the hand is.
+    // Rotation occurs at the tip; the photo's local tip is exactly (0, 0).
+    expect(translations.at(-1)).toEqual([1500, 300]);
+    expect(rotations.at(-1)).toBeCloseTo((3 * Math.PI) / 180);
     const hand = calls.at(-1);
-    expect(hand[2]).toBeCloseTo(1500 - 20 * 1.2);
-    expect(hand[3]).toBeCloseTo(300 - 874 * 1.2);
+    expect(hand[2]).toBeCloseTo(-20 * 1.2);
+    expect(hand[3]).toBeCloseTo(-874 * 1.2);
     // Closed: the brain is tucked 46, 74 under the lid.
     expect(calls[4]).toEqual(["draw", "brain", 1100 + 46, 321 + 74]);
   });
@@ -423,7 +384,7 @@ describe("drawHead", () => {
       { scale: 1, left: 0, top: 0 }
     );
     expect(sizes).toEqual([spec.hand.size[0] * spec.hand.scale]);
-    expect(turns).toEqual([0]);
+    expect(turns).toEqual([0, 0]);
   });
 
   it("leaves the hand out when it is not there", () => {

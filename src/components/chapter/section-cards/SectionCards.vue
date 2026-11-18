@@ -30,7 +30,12 @@ import { buildOutline } from "@/composables/useChapterOutline";
 import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { reducedMotionPreferred } from "@/helper/readerJump";
 import { hasSectionCard, sectionArtFor } from "@/helper/sectionArt";
-import { FIGURE_LINE, cardState, titleShare } from "@/helper/sectionCard";
+import {
+  FIGURE_LINE,
+  MIN_RUN,
+  cardState,
+  titleShare,
+} from "@/helper/sectionCard";
 import SectionCard from "./SectionCard.vue";
 
 const props = defineProps({
@@ -83,6 +88,7 @@ const reader = () => rootEl.value?.closest(".chapter-reader") || document;
 let places = [];
 let readerEnd = null;
 let stale = true;
+const room = new Set();
 function place() {
   stale = false;
   readerEnd = reader().querySelector(READER_END);
@@ -98,6 +104,17 @@ function place() {
           !node.classList.contains("animationTrigger") ||
           (/^trigger/i.test(node.id) && !node.closest("[data-breakout-box]"))
       ) || null;
+    // A first-paragraph figure used to suppress the card (History's first
+    // section and Closing words). Give that heading one card's reading
+    // room instead: the previous figure keeps its hold and the new figure
+    // still starts at its own trigger. Bands already announce themselves.
+    if (
+      end?.classList.contains("animationTrigger") &&
+      end.getBoundingClientRect().top - el.getBoundingClientRect().top < MIN_RUN
+    ) {
+      el.setAttribute("data-section-card-room", "");
+      room.add(el);
+    }
     return [{ card, el, before, end }];
   });
 }
@@ -258,6 +275,8 @@ function stop() {
   cancelAnimationFrame(frame);
   frame = 0;
   clearEntrance();
+  for (const el of room) el.removeAttribute("data-section-card-room");
+  room.clear();
   places = [];
   stale = true;
   showing.value = null;
@@ -298,6 +317,14 @@ defineExpose({ update, current });
 <!-- Not scoped: the transition classes land on SectionCard's root, and the
      heading rules reach into the reader's text. -->
 <style>
+/* Only short figure openings need extra reading room. This is the same
+   MIN_RUN as the timing helper; phone flow and full-width back matter keep
+   their spacing. The card's artwork, typography and fade stay unchanged. */
+@media (min-width: 1024px) {
+  .chapter-reader section[data-section-card-room] > h2.subChapter {
+    padding-bottom: calc(var(--reader-title-gap) + 200px);
+  }
+}
 .section-cards {
   overflow: hidden;
   /* The card's own family, here so the number's face can be asked for

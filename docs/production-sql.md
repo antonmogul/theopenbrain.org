@@ -178,9 +178,10 @@ Pushed after PR #200's deploy served all twelve `-v2.webp` files (200, `image/we
 
 ## Pending
 
-| Migration                                                  | What it does                                                                                                                                                                     |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261119450000_reader_feedback_categories` (OPENBRAIN-45) | Pending: widen the reader `feedback.kind` check with usability, design and other; keep all legacy values and ownership policies. Apply before releasing the new category picker. |
+| Migration                                                  | What it does                                                                                                                                                                                                                                         |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261119440000_history_video_thumbnails` (OPENBRAIN-44)   | **Pending.** Three exact-old-value guarded History video posters (Rita, Brenda, Andrew Huxley) and `posterPlay: "corner"`; needs the app/assets deployed first and Stuart to confirm the picks. Old URLs and reversal guidance are in the migration. |
+| `20261119450000_reader_feedback_categories` (OPENBRAIN-45) | Pending: widen the reader `feedback.kind` check with usability, design and other; keep all legacy values and ownership policies. Apply before releasing the new category picker.                                                                     |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is

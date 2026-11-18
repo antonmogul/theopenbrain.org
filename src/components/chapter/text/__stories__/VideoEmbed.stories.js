@@ -25,3 +25,17 @@ export const Default = {};
 
 /** No title: the card falls back to "Video". */
 export const Untitled = { args: { video: { youtubeId: "g4-6A8u8QBc" } } };
+
+/** Clean designer artwork, with the book's single play control in the corner. */
+export const CornerPoster = {
+  args: {
+    video: {
+      youtubeId: "WgkAR-vrJpM",
+      title: "Rita Levi-Montalcini",
+      start: 2,
+      poster:
+        "/publicAssets/images/foundations/thumbs/rita-levi-montalcini.webp",
+      posterPlay: "corner",
+    },
+  },
+};

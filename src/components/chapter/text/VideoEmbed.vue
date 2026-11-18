@@ -9,7 +9,7 @@ import { computed, ref, watch } from "vue";
 import { youTubeEmbedUrl } from "@/editor/video.mjs";
 
 const props = defineProps({
-  /** { youtubeId?, src?, poster?, title?, caption?, start? } */
+  /** { youtubeId?, src?, poster?, posterPlay?: "corner", title?, caption?, start? } */
   video: { type: Object, required: true },
   showCaption: { type: Boolean, default: true },
 });
@@ -55,6 +55,9 @@ const caption = computed(() => props.video.caption || props.video.title || "");
         v-else
         type="button"
         class="ve-poster"
+        :class="{
+          've-poster--corner': video.poster && video.posterPlay === 'corner',
+        }"
         :aria-label="`Play video: ${title}`"
         @click="playing = true"
       >
@@ -120,6 +123,27 @@ const caption = computed(() => props.video.caption || props.video.title || "");
 }
 .ve-poster > span {
   position: relative;
+}
+/* Maura's History JPGs are clean photographs; only her reference sheet
+   includes an icon. Draw exactly one control, in that sheet's top corner,
+   and leave the photograph undimmed and clear of text. */
+.ve-poster--corner .ve-poster-image {
+  opacity: 1;
+}
+.ve-poster--corner .ve-play {
+  position: absolute;
+  top: 3%;
+  left: 3%;
+  width: clamp(36px, 13%, 64px);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+  color: rgb(var(--color-chapter));
+}
+.ve-poster--corner .ve-title,
+.ve-poster--corner .ve-note {
+  display: none;
 }
 .ve-play {
   display: grid;
