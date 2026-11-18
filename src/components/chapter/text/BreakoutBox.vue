@@ -187,6 +187,7 @@ onBeforeUnmount(() => arrival?.disconnect());
 <template>
   <FullBleed
     ref="fullBleed"
+    :data-listen-box-slot="section.id"
     v-slot="{ floating }"
     :stage-attrs="{ 'data-breakout-box': section.id }"
   >

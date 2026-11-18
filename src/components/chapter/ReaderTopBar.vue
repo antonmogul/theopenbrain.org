@@ -9,6 +9,7 @@ import BookLogo from "@/components/brand/BookLogo.vue";
 import MenuEye from "@/components/brand/MenuEye.vue";
 import ReaderHelp from "./ReaderHelp.vue";
 import ReaderSearch from "./ReaderSearch.vue";
+import ReaderListen from "./ReaderListen.vue";
 
 const props = defineProps({
   isAuthenticated: {
@@ -158,6 +159,8 @@ function onHelpFocusOut(event) {
       />
 
       <div class="spacer"></div>
+
+      <ReaderListen @open="closeHelp({ restoreFocus: false })" />
 
       <!-- Help: how the book reads, the animations setting (OPENBRAIN-189)
            and, signed in, Info / Notebook / Chat (OPENBRAIN-197). Here, not
