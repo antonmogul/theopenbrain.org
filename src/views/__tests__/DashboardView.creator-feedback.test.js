@@ -102,6 +102,27 @@ describe("creator dashboard feedback integration", () => {
     ).toHaveLength(2);
   });
 
+  it("opens Review notes from ?view=review and reads them only there (OPENBRAIN-203)", async () => {
+    const reviewReads = () =>
+      authedRequest.mock.calls.filter(
+        ([q]) => q.startsWith("review_feedback?") && q.endsWith("offset=0")
+      );
+    const w = await mountView();
+    expect(w.findComponent(FeedbackSection).props("view")).toBe("messages");
+    expect(reviewReads()).toHaveLength(0);
+
+    w.findComponent(FeedbackSection).vm.$emit("view-change", "review");
+    await flushPromises();
+    expect(state.route.query).toEqual({ section: "feedback", view: "review" });
+    expect(w.findComponent(FeedbackSection).props("view")).toBe("review");
+    expect(reviewReads()).toHaveLength(1);
+
+    w.findComponent(FeedbackSection).vm.$emit("view-change", "messages");
+    await flushPromises();
+    expect(state.route.query).toEqual({ section: "feedback" });
+    expect(reviewReads()).toHaveLength(1);
+  });
+
   it("waits for creator identity before reading feedback and hides it on sign-out", async () => {
     state.auth.profile.value = null;
     const w = await mountView();

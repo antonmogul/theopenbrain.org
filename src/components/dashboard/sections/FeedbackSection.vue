@@ -7,6 +7,7 @@ import {
   LoadingState,
   ErrorState,
   Button,
+  SegmentedControl,
 } from "@/components/dashboard/shared";
 
 defineProps({
@@ -17,8 +18,17 @@ defineProps({
   feedbackChapter: { type: String, default: "all" },
   feedbackKind: { type: String, default: "all" },
   filteredFeedback: { type: Array, default: () => [] },
+  // "messages": readers' messages (public.feedback); "review": reviewer
+  // notes left with the chapter review widget (OPENBRAIN-203), drawn by
+  // DashboardView into the #review slot.
+  view: { type: String, default: "messages" },
 });
-defineEmits(["fetch", "chapter-change", "kind-change"]);
+defineEmits(["fetch", "chapter-change", "kind-change", "view-change"]);
+
+const VIEWS = [
+  { value: "messages", label: "Reader messages" },
+  { value: "review", label: "Review notes" },
+];
 
 function formatDate(value) {
   const date = new Date(value);
@@ -37,8 +47,11 @@ function formatDate(value) {
 
 <template>
   <section class="section">
-    <SectionHeader eyebrow="09 · Feedback" title="Reader feedback">
-      <template #actions>
+    <SectionHeader
+      eyebrow="09 · Feedback"
+      :title="view === 'review' ? 'Review notes' : 'Reader feedback'"
+    >
+      <template v-if="view !== 'review'" #actions>
         <Button
           variant="outline"
           size="sm"
@@ -49,90 +62,101 @@ function formatDate(value) {
       </template>
     </SectionHeader>
 
-    <p class="feedback-note">
-      Read feedback in its chapter context. AI summaries are unavailable; no
-      feedback is sent to an AI service.
-    </p>
-    <ErrorState
-      v-if="feedbackAccessDenied"
-      title="Access denied"
-      message="A signed-in creator account with feedback read access is required."
-      :show-retry="false"
+    <SegmentedControl
+      class="feedback-views"
+      :model-value="view"
+      :options="VIEWS"
+      aria-label="Feedback view"
+      @update:model-value="$emit('view-change', $event)"
     />
+
+    <slot v-if="view === 'review'" name="review" />
     <template v-else>
-      <div class="feedback-filters">
-        <label>
-          Chapter
-          <select
-            :value="feedbackChapter"
-            @change="$emit('chapter-change', $event.target.value)"
-          >
-            <option value="all">All chapters</option>
-            <option value="unassigned">No chapter assigned</option>
-            <option
-              v-for="chapter in feedbackChapters"
-              :key="chapter.id"
-              :value="chapter.id"
-            >
-              {{ chapter.title }}
-            </option>
-          </select>
-        </label>
-        <label>
-          Feedback type
-          <select
-            :value="feedbackKind"
-            @change="$emit('kind-change', $event.target.value)"
-          >
-            <option value="all">All types</option>
-            <option value="general">General</option>
-            <option value="content">Content</option>
-            <option value="bug">Bug</option>
-            <option value="idea">Idea</option>
-          </select>
-        </label>
-      </div>
-      <LoadingState v-if="feedbackLoading" message="Loading feedback…" />
+      <p class="feedback-note">
+        Read feedback in its chapter context. AI summaries are unavailable; no
+        feedback is sent to an AI service.
+      </p>
       <ErrorState
-        v-else-if="feedbackError"
-        :message="feedbackError"
-        @retry="$emit('fetch')"
-      />
-      <EmptyState
-        v-else-if="filteredFeedback.length === 0"
-        title="No feedback matches these filters"
-        message="Reader submissions will appear here with their chapter and date."
+        v-if="feedbackAccessDenied"
+        title="Access denied"
+        message="A signed-in creator account with feedback read access is required."
+        :show-retry="false"
       />
       <template v-else>
-        <p class="feedback-note" role="status">
-          {{ filteredFeedback.length }}
-          {{ filteredFeedback.length === 1 ? "message" : "messages" }} · Newest
-          first
-        </p>
-        <ul class="feedback-list">
-          <li v-for="item in filteredFeedback" :key="item.id">
-            <BaseCard padding="md">
-              <article>
-                <div class="feedback-heading">
-                  <h3 class="card-title sm">{{ item.chapterTitle }}</h3>
-                  <StatusBadge>{{ item.kind }}</StatusBadge>
-                </div>
-                <p v-if="item.sectionTitle" class="feedback-context">
-                  Section: {{ item.sectionTitle }}
-                </p>
-                <p v-if="item.page" class="feedback-context">
-                  Page: {{ item.page }}
-                </p>
-                <time
-                  class="feedback-context"
-                  :datetime="item.created_at || undefined"
-                  >{{ formatDate(item.created_at) }}</time
-                >
-                <p class="feedback-message">{{ item.message }}</p>
-              </article>
-            </BaseCard>
-          </li>
-        </ul>
+        <div class="feedback-filters">
+          <label>
+            Chapter
+            <select
+              :value="feedbackChapter"
+              @change="$emit('chapter-change', $event.target.value)"
+            >
+              <option value="all">All chapters</option>
+              <option value="unassigned">No chapter assigned</option>
+              <option
+                v-for="chapter in feedbackChapters"
+                :key="chapter.id"
+                :value="chapter.id"
+              >
+                {{ chapter.title }}
+              </option>
+            </select>
+          </label>
+          <label>
+            Feedback type
+            <select
+              :value="feedbackKind"
+              @change="$emit('kind-change', $event.target.value)"
+            >
+              <option value="all">All types</option>
+              <option value="general">General</option>
+              <option value="content">Content</option>
+              <option value="bug">Bug</option>
+              <option value="idea">Idea</option>
+            </select>
+          </label>
+        </div>
+        <LoadingState v-if="feedbackLoading" message="Loading feedback…" />
+        <ErrorState
+          v-else-if="feedbackError"
+          :message="feedbackError"
+          @retry="$emit('fetch')"
+        />
+        <EmptyState
+          v-else-if="filteredFeedback.length === 0"
+          title="No feedback matches these filters"
+          message="Reader submissions will appear here with their chapter and date."
+        />
+        <template v-else>
+          <p class="feedback-note" role="status">
+            {{ filteredFeedback.length }}
+            {{ filteredFeedback.length === 1 ? "message" : "messages" }} ·
+            Newest first
+          </p>
+          <ul class="feedback-list">
+            <li v-for="item in filteredFeedback" :key="item.id">
+              <BaseCard padding="md">
+                <article>
+                  <div class="feedback-heading">
+                    <h3 class="card-title sm">{{ item.chapterTitle }}</h3>
+                    <StatusBadge>{{ item.kind }}</StatusBadge>
+                  </div>
+                  <p v-if="item.sectionTitle" class="feedback-context">
+                    Section: {{ item.sectionTitle }}
+                  </p>
+                  <p v-if="item.page" class="feedback-context">
+                    Page: {{ item.page }}
+                  </p>
+                  <time
+                    class="feedback-context"
+                    :datetime="item.created_at || undefined"
+                    >{{ formatDate(item.created_at) }}</time
+                  >
+                  <p class="feedback-message">{{ item.message }}</p>
+                </article>
+              </BaseCard>
+            </li>
+          </ul>
+        </template>
       </template>
     </template>
   </section>
@@ -140,6 +164,10 @@ function formatDate(value) {
 
 <style scoped>
 @import "@/styles/dashboard-sections.css";
+.feedback-views {
+  align-self: flex-start;
+  flex-wrap: wrap;
+}
 .feedback-note,
 .feedback-context {
   font-size: var(--ui-size-13);
