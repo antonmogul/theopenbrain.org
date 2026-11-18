@@ -1,11 +1,9 @@
 <script setup>
 /*
- * "Open the head" cover (OPENBRAIN-171): the History opener as the
- * designers delivered it. A girl writes in a loop; while the pointer is
- * over the cover a hand holding a tool rests on her crown, and working it
- * to and fro there slides the top off and lets the brain rise. The tool
- * keeps to a small region however far the pointer goes (OPENBRAIN-198), so
- * the reader's own cursor stays on show. Leaving the cover closes the head.
+ * History's prying cover (OPENBRAIN-40/41). On desktop a hover plays
+ * three small rocks around the tool's tip at the back of the skull's cut,
+ * then eases the lid off. The pointer only nudges that contact. Phones and
+ * coarse pointers play a gentle loop without touch-and-hold interaction.
  * The logic is in helper/headCover.js; this component gives it a canvas,
  * the pointer and a clock, and looks after what a page in a book needs
  * that a demo does not:
@@ -21,9 +19,8 @@
  *   canvas is redrawn only when something it shows has changed, and not at
  *   all once the opener has scrolled away.
  * - The page. The drawing keeps clear of the top bar, the timeline and the
- *   hero's down-arrow; on
- *   a phone a vertical swipe still scrolls (`touch-action: pan-y`), and a
- *   sideways rub works the head.
+ *   hero's down-arrow. Phones keep ordinary scrolling and never need a
+ *   finger on the canvas.
  *
  * `imageAssetOk` checks the still first: a missing file means the opener's
  * ordinary cover and nothing logged. The parent reads `state` for
@@ -36,6 +33,7 @@ import {
   createHead,
   drawHead,
   fadedHand,
+  headAutoplays,
   sceneFit,
   stepHead,
 } from "@/helper/headCover";
@@ -72,8 +70,9 @@ let raf = 0;
 let io = null;
 let ro = null;
 let dpr = 1;
+let coarseQuery = null;
 let drawn = ""; // what the canvas last showed
-const pointer = { present: false, u: 0.5, v: 0.5 }; // u, v: 0 to 1 across
+const pointer = { present: false, u: 0.5, v: 0.5, automatic: false }; // u, v: 0 to 1 across
 
 function fit() {
   if (!stage.value) return;
@@ -89,6 +88,7 @@ function fit() {
     c.height = Math.round(r.height * dpr);
   }
   drawn = "";
+  configureInput();
   schedule();
 }
 
@@ -142,6 +142,7 @@ function tick(now) {
     head.frame,
     head.at.toFixed(3),
     head.handAlpha.toFixed(2),
+    head.handTurn.toFixed(3),
     head.handAlpha > 0.01
       ? `${head.hand.x.toFixed(1)},${head.hand.y.toFixed(1)}`
       : "",
@@ -163,6 +164,7 @@ function schedule() {
 /* Where the pointer is across the cover: the helper maps that into the
    tool's small region. */
 function onPointer(e) {
+  if (e.pointerType === "touch" || pointer.automatic) return;
   const r = stage.value?.getBoundingClientRect();
   if (!r || !(r.width > 0 && r.height > 0)) return onLeave();
   const x = e.clientX - r.left;
@@ -174,17 +176,12 @@ function onPointer(e) {
 function onLeave() {
   pointer.present = false;
 }
-function onPointerUp(e) {
-  if (e.pointerType === "touch") onLeave();
-}
 
 let listening = false;
 function listen() {
   if (listening) return;
   listening = true;
   window.addEventListener("pointermove", onPointer, { passive: true });
-  window.addEventListener("pointerdown", onPointer, { passive: true });
-  window.addEventListener("pointerup", onPointerUp, { passive: true });
   window.addEventListener("pointercancel", onLeave, { passive: true });
   window.addEventListener("blur", onLeave);
   document.documentElement.addEventListener("pointerleave", onLeave);
@@ -193,11 +190,22 @@ function unlisten() {
   if (!listening) return;
   listening = false;
   window.removeEventListener("pointermove", onPointer);
-  window.removeEventListener("pointerdown", onPointer);
-  window.removeEventListener("pointerup", onPointerUp);
   window.removeEventListener("pointercancel", onLeave);
   window.removeEventListener("blur", onLeave);
   document.documentElement.removeEventListener("pointerleave", onLeave);
+}
+
+/* Automatic below the reader breakpoint OR on coarse-pointer devices.
+   No pointer/touch handlers are installed in that mode. */
+function configureInput() {
+  const automatic = headAutoplays(window.innerWidth, coarseQuery?.matches);
+  if (automatic !== pointer.automatic) {
+    pointer.automatic = automatic;
+    onLeave();
+    if (head) head = createHead(props.spec, performance.now());
+  }
+  if (automatic || !live.value) unlisten();
+  else listen();
 }
 
 /* The canvas takes over from the still: fetch the layers, then run. */
@@ -215,7 +223,6 @@ async function goLive() {
   head = createHead(props.spec, performance.now());
   live.value = true;
   fit();
-  listen();
 }
 /* Back to the still (reduced motion was turned on). */
 function goStill() {
@@ -232,6 +239,9 @@ watch(reducedMotion, (reduced) => {
 });
 
 onMounted(async () => {
+  coarseQuery = window.matchMedia("(pointer: coarse)");
+  coarseQuery.addEventListener?.("change", configureInput);
+  window.addEventListener("resize", configureInput);
   emit("state", "loading");
   const ok = await imageAssetOk(props.spec.poster);
   if (disposed) return;
@@ -253,7 +263,11 @@ onMounted(async () => {
       if (visible) {
         if (head) head.last = performance.now();
         schedule();
-      } else onLeave();
+      } else {
+        onLeave();
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
     });
     io.observe(stage.value);
   }
@@ -268,6 +282,8 @@ onBeforeUnmount(() => {
   io?.disconnect();
   ro?.disconnect();
   window.removeEventListener("resize", fit);
+  window.removeEventListener("resize", configureInput);
+  coarseQuery?.removeEventListener?.("change", configureInput);
 });
 </script>
 
@@ -307,8 +323,7 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: var(--reader-topbar-h, 0px) 0 var(--reader-timeline-h, 0px);
   overflow: hidden;
-  /* A vertical swipe scrolls the page; a sideways rub works the tool. */
-  touch-action: pan-y;
+  touch-action: auto;
 }
 .head-cover__poster {
   position: absolute;
@@ -317,6 +332,10 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 .head-cover__canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
   position: absolute;
   inset: 0;
   display: block;

@@ -1,59 +1,33 @@
 /*
- * The "open the head" cover (OPENBRAIN-171): the History opener as Sonia
- * and Maura delivered it on 10 Nov 2026 (layers plus a working page). A
- * girl writes, looping at 12 frames a second. A hand holding a tool rests
- * on the crown of her head while the pointer is over the cover; working it
- * to and fro there slides the top of her head off and the brain rises out.
- * Leaving the cover puts it back.
+ * History's "open the head" cover (OPENBRAIN-40/41, following 171/198).
+ * The tool pries at the back end of the skull's cut, rocking about its tip.
+ * A desktop pointer only nudges that contact point; hovering plays three
+ * gentle rocks and eases the lid off. Phones play the same sequence, rest,
+ * close and repeat without needing a finger on the drawing.
  *
- * The hand is careful (OPENBRAIN-198, Stuart, 14 Nov: "restrict the
- * movement of the hand to a really small region ... very carefully opening
- * her skull", not "violently smashing her head"). In the delivered page
- * the tool was glued to the pointer, so it swung across the whole drawing
- * and each stroke bumped the lid. Now the pointer's place on the cover is
- * mapped into a small ellipse on the crown (`spec.work`), the tool glides
- * towards that spot instead of jumping, and the lid slides at a slow, eased
- * pace however fast the reader moves.
- *
- * This file is the page's logic with the browser taken out, so it can be
- * tested: where the drawing sits in a box, where the tool goes, how its
- * strokes are counted, the lid's and the brain's positions (keyframes the
- * designers measured from the artist's gif), and the drawing itself.
- * HeadCover.vue feeds it the pointer and a canvas.
- *
- * Coordinates are pixels of the artwork (`spec.size`, 2680 × 1732) unless
- * a name says otherwise. The artwork-specific numbers (boxes, the tool's
- * region, the keyframes) are the cover's record in helper/chapterCover.js;
- * the feel of the interaction is MOTION below.
+ * All positions are artwork pixels (2680 × 1732), never viewport pixels.
+ * HeadCover.vue supplies the canvas, decoded layers and a visible clock.
  */
 
 /** How the interaction feels. */
 export const MOTION = Object.freeze({
-  /**
-   * The tool glides to its spot: each second it covers `follow` times the
-   * distance left, and never more than `maxSpeed` artwork px. A shake of
-   * the mouse is smoothed away; a slow pass is followed.
-   */
+  /** Pointer nudges settle gently within the tiny contact region. */
   follow: 6,
-  maxSpeed: 150,
-  /** Strokes (a move and its reverse) that open the head fully. */
-  steps: 6,
+  maxSpeed: 20,
+  /** Three full back-and-forth rocks, pivoting about the tool's tip. */
+  steps: 3,
+  rockMs: 1600,
+  rockDegrees: 3,
+  maxTurnSpeed: 12,
+  settleMs: 350,
+  /** Mobile: pause, pry/lift/hold, then give the lid time to close. */
+  loopPauseMs: 1000,
+  loopActiveMs: 11000,
+  loopRestMs: 6000,
   /**
-   * A stroke of the tool is at least this long, and counts once it has
-   * come back this far. In artwork px of the tool's own small travel:
-   * about a tenth of the cover's width under the pointer.
-   */
-  minStroke: 9,
-  back: 4.5,
-  /** Strokes only count this long after the hand has come in, in ms. */
-  settleMs: 250,
-  /** Left alone this long, a half-open head starts to sink back, in ms. */
-  idleMs: 2500,
-  sinkPerSec: 0.1,
-  /**
-   * How far each stroke takes the lid: progress to this power, over the
-   * keys. Below 1 the first stroke already shows (the lid loosens), and
-   * the slide itself comes with the third.
+   * How far each completed rock takes the lid: progress to this power,
+   * over the keys. Below 1 the first rock loosens the lid, and the slide
+   * itself comes with the third.
    */
   liftCurve: 0.8,
   /**
@@ -80,7 +54,35 @@ export const MOTION = Object.freeze({
 });
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+/** Phones and coarse pointers play without touch-and-hold. */
+export function headAutoplays(width, coarse = false) {
+  return width < 1024 || coarse;
+}
+
+/** The phone's visible-time loop; a neutral pointer cannot drag the tip. */
+export function loopPointer(elapsed, motion = MOTION) {
+  const period = motion.loopPauseMs + motion.loopActiveMs + motion.loopRestMs;
+  const at = elapsed % period;
+  return {
+    present:
+      at >= motion.loopPauseMs && at < motion.loopPauseMs + motion.loopActiveMs,
+    u: 0.5,
+    v: 0.5,
+  };
+}
+
+/** Rock around a fixed tip; only completed rocks loosen the lid. */
+export function pryPose(elapsed, motion = MOTION) {
+  const at = Math.max(0, elapsed - motion.settleMs);
+  const rocks = Math.min(motion.steps, at / motion.rockMs);
+  return {
+    turn:
+      rocks >= motion.steps
+        ? 0
+        : Math.sin(rocks * Math.PI * 2) * motion.rockDegrees,
+    progress: Math.floor(rocks) / motion.steps,
+  };
+}
 
 /**
  * Where the artwork sits in a box of `width` × `height` CSS px: `fit`
@@ -102,7 +104,7 @@ export function sceneFit({ width = 0, height = 0 } = {}, fit, margin = 0.97) {
 
 /**
  * Where the tool's tip goes for a pointer at (u, v), each 0 to 1 across the
- * cover: the same place in the small ellipse `work` on the crown, so the
+ * cover: the same place in the small ellipse `work` at the cut, so the
  * whole cover's width is the ellipse's width. Corners are pulled in to the
  * ellipse's edge.
  */
@@ -146,23 +148,22 @@ export function createHead(spec, now = 0) {
     frame: 0, // which body frame
     frameClock: 0,
     inside: false, // the pointer is over the cover
-    enteredAt: 0,
+    workClock: 0, // visible time spent prying, in ms
+    loopClock: 0, // phone loop pauses while offscreen
+    handTurn: 0, // degrees about the tip
     hand: { x: spec.work.x, y: spec.work.y }, // the tool's tip
     handAlpha: 0,
-    anchor: { x: spec.work.x, y: spec.work.y }, // where the stroke began
-    reach: { x: spec.work.x, y: spec.work.y }, // the furthest it has got
     progress: 0, // 0 closed … 1 open
     latched: false, // fully open: stays so until the pointer leaves
-    lastMove: now,
     at: spec.keys.first, // the shown key position
     atSpeed: 0, // and how fast it is changing, keys a second
   };
 }
 
 /**
- * One frame. `pointer` is { present, u, v }: over the cover at all, and
- * where across it (0 to 1 each way). Changes `head` in place and returns
- * it.
+ * One visible frame. `pointer` is { present, u, v } (0 to 1 across the
+ * cover), or { automatic: true } on phones. Changes `head` in place.
+ * A bounded dt means a suspended frame never skips the whole sequence.
  */
 export function stepHead(head, pointer, now, spec, motion = MOTION) {
   const dt = Math.min(0.05, Math.max(0, (now - head.last) / 1000));
@@ -176,7 +177,10 @@ export function stepHead(head, pointer, now, spec, motion = MOTION) {
     head.frame = (head.frame + 1) % spec.body.frames.length;
   }
 
-  // The tool keeps to its small region on the crown and glides there.
+  // The same visible-time sequence drives both modes. No wall-clock jump
+  // on returning to an offscreen hero or a background tab.
+  head.loopClock += dt * 1000;
+  if (pointer.automatic) pointer = loopPointer(head.loopClock, motion);
   const was = head.inside;
   head.inside = !!pointer.present;
   if (head.inside) {
@@ -199,47 +203,24 @@ export function stepHead(head, pointer, now, spec, motion = MOTION) {
         };
       }
     }
-    if (!was) {
-      head.enteredAt = now;
-      head.anchor = { ...head.hand };
-      head.reach = { ...head.hand };
-    }
+    head.workClock = was ? head.workClock + dt * 1000 : 0;
   }
   head.handAlpha +=
     ((head.inside ? 1 : 0) - head.handAlpha) *
     Math.min(1, dt * motion.handFade);
 
-  // Strokes: out from the anchor, then back. Each one is a step.
-  if (!head.inside) {
-    // The pointer has left: the head closes.
-    head.latched = false;
-    head.progress = 0;
-    head.lastMove = now;
-    head.anchor = { ...head.hand };
-    head.reach = { ...head.hand };
-  } else if (now - head.enteredAt >= motion.settleMs && !head.latched) {
-    const out = dist(head.hand, head.anchor);
-    const furthest = dist(head.reach, head.anchor);
-    const back = dist(head.hand, head.reach);
-    if (out > furthest) {
-      head.reach = { ...head.hand }; // still travelling outward
-      head.lastMove = now;
-    } else if (furthest >= motion.minStroke && back >= motion.back) {
-      head.progress = Math.min(1, head.progress + 1 / motion.steps);
-      head.lastMove = now;
-      head.anchor = { ...head.reach };
-      head.reach = { ...head.hand };
-      if (head.progress > 1 - 1e-9) {
-        head.progress = 1;
-        head.latched = true;
-      }
-    } else if (back > motion.back && furthest < motion.minStroke) {
-      head.anchor = { ...head.hand }; // a jitter: start again
-      head.reach = { ...head.hand };
-    }
-    if (now - head.lastMove > motion.idleMs && !head.latched)
-      head.progress = Math.max(0, head.progress - dt * motion.sinkPerSec);
-  }
+  const pry = pryPose(head.workClock, motion);
+  head.progress = head.inside ? pry.progress : 0;
+  head.latched = head.progress === 1;
+  if (!head.inside) head.workClock = 0;
+  const turn = head.inside ? pry.turn : 0;
+  const change = (turn - head.handTurn) * Math.min(1, dt * motion.follow);
+  head.handTurn += clamp(
+    change,
+    -motion.maxTurnSpeed * dt,
+    motion.maxTurnSpeed * dt
+  );
+  if (Math.abs(turn - head.handTurn) < 0.001) head.handTurn = turn;
 
   // The lid follows slowly: it picks up speed, slides, and settles.
   const { first, open } = spec.keys;
@@ -320,14 +301,18 @@ export function drawHead(ctx, images, spec, head, view, motion = MOTION) {
     if (alpha <= 0.004) return;
     const [w, h] = spec.hand.size;
     const s = spec.hand.scale;
+    ctx.save();
     ctx.globalAlpha = alpha;
+    ctx.translate(head.hand.x, head.hand.y);
+    ctx.rotate((head.handTurn * Math.PI) / 180);
     ctx.drawImage(
       images.hand,
-      head.hand.x - spec.hand.tip[0] * s,
-      head.hand.y - spec.hand.tip[1] * s,
+      -spec.hand.tip[0] * s,
+      -spec.hand.tip[1] * s,
       w * s,
       h * s
     );
+    ctx.restore();
     ctx.globalAlpha = 1;
   };
   // Two copies, one each side of the lid. Away from the lid they add up to
