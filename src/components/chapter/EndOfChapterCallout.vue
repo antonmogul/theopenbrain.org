@@ -31,6 +31,7 @@
  */
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import ChapterReaderFeedback from "./ChapterReaderFeedback.vue";
 import { useFeedback } from "@/composables/useFeedback";
 import { useChapterStudyTools } from "@/composables/useChapterStudyTools";
 import { useAuthStore } from "@/stores/auth";
@@ -263,6 +264,13 @@ const cover = computed(() =>
           </p>
         </div>
       </div>
+
+      <ChapterReaderFeedback
+        v-if="moduleId"
+        :key="moduleId"
+        :module-id="moduleId"
+        :is-authenticated="isAuthenticated"
+      />
 
       <nav class="cc-links" aria-label="This chapter">
         <router-link :to="overviewRoute" class="cc-link">

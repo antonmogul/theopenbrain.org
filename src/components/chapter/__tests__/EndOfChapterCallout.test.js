@@ -56,7 +56,7 @@ async function mountClose(props = {}) {
       nextChapter: NEXT,
       ...props,
     },
-    global: { stubs: { RouterLink } },
+    global: { stubs: { RouterLink, ChapterReaderFeedback: true } },
     attachTo: document.body,
   });
   wrappers.push(wrapper);

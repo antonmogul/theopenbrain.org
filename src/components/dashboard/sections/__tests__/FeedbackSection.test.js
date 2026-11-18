@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { mount } from "@vue/test-utils";
 import { mountSection } from "@/test/mountSection";
 import FeedbackSection from "../FeedbackSection.vue";
 
@@ -36,6 +37,17 @@ describe("FeedbackSection", () => {
     await w.find("button").trigger("click");
     expect(w.emitted("fetch")).toHaveLength(1);
   });
+  it.each(["usability", "design", "other"])(
+    "shows and filters the %s category",
+    async (kind) => {
+      const w = mountSection(FeedbackSection, {
+        filteredFeedback: [{ ...item, kind }],
+      });
+      expect(w.find("article").text()).toContain(kind);
+      await w.findAll("select")[1].setValue(kind);
+      expect(w.emitted("kind-change")).toEqual([[kind]]);
+    }
+  );
   it("renders empty, loading, retryable error and denied states without displaying stale feedback", async () => {
     const w = mountSection(FeedbackSection);
     expect(w.text()).toContain("No feedback matches these filters");
@@ -57,6 +69,37 @@ describe("FeedbackSection", () => {
     expect(w.find("article").exists()).toBe(false);
     expect(w.find("select").exists()).toBe(false);
     expect(w.find("button").attributes("disabled")).toBeDefined();
+  });
+  it("keeps the review switch and slot separate from reader category filters", async () => {
+    const w = mount(FeedbackSection, {
+      props: { filteredFeedback: [{ ...item, kind: "usability" }] },
+      slots: { review: "<div data-review-panel>Reviewer notes panel</div>" },
+    });
+    expect(w.findAll("select")).toHaveLength(2);
+    expect(w.find("[data-review-panel]").exists()).toBe(false);
+    await w
+      .findAll('[role="radio"]')
+      .find((button) => button.text() === "Review notes")
+      .trigger("click");
+    expect(w.emitted("view-change")).toEqual([["review"]]);
+    await w.setProps({ view: "review" });
+    expect(w.get("[data-review-panel]").text()).toBe("Reviewer notes panel");
+    expect(w.find("select").exists()).toBe(false);
+    expect(w.find(".feedback-list").exists()).toBe(false);
+    await w
+      .findAll('[role="radio"]')
+      .find((button) => button.text() === "Reader messages")
+      .trigger("click");
+    expect(w.emitted("view-change")[1]).toEqual(["messages"]);
+    await w.setProps({ view: "messages" });
+    expect(w.find("[data-review-panel]").exists()).toBe(false);
+    expect(
+      w
+        .findAll("select")[1]
+        .findAll("option")
+        .map((option) => option.attributes("value"))
+    ).toEqual(expect.arrayContaining(["usability", "design", "other"]));
+    w.unmount();
   });
   it("handles missing dates and treats saved page URLs only as text", () => {
     const w = mountSection(FeedbackSection, {
