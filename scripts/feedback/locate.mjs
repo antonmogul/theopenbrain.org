@@ -185,6 +185,17 @@ export async function locateAnchor({
     });
     const page = await context.newPage();
     await page.goto(url, { waitUntil: "networkidle", timeout: 90000 });
+    // A chapter that came up empty (a dropped request): load it once more.
+    const loaded = () =>
+      page
+        .waitForSelector("[data-paragraph-id]", { timeout: 20000 })
+        .then(() => true)
+        .catch(() => false);
+    if (!(await loaded())) {
+      report.reloaded = true;
+      await page.reload({ waitUntil: "networkidle", timeout: 90000 });
+      await loaded();
+    }
     // ChapterView lands on the hash and holds it for up to 5 s (holdLanding).
     await page.waitForTimeout(6000);
     await page.addScriptTag({ content: await pageScript() });
