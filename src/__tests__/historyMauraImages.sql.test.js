@@ -15,6 +15,10 @@ const migration = readFileSync(
   "supabase/migrations/20261118140000_history_maura_images.sql",
   "utf8"
 );
+const fileUrl = readFileSync(
+  "supabase/migrations/20261118140100_history_maura_images_file_url.sql",
+  "utf8"
+);
 const F = "/publicAssets/images/foundations/";
 
 const schema = `
@@ -22,7 +26,7 @@ create table public.modules (id uuid primary key default gen_random_uuid(), slug
 create table public.sections (id uuid primary key default gen_random_uuid(),
   module_id uuid references modules(id) on delete cascade, slug text);
 create table public.animations (id uuid primary key default gen_random_uuid(),
-  animation_key text unique, config jsonb, updated_at timestamptz);
+  animation_key text unique, config jsonb, image_file_url text, updated_at timestamptz);
 create table public.paragraphs (id uuid primary key default gen_random_uuid(),
   section_id uuid not null references sections(id) on delete cascade,
   content jsonb, updated_at timestamptz);
@@ -103,6 +107,26 @@ describe.skipIf(!harness || !existsSync(harness))(
         ],
         ["s-the-retina", `${F}thurneysser-four-humours-1574.jpg`],
       ]);
+    });
+
+    it("moves image_file_url too, only where it holds the old path", async () => {
+      const db = await fresh();
+      await db.exec(
+        `update animations set image_file_url = '${F}fig08-01.jpg' where animation_key in ('animationFoundationsFig8', 'animationRetinaThing');
+         update animations set image_file_url = '${F}mine.jpg' where animation_key = 'animationFoundationsFig16'`
+      );
+      await db.exec(fileUrl);
+      await db.exec(fileUrl);
+      const rows = Object.fromEntries(
+        (
+          await db.query(
+            "select animation_key k, image_file_url u from animations"
+          )
+        ).rows.map((r) => [r.k, r.u])
+      );
+      expect(rows.animationFoundationsFig8).toBe(`${F}fig08-01-v2.webp`);
+      expect(rows.animationRetinaThing).toBe(`${F}fig08-01.jpg`);
+      expect(rows.animationFoundationsFig16).toBe(`${F}mine.jpg`);
     });
 
     it("changes nothing on a second run", async () => {
