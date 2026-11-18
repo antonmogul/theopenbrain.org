@@ -32,6 +32,10 @@ const sqlV4 = readFileSync(
   "supabase/migrations/20261117196000_history_penfield_binder_v4.sql",
   "utf8"
 );
+const sqlV5 = readFileSync(
+  "supabase/migrations/20261118120100_history_penfield_binder_v5.sql",
+  "utf8"
+);
 const file = readFileSync(
   "src/widgets/uploads/history-penfield-binder.html",
   "utf8"
@@ -43,6 +47,7 @@ const htmlIn = (text) =>
 const fileV1 = htmlIn(sql);
 const fileV2 = htmlIn(sqlV2);
 const fileV3 = htmlIn(sqlV3);
+const fileV4 = htmlIn(sqlV4);
 const json = (html, id) =>
   JSON.parse(
     html.match(
@@ -68,11 +73,11 @@ const onlyTheUpload = (text) => {
 
 describe("Penfield binder migrations", () => {
   it("the latest carries the widget file as it is in src/widgets/uploads", () => {
-    expect(htmlIn(sqlV4)).toBe(file);
+    expect(htmlIn(sqlV5)).toBe(file);
   });
 
   it("states the file's size and hash", () => {
-    expect(sqlV4).toContain(
+    expect(sqlV5).toContain(
       `-- ${Buffer.byteLength(file, "utf8")} bytes, sha256 ${createHash("sha256").update(file).digest("hex")}`
     );
   });
@@ -81,7 +86,35 @@ describe("Penfield binder migrations", () => {
     expect(fileV1).toContain("Version:  1 (2026-11-10)");
     expect(fileV2).toContain("Version:  2 (2026-11-11)");
     expect(fileV3).toContain("Version:  3 (2026-11-12)");
-    expect(file).toContain("Version:  4 (2026-11-17)");
+    expect(fileV4).toContain("Version:  4 (2026-11-17)");
+    expect(file).toContain("Version:  5 (2026-11-18)");
+  });
+
+  describe("version 5 (OPENBRAIN-202)", () => {
+    it("changes the upload's HTML and nothing else", () => {
+      onlyTheUpload(sqlV5);
+    });
+
+    it("fixes the scan's '1' and ']' for 'I' in four quotations, and nothing else", () => {
+      // Stuart, 18 Nov: A. Bra. point 17, "Yes, 1 have heard it before."
+      const fixes = [
+        ["Yes, 1 have heard it before.", "Yes, I have heard it before."],
+        ["and 1 was talking to a man", "and I was talking to a man"],
+        ['"1 hear my brother talking."', '"I hear my brother talking."'],
+        ["Again something ] have heard of", "Again something I have heard of"],
+      ];
+      let before = JSON.stringify(json(fileV4, "cases"));
+      const after = JSON.stringify(json(file, "cases"));
+      for (const [typo, fixed] of fixes) {
+        expect(before).toContain(JSON.stringify(typo).slice(1, -1));
+        expect(after).not.toContain(JSON.stringify(typo).slice(1, -1));
+        before = before.replace(
+          JSON.stringify(typo).slice(1, -1),
+          JSON.stringify(fixed).slice(1, -1)
+        );
+      }
+      expect(after).toBe(before);
+    });
   });
 
   describe("version 4 (OPENBRAIN-196)", () => {
@@ -117,7 +150,7 @@ describe("Penfield binder migrations", () => {
     });
 
     it("leaves the cases, the maps, the cover and the probe as they were", () => {
-      expect(json(file, "cases")).toEqual(json(fileV3, "cases"));
+      expect(json(fileV4, "cases")).toEqual(json(fileV3, "cases"));
       const before = json(fileV3, "assets");
       for (const key of Object.keys(before).filter(
         (k) => k !== "photo" && k !== "letter"
@@ -368,7 +401,8 @@ describe.skipIf(!harness || !existsSync(harness))(
       // Versions 3 and 4 on top, each once: the last is the file as it is now.
       for (const [text, html] of [
         [sqlV3, fileV3],
-        [sqlV4, file],
+        [sqlV4, fileV4],
+        [sqlV5, file],
       ]) {
         await db.exec(text);
         const next = await row();
@@ -386,9 +420,9 @@ describe.skipIf(!harness || !existsSync(harness))(
       }
     });
 
-    it("version 4 alone, on a database without the upload, publishes it", async () => {
+    it("version 5 alone, on a database without the upload, publishes it", async () => {
       const db = await makeDb();
-      await db.exec(sqlV4);
+      await db.exec(sqlV5);
       const { rows } = await db.query(
         "select slug, status, ramp, html from widget_uploads"
       );

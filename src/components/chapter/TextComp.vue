@@ -670,7 +670,11 @@ onBeforeUnmount(() => {
           :id="section.id"
           class="reader-section overflow-y-visible prose-measure"
         >
+          <!-- The 2023 eye on the divider. Not where the authors and funding
+               open the chapter: it sat beside them, out of place (Stuart,
+               18 Nov, OPENBRAIN-202). -->
           <div
+            v-if="!(authors.length || credits.funding)"
             class="TN shadow-md border border-black bg-white rounded-full absolute -translate-x-[5.375rem] -translate-y-[0.5625rem] w-28 h-28 flex items-center justify-center"
           >
             <!--

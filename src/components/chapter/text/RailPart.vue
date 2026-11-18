@@ -32,7 +32,11 @@ import RailFigure from "./RailFigure.vue";
 import { imageUrl } from "@/editor/media.mjs";
 import { useFigureRecords } from "@/composables/useFigureSources";
 import { figureImages } from "@/helper/figureCycle";
-import { railFigureLabel, railPlatesOf } from "@/helper/railFigure";
+import {
+  platesAreFigures,
+  railFigureLabel,
+  railPlatesOf,
+} from "@/helper/railFigure";
 
 const props = defineProps({
   /** { id, title, explore } from railLayoutOf (title: an Explore part's). */
@@ -58,12 +62,13 @@ const drawn = computed(() =>
   props.figures.map((id, i) => {
     const record = records.value[i] || null;
     const plates = railPlatesOf(record);
+    const own = platesAreFigures(plates);
     return plates
       ? {
           id,
           plates,
-          label: railFigureLabel(record),
-          title: record.title || "",
+          label: own ? "" : railFigureLabel(record),
+          title: own ? "" : record.title || "",
           caption: record.caption || record.description || "",
         }
       : { id, plates: null };
