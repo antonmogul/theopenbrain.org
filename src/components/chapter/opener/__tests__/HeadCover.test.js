@@ -136,6 +136,48 @@ describe("HeadCover", () => {
     w.unmount();
   });
 
+  it("autoplays on phones without installing pointer or touch handlers", async () => {
+    const width = window.innerWidth;
+    window.innerWidth = 390;
+    const listener = vi.spyOn(window, "addEventListener");
+    const turns = [];
+    const context = ctx();
+    context.rotate = (angle) => turns.push(angle);
+    HTMLCanvasElement.prototype.getContext = () => context;
+    const w = mount(HeadCover, { props: { spec }, attachTo: document.body });
+    await flushPromises();
+    expect(
+      listener.mock.calls.filter(([type]) => /^(pointer|touch)/.test(type))
+    ).toEqual([]);
+    const start = performance.now();
+    for (let i = 1; i <= 120; i++)
+      frames.splice(0).forEach((cb) => cb(start + i * 20));
+    expect(turns.some((angle) => Math.abs(angle) > 0.02)).toBe(true);
+    w.unmount();
+    listener.mockRestore();
+    window.innerWidth = width;
+  });
+
+  it("changes input mode on resize and ignores desktop touch events", async () => {
+    const width = window.innerWidth;
+    window.innerWidth = 1440;
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const w = mount(HeadCover, { props: { spec }, attachTo: document.body });
+    await flushPromises();
+    expect(add.mock.calls.some(([type]) => type === "pointermove")).toBe(true);
+    expect(add.mock.calls.some(([type]) => type === "pointerdown")).toBe(false);
+    window.innerWidth = 390;
+    window.dispatchEvent(new Event("resize"));
+    expect(remove.mock.calls.some(([type]) => type === "pointermove")).toBe(
+      true
+    );
+    w.unmount();
+    add.mockRestore();
+    remove.mockRestore();
+    window.innerWidth = width;
+  });
+
   it("keeps the still when a layer fails to load", async () => {
     vi.stubGlobal(
       "Image",
