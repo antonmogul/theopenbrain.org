@@ -56,6 +56,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** The book is in review: offer "Feedback" on the selection, which
+   *  opens the review widget on it (OPENBRAIN-204). */
+  reviewing: {
+    type: Boolean,
+    default: false,
+  },
+  /** The reader can highlight (signed in). A signed-out reviewer gets the
+   *  toolbar with "Feedback" alone. */
+  highlighting: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emit = defineEmits([
@@ -64,7 +76,19 @@ const emit = defineEmits([
   "update-highlight",
   "delete-highlight",
   "save-note",
+  "feedback",
 ]);
+
+// "Feedback" on the selection (or on the highlight being edited): its
+// words and paragraph go to the review widget.
+function onFeedback() {
+  const hl = props.mode === "edit" ? props.activeHighlight : null;
+  emit("feedback", {
+    text: hl ? hl.selected_text : props.selection?.text,
+    paragraphId: hl ? hl.paragraph_id : props.selection?.paragraphId,
+    paragraphElement: hl ? null : props.selection?.paragraphElement,
+  });
+}
 
 // Edit mode: the active highlight's sharing, updated as soon as it is toggled
 // and put back if the save fails, with shareError saying so.
@@ -307,14 +331,28 @@ function onCancel() {
         <!-- Main pill bar -->
         <div class="hl-pill">
           <!-- Color dots -->
-          <HighlightColorPicker
-            :mode="mode"
-            :active-color="activeHighlight?.color"
-            @pick="onColorPick"
-          />
+          <template v-if="highlighting">
+            <HighlightColorPicker
+              :mode="mode"
+              :active-color="activeHighlight?.color"
+              @pick="onColorPick"
+            />
 
-          <!-- Divider -->
-          <div class="hl-divider"></div>
+            <!-- Divider -->
+            <div class="hl-divider"></div>
+          </template>
+
+          <!-- Review: the selection as a note to the book's team -->
+          <button
+            v-if="reviewing"
+            type="button"
+            class="hl-note-btn hl-feedback-btn"
+            title="Send the team a note about this passage"
+            data-testid="selection-feedback"
+            @click="onFeedback"
+          >
+            Feedback
+          </button>
 
           <!-- Edit mode actions -->
           <HighlightActionBar
@@ -333,6 +371,7 @@ function onCancel() {
           <!-- Create mode actions: a note straight away, or cancel -->
           <template v-else>
             <button
+              v-if="highlighting"
               type="button"
               class="hl-note-btn"
               title="Highlight and add a note"
@@ -493,6 +532,10 @@ function onCancel() {
 }
 .hl-note-btn:hover {
   background: rgb(var(--color-ink) / 0.06);
+}
+.hl-feedback-btn {
+  margin-right: 0.25rem;
+  border-color: rgb(var(--color-accent));
 }
 
 .hl-action {

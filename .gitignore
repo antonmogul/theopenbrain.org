@@ -64,3 +64,6 @@ storybook-static
 
 # Crossref lookups for scripts/references/import-references.mjs
 scripts/references/.crossref-cache.json
+
+# feedback:locate screenshots (OPENBRAIN-204)
+.feedback/
