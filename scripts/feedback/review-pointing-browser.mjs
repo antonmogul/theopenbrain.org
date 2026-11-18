@@ -302,7 +302,14 @@ async function capture(engineName, browser, width, chapter, motion) {
       await page.click('[data-testid="review-point"]');
       await page.waitForSelector('[data-testid="review-pointer"]');
       // Measured again under the layer: late layout may have moved it.
-      point = (await measure()) || point;
+      // Until the layout has settled: two measures in a row agree.
+      for (let i = 0; i < 5; i += 1) {
+        const next = (await measure()) || point;
+        const still =
+          Math.abs(next.x - point.x) < 2 && Math.abs(next.y - point.y) < 2;
+        point = next;
+        if (still) break;
+      }
       if (phone) {
         await page.touchscreen.tap(point.x, point.y);
         await page.waitForSelector('[data-testid="review-pointer-confirm"]', {
