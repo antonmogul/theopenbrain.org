@@ -65,3 +65,18 @@ export const Mobile = {
   globals: { viewport: { value: "phone", isRotated: false } },
   args: { filteredFeedback: messages },
 };
+
+/**
+ * The Review notes view (OPENBRAIN-203): DashboardView fills the #review
+ * slot with ReviewNotesPanel; see Dashboard/Sections/ReviewNotesPanel.
+ */
+export const ReviewNotesView = {
+  args: { view: "review" },
+  render: (args) => ({
+    components: { FeedbackSection },
+    setup: () => ({ args }),
+    template: `<FeedbackSection v-bind="args" @view-change="args.view = $event">
+      <template #review><p>Reviewer notes are listed here.</p></template>
+    </FeedbackSection>`,
+  }),
+};
