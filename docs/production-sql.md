@@ -158,12 +158,18 @@ Pushed with `supabase db push` after PR #195's deploy was serving the three file
 
 `history:fixture:drift` after the push shows only the four 17 Nov differences noted above (Further reading, the NGF video): this PR's fixture edits match the published rows.
 
+## Pushed 2026-11-18: Stuart's 18 Nov notes (OPENBRAIN-202)
+
+Rows backed up over REST first to `~/Documents/openbrain-backups/2026-11-18-pre-openbrain-202/`; dry run listed only these two; pushed after PR #197 merged.
+
+| Migration                                   | How it got there, and what was checked                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261118120000_history_stuart_18nov`       | **pushed** 18 Nov. Over REST: the five titles changed, Descartes' images carry D and E, no `credit` left on History or Retina widget blocks or Retina pane widgets, Loewi "After Loewi (1921), Figure 1". On production at 1440: plates read FIG D / FIG E, no widget credits, pane labels 01–06 in order (trepanation Fig 03, papyrus Fig 05), no eye beside the authors, no console errors. |
+| `20261118120100_history_penfield_binder_v5` | **pushed** 18 Nov. Over REST the row's HTML equals `src/widgets/uploads/history-penfield-binder.html`.                                                                                                                                                                                                                                                                                        |
+
 ## Pending
 
-| Migration                                                   | What it does                                                                                                                                                                                                                                                                                                                                                                                             |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261118120000_history_stuart_18nov` (OPENBRAIN-202)       | Stuart's 18 Nov notes: five figure titles (Figs 1, 6, 17, 22, 25), Descartes' two photographs as Figures D and E (`images[i].figureNumber`/`title`), the `credit` dropped from History's two and the Retina's four widget blocks and the Retina's nine pane widgets, Loewi's credit "After Loewi (1921), Figure 1". Data only; safe before or after the deploy (old code ignores an image's own number). |
-| `20261118120100_history_penfield_binder_v5` (OPENBRAIN-202) | The binder file with four scan typos fixed ("1"/"]" for "I"). Upload only.                                                                                                                                                                                                                                                                                                                               |
+Nothing: `supabase migration list` shows local and remote in step as of 2026-11-18 (after OPENBRAIN-202).
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
