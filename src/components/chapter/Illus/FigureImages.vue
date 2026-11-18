@@ -89,6 +89,19 @@ const loopSrc = (img) => {
   if (img.play === "player") return "";
   return reducedMotion.value ? "" : youtubeLoopUrl(img.youtube);
 };
+// A film of our own (img.loop): a muted inline loop over its poster, the
+// still itself under reduced motion (followed live, like the YouTube loops).
+const fileLoop = (img) => (img?.loop && !reducedMotion.value ? img.loop : null);
+// Autoplay needs `muted` as the attribute too (iOS Safari reads the
+// attribute, not Vue's property), and play() once the sources are in.
+function primeLoop(el) {
+  if (!el) return;
+  el.muted = true;
+  el.defaultMuted = true;
+  el.setAttribute("muted", "");
+  const started = el.play?.();
+  if (started && typeof started.catch === "function") started.catch(() => {});
+}
 const watchHref = (img) =>
   img?.youtube ? `https://www.youtube.com/watch?v=${img.youtube}` : "";
 const first = computed(() => props.images[0] || {});
@@ -472,6 +485,35 @@ onBeforeUnmount(() => {
         allowfullscreen
         loading="lazy"
       />
+      <video
+        v-else-if="fileLoop(first)"
+        :key="'loop:' + first.src"
+        :ref="primeLoop"
+        class="figimg-img figimg-loop"
+        :poster="first.src"
+        :width="fileLoop(first).width"
+        :height="fileLoop(first).height"
+        role="img"
+        :aria-label="altFor(first)"
+        muted
+        autoplay
+        loop
+        playsinline
+        disablepictureinpicture
+        disableremoteplayback
+        preload="auto"
+      >
+        <source
+          v-if="fileLoop(first).webm"
+          :src="fileLoop(first).webm"
+          type="video/webm"
+        />
+        <source
+          v-if="fileLoop(first).mp4"
+          :src="fileLoop(first).mp4"
+          type="video/mp4"
+        />
+      </video>
       <img
         v-else
         :key="first.src"
@@ -581,6 +623,34 @@ onBeforeUnmount(() => {
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowfullscreen
           />
+          <video
+            v-else-if="fileLoop(current)"
+            :ref="primeLoop"
+            class="figimg-img figimg-gallery-img figimg-loop"
+            :poster="current.src"
+            :width="fileLoop(current).width"
+            :height="fileLoop(current).height"
+            role="img"
+            :aria-label="altFor(current)"
+            muted
+            autoplay
+            loop
+            playsinline
+            disablepictureinpicture
+            disableremoteplayback
+            preload="auto"
+          >
+            <source
+              v-if="fileLoop(current).webm"
+              :src="fileLoop(current).webm"
+              type="video/webm"
+            />
+            <source
+              v-if="fileLoop(current).mp4"
+              :src="fileLoop(current).mp4"
+              type="video/mp4"
+            />
+          </video>
           <img
             v-else
             class="figimg-img figimg-gallery-img"
@@ -817,6 +887,11 @@ onBeforeUnmount(() => {
   height: auto;
   max-height: 85vh;
   object-fit: contain;
+}
+/* A film over its poster: no controls, nothing to pick up or drag. */
+.figimg-loop {
+  pointer-events: none;
+  user-select: none;
 }
 .figimg-caption {
   flex: none;

@@ -13,7 +13,7 @@
  * Pure functions, so the rules are testable without mounting anything.
  */
 
-/** Normalise whatever the row carries into [{ src, caption, alt }]. */
+/** Normalise whatever the row carries into [{ src, caption, alt, youtube?, loop? }]. */
 export function figureImages(animation) {
   if (!animation) return [];
   const raw =
@@ -42,8 +42,39 @@ export function figureImages(animation) {
         const start = Number(item.start);
         if (Number.isFinite(start) && start > 0) out.start = Math.floor(start);
       }
+      // Or loop a short silent film of our own in place of the still, with
+      // `src` as its poster and as the still under reduced motion (Maura,
+      // 18 Nov: Plato and Aristotle; scripts/figures/encode-figure-loop.sh).
+      const loop = figureLoop(item.loop);
+      if (loop && !out.youtube) out.loop = loop;
       return out;
     });
+}
+
+/** A same-origin path, "/publicAssets/…": loops are served with the app. */
+const sameOrigin = (value) =>
+  typeof value === "string" && /^\/(?!\/)\S+$/.test(value) ? value : "";
+
+/**
+ * `{ mp4?, webm?, width?, height? }` → the same with only usable values, or
+ * null without a source. width and height (the film's pixels) let the
+ * browser reserve its shape before the first frame.
+ */
+export function figureLoop(value) {
+  if (!value || typeof value !== "object") return null;
+  const mp4 = sameOrigin(value.mp4);
+  const webm = sameOrigin(value.webm);
+  if (!mp4 && !webm) return null;
+  const out = {};
+  if (webm) out.webm = webm;
+  if (mp4) out.mp4 = mp4;
+  const width = Number(value.width);
+  const height = Number(value.height);
+  if (width > 0 && height > 0) {
+    out.width = Math.round(width);
+    out.height = Math.round(height);
+  }
+  return out;
 }
 
 /** A YouTube video id (11 characters), or "" for anything else. */
