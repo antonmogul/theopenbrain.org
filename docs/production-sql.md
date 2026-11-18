@@ -169,7 +169,9 @@ Rows backed up over REST first to `~/Documents/openbrain-backups/2026-11-18-pre-
 
 ## Pending
 
-Nothing: `supabase migration list` shows local and remote in step as of 2026-11-18 (after OPENBRAIN-202).
+| Migration                                             | What it does                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20261118140000_history_maura_images` (OPENBRAIN-205) | Maura's 18 Nov reworked images: 12 paths in History's figure records and one paragraph swapped to `-v2.webp` files (4 cut-outs for the dark pane, 8 with more room). Needs the deploy first (the files ship with the app). Eccles (Fig 25) waits for Stuart. |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
