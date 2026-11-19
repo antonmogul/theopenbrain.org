@@ -24,8 +24,8 @@ vi.mock("gsap", () => {
 vi.mock("@/helper/motion", () => ({ reducedMotionK: () => 0 }));
 import PhrenologyView from "@/views/PhrenologyView.vue";
 const wrappers = [];
-async function skull() {
-  const w = mount(PhrenologyView, { attachTo: document.body });
+async function skull(slots = {}) {
+  const w = mount(PhrenologyView, { attachTo: document.body, slots });
   wrappers.push(w);
   await flushPromises();
   return w;
@@ -48,6 +48,15 @@ afterEach(() => {
 });
 
 describe("source-backed embedded skull", () => {
+  it("puts the host expand action beside the desktop citation", async () => {
+    const w = await skull({
+      actions: '<button aria-label="Full screen">Expand</button>',
+    });
+    expect(w.find('.phreno__foot [aria-label="Full screen"]').exists()).toBe(
+      true
+    );
+    expect(w.find(".phreno__foot").text()).toContain("1815");
+  });
   it("keeps the view tabs out of the book's square-button rule", async () => {
     // index.css squares `.widget-root button:not(.ob-round)` with !important,
     // which gave the hover fill sharp corners in the pill track.
@@ -202,7 +211,12 @@ describe("source-backed embedded skull", () => {
     afterEach(() => vi.restoreAllMocks());
 
     it("opens the text as a sheet over the lit region, takes focus and returns it on dismissal", async () => {
-      const w = await skull();
+      const w = await skull({
+        actions: '<button aria-label="Full screen">Expand</button>',
+      });
+      expect(
+        w.find('.phreno__legend-row [aria-label="Full screen"]').exists()
+      ).toBe(true);
       expect(w.find(".card--sheet").exists()).toBe(false);
       // On a phone the instruction is folded into the legend (OPENBRAIN-190).
       expect(w.find(".card-instruction").exists()).toBe(false);
@@ -332,7 +346,7 @@ describe("source-backed embedded skull", () => {
       "utf8"
     );
     expect(code).toContain("var(--widget-body-min-h, 65vh)");
-    expect(code).toContain("var(--skull-h) * 450 / 435");
+    expect(code).toContain("100cqh * 450 / 435");
     expect(w.text()).not.toContain("not accepted neuroscience");
     expect(w.find(".card-instruction").text()).toContain(
       "Select a region of the skull"

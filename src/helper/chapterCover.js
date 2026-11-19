@@ -73,8 +73,8 @@ export function coverForModule(module) {
  *   hand         the photograph, its tool's `tip`, `scale`, and its pixel
  *                `size`
  *   work         the contact at the back end of the cut (OPENBRAIN-40).
- *                The pointer only nudges its tiny ellipse; the hand rocks
- *                about the tip. Phones loop without touch (OPENBRAIN-41).
+ *                The pointer rocks the hand about the tip, nudging its tiny
+ *                ellipse. Phones loop without touch (OPENBRAIN-41).
  *   keys         [lid dx, lid dy, lid turn°, brain dx, brain dy] per frame of
  *                the artist's gif, from `first` (closed) to `open`
  */

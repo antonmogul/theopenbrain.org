@@ -630,6 +630,7 @@ watch(activeRegion, (region) => {
            keeps its place, so the stage never moves. Folded, it stays in
            the document for screen readers. -->
       <div v-if="narrow" class="phreno__legend-row">
+        <slot name="actions" />
         <button
           type="button"
           class="phreno__legend-btn"
@@ -666,7 +667,8 @@ watch(activeRegion, (region) => {
     </div>
 
     <footer v-if="!narrow" class="phreno__foot">
-      {{ PHRENOLOGY_CITATION }}
+      <slot name="actions" />
+      <span>{{ PHRENOLOGY_CITATION }}</span>
     </footer>
   </div>
 </template>
@@ -682,14 +684,12 @@ watch(activeRegion, (region) => {
   --accent-rgb: var(--color-chapter, 139 92 246);
   --violet: rgb(var(--accent-rgb));
   --violet-soft: rgb(var(--color-chapter-soft, 167 139 250));
-  /* The skull's height, and the source text's cap beside it. 56vh, or on a
-     short screen what is left of one once the chrome, the chapter band's
-     heading and toolbar and the citation (about 27.5rem together) have
-     theirs, so the band stays one screen. */
-  --skull-h: max(12rem, min(56vh, calc(100vh - 27.5rem)));
   position: relative;
   /* A full screen on its own route; a host can set less (WidgetBreakout). */
   min-height: var(--widget-min-h, 100vh);
+  /* A definite modal height lets the body's cqh resolve before its skull
+     is sized; min-height alone leaves that query size at zero. */
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--plate);
@@ -700,21 +700,22 @@ watch(activeRegion, (region) => {
 }
 
 /* ── chrome ── */
-/* The view switch with the organ list under it, centred over the skull
-   (Figma 169:252, 169:259): the chrome has the body's two columns, and the
-   switch sits in the first. The stage below gets the height. */
+/* Desktop controls sit above the source text beside the skull; phones
+   keep them above it. The engraving gets the remaining height (OPENBRAIN-48). */
 .phreno__chrome {
-  flex-shrink: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
-  gap: 1.5rem;
-  padding: 1rem 2rem 0;
+  /* The controls share the source-text column, so they no longer reserve
+     another full-width row above the skull. */
+  position: absolute;
+  z-index: 1;
+  top: 1rem;
+  right: 2rem;
+  left: calc(52.6316% + 0.605rem);
 }
 .phreno__views {
   justify-self: center;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.75rem;
   width: min(100%, 510px);
 }
 /* The switch: a pill track, the labels in equal parts of it, and one pill
@@ -785,15 +786,15 @@ watch(activeRegion, (region) => {
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 2rem;
-  /* A short host may shrink the body, but not below the artwork plus padding.
-     The root scrolls any excess so the citation cannot overlap the card. */
-  min-height: max(var(--widget-body-min-h, 65vh), calc(var(--skull-h) + 2rem));
+  /* Measure the space actually left after the heading, controls and legend.
+     A fixed viewport allowance counted that chrome twice and shrank the skull. */
+  min-height: var(--widget-body-min-h, 65vh);
+  container-type: size;
 }
 .stage {
   perspective: 1200px;
-  /* As tall as the screen allows: the engraving's height is 435/450 of its
-     width, so this is the skull at --skull-h tall, capped by the column. */
-  width: min(100%, calc(var(--skull-h) * 450 / 435));
+  /* The skull fills the body's available height, capped by its column. */
+  width: min(100%, calc(100cqh * 450 / 435));
   margin: auto;
 }
 .skull {
@@ -882,8 +883,8 @@ watch(activeRegion, (region) => {
      top), and no taller than the skull beside it: long source text scrolls
      rather than growing the row and moving the skull. */
   align-self: start;
-  margin-top: 2.5rem;
-  max-height: calc(var(--skull-h) - 2.5rem);
+  margin-top: 9rem;
+  max-height: calc(100cqh - 9rem);
   box-sizing: border-box;
   padding: 0 2.75rem 0 0; /* the close button's column */
   color: var(--bone);
@@ -892,7 +893,7 @@ watch(activeRegion, (region) => {
 }
 .card-instruction {
   align-self: start;
-  margin: 2.5rem 0 0;
+  margin: 9rem 0 0;
   padding: 0 2.75rem 0 0;
   font-size: var(--type-body-sm-size, 1.0625rem);
   line-height: 1.5;
@@ -1016,6 +1017,9 @@ watch(activeRegion, (region) => {
    legend sits. */
 .phreno__foot {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.75rem 2rem 1rem;
   font-family: var(--font-mono, monospace);
   font-size: 0.71875rem;
@@ -1029,7 +1033,8 @@ watch(activeRegion, (region) => {
    (OPENBRAIN-160; SHEET_MEDIA_QUERY in helper/sheetDetents repeats this) */
 @media (max-width: 759.98px) {
   .phreno__chrome {
-    grid-template-columns: minmax(0, 1fr);
+    position: static;
+    flex-shrink: 0;
     padding: 0.75rem 1rem 0;
   }
   .phreno__views {
@@ -1085,6 +1090,7 @@ watch(activeRegion, (region) => {
   /* The legend's control, in the body's second row: the figures' "Legend"
      control on the plate. */
   .phreno__legend-row {
+    gap: 0.75rem;
     grid-row: 2;
     grid-column: 1;
     display: flex;
@@ -1167,6 +1173,7 @@ watch(activeRegion, (region) => {
      surface, the lighter dark (the plate reads white on dark now), lifted
      off the skull by a hairline and a shadow. */
   .card--sheet {
+    margin-top: 0;
     position: absolute;
     left: 0;
     right: 0;

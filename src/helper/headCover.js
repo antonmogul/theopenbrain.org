@@ -1,8 +1,8 @@
 /*
  * History's "open the head" cover (OPENBRAIN-40/41, following 171/198).
  * The tool pries at the back end of the skull's cut, rocking about its tip.
- * A desktop pointer only nudges that contact point; hovering plays three
- * gentle rocks and eases the lid off. Phones play the same sequence, rest,
+ * A desktop pointer rocks the hand around that contact point; three
+ * back-and-forth mouse strokes ease the lid off. Phones play the same sequence, rest,
  * close and repeat without needing a finger on the drawing.
  *
  * All positions are artwork pixels (2680 × 1732), never viewport pixels.
@@ -148,6 +148,8 @@ export function createHead(spec, now = 0) {
     frame: 0, // which body frame
     frameClock: 0,
     inside: false, // the pointer is over the cover
+    pointerTurn: 0, // previous mouse target, degrees
+    pryTravel: 0, // accumulated mouse rocking, degrees
     workClock: 0, // visible time spent prying, in ms
     loopClock: 0, // phone loop pauses while offscreen
     handTurn: 0, // degrees about the tip
@@ -177,10 +179,10 @@ export function stepHead(head, pointer, now, spec, motion = MOTION) {
     head.frame = (head.frame + 1) % spec.body.frames.length;
   }
 
-  // The same visible-time sequence drives both modes. No wall-clock jump
-  // on returning to an offscreen hero or a background tab.
+  // Phones use visible time; desktop prying advances only with the mouse.
   head.loopClock += dt * 1000;
-  if (pointer.automatic) pointer = loopPointer(head.loopClock, motion);
+  const automatic = !!pointer.automatic;
+  if (automatic) pointer = loopPointer(head.loopClock, motion);
   const was = head.inside;
   head.inside = !!pointer.present;
   if (head.inside) {
@@ -209,7 +211,24 @@ export function stepHead(head, pointer, now, spec, motion = MOTION) {
     ((head.inside ? 1 : 0) - head.handAlpha) *
     Math.min(1, dt * motion.handFade);
 
-  const pry = pryPose(head.workClock, motion);
+  // Either horizontal or vertical strokes can work the tool; diagonal
+  // strokes stay within the same improved range about the cut-line pivot.
+  const mouseTurn =
+    clamp((pointer.u + pointer.v - 1) * 2, -1, 1) * motion.rockDegrees;
+  if (!head.inside) head.pryTravel = 0;
+  else if (!automatic && was) {
+    head.pryTravel += Math.abs(mouseTurn - head.pointerTurn);
+  }
+  head.pointerTurn = mouseTurn;
+  const pry = automatic
+    ? pryPose(head.workClock, motion)
+    : {
+        turn: mouseTurn,
+        progress: Math.min(
+          1,
+          head.pryTravel / (4 * motion.rockDegrees * motion.steps)
+        ),
+      };
   head.progress = head.inside ? pry.progress : 0;
   head.latched = head.progress === 1;
   if (!head.inside) head.workClock = 0;

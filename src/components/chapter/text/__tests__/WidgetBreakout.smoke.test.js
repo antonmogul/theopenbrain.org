@@ -12,11 +12,15 @@ vi.mock("@/widgets/embeds", async () => {
   const fake = (name) => () =>
     Promise.resolve({
       name,
-      render: () => h("div", { class: "fake-widget" }, name),
+      setup(_props, { slots }) {
+        return () =>
+          h("div", { class: "fake-widget" }, [name, slots.actions?.()]);
+      },
     });
   const WIDGET_EMBEDS = {
     "color-vision": fake("ColorVision"),
     retinabox: fake("RetINaBox"),
+    phrenology: fake("Phrenology"),
   };
   const isUpload = (id) => /^upload:.+/.test(id || "");
   return {
@@ -316,15 +320,34 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     expect(pause.querySelector(".fb-screen-room")).not.toBeNull();
     // The header is the band's: Stuart's title and line, with no kicker
     // over them: the band is in the chapter's text, not a breakout box
-    // (Stuart, 12 Nov; OPENBRAIN-190). The toolbar names the credit beside
-    // the expand icon.
+    // (Stuart, 12 Nov; OPENBRAIN-190). Phrenology now owns the legend
+    // row and receives the expand action there (OPENBRAIN-48).
     expect(band.querySelector(".wb-title").textContent).toBe(
       "Explore phrenology"
     );
     expect(band.querySelector(".wb-head").classList).toContain("wb-head--full");
     expect(band.querySelector(".wb-kicker")).toBeNull();
-    expect(band.querySelector(".wb-foot .wb-credit").textContent.trim()).toBe(
-      "Interactive by The Open Brain"
+    expect(band.querySelector(".wb-foot")).toBeNull();
+    const trigger = band.querySelector(".wb-btn--legend");
+    trigger.focus();
+    trigger.click();
+    await flushPromises();
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    document.querySelector(".demo-close").click();
+    await flushPromises();
+    const remounted = band.querySelector(".wb-btn--legend");
+    expect(remounted).not.toBe(trigger);
+    expect(document.activeElement).toBe(remounted);
+    // Browser navigation dismisses without sending focus back to a widget
+    // the reader may have left. Explicit close still restores it above.
+    remounted.click();
+    await flushPromises();
+    // A popstate with the same URL still belongs to navigation.
+    window.dispatchEvent(new Event("popstate"));
+    await flushPromises();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).not.toBe(
+      band.querySelector(".wb-btn--legend")
     );
 
     // Small screens keep the full-width viewport treatment.

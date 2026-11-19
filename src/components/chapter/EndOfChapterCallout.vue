@@ -196,11 +196,6 @@ const cover = computed(() =>
     <div class="cc-wrap">
       <!-- The chapter's name, as it ends -->
       <header class="cc-head">
-        <p class="cc-kicker">
-          Chapter {{ chapterNumber }}
-          <span aria-hidden="true">·</span>
-          The end
-        </p>
         <h2 class="cc-title">
           <span class="cc-title-lead">{{ chapterTitle || "The chapter" }}</span>
           <span class="cc-title-rest">ends here.</span>
@@ -348,7 +343,6 @@ const cover = computed(() =>
 }
 
 /* ---- The end ---- */
-.cc-kicker,
 .cc-test-kicker,
 .cc-next-kicker,
 .cc-stats {
@@ -358,9 +352,6 @@ const cover = computed(() =>
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-}
-.cc-kicker {
-  color: rgb(var(--color-warn));
 }
 .cc-title {
   margin: 1.25rem 0 0;

@@ -175,12 +175,32 @@ const Widget = computed(() =>
 );
 
 const modalOpen = ref(false);
+const legendExpand = ref(null);
+let modalHref = "";
+let restoreLegendFocus = false;
+function modalNavigation() {
+  restoreLegendFocus = false;
+}
+onBeforeUnmount(() => window.removeEventListener("popstate", modalNavigation));
 function openModal() {
+  modalHref = window.location.href;
+  restoreLegendFocus = true;
+  window.addEventListener("popstate", modalNavigation);
   activated.value = true;
   modalOpen.value = true;
 }
-function closeModal() {
+async function closeModal() {
   modalOpen.value = false;
+  window.removeEventListener("popstate", modalNavigation);
+  // Phrenology's slotted trigger is remounted with the inline widget. The
+  // modal cannot return focus to the original, now-disconnected button.
+  await nextTick();
+  if (
+    restoreLegendFocus &&
+    !modalOpen.value &&
+    window.location.href === modalHref
+  )
+    legendExpand.value?.focus({ preventScroll: true });
 }
 
 /* Inline stages mount when they come within ~1.5 screens of the viewport.
@@ -332,7 +352,32 @@ const headingId = computed(
                 {{ launchCard.button }}
               </button>
             </div>
-            <component :is="Widget" v-else-if="inlineMounted && Widget" />
+            <component :is="Widget" v-else-if="inlineMounted && Widget">
+              <template v-if="widgetId === 'phrenology' && fullScreen" #actions>
+                <button
+                  ref="legendExpand"
+                  type="button"
+                  class="wb-btn wb-btn--expand wb-btn--legend"
+                  aria-label="Full screen"
+                  title="Full screen"
+                  @click="openModal"
+                >
+                  <svg
+                    aria-hidden="true"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                  >
+                    <path
+                      d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"
+                    />
+                  </svg>
+                </button>
+              </template>
+            </component>
             <div v-else-if="comingSoon" class="wb-missing">
               This interactive is being built. It will appear here when it's
               ready.
@@ -343,7 +388,10 @@ const headingId = computed(
             <div v-else class="wb-stage-placeholder" aria-hidden="true"></div>
           </div>
 
-          <footer class="wb-foot">
+          <footer
+            v-if="widgetId !== 'phrenology' || !fullScreen"
+            class="wb-foot"
+          >
             <div class="wb-actions">
               <button
                 v-if="embeddable && (!launchCard || activated)"
@@ -730,6 +778,14 @@ const headingId = computed(
   border-color: transparent;
   background: transparent;
   color: #fff;
+}
+.wb-body--full .wb-btn--legend {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
 }
 .wb-body--full .wb-btn--expand svg {
   width: 14px;

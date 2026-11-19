@@ -163,6 +163,23 @@ describe("prying and automatic mode", () => {
 });
 
 describe("stepHead", () => {
+  it("keeps a stationary mouse still and rocks only when its position changes", () => {
+    const head = createHead(spec);
+    play(head, 15000);
+    expect(head.progress).toBe(0);
+    expect(head.at).toBe(spec.keys.first);
+    expect(head.handTurn).toBe(0);
+    play(head, 1500, { ...pointer, v: 1 });
+    expect(head.handTurn).toBeCloseTo(MOTION.rockDegrees, 2);
+    const progress = head.progress;
+    play(head, 5000, { ...pointer, v: 1 });
+    expect(head.progress).toBe(progress);
+    play(head, 1500, { ...pointer, v: 0 });
+    expect(head.handTurn).toBeCloseTo(-MOTION.rockDegrees, 2);
+    expect(head.progress).toBeGreaterThan(progress);
+    play(head, 1500, { ...pointer, u: 1 });
+    expect(head.handTurn).toBeCloseTo(MOTION.rockDegrees, 2);
+  });
   it("plays the girl at 12fps without redrawing unchanged frames", () => {
     const head = createHead(spec);
     play(head, 1000, { ...pointer, present: false });
@@ -171,11 +188,11 @@ describe("stepHead", () => {
     expect(head.frame).toBe(0);
   });
 
-  it("opens after three gentle rocks even with a still pointer, then rests", () => {
+  it("opens after three gentle rocks in automatic mode, then rests", () => {
     const head = createHead(spec);
     const turns = [];
     let previous = head.at;
-    play(head, 12000, pointer, (h) => {
+    play(head, 11900, { automatic: true }, (h) => {
       turns.push(h.handTurn);
       expect(h.at - previous).toBeLessThanOrEqual(
         (MOTION.openSpeed * STEP) / 1000 + 1e-9
@@ -216,6 +233,7 @@ describe("stepHead", () => {
     const head = createHead(spec);
     play(head, MOTION.settleMs + MOTION.rockMs - 20);
     expect(head.at).toBe(spec.keys.first);
+    for (let i = 0; i < 7; i++) play(head, 500, { ...pointer, v: i % 2 });
     play(head, 10000);
     expect(head.at).toBe(spec.keys.open);
     let previous = head.at;
