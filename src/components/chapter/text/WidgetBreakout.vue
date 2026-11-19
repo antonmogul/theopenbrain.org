@@ -7,7 +7,8 @@
  *             mounts the widget full-screen in DemoModal. Nothing heavy loads
  *             until the reader asks for it.
  *   inline    the widget mounts in the flow of the text once the card
- *             scrolls near the viewport, with a "Full screen" escape hatch to
+ *             scrolls near the viewport (or, with launchCard, on request),
+ *             with a "Full screen" escape hatch to
  *             the same modal. Used where the author wants the tool in the
  *             flow of the text (RetINaBox at the end of Circuit computations).
  *
@@ -35,12 +36,14 @@ import {
   defineAsyncComponent,
   onBeforeUnmount,
   onMounted,
+  nextTick,
   provide,
   ref,
   watch,
 } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
+import { launchCardOf } from "@/widgets/placements";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
 import { WIDGET_FIT, WIDGET_SCROLLABLE } from "@/widgets/uploaded/widgetHost";
 import { useMediaQuery } from "@/composables/useMediaQuery";
@@ -54,6 +57,12 @@ const props = defineProps({
   /** The `widget` object of a `{ type: "widget" }` paragraph. */
   placement: { type: Object, required: true },
 });
+
+// RetINaBox stays a quiet launch screen until the reader chooses to load it.
+// The gate covers both the upload request and the component/iframe mount.
+const launchCard = computed(() => launchCardOf(props.placement));
+const activated = ref(false);
+const canLoad = computed(() => !launchCard.value || activated.value);
 
 const requestedId = computed(() => props.placement?.widgetId || "");
 // While an upload isn't published, a placement may name a built-in view to
@@ -104,10 +113,10 @@ onBeforeUnmount(() => stageObserver?.disconnect());
 const upload = computed(() => uploadSlug(requestedId.value));
 const uploadReady = ref(null); // null while checking
 watch(
-  upload,
-  async (slug) => {
+  [upload, canLoad],
+  async ([slug, allowed]) => {
     uploadReady.value = null;
-    if (!slug) return;
+    if (!slug || !allowed) return;
     try {
       const row = await fetchUploadedWidget(slug);
       if (slug === upload.value) uploadReady.value = !!row?.html;
@@ -139,7 +148,8 @@ const modalContentOwnsHeading = computed(
   () => !!upload.value && uploadReady.value === true
 );
 const ownsHeading = computed(
-  () => kind.value === "inline" && modalContentOwnsHeading.value
+  () =>
+    kind.value === "inline" && modalContentOwnsHeading.value && canLoad.value
 );
 const embeddable = computed(
   () => hasEmbed(widgetId.value) && !comingSoon.value
@@ -166,6 +176,7 @@ const Widget = computed(() =>
 
 const modalOpen = ref(false);
 function openModal() {
+  activated.value = true;
   modalOpen.value = true;
 }
 function closeModal() {
@@ -208,13 +219,28 @@ onBeforeUnmount(() => {
 });
 
 const inlineMounted = computed(
-  () => kind.value === "inline" && nearViewport.value && !modalOpen.value
+  () =>
+    kind.value === "inline" &&
+    canLoad.value &&
+    nearViewport.value &&
+    !modalOpen.value
 );
 
 /* Full-bleed at desktop widths (OPENBRAIN-37): FullBleed teleports the stage
    into TextComp's stage layer and keeps a same-height slot (OPENBRAIN-72). */
 const fullBleed = ref(null);
 const scheduleSync = () => fullBleed.value?.sync();
+
+async function loadInline() {
+  if (kind.value !== "inline") {
+    openModal();
+    return;
+  }
+  activated.value = true;
+  await nextTick();
+  // The button leaves the DOM; keep keyboard readers at the loaded stage.
+  widgetStage.value?.focus({ preventScroll: true });
+}
 
 const headingId = computed(
   () => `widget-breakout-${props.placement?.placementId || widgetId.value}`
@@ -281,14 +307,32 @@ const headingId = computed(
 
           <!-- inline: the widget lives here once it is near the viewport. -->
           <div
-            v-if="kind === 'inline'"
+            v-if="kind === 'inline' || (launchCard && !activated)"
             ref="widgetStage"
+            :tabindex="launchCard && !activated ? -1 : 0"
+            role="region"
             class="wb-stage"
             :class="{ 'wb-stage--floating': floating }"
             :data-widget-stage="widgetId"
             :aria-labelledby="headingId"
           >
-            <component :is="Widget" v-if="inlineMounted && Widget" />
+            <div v-if="launchCard && !activated" class="wb-launch">
+              <img
+                :src="launchCard.image"
+                alt="RetINaBox logo"
+                width="138"
+                height="138"
+              />
+              <p>{{ launchCard.prompt }}</p>
+              <button
+                type="button"
+                class="wb-btn wb-btn--primary"
+                @click="loadInline"
+              >
+                {{ launchCard.button }}
+              </button>
+            </div>
+            <component :is="Widget" v-else-if="inlineMounted && Widget" />
             <div v-else-if="comingSoon" class="wb-missing">
               This interactive is being built. It will appear here when it's
               ready.
@@ -302,7 +346,7 @@ const headingId = computed(
           <footer class="wb-foot">
             <div class="wb-actions">
               <button
-                v-if="embeddable"
+                v-if="embeddable && (!launchCard || activated)"
                 type="button"
                 class="wb-btn wb-btn--primary"
                 :class="{ 'wb-btn--expand': kind === 'inline' }"
@@ -441,6 +485,12 @@ const headingId = computed(
   padding: 0;
 }
 
+/* This built-in page uses the reader's dark ink and a transparent root.
+   Give it the paper ground it has on its standalone route. */
+.wb-band .wb-stage[data-widget-stage="direction-selectivity"] {
+  background: rgb(var(--color-bg));
+}
+
 .wb-band .wb-stage-placeholder {
   background: repeating-linear-gradient(
     -45deg,
@@ -549,6 +599,28 @@ const headingId = computed(
   --widget-min-h: 0px;
 }
 
+/* RetINaBox's original eye mark, on an intentionally quiet launch screen. */
+.wb-launch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  min-height: 22rem;
+  padding: 2rem var(--wb-gutter, var(--wb-pad));
+  text-align: center;
+}
+.wb-launch img {
+  width: clamp(5rem, 12vw, 8.625rem);
+  height: auto;
+}
+.wb-launch p {
+  max-width: 32ch;
+  margin: 0;
+  font-size: var(--ui-size-20);
+  line-height: 1.5;
+}
+
 /*
  * Full-bleed inline stage (OPENBRAIN-37). The widget views size their layout
  * from the viewport (their own @media rules), so inside a ~460–580px prose
@@ -582,8 +654,12 @@ const headingId = computed(
   flex-direction: column;
   min-height: 0;
   --widget-body-min-h: 0px;
+  /* Long built-in tools scroll inside their viewport, like uploaded frames. */
+  overflow: auto;
+  overscroll-behavior-x: contain;
 }
 .wb-body--full .wb-stage > :deep(*) {
+  width: 100%;
   flex: 1;
   min-height: 0;
 }

@@ -1,5 +1,6 @@
 import WidgetBreakoutComponent from "../WidgetBreakout.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
+import { WIDGET_PLACEMENTS, widgetParagraph } from "@/widgets/placements";
 import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 
 export default {
@@ -29,7 +30,6 @@ export const BreakoutCard = {
       title: "Colour vision starts in the retina",
       blurb:
         "Work from the electromagnetic spectrum down to cone opponency: how three pigment classes, and their overlap, become the colours we see.",
-      credit: "Interactive by Stuart Trenholm",
       route: "/color-vision",
     },
   },
@@ -45,7 +45,6 @@ export const InlineStage = {
       title: "RetINaBox — build a retinal circuit",
       blurb:
         "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes.",
-      credit: "Interactive by Stuart Trenholm",
       route: "/retinabox",
     },
   },
@@ -152,4 +151,30 @@ export const UnavailableWidget = {
     },
   },
   render: proseFrame(WidgetBreakoutComponent),
+};
+
+// The live Retina placements, including the click-to-load launch screen.
+export const RetinaColourVision = {
+  args: {
+    placement: widgetParagraph(
+      WIDGET_PLACEMENTS.find((p) => p.id === "retina-color-vision")
+    ).widget,
+  },
+  render: readerFrame(WidgetBreakoutComponent),
+};
+export const RetinaDirectionSelectivity = {
+  args: {
+    placement: widgetParagraph(
+      WIDGET_PLACEMENTS.find((p) => p.id === "retina-direction-selectivity")
+    ).widget,
+  },
+  render: readerFrame(WidgetBreakoutComponent),
+};
+export const RetINaBoxLaunch = {
+  args: {
+    placement: widgetParagraph(
+      WIDGET_PLACEMENTS.find((p) => p.id === "retina-retinabox")
+    ).widget,
+  },
+  render: readerFrame(WidgetBreakoutComponent),
 };

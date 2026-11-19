@@ -55,6 +55,8 @@ import { PENFIELD_TITLE } from "@/helper/penfieldPresentation";
  * @property {string} blurb         One or two sentences under the title
  * @property {string} credit        Author credit line
  * @property {string} route         Standalone route of the widget
+ * @property {Object} [launchCard]  Logo, prompt and button; waits for a press
+ *                                  before fetching or mounting the widget
  * @property {boolean} [fullScreen] An inline widget that is one screen of the
  *                                  chapter: from the two-column breakpoint up
  *                                  its band is as tall as the viewport and the
@@ -73,7 +75,9 @@ export const WIDGET_PLACEMENTS = [
     widgetId: "color-vision",
     chapterSlug: "the-retina",
     sectionSlug: "amacrine-and-ganglion-cells-circuits-computations-and-output",
-    kind: "breakout",
+    kind: "inline",
+    // A full-screen band with the box pause, like History's interactives
+    // (OPENBRAIN-52); the widget retains its own controls.
     // "at the color vision section of the chapter as a breakout box" — the
     // colour material lives under Circuit computations (colour opponency,
     // then Dalton's account of colour blindness).
@@ -92,7 +96,7 @@ export const WIDGET_PLACEMENTS = [
     widgetId: "direction-selectivity",
     chapterSlug: "the-retina",
     sectionSlug: "amacrine-and-ganglion-cells-circuits-computations-and-output",
-    kind: "breakout",
+    kind: "inline",
     // "a breakout box at the end of the Direction selective section within
     // Circuit Computations". The direction-selectivity paragraphs are being
     // restored to the DB (OPENBRAIN-22); until then fall back to the end of
@@ -122,6 +126,11 @@ export const WIDGET_PLACEMENTS = [
     // 1180px of controls and plots: on phones and tablets it is the card,
     // and opens full screen (OPENBRAIN-99).
     narrowKind: "breakout",
+    launchCard: {
+      image: "/publicAssets/images/widgets/retinabox-logo.svg",
+      prompt: "Explore how feature detectors are built in the retina.",
+      button: "Load RetINaBox",
+    },
     // "at the bottom of the Circuit Computations section, right before the
     // Rod vs. Cone signals section". Listed after the direction-selectivity
     // placement so that, when both resolve to the same anchor, RetINaBox is
@@ -129,7 +138,7 @@ export const WIDGET_PLACEMENTS = [
     anchors: [{ beforeSubSection: "Rod and cone pathways" }],
     title: "RetINaBox — build a retinal circuit",
     blurb:
-      "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials. Based on the Trenholm lab's outreach tool.",
+      "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials.",
   },
 
   // ── Attention & Working Memory — Arjun Krishnaswamy's widgets (OPENBRAIN-34)
@@ -248,6 +257,7 @@ export function widgetParagraph(placement) {
       credit: placement.credit || "",
       route: placement.route || "",
       ...(placement.fullScreen ? { fullScreen: true } : {}),
+      ...(placement.launchCard ? { launchCard: placement.launchCard } : {}),
     },
   };
 }
@@ -265,6 +275,18 @@ export function fullScreenOf(placement, placements = WIDGET_PLACEMENTS) {
   if (typeof placement.fullScreen === "boolean") return placement.fullScreen;
   const id = placement.placementId;
   return !!(id && placements.find((p) => p.id === id)?.fullScreen);
+}
+
+/** An on-demand launch screen, also inherited by DB-authored placements. */
+export function launchCardOf(placement, placements = WIDGET_PLACEMENTS) {
+  if (!placement) return null;
+  return (
+    placement.launchCard ||
+    placements.find(
+      (p) => p.id === placement.placementId || p.widgetId === placement.widgetId
+    )?.launchCard ||
+    null
+  );
 }
 
 const stripTags = (html) =>

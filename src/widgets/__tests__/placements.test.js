@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   applyWidgetPlacements,
   fullScreenOf,
+  launchCardOf,
   placementsForChapter,
   widgetParagraph,
   WIDGET_PLACEMENTS,
@@ -724,5 +725,16 @@ describe("WIDGET_PLACEMENTS — Foundations prototypes (OPENBRAIN-35)", () => {
     expect(ids(chapter.sections[1].paragraphs).at(-1)).toBe(
       "widget-foundations-case-cabinet"
     );
+  });
+});
+
+describe("RetINaBox launch configuration", () => {
+  it("is carried by code placements and inherited by authored blocks", () => {
+    const p = WIDGET_PLACEMENTS.find((p) => p.id === "retina-retinabox");
+    expect(launchCardOf(widgetParagraph(p).widget)).toEqual(p.launchCard);
+    expect(launchCardOf({ placementId: p.id })).toEqual(p.launchCard);
+    expect(launchCardOf({ widgetId: p.widgetId })).toEqual(p.launchCard);
+    expect(launchCardOf({ widgetId: "color-vision" })).toBeNull();
+    expect(launchCardOf(null)).toBeNull();
   });
 });
