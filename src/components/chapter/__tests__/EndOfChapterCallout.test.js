@@ -78,9 +78,7 @@ afterEach(() => {
 describe("the chapter's name, as it ends", () => {
   it("says the chapter is over, under its title", async () => {
     const wrapper = await mountClose();
-    expect(wrapper.find(".cc-kicker").text()).toMatch(
-      /^Chapter 1\s+·\s+The end$/
-    );
+    expect(wrapper.find(".cc-kicker").exists()).toBe(false);
     expect(wrapper.find(".cc-title-lead").text()).toBe(
       "Foundations of Neuroscience"
     );

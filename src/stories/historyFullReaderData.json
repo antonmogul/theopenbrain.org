@@ -2324,11 +2324,11 @@
           { "type": "citation_ref", "number": 1 },
           {
             "type": "text",
-            "content": " In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through debates that helped frame our modern understanding of the brain."
+            "content": " In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through four debates that helped frame our modern understanding of the brain:  1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?"
           }
         ]
       },
-      "content_text": "Upon being asked why he decided to specialize in neurology, Oliver Sacks famously answered, “I became a neurologist rather than, say, a cardiologist, because there’s nothing for an intelligent man to be interested in in cardiology. The heart, I suppose, is an interesting pump, but it’s just a pump. Neurology is the only branch of medicine that could sustain a thinking man.”1 In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through debates that helped frame our modern understanding of the brain.",
+      "content_text": "Upon being asked why he decided to specialize in neurology, Oliver Sacks famously answered, “I became a neurologist rather than, say, a cardiologist, because there’s nothing for an intelligent man to be interested in in cardiology. The heart, I suppose, is an interesting pump, but it’s just a pump. Neurology is the only branch of medicine that could sustain a thinking man.”1 In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through four debates that helped frame our modern understanding of the brain:  1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?",
       "order_index": 0,
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsIntroWoodcut",
@@ -2339,15 +2339,8 @@
     {
       "id": "history-section-introduction-p1",
       "section_id": "history-section-introduction",
-      "content": {
-        "blocks": [
-          {
-            "type": "text",
-            "content": "Here, we’ll focus on four debates surrounding questions that lead to our current understanding of brain function: 1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?"
-          }
-        ]
-      },
-      "content_text": "Here, we will focus on four debates: 1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?",
+      "content": { "blocks": [] },
+      "content_text": "",
       "order_index": 1,
       "has_animation": false,
       "animation_id": null,
@@ -6013,8 +6006,8 @@
       "title": "Penfield's case binder",
       "ramp": "fund",
       "status": "published",
-      "bytes": 1318843,
-      "sha256": "f14837cb508f76424fa8839ca4508a40a5426b0dabcef2df218dc773a2c1511b"
+      "bytes": 1318730,
+      "sha256": "5abecec1feb8af697773adeda17d968405e8b09650d8fde245c55b48265bddc4"
     },
     {
       "slug": "loewi-vagusstoff",

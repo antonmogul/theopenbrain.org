@@ -1,0 +1,67 @@
+{
+  "noteId": "a82adeef-849f-46ac-af62-fd81eb28381a",
+  "suggestedText": "told through four debates that helped frame our modern understanding of the brain:  1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?",
+  "paragraphUpdates": [
+    {
+      "orderIndex": 0,
+      "before": {
+        "content": {
+          "blocks": [
+            {
+              "type": "text",
+              "content": "Upon being asked why he decided to specialize in neurology, Oliver Sacks famously answered, “I became a neurologist rather than, say, a cardiologist, because there’s nothing for an intelligent man to be interested in in cardiology. The heart, I suppose, is an interesting pump, but it’s just a pump. Neurology is the only branch of medicine that could sustain a thinking man.”"
+            },
+            {
+              "type": "citation_ref",
+              "number": 1
+            },
+            {
+              "type": "text",
+              "content": " In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through debates that helped frame our modern understanding of the brain."
+            }
+          ]
+        },
+        "content_text": "Upon being asked why he decided to specialize in neurology, Oliver Sacks famously answered, “I became a neurologist rather than, say, a cardiologist, because there’s nothing for an intelligent man to be interested in in cardiology. The heart, I suppose, is an interesting pump, but it’s just a pump. Neurology is the only branch of medicine that could sustain a thinking man.”1 In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through debates that helped frame our modern understanding of the brain."
+      },
+      "after": {
+        "content": {
+          "blocks": [
+            {
+              "type": "text",
+              "content": "Upon being asked why he decided to specialize in neurology, Oliver Sacks famously answered, “I became a neurologist rather than, say, a cardiologist, because there’s nothing for an intelligent man to be interested in in cardiology. The heart, I suppose, is an interesting pump, but it’s just a pump. Neurology is the only branch of medicine that could sustain a thinking man.”"
+            },
+            {
+              "type": "citation_ref",
+              "number": 1
+            },
+            {
+              "type": "text",
+              "content": " In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through four debates that helped frame our modern understanding of the brain:  1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?"
+            }
+          ]
+        },
+        "content_text": "Upon being asked why he decided to specialize in neurology, Oliver Sacks famously answered, “I became a neurologist rather than, say, a cardiologist, because there’s nothing for an intelligent man to be interested in in cardiology. The heart, I suppose, is an interesting pump, but it’s just a pump. Neurology is the only branch of medicine that could sustain a thinking man.”1 In this chapter, we provide a brief survey of ideas surrounding this most fascinating of organs, told through four debates that helped frame our modern understanding of the brain:  1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?"
+      }
+    },
+    {
+      "orderIndex": 1,
+      "before": {
+        "content": {
+          "blocks": [
+            {
+              "type": "text",
+              "content": "Here, we’ll focus on four debates surrounding questions that lead to our current understanding of brain function: 1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?"
+            }
+          ]
+        },
+        "content_text": "Here, we will focus on four debates: 1) Where is the mind? 2) Is there localization of function in the brain? 3) What is the fundamental functional unit of the brain? 4) How do neurons communicate with one another?"
+      },
+      "after": {
+        "content": {
+          "blocks": []
+        },
+        "content_text": ""
+      }
+    }
+  ]
+}

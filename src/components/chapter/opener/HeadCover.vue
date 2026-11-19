@@ -1,8 +1,8 @@
 <script setup>
 /*
- * History's prying cover (OPENBRAIN-40/41). On desktop a hover plays
- * three small rocks around the tool's tip at the back of the skull's cut,
- * then eases the lid off. The pointer only nudges that contact. Phones and
+ * History's prying cover (OPENBRAIN-40/41). On desktop the mouse rocks
+ * the hand about the tool's tip at the back of the skull's cut;
+ * three back-and-forth strokes ease the lid off. Phones and
  * coarse pointers play a gentle loop without touch-and-hold interaction.
  * The logic is in helper/headCover.js; this component gives it a canvas,
  * the pointer and a clock, and looks after what a page in a book needs

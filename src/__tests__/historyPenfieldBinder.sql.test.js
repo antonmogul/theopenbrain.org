@@ -36,6 +36,14 @@ const sqlV5 = readFileSync(
   "supabase/migrations/20261118120100_history_penfield_binder_v5.sql",
   "utf8"
 );
+const sqlV6 = readFileSync(
+  "supabase/migrations/20261119480100_history_penfield_binder_v6.sql",
+  "utf8"
+);
+const fileV5 = htmlInVersion5();
+function htmlInVersion5() {
+  return sqlV5.slice(sqlV5.indexOf("$w$") + 3, sqlV5.lastIndexOf("$w$"));
+}
 const file = readFileSync(
   "src/widgets/uploads/history-penfield-binder.html",
   "utf8"
@@ -73,11 +81,11 @@ const onlyTheUpload = (text) => {
 
 describe("Penfield binder migrations", () => {
   it("the latest carries the widget file as it is in src/widgets/uploads", () => {
-    expect(htmlIn(sqlV5)).toBe(file);
+    expect(htmlIn(sqlV6)).toBe(file);
   });
 
   it("states the file's size and hash", () => {
-    expect(sqlV5).toContain(
+    expect(sqlV6).toContain(
       `-- ${Buffer.byteLength(file, "utf8")} bytes, sha256 ${createHash("sha256").update(file).digest("hex")}`
     );
   });
@@ -87,7 +95,24 @@ describe("Penfield binder migrations", () => {
     expect(fileV2).toContain("Version:  2 (2026-11-11)");
     expect(fileV3).toContain("Version:  3 (2026-11-12)");
     expect(fileV4).toContain("Version:  4 (2026-11-17)");
-    expect(file).toContain("Version:  5 (2026-11-18)");
+    expect(fileV5).toContain("Version:  5 (2026-11-18)");
+    expect(file).toContain("Version:  6 (2026-11-19)");
+  });
+
+  it("version 6 removes only the visible close words and retains accessible labels", () => {
+    onlyTheUpload(sqlV6);
+    expect(file).not.toMatch(
+      /<span aria-hidden="true">Close(?: the binder)?<\/span>/
+    );
+    expect((file.match(/aria-label="Close the binder"/g) || []).length).toBe(2);
+    expect(file).toBe(
+      fileV5
+        .replace("Version:  5 (2026-11-18)", "Version:  6 (2026-11-19)")
+        .replace(
+          /^\s*<span aria-hidden="true">Close(?: the binder)?<\/span>\n/gm,
+          "\n"
+        )
+    );
   });
 
   describe("version 5 (OPENBRAIN-202)", () => {
@@ -402,7 +427,8 @@ describe.skipIf(!harness || !existsSync(harness))(
       for (const [text, html] of [
         [sqlV3, fileV3],
         [sqlV4, fileV4],
-        [sqlV5, file],
+        [sqlV5, fileV5],
+        [sqlV6, file],
       ]) {
         await db.exec(text);
         const next = await row();
@@ -420,9 +446,9 @@ describe.skipIf(!harness || !existsSync(harness))(
       }
     });
 
-    it("version 5 alone, on a database without the upload, publishes it", async () => {
+    it("version 6 alone, on a database without the upload, publishes it", async () => {
       const db = await makeDb();
-      await db.exec(sqlV5);
+      await db.exec(sqlV6);
       const { rows } = await db.query(
         "select slug, status, ramp, html from widget_uploads"
       );

@@ -312,16 +312,14 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     expect(pause.querySelector(".fb-screen-room")).not.toBeNull();
     // The header is the band's: Stuart's title and line, with no kicker
     // over them: the band is in the chapter's text, not a breakout box
-    // (Stuart, 12 Nov; OPENBRAIN-190). The toolbar names the credit beside
-    // the expand icon.
+    // (Stuart, 12 Nov; OPENBRAIN-190). Phrenology now owns the legend
+    // row and receives the expand action there (OPENBRAIN-48).
     expect(band.querySelector(".wb-title").textContent).toBe(
       "Explore phrenology"
     );
     expect(band.querySelector(".wb-head").classList).toContain("wb-head--full");
     expect(band.querySelector(".wb-kicker")).toBeNull();
-    expect(band.querySelector(".wb-foot .wb-credit").textContent.trim()).toBe(
-      "Interactive by The Open Brain"
-    );
+    expect(band.querySelector(".wb-foot")).toBeNull();
 
     // Small screens keep the full-width viewport treatment.
     desktop.fire(false);

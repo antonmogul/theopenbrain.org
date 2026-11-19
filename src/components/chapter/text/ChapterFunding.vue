@@ -17,7 +17,6 @@ defineProps({
 
 <template>
   <div class="chapter-funding" data-testid="chapter-funding">
-    <p class="chapter-funding__kicker">Funding</p>
     <p class="chapter-funding__text">{{ funding.text }}</p>
     <component
       :is="funding.url ? 'a' : 'span'"
@@ -46,13 +45,13 @@ defineProps({
 
 <style scoped>
 /* Stuart, 18 Nov: "make that section 'pop' a tiny bit more". A panel on the
-   chapter's palest step with a rule in the chapter colour, a small kicker,
+   chapter's palest step with a rule in the chapter colour,
    the line in ink rather than muted grey, and the logo on the same row from
    640px (stacked below that). */
 .chapter-funding {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-areas: "kicker" "text" "logo";
+  grid-template-areas: "text" "logo";
   align-items: center;
   column-gap: 1.5rem;
   row-gap: 0.5rem;
@@ -67,18 +66,8 @@ defineProps({
 @media (min-width: 640px) {
   .chapter-funding {
     grid-template-columns: 1fr auto;
-    grid-template-areas: "kicker logo" "text logo";
+    grid-template-areas: "text logo";
   }
-}
-.chapter-funding__kicker {
-  grid-area: kicker;
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgb(var(--color-chapter-deep, var(--color-ink)));
 }
 .chapter-funding__text {
   grid-area: text;

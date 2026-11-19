@@ -186,6 +186,11 @@ Pushed after PR #200's deploy served all twelve `-v2.webp` files (200, `image/we
 
 ## Pending
 
+| Migration                                                   | State                                                                                                                                                                      |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261119480000_history_review_introduction` (OPENBRAIN-48) | **Pending**. Stuart's exact Introduction suggestion, guarded as one pair against both full content/text snapshots; keeps paragraph identities, citations and figure links. |
+| `20261119480100_history_penfield_binder_v6` (OPENBRAIN-48)  | **Pending**. Exact v6 upload HTML; removes visible close words and retains accessible labels.                                                                              |
+
 | Migration                                              | State                                                                                                                                                                              |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `20261119470000_review_feedback_verify` (OPENBRAIN-47) | **pushed** 19 Nov after PR #209 merged. Over REST: `list_review_feedback` returns `verified_at` and no private fields; `review_feedback?select=id` with the publishable key → 401. |
