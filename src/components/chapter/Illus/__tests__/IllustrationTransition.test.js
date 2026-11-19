@@ -23,6 +23,7 @@ function renderer() {
     totalFrames: 90,
     setSubframe: vi.fn(),
     goToAndStop: vi.fn(),
+    play: vi.fn(),
     destroy: vi.fn(),
     addEventListener: (name, fn) => (events[name] = fn),
   };
@@ -75,6 +76,35 @@ describe("authored retinal transition", () => {
     expect(r.item.destroy).toHaveBeenCalledOnce();
     wrappers.pop();
   });
+  it("uses the successor's measured crop and coordinates and parks an auto-play entrance at handoff", async () => {
+    const r = renderer();
+    fixture.load = Promise.resolve(r.lottie);
+    const w = mount(IllustrationTransition, {
+      props: {
+        animation,
+        autoPlay: true,
+        progress: 0,
+        framing: {
+          x: 230,
+          y: 80,
+          width: 280,
+          height: 450,
+          viewBox: [100, 200, 800, 1200],
+        },
+      },
+    });
+    wrappers.push(w);
+    await flushPromises();
+    w.get(".transition-art > div").element.innerHTML = "<svg></svg>";
+    r.events.DOMLoaded();
+    expect(r.item.play).toHaveBeenCalledOnce();
+    expect(w.get("svg").attributes("viewBox")).toBe("100 200 800 1200");
+    expect(w.get(".transition-art").attributes("style")).toContain(
+      "left: 230px"
+    );
+    await w.setProps({ progress: 1 });
+    expect(r.item.goToAndStop).toHaveBeenLastCalledWith(89, true);
+  });
   it("does not create a late animation after unmount", async () => {
     let resolve;
     fixture.load = new Promise((r) => (resolve = r));
@@ -115,9 +145,22 @@ describe("authored retinal transition", () => {
       widget = w.findComponent({ name: "IllustrationWidget" });
     expect(zoom.props("progress")).toBe(1);
     expect(widget.attributes("style")).toContain("hidden");
-    widget.vm.$emit("ready");
+    widget.vm.$emit("ready", {
+      artwork: {
+        x: 80,
+        y: 60,
+        width: 200,
+        height: 300,
+        viewBox: [0, 0, 1920, 1920],
+      },
+    });
     await flushPromises();
     expect(widget.attributes("style")).toContain("visible");
+    expect(zoom.props("framing")).toMatchObject({
+      width: 200,
+      height: 300,
+      viewBox: [0, 0, 1920, 1920],
+    });
     expect(zoom.attributes("style")).toContain("hidden");
     await w.setProps({ active: animation.id.toLowerCase(), progress: 0.4 });
     expect(zoom.props("progress")).toBe(0.4);

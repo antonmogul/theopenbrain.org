@@ -4,6 +4,7 @@ import {
   isConfigBearing,
   resolveAnimationConfig,
   lottieAssetOk,
+  lottiePath,
 } from "@/helper/animationResolve";
 
 /*
@@ -141,5 +142,19 @@ describe("lottiePath (OPENBRAIN-70 B4)", () => {
     expect(lottiePath({ id: "animationDragon" })).toBe(
       "/publicAssets/animations/animationDragon.json"
     );
+  });
+});
+
+describe("horizontal-cell artwork alias", () => {
+  it("resolves the 2023 stage alias offline while preserving an author's URL", () => {
+    expect(lottiePath({ id: "animationRetinalCellTypes3" })).toBe(
+      "/publicAssets/animations/animationRetinalCellTypes.json"
+    );
+    expect(
+      lottiePath({
+        id: "animationRetinalCellTypes3",
+        lottieUrl: "/custom.json",
+      })
+    ).toBe("/custom.json");
   });
 });

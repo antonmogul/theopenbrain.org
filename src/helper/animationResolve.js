@@ -88,6 +88,8 @@ export function lottiePath(animation) {
   )
     return "/publicAssets/animations/derived/animationEyeMovements.json";
   if (animation?.lottieUrl) return animation.lottieUrl;
+  if (animation?.id === "animationRetinalCellTypes3")
+    return "/publicAssets/animations/animationRetinalCellTypes.json";
   return animation?.id ? `/publicAssets/animations/${animation.id}.json` : "";
 }
 

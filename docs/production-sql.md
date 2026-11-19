@@ -186,9 +186,10 @@ Pushed after PR #200's deploy served all twelve `-v2.webp` files (200, `image/we
 
 ## Pending
 
-| Migration                                              | State                                                                                                                                                                              |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261119470000_review_feedback_verify` (OPENBRAIN-47) | **pushed** 19 Nov after PR #209 merged. Over REST: `list_review_feedback` returns `verified_at` and no private fields; `review_feedback?select=id` with the publishable key → 401. |
+| Migration                                              | State                                                                                                                                                                                                                             |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261119510000_retina_figure_notes` (OPENBRAIN-51)    | **Pending**: correct the horizontal-cell preset key; hold photoreceptors and center-surround to their next boundary; restore the rod/cone drawing after the visual-cycle band. Guarded placement changes only; deploy code first. |
+| `20261119470000_review_feedback_verify` (OPENBRAIN-47) | **pushed** 19 Nov after PR #209 merged. Over REST: `list_review_feedback` returns `verified_at` and no private fields; `review_feedback?select=id` with the publishable key → 401.                                                |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is

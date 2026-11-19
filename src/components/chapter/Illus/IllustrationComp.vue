@@ -24,7 +24,7 @@
       <!-- Below the reader's top bar, in the original's title style. Inline
            (scopeId, below xl) the figure's caption already names it. -->
       <span
-        v-if="!scopeId && presentation.title"
+        v-if="!scopeId && presentation.title && !presentation.caption"
         class="pb-0 font-sans font-bold text-[1.25rem] leading-[1.55]"
         >{{ presentation.title }}</span
       >
@@ -180,6 +180,9 @@
             :class="{ 'illustration-art': presentation.caption }"
           />
           <figcaption v-if="presentation.caption" class="illustration-caption">
+            <strong v-if="!inline && presentation.title" class="block mb-2">{{
+              presentation.title
+            }}</strong>
             {{ presentation.caption }}
           </figcaption>
         </figure>
@@ -375,7 +378,10 @@ function begin() {
   if (!ready.value || disposed) return;
   if (reducedMotion.value) return park();
   if (info.states && !info.hasTransition) {
-    animationLottie.goToAndStop(24, true);
+    animationLottie.goToAndStop(
+      Math.min(24, animationLottie.totalFrames - 1),
+      true
+    );
   } else {
     isPaused.value = false;
     animationLottie.setSpeed(info.speed || 1);
@@ -487,10 +493,13 @@ onBeforeUnmount(() => {
 }
 .illustration-art {
   min-height: 0;
-  flex: 0 1 auto;
+  flex: 1 1 0;
+  width: 100%;
+  /* Keep the caption at the foot while Vue fades and destroys the SVG. */
 }
 .illustration-art :deep(svg) {
   max-height: 100%;
+  height: 100%;
 }
 .illustration-caption {
   flex-shrink: 0;

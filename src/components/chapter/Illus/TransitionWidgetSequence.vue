@@ -12,6 +12,15 @@ const props = defineProps({
   progress: { type: Number, default: 0 },
 });
 const ready = ref(false);
+const root = ref(null);
+const framing = ref(null);
+function widgetReady(report) {
+  const art = report?.artwork;
+  const rect = root.value?.getBoundingClientRect();
+  if (art && rect && art.width > 0 && art.height > 0)
+    framing.value = { ...art, x: art.x - rect.x, y: art.y - rect.y };
+  ready.value = true;
+}
 const atSuccessor = computed(
   () => props.active === props.successor.id.toLowerCase()
 );
@@ -19,10 +28,16 @@ const showSuccessor = computed(() => atSuccessor.value && ready.value);
 </script>
 
 <template>
-  <div class="figure-sequence w-full h-full" :data-sequence-ready="ready">
+  <div
+    ref="root"
+    class="figure-sequence w-full h-full"
+    :data-sequence-ready="ready"
+  >
     <IllustrationTransition
       :animation="transition"
       :progress="atSuccessor ? 1 : progress"
+      :framing="framing"
+      :auto-play="!transition.isTransition"
       :style="{ visibility: showSuccessor ? 'hidden' : 'visible' }"
       :aria-hidden="showSuccessor"
       class="sequence-layer"
@@ -34,7 +49,7 @@ const showSuccessor = computed(() => atSuccessor.value && ready.value);
       :inert="!showSuccessor"
       :aria-hidden="!showSuccessor"
       class="sequence-layer"
-      @ready="ready = true"
+      @ready="widgetReady"
     />
   </div>
 </template>
