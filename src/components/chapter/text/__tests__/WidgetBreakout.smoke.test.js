@@ -12,11 +12,15 @@ vi.mock("@/widgets/embeds", async () => {
   const fake = (name) => () =>
     Promise.resolve({
       name,
-      render: () => h("div", { class: "fake-widget" }, name),
+      setup(_props, { slots }) {
+        return () =>
+          h("div", { class: "fake-widget" }, [name, slots.actions?.()]);
+      },
     });
   const WIDGET_EMBEDS = {
     "color-vision": fake("ColorVision"),
     retinabox: fake("RetINaBox"),
+    phrenology: fake("Phrenology"),
   };
   const isUpload = (id) => /^upload:.+/.test(id || "");
   return {
@@ -320,6 +324,16 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     expect(band.querySelector(".wb-head").classList).toContain("wb-head--full");
     expect(band.querySelector(".wb-kicker")).toBeNull();
     expect(band.querySelector(".wb-foot")).toBeNull();
+    const trigger = band.querySelector(".wb-btn--legend");
+    trigger.focus();
+    trigger.click();
+    await flushPromises();
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    document.querySelector(".demo-close").click();
+    await flushPromises();
+    const remounted = band.querySelector(".wb-btn--legend");
+    expect(remounted).not.toBe(trigger);
+    expect(document.activeElement).toBe(remounted);
 
     // Small screens keep the full-width viewport treatment.
     desktop.fire(false);

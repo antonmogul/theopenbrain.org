@@ -35,6 +35,7 @@ import {
   defineAsyncComponent,
   onBeforeUnmount,
   onMounted,
+  nextTick,
   provide,
   ref,
   watch,
@@ -165,11 +166,16 @@ const Widget = computed(() =>
 );
 
 const modalOpen = ref(false);
+const legendExpand = ref(null);
 function openModal() {
   modalOpen.value = true;
 }
-function closeModal() {
+async function closeModal() {
   modalOpen.value = false;
+  // Phrenology's slotted trigger is remounted with the inline widget. The
+  // modal cannot return focus to the original, now-disconnected button.
+  await nextTick();
+  legendExpand.value?.focus({ preventScroll: true });
 }
 
 /* Inline stages mount when they come within ~1.5 screens of the viewport.
@@ -291,6 +297,7 @@ const headingId = computed(
             <component :is="Widget" v-if="inlineMounted && Widget">
               <template v-if="widgetId === 'phrenology' && fullScreen" #actions>
                 <button
+                  ref="legendExpand"
                   type="button"
                   class="wb-btn wb-btn--expand wb-btn--legend"
                   aria-label="Full screen"
