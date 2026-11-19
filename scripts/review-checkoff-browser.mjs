@@ -212,28 +212,30 @@ for (const [name, engine] of [
           });
         const chip = card.locator(".rv-status-chip");
         // Actual computed colours, in the rendered book, have AA text contrast.
-        const colours = await chip.evaluate((el) => ({
-          fg: getComputedStyle(el).color,
-          bg: getComputedStyle(el).backgroundColor,
-        }));
-        const luminance = (css) => {
-          const values = css
-            .match(/[\d.]+/g)
-            .slice(0, 3)
-            .map(Number)
-            .map((c) => (css.startsWith("color(srgb") ? c : c / 255))
-            .map((c) =>
-              c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
-            );
-          return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
-        };
-        const l = [luminance(colours.fg), luminance(colours.bg)].sort(
-          (a, b) => b - a
-        );
-        assert.ok(
-          (l[0] + 0.05) / (l[1] + 0.05) >= 4.5,
-          `${status} contrast ${JSON.stringify(colours)}`
-        );
+        for (const marker of [chip, card.locator(".rv-num")]) {
+          const colours = await marker.evaluate((el) => ({
+            fg: getComputedStyle(el).color,
+            bg: getComputedStyle(el).backgroundColor,
+          }));
+          const luminance = (css) => {
+            const values = css
+              .match(/[\d.]+/g)
+              .slice(0, 3)
+              .map(Number)
+              .map((c) => (css.startsWith("color(srgb") ? c : c / 255))
+              .map((c) =>
+                c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+              );
+            return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
+          };
+          const l = [luminance(colours.fg), luminance(colours.bg)].sort(
+            (a, b) => b - a
+          );
+          assert.ok(
+            (l[0] + 0.05) / (l[1] + 0.05) >= 4.5,
+            `${status} contrast ${JSON.stringify(colours)}`
+          );
+        }
       }
       const foreign = page.locator(`[data-note-id="${uuid(6)}"]`);
       assert.equal(
