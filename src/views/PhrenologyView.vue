@@ -687,6 +687,9 @@ watch(activeRegion, (region) => {
   position: relative;
   /* A full screen on its own route; a host can set less (WidgetBreakout). */
   min-height: var(--widget-min-h, 100vh);
+  /* A definite modal height lets the body's cqh resolve before its skull
+     is sized; min-height alone leaves that query size at zero. */
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--plate);
