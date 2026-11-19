@@ -741,67 +741,6 @@ describe("useChapterTimeline: jumpTo", () => {
     expect(record).toHaveBeenCalledTimes(3);
   });
 
-  it("keeps the departure ring through a forward jump and clears it on Back to the exact source", async () => {
-    renderChapter();
-    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-    const { jumpTo, layers } = setup();
-    await settle();
-    scrollTo(100);
-    flushFrames();
-    jumpTo(4);
-    expect(layers.value.origin).toBe(1);
-    scrollTo(1620);
-    flushFrames();
-    window.dispatchEvent(new Event("scrollend"));
-    expect(layers.value.origin).toBe(1);
-    // The router restores the original offset after popstate.
-    window.dispatchEvent(new Event("popstate"));
-    scrollTo(100);
-    flushFrames();
-    expect(layers.value.origin).toBe(-1);
-  });
-
-  it("keeps an instant jump's ring when scrollend arrives before the scroll frame", async () => {
-    document.documentElement.setAttribute("data-reduce-motion", "1");
-    renderChapter();
-    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-    const { jumpTo, layers } = setup();
-    await settle();
-    scrollTo(100);
-    flushFrames();
-    jumpTo(4);
-    scrollTo(1620);
-    window.dispatchEvent(new Event("scrollend"));
-    flushFrames();
-    expect(layers.value.origin).toBe(1);
-    scrollTo(100);
-    flushFrames();
-    expect(layers.value.origin).toBe(-1);
-  });
-
-  it("keeps a backward departure until ordinary reading passes it, replacing it on another jump", async () => {
-    renderChapter();
-    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-    const { jumpTo, layers } = setup();
-    await settle();
-    scrollTo(800);
-    flushFrames();
-    jumpTo(0);
-    expect(layers.value.origin).toBe(2);
-    scrollTo(20);
-    flushFrames();
-    window.dispatchEvent(new Event("scrollend"));
-    scrollTo(850);
-    flushFrames();
-    expect(layers.value.origin).toBe(-1);
-    jumpTo(4);
-    expect(layers.value.origin).toBe(2);
-    scrollTo(1620);
-    flushFrames();
-    jumpTo(0);
-    expect(layers.value.origin).toBe(4);
-  });
-
   it("does nothing for an unknown index or an empty page", async () => {
     const scroll = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
     const { jumpTo } = setup();

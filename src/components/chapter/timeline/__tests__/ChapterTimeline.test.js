@@ -484,15 +484,17 @@ describe("ChapterTimeline — map", () => {
 });
 
 describe("ChapterTimeline — page contract", () => {
-  it("publishes --reader-timeline-h while mounted", () => {
+  it("publishes the resting and peek clearances while mounted", () => {
     // Read through the attribute: happy-dom's getPropertyValue goes stale
     // once a removeProperty has emptied the style attribute.
     const inline = () => document.documentElement.getAttribute("style") || "";
     mountTimeline();
     expect(inline()).toContain(`--reader-timeline-h: ${REST_H}px`);
+    expect(inline()).toContain(`--reader-timeline-peek-h: ${PEEK_H}px`);
     wrapper.unmount();
     wrapper = null;
     expect(inline()).not.toContain("--reader-timeline-h");
+    expect(inline()).not.toContain("--reader-timeline-peek-h");
   });
 
   it("is fixed to the bottom and hides on `hidden`", async () => {

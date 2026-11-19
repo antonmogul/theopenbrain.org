@@ -1,8 +1,8 @@
 /*
  * Chapter/ReaderShell/TimelineBars — the chapter as bars (OPENBRAIN-128), as
  * the dock (rest and peek) and the map draw it, from the real Retina
- * (timelineFixture.js). Paragraph dashes and round object dots have the
- * same height; the played fill and all three lanes keep their meaning.
+ * (timelineFixture.js). Round object dots are larger than paragraph dashes;
+ * the played fill and all three lanes keep their meaning.
  *
  * Point at the bars: the bar under the pointer turns ink (the story feeds
  * `hover` back as `cursor`, as the dock does).
@@ -32,7 +32,6 @@ export default {
     expanded: false,
     signedIn: false,
     empty: false,
-    origin: -1,
     onPick: fn(),
   },
   argTypes: {
@@ -69,12 +68,11 @@ export default {
     setup() {
       const chapter = computed(() => (args.empty ? EMPTY_MODEL : model));
       const position = computed(() => positionAt(chapter.value, args.progress));
-      const layers = computed(() => ({
-        ...(args.empty
+      const layers = computed(() =>
+        args.empty
           ? emptyLayers()
-          : retinaLayers(model, { signedIn: args.signedIn })),
-        origin: args.origin,
-      }));
+          : retinaLayers(model, { signedIn: args.signedIn })
+      );
       const cursor = ref(-1);
       watch(chapter, () => (cursor.value = -1));
       const onHover = (hit) => (cursor.value = hit ? hit.index : -1);
@@ -127,8 +125,3 @@ export const Phone = {
 
 /** No items: nothing drawn. */
 export const Empty = { args: { empty: true, expanded: true, barHeight: 52 } };
-
-/** The place left by a jump is ringed until the reader returns or reads past it. */
-export const LastDeparture = {
-  args: { expanded: true, barHeight: 52, signedIn: true, origin: 18 },
-};

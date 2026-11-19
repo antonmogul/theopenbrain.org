@@ -490,10 +490,15 @@ onMounted(() => {
     "--reader-timeline-h",
     `${REST_H}px`
   );
+  document.documentElement.style.setProperty(
+    "--reader-timeline-peek-h",
+    `${PEEK_H}px`
+  );
 });
 
 onBeforeUnmount(() => {
   document.documentElement.style.removeProperty("--reader-timeline-h");
+  document.documentElement.style.removeProperty("--reader-timeline-peek-h");
   document.removeEventListener("pointerdown", onDocumentPointerDown, true);
   releaseValue();
 });
