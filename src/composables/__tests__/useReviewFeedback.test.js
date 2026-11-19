@@ -283,10 +283,10 @@ describe("the queue", () => {
     review.submit(draft, ENV);
     await syncReviewQueue();
     await review.refreshStatuses();
-    expect(apiRequest).toHaveBeenLastCalledWith("rpc/review_feedback_status", {
-      method: "POST",
-      body: JSON.stringify({ p_ids: ["row-5"] }),
-    });
+    expect(apiRequest).toHaveBeenLastCalledWith(
+      "rpc/review_feedback_status?p_ids=%7Brow-5%7D",
+      { method: "GET" }
+    );
   });
 
   it("sends nothing when the queue is empty (no write on page load)", async () => {

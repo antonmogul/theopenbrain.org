@@ -150,7 +150,7 @@ describe("reviewer notes helpers (OPENBRAIN-203)", () => {
     ).split("\n");
     expect(table).toHaveLength(6);
     expect(table[2]).toBe(
-      "| 1 | Foundations of Neuroscience | Galen and the animal spirits | Figure | Doing | Fig 07 · Galen silences a squealing pig | The pig should face the other way, toward the text. | Maura, designer | [open](https://example.test/chapter/1/foundations-of-neuroscience#galen) |"
+      "| 1 | Foundations of Neuroscience | Galen and the animal spirits | Figure | In progress | Fig 07 · Galen silences a squealing pig | The pig should face the other way, toward the text. | Maura, designer | [open](https://example.test/chapter/1/foundations-of-neuroscience#galen) |"
     );
     expect(table.join("\n")).toContain(
       "| “Rods outnumber cones about 10 to 1” → “Rods outnumber cones about 20 to 1” |"
@@ -198,4 +198,13 @@ describe("reviewer notes helpers (OPENBRAIN-203)", () => {
     expect(table[3]).toContain("the mirrored version reads better");
     expect(table[5].startsWith("| 2 |")).toBe(true);
   });
+});
+
+it("excludes author-checked notes from open and selects them explicitly", () => {
+  expect(matchesReviewFilters({ status: "verified" }, { status: "open" })).toBe(
+    false
+  );
+  expect(
+    matchesReviewFilters({ status: "verified" }, { status: "verified" })
+  ).toBe(true);
 });

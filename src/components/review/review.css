@@ -99,3 +99,62 @@
   font-size: var(--ui-size-12);
   line-height: 1.4;
 }
+
+/* Status paint uses saturated tokens with dark ink (AA), in both themes.
+   The green checked state is dimmed through its surface, never text opacity. */
+.rv-status {
+  --rv-status-color: var(--color-accent);
+}
+.rv-status[data-status="doing"] {
+  --rv-status-color: var(--color-warn);
+}
+.rv-status[data-status="question"] {
+  --rv-status-color: var(--color-mark3);
+}
+.rv-status[data-status="done"],
+.rv-status[data-status="verified"] {
+  --rv-status-color: var(--color-complete);
+}
+.rv-status[data-status="wont_do"] {
+  --rv-status-color: var(--color-mute);
+}
+.rv-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(var(--rv-status-color));
+  color: #111;
+  font: 600 var(--ui-size-11) / 1.5 var(--font-ui);
+}
+.rv-status[data-status="question"].rv-status-chip {
+  color: #fff;
+}
+.rv-status[data-status="wont_do"].rv-status-chip {
+  background: rgb(var(--color-line));
+  color: rgb(var(--color-ink));
+}
+.rv-status[data-status="verified"].rv-status-chip {
+  background: color-mix(
+    in srgb,
+    rgb(var(--color-complete)) 35%,
+    rgb(var(--color-paper))
+  );
+  color: rgb(var(--color-ink));
+}
+.rv-status.rv-status-card[data-status] {
+  border-inline-start: 3px solid rgb(var(--rv-status-color));
+}
+.rv-status.rv-status-card[data-status="verified"] {
+  border-inline-start-style: dashed;
+  background: rgb(var(--color-complete) / 0.06);
+}
+
+.rv-status[data-status="question"] .rv-num {
+  color: #fff;
+}
+:root[data-accent="mono"] .rv-status[data-status="new"].rv-status-chip,
+:root[data-accent="mono"] .rv-status[data-status="new"] .rv-num {
+  color: #fff;
+}

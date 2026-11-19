@@ -53,3 +53,18 @@ export default {
 };
 
 export const OnTwoParagraphs = {};
+
+export const Statuses = {
+  args: {
+    showChecked: true,
+    items: ["new", "doing", "question", "done", "wont_do", "verified"].map(
+      (status, i) => ({
+        ...ITEMS[0],
+        id: status,
+        n: i + 1,
+        status,
+        anchor: { ...ITEMS[0].anchor, point: { x: i * 0.15, y: i * 0.3 } },
+      })
+    ),
+  },
+};

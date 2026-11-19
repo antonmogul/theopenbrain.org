@@ -6,6 +6,7 @@
  * (one save per press). Presentational: DashboardView owns useReviewNotes.
  */
 import { reactive } from "vue";
+import "@/components/review/review.css";
 import {
   BaseCard,
   StatusBadge,
@@ -20,6 +21,7 @@ import {
   reviewAnchorLabel,
   reviewNoteHref,
   reviewStatusLabel,
+  reviewStatusIcon,
   reviewTypeLabel,
   reviewViewLabel,
 } from "@/helper/reviewNotes.mjs";
@@ -69,14 +71,6 @@ const ROLE_LABELS = {
   reviewer: "Reviewer",
   other: "Other",
 };
-const STATUS_TONE = {
-  new: "accent",
-  doing: "warn",
-  question: "warn",
-  done: "complete",
-  wont_do: "neutral",
-};
-
 function formatDate(value) {
   const date = new Date(value);
   if (!value || Number.isNaN(date.getTime())) return "Date unavailable";
@@ -196,14 +190,23 @@ function formatDate(value) {
             <ul class="review-list">
               <li v-for="note in section.notes" :key="note.id">
                 <BaseCard padding="md">
-                  <article class="review-note" :data-review-note="note.id">
+                  <article
+                    class="review-note rv-status rv-status-card"
+                    :data-status="note.status"
+                    :data-review-note="note.id"
+                  >
                     <div class="review-heading">
                       <StatusBadge>{{
                         reviewTypeLabel(note.type)
                       }}</StatusBadge>
-                      <StatusBadge :variant="STATUS_TONE[note.status]">{{
-                        reviewStatusLabel(note.status)
-                      }}</StatusBadge>
+                      <span
+                        class="rv-status rv-status-chip"
+                        :data-status="note.status"
+                        ><span aria-hidden="true">{{
+                          reviewStatusIcon(note.status)
+                        }}</span
+                        >{{ reviewStatusLabel(note.status) }}</span
+                      >
                       <span class="review-meta">
                         {{ note.reviewer_name
                         }}<template v-if="note.reviewer_role">

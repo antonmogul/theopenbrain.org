@@ -9,6 +9,8 @@ import {
   REVIEW_STATUS_LABELS,
   REVIEW_TYPES,
 } from "@/composables/useReviewFeedback";
+import { reviewStatusIcon } from "@/helper/reviewNotes.mjs";
+import ReviewAuthorActions from "./ReviewAuthorActions.vue";
 import "./review.css";
 
 const props = defineProps({
@@ -17,6 +19,7 @@ const props = defineProps({
   /** Only this chapter's notes, when set. */
   chapterSlug: { type: String, default: "" },
   checking: { type: Boolean, default: false },
+  authorAction: { type: Function, default: null },
 });
 const emit = defineEmits(["refresh", "discard", "show", "retry"]);
 
@@ -35,14 +38,7 @@ function stateOf(n) {
   const s = n.status || "new";
   return {
     text: REVIEW_STATUS_LABELS[s] || s,
-    tone:
-      s === "done"
-        ? "good"
-        : s === "question"
-          ? "ask"
-          : s === "wont_do"
-            ? "bad"
-            : "info",
+    tone: s,
   };
 }
 
@@ -83,12 +79,17 @@ const when = (iso) => {
       <li
         v-for="n in list"
         :key="n.clientId"
-        class="rv-note"
+        class="rv-note rv-status rv-status-card"
+        :data-status="n.status || 'new'"
         data-testid="review-note-row"
       >
         <div class="rv-note-top">
-          <span class="rv-chip" :class="`rv-chip--${stateOf(n).tone}`">
-            {{ stateOf(n).text }}
+          <span
+            class="rv-status rv-status-chip"
+            :data-status="n.state === 'sent' ? n.status || 'new' : 'wont_do'"
+          >
+            <span aria-hidden="true">{{ reviewStatusIcon(n.status) }}</span
+            >{{ stateOf(n).text }}
           </span>
           <span class="rv-hint"
             >{{ typeLabel(n.type) }} · {{ when(n.createdAt) }}</span
@@ -107,6 +108,11 @@ const when = (iso) => {
         <p v-if="n.error && n.state !== 'sent'" class="rv-hint">
           {{ n.error }}
         </p>
+        <ReviewAuthorActions
+          v-if="n.state === 'sent' && !n.parentId"
+          :note="n"
+          :action="authorAction"
+        />
         <div class="rv-note-actions">
           <button
             v-if="n.hash || n.label"
@@ -205,33 +211,7 @@ const when = (iso) => {
 
 .rv-note-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-}
-
-.rv-chip {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: var(--ui-size-11);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  background: rgb(var(--color-line));
-  color: rgb(var(--color-ink));
-}
-
-.rv-chip--good {
-  background: rgb(var(--color-complete) / 0.3);
-}
-
-.rv-chip--ask {
-  background: rgb(var(--color-warn) / 0.35);
-}
-
-.rv-chip--wait {
-  background: rgb(var(--color-warn) / 0.2);
-}
-
-.rv-chip--bad {
-  background: rgb(var(--color-mute) / 0.25);
 }
 </style>

@@ -89,3 +89,12 @@ export const Phone = {
     reviewSeed: { identity: { name: "Arjun", role: "author" }, notes: NOTES },
   },
 };
+
+export const AwaitingYourCheck = {
+  parameters: {
+    reviewSeed: {
+      identity: { name: "Stuart", role: "author" },
+      notes: [NOTES[0]],
+    },
+  },
+};

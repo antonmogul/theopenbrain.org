@@ -24,6 +24,7 @@ const harness = process.env.HISTORY_SQL_HARNESS;
 const migration = (name) =>
   readFileSync(`supabase/migrations/${name}.sql`, "utf8");
 const review = migration("20261118150000_review_feedback");
+const verify = migration("20261119470000_review_feedback_verify");
 const schema = [
   migration("20250101000000_initial_schema").replace(
     /^CREATE EXTENSION .*$/gm,
@@ -76,6 +77,7 @@ async function setup() {
     );
   }
   await db.exec(review);
+  await db.exec(verify);
 }
 
 // One PostgREST-style request: anon (user null) or a signed-in user.
@@ -443,6 +445,7 @@ describe.skipIf(!harness)(
           reply: "On it",
           replied_at: expect.any(Date),
           updated_at: expect.any(Date),
+          verified_at: null,
         },
       ]);
       expect(Object.keys(answer[0]).sort()).toEqual([
@@ -451,6 +454,7 @@ describe.skipIf(!harness)(
         "reply",
         "status",
         "updated_at",
+        "verified_at",
       ]);
       expect(await status([b.id], STUDENT)).toMatchObject([
         { id: b.id, status: "new", reply: null },
@@ -579,6 +583,7 @@ describe.skipIf(!harness)(
           "suggested_text",
           "type",
           "updated_at",
+          "verified_at",
         ].sort()
       );
       expect(JSON.stringify(item)).not.toMatch(
@@ -614,10 +619,154 @@ describe.skipIf(!harness)(
       expect(fns).toEqual([{ prosecdef: true, provolatile: "s" }]);
     }, 60000);
 
+    it("checks authorship and valid transitions, with a reopen reply preserving history", async () => {
+      await setup();
+      const { id } = await submit({
+        ...NOTE,
+        client_id: "secret-author-proof",
+      });
+      const act = (
+        action,
+        note = null,
+        client = "secret-author-proof",
+        user = null
+      ) =>
+        as(
+          user,
+          async () =>
+            (
+              await db.query(
+                "select public.review_feedback_author_action($1, $2, $3, $4) as r",
+                [id, client, action, note]
+              )
+            ).rows[0].r
+        );
+      for (const state of ["new", "doing", "question", "verified"]) {
+        await db.query("update review_feedback set status = $1 where id = $2", [
+          state,
+          id,
+        ]);
+        await expect(act("verify")).rejects.toThrow("review_invalid");
+      }
+      await db.query(
+        "update review_feedback set status = 'done', reply = 'Fixed the legend' where id = $1",
+        [id]
+      );
+      for (const client of ["wrong", "", null])
+        await expect(act("verify", null, client)).rejects.toThrow(
+          "review_invalid"
+        );
+      await expect(act(null)).rejects.toThrow("review_invalid");
+      await expect(act("delete")).rejects.toThrow("review_invalid");
+      const checked = await act("verify");
+      expect(checked).toMatchObject({
+        id,
+        status: "verified",
+        verified_at: expect.any(String),
+        reply: "Fixed the legend",
+      });
+      expect((await status([id]))[0].verified_at).toBeInstanceOf(Date);
+      for (const note of [null, "   ", "x".repeat(4001)])
+        await expect(act("reopen", note)).rejects.toThrow("review_invalid");
+      expect(await rows()).toHaveLength(1);
+      const reopened = await act(
+        "reopen",
+        "  Still the wrong date.  ",
+        "secret-author-proof",
+        STUDENT
+      );
+      expect(reopened).toMatchObject({
+        status: "new",
+        verified_at: null,
+        reply: "Fixed the legend",
+      });
+      const reply = (await rows()).find((r) => r.parent_id === id);
+      expect(reply).toMatchObject({
+        chapter_slug: NOTE.chapter_slug,
+        section_slug: NOTE.section_slug,
+        note: "Still the wrong date.",
+        reviewer_name: "Stuart",
+        reviewer_role: "author",
+        anchor: {},
+        type: "note",
+      });
+      for (const state of ["done", "wont_do"]) {
+        await db.query("update review_feedback set status = $1 where id = $2", [
+          state,
+          id,
+        ]);
+        expect((await act("verify")).status).toBe("verified");
+        await db.query("update review_feedback set status = $1 where id = $2", [
+          state,
+          id,
+        ]);
+        expect((await act("reopen", "Needs another look")).status).toBe("new");
+      }
+      await as(CREATOR, () =>
+        db.query(
+          "update review_feedback set status = 'verified' where id = $1",
+          [id]
+        )
+      );
+      expect((await status([id]))[0]).toMatchObject({
+        status: "verified",
+        verified_at: expect.any(Date),
+      });
+      await expect(
+        as(null, () => db.query("select * from review_feedback_verify_events"))
+      ).rejects.toThrow(/permission denied/);
+    }, 60000);
+
+    it("shares submit's per-address and overall rate budgets, including verify events", async () => {
+      await setup();
+      const { id } = await submit({ ...NOTE, client_id: "rate-proof" });
+      await db.query(
+        "update review_feedback set status = 'done' where id = $1",
+        [id]
+      );
+      const hash = (
+        await db.query(
+          "select encode(sha256(convert_to('9.9.9.9', 'UTF8')), 'hex') as h"
+        )
+      ).rows[0].h;
+      await db.query(
+        "insert into review_feedback_verify_events (ip_hash) select $1 from generate_series(1, 120)",
+        [hash]
+      );
+      const act = () =>
+        as(
+          null,
+          () =>
+            db.query(
+              "select public.review_feedback_author_action($1, 'rate-proof', 'verify')",
+              [id]
+            ),
+          { ip: "9.9.9.9" }
+        );
+      await expect(act()).rejects.toThrow("review_rate_limited");
+      await expect(submit(NOTE, { ip: "9.9.9.9" })).rejects.toThrow(
+        "review_rate_limited"
+      );
+      await db.exec(
+        "update review_feedback_verify_events set created_at = now() - interval '61 minutes'"
+      );
+      await act();
+      await db.exec(
+        "insert into review_feedback_verify_events select gen_random_uuid(), now(), null from generate_series(1, 1998)"
+      );
+      await db.query(
+        "update review_feedback set status = 'done' where id = $1",
+        [id]
+      );
+      await expect(act()).rejects.toThrow("review_rate_limited");
+      expect((await status([id]))[0].status).toBe("done");
+    }, 60000);
+
     it("reruns cleanly", async () => {
       await setup();
       const { id } = await submit({ ...NOTE, client_id: "keep" });
-      await db.exec(review);
+      await db.exec(verify);
+      await db.exec(verify);
       expect((await rows()).map((r) => r.id)).toEqual([id]);
       await expect(
         as(null, () => db.query("select * from review_feedback"))

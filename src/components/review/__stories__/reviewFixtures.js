@@ -141,6 +141,13 @@ export const CHAPTER_ROWS = [
 export const offlineTransport = {
   submit: async (p) => ({ id: `story-${p.client_id}`, status: "new" }),
   statuses: async (ids) =>
-    ids.map((id) => ({ id, status: "doing", reply: "" })),
+    ids.map((id) => {
+      const note = NOTES.find((n) => n.id === id);
+      return { id, status: note?.status || "doing", reply: note?.reply || "" };
+    }),
   list: async () => CHAPTER_ROWS,
+  authorAction: async (id, clientId, action) => ({
+    id,
+    status: action === "verify" ? "verified" : "new",
+  }),
 };

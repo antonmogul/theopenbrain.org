@@ -9,11 +9,14 @@
  * The layer takes no pointer events; only the pins do.
  */
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { reviewStatusIcon, reviewStatusLabel } from "@/helper/reviewNotes.mjs";
+import "./review.css";
 import { findAnchorElement } from "@/helper/reviewAnchor.mjs";
 
 const props = defineProps({
   /** [{ id, n, anchor, label }] */
   items: { type: Array, default: () => [] },
+  showChecked: { type: Boolean, default: false },
 });
 const emit = defineEmits(["open"]);
 
@@ -41,6 +44,7 @@ function measure() {
   ).toLowerCase();
   const out = [];
   for (const item of props.items) {
+    if (item.status === "verified" && !props.showChecked) continue;
     const el = elements.get(item.id);
     if (!el?.isConnected) continue;
     const a = item.anchor;
@@ -57,7 +61,7 @@ function measure() {
     const x = r.left + (a.point?.x ?? 0.04) * r.width;
     const y = r.top + (a.point?.y ?? 0.04) * r.height;
     if (x < 0 || x > vw || y < top || y > vh - 24) continue;
-    out.push({ id: item.id, n: item.n, label: item.label, x, y });
+    out.push({ ...item, x, y });
   }
   placed.value = out;
 }
@@ -72,7 +76,7 @@ function refresh() {
   schedule();
 }
 
-watch(() => props.items, refresh);
+watch([() => props.items, () => props.showChecked], refresh);
 
 onMounted(() => {
   refresh();
@@ -102,14 +106,20 @@ onBeforeUnmount(() => {
         v-for="p in placed"
         :key="p.id"
         type="button"
-        class="rv-pin"
+        class="rv-pin rv-status"
+        :data-status="p.status || 'new'"
         :style="{ left: `${p.x}px`, top: `${p.y}px` }"
-        :aria-label="`Note ${p.n}: ${p.label}`"
-        :title="p.label"
+        :aria-label="`Note ${p.n}: ${reviewStatusLabel(p.status || 'new')}. ${p.label}`"
+        :title="`${reviewStatusLabel(p.status || 'new')}: ${p.label}`"
         data-testid="review-pin"
         @click="emit('open', p.id)"
       >
-        {{ p.n }}
+        <span aria-hidden="true"
+          >{{ reviewStatusIcon(p.status) }} {{ p.n }}</span
+        >
+        <span class="rv-pin-status">{{
+          reviewStatusLabel(p.status || "new")
+        }}</span>
       </button>
     </div>
   </Teleport>
@@ -125,22 +135,54 @@ onBeforeUnmount(() => {
 
 .rv-pin {
   position: fixed;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   min-width: 24px;
   height: 24px;
   margin: -12px 0 0 -12px;
   padding: 0 6px;
   border: 2px solid #fff;
   border-radius: 999px 999px 999px 0;
-  background: rgb(var(--color-accent));
-  color: #fff;
+  background: rgb(var(--rv-status-color));
+  color: #111;
   font: 700 var(--ui-size-11) / 1 var(--font-ui);
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
   cursor: pointer;
   pointer-events: auto;
 }
 
+.rv-pin[data-status="wont_do"] {
+  background: rgb(var(--color-line));
+  color: rgb(var(--color-ink));
+}
+:global(:root[data-accent="mono"]) .rv-pin[data-status="new"],
+.rv-pin[data-status="question"] {
+  color: #fff;
+}
+.rv-pin[data-status="verified"] {
+  background: color-mix(
+    in srgb,
+    rgb(var(--color-complete)) 35%,
+    rgb(var(--color-paper))
+  );
+  color: rgb(var(--color-ink));
+  border-style: dashed;
+}
+.rv-pin-status {
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 639px) {
+  .rv-pin-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+  }
+}
 .rv-pin:focus-visible {
   outline: 3px solid rgb(var(--color-ink));
   outline-offset: 2px;

@@ -14,6 +14,8 @@ import {
   REVIEW_STATUS_LABELS,
   REVIEW_TYPES,
 } from "@/composables/useReviewFeedback";
+import { reviewStatusIcon } from "@/helper/reviewNotes.mjs";
+import ReviewAuthorActions from "./ReviewAuthorActions.vue";
 import "./review.css";
 
 const props = defineProps({
@@ -25,12 +27,21 @@ const props = defineProps({
   error: { type: String, default: "" },
   /** Whether the pins are on the page. */
   pins: { type: Boolean, default: false },
+  showChecked: { type: Boolean, default: false },
+  ownIds: { type: Array, default: () => [] },
+  authorAction: { type: Function, default: null },
   /** Note id → its pin number. */
   numbers: { type: Object, default: () => ({}) },
   /** The note to open (a pin was pressed). */
   focusId: { type: String, default: "" },
 });
-const emit = defineEmits(["refresh", "show", "reply", "update:pins"]);
+const emit = defineEmits([
+  "refresh",
+  "show",
+  "reply",
+  "update:pins",
+  "update:showChecked",
+]);
 
 const open = ref({}); // note id → reply box open
 const drafts = ref({});
@@ -78,6 +89,14 @@ function send(note) {
         />
         Pins on the page
       </label>
+      <label class="rv-pins">
+        <input
+          type="checkbox"
+          :checked="showChecked"
+          @change="emit('update:showChecked', $event.target.checked)"
+        />
+        Show checked
+      </label>
       <button
         type="button"
         class="rv-btn rv-btn--link"
@@ -103,7 +122,8 @@ function send(note) {
         <li
           v-for="note in group.notes"
           :key="note.id"
-          class="rv-thread"
+          class="rv-thread rv-status rv-status-card"
+          :data-status="note.status"
           :class="{ 'is-focus': note.id === focusId }"
           :data-note-id="note.id"
           data-testid="review-all-note"
@@ -118,7 +138,12 @@ function send(note) {
                 · {{ roleLabel(note.reviewer_role) }}</span
               ></span
             >
-            <span class="rv-chip">{{ statusLabel(note.status) }}</span>
+            <span class="rv-status rv-status-chip" :data-status="note.status"
+              ><span aria-hidden="true">{{
+                reviewStatusIcon(note.status)
+              }}</span
+              >{{ statusLabel(note.status) }}</span
+            >
           </div>
           <button
             type="button"
@@ -140,6 +165,11 @@ function send(note) {
           <p v-if="note.reply" class="rv-thread-team">
             <span class="rv-label">The team</span>{{ note.reply }}
           </p>
+          <ReviewAuthorActions
+            v-if="ownIds.includes(note.id)"
+            :note="note"
+            :action="authorAction"
+          />
           <ol v-if="note.replies.length" class="rv-replies">
             <li v-for="r in note.replies" :key="r.id" class="rv-reply">
               <span class="rv-who">{{ r.reviewer_name }}</span>
@@ -198,6 +228,7 @@ function send(note) {
 
 .rv-all-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
@@ -252,6 +283,7 @@ function send(note) {
 
 .rv-thread-top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -268,18 +300,10 @@ function send(note) {
   min-width: 20px;
   height: 20px;
   border-radius: 999px;
-  background: rgb(var(--color-accent));
-  color: #fff;
+  background: rgb(var(--rv-status-color));
+  color: #111;
   font-size: var(--ui-size-11);
   font-weight: 700;
-}
-
-.rv-chip {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgb(var(--color-line));
-  font-size: var(--ui-size-11);
-  font-weight: 600;
 }
 
 .rv-place-link {

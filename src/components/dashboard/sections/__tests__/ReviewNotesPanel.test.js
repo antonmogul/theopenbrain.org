@@ -153,3 +153,18 @@ describe("FeedbackSection view switch", () => {
     expect(r.text()).not.toContain("AI summaries are unavailable");
   });
 });
+
+it("shows the author tick, filter and creator status option", async () => {
+  const checked = { ...REVIEW_NOTES[0], status: "verified" };
+  const w = mountSection(ReviewNotesPanel, {
+    groups: groupReviewNotes([checked], REVIEW_MODULES, REVIEW_SECTIONS),
+  });
+  const badge = w.get('.rv-status-chip[data-status="verified"]');
+  expect(badge.text()).toContain("✓Checked by author");
+  const filter = w.findAll(".review-filters select")[2];
+  await filter.setValue("verified");
+  expect(w.emitted("filter-change").at(-1)[0].status).toBe("verified");
+  expect(w.get('form select option[value="verified"]').text()).toBe(
+    "Checked by author"
+  );
+});
