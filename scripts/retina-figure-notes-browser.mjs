@@ -17,18 +17,37 @@ const out =
 mkdirSync(out, { recursive: true });
 const base = process.env.RETINA_FIGURE_BASE || "http://127.0.0.1:5251";
 const db = new PGlite();
-await db.exec(
-  `create table modules(id uuid,slug text);create table sections(id uuid,module_id uuid,slug text,animation_config jsonb,updated_at timestamptz);create table animations(id uuid,animation_key text);create table paragraphs(id uuid,section_id uuid,animation_id uuid,has_animation boolean,animation_trigger text,content jsonb,updated_at timestamptz);`
-);
+await db.exec(`
+create table modules(id uuid,slug text);
+create table sections(id uuid,module_id uuid,slug text,animation_config jsonb,updated_at timestamptz);
+create table animations(id uuid primary key default gen_random_uuid(),animation_key text unique,title text,media_type text,image_file_url text,interaction_type text,component_name text,config jsonb,updated_at timestamptz);
+create table paragraphs(id uuid,section_id uuid,order_index int,content jsonb,content_text text,animation_id uuid,has_animation boolean,animation_trigger text,is_subsection_header boolean,subsection_level int,updated_at timestamptz);
+`);
 for (const [table, columns] of [
   ["modules", ["id", "slug"]],
   ["sections", ["id", "module_id", "slug", "animation_config"]],
-  ["animations", ["id", "animation_key"]],
+  [
+    "animations",
+    [
+      "id",
+      "animation_key",
+      "title",
+      "media_type",
+      "image_file_url",
+      "interaction_type",
+      "component_name",
+      "config",
+    ],
+  ],
   [
     "paragraphs",
     [
       "id",
       "section_id",
+      "order_index",
+      "content_text",
+      "is_subsection_header",
+      "subsection_level",
       "animation_id",
       "has_animation",
       "animation_trigger",
@@ -44,15 +63,21 @@ for (const [table, columns] of [
 }
 await db.exec(
   readFileSync(
+    "supabase/migrations/20261119500000_retina_text_review.sql",
+    "utf8"
+  )
+);
+await db.exec(
+  readFileSync(
     "supabase/migrations/20261119510000_retina_figure_notes.sql",
     "utf8"
   )
 );
-for (const table of ["sections", "paragraphs"]) {
+for (const table of ["sections", "paragraphs", "animations"]) {
   const { rows } = await db.query(`select * from ${table}`);
-  data[table] = data[table].map((original) => ({
-    ...original,
-    ...rows.find((r) => r.id === original.id),
+  data[table] = rows.map((row) => ({
+    ...data[table].find((original) => original.id === row.id),
+    ...row,
   }));
 }
 await db.close();
@@ -89,7 +114,7 @@ for (const engine of [chromium, webkit].filter(
       const table = url.pathname.split("/").at(-1);
       if (
         url.pathname.includes("/rest/v1/") &&
-        ["sections", "paragraphs"].includes(table)
+        ["sections", "paragraphs", "animations"].includes(table)
       )
         return route.fulfill({ json: data[table] });
       return route.continue();

@@ -30,6 +30,7 @@ update public.paragraphs p
 -- After the full-width visual-cycle interactive, bring back the same rod
 -- and cone drawing for the two paragraphs that compare their sensitivity.
 -- This is a new placement of the existing figure, not a new media record.
+-- Guard only placement keys; 20261119500000 may have edited the prose/citations.
 update public.paragraphs p
    set animation_id = a.id, has_animation = true,
        animation_trigger = 'widget-upload:retina-photoreceptors',
@@ -42,5 +43,4 @@ update public.paragraphs p
    and s.slug = 'photoreceptors-and-phototransduction'
    and a.animation_key = 'widget-upload:retina-photoreceptors'
    and p.animation_id is null
-   and not (coalesce(p.content -> 'animationFlags', '{}'::jsonb) ? 'hold')
-   and p.content -> 'blocks' -> 0 ->> 'content' like 'Light sensitivity and temporal differences between rods and cones.%';
+   and not (coalesce(p.content -> 'animationFlags', '{}'::jsonb) ? 'hold');

@@ -26,15 +26,16 @@ Local implementation and browser evidence; deployment and the content migration 
 
 ## Validation
 
-- Full Vitest suite with PGlite: **319 files, 3,433 tests passed** on the final source state. An earlier run overlapped edits and encountered two timeline-map timing failures; the isolated timeline rerun and the subsequent complete run passed.
+- Full Vitest suite with PGlite: **320 files, 3,441 tests passed** on the final source state. An earlier run overlapped edits and encountered two timeline-map timing failures; the isolated timeline rerun and the subsequent complete run passed.
 - `npm run lint:ci`: passed (nine existing warnings); changed-file lint passed.
 - `npm run format:check`, `npm run build`, and `npm run storybook:coverage`: passed.
 - Chromium and WebKit: 1440×900 and 1024×768 pane checks; 390×844 inline checks, plus actual `devices["iPhone 13"]` contexts. Horizontal and bipolar presets (including the bipolar figure's return after ON/OFF), all three holds and the color-opponency boundary, both entrance crops/coordinates, the Zahn exit and Eye Movements caption placement were checked. Explicit reduced motion and horizontal overflow checks passed.
 - The browser evidence records blocked YouTube/Google telemetry POSTs from the read-only guard, and WebKit's native `invalid/pip/airplay-placard` blob-icon diagnostics using the same narrow allowlist as `review-checkoff-browser.mjs`. There were no application page errors or unexpected console errors.
 - The production-build smoke sweep is recorded in `smoke-final.log` beside the browser evidence; the final sweep outcome and exact-head CI state are in PR #215.
+- Integration with merged PR #213: the dedicated SQL test applies the real `20261119500000_retina_text_review.sql` to its committed published fixture first. All three holds then apply; revised prose/citation blocks, the new Counting photons chart, and all three deletions survive unchanged. A further edited rod/cone opening also receives its placement, confirming there is no prose fingerprint guard. Both SQL suites pass (nine tests), and the merged full suite passes (3,441 tests).
 - PR: https://github.com/antonmogul/theopenbrain.org/pull/215. Migration and deployment remain pending owner action.
 
-Browser checks use the actual reader and published GETs, overlaying only the result of this migration in local PGlite. The migration is never sent to production. Runtime proof therefore covers the proposed code/content combination, not a deployed migration.
+Browser checks use the actual reader and published GETs, applying the pending text migration `20261119500000` before the figure migration `20261119510000` in local PGlite and overlaying those local results. The migration is never sent to production. Runtime proof therefore covers the proposed code/content combination, not a deployed migration.
 
 Screenshots: `/private/tmp/claude-501/-Volumes-Brain-code-theopenbrain-org/4addea41-0573-4866-a7f1-11a4bc0678a6/scratchpad/nov18/codex-51/`.
 
