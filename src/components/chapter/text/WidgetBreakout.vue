@@ -485,6 +485,12 @@ const headingId = computed(
   padding: 0;
 }
 
+/* This built-in page uses the reader's dark ink and a transparent root.
+   Give it the paper ground it has on its standalone route. */
+.wb-band .wb-stage[data-widget-stage="direction-selectivity"] {
+  background: rgb(var(--color-bg));
+}
+
 .wb-band .wb-stage-placeholder {
   background: repeating-linear-gradient(
     -45deg,
