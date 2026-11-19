@@ -127,6 +127,16 @@ function go(anchor, event) {
   letter-spacing: 0.1px;
   text-wrap: balance;
 }
+/* Keep the title beside a long contents list (OPENBRAIN-53). Its grid
+   column stretches with the list; only the heading sticks, so it releases
+   at the column's end without changing the opener's measured height.
+   Native sticky also works with reduced motion, with no scroll animation. */
+@media (min-width: 1024px) {
+  .opener-toc__h1 {
+    position: sticky;
+    top: calc(var(--reader-topbar-h, 4rem) + 1.5rem);
+  }
+}
 .opener-toc__lead {
   display: block;
   color: var(--toc-accent);

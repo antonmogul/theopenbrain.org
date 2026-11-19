@@ -168,3 +168,73 @@ export const NoSubtitle = {
     outline: attentionOutline.slice(0, 3),
   },
 };
+
+/** Scroll through the Retina's long contents: the title stays on the left
+ * from 1024px, then leaves with the dark block. Below 1024px it stacks.
+ * Titles mirror the published Retina outline (19 Nov 2026). */
+export const RetinaLong = {
+  args: {
+    ramp: "perc",
+    title: "The Retina",
+    subtitle:
+      "An interactive exploration of retinal anatomy, photoreceptors, neural circuits, and visual processing.",
+    outline: [
+      ["The Retina", []],
+      ["Story of the eye", []],
+      [
+        "Organization and cell types in the retina",
+        [
+          "Cross-sectional anatomy",
+          "Retinal cell classes and types",
+          "Synaptic architecture",
+        ],
+      ],
+      ["Photoreceptors and phototransduction", ["Phototransduction"]],
+      ["Horizontal cells and feedback", []],
+      ["Bipolar cells diversify photoreceptor signals", []],
+      [
+        "Amacrine and ganglion cells – circuits, computations and output",
+        [
+          "Circuit computations",
+          "Rod and cone pathways",
+          "Intrinsically photosensitive retinal ganglion cells",
+          "Retinal output",
+        ],
+      ],
+      ["Retinal vision in the ‘real world’", ["Light adaptation"]],
+      [
+        "Retinal development",
+        [
+          "Generation and wiring of retinal neurons",
+          "Spontaneous waves of activity",
+        ],
+      ],
+      [
+        "Diseases, disorders, and treatments",
+        [
+          "Cataracts",
+          "Glaucoma",
+          "Diabetic retinopathy",
+          "Age-related macular degeneration",
+          "Retinitis pigmentosa",
+        ],
+      ],
+      ["Looking forward", []],
+    ].map(([title, parts], i) => ({
+      id: `retina-${i}`,
+      kind: i === 0 ? "intro" : "section",
+      label: String(i),
+      title,
+      anchor: `#retina-${i}`,
+      subsections: parts.map((title, j) => sub(`retina-${i}-${j}`, title)),
+    })),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Scroll the page to keep the chapter title beside the contents on desktop. The title releases at the end of the dark block. On phones the title and list scroll together in the existing stacked layout.",
+      },
+    },
+  },
+};
