@@ -1,7 +1,7 @@
 /* Read-only integration check against a running reader, including its real
  * router/history and scroll locks. Run with:
  * node src/components/chapter/timeline/__tests__/timelineHistory.browser.mjs
- *   --base http://127.0.0.1:4242 --out /tmp/openbrain-42
+ *   --base http://127.0.0.1:4249 --out /tmp/openbrain-49
  * No auth session is installed and database writes are blocked before sending.
  */
 import assert from "node:assert/strict";
@@ -12,8 +12,8 @@ const flag = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
   return i < 0 ? fallback : process.argv[i + 1];
 };
-const base = flag("base", "http://127.0.0.1:4242");
-const out = flag("out", "/tmp/openbrain-42");
+const base = flag("base", "http://127.0.0.1:4249");
+const out = flag("out", "/tmp/openbrain-49");
 const engines = flag("engines", "chromium,webkit").split(",");
 // WebKit can leave document.fonts.ready pending after all local reader
 // faces loaded. Wait for the actual reader fonts below, then capture without
@@ -30,6 +30,45 @@ async function noOverflow(page) {
     false,
     "reader must not scroll horizontally"
   );
+}
+
+// Check rendered SVG geometry and CSS: a unit DOM cannot catch a missing
+// played-dot selector, a filled frame, or marks squeezed by a narrow strip.
+async function checkMarks(page, selector, expanded = false) {
+  const marks = await page.locator(selector).evaluate((el) => {
+    const base = el.querySelector(".tl-layer:not(.is-played)");
+    const played = el.querySelector(".is-played");
+    const frame = (type) => {
+      const node = base.querySelector(`[data-type="${type}"]`);
+      if (!node) return null;
+      const css = getComputedStyle(node);
+      return { fill: css.fill, stroke: css.stroke, dash: css.strokeDasharray };
+    };
+    return {
+      dashH: base.querySelector(".tl-text").getBBox().height,
+      dotH: base.querySelector(".tl-block").getBBox().height,
+      textFill: getComputedStyle(played.querySelector(".tl-text")).fill,
+      dotFill: getComputedStyle(played.querySelector(".tl-block")).fill,
+      unreadFill: getComputedStyle(base.querySelector(".tl-block")).fill,
+      figure: frame("figure"),
+      widget: frame("widget"),
+      rings: el.querySelectorAll(".tl-origin").length,
+    };
+  });
+  assert.ok(marks.dotH > marks.dashH, "object dots are larger than dashes");
+  assert.equal(marks.dotFill, marks.textFill, "read dots match read dashes");
+  assert.notEqual(marks.dotFill, marks.unreadFill, "read dots change colour");
+  assert.equal(marks.rings, 0, "no departure ring on any surface");
+  if (expanded) {
+    for (const type of ["figure", "widget"]) {
+      assert.ok(marks[type], `${type} frame present`);
+      assert.equal(marks[type].fill, "none", `${type} frame is hollow`);
+      assert.notEqual(marks[type].stroke, "none", `${type} outline visible`);
+    }
+    assert.equal(marks.figure.dash, "none", "figure outline is solid");
+    assert.notEqual(marks.widget.dash, "none", "widget outline is dashed");
+  }
+  return marks;
 }
 
 async function sourceAt(page) {
@@ -51,13 +90,13 @@ async function backTo(page, source, position, screenshot) {
   );
   assert.equal(
     await page.locator(".ctl .tl-origin").count(),
-    1,
-    "departure stays ringed after landing"
+    0,
+    "jumps have no departure ring"
   );
   if (screenshot)
     await page
       .locator(".ctl")
-      .screenshot({ path: `${out}/${screenshot}-departure.png` });
+      .screenshot({ path: `${out}/${screenshot}-after-jump.png` });
   const destination = await page.evaluate(() => scrollY);
   assert.ok(Math.abs(destination - source) > 30, "jump must move the reader");
   // Same-document Back can wait for a load event that WebKit never sends to
@@ -70,7 +109,7 @@ async function backTo(page, source, position, screenshot) {
   assert.equal(
     await page.locator(".ctl .tl-origin").count(),
     0,
-    "return clears the ring"
+    "Back keeps the ring absent"
   );
   return { source, destination, restored: await page.evaluate(() => scrollY) };
 }
@@ -89,6 +128,15 @@ for (const engine of engines) {
           ...(width === 390 ? devices["iPhone 13"] : {}),
           viewport: { width, height },
           reducedMotion: reduced ? "reduce" : "no-preference",
+        });
+        // Match feedback:locate: review chrome overlaps the map button in
+        // this baseline, and belongs to a separate review-widget lane.
+        await context.addInitScript(() => {
+          try {
+            localStorage.setItem("ob.review.off", "1");
+          } catch {
+            // Uploaded widget frames intentionally have no storage access.
+          }
         });
         const page = await context.newPage();
         const errors = [];
@@ -126,11 +174,13 @@ for (const engine of engines) {
             }
           });
           let source = await sourceAt(page);
+          const marks = { rest: await checkMarks(page, ".ctl .tl-bars") };
           await noOverflow(page);
           await page.screenshot({ path: `${out}/${label}-rest.png` });
           if (width >= 768) {
             await page.locator(".ctl").hover();
             await page.waitForTimeout(300);
+            marks.peek = await checkMarks(page, ".ctl .tl-bars", true);
             await page.screenshot({ path: `${out}/${label}-peek.png` });
             let position = await page.evaluate(() => history.state.position);
             await page
@@ -147,6 +197,24 @@ for (const engine of engines) {
               .click();
             await page.locator(".ctl-map").waitFor();
             await page.waitForTimeout(300);
+            marks.map = await checkMarks(page, ".map-bars .tl-bars", true);
+            const glyphs = await page.locator(".map-legend").evaluate((el) =>
+              ["figure", "widget"].map((type) => {
+                const css = getComputedStyle(
+                  el.querySelector(`[data-type="${type}"]`)
+                );
+                return {
+                  type,
+                  background: css.backgroundColor,
+                  border: css.borderTopStyle,
+                };
+              })
+            );
+            assert.deepEqual(
+              glyphs.map((g) => g.border),
+              ["solid", "dashed"]
+            );
+            assert.ok(glyphs.every((g) => g.background === "rgba(0, 0, 0, 0)"));
             await page.screenshot({ path: `${out}/${label}-map.png` });
             await noOverflow(page);
             source = await page.evaluate(() => scrollY);
@@ -173,6 +241,7 @@ for (const engine of engines) {
             await page.locator(".ctl").tap();
             await page.locator(".tls-strip").waitFor();
             await page.waitForTimeout(300);
+            marks.scrubber = await checkMarks(page, ".tls-bars", true);
             await page.screenshot({ path: `${out}/${label}-scrubber.png` });
             await noOverflow(page);
             const position = await page.evaluate(() => history.state.position);
@@ -234,6 +303,7 @@ for (const engine of engines) {
           results.push({
             label,
             passed: true,
+            marks,
             jumps,
             errors,
             baselineWarnings,

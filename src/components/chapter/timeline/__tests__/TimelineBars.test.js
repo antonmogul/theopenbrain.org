@@ -40,7 +40,7 @@ describe("TimelineBars", () => {
     expect(text.attributes("d").match(/M/g)).toHaveLength(6);
     expect(block.attributes("d").match(/M/g)).toHaveLength(2);
     expect(text.attributes("d")).toContain("a");
-    expect(block.attributes("d")).toContain("a2 2");
+    expect(block.attributes("d")).toContain("a3 3");
     expect(wrapper.find("pattern").exists()).toBe(false);
   });
 
@@ -67,7 +67,7 @@ describe("TimelineBars", () => {
     const current = clipRect(wrapper, "current");
     expect(current.exists()).toBe(true);
     // A block is full height: half of it read.
-    expect(Number(current.attributes("height"))).toBeCloseTo(2, 5);
+    expect(Number(current.attributes("height"))).toBeCloseTo(3, 5);
     expect(wrapper.findAll(".tl-layer.is-played")).toHaveLength(2);
   });
 
@@ -89,15 +89,21 @@ describe("TimelineBars", () => {
     expect(wrapper.get(".tl-cursor").classes()).not.toContain("is-block");
   });
 
-  it("rings the last departure mark at rest and expanded, including box paragraphs", async () => {
-    const layers = { ...testLayers(), origin: 3 };
-    const wrapper = await mountBars({ layers });
-    expect(wrapper.find(".tl-origin").exists()).toBe(true);
-    expect(wrapper.get(".tl-origin").attributes("ry")).toBe("4");
+  it("never draws a departure ring, even with an older origin layer", async () => {
+    const wrapper = await mountBars({ layers: { ...testLayers(), origin: 3 } });
+    expect(wrapper.find("ellipse").exists()).toBe(false);
     await wrapper.setProps({ expanded: true });
-    expect(wrapper.find(".tl-origin").exists()).toBe(true);
-    await wrapper.setProps({ layers: { ...layers, origin: -1 } });
-    expect(wrapper.find(".tl-origin").exists()).toBe(false);
+    expect(wrapper.find("ellipse").exists()).toBe(false);
+  });
+
+  it("draws figure and widget frames separately, keeping personal highlights round", async () => {
+    const wrapper = await mountBars({ expanded: true, layers: testLayers() });
+    for (const type of ["figure", "widget"]) {
+      const frame = wrapper.get(`.tl-content[data-type="${type}"]`);
+      expect(frame.attributes("d")).toContain("h6v6h-6Z");
+      expect(frame.attributes("d")).not.toContain("a2.5");
+    }
+    expect(wrapper.get(".tl-dot").attributes("d")).toContain("a2.5");
   });
 
   it("shows the layers expanded: trending caps, your dots and notes", async () => {

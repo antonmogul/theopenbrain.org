@@ -614,8 +614,8 @@ const style = computed(() =>
 <style>
 /*
  * The timeline's glyphs in HTML (the card and the map), drawn in CSS so they
- * match the SVG lanes in TimelineBars whatever the font: widget ■, figure ●,
- * video ▶, break ◆, trending ▀. Coloured by currentColor.
+ * match the SVG lanes in TimelineBars whatever the font: dashed widget
+ * frame, figure frame, video ▶, break ◆, trending ▀. Coloured by currentColor.
  */
 .tl-glyph {
   display: inline-block;
@@ -625,8 +625,15 @@ const style = computed(() =>
   background: currentColor;
 }
 
-.tl-glyph[data-type="figure"] {
-  border-radius: 50%;
+.tl-glyph[data-type="figure"],
+.tl-glyph[data-type="image"],
+.tl-glyph[data-type="widget"] {
+  background: none;
+  border: 1px solid currentColor;
+}
+
+.tl-glyph[data-type="widget"] {
+  border-style: dashed;
 }
 
 .tl-glyph[data-type="video"] {
