@@ -6,7 +6,7 @@
 import BreakImages from "../BreakImages.vue";
 import { proseFrame } from "../../__stories__/chapterFixtures";
 
-const SLUGS = ["placeholder", "dowling-and-werblin"];
+const SLUGS = ["placeholder", "dowling-and-werblin", "baden"];
 
 export default {
   title: "Chapter/Text/BreakImages",
@@ -39,4 +39,8 @@ export const DowlingAndWerblin = {
     title: "John Dowling",
     text: "Retinal cell types, connectivity and responses.",
   },
+};
+
+export const TomBaden = {
+  args: { slug: "baden" },
 };
