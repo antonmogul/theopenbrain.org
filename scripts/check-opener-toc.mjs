@@ -7,7 +7,12 @@ export async function checkOpenerToc(page) {
     const title = block?.querySelector(".opener-toc__h1");
     const list = block?.querySelector(".opener-toc__list");
     if (!title || !list) return ["no numbered contents"];
-    await document.fonts.ready;
+    // WebKit can leave unused local IBM Plex faces in "loading" after
+    // networkidle. Bound the wait; the geometry checks still catch a swap.
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
     const problems = [];
     const rect = (el) => el.getBoundingClientRect();
     const root = document.documentElement;
