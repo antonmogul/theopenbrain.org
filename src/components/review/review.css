@@ -162,3 +162,9 @@
   background: rgb(var(--color-line));
   color: rgb(var(--color-ink));
 }
+
+/* Timeline dialogs own reader input. Keep Feedback out of the phone's
+   scrubber strip and the desktop map, including their keyboard focus order. */
+:root:has(.tls[aria-modal="true"], .ctl-map[aria-modal="true"]) .rv-fab {
+  visibility: hidden;
+}

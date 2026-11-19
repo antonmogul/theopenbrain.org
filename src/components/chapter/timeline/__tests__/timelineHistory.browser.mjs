@@ -71,6 +71,59 @@ async function checkMarks(page, selector, expanded = false) {
   return marks;
 }
 
+// Review chrome stays enabled: geometry and hit tests prove that Feedback
+// neither covers the dock/map button nor intercepts a phone scrubber gesture.
+async function checkHitArea(locator) {
+  return locator.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const points = [0.15, 0.5, 0.85].map((f) => ({
+      x: r.left + r.width * f,
+      y: r.top + r.height / 2,
+    }));
+    return points.every(({ x, y }) =>
+      el.contains(document.elementFromPoint(x, y))
+    );
+  });
+}
+
+async function checkReviewClearance(
+  page,
+  { peek = false, modal = false } = {}
+) {
+  const fab = page.getByTestId("review-fab");
+  assert.equal(await fab.count(), 1, "review widget is enabled");
+  if (modal) {
+    assert.equal(
+      await fab.isVisible(),
+      false,
+      "timeline dialog hides the launcher"
+    );
+    return { hiddenForTimelineDialog: true };
+  }
+  await fab.waitFor({ state: "visible" });
+  const button = await fab.boundingBox();
+  const dock = await page.locator(".ctl").boundingBox();
+  const gap = dock.y - (button.y + button.height);
+  assert.ok(
+    gap >= 15,
+    `Feedback clears the ${peek ? "peek" : "resting"} dock by ${gap}px`
+  );
+  assert.ok(button.y >= 0, "Feedback remains in the viewport");
+  assert.ok(await checkHitArea(fab), "Feedback itself remains clickable");
+  assert.ok(
+    await checkHitArea(page.locator(".ctl")),
+    "dock tap target stays clear across its width"
+  );
+  if (peek)
+    assert.ok(
+      await checkHitArea(
+        page.getByRole("button", { name: "Open chapter map" })
+      ),
+      "map button is not covered"
+    );
+  return { gap, button };
+}
+
 async function sourceAt(page) {
   await page.mouse.move(100, 100);
   await page.evaluate(() => {
@@ -129,15 +182,6 @@ for (const engine of engines) {
           viewport: { width, height },
           reducedMotion: reduced ? "reduce" : "no-preference",
         });
-        // Match feedback:locate: review chrome overlaps the map button in
-        // this baseline, and belongs to a separate review-widget lane.
-        await context.addInitScript(() => {
-          try {
-            localStorage.setItem("ob.review.off", "1");
-          } catch {
-            // Uploaded widget frames intentionally have no storage access.
-          }
-        });
         const page = await context.newPage();
         const errors = [];
         await page.route("**/*", async (route) => {
@@ -175,12 +219,24 @@ for (const engine of engines) {
           });
           let source = await sourceAt(page);
           const marks = { rest: await checkMarks(page, ".ctl .tl-bars") };
+          const review = { rest: await checkReviewClearance(page) };
+          // The relocated launcher still opens the real review panel; no
+          // note is created or sent during this read-only integration test.
+          await page.getByTestId("review-fab").click();
+          await page.getByTestId("review-panel").waitFor();
+          await page
+            .getByTestId("review-panel")
+            .getByRole("button", { name: "Close", exact: true })
+            .click();
+          await page.mouse.move(100, 100);
+          await page.waitForTimeout(250);
           await noOverflow(page);
           await page.screenshot({ path: `${out}/${label}-rest.png` });
           if (width >= 768) {
             await page.locator(".ctl").hover();
             await page.waitForTimeout(300);
             marks.peek = await checkMarks(page, ".ctl .tl-bars", true);
+            review.peek = await checkReviewClearance(page, { peek: true });
             await page.screenshot({ path: `${out}/${label}-peek.png` });
             let position = await page.evaluate(() => history.state.position);
             await page
@@ -198,6 +254,7 @@ for (const engine of engines) {
             await page.locator(".ctl-map").waitFor();
             await page.waitForTimeout(300);
             marks.map = await checkMarks(page, ".map-bars .tl-bars", true);
+            review.map = await checkReviewClearance(page, { modal: true });
             const glyphs = await page.locator(".map-legend").evaluate((el) =>
               ["figure", "widget"].map((type) => {
                 const css = getComputedStyle(
@@ -242,11 +299,20 @@ for (const engine of engines) {
             await page.locator(".tls-strip").waitFor();
             await page.waitForTimeout(300);
             marks.scrubber = await checkMarks(page, ".tls-bars", true);
+            review.scrubber = await checkReviewClearance(page, { modal: true });
+            assert.ok(
+              await checkHitArea(page.locator(".tls-strip")),
+              "phone scrubber hit area is clear"
+            );
+            assert.ok(
+              await checkHitArea(page.locator(".tls-close")),
+              "phone scrubber close button is clear"
+            );
             await page.screenshot({ path: `${out}/${label}-scrubber.png` });
             await noOverflow(page);
             const position = await page.evaluate(() => history.state.position);
-            // Touch-pointer drag and hold, matching the phone gesture. The
-            // dedicated unit suite covers the scrubber's pointer capture.
+            // The browser's hit test above chooses the real target; the
+            // pointer events exercise drag/hold while unit tests cover capture.
             const strip = page.locator(".tls-strip");
             await strip.dispatchEvent("pointerdown", {
               pointerType: "touch",
@@ -285,6 +351,7 @@ for (const engine of engines) {
               ...(await backTo(page, source, keyboardPosition)),
             });
           }
+          review.afterBack = await checkReviewClearance(page);
           await noOverflow(page);
           // This exact WebKit engine warning reproduces on unchanged live
           // production. Keep it visible in the evidence; fail all other errors.
@@ -304,6 +371,7 @@ for (const engine of engines) {
             label,
             passed: true,
             marks,
+            review,
             jumps,
             errors,
             baselineWarnings,
