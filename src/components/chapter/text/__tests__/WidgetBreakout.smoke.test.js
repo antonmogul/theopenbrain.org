@@ -338,6 +338,17 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     const remounted = band.querySelector(".wb-btn--legend");
     expect(remounted).not.toBe(trigger);
     expect(document.activeElement).toBe(remounted);
+    // Browser navigation dismisses without sending focus back to a widget
+    // the reader may have left. Explicit close still restores it above.
+    remounted.click();
+    await flushPromises();
+    // A popstate with the same URL still belongs to navigation.
+    window.dispatchEvent(new Event("popstate"));
+    await flushPromises();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).not.toBe(
+      band.querySelector(".wb-btn--legend")
+    );
 
     // Small screens keep the full-width viewport treatment.
     desktop.fire(false);

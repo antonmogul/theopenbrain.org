@@ -176,16 +176,31 @@ const Widget = computed(() =>
 
 const modalOpen = ref(false);
 const legendExpand = ref(null);
+let modalHref = "";
+let restoreLegendFocus = false;
+function modalNavigation() {
+  restoreLegendFocus = false;
+}
+onBeforeUnmount(() => window.removeEventListener("popstate", modalNavigation));
 function openModal() {
+  modalHref = window.location.href;
+  restoreLegendFocus = true;
+  window.addEventListener("popstate", modalNavigation);
   activated.value = true;
   modalOpen.value = true;
 }
 async function closeModal() {
   modalOpen.value = false;
+  window.removeEventListener("popstate", modalNavigation);
   // Phrenology's slotted trigger is remounted with the inline widget. The
   // modal cannot return focus to the original, now-disconnected button.
   await nextTick();
-  legendExpand.value?.focus({ preventScroll: true });
+  if (
+    restoreLegendFocus &&
+    !modalOpen.value &&
+    window.location.href === modalHref
+  )
+    legendExpand.value?.focus({ preventScroll: true });
 }
 
 /* Inline stages mount when they come within ~1.5 screens of the viewport.
