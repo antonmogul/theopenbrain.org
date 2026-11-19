@@ -8,7 +8,7 @@
     class="pointer-events-auto"
     :class="
       inline
-        ? 'relative flex flex-col gap-4'
+        ? 'illustration-inline relative flex flex-col gap-4'
         : 'pr-14 pl-32 flex flex-row justify-center items-center h-[100%]'
     "
   >
@@ -24,7 +24,7 @@
       <!-- Below the reader's top bar, in the original's title style. Inline
            (scopeId, below xl) the figure's caption already names it. -->
       <span
-        v-if="!scopeId && presentation.title"
+        v-if="!scopeId && presentation.title && !presentation.caption"
         class="pb-0 font-sans font-bold text-[1.25rem] leading-[1.55]"
         >{{ presentation.title }}</span
       >
@@ -178,8 +178,16 @@
             :id="scopeId || animation.id"
             ref="art"
             :class="{ 'illustration-art': presentation.caption }"
+            :style="
+              inline && presentation.caption
+                ? { '--illustration-ratio': artRatio }
+                : undefined
+            "
           />
           <figcaption v-if="presentation.caption" class="illustration-caption">
+            <strong v-if="!inline && presentation.title" class="block mb-2">{{
+              presentation.title
+            }}</strong>
             {{ presentation.caption }}
           </figcaption>
         </figure>
@@ -249,6 +257,7 @@ const presentation = computed(() => figurePresentation(props.animation));
 let animationLottie;
 const root = ref(null);
 const art = ref(null);
+const artRatio = ref("1");
 const ready = ref(false);
 const reducedMotion = useReducedMotion();
 const isPaused = ref(reducedMotion.value);
@@ -375,7 +384,10 @@ function begin() {
   if (!ready.value || disposed) return;
   if (reducedMotion.value) return park();
   if (info.states && !info.hasTransition) {
-    animationLottie.goToAndStop(24, true);
+    animationLottie.goToAndStop(
+      Math.min(24, animationLottie.totalFrames - 1),
+      true
+    );
   } else {
     isPaused.value = false;
     animationLottie.setSpeed(info.speed || 1);
@@ -406,6 +418,9 @@ onMounted(async () => {
   animationLottie.addEventListener("DOMLoaded", () => {
     if (disposed) return;
     ready.value = true;
+    const dimensions = animationLottie.animationData;
+    if (dimensions?.w > 0 && dimensions?.h > 0)
+      artRatio.value = `${dimensions.w} / ${dimensions.h}`;
     for (const element of parts("highlighterIllu")) {
       // Bind only this instance's SVG, and remove the same handlers on teardown.
       const name = [...element.classList].find((value) =>
@@ -487,10 +502,23 @@ onBeforeUnmount(() => {
 }
 .illustration-art {
   min-height: 0;
-  flex: 0 1 auto;
+  flex: 1 1 0;
+  width: 100%;
+  /* Keep the caption at the foot while Vue fades and destroys the SVG. */
 }
 .illustration-art :deep(svg) {
   max-height: 100%;
+  height: 100%;
+}
+/* Inline art has no fixed pane height: its authored ratio reserves the
+   picture above the caption, instead of giving the flex slot zero height. */
+.illustration-inline .illustration-captioned {
+  height: auto;
+}
+.illustration-inline .illustration-art {
+  aspect-ratio: var(--illustration-ratio, 1);
+  flex: none;
+  height: auto;
 }
 .illustration-caption {
   flex-shrink: 0;

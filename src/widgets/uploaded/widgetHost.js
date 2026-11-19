@@ -105,12 +105,21 @@ const BRIDGE = `(function(){
     if(h){d.style.setProperty("--ob-max-height",h+"px");d.setAttribute("data-ob-fit","")}
     else{d.style.removeProperty("--ob-max-height");d.removeAttribute("data-ob-fit")}
     fits.forEach(function(fn){try{fn(h)}catch(err){post({type:"error",message:String(err.message||err)})}});}
+  // Only authored handoffs request artwork coordinates. No iframe DOM access
+  // is granted to the parent; the existing source-checked bridge reports it.
+  function artwork(){
+    if(!window.__obWaitForArtwork)return null;
+    var svg=document.querySelector('.tob-canvas .tob-anim svg');
+    if(!svg)return null;
+    var r=svg.getBoundingClientRect();
+    return {x:r.x,y:r.y,width:r.width,height:r.height,viewBox:svg.getAttribute("viewBox")};
+  }
   var last="";
   function report(){var d=document.documentElement,b=document.body;
     var h=Math.ceil(Math.max(d.scrollHeight,b?b.scrollHeight:0));
     var w=Math.ceil(d.scrollWidth),v=d.clientWidth;
-    var k=h+"x"+w+"x"+v;if(k===last)return;last=k;
-    post({type:"size",height:h,scrollWidth:w,viewport:v});}
+    var art=artwork();var k=h+"x"+w+"x"+v+JSON.stringify(art);if(k===last)return;last=k;
+    post({type:"size",height:h,scrollWidth:w,viewport:v,artwork:art});}
   window.addEventListener("error",function(e){post({type:"error",message:String(e.message||e)})});
   window.addEventListener("unhandledrejection",function(e){post({type:"error",message:String(e.reason&&e.reason.message||e.reason)})});
   var ce=console.error;console.error=function(){post({type:"error",message:[].slice.call(arguments).join(" ").slice(0,300)});return ce.apply(console,arguments)};
@@ -136,7 +145,7 @@ const BRIDGE = `(function(){
       if(window.__obWaitForArtwork){
         var a=window.tobWidget&&window.tobWidget.anim;
         if(!a||!a.isLoaded||!document.querySelector('.tob-canvas svg path')){requestAnimationFrame(ready);return;}
-        requestAnimationFrame(function(){requestAnimationFrame(function(){post({type:"ready"})})});
+        requestAnimationFrame(function(){requestAnimationFrame(function(){post({type:"ready",artwork:artwork()})})});
       }else post({type:"ready"});
     }
     ready();

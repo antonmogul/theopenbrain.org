@@ -1,6 +1,10 @@
 // Historical figure presentation that predates the CMS metadata. Keep these
 // reader corrections separate from playback config and the database title.
 const PRESENTATION = {
+  animationEyeMovements: {
+    caption:
+      "Saccadic eye movements shift our gaze rapidly. Reflex eye movements stabilize our gaze as our head moves, while microsaccades and drift continually update the image on the retina.",
+  },
   animationDragon: {
     hideTitle: true,
     accessibleName: "Johann Zahn’s radiating eye illustration",

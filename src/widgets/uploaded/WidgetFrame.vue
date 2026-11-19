@@ -150,6 +150,31 @@ function onMessage(e) {
   const m = e.data;
   if (!m || !m.__ob) return;
   const r = { ...report.value };
+  if (m.artwork && props.waitForArtwork) {
+    const { x, y, width, height, viewBox } = m.artwork;
+    const box = String(viewBox || "")
+      .trim()
+      .split(/\s+/)
+      .map(Number);
+    if (
+      [x, y, width, height, ...box].every(Number.isFinite) &&
+      width > 0 &&
+      height > 0 &&
+      box.length === 4 &&
+      box[2] > 0 &&
+      box[3] > 0
+    ) {
+      const host = frame.value.getBoundingClientRect();
+      const scale = host.width / frame.value.clientWidth;
+      r.artwork = {
+        x: host.x + x * scale,
+        y: host.y + y * scale,
+        width: width * scale,
+        height: height * scale,
+        viewBox: box,
+      };
+    }
+  }
   if (m.type === "size") {
     r.height = m.height;
     r.scrollWidth = m.scrollWidth;

@@ -60,8 +60,10 @@ const ramp = computed(
       :full-screen="fullScreen"
       :initial-explanation="slug === 'retina-refraction-errors'"
       :eager="eager"
-      :wait-for-artwork="slug === 'retina-retinal-cell-types'"
-      @report="(report) => report.ready && emit('ready')"
+      :wait-for-artwork="
+        ['retina-retinal-cell-types', 'retina-center-surround'].includes(slug)
+      "
+      @report="(report) => report.ready && emit('ready', report)"
     />
     <p v-else-if="state === 'missing'" class="uw-note">
       This interactive isn't available yet.
