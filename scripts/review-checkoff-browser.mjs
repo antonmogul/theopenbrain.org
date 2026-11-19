@@ -34,6 +34,7 @@ for (const [name, engine] of [
       });
       const page = await context.newPage();
       const errors = [];
+      const browserDiagnostics = [];
       const calls = [];
       const rows = statuses.map((status, i) => ({
         id: uuid(i),
@@ -90,7 +91,18 @@ for (const [name, engine] of [
       );
       page.on("pageerror", (error) => errors.push(error.message));
       page.on("console", (msg) => {
-        if (msg.type() === "error") errors.push(msg.text());
+        if (msg.type() !== "error") return;
+        const text = msg.text();
+        // Reproduced read-only on production: WebKit's own mobile video controls,
+        // not the book/widget. Keep these visible in the evidence JSON.
+        if (
+          name === "webkit" &&
+          /^Button failed to load, iconName = (?:invalid|pip|airplay)-placard, layoutTraits = \[MacOSLayoutTraits Inline\], src = blob:/.test(
+            text
+          )
+        )
+          browserDiagnostics.push(text);
+        else errors.push(text);
       });
       await page.route("**/*", async (route) => {
         const request = route.request();
@@ -314,6 +326,7 @@ for (const [name, engine] of [
         reducedMotion: true,
         calls,
         consoleErrors: errors,
+        browserDiagnostics,
         passed: true,
       });
       await context.close();
