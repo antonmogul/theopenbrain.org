@@ -590,7 +590,11 @@ defineExpose({ startFromSelection, open: openPanel, close });
 .rv-fab {
   position: fixed;
   right: 16px;
-  bottom: calc(var(--reader-timeline-h, 0px) + 16px);
+  /* Reserve the open dock's height even at rest, so hovering the timeline
+     never puts its map button underneath Feedback (OPENBRAIN-49). */
+  bottom: calc(
+    var(--reader-timeline-peek-h, var(--reader-timeline-h, 0px)) + 16px
+  );
   z-index: 9000;
   display: inline-flex;
   align-items: center;
@@ -637,12 +641,17 @@ defineExpose({ startFromSelection, open: openPanel, close });
 .rv-panel {
   position: fixed;
   right: 16px;
-  bottom: calc(var(--reader-timeline-h, 0px) + 72px);
+  bottom: calc(
+    var(--reader-timeline-peek-h, var(--reader-timeline-h, 0px)) + 72px
+  );
   z-index: 9000;
   display: flex;
   flex-direction: column;
   width: 380px;
-  max-height: calc(100dvh - var(--reader-topbar-h, 4rem) - 110px);
+  max-height: calc(
+    100dvh - var(--reader-topbar-h, 4rem) -
+      var(--reader-timeline-peek-h, var(--reader-timeline-h, 0px)) - 88px
+  );
   border: 1px solid rgb(var(--color-line));
   border-radius: 12px;
   background: rgb(var(--color-paper));

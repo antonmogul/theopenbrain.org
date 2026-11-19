@@ -36,8 +36,9 @@ vi.mock("@/widgets/embeds", async () => {
 vi.mock("@/widgets/uploaded/useUploadedWidgets", () => ({
   uploadSlug: (id) =>
     typeof id === "string" && id.startsWith("upload:") ? id.slice(7) : null,
-  fetchUploadedWidget: async (slug) =>
-    slug === "built" ? { slug, html: "<p>hi</p>" } : null,
+  fetchUploadedWidget: vi.fn(async (slug) =>
+    slug === "built" ? { slug, html: "<p>hi</p>" } : null
+  ),
 }));
 
 /* The stage refreshes ScrollTrigger when its slot height changes; gsap
@@ -45,6 +46,8 @@ vi.mock("@/widgets/uploaded/useUploadedWidgets", () => ({
 const { refreshSpy } = vi.hoisted(() => ({ refreshSpy: vi.fn() }));
 vi.mock("gsap/ScrollTrigger", () => ({ default: { refresh: refreshSpy } }));
 
+import { fetchUploadedWidget } from "@/widgets/uploaded/useUploadedWidgets";
+import { WIDGET_PLACEMENTS, widgetParagraph } from "@/widgets/placements";
 import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 
@@ -71,7 +74,7 @@ const breakout = {
   kind: "breakout",
   title: "Colour vision starts in the retina",
   blurb: "Three pigment classes become the colours we see.",
-  credit: "Interactive by Stuart Trenholm",
+  credit: "Interactive by Example Author",
   route: "/color-vision",
 };
 
@@ -103,6 +106,7 @@ beforeEach(() => {
     removeEventListener: (_, fn) => desktop.listeners.delete(fn),
   });
   refreshSpy.mockClear();
+  fetchUploadedWidget.mockClear();
 });
 
 afterEach(() => {
@@ -132,7 +136,7 @@ describe("WidgetBreakout — breakout card", () => {
     expect(root.classes()).toContain("wb--breakout");
     expect(wrapper.text()).toContain("Colour vision starts in the retina");
     expect(wrapper.text()).toContain("Three pigment classes");
-    expect(wrapper.text()).not.toContain("Interactive by Stuart Trenholm");
+    expect(wrapper.text()).not.toContain("Interactive by Example Author");
     expect(document.querySelector(".fake-widget")).toBeNull();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
 
@@ -178,7 +182,7 @@ describe("WidgetBreakout — inline stage", () => {
   it("mounts the widget in the prose and offers a full-screen escape hatch", async () => {
     const wrapper = mountBreakout({
       ...breakout,
-      placementId: "retina-retinabox",
+      placementId: "generic-retinabox",
       widgetId: "retinabox",
       kind: "inline",
       title: "RetINaBox",
@@ -213,7 +217,7 @@ describe("WidgetBreakout — inline stage", () => {
 describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
   const inline = {
     ...breakout,
-    placementId: "retina-retinabox",
+    placementId: "generic-retinabox",
     widgetId: "retinabox",
     kind: "inline",
     title: "RetINaBox",
@@ -475,6 +479,7 @@ describe("WidgetBreakout for an uploaded widget", () => {
       ...card("upload:retina-retinabox"),
       fallbackWidgetId: "retinabox",
     });
+    await w.find(".wb-launch button").trigger("click");
     await flushPromises();
     expect(w.find(".wb-kicker").exists()).toBe(false);
     expect(
@@ -551,5 +556,70 @@ describe("WidgetBreakout for an uploaded widget", () => {
       w.find("[data-widget-breakout]").attributes("data-widget-breakout")
     ).toBe("upload:built");
     w.unmount();
+  });
+});
+
+describe("Retina widget review notes (OPENBRAIN-52)", () => {
+  const retina = (id) =>
+    widgetParagraph(WIDGET_PLACEMENTS.find((p) => p.id === id)).widget;
+
+  it.each(["retina-color-vision", "retina-direction-selectivity"])(
+    "%s is a full-screen band with the breakout pause",
+    async (id) => {
+      const wrapper = mountBreakout(retina(id));
+      await flushPromises();
+      expect(wrapper.find(".wb--inline").exists()).toBe(true);
+      expect(wrapper.find(".fb-screen-hold .wb-body--full").exists()).toBe(
+        true
+      );
+      expect(wrapper.find(".fb-screen-room").exists()).toBe(true);
+      wrapper.unmount();
+    }
+  );
+
+  it("neither fetches nor mounts RetINaBox when it reaches the viewport; the button loads it and keeps keyboard focus", async () => {
+    const wrapper = mountBreakout(retina("retina-retinabox"));
+    await flushPromises();
+    expect(wrapper.find(".wb-launch img").attributes("src")).toContain(
+      "retinabox-logo.svg"
+    );
+    expect(wrapper.find(".wb-launch").text()).toContain("feature detectors");
+    expect(fetchUploadedWidget).not.toHaveBeenCalled();
+    expect(wrapper.find(".fake-widget").exists()).toBe(false);
+    expect(wrapper.find('[aria-label="Full screen"]').exists()).toBe(false);
+
+    await wrapper.find(".wb-launch button").trigger("click");
+    await flushPromises();
+    expect(fetchUploadedWidget).toHaveBeenCalledWith("retina-retinabox");
+    // The unpublished-upload path still honours the original Vue fallback.
+    await vi.waitFor(() =>
+      expect(wrapper.find(".fake-widget").text()).toBe("RetINaBox")
+    );
+    expect(document.activeElement).toBe(wrapper.find(".wb-stage").element);
+    expect(wrapper.find(".wb-launch").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("keeps the launch gate on a phone card and mounts the upload only after pressing Load", async () => {
+    desktop.matches = true; // useMediaQuery's narrow query
+    const wrapper = mountBreakout({
+      ...retina("retina-retinabox"),
+      widgetId: "upload:built",
+    });
+    await flushPromises();
+    expect(wrapper.find(".wb--breakout").exists()).toBe(true);
+    expect(fetchUploadedWidget).not.toHaveBeenCalled();
+    await wrapper.find(".wb-launch button").trigger("click");
+    await flushPromises();
+    expect(fetchUploadedWidget).toHaveBeenCalledWith("built");
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('[role="dialog"] .fake-widget')?.textContent
+      ).toBe("Uploaded")
+    );
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await flushPromises();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    wrapper.unmount();
   });
 });

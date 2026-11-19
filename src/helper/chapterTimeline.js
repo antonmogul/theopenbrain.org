@@ -2,7 +2,7 @@
  * Chapter timeline model (OPENBRAIN-128) — the chapter as the bars of the
  * dock at the bottom of the reader, dots and dashes: one mark per
  * thing the reader passes (a paragraph, a widget, a break), in the order
- * TextComp renders them. Every mark has the same height.
+ * TextComp renders them. Paragraph length never changes a mark's height.
  *
  * Pure functions over the transformed chapter useText holds (chapterTransform
  * output, or the legacy text.json it mirrors): no Vue, no store, no DOM, so

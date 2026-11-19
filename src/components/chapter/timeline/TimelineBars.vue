@@ -2,12 +2,13 @@
 /*
  * TimelineBars — horizontal dots and dashes (OPENBRAIN-42). Paragraphs
  * are dashes; widgets, breaks and whole breakout/side-scrolling boxes are
- * round dots, all the same height. The read part fills in chapter colour.
+ * round dots, a little larger than the dashes. The read part fills in
+ * chapter colour.
  *
  * Expanded, it adds the section labels above the bars, a trending cap on
  * the bars other readers highlight most, and two lanes under them: what the
- * chapter shows there (widget ■, figure ●, video ▶, break ◆) and what this
- * reader left (highlights in their colour, notes ✎).
+ * chapter shows there (dashed widget frame, figure frame, video ▶, break ◆)
+ * and what this reader left (highlights in their colour, notes ✎).
  *
  * SVG, not canvas (index.css fixes every <canvas>). The bars are a few paths
  * built once per layout; reading progress only moves two clip rects, so a
@@ -65,6 +66,7 @@ const width = ref(0);
 // Unitless SVG-pixel tokens, read from CSS on mount/resize. Hosts can
 // restyle every surface with the same tokens, including teleported sheets.
 const markSize = ref(4);
+const dotSize = ref(6);
 const dashRatio = ref(3);
 const dashRadius = ref(1);
 
@@ -100,8 +102,8 @@ const geom = computed(() => {
 
 const px = (v) => Math.round(v * 100) / 100;
 
-// A shared size keeps dots round and every mark equally tall, even on a
-// dense resting strip. Slots remain wide enough to hit between the marks.
+// Dashes shrink to their slots on a dense strip. Dots can use more of
+// their slot, keeping them round and more visible without covering a neighbour.
 const markH = computed(() =>
   Math.min(
     markSize.value,
@@ -109,20 +111,21 @@ const markH = computed(() =>
     ...bars.value.map((b) => b.w / dashRatio.value)
   )
 );
-const markY = computed(
-  () => (geom.value.top + geom.value.base - markH.value) / 2
+const dotH = computed(() =>
+  Math.min(dotSize.value, props.barHeight, ...bars.value.map((b) => b.w))
 );
-const barTop = () => markY.value;
+const heightOf = (bar) => (bar.kind === "block" ? dotH.value : markH.value);
+const barTop = (bar) => (geom.value.top + geom.value.base - heightOf(bar)) / 2;
 const markW = (bar) =>
   bar.kind === "block"
-    ? markH.value
+    ? dotH.value
     : Math.min(bar.w, markH.value * dashRatio.value);
 
 function shapeOf(bar) {
-  const h = markH.value;
+  const h = heightOf(bar);
   const w = markW(bar);
   const x = bar.x + (bar.w - w) / 2;
-  const y = markY.value;
+  const y = barTop(bar);
   const r = bar.kind === "block" ? h / 2 : Math.min(dashRadius.value, h / 2);
   return (
     `M${px(x + r)} ${px(y)}H${px(x + w - r)}` +
@@ -132,20 +135,6 @@ function shapeOf(bar) {
     `a${px(r)} ${px(r)} 0 0 1 ${px(r)} ${px(-r)}Z`
   );
 }
-
-const origin = computed(() => {
-  const index = props.layers?.origin;
-  if (!(index >= 0)) return null;
-  const bar = bars.value[barOf.value[index]];
-  return bar
-    ? {
-        cx: bar.x + bar.w / 2,
-        cy: markY.value + markH.value / 2,
-        rx: markW(bar) / 2 + 2,
-        ry: markH.value / 2 + 2,
-      }
-    : null;
-});
 
 const paths = computed(() => {
   let text = "";
@@ -173,13 +162,14 @@ const progress = computed(() => {
     Math.max(0, (props.position - bar.from) / (bar.to - bar.from))
   );
   if (!fraction) return { playX: bar.x, current: null };
-  const height = markH.value * fraction;
+  const h = heightOf(bar);
+  const height = h * fraction;
   return {
     playX: bar.x,
     current: {
       x: bar.x - 0.5,
       w: bar.w + 1,
-      y: markY.value + markH.value - height,
+      y: barTop(bar) + h - height,
       h: height,
     },
   };
@@ -245,17 +235,18 @@ const caps = computed(() => {
 });
 
 function glyph(type, cx, cy) {
-  if (type === "widget") return `M${px(cx - 2.5)} ${px(cy - 2.5)}h5v5h-5Z`;
+  if (["widget", "figure", "image"].includes(type))
+    return `M${px(cx - 3)} ${px(cy - 3)}h6v6h-6Z`;
   if (type === "video")
     return `M${px(cx - 2)} ${px(cy - 3)}L${px(cx + 3)} ${px(cy)}L${px(cx - 2)} ${px(cy + 3)}Z`;
   if (type === "break") return `M${px(cx)} ${px(cy - 3)}l3 3-3 3-3-3Z`;
-  // figure / image: a dot
+  // Personal highlights stay filled dots.
   return `M${px(cx - 2.5)} ${px(cy)}a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0Z`;
 }
 
 // The content lane: one glyph per bar, the most telling of its marks.
-const contentPath = computed(() => {
-  if (!props.expanded) return "";
+const contentPaths = computed(() => {
+  if (!props.expanded) return [];
   const spots = [];
   for (const bar of bars.value) {
     let best = null;
@@ -272,7 +263,12 @@ const contentPath = computed(() => {
     spots.push({ type: best, cx });
   }
   const cy = geom.value.content;
-  return spots.map((s) => glyph(s.type, s.cx, cy)).join("");
+  const paths = new Map();
+  for (const spot of spots) {
+    const type = spot.type === "image" ? "figure" : spot.type;
+    paths.set(type, (paths.get(type) || "") + glyph(type, spot.cx, cy));
+  }
+  return [...paths].map(([type, d]) => ({ type, d }));
 });
 
 const pencil = (cx, cy) => `M${px(cx - 3)} ${px(cy + 3)}l1-3 4-4 2 2-4 4Z`;
@@ -298,7 +294,7 @@ const yourMarks = computed(() => {
     if (cx < free) continue;
     if (color) {
       const hex = HIGHLIGHT_HEX[color] || HIGHLIGHT_HEX.yellow;
-      dots.set(hex, (dots.get(hex) || "") + glyph("figure", cx, cy));
+      dots.set(hex, (dots.get(hex) || "") + glyph("highlight", cx, cy));
     }
     if (note) notePath += pencil(color ? cx + 6 : cx, cy);
     free = cx + (color && note ? 6 : 0) + GLYPH_GAP;
@@ -322,6 +318,7 @@ function measure() {
     return n > 0 ? n : fallback;
   };
   markSize.value = token("--tl-mark-size", 4);
+  dotSize.value = token("--tl-dot-size", markSize.value * 1.5);
   dashRatio.value = token("--tl-dash-ratio", 3);
   dashRadius.value = token("--tl-dash-radius", 1);
   const w = el.clientWidth || el.getBoundingClientRect().width || 0;
@@ -471,7 +468,13 @@ defineExpose({ centerOf });
       <g class="tl-layer">
         <path class="tl-text" :d="paths.text" />
         <path class="tl-block" :d="paths.block" />
-        <path v-if="contentPath" class="tl-content" :d="contentPath" />
+        <path
+          v-for="path in contentPaths"
+          :key="path.type"
+          class="tl-content"
+          :data-type="path.type"
+          :d="path.d"
+        />
       </g>
       <g
         v-for="clip in progress.current ? ['played', 'current'] : ['played']"
@@ -481,11 +484,15 @@ defineExpose({ centerOf });
       >
         <path class="tl-text" :d="paths.text" />
         <path class="tl-block" :d="paths.block" />
-        <path
-          v-if="contentPath && clip === 'played'"
-          class="tl-content"
-          :d="contentPath"
-        />
+        <template v-if="clip === 'played'">
+          <path
+            v-for="path in contentPaths"
+            :key="path.type"
+            class="tl-content"
+            :data-type="path.type"
+            :d="path.d"
+          />
+        </template>
       </g>
       <path
         v-if="cursorBar"
@@ -493,17 +500,6 @@ defineExpose({ centerOf });
         :class="{ 'is-block': cursorBar.kind === 'block' }"
         :d="cursorBar.d"
       />
-
-      <ellipse
-        v-if="origin"
-        class="tl-origin"
-        :cx="origin.cx"
-        :cy="origin.cy"
-        :rx="origin.rx"
-        :ry="origin.ry"
-      >
-        <title>Last place jumped from — browser Back returns here</title>
-      </ellipse>
 
       <rect
         v-for="cap in caps"
@@ -532,7 +528,7 @@ defineExpose({ centerOf });
   /* The read part: the host's accent (the chapter colour). */
   --tl-played: var(--tl-accent, var(--color-accent));
   /* Shape tokens are unitless SVG pixels; may be set on html or a host:
-     --tl-mark-size: 4; --tl-dash-ratio: 3; --tl-dash-radius: 1. */
+     --tl-mark-size: 4; --tl-dot-size: 6; --tl-dash-ratio: 3; --tl-dash-radius: 1. */
 
   position: relative;
   /* Whoever animates the dock animates this; the SVG stretches along. */
@@ -557,7 +553,7 @@ defineExpose({ centerOf });
   overflow: visible;
 }
 
-/* Both shapes use identical tones and height; their silhouettes differ. */
+/* Both shapes use identical tones; dots are larger than the dashes. */
 .tl-text,
 .tl-block {
   fill: rgb(
@@ -565,16 +561,21 @@ defineExpose({ centerOf });
   );
 }
 
-.tl-origin {
-  fill: none;
-  stroke: rgb(var(--tl-origin-color, var(--color-ink)));
-  stroke-width: var(--tl-origin-width, 1);
-  vector-effect: non-scaling-stroke;
-  pointer-events: none;
+.tl-content {
+  color: rgb(var(--color-ink) / 0.45);
+  fill: currentColor;
 }
 
-.tl-content {
-  fill: rgb(var(--color-ink) / 0.45);
+.tl-content[data-type="figure"],
+.tl-content[data-type="widget"] {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.tl-content[data-type="widget"] {
+  stroke-dasharray: 2 1;
 }
 
 /* Read: the chapter colour. On white paper the light ramps' main step is
@@ -587,8 +588,12 @@ defineExpose({ centerOf });
 }
 
 .is-played .tl-text,
+.is-played .tl-block {
+  fill: rgb(var(--tl-accent-deep, var(--tl-played)));
+}
+
 .is-played .tl-content {
-  fill: rgb(var(--tl-accent-deep));
+  color: rgb(var(--tl-accent-deep, var(--tl-played)));
 }
 
 /* The mark under the pointer or keyboard cursor. */
