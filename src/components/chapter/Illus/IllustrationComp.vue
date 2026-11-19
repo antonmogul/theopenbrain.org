@@ -8,7 +8,7 @@
     class="pointer-events-auto"
     :class="
       inline
-        ? 'relative flex flex-col gap-4'
+        ? 'illustration-inline relative flex flex-col gap-4'
         : 'pr-14 pl-32 flex flex-row justify-center items-center h-[100%]'
     "
   >
@@ -178,6 +178,11 @@
             :id="scopeId || animation.id"
             ref="art"
             :class="{ 'illustration-art': presentation.caption }"
+            :style="
+              inline && presentation.caption
+                ? { '--illustration-ratio': artRatio }
+                : undefined
+            "
           />
           <figcaption v-if="presentation.caption" class="illustration-caption">
             <strong v-if="!inline && presentation.title" class="block mb-2">{{
@@ -252,6 +257,7 @@ const presentation = computed(() => figurePresentation(props.animation));
 let animationLottie;
 const root = ref(null);
 const art = ref(null);
+const artRatio = ref("1");
 const ready = ref(false);
 const reducedMotion = useReducedMotion();
 const isPaused = ref(reducedMotion.value);
@@ -412,6 +418,9 @@ onMounted(async () => {
   animationLottie.addEventListener("DOMLoaded", () => {
     if (disposed) return;
     ready.value = true;
+    const dimensions = animationLottie.animationData;
+    if (dimensions?.w > 0 && dimensions?.h > 0)
+      artRatio.value = `${dimensions.w} / ${dimensions.h}`;
     for (const element of parts("highlighterIllu")) {
       // Bind only this instance's SVG, and remove the same handlers on teardown.
       const name = [...element.classList].find((value) =>
@@ -500,6 +509,16 @@ onBeforeUnmount(() => {
 .illustration-art :deep(svg) {
   max-height: 100%;
   height: 100%;
+}
+/* Inline art has no fixed pane height: its authored ratio reserves the
+   picture above the caption, instead of giving the flex slot zero height. */
+.illustration-inline .illustration-captioned {
+  height: auto;
+}
+.illustration-inline .illustration-art {
+  aspect-ratio: var(--illustration-ratio, 1);
+  flex: none;
+  height: auto;
 }
 .illustration-caption {
   flex-shrink: 0;

@@ -7,6 +7,7 @@ const playback = vi.hoisted(() => ({
     if (name === "DOMLoaded") fn();
   }),
   totalFrames: 288,
+  animationData: { w: 1300, h: 1257 },
   setSpeed: vi.fn(),
   goToAndStop: vi.fn(),
   setSubframe: vi.fn(),
@@ -40,6 +41,10 @@ describe("historical figure presentation", () => {
       });
       await flushPromises();
       expect(wrapper.findAll("figcaption")).toHaveLength(1);
+      if (scopeId)
+        expect(wrapper.get(".illustration-art").attributes("style")).toContain(
+          "1300 / 1257"
+        );
       expect(wrapper.find("figcaption").text()).toBe(
         figurePresentation(dragon).caption
       );

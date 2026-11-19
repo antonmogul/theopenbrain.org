@@ -21,7 +21,7 @@ Local implementation and browser evidence; deployment and the content migration 
 - Three-frame anatomy files were being parked at frame 24, beyond their authored range. Both normal and reduced-motion playback now clamp to the available frames. The offline `animationRetinalCellTypes3` alias also resolves to the original cross-section file.
 - The horizontal section's saved name addressed `animationRetinalCellTypes`, although its saved id and stage addressed `animationRetinalCellTypes3` / “Horizontal cells.” The guarded migration corrects the name, preserving later author choices.
 - Authored Retina transitions preload their uploaded successor. The existing sandbox bridge reports the artwork box and viewBox; the host validates finite geometry and the message source, accounts for iframe scaling, and frames the transition identically. The iframe remains sandboxed. This makes the cross-section handoff exact and matches the shared cells of the circuits entrance to center-surround, without rewriting uploaded widget HTML.
-- Caption artwork keeps a stable flex slot throughout teardown. Eye Movements uses that caption slot for its title and a legend paraphrased from the existing chapter paragraph.
+- Caption artwork keeps a stable flex slot throughout teardown; inline captions reserve the artwork’s authored aspect ratio so the picture cannot collapse to zero height. Eye Movements uses that caption slot for its title and a legend paraphrased from the existing chapter paragraph.
 - `20261119510000_retina_figure_notes.sql` sets the two existing placements to `animationFlags.hold: "next"`, adds the same photoreceptor figure after the visual-cycle band, and corrects the horizontal-stage key. Boundaries still come from `figureEnd`; full-width bands and color opponency end the holds. Apply only after the code deploy; it has not been applied here.
 
 ## Validation
@@ -29,13 +29,20 @@ Local implementation and browser evidence; deployment and the content migration 
 - Full Vitest suite with PGlite: **319 files, 3,433 tests passed** on the final source state. An earlier run overlapped edits and encountered two timeline-map timing failures; the isolated timeline rerun and the subsequent complete run passed.
 - `npm run lint:ci`: passed (nine existing warnings); changed-file lint passed.
 - `npm run format:check`, `npm run build`, and `npm run storybook:coverage`: passed.
-- Chromium/WebKit reader matrix and smoke: completing; final results will be recorded before handoff.
+- Chromium and WebKit: 1440×900 and 1024×768 pane checks; 390×844 inline checks, plus actual `devices["iPhone 13"]` contexts. Horizontal and bipolar presets (including the bipolar figure's return after ON/OFF), all three holds and the color-opponency boundary, both entrance crops/coordinates, the Zahn exit and Eye Movements caption placement were checked. Explicit reduced motion and horizontal overflow checks passed.
+- The browser evidence records blocked YouTube/Google telemetry POSTs from the read-only guard, and WebKit's native `invalid/pip/airplay-placard` blob-icon diagnostics using the same narrow allowlist as `review-checkoff-browser.mjs`. There were no application page errors or unexpected console errors.
+- The production-build smoke sweep is recorded in `smoke-final.log` beside the browser evidence; the final sweep outcome and exact-head CI state are in PR #215.
+- PR: https://github.com/antonmogul/theopenbrain.org/pull/215. Migration and deployment remain pending owner action.
 
 Browser checks use the actual reader and published GETs, overlaying only the result of this migration in local PGlite. The migration is never sent to production. Runtime proof therefore covers the proposed code/content combination, not a deployed migration.
 
 Screenshots: `/private/tmp/claude-501/-Volumes-Brain-code-theopenbrain-org/4addea41-0573-4866-a7f1-11a4bc0678a6/scratchpad/nov18/codex-51/`.
 
 Run `scripts/retina-figure-notes-browser.mjs` with `HISTORY_SQL_HARNESS`, `RETINA_FIGURE_FIXTURE`, `RETINA_FIGURE_BASE` and `RETINA_FIGURE_OUT`. The fixture is a JSON object with `modules`, `sections`, `paragraphs`, `animations`, `states` and `variants`, exported through `scripts/lib/supabase-rest.mjs` using published GETs. The browser rejects non-read requests. Keep fixture exports and tokens out of Git.
+
+## Integration with the sibling widget lane
+
+The shared uploaded-widget files only add source-checked artwork geometry to the existing ready/size report and forward that payload. Preserve the sibling lane's host styling, controls, narration and widget-content edits when integrating these small protocol changes.
 
 ## CLAUDE.md handoff paragraph
 

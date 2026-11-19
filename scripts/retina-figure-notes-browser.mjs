@@ -2,10 +2,11 @@
 // OPENBRAIN-51: real reader, published GETs, and local migration overlay only.
 // RETINA_FIGURE_FIXTURE=/tmp/live.json supplies the read-only export documented
 // in docs/retina-figure-notes.md. No database or review-status writes occur.
-import { chromium, webkit } from "@playwright/test";
+import { chromium, webkit, devices } from "@playwright/test";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import assert from "node:assert/strict";
+process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY ??= "1";
 const require = createRequire(import.meta.url);
 const { PGlite } = require(process.env.HISTORY_SQL_HARNESS);
 const data = JSON.parse(
@@ -71,6 +72,7 @@ for (const engine of [chromium, webkit].filter(
     .split(",")
     .map(Number)) {
     const context = await browser.newContext({
+      ...(width === 390 ? devices["iPhone 13"] : {}),
       viewport: {
         width,
         height: width === 390 ? 844 : width === 1024 ? 768 : 900,
@@ -325,6 +327,15 @@ for (const engine of [chromium, webkit].filter(
         .filter({ visible: true })
         .first();
       await eye.locator(".illustration-caption").waitFor();
+      const art = await eye.locator(".illustration-art").boundingBox();
+      assert(
+        art.height > 200,
+        `${prefix} inline Eye Movements artwork collapsed`
+      );
+      await eye.evaluate((e) =>
+        scrollTo(0, e.getBoundingClientRect().top + scrollY - 80)
+      );
+      await pause(250);
       await eye.screenshot({
         path: `${out}/${prefix}-eye-movements-inline.png`,
       });
@@ -352,8 +363,21 @@ for (const engine of [chromium, webkit].filter(
       ),
       `${prefix} horizontal overflow`
     );
+    // Same narrow native-media diagnostic allowlist as review-checkoff-browser:
+    // WebKit's bundled video controls emit these for their own blob icons.
+    const nativeMedia = errors.filter(
+      (error) =>
+        typeof error !== "string" &&
+        engine.name() === "webkit" &&
+        !error.url &&
+        /^Button failed to load, iconName = (?:invalid|pip|airplay)-placard, layoutTraits = \[MacOSLayoutTraits Inline\], src = blob:/.test(
+          error.text
+        )
+    );
     const unexpected = errors.filter(
-      (error) => typeof error === "string" || !blocked.has(error.url)
+      (error) =>
+        !nativeMedia.includes(error) &&
+        (typeof error === "string" || !blocked.has(error.url))
     );
     assert.deepEqual(unexpected, [], `${prefix} console errors`);
     record({
@@ -361,6 +385,7 @@ for (const engine of [chromium, webkit].filter(
       width,
       test: "console, overflow and read-only guard",
       blocked: [...blocked],
+      nativeMedia,
     });
     await context.close();
   }
