@@ -491,9 +491,11 @@ export async function fetchChapterReviewNotes(chapterSlug) {
   if (!chapterSlug || !transport.configured() || !transport.list) return [];
   listing.value = true;
   listError.value = "";
+  const revision = statusRevision;
   try {
     const rows = await transport.list(chapterSlug);
-    chapterNotes.value = Array.isArray(rows) ? rows : [];
+    if (revision === statusRevision)
+      chapterNotes.value = Array.isArray(rows) ? rows : [];
   } catch {
     listError.value = "Couldn't load the notes just now.";
   } finally {

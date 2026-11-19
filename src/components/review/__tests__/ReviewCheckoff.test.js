@@ -144,6 +144,29 @@ describe("author check-off", () => {
     expect(review.awaitingCheckCount.value).toBe(0);
   });
 
+  it("does not let a slow All notes GET undo a completed author check", async () => {
+    seed();
+    let resolveList;
+    const list = vi.fn().mockResolvedValueOnce([{ id: ID, status: "done" }]);
+    list.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveList = resolve;
+        })
+    );
+    setReviewTransport({
+      list,
+      authorAction: async () => ({ id: ID, status: "verified" }),
+    });
+    const review = useReviewFeedback();
+    await review.fetchChapterNotes("the-retina");
+    const pending = review.fetchChapterNotes("the-retina");
+    await review.authorAction(ID, "verify");
+    resolveList([{ id: ID, status: "done" }]);
+    await pending;
+    expect(review.chapterNotes.value[0].status).toBe("verified");
+  });
+
   it("checks sent status once at load, again when opened, and never sends queued notes on load", async () => {
     seed([note, { ...note, id: null, clientId: "queued", state: "queued" }]);
     const statuses = vi.fn().mockResolvedValue([{ id: ID, status: "done" }]);
