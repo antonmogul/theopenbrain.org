@@ -2,6 +2,7 @@
 // The widget migration changed the figure key and removed its scroll flag;
 // these Lottie assets remain the source of the eye/retina zoom choreography.
 export const FIGURE_TRANSITIONS = {
+  "widget-upload:retina-center-surround": "animationRetinalCircuitsTransition",
   "widget-upload:retina-retinal-cell-types":
     "animationRetinalCellTypesTransition",
 };

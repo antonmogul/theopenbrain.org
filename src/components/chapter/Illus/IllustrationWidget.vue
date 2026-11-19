@@ -64,7 +64,7 @@ const view = computed(() =>
         :is="view"
         v-if="view"
         :eager="preload"
-        @ready="emit('ready')"
+        @ready="(report) => emit('ready', report)"
       />
       <p v-else class="iw-missing">
         This interactive ({{ animation.widgetId || "unknown" }}) isn't available

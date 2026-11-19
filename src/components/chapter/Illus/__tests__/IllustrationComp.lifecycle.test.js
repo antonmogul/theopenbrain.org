@@ -48,6 +48,29 @@ async function render(animation = dragon, scopeId = null) {
 }
 
 describe("legacy artwork lifecycle", () => {
+  it.each(["0", "1"])(
+    "keeps three-frame cell-type artwork within its authored range (motion %s)",
+    async (choice) => {
+      document.documentElement.setAttribute("data-reduce-motion", choice);
+      const w = await render({
+        id: "animationRetinalCellTypes3",
+        clickTriggered: true,
+        highlight: true,
+        set: 1,
+        states: ["Photoreceptors", "Horizontal cells", "Bipolar cells"],
+      });
+      const anim = mock.instances[0];
+      anim.totalFrames = 3;
+      w.get("figure > div").element.innerHTML =
+        '<svg><g class="horizontalCellsHighlight"></g></svg>';
+      anim.listeners.DOMLoaded();
+      await flushPromises();
+      expect(anim.goToAndStop).toHaveBeenLastCalledWith(2, true);
+      expect(w.get(".horizontalCellsHighlight").classes()).toContain(
+        "highlightIllu"
+      );
+    }
+  );
   it("loads and parks the original art under explicit reduced motion, then follows changes", async () => {
     document.documentElement.setAttribute("data-reduce-motion", "1");
     const w = await render();

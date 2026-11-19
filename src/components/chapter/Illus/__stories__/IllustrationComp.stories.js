@@ -50,3 +50,19 @@ export const Mobile = {
 export const RetinalCellTypes = {
   args: { animation: cellTypes, activeAnimation: cellTypes.id.toLowerCase() },
 };
+
+/** Three-frame anatomy plates must never seek the ordinary frame-24 rest. */
+export const HorizontalCells = {
+  args: {
+    animation: {
+      ...animationById("animationRetinalCellTypes3"),
+      lottieUrl: "/publicAssets/animations/animationRetinalCellTypes.json",
+    },
+  },
+};
+export const BipolarCells = {
+  args: { animation: animationById("animationRetinalCellTypes2") },
+};
+export const EyeMovementsLegend = {
+  args: { animation: animationById("animationEyeMovements") },
+};

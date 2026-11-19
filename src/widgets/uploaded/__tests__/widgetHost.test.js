@@ -31,7 +31,19 @@ describe("buildWidgetDoc", () => {
       documentElement: document.createElement("html"),
       body: document.createElement("body"),
       addEventListener: vi.fn(),
-      querySelector: vi.fn(() => (anim.isLoaded ? {} : null)),
+      querySelector: vi.fn(() =>
+        anim.isLoaded
+          ? {
+              getBoundingClientRect: () => ({
+                x: 120,
+                y: 60,
+                width: 300,
+                height: 400,
+              }),
+              getAttribute: () => "0 0 1920 1920",
+            }
+          : null
+      ),
     };
     const script = buildWidgetDoc("<p>widget</p>", {
       waitForArtwork: true,
@@ -64,6 +76,15 @@ describe("buildWidgetDoc", () => {
     expect(ready()).toBe(false);
     frames.shift()();
     expect(ready()).toBe(true);
+    expect(
+      postMessage.mock.calls.find(([m]) => m.type === "ready")[0].artwork
+    ).toEqual({
+      x: 120,
+      y: 60,
+      width: 300,
+      height: 400,
+      viewBox: "0 0 1920 1920",
+    });
   });
 
   it("puts the policy, tokens and bridge first in <head>", () => {
