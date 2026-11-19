@@ -24,6 +24,7 @@ import { chromium } from "@playwright/test";
 import { mkdir, rm } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { checkOpenerToc } from "./check-opener-toc.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -285,6 +286,9 @@ const ROUTES = [
     name: "retina",
     minText: 2000,
     needsData: true,
+    // No section art: the title pins beside the scrolling contents from
+    // 1024px and releases with the dark block; phones keep stacking.
+    expectStickyContents: true,
     /*
      * The three client-placed interactives (OPENBRAIN-21) must be in the
      * prose. Their anchors depend on chapter content, so this is a data
@@ -845,6 +849,13 @@ async function main() {
         // opens (OPENBRAIN-182, 193). Sections are pointed at by keyboard
         // focus, which needs no pointer.
         let contentsOk = true;
+        if (checkContent && route.expectStickyContents) {
+          const problems = await checkOpenerToc(page);
+          if (problems.length) {
+            contentsOk = false;
+            problems.forEach((p) => failures.push(`${label}: contents: ${p}`));
+          }
+        }
         if (
           checkContent &&
           route.expectContents &&
