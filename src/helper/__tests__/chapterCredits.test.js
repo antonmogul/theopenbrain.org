@@ -27,7 +27,7 @@ describe("creditsForModule (OPENBRAIN-200)", () => {
   });
 
   it("gives a chapter without credits nothing", () => {
-    expect(creditsForModule({ slug: "the-retina" })).toEqual({
+    expect(creditsForModule({ slug: "a-new-chapter" })).toEqual({
       funding: null,
       acknowledgements: [],
     });
@@ -35,6 +35,16 @@ describe("creditsForModule (OPENBRAIN-200)", () => {
       funding: null,
       acknowledgements: [],
     });
+  });
+
+  it("gives the Retina its requested funder and a bundled logo", () => {
+    const { funding } = creditsForModule({ slug: "the-retina" });
+    expect(funding.text).toBe(
+      "This chapter was funded by the Vision Science Research Network."
+    );
+    expect(funding.url).toBe("https://visionnetwork.ca/");
+    expect(funding.logo.alt).toBe("Vision Science Research Network");
+    expect(existsSync(`public${funding.logo.src}`)).toBe(true);
   });
 
   it("prefers the module row's own credits, and keeps only safe links", () => {
