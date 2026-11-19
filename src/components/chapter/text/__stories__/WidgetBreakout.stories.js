@@ -1,5 +1,6 @@
 import WidgetBreakoutComponent from "../WidgetBreakout.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
+import { WIDGET_PLACEMENTS, widgetParagraph } from "@/widgets/placements";
 import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 
 export default {
@@ -152,4 +153,30 @@ export const UnavailableWidget = {
     },
   },
   render: proseFrame(WidgetBreakoutComponent),
+};
+
+// The live Retina placements, including the click-to-load launch screen.
+export const RetinaColourVision = {
+  args: {
+    placement: widgetParagraph(
+      WIDGET_PLACEMENTS.find((p) => p.id === "retina-color-vision")
+    ).widget,
+  },
+  render: readerFrame(WidgetBreakoutComponent),
+};
+export const RetinaDirectionSelectivity = {
+  args: {
+    placement: widgetParagraph(
+      WIDGET_PLACEMENTS.find((p) => p.id === "retina-direction-selectivity")
+    ).widget,
+  },
+  render: readerFrame(WidgetBreakoutComponent),
+};
+export const RetINaBoxLaunch = {
+  args: {
+    placement: widgetParagraph(
+      WIDGET_PLACEMENTS.find((p) => p.id === "retina-retinabox")
+    ).widget,
+  },
+  render: readerFrame(WidgetBreakoutComponent),
 };
