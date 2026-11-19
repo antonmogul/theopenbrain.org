@@ -8,7 +8,7 @@ import {
 
 /** The columns the dashboard reads (ip_hash is not granted to anyone). */
 export const REVIEW_NOTE_COLUMNS =
-  "id,created_at,updated_at,chapter_slug,section_slug,paragraph_id,type,note,quote,suggested_text,anchor,reviewer_name,reviewer_role,user_id,url,viewport,user_agent,status,reply,replied_at,parent_id";
+  "id,created_at,updated_at,chapter_slug,section_slug,paragraph_id,type,note,quote,suggested_text,anchor,reviewer_name,reviewer_role,user_id,url,viewport,user_agent,status,reply,replied_at,parent_id,verified_at";
 
 const isMissingTable = (err) =>
   err?.status === 404 || /PGRST20[25]/.test(String(err?.response || ""));

@@ -14,13 +14,17 @@ export const REVIEW_TYPES = [
   { value: "note", label: "Note" },
 ];
 
+/** One status contract for pins, the widget and the creator inbox. */
 export const REVIEW_STATUSES = [
-  { value: "new", label: "New" },
-  { value: "doing", label: "Doing" },
-  { value: "question", label: "Question" },
-  { value: "done", label: "Done" },
-  { value: "wont_do", label: "Won't do" },
+  { value: "new", label: "New", icon: "●" },
+  { value: "doing", label: "In progress", icon: "◷" },
+  { value: "question", label: "Question for you", icon: "?" },
+  { value: "done", label: "Fixed: please check", icon: "◇" },
+  { value: "wont_do", label: "Won't do", icon: "−" },
+  { value: "verified", label: "Checked by author", icon: "✓" },
 ];
+export const reviewStatusIcon = (value) =>
+  REVIEW_STATUSES.find((s) => s.value === value)?.icon || "●";
 
 /** Statuses that still need someone: the dashboard's default filter. */
 export const OPEN_STATUSES = ["new", "doing", "question"];

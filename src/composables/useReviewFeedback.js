@@ -21,6 +21,7 @@
  * Asana back end is not: the book has no server, so notes live in Supabase.
  */
 import { computed, ref } from "vue";
+import { REVIEW_STATUSES } from "@/helper/reviewNotes.mjs";
 import { apiRequest, isApiConfigured } from "@/services/api/client";
 
 export const REVIEW_KEYS = Object.freeze({
@@ -54,13 +55,9 @@ export const REVIEW_ROLES = Object.freeze([
 ]);
 
 /** The database's statuses, as "My notes" names them. */
-export const REVIEW_STATUS_LABELS = Object.freeze({
-  new: "Received",
-  doing: "In progress",
-  done: "Done",
-  wont_do: "Won't do",
-  question: "Question for you",
-});
+export const REVIEW_STATUS_LABELS = Object.freeze(
+  Object.fromEntries(REVIEW_STATUSES.map((s) => [s.value, s.label]))
+);
 
 /** The caps the RPC enforces (OPENBRAIN-203), checked here first. */
 export const REVIEW_LIMITS = Object.freeze({
@@ -263,9 +260,19 @@ const defaultTransport = {
       body: JSON.stringify({ p }),
     }),
   statuses: (ids) =>
-    apiRequest("rpc/review_feedback_status", {
+    apiRequest(
+      `rpc/review_feedback_status?p_ids=${encodeURIComponent(`{${ids.join(",")}}`)}`,
+      { method: "GET" }
+    ),
+  authorAction: (id, clientId, action, note) =>
+    apiRequest("rpc/review_feedback_author_action", {
       method: "POST",
-      body: JSON.stringify({ p_ids: ids }),
+      body: JSON.stringify({
+        p_id: id,
+        p_client_id: clientId,
+        p_action: action,
+        p_note: note || null,
+      }),
     }),
   // Stable, so a GET, like the deck RPCs (and never on page load: the
   // widget asks only when its panel opens on "All notes").
@@ -292,6 +299,7 @@ const syncing = ref(false);
 const lastError = ref("");
 let syncPromise = null;
 let listening = false;
+let statusRevision = 0;
 
 function saveQueue() {
   writeJSON(REVIEW_KEYS.queue, queue.value);
@@ -371,6 +379,7 @@ export async function refreshReviewStatuses() {
     .map((r) => r.id)
     .slice(-200);
   if (!ids.length || !transport.configured()) return 0;
+  const revision = statusRevision;
   let rows;
   try {
     rows = await transport.statuses(ids);
@@ -378,6 +387,8 @@ export async function refreshReviewStatuses() {
     lastError.value = "Couldn't check the notes' status just now.";
     return 0;
   }
+  // A slow GET must not undo an author action that completed meanwhile.
+  if (revision !== statusRevision) return 0;
   const byId = new Map((Array.isArray(rows) ? rows : []).map((r) => [r.id, r]));
   queue.value = queue.value.map((r) => {
     const row = r.id && byId.get(r.id);
@@ -388,11 +399,46 @@ export async function refreshReviewStatuses() {
           reply: row.reply || "",
           repliedAt: row.replied_at || null,
           updatedAt: row.updated_at || null,
+          verifiedAt: row.verified_at || null,
         }
       : r;
   });
   saveQueue();
   return byId.size;
+}
+
+/** Only a sent queue record carries proof of authorship; list rows never do. */
+export async function reviewAuthorAction(id, action, note = null) {
+  const own = queue.value.find((r) => r.id === id && r.state === "sent");
+  if (!own?.clientId) throw new Error("Use the browser that sent this note.");
+  if (action === "reopen" && !String(note || "").trim())
+    throw new Error("Add a comment about what still needs changing.");
+  let row;
+  try {
+    const res = await transport.authorAction(id, own.clientId, action, note);
+    row = Array.isArray(res) ? res[0] : res;
+    if (!row?.status) throw new Error("Missing status");
+  } catch (err) {
+    throw new Error(
+      reviewErrorCode(err) === "review_rate_limited"
+        ? "Too many changes this hour. Please try again later."
+        : "The change couldn't be saved. Check for replies, then try again."
+    );
+  }
+  statusRevision++;
+  update(own.clientId, {
+    status: row.status,
+    reply: row.reply || "",
+    repliedAt: row.replied_at || null,
+    updatedAt: row.updated_at || null,
+    verifiedAt: row.verified_at || null,
+  });
+  chapterNotes.value = chapterNotes.value.map((n) =>
+    n.id === id ? { ...n, ...row } : n
+  );
+  if (action === "reopen" && chapterNotes.value.length)
+    await fetchChapterReviewNotes(own.chapterSlug);
+  return true;
 }
 
 /* ── Everyone's notes (the "All notes" view) ─────────────────────────── */
@@ -445,9 +491,11 @@ export async function fetchChapterReviewNotes(chapterSlug) {
   if (!chapterSlug || !transport.configured() || !transport.list) return [];
   listing.value = true;
   listError.value = "";
+  const revision = statusRevision;
   try {
     const rows = await transport.list(chapterSlug);
-    chapterNotes.value = Array.isArray(rows) ? rows : [];
+    if (revision === statusRevision)
+      chapterNotes.value = Array.isArray(rows) ? rows : [];
   } catch {
     listError.value = "Couldn't load the notes just now.";
   } finally {
@@ -561,6 +609,13 @@ export function useReviewFeedback() {
     syncing,
     lastError,
     pendingCount,
+    awaitingCheckCount: computed(
+      () =>
+        queue.value.filter(
+          (r) => r.state === "sent" && !r.parentId && r.status === "done"
+        ).length
+    ),
+    authorAction: reviewAuthorAction,
     setIdentity,
     forgetIdentity,
     submit,

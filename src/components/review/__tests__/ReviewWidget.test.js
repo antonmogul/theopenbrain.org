@@ -257,7 +257,8 @@ describe("All notes", () => {
     await flushPromises();
     const pin = w.find('[data-testid="review-pin"]');
     expect(pin.exists()).toBe(true);
-    expect(pin.text()).toBe("1");
+    expect(pin.text()).toContain("● 1");
+    expect(pin.attributes("aria-label")).toContain("New");
     w.unmount();
   });
 });

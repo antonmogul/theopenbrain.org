@@ -11,7 +11,12 @@ export default {
   component: ReviewMyNotes,
   tags: ["autodocs"],
   parameters: { layout: "padded" },
-  args: { notes: NOTES, chapterSlug: "", checking: false },
+  args: {
+    notes: NOTES,
+    chapterSlug: "",
+    checking: false,
+    authorAction: async () => true,
+  },
   argTypes: {
     notes: { control: "object" },
     chapterSlug: { control: "text" },
@@ -35,3 +40,20 @@ export const WithReplies = {};
 export const Checking = { args: { checking: true } };
 
 export const Empty = { args: { notes: [] } };
+
+export const Statuses = {
+  args: {
+    notes: ["new", "doing", "question", "done", "wont_do", "verified"].map(
+      (status, i) => ({
+        ...NOTES[0],
+        clientId: `status-${i}`,
+        id: `status-${i}`,
+        status,
+      })
+    ),
+  },
+};
+export const FixedPleaseCheck = { args: { notes: [NOTES[0]] } };
+export const CheckedByAuthor = {
+  args: { notes: [{ ...NOTES[0], status: "verified" }] },
+};

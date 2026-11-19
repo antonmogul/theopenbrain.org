@@ -74,7 +74,7 @@ const enabled =
   });
 
 const review = useReviewFeedback();
-const { identity, queue, pendingCount } = review;
+const { identity, queue, pendingCount, awaitingCheckCount } = review;
 
 const open = ref(false);
 const tab = ref("new");
@@ -174,6 +174,7 @@ function setAnchor(a) {
 
 function openPanel() {
   open.value = true;
+  void review.refreshStatuses();
   status.value = "";
   problems.value = [];
   if (!anchor.value) {
@@ -290,6 +291,10 @@ async function showMyNotes() {
 /* ── Everyone's notes ──────────────────────────────────────────────── */
 
 const pins = ref(false);
+const showChecked = ref(false);
+const ownIds = computed(() =>
+  queue.value.filter((n) => n.state === "sent" && n.clientId).map((n) => n.id)
+);
 const focusId = ref("");
 const groups = computed(() => {
   const order = sectionOrder();
@@ -309,6 +314,7 @@ const pinItems = computed(() =>
       n: numbers.value[note.id],
       anchor: note.anchor,
       label: note.anchor?.label || "",
+      status: note.status,
     }))
   )
 );
@@ -400,10 +406,9 @@ onMounted(() => {
   document.addEventListener("selectionchange", onSelectionChange);
   document.addEventListener("keydown", onKey);
   if (!props.figureRecords) void fetchAnimations();
-  // Anything left from an earlier visit goes now (a write only when the
-  // queue has a note in it).
-  if (pendingCount.value) void review.sync();
+  // Loading may read sent-note status once; no write is sent without a user action.
   if (props.startOpen) openPanel();
+  else void review.refreshStatuses();
 });
 
 onBeforeUnmount(() => {
@@ -441,6 +446,13 @@ defineExpose({ startFromSelection, open: openPanel, close });
         <path d="M7 8h6" stroke-linecap="round" />
       </svg>
       <span class="rv-fab-label">Feedback</span>
+      <span
+        v-if="awaitingCheckCount"
+        class="rv-fab-badge rv-fab-badge--check"
+        :aria-label="`${awaitingCheckCount} notes fixed, waiting for your check`"
+        data-testid="review-check-badge"
+        >◇ {{ awaitingCheckCount }}</span
+      >
       <span
         v-if="pendingCount"
         class="rv-fab-badge"
@@ -533,6 +545,7 @@ defineExpose({ startFromSelection, open: openPanel, close });
           v-else-if="tab === 'mine'"
           :notes="queue"
           :checking="checking"
+          :author-action="review.authorAction"
           @refresh="showMyNotes"
           @discard="(n) => review.discard(n.clientId)"
           @retry="() => review.sync()"
@@ -541,6 +554,9 @@ defineExpose({ startFromSelection, open: openPanel, close });
         <ReviewAllNotes
           v-else
           v-model:pins="pins"
+          v-model:show-checked="showChecked"
+          :own-ids="ownIds"
+          :author-action="review.authorAction"
           :groups="groups"
           :section-title="sectionTitle"
           :loading="review.listing.value"
@@ -554,7 +570,12 @@ defineExpose({ startFromSelection, open: openPanel, close });
       </div>
     </div>
 
-    <ReviewPins v-if="pins && !pointing" :items="pinItems" @open="openPin" />
+    <ReviewPins
+      v-if="pins && !pointing"
+      :items="pinItems"
+      :show-checked="showChecked"
+      @open="openPin"
+    />
 
     <ReviewPointer
       v-if="pointing"
@@ -606,6 +627,11 @@ defineExpose({ startFromSelection, open: openPanel, close });
   color: #111;
   font-size: var(--ui-size-11);
   text-align: center;
+}
+
+.rv-fab-badge--check {
+  background: rgb(var(--color-complete));
+  color: #111;
 }
 
 .rv-panel {
@@ -701,6 +727,11 @@ defineExpose({ startFromSelection, open: openPanel, close });
     position: absolute;
     top: -4px;
     right: -4px;
+  }
+
+  .rv-fab-badge--check + .rv-fab-badge {
+    right: auto;
+    left: -4px;
   }
 
   .rv-panel {

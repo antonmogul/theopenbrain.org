@@ -19,15 +19,62 @@ Migration `supabase/migrations/20261118150000_review_feedback.sql`, tested in PG
 | `reviewer_name`, `reviewer_role`              | from the widget's name screen; role `author` `designer` `reviewer` `other`                                |
 | `user_id`                                     | `auth.uid()` when the reviewer happened to be signed in, else null                                        |
 | `url`, `viewport`, `user_agent`, `client_id`  | context; `client_id` is the browser queue's id (unique, makes retries idempotent)                         |
-| `status`, `reply`, `replied_at`, `updated_at` | `new` `doing` `question` `done` `wont_do`; a trigger keeps `updated_at` and `replied_at`                  |
+| `status`, `reply`, `replied_at`, `updated_at` | `new` `doing` `question` `done` `wont_do` `verified`; a trigger keeps `updated_at` and `replied_at`       |
+| `verified_at`                                 | server timestamp when a note becomes `verified`; cleared when it leaves that status                       |
 | `ip_hash`                                     | sha256 of the sender's first `x-forwarded-for` address, for the rate limit; granted to nobody             |
 
 Access:
 
 - **Nobody inserts or reads the table directly.** `anon` has no grants; `authenticated` has `select` (every column but `ip_hash`), `update (status, reply)` and `delete`, and RLS limits all three to `public.is_creator()`. A creator cannot rewrite a reviewer's words.
 - `submit_review_feedback(p jsonb) → { id, status }` (SECURITY DEFINER, anon + authenticated). Trims every text field and cuts it to its cap; requires `note`, or `quote` and `suggested_text`; a known `client_id` returns the stored row unchanged. An optional `parent_id` makes the note a reply: it must be an existing note with the same `chapter_slug`, otherwise `review_invalid` (`detail`: `parent_id`, or `parent_id must be a note in the same chapter`). Errors: `review_invalid` (SQLSTATE 22023, HTTP 400; `detail` names the field: treat as permanent, don't retry) and `review_rate_limited` (SQLSTATE `PT429`, HTTP 429: retry later). Limits: 120 notes per address per hour, 2000 per hour overall.
-- `list_review_feedback(p_chapter text, p_since timestamptz default null) → setof jsonb` (SECURITY DEFINER, stable, anon + authenticated). Every note and reply on the chapter, newest first (`created_at desc`), at most 1000. With `p_since`, only rows whose `updated_at` is later (new rows, and notes whose status or reply changed). Each element: `id, parent_id, created_at, updated_at, chapter_slug, section_slug, paragraph_id, type, note, quote, suggested_text, anchor, reviewer_name, reviewer_role, status, reply, replied_at`. Never the url, user agent, user id or address hash. Everyone can read these while the site is in review: revoke the grant (or drop the function) when review ends.
-- `review_feedback_status(p_ids uuid[]) → (id, status, reply, replied_at, updated_at)` (SECURITY DEFINER, stable, so GET works). Answers the first 200 ids; unknown ids are absent. The ids are random uuids, so knowing one is the right to its status.
+- `list_review_feedback(p_chapter text, p_since timestamptz default null) → setof jsonb` (SECURITY DEFINER, stable, anon + authenticated). Every note and reply on the chapter, newest first (`created_at desc`), at most 1000. With `p_since`, only rows whose `updated_at` is later (new rows, and notes whose status or reply changed). Each element: `id, parent_id, created_at, updated_at, chapter_slug, section_slug, paragraph_id, type, note, quote, suggested_text, anchor, reviewer_name, reviewer_role, status, reply, replied_at, verified_at`. Never the url, user agent, user id or address hash. Everyone can read these while the site is in review: revoke the grant (or drop the function) when review ends.
+- `review_feedback_status(p_ids uuid[]) → (id, status, reply, replied_at, updated_at, verified_at)` (SECURITY DEFINER, stable, so GET works). Answers the first 200 ids; unknown ids are absent. The ids are random uuids, so knowing one is the right to its status.
+
+## Fixed notes and the author's check (OPENBRAIN-47)
+
+Migration `20261119470000_review_feedback_verify.sql` adds `verified_at`, the
+`verified` status and `review_feedback_author_action(p_id uuid, p_client_id text,
+p_action text, p_note text default null) → jsonb`. It is SECURITY DEFINER with
+`search_path = public`, executable by anon and authenticated.
+
+The author means the person who sent that note, using that browser, regardless
+of their selected reviewer role. Only their local `ob.review.queue` record has
+the note's `clientId`; public list/status RPCs never expose it. Exact equality
+with the stored `client_id` is the proof. This is a browser-held capability,
+not an account identity: clearing storage or switching browsers loses it.
+Existing queued and sent records remain usable without conversion.
+
+- `verify`: only `done` or `wont_do` → `verified`, stamped by the server.
+- `reopen`: `done`, `wont_do` or `verified` → `new`; requires a nonblank comment
+  of at most 4000 characters. It inserts a `parent_id` reply carrying the original
+  reviewer's name and role in the same chapter, preserving the team's reply.
+- Wrong proof, invalid action/state or missing comment: `review_invalid` (22023).
+  Requests share submit's hourly budgets (120/address, 2000 overall), including
+  a private event table for verifications; overflow is `review_rate_limited`.
+  Reopen replies consume the note budget. The table remains closed to anon.
+- Creators retain status/reply control and can also select `verified`; the
+  timestamp is maintained by the trigger, not supplied by the browser.
+
+| Status   | Colour                      | Symbol and label      |
+| -------- | --------------------------- | --------------------- |
+| new      | accent (magenta by default) | ● New                 |
+| doing    | amber (`--color-warn`)      | ◷ In progress         |
+| question | blue (`--color-mark3`)      | ? Question for you    |
+| done     | green (`--color-complete`)  | ◇ Fixed: please check |
+| wont_do  | grey                        | − Won't do            |
+| verified | dimmed green, dashed edge   | ✓ Checked by author   |
+
+Pins, My notes, All notes and the dashboard use the same labels and symbols.
+Checked pins are hidden until “Show checked” is enabled in All notes. The
+dashboard defaults to open (new/doing/question), and has a Checked by author
+filter. Only the sending browser gets “Looks good ✓” and “Not quite” controls.
+My notes preserves a reopen comment after a failed save.
+
+The launcher shows a green count of this browser's top-level `done` notes
+waiting for a check. Status uses GET once on chapter load only if this browser
+has sent notes, and again on panel opening / Check for replies. No submit or
+author-action POST occurs on page load; queued submissions retry on opening,
+an explicit send, or reconnection.
 
 ## The anchor
 

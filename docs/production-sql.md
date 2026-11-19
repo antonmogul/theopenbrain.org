@@ -186,7 +186,9 @@ Pushed after PR #200's deploy served all twelve `-v2.webp` files (200, `image/we
 
 ## Pending
 
-Nothing: `supabase migration list` shows local and remote in step as of 2026-11-18 (after OPENBRAIN-45).
+| Migration                                              | State                                                                                                                                                                                           |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261119470000_review_feedback_verify` (OPENBRAIN-47) | **Pending coordinator push.** Adds author check-off, `verified_at`, public RPC fields and rate accounting. Apply before releasing the check-off UI; no production write performed by this task. |
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is
