@@ -30,7 +30,6 @@ export const BreakoutCard = {
       title: "Colour vision starts in the retina",
       blurb:
         "Work from the electromagnetic spectrum down to cone opponency: how three pigment classes, and their overlap, become the colours we see.",
-      credit: "Interactive by Stuart Trenholm",
       route: "/color-vision",
     },
   },
@@ -46,7 +45,6 @@ export const InlineStage = {
       title: "RetINaBox — build a retinal circuit",
       blurb:
         "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes.",
-      credit: "Interactive by Stuart Trenholm",
       route: "/retinabox",
     },
   },

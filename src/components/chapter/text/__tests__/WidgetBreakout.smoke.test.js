@@ -70,7 +70,7 @@ const breakout = {
   kind: "breakout",
   title: "Colour vision starts in the retina",
   blurb: "Three pigment classes become the colours we see.",
-  credit: "Interactive by Stuart Trenholm",
+  credit: "Interactive by Example Author",
   route: "/color-vision",
 };
 
@@ -132,7 +132,7 @@ describe("WidgetBreakout — breakout card", () => {
     expect(root.classes()).toContain("wb--breakout");
     expect(wrapper.text()).toContain("Colour vision starts in the retina");
     expect(wrapper.text()).toContain("Three pigment classes");
-    expect(wrapper.text()).not.toContain("Interactive by Stuart Trenholm");
+    expect(wrapper.text()).not.toContain("Interactive by Example Author");
     expect(document.querySelector(".fake-widget")).toBeNull();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
 

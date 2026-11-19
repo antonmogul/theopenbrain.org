@@ -138,7 +138,7 @@ export const WIDGET_PLACEMENTS = [
     anchors: [{ beforeSubSection: "Rod and cone pathways" }],
     title: "RetINaBox — build a retinal circuit",
     blurb:
-      "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials. Based on the Trenholm lab's outreach tool.",
+      "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials.",
   },
 
   // ── Attention & Working Memory — Arjun Krishnaswamy's widgets (OPENBRAIN-34)
