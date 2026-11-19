@@ -16,6 +16,18 @@
  *   acknowledgements: [paragraph, …] (plain text)
  */
 export const CREDITS_BY_SLUG = Object.freeze({
+  "the-retina": {
+    funding: {
+      text: "This chapter was funded by the Vision Science Research Network.",
+      url: "https://visionnetwork.ca/",
+      logo: {
+        src: "/publicAssets/images/funders/vision-science-research-network.webp",
+        alt: "Vision Science Research Network",
+        width: 758,
+        height: 229,
+      },
+    },
+  },
   "foundations-of-neuroscience": {
     funding: {
       text: "This chapter was funded by The Montreal Neurological Institute (The Neuro).",
