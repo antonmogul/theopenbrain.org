@@ -177,7 +177,11 @@ export function railLayoutOf(section) {
  */
 export function boxIsRail(section, chapterSlug) {
   const listed = chapterSlug ? RAIL_BOXES_BY_SLUG[chapterSlug] : null;
-  return !!listed?.includes(section?.slug) && !!railLayoutOf(section);
+  const enabled =
+    typeof section?.rail === "boolean"
+      ? section.rail
+      : !!listed?.includes(section?.slug);
+  return enabled && !!railLayoutOf(section);
 }
 
 /** The track position for a page scrolled `scrolled` px past the pin. */
