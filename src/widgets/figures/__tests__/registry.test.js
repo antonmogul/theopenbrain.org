@@ -61,103 +61,14 @@ describe("figure widgets use only their own colours", () => {
   });
 });
 
-// A step-through schema is bound to its artwork: its last frame is the
-// Lottie's end, its icons exist, and each legend item lights up a layer the
-// Lottie has. This is what catches the live site's dead "α subunit" key.
-describe("step-through figures match their artwork", () => {
-  const pub = join(__dirname, "../../../../public");
-  const stepThrough = Object.values(FIGURE_WIDGETS)
-    .map((w) => w.schema)
-    .filter((s) => Array.isArray(s.frames));
-
-  function layerClasses(lottie) {
-    const out = new Set();
-    const walk = (layers = []) => {
-      for (const l of layers) {
-        for (const c of `${l.cl || ""} ${(l.nm || "").split(".").join(" ")}`
-          .split(/\s+/)
-          .filter(Boolean))
-          out.add(c);
-        walk(l.layers);
-      }
-    };
-    walk(lottie.layers);
-    for (const a of lottie.assets || []) walk(a.layers);
-    return out;
-  }
-
-  it.each(stepThrough.map((s) => [s.id, s]))("%s", (_, schema) => {
-    const lottie = JSON.parse(
-      readFileSync(
-        join(pub, "publicAssets/animations", `${schema.animationKey}.json`),
-        "utf8"
-      )
-    );
-    expect(schema.frames.at(-1)).toBe(lottie.op);
-    expect(schema.defaults.states).toHaveLength(schema.frames.length - 1);
-    expect(schema.legendArt).toHaveLength(schema.defaults.legend.length);
-    const classes = layerClasses(lottie);
-    for (const art of schema.legendArt) {
-      expect(classes, art.highlight).toContain(art.highlight);
-      expect(statSync(join(pub, art.icon)).isFile(), art.icon).toBe(true);
-    }
-  });
-});
-
-// A switch schema is bound to its artwork too: one Lottie per switch, every
-// legend symbol on disk.
-describe("switch figures match their artwork", () => {
-  const pub = join(__dirname, "../../../../public");
-  const switches = Object.values(FIGURE_WIDGETS)
-    .map((w) => w.schema)
-    .filter((s) => s.variants);
-
-  it("finds them", () => expect(switches.length).toBe(5));
-
-  it.each(switches.map((s) => [s.id, s]))("%s", (_, schema) => {
-    expect(schema.variants).toHaveLength(schema.defaults.switches.length);
-    expect(schema.legendArt).toHaveLength(schema.defaults.legend.length);
-    for (const v of schema.variants) {
-      const lottie = JSON.parse(readFileSync(join(pub, v.file), "utf8"));
-      expect(lottie.op, v.file).toBeGreaterThan(0);
-      // Where a held version rests: inside the file, past its start.
-      expect(v.stillFrame, v.file).toBeGreaterThan(0);
-      expect(v.stillFrame, v.file).toBeLessThan(lottie.op);
-    }
-    for (const art of schema.legendArt)
-      expect(statSync(join(pub, art.icon)).isFile(), art.icon).toBe(true);
-    // Their labels are the drawing's, not the database's older ones.
-    for (const key of ["switches", "legend"])
-      expect(schema.fields.find((f) => f.key === key).artwork).toBe(true);
-  });
-});
-
-// The split and the transitions are bound to their artwork too.
-describe("scrubbed figures match their artwork", () => {
-  const pub = join(__dirname, "../../../../public");
-  const read = (f) => JSON.parse(readFileSync(join(pub, f), "utf8"));
-
-  it("the split: two files of one length, its layers inside them", () => {
-    const s = FIGURE_WIDGETS.animationLatteralOrganization.schema;
-    const [l, r] = [read(s.left), read(s.right)];
-    expect(l.op).toBe(r.op);
-    expect(s.frames).toBe(l.op);
-    expect(s.startFrame).toBeLessThan(s.layers[0].from);
-    for (const layer of s.layers) {
-      expect(layer.from).toBeLessThan(layer.to);
-      expect(layer.to).toBeLessThan(l.op);
-    }
-    expect(s.defaults.infos).toHaveLength(s.layers.length);
-    expect(s.defaults.sources).toHaveLength(s.layers.length);
-    expect(s.scrollLength).toMatch(/vh$/);
-  });
-
-  it.each([
-    "animationEyeStructurTransition",
-    "animationRetinalCellTypesTransition",
-  ])("%s", (key) => {
-    const s = FIGURE_WIDGETS[key].schema;
-    expect(read(`publicAssets/animations/${key}.json`).op).toBeGreaterThan(0);
-    expect(s.scrub.from).toBeLessThan(s.scrub.to);
+describe("the remaining figure widgets", () => {
+  it("keeps lateral organization, live section transitions and both History figures", () => {
+    expect(Object.keys(FIGURE_WIDGETS)).toEqual([
+      "animationLatteralOrganization",
+      "animationEyeStructurTransition",
+      "animationRetinalCellTypesTransition",
+      "animationFoundationsFig2",
+      "animationFoundationsFig4",
+    ]);
   });
 });

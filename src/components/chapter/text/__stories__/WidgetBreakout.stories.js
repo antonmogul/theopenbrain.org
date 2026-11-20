@@ -1,7 +1,31 @@
 import WidgetBreakoutComponent from "../WidgetBreakout.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
-import { WIDGET_PLACEMENTS, widgetParagraph } from "@/widgets/placements";
+import blocks from "@/__tests__/fixtures/retinaWidgetBlocks.json";
+import { loadWidgetHtml } from "@/widgets/uploads";
+import { transformParagraph } from "@/composables/chapterTransform.mjs";
+const placement = (id) =>
+  transformParagraph({
+    content: { blocks: [blocks.find((b) => b.placementId === id)] },
+  }).widget;
 import { STAGE_LAYER_ID } from "@/helper/stageLayer";
+
+const uploadedStory = (slug) => ({
+  api: {
+    widget_uploads: async () => [
+      {
+        slug,
+        title:
+          slug === "retina-color-vision"
+            ? "Colour vision"
+            : slug === "retina-retinabox"
+              ? "RetINaBox"
+              : "Direction selectivity",
+        ramp: "perc",
+        html: await loadWidgetHtml(slug),
+      },
+    ],
+  },
+});
 
 export default {
   title: "Chapter/Text/WidgetBreakout",
@@ -155,26 +179,23 @@ export const UnavailableWidget = {
 
 // The live Retina placements, including the click-to-load launch screen.
 export const RetinaColourVision = {
+  parameters: uploadedStory("retina-color-vision"),
   args: {
-    placement: widgetParagraph(
-      WIDGET_PLACEMENTS.find((p) => p.id === "retina-color-vision")
-    ).widget,
+    placement: placement("retina-color-vision"),
   },
   render: readerFrame(WidgetBreakoutComponent),
 };
 export const RetinaDirectionSelectivity = {
+  parameters: uploadedStory("retina-direction-selectivity"),
   args: {
-    placement: widgetParagraph(
-      WIDGET_PLACEMENTS.find((p) => p.id === "retina-direction-selectivity")
-    ).widget,
+    placement: placement("retina-direction-selectivity"),
   },
   render: readerFrame(WidgetBreakoutComponent),
 };
 export const RetINaBoxLaunch = {
+  parameters: uploadedStory("retina-retinabox"),
   args: {
-    placement: widgetParagraph(
-      WIDGET_PLACEMENTS.find((p) => p.id === "retina-retinabox")
-    ).widget,
+    placement: placement("retina-retinabox"),
   },
   render: readerFrame(WidgetBreakoutComponent),
 };

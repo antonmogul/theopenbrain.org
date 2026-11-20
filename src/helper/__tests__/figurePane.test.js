@@ -20,7 +20,7 @@ const legacyTransition = {
 };
 // Figure widgets registered in src/widgets/figures/registry.js.
 const papyrus = { id: "animationFoundationsFig4" };
-const stepThrough = { id: "animationPupillaryLightreflex" };
+const lateral = { id: "animationLatteralOrganization" };
 const switchFigure = { id: "animationRodVsConeCircuits" };
 const transitionFigure = { id: "animationEyeStructurTransition" };
 
@@ -33,7 +33,7 @@ describe("figureGround", () => {
   it("puts widgets with a plate of their own on the dark pane", () => {
     expect(figureGround(uploadedWidget)).toBe("dark");
     expect(figureGround(papyrus)).toBe("dark");
-    expect(figureGround(stepThrough)).toBe("dark");
+    expect(figureGround(lateral)).toBe("dark");
   });
 
   it("keeps the 2023 Lottie line art on paper", () => {
@@ -42,7 +42,7 @@ describe("figureGround", () => {
     expect(figureGround(legacyTransition)).toBe("paper");
   });
 
-  it("keeps the figure widgets drawn on the reader's own ground on paper", () => {
+  it("keeps unregistered legacy line art on paper", () => {
     expect(figureGround(switchFigure)).toBe("paper");
     expect(figureGround(transitionFigure)).toBe("paper");
   });

@@ -1,6 +1,53 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import FigureWidgetSettings from "../FigureWidgetSettings.vue";
+
+// Exercise every generic field kind without retaining an unused Retina schema.
+vi.mock("@/widgets/figures/registry", () => ({
+  figureWidgetFor: (key) =>
+    key === "test-schema"
+      ? {
+          schema: {
+            name: "Refraction errors",
+            fields: [
+              { key: "title", label: "Title", type: "text" },
+              {
+                key: "infoText",
+                label: "Introduction",
+                type: "textarea",
+                optional: true,
+              },
+              { key: "states", label: "Conditions", type: "list" },
+              { key: "toggle", label: "Button", type: "text" },
+              { key: "image", label: "Image", type: "image" },
+              {
+                key: "video",
+                label: "Video",
+                type: "group",
+                optional: true,
+                fields: [
+                  { key: "title", label: "Speaker", type: "text" },
+                  { key: "slug", label: "Video", type: "text" },
+                ],
+              },
+            ],
+            defaults: {
+              title: "Refraction errors",
+              infoText: "Introduction",
+              states: [
+                "Normal eye (emmetropia)",
+                "Myopia",
+                "Hyperopia",
+                "Astigmatism",
+              ],
+              toggle: "Corrected",
+              image: "",
+              video: { title: "Maureen and Jay Neitz", slug: "neitz-myopia" },
+            },
+          },
+        }
+      : null,
+}));
 
 // The modal teleports to <body>; render its slots in place instead.
 const BaseModalStub = {
@@ -19,7 +66,7 @@ const MediaPickerStub = {
 const figure = {
   id: "fig-1",
   title: "Refraction errors",
-  animation_key: "animationImpairedVision",
+  animation_key: "test-schema",
   config: { toggle: "Corrected", infoText: "Row intro", fullscreen: true },
 };
 const states = [

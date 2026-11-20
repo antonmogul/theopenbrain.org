@@ -19,8 +19,8 @@ export default {
 export const FromTheDatabase = {
   args: {
     record: {
-      id: "animationImpairedVision",
-      title: "Refraction errors",
+      id: "animationFoundationsFig2",
+      title: "Early neurosurgery",
       toggle: "Corrected",
       fullscreen: true,
       states: ["Normal eye (emmetropia)", "Myopia", "Hyperopia", "Astigmatism"],

@@ -1,22 +1,17 @@
 /*
- * Timeline fixtures (OPENBRAIN-128) — the real Retina chapter as the chapter
- * timeline sees it, for the timeline's stories and tests.
+ * Timeline fixtures (OPENBRAIN-128) — Retina-shaped examples for the
+ * timeline stories and tests.
  *
- * text.json is the Retina as it was before it moved to Supabase. The
- * fixture gives it what the live chapter has and the JSON lacks: an id on
- * every paragraph and subsection (normalised where one is missing), section
- * slugs, and the chapter's three widgets, placed where src/widgets/
- * placements.js puts them in the reader. The layers (the reader's highlights
- * and notes, other readers' trending passages) quote the chapter's own
- * paragraphs, so every lane and preview card has something real to show.
+ * Historical prose supplies a long chapter-shaped preview fixture. The
+ * widget examples are real DB blocks, transformed through the reader's
+ * parser; their fixture-only grouping below is not a production placement.
+ * Highlights, notes and trending passages quote the fixture's own prose.
  */
 import text from "@/assets/json_backend/text.json";
 import { buildTimeline, plainText } from "@/helper/chapterTimeline";
 import { sectionLabelMap } from "@/composables/useChapterOutline";
-import {
-  applyWidgetPlacements,
-  placementsForChapter,
-} from "@/widgets/placements";
+import widgetBlocks from "@/__tests__/fixtures/retinaWidgetBlocks.json";
+import { transformParagraph } from "@/composables/chapterTransform.mjs";
 
 export const RETINA_TITLE = "The Retina";
 
@@ -55,7 +50,19 @@ export function retinaText() {
     section.slug ??= slugify(section.title);
     normalise(section.paragraphs, section.id);
   }
-  applyWidgetPlacements(chapter, placementsForChapter("the-retina"));
+  // Story data only: exercise widget previews even though the production
+  // placement table is intentionally empty. Real positions live in DB rows.
+  const circuit = chapter.sections.find((section) =>
+    section.slug.startsWith("amacrine-and-ganglion-cells")
+  );
+  circuit.paragraphs.push(
+    ...widgetBlocks.map((block) =>
+      transformParagraph({
+        id: `fixture-db-${block.placementId}`,
+        content: { blocks: [block] },
+      })
+    )
+  );
   return chapter;
 }
 
