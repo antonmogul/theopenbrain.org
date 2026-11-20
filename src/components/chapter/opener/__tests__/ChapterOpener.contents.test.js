@@ -49,6 +49,21 @@ describe("ChapterOpener's contents", () => {
     wrapper.unmount();
   });
 
+  it("uses stored artwork for an unmapped chapter, including the intro", () => {
+    const art = { src: "/media/intro.webp", alt: "Intro art" };
+    const wrapper = mount(ChapterOpener, {
+      props: {
+        module: { slug: "new-chapter", title: "New" },
+        text: { ...text, intro: [{ ...text.intro[0], art }] },
+      },
+    });
+    const toc = wrapper.findComponent({ name: "OpenerTocArt" });
+    expect(toc.exists()).toBe(true);
+    expect(toc.props("outline")[0].art).toEqual(art);
+    expect(toc.find("img").attributes("src")).toBe(art.src);
+    wrapper.unmount();
+  });
+
   it("keeps the numbered list for every other chapter", () => {
     const wrapper = opener("the-retina");
     expect(wrapper.findComponent({ name: "OpenerTocArt" }).exists()).toBe(

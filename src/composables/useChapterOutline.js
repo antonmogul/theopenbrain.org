@@ -101,6 +101,7 @@ export function buildOutline(text) {
       // The section art and the pane's cards look a section up by slug
       // (helper/sectionArt.js); the intro's is always "introduction".
       slug: "introduction",
+      ...(intro.art !== undefined ? { art: intro.art } : {}),
       kind: "intro",
       label: "0",
       // The transform names the intro after the module (the reader's old h1);
@@ -130,6 +131,7 @@ export function buildOutline(text) {
     const entry = {
       id: s.id,
       slug: s.slug,
+      ...(s.art !== undefined ? { art: s.art } : {}),
       kind: s.kind === "box" ? "box" : "section",
       label: labels[s.id || s.title],
       title: s.title,
