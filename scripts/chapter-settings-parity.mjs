@@ -9,6 +9,8 @@ import { readFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+// Match the existing reader QA harnesses: normal faces are awaited below.
+process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY = "1";
 const BASE = process.argv[2] || "http://127.0.0.1:4263";
 const OUT = path.resolve(
   process.argv[3] || "/Volumes/Brain/artifacts/retina-cleanup/63/browser"
@@ -189,7 +191,28 @@ for (const [engine, browserType] of Object.entries({ chromium, webkit })) {
           await page.waitForFunction(
             () => !document.querySelector('[data-reactive-cover="loading"]')
           );
-          await page.evaluate(() => document.fonts.ready);
+          // WebKit can keep fonts.ready pending on unused legacy subset
+          // faces. Wait for the normal UI faces the samples actually use.
+          await page.evaluate(async () => {
+            const fonts = [300, 400, 450, 500, 600, 700].map(
+              (weight) => `${weight} 16px "IBM Plex Sans"`
+            );
+            fonts.push('400 16px "IBM Plex Mono"');
+            await Promise.race([
+              Promise.all(
+                fonts.map((font) =>
+                  document.fonts.load(font, "History authors 0123456789")
+                )
+              ),
+              new Promise((_, reject) =>
+                setTimeout(
+                  () => reject(Error("Normal reader fonts did not load")),
+                  20000
+                )
+              ),
+            ]);
+            return true;
+          });
           await page.addStyleTag({
             content: "* { caret-color: transparent !important; }",
           });
