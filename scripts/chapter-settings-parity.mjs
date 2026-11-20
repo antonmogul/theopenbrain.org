@@ -8,8 +8,7 @@ import { createRequire } from "node:module";
 import { readFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
-const require = createRequire(import.meta.url);
-const { PGlite } = require(process.env.HISTORY_SQL_HARNESS);
+import { fileURLToPath } from "node:url";
 const BASE = process.argv[2] || "http://127.0.0.1:4263";
 const OUT = path.resolve(
   process.argv[3] || "/Volumes/Brain/artifacts/retina-cleanup/63/browser"
@@ -40,60 +39,80 @@ async function get(endpoint) {
     throw Error(`GET ${endpoint.split("?")[0]}: ${response.status}`);
   return response.json();
 }
-const modules = await get("modules?select=*");
-const sections = await get("sections?select=*");
-const db = new PGlite();
-await db.exec(`create table modules(id uuid primary key,slug text,cover_image_url text,authors jsonb,ramp text);
+// Keep the SQL engine in a short-lived process, so its WASM memory is
+// released before opening real browser renderers on a busy workstation.
+if (process.argv.includes("--prepare")) {
+  const require = createRequire(import.meta.url);
+  const { PGlite } = require(process.env.HISTORY_SQL_HARNESS);
+  const modules = await get("modules?select=*");
+  const sections = await get("sections?select=*");
+  const db = new PGlite();
+  await db.exec(`create table modules(id uuid primary key,slug text,cover_image_url text,authors jsonb,ramp text);
  create table sections(id uuid primary key,module_id uuid,slug text,box_treatment text);`);
-for (const m of modules)
-  await db.query("insert into modules values($1,$2,$3,$4,$5)", [
-    m.id,
-    m.slug,
-    m.cover_image_url,
-    m.authors,
-    m.ramp,
-  ]);
-for (const s of sections)
-  await db.query("insert into sections values($1,$2,$3,$4)", [
-    s.id,
-    s.module_id,
-    s.slug,
-    s.box_treatment,
-  ]);
-await db.exec(
-  readFileSync(
-    "supabase/migrations/20261120066300_chapter_settings_columns.sql",
-    "utf8"
-  )
-);
-// Preserve settings if the migration has subsequently been applied live.
-for (const m of modules)
-  if (m.cover !== undefined || m.credits !== undefined)
-    await db.query("update modules set cover=$1,credits=$2 where id=$3", [
-      m.cover ?? null,
-      m.credits ?? null,
+  for (const m of modules)
+    await db.query("insert into modules values($1,$2,$3,$4,$5)", [
       m.id,
+      m.slug,
+      m.cover_image_url,
+      m.authors,
+      m.ramp,
     ]);
-for (const s of sections)
-  if (s.art !== undefined || s.rail !== undefined)
-    await db.query("update sections set art=$1,rail=$2 where id=$3", [
-      s.art ?? null,
-      s.rail ?? null,
+  for (const s of sections)
+    await db.query("insert into sections values($1,$2,$3,$4)", [
       s.id,
+      s.module_id,
+      s.slug,
+      s.box_treatment,
     ]);
-await db.exec(
-  readFileSync(
-    "supabase/migrations/20261120066301_chapter_settings_seed.sql",
-    "utf8"
-  )
+  await db.exec(
+    readFileSync(
+      "supabase/migrations/20261120066300_chapter_settings_columns.sql",
+      "utf8"
+    )
+  );
+  // Preserve settings if the migration has subsequently been applied live.
+  for (const m of modules)
+    if (m.cover !== undefined || m.credits !== undefined)
+      await db.query("update modules set cover=$1,credits=$2 where id=$3", [
+        m.cover ?? null,
+        m.credits ?? null,
+        m.id,
+      ]);
+  for (const s of sections)
+    if (s.art !== undefined || s.rail !== undefined)
+      await db.query("update sections set art=$1,rail=$2 where id=$3", [
+        s.art ?? null,
+        s.rail ?? null,
+        s.id,
+      ]);
+  await db.exec(
+    readFileSync(
+      "supabase/migrations/20261120066301_chapter_settings_seed.sql",
+      "utf8"
+    )
+  );
+  const after = {
+    modules: (await db.query("select * from modules")).rows,
+    sections: (await db.query("select * from sections")).rows,
+  };
+  await db.close();
+  writeFileSync(
+    path.join(OUT, "settings-after.json"),
+    JSON.stringify(after, null, 2)
+  );
+  process.exit(0);
+}
+execFileSync(process.execPath, [
+  fileURLToPath(import.meta.url),
+  BASE,
+  OUT,
+  "--prepare",
+]);
+const after = JSON.parse(
+  readFileSync(path.join(OUT, "settings-after.json"), "utf8")
 );
-const afterModules = new Map(
-  (await db.query("select * from modules")).rows.map((m) => [m.id, m])
-);
-const afterSections = new Map(
-  (await db.query("select * from sections")).rows.map((s) => [s.id, s])
-);
-await db.close();
+const afterModules = new Map(after.modules.map((m) => [m.id, m]));
+const afterSections = new Map(after.sections.map((s) => [s.id, s]));
 const cache = new Map();
 const resultsFile = path.join(OUT, "results.json");
 const results =
