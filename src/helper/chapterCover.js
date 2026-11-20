@@ -1,7 +1,8 @@
 /*
  * Chapter cover image for the opener hero (OPENBRAIN-32).
  *
- * Resolution order: modules.cover_image_url (migration 20260911000100)
+ * Resolution order: modules.cover.image (OPENBRAIN-63) → legacy
+ * modules.cover_image_url (migration 20260911000100)
  * → code-side map by slug → the neutral default. The slug map exists so the
  * covers Sonia has already chosen render before the column is populated in
  * production; a DB value wins once it is set.
@@ -29,6 +30,7 @@ function isUsableUrl(value) {
 
 export function coverForModule(module) {
   if (!module || typeof module !== "object") return DEFAULT_COVER;
+  if (isUsableUrl(module.cover?.image)) return module.cover.image.trim();
   if (isUsableUrl(module.cover_image_url)) return module.cover_image_url.trim();
   return COVER_BY_SLUG[module.slug] || DEFAULT_COVER;
 }
@@ -41,11 +43,11 @@ export function coverForModule(module) {
  * opener scrubs from the pointer, laid over the still cover, which stays the
  * poster and the fallback when the file is missing or motion is reduced.
  *
- * Resolution order mirrors the still cover: modules.reactive_cover (a JSON
- * column with the shape below; not migrated yet) → the slug map → none. To
+ * Resolution order: modules.cover.reactive → legacy modules.reactive_cover
+ * → the slug map → none (OPENBRAIN-63). To
  * swap a chapter's reactive graphic, drop the Lottie into
- * public/publicAssets/animations/covers/ and point its entry here (or, once
- * the column exists, at a chapter-media URL from the chapter page).
+ * public/publicAssets/animations/covers/ and set modules.cover.reactive to
+ * that path or a chapter-media URL. This map is only the rollout fallback.
  *
  *   lottie   path or URL of the Lottie JSON
  *   axis     "x" | "y": which pointer coordinate drives the frame
@@ -263,7 +265,9 @@ export function normalizeReactiveCover(raw) {
 
 export function reactiveCoverForModule(module) {
   if (!module || typeof module !== "object") return null;
+  if (module.cover?.reactive === null) return null;
   return (
+    normalizeReactiveCover(module.cover?.reactive) ||
     normalizeReactiveCover(module.reactive_cover) ||
     normalizeReactiveCover(REACTIVE_COVER_BY_SLUG[module.slug])
   );

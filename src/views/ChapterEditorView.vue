@@ -277,9 +277,11 @@ function saveDetails(patch) {
 
 // ---- cover (OPENBRAIN-67) ----
 const cover = computed(() => coverForModule(ed.module.value));
-const coverIsDefault = computed(() => !ed.module.value?.cover_image_url);
+const coverIsDefault = computed(
+  () => cover.value === coverForModule({ slug: ed.module.value?.slug })
+);
 const coverMediaId = computed(() => {
-  const url = ed.module.value?.cover_image_url;
+  const url = cover.value;
   return (
     (url &&
       ed.media.value.find(

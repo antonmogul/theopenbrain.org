@@ -14,7 +14,7 @@
  * Which section gets which is data, keyed by chapter slug then section slug
  * (the intro's is "introduction"), because section slugs are only unique
  * within a module and titles get edited. A section's own `art` ({ src, alt })
- * wins once sections carry one from the database; nothing is migrated yet.
+ * wins over the rollout map (sections.art, OPENBRAIN-63).
  * `position` (a CSS object-position) says where the subject is in a picture
  * whose subject is off centre; the contents crop to it, on a phone too.
  * A chapter with no entry here keeps the contents and the pane it had.
@@ -71,8 +71,12 @@ const usable = (art) =>
   !!art && typeof art.src === "string" && art.src.trim().length > 0;
 
 /** The chapter's art by section slug, or null when it has none. */
-export function sectionArtForChapter(chapterSlug) {
-  const map = SECTION_ART_BY_SLUG[chapterSlug];
+export function sectionArtForChapter(chapterSlug, sections = []) {
+  const map = { ...SECTION_ART_BY_SLUG[chapterSlug] };
+  for (const section of sections) {
+    const art = sectionArtFor(chapterSlug, section);
+    if (art && section?.slug) map[section.slug] = art;
+  }
   return map && Object.keys(map).length ? map : null;
 }
 
@@ -84,7 +88,7 @@ export function sectionArtForChapter(chapterSlug) {
 export function sectionArtFor(chapterSlug, section) {
   if (usable(section?.art)) {
     const { src, alt, position } = section.art;
-    const art = { src: src.trim(), alt: alt || "" };
+    const art = { src: src.trim(), alt: typeof alt === "string" ? alt : "" };
     if (typeof position === "string" && position.trim())
       art.position = position.trim();
     return art;
