@@ -25,7 +25,7 @@ const title = computed(() => {
   if (type.value === "imageBlock") return a.caption || a.alt || a.src || "";
   if (type.value === "widgetBlock") return a.title || a.widgetId || "";
   const b = block.value;
-  if (b.type === "footnote")
+  if (b.type === "footnote" || b.type === "reference")
     return `${b.number}. ${String(b.content || "").replace(/<[^>]*>/g, "")}`;
   return b.title || "";
 });

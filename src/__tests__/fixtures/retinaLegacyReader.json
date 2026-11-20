@@ -1,0 +1,2417 @@
+{
+  "module": {
+    "id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+    "title": "The Retina",
+    "slug": "the-retina",
+    "order_index": 2,
+    "status": "published"
+  },
+  "sections": [
+    {
+      "id": "36adafd0-bc6a-4ebc-acc7-8270ea0c083b",
+      "title": "The Retina",
+      "slug": "introduction",
+      "order_index": 0,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": "063275c8-84e1-4557-afe5-967ac2bd0c93",
+      "animation_config": {
+        "name": "dragon"
+      }
+    },
+    {
+      "id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "title": "Story of the eye",
+      "slug": "story-of-the-eye",
+      "order_index": 1,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "title": "Organization and cell types in the retina",
+      "slug": "organization-and-cell-types-in-the-retina",
+      "order_index": 2,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "title": "Photoreceptors and phototransduction",
+      "slug": "photoreceptors-and-phototransduction",
+      "order_index": 3,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "6af621e4-6ff0-4f27-8146-6aa72835c8f8",
+      "title": "Horizontal cells and feedback",
+      "slug": "horizontal-cells-and-feedback",
+      "order_index": 4,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "animation_config": {
+        "id": "animationRetinalCellTypes3",
+        "name": "RetinalCellTypes3",
+        "stage": "Horizontal cells",
+        "title": "Retinal cell types"
+      }
+    },
+    {
+      "id": "9497f217-b3e2-4688-a7cd-5360e2e779ca",
+      "title": "Bipolar cells diversify photoreceptor signals",
+      "slug": "bipolar-cells-diversify-photoreceptor-signals",
+      "order_index": 5,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "animation_config": {
+        "id": "animationRetinalCellTypes2",
+        "name": "RetinalCellTypes2",
+        "stage": "Bipolar cells",
+        "title": "Retinal cell types"
+      }
+    },
+    {
+      "id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "title": "Amacrine and ganglion cells – circuits, computations and output",
+      "slug": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+      "order_index": 6,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "9929c0a4-3574-470e-b8fc-4d5f65b4d763",
+      "title": "Retinal vision in the ‘real world’",
+      "slug": "retinal-vision-in-the-real-world",
+      "order_index": 7,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "0a7c7c97-2cdf-41df-b869-c0bdbc1201d3",
+      "title": "Retinal development",
+      "slug": "retinal-development",
+      "order_index": 8,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "title": "Diseases, disorders, and treatments",
+      "slug": "diseases-disorders-and-treatments",
+      "order_index": 9,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "8a4f70b1-0a50-4f7e-808c-58ef00b0438f",
+      "title": "Looking forward",
+      "slug": "looking-forward",
+      "order_index": 10,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "663ea8ad-591c-48bb-b3f3-a2815ca148ea",
+      "title": "Further reading:",
+      "slug": "further-reading",
+      "order_index": 11,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    },
+    {
+      "id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "title": "Footnotes",
+      "slug": "footnotes",
+      "order_index": 12,
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "animation_id": null,
+      "animation_config": null
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": "65b52ec0-a886-486c-af64-cadc150d2096",
+      "section_id": "36adafd0-bc6a-4ebc-acc7-8270ea0c083b",
+      "order_index": 0,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Seeing starts in our eyes. Is this because something from the outside world passes into our eyes or because something leaves our eyes to interact with the world. More formally, does vision work via intromission (eg. light passing into the eyes) or extramission (eg. energy passing out of the eyes). Many of the earliest theories favored the extramission model of vision. <span id='alcmeon' class='hoverImg'>Alcmeon</span> (Greece, 5th century BCE), thought of the eye as a lantern, emitting an internally generated fire that was required for seeing<sup class=\"citation-ref\" data-ref=\"1\">1</sup>. Plato and others would evolve this theory to incorporate both an internally generated visual fire that leaves the eye, as well as spirits emanating from objects, with these two energies interacting before returning to the eye to enable vision<sup class=\"citation-ref\" data-ref=\"1\">1</sup>. As an outcome of this idea, Plato argued that we dream during sleep when this internal fire collides with our closed eyelids and bounces back into our body."
+          }
+        ]
+      },
+      "content_text": "Seeing starts in our eyes. Is this because something from the outside world passes into our eyes or because something leaves our eyes to interact with the world. More formally, does vision work via in",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "a985ddef-a669-48a2-b0e6-cf9a63bacac0",
+      "section_id": "36adafd0-bc6a-4ebc-acc7-8270ea0c083b",
+      "order_index": 1,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "The extramission theory of vision would remain popular for over a thousand years. Cracks began to show during the <span id='islamicGoldenAge' class='hoverImg'> ‘Islamic Golden Age’ </span> when scientists like ibn Sina and al Razi described how external light alters pupil size and how bright light could cause visual disturbances<sup class=\"citation-ref\" data-ref=\"1\">1<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"2\">2</sup>. These observations argued in favour of the intromission theory. Still, it would take hundreds of years until the retina was identified as the light detector in the eye, whose neurons convert incoming images into electrochemical signals which are locally processed before being relayed to the rest of the brain."
+          }
+        ]
+      },
+      "content_text": "The extramission theory of vision would remain popular for over a thousand years. Cracks began to show during the  ‘Islamic Golden Age’  when scientists like ibn Sina and al Razi described how externa",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "47673b73-0047-42a2-b218-8af9d9cecdc0",
+      "section_id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "order_index": 0,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "It is believed that the ancient Greeks were the first to dissect animal eyes, with <span id='alcmeon' class='hoverImg'>Alcmeon</span> being one of the first to perform dissections for the purpose of studying anatomy <sup class=\"citation-ref\" data-ref=\"1\">1</sup>. The Hippocratic school split the eye into 3 layers (or tunics) based on gross anatomy: sclera, uvea, and retina. Since then, a much clearer picture has emerged. The external part of the eye is comprised of two main parts: the cornea, a clear crystalline material called the cornea, and the sclera, a white fibrous layer. Moving inwards from the sclera is the choroid, a layer important for vascularization, the retinal pigment epithelium, a layer important for its complex interactions with photoreceptors, and the retina. Aside from these structures, there is a lens near the front half of the eye, whose shape can be adjusted by the ciliary muscles to change the focus of incoming image on the retina. There are also two fluid filled chambers, the anterior and posterior chambers, that contain aqueous and vitreous humour, respectively<sup class=\"citation-ref\" data-ref=\"3\">3</sup>. These fluids maintain pressure in the eye and circulate important nutrients. Impairments in the exchange of these fluids can lead to increases in intraocular pressure which are associated with ocular health issues, such as glaucoma<sup class=\"citation-ref\" data-ref=\"3\">3</sup>."
+          }
+        ]
+      },
+      "content_text": "It is believed that the ancient Greeks were the first to dissect animal eyes, with Alcmeon being one of the first to perform dissections for the purpose of studying anatomy 1. The Hippocratic school s",
+      "has_animation": true,
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "animation_trigger": "scroll",
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "1a481649-da77-4450-afd2-1e331a5ab435",
+      "section_id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "order_index": 3,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Due to the optic nerve, each retina has a small region without photoreceptors, resulting in a blind spot in each eye’s visual field. In each eye’s visual field, the blind spot is located roughly 10° temporally (away from the nose) and has a size of approximately 6°<sup class=\"citation-ref\" data-ref=\"8\">8</sup>. The blind spot was first discovered in the 17th century by French physicist and priest Edme Marriott<sup class=\"citation-ref\" data-ref=\"9\">9</sup>. We tend not to notice our blind spots in part because our brain in so good at ‘filling in’ missing visual information. To find your own blind spot, try one of these two methods:"
+          },
+          {
+            "type": "break_section",
+            "steps": [
+              "Put your monitor an arm’s length away. Close your left eye and fix your right eye’s gaze on the ‘B’. Extend your right hand and block the ‘B’ with the tip of your index fingers. Slowly move your hand directly rightwards, and when it gets about halfway across the screen your fingertip should disappear.",
+              "Close your left eye and fix your right eye’s gaze on the ‘B’. Move closer and farther away from the screen until the ‘A’ disappears. Repeat with your left eye while fixating on the ‘A’ and the ‘B’ should disappeared."
+            ],
+            "title": "Blind spot"
+          }
+        ]
+      },
+      "content_text": "Due to the optic nerve, each retina has a small region without photoreceptors, resulting in a blind spot in each eye’s visual field. In each eye’s visual field, the blind spot is located roughly 10° t",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1
+    },
+    {
+      "id": "f8fbd23b-3204-4fa4-b355-ea250b659430",
+      "section_id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "order_index": 4,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "discussing 'Is our retina really upside down?'"
+          },
+          {
+            "type": "break_video",
+            "title": "Tom Baden",
+            "videoSlug": "baden"
+          }
+        ]
+      },
+      "content_text": "discussing 'Is our retina really upside down?'",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1
+    },
+    {
+      "id": "a64885db-aabe-411e-bf2d-cd463e9a37e3",
+      "section_id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "order_index": 15,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Retinal cell types, connectivity and responses."
+          },
+          {
+            "type": "break_video",
+            "title": "John Dowling",
+            "videoSlug": "dowling-and-werblin"
+          }
+        ]
+      },
+      "content_text": "Retinal cell types, connectivity and responses.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 2
+    },
+    {
+      "id": "1dd1d2ae-f64f-4d19-8ead-f1a343bcae09",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "order_index": 6,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "One of the first written accounts of color blindness comes from John Dalton – of atomic theory fame – at the end of the 18th century. He noted that he and his brother were color blind, and he assembled a small list of other color blind people. Most happened to be males. Dalton hypothesized that his vitreous humour was tinted blue, and thus absorbed longer wavelengths<sup class=\"citation-ref\" data-ref=\"69\">69</sup>. He donated his eyes upon his death, but no pigment abnormalities were found with his vitreous humour nor his lens. It is now known that color vision starts with the three different types of cones (blue, green and red, as outlined above). It turns out that about 8% of males are red-green color blind, due to a genetic mutation leading to dysfunction of either red or green cones. Other types of color blindness exist, but are more rare. Genetic analysis in the 1990s of Dalton’s preserved eye tissue revealed that he was missing functional middle wavelength (green) cones<sup class=\"citation-ref\" data-ref=\"69\">69</sup>."
+          },
+          {
+            "type": "break_section",
+            "title": "Color blindness"
+          }
+        ]
+      },
+      "content_text": "One of the first written accounts of color blindness comes from John Dalton – of atomic theory fame – at the end of the 18th century. He noted that he and his brother were color blind, and he assemble",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 2
+    },
+    {
+      "id": "3aeb5267-7a52-45ba-9bec-d12c52fe7d4b",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 0,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 1,
+            "content": "Finger, S. <em>Origins of neuroscience: a history of explorations into brain function</em>. (Oxford Univ. Press, 2001)."
+          }
+        ]
+      },
+      "content_text": "Finger, S. Origins of neuroscience: a history of explorations into brain function. (Oxford Univ. Press, 2001).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "3ab9ec7e-8ea0-42e0-9286-ce9c17d6df31",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 1,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 2,
+            "content": "Gross, C. G. <em>Brain, vision, memory: tales in the history of neuroscience</em>. (MIT Press, 2011)"
+          }
+        ]
+      },
+      "content_text": "Gross, C. G. Brain, vision, memory: tales in the history of neuroscience. (MIT Press, 2011)",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "a633e71d-159a-4dcb-b29b-31eccf5e2039",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 2,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 3,
+            "content": "<em>Adler's physiology of the eye: clinical application</em>. (Saunders/Elsevier, 2011)"
+          }
+        ]
+      },
+      "content_text": "Adler's physiology of the eye: clinical application. (Saunders/Elsevier, 2011)",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "88627352-70c9-4798-a8ef-061e13c3838f",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 3,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 4,
+            "content": "Land, M. F. <em>The Eye: A Very Short Introduction</em>. (Oxford University Press, 2014)"
+          }
+        ]
+      },
+      "content_text": "Land, M. F. The Eye: A Very Short Introduction. (Oxford University Press, 2014)",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "eeff500f-b589-4b88-b838-89c4e1c29d9c",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 4,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 5,
+            "content": "Masland, R. H. Neuronal diversity in the retina. <em>Curr. Opin. Neurobiol.</em> <strong>11</strong>, 431--436 (2001)"
+          }
+        ]
+      },
+      "content_text": "Masland, R. H. Neuronal diversity in the retina. Curr. Opin. Neurobiol. 11, 431--436 (2001)",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "7bc9bf42-17b1-49ad-b961-3967700beb9b",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 5,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 6,
+            "content": "Masland, R. H. The neuronal organization of the retina. <em>Neuron</em> <strong>76</strong>, 266--80 (2012)"
+          }
+        ]
+      },
+      "content_text": "Masland, R. H. The neuronal organization of the retina. Neuron 76, 266--80 (2012)",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "8c888519-e885-42b2-a9df-6820b8614da0",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 6,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 7,
+            "content": "Webvision -- The Organization of the Retina and Visual System. https://webvision.med.utah.edu/"
+          }
+        ]
+      },
+      "content_text": "Webvision -- The Organization of the Retina and Visual System. https://webvision.med.utah.edu/",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "8543896c-d3cb-44c7-8df3-5cae4a2da4e4",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 7,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 8,
+            "content": "Gregory, R. & Cavanagh, P. The Blind Spot. <em>Scholarpedia</em> <strong>6</strong>, 9618 (2011)"
+          }
+        ]
+      },
+      "content_text": "Gregory, R. & Cavanagh, P. The Blind Spot. Scholarpedia 6, 9618 (2011)",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "9cb6612a-47c9-4522-8ae8-e32e355c220b",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 8,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 9,
+            "content": "Grzybowski, A. & Aydin, P. Edme Mariotte (1620--1684): Pioneer of Neurophysiology. <em>Survey of Ophthalmology</em> <strong>52</strong>, 443--451 (2007)."
+          }
+        ]
+      },
+      "content_text": "Grzybowski, A. & Aydin, P. Edme Mariotte (1620--1684): Pioneer of Neurophysiology. Survey of Ophthalmology 52, 443--451 (2007).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "9d2dc758-041b-40a8-a10b-cb28b4eab4c3",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 9,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 10,
+            "content": "Rodieck, R. W. The density recovery profile: a method for the analysis of points in the plane applicable to retinal studies. <em>Vis Neurosci</em> <strong>6</strong>, 95--111 (1991)."
+          }
+        ]
+      },
+      "content_text": "Rodieck, R. W. The density recovery profile: a method for the analysis of points in the plane applicable to retinal studies. Vis Neurosci 6, 95--111 (1991).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "8e34370f-f621-49cc-a1b7-23784722f684",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 10,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 11,
+            "content": "Reese, B. E. & Galli-Resta, L. The role of tangential dispersion in retinal mosaic formation. <em>Prog Retin Eye Res</em> <strong>21</strong>, 153--168 (2002)."
+          }
+        ]
+      },
+      "content_text": "Reese, B. E. & Galli-Resta, L. The role of tangential dispersion in retinal mosaic formation. Prog Retin Eye Res 21, 153--168 (2002).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "539028e8-3cf8-4fd6-bf6b-07556c25a0d3",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 11,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 12,
+            "content": "Kay, J. N., Chu, M. W. & Sanes, J. R. MEGF10 and MEGF11 mediate homotypic interactions required for mosaic spacing of retinal neurons. <em>Nature</em> <strong>483</strong>, 465--469 (2012)."
+          }
+        ]
+      },
+      "content_text": "Kay, J. N., Chu, M. W. & Sanes, J. R. MEGF10 and MEGF11 mediate homotypic interactions required for mosaic spacing of retinal neurons. Nature 483, 465--469 (2012).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "78d900ee-a6bd-4e30-b0aa-1905a3f02279",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 12,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 13,
+            "content": "Galli-Resta, L. Local, possibly contact-mediated signalling restricted to homotypic neurons controls the regular spacing of cells within the cholinergic arrays in the developing rodent retina. <em>Development</em> <strong>127</strong>, 1509--1516 (2000)."
+          }
+        ]
+      },
+      "content_text": "Galli-Resta, L. Local, possibly contact-mediated signalling restricted to homotypic neurons controls the regular spacing of cells within the cholinergic arrays in the developing rodent retina. Develop",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "b091be65-4f00-4809-80d1-444f472338cb",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 13,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 14,
+            "content": "Galli-Resta, L., Resta, G., Tan, S. S. & Reese, B. E. Mosaics of islet-1-expressing amacrine cells assembled by short-range cellular interactions. <em>J Neurosci</em> <strong>17</strong>, 7831--7838 (1997)."
+          }
+        ]
+      },
+      "content_text": "Galli-Resta, L., Resta, G., Tan, S. S. & Reese, B. E. Mosaics of islet-1-expressing amacrine cells assembled by short-range cellular interactions. J Neurosci 17, 7831--7838 (1997).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "3b72bcc6-9409-4299-80c6-e14e980b9c27",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 14,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 15,
+            "content": "Lefebvre, J. L., Sanes, J. R. & Kay, J. N. Development of dendritic form and function. <em>Annu Rev Cell Dev Biol</em> <strong>31</strong>, 741--777 (2015)."
+          }
+        ]
+      },
+      "content_text": "Lefebvre, J. L., Sanes, J. R. & Kay, J. N. Development of dendritic form and function. Annu Rev Cell Dev Biol 31, 741--777 (2015).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "8539746c-ef24-4ba2-82a4-0b3377218e04",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 15,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 16,
+            "content": "Croner, L. J. & Kaplan, E. Receptive fields of P and M ganglion cells across the primate retina. <em>Vision Research</em> <strong>35</strong>, 7--24 (1995)."
+          }
+        ]
+      },
+      "content_text": "Croner, L. J. & Kaplan, E. Receptive fields of P and M ganglion cells across the primate retina. Vision Research 35, 7--24 (1995).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "fe29d7ba-0628-402d-aa8d-92d236a215f2",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 16,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 17,
+            "content": "Sanes, J. R. & Masland, R. H. The types of retinal ganglion cells: current status and implications for neuronal classification. <em>Annu Rev Neurosci</em> <strong>38</strong>, 221--46 (2015)."
+          }
+        ]
+      },
+      "content_text": "Sanes, J. R. & Masland, R. H. The types of retinal ganglion cells: current status and implications for neuronal classification. Annu Rev Neurosci 38, 221--46 (2015).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "57e4c567-599e-4c49-9b4c-1ae75c80d7a3",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 17,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 18,
+            "content": "Sümbül, U. <em>et al.</em> A genetic and computational approach to structurally classify neuronal types. <em>Nat Commun</em> <strong>5</strong>, 3512 (2014)."
+          }
+        ]
+      },
+      "content_text": "Sümbül, U. et al. A genetic and computational approach to structurally classify neuronal types. Nat Commun 5, 3512 (2014).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "8e1b6d70-8108-457f-9c6c-c0573fb0f6af",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 18,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 19,
+            "content": "Macosko, E. Z. <em>et al.</em> Highly Parallel Genome-wide Expression Profiling of Individual Cells Using Nanoliter Droplets. <em>Cell</em> <strong>161</strong>, 1202--14 (2015)."
+          }
+        ]
+      },
+      "content_text": "Macosko, E. Z. et al. Highly Parallel Genome-wide Expression Profiling of Individual Cells Using Nanoliter Droplets. Cell 161, 1202--14 (2015).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "e7522579-42ed-49fd-a92e-b17be86197a7",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 19,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 20,
+            "content": "Shekhar, K. <em>et al.</em> Comprehensive Classification of Retinal Bipolar Neurons by Single-Cell Transcriptomics. <em>Cell</em> <strong>166</strong>, 1308-1323 e30 (2016)."
+          }
+        ]
+      },
+      "content_text": "Shekhar, K. et al. Comprehensive Classification of Retinal Bipolar Neurons by Single-Cell Transcriptomics. Cell 166, 1308-1323 e30 (2016).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "a7585133-4eb3-4dca-a056-c152c9700f27",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 20,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 21,
+            "content": "Yan, W. <em>et al.</em> Mouse Retinal Cell Atlas: Molecular Identification of over Sixty Amacrine Cell Types. <em>J Neurosci</em> <strong>40</strong>, 5177--5195 (2020)."
+          }
+        ]
+      },
+      "content_text": "Yan, W. et al. Mouse Retinal Cell Atlas: Molecular Identification of over Sixty Amacrine Cell Types. J Neurosci 40, 5177--5195 (2020).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "163e3010-5d08-4711-bac3-efb032b98fcf",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 21,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 22,
+            "content": "Badea, T. C. & Nathans, J. Quantitative analysis of neuronal morphologies in the mouse retina visualized by using a genetically directed reporter. <em>J Comp Neurol</em> <strong>480</strong>, 331--351 (2004)."
+          }
+        ]
+      },
+      "content_text": "Badea, T. C. & Nathans, J. Quantitative analysis of neuronal morphologies in the mouse retina visualized by using a genetically directed reporter. J Comp Neurol 480, 331--351 (2004).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "9772e75a-a25c-42d8-bf6c-66c92cfcb61d",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 22,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 23,
+            "content": "Kong, J.-H., Fish, D. R., Rockhill, R. L. & Masland, R. H. Diversity of ganglion cells in the mouse retina: unsupervised morphological classification and its limits. <em>J Comp Neurol</em> <strong>489</strong>, 293--310 (2005)."
+          }
+        ]
+      },
+      "content_text": "Kong, J.-H., Fish, D. R., Rockhill, R. L. & Masland, R. H. Diversity of ganglion cells in the mouse retina: unsupervised morphological classification and its limits. J Comp Neurol 489, 293--310 (2005)",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "060241cb-b05f-448d-9c88-48b3b0db8c8a",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 23,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 24,
+            "content": "Coombs, J. L., Van Der List, D. & Chalupa, L. M. Morphological properties of mouse retinal ganglion cells during postnatal development. <em>J Comp Neurol</em> <strong>503</strong>, 803--814 (2007)."
+          }
+        ]
+      },
+      "content_text": "Coombs, J. L., Van Der List, D. & Chalupa, L. M. Morphological properties of mouse retinal ganglion cells during postnatal development. J Comp Neurol 503, 803--814 (2007).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "8e5e7e19-3892-4236-ad4c-8fa3b9cf4f2f",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 24,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 25,
+            "content": "Baden, T. <em>et al.</em> The functional diversity of retinal ganglion cells in the mouse. <em>Nature</em> <strong>529</strong>, 345--50 (2016)."
+          }
+        ]
+      },
+      "content_text": "Baden, T. et al. The functional diversity of retinal ganglion cells in the mouse. Nature 529, 345--50 (2016).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "9cf10af8-7227-4ff0-9495-4c86ef25b31d",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 25,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 26,
+            "content": "Baden, T., Berens, P., Bethge, M. & Euler, T. Spikes in mammalian bipolar cells support temporal layering of the inner retina. <em>Current biology: CB</em> <strong>23</strong>, 48--52 (2013)."
+          }
+        ]
+      },
+      "content_text": "Baden, T., Berens, P., Bethge, M. & Euler, T. Spikes in mammalian bipolar cells support temporal layering of the inner retina. Current biology: CB 23, 48--52 (2013).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "c9061d1a-be76-4fca-be37-97a812c4714c",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 26,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 27,
+            "content": "Franke, K. <em>et al.</em> Inhibition decorrelates visual feature representations in the inner retina. <em>Nature</em> <strong>542</strong>, 439--444 (2017)."
+          }
+        ]
+      },
+      "content_text": "Franke, K. et al. Inhibition decorrelates visual feature representations in the inner retina. Nature 542, 439--444 (2017).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "535415c5-54c0-40cb-9de9-657ca0dc2d0c",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 27,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 28,
+            "content": "Rodieck, R. W. <em>The first steps in seeing</em>. (Sinauer Associates, 1998)."
+          }
+        ]
+      },
+      "content_text": "Rodieck, R. W. The first steps in seeing. (Sinauer Associates, 1998).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "848273d0-b31c-4634-a86e-0c6ad637b4ce",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 28,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 29,
+            "content": "<em>Principles of neural science</em>. (McGraw-Hill, Health Professions Division, 2000)."
+          }
+        ]
+      },
+      "content_text": "Principles of neural science. (McGraw-Hill, Health Professions Division, 2000).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "07fc363c-5815-471a-a617-a93828959acd",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 29,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 30,
+            "content": "Werblin, F. S. The retinal hypercircuit: a repeating synaptic interactive motif underlying visual function. <em>J Physiol</em> <strong>589</strong>, 3691--3702 (2011)."
+          }
+        ]
+      },
+      "content_text": "Werblin, F. S. The retinal hypercircuit: a repeating synaptic interactive motif underlying visual function. J Physiol 589, 3691--3702 (2011).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "498df916-20f8-4a82-8ef2-c2d4799b1e2e",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 30,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 31,
+            "content": "Seabrook, T. A., Burbridge, T. J., Crair, M. C. & Huberman, A. D. Architecture, Function, and Assembly of the Mouse Visual System. <em>Annu Rev Neurosci</em> <strong>40</strong>, 499--538 (2017)."
+          }
+        ]
+      },
+      "content_text": "Seabrook, T. A., Burbridge, T. J., Crair, M. C. & Huberman, A. D. Architecture, Function, and Assembly of the Mouse Visual System. Annu Rev Neurosci 40, 499--538 (2017).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "f375cfe1-c2e1-4e92-b41e-e92abcaf62d9",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 31,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 32,
+            "content": "Lagnado, L. & Schmitz, F. Ribbon Synapses and Visual Processing in the Retina. <em>Annu Rev Vis Sci</em> <strong>1</strong>, 235--262 (2015)."
+          }
+        ]
+      },
+      "content_text": "Lagnado, L. & Schmitz, F. Ribbon Synapses and Visual Processing in the Retina. Annu Rev Vis Sci 1, 235--262 (2015).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "0ca9ff56-b7c2-4302-b1df-ca0651f46f44",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 32,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 33,
+            "content": "Sterling, P. & Matthews, G. Structure and function of ribbon synapses. <em>Trends in Neurosciences</em> <strong>28</strong>, 20--29 (2005)."
+          }
+        ]
+      },
+      "content_text": "Sterling, P. & Matthews, G. Structure and function of ribbon synapses. Trends in Neurosciences 28, 20--29 (2005).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "37375026-9523-469f-b08f-defb82a14988",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 33,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 34,
+            "content": "Trenholm, S. & Awatramani, G. B. Myriad roles for gap junctions in retinal circuits. in <em>Webvision: The Organization of the Retina and Visual System</em> (eds. Kolb, H., Fernandez, E. & Nelson, R.) (University of Utah Health Sciences Center, 1995)."
+          }
+        ]
+      },
+      "content_text": "Trenholm, S. & Awatramani, G. B. Myriad roles for gap junctions in retinal circuits. in Webvision: The Organization of the Retina and Visual System (eds. Kolb, H., Fernandez, E. & Nelson, R.) (Univers",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "9dcbb23e-b571-419b-92a6-14f88c56d0f6",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 34,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 35,
+            "content": "Fernald, R. D. The evolution of eyes. <em>Brain Behav Evol</em> <strong>50</strong>, 253--259 (1997)."
+          }
+        ]
+      },
+      "content_text": "Fernald, R. D. The evolution of eyes. Brain Behav Evol 50, 253--259 (1997).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "7125336b-6c31-450a-9d17-b7eda5847a5a",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 35,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 36,
+            "content": "Fernald, R. D. Evolution of eyes. <em>Curr Opin Neurobiol</em> <strong>10</strong>, 444--450 (2000)."
+          }
+        ]
+      },
+      "content_text": "Fernald, R. D. Evolution of eyes. Curr Opin Neurobiol 10, 444--450 (2000).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "aa0af33c-ad1a-4ff0-ad1a-8221e5b23581",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 36,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 37,
+            "content": "Baden, T. & Osorio, D. The Retinal Basis of Vertebrate Color Vision. <em>Annu Rev Vis Sci</em> <strong>5</strong>, 177--200 (2019)."
+          }
+        ]
+      },
+      "content_text": "Baden, T. & Osorio, D. The Retinal Basis of Vertebrate Color Vision. Annu Rev Vis Sci 5, 177--200 (2019).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "74288438-a74e-46e9-9a69-a45c798dc879",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 37,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 38,
+            "content": "Lacalli, T. Evolutionary biology: light on ancient photoreceptors. <em>Nature</em> <strong>432</strong>, 454--455 (2004)."
+          }
+        ]
+      },
+      "content_text": "Lacalli, T. Evolutionary biology: light on ancient photoreceptors. Nature 432, 454--455 (2004).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "d44a3797-97b0-46de-9372-5b28438a0f34",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 38,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 39,
+            "content": "Mayhew, T. M. & Astle, D. Photoreceptor number and outer segment disk membrane surface area in the retina of the rat: stereological data for whole organ and average photoreceptor cell. <em>J Neurocytol</em> <strong>26</strong>, 53--61 (1997)."
+          }
+        ]
+      },
+      "content_text": "Mayhew, T. M. & Astle, D. Photoreceptor number and outer segment disk membrane surface area in the retina of the rat: stereological data for whole organ and average photoreceptor cell. J Neurocytol 26",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "b0d85b9f-63d9-4263-b013-34f6d82e21d8",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 39,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 40,
+            "content": "Trenholm, S. & Krishnaswamy, A. An Annotated Journey through Modern Visual Neuroscience. <em>J Neurosci</em> <strong>40</strong>, 44--53 (2020)."
+          }
+        ]
+      },
+      "content_text": "Trenholm, S. & Krishnaswamy, A. An Annotated Journey through Modern Visual Neuroscience. J Neurosci 40, 44--53 (2020).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "a82ad0c8-f73d-4f7e-b79d-1a86a9216ca7",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 40,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 41,
+            "content": "Hubbard, R. 100 years of rhodopsin. <em>Trends in Biochemical Sciences</em> <strong>1</strong>, 154--158 (1976)."
+          }
+        ]
+      },
+      "content_text": "Hubbard, R. 100 years of rhodopsin. Trends in Biochemical Sciences 1, 154--158 (1976).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "8dc90339-ba12-4ce1-b960-4625d39d9e57",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 41,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 42,
+            "content": "Marmor, M. F. & Martin, L. J. 100 years of the visual cycle. <em>Surv Ophthalmol</em> <strong>22</strong>, 279--285 (1978)."
+          }
+        ]
+      },
+      "content_text": "Marmor, M. F. & Martin, L. J. 100 years of the visual cycle. Surv Ophthalmol 22, 279--285 (1978).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "bcdd6d08-79a7-4ab9-8d10-6f7d877ac286",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 42,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 43,
+            "content": "Ingram, N. T., Sampath, A. P. & Fain, G. L. Why are rods more sensitive than cones? <em>J Physiol</em> <strong>594</strong>, 5415--5426 (2016)."
+          }
+        ]
+      },
+      "content_text": "Ingram, N. T., Sampath, A. P. & Fain, G. L. Why are rods more sensitive than cones? J Physiol 594, 5415--5426 (2016).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "f9da433f-1215-4269-bdda-4705acb661cb",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 43,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 44,
+            "content": "Phototransduction in Rods and Cones by Yingbin Fu -- Webvision. https://webvision.med.utah.edu/book/part-v-phototransduction-in-rods-and-cones/phototransduction-in-rods-and-cones/."
+          }
+        ]
+      },
+      "content_text": "Phototransduction in Rods and Cones by Yingbin Fu -- Webvision. https://webvision.med.utah.edu/book/part-v-phototransduction-in-rods-and-cones/phototransduction-in-rods-and-cones/.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "b620b322-a222-40cb-b6a7-b0b29aa8e8ed",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 44,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 45,
+            "content": "Baylor, D. A., Fuortes, M. G. & O'Bryan, P. M. Receptive fields of cones in the retina of the turtle. <em>J. Physiol. (Lond.)</em> <strong>214</strong>, 265--294 (1971)."
+          }
+        ]
+      },
+      "content_text": "Baylor, D. A., Fuortes, M. G. & O'Bryan, P. M. Receptive fields of cones in the retina of the turtle. J. Physiol. (Lond.) 214, 265--294 (1971).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "94ccccde-44e7-4c76-8cde-8303c1a4173b",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 45,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 46,
+            "content": "Y-R, P. <em>et al.</em> MOLECULAR CLASSIFICATION AND COMPARATIVE TAXONOMICS OF FOVEAL AND PERIPHERAL CELLS IN PRIMATE RETINA. <em>Biorxiv</em> (2018) doi:10.1101/428110."
+          }
+        ]
+      },
+      "content_text": "Y-R, P. et al. MOLECULAR CLASSIFICATION AND COMPARATIVE TAXONOMICS OF FOVEAL AND PERIPHERAL CELLS IN PRIMATE RETINA. Biorxiv (2018) doi:10.1101/428110.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "545a850f-c713-4740-b8c5-0ce52674002a",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 46,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 47,
+            "content": "Outer Plexiform Layer by Helga Kolb -- Webvision. https://webvision.med.utah.edu/book/part-ii-anatomy-and-physiology-of-the-retina/oute-plexiform/."
+          }
+        ]
+      },
+      "content_text": "Outer Plexiform Layer by Helga Kolb -- Webvision. https://webvision.med.utah.edu/book/part-ii-anatomy-and-physiology-of-the-retina/oute-plexiform/.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "88331b40-70ce-4cea-a169-2d29b9226641",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 47,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 48,
+            "content": "Slaughter, M. M. & Miller, R. F. 2-amino-4-phosphonobutyric acid: a new pharmacological tool for retina research. <em>Science</em> <strong>211</strong>, 182--185 (1981)."
+          }
+        ]
+      },
+      "content_text": "Slaughter, M. M. & Miller, R. F. 2-amino-4-phosphonobutyric acid: a new pharmacological tool for retina research. Science 211, 182--185 (1981).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "00fcc987-a946-4e44-95fc-e5b6d9d4fc66",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 48,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 49,
+            "content": "Nakajima, Y. <em>et al.</em> Molecular characterization of a novel retinal metabotropic glutamate receptor mGluR6 with a high agonist selectivity for L-2-amino-4-phosphonobutyrate. <em>J Biol Chem</em> <strong>268</strong>, 11868--11873 (1993)."
+          }
+        ]
+      },
+      "content_text": "Nakajima, Y. et al. Molecular characterization of a novel retinal metabotropic glutamate receptor mGluR6 with a high agonist selectivity for L-2-amino-4-phosphonobutyrate. J Biol Chem 268, 11868--1187",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "512db884-4132-402a-a3ff-b6385883b906",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 49,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 50,
+            "content": "Koike, C., Numata, T., Ueda, H., Mori, Y. & Furukawa, T. TRPM1: a vertebrate TRP channel responsible for retinal ON bipolar function. <em>Cell Calcium</em> <strong>48</strong>, 95--101 (2010)."
+          }
+        ]
+      },
+      "content_text": "Koike, C., Numata, T., Ueda, H., Mori, Y. & Furukawa, T. TRPM1: a vertebrate TRP channel responsible for retinal ON bipolar function. Cell Calcium 48, 95--101 (2010).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "ffc8b800-d163-4b99-a3b0-f5ce1e03ef30",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 50,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 51,
+            "content": "Schwartz, G. W. Chapter 7 - Texture sensitivity. in <em>Retinal Computation</em> (ed. Schwartz, G. W.) 126--142 (Academic Press, 2021). doi:10.1016/B978-0-12-819896-4.00008-1."
+          }
+        ]
+      },
+      "content_text": "Schwartz, G. W. Chapter 7 - Texture sensitivity. in Retinal Computation (ed. Schwartz, G. W.) 126--142 (Academic Press, 2021). doi:10.1016/B978-0-12-819896-4.00008-1.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "c14b93a9-4563-4a84-9838-18faf11df546",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 51,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 52,
+            "content": "Demb, J. B., Zaghloul, K., Haarsma, L. & Sterling, P. Bipolar cells contribute to nonlinear spatial summation in the brisk-transient (Y) ganglion cell in mammalian retina. <em>J Neurosci</em> <strong>21</strong>, 7447--7454 (2001)."
+          }
+        ]
+      },
+      "content_text": "Demb, J. B., Zaghloul, K., Haarsma, L. & Sterling, P. Bipolar cells contribute to nonlinear spatial summation in the brisk-transient (Y) ganglion cell in mammalian retina. J Neurosci 21, 7447--7454 (2",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "e77b25fa-72d8-44b8-a67e-33cf63adc809",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 52,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 53,
+            "content": "Peng, Y.-R. <em>et al.</em> Molecular Classification and Comparative Taxonomics of Foveal and Peripheral Cells in Primate Retina. <em>Cell</em> <strong>176</strong>, 1222-1237.e22 (2019)."
+          }
+        ]
+      },
+      "content_text": "Peng, Y.-R. et al. Molecular Classification and Comparative Taxonomics of Foveal and Peripheral Cells in Primate Retina. Cell 176, 1222-1237.e22 (2019).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "5d2750f9-9f8f-4fe5-8e7f-b91a0c25d322",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 53,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 54,
+            "content": "Enroth-Cugell, C. & Robson, J. G. The contrast sensitivity of retinal ganglion cells of the cat. <em>J. Physiol. (Lond.)</em> <strong>187</strong>, 517--552 (1966)."
+          }
+        ]
+      },
+      "content_text": "Enroth-Cugell, C. & Robson, J. G. The contrast sensitivity of retinal ganglion cells of the cat. J. Physiol. (Lond.) 187, 517--552 (1966).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "403062ba-0923-4045-b3b3-bece113b50c1",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 54,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 55,
+            "content": "Shapley, R. M. & Victor, J. D. Nonlinear spatial summation and the contrast gain control of cat retinal ganglion cells. <em>J Physiol</em> <strong>290</strong>, 141--161 (1979)."
+          }
+        ]
+      },
+      "content_text": "Shapley, R. M. & Victor, J. D. Nonlinear spatial summation and the contrast gain control of cat retinal ganglion cells. J Physiol 290, 141--161 (1979).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "e2a9e2bc-929f-4a83-b620-c4a3c29ab32c",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 55,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 56,
+            "content": "Hartline, H. K. THE RESPONSE OF SINGLE OPTIC NERVE FIBERS OF THE VERTEBRATE EYE TO ILLUMINATION OF THE RETINA. <em>American Journal of Physiology-Legacy Content</em> <strong>121</strong>, 400--415 (1938)."
+          }
+        ]
+      },
+      "content_text": "Hartline, H. K. THE RESPONSE OF SINGLE OPTIC NERVE FIBERS OF THE VERTEBRATE EYE TO ILLUMINATION OF THE RETINA. American Journal of Physiology-Legacy Content 121, 400--415 (1938).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "7d3b6253-f7f2-4528-b10d-a9e3cb16a675",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 56,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 57,
+            "content": "Kuffler, S. W. Discharge patterns and functional organization of mammalian retina. <em>J. Neurophysiol.</em> <strong>16</strong>, 37--68 (1953)."
+          }
+        ]
+      },
+      "content_text": "Kuffler, S. W. Discharge patterns and functional organization of mammalian retina. J. Neurophysiol. 16, 37--68 (1953).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "ac064f87-0556-44e7-9842-88318ad5d61c",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 57,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 58,
+            "content": "Barlow, H. B. Summation and inhibition in the frog's retina. <em>J. Physiol. (Lond.)</em> <strong>119</strong>, 69--88 (1953)."
+          }
+        ]
+      },
+      "content_text": "Barlow, H. B. Summation and inhibition in the frog's retina. J. Physiol. (Lond.) 119, 69--88 (1953).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "80456201-4f82-4561-a8c2-6dfd8cd1be6a",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 58,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 59,
+            "content": "Rodieck, R. W. Quantitative analysis of cat retinal ganglion cell response to visual stimuli. <em>Vision Research</em> <strong>5</strong>, 583--601 (1965)."
+          }
+        ]
+      },
+      "content_text": "Rodieck, R. W. Quantitative analysis of cat retinal ganglion cell response to visual stimuli. Vision Research 5, 583--601 (1965).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "a91313bd-4db1-4c57-942f-39fd9a7dbbc1",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 59,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 60,
+            "content": "Rodieck, R. W. & Stone, J. Analysis of receptive fields of cat retinal ganglion cells. <em>J. Neurophysiol.</em> <strong>28</strong>, 833--849 (1965)."
+          }
+        ]
+      },
+      "content_text": "Rodieck, R. W. & Stone, J. Analysis of receptive fields of cat retinal ganglion cells. J. Neurophysiol. 28, 833--849 (1965).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "ef67096c-bb3a-421c-9ecc-2ac635b78a62",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 60,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 61,
+            "content": "Gauthier, J. L. <em>et al.</em> Receptive Fields in Primate Retina Are Coordinated to Sample Visual Space More Uniformly. <em>PLOS Biology</em> <strong>7</strong>, e1000063 (2009)."
+          }
+        ]
+      },
+      "content_text": "Gauthier, J. L. et al. Receptive Fields in Primate Retina Are Coordinated to Sample Visual Space More Uniformly. PLOS Biology 7, e1000063 (2009).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "2c083bae-f1c0-4905-a094-edf0a4f97ea9",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 61,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 62,
+            "content": "S-Potentials and Horizontal Cells by Ido Perlman, Helga Kolb and Ralph Nelson -- Webvision. https://webvision.med.utah.edu/book/part-v-phototransduction-in-rods-and-cones/horizontal-cells/."
+          }
+        ]
+      },
+      "content_text": "S-Potentials and Horizontal Cells by Ido Perlman, Helga Kolb and Ralph Nelson -- Webvision. https://webvision.med.utah.edu/book/part-v-phototransduction-in-rods-and-cones/horizontal-cells/.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "4da747ab-dcf1-4ade-b1e2-916a3dcc2ad1",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 62,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 63,
+            "content": "Midget pathways of the primate retina underlie resolution and red green color opponency by Helga Kolb -- Webvision. https://webvision.med.utah.edu/book/part-iii-retinal-circuits/midget-pathways-of-the-primate-retina-underly-resolution/."
+          }
+        ]
+      },
+      "content_text": "Midget pathways of the primate retina underlie resolution and red green color opponency by Helga Kolb -- Webvision. https://webvision.med.utah.edu/book/part-iii-retinal-circuits/midget-pathways-of-the",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "1e260047-4d2f-4826-b208-52780f9bf86b",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 63,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 64,
+            "content": "S-Cone Pathways by Helga Kolb -- Webvision. https://webvision.med.utah.edu/book/part-iii-retinal-circuits/s-cone-pathways/."
+          }
+        ]
+      },
+      "content_text": "S-Cone Pathways by Helga Kolb -- Webvision. https://webvision.med.utah.edu/book/part-iii-retinal-circuits/s-cone-pathways/.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "e4f86039-6844-45de-802e-f8b982caa321",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 64,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 65,
+            "content": "Field, G. D. <em>et al.</em> Functional connectivity in the retina at the resolution of photoreceptors. <em>Nature</em> <strong>467</strong>, 673--677 (2010)."
+          }
+        ]
+      },
+      "content_text": "Field, G. D. et al. Functional connectivity in the retina at the resolution of photoreceptors. Nature 467, 673--677 (2010).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "215f5b88-ffc5-4f70-bd8e-3c85957677ef",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 65,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 66,
+            "content": "Patterson, S. S. <em>et al.</em> Another Blue-ON ganglion cell in the primate retina. <em>Current Biology</em> <strong>30</strong>, R1409--R1410 (2020)."
+          }
+        ]
+      },
+      "content_text": "Patterson, S. S. et al. Another Blue-ON ganglion cell in the primate retina. Current Biology 30, R1409--R1410 (2020).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "5d1cae1f-3ff5-4656-88d6-6cab5950beac",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 66,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 67,
+            "content": "Patterson, S. S., Neitz, M. & Neitz, J. Reconciling Color Vision Models With Midget Ganglion Cell Receptive Fields. <em>Frontiers in Neuroscience</em> <strong>13</strong>, (2019)."
+          }
+        ]
+      },
+      "content_text": "Patterson, S. S., Neitz, M. & Neitz, J. Reconciling Color Vision Models With Midget Ganglion Cell Receptive Fields. Frontiers in Neuroscience 13, (2019).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "3062404b-dcec-4b1a-ab80-e35b460bdcf3",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 67,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 68,
+            "content": "Color Vision by Peter Gouras -- Webvision. https://webvision.med.utah.edu/book/part-vii-color-vision/color-vision/."
+          }
+        ]
+      },
+      "content_text": "Color Vision by Peter Gouras -- Webvision. https://webvision.med.utah.edu/book/part-vii-color-vision/color-vision/.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "6f054a35-213f-449a-80ff-62586620f281",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 68,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 69,
+            "content": "Hunt, D. M., Dulai, K. S., Bowmaker, J. K. & Mollon, J. D. The Chemistry of John Dalton's Color Blindness. <em>Science</em> <strong>267</strong>, 984--988 (1995)."
+          }
+        ]
+      },
+      "content_text": "Hunt, D. M., Dulai, K. S., Bowmaker, J. K. & Mollon, J. D. The Chemistry of John Dalton's Color Blindness. Science 267, 984--988 (1995).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "3dc101fc-80a8-4b86-89bc-bd7c2a7243ac",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 69,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 70,
+            "content": "Kim, Y. J. <em>et al.</em> Origins of direction selectivity in the primate retina. <em>Nat Commun</em> <strong>13</strong>, 2862 (2022)."
+          }
+        ]
+      },
+      "content_text": "Kim, Y. J. et al. Origins of direction selectivity in the primate retina. Nat Commun 13, 2862 (2022).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "b1bb57f7-5b8d-458b-b7dd-1d9dc14e3fb2",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 70,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 71,
+            "content": "Patterson, S. S. <em>et al.</em> Conserved circuits for direction selectivity in the primate retina. <em>Current Biology</em> <strong>32</strong>, 2529-2538.e4 (2022)."
+          }
+        ]
+      },
+      "content_text": "Patterson, S. S. et al. Conserved circuits for direction selectivity in the primate retina. Current Biology 32, 2529-2538.e4 (2022).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "7c9e6740-08ac-4bc1-a8b4-7a68a9a68912",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 71,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 72,
+            "content": "Vaney, D. I., Sivyer, B. & Taylor, W. R. Direction selectivity in the retina: symmetry and asymmetry in structure and function. <em>Nat Rev Neurosci</em> <strong>13</strong>, 194--208 (2012)."
+          }
+        ]
+      },
+      "content_text": "Vaney, D. I., Sivyer, B. & Taylor, W. R. Direction selectivity in the retina: symmetry and asymmetry in structure and function. Nat Rev Neurosci 13, 194--208 (2012).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "017098b9-2dec-47ad-81bf-f08a32a4f228",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 72,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 73,
+            "content": "Hassenstein, B. & Reichardt, W. Systemtheoretische Analyse der Zeit-, Reihenfolgen- und Vorzeichenauswertung bei der Bewegungsperzeption des Rüsselkäfers Chlorophanus. <em>Zeitschrift für Naturforschung B</em> <strong>11</strong>, 513--524 (1956)."
+          }
+        ]
+      },
+      "content_text": "Hassenstein, B. & Reichardt, W. Systemtheoretische Analyse der Zeit-, Reihenfolgen- und Vorzeichenauswertung bei der Bewegungsperzeption des Rüsselkäfers Chlorophanus. Zeitschrift für Naturforschung B",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "56cddf60-9c9b-445d-a8f4-ab8215695da6",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 73,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 74,
+            "content": "Famiglietti, E. V. 'Starburst' amacrine cells and cholinergic neurons: mirror-symmetric ON and OFF amacrine cells of rabbit retina. <em>Brain Research</em> <strong>261</strong>, 138--144 (1983)."
+          }
+        ]
+      },
+      "content_text": "Famiglietti, E. V. 'Starburst' amacrine cells and cholinergic neurons: mirror-symmetric ON and OFF amacrine cells of rabbit retina. Brain Research 261, 138--144 (1983).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "2e434a8d-cef5-4895-bfb1-408826df7379",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 74,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 75,
+            "content": "Euler, T., Detwiler, P. B. & Denk, W. Directionally selective calcium signals in dendrites of starburst amacrine cells. <em>Nature</em> <strong>418</strong>, 845--852 (2002)."
+          }
+        ]
+      },
+      "content_text": "Euler, T., Detwiler, P. B. & Denk, W. Directionally selective calcium signals in dendrites of starburst amacrine cells. Nature 418, 845--852 (2002).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "901cb400-5a71-4cec-9080-100c055b8168",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 75,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 76,
+            "content": "Fried, S. I., Münch, T. A. & Werblin, F. S. Mechanisms and circuitry underlying directional selectivity in the retina. <em>Nature</em> <strong>420</strong>, 411--414 (2002)."
+          }
+        ]
+      },
+      "content_text": "Fried, S. I., Münch, T. A. & Werblin, F. S. Mechanisms and circuitry underlying directional selectivity in the retina. Nature 420, 411--414 (2002).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "742ddc50-673f-4396-bb13-62481f0a338c",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 76,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 77,
+            "content": "Briggman, K. L., Helmstaedter, M. & Denk, W. Wiring specificity in the direction-selectivity circuit of the retina. <em>Nature</em> <strong>471</strong>, 183--188 (2011)."
+          }
+        ]
+      },
+      "content_text": "Briggman, K. L., Helmstaedter, M. & Denk, W. Wiring specificity in the direction-selectivity circuit of the retina. Nature 471, 183--188 (2011).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "126d2166-47d5-418d-ae36-8a49f3114fb5",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 77,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 78,
+            "content": "Oyster, C. W. & Barlow, H. B. Direction-selective units in rabbit retina: distribution of preferred directions. <em>Science</em> <strong>155</strong>, 841--842 (1967)."
+          }
+        ]
+      },
+      "content_text": "Oyster, C. W. & Barlow, H. B. Direction-selective units in rabbit retina: distribution of preferred directions. Science 155, 841--842 (1967).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "7b651419-9041-40cc-ab2d-97d7ccb8c01c",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 78,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 79,
+            "content": "Oyster, C. W., Takahashi, E. & Collewijn, H. Direction-selective retinal ganglion cells and control of optokinetic nystagmus in the rabbit. <em>Vision Res</em> <strong>12</strong>, 183--193 (1972)."
+          }
+        ]
+      },
+      "content_text": "Oyster, C. W., Takahashi, E. & Collewijn, H. Direction-selective retinal ganglion cells and control of optokinetic nystagmus in the rabbit. Vision Res 12, 183--193 (1972).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "ceca3b86-58ff-423d-b71c-2cd635482978",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 79,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 80,
+            "content": "Cruz-Martín, A. <em>et al.</em> A dedicated circuit links direction-selective retinal ganglion cells to the primary visual cortex. <em>Nature</em> <strong>507</strong>, 358--361 (2014)."
+          }
+        ]
+      },
+      "content_text": "Cruz-Martín, A. et al. A dedicated circuit links direction-selective retinal ganglion cells to the primary visual cortex. Nature 507, 358--361 (2014).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "31be9d7b-1552-4b53-ad33-8b5ebbfeb5c1",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 80,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 81,
+            "content": "Gollisch, T. & Meister, M. Eye smarter than scientists believed: neural computations in circuits of the retina. <em>Neuron</em> <strong>65</strong>, 150--64 (2010)."
+          }
+        ]
+      },
+      "content_text": "Gollisch, T. & Meister, M. Eye smarter than scientists believed: neural computations in circuits of the retina. Neuron 65, 150--64 (2010).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "07efb279-25d9-417a-80d8-3f03c33b11af",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 81,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 82,
+            "content": "Lettvin, J., Y., Maturana, H., R., McCulloch, W., S. & Pitts, W., H. What the Frog's Eye Tells the Frog's Brain. <em>Proceedings of the IRE</em> 1940--1959."
+          }
+        ]
+      },
+      "content_text": "Lettvin, J., Y., Maturana, H., R., McCulloch, W., S. & Pitts, W., H. What the Frog's Eye Tells the Frog's Brain. Proceedings of the IRE 1940--1959.",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "be1b74ea-fec5-42b2-bc42-eb712981b4cf",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 82,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 83,
+            "content": "van Wyk, M., Taylor, W. R. & Vaney, D. I. Local edge detectors: a substrate for fine spatial vision at low temporal frequencies in rabbit retina. <em>The Journal of neuroscience : the official journal of the Society for Neuroscience</em> <strong>26</strong>, 13250--63 (2006)."
+          }
+        ]
+      },
+      "content_text": "van Wyk, M., Taylor, W. R. & Vaney, D. I. Local edge detectors: a substrate for fine spatial vision at low temporal frequencies in rabbit retina. The Journal of neuroscience : the official journal of ",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "7eb19d11-d456-46c0-9a7a-5d783bc0462a",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 83,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 84,
+            "content": "Olveczky, B. P., Baccus, S. A. & Meister, M. Segregation of object and background motion in the retina. <em>Nature</em> <strong>423</strong>, 401--8 (2003)."
+          }
+        ]
+      },
+      "content_text": "Olveczky, B. P., Baccus, S. A. & Meister, M. Segregation of object and background motion in the retina. Nature 423, 401--8 (2003).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "2f787dca-e15d-4fcf-91b3-19b9c154c967",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 84,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 85,
+            "content": "Baccus, S. A., Olveczky, B. P., Manu, M. & Meister, M. A retinal circuit that computes object motion. <em>The Journal of neuroscience : the official journal of the Society for Neuroscience</em> <strong>28</strong>, 6807--17 (2008)."
+          }
+        ]
+      },
+      "content_text": "Baccus, S. A., Olveczky, B. P., Manu, M. & Meister, M. A retinal circuit that computes object motion. The Journal of neuroscience : the official journal of the Society for Neuroscience 28, 6807--17 (2",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "e21e7585-a159-48f9-8563-e0294c287c2a",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 85,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 86,
+            "content": "Zhang, Y., Kim, I. J., Sanes, J. R. & Meister, M. The most numerous ganglion cell type of the mouse retina is a selective feature detector. <em>Proceedings of the National Academy of Sciences of the United States of America</em> <strong>109</strong>, E2391-8 (2012)."
+          }
+        ]
+      },
+      "content_text": "Zhang, Y., Kim, I. J., Sanes, J. R. & Meister, M. The most numerous ganglion cell type of the mouse retina is a selective feature detector. Proceedings of the National Academy of Sciences of the Unite",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "b5a9bc14-4ab6-445a-8b70-6f57d7487fce",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 86,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 87,
+            "content": "Kolb, H. The inner plexiform layer in the retina of the cat: electron microscopic observations. <em>J Neurocytol</em> <strong>8</strong>, 295--329 (1979)."
+          }
+        ]
+      },
+      "content_text": "Kolb, H. The inner plexiform layer in the retina of the cat: electron microscopic observations. J Neurocytol 8, 295--329 (1979).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "728cf56e-cc59-4914-bc1f-ae143c5fdc96",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 87,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 88,
+            "content": "Kolb, H. & Famiglietti, E. V. Rod and cone pathways in the inner plexiform layer of cat retina. <em>Science</em> <strong>186</strong>, 47--49 (1974)."
+          }
+        ]
+      },
+      "content_text": "Kolb, H. & Famiglietti, E. V. Rod and cone pathways in the inner plexiform layer of cat retina. Science 186, 47--49 (1974).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "da1a82a9-8b50-4e90-bb2f-3a5acfcfe500",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 88,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 89,
+            "content": "Kolb, H. & Nelson, R. Rod pathways in the retina of the cat. <em>Vision Res</em> <strong>23</strong>, 301--312 (1983)."
+          }
+        ]
+      },
+      "content_text": "Kolb, H. & Nelson, R. Rod pathways in the retina of the cat. Vision Res 23, 301--312 (1983).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "3d647f99-e267-4981-9a88-a0b46e0dfc1f",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 89,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 90,
+            "content": "Hattar, S. <em>et al.</em> Melanopsin and rod-cone photoreceptive systems account for all major accessory visual functions in mice. <em>Nature</em> <strong>424</strong>, 76--81 (2003)."
+          }
+        ]
+      },
+      "content_text": "Hattar, S. et al. Melanopsin and rod-cone photoreceptive systems account for all major accessory visual functions in mice. Nature 424, 76--81 (2003).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "cd64de23-9237-4eab-8f2e-0d59e6eafe95",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 90,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 91,
+            "content": "Schmidt, T. M., Chen, S.-K. & Hattar, S. Intrinsically photosensitive retinal ganglion cells: many subtypes, diverse functions. <em>Trends Neurosci</em> <strong>34</strong>, 572--580 (2011)."
+          }
+        ]
+      },
+      "content_text": "Schmidt, T. M., Chen, S.-K. & Hattar, S. Intrinsically photosensitive retinal ganglion cells: many subtypes, diverse functions. Trends Neurosci 34, 572--580 (2011).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "3197defb-c994-4759-9e2c-881205d1838b",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 91,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 92,
+            "content": "Martersteck, E. M. <em>et al.</em> Diverse Central Projection Patterns of Retinal Ganglion Cells. <em>Cell Rep</em> <strong>18</strong>, 2058--2072 (2017)."
+          }
+        ]
+      },
+      "content_text": "Martersteck, E. M. et al. Diverse Central Projection Patterns of Retinal Ganglion Cells. Cell Rep 18, 2058--2072 (2017).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "b65f688c-5969-427c-8343-9f1cfde34fad",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 92,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 93,
+            "content": "Binda, P. & Morrone, M. C. Vision During Saccadic Eye Movements. <em>Annu Rev Vis Sci</em> <strong>4</strong>, 193--213 (2018)."
+          }
+        ]
+      },
+      "content_text": "Binda, P. & Morrone, M. C. Vision During Saccadic Eye Movements. Annu Rev Vis Sci 4, 193--213 (2018).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "91723298-0a34-40c5-84ab-f1c58458b093",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 93,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 94,
+            "content": "Castet, E., Jeanjean, S. & Masson, G. S. 'Saccadic suppression'- no need for an active extra-retinal mechanism. <em>Trends Neurosci</em> <strong>24</strong>, 316--318 (2001)."
+          }
+        ]
+      },
+      "content_text": "Castet, E., Jeanjean, S. & Masson, G. S. 'Saccadic suppression'- no need for an active extra-retinal mechanism. Trends Neurosci 24, 316--318 (2001).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "26fb6383-8eaf-455c-b16e-aae2a9bd16f2",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 94,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 95,
+            "content": "Ross, J., Morrone, M. C., Goldberg, M. E. & Burr, D. C. Changes in visual perception at the time of saccades. <em>Trends Neurosci</em> <strong>24</strong>, 113--121 (2001)."
+          }
+        ]
+      },
+      "content_text": "Ross, J., Morrone, M. C., Goldberg, M. E. & Burr, D. C. Changes in visual perception at the time of saccades. Trends Neurosci 24, 113--121 (2001).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "c6aa355e-3820-4f57-b0f4-76b71f33872d",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 95,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 96,
+            "content": "Dodge, R. Visual perception during eye movement. <em>Psychological Review</em> <strong>7</strong>, 454--465 (1900)."
+          }
+        ]
+      },
+      "content_text": "Dodge, R. Visual perception during eye movement. Psychological Review 7, 454--465 (1900).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "59667a51-bed0-4b85-98a1-037881980d38",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 96,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 97,
+            "content": "Rucci, M. & Poletti, M. Control and Functions of Fixational Eye Movements. <em>Annu. Rev. Vis. Sci.</em> <strong>1</strong>, 499--518 (2015)."
+          }
+        ]
+      },
+      "content_text": "Rucci, M. & Poletti, M. Control and Functions of Fixational Eye Movements. Annu. Rev. Vis. Sci. 1, 499--518 (2015).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "6fc0fb71-a579-4773-8581-582df8978637",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 97,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 98,
+            "content": "Coppola, D. & Purves, D. The extraordinarily rapid disappearance of entopic images. <em>Proceedings of the National Academy of Sciences</em> <strong>93</strong>, 8001--8004 (1996)."
+          }
+        ]
+      },
+      "content_text": "Coppola, D. & Purves, D. The extraordinarily rapid disappearance of entopic images. Proceedings of the National Academy of Sciences 93, 8001--8004 (1996).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "263ebc5d-1262-4ad3-bfd4-6d675f3a16d2",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 98,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 99,
+            "content": "Rucci, M., Iovin, R., Poletti, M. & Santini, F. Miniature eye movements enhance fine spatial detail. <em>Nature</em> <strong>447</strong>, 852--855 (2007)."
+          }
+        ]
+      },
+      "content_text": "Rucci, M., Iovin, R., Poletti, M. & Santini, F. Miniature eye movements enhance fine spatial detail. Nature 447, 852--855 (2007).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "50758270-6376-46a1-91b8-78aab8174996",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 99,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 100,
+            "content": "Darwin, C. <em>The origin of species</em>. (New York : P.F. Collier, c1909)."
+          }
+        ]
+      },
+      "content_text": "Darwin, C. The origin of species. (New York : P.F. Collier, c1909).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "cebb8a97-5362-429f-989d-8e5c258ae5ea",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 100,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 101,
+            "content": "Petridou, E. & Godinho, L. Cellular and Molecular Determinants of Retinal Cell Fate. <em>Annu. Rev. Vis. Sci.</em> <strong>8</strong>, 79--99 (2022)."
+          }
+        ]
+      },
+      "content_text": "Petridou, E. & Godinho, L. Cellular and Molecular Determinants of Retinal Cell Fate. Annu. Rev. Vis. Sci. 8, 79--99 (2022).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "957a3825-d761-4c90-96e4-04a22e192dd3",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 101,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 102,
+            "content": "Sanes, J. R. & Zipursky, S. L. Synaptic Specificity, Recognition Molecules, and Assembly of Neural Circuits. <em>Cell</em> <strong>181</strong>, 536--556 (2020)."
+          }
+        ]
+      },
+      "content_text": "Sanes, J. R. & Zipursky, S. L. Synaptic Specificity, Recognition Molecules, and Assembly of Neural Circuits. Cell 181, 536--556 (2020).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "23e514cf-81aa-42eb-8bd2-056fb85fd083",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 102,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 103,
+            "content": "Meister, M., Wong, R. O., Baylor, D. A. & Shatz, C. J. Synchronous bursts of action potentials in ganglion cells of the developing mammalian retina. <em>Science</em> <strong>252</strong>, 939--943 (1991)."
+          }
+        ]
+      },
+      "content_text": "Meister, M., Wong, R. O., Baylor, D. A. & Shatz, C. J. Synchronous bursts of action potentials in ganglion cells of the developing mammalian retina. Science 252, 939--943 (1991).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "1fd98c9c-031a-4c0f-9f67-531c50ea60e7",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 103,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 104,
+            "content": "Wong, R. O. L. RETINAL WAVES AND VISUAL SYSTEM DEVELOPMENT. <em>Annu. Rev. Neurosci.</em> <strong>22</strong>, 29--47 (1999)."
+          }
+        ]
+      },
+      "content_text": "Wong, R. O. L. RETINAL WAVES AND VISUAL SYSTEM DEVELOPMENT. Annu. Rev. Neurosci. 22, 29--47 (1999).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "9b3f2661-e159-4d01-89ff-662eef6f0a53",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 104,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 105,
+            "content": "Ackman, J. B. & Crair, M. C. Role of emergent neural activity in visual map development. <em>Curr. Opin. Neurobiol.</em> <strong>24</strong>, 166--175 (2014)."
+          }
+        ]
+      },
+      "content_text": "Ackman, J. B. & Crair, M. C. Role of emergent neural activity in visual map development. Curr. Opin. Neurobiol. 24, 166--175 (2014).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    },
+    {
+      "id": "45075739-bd5d-4b4e-884b-8689e737f530",
+      "section_id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "order_index": 105,
+      "content": {
+        "blocks": [
+          {
+            "type": "footnote",
+            "number": 106,
+            "content": "Tiriac, A. & Feller, M. B. Roles of visually evoked and spontaneous activity in the development of retinal direction selectivity maps. <em>Trends Neurosci</em> <strong>45</strong>, 529--538 (2022)."
+          }
+        ]
+      },
+      "content_text": "Tiriac, A. & Feller, M. B. Roles of visually evoked and spontaneous activity in the development of retinal direction selectivity maps. Trends Neurosci 45, 529--538 (2022).",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0
+    }
+  ]
+}

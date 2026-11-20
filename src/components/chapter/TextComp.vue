@@ -38,10 +38,7 @@ import ChapterReferences from "./text/ChapterReferences.vue";
 import ChapterAuthors from "./text/ChapterAuthors.vue";
 import ChapterFunding from "./text/ChapterFunding.vue";
 import ChapterAcknowledgements from "./text/ChapterAcknowledgements.vue";
-import {
-  chapterBackReferences,
-  retinaLegacyReferences,
-} from "@/helper/chapterReferences";
+import { chapterBackReferences } from "@/helper/chapterReferences";
 // The editor (TipTap, ~400 KB) loads only when a creator edits: readers
 // never render it (OPENBRAIN-166).
 const EditableBlock = defineAsyncComponent(
@@ -125,8 +122,7 @@ const source = computed(() => {
 const sectionLabels = computed(() => sectionLabelMap(source.value?.sections));
 
 // The chapter's references, full width in the back matter below the text
-// (OPENBRAIN-179): its References section when it has one (History), else
-// the references table's rows over the Retina's footnotes (OPENBRAIN-92).
+// (OPENBRAIN-179): its References section, enriched by references-table rows.
 // While a creator edits, a References section stays in the text column,
 // where its own text is edited (SectionComp).
 const refsCtx = inject("references", null);
@@ -137,7 +133,6 @@ const backReferences = computed(() => {
   );
   return back && !(back.section && canEdit.value) ? back : null;
 });
-const legacyReferences = computed(() => retinaLegacyReferences(source.value));
 
 // Boxes anchored to a paragraph render inside their section, right after it
 // (OPENBRAIN-70 A4); the references go to the back matter; the rest render
@@ -810,10 +805,9 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <!-- A chapter's explanatory footnotes stay with its text (the
-             Retina's are its bibliography, and go to the back matter). -->
+        <!-- A chapter's explanatory footnotes stay with its text. -->
         <div
-          v-if="source['footNotes']?.notes?.length && !legacyReferences.length"
+          v-if="source['footNotes']?.notes?.length"
           class="chapter-end-blocks"
         >
           <FootNotes :content="source['footNotes']" />

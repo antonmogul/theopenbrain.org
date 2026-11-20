@@ -1,14 +1,14 @@
 /*
  * Chapter/Text/HoverImg — the floating portrait-and-blurb that follows the
  * cursor while a `.hoverImg` anchor is hovered. No props: it finds anchors by
- * class and looks the id up in infosImages.json, so the story provides the
+ * class and looks the id up in the authored hover attributes, so the story provides the
  * anchor and fires the hover in `play`.
  */
-import infos from "@/assets/json_backend/infosImages.json";
+
 import HoverImg from "../HoverImg.vue";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
 
-const IMAGE_IDS = infos.images.map((image) => image.title);
+const IMAGE_IDS = ["alcmeon", "islamicGoldenAge"];
 
 const hover = async ({ args }) => {
   if (!args.hovered) return;
@@ -27,7 +27,7 @@ export default {
       control: "select",
       options: IMAGE_IDS,
       description:
-        "Story-only: id of the .hoverImg anchor; must match a title in infosImages.json.",
+        "Story-only: id of the .hoverImg anchor; must match a title in the authored hover attributes.",
     },
     label: { control: "text", description: "Story-only: the anchor text." },
     hovered: {
@@ -36,7 +36,7 @@ export default {
     },
   },
   render: chapterFrame(HoverImg, {
-    template: `<div style="min-height:480px;padding:64px;"><button :id="args.imageId" class="hoverImg" style="font:20px var(--font-body);text-decoration:underline;">{{ args.label }}</button><StoryComponent /></div>`,
+    template: `<div style="min-height:480px;padding:64px;"><button :id="args.imageId" class="hoverImg" :data-hover-src="'/publicAssets/hoverImges/' + args.imageId + '.jpg'" :data-hover-text="args.label" style="font:20px var(--font-body);text-decoration:underline;">{{ args.label }}</button><StoryComponent /></div>`,
   }),
 };
 
