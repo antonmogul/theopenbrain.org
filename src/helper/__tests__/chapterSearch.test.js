@@ -250,3 +250,80 @@ describe("searchChapter", () => {
     expect(total).toBeGreaterThan(2);
   });
 });
+
+describe("container figure records", () => {
+  it("indexes numbered subsection/group figures and fullscreen figures without duplicating a repeated record", () => {
+    const chapter = {
+      sections: [
+        {
+          id: "section",
+          title: "Retinal development",
+          paragraphs: [
+            {
+              subSection: [
+                {
+                  id: "waves",
+                  title: "Waves",
+                  animation: { id: "animationWaves", title: "Waves" },
+                  paragraphs: [
+                    { id: "p1", text: "Waves travel across the retina." },
+                    {
+                      id: "p2",
+                      text: "The waves continue.",
+                      animation: { id: "animationWaves" },
+                    },
+                    {
+                      id: "group",
+                      animation: { id: "animationGanglion" },
+                      paragraphs: [
+                        {
+                          id: "widget-first",
+                          type: "widget",
+                          widget: { widgetId: "test", title: "Explore" },
+                        },
+                      ],
+                    },
+                    {
+                      id: "full",
+                      animationFull: true,
+                      animationId: "animationGallery",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const records = [
+      {
+        id: "animationWaves",
+        title: "Spontaneous waves of activity",
+        figureNumber: 20,
+      },
+      { id: "animationGanglion", title: "Ganglion cells", figureNumber: 17 },
+      {
+        id: "animationGallery",
+        title: "Lateral organization",
+        figureNumber: 5,
+      },
+    ];
+    const entries = buildSearchIndex(chapter, { figures: records }).filter(
+      (e) => e.kind === "figure"
+    );
+    expect(
+      entries.map((e) => ({ id: e.id, tag: e.tag, title: e.title }))
+    ).toEqual([
+      { id: "p1", tag: "Fig 20", title: "Spontaneous waves of activity" },
+      { id: "widget-first", tag: "Fig 17", title: "Ganglion cells" },
+      { id: "full", tag: "Fig 05", title: "Lateral organization" },
+    ]);
+    expect(
+      searchChapter(
+        buildSearchIndex(chapter, { figures: records }),
+        "Spontaneous waves"
+      ).results[0].entry.tag
+    ).toBe("Fig 20");
+  });
+});
