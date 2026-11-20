@@ -165,6 +165,7 @@
             :key="subParagraph.id"
             :title="subParagraph.title"
             :text="subParagraph.text"
+            :video="subParagraph.video"
             :slug="subParagraph.videoSlug || 'placeholder'"
             :data-timeline-id="subParagraph.id"
           />

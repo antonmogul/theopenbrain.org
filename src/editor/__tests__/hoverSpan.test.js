@@ -24,4 +24,14 @@ describe("hover links", () => {
     ];
     expect(docToBlocks(blocksToDoc(blocks))).toEqual(blocks);
   });
+  it("keeps migrated image alt text and keyboard access through an author edit", () => {
+    const blocks = [
+      {
+        type: "text",
+        content:
+          '<span class="hoverImg" data-hover-src="/alcmeon.jpg" data-hover-text="The author caption." data-hover-alt="Alcmaeon" tabindex="0">Alcmaeon</span>',
+      },
+    ];
+    expect(docToBlocks(blocksToDoc(blocks))).toEqual(blocks);
+  });
 });

@@ -286,9 +286,10 @@ const ROUTES = [
     name: "retina",
     minText: 2000,
     needsData: true,
-    // No section art: the title pins beside the scrolling contents from
-    // 1024px and releases with the dark block; phones keep stacking.
+    // Authored section art selects the picture contents; without it the
+    // title pins beside the numbered list. Exercise the rendered variant.
     expectStickyContents: true,
+    expectContents: { selector: "#chapter-toc", minWidth: 1024 },
     /*
      * The three client-placed interactives (OPENBRAIN-21) must be in the
      * prose. Their anchors depend on chapter content, so this is a data
@@ -849,7 +850,8 @@ async function main() {
         // opens (OPENBRAIN-182, 193). Sections are pointed at by keyboard
         // focus, which needs no pointer.
         let contentsOk = true;
-        if (checkContent && route.expectStickyContents) {
+        const artContents = await page.locator("#chapter-toc.otoc").count();
+        if (checkContent && route.expectStickyContents && !artContents) {
           const problems = await checkOpenerToc(page);
           if (problems.length) {
             contentsOk = false;
@@ -859,6 +861,7 @@ async function main() {
         if (
           checkContent &&
           route.expectContents &&
+          (!route.expectStickyContents || artContents) &&
           width >= (route.expectContents.minWidth || 0)
         ) {
           const problems = await page.evaluate(async (selector) => {

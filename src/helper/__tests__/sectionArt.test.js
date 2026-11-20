@@ -112,3 +112,14 @@ describe("section art", () => {
     );
   });
 });
+
+it("preserves the strict temporary-art flag without labelling real art", () => {
+  const own = { src: "/placeholder.webp", alt: "Temporary", placeholder: true };
+  expect(sectionArtFor("any", { art: own }).placeholder).toBe(true);
+  expect(
+    sectionArtFor("any", { art: { ...own, placeholder: "true" } }).placeholder
+  ).toBeUndefined();
+  expect(
+    sectionArtFor("any", { art: { ...own, placeholder: false } }).placeholder
+  ).toBeUndefined();
+});

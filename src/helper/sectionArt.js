@@ -91,6 +91,7 @@ export function sectionArtFor(chapterSlug, section) {
     const art = { src: src.trim(), alt: typeof alt === "string" ? alt : "" };
     if (typeof position === "string" && position.trim())
       art.position = position.trim();
+    if (section.art.placeholder === true) art.placeholder = true;
     return art;
   }
   const art = SECTION_ART_BY_SLUG[chapterSlug]?.[section?.slug];

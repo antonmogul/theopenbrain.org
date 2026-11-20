@@ -79,6 +79,18 @@ export const SpanMark = Mark.create({
         renderHTML: (attrs) =>
           attrs.hoverText ? { "data-hover-text": attrs.hoverText } : {},
       },
+      hoverAlt: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("data-hover-alt"),
+        renderHTML: (attrs) =>
+          attrs.hoverAlt ? { "data-hover-alt": attrs.hoverAlt } : {},
+      },
+      tabIndex: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("tabindex"),
+        renderHTML: (attrs) =>
+          attrs.tabIndex !== null ? { tabindex: attrs.tabIndex } : {},
+      },
     };
   },
   parseHTML() {

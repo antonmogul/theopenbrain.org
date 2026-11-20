@@ -26,6 +26,7 @@ const LABELS = {
   animation_full: "a full-screen animation",
   further_reading: "further reading",
   footnote: "a footnote",
+  reference: "a reference",
   heading: "a heading",
   list: "a list",
   blockquote: "a quote",

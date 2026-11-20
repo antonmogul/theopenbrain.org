@@ -88,9 +88,14 @@ const history = () => ({
 const retina = () => ({
   slug: "the-retina",
   intro: [],
-  sections: [section("s1", "the-eye", "The eye")],
+  sections: [
+    section("s1", "the-eye", "The eye"),
+    section("rs", "references", "References", [
+      { text: "<ol><li>First.</li><li>Second.</li></ol>" },
+    ]),
+  ],
   furtherReading: { paragraphs: [] },
-  footNotes: { notes: [{ text: "First." }, { text: "Second." }] },
+  footNotes: { notes: [] },
 });
 
 const wrappers = [];
@@ -294,19 +299,24 @@ describe("the end of the reader", () => {
     ]);
   });
 
-  it("lists the Retina's footnotes, its bibliography, as the references", () => {
+  it("lists the Retina references through the shared section contract", () => {
     const wrapper = mountReader(retina());
     const refs = wrapper.find("[data-stub-references]");
     expect(refs.attributes("data-stub-references")).toBe("2");
-    expect(refs.attributes("data-label")).toBe("");
-    expect(refs.attributes("data-section-id")).toBeUndefined();
+    expect(refs.attributes("data-label")).toBe("2");
+    expect(refs.attributes("data-section-id")).toBe("rs");
     expect(refs.element.parentElement.id).toBe("references");
     // They are not printed again as footnotes.
     expect(wrapper.find("[data-stub-footnotes]").exists()).toBe(false);
   });
 
   it("keeps another chapter's explanatory footnotes with its text", () => {
-    const wrapper = mountReader({ ...retina(), slug: "stress" });
+    const wrapper = mountReader({
+      ...retina(),
+      slug: "stress",
+      sections: [],
+      footNotes: { notes: [{ text: "Explanatory note." }] },
+    });
     expect(wrapper.find("main#text [data-stub-footnotes]").exists()).toBe(true);
     expect(wrapper.find("[data-stub-references]").exists()).toBe(false);
   });

@@ -366,3 +366,19 @@ describe("SectionCards", () => {
     });
   });
 });
+
+it("carries temporary art into the visible section card", async () => {
+  const temporary = structuredClone(text);
+  temporary.sections[1].art = { src: "/temporary.webp", placeholder: true };
+  mountCards();
+  await wrapper.setProps({ text: temporary });
+  layOut(600);
+  await scrolled();
+  expect(wrapper.find(".sec-card__placeholder").text()).toBe(
+    "Placeholder image"
+  );
+  temporary.sections[1].art = { src: "/designer.webp" };
+  await wrapper.setProps({ text: structuredClone(temporary) });
+  await scrolled();
+  expect(wrapper.find(".sec-card__placeholder").exists()).toBe(false);
+});
