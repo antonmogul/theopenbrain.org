@@ -4,6 +4,12 @@ Migrations in `supabase/migrations/` are **not** applied by CI or by the Railway
 
 Project ref: `ocenwbkdzmxhsvwlornp` ("The Open Brain V2").
 
+## Pending — OPENBRAIN-67
+
+| Migration                                  | State   | Release order                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261120066700_retina_figure_numbers.sql` | Pending | Data only; safe before or after deploy. Numbers the Retina's 26 record-backed figures by first appearance (repeats reuse their number), only where `config.figureNumber` is missing or null. Skips unlinked records and any record shared with another chapter. Standalone widget bands and the Cajal content image stay unnumbered; no numbered prose citations exist to update. |
+
 ## Pending — OPENBRAIN-66
 
 | Migration                                      | State   | Release order                                                                                                                                                                                                                         |

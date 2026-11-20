@@ -173,7 +173,8 @@ function referenceWords(items) {
  * @param {{intro?: object[], sections?: object[]}} text  useText().text
  * @param {{labels?: Record<string,string>, source?: boolean}} [opts]
  *   labels: sectionLabelMap(text.sections); source: keep each item's own
- *   paragraph as `item.source` (the chapter search reads its full text).
+ *   paragraph as `item.source` and queued container marks' `figureId`
+ *   (chapter search reads their full text and figure records).
  * @returns {{ items: Item[], sections: Section[], subsections: Sub[],
  *   maxWords: number, byId: Map<string, number> }}
  *
@@ -213,7 +214,12 @@ export function buildTimeline(text, opts = {}) {
     if (!key || PLACEHOLDER_FIGURE.test(animation.name || "")) return;
     if (key === lastFigure) return;
     lastFigure = key;
-    pending.push(figureMark(animation));
+    pending.push({
+      ...figureMark(animation),
+      // Search needs the record key for a container-triggered figure. The
+      // timeline's ordinary marks keep their existing presentation shape.
+      ...(opts?.source ? { figureId: key } : {}),
+    });
   }
 
   // A container's figures go to its first item; if it has none they lapse

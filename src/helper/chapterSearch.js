@@ -160,6 +160,33 @@ export function buildSearchIndex(text, opts = {}) {
     // An item the data gave no id anchors nothing: land on its section.
     const id = /^tl-\d+$/.test(item.id) ? run?.anchorId : item.id;
 
+    // A container figure (subsection/group) is queued on its first timeline
+    // item; a paragraph's own figure follows it. Both resolve the same record
+    // label as the pane, including fullscreen figures carried by animationId.
+    const addFigures = () => {
+      const figureIds = [
+        ...(item.marks || []).map((m) => m.figureId).filter(Boolean),
+        p.animation?.id || p.animationId || "",
+      ].filter(Boolean);
+      for (const figureId of figureIds) {
+        if (figureId !== lastFigure) {
+          const record = recordFor(figureId, opts.figures);
+          const title = plainText(record?.title || p.animation?.title || "");
+          const body = legendOf(record);
+          if (title || body)
+            add({
+              kind: "figure",
+              id,
+              tag: figureTag(record?.figureNumber),
+              where,
+              title,
+              body,
+            });
+        }
+        lastFigure = figureId;
+      }
+    };
+
     if (item.kind === "widget") {
       add({
         kind: "widget",
@@ -169,6 +196,7 @@ export function buildSearchIndex(text, opts = {}) {
         title: plainText(p.widget?.title) || item.title,
         body: plainText(p.widget?.blurb),
       });
+      addFigures();
       continue;
     }
     if (item.kind === "break") {
@@ -180,6 +208,7 @@ export function buildSearchIndex(text, opts = {}) {
         title: plainText(p.title),
         body: plainText(p.text),
       });
+      addFigures();
       continue;
     }
 
@@ -193,24 +222,8 @@ export function buildSearchIndex(text, opts = {}) {
         body: plainText(p.explore.prompt),
       });
     add({ kind: "text", id, tag: "", where, body: plainText(p.text) });
+    addFigures();
 
-    // The figure this paragraph brings into the pane, once in a row.
-    const figureId = p.animation?.id || p.animationId || "";
-    if (figureId && figureId !== lastFigure) {
-      const record = recordFor(figureId, opts.figures);
-      const title = plainText(record?.title || p.animation?.title || "");
-      const body = legendOf(record);
-      if (title || body)
-        add({
-          kind: "figure",
-          id,
-          tag: figureTag(record?.figureNumber),
-          where,
-          title,
-          body,
-        });
-    }
-    if (figureId) lastFigure = figureId;
     const legends = [plainText(p.imgCap), plainText(p.explore?.legend)].filter(
       Boolean
     );
