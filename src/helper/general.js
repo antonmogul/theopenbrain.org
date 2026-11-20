@@ -32,18 +32,15 @@ const addH = (event) => {
   let text = event.target;
 
   if (paths.length === 0) {
-    paths = document.getElementsByClassName(
-      event.target.closest(".highlighterIllu").classList[0]
-    );
-    text = document.getElementById(
-      event.target
-        .closest(".highlighterIllu")
-        .classList[0].replace("Highlight", "")
-    );
+    const figure = event.target?.closest?.(".highlighterIllu");
+    if (!figure) return;
+    const key = figure.classList[0];
+    paths = document.getElementsByClassName(key);
+    text = document.getElementById(key.replace("Highlight", ""));
   }
   for (const path of paths) {
     path.classList.add("highlightIllu");
-    text.classList.add("highlightText");
+    text?.classList.add("highlightText");
   }
 };
 const removeH = (event) => {
@@ -53,18 +50,15 @@ const removeH = (event) => {
   let text = event.target;
 
   if (paths.length === 0) {
-    paths = document.getElementsByClassName(
-      event.target.closest(".highlighterIllu").classList[0]
-    );
-    text = document.getElementById(
-      event.target
-        .closest(".highlighterIllu")
-        .classList[0].replace("Highlight", "")
-    );
+    const figure = event.target?.closest?.(".highlighterIllu");
+    if (!figure) return;
+    const key = figure.classList[0];
+    paths = document.getElementsByClassName(key);
+    text = document.getElementById(key.replace("Highlight", ""));
   }
   for (const path of paths) {
     path.classList.remove("highlightIllu");
-    text.classList.remove("highlightText");
+    text?.classList.remove("highlightText");
   }
 };
 

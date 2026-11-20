@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 import VideoEmbed from "../VideoEmbed.vue";
+import { breakVideos } from "@/stories/breakVideoFixtures";
 import BreakImages from "../BreakImages.vue";
 
 describe("shared chapter video presentation", () => {
@@ -78,7 +79,7 @@ describe("shared chapter video presentation", () => {
   it.each(["neitz-myopia", "dowling-and-werblin"])(
     "retains %s's original source, poster and caption with deliberate native playback",
     (slug) => {
-      const w = mount(BreakImages, { props: { slug } });
+      const w = mount(BreakImages, { props: { video: breakVideos[slug] } });
       const v = w.find("video");
       expect(w.find("source").attributes("src")).toBe(
         `/publicAssets/video/breakSections/${slug}.mp4`

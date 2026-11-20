@@ -1,11 +1,35 @@
 <script setup>
-import { computed } from "vue";
+import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BreakImages from "@/components/chapter/text/BreakImages.vue";
-import infos from "@/assets/json_backend/breakVideos.json";
+import { fetchBreakVideo } from "@/services/api/breakVideos";
 const route = useRoute();
 const router = useRouter();
-const info = computed(() => infos.videos?.[route.params.video]);
+const info = ref(null);
+const loading = ref(false);
+const error = ref("");
+watch(
+  () => route.params.video,
+  async (slug, _, onCleanup) => {
+    let active = true;
+    onCleanup(() => {
+      active = false;
+    });
+    loading.value = true;
+    info.value = null;
+    error.value = "";
+    try {
+      const video = await fetchBreakVideo(slug);
+      if (active) info.value = video;
+    } catch {
+      if (active)
+        error.value = "The video could not be loaded. Please try again.";
+    } finally {
+      if (active) loading.value = false;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -13,9 +37,11 @@ const info = computed(() => infos.videos?.[route.params.video]);
     <button class="break-video-back" type="button" @click="router.go(-1)">
       ← Back to reading
     </button>
+    <p v-if="loading" role="status">Loading video…</p>
+    <p v-else-if="error" role="alert">{{ error }}</p>
     <BreakImages
-      v-if="info"
-      :slug="route.params.video"
+      v-else-if="info"
+      :video="info"
       :title="info.title"
       :text="info.text"
     />

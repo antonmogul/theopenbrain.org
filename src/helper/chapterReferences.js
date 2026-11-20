@@ -1,12 +1,4 @@
-/*
- * References from the chapter itself (OPENBRAIN-90). The `references` table
- * is empty for every chapter today, so a click on a superscript found
- * nothing (Stuart, 24 Sep: "clicking on references doesn't do anything").
- * The chapters do carry their reference lists: the Retina as its Footnotes
- * section (one footnote per number), History as the ordered list in its
- * References section. This finds reference N there, so the tooltip always
- * has something to show; a structured row, once imported, still wins.
- */
+/* Chapter bibliographies use a references section, optionally enriched by table rows. */
 
 /** The <li> contents of an HTML list, in order. */
 function listItems(html) {
@@ -41,14 +33,8 @@ export function linkifyReference(html) {
  */
 export function referenceFromChapter(chapter, number) {
   if (!chapter || !Number.isInteger(number) || number < 1) return null;
-  const note = chapter.footNotes?.notes?.[number - 1]?.text;
-  if (note) return { number, html: linkifyReference(note) };
-  const section = (chapter.sections || []).find((s) => s.slug === "references");
-  if (section) {
-    const items = (section.paragraphs || []).flatMap((p) => listItems(p.text));
-    const item = items[number - 1];
-    if (item) return { number, html: linkifyReference(item) };
-  }
+  const entry = sectionReferences(chapter).find((r) => r.number === number);
+  if (entry) return { number, html: linkifyReference(entry.raw_text) };
   return null;
 }
 
@@ -98,21 +84,34 @@ export function referenceDisplay(ref) {
   };
 }
 
-/** Retina's legacy Footnotes are its bibliography, not explanatory notes. */
-export function retinaLegacyReferences(chapter) {
-  if (chapter?.slug !== "the-retina") return [];
-  return (chapter.footNotes?.notes || []).flatMap((note, index) =>
-    note.text ? [{ number: index + 1, html: linkifyReference(note.text) }] : []
-  );
+/** Section-authored entries preserve paragraph UUIDs and explicit numbers. */
+export function sectionReferences(chapter) {
+  const section = chapter?.sections?.find((s) => s.slug === "references");
+  let next = 1;
+  return (section?.paragraphs || []).flatMap((p) => {
+    const authored = (p.blocks || []).filter((b) => b.type === "reference");
+    if (authored.length)
+      return authored.map((b) => ({
+        id: p.id,
+        number: Number(b.number),
+        raw_text: b.content || "",
+      }));
+    return listItems(p.text).map((raw_text) => ({ number: next++, raw_text }));
+  });
 }
 
-/** One ordered bibliography, retaining legacy entries absent from the table. */
+/** Structured rows enrich rather than truncate an authored bibliography. */
 export function chapterEndReferences(chapter, rows = []) {
-  if ((chapter?.sections || []).some((s) => s.slug === "references")) return [];
-  const byNumber = new Map(
-    retinaLegacyReferences(chapter).map((entry) => [entry.number, entry])
-  );
-  for (const row of rows) byNumber.set(Number(row.number), row);
+  const entries = sectionReferences(chapter);
+  const byNumber = new Map(entries.map((entry) => [entry.number, entry]));
+  for (const row of rows) {
+    const old = byNumber.get(Number(row.number));
+    byNumber.set(Number(row.number), {
+      ...old,
+      ...row,
+      ...(old?.id ? { id: old.id } : {}),
+    });
+  }
   return [...byNumber.values()].sort((a, b) => a.number - b.number);
 }
 
@@ -236,33 +235,17 @@ export function referenceSearchText(ref) {
     .toLowerCase();
 }
 
-/**
- * The chapter's reference list for the full-width back matter
- * (OPENBRAIN-179), or null when it has none.
- *
- * - A chapter with a References section (History): that section, its title,
- *   and the references table's rows; until those arrive, or for a chapter
- *   whose table is empty, the section's own list, entry by entry.
- * - A chapter without one (the Retina): the table's rows over its legacy
- *   footnotes (chapterEndReferences).
- * @returns {{ section: object|null, title: string, entries: object[] } | null}
- */
+/** The chapter's references section and its complete, numbered entries. */
 export function chapterBackReferences(chapter, rows = []) {
-  const section = (chapter?.sections || []).find(
+  const section = chapter?.sections?.find(
     (s) => s.slug === "references" && !s.anchored
   );
-  if (!section) {
-    const entries = chapterEndReferences(chapter, rows);
-    return entries.length
-      ? { section: null, title: "References", entries }
-      : null;
-  }
-  const entries = rows.length
-    ? rows
-    : (section.paragraphs || [])
-        .flatMap((p) => listItems(p.text))
-        .map((raw_text, i) => ({ number: i + 1, raw_text }));
+  const entries = chapterEndReferences(chapter, rows);
   return entries.length
-    ? { section, title: section.title || "References", entries }
+    ? {
+        section: section || null,
+        title: section?.title || "References",
+        entries,
+      }
     : null;
 }

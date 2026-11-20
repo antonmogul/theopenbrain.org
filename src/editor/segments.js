@@ -39,6 +39,7 @@ export const BLOCK_LABELS = {
   widget: "Widget",
   video: "Video",
   footnote: "Footnote",
+  reference: "Reference",
   further_reading: "Further reading",
   break_video: "Break video",
   break_section: "Break section",

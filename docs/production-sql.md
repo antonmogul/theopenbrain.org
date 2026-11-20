@@ -243,6 +243,12 @@ was a targeted REST capture rather than a `db dump`).
 
 `https://supabase.com/dashboard/project/ocenwbkdzmxhsvwlornp/sql/new`. If you paste a migration there, also run `supabase migration repair --status applied <version>` afterwards or the next `db push` will try to apply it again. When copying a large file from a terminal use `LC_ALL=en_US.UTF-8 pbcopy < file.sql`: plain `pbcopy` in a non-interactive shell runs in the C locale and turned curly quotes into mojibake in nine Chapter 1 rows on 2026-09-03. Check the pasted text for `‚Ä` before running.
 
+## Pending: OPENBRAIN-61 Retina reader data
+
+| Migration                           | Status                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20261120066100_retina_legacy_json` | **Pending. Deploy reader first.** Block-owned break-video and hover metadata; published-module-scoped standalone video catalog; all 106 bibliography blocks become reference entries in the same section UUID, retaining paragraph UUIDs and numbers. Fails closed on bibliography shape or numbering drift; creator media fields win. No production writes performed by the worker. |
+
 ## Pending: generated placeholder section art (OPENBRAIN-65)
 
 | Migration                                | State and rollout                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |

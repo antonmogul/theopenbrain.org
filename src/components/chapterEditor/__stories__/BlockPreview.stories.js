@@ -39,3 +39,21 @@ export const Footnote = { args: { paragraph: byId["p-5"] } };
  * the left pane (OPENBRAIN-131): "shows when reached · stays 1 screen more".
  */
 export const HeldFigure = { args: { paragraph: byId["p-7"] } };
+
+/** Numbered bibliography entries keep their authored text and paragraph id. */
+export const Reference = {
+  args: {
+    paragraph: {
+      id: "reference-1",
+      content: {
+        blocks: [
+          {
+            type: "reference",
+            number: 1,
+            content: "Finger, S. <em>Origins of neuroscience.</em> (2001).",
+          },
+        ],
+      },
+    },
+  },
+};

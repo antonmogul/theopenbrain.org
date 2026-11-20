@@ -192,7 +192,7 @@ describe("chapterBackReferences: the chapter's list for its back matter", () => 
     expect(chapterBackReferences(chapter, rows)).toEqual({
       section,
       title: "References",
-      entries: rows,
+      entries: [{ ...rows[0] }, { number: 2, raw_text: "Broca, P. (1867)." }],
     });
   });
 
@@ -203,7 +203,7 @@ describe("chapterBackReferences: the chapter's list for its back matter", () => 
     ]);
   });
 
-  it("is the Retina's footnotes under the table's rows when there is no section", () => {
+  it("uses table rows without consuming explanatory footnotes", () => {
     const retina = {
       slug: "the-retina",
       sections: [],
@@ -214,8 +214,8 @@ describe("chapterBackReferences: the chapter's list for its back matter", () => 
     ]);
     expect(back.section).toBeNull();
     expect(back.title).toBe("References");
-    expect(back.entries.map((e) => e.number)).toEqual([1, 2]);
-    expect(back.entries[1].raw_text).toBe("Second, from the table.");
+    expect(back.entries.map((e) => e.number)).toEqual([2]);
+    expect(back.entries[0].raw_text).toBe("Second, from the table.");
   });
 
   it("is null for a chapter with nothing to list", () => {

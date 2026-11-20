@@ -121,9 +121,18 @@ describe.skipIf(!harness || !existsSync(harness))(
         );
         const back = chapterBackReferences({
           slug: "the-retina",
-          footNotes: {
-            notes: notes.map((p) => ({ text: p.content.blocks[0].content })),
-          },
+          sections: [
+            {
+              slug: "references",
+              paragraphs: notes.map((p) => ({
+                id: p.id,
+                blocks: p.content.blocks.map((b) => ({
+                  ...b,
+                  type: "reference",
+                })),
+              })),
+            },
+          ],
         });
         expect(back.entries.map((r) => r.number)).toEqual(
           Array.from({ length: 106 }, (_, i) => i + 1)

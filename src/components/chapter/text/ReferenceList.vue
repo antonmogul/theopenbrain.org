@@ -27,7 +27,11 @@ const props = defineProps({
 });
 
 const entries = computed(() =>
-  props.references.map((r) => ({ number: r.number, ...referenceParts(r) }))
+  props.references.map((r) => ({
+    number: r.number,
+    id: r.id,
+    ...referenceParts(r),
+  }))
 );
 </script>
 
@@ -42,7 +46,7 @@ const entries = computed(() =>
         class="ref-list__item"
       >
         <span class="ref-list__n" aria-hidden="true">{{ r.number }}</span>
-        <div class="ref-list__body">
+        <div :id="r.id || undefined" class="ref-list__body">
           <!-- The authors' own reference text (their HTML: italics, bold). -->
           <!-- eslint-disable-next-line vue/no-v-html -->
           <span class="ref-list__text" v-html="r.html" />

@@ -140,7 +140,9 @@ const plain = (html) => String(html || "").replace(/<[^>]*>/g, "");
           <span class="bp-card-kind">{{
             BLOCK_LABELS[seg.kind] || seg.kind
           }}</span>
-          <span v-if="seg.kind === 'footnote'" class="bp-card-body"
+          <span
+            v-if="seg.kind === 'footnote' || seg.kind === 'reference'"
+            class="bp-card-body"
             ><b>{{ seg.block.number }}.</b> {{ plain(seg.block.content) }}</span
           >
           <span v-else-if="seg.block.title" class="bp-card-body">{{

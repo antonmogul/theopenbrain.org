@@ -138,3 +138,14 @@ describe("inline HTML the editor must keep", () => {
     expect(docToBlocks(blocksToDoc(blocks))).toEqual(blocks);
   });
 });
+
+it("preserves a numbered reference and its block metadata through the chapter editor", () => {
+  const blocks = [
+    {
+      type: "reference",
+      number: 106,
+      content: "Tiriac & Feller. <em>Trends Neurosci</em> (2022).",
+    },
+  ];
+  expect(docToBlocks(blocksToDoc(blocks))).toEqual(blocks);
+});
