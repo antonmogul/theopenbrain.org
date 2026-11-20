@@ -4,17 +4,17 @@ Migrations in `supabase/migrations/` are **not** applied by CI or by the Railway
 
 Project ref: `ocenwbkdzmxhsvwlornp` ("The Open Brain V2").
 
-## Pending — OPENBRAIN-67
+## Pushed 2026-11-20 — OPENBRAIN-67
 
-| Migration                                  | State   | Release order                                                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261120066700_retina_figure_numbers.sql` | Pending | Data only; safe before or after deploy. Numbers the Retina's 26 record-backed figures by first appearance (repeats reuse their number), only where `config.figureNumber` is missing or null. Skips unlinked records and any record shared with another chapter. Standalone widget bands and the Cajal content image stay unnumbered; no numbered prose citations exist to update. |
+| Migration                                  | State  | Release order                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261120066700_retina_figure_numbers.sql` | Pushed | Data only; safe before or after deploy. Numbers the Retina's 26 record-backed figures by first appearance (repeats reuse their number), only where `config.figureNumber` is missing or null. Skips unlinked records and any record shared with another chapter. Standalone widget bands and the Cajal content image stay unnumbered; no numbered prose citations exist to update. |
 
-## Pending — OPENBRAIN-66
+## Pushed 2026-11-20 — OPENBRAIN-66
 
-| Migration                                      | State   | Release order                                                                                                                                                                                                                         |
-| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261120066600_retina_introduction_title.sql` | Pending | Data only; may run before or after deploy. Renames only the Retina introduction's existing `The Retina` title to `Introduction`; preserves later author edits. Funding and the intentionally empty acknowledgements remain as stored. |
+| Migration                                      | State  | Release order                                                                                                                                                                                                                         |
+| ---------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261120066600_retina_introduction_title.sql` | Pushed | Data only; may run before or after deploy. Renames only the Retina introduction's existing `The Retina` title to `Introduction`; preserves later author edits. Funding and the intentionally empty acknowledgements remain as stored. |
 
 ## Pushed 2026-11-20 — OPENBRAIN-62
 
@@ -27,6 +27,10 @@ Project ref: `ocenwbkdzmxhsvwlornp` ("The Open Brain V2").
 | Migration                                 | State and verification                                                                                                                                                                                                                                                                                                |
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `20261120066210_retina_tob_phone_fit.sql` | **Pushed 20 Nov**, confirmed by the coordinator. Repairs fitted phone artwork in eight Retina uploads; guards the exact 066200 HTML md5s, preserves publication/metadata, and is idempotent. The correction lives entirely in uploaded HTML and is already applied in production. No production write by this worker. |
+
+## State on 2026-11-20 (Retina cleanup)
+
+All migrations through `20261120066700` are pushed; `supabase migration list` shows local and remote in step. Rows were backed up over REST before each push to `~/Documents/openbrain-backups/2026-11-20-pre-openbrain-{44,54,55,60,61,62,62b,63,65,67}/`. `066000`, `066100`, `066210`, `066600` and `066700` needed `--include-all` (versions older than ones already applied); `066200` and `066210` were pushed migration-first, before their PRs merged.
 
 ## The workflow
 
