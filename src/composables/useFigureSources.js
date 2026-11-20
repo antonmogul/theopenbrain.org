@@ -9,15 +9,13 @@
  * fold-out card ask this which files their figures already show and leave
  * out a picture that would repeat one.
  *
- * Figures resolve as IllustrationInline resolves them: the database first,
- * animations.json as the fallback, quietly while the fetch is out.
+ * Figures resolve from the database, like IllustrationInline.
  */
-import { computed, onMounted, toValue, watch } from "vue";
+import { computed, onMounted, ref, toValue, watch } from "vue";
 import { useAnimations } from "@/composables/useAnimations";
 import { resolveAnimationRecord } from "@/helper/animationResolve";
 import { figureImages } from "@/helper/figureCycle";
 import { imageUrl } from "@/editor/media.mjs";
-import animationJSON from "@/assets/json_backend/animations.json";
 
 /**
  * @param {import("vue").MaybeRefOrGetter<string[]>} ids animation ids
@@ -42,6 +40,7 @@ export function useFigureSources(ids) {
  */
 export function useFigureRecords(ids) {
   const { animations, fetchAnimations } = useAnimations();
+  const fetched = ref(false);
   // Once there are figures to look up (a box's figures are drawn only once
   // it floats, after its first render). Shared and cached: the figures
   // themselves make the same request.
@@ -49,7 +48,13 @@ export function useFigureRecords(ids) {
   const ask = () => {
     if (asked || !(toValue(ids) || []).length) return;
     asked = true;
-    Promise.resolve(fetchAnimations()).catch(() => {});
+    Promise.resolve(fetchAnimations())
+      .catch((error) => {
+        console.warn("Figure records could not load:", error);
+      })
+      .finally(() => {
+        fetched.value = true;
+      });
   };
   onMounted(ask);
   watch(() => toValue(ids), ask);
@@ -59,8 +64,7 @@ export function useFigureRecords(ids) {
         resolveAnimationRecord(
           id,
           animations.value,
-          animationJSON.animations,
-          () => {}
+          fetched.value ? undefined : () => {}
         ) || null
     )
   );

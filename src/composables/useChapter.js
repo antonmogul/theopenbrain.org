@@ -139,7 +139,9 @@ export function useChapter() {
       // left-column trigger id, so attach animation_key/title onto each row.
       const animationIds = [
         ...new Set(
-          (paragraphsData || []).map((p) => p.animation_id).filter(Boolean)
+          [...(paragraphsData || []), ...(sectionsData || [])]
+            .map((p) => p.animation_id)
+            .filter(Boolean)
         ),
       ];
       if (animationIds.length > 0) {
@@ -151,11 +153,15 @@ export function useChapter() {
           return { data: null, error: null, stale: true };
         }
         const animById = new Map((animRows || []).map((a) => [a.id, a]));
-        for (const p of paragraphsData) {
+        for (const p of [...paragraphsData, ...sectionsData]) {
           const a = p.animation_id && animById.get(p.animation_id);
           if (a) {
             p.animation_key = a.animation_key;
             p.animation_title = a.title || "";
+          } else if (p.animation_id) {
+            console.warn(
+              `[animations] database record "${p.animation_id}" linked by "${p.id}" was not found — the figure will not render`
+            );
           }
         }
       }

@@ -31,7 +31,7 @@ const section = {
   id: "s1",
   title: "A section",
   kind: "section",
-  // A section-level figure (sections.animation_config) wraps them all.
+  // Historical section objects no longer create a second figure path.
   animation: { name: "SectionFig", hold: 1 },
   paragraphs: [
     text("p0", fig("ParaFig", 0.5)),
@@ -109,8 +109,7 @@ describe("data-figure-hold on every figure trigger", () => {
         .map((el) => [el.attributes("id"), el.attributes("data-figure-hold")])
     );
     expect(holds).toEqual({
-      // SectionComp: the section-level span and a paragraph's span
-      triggerAnimationSectionFig: "1",
+      // SectionComp: paragraph placements only.
       triggerAnimationParaFig: "0.5",
       triggerAnimationAutoFig: undefined,
       // SubSection: the header's span and a sub-paragraph's span
@@ -156,7 +155,6 @@ describe("data-figure-hold on every figure trigger", () => {
         .map((el) => [el.attributes("id"), el.attributes("data-figure-room")])
     );
     expect(rooms).toEqual({
-      triggerAnimationSectionFig: "1",
       triggerAnimationParaFig: "0.5",
       triggerAnimationAutoFig: undefined,
       triggerAnimationHeaderFig: undefined,

@@ -80,11 +80,6 @@
       {{ section.title }}
     </h2>
 
-    <StartEndIcon v-if="!boxTail" :paragraph="section" art="start" />
-    <IllustrationInline
-      v-if="!boxTail && inlineFigureFor(section)"
-      :animation-id="section.animation.id"
-    />
     <!-- The References section, from the references table once it has
          rows: each entry links to its source (OPENBRAIN-92). -->
     <ReferenceList
@@ -93,20 +88,10 @@
     />
     <div
       v-else
-      :id="
-        section?.animation?.name && !boxTail
-          ? 'triggerAnimation' + section?.animation?.name
-          : ''
-      "
-      :class="[
-        section?.animation?.name ? 'animationTrigger block noHighlight' : '',
-        {
-          'section-paragraphs--paired': !rail && pairedExploreIds.size > 0,
-          'bx-rail-row': rail,
-        },
-      ]"
-      :data-figure-hold="section?.animation?.hold"
-      :data-figure-room="section?.animation?.room"
+      :class="{
+        'section-paragraphs--paired': !rail && pairedExploreIds.size > 0,
+        'bx-rail-row': rail,
+      }"
     >
       <!-- A box read sideways is cut into parts (helper/exploreRail.js),
            each a RailPart that draws the part's figures first; anywhere
@@ -258,7 +243,6 @@
         </template>
       </component>
     </div>
-    <StartEndIcon v-if="!boxTail" :paragraph="section" art="end" />
     <FullScreenIllustration
       :key="section.id"
       v-if="section.animationFull && !boxTail"

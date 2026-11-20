@@ -230,7 +230,6 @@ import { toSlug, toCamelCase } from "@/helper/general";
 import { loadLottie } from "@/composables/useLottie";
 
 import { useReducedMotion } from "@/composables/useReducedMotion";
-import animationJSON from "@/assets/json_backend/animations.json";
 import { lottiePath, resolveAnimationConfig } from "@/helper/animationResolve";
 import { figurePresentation } from "@/helper/figurePresentation";
 import PlayIcon from "@/icons/custom/PlayIcon.vue";
@@ -266,10 +265,8 @@ let playTimer;
 const highlightListeners = [];
 const parts = (name) => root.value?.getElementsByClassName(name) || [];
 
-// Use the animation prop directly (it now contains all config from DB or JSON).
-// Fall back to JSON lookup for backward compatibility during transition —
-// shared heuristic, see resolveAnimationConfig (warns when both sources miss).
-const info = resolveAnimationConfig(props.animation, animationJSON.animations);
+// The parent resolves the complete database record before mounting.
+const info = resolveAnimationConfig(props.animation);
 
 const activeState = !info.blockStates
   ? ref({
