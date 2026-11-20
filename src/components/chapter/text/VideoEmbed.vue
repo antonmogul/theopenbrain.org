@@ -16,7 +16,10 @@ const props = defineProps({
 
 const playing = ref(false);
 watch(
-  () => [props.video.youtubeId, props.video.src, props.video.start],
+  // Watch the source values individually. FigureImages supplies a fresh
+  // object on redraw (including fullscreen/visibility changes); that is
+  // still the same film, and must not send its iframe back to the poster.
+  [() => props.video.youtubeId, () => props.video.src, () => props.video.start],
   () => {
     playing.value = false;
   }
@@ -95,6 +98,13 @@ const caption = computed(() => props.video.caption || props.video.title || "");
   inset: 0;
   width: 100%;
   height: 100%;
+  border: 0;
+}
+/* Fullscreen the existing frame, without moving/reloading its iframe. */
+.ve-frame:fullscreen {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
   border: 0;
 }
 .ve-poster {

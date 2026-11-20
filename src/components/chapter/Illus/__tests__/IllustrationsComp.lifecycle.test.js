@@ -38,6 +38,7 @@ vi.mock("gsap/ScrollTrigger", () => ({
       return trigger;
     }),
     refresh: vi.fn(),
+    update: vi.fn(),
     getAll: () => fixtures.triggers,
   },
 }));
@@ -48,6 +49,7 @@ vi.mock("@/helper/chapterDebug", () => ({
 }));
 import IllustrationsComp from "../IllustrationsComp.vue";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { lockReaderScroll } from "@/helper/readerScrollLock";
 
 const wrappers = [];
 const mountPane = (options = {}) => {
@@ -80,6 +82,7 @@ beforeEach(() => {
 afterEach(() => {
   wrappers.splice(0).forEach((wrapper) => wrapper.unmount());
   vi.useRealTimers();
+  delete document.fullscreenElement;
   document.body.innerHTML = "";
 });
 
@@ -108,6 +111,56 @@ describe("reader figure lifecycle", () => {
     expect(fixtures.store.animationActive).toBe(true);
     toggle(first, false);
     expect(fixtures.store.animationActive).toBe(false);
+  });
+
+  it("keeps the active pane mounted when fullscreen reflow changes trigger state", async () => {
+    const frames = [];
+    const raf = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((fn) => {
+        frames.push(fn);
+        return frames.length;
+      });
+    const pane = mountPane();
+    await settle();
+    const [first] = fixtures.triggers;
+    toggle(first, true);
+    const video = document.createElement("div");
+    video.className = "ve";
+    Object.defineProperty(document, "fullscreenElement", {
+      configurable: true,
+      value: video,
+    });
+    document.dispatchEvent(new Event("fullscreenchange"));
+    toggle(first, false);
+    expect(fixtures.store.animationActive).toBe(true);
+    // Restoring the viewport makes this paragraph active again.
+    first.isActive = true;
+    // The chapter's background trigger must never become a figure.
+    fixtures.triggers.find((t) => t.trigger.id === "container").isActive = true;
+    Object.defineProperty(document, "fullscreenElement", {
+      configurable: true,
+      value: null,
+    });
+    document.dispatchEvent(new Event("fullscreenchange"));
+    await vi.advanceTimersByTimeAsync(250);
+    frames.shift()();
+    frames.shift()();
+    raf.mockRestore();
+    expect(ScrollTrigger.refresh).toHaveBeenCalled();
+    expect(fixtures.store.animationActive).toBe(true);
+    expect(pane.vm.activeAnimation).toBe("animationfoundationsfig1");
+  });
+
+  it("keeps the figure and its dialog mounted while overlay reflow changes triggers", async () => {
+    const pane = mountPane();
+    await settle();
+    const [first] = fixtures.triggers;
+    toggle(first, true);
+    const release = lockReaderScroll();
+    toggle(first, false);
+    expect(pane.vm.activeAnimation).toBe("animationfoundationsfig1");
+    release();
   });
 
   it("does not bind to the departing chapter during a route transition", async () => {

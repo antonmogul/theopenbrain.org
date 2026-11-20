@@ -37,6 +37,8 @@ import {
   railXOf,
 } from "@/helper/exploreRail";
 import { reducedMotionPreferred, scrollToY } from "@/helper/readerJump";
+import { videoFullscreenHeld } from "@/helper/videoFullscreen";
+import { readerScrollLocked } from "@/helper/readerScrollLock";
 
 /**
  * @param {{
@@ -110,6 +112,7 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
 
   /** The page moved: put the track where the page says. */
   function drive() {
+    if (videoFullscreenHeld() || readerScrollLocked()) return;
     const scroller = scrollerEl.value;
     const pause = pauseEl.value;
     if (!pinned.value || !scroller || !pause) return;
@@ -122,6 +125,7 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
 
   /** The track moved: if the page did not move it, the page follows. */
   function onTrackScroll() {
+    if (videoFullscreenHeld() || readerScrollLocked()) return;
     const scroller = scrollerEl.value;
     if (!on.value || !scroller) return;
     const x = scroller.scrollLeft;

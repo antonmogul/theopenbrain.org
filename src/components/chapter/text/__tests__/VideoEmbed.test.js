@@ -26,6 +26,16 @@ describe("shared chapter video presentation", () => {
     );
     w.unmount();
   });
+  it("keeps the active player when a gallery redraw supplies the same source", async () => {
+    const video = { youtubeId: "KbA3RLz3xUQ", title: "Huxley", start: 2 };
+    const w = mount(VideoEmbed, { props: { video } });
+    await w.get("button").trigger("click");
+    const iframe = w.get("iframe").element;
+    await w.setProps({ video: { ...video, title: "Andrew Huxley" } });
+    expect(w.get("iframe").element).toBe(iframe);
+    expect(w.get("iframe").attributes("title")).toBe("Andrew Huxley");
+    w.unmount();
+  });
   it("preserves the authored label on legacy placeholder cards", () => {
     const w = mount(BreakImages, {
       props: {

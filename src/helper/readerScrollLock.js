@@ -5,6 +5,10 @@ let locks = 0;
 let previous = null;
 let lockedY = 0;
 
+// Scroll-linked figures/tracks must not reinterpret overlay reflow as a
+// reader gesture while the document is locked.
+export const readerScrollLocked = () => locks > 0;
+
 /* An overlay must not move the page it covers (Stuart, 7 Oct: closing the
    menu "brings me back to the very top of the chapter"). The lock notes
    the scroll position it found and, when the last overlay closes, puts it
@@ -35,6 +39,7 @@ export function lockReaderScroll() {
       const now = window.scrollY || window.pageYOffset || 0;
       if (now === 0 && lockedY > 0)
         window.scrollTo({ top: lockedY, left: 0, behavior: "auto" });
+      window.dispatchEvent(new Event("scroll"));
     }
   };
 }

@@ -37,6 +37,8 @@ import {
 } from "@/helper/historyFigureTiming";
 import { figurePaneGround } from "@/helper/figurePane";
 import { keepRefreshInstant } from "@/helper/refreshScroll";
+import { holdVideoFullscreen } from "@/helper/videoFullscreen";
+import { readerScrollLocked } from "@/helper/readerScrollLock";
 
 // Panel figures rebuilt as figure widgets (full-screen ones render in the
 // text through FullScreenIllustration).
@@ -168,8 +170,10 @@ let refreshTimer = null;
 let layoutObserver = null;
 let fontSet = null;
 let unmounted = false;
+let videoFullscreen = null;
 
 function updateActiveFigure() {
+  if (videoFullscreen?.held() || readerScrollLocked()) return;
   // A nested/overlapping trigger leaving must not clear the one still active.
   // The last authored active trigger wins, in either scroll direction.
   const current = [...ownedTriggers]
@@ -188,7 +192,8 @@ function refreshAfterLayout() {
   if (unmounted || refreshTimer !== null) return;
   refreshTimer = setTimeout(() => {
     refreshTimer = null;
-    if (!unmounted) ScrollTrigger.refresh();
+    if (!unmounted && !videoFullscreen?.held() && !readerScrollLocked())
+      ScrollTrigger.refresh();
   }, 0);
 }
 
@@ -257,6 +262,7 @@ function setupTriggers() {
       end,
       markers: false,
       onToggle: (self) => {
+        if (videoFullscreen?.held() || readerScrollLocked()) return;
         trigger.classList.toggle("active", self.isActive);
         if (self.isActive) activeTriggers.add(trigger);
         else activeTriggers.delete(trigger);
@@ -328,6 +334,20 @@ function setupTriggers() {
 }
 
 onMounted(async () => {
+  videoFullscreen = holdVideoFullscreen(() => {
+    if (readerScrollLocked()) return;
+    // Discard GSAP's scroll value cached before native fullscreen exited.
+    ScrollTrigger.update();
+    ScrollTrigger.refresh();
+    ScrollTrigger.update();
+    // A third-party refresh may have toggled GSAP's internal state while
+    // callbacks were held. Reconcile it once the reader is restored.
+    activeTriggers.clear();
+    for (const trigger of ownedTriggers)
+      if (trigger.vars.onToggle && trigger.isActive)
+        activeTriggers.add(trigger.trigger);
+    updateActiveFigure();
+  });
   announce();
   try {
     await fetchAnimations();
@@ -346,6 +366,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   unmounted = true;
+  videoFullscreen?.stop();
   clearTimeout(setupTimer);
   clearTimeout(refreshTimer);
   layoutObserver?.disconnect();
