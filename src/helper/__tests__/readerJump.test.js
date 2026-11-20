@@ -297,7 +297,7 @@ describe("jumpToElement", () => {
       expect(scroller.scrollLeft).toBe(1310);
       expect(window.scrollTo).toHaveBeenCalledWith({
         top: 2300 + 1000 - 80,
-        behavior: "auto",
+        behavior: "instant",
       });
     });
   });
@@ -307,7 +307,7 @@ describe("jumpToElement", () => {
     jumpToElement(placed(500));
     expect(window.scrollTo).toHaveBeenCalledWith({
       top: 420,
-      behavior: "auto",
+      behavior: "instant",
     });
   });
 
@@ -582,7 +582,7 @@ describe("scrollToY", () => {
     expect(window.scrollTo).toHaveBeenCalledTimes(1);
     expect(window.scrollTo).toHaveBeenCalledWith({
       top: 3000,
-      behavior: "auto",
+      behavior: "instant",
     });
   });
 

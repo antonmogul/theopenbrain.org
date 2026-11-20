@@ -3,6 +3,35 @@
  * Returns problems so the smoke can keep reporting its other assertions. */
 export async function checkOpenerToc(page) {
   return page.evaluate(async () => {
+    const illustrated = document.querySelector("#chapter-toc.otoc");
+    if (illustrated) {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 3000)),
+      ]);
+      const problems = [];
+      const nav = illustrated.querySelector("nav");
+      const list = illustrated.querySelector("ol");
+      const rows = illustrated.querySelectorAll(".otoc__row");
+      if (!rows.length) problems.push("no illustrated contents rows");
+      if (innerWidth >= 1024) {
+        if (Math.abs(illustrated.offsetHeight - innerHeight) > 1)
+          problems.push("illustrated contents is not one screen");
+        // Very short windows may intentionally scroll the column; otherwise
+        // all rows must fit without clipping or changing the opener height.
+        if (
+          !illustrated.classList.contains("otoc--scrolls") &&
+          list.scrollHeight > nav.clientHeight + 4
+        )
+          problems.push("illustrated contents is clipped");
+      } else if (getComputedStyle(nav).overflowY === "auto")
+        problems.push("phone contents traps page scrolling");
+      if (illustrated.querySelector("[aria-expanded]"))
+        problems.push("contents expand subsections");
+      if (document.documentElement.scrollWidth > innerWidth + 1)
+        problems.push("the page scrolls horizontally");
+      return problems;
+    }
     const block = document.querySelector("#chapter-toc.opener-toc");
     const title = block?.querySelector(".opener-toc__h1");
     const list = block?.querySelector(".opener-toc__list");

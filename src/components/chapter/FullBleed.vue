@@ -83,6 +83,7 @@ const stageStyle = computed(() =>
 
 let mql = null;
 let resizeObserver = null;
+let resizeTimer = null;
 let syncPending = false;
 let unmounted = false;
 
@@ -119,11 +120,22 @@ function schedule() {
     }
   });
 }
+// A resize can move this stage's slot and refresh every scroll trigger.
+// A microtask inside observer delivery runs in that same layout cycle;
+// WebKit reports an undelivered loop. Start the next task instead, also in
+// background/embedded tabs where requestAnimationFrame can be paused.
+function scheduleResize() {
+  if (resizeTimer !== null) return;
+  resizeTimer = setTimeout(() => {
+    resizeTimer = null;
+    schedule();
+  }, 0);
+}
 function observe() {
   resizeObserver?.disconnect();
   resizeObserver = null;
   if (!floating.value || typeof ResizeObserver !== "function") return;
-  resizeObserver = new ResizeObserver(schedule);
+  resizeObserver = new ResizeObserver(scheduleResize);
   if (stageEl.value) resizeObserver.observe(stageEl.value);
   // #container is as tall as the prose: content changes above the slot
   // change it, and move the slot.
@@ -153,6 +165,7 @@ watch(floating, async () => {
 });
 onBeforeUnmount(() => {
   unmounted = true;
+  clearTimeout(resizeTimer);
   if (mql?.removeEventListener)
     mql.removeEventListener("change", onMediaChange);
   else mql?.removeListener?.(onMediaChange);

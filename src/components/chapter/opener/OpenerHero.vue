@@ -23,6 +23,7 @@
  * for a photograph and would vanish on paper.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { jumpToElement } from "@/helper/readerJump";
 import { useReducedMotion } from "@/composables/useReducedMotion";
 import MotionNotice from "../MotionNotice.vue";
 import ReactiveCover from "./ReactiveCover.vue";
@@ -83,7 +84,9 @@ onBeforeUnmount(() => window.removeEventListener("scroll", onScroll));
 function scrollDown() {
   const el = document.getElementById(props.scrollTarget);
   if (!el) return;
-  el.scrollIntoView({ behavior: reducedMotion.value ? "auto" : "smooth" });
+  // Native "auto" still follows html:focus-within's smooth scrolling. Use
+  // the reader's jump so reduced motion is instant and the top bar clears it.
+  jumpToElement(el, { align: "top", remember: false });
 }
 </script>
 

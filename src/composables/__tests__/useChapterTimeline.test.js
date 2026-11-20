@@ -615,7 +615,7 @@ describe("useChapterTimeline: jumpTo", () => {
     jumpTo(0);
     expect(scroll).toHaveBeenCalledWith({
       top: Math.max(0, 100 - readerTopInset()),
-      behavior: "auto",
+      behavior: "instant",
     });
   });
 
