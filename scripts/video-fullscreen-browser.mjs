@@ -182,7 +182,9 @@ for (const [engine, type] of Object.entries({ chromium, webkit })) {
             deviceScaleFactor: 2,
             mobile: false,
           });
-          await metrics.detach();
+          // Keep the override until this page closes; detaching its CDP
+          // session restores the OS window metrics during the next native
+          // fullscreen entry, defeating the requested test viewport.
         }
         await page.waitForTimeout(500);
         await samePlayer(frame, before);

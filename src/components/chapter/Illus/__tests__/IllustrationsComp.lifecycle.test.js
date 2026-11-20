@@ -49,6 +49,7 @@ vi.mock("@/helper/chapterDebug", () => ({
 }));
 import IllustrationsComp from "../IllustrationsComp.vue";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { lockReaderScroll } from "@/helper/readerScrollLock";
 
 const wrappers = [];
 const mountPane = (options = {}) => {
@@ -149,6 +150,17 @@ describe("reader figure lifecycle", () => {
     expect(ScrollTrigger.refresh).toHaveBeenCalled();
     expect(fixtures.store.animationActive).toBe(true);
     expect(pane.vm.activeAnimation).toBe("animationfoundationsfig1");
+  });
+
+  it("keeps the figure and its dialog mounted while overlay reflow changes triggers", async () => {
+    const pane = mountPane();
+    await settle();
+    const [first] = fixtures.triggers;
+    toggle(first, true);
+    const release = lockReaderScroll();
+    toggle(first, false);
+    expect(pane.vm.activeAnimation).toBe("animationfoundationsfig1");
+    release();
   });
 
   it("does not bind to the departing chapter during a route transition", async () => {

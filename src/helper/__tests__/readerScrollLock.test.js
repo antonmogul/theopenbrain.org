@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { lockReaderScroll } from "@/helper/readerScrollLock";
+import {
+  lockReaderScroll,
+  readerScrollLocked,
+} from "@/helper/readerScrollLock";
 
 /* Stuart, 7 Oct: opening the chapter menu and closing it "brings me back
    to the very top of the chapter" (OPENBRAIN-145). The lock keeps the
@@ -39,9 +42,11 @@ describe("lockReaderScroll", () => {
   it("locks html and body and restores their previous overflow", () => {
     document.body.style.overflow = "auto";
     const release = lockReaderScroll();
+    expect(readerScrollLocked()).toBe(true);
     expect(htmlOverflow()).toBe("hidden");
     expect(bodyOverflow()).toBe("hidden");
     release();
+    expect(readerScrollLocked()).toBe(false);
     expect(htmlOverflow()).toBe("");
     expect(bodyOverflow()).toBe("auto");
   });
