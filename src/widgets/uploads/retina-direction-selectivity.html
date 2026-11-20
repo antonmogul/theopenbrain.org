@@ -396,6 +396,18 @@ html[data-ob-fit].tob-choices .tob-stage { align-content: stretch; }
 html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
 .tob-seg { border-radius: 0 !important; }
 </style>
+
+<!-- Open Brain book (OPENBRAIN-62b): fitted phone keys stay below the artwork and pickers above it; do not squeeze the canvas into a horizontal flex row. -->
+<style>
+@media (max-width: 470px) {
+  html[data-ob-fit].tob-keyed .tob-view,
+  html[data-ob-fit].tob-picker .tob-view { flex-direction: column; }
+  html[data-ob-fit].tob-keyed .tob-canvas,
+  html[data-ob-fit].tob-picker .tob-canvas { flex: 1 1 0; height: auto !important; min-width: 0; width: 100%; }
+  html[data-ob-fit].tob-keyed .tob-key,
+  html[data-ob-fit].tob-picker .tob-picks { flex: none; }
+}
+</style>
 </head>
 <body>
 

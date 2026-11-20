@@ -3,8 +3,15 @@ import { readFileSync, readdirSync } from "node:fs";
 
 export const migration = "20261120066200_retina_widgets_db.sql";
 export const sql = readFileSync(`supabase/migrations/${migration}`, "utf8");
-export const beforeHtml = (html) =>
+// Historical replay tests compare the file as 066200 published it, before
+// the separate guarded phone-fit repair.
+export const atWidgetsDb = (html) =>
   html.replace(
+    /\n<!-- Open Brain book \(OPENBRAIN-62b\):[^\n]+ -->\n<style>\n[\s\S]*?<\/style>\n(?=<\/head>)/,
+    ""
+  );
+export const beforeHtml = (html) =>
+  atWidgetsDb(html).replace(
     /\n<!-- Open Brain book \(OPENBRAIN-62\): presentation formerly injected by widgetHost; authored scripts and artwork unchanged\. -->\n<style>\n[\s\S]*?<\/style>\n(?=<\/head>)/,
     ""
   );
