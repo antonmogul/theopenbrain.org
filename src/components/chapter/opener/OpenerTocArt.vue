@@ -198,7 +198,13 @@ defineExpose({ active, fit, scrolls, measure });
     :id="id"
     ref="rootEl"
     class="otoc"
-    :class="{ 'otoc--still': still, 'otoc--scrolls': scrolls }"
+    :class="{
+      'otoc--still': still,
+      'otoc--scrolls': scrolls,
+      'otoc--long-numbers': outline.some(
+        (entry) => String(entry.label).length > 1
+      ),
+    }"
     :style="{ '--otoc-fit': fit }"
     aria-labelledby="opener-toc-title"
   >
@@ -292,7 +298,7 @@ defineExpose({ active, fit, scrolls, measure });
 }
 .otoc__placeholder {
   position: absolute;
-  top: 1rem;
+  top: calc(var(--reader-topbar-h, 4rem) + 1rem);
   left: 1rem;
   z-index: 3;
   padding: 0.375rem 0.625rem;
@@ -416,6 +422,9 @@ defineExpose({ active, fit, scrolls, measure });
   flex: none;
   width: 0.9em;
   font-variant-numeric: tabular-nums;
+}
+.otoc--long-numbers .otoc__num {
+  width: 1.7em;
 }
 .otoc__label {
   min-width: 0;
