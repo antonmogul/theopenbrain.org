@@ -344,3 +344,21 @@ describe("OpenerTocArt", () => {
     expect(shownPicture()).toMatch(/introduction\.webp$/);
   });
 });
+
+describe("temporary artwork", () => {
+  it("labels only the active placeholder, including when focus changes it", async () => {
+    mountToc({
+      outline: outline.slice(0, 2).map((s, i) => ({
+        ...s,
+        art: { src: `/art-${i}.webp`, placeholder: i === 0 },
+      })),
+    });
+    expect(wrapper.find(".otoc__placeholder").text()).toBe("Placeholder image");
+    await rows()[1].trigger("focus");
+    expect(wrapper.find(".otoc__placeholder").exists()).toBe(false);
+  });
+  it("never labels History's designer art", () => {
+    mountToc();
+    expect(wrapper.find(".otoc__placeholder").exists()).toBe(false);
+  });
+});
