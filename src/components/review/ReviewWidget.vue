@@ -23,7 +23,6 @@
  * Off with VITE_REVIEW_WIDGET=off, or per browser with ?review=off.
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import animationJSON from "@/assets/json_backend/animations.json";
 import { useAnimations } from "@/composables/useAnimations";
 import {
   pageEnv,
@@ -94,11 +93,7 @@ const panel = ref(null);
 
 /* Figure records, for numbers and titles (the pane's own source). */
 const { animations, fetchAnimations } = useAnimations();
-const records = computed(
-  () =>
-    props.figureRecords ||
-    (animations.value?.length ? animations.value : animationJSON.animations)
-);
+const records = computed(() => props.figureRecords || animations.value);
 const recordFor = (key) => figureRecordFor(key, records.value) || null;
 
 /* ── The selection ──────────────────────────────────────────────────── */

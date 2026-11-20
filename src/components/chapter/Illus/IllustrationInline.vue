@@ -21,8 +21,6 @@ import {
   lottieAssetOk,
   lottiePath,
 } from "@/helper/animationResolve";
-// Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
-import animationJSON from "@/assets/json_backend/animations.json";
 import { mobileMode } from "@/helper/illustrationMobile";
 import { figureWidgetFor } from "@/widgets/figures/registry";
 import { figureImages } from "@/helper/figureCycle";
@@ -40,10 +38,7 @@ const props = defineProps({
   animationId: { type: String, required: true },
 });
 
-// Resolve the full animation record (with its flags): Supabase first so
-// DB-backed chapters work, animations.json as the Chapter-1 fallback. The
-// computed re-runs once the fetch lands; until then the JSON answer (or
-// nothing, silently — see the warn gate below) renders.
+// Wait for the database answer before reporting a missing record.
 const { animations: dbAnimations, fetchAnimations } = useAnimations();
 const fetched = ref(false);
 onMounted(async () => {
@@ -54,7 +49,6 @@ const animation = computed(() =>
   resolveAnimationRecord(
     props.animationId,
     dbAnimations.value,
-    animationJSON.animations,
     // Warn only once the DB answer is in — before that a DB-only figure is
     // legitimately unresolved and would produce a spurious warning.
     fetched.value ? undefined : () => {}
@@ -74,11 +68,18 @@ const widgetSchema = computed(
 // it, making lottie-web throw). null = still checking → render nothing yet.
 const assetOk = ref(null);
 watch(
-  () => (mode.value === "interactive" ? props.animationId : null),
-  async (id) => {
-    if (!id) return;
+  () => (mode.value === "interactive" ? animation.value : null),
+  async (record) => {
+    if (!record) return;
     assetOk.value = null;
-    const ok = await lottieAssetOk(lottiePath(animation.value) || id);
+    // Flip cards use MP4/still artwork; switches load their variant files.
+    // Neither needs a Lottie named after the record itself.
+    if (record.flip || record.switch) {
+      assetOk.value = true;
+      return;
+    }
+    const id = record.id;
+    const ok = await lottieAssetOk(lottiePath(record));
     assetOk.value = ok;
     if (!ok) {
       console.warn(

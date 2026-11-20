@@ -1,0 +1,2179 @@
+{
+  "captured": "2026-11-20; anonymous GET only; authored prose omitted",
+  "modules": [
+    {
+      "id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "the-retina"
+    },
+    {
+      "id": "be7a87ea-d7c3-49d7-9286-02a938646bd6",
+      "slug": "foundations-of-neuroscience"
+    },
+    {
+      "id": "9b6a9d07-c643-431c-84e6-75b94745d5bb",
+      "slug": "attention-and-working-memory"
+    }
+  ],
+  "sections": [
+    {
+      "id": "36adafd0-bc6a-4ebc-acc7-8270ea0c083b",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "introduction",
+      "animation_id": "063275c8-84e1-4557-afe5-967ac2bd0c93",
+      "animation_config": {
+        "name": "dragon"
+      },
+      "order_index": 0
+    },
+    {
+      "id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "organization-and-cell-types-in-the-retina",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 2
+    },
+    {
+      "id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "photoreceptors-and-phototransduction",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 3
+    },
+    {
+      "id": "9497f217-b3e2-4688-a7cd-5360e2e779ca",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "bipolar-cells-diversify-photoreceptor-signals",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "animation_config": {
+        "id": "animationRetinalCellTypes2",
+        "name": "RetinalCellTypes2",
+        "stage": "Bipolar cells",
+        "title": "Retinal cell types"
+      },
+      "order_index": 5
+    },
+    {
+      "id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 6
+    },
+    {
+      "id": "9929c0a4-3574-470e-b8fc-4d5f65b4d763",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "retinal-vision-in-the-real-world",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 7
+    },
+    {
+      "id": "0a7c7c97-2cdf-41df-b869-c0bdbc1201d3",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "retinal-development",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 8
+    },
+    {
+      "id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "diseases-disorders-and-treatments",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 9
+    },
+    {
+      "id": "663ea8ad-591c-48bb-b3f3-a2815ca148ea",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "further-reading",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 11
+    },
+    {
+      "id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "story-of-the-eye",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 1
+    },
+    {
+      "id": "8a4f70b1-0a50-4f7e-808c-58ef00b0438f",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "looking-forward",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 10
+    },
+    {
+      "id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "footnotes",
+      "animation_id": null,
+      "animation_config": null,
+      "order_index": 12
+    },
+    {
+      "id": "6af621e4-6ff0-4f27-8146-6aa72835c8f8",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "horizontal-cells-and-feedback",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "animation_config": {
+        "id": "animationRetinalCellTypes3",
+        "name": "RetinalCellTypes3",
+        "stage": "Horizontal cells",
+        "title": "Retinal cell types"
+      },
+      "order_index": 4
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": "2144a465-2440-4975-8f93-896894223513",
+      "section_id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "order_index": 2,
+      "animation_id": null,
+      "animation_trigger": "PupillaryLightreflex",
+      "has_animation": false,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "8b3cb725-e2ec-40ec-84da-9fcbfdaf7bfb",
+      "section_id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "order_index": 0,
+      "animation_id": "71f33065-e4c1-49fd-ab7c-c50df1b2166f",
+      "animation_trigger": "NormalVision",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fef36b77-19b7-4ca5-869d-81a46186661a",
+      "section_id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "order_index": 1,
+      "animation_id": "11fc8bf8-c32e-4c90-8c35-274e7893490e",
+      "animation_trigger": "Cataracts",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "25028da1-b944-46b7-b049-fc8ebbb86484",
+      "section_id": "9929c0a4-3574-470e-b8fc-4d5f65b4d763",
+      "order_index": 1,
+      "animation_id": "e8e241cd-94c1-4c09-a6cd-256fbdd8ca5e",
+      "animation_trigger": "eyeMovements",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fd564629-be00-4f8a-b218-0a5437b594d4",
+      "section_id": "0a7c7c97-2cdf-41df-b869-c0bdbc1201d3",
+      "order_index": 4,
+      "animation_id": "1c172a95-1d96-4931-a8e5-9650e9ef9f96",
+      "animation_trigger": "wavesOfActivity",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fe833e48-bcc5-4af3-921c-1d62d42dccc9",
+      "section_id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "order_index": 3,
+      "animation_id": "04b0d60a-8191-492a-8bf6-a1caffac0159",
+      "animation_trigger": "Glaucoma",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "7d7d821e-03de-4336-bad8-827f063f0ebd",
+      "section_id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "order_index": 5,
+      "animation_id": "ffa8266d-8b43-4935-a637-497aceafc24d",
+      "animation_trigger": "DiabeticRetinopathy",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "e69745f5-41b1-402a-910a-1bc574c2e99a",
+      "section_id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "order_index": 7,
+      "animation_id": "ca840b89-c445-4387-bcf7-93c6c920dca5",
+      "animation_trigger": "AgeRelatedMacularDegeneration",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "25c06831-36f4-463e-bc44-1e315a7ba388",
+      "section_id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "order_index": 9,
+      "animation_id": "02a58588-b94f-4fad-ad88-ec78b0bf69fd",
+      "animation_trigger": "RetinitisPigmentosa",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "671e3832-e311-406d-821a-97f313f9db95",
+      "section_id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "order_index": 5,
+      "animation_id": null,
+      "animation_trigger": "Phototransduction",
+      "has_animation": false,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "3ad0547d-a63d-4bda-8a43-057deabcd42b",
+      "section_id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "order_index": 10,
+      "animation_id": null,
+      "animation_trigger": "TheVisualCycle",
+      "has_animation": false,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "65b52ec0-a886-486c-af64-cadc150d2096",
+      "section_id": "36adafd0-bc6a-4ebc-acc7-8270ea0c083b",
+      "order_index": 0,
+      "animation_id": null,
+      "animation_trigger": null,
+      "has_animation": false,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "8db9c849-1cbf-4217-a4cd-d0da1597705e",
+      "section_id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "order_index": 1,
+      "animation_id": "0825f3b9-44cb-4e27-b3a6-1be051d2cde4",
+      "animation_trigger": "AccommodationVergence",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "08333789-23e1-4864-bb75-de07fc3447d4",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "order_index": 0,
+      "animation_id": "69b84f7b-4a6b-4ed1-8ef2-9811da1de31c",
+      "animation_trigger": "RetinalCircuitsTransition",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "c41015c0-4b87-49d4-9868-8ba943adcaa6",
+      "section_id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "order_index": 7,
+      "animation_id": "1c5d75f3-bb81-4f58-b28e-f666d8b3f05d",
+      "animation_trigger": "LatteralOrganization",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "4bb764b8-e8ce-4503-8d09-9db82ccb9958",
+      "section_id": "6af621e4-6ff0-4f27-8146-6aa72835c8f8",
+      "order_index": 0,
+      "animation_id": null,
+      "animation_trigger": null,
+      "has_animation": false,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "b9d2316d-f213-4d6d-a0ad-21aa85194e9a",
+      "section_id": "9497f217-b3e2-4688-a7cd-5360e2e779ca",
+      "order_index": 0,
+      "animation_id": null,
+      "animation_trigger": null,
+      "has_animation": false,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fccf2f42-9f63-4c68-b8d9-24f67b239637",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "order_index": 5,
+      "animation_id": "a3cb77ae-4cd4-48c1-bda4-87d9e3d775fd",
+      "animation_trigger": "ColorOpponency",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "21ee12e5-7bd0-4b62-9153-a71135facf99",
+      "section_id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "order_index": 3,
+      "animation_id": null,
+      "animation_trigger": "ImpairedVision",
+      "has_animation": false,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    },
+    {
+      "id": "6cb473ef-50d9-4976-b8b0-707be960fbc7",
+      "section_id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "order_index": 11,
+      "animation_id": "619513cf-24da-42c4-9b6b-a02d3ff4d54c",
+      "animation_trigger": "widget-upload:retina-photoreceptors",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ],
+        "animationFlags": {
+          "hold": "next"
+        }
+      }
+    },
+    {
+      "id": "f96d99ae-0771-4784-8949-d73788bb9c90",
+      "section_id": "0a7c7c97-2cdf-41df-b869-c0bdbc1201d3",
+      "order_index": 2,
+      "animation_id": "259f1245-e4ee-4688-9114-b3d0cd2efd1a",
+      "animation_trigger": "animationRetinaDevelopment",
+      "has_animation": true,
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Authored prose is unchanged."
+          }
+        ]
+      }
+    }
+  ],
+  "animations": [
+    {
+      "id": "940d4b0b-b6e5-4d82-a77e-6f0e36d6baa3",
+      "animation_key": "animationCenterSurroundReceptiveFields",
+      "title": "Center surround receptive fields",
+      "config": {
+        "loop": true,
+        "legend": [
+          "Photoreceptors",
+          "Horizontal cells",
+          "Bipolar cells",
+          "Amacrine cells",
+          "Ganglion cells",
+          "Hyperpolarization",
+          "Depolarization",
+          "Spike train",
+          "special",
+          "Inhibition",
+          "Excitation",
+          "Gap junction"
+        ],
+        "fullscreen": false,
+        "blockSwitches": true
+      },
+      "interaction_type": "switch",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "1780f705-0c83-458f-8a5e-6eac9994bb55",
+      "animation_key": "animationDirectionSelectivity",
+      "title": "Direction selectivity",
+      "config": {
+        "loop": true,
+        "legend": [
+          "Photoreceptors",
+          "Horizontal cells",
+          "Bipolar cells",
+          "Amacrine cells",
+          "Ganglion cells",
+          "Hyperpolarization",
+          "Depolarization",
+          "Spike train",
+          "special",
+          "Inhibition",
+          "Excitation",
+          "Gap junction"
+        ],
+        "fullscreen": false,
+        "blockSwitches": true
+      },
+      "interaction_type": "switch",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "000c39d5-9398-4462-b514-5a4fed6e40b9",
+      "animation_key": "animationObjectMotionSensitivity",
+      "title": "Object motion sensitivity",
+      "config": {
+        "loop": true,
+        "legend": [
+          "Photoreceptors",
+          "Horizontal cells",
+          "Bipolar cells",
+          "Amacrine cells",
+          "Ganglion cells",
+          "Hyperpolarization",
+          "Depolarization",
+          "Spike train",
+          "special",
+          "Inhibition",
+          "Excitation",
+          "Gap junction"
+        ],
+        "fullscreen": false,
+        "blockSwitches": true
+      },
+      "interaction_type": "switch",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "37ed8dad-4e1e-48a2-b9bf-10a09ea32f2c",
+      "animation_key": "animationRodVsConeCircuits",
+      "title": "Rod vs. cone circuits",
+      "config": {
+        "loop": true,
+        "legend": [
+          "Photoreceptors",
+          "Horizontal cells",
+          "Bipolar cells",
+          "Amacrine cells",
+          "Ganglion cells",
+          "Hyperpolarization",
+          "Depolarization",
+          "Spike train",
+          "special",
+          "Inhibition",
+          "Excitation",
+          "Gap junction"
+        ],
+        "fullscreen": false,
+        "iconPraefix": "retinalCircuits",
+        "blockSwitches": true,
+        "swicthSymboles": true
+      },
+      "interaction_type": "switch",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "e7346636-9f10-4864-ae5a-f689ffa4bc76",
+      "animation_key": "animationLightSensitiveGanglionCells",
+      "title": "Light sensitive ganglion cells",
+      "config": {
+        "loop": true,
+        "legend": [
+          "Photoreceptors",
+          "Horizontal cells",
+          "Bipolar cells",
+          "Amacrine cells",
+          "Ganglion cells",
+          "Hyperpolarization",
+          "Depolarization",
+          "Spike train",
+          "special",
+          "Inhibition",
+          "Excitation",
+          "Gap junction"
+        ],
+        "fullscreen": false
+      },
+      "interaction_type": "auto_loop",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationLightSensitiveGanglionCells.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "animation_key": "animationPhototransduction",
+      "title": "Phototransduction",
+      "config": {
+        "loop": true,
+        "infoText": "In the dark, the photoreceptor outer segment maintains a high concentration of the small molecule cGMP (cyclic guanosine monophosphate), which tonically activates cGMP-gated cationic channels. This results in Na<sup>+</sup> and Ca<sup>2+</sup> inflow in the outer segment, which balances an ongoing efflux of K<sup>+</sup> ions in the inner segment. This ionic flux results in a relatively depolarized resting membrane potential (Vm) of ~-30mV in darkness. Rhodopsin is a G-protein coupled receptor. It becomes enzymatically active following photon absorption and in turn activates the G-protein transducin. Transducin is composed of α, β, and γ subunits, and upon activation, releases its βγ subunit. Its α subunit in turn activates a phosphodiesterase (PDE) that then hydrolyzes cGMP molecules. The resulting decrease in intracellular [cGMP] in the outer segment leads to the closure of cGMP-gated cation channels<sup data-sup='28'>28</sup>. Since the efflux of K<sup>+</sup> ions continues in the inner segment, closing cGMP-gated channels in the outer segment results in photoreceptor membrane hyperpolarization, leading to a decrease in glutamate release. This light-evoked hyperpolarization is called a photovoltage, and its amplitude and duration depend on the luminance, size and duration of the light flash. Finally, an activated rhodopsin molecule needs to be de-activated, otherwise the phototransduction cascade would continue endlessly. Phototransduction terminates when an activated rhodopsin is phosphorylated by a membrane-bound enzyme called rhodopsin kinase. The addition of a phosphate to rhodopsin leads to its binding by a protein called arrestin, which ejects the rhodopsin kinase, and quenches rhodopsin’s ability to activate transducin by breaking the bond between all-trans retinal and opsin<sup data-sup='28'>28,</sup><sup data-sup='29'>29,</sup><sup data-sup='42'>42</sup>.",
+        "fullscreen": true,
+        "hasSpeedControl": true
+      },
+      "interaction_type": "fullscreen_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationPhototransduction.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "animation_key": "animationTheVisualCycle",
+      "title": "The visual cycle",
+      "config": {
+        "loop": true,
+        "infoText": "When rhodopsin absorbs a photon, its light-catching 11-cis retinal chromophore is isomerized into all-trans retinal. This latter form cannot be used for photon absorption, and the retina undertakes a complex series of steps to convert all-trans retinal back to photo-activatable 11-cis retinal. Following binding of arrestin, the bond between all-trans retinal and the opsin is broken. The all-trans aldehyde is released and quickly converted to all-trans retinol by membrane bound retinal dehydrogenase, which is in turn bound by an all-trans retinol binding protein. From here, a transport protein called interphotoreceptor retinoid-binding protein (IRBP) takes all-trans retinol on an inter-cellular journey into the retina pigment epithelium, which intercalates with photoreceptor outer segments. The retina pigment epithelium contains a pair of enzymes&nbsp;&mdash;&nbsp;retinyl-ester isomerase which converts all-trans retinol to 11-cis retinol, and 11-cis retinol dehydrogenase which uses ATP to convert 11-cis retinol back into 11-cis retinal. The regenerated 11-cis retinal is highly insoluble and is quickly bound by an IRBP which encapsulates the molecule, which makes the return trip out of retina pigment epithelium and back into the photoreceptor outer segment, where it is released and binds anew with an opsin<sup data-sup='28'>28,</sup><sup data-sup='41'>41</sup>.",
+        "fullscreen": true,
+        "hasSpeedControl": true
+      },
+      "interaction_type": "fullscreen_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationTheVisualCycle.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "063275c8-84e1-4557-afe5-967ac2bd0c93",
+      "animation_key": "animationDragon",
+      "title": "Dragon",
+      "config": {
+        "loop": true,
+        "fullscreen": false,
+        "loopSection": [82, 287]
+      },
+      "interaction_type": "auto_loop",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationDragon.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "79412b94-46a1-41b2-a4ed-c1a9ab28066c",
+      "animation_key": "animationEyeStructurTransition",
+      "title": "Eye Structure",
+      "config": {
+        "noBleed": true,
+        "isTransition": true
+      },
+      "interaction_type": "scroll_transition",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationEyeStructurTransition.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "animation_key": "animationEyeStructur",
+      "title": "Eye structure",
+      "config": {
+        "highlight": true,
+        "fullscreen": false,
+        "clickTriggered": true
+      },
+      "interaction_type": "click_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationEyeStructur.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "0825f3b9-44cb-4e27-b3a6-1be051d2cde4",
+      "animation_key": "animationAccommodationVergence",
+      "title": "Accommodation & vergence",
+      "config": {
+        "loop": true,
+        "fullscreen": false,
+        "loopSection": null
+      },
+      "interaction_type": "auto_loop",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationAccommodationVergence.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "animation_key": "animationPupillaryLightreflex",
+      "title": "Pathway for the pupillary light reflex",
+      "config": {
+        "loop": true,
+        "fullscreen": true,
+        "hasSpeedControl": true
+      },
+      "interaction_type": "fullscreen_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationPupillaryLightreflex.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "1c5d75f3-bb81-4f58-b28e-f666d8b3f05d",
+      "animation_key": "animationLatteralOrganization",
+      "title": "Lateral organization",
+      "config": {
+        "split": true,
+        "sources": [
+          "Cone mosaic in the fovea. Source Wikipedia.",
+          "Red, cone terminals; Green, horizontal cell mosaic; Blue, bipolar cell mosaic. Source Webvision (Luna, Fisher and Lewis).",
+          "ON alpha ganglion cell mosaic from cat retina. Source Wässle et al., 1981, Nature."
+        ],
+        "multiple": false,
+        "fullscreen": true
+      },
+      "interaction_type": "scroll_linked",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "01278ef4-b3dd-48df-831f-99200fa3d77f",
+      "animation_key": "animationSynapticArchitecture",
+      "title": "Synaptic architecture",
+      "config": {
+        "fullscreen": false,
+        "blockStates": true,
+        "iconPraefix": "retinalCircuits",
+        "hasTransition": true,
+        "clickTriggered": true
+      },
+      "interaction_type": "click_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationSynapticArchitecture.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "d1767bbe-4483-4e97-9089-bff013098bc3",
+      "animation_key": "animationPhotoreceptors",
+      "title": "Photoreceptors",
+      "config": {
+        "speed": 0.7,
+        "highlight": true,
+        "fullscreen": false,
+        "hasTransition": true,
+        "clickTriggered": true
+      },
+      "interaction_type": "click_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationPhotoreceptors.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "11a25596-5a1a-49ae-b7d0-0578a7050910",
+      "animation_key": "animationLateralOrganization",
+      "title": "Lateral organization",
+      "config": {
+        "split": true,
+        "scroll": true,
+        "fullscreen": true
+      },
+      "interaction_type": "scroll_linked",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationLateralOrganization.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "601bec99-5924-4f4d-aa75-be22ac1743ef",
+      "animation_key": "animationRetinalCellTypesTransition",
+      "title": "Retinal cell types",
+      "config": {
+        "noBleed": true,
+        "isTransition": true
+      },
+      "interaction_type": "scroll_transition",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationRetinalCellTypesTransition.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "animation_key": "animationRetinalCellTypes",
+      "title": "Retinal cell types",
+      "config": {
+        "icons": ["true", "true", "true", "true", "true"],
+        "autoplay": true,
+        "highlight": true,
+        "fullscreen": false,
+        "iconPraefix": "retinalCellTypes",
+        "clickTriggered": true
+      },
+      "interaction_type": "click_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationRetinalCellTypes.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "animation_key": "animationRetinalCellTypes2",
+      "title": "Retinal cell types",
+      "config": {
+        "set": 2,
+        "icons": ["true", "true", "true", "true", "true"],
+        "autoplay": true,
+        "highlight": true,
+        "fullscreen": false,
+        "iconPraefix": "retinalCellTypes",
+        "clickTriggered": true
+      },
+      "interaction_type": "click_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationRetinalCellTypes2.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "animation_key": "animationRetinalCellTypes3",
+      "title": "Retinal cell types",
+      "config": {
+        "set": 1,
+        "icons": ["true", "true", "true", "true", "true"],
+        "autoplay": true,
+        "highlight": true,
+        "fullscreen": false,
+        "iconPraefix": "retinalCellTypes",
+        "clickTriggered": true
+      },
+      "interaction_type": "click_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationRetinalCellTypes.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "f4e3f327-21bc-4775-b354-477156d46d8c",
+      "animation_key": "animationONOFFLamina",
+      "title": "ON and OFF lamina",
+      "config": {
+        "illuImage": true,
+        "fullHeight": false
+      },
+      "interaction_type": "static_image",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/illuImages/animationONOFFLamina.png"
+    },
+    {
+      "id": "a3cb77ae-4cd4-48c1-bda4-87d9e3d775fd",
+      "animation_key": "animationColorOpponency",
+      "title": "Color Opponency",
+      "config": {
+        "caption": "Stare at the cross for 30 seconds, then close your eyes or look at a white wall and notice how the colours change.",
+        "illuImage": true,
+        "fullHeight": true
+      },
+      "interaction_type": "static_image",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/illuImages/animationColorOpponency.png"
+    },
+    {
+      "id": "1c172a95-1d96-4931-a8e5-9650e9ef9f96",
+      "animation_key": "animationWavesOfActivity",
+      "title": "Spontaneous waves of activity",
+      "config": {
+        "illuImage": true
+      },
+      "interaction_type": "youtube_embed",
+      "youtube_id": "k0_HXpcH4zI",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "71f33065-e4c1-49fd-ab7c-c50df1b2166f",
+      "animation_key": "animationNormalVision",
+      "title": "Normal vision",
+      "config": {
+        "flip": true,
+        "video": "normal-vision",
+        "fullscreen": false
+      },
+      "interaction_type": "video_flip",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": "/publicAssets/video/9-1-diseases/9-1-normal-vision.mp4",
+      "image_file_url": null
+    },
+    {
+      "id": "11fc8bf8-c32e-4c90-8c35-274e7893490e",
+      "animation_key": "animationCataracts",
+      "title": "Cataracts",
+      "config": {
+        "flip": true,
+        "video": "cataracts",
+        "source": "Xu et al., 2021, Biomed Eng Online",
+        "fullscreen": false
+      },
+      "interaction_type": "video_flip",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": "/publicAssets/video/9-1-diseases/9-1-cataracts.mp4",
+      "image_file_url": null
+    },
+    {
+      "id": "04b0d60a-8191-492a-8bf6-a1caffac0159",
+      "animation_key": "animationGlaucoma",
+      "title": "Glaucoma",
+      "config": {
+        "flip": true,
+        "video": "glaucoma",
+        "source": "Viewpoint online",
+        "fullscreen": false
+      },
+      "interaction_type": "video_flip",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": "/publicAssets/video/9-1-diseases/9-1-glaucoma.mp4",
+      "image_file_url": null
+    },
+    {
+      "id": "ffa8266d-8b43-4935-a637-497aceafc24d",
+      "animation_key": "animationDiabeticRetinopathy",
+      "title": "Diabetic retinopathy",
+      "config": {
+        "flip": true,
+        "video": "diabetic-retinopathy",
+        "source": "Ramasy et al., 2021, PeerJ Computer Science",
+        "fullscreen": false
+      },
+      "interaction_type": "video_flip",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": "/publicAssets/video/9-1-diseases/9-1-diabetic-retinopathy.mp4",
+      "image_file_url": null
+    },
+    {
+      "id": "ca840b89-c445-4387-bcf7-93c6c920dca5",
+      "animation_key": "animationAgeRelatedMacularDegeneration",
+      "title": "Age related macular degeneration",
+      "config": {
+        "flip": true,
+        "video": "macular-degeneration",
+        "source": "Eyerounds.org",
+        "fullscreen": false
+      },
+      "interaction_type": "video_flip",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": "/publicAssets/video/9-1-diseases/9-1-macular-degeneration.mp4",
+      "image_file_url": null
+    },
+    {
+      "id": "02a58588-b94f-4fad-ad88-ec78b0bf69fd",
+      "animation_key": "animationRetinitisPigmentosa",
+      "title": "Retinitis pigmentosa",
+      "config": {
+        "flip": true,
+        "video": "retinitis-pigmentosa",
+        "source": "Hamel Orphanet Journal of Rare Diseases 2006 1:40 doi:10.1186/1750-1172-1-40)",
+        "fullscreen": false
+      },
+      "interaction_type": "video_flip",
+      "youtube_id": null,
+      "lottie_file_url": null,
+      "video_file_url": "/publicAssets/video/9-1-diseases/9-1-retinitis-pigmentosa.mp4",
+      "image_file_url": null
+    },
+    {
+      "id": "e8e241cd-94c1-4c09-a6cd-256fbdd8ca5e",
+      "animation_key": "animationEyeMovements",
+      "title": "Eye Movements",
+      "config": {
+        "loop": true,
+        "source": "Artistic reinterpretaton",
+        "fullscreen": false
+      },
+      "interaction_type": "auto_loop",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationEyeMovements.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "382e5d89-4710-4df9-9c22-900e21e1bc7a",
+      "animation_key": "animationPlaceholder",
+      "title": "Placeholder",
+      "config": {
+        "loop": true,
+        "fullParagraph": true
+      },
+      "interaction_type": "auto_loop",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationPlaceholder.json",
+      "video_file_url": null,
+      "image_file_url": null
+    },
+    {
+      "id": "1028debf-076f-40c8-845c-c571241297c4",
+      "animation_key": "animationImpairedVision",
+      "title": "Refraction errors",
+      "config": {
+        "loop": false,
+        "toggle": "Corrected",
+        "infoText": "Despite our body’s best laid plans, a variety of developmental and age-related issues can cause our eyes to improperly focus incoming images onto the retina, resulting in impaired vision. Two common issues result from the image being focused either in front of (myopia) or behind (hyperopia) the retina. Myopia, also commonly referred to as nearsightedness, blurs images of far-away images. In contrast, hyperopia, commonly referred to as farsightedness, blurs images of nearby images. Another common refractive issue is astigmatism, which results in uneven focus of the incoming image on the retina, due to irregular curvature of the cornea, or lens abnormalities. Finally, as we age, the lens becomes less elastic and the ciliary muscles become less effective at accommodating different focal planes, leading to presbyopia, which tends to focus images behind the retina. In general, most types of refractive errors can be addressed with corrective lenses.",
+        "fullscreen": true
+      },
+      "interaction_type": "fullscreen_states",
+      "youtube_id": null,
+      "lottie_file_url": "/publicAssets/animations/animationImpairedVision.json",
+      "video_file_url": null,
+      "image_file_url": null
+    }
+  ],
+  "animation_states": [
+    {
+      "id": "7cbdd42c-084e-4e29-91a7-72e5a37e2c6f",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Step 1",
+      "state_description": "Light shines into an eye, activating the retina",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "9562eb08-363a-47f5-a761-805e5a018019",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Step 3",
+      "state_description": "Each pretectal nucleus projects bilaterally to the Edinger-Westphal Nucleus",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "6db1dc7b-b650-4d4d-967d-eb4dd8a7faae",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Step 4",
+      "state_description": "The Edinger-Westphal nucleus projects ipsilaterally to the ciliary ganglion",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "98ae4ab1-4f65-4aa4-8b3d-3dabc5852305",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Pretectal nucleus",
+      "state_description": null,
+      "order_index": 100,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "05700c41-cb64-4fbf-ab7b-f0d86ddc724e",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Edinger-Westphal nucleus",
+      "state_description": null,
+      "order_index": 101,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e2fae02c-f86e-42f7-9111-5d101dd72958",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Ciliary ganglion",
+      "state_description": null,
+      "order_index": 102,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "fb257641-0b6d-4a93-9068-7669b99e77ea",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Iris muscle",
+      "state_description": null,
+      "order_index": 103,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e96d69cb-b997-4828-8978-1224ee257080",
+      "animation_id": "1028debf-076f-40c8-845c-c571241297c4",
+      "state_label": "Step 1",
+      "state_description": "Normal eye (emmetropia)",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "049ce420-22c1-4b3d-afd3-8125e6990270",
+      "animation_id": "1028debf-076f-40c8-845c-c571241297c4",
+      "state_label": "Step 2",
+      "state_description": "Myopia",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "65d54b94-b537-4603-943e-d21a41c6f226",
+      "animation_id": "1028debf-076f-40c8-845c-c571241297c4",
+      "state_label": "Step 3",
+      "state_description": "Hyperopia",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "af4a608a-2904-4522-ac46-540a2f04c63f",
+      "animation_id": "1028debf-076f-40c8-845c-c571241297c4",
+      "state_label": "Step 4",
+      "state_description": "Astigmatism",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "faa078ff-90e3-448e-a849-6193c98cabdc",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 2",
+      "state_description": "A flash of light, and a photon activates rhodopsin",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "8950472c-4ff8-4275-82b5-3f1b13b17e44",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 3",
+      "state_description": "Retinal changes conformation",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "5ee4883f-a898-4832-b1c0-5836196a18d8",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 4",
+      "state_description": "Activated rhodopsin in turn activates transducin",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "3ede5cd0-7ea8-4863-878a-50fc046201f5",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 5",
+      "state_description": "The alpha subunit of transducin activates phosphodiesterase (PDE)",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "d3db260f-56fd-456b-8b6a-78aef1c4695e",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 7",
+      "state_description": "cGMP-gated ion channels close",
+      "order_index": 6,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "34d72d37-89fd-44e8-8ae4-d99ec4c6e360",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 8",
+      "state_description": "The rod membrane hyperpolarizes",
+      "order_index": 7,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "5e84b8b3-e597-4038-9db0-3e3eaf7f9992",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Rhodopsin",
+      "state_description": null,
+      "order_index": 100,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "6e932c8f-ed79-4136-94c3-b9d86e8e961d",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Retinal",
+      "state_description": null,
+      "order_index": 101,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "c3030c69-a4a4-4f18-a865-cc2c881cd35a",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Transducin",
+      "state_description": null,
+      "order_index": 102,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "de243d53-fa38-4b51-b46e-45f15a15c861",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Phosphodiesterase (PDE)",
+      "state_description": null,
+      "order_index": 103,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "b55964c9-b60b-4fa0-ae5d-80ff9deb1c81",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "cGMP",
+      "state_description": null,
+      "order_index": 104,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "b5091f94-4871-4a1e-972c-52dd0438467d",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "GMP",
+      "state_description": null,
+      "order_index": 105,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "16a3a156-6857-4ce6-8997-aa185da9d63e",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "α",
+      "state_description": null,
+      "order_index": 106,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "f2f7f279-b841-4633-a02c-8e332a03d47e",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "γ",
+      "state_description": null,
+      "order_index": 107,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "a8b1d74b-5087-4b47-9b0e-0a515dbb2fdc",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "β",
+      "state_description": null,
+      "order_index": 108,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "37a546f5-3e38-4b0c-8e9d-cc09d250bf44",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "GTP",
+      "state_description": null,
+      "order_index": 109,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "8f2ddc8d-e928-44d3-a796-ee37476fefa8",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "NA+",
+      "state_description": null,
+      "order_index": 110,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "424ccc3e-6be7-43fa-8d54-94cead49d03c",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Step 1",
+      "state_description": "Rhodopsin absorps a photon of light and retinal changes from 11-cis to all-trans",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "168c3ba3-8c78-4ed6-8fed-216b96a748a5",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Step 2",
+      "state_description": "All-trans retinal exits the rod",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "19fb993f-0c74-42fc-898b-7aec4cd7f7dd",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Step 3",
+      "state_description": "All-trans retinal binds to IRBP, which transports it into the RPE",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e4be6b52-0347-4084-83b5-971909875ffb",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Step 4",
+      "state_description": "In the RPE, All-trans retinal undergoes further changes until restored to 11-cis ",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "ea8fdd99-716a-40b3-877c-223c24b63549",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Step 6",
+      "state_description": "11-cis retinal re-enters the rod where it can get activated by light again",
+      "order_index": 5,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "7b7cb8bc-cddc-414a-920c-fe01c6704864",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Rhodopsin",
+      "state_description": null,
+      "order_index": 100,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "3652b439-3e32-4972-9dbb-531693e25fc4",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Retinal ",
+      "state_description": null,
+      "order_index": 101,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "963d32cf-be09-42fd-a765-b75d04002a8d",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Rod",
+      "state_description": null,
+      "order_index": 102,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "9d735b34-85d0-4d1f-924c-1b44183e4628",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "RPE",
+      "state_description": null,
+      "order_index": 103,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e38b6dc3-ed15-4249-b419-e46f6876b65c",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "IRBP",
+      "state_description": null,
+      "order_index": 104,
+      "is_highlight_state": true,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "1bddc60b-cb8d-4bd1-b7aa-5dc7cc01c1f2",
+      "animation_id": "01278ef4-b3dd-48df-831f-99200fa3d77f",
+      "state_label": "Step 1",
+      "state_description": "Inhibition",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "78249f53-fda5-4a57-9d97-47f58f5683d2",
+      "animation_id": "01278ef4-b3dd-48df-831f-99200fa3d77f",
+      "state_label": "Step 3",
+      "state_description": "Gap junction",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "48b74730-e2cc-4aa8-9b96-7c9a02bc5980",
+      "animation_id": "d1767bbe-4483-4e97-9089-bff013098bc3",
+      "state_label": "Step 1",
+      "state_description": "Disks",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e32a3114-6603-4df9-a0a0-efb70e040f91",
+      "animation_id": "d1767bbe-4483-4e97-9089-bff013098bc3",
+      "state_label": "Step 2",
+      "state_description": "Opsins",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "99692c97-efec-4d84-858f-ad65b61ff71e",
+      "animation_id": "d1767bbe-4483-4e97-9089-bff013098bc3",
+      "state_label": "Step 3",
+      "state_description": "Outer segment",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "4850ce59-782a-41d7-ae29-af686460a3df",
+      "animation_id": "d1767bbe-4483-4e97-9089-bff013098bc3",
+      "state_label": "Step 4",
+      "state_description": "Inner segment",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "10339d13-a0d5-49fb-b175-d864dbb7685f",
+      "animation_id": "d1767bbe-4483-4e97-9089-bff013098bc3",
+      "state_label": "Step 5",
+      "state_description": "Mitocondria",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "86b509e2-e960-42ed-91e7-fb86f51d1361",
+      "animation_id": "d1767bbe-4483-4e97-9089-bff013098bc3",
+      "state_label": "Step 6",
+      "state_description": "Nucleus",
+      "order_index": 5,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "4e266c9c-da2f-4504-8651-7ee771820f50",
+      "animation_id": "01278ef4-b3dd-48df-831f-99200fa3d77f",
+      "state_label": "Step 2",
+      "state_description": "Excitation",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "809cb58e-4f69-4f3f-a8ee-515beeb92d72",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 1",
+      "state_description": "Photoreceptors",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "a279f7b2-9b06-4ea2-a1b0-439d508217d9",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 2",
+      "state_description": "Horizontal cells",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "5cdb2a82-f9ee-49a7-97c0-9d7f20589d68",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 3",
+      "state_description": "Bipolar cells",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "33ef4533-a364-4472-93a5-36621ba73936",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 4",
+      "state_description": "Amacrine cells",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "836fa9ae-09ed-474f-afca-036da7e9b7ef",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 5",
+      "state_description": "Ganglion cells",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "9cf055a6-8669-4a4f-8923-5d28130e2618",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 6",
+      "state_description": "Inner nuclear layer",
+      "order_index": 5,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "3642add9-3f04-4332-b09b-eaaff5c3dbb3",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 7",
+      "state_description": "Inner plexiform layer",
+      "order_index": 6,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "2ede6d99-8c5e-422a-9088-968f2bf77980",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 8",
+      "state_description": "Outer nuclear layer",
+      "order_index": 7,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "b69a05b9-6665-461e-ae7a-62dab63834b2",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 9",
+      "state_description": "Outer plexiform layer",
+      "order_index": 8,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "355dea67-11da-4b8b-8b53-f7de86fa4679",
+      "animation_id": "07f91aaf-a191-4b7b-bd46-02985528b180",
+      "state_label": "Step 10",
+      "state_description": "Ganglion cell layer",
+      "order_index": 9,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "0e51d50e-a001-4264-aa4f-633a3f77cf6e",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 1",
+      "state_description": "Photoreceptors",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "cdd66a9f-15bf-4701-9b0a-36267248c070",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 2",
+      "state_description": "Horizontal cells",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "c9e4f442-3d76-4ca0-b574-3a580dd28718",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 3",
+      "state_description": "Bipolar cells",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "8da87c38-0a12-4d5f-b7e0-dcccd5673750",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 4",
+      "state_description": "Amacrine cells",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "dfc2cf73-0218-4b0e-bbf1-f2c35fe86c67",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 5",
+      "state_description": "Ganglion cells",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "09ed7e89-5f67-447d-beea-ed36a3724c80",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 6",
+      "state_description": "Inner nuclear layer",
+      "order_index": 5,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e86702c9-ca58-4b67-a94d-2929e57136cf",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 7",
+      "state_description": "Inner plexiform layer",
+      "order_index": 6,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "61e53901-5a4a-49a6-b9b1-3e43fc44ebc3",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 8",
+      "state_description": "Outer nuclear layer",
+      "order_index": 7,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "4c1c1b10-3666-49b9-a169-25f488e7ab43",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 9",
+      "state_description": "Outer plexiform layer",
+      "order_index": 8,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "ca574625-f54d-4aea-b38e-1545648c5e6d",
+      "animation_id": "15296428-d3b8-4ed9-83bb-19c913d18057",
+      "state_label": "Step 10",
+      "state_description": "Ganglion cell layer",
+      "order_index": 9,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "9fcae5a1-3fce-40c6-99c8-a0fa44b89ed3",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 5",
+      "state_description": "Lens",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "10f2a631-3fc1-49fb-a312-9abfb71056ce",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 3",
+      "state_description": "Iris",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "f664166a-0d44-454f-991c-64d75e785350",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 1",
+      "state_description": "Cornea",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e0062a01-fa5e-428f-978b-c246c53c8ac3",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 10",
+      "state_description": "Choroid",
+      "order_index": 9,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "f5ebd844-a61e-4746-8ca7-a7652e1d32b0",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 11",
+      "state_description": "Sclera",
+      "order_index": 10,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "36304268-0ece-4c7d-8b70-05eddf18bd90",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 9",
+      "state_description": "Fovea",
+      "order_index": 8,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "5bb23a39-21cc-44f1-bb9f-830f663aaf48",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 2",
+      "state_description": "Aqueous humour",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "3d7276e5-206a-4ca6-9873-4cf0dcb195a6",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 6",
+      "state_description": "Ciliary muscle",
+      "order_index": 5,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "95f339b8-f8fd-4c34-a23a-28269d17f5b6",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 8",
+      "state_description": "Retina",
+      "order_index": 7,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "00b293db-045f-452a-a39a-de6be3f5b9fe",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 7",
+      "state_description": "Vitreous humour",
+      "order_index": 6,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "1c6294b8-6195-43e0-9364-c10710b4d42b",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 12",
+      "state_description": "Optic nerve",
+      "order_index": 11,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "af719ae4-dc85-4776-ab87-f64c06043407",
+      "animation_id": "12344b49-a707-4ef1-aea8-27cd67b97e94",
+      "state_label": "Step 4",
+      "state_description": "Pupil",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-09-24T19:50:23.690436+00:00"
+    },
+    {
+      "id": "4b08d325-0b4a-41ee-b91e-5dadd7718d6d",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 1",
+      "state_description": "Photoreceptors",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "067b9f49-a633-4505-849c-40324d28b039",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 2",
+      "state_description": "Horizontal cells",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "af3b361d-ac85-40c6-8480-c1498165938a",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 3",
+      "state_description": "Bipolar cells",
+      "order_index": 2,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "8849fcc0-8b4e-4f46-a358-a8da33c9faf0",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 4",
+      "state_description": "Amacrine cells",
+      "order_index": 3,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "f6be5d9c-a15f-4c37-a91b-64f960687114",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 5",
+      "state_description": "Ganglion cells",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "c88fa58f-5376-4e7f-86f4-34d696420c9b",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 8",
+      "state_description": "Inner nuclear layer",
+      "order_index": 7,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "46a1eff7-e8f8-4121-a9b9-5e7881b0abf4",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 9",
+      "state_description": "Inner plexiform layer",
+      "order_index": 8,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "f6cd0cdc-4540-468d-8871-c14a7f05be55",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 6",
+      "state_description": "Outer nuclear layer",
+      "order_index": 5,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "9e7a833c-6050-4768-bbdc-20911c4e6aaa",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 7",
+      "state_description": "Outer plexiform layer",
+      "order_index": 6,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "392808c1-16d7-4e87-83ff-33ba034ec849",
+      "animation_id": "c45cd95d-0704-4b2f-b809-27706f338f79",
+      "state_label": "Step 10",
+      "state_description": "Ganglion cell layer",
+      "order_index": 9,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "aa1f470b-fba7-4e94-9326-3a2744be1824",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Step 2",
+      "state_description": "Retinal ganglion cell axons project bilaterally to the pretectal olivary nucleus",
+      "order_index": 1,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "70047dbd-1e20-4a99-a011-d9acc09ec544",
+      "animation_id": "d698963e-ebca-4856-9dd7-d4758ff99601",
+      "state_label": "Step 5",
+      "state_description": "Postganglionic parasympathetic neurons project ipsilaterally to the iris spinster muscle, resulting in pupil constriction",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "62985429-3b42-4c97-8754-8dfdd715f86f",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 1",
+      "state_description": "Rod is in the dark. Rhodopsin is inactive. The rod membrane is depolarized",
+      "order_index": 0,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "3f5ba9b6-86c3-4a1e-9d63-9c88b3f84cd6",
+      "animation_id": "e67a1f28-244e-4b97-83ed-ce29ea23abcc",
+      "state_label": "Step 6",
+      "state_description": "PDE converts cGMP into GMP, leading to a decrease in intracellular [cGMP]",
+      "order_index": 5,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "0d6112ef-9529-4d79-9b62-1b2ab2e51075",
+      "animation_id": "c80546ca-fc37-4443-b916-a6d1134d24ba",
+      "state_label": "Step 5",
+      "state_description": "11-cis retinal binds to IRBP and is shuttled out of the RPE",
+      "order_index": 4,
+      "is_highlight_state": false,
+      "highlight_class_name": null,
+      "highlight_elements": null,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    }
+  ],
+  "animation_variants": [
+    {
+      "id": "b8d9c7f3-4e17-4ede-84f0-084cd106d846",
+      "animation_id": "1c5d75f3-bb81-4f58-b28e-f666d8b3f05d",
+      "variant_label": "Left",
+      "lottie_file_url": "/publicAssets/animations/animationLatteralOrganizationLeft.json",
+      "video_file_url": null,
+      "order_index": 0,
+      "created_at": "2026-04-13T16:27:35.822267+00:00"
+    },
+    {
+      "id": "fab5cb3d-3a97-4449-9298-eea00e165a97",
+      "animation_id": "1c5d75f3-bb81-4f58-b28e-f666d8b3f05d",
+      "variant_label": "Right",
+      "lottie_file_url": "/publicAssets/animations/animationLatteralOrganizationRight.json",
+      "video_file_url": null,
+      "order_index": 1,
+      "created_at": "2026-04-13T16:27:35.822267+00:00"
+    },
+    {
+      "id": "5148eae0-3acb-4a6f-bb23-c51c37fffd90",
+      "animation_id": "940d4b0b-b6e5-4d82-a77e-6f0e36d6baa3",
+      "variant_label": "Small light",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 0,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "135c9e4d-6020-4541-bf51-d696c5cc25cf",
+      "animation_id": "940d4b0b-b6e5-4d82-a77e-6f0e36d6baa3",
+      "variant_label": "Wide light",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 1,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "3ef3c588-0aed-444d-ab5d-41dbe09a1731",
+      "animation_id": "1780f705-0c83-458f-8a5e-6eac9994bb55",
+      "variant_label": "Prefered",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 0,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "7a6c1ea5-458e-4eb6-aba3-3e16a657a419",
+      "animation_id": "1780f705-0c83-458f-8a5e-6eac9994bb55",
+      "variant_label": "Null",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 1,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "97b796e7-6b33-41d5-933f-54da32642448",
+      "animation_id": "000c39d5-9398-4462-b514-5a4fed6e40b9",
+      "variant_label": "Symmetric center",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 0,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "f90ea0e0-c7f3-475a-9a68-7870a6cf0504",
+      "animation_id": "000c39d5-9398-4462-b514-5a4fed6e40b9",
+      "variant_label": "Asymmetric center",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 1,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "67b19fcd-cbaf-4829-a332-1db9e65fdd44",
+      "animation_id": "37ed8dad-4e1e-48a2-b9bf-10a09ea32f2c",
+      "variant_label": "Day",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 0,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    },
+    {
+      "id": "e3023336-44d5-41fe-a83e-fb426bbcb682",
+      "animation_id": "37ed8dad-4e1e-48a2-b9bf-10a09ea32f2c",
+      "variant_label": "Night",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "order_index": 1,
+      "created_at": "2026-07-29T16:35:10.971808+00:00"
+    }
+  ]
+}
