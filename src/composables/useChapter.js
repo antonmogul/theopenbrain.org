@@ -30,10 +30,6 @@ async function canPreviewDrafts() {
 }
 import { clog, cgroup } from "@/helper/chapterDebug";
 import { transformModuleToChapterFormat } from "./chapterTransform.mjs";
-import {
-  applyWidgetPlacements,
-  placementsForChapter,
-} from "@/widgets/placements";
 
 /**
  * Generic composable to fetch and transform any chapter from Supabase
@@ -139,7 +135,9 @@ export function useChapter() {
       // left-column trigger id, so attach animation_key/title onto each row.
       const animationIds = [
         ...new Set(
-          (paragraphsData || []).map((p) => p.animation_id).filter(Boolean)
+          [...(paragraphsData || []), ...(sectionsData || [])]
+            .map((p) => p.animation_id)
+            .filter(Boolean)
         ),
       ];
       if (animationIds.length > 0) {
@@ -151,11 +149,15 @@ export function useChapter() {
           return { data: null, error: null, stale: true };
         }
         const animById = new Map((animRows || []).map((a) => [a.id, a]));
-        for (const p of paragraphsData) {
+        for (const p of [...paragraphsData, ...sectionsData]) {
           const a = p.animation_id && animById.get(p.animation_id);
           if (a) {
             p.animation_key = a.animation_key;
             p.animation_title = a.title || "";
+          } else if (p.animation_id) {
+            console.warn(
+              `[animations] database record "${p.animation_id}" linked by "${p.id}" was not found — the figure will not render`
+            );
           }
         }
       }
@@ -183,21 +185,6 @@ export function useChapter() {
 
       chapterData.value = chapter;
       const transformed = transformModuleToChapterFormat(chapter);
-      // Splice interactive widgets into the prose (OPENBRAIN-21). Code-side
-      // placements only fill gaps: a `{ type: "widget" }` block authored in
-      // the DB reaches here via transformParagraph and the matching placement
-      // is skipped. Unresolved anchors are a content drift signal, not an
-      // error — the chapter still renders.
-      const placed = applyWidgetPlacements(
-        transformed,
-        placementsForChapter(chapter?.slug)
-      );
-      if (placed.unresolved.length) {
-        console.warn(
-          "useChapter: widget placements could not be anchored -",
-          placed.unresolved.join(", ")
-        );
-      }
       transformedData.value = transformed;
 
       // [2 TREE] summarise the transformed tree: sections, subsections, figures, and

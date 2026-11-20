@@ -29,10 +29,7 @@ import {
 
 import Section from "./text/SectionComp.vue";
 import IllustrationInline from "@/components/chapter/Illus/IllustrationInline.vue";
-import {
-  useInlineFigureFor,
-  useInlineFigures,
-} from "@/composables/useInlineFigures";
+import { useInlineFigureFor } from "@/composables/useInlineFigures";
 import Points from "@/components/UI/PointsComp.vue";
 import HoverImg from "@/components/chapter/text/HoverImg.vue";
 import ReadingRail from "@/components/chapter/ReadingRail.vue";
@@ -88,15 +85,6 @@ const emit = defineEmits(["figure-changed"]);
 const authors = computed(() => authorCardsForModule(props.module));
 const credits = computed(() => creditsForModule(props.module));
 
-// The intro's scroll-trigger id derives from its animation config
-// (sections.animation_config.name, e.g. "dragon" → triggerAnimationDragon)
-// instead of a hardcoded Retina-only span.
-const introTriggerId = (section) => {
-  const name = section?.animation?.name;
-  if (!name) return null;
-  return `triggerAnimation${name.charAt(0).toUpperCase()}${name.slice(1)}`;
-};
-
 // An intro paragraph with a figure of its own gets the scroll trigger the
 // pinned pane listens for, `triggerAnimation` + the figure's name, exactly
 // as SectionComp gives one to a section's paragraphs (OPENBRAIN-131), with
@@ -116,7 +104,6 @@ const paragraphTrigger = (paragraph) => {
 // Below 1024px there is no pane: the figure is drawn in the text, at its
 // first paragraph (useInlineFigures).
 const inlineFigureFor = useInlineFigureFor();
-const inlineIntro = useInlineFigures();
 
 // Use computed property for reactivity - this will update when store changes
 const source = computed(() => {
@@ -743,61 +730,8 @@ onBeforeUnmount(() => {
             {{ section.sectionTitle || section.title }}
           </h1>
 
-          <!-- Intro paragraphs. A section with an intro animation (Retina's
-               "dragon") wraps them in that animation's scroll trigger. A
-               paragraph with a figure of its own (Attention's and Stress's
-               Figure 1) gets its own trigger for the pane, and draws the
-               figure inline below 1024px, as SectionComp does
-               (OPENBRAIN-131). -->
-          <span
-            v-if="introTriggerId(section)"
-            :id="introTriggerId(section)"
-            class="animationTrigger block noHighlight"
-            :data-figure-hold="section.animation?.hold"
-            :data-figure-room="section.animation?.room"
-          >
-            <IllustrationInline
-              v-if="inlineIntro"
-              :animation-id="
-                introTriggerId(section).replace(
-                  /^triggerAnimation/,
-                  'animation'
-                )
-              "
-            />
-            <template
-              v-for="paragraph in section.paragraphs"
-              :key="paragraph.id"
-            >
-              <span v-bind="paragraphTrigger(paragraph)">
-                <EditableBlock
-                  v-if="canEdit"
-                  :content="paragraph.text"
-                  :paragraph-id="paragraph.id"
-                  :is-creator="canEdit"
-                  tag="p"
-                  class-name="P"
-                  @save="
-                    ({ paragraphId, content }) =>
-                      saveContent({ paragraphId, content, type: 'intro' })
-                  "
-                />
-                <div
-                  v-else
-                  :id="paragraph.id"
-                  :data-paragraph-id="paragraph.id"
-                  class="P"
-                  v-html="paragraph.text"
-                />
-                <IllustrationInline
-                  v-if="inlineFigureFor(paragraph)"
-                  :key="'inline' + paragraph.id"
-                  :animation-id="paragraph.animation.id"
-                />
-              </span>
-            </template>
-          </span>
-          <span v-else class="block noHighlight">
+          <!-- Intro figures use the same paragraph placements as every section. -->
+          <span class="block noHighlight">
             <template
               v-for="paragraph in section.paragraphs"
               :key="paragraph.id"

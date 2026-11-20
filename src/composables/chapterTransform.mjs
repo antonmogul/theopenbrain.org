@@ -64,8 +64,7 @@ export function extractChapter1Meta(blocks) {
       };
     }
     if (block.type === "widget" && block.widgetId) {
-      // Author-placed interactive (OPENBRAIN-21). Same paragraph shape as
-      // src/widgets/placements.js produces, so the reader has one branch.
+      // Author-placed interactive: presentation travels with the DB block.
       meta.type = "widget";
       meta.widget = {
         placementId: block.placementId || block.widgetId,
@@ -75,8 +74,12 @@ export function extractChapter1Meta(blocks) {
         blurb: block.blurb || "",
         credit: block.credit || "",
         route: block.route || "",
-        // One screen of the chapter, set on the block itself; a block
-        // without it inherits its code placement's (fullScreenOf).
+        ...(block.narrowKind ? { narrowKind: block.narrowKind } : {}),
+        ...(block.fallbackWidgetId
+          ? { fallbackWidgetId: block.fallbackWidgetId }
+          : {}),
+        ...(block.launchCard ? { launchCard: block.launchCard } : {}),
+        // One screen of the chapter, set on the block itself.
         ...(typeof block.fullScreen === "boolean"
           ? { fullScreen: block.fullScreen }
           : {}),
@@ -527,6 +530,44 @@ export function transformSectionParagraphs(rows) {
 }
 
 /**
+ * Compatibility while section placements await their content migration.
+ * Lower them once to the same paragraph shape as migrated placements; the
+ * renderer has only a paragraph figure path. No chapter/key lookup is needed.
+ */
+export function paragraphFiguresForSection(section) {
+  const paragraphs = [...(section.paragraphs || [])].sort(
+    (a, b) => a.order_index - b.order_index
+  );
+  const placement = section.animation_config;
+  const key = placement?.id || section.animation_key;
+  if (!section.animation_id || !key || !paragraphs.length) return paragraphs;
+  const host = paragraphs[0];
+  if (host.animation_id) return paragraphs;
+  const { title } = placement || {};
+  const flags = Object.fromEntries(
+    Object.entries(placement || {}).filter(
+      ([key]) => !["id", "name", "title"].includes(key)
+    )
+  );
+  paragraphs[0] = {
+    ...host,
+    animation_id: section.animation_id,
+    animation_key: key,
+    animation_title: section.animation_title || title || "",
+    animation_trigger: "auto",
+    content: {
+      ...host.content,
+      animationFlags: {
+        hold: "next",
+        ...flags,
+        ...host.content?.animationFlags,
+      },
+    },
+  };
+  return paragraphs;
+}
+
+/**
  * Transform database module structure to Chapter 1 format
  */
 export function transformModuleToChapterFormat(module) {
@@ -564,9 +605,12 @@ export function transformModuleToChapterFormat(module) {
     };
   });
   // Sort sections by order_index
-  const sortedSections = normalizedSections.sort(
-    (a, b) => a.order_index - b.order_index
-  );
+  const sortedSections = normalizedSections
+    .map((section) => ({
+      ...section,
+      paragraphs: paragraphFiguresForSection(section),
+    }))
+    .sort((a, b) => a.order_index - b.order_index);
 
   // Find special sections
   const introSection = sortedSections.find(
@@ -595,7 +639,6 @@ export function transformModuleToChapterFormat(module) {
           title: module.title || introSection.title,
           sectionTitle: introSection.title,
           ...(introSection.art !== undefined ? { art: introSection.art } : {}),
-          animation: introSection.animation_config || undefined,
           paragraphs: introSection.paragraphs
             ? introSection.paragraphs
                 .sort((a, b) => a.order_index - b.order_index)
@@ -634,11 +677,6 @@ export function transformModuleToChapterFormat(module) {
     // it; the resolver reads older names ("violet") too.
     if (sectionObj.kind === "box" && section.box_treatment) {
       sectionObj.treatment = section.box_treatment;
-    }
-
-    // Restore section-level animation from animation_config
-    if (section.animation_config) {
-      sectionObj.animation = section.animation_config;
     }
 
     return sectionObj;

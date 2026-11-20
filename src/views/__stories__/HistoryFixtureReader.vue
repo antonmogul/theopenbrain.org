@@ -4,7 +4,6 @@
 import { computed, ref } from "vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
-import { WIDGET_PLACEMENTS } from "@/widgets/placements";
 import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
@@ -16,12 +15,11 @@ const props = defineProps({
 });
 const narrow = useMediaQuery(READER_NARROW_QUERY);
 const open3d = ref(false);
-const placement = computed(() => {
-  const record = WIDGET_PLACEMENTS.find(
-    (item) => item.widgetId === props.subject
-  );
-  return record ? { ...record, placementId: record.id } : null;
-});
+// This scoped legacy appendix fixture deliberately exercises the Vue ports;
+// published chapter placement comes from DB blocks, not this story data.
+const placement = computed(
+  () => fixture.widgets.find((item) => item.widgetId === props.subject) || null
+);
 const gallery = {
   id: "animationFoundationsFig6",
   title: "The medieval cell doctrine",

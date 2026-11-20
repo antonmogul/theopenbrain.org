@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import appendix from "@/data/history/penfieldAppendix.json";
 import { PENFIELD_LABELS, PENFIELD_TITLE } from "@/helper/penfieldPresentation";
-import { WIDGET_PLACEMENTS } from "@/widgets/placements";
+import fixture from "./fixtures/retinaWidgetsDb.json";
 
 describe("Penfield presentation preserves the scientific source", () => {
   it("retains all original scan hashes and covers only existing mapped labels", () => {
@@ -46,7 +46,9 @@ describe("Penfield presentation preserves the scientific source", () => {
       "Find out what it was like to be Dr. Wilder Penfield"
     );
     expect(
-      WIDGET_PLACEMENTS.find((p) => p.widgetId === "case-cabinet").title
+      fixture.paragraphs
+        .flatMap((p) => p.content.blocks)
+        .find((b) => b.placementId === "foundations-case-cabinet").title
     ).toBe(PENFIELD_TITLE);
   });
 });

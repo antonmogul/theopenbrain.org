@@ -9,7 +9,7 @@ describe("mobileMode", () => {
   });
   it("draws a panel figure widget inline (OPENBRAIN-82)", () => {
     expect(
-      mobileMode({ id: "animationRodVsConeCircuits", switch: true, loop: true })
+      mobileMode({ id: "animationLatteralOrganization", scroll: true })
     ).toBe("figure-widget");
     // Full-screen figure widgets already render in the text.
     expect(

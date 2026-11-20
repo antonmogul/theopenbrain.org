@@ -16,12 +16,20 @@ const sql = readFileSync(
 const fixture = JSON.parse(
   readFileSync("src/__tests__/fixtures/retinaLegacyReader.json", "utf8")
 );
+const figuresSql = readFileSync(
+  "supabase/migrations/20261120066000_retina_figures_db.sql",
+  "utf8"
+);
+const figuresFixture = JSON.parse(
+  readFileSync("src/__tests__/fixtures/retinaFiguresDb.json", "utf8")
+);
 const schema = `
 create role anon; create role authenticated;
 create function public.is_creator() returns boolean language sql stable as $$ select current_setting('app.creator', true) = 'yes' $$;
 create table modules(id uuid primary key, slug text, status text);
-create table sections(id uuid primary key, module_id uuid references modules(id), slug text, title text, order_index integer, updated_at timestamptz);
-create table paragraphs(id uuid primary key, section_id uuid references sections(id), content jsonb, order_index integer, updated_at timestamptz);
+create table sections(id uuid primary key, module_id uuid references modules(id), slug text, title text, order_index integer, animation_id uuid, animation_config jsonb, updated_at timestamptz);
+create table paragraphs(id uuid primary key, section_id uuid references sections(id), content jsonb, order_index integer, animation_id uuid, animation_trigger text, has_animation boolean, updated_at timestamptz);
+create table animations(id uuid primary key, animation_key text, config jsonb, updated_at timestamptz);
 grant usage on schema public to anon, authenticated;
 grant select on modules to anon, authenticated;
 `;
@@ -35,13 +43,29 @@ async function fresh() {
   ]);
   for (const s of fixture.sections)
     await db.query(
-      "insert into sections(id,module_id,slug,title,order_index) values ($1,$2,$3,$4,$5)",
-      [s.id, s.module_id, s.slug, s.title, s.order_index]
+      "insert into sections(id,module_id,slug,title,order_index,animation_id,animation_config) values ($1,$2,$3,$4,$5,$6,$7)",
+      [
+        s.id,
+        s.module_id,
+        s.slug,
+        s.title,
+        s.order_index,
+        s.animation_id ?? null,
+        s.animation_config ?? null,
+      ]
     );
   for (const p of fixture.paragraphs)
     await db.query(
-      "insert into paragraphs(id,section_id,content,order_index) values ($1,$2,$3,$4)",
-      [p.id, p.section_id, p.content, p.order_index]
+      "insert into paragraphs(id,section_id,content,order_index,animation_id,animation_trigger,has_animation) values ($1,$2,$3,$4,$5,$6,$7)",
+      [
+        p.id,
+        p.section_id,
+        p.content,
+        p.order_index,
+        p.animation_id ?? null,
+        p.animation_trigger ?? null,
+        p.has_animation ?? false,
+      ]
     );
   return db;
 }
@@ -83,6 +107,66 @@ describe.skipIf(!harness || !existsSync(harness))(
       expect(await snapshot(db)).toEqual(once);
       await db.close();
     });
+    it("applies after the figures migration and preserves its placements and flags on rerun", async () => {
+      const db = await fresh();
+      const footnotesId = fixture.sections.find(
+        (section) => section.slug === "footnotes"
+      ).id;
+      for (const animation of figuresFixture.animations)
+        await db.query(
+          "insert into animations(id,animation_key,config) values ($1,$2,$3)",
+          [animation.id, animation.animation_key, animation.config]
+        );
+      // Add the figure paragraphs outside this lane's smaller media/reference fixture.
+      for (const paragraph of figuresFixture.paragraphs) {
+        if (paragraph.section_id === footnotesId) continue;
+        await db.query(
+          "insert into paragraphs(id,section_id,content,order_index,animation_id,animation_trigger,has_animation) values ($1,$2,$3,$4,$5,$6,$7) on conflict(id) do nothing",
+          [
+            paragraph.id,
+            paragraph.section_id,
+            paragraph.content,
+            paragraph.order_index,
+            paragraph.animation_id,
+            paragraph.animation_trigger,
+            paragraph.has_animation,
+          ]
+        );
+      }
+      await db.exec(figuresSql);
+      const placements = () =>
+        db
+          .query(
+            "select id,animation_id,animation_trigger,content->'animationFlags' flags from paragraphs where id in ('65b52ec0-a886-486c-af64-cadc150d2096','b9d2316d-f213-4d6d-a0ad-21aa85194e9a','4bb764b8-e8ce-4503-8d09-9db82ccb9958') order by id"
+          )
+          .then((result) => result.rows);
+      const placed = await placements();
+      expect(placed).toHaveLength(3);
+      expect(
+        placed.every(
+          (paragraph) =>
+            paragraph.animation_id &&
+            paragraph.animation_trigger === "auto" &&
+            paragraph.flags.hold === "next"
+        )
+      ).toBe(true);
+      const bibliography = chapterBackReferences(
+        transformModuleToChapterFormat(await snapshot(db))
+      );
+      await db.exec(sql);
+      expect(await placements()).toEqual(placed);
+      expect(
+        chapterBackReferences(
+          transformModuleToChapterFormat(await snapshot(db))
+        )
+      ).toEqual(bibliography);
+      const once = await snapshot(db);
+      await db.exec(figuresSql);
+      await db.exec(sql);
+      expect(await snapshot(db)).toEqual(once);
+      await db.close();
+    });
+
     it("places media and hover metadata on their blocks without changing scientific prose or custom media", async () => {
       const db = await fresh();
       await db.query(

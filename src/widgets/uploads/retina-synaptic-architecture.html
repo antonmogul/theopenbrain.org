@@ -427,6 +427,24 @@
   }
   @media (pointer: coarse) { .tob-plain .tob-tools .tob-ctl { width: 44px; height: 44px; } }
 </style>
+
+<!-- Open Brain book (OPENBRAIN-62): presentation formerly injected by widgetHost; authored scripts and artwork unchanged. -->
+<style>
+html[data-ob-fit] body { margin: 0 !important; padding: 0 !important; }
+.tob-info-open .tob-info-btn { transform: none !important; }
+.tob-info-open .tob-info-btn > svg { transform: rotate(45deg); }
+html[data-ob-fit] .tob { height: var(--ob-max-height); min-height: var(--ob-max-height); }
+html[data-ob-fit] .tob-stage { height: 100%; min-height: 0; }
+html[data-ob-fit] .tob-body { min-height: 0; }
+html[data-ob-fit] .tob-head, html[data-ob-fit] .tob-caption,
+html[data-ob-fit] .tob-legend, html[data-ob-fit] .tob-dots { flex-shrink: 0; }
+html[data-ob-fit] .tob-view { flex: 1; min-height: 120px; display: flex; }
+html[data-ob-fit] .tob-canvas { height: 100% !important; min-height: 120px; flex: 1; }
+html[data-ob-fit] .tob-steps { max-height: var(--ob-max-height); overflow-y: auto; }
+html[data-ob-fit].tob-choices .tob-stage { align-content: stretch; }
+html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
+.tob-seg { border-radius: 0 !important; }
+</style>
 </head>
 <body>
 

@@ -169,3 +169,8 @@ export const HistoryPenfieldBinderFullScreen = {
       />`,
   }),
 };
+
+export const RetinaColourVision = {
+  ...story("retina-color-vision"),
+  name: "Colour vision",
+};

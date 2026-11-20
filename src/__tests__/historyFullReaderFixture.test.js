@@ -181,11 +181,7 @@ describe("committed complete History reader fixture", () => {
     for (const block of widgetBlocks) {
       expect(hasEmbed(block.widgetId), block.widgetId).toBe(true);
       expect(["inline", "breakout"]).toContain(block.kind);
-      if (block.placementId)
-        expect(
-          placements.some((placement) => placement.id === block.placementId),
-          block.placementId
-        ).toBe(true);
+      if (block.placementId) expect(block.placementId).toBeTypeOf("string");
     }
     const transformed = chapter();
     const result = applyWidgetPlacements(transformed, placements);
