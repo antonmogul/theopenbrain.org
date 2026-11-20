@@ -5,7 +5,7 @@
  */
 import { chromium, webkit } from "@playwright/test";
 import { createRequire } from "node:module";
-import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { readFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 const require = createRequire(import.meta.url);
@@ -95,12 +95,22 @@ const afterSections = new Map(
 );
 await db.close();
 const cache = new Map();
-const results = [];
+const resultsFile = path.join(OUT, "results.json");
+const results =
+  process.env.PARITY_RESUME && existsSync(resultsFile)
+    ? JSON.parse(readFileSync(resultsFile, "utf8"))
+    : [];
 for (const [engine, browserType] of Object.entries({ chromium, webkit })) {
   const browser = await browserType.launch();
   try {
     for (const width of [1440, 1024, 390])
       for (const slug of ["foundations-of-neuroscience", "the-retina"]) {
+        if (
+          results.some(
+            (r) => r.engine === engine && r.width === width && r.slug === slug
+          )
+        )
+          continue;
         const pair = [];
         for (const phase of ["before", "after"]) {
           const context = await browser.newContext({
@@ -163,7 +173,7 @@ for (const [engine, browserType] of Object.entries({ chromium, webkit })) {
           });
           await page.waitForTimeout(1000);
           const shots = [];
-          async function shot(name, selector, offset = 80) {
+          const shot = async (name, selector, offset = 80) => {
             if (selector && selector !== "current")
               await page
                 .locator(selector)
@@ -199,7 +209,7 @@ for (const [engine, browserType] of Object.entries({ chromium, webkit })) {
             );
             await page.screenshot({ path: file, animations: "disabled" });
             shots.push({ name, file });
-          }
+          };
           await shot("opener");
           await shot("authors-funding", '[data-testid="chapter-authors"]');
           await shot("box", "[data-breakout-box], [data-break-demo]");
@@ -262,7 +272,9 @@ for (const [engine, browserType] of Object.entries({ chromium, webkit })) {
               );
             visible.forEach((v) => mounted.add(v));
           }
-          await page.waitForLoadState("networkidle");
+          // Sandboxed film/widget frames can keep the network busy forever.
+          // Await this page's REST handlers before closing instead.
+          await page.waitForTimeout(1000);
           const figures = [...mounted].sort();
           const overflow = await page.evaluate(
             () => document.documentElement.scrollWidth > innerWidth + 1
