@@ -47,7 +47,8 @@ const { refreshSpy } = vi.hoisted(() => ({ refreshSpy: vi.fn() }));
 vi.mock("gsap/ScrollTrigger", () => ({ default: { refresh: refreshSpy } }));
 
 import { fetchUploadedWidget } from "@/widgets/uploaded/useUploadedWidgets";
-import { WIDGET_PLACEMENTS, widgetParagraph } from "@/widgets/placements";
+import blocks from "@/__tests__/fixtures/retinaWidgetBlocks.json";
+import { transformParagraph } from "@/composables/chapterTransform.mjs";
 import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 
@@ -488,6 +489,8 @@ describe("WidgetBreakout for an uploaded widget", () => {
   it("shows the fallback view while the upload isn't published", async () => {
     const w = mountBreakout({
       ...card("upload:retina-retinabox"),
+      launchCard: blocks.find((b) => b.placementId === "retina-retinabox")
+        .launchCard,
       fallbackWidgetId: "retinabox",
     });
     await w.find(".wb-launch button").trigger("click");
@@ -572,7 +575,9 @@ describe("WidgetBreakout for an uploaded widget", () => {
 
 describe("Retina widget review notes (OPENBRAIN-52)", () => {
   const retina = (id) =>
-    widgetParagraph(WIDGET_PLACEMENTS.find((p) => p.id === id)).widget;
+    transformParagraph({
+      content: { blocks: [blocks.find((b) => b.placementId === id)] },
+    }).widget;
 
   it.each(["retina-color-vision", "retina-direction-selectivity"])(
     "%s is a full-screen band with the breakout pause",

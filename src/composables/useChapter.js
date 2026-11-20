@@ -30,10 +30,6 @@ async function canPreviewDrafts() {
 }
 import { clog, cgroup } from "@/helper/chapterDebug";
 import { transformModuleToChapterFormat } from "./chapterTransform.mjs";
-import {
-  applyWidgetPlacements,
-  placementsForChapter,
-} from "@/widgets/placements";
 
 /**
  * Generic composable to fetch and transform any chapter from Supabase
@@ -183,21 +179,6 @@ export function useChapter() {
 
       chapterData.value = chapter;
       const transformed = transformModuleToChapterFormat(chapter);
-      // Splice interactive widgets into the prose (OPENBRAIN-21). Code-side
-      // placements only fill gaps: a `{ type: "widget" }` block authored in
-      // the DB reaches here via transformParagraph and the matching placement
-      // is skipped. Unresolved anchors are a content drift signal, not an
-      // error — the chapter still renders.
-      const placed = applyWidgetPlacements(
-        transformed,
-        placementsForChapter(chapter?.slug)
-      );
-      if (placed.unresolved.length) {
-        console.warn(
-          "useChapter: widget placements could not be anchored -",
-          placed.unresolved.join(", ")
-        );
-      }
       transformedData.value = transformed;
 
       // [2 TREE] summarise the transformed tree: sections, subsections, figures, and

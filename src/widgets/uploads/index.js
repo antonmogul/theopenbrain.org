@@ -12,6 +12,15 @@
  */
 export const UPLOADED_WIDGETS = [
   {
+    slug: "retina-color-vision",
+    title: "Colour vision",
+    description:
+      "From the electromagnetic spectrum to cone opponency and colour blindness.",
+    author: "Stuart Trenholm",
+    ramp: "perc",
+    chapter: "the-retina",
+  },
+  {
     slug: "attn-sdt",
     title: "Signal detection theory",
     description:
