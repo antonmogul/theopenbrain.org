@@ -105,7 +105,7 @@ for (const engine of [chromium, webkit]) {
         for (const key of await page
           .locator("[data-figure-key]")
           .evaluateAll((els) => els.map((e) => e.dataset.figureKey)))
-          figures.add(key);
+          if (typeof key === "string" && key) figures.add(key);
       }
       mounted.push([...figures].sort());
       if (overlay) {
