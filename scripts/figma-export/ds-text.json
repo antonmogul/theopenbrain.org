@@ -1,0 +1,258 @@
+[
+  {
+    "name": "Book/Caption",
+    "key": "5ad5957e45a890d3e40a626586e3e52c22fcb013",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 13.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Overline",
+    "key": "f91429aedfbfeac55a0dc4d66b0eb7765182c4a0",
+    "family": "IBM Plex Mono",
+    "style": "Medium",
+    "size": 11.0,
+    "upper": true
+  },
+  {
+    "name": "Widget/Title",
+    "key": "c9d184e1d91f9789a8262f5d794bc9a3f595f53b",
+    "family": "IBM Plex Sans",
+    "style": "SemiBold",
+    "size": 15.0,
+    "upper": false
+  },
+  {
+    "name": "Widget/Body",
+    "key": "304f962c717ca941e7298f0e091207239247a558",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 13.0,
+    "upper": false
+  },
+  {
+    "name": "Widget/Sub",
+    "key": "28fea5803afc8af9e4de2fc738cce274eeffcfe4",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 12.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Mono 11",
+    "key": "95f303f8ad76cdfca35afff67a0d1ff58c200ead",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 11.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Mono 12",
+    "key": "f3f95144e074669bb765360a15299145b4ab7d27",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 12.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Input",
+    "key": "54900fa83ae7e57316d0ec23f87a26490a950139",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 14.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 15",
+    "key": "b982d01c707b6aa9566cb4b24e7241e4a385ef51",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 15.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 16",
+    "key": "ce7e3dc03cc96f6e84ab63d89a663787c5122ab4",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 16.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Title 18",
+    "key": "89602ac2e7426f1dbd6b904bf84d73748ae81ff1",
+    "family": "IBM Plex Sans",
+    "style": "Medium",
+    "size": 18.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Title 20",
+    "key": "0a23a3b838dafb100a7986865b54286d27d61db5",
+    "family": "IBM Plex Sans",
+    "style": "Medium",
+    "size": 20.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Display 32",
+    "key": "f3a9c7180a969b9557164437ec277bce5b0e2d10",
+    "family": "IBM Plex Sans",
+    "style": "Medium",
+    "size": 32.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Caps 12",
+    "key": "a6badbc40ca2440924a693cd6f7af0f247ea9e98",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 12.0,
+    "upper": true
+  },
+  {
+    "name": "UI/Caps 13",
+    "key": "c1bc20eaab74085879917a2c69200005f99021a1",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 13.0,
+    "upper": true
+  },
+  {
+    "name": "UI/Mono 14",
+    "key": "44d5695b75d58594f1f2efa893b36b3fff1f46dc",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 14.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 14",
+    "key": "84c309d3add6df3225d42deeee7a2f5dc17cd139",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 14.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 14 medium",
+    "key": "02f286dd5c4e19719493bb9bedba5635b1db2207",
+    "family": "IBM Plex Sans",
+    "style": "Medium",
+    "size": 14.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 18",
+    "key": "9ef2bcf7b90baedc9e2efc95ea044149e3305170",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 18.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Mono 10",
+    "key": "23ef4b26ba9d09b273ca5d1d2a6c944703ab49ad",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 10.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 12 medium",
+    "key": "81bed9527d380a4cf342a26a70085da6c02122cf",
+    "family": "IBM Plex Sans",
+    "style": "Medium",
+    "size": 12.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 16 semibold",
+    "key": "813274050e2a246d7064e8d673d681368ec0e260",
+    "family": "IBM Plex Sans",
+    "style": "SemiBold",
+    "size": 16.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 13 medium",
+    "key": "9f4522f4b9e72622e079bfdda36e151f368d0f3f",
+    "family": "IBM Plex Sans",
+    "style": "Medium",
+    "size": 13.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 13 semibold",
+    "key": "4be91d58c0a2486ca82feff3ba19806d5d83a884",
+    "family": "IBM Plex Sans",
+    "style": "SemiBold",
+    "size": 13.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Title 18 semibold",
+    "key": "503c7f47c35b535e0a92c50c8de941526de66e3b",
+    "family": "IBM Plex Sans",
+    "style": "SemiBold",
+    "size": 18.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Sans 11",
+    "key": "16e298bd9e80a18a31208de344afec6ec46a65ed",
+    "family": "IBM Plex Sans",
+    "style": "Regular",
+    "size": 11.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Caps 10",
+    "key": "9c3a3706bc00ad147ecbac23d612d1c3280f42a3",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 10.0,
+    "upper": true
+  },
+  {
+    "name": "UI/Caps 11",
+    "key": "e8457f3c857a1b87a6e3a54f013d8a33287b948c",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 11.0,
+    "upper": true
+  },
+  {
+    "name": "Reader/Band title",
+    "key": "251751c36995d9ce4fac0cef7d71c0f10f7029e7",
+    "family": "IBM Plex Sans",
+    "style": "SemiBold",
+    "size": 20.0,
+    "upper": false
+  },
+  {
+    "name": "UI/Button sm",
+    "key": "121862ded375cc5b4257ee402710e720690dc3c5",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 10.0,
+    "upper": true
+  },
+  {
+    "name": "UI/Button md",
+    "key": "b54487e176c95b18b489d2fb21d247d9c4b095ea",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 11.0,
+    "upper": true
+  },
+  {
+    "name": "UI/Button lg",
+    "key": "ddd60991cfceb5333af9d0d86d789d21fe919281",
+    "family": "IBM Plex Mono",
+    "style": "Regular",
+    "size": 13.0,
+    "upper": true
+  }
+]

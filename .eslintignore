@@ -22,3 +22,7 @@ supabase/.temp/
 storybook-static/
 storybook-snapshots/
 scripts/tokens/figma-check.js
+
+# Runs inside Figma as a function body (top-level return)
+scripts/figma-export/builder.js
+scripts/figma-export/scaffold2.body.js
