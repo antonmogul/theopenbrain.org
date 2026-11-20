@@ -53,7 +53,13 @@ const manifest = {
     "Real local chapter route and sandboxed WidgetFrame; committed published-chapter fixture replaces all remote reads; all non-GET requests aborted; no production writes, migration application or deployment.",
   cases: [],
 };
-for (const [engine, launcher] of Object.entries({ chromium, webkit })) {
+if (process.env.LOEWI_APPEND)
+  manifest.cases.push(
+    ...JSON.parse(await readFile(`${output}/measurements.json`, "utf8")).cases
+  );
+for (const [engine, launcher] of Object.entries({ chromium, webkit }).filter(
+  ([engine]) => !process.env.LOEWI_ENGINE || engine === process.env.LOEWI_ENGINE
+)) {
   const browser = await launcher.launch();
   try {
     for (const [version, html] of Object.entries(sources).filter(
@@ -124,8 +130,19 @@ for (const [engine, launcher] of Object.entries({ chromium, webkit })) {
         const page = await context.newPage({ viewport: { width, height } });
         await page.setViewportSize({ width, height });
         console.log(`Starting ${engine} ${version} ${width}x${height}`);
-        const errors = [];
-        page.on("pageerror", (e) => errors.push(e.message));
+        const errors = [],
+          warnings = [];
+        // This WebKit notification also occurs with the frozen v4 baseline
+        // when the complete reader remeasures. Retain it separately; actual
+        // exceptions, clipped captions and overflow still fail the run.
+        page.on("pageerror", (e) => {
+          if (
+            e.message ===
+            "ResizeObserver loop completed with undelivered notifications."
+          )
+            warnings.push(e.message);
+          else errors.push(e.message);
+        });
         await page.goto(`${base}/chapter/1/foundations-of-neuroscience`);
         await page.locator("#text").waitFor();
         await page.waitForTimeout(1600);
@@ -298,6 +315,7 @@ for (const [engine, launcher] of Object.entries({ chromium, webkit })) {
         assert(!pageOverflow, `${engine} ${width}: reader overflow`);
         assert.deepEqual(errors, [], `${engine} ${width}: runtime errors`);
         const row = {
+          warnings,
           fonts,
           engine,
           version,
