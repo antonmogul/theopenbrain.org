@@ -44,6 +44,8 @@ import {
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
+import FigureHeading from "@/components/chapter/Illus/FigureHeading.vue";
+import { railFigureLabel } from "@/helper/railFigure";
 import { WIDGET_FIT, WIDGET_SCROLLABLE } from "@/widgets/uploaded/widgetHost";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
@@ -313,8 +315,20 @@ const headingId = computed(
             </p>
             <!-- A kit-built upload carries its own title and instructions, so
                in the band ours is for screen readers only. -->
+            <FigureHeading
+              v-if="railFigureLabel(placement)"
+              :id="headingId"
+              :record="{ ...placement, title }"
+              ground="dark"
+            />
             <div :class="{ 'wb-sr': ownsHeading }">
-              <h3 :id="headingId" class="wb-title">{{ title }}</h3>
+              <h3
+                v-if="!railFigureLabel(placement)"
+                :id="headingId"
+                class="wb-title"
+              >
+                {{ title }}
+              </h3>
               <p v-if="placement.blurb" class="wb-blurb">
                 {{ placement.blurb }}
               </p>
@@ -722,6 +736,10 @@ const headingId = computed(
 /* The full-screen band's heading (Widget Library Figma 68:83, 68:87,
    OPENBRAIN-162): centred, the kicker over the title in the subhead role,
    the line under it at 20px, as the breakout panels centre theirs. */
+.wb-head > .figure-heading {
+  padding: 1.25rem 0;
+}
+
 .wb-head--full {
   display: flex;
   flex-direction: column;

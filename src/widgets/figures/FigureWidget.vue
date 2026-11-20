@@ -9,6 +9,8 @@ import { figureWidgetFor } from "./registry.js";
 import { figureContent, versionedUrl } from "./content.js";
 import { lottiePath } from "@/helper/animationResolve";
 import { FIGURE_WIDGET_FIT } from "./shared/figureFit.js";
+import FigureHeading from "@/components/chapter/Illus/FigureHeading.vue";
+import { railFigureLabel } from "@/helper/railFigure";
 
 const props = defineProps({
   /** The resolved animation record (useAnimations / animations.json shape). */
@@ -24,6 +26,11 @@ const props = defineProps({
 provide(FIGURE_WIDGET_FIT, toRef(props, "fit"));
 
 const entry = computed(() => figureWidgetFor(props.record?.id));
+const hostHeading = computed(
+  () =>
+    railFigureLabel(props.record) &&
+    !entry.value?.schema.fields.some((field) => field.key === "figureLabel")
+);
 
 // Shown when the widget's code doesn't load, e.g. a tab left open across a
 // deploy whose old chunk is gone: say so, and offer the reload that fixes it.
@@ -91,15 +98,20 @@ const lottieUrl = computed(() =>
   <div
     v-if="Widget"
     class="widget-root figure-widget"
-    :class="{ 'figure-widget--fit': fit }"
+    :class="{
+      'figure-widget--fit': fit,
+      'figure-widget--labelled': hostHeading,
+    }"
   >
     <component
       :is="Widget"
       :content="content"
       :schema="entry.schema"
       :lottie-url="lottieUrl"
+      :numbered="!!hostHeading"
       v-bind="progress === null ? {} : { progress }"
     />
+    <FigureHeading v-if="hostHeading" :record="record" />
   </div>
 </template>
 
@@ -118,6 +130,14 @@ const lottieUrl = computed(() =>
 }
 /* As tall as its content (a schema's fitHeight, inline): only the width can
    be contained, or the box would collapse to nothing. */
+.figure-widget--labelled {
+  display: flex;
+  flex-direction: column;
+}
+.figure-widget--labelled > :first-child {
+  flex: 1 1 auto;
+  min-height: 0;
+}
 .figure-widget--fit {
   container: figure / inline-size;
   height: auto;

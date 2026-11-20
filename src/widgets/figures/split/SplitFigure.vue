@@ -15,6 +15,7 @@ import { versionedUrl } from "../content.js";
 import { useFigureLottie } from "../shared/useFigureLottie.js";
 
 const props = defineProps({
+  numbered: { type: Boolean, default: false },
   /** figureContent(schema, record): title, infos, sources. */
   content: { type: Object, required: true },
   /** The figure's schema: left, right, startFrame, layers, lottieVersion. */
@@ -72,7 +73,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="sp">
-    <h4 class="sp-title">{{ content.title }}</h4>
+    <h4 v-if="!numbered" class="sp-title">{{ content.title }}</h4>
     <div class="sp-halves" aria-hidden="true">
       <div class="sp-left">
         <div ref="leftStage" class="sp-stage-left" />
