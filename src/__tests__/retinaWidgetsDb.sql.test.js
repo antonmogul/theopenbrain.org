@@ -98,6 +98,15 @@ describe.skipIf(!harness || !existsSync(harness))(
           if (row.content.blocks[0]?.placementId?.startsWith("foundations-"))
             expect(row.content.blocks[0].fullScreen).toBe(true);
         await db.query(
+          "update paragraphs set content=jsonb_set(content, '{blocks,0,fullScreen}', 'false') where id='f891fe5f-59f8-4649-a2eb-48763f78a3bc'"
+        );
+        await db.exec(sql);
+        expect(
+          (await paragraphs(db)).find(
+            (p) => p.id === "f891fe5f-59f8-4649-a2eb-48763f78a3bc"
+          ).content.blocks[0].fullScreen
+        ).toBe(false);
+        await db.query(
           "update widget_uploads set html=html || '<!-- author edit -->' where slug='retina-retinabox'"
         );
         await expect(db.exec(sql)).rejects.toThrow(/retina-retinabox changed/);

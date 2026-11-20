@@ -1429,14 +1429,14 @@ end $upload$;
 update public.paragraphs p
 set content = jsonb_set(p.content, '{blocks}', (
   select jsonb_agg(case when b->>'type' = 'widget' and b->>'placementId' in
-    ('foundations-phrenology','foundations-case-cabinet') then b || '{"fullScreen":true}'::jsonb else b end order by ord)
+    ('foundations-phrenology','foundations-case-cabinet') and not (b ? 'fullScreen') then b || '{"fullScreen":true}'::jsonb else b end order by ord)
   from jsonb_array_elements(p.content->'blocks') with ordinality as x(b,ord)
 )), updated_at = now()
 from public.sections s, public.modules m
 where p.section_id=s.id and s.module_id=m.id and m.slug='foundations-of-neuroscience'
   and exists (select 1 from jsonb_array_elements(p.content->'blocks') b
     where b->>'type'='widget' and b->>'placementId' in ('foundations-phrenology','foundations-case-cabinet')
-      and b->'fullScreen' is distinct from 'true'::jsonb);
+      and not (b ? 'fullScreen'));
 
 -- Direction selectivity becomes one prose band after its final passage,
 -- replacing both the earlier pane upload and the code-placed Vue port.
