@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { transformParagraph } from "@/composables/chapterTransform.mjs";
 import { blocksToDoc, docToBlocks } from "@/editor/blocks";
+import blocks from "@/__tests__/fixtures/retinaWidgetBlocks.json";
 import { fullScreenOf } from "@/widgets/placements";
 
 // OPENBRAIN-168: a widget block says itself that it is one screen of the
@@ -23,7 +24,7 @@ describe("a widget block's fullScreen", () => {
     expect(fullScreenOf(p.widget, [])).toBe(true);
   });
 
-  it("is left out when the block doesn't say, so the placement's still applies", () => {
+  it("is left out when the block does not say and never inherits code placement flags", () => {
     const rest = { ...block };
     delete rest.fullScreen;
     const p = transformParagraph({ id: "p1", content: { blocks: [rest] } });
@@ -32,7 +33,27 @@ describe("a widget block's fullScreen", () => {
       fullScreenOf(p.widget, [
         { id: "foundations-case-cabinet", fullScreen: true },
       ])
-    ).toBe(true);
+    ).toBe(false);
+  });
+
+  it("preserves DB launch and narrow-screen behaviour through the block editor", () => {
+    for (const widget of blocks) {
+      const saved = docToBlocks(blocksToDoc([widget]));
+      expect(saved).toEqual([widget]);
+      expect(
+        transformParagraph({ content: { blocks: saved } }).widget
+      ).toMatchObject({
+        widgetId: widget.widgetId,
+        fullScreen: true,
+        ...(widget.launchCard
+          ? {
+              launchCard: widget.launchCard,
+              narrowKind: "breakout",
+              fallbackWidgetId: "retinabox",
+            }
+          : {}),
+      });
+    }
   });
 
   it("survives an edit in the block editor", () => {

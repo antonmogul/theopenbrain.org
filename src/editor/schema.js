@@ -205,6 +205,9 @@ export const WIDGET_ATTRS = [
   "placementId",
   "route",
   "fullScreen",
+  "narrowKind",
+  "fallbackWidgetId",
+  "launchCard",
 ];
 
 /** A `widget` block (an interactive from src/widgets). */

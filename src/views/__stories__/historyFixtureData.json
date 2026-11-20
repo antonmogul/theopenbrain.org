@@ -65,5 +65,25 @@
       "src": "/publicAssets/images/foundations/fig06-10.jpg",
       "caption": "English physician Robert Fludd’s scheme for the medieval cell doctrine (Fludd, 1619). See text for details. Courtesy of the Bibliothèque municipale de Lyon [Lyon Public Library], Lyon, France. Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
     }
+  ],
+  "widgets": [
+    {
+      "widgetId": "phrenology",
+      "placementId": "foundations-phrenology",
+      "kind": "breakout",
+      "title": "Explore phrenology",
+      "blurb": "Click on different parts of the skull to explore Gall and Spurzheim's model of localization of brain function.",
+      "route": "/phrenology",
+      "fullScreen": true
+    },
+    {
+      "widgetId": "case-cabinet",
+      "placementId": "foundations-case-cabinet",
+      "kind": "breakout",
+      "title": "Find out what it was like to be Dr. Wilder Penfield",
+      "blurb": "Explore what having your brain electrically stimulated by Penfield was like.",
+      "route": "/case-cabinet",
+      "fullScreen": true
+    }
   ]
 }

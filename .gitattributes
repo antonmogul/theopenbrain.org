@@ -1,0 +1,4 @@
+# Preserve Stuart's export bytes, including CRLF/trailing spaces, in the
+# upload and the SQL literal. Their equality is checked by the SQL test.
+src/widgets/uploads/retina-color-vision.html -text -whitespace
+supabase/migrations/20261120066200_retina_widgets_db.sql -text -whitespace
