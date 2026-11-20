@@ -1,5 +1,20 @@
 import { computed, provide, ref } from "vue";
 import animationData from "@/assets/json_backend/animations.json";
+import databaseFigures from "@/__tests__/fixtures/retinaFiguresDb.json";
+
+export const retinaFigureApi = {
+  animations: databaseFigures.animations,
+  animation_states: [...databaseFigures.animation_states].sort(
+    (a, b) =>
+      a.animation_id.localeCompare(b.animation_id) ||
+      a.order_index - b.order_index
+  ),
+  animation_variants: [...databaseFigures.animation_variants].sort(
+    (a, b) =>
+      a.animation_id.localeCompare(b.animation_id) ||
+      a.order_index - b.order_index
+  ),
+};
 import { useGeneral, useText } from "@/stores";
 
 export const retinaChapter = {

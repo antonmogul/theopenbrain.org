@@ -10,8 +10,6 @@ import FullScreenIllustrationMultiple from "@/components/chapter/Illus/FullScree
 
 import { useAnimations } from "@/composables/useAnimations";
 import { resolveAnimationRecord } from "@/helper/animationResolve";
-// Chapter-1 / offline fallback — see the DECISION note in animationResolve.js.
-import animationsJSON from "@/assets/json_backend/animations.json";
 import FullScreenIllustrationLoop from "./FullScreenIllustrationLoop.vue";
 import FullScreenIllustrationSplit from "./FullScreenIllustrationSplit.vue";
 import SourceElement from "../../UI/SourceElement.vue";
@@ -50,9 +48,7 @@ const animation = ref(null);
 const totalFrames = ref(null);
 const containerScroll = ref();
 
-// Resolved async in onMounted: Supabase record first, animations.json second
-// (Chapter 1). The template guards on it, so nothing renders — and a warning
-// fires — when neither source knows the id.
+// Resolve after the shared database fetch; missing records warn loudly.
 const { animations: dbAnimations, fetchAnimations } = useAnimations();
 const thisAnimation = ref(null);
 
@@ -62,13 +58,11 @@ const activeState = ref({
 });
 
 onMounted(async () => {
-  // Cheap when already cached by IllustrationsComp; on failure the resolver
-  // just sees an empty DB list and falls back to the JSON.
+  // Cheap when already cached by IllustrationsComp.
   await fetchAnimations();
   thisAnimation.value = resolveAnimationRecord(
     props.paragraph.animationId,
-    dbAnimations.value,
-    animationsJSON.animations
+    dbAnimations.value
   );
   if (!thisAnimation.value) return;
 

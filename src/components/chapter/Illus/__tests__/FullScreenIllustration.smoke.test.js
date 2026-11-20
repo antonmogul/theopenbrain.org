@@ -41,7 +41,7 @@ vi.mock("@/composables/useLottie", () => ({
 
 import FullScreenIllustration from "@/components/chapter/Illus/FullScreenIllustration.vue";
 
-describe("FullScreenIllustration (DB-first resolution smoke)", () => {
+describe("FullScreenIllustration (database resolution smoke)", () => {
   it("renders a Supabase-only figure that animations.json does not contain", async () => {
     const w = mount(FullScreenIllustration, {
       props: { paragraph: { animationId: "animationDbOnlyFigure" } },
@@ -53,13 +53,17 @@ describe("FullScreenIllustration (DB-first resolution smoke)", () => {
     expect(w.find("#containeranimationDbOnlyFigure").exists()).toBe(true);
   });
 
-  it("still resolves Chapter 1 figures from the JSON fallback", async () => {
-    // A real Chapter-1 id that is NOT in the mocked DB list.
+  it("warns for a historical JSON figure absent from the database", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const w = mount(FullScreenIllustration, {
       props: { paragraph: { animationId: "animationEyeStructur" } },
     });
     await flushPromises();
-    expect(w.find("div").exists()).toBe(true);
+    expect(w.find("div").exists()).toBe(false);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("animationEyeStructur")
+    );
+    warn.mockRestore();
   });
 
   it("renders nothing but warns for an id neither source knows", async () => {

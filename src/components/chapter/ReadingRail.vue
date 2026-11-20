@@ -32,8 +32,6 @@ import {
 } from "vue";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
-// The pane's fallback when the animations fetch fails or is empty.
-import animationJSON from "@/assets/json_backend/animations.json";
 import { useAnimations } from "@/composables/useAnimations";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_WIDE_QUERY } from "@/helper/readerLayout";
@@ -62,11 +60,7 @@ const beam = ref(null);
 const landing = ref(null);
 const wide = useMediaQuery(READER_WIDE_QUERY);
 const { animations, fetchAnimations } = useAnimations();
-const list = computed(
-  () =>
-    props.records ||
-    (animations.value?.length ? animations.value : animationJSON.animations)
-);
+const list = computed(() => props.records || animations.value);
 
 /** One per figure: { key, id, el, els, top, end, wait, kind, interactive,
  *  tip, name, stacked }
