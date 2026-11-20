@@ -155,7 +155,35 @@ for (const [engine, type] of Object.entries({ chromium, webkit })) {
         await expect(page.getByRole("dialog")).toHaveCount(0);
         await expect(page.locator(".ve iframe")).toHaveCount(1);
         await shot(page, prefix, "book-fullscreen");
+        // A MacBook's browser viewport and fullscreen screen can differ.
+        // CDP changes layout metrics without trying to resize a fullscreen
+        // OS window (which Browser.setWindowBounds correctly refuses).
+        let metrics = null;
+        if (engine === "chromium") {
+          metrics = await page.context().newCDPSession(page);
+          await metrics.send("Emulation.setDeviceMetricsOverride", {
+            width: 1920,
+            height: 1080,
+            deviceScaleFactor: 2,
+            mobile: false,
+          });
+          await page.waitForTimeout(500);
+          await expect
+            .poll(() => page.evaluate(() => !!document.fullscreenElement))
+            .toBe(true);
+          assert(await element.evaluate((el) => el.isConnected));
+          await samePlayer(frame, before);
+          result.fullscreenResize = "1920x1080: player retained";
+        }
         await page.evaluate(() => document.exitFullscreen());
+        if (metrics) {
+          await metrics.send("Emulation.setDeviceMetricsOverride", {
+            ...viewport,
+            deviceScaleFactor: 2,
+            mobile: false,
+          });
+          await metrics.detach();
+        }
         await page.waitForTimeout(500);
         await samePlayer(frame, before);
         assert(Math.abs((await page.evaluate(() => scrollY)) - y) <= 2);
