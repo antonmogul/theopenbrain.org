@@ -571,8 +571,8 @@ function closeFullscreen() {
 .fig-legend-caret {
   transition: transform 0.16s ease;
 }
-/* The caret points the way the panel opens: down under a toolbar at the
-   top (the paper pane), up over the artwork on the dark pane. */
+/* The base caret opens below the inline artwork. The pane overrides it
+   below to open upwards from the shared toolbar at the artwork's foot. */
 .fig-legend-btn .fig-legend-caret {
   transform: rotate(180deg);
 }
@@ -758,24 +758,30 @@ function closeFullscreen() {
   margin-right: 0.25rem;
 }
 
+.figure-pane--paper .fig-shell {
+  --figure-pane-ink: var(--color-ink);
+  --figure-toolbar-accent: var(--color-chapter-deep);
+}
+
 /*
- * On the dark pane (.figure-pane--dark, IllustrationsComp; OPENBRAIN-152),
+ * In either pane (IllustrationsComp; OPENBRAIN-66),
  * as the History redesign draws the figure (Figma Yv7WvZSoabK2t5fNtsChvf,
- * Toolbar 2730:8241): the artwork on the dark surface, and the toolbar
+ * Toolbar 2730:8241): the artwork keeps its own ground, and the toolbar
  * below it as one row, the expand icon, then "FIG 05" in --color-warn, then
  * the title with its legend under it, all IBM Plex Mono — label and title
  * SemiBold at the sizes above (the designer traced them), the legend Text
- * at the title's size, white. The toolbar's borders are transparent there.
+ * at the title's size. Paper uses its own ink and chapter accent; the dark
+ * pane keeps white ink and amber. The toolbar's borders are transparent.
  * The legend is folded behind the "Legend" control that ends the row
  * (OPENBRAIN-177). The text column's inline figure never matches these
  * selectors and keeps the paper shell. The fullscreen dialog carries the
  * class when the chapter's pane is dark (DemoModal `ground`), but it has no
  * toolbar: its heading is .fs-label / .fs-name below.
  */
-.figure-pane--dark .fig-shell {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-shell {
   background: transparent;
 }
-.figure-pane--dark .fig-toolbar {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-toolbar {
   order: 1;
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
@@ -785,47 +791,47 @@ function closeFullscreen() {
   padding: 1.875rem 0.875rem;
 }
 /* The artwork keeps a little air under the top bar (Anton, 11 Nov). */
-.figure-pane--dark .fig-shell .fig-area--art {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--art {
   padding-top: 1rem;
 }
 /* Label and title become grid items of the toolbar, so the icon can lead
    the row and the legend can sit under the title. */
-.figure-pane--dark .fig-toolbar-left,
-.figure-pane--dark .fig-heading {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-toolbar-left,
+:is(.figure-pane--dark, .figure-pane--paper) .fig-heading {
   display: contents;
 }
 /* The bare 14px icon flush with the padding, in the label's amber; the
    28px hit area reaches 7px around it, into the padding. */
-.figure-pane--dark .fig-fs-btn {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-fs-btn {
   grid-row: 1;
   grid-column: 1;
   margin: -7px;
   border-color: transparent;
-  color: rgb(var(--color-warn));
+  color: rgb(var(--figure-toolbar-accent, var(--color-warn)));
 }
-.figure-pane--dark .fig-fs-btn:hover {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-fs-btn:hover {
   border-color: transparent;
   background: rgb(var(--figure-pane-ink) / 0.08);
   color: rgb(var(--figure-pane-ink));
 }
 /* The label's column is 50px in the Figma, so the title starts at 94px
    whatever the number. */
-.figure-pane--dark .fig-label {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-label {
   grid-row: 1;
   grid-column: 2;
   min-width: 3.125rem;
   font-weight: 600;
   line-height: 1.3;
-  color: rgb(var(--color-warn));
+  color: rgb(var(--figure-toolbar-accent, var(--color-warn)));
 }
-.figure-pane--dark .fig-name {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-name {
   grid-row: 1;
   grid-column: 3;
   font-weight: 600;
   line-height: 1.3;
   color: rgb(var(--figure-pane-ink));
 }
-.figure-pane--dark .fig-legend {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-legend {
   grid-row: 2;
   grid-column: 3 / -1;
   font-family: var(--font-mono);
@@ -836,31 +842,34 @@ function closeFullscreen() {
 }
 /* The legend's control ends the row, bare like the expand icon; amber while
    the legend is kept open. */
-.figure-pane--dark .fig-legend-btn {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-legend-btn {
   grid-row: 1;
   grid-column: 4;
   margin: -8px -0.5rem -8px 0;
   border-color: transparent;
   color: rgb(var(--figure-pane-ink) / 0.72);
 }
-.figure-pane--dark .fig-legend-btn:hover {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-legend-btn:hover {
   border-color: transparent;
   background: rgb(var(--figure-pane-ink) / 0.08);
   color: rgb(var(--figure-pane-ink));
 }
-.figure-pane--dark .fig-legend-btn[aria-expanded="true"] {
-  color: rgb(var(--color-warn));
+:is(.figure-pane--dark, .figure-pane--paper)
+  .fig-legend-btn[aria-expanded="true"] {
+  color: rgb(var(--figure-toolbar-accent, var(--color-warn)));
 }
-.figure-pane--dark .fig-legend-btn .fig-legend-caret {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-legend-btn .fig-legend-caret {
   transform: none;
 }
-.figure-pane--dark .fig-legend-btn[aria-expanded="true"] .fig-legend-caret {
+:is(.figure-pane--dark, .figure-pane--paper)
+  .fig-legend-btn[aria-expanded="true"]
+  .fig-legend-caret {
   transform: rotate(180deg);
 }
 /* The toolbar is under the artwork here, so the panel opens upwards over
    the artwork's foot, on the pane's own ground; its text starts where the
    title does (14px padding, the 14px icon, the label's 50px, two gaps). */
-.figure-pane--dark .fig-legend--folds.is-open {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-legend--folds.is-open {
   grid-area: auto;
   top: auto;
   bottom: 100%;
@@ -871,19 +880,24 @@ function closeFullscreen() {
   line-height: 1.45;
   backdrop-filter: blur(8px);
 }
-:root[data-theme="dark"] .figure-pane--dark .fig-legend--folds.is-open {
+:root[data-theme="dark"]
+  :is(.figure-pane--dark, .figure-pane--paper)
+  .fig-legend--folds.is-open {
+  background: rgb(var(--color-bg) / 0.94);
+}
+.figure-pane--paper .fig-legend--folds.is-open {
   background: rgb(var(--color-bg) / 0.94);
 }
 /* The "artwork pending" state in the pane's ink. */
-.figure-pane--dark .fig-title {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-title {
   color: rgb(var(--figure-pane-ink));
 }
-.figure-pane--dark .fig-caption,
-.figure-pane--dark .fig-note,
-.figure-pane--dark .fig-status {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-caption,
+:is(.figure-pane--dark, .figure-pane--paper) .fig-note,
+:is(.figure-pane--dark, .figure-pane--paper) .fig-status {
   color: rgb(var(--figure-pane-ink) / 0.62);
 }
-.figure-pane--dark .fig-glyph {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-glyph {
   color: rgb(var(--figure-pane-ink) / 0.3);
 }
 

@@ -154,7 +154,7 @@ describe("useTrendingHighlights", () => {
     const top = Math.round(1200 + 50 - window.innerHeight / 2);
     expect(scrollTo).toHaveBeenCalledWith({
       top: Math.max(0, top),
-      behavior: "auto",
+      behavior: "instant",
     });
     expect(paragraph.classList.contains("ob-flash")).toBe(true);
     vi.advanceTimersByTime(1600);

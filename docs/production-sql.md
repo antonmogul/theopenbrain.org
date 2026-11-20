@@ -4,6 +4,12 @@ Migrations in `supabase/migrations/` are **not** applied by CI or by the Railway
 
 Project ref: `ocenwbkdzmxhsvwlornp` ("The Open Brain V2").
 
+## Pending — OPENBRAIN-66
+
+| Migration                                      | State   | Release order                                                                                                                                                                                                                         |
+| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261120066600_retina_introduction_title.sql` | Pending | Data only; may run before or after deploy. Renames only the Retina introduction's existing `The Retina` title to `Introduction`; preserves later author edits. Funding and the intentionally empty acknowledgements remain as stored. |
+
 ## Pushed 2026-11-20 — OPENBRAIN-62
 
 | Migration                              | State  | Release order                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |

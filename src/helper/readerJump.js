@@ -227,7 +227,9 @@ export function scrollToY(topOf, { remember = false } = {}) {
   }
   stopLanding?.();
   const smooth = !reducedMotionPreferred();
-  window.scrollTo({ top: first, behavior: smooth ? "smooth" : "auto" });
+  // "auto" follows html:focus-within's smooth behaviour after a button
+  // receives focus. Reduced motion must bypass that CSS as well.
+  window.scrollTo({ top: first, behavior: smooth ? "smooth" : "instant" });
   if (!smooth) return true;
 
   let tries = 0;

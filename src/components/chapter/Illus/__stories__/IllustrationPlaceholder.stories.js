@@ -96,7 +96,7 @@ export const WithoutFigureNumber = {
 /* The reader's figure pane has a fixed height (viewport minus the top bar);
    the artwork stories use one too, so fitting is what is on show. This is
    the paper pane (a chapter whose art was drawn for paper, the Retina):
-   the toolbar is above the artwork, the legend opens under it, and the
+   the shared toolbar is below the artwork, the legend peeks upwards, and the
    fullscreen dialog stays on paper, which the shell reads from the pane's
    data-ground. */
 const paneFrame = illustrationFrame(IllustrationPlaceholder, {
@@ -186,3 +186,22 @@ export const OnTheDarkPaneSingle = {
 
 /** On the dark pane: artwork still pending. */
 export const OnTheDarkPanePending = { render: darkPaneFrame };
+
+/** Generic Retina media use the same toolbar geometry while keeping paper. */
+export const RetinaPaperPane = {
+  render: paneFrame,
+  args: {
+    animation: {
+      id: "animationRetinaDevelopment",
+      title: "Retinal development",
+      caption:
+        "Neuroblasts divide and migrate as the developing retina generates its neuronal layers and assembles retinal circuits.",
+      images: [
+        {
+          src: "/publicAssets/videos/retina/retinal-development-loop.webp",
+          alt: "Animation of neuronal development in the retina.",
+        },
+      ],
+    },
+  },
+};

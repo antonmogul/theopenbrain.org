@@ -15,7 +15,10 @@ const { assetOk, reduced, loaded } = vi.hoisted(() => ({
   loaded: [],
 }));
 vi.mock("@/helper/animationResolve", () => ({ imageAssetOk: assetOk }));
-vi.mock("@/helper/readerJump", () => ({ reducedMotionPreferred: reduced }));
+vi.mock("@/helper/readerJump", () => ({
+  reducedMotionPreferred: reduced,
+  jumpToElement: vi.fn(),
+}));
 
 import HeadCover from "../HeadCover.vue";
 import OpenerHero from "../OpenerHero.vue";
