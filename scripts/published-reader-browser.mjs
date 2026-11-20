@@ -418,14 +418,21 @@ try {
               .toBeGreaterThan(0);
           }
         } else {
-          // A mounted Lottie must contain authored shapes, not only its outer
-          // SVG or the expand/control icon. Check a viewBox and drawn groups.
-          await expect
-            .poll(() => figure.locator("svg[viewBox] g").count(), {
-              timeout: 20000,
-              message: `${key}: drawn Lottie`,
-            })
-            .toBeGreaterThan(0);
+          // Scope to this record's artwork, excluding toolbar SVGs and a
+          // departing figure's transition. Both split halves must draw.
+          const artStages = config.split
+            ? [".sp-stage-left", ".sp-stage-right"]
+            : [`[id="${key}"], [id="${key}--inline"]`];
+          for (const stage of artStages)
+            await expect
+              .poll(
+                () => figure.locator(stage).locator("svg[viewBox] g").count(),
+                {
+                  timeout: 20000,
+                  message: `${key}: drawn Lottie in ${stage}`,
+                }
+              )
+              .toBeGreaterThan(0);
         }
         record.box = await size(config.widgetId ? uploadFrame : figure);
         if (
