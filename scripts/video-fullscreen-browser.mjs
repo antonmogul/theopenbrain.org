@@ -124,10 +124,13 @@ for (const [engine, type] of Object.entries({ chromium, webkit })) {
               behavior: "instant",
             })
           );
-        const pane = page.locator(".figure-pane .fig-pane");
+        // Wait for the previous figure's crossfade before using its toolbar.
+        await page.waitForTimeout(600);
+        const pane = page.locator(
+          ".figure-pane .fig-pane:not(.fade-leave-active)"
+        );
         await expect(pane).toHaveCount(1);
         await expect(pane).toBeVisible();
-        await page.waitForTimeout(600);
         if (index) await pane.locator(".figimg-thumbnail").nth(index).click();
         await pane.locator(".ve-poster").click();
         const iframe = pane.locator(".ve iframe");
