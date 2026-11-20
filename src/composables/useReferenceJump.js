@@ -12,7 +12,11 @@
  * Module scope: one reader, one list.
  */
 import { nextTick, ref } from "vue";
-import { jumpToElement } from "@/helper/readerJump";
+import {
+  jumpToElement,
+  holdLanding,
+  reducedMotionPreferred,
+} from "@/helper/readerJump";
 
 // How long after a jump to look whether it began (see jumpToReference).
 const NUDGE_MS = 300;
@@ -21,6 +25,7 @@ const NUDGE_MS = 300;
 const returnTo = ref(null);
 /** The number last asked for: a filtered list shows everything again. */
 const requested = ref(null);
+let stopReturnLanding = null;
 
 /** The list's entry for reference `number`, if it is on the page. */
 export function referenceAnchor(number) {
@@ -40,6 +45,8 @@ export function referenceListOnPage() {
  * entry (nothing moves).
  */
 export async function jumpToReference(number, origin = null) {
+  stopReturnLanding?.();
+  stopReturnLanding = null;
   // A new object each time: asking twice for the same entry counts twice.
   requested.value = { number: Number(number) };
   // A filtered list drops its filter first, so the entry is there to find.
@@ -72,15 +79,22 @@ export function returnFromReference() {
   const back = returnTo.value;
   returnTo.value = null;
   if (!back?.origin?.isConnected) return false;
-  return jumpToElement(back.origin, {
+  const landed = jumpToElement(back.origin, {
     align: "center",
     flash: true,
     remember: false,
   });
+  // Full-width bands and lazy figures can remeasure after an instant return.
+  // Reuse the reader's bounded landing guard; reader input releases it.
+  if (reducedMotionPreferred())
+    stopReturnLanding = holdLanding(back.origin, { align: "center", ms: 1500 });
+  return landed;
 }
 
 /** Forget the way back (the chapter changed, the list went away). */
 export function forgetReferenceJump() {
+  stopReturnLanding?.();
+  stopReturnLanding = null;
   returnTo.value = null;
   requested.value = null;
 }

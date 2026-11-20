@@ -7,8 +7,11 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const jumpToElement = vi.fn(() => true);
+const holdLanding = vi.fn(() => vi.fn());
 vi.mock("@/helper/readerJump", () => ({
   jumpToElement: (...a) => jumpToElement(...a),
+  holdLanding: (...a) => holdLanding(...a),
+  reducedMotionPreferred: () => true,
 }));
 
 import ChapterReferences from "../ChapterReferences.vue";
@@ -196,6 +199,10 @@ describe("from the text to an entry, and back", () => {
 
     jumpToElement.mockClear();
     pill.querySelector(".cr-return-back").click();
+    expect(holdLanding).toHaveBeenCalledWith(citation, {
+      align: "center",
+      ms: 1500,
+    });
     await flushPromises();
     expect(jumpToElement).toHaveBeenCalledWith(
       citation,

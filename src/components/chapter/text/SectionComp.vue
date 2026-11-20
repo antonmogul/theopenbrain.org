@@ -232,6 +232,7 @@
             v-else-if="paragraph.type === 'breakVideo'"
             :title="paragraph.title"
             :text="paragraph.text"
+            :video="paragraph.video"
             :slug="paragraph.videoSlug || 'placeholder'"
             :data-timeline-id="paragraph.id"
           />

@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   chapterEndReferences,
-  retinaLegacyReferences,
   linkifyReference,
   referenceDisplay,
   referenceFromChapter,
 } from "../chapterReferences.js";
 
 describe("referenceFromChapter (OPENBRAIN-90)", () => {
-  it("finds a Retina reference among its footnotes", () => {
+  it("does not treat explanatory footnotes as references", () => {
     const chapter = {
       footNotes: {
         notes: [
@@ -18,10 +17,7 @@ describe("referenceFromChapter (OPENBRAIN-90)", () => {
       },
       sections: [],
     };
-    expect(referenceFromChapter(chapter, 2)).toEqual({
-      number: 2,
-      html: "Second.",
-    });
+    expect(referenceFromChapter(chapter, 2)).toBeNull();
   });
 
   it("finds a History reference in its References list", () => {
@@ -126,30 +122,33 @@ describe("referenceDisplay (OPENBRAIN-92)", () => {
   });
 });
 
-describe("one complete Retina bibliography", () => {
+describe("one complete section bibliography", () => {
   const chapter = {
-    slug: "the-retina",
-    footNotes: { notes: [{ text: "First." }, { text: "Second." }] },
-    furtherReading: { paragraphs: [{ text: "Keep Webvision." }] },
+    sections: [
+      {
+        slug: "references",
+        paragraphs: [
+          {
+            id: "one",
+            blocks: [
+              { type: "reference", number: 1, content: "First." },
+              { type: "reference", number: 2, content: "Second." },
+            ],
+          },
+        ],
+      },
+    ],
   };
-  it("prefers structured metadata and retains missing legacy citation numbers", () => {
-    const row = { number: 2, raw_text: "Second.", doi: "10.1234/example" };
-    expect(chapterEndReferences(chapter, [row])).toEqual([
-      { number: 1, html: "First." },
-      row,
-    ]);
-    expect(chapter.footNotes.notes).toHaveLength(2);
-    expect(chapter.furtherReading.paragraphs[0].text).toBe("Keep Webvision.");
-  });
-  it("still supplies every citation anchor when the table is empty", () => {
-    expect(chapterEndReferences(chapter).map((r) => r.number)).toEqual([1, 2]);
-  });
-  it("does not consume genuine footnotes from other chapters or append a second References section", () => {
-    expect(retinaLegacyReferences({ ...chapter, slug: "other" })).toEqual([]);
+  it("enriches entries without losing missing rows, numbering or paragraph ids", () => {
     expect(
-      chapterEndReferences({ ...chapter, sections: [{ slug: "references" }] }, [
-        { number: 1 },
-      ])
-    ).toEqual([]);
+      chapterEndReferences(chapter, [{ number: 2, doi: "10.1234/example" }])
+    ).toEqual([
+      { id: "one", number: 1, raw_text: "First." },
+      { id: "one", number: 2, raw_text: "Second.", doi: "10.1234/example" },
+    ]);
+    expect(referenceFromChapter(chapter, 2)).toEqual({
+      number: 2,
+      html: "Second.",
+    });
   });
 });

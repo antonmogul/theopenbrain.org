@@ -2,6 +2,7 @@
 import { computed, ref, useId } from "vue";
 import { toSlug } from "@/helper/general.js";
 import { breakSectionDirections } from "@/helper/breakSectionPresentation";
+import BreakImages from "./BreakImages.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 
 const props = defineProps({ content: Object });
@@ -17,7 +18,8 @@ const steps = computed(() => breakSectionDirections(props.content));
 </script>
 
 <template>
-  <FullBleed viewport>
+  <BreakImages v-if="content.video" :video="content.video" />
+  <FullBleed v-else viewport>
     <section
       class="break-demo noHighlight"
       :class="{ 'break-demo--plate': colorBlindness && !infoIsOpen }"

@@ -41,10 +41,12 @@ export function extractChapter1Meta(blocks) {
       meta.type = "breakSection";
       meta.title = block.title;
       meta.steps = block.steps;
+      if (block.video) meta.video = block.video;
     }
     if (block.type === "break_video") {
       meta.type = "breakVideo";
       meta.title = block.title;
+      meta.video = block;
       if (block.videoSlug) meta.videoSlug = block.videoSlug;
     }
     if (block.type === "image") {
@@ -152,6 +154,9 @@ export function contentBlocksToHTML(blocks) {
       }
       if (block.type === "code") {
         return `<pre><code>${block.content || ""}</code></pre>`;
+      }
+      if (block.type === "reference") {
+        return `<ol start="${Number(block.number)}"><li>${block.content || ""}</li></ol>`;
       }
       if (block.type === "list") {
         const items = (block.items || [])
@@ -529,8 +534,37 @@ export function transformModuleToChapterFormat(module) {
     return null;
   }
 
+  // Deploy compatibility: numbered legacy bibliography blocks enter the same
+  // references-section contract before the guarded data migration is applied.
+  // No chapter identity is involved; genuine explanatory footnotes stay notes.
+  const normalizedSections = module.sections.map((section) => {
+    const paragraphs = section.paragraphs || [];
+    if (
+      section.slug !== "footnotes" ||
+      !paragraphs.length ||
+      !paragraphs.every(
+        (p) =>
+          p.content?.blocks?.length === 1 &&
+          p.content.blocks[0].type === "footnote" &&
+          Number.isInteger(p.content.blocks[0].number)
+      )
+    )
+      return section;
+    return {
+      ...section,
+      slug: "references",
+      title: "References",
+      paragraphs: paragraphs.map((p) => ({
+        ...p,
+        content: {
+          ...p.content,
+          blocks: p.content.blocks.map((b) => ({ ...b, type: "reference" })),
+        },
+      })),
+    };
+  });
   // Sort sections by order_index
-  const sortedSections = [...module.sections].sort(
+  const sortedSections = normalizedSections.sort(
     (a, b) => a.order_index - b.order_index
   );
 

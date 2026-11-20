@@ -96,10 +96,11 @@
                 v-html="subSubParagraph.text"
               />
               <BreakImages
-                v-else-if="subSubSection?.type === 'breakVideo'"
+                v-else-if="subSubParagraph?.type === 'breakVideo'"
                 :key="subSubParagraph.text"
                 :title="subSubParagraph.title"
                 :text="subSubParagraph.text"
+                :video="subSubParagraph.video"
                 :slug="subSubParagraph.videoSlug || 'placeholder'"
                 :data-timeline-id="subSubParagraph.id"
               />
@@ -136,6 +137,7 @@
           v-if="subSubSection.type === 'breakVideo'"
           :title="subSubSection.title"
           :text="subSubSection.text"
+          :video="subSubSection.video"
           :slug="subSubSection.videoSlug || 'placeholder'"
           :data-timeline-id="subSubSection.id"
         />
