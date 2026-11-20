@@ -36,18 +36,18 @@ Draft coverage uses committed migrations because anonymous REST intentionally hi
 
 ### Ports retained without a primary chapter placement
 
-| View                           | Route                     | Recommendation                                                                 |
-| ------------------------------ | ------------------------- | ------------------------------------------------------------------------------ |
-| `ColorVisionView.vue`          | `/color-vision`           | Keep the library comparison and explicit upload fallback                       |
-| `DirectionSelectivityView.vue` | `/direction-selectivity`  | Keep the distinct Python/data demonstration in the library                     |
-| `RetINaBoxView.vue`            | `/retinabox`              | Keep the library comparison and explicit upload fallback                       |
-| `V1CameraView.vue`             | `/v1-camera`              | Keep for the widget library and future chapter authoring                       |
-| `VisualPathwayLesionsView.vue` | `/visual-pathway` | Keep for the widget library and future chapter authoring                       |
-| `SdtWidgetView.vue`            | `/sdt`                    | Keep the library comparison; the chapter uses `upload:attn-sdt`                |
-| `PosnerCueingView.vue`         | `/posner-cueing`          | Keep the library comparison; the chapter uses an upload                        |
-| `ContrastResponseGainView.vue` | `/contrast-response` | Keep the library comparison; the chapter uses an upload                        |
-| `TmtFeatureAttentionView.vue`  | `/feature-attention`  | Keep the library comparison; the chapter uses an upload                        |
-| `CaseCabinetView.vue`          | `/case-cabinet`           | Keep the source appendix/library fixture; the chapter uses the Penfield upload |
+| View                           | Route                    | Recommendation                                                                 |
+| ------------------------------ | ------------------------ | ------------------------------------------------------------------------------ |
+| `ColorVisionView.vue`          | `/color-vision`          | Keep the library comparison and explicit upload fallback                       |
+| `DirectionSelectivityView.vue` | `/direction-selectivity` | Keep the distinct Python/data demonstration in the library                     |
+| `RetINaBoxView.vue`            | `/retinabox`             | Keep the library comparison and explicit upload fallback                       |
+| `V1CameraView.vue`             | `/v1-camera`             | Keep for the widget library and future chapter authoring                       |
+| `VisualPathwayLesionsView.vue` | `/visual-pathway`        | Keep for the widget library and future chapter authoring                       |
+| `SdtWidgetView.vue`            | `/sdt`                   | Keep the library comparison; the chapter uses `upload:attn-sdt`                |
+| `PosnerCueingView.vue`         | `/posner-cueing`         | Keep the library comparison; the chapter uses an upload                        |
+| `ContrastResponseGainView.vue` | `/contrast-response`     | Keep the library comparison; the chapter uses an upload                        |
+| `TmtFeatureAttentionView.vue`  | `/feature-attention`     | Keep the library comparison; the chapter uses an upload                        |
+| `CaseCabinetView.vue`          | `/case-cabinet`          | Keep the source appendix/library fixture; the chapter uses the Penfield upload |
 
 The standalone `/phrenology-3d` and `/playground` tools also remain. No route or `views/*View.vue` port is deleted. Biased competition, psychometric function, normalization, Hillyard ERP, Corbetta PET and phrenology still have published chapter uses and are excluded from the unused-port list.
 
