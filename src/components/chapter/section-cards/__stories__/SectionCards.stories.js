@@ -112,3 +112,14 @@ export const InAReader = {
 export const ClosingWords = {
   args: { art: art("closing-words"), label: "5", title: "Closing words" },
 };
+
+export const Placeholder = {
+  args: {
+    art: {
+      src: "/publicAssets/images/the-retina/sections/placeholder-story-of-the-eye.webp",
+      placeholder: true,
+    },
+    label: "1",
+    title: "Story of the eye",
+  },
+};

@@ -284,7 +284,7 @@ function stop() {
 
 onMounted(start);
 onBeforeUnmount(stop);
-watch(() => cards.value.map((c) => c.id).join("|"), start, { flush: "post" });
+watch(cards, start, { flush: "post" });
 watch(wide, onLayout);
 
 defineExpose({ update, current });

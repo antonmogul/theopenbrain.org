@@ -124,3 +124,18 @@ export const SomeWithoutArt = {
     ],
   },
 };
+
+/** Generated temporary artwork is labelled independently of its baked-in mark. */
+export const Placeholder = {
+  args: {
+    title: "The Retina",
+    chapterSlug: "the-retina",
+    outline: historyOutline.slice(0, 3).map((entry) => ({
+      ...entry,
+      art: {
+        src: "/publicAssets/images/the-retina/sections/placeholder-story-of-the-eye.webp",
+        placeholder: true,
+      },
+    })),
+  },
+};

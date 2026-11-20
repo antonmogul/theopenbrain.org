@@ -198,7 +198,13 @@ defineExpose({ active, fit, scrolls, measure });
     :id="id"
     ref="rootEl"
     class="otoc"
-    :class="{ 'otoc--still': still, 'otoc--scrolls': scrolls }"
+    :class="{
+      'otoc--still': still,
+      'otoc--scrolls': scrolls,
+      'otoc--long-numbers': outline.some(
+        (entry) => String(entry.label).length > 1
+      ),
+    }"
     :style="{ '--otoc-fit': fit }"
     aria-labelledby="opener-toc-title"
   >
@@ -218,6 +224,10 @@ defineExpose({ active, fit, scrolls, measure });
         draggable="false"
       />
     </div>
+
+    <span v-if="pictures[shown]?.placeholder" class="otoc__placeholder"
+      >Placeholder image</span
+    >
 
     <div class="otoc__column" @pointerleave="onLeave">
       <h1 id="opener-toc-title" class="otoc__title">
@@ -285,6 +295,19 @@ defineExpose({ active, fit, scrolls, measure });
   position: relative;
   overflow: hidden;
   background: rgb(var(--color-chapter));
+}
+.otoc__placeholder {
+  position: absolute;
+  top: calc(var(--reader-topbar-h, 4rem) + 1rem);
+  left: 1rem;
+  z-index: 3;
+  padding: 0.375rem 0.625rem;
+  background: rgb(var(--color-dark-surface));
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 .otoc__pic {
   position: absolute;
@@ -399,6 +422,9 @@ defineExpose({ active, fit, scrolls, measure });
   flex: none;
   width: 0.9em;
   font-variant-numeric: tabular-nums;
+}
+.otoc--long-numbers .otoc__num {
+  width: 1.7em;
 }
 .otoc__label {
   min-width: 0;
