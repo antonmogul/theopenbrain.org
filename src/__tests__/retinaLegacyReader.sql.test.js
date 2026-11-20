@@ -127,6 +127,22 @@ describe.skipIf(!harness || !existsSync(harness))(
       await expect(db.exec(sql)).rejects.toThrow(/footnote shape changed/);
       await db.close();
     });
+    it.each(["type", "content"])(
+      "fails closed when a bibliography block has no %s",
+      async (key) => {
+        const db = await fresh();
+        const note = fixture.paragraphs.find(
+          (p) => p.content.blocks[0]?.type === "footnote"
+        );
+        await db.query(
+          "update paragraphs set content = content #- $1::text[] where id = $2",
+          [["blocks", "0", key], note.id]
+        );
+        await expect(db.exec(sql)).rejects.toThrow(/footnote shape changed/);
+        await db.close();
+      }
+    );
+
     it("leaves History, Attention and Stress blocks and section slugs unchanged", async () => {
       const db = await fresh();
       for (const slug of [

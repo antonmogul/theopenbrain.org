@@ -86,9 +86,9 @@ begin
   if (select count(*) from public.paragraphs where section_id = target) <> 106
     or exists (select 1 from public.paragraphs p where p.section_id = target and (
       jsonb_array_length(p.content->'blocks') <> 1
-      or p.content->'blocks'->0->>'type' <> 'footnote'
+      or p.content->'blocks'->0->>'type' is distinct from 'footnote'
       or p.content->'blocks'->0->>'number' is distinct from (p.order_index + 1)::text
-      or jsonb_typeof(p.content->'blocks'->0->'content') <> 'string'
+      or jsonb_typeof(p.content->'blocks'->0->'content') is distinct from 'string'
     )) then raise exception 'OPENBRAIN-61: footnote shape changed; inspect before retrying'; end if;
   update public.paragraphs p set content = jsonb_set(p.content, '{blocks,0,type}', '"reference"'::jsonb), updated_at = now()
     where p.section_id = target;
