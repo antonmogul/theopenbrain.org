@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import fixture from "./fixtures/retinaWidgetsDb.json";
 import blocks from "./fixtures/retinaWidgetBlocks.json";
-import { sql, widgetsDb } from "./helpers/retinaWidgetsDb.mjs";
+import { sql, widgetsDb, atWidgetsDb } from "./helpers/retinaWidgetsDb.mjs";
 import { transformParagraph } from "@/composables/chapterTransform.mjs";
 
 const harness = process.env.HISTORY_SQL_HARNESS;
@@ -25,7 +25,9 @@ describe.skipIf(!harness || !existsSync(harness))(
           published = await uploads(db);
         for (const row of published)
           expect(row.html, row.slug).toBe(
-            readFileSync(`src/widgets/uploads/${row.slug}.html`, "utf8")
+            atWidgetsDb(
+              readFileSync(`src/widgets/uploads/${row.slug}.html`, "utf8")
+            )
           );
         expect(published).toHaveLength(15);
         expect(published.every((u) => u.status === "published")).toBe(true);
