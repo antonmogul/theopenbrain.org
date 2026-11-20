@@ -163,10 +163,13 @@ for (const [engine, browserType] of Object.entries({ chromium, webkit })) {
           });
           const number = slug === "the-retina" ? 2 : 1;
           await page.goto(`${BASE}/chapter/${number}/${slug}`, {
-            waitUntil: "networkidle",
+            waitUntil: "domcontentloaded",
             timeout: 60000,
           });
           await page.locator('[data-testid="chapter-authors"]').waitFor();
+          await page.waitForFunction(
+            () => !document.querySelector('[data-reactive-cover="loading"]')
+          );
           await page.evaluate(() => document.fonts.ready);
           await page.addStyleTag({
             content: "* { caret-color: transparent !important; }",
