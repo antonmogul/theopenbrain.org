@@ -171,7 +171,7 @@ if(window.OB){
   document.addEventListener("DOMContentLoaded",()=>{
     const canvas=document.getElementById("cv"), context=canvas.getContext("2d"), fillText=context.fillText;
     context.fillText=function(text,x,y,...rest){
-      if(!document.documentElement.hasAttribute("data-ob-fit")||this.textAlign!=="left"||y>=100) return fillText.call(this,text,x,y,...rest);
+      if(!document.documentElement.hasAttribute("data-ob-fit")||this.textAlign!=="left"||this.textBaseline!=="alphabetic"||!this.font.includes("IBM Plex Mono")||y>=100) return fillText.call(this,text,x,y,...rest);
       const font=this.font, size=font.match(/([\d.]+)px/), matrix=this.getTransform();
       const scale=Math.min(canvas.clientWidth/canvas.width,canvas.clientHeight/canvas.height)*Math.hypot(matrix.c,matrix.d);
       if(!size||!scale) return fillText.call(this,text,x,y,...rest);

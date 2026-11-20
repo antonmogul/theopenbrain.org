@@ -76,7 +76,13 @@ for (const [engine, launcher] of Object.entries({ chromium, webkit }).filter(
           y,
           ...rest
         ) {
-          if (this.canvas.id === "cv" && this.textAlign === "left" && y < 100) {
+          if (
+            this.canvas.id === "cv" &&
+            this.textAlign === "left" &&
+            this.textBaseline === "alphabetic" &&
+            this.font.includes("IBM Plex Mono") &&
+            y < 100
+          ) {
             window.__loewiHeading = {
               text,
               font: this.font,
@@ -85,6 +91,12 @@ for (const [engine, launcher] of Object.entries({ chromium, webkit }).filter(
               y,
               textWidth: this.measureText(text).width,
             };
+          }
+          if (this.canvas.id === "cv" && this.font.includes("Helvetica Neue")) {
+            window.__loewiMoleculeFonts ||= new Set();
+            window.__loewiMoleculeFonts.add(
+              Number(this.font.match(/([\d.]+)px/)[1])
+            );
           }
           return fill.call(this, text, x, y, ...rest);
         };
@@ -221,6 +233,7 @@ for (const [engine, launcher] of Object.entries({ chromium, webkit }).filter(
           const reading = await inner
             .locator("body")
             .evaluate(async (_, time) => {
+              window.__loewiHeading = null;
               window.__w.seek(time);
               await new Promise(requestAnimationFrame);
               const cap = document.querySelector(".cap"),
@@ -252,6 +265,9 @@ for (const [engine, launcher] of Object.entries({ chromium, webkit }).filter(
                 clock: font(".clock"),
                 speed: font(".ib.spd"),
                 tag,
+                moleculeFonts: [...(window.__loewiMoleculeFonts || [])].sort(
+                  (a, b) => a - b
+                ),
                 captionFits: cap.scrollHeight <= cap.clientHeight + 1,
                 sceneHeight: rect.height,
                 overflow:
@@ -269,6 +285,12 @@ for (const [engine, launcher] of Object.entries({ chromium, webkit }).filter(
           ])
             reading[key] *= scale;
           if (reading.tag) reading.tag.effective *= scale;
+          if (time === 155)
+            assert.deepEqual(
+              reading.moleculeFonts,
+              [11, 17],
+              `${engine} ${width}: author's chemical formula fonts changed`
+            );
           if (version === "after") {
             assert(
               reading.caption >= 14,
