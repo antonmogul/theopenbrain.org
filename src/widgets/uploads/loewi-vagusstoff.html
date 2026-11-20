@@ -130,7 +130,24 @@ canvas{display:block;width:100%;height:100%;object-fit:contain}
 /* Figure pane: the frame is as tall as the pane allows (--ob-max-height); the scene takes
    what the caption and transport leave, and the canvas script redraws to its box. */
 html[data-ob-fit],html[data-ob-fit] body{height:100%;overflow:hidden}
-html[data-ob-fit] .fig{aspect-ratio:auto;height:var(--ob-max-height,100vh);max-height:100vh}
+html[data-ob-fit] .fig{width:100%;aspect-ratio:auto;height:var(--ob-max-height,100vh);max-height:100vh}
+/* v5 (OPENBRAIN-55): type uses CSS pixels, not the artwork's design units.
+   Reserve enough caption space for its longest timed passage without spending
+   150 design units on every short line; the drawing gets the remaining height. */
+html[data-ob-book] .cap{height:auto;min-height:126px;padding:14px var(--pad) 8px;overflow:visible}
+html[data-ob-book] .cap h3{font-size:14px;line-height:1.3;margin-bottom:8px}
+html[data-ob-book] .cap p{font-size:16px;line-height:1.4}
+html[data-ob-book] .chapters{font-size:13px;line-height:20px;height:20px;letter-spacing:0;color:var(--ink-2)}
+html[data-ob-book] .clock,html[data-ob-book] .ib.spd{font-size:13px}
+html[data-ob-book] .transport{padding-bottom:14px;row-gap:8px}
+@media (max-width:560px){
+  html[data-ob-book] .cap{min-height:148px}
+  /* Equal cells keep the last two timeline labels apart in the narrow pane
+     and inline on phones; the scrub bar retains the author's timed segments. */
+  html[data-ob-book] .chapters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:auto;font-size:12px}
+  html[data-ob-book] .chapters button{position:static;padding:4px 0;margin:0;font:inherit;white-space:normal;overflow-wrap:anywhere;text-align:left}
+  html[data-ob-book] .chapters button:last-child{text-align:right}
+}
 html[data-ob-fit] .scene{flex:1 1 0!important;aspect-ratio:auto!important;min-height:0;max-height:none}
 /* Inline in the book (no pane): the frame grows to the content, so nothing may size
    itself from the viewport. On a phone the scene keeps the artwork's 720 x 853. */
@@ -144,7 +161,32 @@ html[data-ob-reduce-motion] .load .sp{animation:none}
 /* Maura, 18 Nov: the hover tooltip with the time and section is redundant. */
 .tip{display:none!important}
 </style>
-<script>if(window.OB)document.documentElement.setAttribute("data-ob-book","");</script>
+<script>
+if(window.OB){
+  document.documentElement.setAttribute("data-ob-book","");
+  /* The period/step heading is drawn into the canvas by the author. Its
+     12.5 design-unit cap becomes ~5px on a short pane. Adapt only that
+     heading's paint, leaving the artwork, coordinates and player untouched.
+     Account for object-fit:contain as well as the backing-store transform. */
+  document.addEventListener("DOMContentLoaded",()=>{
+    const canvas=document.getElementById("cv"), context=canvas.getContext("2d"), fillText=context.fillText;
+    context.fillText=function(text,x,y,...rest){
+      if(!document.documentElement.hasAttribute("data-ob-fit")||this.textAlign!=="left"||this.textBaseline!=="alphabetic"||!this.font.includes("IBM Plex Mono")||y>=100) return fillText.call(this,text,x,y,...rest);
+      const font=this.font, size=font.match(/([\d.]+)px/), matrix=this.getTransform();
+      const scale=Math.min(canvas.clientWidth/canvas.width,canvas.clientHeight/canvas.height)*Math.hypot(matrix.c,matrix.d);
+      if(!size||!scale) return fillText.call(this,text,x,y,...rest);
+      this.save();
+      this.font=font.replace(/([\d.]+)px/,Math.max(Number(size[1]),13/scale)+"px");
+      fillText.call(this,text,x,y,...rest);
+      this.restore();
+    };
+    /* A paused frame must repaint after its caption or the pane resizes too. */
+    new ResizeObserver(()=>{
+      if(document.documentElement.hasAttribute("data-ob-fit")&&document.getElementById("load").hidden) window.__w?.render(window.__w.t);
+    }).observe(canvas);
+  });
+}
+</script>
 
 <div class="fig">
   <div class="scene">
