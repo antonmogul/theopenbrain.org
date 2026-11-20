@@ -2,10 +2,12 @@
   <div
     class="w-full flex flex-col h-full pointer-events-auto"
     :class="framing ? '' : 'pl-32 pr-14'"
+    style="position: relative"
   >
     <div :style="frameStyle" class="transition-art">
       <div :id="animation.id" ref="container" class="w-full h-full" />
     </div>
+    <FigureHeading :record="animation" class="transition-heading" />
   </div>
 </template>
 
@@ -14,6 +16,7 @@ import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { loadLottie } from "@/composables/useLottie";
 import { useReducedMotion } from "@/composables/useReducedMotion";
 import { lottiePath } from "@/helper/animationResolve";
+import FigureHeading from "./FigureHeading.vue";
 
 const props = defineProps({
   animation: Object,
@@ -80,3 +83,11 @@ onBeforeUnmount(() => {
   animationLottie?.destroy();
 });
 </script>
+
+<style scoped>
+.transition-heading {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+</style>

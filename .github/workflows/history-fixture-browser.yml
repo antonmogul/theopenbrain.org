@@ -17,7 +17,7 @@ jobs:
   history-fixture-browser:
     name: History fixture Chromium assertions and screenshots
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       # Storybook aliases every API/auth client. No repository secrets are used.
       STORYBOOK_DISABLE_TELEMETRY: "1"
@@ -83,7 +83,7 @@ jobs:
         if: ${{ !cancelled() && steps.prepare-full-reader.outcome == 'success' }}
         shell: bash
         run: npx start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 'node scripts/history-full-reader-browser.mjs' 2>&1 | tee history-fixture-browser-artifacts/full-reader-browser.log
-      - name: Run published Retina reader assertions (same Storybook build)
+      - name: Run published Retina reader and figure label assertions (same Storybook build)
         if: ${{ !cancelled() && steps.prepare-retina.outcome == 'success' }}
         shell: bash
         run: |

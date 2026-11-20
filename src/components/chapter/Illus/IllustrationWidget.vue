@@ -21,6 +21,8 @@ import {
 } from "vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
 import { WIDGET_FIT } from "@/widgets/uploaded/widgetHost";
+import { railFigureLabel } from "@/helper/railFigure";
+import FigureHeading from "./FigureHeading.vue";
 
 const props = defineProps({
   /** The figure: { id, title?, widgetId } from useAnimations. */
@@ -71,7 +73,8 @@ const view = computed(() =>
         in the reader yet.
       </p>
     </div>
-    <figcaption v-if="animation.title" class="iw-caption">
+    <FigureHeading v-if="railFigureLabel(animation)" :record="animation" />
+    <figcaption v-else-if="animation.title" class="iw-caption">
       {{ animation.title }}
     </figcaption>
   </figure>

@@ -1,15 +1,15 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 82,
-  "coveredCount": 82,
+  "sourceCount": 83,
+  "coveredCount": 83,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
     "ReaderShell": 29,
     "Highlighting": 6,
     "Demos": 4,
-    "Illustrations": 17,
+    "Illustrations": 18,
     "Text": 26
   },
   "components": [
@@ -37,6 +37,11 @@
       "source": "src/components/chapter/HighlightToolbar.vue",
       "storyFile": "src/components/chapter/__stories__/HighlightToolbar.stories.js",
       "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/Illus/FigureHeading.vue",
+      "storyFile": "src/components/chapter/Illus/__stories__/FigureHeading.stories.js",
+      "story": "PaperPane"
     },
     {
       "source": "src/components/chapter/Illus/FigureImages.vue",

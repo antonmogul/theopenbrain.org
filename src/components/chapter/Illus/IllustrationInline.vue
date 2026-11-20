@@ -33,6 +33,8 @@ import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 import FigureWidget from "@/widgets/figures/FigureWidget.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
 import VideoEmbed from "@/components/chapter/text/VideoEmbed.vue";
+import FigureHeading from "./FigureHeading.vue";
+import { railFigureLabel } from "@/helper/railFigure";
 
 const props = defineProps({
   // The figure's id, e.g. "animationEyeStructur" (the `para.animation.id`).
@@ -126,6 +128,7 @@ const posterSrc = computed(
       kind: animation.widgetId.startsWith('upload:') ? 'inline' : 'breakout',
       title: animation.title || '',
       kicker: animation.kicker || '',
+      figureNumber: animation.figureNumber,
     }"
   />
   <!-- An image figure (or its placeholder): the pane's figure shell
@@ -165,10 +168,11 @@ const posterSrc = computed(
     :data-figure-key="animation.id"
   >
     <figcaption
-      v-if="title || mode === 'interactive'"
+      v-if="title || railFigureLabel(animation) || mode === 'interactive'"
       class="mb-2 flex items-center justify-between gap-2"
     >
-      <span>{{ title }}</span>
+      <FigureHeading v-if="railFigureLabel(animation)" :record="animation" />
+      <span v-else>{{ title }}</span>
       <button
         v-if="mode === 'interactive'"
         type="button"
@@ -257,6 +261,13 @@ const posterSrc = computed(
 </template>
 
 <style scoped>
+.illu-inline .figure-heading {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding-inline: 0;
+}
+
 .illu-inline {
   width: 100%;
 }

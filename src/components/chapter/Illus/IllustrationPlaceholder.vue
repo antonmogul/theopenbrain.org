@@ -40,6 +40,7 @@ import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
 import { figureImages, galleryStartView } from "@/helper/figureCycle";
 import { useFigureLegend } from "@/composables/useFigureLegend";
+import { railFigureLabel } from "@/helper/railFigure";
 
 const props = defineProps({
   animation: { type: Object, required: true },
@@ -71,12 +72,7 @@ const type = computed(
 );
 
 // "FIG 03" (numeric, zero-padded) or "FIG A" (box letter).
-const figureLabel = computed(() => {
-  const n = props.animation.figureNumber;
-  if (n === undefined || n === null || n === "") return "FIG";
-  const isNumeric = typeof n === "number" || /^\d+$/.test(String(n));
-  return `FIG ${isNumeric ? String(n).padStart(2, "0") : n}`;
-});
+const figureLabel = computed(() => railFigureLabel(props.animation) || "FIG");
 
 const title = computed(() => props.animation.title || "Untitled figure");
 const images = computed(() => figureImages(props.animation));

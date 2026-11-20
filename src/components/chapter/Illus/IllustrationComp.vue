@@ -6,11 +6,12 @@
   <div
     ref="root"
     class="pointer-events-auto"
-    :class="
+    :class="[
+      { 'illustration-numbered': !!label && !inline },
       inline
         ? 'illustration-inline relative flex flex-col gap-4'
-        : 'pr-14 pl-32 flex flex-row justify-center items-center h-[100%]'
-    "
+        : 'pr-14 pl-32 flex flex-row justify-center items-center h-[100%]',
+    ]"
   >
     <div
       class="flex flex-col"
@@ -24,7 +25,7 @@
       <!-- Below the reader's top bar, in the original's title style. Inline
            (scopeId, below xl) the figure's caption already names it. -->
       <span
-        v-if="!scopeId && presentation.title && !presentation.caption"
+        v-if="!label && !scopeId && presentation.title && !presentation.caption"
         class="pb-0 font-sans font-bold text-[1.25rem] leading-[1.55]"
         >{{ presentation.title }}</span
       >
@@ -143,7 +144,7 @@
           "
         >
           <span
-            v-if="!inline"
+            v-if="!label && !inline"
             class="px-24 pt-10 z-30 fixed flex flex-col w-illus justify-between top-0 left-0 text-baseMono"
           >
             {{ animation.title }}
@@ -185,9 +186,11 @@
             "
           />
           <figcaption v-if="presentation.caption" class="illustration-caption">
-            <strong v-if="!inline && presentation.title" class="block mb-2">{{
-              presentation.title
-            }}</strong>
+            <strong
+              v-if="!label && !inline && presentation.title"
+              class="block mb-2"
+              >{{ presentation.title }}</strong
+            >
             {{ presentation.caption }}
           </figcaption>
         </figure>
@@ -203,6 +206,11 @@
         />
       </template>
     </div>
+    <FigureHeading
+      v-if="label && !inline"
+      :record="animation"
+      class="illustration-heading"
+    />
     <div
       class="absolute z-40"
       :class="inline ? 'top-0 right-0' : 'top-12 right-8'"
@@ -232,6 +240,8 @@ import { loadLottie } from "@/composables/useLottie";
 import { useReducedMotion } from "@/composables/useReducedMotion";
 import { lottiePath, resolveAnimationConfig } from "@/helper/animationResolve";
 import { figurePresentation } from "@/helper/figurePresentation";
+import { railFigureLabel } from "@/helper/railFigure";
+import FigureHeading from "./FigureHeading.vue";
 import PlayIcon from "@/icons/custom/PlayIcon.vue";
 import PauseIcon from "@/icons/custom/PauseIcon.vue";
 import IllustrationFlip from "./IllustrationFlip.vue";
@@ -253,6 +263,7 @@ const props = defineProps({
 // Rendered in the text rather than the pane (see the template's note).
 const inline = computed(() => !!props.scopeId);
 const presentation = computed(() => figurePresentation(props.animation));
+const label = computed(() => railFigureLabel(props.animation));
 let animationLottie;
 const root = ref(null);
 const art = ref(null);
@@ -474,6 +485,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.illustration-numbered {
+  position: relative;
+}
+/* Captioned artwork keeps its caption above the new toolbar row. The
+   authored drawing and playback/state controls are otherwise unchanged. */
+.illustration-numbered .illustration-figure {
+  padding-bottom: 6.75rem;
+}
+.illustration-heading {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
 .illustration-playback {
   width: 2.75rem;
   height: 2.75rem;

@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { chromium, expect } from "@playwright/test";
+import { chromium, webkit, expect } from "@playwright/test";
 import { readerChapter } from "./reader-fixture-chapters.mjs";
 
 assert.equal(
@@ -12,7 +12,12 @@ assert.equal(
   "true",
   "Set GITHUB_ACTIONS=true for an intentional local browser run"
 );
+// WebKit can leave an unused font face pending indefinitely. Explicitly
+// settle used faces below; screenshots must not wait for unrelated faces.
+process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY = "1";
 const chapter = readerChapter();
+const engine = process.env.READER_ENGINE || "chromium";
+assert.ok(["chromium", "webkit"].includes(engine), `Unknown engine ${engine}`);
 const fixture = JSON.parse(await readFile(chapter.fixture, "utf8"));
 const base = process.env.STORYBOOK_URL || "http://127.0.0.1:6010";
 assert.match(new URL(base).origin, /^http:\/\/127\.0\.0\.1:\d+$/);
@@ -28,7 +33,7 @@ const manifest = {
     ...fixture.omissions,
     "Only fixture-named YouTube embeds are fulfilled with a local stand-in; player mounting is tested, external playback is not.",
   ],
-  engine: "chromium",
+  engine,
   cases: [],
 };
 const assets = JSON.parse(await readFile(chapter.assets, "utf8"));
@@ -57,9 +62,13 @@ const youtubeIds = new Set(
     .filter(Boolean)
 );
 let failures = 0;
-const browser = await chromium.launch({
+const browser = await { chromium, webkit }[engine].launch({
   headless: true,
-  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+  ...(engine === "chromium"
+    ? {
+        args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+      }
+    : {}),
 });
 async function overflow(page) {
   const size = await page.evaluate(() => ({
@@ -129,6 +138,8 @@ try {
       status: "running",
       measurements: [],
       errors: [],
+      labels: [],
+      harnessNotes: [],
       blockedRequests: [],
       steps: [],
     };
@@ -193,9 +204,36 @@ try {
     });
     const page = await context.newPage();
     page.on("console", (m) => {
-      if (m.type() === "error") result.errors.push(m.text());
+      if (m.type() !== "error") return;
+      // The same WebKit native-control diagnostics captured before this
+      // change (retina-figure-numbers-browser); these are browser icon blobs,
+      // not failed application assets. Retain them in the manifest.
+      if (
+        engine === "webkit" &&
+        m.text() ===
+          "Service Worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag"
+      ) {
+        result.harnessNotes.push(m.text());
+        return;
+      }
+      if (
+        engine === "webkit" &&
+        /^Button failed to load, iconName = (?:invalid|pip|airplay)-placard, layoutTraits = \[MacOSLayoutTraits Inline\], src = blob:/.test(
+          m.text()
+        )
+      )
+        result.harnessNotes.push(m.text());
+      else result.errors.push(m.text());
     });
     page.on("pageerror", (e) => {
+      if (
+        engine === "webkit" &&
+        e.message ===
+          "Service Worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag"
+      ) {
+        result.harnessNotes.push(e.message);
+        return;
+      }
       // Playwright's own service-worker override throws in opaque srcdoc
       // frames, as documented by the existing History lane.
       if (
@@ -214,12 +252,23 @@ try {
     await context.tracing.start({ screenshots: true, snapshots: true });
     try {
       await page.goto(
-        `${base}/iframe.html?id=${chapter.story}&viewMode=story&globals=reduceMotion:!false`
+        `${base}/iframe.html?id=${chapter.story}&viewMode=story&globals=reduceMotion:!false`,
+        { waitUntil: "domcontentloaded" }
       );
       await expect(page.locator(".chapter-reader #text")).toBeVisible({
         timeout: 30000,
       });
-      await page.evaluate(() => document.fonts.ready);
+      result.fonts = await page.evaluate(async () => {
+        await Promise.all([
+          document.fonts.load('600 11px "IBM Plex Mono"'),
+          document.fonts.load('400 20px "IBM Plex Sans"'),
+        ]);
+        return {
+          mono: document.fonts.check('600 11px "IBM Plex Mono"'),
+          sans: document.fonts.check('400 20px "IBM Plex Sans"'),
+        };
+      });
+      expect(result.fonts).toEqual({ mono: true, sans: true });
       await page.waitForTimeout(1200);
       await overflow(page);
       // The opener's contents list must include every main section; nested
@@ -434,6 +483,62 @@ try {
               )
               .toBeGreaterThan(0);
         }
+        if (
+          config.figureNumber !== undefined &&
+          config.figureNumber !== null &&
+          config.figureNumber !== ""
+        ) {
+          const number = String(config.figureNumber);
+          const label = `FIG ${/^\d+$/.test(number) ? number.padStart(2, "0") : number}`;
+          const labels = figure
+            .locator(".fig-label, .figure-heading__label, .fbar-fig")
+            .filter({ hasText: new RegExp(`^${label}$`, "i"), visible: true });
+          await expect(
+            labels,
+            `${key}: exactly one visible record label`
+          ).toHaveCount(1);
+          if (width < 1024) {
+            const top = await labels.evaluate(
+              (el) => el.getBoundingClientRect().top + scrollY
+            );
+            await page.evaluate(
+              (y) => scrollTo({ top: y - 80, behavior: "instant" }),
+              top
+            );
+            await page.waitForTimeout(250);
+          }
+          const style = await labels.evaluate((el) => {
+            const css = getComputedStyle(el);
+            return {
+              text: el.textContent,
+              color: css.color,
+              fontFamily: css.fontFamily,
+              box: el.getBoundingClientRect().toJSON(),
+            };
+          });
+          expect(style.fontFamily).toMatch(/mono/i);
+          if (
+            width >= 1024 &&
+            (await figure.locator(".illustration-caption").count())
+          ) {
+            const caption = await figure
+              .locator(".illustration-caption")
+              .filter({ visible: true })
+              .boundingBox();
+            const heading = await figure
+              .locator(".figure-heading")
+              .filter({ visible: true })
+              .boundingBox();
+            expect(
+              caption.y + caption.height,
+              `${key}: caption clears heading`
+            ).toBeLessThanOrEqual(heading.y + 1);
+          }
+          result.labels.push({ id: key, label, ...style });
+          await page.screenshot({
+            path: path.join(output, `${width}-fig-${number}.png`),
+          });
+        }
         record.box = await size(config.widgetId ? uploadFrame : figure);
         if (
           !result.measurements.some(
@@ -450,12 +555,88 @@ try {
         await overflow(page);
       }
       expect(mountedFigures.size).toBe(fixture.animations.length);
+      const numbered = fixture.animations.filter(
+        (a) => a.config?.figureNumber != null && a.config.figureNumber !== ""
+      );
+      expect(result.labels.length).toBe(numbered.length);
       result.steps.push(
-        `all ${mountedFigures.size} distinct figures mounted (${linked.length} prose links)`
+        `all ${mountedFigures.size} distinct figures mounted (${linked.length} prose links); ${result.labels.length} labels visible once`
       );
       await page.screenshot({
         path: path.join(output, `${width}-figures.png`),
       });
+      // A continuous chapter pass catches labels lost during normal pane
+      // handoffs, beyond the targeted record visits above. Read innerText as
+      // a reader sees it; hidden preloaded sequence layers do not count.
+      result.scan = [];
+      for (let top = 0; ; top += 450) {
+        const extent = await page.evaluate(
+          () => document.documentElement.scrollHeight - innerHeight
+        );
+        await page.evaluate(
+          (y) => scrollTo({ top: y, behavior: "instant" }),
+          Math.min(top, extent)
+        );
+        await page.waitForTimeout(100);
+        if (top % 45000 === 0)
+          console.log(`${width}: label sweep ${top}/${Math.round(extent)}`);
+        if (width >= 1024) {
+          const active = await page
+            .locator(pane)
+            .getAttribute("data-figure-key");
+          const row = numbered.find(
+            (a) => a.animation_key.toLowerCase() === active
+          );
+          if (row) {
+            const label = result.labels.find(
+              (r) => r.id === row.animation_key
+            ).label;
+            await expect
+              .poll(
+                async () => {
+                  const text = await page.locator(pane).innerText();
+                  return text
+                    .split(/\n/)
+                    .filter((line) => line.trim() === label).length;
+                },
+                {
+                  timeout: 3000,
+                  message: `scroll ${top}: ${label} visible once`,
+                }
+              )
+              .toBe(1);
+            result.scan.push({
+              top,
+              id: row.animation_key,
+              label,
+              text: await page.locator(pane).innerText(),
+            });
+          }
+        } else {
+          const visible = await page
+            .locator(".fig-label, .figure-heading__label, .fbar-fig")
+            .evaluateAll((nodes) =>
+              nodes
+                .filter((el) => {
+                  const r = el.getBoundingClientRect();
+                  return (
+                    r.width > 0 &&
+                    r.height > 0 &&
+                    r.top >= 64 &&
+                    r.bottom <= innerHeight
+                  );
+                })
+                .map((el) => el.textContent.trim())
+            );
+          expect(
+            new Set(visible).size,
+            `scroll ${top}: no repeated visible labels`
+          ).toBe(visible.length);
+          if (visible.length) result.scan.push({ top, labels: visible });
+        }
+        if (top >= extent) break;
+      }
+      result.steps.push("450px full-chapter label sweep");
       for (const { paragraph, block } of widgets) {
         result.current = `widget ${block.widgetId}`;
         const band = page.locator(`[data-widget-breakout="${block.widgetId}"]`);
