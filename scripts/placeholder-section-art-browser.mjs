@@ -94,14 +94,57 @@ for (const engine of [chromium, webkit]) {
         .evaluateAll((els) => els.map((el) => el.id));
       const figures = new Set();
       for (const id of triggers) {
-        await page.evaluate((id) => {
-          const el = document.getElementById(id);
-          scrollTo(
-            0,
-            el.getBoundingClientRect().top + scrollY - innerHeight * 0.4
+        if (width >= 1024 && !/Placeholder$/i.test(id)) {
+          // Use the pane's actual registered window, as the figure-data
+          // acceptance harness does. Paragraph geometry alone can land in
+          // an overlapping authored hold and miss a short video figure.
+          const expected = id.replace(/^trigger/i, "").toLowerCase();
+          let selected;
+          for (let attempt = 0; attempt < 5; attempt++) {
+            const window = await page.evaluate(async (id) => {
+              const source = await fetch(
+                "/src/components/chapter/Illus/IllustrationsComp.vue"
+              ).then((r) => r.text());
+              const path = source.match(
+                /import ScrollTrigger from "([^"]+)"/
+              )[1];
+              const { default: ScrollTrigger } = await import(path);
+              ScrollTrigger.refresh();
+              const st = ScrollTrigger.getAll().find(
+                (s) =>
+                  s.vars.id === "scrollTriggerAnimation" && s.trigger?.id === id
+              );
+              if (!st) return null;
+              scrollTo(0, st.start + Math.max(1, (st.end - st.start) * 0.4));
+              ScrollTrigger.update();
+              return { start: st.start, end: st.end };
+            }, id);
+            assert(window, `${prefix}: no registered figure window for ${id}`);
+            await page.waitForTimeout(200);
+            selected = await page
+              .locator(".figure-pane")
+              .getAttribute("data-figure-key");
+            if (
+              selected === expected ||
+              selected === expected.replace(/^animation/, "")
+            )
+              break;
+          }
+          assert(
+            selected === expected ||
+              selected === expected.replace(/^animation/, ""),
+            `${prefix}: ${id} selected ${selected}`
           );
-        }, id);
-        await page.waitForTimeout(90);
+        } else {
+          await page.evaluate((id) => {
+            const el = document.getElementById(id);
+            scrollTo(
+              0,
+              el.getBoundingClientRect().top + scrollY - innerHeight * 0.4
+            );
+          }, id);
+          await page.waitForTimeout(90);
+        }
         for (const key of await page
           .locator("[data-figure-key]")
           .evaluateAll((els) => els.map((e) => e.dataset.figureKey)))
