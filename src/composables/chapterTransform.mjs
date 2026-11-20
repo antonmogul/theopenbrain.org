@@ -601,6 +601,7 @@ export function transformModuleToChapterFormat(module) {
           // as the chapter title. The section's own title is kept alongside.
           title: module.title || introSection.title,
           sectionTitle: introSection.title,
+          ...(introSection.art !== undefined ? { art: introSection.art } : {}),
           paragraphs: introSection.paragraphs
             ? introSection.paragraphs
                 .sort((a, b) => a.order_index - b.order_index)
@@ -620,6 +621,8 @@ export function transformModuleToChapterFormat(module) {
       // module); titles get edited, slugs do not.
       slug: section.slug,
       title: section.title,
+      ...(section.art !== undefined ? { art: section.art } : {}),
+      ...(typeof section.rail === "boolean" ? { rail: section.rail } : {}),
       // Foundations seeds its sidebars as sections slugged box-*; the reader
       // letters those as breakout boxes instead of numbering them.
       kind: section.slug?.startsWith("box-") ? "box" : "section",

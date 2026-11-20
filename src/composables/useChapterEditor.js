@@ -807,11 +807,18 @@ export function useChapterEditor(slug) {
 
   async function setCover(url) {
     return withSaving(async () => {
-      const before = module.value.cover_image_url ?? null;
-      await patchModule({ cover_image_url: url || null });
-      pushUndo(url ? "Change cover" : "Reset cover", () =>
-        patchModule({ cover_image_url: before })
-      );
+      const hasCover = Object.hasOwn(module.value, "cover");
+      const before = {
+        cover_image_url: module.value.cover_image_url ?? null,
+        ...(hasCover ? { cover: module.value.cover } : {}),
+      };
+      await patchModule({
+        cover_image_url: url || null,
+        ...(hasCover
+          ? { cover: { ...module.value.cover, image: url || null } }
+          : {}),
+      });
+      pushUndo(url ? "Change cover" : "Reset cover", () => patchModule(before));
     });
   }
 
