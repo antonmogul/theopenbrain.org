@@ -514,3 +514,22 @@ describe("a citation after a quote (OPENBRAIN-194)", () => {
     expect(text).toBe(`dualism${cite(88)}${cite(89, true)}`);
   });
 });
+
+describe("published image blocks (OPENBRAIN-68)", () => {
+  it.each([
+    ["RodBySchultze", "/publicAssets/images/RodBySchultze.png"],
+    [
+      "/publicAssets/images/foundations/fig01-01.jpg?v=2",
+      "/publicAssets/images/foundations/fig01-01.jpg?v=2",
+    ],
+    ["https://example.org/art.png", "https://example.org/art.png"],
+  ])(
+    "resolves %s consistently in prose and standalone images",
+    (src, expected) => {
+      const { text } = contentBlocksToHTML([
+        { type: "image", src, alt: "Artwork" },
+      ]);
+      expect(text).toBe(`<img src="${expected}" alt="Artwork" />`);
+    }
+  );
+});

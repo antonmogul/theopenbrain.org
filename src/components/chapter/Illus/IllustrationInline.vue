@@ -32,6 +32,7 @@ import SourceElement from "@/components/UI/SourceElement.vue";
 import WidgetBreakout from "@/components/chapter/text/WidgetBreakout.vue";
 import FigureWidget from "@/widgets/figures/FigureWidget.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
+import VideoEmbed from "@/components/chapter/text/VideoEmbed.vue";
 
 const props = defineProps({
   // The figure's id, e.g. "animationEyeStructur" (the `para.animation.id`).
@@ -107,11 +108,6 @@ const isGallery = computed(() => figureImages(animation.value).length > 1);
 const title = computed(() => figurePresentation(animation.value).title);
 const posterSrc = computed(
   () => `/publicAssets/images/illuImages/${props.animationId}.png`
-);
-const youtubeSrc = computed(() =>
-  animation.value?.youtubeID
-    ? `https://www.youtube.com/embed/${animation.value.youtubeID}`
-    : null
 );
 </script>
 
@@ -198,23 +194,11 @@ const youtubeSrc = computed(() =>
 
     <!-- Static: plain image or embedded video, full width. -->
     <template v-else-if="mode === 'static'">
-      <iframe
-        v-if="youtubeSrc"
-        class="w-full aspect-video"
-        :src="youtubeSrc"
-        title="YouTube video player"
-        frameborder="0"
-        allow="
-          accelerometer;
-          autoplay;
-          clipboard-write;
-          encrypted-media;
-          gyroscope;
-          picture-in-picture;
-          web-share;
-        "
-        allowfullscreen
-      ></iframe>
+      <VideoEmbed
+        v-if="animation.youtubeID"
+        :video="{ youtubeId: animation.youtubeID, title }"
+        :show-caption="false"
+      />
       <!-- Same missing-file failure mode as the Lottie assets: hide the broken
            image rather than showing the browser's broken-image glyph. -->
       <img

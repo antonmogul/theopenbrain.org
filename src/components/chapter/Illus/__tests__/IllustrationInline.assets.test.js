@@ -52,3 +52,24 @@ describe("inline video flip cards", () => {
     warn.mockRestore();
   });
 });
+
+it("keeps an inline YouTube figure local until the reader presses play", async () => {
+  records.value = [
+    {
+      id: "animationWavesOfActivity",
+      title: "Spontaneous waves of activity",
+      illuImage: true,
+      youtubeID: "k0_HXpcH4zI",
+    },
+  ];
+  const w = mountFigure("animationWavesOfActivity");
+  await flushPromises();
+  expect(w.find("iframe").exists()).toBe(false);
+  await w
+    .get('button[aria-label="Play video: Spontaneous waves of activity"]')
+    .trigger("click");
+  expect(w.get("iframe").attributes("src")).toContain(
+    "https://www.youtube-nocookie.com/embed/k0_HXpcH4zI"
+  );
+  w.unmount();
+});

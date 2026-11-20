@@ -30,7 +30,9 @@ function dispose() {
   history?.destroy();
   history = null;
 }
-const start = "/chapter/1/foundations-of-neuroscience";
+const props = defineProps({
+  start: { type: String, default: "/chapter/1/foundations-of-neuroscience" },
+});
 onMounted(async () => {
   useAnimations().clearCache();
   // Match main.js typography and reading measure while honoring the story
@@ -50,7 +52,7 @@ onMounted(async () => {
   });
   app.use(pinia);
   app.use(router);
-  await router.replace(start);
+  await router.replace(props.start);
   await router.isReady();
   if (disposed) {
     dispose();

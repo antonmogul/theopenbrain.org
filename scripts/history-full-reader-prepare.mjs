@@ -14,13 +14,13 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
-const fixture = JSON.parse(
-  await readFile("src/stories/historyFullReaderData.json", "utf8")
-);
+import { readerChapter } from "./reader-fixture-chapters.mjs";
+const chapter = readerChapter();
+const fixture = JSON.parse(await readFile(chapter.fixture, "utf8"));
 assert.equal(
   fixture.header?.source,
   "published chapter export",
-  "Refresh the fixture: npm run history:fixture:export"
+  `Refresh the fixture: npm run ${chapter.key}:fixture:export`
 );
 const assets = new Map();
 const skipped = new Map();
@@ -53,11 +53,27 @@ for (const root of [
   "publicAssets/images/case-cabinet",
   "publicAssets/images/attention-matisse-reader.jpg",
   "publicAssets/images/background.jpg",
+  ...(chapter.key === "retina"
+    ? ["publicAssets/animations", "publicAssets/images", "publicAssets/video"]
+    : []),
 ])
   await copy(root);
 // A published image may carry a cache-busting query (fig01-01.jpg?v=2): the
 // file is the path before it.
 const local = (src) => src.slice(1).split("?")[0];
+// Include row URLs, loop sources, variant files and artwork named in prose
+// HTML, beyond the older History gallery-only asset enumeration.
+async function namedAssets(value) {
+  if (typeof value === "string") {
+    for (const match of value.matchAll(/\/publicAssets\/[^\s"'<>]+/g))
+      await copy(local(match[0]));
+  } else if (Array.isArray(value)) {
+    for (const item of value) await namedAssets(item);
+  } else if (value && typeof value === "object") {
+    for (const item of Object.values(value)) await namedAssets(item);
+  }
+}
+await namedAssets(fixture);
 for (const animation of fixture.animations) {
   for (const image of animation.config?.images || []) {
     const src = typeof image === "string" ? image : image.src;
@@ -89,7 +105,7 @@ for (const paragraph of fixture.paragraphs) {
   await copy(local(src));
 }
 await writeFile(
-  "storybook-static/history-full-reader-assets.json",
+  chapter.assets,
   `${JSON.stringify({ boundary: fixture.boundary, header: fixture.header, assets: [...assets.values()], skipped: [...skipped.values()] }, null, 2)}\n`
 );
 console.log(
