@@ -55,12 +55,21 @@ async function shot(page, prefix, name) {
 async function nativeRoundTrip(page, iframe, prefix, result) {
   const element = await iframe.elementHandle();
   const frame = await element.contentFrame();
+  if (live) {
+    const play = frame.getByRole("button", { name: "Play video", exact: true });
+    if (await play.isVisible()) await play.click();
+  }
   const before = await remember(frame);
   const y = await page.evaluate(() => scrollY);
   await iframe.hover();
   const button = frame.getByRole("button", {
     name: /^(Enter full screen|Full screen.*)$/i,
   });
+  if (live)
+    await button
+      .first()
+      .waitFor({ state: "visible", timeout: 8000 })
+      .catch(() => {});
   if (!(await button.count())) {
     assert(live, "The deterministic player always has its fullscreen button");
     result.nativePlayer =
