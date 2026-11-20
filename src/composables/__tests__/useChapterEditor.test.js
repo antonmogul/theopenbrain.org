@@ -504,6 +504,23 @@ describe("useChapterEditor cover (OPENBRAIN-67)", () => {
     expect(ed.module.value.cover_image_url).toBe("/old.jpg");
   });
 
+  it("edits and undoes the unified cover while preserving reactive art", async () => {
+    const patches = coverApi();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const cover = { image: "/seed.webp", reactive: { lottie: "/eyes.json" } };
+    ed.module.value.cover = cover;
+    await ed.setCover("/own.webp");
+    expect(patches[0]).toEqual({
+      cover_image_url: "/own.webp",
+      cover: { ...cover, image: "/own.webp" },
+    });
+    await ed.undo();
+    expect(ed.module.value.cover).toEqual(cover);
+    await ed.setCover(null);
+    expect(ed.module.value.cover).toEqual({ ...cover, image: null });
+  });
+
   it("resets to the default with null, and reports a refused save", async () => {
     const patches = coverApi();
     const ed = useChapterEditor("s");

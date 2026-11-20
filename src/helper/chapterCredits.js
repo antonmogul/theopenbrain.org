@@ -6,8 +6,8 @@
  * and "at the bottom, above references, an acknowledgements section".
  *
  * Credits are chapter data and resolve like the authors
- * (helper/chapterAuthors.js): the module row's own `funding` /
- * `acknowledgements` once a migration adds those columns, else the map
+ * (helper/chapterAuthors.js): modules.credits (OPENBRAIN-63), then legacy
+ * `funding` / `acknowledgements` properties, else the map
  * below by slug, else nothing. A chapter without credits shows neither
  * block.
  *
@@ -96,13 +96,25 @@ function cleanParagraphs(value) {
  */
 export function creditsForModule(module) {
   const fallback = (module && CREDITS_BY_SLUG[module.slug]) || {};
+  const raw = module?.credits;
+  const credits =
+    raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
   const funding =
-    cleanFunding(module?.funding) || cleanFunding(fallback.funding);
-  const own = cleanParagraphs(module?.acknowledgements);
+    credits.funding === null
+      ? null
+      : cleanFunding(credits.funding) ||
+        cleanFunding(module?.funding) ||
+        cleanFunding(fallback.funding);
+  const stored = credits.acknowledgements;
+  const own = cleanParagraphs(stored);
+  const valid =
+    Array.isArray(stored) && stored.every((p) => typeof p === "string");
   return {
     funding,
-    acknowledgements: own.length
+    acknowledgements: valid
       ? own
-      : cleanParagraphs(fallback.acknowledgements),
+      : cleanParagraphs(module?.acknowledgements).length
+        ? cleanParagraphs(module.acknowledgements)
+        : cleanParagraphs(fallback.acknowledgements),
   };
 }

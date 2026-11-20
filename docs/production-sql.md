@@ -204,9 +204,10 @@ PRs #211–#215 fixed 31 of the 32 notes left with the review widget on 19 Nov. 
 
 ## Pending
 
-| Migration                              | Scope and release order                                                                                                                                                                                                                                                                             |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261119540100_retina_stuart_answers` | **Pending (OPENBRAIN-54).** Counting photons legend and hold, Baden video slug after Blind spot, retinal-development silent loop placement. Deploy the reader and `/publicAssets/videos/` media before applying. Idempotent; guards only the changed placement/caption keys. No review-note writes. |
+| Migration                                                                                         | Scope and release order                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261120066300_chapter_settings_columns` + `20261120066301_chapter_settings_seed` (OPENBRAIN-63) | **Pending. Deploy reader first**, then columns and seed: unified module cover/credits, section art/rail, missing author profiles, box treatments and ramps. Guarded missing-key updates; existing RLS/grants unchanged.                                                                             |
+| `20261119540100_retina_stuart_answers`                                                            | **Pending (OPENBRAIN-54).** Counting photons legend and hold, Baden video slug after Blind spot, retinal-development silent loop placement. Deploy the reader and `/publicAssets/videos/` media before applying. Idempotent; guards only the changed placement/caption keys. No review-note writes. |
 
 The Retina contents note (be3ef6b0) is tracked separately.
 

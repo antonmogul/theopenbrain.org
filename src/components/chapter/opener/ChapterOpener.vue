@@ -39,7 +39,7 @@ const outline = computed(() => buildOutline(props.text));
 // A chapter with a picture per section gets the contents that show them
 // (OPENBRAIN-174); every other chapter keeps the numbered list.
 const hasSectionArt = computed(
-  () => !!sectionArtForChapter(props.module?.slug)
+  () => !!sectionArtForChapter(props.module?.slug, outline.value)
 );
 
 gsap.registerPlugin(ScrollTrigger);
