@@ -153,33 +153,10 @@ const BRIDGE = `(function(){
   setInterval(report,1000);
 })();`;
 
-// Host presentation lives here so already-published uploads receive the
-// same treatment without rewriting their scripts or database content.
-// Only controls are squared; scientific circles and slider/radio handles
-// keep their authored geometry. The .tob rules adapt the legacy Retina
-// template's fixed 700px canvas to the measured host box using flex/grid.
+// Generic kit controls; widget-specific layout belongs to each uploaded file.
 const HOST_STYLE = `
 button, [role="button"], input[type="button"], input[type="submit"],
-input[type="reset"], select, .tob-seg { border-radius: 0 !important; }
-.tob-info-open .tob-info-btn { transform: none !important; }
-.tob-info-open .tob-info-btn > svg { transform: rotate(45deg); }
-[data-ob-author-credit], .rb-foot { display: none !important; }
-html[data-ob-fit] body { margin: 0 !important; padding: 0 !important; }
-html[data-ob-fit] .rb { max-width: none; margin: 0; border-radius: 0; min-height: var(--ob-max-height); }
-html[data-ob-fit] .rb-tabs { flex-wrap: wrap; }
-@media (min-width: 1024px) {
-  html[data-ob-fit] .rb-bar { padding-right: 64px; }
-}
-html[data-ob-fit] .tob { height: var(--ob-max-height); min-height: var(--ob-max-height); }
-html[data-ob-fit] .tob-stage { height: 100%; min-height: 0; }
-html[data-ob-fit] .tob-body { min-height: 0; }
-html[data-ob-fit] .tob-head, html[data-ob-fit] .tob-caption,
-html[data-ob-fit] .tob-legend, html[data-ob-fit] .tob-dots { flex-shrink: 0; }
-html[data-ob-fit] .tob-view { flex: 1; min-height: 120px; display: flex; }
-html[data-ob-fit] .tob-canvas { height: 100% !important; min-height: 120px; flex: 1; }
-html[data-ob-fit] .tob-steps { max-height: var(--ob-max-height); overflow-y: auto; }
-html[data-ob-fit].tob-choices .tob-stage { align-content: stretch; }
-html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
+input[type="reset"], select { border-radius: 0 !important; }
 `;
 
 /**

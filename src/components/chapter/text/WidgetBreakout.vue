@@ -2,7 +2,7 @@
 /*
  * WidgetBreakout — an interactive widget placed inside the chapter prose.
  *
- * Two kinds, chosen per placement in src/widgets/placements.js:
+ * Two kinds, chosen by the paragraph's DB widget block:
  *   breakout  a card (title, blurb, credit) with "Open interactive", which
  *             mounts the widget full-screen in DemoModal. Nothing heavy loads
  *             until the reader asks for it.
@@ -43,7 +43,6 @@ import {
 } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
-import { launchCardOf } from "@/widgets/placements";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
 import { WIDGET_FIT, WIDGET_SCROLLABLE } from "@/widgets/uploaded/widgetHost";
 import { useMediaQuery } from "@/composables/useMediaQuery";
@@ -60,7 +59,7 @@ const props = defineProps({
 
 // RetINaBox stays a quiet launch screen until the reader chooses to load it.
 // The gate covers both the upload request and the component/iframe mount.
-const launchCard = computed(() => launchCardOf(props.placement));
+const launchCard = computed(() => props.placement?.launchCard || null);
 const activated = ref(false);
 const canLoad = computed(() => !launchCard.value || activated.value);
 

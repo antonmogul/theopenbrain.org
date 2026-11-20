@@ -1,0 +1,2523 @@
+{
+  "modules": [
+    {
+      "id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "content_version_id": "3899a199-ac71-4438-8dcd-313aa7f20130",
+      "title": "The Retina",
+      "slug": "the-retina",
+      "description": "An interactive exploration of retinal anatomy, photoreceptors, neural circuits, and visual processing.",
+      "order_index": 2,
+      "animation_config": null,
+      "layout_config": null,
+      "status": "published",
+      "created_by": "8881062d-ba91-42d0-a364-511e5bd26134",
+      "created_at": "2026-04-13T16:29:19.657874+00:00",
+      "updated_at": "2026-11-17T07:29:02.115464+00:00",
+      "key_takeaways": null,
+      "ramp": "perc",
+      "cover_image_url": null,
+      "authors": [
+        {
+          "url": "https://www.swamylab.com/",
+          "name": "Arjun Krishnaswamy",
+          "affiliation": "Department of Physiology, McGill University, Montreal, Canada"
+        },
+        {
+          "url": "https://www.trenholmlab.com",
+          "name": "Stuart Trenholm",
+          "affiliation": "Montreal Neurological Institute, McGill University, Montreal, Canada"
+        }
+      ]
+    },
+    {
+      "id": "be7a87ea-d7c3-49d7-9286-02a938646bd6",
+      "content_version_id": "3899a199-ac71-4438-8dcd-313aa7f20130",
+      "title": "Foundations of Neuroscience",
+      "slug": "foundations-of-neuroscience",
+      "description": "Debates that framed our understanding of the brain",
+      "order_index": 1,
+      "animation_config": null,
+      "layout_config": {
+        "defaultLayout": "split-screen",
+        "animationPosition": "left"
+      },
+      "status": "published",
+      "created_by": "8881062d-ba91-42d0-a364-511e5bd26134",
+      "created_at": "2026-06-04T14:47:54.458738+00:00",
+      "updated_at": "2026-11-17T07:29:02.115464+00:00",
+      "key_takeaways": [
+        "The history of neuroscience advances through debates where both sides were often partly right and partly wrong.",
+        "Where the mind resides shifted over millennia between heart (cardiocentric) and brain (encephalocentric) views.",
+        "Settled questions can reopen when new evidence emerges — progress is incremental and self-correcting."
+      ],
+      "ramp": "fund",
+      "cover_image_url": null,
+      "authors": [
+        {
+          "url": "https://douglas.research.mcgill.ca/naguib-mechawar",
+          "name": "Naguib Mechawar",
+          "affiliation": "Douglas Mental Health University Institute; Department of Psychiatry, McGill University"
+        },
+        {
+          "url": "https://www.trenholmlab.com",
+          "name": "Stuart Trenholm",
+          "affiliation": "Montreal Neurological Institute, McGill University"
+        }
+      ]
+    },
+    {
+      "id": "9b6a9d07-c643-431c-84e6-75b94745d5bb",
+      "content_version_id": "3899a199-ac71-4438-8dcd-313aa7f20130",
+      "title": "Attention and Working Memory",
+      "slug": "attention-and-working-memory",
+      "description": "by Arjun Krishnaswamy",
+      "order_index": 3,
+      "animation_config": null,
+      "layout_config": {
+        "defaultLayout": "split-screen",
+        "animationPosition": "left"
+      },
+      "status": "published",
+      "created_by": "8881062d-ba91-42d0-a364-511e5bd26134",
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-11-17T07:29:02.115464+00:00",
+      "key_takeaways": null,
+      "ramp": "lear",
+      "cover_image_url": null,
+      "authors": [
+        {
+          "url": "https://www.swamylab.com/",
+          "name": "Arjun Krishnaswamy",
+          "affiliation": "Department of Physiology, McGill University, Montreal, Canada"
+        },
+        {
+          "url": "https://www.mcgill.ca/physiology/directory/core-faculty/erik-cook",
+          "name": "Erik Cook",
+          "affiliation": "Department of Physiology, McGill University, Montreal, Canada"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "title": "Amacrine and ganglion cells – circuits, computations and output",
+      "slug": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+      "order_index": 6,
+      "introduction_text": null,
+      "animation_id": null,
+      "animation_config": null,
+      "fullscreen": false,
+      "split_screen": false,
+      "created_at": "2026-04-13T16:29:26.202663+00:00",
+      "updated_at": "2026-04-13T16:29:26.202663+00:00",
+      "parent_section_id": null,
+      "anchor_paragraph_id": null,
+      "box_treatment": null
+    },
+    {
+      "id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "module_id": "be7a87ea-d7c3-49d7-9286-02a938646bd6",
+      "title": "Do different parts of the brain do different things?",
+      "slug": "do-different-parts",
+      "order_index": 2,
+      "introduction_text": null,
+      "animation_id": null,
+      "animation_config": null,
+      "fullscreen": false,
+      "split_screen": false,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-06-04T16:05:45.405125+00:00",
+      "parent_section_id": null,
+      "anchor_paragraph_id": null,
+      "box_treatment": null
+    },
+    {
+      "id": "8b499b7c-6375-4077-a98b-0c0c086e81f2",
+      "module_id": "be7a87ea-d7c3-49d7-9286-02a938646bd6",
+      "title": "Wilder Penfield and the Montreal Procedure",
+      "slug": "box-penfield",
+      "order_index": 10,
+      "introduction_text": null,
+      "animation_id": null,
+      "animation_config": null,
+      "fullscreen": false,
+      "split_screen": false,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-09-24T03:37:26.766448+00:00",
+      "parent_section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "anchor_paragraph_id": "304cc611-0836-4e8d-8b54-226d75d0f19c",
+      "box_treatment": null
+    },
+    {
+      "id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "module_id": "9b6a9d07-c643-431c-84e6-75b94745d5bb",
+      "title": "Neural Correlates of Visual Attention",
+      "slug": "neural-correlates-of-visual-attention",
+      "order_index": 3,
+      "introduction_text": null,
+      "animation_id": null,
+      "animation_config": null,
+      "fullscreen": false,
+      "split_screen": false,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00",
+      "parent_section_id": null,
+      "anchor_paragraph_id": null,
+      "box_treatment": null
+    }
+  ],
+  "animations": [
+    {
+      "id": "69b84f7b-4a6b-4ed1-8ef2-9811da1de31c",
+      "animation_key": "animationRetinalCircuitsTransition",
+      "title": "Retinal circuits",
+      "description": null,
+      "media_type": "lottie",
+      "lottie_file_url": "/publicAssets/animations/animationRetinalCircuitsTransition.json",
+      "video_file_url": null,
+      "image_file_url": null,
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "auto_loop",
+      "component_name": "IllustrationComp",
+      "config": {
+        "loop": false,
+        "fullscreen": false
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "circuits",
+      "load_priority": "high",
+      "created_at": "2026-09-24T19:50:23.690436+00:00",
+      "updated_at": "2026-09-24T19:50:23.690436+00:00"
+    },
+    {
+      "id": "70573ccc-2146-4fc4-a7f5-2284ab199ad6",
+      "animation_key": "animationFoundationsFig5",
+      "title": "Galen silences a squealing pig",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/fig05-01-pig-v2.webp",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "A woodcut of Galen dissecting a pig on a table before a crowd of onlookers.",
+            "src": "/publicAssets/images/foundations/fig05-01-pig-v2.webp"
+          }
+        ],
+        "caption": "Galen dissecting a pig. From Opera omnia latine in septem classes digesta, published in 1565. Source: Wellcome Collection.",
+        "diagramType": "diagram",
+        "placeholder": true,
+        "figureNumber": 7
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-18T21:28:32.041921+00:00"
+    },
+    {
+      "id": "c3739fe3-4e78-422c-9f4f-72df5f453f02",
+      "animation_key": "animationFoundationsFig11",
+      "title": "Goltz's dog vs. Ferrier's monkey",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/fig11-01-abc-v2.webp",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "Drawings of Goltz's dog brain (A and B) and Ferrier's monkey brain (C) after lesions.",
+            "src": "/publicAssets/images/foundations/fig11-01-abc-v2.webp"
+          }
+        ],
+        "caption": "Anatomical drawings of Goltz’s dog (left, A and B) and Ferrier’s monkey (right, C) that were presented at the Seventh International Medical Congress in 1881. Modified from Gowers WR, Klein E, Schaefer AE, Langley JN. Preliminary report. Transactions of the International Medical Congress 1881. Volume 1.",
+        "diagramType": "photo",
+        "placeholder": true,
+        "figureNumber": 14
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-18T21:28:32.041921+00:00"
+    },
+    {
+      "id": "a3cb77ae-4cd4-48c1-bda4-87d9e3d775fd",
+      "animation_key": "animationColorOpponency",
+      "title": "Color Opponency",
+      "description": "Static color opponency illusion image",
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/illuImages/animationColorOpponency.png",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationComp",
+      "config": {
+        "caption": "Stare at the cross for 30 seconds, then close your eyes or look at a white wall and notice how the colours change.",
+        "illuImage": true,
+        "fullHeight": true
+      },
+      "file_size_bytes": 30720,
+      "scientific_domain": "circuits",
+      "load_priority": "low",
+      "created_at": "2026-04-13T16:27:35.822267+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "e8a918e8-4d28-4eda-bd85-5033f18766fb",
+      "animation_key": "animationFoundationsFig8",
+      "title": "Gall & Spurzheim's phrenological map",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/fig08-01-v2.webp",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "A skull in profile covered with numbered regions, each an organ of a mental faculty.",
+            "src": "/publicAssets/images/foundations/fig08-01-v2.webp"
+          }
+        ],
+        "caption": "Gall’s organology. Source: Gall and Spurzheim, Anatomie et Physiologie, 1810-1819.",
+        "diagramType": "diagram",
+        "placeholder": true,
+        "figureNumber": 11
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-18T21:28:32.041921+00:00"
+    },
+    {
+      "id": "8efcc00a-95d2-452e-b10b-8437ab6f8525",
+      "animation_key": "animationFoundationsFig9",
+      "title": "Leborgne (“Tan”): left frontal damage",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/fig09-01-v2.webp",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "The left side of Leborgne's preserved brain, with a lesion in the frontal lobe.",
+            "src": "/publicAssets/images/foundations/fig09-01-v2.webp"
+          }
+        ],
+        "caption": "A photograph of the left side of Louis Victor Leborgne’s (aka Tan) brain. MRI analysis of Leborgne’s brain in 2007 revealed additional damage not visible from the brain surface that may have contributed to his aphasia. Source: Dronkers et al., Brain, 2007.",
+        "diagramType": "photo",
+        "placeholder": true,
+        "figureNumber": 12
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-18T21:28:32.041921+00:00"
+    },
+    {
+      "id": "8afd48c2-f051-4a78-8a1f-c204efcfb747",
+      "animation_key": "widget-upload:retina-light-sensitive-ganglion-cells",
+      "title": "Light-sensitive ganglion cells",
+      "description": null,
+      "media_type": "widget",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null,
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "click_states",
+      "component_name": "IllustrationWidget",
+      "config": {
+        "widgetId": "upload:retina-light-sensitive-ganglion-cells"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "retina",
+      "load_priority": "low",
+      "created_at": "2026-10-21T08:13:41.971724+00:00",
+      "updated_at": "2026-11-18T17:07:39.550974+00:00"
+    },
+    {
+      "id": "8ddb2eda-f841-4543-bae6-07977e759b67",
+      "animation_key": "widget-upload:retina-rod-vs-cone-circuits",
+      "title": "Rod and cone circuits",
+      "description": null,
+      "media_type": "widget",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null,
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "click_states",
+      "component_name": "IllustrationWidget",
+      "config": {
+        "widgetId": "upload:retina-rod-vs-cone-circuits"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "retina",
+      "load_priority": "low",
+      "created_at": "2026-10-21T08:13:41.971724+00:00",
+      "updated_at": "2026-11-18T17:07:39.550974+00:00"
+    },
+    {
+      "id": "4a690b39-80f1-4b97-bf89-10c24d90e4c6",
+      "animation_key": "animationFoundationsFig6",
+      "title": "The cell doctrine (ventricular theory)",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/fig06-01.jpg",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "src": "/publicAssets/images/foundations/fig06-01.jpg",
+            "caption": "Medieval cell doctrine with five cells arranged in a linear sequence by the German Dominican friar and historian Johann Lindner (1440–1524), as part of notes for Albertus Magnus’s Parvulus philosophiae naturalis. Source: Lindner (1472–1474). Courtesy of the Wellcome Library, London. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-02.jpg",
+            "caption": "Medieval cell doctrine with five cells arranged in a nonlinear sequence (ca. 1300), illumination on parchment by an unknown English miniaturist. The vermis (worm) guards the entrance of the posterior cell. Source: University Library, Cambridge, ms Gr.g.1.1; Web Gallery of Art. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-03.jpg",
+            "caption": "The medieval cell doctrine according to Albertus Magnus, as presented in the first printed example of this doctrine, which appeared in Philosophia pauperum, sive Philosophia naturalis [Philosophy for the simple, or Natural philosophy] in 1490 (an earlier edition of this incunabulum from 1485 was not illustrated). In discussing the soul (De anima), Albertus Magnus partitioned cognitive abilities into three cells or ventricles, with the common sense (sensus communis) and imagination (imaginatio) in the first ventricle, the imaginative faculty (imaginativa) and extimativa (sic, judgment) in the second, and finally memory (memorativa) and the control of motion (membro motiva) in the third. Courtesy of the U.S. National Library of Medicine, Bethesda, Maryland, United States. Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-04.jpg",
+            "caption": "The medieval cell doctrine combined with elementary anatomy from Johannes Peyligk (1474–1522) from 1499. The woodcut shows a schematic layout of the ventricular system viewed from the side (although the head is actually only turned about 45 degrees), with both lateral ventricles, the third ventricle, and the fourth ventricle all depicted. Courtesy of the Herzog August Bibliothek in Wolfenbüttel, Germany. Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-05.jpg",
+            "caption": "Other depictions of the ventricular system from Peyligk (1499). (a) Top: Ventricular system from above, visualized through the skull and brain and (b) bottom: Ventricular system with drainage pathways to the pituitary. Courtesy of the Herzog August Bibliothek in Wolfenbüttel, Germany. Figures edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-06.jpg",
+            "caption": "Anatomy of the head and brain as depicted in a woodcut by German physician, philosopher, and theologian Magnus Hundt (1449–1519) in 1501. Note the two round structures at the bridge of the nose. These represent the olfactory bulbs. They project and appear to join in a network at the base of the brain (the mythical rete mirabile). Also present are projections from the eyes, tongue, and body to three cavities in a band above the eyes and ears; this is a representation of the medieval cell doctrine showing the three cells or ventricles with functional divisions depicted schematically by divisional lines in each of the ventricles. Above this are schematic depictions of the cranial sutures and the sequential tissues external to the skull. Courtesy of the Wellcome Library, London. Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-07.jpg",
+            "caption": "The medieval cell doctrine according to Italian philosopher and physician Alessandro Achillini (1463/1461–1512) from Opusculum perutile de cognitione animae et eius potentiis Augustini de Anchona cum quadam questione Prosperi de Regio (1503). Courtesy of the Biblioteca Nazionale Centrale, Roma [National Central Library, Rome], Italy. Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-08.jpg",
+            "caption": "Illustration of the medieval cell doctrine from the encyclopedic compilation Margarita philosophica (The Pearl of Wisdom, or The Philosophical Pearl) by German Carthusian monk and humanist writer Gregor Reisch (ca. 1467–1525). The skull is cut away in a band to allow viewing of the brain and the ventricular system within it, along with the specific cognitive faculties localized to each of the ventricles. The curlicues around the ventricles are meant to portray the sulci of the cerebral cortex. The woodcut shown was used in the authorized editions in 1503, March 1504, February 1508, 1517, 1536, and 1583. Courtesy of the University of Iowa Libraries, Iowa City, Iowa (Reisch, 1504). Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-09.jpg",
+            "caption": "Anatomy of the head and brain as depicted in a woodcut by Johannes Dryander (1500–1560) in 1537. This image was clearly derived from the one by Magnus Hundt in 1501. It continues the same medieval fictions, while resolving some problems with Hundt’s figure and creating some new problems and misunderstandings. It is a striking example of the persistence of erroneous medieval ideas, despite the work of other pre-Vesalian anatomists, such as Jacopo Berengario da Carpi (1460–1530), in the intervening years. Nevertheless, this image also shows a dramatic improvement in realism (naturalism), representation of light and shadow, and single-point linear perspective represented in woodcuts over that period. Courtesy of the U.S. National Library of Medicine, Bethesda, Maryland, United States. Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig06-10.jpg",
+            "caption": "English physician Robert Fludd’s scheme for the medieval cell doctrine (Fludd, 1619). See text for details. Courtesy of the Bibliothèque municipale de Lyon [Lyon Public Library], Lyon, France. Figure edited by Douglas J. Lanska. Figure legend from Lanska, 2024, Oxford Research Encyclopedia of Neuroscience."
+          }
+        ],
+        "diagramType": "diagram",
+        "placeholder": true,
+        "figureNumber": 8
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "a2369684-12d1-493f-9ca2-61c5cefa88b3",
+      "animation_key": "animationFoundationsFig10",
+      "title": "Fritsch & Hitzig's motor cortex map",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/fig10-01-v2.webp",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "A top-down drawing of a dog's brain marked with symbols where stimulation moved muscles.",
+            "src": "/publicAssets/images/foundations/fig10-01-v2.webp"
+          }
+        ],
+        "caption": "Top-down drawing of a dog’s brain from Fritsch and Hitzig’s 1870 paper. Symbols indicate locations of electrical brain stimulation in motor cortex. The region marked ∆ activated neck muscles. Areas marked + moved the forepaw. Areas marked # activated the hindpaw. Facial muscles were activated when the areas marked O were stimulated. Image source: Wellcome Collection.",
+        "diagramType": "diagram",
+        "placeholder": true,
+        "figureNumber": 13
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-18T21:28:32.041921+00:00"
+    },
+    {
+      "id": "7699cef4-f6f1-41fb-acef-6dc8917cf099",
+      "animation_key": "animationFoundationsMilnerHM",
+      "title": "Brenda Milner and H.M.",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/hm-brenda-milner-v2.webp",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "Black-and-white portrait of Brenda Milner.",
+            "src": "/publicAssets/images/foundations/hm-brenda-milner-v2.webp",
+            "caption": "Brenda Milner."
+          },
+          {
+            "alt": "Video: History of Neuroscience, Brenda Milner.",
+            "src": "/publicAssets/images/foundations/thumbs/brenda-milner.webp",
+            "play": "player",
+            "caption": "History of Neuroscience: Brenda Milner. Video: Society for Neuroscience.",
+            "youtube": "g4-6A8u8QBc",
+            "posterPlay": "corner"
+          },
+          {
+            "alt": "Surgeons in masks and gowns operating, William Beecher Scoville among them.",
+            "src": "/publicAssets/images/foundations/hm-scoville-surgery.jpg",
+            "caption": "William Beecher Scoville performing surgery."
+          },
+          {
+            "alt": "Snapshot dated November 1958 of Henry Molaison seated outside a house, smoking.",
+            "src": "/publicAssets/images/foundations/hm-smoking-1958.jpg",
+            "caption": "Henry Molaison (H.M.), 1958."
+          },
+          {
+            "alt": "H.M.'s frozen brain being cut into thin sections.",
+            "src": "/publicAssets/images/foundations/hm-brain-slicing.jpg",
+            "caption": "H.M.'s brain being sectioned after his death.",
+            "youtube": "OmmH4Rp9-to"
+          }
+        ],
+        "caption": "Brenda Milner, William Beecher Scoville, and Henry Molaison (H.M.).",
+        "diagramType": "diagram",
+        "placeholder": true,
+        "figureNumber": 15
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-10-09T13:48:59.720782+00:00",
+      "updated_at": "2026-11-18T21:53:06.890694+00:00"
+    },
+    {
+      "id": "7d2f6053-bdfc-4364-ac99-318732b59b40",
+      "animation_key": "animationFoundationsFig7",
+      "title": "Vesalius, De Humani Corporis Fabrica",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/fig07-01.jpg",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "src": "/publicAssets/images/foundations/fig07-01.jpg"
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig07-02.jpg"
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig07-03.jpg"
+          },
+          {
+            "src": "/publicAssets/images/foundations/fig07-04.jpg"
+          }
+        ],
+        "caption": "From A. Vesalius, De Humani Corporis Fabrica Libri Septem, Basle: Joannes Oporinus, 1543. Image source, The Wellcome Collection.",
+        "diagramType": "manuscript",
+        "placeholder": true,
+        "figureNumber": 9
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "ee8c83e5-6e01-400e-af50-83a3c027016f",
+      "animation_key": "animationFoundationsLocalizationPortraits",
+      "title": "Descartes, Swedenborg, Willis and Haller",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/portrait-descartes.jpg",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "Oil portrait of René Descartes in black with a white collar, holding a book.",
+            "src": "/publicAssets/images/foundations/portrait-descartes.jpg",
+            "caption": "Portrait of René Descartes, by Jan Baptist Weenix, 1647–1649. Source: Collectie Centraal Museum Utrecht / foto Ruben de Heer."
+          },
+          {
+            "alt": "Portrait of an elderly Emanuel Swedenborg in a powdered wig and brown coat, holding a manuscript titled Apocalypsis Revelata.",
+            "src": "/publicAssets/images/foundations/portrait-swedenborg.jpg",
+            "caption": "Portrait of Emanuel Swedenborg, circa 1766. Source: Wikimedia Commons."
+          },
+          {
+            "alt": "Engraved portrait of Thomas Willis with long hair, in an oval frame above a table of books, a skull and anatomical specimens.",
+            "src": "/publicAssets/images/foundations/portrait-willis.jpg",
+            "caption": "Portrait of Thomas Willis. Line engraving by G. Vertue, 1742, after D. Loggan. Source: Wellcome Collection."
+          },
+          {
+            "alt": "Portrait of a young Albrecht von Haller in a powdered wig, holding papers, with mountains behind him.",
+            "src": "/publicAssets/images/foundations/portrait-haller.jpg",
+            "caption": "Portrait of Albrecht von Haller, 1736. Source: Burgerbibliothek Bern, Negativnummer 2453."
+          }
+        ],
+        "caption": "Thinkers who argued over the localization of function in the 17th and 18th centuries.",
+        "diagramType": "diagram",
+        "placeholder": true,
+        "figureNumber": 10
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-10-09T13:48:59.720782+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "5a79ff2d-bc29-4100-b058-67a394d7489d",
+      "animation_key": "animationFoundationsFigJ",
+      "title": "The cortical homunculus",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/figj-01.jpg",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "Penfield's somatosensory and motor homunculi drawn over sections of the cortex.",
+            "src": "/publicAssets/images/foundations/figj-01.jpg"
+          }
+        ],
+        "caption": "Penfield’s homunculus, for somatosensory (left) and motor (right) cortex. Adapted from Penfield and Rasmussen, 1950.",
+        "diagramType": "diagram",
+        "placeholder": true,
+        "figureNumber": "K"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "7ee29559-f553-4f48-84a6-035602f8f32a",
+      "animation_key": "animationFoundationsPenfieldOperative",
+      "title": "Penfield’s operative photograph",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/narrative/penfield-operative-h.jpg",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "Operative photograph of patient M.B.’s exposed cortex, with lettered paper markers at electrical stimulation sites.",
+            "src": "/publicAssets/images/foundations/narrative/penfield-operative-h.jpg"
+          }
+        ],
+        "source": {
+          "document": "Foundations_ST7_NM3_LL.docx",
+          "imageBlock": 197,
+          "captionBlock": 197,
+          "manuscriptLabel": "H"
+        },
+        "caption": "Figure I. Operative photo of one of Penfield’s patients (M.B.) related to removal of a microgyria. Letters indicate brain regions where electrical stimulation was performed. See Figure J for results of electrical stimulation. Source: Leblanc, Journal of Neurosurgery, 2021.",
+        "diagramType": "photo",
+        "placeholder": true,
+        "figureNumber": "I"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-10-09T13:48:57.279494+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "116e14cc-70bf-4ec9-81d7-f3867570cab7",
+      "animation_key": "animationFoundationsPenfieldMap",
+      "title": "Penfield’s map of case M.B.",
+      "description": null,
+      "media_type": "image",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": "/publicAssets/images/foundations/narrative/penfield-case-mb-i.jpg",
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "static_image",
+      "component_name": "IllustrationPlaceholder",
+      "config": {
+        "images": [
+          {
+            "alt": "Penfield’s lateral brain map of case M.B., showing stimulation sites and a dotted resection boundary around the microgyria.",
+            "src": "/publicAssets/images/foundations/narrative/penfield-case-mb-i.jpg"
+          }
+        ],
+        "source": {
+          "document": "Foundations_ST7_NM3_LL.docx",
+          "imageBlock": 198,
+          "captionBlock": 198,
+          "manuscriptLabel": "I"
+        },
+        "caption": "Figure J. Penfield's map of case M.B. Stimulation at A and B produced sensation in the right leg from knee to the foot. Stimulation at C produced sensation in the right hand, which was most intense in the middle finger and produced a slight clonic tremor of the hand. Stimulation at D produced slight clonic movement of the right foot. Stimulation at E produced no response. Stimulation at F produced sensation in the right foot, and stimulation at H produced sensation in the leg. The dotted line encircling the microgyria indicates the resection margins. Source: Leblanc, Journal of Neurosurgery, 2021.",
+        "diagramType": "map",
+        "placeholder": true,
+        "figureNumber": "J"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "history",
+      "load_priority": "low",
+      "created_at": "2026-10-09T13:48:57.279494+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "98d96a41-e9e1-4688-ba88-65cdfa112467",
+      "animation_key": "widget-upload:retina-center-surround",
+      "title": "Center-surround receptive fields",
+      "description": null,
+      "media_type": "widget",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null,
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "click_states",
+      "component_name": "IllustrationWidget",
+      "config": {
+        "widgetId": "upload:retina-center-surround"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "retina",
+      "load_priority": "low",
+      "created_at": "2026-10-21T08:13:41.971724+00:00",
+      "updated_at": "2026-11-18T17:07:39.550974+00:00"
+    },
+    {
+      "id": "5089d277-4e6b-4b95-a353-613e81d60011",
+      "animation_key": "widget-upload:retina-direction-selectivity",
+      "title": "Direction selectivity",
+      "description": null,
+      "media_type": "widget",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null,
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "click_states",
+      "component_name": "IllustrationWidget",
+      "config": {
+        "widgetId": "upload:retina-direction-selectivity"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "retina",
+      "load_priority": "low",
+      "created_at": "2026-10-21T08:13:41.971724+00:00",
+      "updated_at": "2026-11-18T17:07:39.550974+00:00"
+    },
+    {
+      "id": "b4160040-d527-4cce-ab8b-f5e8b23c713e",
+      "animation_key": "widget-upload:retina-object-motion-sensitivity",
+      "title": "Object motion sensitivity",
+      "description": null,
+      "media_type": "widget",
+      "lottie_file_url": null,
+      "video_file_url": null,
+      "image_file_url": null,
+      "youtube_id": null,
+      "gsap_config": null,
+      "css_class_name": null,
+      "interaction_type": "click_states",
+      "component_name": "IllustrationWidget",
+      "config": {
+        "widgetId": "upload:retina-object-motion-sensitivity"
+      },
+      "file_size_bytes": null,
+      "scientific_domain": "retina",
+      "load_priority": "low",
+      "created_at": "2026-10-21T08:13:41.971724+00:00",
+      "updated_at": "2026-11-18T17:07:39.550974+00:00"
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": "ce10e6cf-c632-463f-be89-48268caed45b",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "blurb": "Figure 5. Attention biases competition between stimuli in the receptive field. Put a preferred and a non-preferred stimulus in the same receptive field and attend to either: the biased competition model shows which one wins the neuron's response.",
+            "route": "/biased-competition",
+            "title": "Two stimuli, one receptive field",
+            "credit": "Arjun Krishnaswamy",
+            "caption": "Attention biases competition between stimuli in the receptive field",
+            "widgetId": "biased-competition",
+            "placementId": "attention-biased-competition",
+            "figureNumber": 5
+          }
+        ]
+      },
+      "content_text": "Interactive: Two stimuli, one receptive field",
+      "order_index": 8,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-27T15:40:24.08078+00:00"
+    },
+    {
+      "id": "9638c550-f6d1-4424-bf5d-dce1bf5d5dd0",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "blurb": "Figure 4. Contrast vs response gain. Slide attention onto a neuron's receptive field and watch its contrast-response curve shift left or stretch up — the two signatures the chapter just described.",
+            "route": "/contrast-response",
+            "title": "Contrast gain or response gain",
+            "credit": "Arjun Krishnaswamy · design: Malpeso Studio",
+            "caption": "Contrast vs response gain",
+            "widgetId": "upload:attn-contrast-response-gain",
+            "placementId": "attention-contrast-response-gain",
+            "figureNumber": 4
+          }
+        ]
+      },
+      "content_text": "Interactive: Contrast gain or response gain?",
+      "order_index": 4,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-30T08:18:00.265165+00:00"
+    },
+    {
+      "id": "7f11190b-07fa-4d5f-aa97-7e4d4c717bc9",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "heading",
+            "level": 3,
+            "content": "Circuit computations"
+          }
+        ]
+      },
+      "content_text": "Circuit computations",
+      "order_index": 1,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": true,
+      "subsection_level": 1,
+      "created_at": "2026-04-13T16:29:26.467853+00:00",
+      "updated_at": "2026-04-13T16:29:26.467853+00:00"
+    },
+    {
+      "id": "5dec7bc3-17c2-4dab-8415-0cb2c9a291d5",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Contrast gain causes left-ward shifts of the neural stimulus response function.</strong> The visual system is attuned to contrast and many neurons, including those within the cortex, increase their firing as stimulus contrast grows ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 4
+          },
+          {
+            "type": "text",
+            "content": "). The relationship often adopts a sigmoid shape: the neural response follows stimulus contrast linearly in a narrow band of values, below this band neurons rarely respond, above this bad their responses saturate. In many ways, such neurometric curves, were analogous to the psychometric curves computed for an entire animal’s response to stimuli."
+          }
+        ]
+      },
+      "content_text": "Contrast gain causes left-ward shifts of the neural stimulus response function. The visual system is attuned to contrast and many neurons, including those within the cortex, increase their firing as…",
+      "order_index": 3,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-27T15:40:24.08078+00:00"
+    },
+    {
+      "id": "1833bcea-7728-46e0-8567-e1d7220987a5",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Such stimulus-response curves are shifted left when attention is placed upon a stimulus residing in the receptive field ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 4
+          },
+          {
+            "type": "text",
+            "content": "). If attention is directed outside the receptive field, the curve shifts to the right. These shifts change neural firing in ways that mimic an effective increase in stimulus contrast and were observed at both neural and behavioral levels. These results suggested that the neural mechanisms underlying spatial attention may be the same mechanisms activated by strong versus weak stimuli."
+          }
+        ]
+      },
+      "content_text": "Such stimulus-response curves are shifted left when attention is placed upon a stimulus residing in the receptive field (Figure 4). If attention is directed outside the receptive field, the curve…",
+      "order_index": 5,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-27T15:40:24.08078+00:00"
+    },
+    {
+      "id": "94365fd8-3620-408c-92b2-c0f942a825df",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "It wasn’t until about a thousand years after the death of Galen that sufficient advancements were made in neuroanatomy to allow for more pointed ideas to arise about localization of brain function. Modern neuroanatomy can be traced back to Andreas Vesalius (1512-1564) who combined art and science in the early Renaissance to produce beautiful anatomical descriptions of the human body. His work relied on dissecting human corpses, but this was just starting to be allowed in some parts of Europe at the time. As such, sometimes Vesalius had to acquire his material in creative ways, such as getting bodies fresh from the gallows"
+          },
+          {
+            "type": "citation_ref",
+            "number": 24
+          },
+          {
+            "type": "text",
+            "content": ". In his magnum opus <em>De Humani Corporis Fabrica</em> (1543; often referred to simply as <em>De Fabrica</em>; "
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 9
+          },
+          {
+            "type": "text",
+            "content": "), Vesalius provided unparalleled artistic renditions of the human brain: it’s believed the woodcut artwork was produced by students of Titian. In <em>De Fabrica</em>, Vesalius pinpointed numerous errors in Galen’s work, much of which likely arose since Galen did not have access to human tissue. Vesalius’ work was widely read and served as a foundation for future neuroanatomists to scrutinize and refine"
+          },
+          {
+            "type": "citation_ref",
+            "number": 25
+          },
+          {
+            "type": "text",
+            "content": ". This was the case for Thomas Willis (1621-1675), who built on Vesalius’ anatomical work and combined it with findings from his clinical practice to produce the book <em>Cerebri Anatome</em> (1664), the most complete and detailed description of the nervous system at the time"
+          },
+          {
+            "type": "citation_ref",
+            "number": 26
+          },
+          {
+            "type": "text",
+            "content": ". Willis was the first to describe the anatomy of the striatum and discovered the arterial circle at the base of the brain which bears his name to this day—the circle of Willis. Willis also coined the term neurology. Thus, by the 17<sup>th</sup> century it was clear that the brain had a complex anatomical structure, with distinct regions and connectivity patterns. This led people to start proposing specific roles for these newly described anatomical regions. Thomas Willis, for instance, proposed that common sense was housed in the striatum, imagination in the corpus collosum, and memory in the cortex"
+          },
+          {
+            "type": "citation_ref",
+            "number": 27
+          },
+          {
+            "type": "text",
+            "content": "."
+          }
+        ]
+      },
+      "content_text": "It wasn’t until about a thousand years after the death of Galen that sufficient advancements were made in neuroanatomy to allow for more pointed ideas to arise about localization of brain function. Modern neuroanatomy can be traced back to Andreas Vesalius (1512-1564) who combined art and science in the early Renaissance to produce beautiful anatomical descriptions of the human body. His work relied on dissecting human corpses, but this was just starting to be allowed in some parts of Europe at the time. As such, sometimes Vesalius had to acquire his material in creative ways, such as getting ",
+      "order_index": 3,
+      "has_animation": true,
+      "animation_id": "7d2f6053-bdfc-4364-ac99-318732b59b40",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "7f7d0ca3-6ffa-457b-b667-8fdf89831f18",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Response gain increases a neural responses across all kinds of attended stimuli.</strong> A separate, but parallel line of inquiry showed a very different effect of attention –under certain conditions, both the psychometric curve of subjects and the neurometric curves obtained from recordings would show a vertical stretching ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 4
+          },
+          {
+            "type": "text",
+            "content": "). The curves obtained when attention was directed into the receptive field of a neuron were consistent with a multiplication of that neuron’s stimulus-response function. Thus, attention in these experiments was seen as an increase in the excitability of neurons rather than the change in stimulus sensitivity produced by contrast gain."
+          }
+        ]
+      },
+      "content_text": "Response gain increases a neural responses across all kinds of attended stimuli. A separate, but parallel line of inquiry showed a very different effect of attention –under certain conditions, both…",
+      "order_index": 6,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-27T15:40:24.08078+00:00"
+    },
+    {
+      "id": "5b2a18a4-457d-4323-a0ae-2ec172e34ded",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Moran and Desimone (1985) tested this directly by placing a behaviorally relevant and irrelevant stimulus within a single V4 neuron's receptive field and asking a subject to move attention between them. The two stimuli differed along dimensions of the neuron’s selectivity (ie: color and orientation) so that one was a \"good\" stimulus that drove the cell strongly on its own and the other a \"poor\" stimulus that drove it weakly. When attention directed outside the receptive field, the neuron's response to the pair fell to a level between that evoked by either stimulus alone. When the monkey attended to the good stimulus, the paired response rose toward the level evoked by that stimulus alone; when attention shifted to the poor stimulus, the paired response fell toward that stimulus's lower evoked firing rate. In each case the neuron's output came to resemble its response to the attended stimulus in isolation. It is as though the unattended stimulus had been filtered out of its receptive field entirely. ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 5
+          },
+          {
+            "type": "text",
+            "content": ")"
+          }
+        ]
+      },
+      "content_text": "Moran and Desimone (1985) tested this directly by placing a behaviorally relevant and irrelevant stimulus within a single V4 neuron's receptive field and asking a subject to move attention between…",
+      "order_index": 9,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-27T15:40:24.08078+00:00"
+    },
+    {
+      "id": "5fb5161e-905e-4984-a599-56517e1f180c",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Though a leading neuroanatomist of his time—for instance, Gall found that white matter fibers originated from grey matter, and he described how spinal nerves connected with the midbrain, which then connected with other brain areas"
+          },
+          {
+            "type": "citation_ref",
+            "number": 32
+          },
+          {
+            "type": "text",
+            "content": "—Gall did not think that brain anatomy was particularly informative to function: “it is thus without the help of any anatomical dissection that we have ourselves made most of our physiological discoveries [“physiological” here means functional]."
+          },
+          {
+            "type": "citation_ref",
+            "number": 32
+          },
+          {
+            "type": "text",
+            "content": "” To assign specific faculties to specific brain regions, Gall, along with his assistant Johann Spurzheim, took humans with known skills (e.g., good memory) or behavioral excesses (e.g., violent murderers), and contrasted them with humans lacking such traits. Gall and Spurzheim generated a map outlining the location of over twenty-five brain regions underlying different faculties ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 11
+          },
+          {
+            "type": "text",
+            "content": "). Gall and Spurzheim eventually had a falling out, and Spurzheim would then coin the term phrenology, add a few more functional brain areas, and help to popularize phrenology internationally"
+          },
+          {
+            "type": "citation_ref",
+            "number": 8
+          },
+          {
+            "type": "text",
+            "content": "."
+          }
+        ]
+      },
+      "content_text": "Though a leading neuroanatomist of his time—for instance, Gall found that white matter fibers originated from grey matter, and he described how spinal nerves connected with the midbrain, which then connected with other brain areas —Gall did not think that brain anatomy was particularly informative to function: “it is thus without the help of any anatomical dissection that we have ourselves made most of our physiological discoveries [“physiological” here means functional]. ” To assign specific faculties to specific brain regions, Gall, along with his assistant Johann Spurzheim, took humans with",
+      "order_index": 11,
+      "has_animation": true,
+      "animation_id": "e8a918e8-4d28-4eda-bd85-5033f18766fb",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "9f205460-7a38-4c32-9f8e-d450a2ce04c1",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "In Rome, Galen made several contributions to the idea of localization of nervous system function. First, he argued that since the cerebrum is relatively soft, it likely receives sensory nerves, whereas since the cerebellum is relatively hard, it must receive motor nerves. Second, based on vivisections in animals he was able to provide evidence for localization of function in the central nervous system (CNS). In one set of experiments in which he sought to identify the nerve responsible for breathing, he instead found the laryngeal nerve. In a public dissection, he proceeded to show that he could stop a pig from squealing by specifically cutting this nerve"
+          },
+          {
+            "type": "citation_ref",
+            "number": 20
+          },
+          {
+            "type": "text",
+            "content": " ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 7
+          },
+          {
+            "type": "text",
+            "content": "). In another set of experiments Galen cut the spinal cord of animals in various locations"
+          },
+          {
+            "type": "citation_ref",
+            "number": 21
+          },
+          {
+            "type": "text",
+            "content": ". He found that for full transections, everything below the cut became paralyzed. In contrast, if he cut the spinal cord from the side, and only halfway through, only the parts of the body below and ipsilateral to the cut were paralyzed."
+          }
+        ]
+      },
+      "content_text": "In Rome, Galen made several contributions to the idea of localization of nervous system function. First, he argued that since the cerebrum is relatively soft, it likely receives sensory nerves, whereas since the cerebellum is relatively hard, it must receive motor nerves. Second, based on vivisections in animals he was able to provide evidence for localization of function in the central nervous system (CNS). In one set of experiments in which he sought to identify the nerve responsible for breathing, he instead found the laryngeal nerve. In a public dissection, he proceeded to show that he cou",
+      "order_index": 1,
+      "has_animation": true,
+      "animation_id": "70573ccc-2146-4fc4-a7f5-2284ab199ad6",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "2269a705-7e07-49e0-bfa0-1b37b54aa14d",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "In Hellenic Greece, Herophilus and Erasistratus were the first to separate sensory from motor nerves, but this didn’t provide much insight into whether different functions of the mind were restricted to specific parts of the brain. Nonetheless, Herophilus is thought to have written about specific parts of the brain serving different functions; Erasistratus is said to have associated cerebellar size with running speed and coordination and the complexity of cerebral convolutions with intellect"
+          },
+          {
+            "type": "citation_ref",
+            "number": 8
+          },
+          {
+            "type": "text",
+            "content": "."
+          }
+        ]
+      },
+      "content_text": "In Hellenic Greece, Herophilus and Erasistratus were the first to separate sensory from motor nerves, but this didn’t provide much insight into whether different functions of the mind were restricted to specific parts of the brain. Nonetheless, Herophilus is thought to have written about specific parts of the brain serving different functions; Erasistratus is said to have associated cerebellar size with running speed and coordination and the complexity of cerebral convolutions with intellect.",
+      "order_index": 0,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-06-04T16:05:45.405125+00:00"
+    },
+    {
+      "id": "ea7ca3bc-6f28-47d8-9f0e-84f6f905640a",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Galen had less to work with when it came to assigning mental faculties to specific parts of the brain. As such, while he split the mental faculties into three components—imagination, reasoning, and memory—he did not propose specific brain locations where these were processed. That task would be taken up by Christian Church Fathers of the 4<sup>th</sup> century CE. They took these faculties and assigned each to a different ventricle in the brain. Since brain activity was thought to arise via pneuma or spirits (i.e., some type of air-like substance) flowing through nerves, the ventricles seemed like a good place for the pneuma to be stored and work their magic. This theory, referred to as the cell doctrine or ventricular theory, would persist in variations—some with more ventricles, some with different functions assigned to different ventricles—for the next thousand years"
+          },
+          {
+            "type": "citation_ref",
+            "number": 8
+          },
+          {
+            "type": "citation_ref",
+            "number": 22
+          },
+          {
+            "type": "citation_ref",
+            "number": 23
+          },
+          {
+            "type": "text",
+            "content": " ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 8
+          },
+          {
+            "type": "text",
+            "content": "). In general, sensory signals were thought to be received by the most frontal ventricle. From there, pneuma would be passed onto the middle ventricle for mental processing, and then the pneuma would pass to the most anterior ventricle for mental storage."
+          }
+        ]
+      },
+      "content_text": "Galen had less to work with when it came to assigning mental faculties to specific parts of the brain. As such, while he split the mental faculties into three components—imagination, reasoning, and memory—he did not propose specific brain locations where these were processed. That task would be taken up by Christian Church Fathers of the 4th century CE. They took these faculties and assigned each to a different ventricle in the brain. Since brain activity was thought to arise via pneuma or spirits (i.e., some type of air-like substance) flowing through nerves, the ventricles seemed like a good",
+      "order_index": 2,
+      "has_animation": true,
+      "animation_id": "4a690b39-80f1-4b97-bf89-10c24d90e4c6",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "5ceb7c24-ff63-4f16-b884-b03b5fde39df",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Despite these emerging claims of localization of function, there were those who pushed back. For instance, Danish anatomist and geologist Neils Steensen argued that Descartes’ anatomical positioning of the pineal gland was incorrect, finding from his own dissections that the pineal gland was embedded in brain tissue. This meant it could not move around freely in the ventricle as Descartes had proposed"
+          },
+          {
+            "type": "citation_ref",
+            "number": 27
+          },
+          {
+            "type": "text",
+            "content": ". Regarding Thomas Willis, Steensen believed that Willis also lacked sufficient evidence to assign function to specific brain areas. Related to Willis’ suggestion that the corpus collosum housed imagination, Steensen wrote, “We know so little of the true structure of the corpus callosum that a man of tolerable genius may say about it, whatever he pleases"
+          },
+          {
+            "type": "citation_ref",
+            "number": 27
+          },
+          {
+            "type": "text",
+            "content": ".” Steensen argued that only evidence-based reasoning would move the field forward, and that at the time there was not enough evidence to draw many conclusions."
+          }
+        ]
+      },
+      "content_text": "Despite these emerging claims of localization of function, there were those who pushed back. For instance, Danish anatomist and geologist Neils Steensen argued that Descartes’ anatomical positioning of the pineal gland was incorrect, finding from his own dissections that the pineal gland was embedded in brain tissue. This meant it could not move around freely in the ventricle as Descartes had proposed. Regarding Thomas Willis, Steensen believed that Willis also lacked sufficient evidence to assign function to specific brain areas. Related to Willis’ suggestion that the corpus collosum housed i",
+      "order_index": 5,
+      "has_animation": true,
+      "animation_id": "ee8c83e5-6e01-400e-af50-83a3c027016f",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-10-13T16:24:37.649959+00:00"
+    },
+    {
+      "id": "37dce375-0f4b-40ca-98c6-ad507e526bb6",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "It turns out there was someone taking such an evidence-based approach to studying brain function in the mid-17<sup>th</sup> century: Swedish polymath Emanuel Swedenborg. By reading everything he could find about anatomy and medical cases involving brain damage, he correctly deduced the general location of motor cortex and assigned roles related to executive function to the frontal lobes. However, most of his writings about the brain were not published in his lifetime, as he started having spiritual visions and turned his attention to religious writings"
+          },
+          {
+            "type": "citation_ref",
+            "number": 29
+          },
+          {
+            "type": "citation_ref",
+            "number": 30
+          },
+          {
+            "type": "text",
+            "content": ". The New Church, or Swedenborgianism, sprung up after his death. In an interesting parallel, Niels Steensen also became increasingly religious in his later years and stopped focusing on natural sciences. Steensen became a priest, then a vicar, then a bishop, and some 300 years after his death was beatified by the Catholic Church—the closest any neuroscientist has come to becoming a saint."
+          }
+        ]
+      },
+      "content_text": "It turns out there was someone taking such an evidence-based approach to studying brain function in the mid-17th century: Swedish polymath Emanuel Swedenborg. By reading everything he could find about anatomy and medical cases involving brain damage, he correctly deduced the general location of motor cortex and assigned roles related to executive function to the frontal lobes. However, most of his writings about the brain were not published in his lifetime, as he started having spiritual visions and turned his attention to religious writings. The New Church, or Swedenborgianism, sprung up afte",
+      "order_index": 6,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-06-04T16:05:45.405125+00:00"
+    },
+    {
+      "id": "0d75f569-74a0-43da-9e1c-4f22a781709b",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "As the 18<sup>th</sup> century commenced, gross neuroanatomy was relatively well established, but still practically nothing was known regarding functional organization. In the middle of the 18<sup>th</sup> century, Albrecht von Haller performed a series of influential experiments related to sensibility and irritability:"
+          }
+        ]
+      },
+      "content_text": "As the 18th century commenced, gross neuroanatomy was relatively well established, but still practically nothing was known regarding functional organization. In the middle of the 18th century, Albrecht von Haller performed a series of influential experiments related to sensibility and irritability:",
+      "order_index": 7,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-06-04T16:05:45.405125+00:00"
+    },
+    {
+      "id": "990161c4-a63e-49f5-b614-c7a2abd80bc4",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Haller concluded that only muscles were irritable, and that only parts of the body connected to nerves showed sensibility"
+          },
+          {
+            "type": "citation_ref",
+            "number": 31
+          },
+          {
+            "type": "text",
+            "content": ". He also argued that grey matter was insensitive and that only physical stimulation of the white matter elicited movements"
+          },
+          {
+            "type": "citation_ref",
+            "number": 31
+          },
+          {
+            "type": "text",
+            "content": ". As such, he considered the white matter to be the brain’s seat of sensations, but that various parts of white matter throughout the brain were functionally equivalent, or equipotential"
+          },
+          {
+            "type": "citation_ref",
+            "number": 32
+          },
+          {
+            "type": "text",
+            "content": "."
+          }
+        ]
+      },
+      "content_text": "Haller concluded that only muscles were irritable, and that only parts of the body connected to nerves showed sensibility. He also argued that grey matter was insensitive and that only physical stimulation of the white matter elicited movements. As such, he considered the white matter to be the brain’s seat of sensations, but that various parts of white matter throughout the brain were functionally equivalent, or equipotential.",
+      "order_index": 9,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-06-04T16:05:45.405125+00:00"
+    },
+    {
+      "id": "5093812b-8436-46b5-ab9e-909a78f1c6d9",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Ideas surrounding equipotentiality would be challenged around the turn of the 19<sup>th</sup> century. Franz Joseph Gall, a German physician and anatomist who worked in Austria, then later in France, believed that different parts of the brain served different functions, that the relative size of each of these functional areas differed across individuals, and that these anatomical differences accounted for differences in disposition. Moreover, he thought that these local excesses or deficiencies in brain size could be read out through external measurement of the skull, reasoning that “the skull is molded on the brain"
+          },
+          {
+            "type": "citation_ref",
+            "number": 32
+          },
+          {
+            "type": "text",
+            "content": ".” In the first decade of the 1800s he travelled through Europe promoting his ideas about “organology” or “cranioscopy,” which at its heart was just a twist on the old idea of physiognomy—the belief that a person’s character could be inferred from facial features."
+          }
+        ]
+      },
+      "content_text": "Ideas surrounding equipotentiality would be challenged around the turn of the 19th century. Franz Joseph Gall, a German physician and anatomist who worked in Austria, then later in France, believed that different parts of the brain served different functions, that the relative size of each of these functional areas differed across individuals, and that these anatomical differences accounted for differences in disposition. Moreover, he thought that these local excesses or deficiencies in brain size could be read out through external measurement of the skull, reasoning that “the skull is molded ",
+      "order_index": 10,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-06-04T16:05:45.405125+00:00"
+    },
+    {
+      "id": "85a5a4df-3d12-4b91-9a9d-5746dee97155",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Phrenology became wildly popular, and phrenological societies popped up throughout the world. It was used to argue for social reforms (e.g., to encourage the development of morally favourable faculties)"
+          },
+          {
+            "type": "citation_ref",
+            "number": 32
+          },
+          {
+            "type": "text",
+            "content": ". However, seeing as, unlike Gall’s neuroanatomical work, his “organology” work was built on much shakier ground, it was immediately attacked. On political and religious grounds, some people did not appreciate that his materialistic ideas took what many viewed as a spiritual and ethereal mind/soul and placed it firmly in corruptible tissue. On scientific grounds, Gall’s most famous critic was Marie Pierre Jean Flourens. In part via a commission by the French Académie de Sciences that wanted to undercut Gall’s ideas"
+          },
+          {
+            "type": "citation_ref",
+            "number": 32
+          },
+          {
+            "type": "text",
+            "content": ", Flourens performed a number of experiments, mostly in pigeons and rabbits, where he lesioned specific brain regions and studied the impact on behavior. Flourens found that different parts of the brain served distinct functions. The medulla was critical for breathing. The cerebellum appeared important for motor coordination. The cerebrum was critical for “perception, judgement and will."
+          },
+          {
+            "type": "citation_ref",
+            "number": 19
+          },
+          {
+            "type": "text",
+            "content": "” As noted above, this was the first solid evidence that the brain housed the mind. However, in contrast to Gall, Flourens considered the cerebrum to be equipotential: “All sensations, all perceptions, and all volition occupy concurrently the same seat in these organs. The faculty of sensation, perception, and volition is then essentially one faculty."
+          },
+          {
+            "type": "citation_ref",
+            "number": 33
+          },
+          {
+            "type": "text",
+            "content": "” Thus, Flourens concluded that phrenology was nonsense."
+          }
+        ]
+      },
+      "content_text": "Phrenology became wildly popular, and phrenological societies popped up throughout the world. It was used to argue for social reforms (e.g., to encourage the development of morally favourable faculties). However, seeing as, unlike Gall’s neuroanatomical work, his “organology” work was built on much shakier ground, it was immediately attacked. On political and religious grounds, some people did not appreciate that his materialistic ideas took what many viewed as a spiritual and ethereal mind/soul and placed it firmly in corruptible tissue. On scientific grounds, Gall’s most famous critic was Ma",
+      "order_index": 12,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-06-04T16:05:45.405125+00:00"
+    },
+    {
+      "id": "56cb91c4-99d4-46d9-ae92-75adfb5a21ea",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "blockquote",
+            "content": "“I call that part of the human body irritable, which becomes shorter upon being touched; very irritable if it contracts upon a slight touch, and the contrary if by a violent touch it contracts but little. I call that a sensible part of the human body, which upon being touched transmits the impression of it to the soul; and in brutes, in whom the existence of a soul is not so clear, I call those parts sensible, the Irritation of which occasions evident signs of pain and disquiet in the animal.<sup class=\"citation-ref\" data-ref=\"31\">31</sup>”"
+          }
+        ]
+      },
+      "content_text": "",
+      "order_index": 8,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-10-09T13:48:57.279494+00:00"
+    },
+    {
+      "id": "2067c56b-93c6-4ae2-8d99-6184abf438ba",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Attention to a visual feature enhances neural firing in ways similar to spatial attention</strong>, but the underlying computation differs. Treue and Martinez-Trujillo (1999) recorded from neurons in the motion-sensitive area MT while two patches of moving dots were displayed, one positioned inside a neuron's receptive field and the other in the opposite hemifield, entirely outside it ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 6
+          },
+          {
+            "type": "text",
+            "content": "). On each trial the monkey attended either to the fixation point or to the patch outside the receptive field, and the two patches always moved in the same direction. Although the recorded neuron's receptive field always contained the same physical stimulus, its firing rate changed depending on the direction of the attended patch elsewhere in the visual field: responses rose when the attended direction matched the neuron's preferred direction and fell when it matched the neuron's null direction. Because the attended stimulus never entered the receptive field, this modulation could not be a spatial effect. Instead, it depended only on the attended feature (motion direction)."
+          }
+        ]
+      },
+      "content_text": "Attention to a visual feature enhances neural firing in ways similar to spatial attention, but the…",
+      "order_index": 11,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-27T15:40:24.08078+00:00"
+    },
+    {
+      "id": "1a670efe-5f58-45d7-bd86-27e38cbddd40",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "blurb": "Figure 6. Feature Attention. Attend to a colour or a direction rather than a place: the feature-similarity gain principle multiplies a neuron's response by how well the attended feature matches its tuning.",
+            "route": "/feature-attention",
+            "title": "Feature-based attention",
+            "credit": "Arjun Krishnaswamy · design: Malpeso Studio",
+            "caption": "Feature Attention",
+            "widgetId": "upload:attn-feature-attention",
+            "placementId": "attention-tmt-feature-attention",
+            "figureNumber": 6
+          }
+        ]
+      },
+      "content_text": "Interactive: Feature-based attention",
+      "order_index": 10,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-30T08:18:00.265165+00:00"
+    },
+    {
+      "id": "3ad37ea1-7860-4892-9856-9f0bcfdcb684",
+      "section_id": "8b499b7c-6375-4077-a98b-0c0c086e81f2",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "At the same time as they were performing this medical procedure, Penfield and colleagues began mapping the mind of awake patients. Upon stimulating a brain region, they would put a piece of paper with a number or letter on that brain area and note what the patient’s reaction was to the stimulation (<strong>Figures I and J</strong>). Some stimulations caused motor movements, some stimulations caused sensations, some stimulations even triggered memory recall"
+          },
+          {
+            "type": "citation_ref",
+            "number": 116
+          },
+          {
+            "type": "text",
+            "content": ". Most notably, Penfield carefully mapped the somatosensory and primary motor cortex, revealing an uneven representation of the body within each cortical area, similar to what had been predicted years earlier by neurologist John Hughlings Jackson who had studied the progression of motor movements during epileptic episodes"
+          },
+          {
+            "type": "citation_ref",
+            "number": 117
+          },
+          {
+            "type": "text",
+            "content": ". For instance, Penfield found that in somatosensory cortex the hands and lips had a much greater cortical representation than the back and legs ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": "K"
+          },
+          {
+            "type": "text",
+            "content": "). These uneven maps of the body in the brain are directly related to variations in the densities of primary sensory receptors in the skin. The visualization of this distorted map with an oddly shaped cartoon human is called a cortical homunculus (little man)."
+          }
+        ]
+      },
+      "content_text": "At the same time as they were performing this medical procedure, Penfield and colleagues began mapping the mind of awake patients. Upon stimulating a brain region, they would put a piece of paper with a number or letter on that brain area and note what the patient’s reaction was to the stimulation (Figures I and J). Some stimulations caused motor movements, some stimulations caused sensations, some stimulations even triggered memory recall. Most notably, Penfield carefully mapped the somatosensory and primary motor cortex, revealing an uneven representation of the body within each cortical are",
+      "order_index": 2,
+      "has_animation": true,
+      "animation_id": "5a79ff2d-bc29-4100-b058-67a394d7489d",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "c6e7b8fe-bf16-4fd3-9648-fb6673914e72",
+      "section_id": "8b499b7c-6375-4077-a98b-0c0c086e81f2",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "In 1927, Penfield spent six months in Breslau, then part of Germany, to work with neurosurgeon Otfrid Foerster. Foerster had studied in Germany with Fedor Krause, who pioneered the use of electrical stimulation of cortex to guide removal of tissue resection as a treatment for epilepsy"
+          },
+          {
+            "type": "citation_ref",
+            "number": 113
+          },
+          {
+            "type": "text",
+            "content": ". Penfield was also aware that Cushing had briefly performed similar methods in a small number of patients around the turn of the century"
+          },
+          {
+            "type": "citation_ref",
+            "number": 114
+          },
+          {
+            "type": "text",
+            "content": ", and that Sherrington had performed related experiments in non-human primates"
+          },
+          {
+            "type": "citation_ref",
+            "number": 115
+          },
+          {
+            "type": "text",
+            "content": ". In Breslau, Penfield learned how to perform local cortical electrical stimulations while patients were treated with local anesthesia, as well as methods for excising brain scars"
+          },
+          {
+            "type": "citation_ref",
+            "number": 112
+          },
+          {
+            "type": "text",
+            "content": ". In 1928, after returning to New York City, Penfield, along with Cone, performed their version of the Foerster method for the first time, successfully treating an epilepsy patient"
+          },
+          {
+            "type": "citation_ref",
+            "number": 112
+          },
+          {
+            "type": "text",
+            "content": ". Later that year, Penfield and Cone moved to Montreal. In 1934, Penfield led the establishment of the Montreal Neurological Institute"
+          },
+          {
+            "type": "citation_ref",
+            "number": 111
+          },
+          {
+            "type": "text",
+            "content": ". There, along with Cone and many residents, Penfield continued refining the Foerster method and made it their own"
+          },
+          {
+            "type": "citation_ref",
+            "number": 111
+          },
+          {
+            "type": "text",
+            "content": ". They would carefully stimulate the brain surrounding an area where they thought the patient’s seizures were being generated. Then, if they were able to stimulate a seizure, they would carefully resect only the problematic piece of brain tissue. This became known as The Montreal Procedure (<strong>Figures I and J</strong>)."
+          }
+        ]
+      },
+      "content_text": "In 1927, Penfield spent six months in Breslau, then part of Germany, to work with neurosurgeon Otfrid Foerster. Foerster had studied in Germany with Fedor Krause, who pioneered the use of electrical stimulation of cortex to guide removal of tissue resection as a treatment for epilepsy. Penfield was also aware that Cushing had briefly performed similar methods in a small number of patients around the turn of the century, and that Sherrington had performed related experiments in non-human primates. In Breslau, Penfield learned how to perform local cortical electrical stimulations while patients ",
+      "order_index": 1,
+      "has_animation": true,
+      "animation_id": "116e14cc-70bf-4ec9-81d7-f3867570cab7",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "304cc611-0836-4e8d-8b54-226d75d0f19c",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Lashley’s conclusions on a lack of localization of function for memory processing didn’t hold for long. In the 1950s, working with Donald Hebb (a former student of Lashley’s) at the Montreal Neurological Institute, Brenda Milner began studying some of neurosurgeon Wilder Penfield’s patients who had had different brain regions resected as part of treatment for epilepsy or other neurological disorders. She noted that a couple of patients with apparent bilateral hippocampal formation resections/damage had memory-related issues. After presenting these observations at a conference, Milner and Penfield were contacted by William Scoville, an American neurosurgeon who had performed similar surgeries and had noted memory deficits in some of his patients. Milner proceeded to examine some of Scoville’s patients"
+          },
+          {
+            "type": "citation_ref",
+            "number": 42
+          },
+          {
+            "type": "text",
+            "content": ", including patient H.M. (Henry Molaison), who had been having seizures since the age of 10, and severe episodes since the age of 16. By the age of 27, Molaison could no longer hold down a job and Scoville advised experimental bilateral hippocampal resection. Following the procedure, though his epilepsy was greatly reduced, Molaison could no longer form new memories (i.e., he suffered from anterograde amnesia). Milner carefully documented H.M.’s behaviors, finding that though he could not form new episodic memories, he was able to form new procedural memories (e.g., a mirror drawing task). Thus, not only was Milner able to identify the hippocampus as a critical region for the encoding of new memories"
+          },
+          {
+            "type": "citation_ref",
+            "number": 42
+          },
+          {
+            "type": "text",
+            "content": ", she was also able to establish that different types of memories—e.g., episodic (“I remember what happened where”) vs. procedural (“I know how to do it”)—were stored in different brain regions."
+          }
+        ]
+      },
+      "content_text": "Lashley’s conclusions on a lack of localization of function for memory processing didn’t hold for long. In the 1950s, working with Donald Hebb (a former student of Lashley’s) at the Montreal Neurological Institute, Brenda Milner began studying some of neurosurgeon Wilder Penfield’s patients who had had different brain regions resected as part of treatment for epilepsy or other neurological disorders. She noted that a couple of patients with apparent bilateral hippocampal formation resections/damage had memory-related issues. After presenting these observations at a conference, Milner and Penfi",
+      "order_index": 18,
+      "has_animation": true,
+      "animation_id": "7699cef4-f6f1-41fb-acef-6dc8917cf099",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-10-09T13:48:59.720782+00:00"
+    },
+    {
+      "id": "d49273f2-3c6c-47fc-8433-768de7921a5d",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Still, the work of Flourens was very influential, and localization of brain function became a controversial topic, with many people holding strong opinions despite a continued lack of solid evidence one way or another. Then, in April 1861, a patient by the name of Louis Victor Leborgne came under the care of physician Paul Broca (whom we already met above in the section about trepanation). Leborgne had been hospitalized for the previous 10 years, stemming from epilepsy that started in his youth and had eventually led, by the age of 30, to aphasia—an inability to speak"
+          },
+          {
+            "type": "citation_ref",
+            "number": 34
+          },
+          {
+            "type": "citation_ref",
+            "number": 35
+          },
+          {
+            "type": "text",
+            "content": ". By the time Broca saw him, Leborgne was known as “Tan,” as this was essentially the only word he could say, often repeated twice in a row. Leborgne’s mind otherwise appeared intact—he could understand what was said to him and answer questions with gestures. At the time, in France, there were active discussions about whether there was a cortical locus for speech. Years earlier, physician Jean-Baptiste Bouillaud had described patients with anterior lobe damage who had trouble generating speech. Furthermore, a few days before Leborgne came under Broca’s care, at a Paris scientific meeting, physician Simon Auburtin, Bouillaud’s son-in-law, discussed a patient of his who had a skull opening over the anterior lobe due to a gunshot wound: “During the interrogation the blade of a large spatula was placed on the anterior lobes; by means of light pressure speech was suddenly stopped; a word that had been commenced was cut in two. The faculty of speech reappeared as soon as the compression ceased."
+          },
+          {
+            "type": "citation_ref",
+            "number": 36
+          },
+          {
+            "type": "text",
+            "content": "” Leborgne died a few days after coming under Broca’s care and an autopsy revealed significant damage to the frontal cortex in the left hemisphere ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 12
+          },
+          {
+            "type": "text",
+            "content": "). Broca published this result to immediate enthusiasm from the medical and scientific communities, and a few years later published a follow-up paper with several additional people with aphasia, solidifying his claim of the left frontal cortex as the locus of speech generation"
+          },
+          {
+            "type": "citation_ref",
+            "number": 37
+          },
+          {
+            "type": "text",
+            "content": "."
+          }
+        ]
+      },
+      "content_text": "Still, the work of Flourens was very influential, and localization of brain function became a controversial topic, with many people holding strong opinions despite a continued lack of solid evidence one way or another. Then, in April 1861, a patient by the name of Louis Victor Leborgne came under the care of physician Paul Broca (whom we already met above in the section about trepanation). Leborgne had been hospitalized for the previous 10 years, stemming from epilepsy that started in his youth and had eventually led, by the age of 30, to aphasia—an inability to speak. By the time Broca saw hi",
+      "order_index": 14,
+      "has_animation": true,
+      "animation_id": "8efcc00a-95d2-452e-b10b-8437ab6f8525",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "abe785c2-92d0-444f-a8c2-d463245a25d3",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Fritsch and Hitzig’s work was validated soon afterwards in primates by David Ferrier who was working in England. However, not everyone was convinced. A flashpoint in the debate between localizationalists and anti-localizationalists occurred at the Seventh International Medical Congress, held in 1881 in London. In attendance were 3,000 people, including clinicians and researchers, as well as political, religious and intellectual leaders"
+          },
+          {
+            "type": "citation_ref",
+            "number": 39
+          },
+          {
+            "type": "text",
+            "content": ". One morning, Leopold Goltz, a German physiologist, presented one of the dogs he had worked with. Goltz claimed that, using a water pick, he had ablated motor cortex from one of the hemispheres, but the dog still moved around more or less normally. Immediately afterward, Ferrier presented one of his monkeys that had motor cortex ablated in one hemisphere. This monkey presented with hemiplegia on the contralateral side of the lesion. How could such conflicting results be assessed? Goltz and Ferrier agreed for an independent panel of experts, including a young Charles Sherrington, to euthanize the animals and examine the extent of brain damage in relation to the claims of purported lesions by Goltz and Ferrier"
+          },
+          {
+            "type": "citation_ref",
+            "number": 40
+          },
+          {
+            "type": "text",
+            "content": ". In the end, it was found that Goltz’s dog had significant portions of motor cortex remaining, whereas Ferrier’s monkey had a lesion corresponding to Ferrier’s description"
+          },
+          {
+            "type": "citation_ref",
+            "number": 39
+          },
+          {
+            "type": "text",
+            "content": " ("
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 14
+          },
+          {
+            "type": "text",
+            "content": "). Nonetheless, subsequent work would show more notable deficits in primates lacking motor cortex than in lower mammals with similar lesions, providing at least some support to Goltz."
+          }
+        ],
+        "animationFlags": {
+          "room": 1
+        }
+      },
+      "content_text": "Fritsch and Hitzig’s work was validated soon afterwards in primates by David Ferrier who was working in England. However, not everyone was convinced. A flashpoint in the debate between localizationalists and anti-localizationalists occurred at the Seventh International Medical Congress, held in 1881 in London. In attendance were 3,000 people, including clinicians and researchers, as well as political, religious and intellectual leaders. One morning, Leopold Goltz, a German physiologist, presented one of the dogs he had worked with. Goltz claimed that, using a water pick, he had ablated motor c",
+      "order_index": 16,
+      "has_animation": true,
+      "animation_id": "c3739fe3-4e78-422c-9f4f-72df5f453f02",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "8fea40c6-20bc-4a81-becd-c0fae9b32f79",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Work over the following decades would reveal the circuitry underlying center and surround mechanisms. Center responses are driven by excitatory bipolar cell input which is collected over a ganglion cell’s dendritic tree. Surround responses are driven predominantly by GABAergic amacrine cells that reside (laterally) further away and relay visual signals to the central ganglion cell. Center bipolar cells, and the bipolar cells that activate amacrine in the surround are driven by the same luminance change. Varying the luminance delivered to these two regions varies excitatory (bipolar) or inhibitory (amacrine) drive to the central ganglion cell and causes the firing patterns observed by Kuffler and others. For example, in an ON ganglion cell, a bright spot placed in the surround activates amacrine inhibition and antagonizes the excitatory effects of a center spot that drives bipolar cells. A bright spot placed in the surround of this neuron evokes only amacrine inhibition and so does not drive spikes. A dark spot placed in the surround inhibits the amacrine cell and reduces its inhibition of the ganglion cell, this disinhibition often leads ganglion cells to spike."
+          }
+        ]
+      },
+      "content_text": "Work over the following decades would reveal the circuitry underlying center and surround mechanisms. Center responses are driven by excitatory bipolar cell input which is collected over a ganglion ce",
+      "order_index": 3,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-09-04T02:25:58.456145+00:00",
+      "updated_at": "2026-09-04T02:29:07.648127+00:00"
+    },
+    {
+      "id": "63097b63-2674-4059-946b-51589ed1341b",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Reynolds and Heeger (2009) proposed that attention acts directly on the normalization computation. In their model, attention adds an extra gain field over the population of neurons — a spatially or feature-selective region where inputs are boosted before they are pooled for normalization. Whether this produces contrast gain or response gain depends on the size of the stimulus relative to the size of the attention field: a small stimulus attended by a wide field yields contrast gain, a large stimulus attended by a narrow field yields response gain, and every intermediate combination is possible in between. The same architecture, applied to two stimuli sharing a receptive field, reproduces biased competition; applied to a field defined by feature rather than location, it reproduces the feature-similarity gain principle. A single computation, run under different conditions, accounts for all four phenomena described above."
+          }
+        ]
+      },
+      "content_text": "Reynolds and Heeger (2009) proposed that attention acts directly on the normalization computation. In their model, attention adds an extra gain field over the population of neurons — a spatially or…",
+      "order_index": 15,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-27T15:40:24.08078+00:00"
+    },
+    {
+      "id": "80166c6c-c038-4b7d-b859-e256c91b2d95",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "heading",
+            "level": 3,
+            "content": "Retinal output"
+          }
+        ]
+      },
+      "content_text": "Retinal output",
+      "order_index": 15,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": true,
+      "subsection_level": 1,
+      "created_at": "2026-04-13T16:29:28.126616+00:00",
+      "updated_at": "2026-09-04T02:25:58.456145+00:00"
+    },
+    {
+      "id": "bfb594df-a813-4762-8dfa-8c81d470d38a",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "heading",
+            "level": 3,
+            "content": "Rod and cone pathways"
+          }
+        ]
+      },
+      "content_text": "Rod and cone pathways",
+      "order_index": 11,
+      "has_animation": true,
+      "animation_id": "8ddb2eda-f841-4543-bae6-07977e759b67",
+      "animation_trigger": "auto",
+      "is_subsection_header": true,
+      "subsection_level": 1,
+      "created_at": "2026-04-13T16:29:27.278852+00:00",
+      "updated_at": "2026-10-21T08:13:41.971724+00:00"
+    },
+    {
+      "id": "901b315e-65f7-457d-8526-0b537fae86e4",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "heading",
+            "level": 3,
+            "content": "Intrinsically photosensitive retinal ganglion cells"
+          }
+        ]
+      },
+      "content_text": "Intrinsically photosensitive retinal ganglion cells",
+      "order_index": 13,
+      "has_animation": true,
+      "animation_id": "8afd48c2-f051-4a78-8a1f-c204efcfb747",
+      "animation_trigger": "auto",
+      "is_subsection_header": true,
+      "subsection_level": 1,
+      "created_at": "2026-04-13T16:29:27.832262+00:00",
+      "updated_at": "2026-10-21T08:13:41.971724+00:00"
+    },
+    {
+      "id": "c546fac1-de01-48e8-a54f-8538dfbcd211",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "The next breakthrough came in the early 1870s. Working in Berlin, neurologist Eduard Fritsch and anatomist Gustav Hitzig used electrical stimulation of cortex in dogs to identify motor cortex. Not only did they find a specific portion of cortex that could reliably drive contralateral body movements, they found that stimulating different parts of this motor cortex led to movement of different parts of the body (e.g., hind leg vs. front leg; "
+          },
+          {
+            "type": "figure_placeholder",
+            "number": 13
+          },
+          {
+            "type": "text",
+            "content": ")"
+          },
+          {
+            "type": "citation_ref",
+            "number": 38
+          },
+          {
+            "type": "text",
+            "content": ". Fritsch and Hitzig then showed that lesioning this region led to contralateral motor deficits."
+          }
+        ],
+        "animationFlags": {
+          "room": 1
+        }
+      },
+      "content_text": "The next breakthrough came in the early 1870s. Working in Berlin, neurologist Eduard Fritsch and anatomist Gustav Hitzig used electrical stimulation of cortex in dogs to identify motor cortex. Not only did they find a specific portion of cortex that could reliably drive contralateral body movements, they found that stimulating different parts of this motor cortex led to movement of different parts of the body (e.g., hind leg vs. front leg; (Figure 13)). Fritsch and Hitzig then showed that lesioning this region led to contralateral motor deficits.",
+      "order_index": 15,
+      "has_animation": true,
+      "animation_id": "a2369684-12d1-493f-9ca2-61c5cefa88b3",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-11-17T06:31:04.011541+00:00"
+    },
+    {
+      "id": "a4fe3d52-2d18-4b86-8743-27a15784f3b7",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "By the turn of the 20<sup>th</sup> century, while researchers increasingly believed that there were cortical loci for primary sensory and motor areas, it remained controversial whether there was localization of higher brain functions. For roughly a 30-year period in the mid-20<sup>th</sup> century, Karl Lashley, an American behavioral psychologist, hunted for engrams—the physical traces of stored memories in the brain. He trained rats in mazes and memory tasks, and then lesioned various brain regions, largely in cortex, and examined the effects. He was unable to find a specific part of the brain that stored memories. This led him to conclude that unlike primary sensory cortical regions which took up defined plots of land in the brain, memories were stored everywhere (equipotentiality) and that the impact of lesions directly scaled with the size of the lesion (mass action)"
+          },
+          {
+            "type": "citation_ref",
+            "number": 41
+          },
+          {
+            "type": "text",
+            "content": "."
+          }
+        ]
+      },
+      "content_text": "By the turn of the 20th century, while researchers increasingly believed that there were cortical loci for primary sensory and motor areas, it remained controversial whether there was localization of higher brain functions. For roughly a 30-year period in the mid-20th century, Karl Lashley, an American behavioral psychologist, hunted for engrams—the physical traces of stored memories in the brain. He trained rats in mazes and memory tasks, and then lesioned various brain regions, largely in cortex, and examined the effects. He was unable to find a specific part of the brain that stored memorie",
+      "order_index": 17,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-09-24T02:51:06.507452+00:00"
+    },
+    {
+      "id": "08333789-23e1-4864-bb75-de07fc3447d4",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "The parcellation of photoreceptor-generated signals into distinct visual channels culminates at the ganglion cell. The outcome is that the retina sends out many different channels of visual content to the brain – each carrying distinct information about the incoming visual scene, with some channels focused on motion, others on color, others on size, etc<sup class=\"citation-ref\" data-ref=\"17\">17<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"31\">31</sup>. It appears that roughly 15 visual channels leave the primate retina <sup class=\"citation-ref\" data-ref=\"53\">53</sup>. These channels are represented by different types of ganglion cells<sup class=\"citation-ref\" data-ref=\"6\">6<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"17\">17<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"46\">46</sup>. While ganglion cells are the focus of this section, since they represent the retinal output channels, their response properties are intertwined with the amacrine cells they are connected to, so we discuss both cell types in combination. Furthermore, while some amacrine cells fire action potentials, and some bipolar cells can generate spike-like events, ganglion cells are generally considered the predominant spiking cell in the retina. Another important property of ganglion cells is that many of them can independently relay inputs that arise in a portion of their receptive field. In the bipolar cell section, we outlined how bipolar cells are unable distinguish between a grey background and a stimulus that half-illuminates and half-darkens their receptive field. It turns out that some ganglion cells can respond to such stimuli, encoding both ON and OFF inputs. Such processing in ganglion cells is referred to as a non-linearity<sup class=\"citation-ref\" data-ref=\"54\">54<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"55\">55</sup>. This property enhances a ganglion cell’s ability to encode patterns within its receptive field. Below, we outline several canonical circuit computations in the retina, which result in ganglion cells with distinct feature selectivities, each likely serving specific ethologically-relevant functions."
+          }
+        ]
+      },
+      "content_text": "The parcellation of photoreceptor-generated signals into distinct visual channels culminates at the ganglion cell. The outcome is that the retina sends out many different channels of visual content to",
+      "order_index": 0,
+      "has_animation": true,
+      "animation_id": "69b84f7b-4a6b-4ed1-8ef2-9811da1de31c",
+      "animation_trigger": "RetinalCircuitsTransition",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-04-13T16:29:26.312695+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "494277a4-bdea-4578-bbe8-0f8697580178",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "The earliest attentional signatures were found in a primate midbrain structure called the superior colliculus whose neurons showed enhanced responses when a stimulus in the receptive field was about to become a saccade target (goldberg and wurtz, 1972). Approximately a decade later the same effects were seen independent of eye movement (bushnell, Goldberg, Robinson, 1981). Subsequent work defined these effects as “overt” (associated with eye movement) and “covert” (no eye movement). This effort also defined attention to visual locations (spatial attention), to visual features (feature attention), and to visual objects (object attention). Spatial attention paradigms (such as the posner cueing method) were the earliest adopted and are still the most widely used. As a result, much of what we know about the neural correlates of visual attention arise from the spatial cueing paradigm. Below we describe these single-neuron and population level effects in the context of covert spatial attention, and then we turn to similarities and differences produced by feature/object attention."
+          }
+        ]
+      },
+      "content_text": "The earliest attentional signatures were found in a primate midbrain structure called the superior colliculus whose neurons showed enhanced responses when a stimulus in the receptive field was about…",
+      "order_index": 0,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00"
+    },
+    {
+      "id": "cec47825-09e3-4e56-8995-9948be0f2aae",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "heading",
+            "level": 3,
+            "content": "Stimuli evoke stronger firing from visual neurons when attention is directed to their receptive field."
+          }
+        ]
+      },
+      "content_text": "Stimuli evoke stronger firing from visual neurons when attention is directed to their receptive field.",
+      "order_index": 1,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": true,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00"
+    },
+    {
+      "id": "42718e80-fd99-414e-988d-b274ba8c956c",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Many studies indicate that covertly attending a spatial location enhances the firing of visual neurons whose receptive fields overlap such locations. The magnitude of these effects at different stations of the visual pathway vary but can be seen in many animals as early as the lateral geniculate nucleus of the thalamus. Such attentional enhancements become more pronounced as one moves up the visual hierarchy and in primates is most strong at the highest visual areas. Early work on the topic employed cueing paradigms and single unit recordings from awake behaving non-human primates. These studies consistently turned up two forms of attention related changes to neural firing termed contrast and response gain."
+          }
+        ]
+      },
+      "content_text": "Many studies indicate that covertly attending a spatial location enhances the firing of visual neurons whose receptive fields overlap such locations. The magnitude of these effects at different…",
+      "order_index": 2,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00"
+    },
+    {
+      "id": "8ccf2d7c-cf89-4920-b9c2-360212e230b0",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Attention biases competition between two stimuli residing in the same receptive field.</strong> Macaque brain area V4 had become the premier model for these studies because the large receptive fields of V4 neurons (~60degrees) made their responses to stimuli relatively immune to small eye movements. However, this large size meant that studies of contrast and response gain required subjects to move attention to the other hemifield to be well clear of any overlap with the recorded cells receptive field. As understanding grew, the large size of these receptive fields proved to be a sticky issue. Specifically, researchers began asking what happens when attention must select among stimuli competing within the same receptive field as occurs during visual search?"
+          }
+        ]
+      },
+      "content_text": "Attention biases competition between two stimuli residing in the same receptive field. Macaque brain area V4 had become the premier model for these studies because the large receptive fields of V4…",
+      "order_index": 7,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00"
+    },
+    {
+      "id": "5a19ed3c-5b0a-4f8f-afb3-9577bd0273b5",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "This push-pull pattern led Treue and Martinez-Trujillo to propose the feature-similarity gain principle: attention multiplies a neuron's response by a gain factor set by the similarity between the attended feature and the neuron's own tuning preference."
+          }
+        ]
+      },
+      "content_text": "This push-pull pattern led Treue and Martinez-Trujillo to propose the feature-similarity gain principle: attention multiplies a neuron's response by a gain factor set by the similarity between the…",
+      "order_index": 12,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00"
+    },
+    {
+      "id": "5ade245f-3a61-4d1d-aeea-56391f47e178",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Normalization model: are the many forms of attentional modulation different mechanisms, or are they facets of the same process?</strong> Starting in the early 2000s, the field was trying to reconcile the many different forms of attention and their neural correlates. The question being asked was whether contrast/response gain, biased competition, feature similarity, and others, reflected different underlying mechanisms of visual attention or were in fact the same phenomenon. A big clue would emerge from computational studies of visual cortical neurons which revealed the normalization-like logic of their firing to visual stimuli."
+          }
+        ]
+      },
+      "content_text": "Normalization model: are the many forms of attentional modulation different mechanisms, or are they facets of the same process? Starting in the early 2000s, the field was trying to reconcile the…",
+      "order_index": 13,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00"
+    },
+    {
+      "id": "26792ead-b624-4932-a082-01aab2f88717",
+      "section_id": "586e872f-217d-4ab0-90c2-b789aad7db0a",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Normalization was first formalized as a mechanism for gain control in primary visual cortex, where a neuron's response is computed from both its own input divided by the pooled activity of a wider population of neighboring neurons (Heeger, 1992). This divisive step endows visual neurons with unique coding properties that include invariance to certain stimulus dimensions (contrast), high-sensitivity, and winner-take-all behavior. This latter feature is particularly relevant to attention since earlier work indicated that presentation of two stimuli in the receptive field evoked activity that was an average of that evoked by either stimulus alone. However, attending to one of these stimuli led its activity pattern to dominate firing behavior."
+          }
+        ]
+      },
+      "content_text": "Normalization was first formalized as a mechanism for gain control in primary visual cortex, where a neuron's response is computed from both its own input divided by the pooled activity of a wider…",
+      "order_index": 14,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-09-25T12:57:19.674316+00:00",
+      "updated_at": "2026-09-25T12:57:19.674316+00:00"
+    },
+    {
+      "id": "5b101815-0894-48a9-9ed0-a94a9d4d9492",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "RW Rodieck modelled excitatory (center) and inhibitory (surround) portions of the receptive field with two Gaussians which offered great power in predicting ganglion cell responses to light<sup class=\"citation-ref\" data-ref=\"59\">59<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"60\">60</sup>. It also showed that a given ganglion cell encodes an edge (or small spot), and not a homogenous patch of visual space. Rodieck’s models also made predictions about how center-surround organization could be used by downstream brain regions. For example, if a neuron in such a region has access to multiple center-surround receptive fields from several neighbouring ganglion cells, the precise location of a visual stimulus or pattern could be easily decoded. The most common cell types in the human retina, ON and OFF midget and ON and OFF parasol cells (which account for ~80% of ganglion cells), all show center-surround receptive fields<sup class=\"citation-ref\" data-ref=\"61\">61</sup>."
+          }
+        ]
+      },
+      "content_text": "RW Rodieck modelled excitatory (center) and inhibitory (surround) portions of the receptive field with two Gaussians which offered great power in predicting ganglion cell responses to light59,60. It a",
+      "order_index": 4,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-09-04T02:25:58.456145+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "fccf2f42-9f63-4c68-b8d9-24f67b239637",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Color opponency:</strong> First described in horizontal cells of fish by Gunner Svaetichin<sup class=\"citation-ref\" data-ref=\"62\">62</sup>, color opponency arises when a cell receives competing signals generated by visual stimuli of different wavelengths. In the primate retina, at the level of ganglion cells, it is generally believed that color opponency is split along red-green<sup class=\"citation-ref\" data-ref=\"63\">63</sup> and blue-yellow<sup class=\"citation-ref\" data-ref=\"64\">64</sup> axes. Red-green opponency is thought to be computed in midget ganglion cells, some of which exhibit a biased spectral sampling within their receptive field centers to either red or green cones<sup class=\"citation-ref\" data-ref=\"65\">65</sup>. In contrast, blue-yellow opponency is thought to be computed by small bistratified ganglion cells<sup class=\"citation-ref\" data-ref=\"64\">64</sup>, as well as type of widefield ganglion cell<sup class=\"citation-ref\" data-ref=\"66\">66</sup>. While the exact role of color opponency in the retina remains an area of active research<sup class=\"citation-ref\" data-ref=\"67\">67</sup>, signals from color opponent ganglion cell types appear to make their way to color-coding visual regions in the brain, which eventually lead to color perception<sup class=\"citation-ref\" data-ref=\"68\">68</sup>."
+          }
+        ]
+      },
+      "content_text": "Color opponency: First described in horizontal cells of fish by Gunner Svaetichin62, color opponency arises when a cell receives competing signals generated by visual stimuli of different wavelengths.",
+      "order_index": 5,
+      "has_animation": true,
+      "animation_id": "a3cb77ae-4cd4-48c1-bda4-87d9e3d775fd",
+      "animation_trigger": "ColorOpponency",
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-04-13T16:29:26.707799+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "1dd1d2ae-f64f-4d19-8ead-f1a343bcae09",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "One of the first written accounts of color blindness comes from John Dalton – of atomic theory fame – at the end of the 18th century. He noted that he and his brother were color blind, and he assembled a small list of other color blind people. Most happened to be males. Dalton hypothesized that his vitreous humour was tinted blue, and thus absorbed longer wavelengths<sup class=\"citation-ref\" data-ref=\"69\">69</sup>. He donated his eyes upon his death, but no pigment abnormalities were found with his vitreous humour nor his lens. It is now known that color vision starts with the three different types of cones (blue, green and red, as outlined above). It turns out that about 8% of males are red-green color blind, due to a genetic mutation leading to dysfunction of either red or green cones. Other types of color blindness exist, but are more rare. Genetic analysis in the 1990s of Dalton’s preserved eye tissue revealed that he was missing functional middle wavelength (green) cones<sup class=\"citation-ref\" data-ref=\"69\">69</sup>."
+          },
+          {
+            "type": "break_section",
+            "title": "Color blindness"
+          }
+        ]
+      },
+      "content_text": "One of the first written accounts of color blindness comes from John Dalton – of atomic theory fame – at the end of the 18th century. He noted that he and his brother were color blind, and he assemble",
+      "order_index": 6,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-04-13T16:29:26.814521+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "2371e7b0-c86e-4f5b-9fc2-cd07ba6d8e39",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "At least in the mouse and rabbit retina, there are several types of direction selective ganglion cells17. The best-described are ON-OFF and ON DS cells<sup class=\"citation-ref\" data-ref=\"78\">78<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"79\">79</sup>. The ON-OFF DS cells prefer relatively fast motion, and comprise types encoding motion along the cardinal axes (up, down, left and right). These cells send signals to the LGN and onto visual cortex<sup class=\"citation-ref\" data-ref=\"80\">80</sup>, but their role in visual perception is still unclear. ON DS cell prefer relatively slow motion and encode 3 directions that align with the axes of head motion encoded by the semicircular canals of the inner ear<sup class=\"citation-ref\" data-ref=\"17\">17<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"79\">79</sup>. These cells project directly to accessory optic nuclei and are important for stabilizing eye movements, and help drive the vestibulo-ocular and optokinetic reflexes."
+          }
+        ]
+      },
+      "content_text": "At least in the mouse and rabbit retina, there are several types of direction selective ganglion cells17. The best-described are ON-OFF and ON DS cells78,79. The ON-OFF DS cells prefer relatively fast",
+      "order_index": 8,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-09-04T02:25:58.456145+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "53ba8f11-4513-4f89-bb14-2246ecafcd18",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "While both rod and cone mediated visual signals make their way to ganglion cells and out of the retina, they take different anatomical routes. Cones contact ON and OFF cone bipolar cells, which then directly contact ON and OFF ganglion cells, respectively<sup class=\"citation-ref\" data-ref=\"7\">7</sup>. In contrast, rods predominantly contact rod bipolar cells (which are a type of ON bipolar cell)<sup class=\"citation-ref\" data-ref=\"6\">6</sup>. However, rod bipolar cells do not form synapses with ganglion cells<sup class=\"citation-ref\" data-ref=\"87\">87<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"88\">88</sup>. Instead, rod bipolar cells make glutamatergic synapses with AII (pronounced A-2) amacrine cells<sup class=\"citation-ref\" data-ref=\"6\">6<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"88\">88<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"89\">89</sup>. AII amacrine cells pass rod signals to ON bipolars via electrical synapses, and OFF bipolars via glycinergic synapses<sup class=\"citation-ref\" data-ref=\"34\">34</sup>. Additionally, some rod responses get into the cone system via electrical coupling between rods and cones<sup class=\"citation-ref\" data-ref=\"34\">34</sup>, and some rods appear to directly synapse with OFF bipolar cells."
+          }
+        ]
+      },
+      "content_text": "While both rod and cone mediated visual signals make their way to ganglion cells and out of the retina, they take different anatomical routes. Cones contact ON and OFF cone bipolar cells, which then d",
+      "order_index": 12,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-04-13T16:29:27.383913+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "34fee795-e864-4e1d-ad85-9d08ca8f11a6",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Classically, the retina was considered to have 2 types of photoreceptors – rod and cones. However, around the turn of the 21th century, converging lines of evidence revealed that there was a population of ganglion cells that were themselves photosensitive<sup class=\"citation-ref\" data-ref=\"90\">90<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"91\">91</sup>. Termed intrinsically photosensitive retinal ganglion cells (ipRGCs), these cells contain melanopsin and can convert light into spiking responses in the absence of inputs from rod and cone circuits. ipRGCs project to several ‘non-image forming’ visual centers in the brain, where their inputs are important for controlling circadian rhythm and the pupillary light reflex<sup class=\"citation-ref\" data-ref=\"31\">31<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"90\">90<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"91\">91</sup>. Interestingly, ipRGCs generally also receive light-evoked inputs from rod and cone pathways, and thus represent a hybrid visual signalling channel."
+          }
+        ]
+      },
+      "content_text": "Classically, the retina was considered to have 2 types of photoreceptors – rod and cones. However, around the turn of the 21th century, converging lines of evidence revealed that there was a populatio",
+      "order_index": 14,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-04-13T16:29:28.002865+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "82e3b741-f487-483d-961b-83710b62557e",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "While the axons of all retinal ganglion cells get bundled into the optic nerve, which leave the eye via the optic nerve, each type of ganglion cells projects its axons to specific target regions in the brain. The most common retino-recipient targets are the LGN (which in turn projects to visual cortex which is responsible for conscious visual perception) and the superior colliculus (which is integral for controlling eye movements and integrating vision with other sensory inputs). Intrinsically photosensitive ganglion cells project to a host of other brain regions. In mouse, recent work has found approximately 45 different retino-recipient regions<sup class=\"citation-ref\" data-ref=\"92\">92</sup>."
+          },
+          {
+            "src": "retinoRecipientRegions",
+            "type": "image",
+            "closed": true,
+            "caption": "Different retinal cell types (shown in different colors) can project to various retino-recipient regions in the brain (schematized as A, B and C). Some ganglion cells predominantly project to a single brain region, whereas others project to multiple regions. Adapted from Martersteck et al., Cell Reports. 2017."
+          }
+        ]
+      },
+      "content_text": "While the axons of all retinal ganglion cells get bundled into the optic nerve, which leave the eye via the optic nerve, each type of ganglion cells projects its axons to specific target regions in th",
+      "order_index": 16,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 1,
+      "created_at": "2026-04-13T16:29:28.246124+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "e78f698a-02bb-4cf9-9545-a97f9f2265d3",
+      "section_id": "8b499b7c-6375-4077-a98b-0c0c086e81f2",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Wilder Penfield was born in Spokane, Washington in 1891. He obtained a Bachelor of Arts in Philosophy from Princeton before moving to Oxford as a Rhodes Scholar in the lab of Charles Sherrington, where he obtained a Bachelor of Science in Physiology. Penfield then completed medical training at Johns Hopkins University and apprenticed with Harvey Cushing"
+          },
+          {
+            "type": "citation_ref",
+            "number": 110
+          },
+          {
+            "type": "text",
+            "content": ". Penfield took his first job as a neurosurgeon in New York City, where he started working with William Vernon Cone, who would remain his neurosurgical partner for most of his professional career"
+          },
+          {
+            "type": "citation_ref",
+            "number": 111
+          },
+          {
+            "type": "text",
+            "content": ". While working with Cone to refine neurosurgical techniques, Penfield developed an interest in research related to epilepsy. As part of this endeavour, in 1924 he travelled to Spain—where he studied under Ramón y Cajal’s pupil Pio del Rio-Hortega—to learn methods for studying glial cells, which allowed him to examine glial tumours and brain scars"
+          },
+          {
+            "type": "citation_ref",
+            "number": 112
+          },
+          {
+            "type": "text",
+            "content": "."
+          }
+        ]
+      },
+      "content_text": "Wilder Penfield was born in Spokane, Washington in 1891. He obtained a Bachelor of Arts in Philosophy from Princeton before moving to Oxford as a Rhodes Scholar in the lab of Charles Sherrington, where he obtained a Bachelor of Science in Physiology. Penfield then completed medical training at Johns Hopkins University and apprenticed with Harvey Cushing. Penfield took his first job as a neurosurgeon in New York City, where he started working with William Vernon Cone, who would remain his neurosurgical partner for most of his professional career. While working with Cone to refine neurosurgical ",
+      "order_index": 0,
+      "has_animation": true,
+      "animation_id": "7ee29559-f553-4f48-84a6-035602f8f32a",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-10-09T13:48:57.279494+00:00"
+    },
+    {
+      "id": "f891fe5f-59f8-4649-a2eb-48763f78a3bc",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "blurb": "Click on different parts of the skull to explore Gall and Spurzheim's model of localization of brain function.",
+            "route": "/phrenology",
+            "title": "Explore phrenology",
+            "widgetId": "phrenology",
+            "fullScreen": true,
+            "placementId": "foundations-phrenology"
+          }
+        ]
+      },
+      "content_text": "",
+      "order_index": 13,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-09-24T02:51:06.406827+00:00",
+      "updated_at": "2026-11-18T17:07:39.550974+00:00"
+    },
+    {
+      "id": "f468cf8d-8ff3-447c-bd28-ef4653174034",
+      "section_id": "8b499b7c-6375-4077-a98b-0c0c086e81f2",
+      "content": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "blurb": "Explore what having your brain electrically stimulated by Penfield was like.",
+            "title": "Find out what it was like to be Dr. Wilder Penfield",
+            "widgetId": "upload:history-penfield-binder",
+            "fullScreen": true,
+            "placementId": "foundations-case-cabinet"
+          }
+        ]
+      },
+      "content_text": "",
+      "order_index": 3,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-09-24T02:51:06.678596+00:00",
+      "updated_at": "2026-11-18T17:07:39.550974+00:00"
+    },
+    {
+      "id": "9d0c04b0-f71e-4b4d-8533-ba5c37c7eedc",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Center-surround</strong>: Recording from ganglion cell axons in the horseshoe crab in the 1930s, Halding Hartline found that retinal ganglion cells had ‘receptive fields’ – areas over which a visual stimulus had to be localized in order to activate the cell<sup class=\"citation-ref\" data-ref=\"56\">56</sup>. He also found that different ganglion cells could respond either to increments (ON) or decrements (OFF) of light intensity (or both, ON-OFF). Subsequently, in the 1950s Horace Barlow and Steven Kuffler found that ganglion cell receptive fields could be divided into two parts, called a center and surround<sup class=\"citation-ref\" data-ref=\"57\">57<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"58\">58</sup>. In these studies, a spot of light was placed at several positions relative to a ganglion cell’s soma. At positions within a circular region close to the cell body (the center), the spot caused the neuron to fire. Spots placed in position beyond this center region (the surround) caused no firing (or even a decrease from the baseline firing rate). This surrounding region was also somewhat circular in shape and placing a spot in this region simultaneously with a spot in the center produced less firing than when a spot was placed in the center alone. Similar results were obtained for both ON and OFF types of ganglion cells."
+          }
+        ],
+        "animationFlags": {
+          "hold": "next"
+        }
+      },
+      "content_text": "Center-surround: Recording from ganglion cell axons in the horseshoe crab in the 1930s, Halding Hartline found that retinal ganglion cells had ‘receptive fields’ – areas over which a visual stimulus h",
+      "order_index": 2,
+      "has_animation": true,
+      "animation_id": "98d96a41-e9e1-4688-ba88-65cdfa112467",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-04-13T16:29:26.58064+00:00",
+      "updated_at": "2026-11-19T18:45:17.851205+00:00"
+    },
+    {
+      "id": "d29b79cf-095d-4edf-8873-307bafe2dd33",
+      "section_id": "72104e64-d3f9-4425-99e1-7978a8909b25",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "René Descartes, a contemporary of Willis, put forward a different theory of localization of function based on the concept of dualism—that the human body is effectively just an automaton that needs to interact with an ethereal soul in order to be controlled"
+          },
+          {
+            "type": "citation_ref",
+            "number": 28
+          },
+          {
+            "type": "text",
+            "content": ". Descartes argued that the pineal gland, which lies along the midline, acted like a puppet master, directing the flow of spirits throughout the brain to control distinct functions, and acting as an interface between the physical and ethereal worlds. However, unlike Willis, Descartes was neither a clinician nor an anatomist, and he incorrectly believed the pineal gland was located at the top of a ventricle. Interestingly, a similar idea about the pineal gland had been proposed hundreds of years earlier by Herophilus, but Galen wrote that “the notion that the pineal body is what regulates the passage of the pneuma is the opinion of those who are ignorant… Why need I mention how ignorant and stupid these opinions are.”"
+          },
+          {
+            "type": "citation_ref",
+            "number": 28
+          }
+        ]
+      },
+      "content_text": "René Descartes, a contemporary of Willis, put forward a different theory of localization of function based on the concept of dualism—that the human body is effectively just an automaton that needs to interact with an ethereal soul in order to be controlled. Descartes argued that the pineal gland, which lies along the midline, acted like a puppet master, directing the flow of spirits throughout the brain to control distinct functions, and acting as an interface between the physical and ethereal worlds. However, unlike Willis, Descartes was neither a clinician nor an anatomist, and he incorrectl",
+      "order_index": 4,
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 0,
+      "created_at": "2026-06-04T16:05:45.405125+00:00",
+      "updated_at": "2026-10-13T16:24:37.649959+00:00"
+    },
+    {
+      "id": "03f92733-17dd-46a2-9131-c3c64875dba1",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Direction-selectivity:</strong> In the human and non-human primate visual system, it was generally thought that direction selective responses first arise in primary visual cortex. However, recent research has described direction selectivity in the primate retina<sup class=\"citation-ref\" data-ref=\"70\">70<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"71\">71</sup>. This puts the primate retina in line with several animal models commonly studied, such as rabbits and mice (as well as flies and fish), where direction selectivity (DS) arises in retinal ganglion cells<sup class=\"citation-ref\" data-ref=\"72\">72</sup>, and where the circuitry underlying the DS computation is among the most studied in neuroscience. Early ideas came out of studies in insects and proposed that visual inputs from two spatially-offset locations were relayed to a single downstream neuron with differing delays<sup class=\"citation-ref\" data-ref=\"73\">73</sup>. A moving object that activated the long-delay input before the short delay input drove neurons better since the delay allowed excitation from both locations to coincide. Motion in the opposite direct led to little coincidence and so the neuron could respond selectively to motion direction. Recent work in infects confirm aspects of this model, but retinal direction selectivity in mammals arises in ganglion cells through direction-selective GABAergic inhibition from starburst amacrine cells<sup class=\"citation-ref\" data-ref=\"72\">72</sup>. These amacrine cells, named by Ted Famiglietti due to their unique ‘firework’ anatomical appearance, grow dendrites radially outwards from their cell bodies<sup class=\"citation-ref\" data-ref=\"74\">74</sup>. Starburst amacrine cells are preferentially activated by visual stimuli moving centripetally along their dendritic tree (i.e. moving away from the soma)<sup class=\"citation-ref\" data-ref=\"75\">75</sup>. The distal tip of each starburst dendrite connects with a ganglion cell. This ganglion cell in turn has the opposite preferred direction to its presynaptic starburst partner, since the amacrine cell releases GABA when activated<sup class=\"citation-ref\" data-ref=\"76\">76</sup>. In a remarkable feat of wiring, ganglion cells preferring a particular direction of motion receive inhibition exclusively from starburst amacrine cells dendrites that point the opposite direction<sup class=\"citation-ref\" data-ref=\"77\">77</sup>. As such, stimuli moving in a ganglion cell’s preferred direction drive very little inhibition, whereas stimuli moving in the ganglion cell’s null direction drive strong GABAergic inhibition, which vetoes the relatively symmetrical excitatory drive from bipolar cells during both preferred and null direction motion."
+          },
+          {
+            "src": "GABAergic",
+            "type": "image",
+            "closed": true,
+            "caption": "For a given starburst amacrine cell, its distal processes are predominantly activated by visual stimuli moving away from the soma. In turn, it’s processes in different quadrants specifically connect to nearby direction selective ganglion cells with a preferred direction opposite to preferred direction of the starburst processes that connect to it. Adapted from Briggman et al., Nature, 2011."
+          }
+        ]
+      },
+      "content_text": "Direction-selectivity: In the human and non-human primate visual system, it was generally thought that direction selective responses first arise in primary visual cortex. However, recent research has ",
+      "order_index": 7,
+      "has_animation": true,
+      "animation_id": "5089d277-4e6b-4b95-a353-613e81d60011",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-04-13T16:29:26.930947+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    },
+    {
+      "id": "63f9a3e3-1f34-46a0-b973-92e282d5f386",
+      "section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "content": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "<strong>Object motion sensitivity:</strong> An important task of the visual system is to separate object from background. An early correlate of this computation is thought to arise in the retina, with some ganglion cells preferentially responding when a small stimulus located in the receptive field center (i.e. the ‘object’) moves asynchronously from the stimulus impinging in its surround (i.e. the ‘background’)<sup class=\"citation-ref\" data-ref=\"81\">81</sup>. These cells have been described as “bug perceivers”<sup class=\"citation-ref\" data-ref=\"82\">82</sup>, “local edge detectors<sup class=\"citation-ref\" data-ref=\"83\">83</sup>” and “object motion sensitive” cells<sup class=\"citation-ref\" data-ref=\"84\">84</sup>. Their properties arise because center excitation gets cancelled out by surround inhibition during synchronous center-surround motion<sup class=\"citation-ref\" data-ref=\"81\">81<span aria-hidden=\"true\">,</span></sup><sup class=\"citation-ref\" data-ref=\"84\">84</sup><sup class=\"citation-ref\" data-ref=\"85\"><span aria-hidden=\"true\">,</span>85</sup><sup class=\"citation-ref\" data-ref=\"86\"><span aria-hidden=\"true\">,</span>86</sup>. Ensuring that surround inhibition is able to cancel out center excitation during such synchronous motion requires special circuitry, since signals in the center have to only travel through a bipolar cell to reach the ganglion cell, whereas surround motion signals must travel through a bipolar cell and an amacrine cell. Center bipolar excitation is slowed down by several mechanisms including interactions with glutamatergic amacrine cells and intrinsic properties. Surround inhibition is sped up by using an amacrine cell that can fire action potentials. The effect is that this ganglion cell preferentially responds when the stimulus in its center moves asynchronously from the stimulus in its surround, which has been suggested to be a method of computing object motion"
+          }
+        ]
+      },
+      "content_text": "Object motion sensitivity: An important task of the visual system is to separate object from background. An early correlate of this computation is thought to arise in the retina, with some ganglion ce",
+      "order_index": 9,
+      "has_animation": true,
+      "animation_id": "b4160040-d527-4cce-ab8b-f5e8b23c713e",
+      "animation_trigger": "auto",
+      "is_subsection_header": false,
+      "subsection_level": 2,
+      "created_at": "2026-04-13T16:29:27.039862+00:00",
+      "updated_at": "2026-11-19T18:18:45.980091+00:00"
+    }
+  ]
+}

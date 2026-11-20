@@ -4,6 +4,12 @@ Migrations in `supabase/migrations/` are **not** applied by CI or by the Railway
 
 Project ref: `ocenwbkdzmxhsvwlornp` ("The Open Brain V2").
 
+## Pending — OPENBRAIN-62
+
+| Migration                              | State   | Release order                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261120066200_retina_widgets_db.sql` | Pending | **push BEFORE merging/deploying this PR**. Data only; current main skips the matching code placements by placementId. Publishes Colour vision and the 14 uploads with their own former host styles, places the three Retina bands, removes the duplicate direction-selectivity pane link and writes History's fullScreen flags. Deploy then removes code placements and host styling. Accepted intermediate state: current main ignores `narrowKind`, so the 390px RetINaBox launch cover briefly becomes a dark inline band; it remains gated and working. This PR restores the existing phone card. |
+
 ## The workflow
 
 ```bash

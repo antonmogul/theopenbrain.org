@@ -62,8 +62,7 @@ export function extractChapter1Meta(blocks) {
       };
     }
     if (block.type === "widget" && block.widgetId) {
-      // Author-placed interactive (OPENBRAIN-21). Same paragraph shape as
-      // src/widgets/placements.js produces, so the reader has one branch.
+      // Author-placed interactive: presentation travels with the DB block.
       meta.type = "widget";
       meta.widget = {
         placementId: block.placementId || block.widgetId,
@@ -73,8 +72,12 @@ export function extractChapter1Meta(blocks) {
         blurb: block.blurb || "",
         credit: block.credit || "",
         route: block.route || "",
-        // One screen of the chapter, set on the block itself; a block
-        // without it inherits its code placement's (fullScreenOf).
+        ...(block.narrowKind ? { narrowKind: block.narrowKind } : {}),
+        ...(block.fallbackWidgetId
+          ? { fallbackWidgetId: block.fallbackWidgetId }
+          : {}),
+        ...(block.launchCard ? { launchCard: block.launchCard } : {}),
+        // One screen of the chapter, set on the block itself.
         ...(typeof block.fullScreen === "boolean"
           ? { fullScreen: block.fullScreen }
           : {}),

@@ -1,0 +1,37 @@
+[
+  {
+    "type": "widget",
+    "placementId": "retina-color-vision",
+    "widgetId": "upload:retina-color-vision",
+    "kind": "inline",
+    "fullScreen": true,
+    "title": "Colour vision starts in the retina",
+    "blurb": "Work from the electromagnetic spectrum down to cone opponency: how three pigment classes, and their overlap, become the colours we see.",
+    "route": "/color-vision",
+    "fallbackWidgetId": "color-vision"
+  },
+  {
+    "type": "widget",
+    "placementId": "retina-direction-selectivity",
+    "widgetId": "upload:retina-direction-selectivity",
+    "kind": "inline",
+    "fullScreen": true,
+    "title": "Direction selectivity"
+  },
+  {
+    "type": "widget",
+    "placementId": "retina-retinabox",
+    "widgetId": "upload:retina-retinabox",
+    "kind": "inline",
+    "fullScreen": true,
+    "narrowKind": "breakout",
+    "fallbackWidgetId": "retinabox",
+    "title": "RetINaBox — build a retinal circuit",
+    "blurb": "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials.",
+    "launchCard": {
+      "image": "/publicAssets/images/widgets/retinabox-logo.svg",
+      "prompt": "Explore how feature detectors are built in the retina.",
+      "button": "Load RetINaBox"
+    }
+  }
+]
