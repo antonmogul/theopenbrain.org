@@ -40,4 +40,3 @@ export const LongTitle = {
     () => ({ template: '<div style="width:300px"><story /></div>' }),
   ],
 };
-export const Unnumbered = { args: { record: { title: "Unnumbered artwork" } } };
