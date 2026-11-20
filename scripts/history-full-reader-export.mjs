@@ -26,8 +26,10 @@ import { readFile, writeFile } from "node:fs/promises";
 import { isDeepStrictEqual } from "node:util";
 import prettier from "prettier";
 
-const SLUG = "foundations-of-neuroscience";
-const TARGET = "src/stories/historyFullReaderData.json";
+import { readerChapter } from "./reader-fixture-chapters.mjs";
+const chapter = readerChapter();
+const SLUG = chapter.slug;
+const TARGET = chapter.fixture;
 // Row bookkeeping the reader never renders. Everything else is exported, so a
 // column a later migration adds reaches the fixture without a change here.
 const DROPPED = new Set([
@@ -122,6 +124,16 @@ async function exportChapter() {
         `animations?id=in.${inList(linked)}&select=*&order=animation_key.asc`
       )
     : [];
+  const states = linked.length
+    ? await get(
+        `animation_states?animation_id=in.${inList(linked)}&select=*&order=animation_id.asc,order_index.asc`
+      )
+    : [];
+  const variants = linked.length
+    ? await get(
+        `animation_variants?animation_id=in.${inList(linked)}&select=*&order=animation_id.asc,order_index.asc`
+      )
+    : [];
   const references = await get(
     `references?module_id=eq.${module.id}&select=*&order=number.asc`
   );
@@ -160,13 +172,23 @@ async function exportChapter() {
   // Stable, readable ids instead of production UUIDs: the stories, tests and
   // browser assertions name rows by them, and a refresh's diff stays about
   // content. The scheme is the one the fixture has always used.
-  const ids = new Map([[module.id, "history-fixture-module"]]);
-  for (const s of sections) ids.set(s.id, `history-section-${s.slug}`);
+  const ids = new Map([[module.id, `${chapter.key}-fixture-module`]]);
+  for (const s of sections) ids.set(s.id, `${chapter.key}-section-${s.slug}`);
   for (const a of animations)
-    ids.set(a.id, `history-animation-${a.animation_key}`);
+    ids.set(a.id, `${chapter.key}-animation-${a.animation_key}`);
   for (const p of paragraphs)
     ids.set(p.id, `${ids.get(p.section_id)}-p${p.order_index}`);
-  for (const r of references) ids.set(r.id, `history-reference-${r.number}`);
+  for (const r of references)
+    ids.set(r.id, `${chapter.key}-reference-${r.number}`);
+  for (const [table, list] of [
+    ["state", states],
+    ["variant", variants],
+  ])
+    for (const row of list)
+      ids.set(
+        row.id,
+        `${ids.get(row.animation_id)}-${table}-${row.order_index}`
+      );
   assert.equal(
     new Set(ids.values()).size,
     ids.size,
@@ -203,10 +225,9 @@ async function exportChapter() {
 
   const fixture = {
     header: null,
-    boundary:
-      "The published History chapter as readers get it: the module, its sections, paragraphs, the figures its paragraphs link and its reference list, exported read-only from the database and rendered by the real App, ChapterView and TextComp against Storybook's API doubles. No authentication, RLS, production route or deployment is asserted, and the export is only as fresh as its date.",
+    boundary: `The published ${chapter.title} chapter as readers get it: the module, its sections, paragraphs, the figures its paragraphs link and its reference list, exported read-only from the database and rendered by the real App, ChapterView and TextComp against Storybook's API doubles. No authentication, RLS, production route or deployment is asserted, and the export is only as fresh as its date.`,
     omissions: [
-      "Only figures (animations rows) a History paragraph links are exported. The reader also loads every other chapter's rows; they are never drawn in History.",
+      `Only figures (animations rows) a ${chapter.title} paragraph links are exported. The reader also loads every other chapter's rows; they are never drawn in ${chapter.title}.`,
       "An uploaded widget's HTML is not stored here. The fixture records the published file's sha256; the story serves the committed copy in src/widgets/uploads/, without its Google Fonts links, and the fixture test holds that copy to the hash.",
       "A figure that plays a YouTube video keeps its i.ytimg.com poster URL here. The story draws a plain stand-in for it, because the browser lane allows no outside request.",
       "Row ids are stable fixture ids, not production ids; created_at, updated_at, created_by and content_version_id are dropped.",
@@ -222,7 +243,13 @@ async function exportChapter() {
     animations: rows("animations", animations),
     references: rows("references", references),
     uploads,
+    ...(states.length || variants.length
+      ? { states: rows("states", states), variants: rows("variants", variants) }
+      : {}),
   };
+  if (states.length || variants.length)
+    fixture.omissions[4] =
+      "Highlights, notes, trending passages, reading progress and quizzes are not exported: the story answers those reads with nothing, as for a first-time anonymous reader. Linked animation states and variants are exported so the real figure controls and split renderers receive their published configuration.";
   assert.deepEqual(
     stray,
     [],
@@ -251,6 +278,9 @@ function counts(fixture) {
     ).length,
     references: fixture.references.length,
     uploads: fixture.uploads.length,
+    ...(fixture.states
+      ? { states: fixture.states.length, variants: fixture.variants.length }
+      : {}),
   };
 }
 
@@ -269,12 +299,14 @@ function drift(committed, live) {
     "animations",
     "references",
     "uploads",
+    "states",
+    "variants",
   ]) {
     const id = (row) => row.id || row.slug;
     const before = new Map(
       (committed[table] || []).map((row) => [id(row), row])
     );
-    const after = new Map(live[table].map((row) => [id(row), row]));
+    const after = new Map((live[table] || []).map((row) => [id(row), row]));
     for (const id of after.keys())
       if (!before.has(id)) lines.push(`+ ${table} ${id} (live only)`);
     for (const [id, row] of before) {
@@ -302,12 +334,12 @@ if (check) {
   if (lines.length) {
     console.log(lines.join("\n"));
     console.log(
-      `History fixture drift: ${lines.length} difference${lines.length === 1 ? "" : "s"} between the fixture exported ${committed.header?.exportedAt || "(undated)"} and the published chapter today. Refresh with: npm run history:fixture:export`
+      `${chapter.title} fixture drift: ${lines.length} difference${lines.length === 1 ? "" : "s"} between the fixture exported ${committed.header?.exportedAt || "(undated)"} and the published chapter today. Refresh with: npm run ${chapter.key}:fixture:export`
     );
     process.exitCode = 1;
   } else
     console.log(
-      `History fixture drift: 0. The fixture exported ${committed.header.exportedAt} matches the published chapter: ${summary(live.header.counts)}.`
+      `${chapter.title} fixture drift: 0. The fixture exported ${committed.header.exportedAt} matches the published chapter: ${summary(live.header.counts)}.`
     );
 } else {
   const options = await prettier.resolveConfig(TARGET);
@@ -319,6 +351,6 @@ if (check) {
     })
   );
   console.log(
-    `History fixture exported ${live.header.exportedAt} from the published chapter: ${summary(live.header.counts)}.`
+    `${chapter.title} fixture exported ${live.header.exportedAt} from the published chapter: ${summary(live.header.counts)}.`
   );
 }

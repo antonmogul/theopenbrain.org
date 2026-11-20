@@ -34,7 +34,7 @@ jobs:
       # (docs/architecture/history-fixture.md). This lane has no secrets and
       # never reads the database: it checks the committed file's shape. Drift
       # from the live chapter is `npm run history:fixture:drift`, run locally.
-      - name: Check the committed History fixture's header, counts and links
+      - name: Check the committed History and Retina fixture headers, counts and links
         shell: bash
         run: |
           set -euo pipefail
@@ -73,6 +73,9 @@ jobs:
         id: prepare-full-reader
         shell: bash
         run: node scripts/history-full-reader-prepare.mjs 2>&1 | tee history-fixture-browser-artifacts/full-reader-assets.log
+      - name: Supply and verify published Retina artwork
+        id: prepare-retina
+        run: npm run retina:fixture:prepare
       - name: Run fixture-only browser assertions
         shell: bash
         run: npm run history:fixture:browser:ci 2>&1 | tee history-fixture-browser-artifacts/browser.log
@@ -80,6 +83,12 @@ jobs:
         if: ${{ !cancelled() && steps.prepare-full-reader.outcome == 'success' }}
         shell: bash
         run: npx start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 'node scripts/history-full-reader-browser.mjs' 2>&1 | tee history-fixture-browser-artifacts/full-reader-browser.log
+      - name: Run published Retina reader assertions (same Storybook build)
+        if: ${{ !cancelled() && steps.prepare-retina.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx start-server-and-test 'serve storybook-static -c ../.storybook/serve.json -l tcp://127.0.0.1:6010' http://127.0.0.1:6010 'npm run retina:fixture:browser' 2>&1 | tee history-fixture-browser-artifacts/retina-full-reader-browser.log
       - name: Upload screenshots, measurements and failure context
         if: always()
         uses: actions/upload-artifact@v4

@@ -17,6 +17,7 @@ import {
   normalizeFigureHold,
   normalizeFigureRoom,
 } from "../helper/figureHold.mjs";
+import { imageUrl } from "../editor/media.mjs";
 
 /**
  * Convert JSONB content blocks to HTML text
@@ -182,7 +183,7 @@ export function contentBlocksToHTML(blocks) {
         return `<blockquote>${block.content || ""}${cites}</blockquote>`;
       }
       if (block.type === "image") {
-        return `<img src="${block.src || ""}" alt="${block.alt || ""}" />`;
+        return `<img src="${imageUrl(block.src)}" alt="${block.alt || ""}" />`;
       }
       if (block.type === "citation_ref") {
         // Already set inside the quote it follows (above).

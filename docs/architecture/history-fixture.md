@@ -65,3 +65,22 @@ The twelve History seed and content migrations are still replayed in PGlite, as 
 Under the Reduce motion setting (`data-reduce-motion="1"`), when the chapter opener changes height after the figure triggers exist, the pane's triggers keep their old positions until something else re-measures them (a window resize does): every figure then appears and leaves early or late by the height difference. Measured in the full reader story at 1440 px: after the opener grew by 24 px and then by 160 px, Fig 9 left the pane 24 px and then 160 px early; with the attribute off, 0 px both times. The likely cause, not confirmed in the code path: `ChapterOpener` re-measures in the same tick it publishes `--opener-h`, and the reduce-motion rule gives every property a 0.01 ms transition, so the text has not moved yet when ScrollTrigger measures.
 
 The lane used to add its classic scrollbar after the page loaded. With the published contents list that narrows the page enough to rewrap the opener by one line, which set this off and failed the Broca figure's timing by 24 px. The browser script now installs the scrollbar before first layout, as a real classic scrollbar is. The defect itself is unfixed and has no test.
+
+## Published reader lanes by chapter (OPENBRAIN-68)
+
+The same exporter, artwork preparation, story API setup, real-app harness and fixture invariants also serve the Retina (`the-retina`). History's existing commands and specialised geometry/figure-timing assertions stay in place. The chapter names and stable-id prefixes are in `scripts/reader-fixture-chapters.mjs`; the shared tools accept `--chapter <slug>`.
+
+```bash
+npm run retina:fixture:export
+npm run retina:fixture:drift
+npm run build-storybook
+npm run retina:fixture:prepare
+# Serve this same Storybook build, then:
+GITHUB_ACTIONS=true STORYBOOK_URL=http://127.0.0.1:4268 npm run retina:fixture:browser
+```
+
+`src/stories/retinaFullReaderData.json` is the published chapter export, with the same upload byte lengths and SHA-256 checks as History. Where a chapter has linked `animation_states` or `animation_variants`, the exporter also includes those rows, remaps their ids and animation foreign keys, and records their counts. The story supplies them to the real figure loader; excluding them would turn Retina's split figures and state controls into incomplete replicas. These optional tables are also compared by the drift command. The fixture shape test runs both chapters, and History's specific Broca/Fritsch expectations still apply only to History.
+
+`Chapter/Retina Full Reader → Published Export` uses the same real App/router/width observer as History, starting on `/chapter/2/the-retina`. Its artwork manifest records local Lottie files, embedded images, flip MP4s and prose artwork, as well as fonts. The shared story replaces YouTube posters with plain stand-ins and strips uploaded widgets' Google Fonts links. The browser harness additionally fulfils only fixture-named YouTube embed documents with a local offline stand-in; it checks the tap-to-play transition and iframe mounting, not YouTube playback or availability. Every other external request, backend request or write fails the run. Local video flips use their real committed MP4s, and the retinal-development loop must decode and advance its playback time with ordinary motion enabled.
+
+The existing workflow builds Storybook and installs Chromium once. It adds Retina assertions at 1440, 1024 and 390 px to that build, rather than adding a second install/build job. History's lane uses Chromium only, so Retina matches that browser boundary. `scripts/published-reader-browser.mjs` records each width's duration, upload bridge ready/size/overflow reports, figure and widget measurements, errors, traces and screenshots under `history-fixture-browser-artifacts/retina-full-reader/manifest.json`. Its contract derives the distinct figures and every widget band from the fixture (repeated prose links share a record, and the phone draws each figure at its first appearance), verifies contents and drawer sections, exercises citations to references and back, and rejects horizontal scrolling or console errors. Further reading is chapter back matter rather than a contents section. Screenshots still need visual review, and this offline lane asserts neither production routing/RLS nor live deployment.
