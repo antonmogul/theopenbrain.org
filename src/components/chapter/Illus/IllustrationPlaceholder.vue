@@ -162,6 +162,23 @@ function paneGround() {
   return pane?.dataset?.ground === "paper" ? "paper" : "dark";
 }
 function openFullscreen() {
+  // A playing film must stay in its original iframe: the gallery dialog
+  // mounts another viewer, starting at the poster (and two players can
+  // then play at once). The Fullscreen API enlarges this frame in place,
+  // just as YouTube's own control does. Before playback, the gallery
+  // still opens in the book's dialog, with its legend and other images.
+  const player = shellElement.value?.querySelector(
+    ".ve iframe, .ve video"
+  )?.parentElement;
+  if (player?.requestFullscreen) {
+    try {
+      const request = player.requestFullscreen();
+      request?.catch(() => console.warn("Video fullscreen was unavailable"));
+    } catch {
+      console.warn("Video fullscreen was unavailable");
+    }
+    return;
+  }
   dialogGround.value = paneGround();
   isFullscreen.value = true;
 }
