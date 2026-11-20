@@ -198,7 +198,11 @@ PRs #211–#215 fixed 31 of the 32 notes left with the review widget on 19 Nov. 
 
 ## Pending
 
-Nothing: local and remote in step as of 2026-11-19 (after the round-1 review notes). The Retina contents note (be3ef6b0) is still being built.
+| Migration                              | Scope and release order                                                                                                                                                                                                                                                                             |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261119540100_retina_stuart_answers` | **Pending (OPENBRAIN-54).** Counting photons legend and hold, Baden video slug after Blind spot, retinal-development silent loop placement. Deploy the reader and `/publicAssets/videos/` media before applying. Idempotent; guards only the changed placement/caption keys. No review-note writes. |
+
+The Retina contents note (be3ef6b0) is tracked separately.
 
 > The line above said "Nothing" from 21 Oct while the three 22 Oct migrations below
 > sat unapplied for six days — merged in code, missing in the database. The ledger is

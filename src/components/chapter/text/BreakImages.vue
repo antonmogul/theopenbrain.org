@@ -11,11 +11,14 @@ const authored = computed(() =>
     : currentVideo.value
 );
 const video = computed(() => ({
-  src: `/publicAssets/video/breakSections/${props.slug}.mp4`,
+  src:
+    currentVideo.value?.src ||
+    `/publicAssets/video/breakSections/${props.slug}.mp4`,
   poster:
-    props.slug === "placeholder"
+    currentVideo.value?.poster ||
+    (props.slug === "placeholder"
       ? "/publicAssets/images/placeholders/monaLisa.webp"
-      : `/publicAssets/images/breakVideos/${props.slug}.png`,
+      : `/publicAssets/images/breakVideos/${props.slug}.png`),
   title: authored.value?.title || props.title,
   caption: [
     authored.value?.title || props.title,

@@ -32,6 +32,21 @@ describe("BreakView", () => {
     );
   });
 
+  it("plays Baden's restored local film with its poster and caption", () => {
+    routeState.params = { video: "baden" };
+    const wrapper = mount(BreakView, { global: { stubs } });
+    expect(wrapper.find("video source").attributes("src")).toBe(
+      "/publicAssets/videos/baden.mp4"
+    );
+    expect(wrapper.find("video").attributes("poster")).toBe(
+      "/publicAssets/videos/baden.webp"
+    );
+    expect(wrapper.text()).toContain(
+      "Tom Baden — Is our retina really upside down?"
+    );
+    expect(wrapper.find("video").attributes("autoplay")).toBeUndefined();
+  });
+
   it("shows a not-found panel instead of a broken video for an unknown key", () => {
     routeState.params = { video: "introduction" };
     const wrapper = mount(BreakView, { global: { stubs } });
