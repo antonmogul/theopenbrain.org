@@ -219,6 +219,10 @@ defineExpose({ active, fit, scrolls, measure });
       />
     </div>
 
+    <span v-if="pictures[shown]?.placeholder" class="otoc__placeholder"
+      >Placeholder image</span
+    >
+
     <div class="otoc__column" @pointerleave="onLeave">
       <h1 id="opener-toc-title" class="otoc__title">
         <span class="otoc__lead">{{ title }}</span>
@@ -285,6 +289,19 @@ defineExpose({ active, fit, scrolls, measure });
   position: relative;
   overflow: hidden;
   background: rgb(var(--color-chapter));
+}
+.otoc__placeholder {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 3;
+  padding: 0.375rem 0.625rem;
+  background: rgb(var(--color-dark-surface));
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 .otoc__pic {
   position: absolute;

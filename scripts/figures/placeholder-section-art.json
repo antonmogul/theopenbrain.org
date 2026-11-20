@@ -1,0 +1,392 @@
+[
+  {
+    "chapter": "the-retina",
+    "section": "introduction",
+    "title": "The Retina",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-introduction.webp",
+      "alt": "Placeholder image for The Retina; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "story-of-the-eye",
+    "title": "Story of the eye",
+    "source": "live figure frame: animationEyeStructur",
+    "reason": "first Lottie figure rendered on live reader",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-story-of-the-eye.webp",
+      "alt": "Placeholder image for Story of the eye; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "organization-and-cell-types-in-the-retina",
+    "title": "Organization and cell types in the retina",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-organization-and-cell-types-in-the-retina.webp",
+      "alt": "Placeholder image for Organization and cell types in the retina; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "photoreceptors-and-phototransduction",
+    "title": "Photoreceptors and phototransduction",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-photoreceptors-and-phototransduction.webp",
+      "alt": "Placeholder image for Photoreceptors and phototransduction; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "horizontal-cells-and-feedback",
+    "title": "Horizontal cells and feedback",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-horizontal-cells-and-feedback.webp",
+      "alt": "Placeholder image for Horizontal cells and feedback; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "bipolar-cells-diversify-photoreceptor-signals",
+    "title": "Bipolar cells diversify photoreceptor signals",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-bipolar-cells-diversify-photoreceptor-signals.webp",
+      "alt": "Placeholder image for Bipolar cells diversify photoreceptor signals; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+    "title": "Amacrine and ganglion cells – circuits, computations and output",
+    "source": "live figure frame: animationRetinalCircuitsTransition",
+    "reason": "first Lottie figure rendered on live reader",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-amacrine-and-ganglion-cells-circuits-computations-and-output.webp",
+      "alt": "Placeholder image for Amacrine and ganglion cells – circuits, computations and output; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "retinal-vision-in-the-real-world",
+    "title": "Retinal vision in the ‘real world’",
+    "source": "live figure frame: animationEyeMovements",
+    "reason": "first Lottie figure rendered on live reader",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-retinal-vision-in-the-real-world.webp",
+      "alt": "Placeholder image for Retinal vision in the ‘real world’; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "retinal-development",
+    "title": "Retinal development",
+    "source": "/publicAssets/videos/retina/retinal-development-loop.webp",
+    "reason": "first figure still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-retinal-development.webp",
+      "alt": "Placeholder image for Retinal development; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "diseases-disorders-and-treatments",
+    "title": "Diseases, disorders, and treatments",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-diseases-disorders-and-treatments.webp",
+      "alt": "Placeholder image for Diseases, disorders, and treatments; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "looking-forward",
+    "title": "Looking forward",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-looking-forward.webp",
+      "alt": "Placeholder image for Looking forward; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "further-reading",
+    "title": "Further reading:",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-further-reading.webp",
+      "alt": "Placeholder image for Further reading:; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "the-retina",
+    "section": "footnotes",
+    "title": "Footnotes",
+    "source": "/publicAssets/images/00-matisse-bg.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/placeholder-footnotes.webp",
+      "alt": "Placeholder image for Footnotes; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "introduction",
+    "title": "Introduction",
+    "source": "/publicAssets/images/attention/fig01-guru-and-princes-nandalal-bose.jpeg",
+    "reason": "first figure still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-introduction.webp",
+      "alt": "Placeholder image for Introduction; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "the-story-of-attention",
+    "title": "The story of attention",
+    "source": "/publicAssets/images/attention-matisse-reader.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-the-story-of-attention.webp",
+      "alt": "Placeholder image for The story of attention; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "attention-is-measured-behaviorally",
+    "title": "Attention is measured behaviorally",
+    "source": "/publicAssets/images/attention-matisse-reader.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-attention-is-measured-behaviorally.webp",
+      "alt": "Placeholder image for Attention is measured behaviorally; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "neural-correlates-of-visual-attention",
+    "title": "Neural Correlates of Visual Attention",
+    "source": "/publicAssets/images/attention-matisse-reader.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-neural-correlates-of-visual-attention.webp",
+      "alt": "Placeholder image for Neural Correlates of Visual Attention; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "population-effects-of-visual-attention",
+    "title": "Population effects of visual attention",
+    "source": "/publicAssets/images/attention/cohen-maunsell-2010-task.png",
+    "reason": "first figure still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-population-effects-of-visual-attention.webp",
+      "alt": "Placeholder image for Population effects of visual attention; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "primate-studies-suggest-that-brain-regions-involved-in-saccade-generation-and-planning-are-also-used-for-attention",
+    "title": "Primate studies suggest that brain regions involved in saccade generation and planning are also used for attention",
+    "source": "/publicAssets/images/attention-matisse-reader.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-primate-studies-suggest-that-brain-regions-involved-in-saccade-generation-and-planning-are-also-used-for-attention.webp",
+      "alt": "Placeholder image for Primate studies suggest that brain regions involved in saccade generation and planning are also used for attention; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "human-studies-reveal-rhythmic-interactions-between-attention-brain-areas",
+    "title": "Human studies reveal rhythmic interactions between attention brain areas",
+    "source": "/publicAssets/images/attention-matisse-reader.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-human-studies-reveal-rhythmic-interactions-between-attention-brain-areas.webp",
+      "alt": "Placeholder image for Human studies reveal rhythmic interactions between attention brain areas; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "working-memory",
+    "title": "Working Memory",
+    "source": "/publicAssets/images/attention-matisse-reader.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-working-memory.webp",
+      "alt": "Placeholder image for Working Memory; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "disease",
+    "title": "Disease",
+    "source": "/publicAssets/images/attention/neglect-copying-drawings.png",
+    "reason": "first figure still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-disease.webp",
+      "alt": "Placeholder image for Disease; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "attention-and-working-memory",
+    "section": "references",
+    "title": "References",
+    "source": "/publicAssets/images/attention-matisse-reader.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/attention-and-working-memory/sections/placeholder-references.webp",
+      "alt": "Placeholder image for References; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "stress",
+    "section": "introduction",
+    "title": "Introduction",
+    "source": "/publicAssets/images/background.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/stress/sections/placeholder-introduction.webp",
+      "alt": "Placeholder image for Introduction; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "stress",
+    "section": "the-biology-of-stress",
+    "title": "The Biology of Stress",
+    "source": "/publicAssets/images/background.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/stress/sections/placeholder-the-biology-of-stress.webp",
+      "alt": "Placeholder image for The Biology of Stress; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "stress",
+    "section": "stress-effects-on-behavior-and-brain-structure-and-function",
+    "title": "Stress effects on behavior and brain structure and function",
+    "source": "/publicAssets/images/background.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/stress/sections/placeholder-stress-effects-on-behavior-and-brain-structure-and-function.webp",
+      "alt": "Placeholder image for Stress effects on behavior and brain structure and function; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "stress",
+    "section": "stress-and-health",
+    "title": "Stress and Health",
+    "source": "/publicAssets/images/background.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/stress/sections/placeholder-stress-and-health.webp",
+      "alt": "Placeholder image for Stress and Health; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "stress",
+    "section": "stress-management-and-interventions",
+    "title": "Stress Management and Interventions",
+    "source": "/publicAssets/images/background.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/stress/sections/placeholder-stress-management-and-interventions.webp",
+      "alt": "Placeholder image for Stress Management and Interventions; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "stress",
+    "section": "conclusion",
+    "title": "Conclusion",
+    "source": "/publicAssets/images/background.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/stress/sections/placeholder-conclusion.webp",
+      "alt": "Placeholder image for Conclusion; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  },
+  {
+    "chapter": "stress",
+    "section": "references",
+    "title": "References",
+    "source": "/publicAssets/images/background.jpg",
+    "reason": "chapter cover: first figure has no still",
+    "art": {
+      "src": "/publicAssets/images/stress/sections/placeholder-references.webp",
+      "alt": "Placeholder image for References; temporary chapter-colour artwork",
+      "position": "50% 50%",
+      "placeholder": true
+    }
+  }
+]

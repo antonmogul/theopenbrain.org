@@ -48,6 +48,9 @@ defineProps({
       draggable="false"
     />
     <div class="sec-card__shade" />
+    <span v-if="art.placeholder === true" class="sec-card__placeholder"
+      >Placeholder image</span
+    >
     <div class="sec-card__words">
       <!-- The title over the number: the title goes when the heading
            arrives, and the number is left standing on the card's foot. -->
@@ -102,6 +105,18 @@ defineProps({
   display: flex;
   flex-direction: column;
   padding: 0 clamp(1.5rem, 5cqw, 2.75rem) clamp(1.75rem, 6cqh, 3rem);
+}
+.sec-card__placeholder {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.375rem 0.625rem;
+  background: rgb(var(--color-dark-surface));
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 .sec-card__num {
   font-size: clamp(6rem, 26cqw, 13rem);
