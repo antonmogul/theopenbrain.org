@@ -4,6 +4,7 @@
  * --pool=forks src/__tests__/historyLoewiV4.sql.test.js (the SQL runs are
  * skipped without it; the file checks always run).
  */
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -15,7 +16,8 @@ const read = (path) => readFileSync(path, "utf8");
 const htmlIn = (text) =>
   text.slice(text.indexOf("$w$") + "$w$".length, text.lastIndexOf("$w$"));
 const sql = read("supabase/migrations/20261118090000_history_loewi_v4.sql");
-const file = read("src/widgets/uploads/loewi-vagusstoff.html");
+// Historical v4 payload: v5 now owns equality with the current widget file.
+const file = htmlIn(sql);
 // What the row holds before this migration: v3, pushed 11 Nov.
 const previous = htmlIn(
   read("supabase/migrations/20261111180100_history_loewi_v3.sql")
@@ -23,9 +25,10 @@ const previous = htmlIn(
 const payload = htmlIn(sql);
 
 describe("Loewi v4 migration", () => {
-  it("carries the widget file as it is in src/widgets/uploads", () => {
-    expect(payload).toBe(file);
-    expect(Buffer.byteLength(file)).toBeLessThanOrEqual(MAX_WIDGET_BYTES);
+  it("is the exact baseline v5 replaces", () => {
+    const v5 = read("supabase/migrations/20261120550000_history_loewi_v5.sql");
+    expect(v5).toContain(createHash("md5").update(payload).digest("hex"));
+    expect(Buffer.byteLength(payload)).toBeLessThanOrEqual(MAX_WIDGET_BYTES);
   });
 
   it("is Maura's 17 Nov file plus the comment and one marked block for the book", () => {
