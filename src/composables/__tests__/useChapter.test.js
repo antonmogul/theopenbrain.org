@@ -112,6 +112,22 @@ async function transform(paragraphs) {
   return transformedData.value.sections.find((s) => s.id === SECTION_ID);
 }
 
+describe("useChapter missing linked figure", () => {
+  it("warns with the paragraph and missing database id", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockRest({
+      sections: mainSection(),
+      paragraphs: [para(1, 0, { row: { animation_id: "missing-db-row" } })],
+    });
+    const { fetchChapter } = useChapter();
+    await fetchChapter("the-retina");
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('"missing-db-row" linked by "1"')
+    );
+    warn.mockRestore();
+  });
+});
+
 describe("useChapter missing chapter", () => {
   it("returns a controlled not-found error for a retired slug", async () => {
     apiRequest.mockResolvedValue([]);

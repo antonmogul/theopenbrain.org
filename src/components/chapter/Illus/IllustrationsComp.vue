@@ -13,10 +13,7 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 
 import { useGeneral } from "@/stores";
 import { useAnimations } from "@/composables/useAnimations";
-import { clog, cgroup, announce } from "@/helper/chapterDebug";
-
-// Legacy JSON fallback for Chapter 1 during transition
-import animationJSON from "@/assets/json_backend/animations.json";
+import { clog, announce } from "@/helper/chapterDebug";
 
 import Illustration from "@/components/chapter/Illus/IllustrationComp.vue";
 import IllustrationOnScroll from "@/components/chapter/Illus/IllustrationOnScroll.vue";
@@ -82,42 +79,10 @@ watch(activeAnimation, () => {
 // Use Supabase animations composable
 const { animations: dbAnimations, fetchAnimations } = useAnimations();
 
-// Determine which animation source to use:
-// - Try Supabase first (dbAnimations)
-// - Fall back to legacy JSON if Supabase fetch fails or returns empty
-const animationList = computed(() => {
-  if (dbAnimations.value && dbAnimations.value.length > 0) {
-    // [4 MOUNT] which source is driving the figures + one-line inventory
-    cgroup(
-      "MOUNT",
-      `source = SUPABASE (${dbAnimations.value.length} figures)`,
-      () => {
-        clog("MOUNT", "renderer each figure will mount when active", {
-          list: dbAnimations.value.map((a) => ({
-            id: a.id,
-            renderer: isPanelWidget(a)
-              ? "FigureWidget"
-              : usesFigureShell(a)
-                ? "Placeholder"
-                : a.fullscreen
-                  ? "FullScreen"
-                  : a.switch
-                    ? "Switch"
-                    : a.scroll
-                      ? "OnScroll"
-                      : a.isTransition
-                        ? "Transition"
-                        : "Inline",
-            states: a.states?.length || 0,
-          })),
-        });
-      }
-    );
-    return dbAnimations.value.filter((a) => !isBlankFigure(a));
-  }
-  clog("MOUNT", "source = STATIC JSON fallback (Supabase empty/failed)");
-  return animationJSON.animations.filter((a) => !isBlankFigure(a));
-});
+// Every reader figure comes from the shared database loader.
+const animationList = computed(() =>
+  dbAnimations.value.filter((a) => !isBlankFigure(a))
+);
 
 /*
  * The 2023 seed's "Placeholder" Lottie (animationPlaceholder, an empty
@@ -226,6 +191,14 @@ function setupTriggers() {
   measureGround();
   clog("SCROLL", `wiring ${animationTriggers.length} reader figure triggers`);
   for (const trigger of animationTriggers) {
+    const key = trigger.id.replace(/^trigger/i, "");
+    if (
+      !figureRecordFor(key, animationList.value) &&
+      !isBlankFigure({ id: key })
+    )
+      console.warn(
+        `[animations] "${key}" not found in Supabase — the figure will not render`
+      );
     // Its paragraph's window, or longer for a figure that holds (still
     // images, an author's "Stays"; OPENBRAIN-131). A function, so every
     // refresh re-measures it.
@@ -352,7 +325,7 @@ onMounted(async () => {
   try {
     await fetchAnimations();
   } catch (err) {
-    console.warn("IllustrationsComp: using JSON fallback:", err);
+    console.warn("IllustrationsComp: database figures could not load:", err);
   }
   await nextTick();
   if (unmounted) return;

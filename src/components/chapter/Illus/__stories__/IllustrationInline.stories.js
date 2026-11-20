@@ -1,13 +1,14 @@
 /*
  * Chapter/Illustrations/IllustrationInline — the in-column figure used below
  * the two-pane breakpoint. Takes only the figure id, resolves the record
- * (Supabase first, animations.json second) and picks static / interactive /
+ * from Supabase and picks static / interactive /
  * fullscreen rendering from the record's flags. Interactive figures also
  * HEAD-check their Lottie asset before mounting.
  */
 import IllustrationInline from "../IllustrationInline.vue";
 import {
   animationIds,
+  retinaFigureApi,
   illustrationFrame,
 } from "../../__stories__/chapterFixtures";
 
@@ -15,7 +16,7 @@ export default {
   title: "Chapter/Illustrations/IllustrationInline",
   component: IllustrationInline,
   tags: ["autodocs"],
-  parameters: { layout: "fullscreen", api: { animations: [] } },
+  parameters: { layout: "fullscreen", api: retinaFigureApi },
   args: { animationId: "animationEyeStructur" },
   argTypes: {
     animationId: {
@@ -39,7 +40,7 @@ export const FullscreenFigure = {
   args: { animationId: "animationPhototransduction" },
 };
 
-/** An id neither source knows: nothing renders and the resolver warns. */
+/** An id the database does not contain: nothing renders and the resolver warns. */
 export const UnknownAnimation = {
   args: { animationId: "animationDoesNotExist" },
 };

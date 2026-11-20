@@ -203,18 +203,22 @@ describe("TextComp: the intro's figures", () => {
     expect(trigger.find("[data-inline-figure]").exists()).toBe(true);
   });
 
-  it("keeps a section-level intro animation (the Retina's dragon) around every paragraph", async () => {
-    const chapter = transformModuleToChapterFormat(attentionModule());
-    chapter.intro[0].animation = { name: "dragon" };
+  it("draws a lowered section figure on its first paragraph", async () => {
+    const module = attentionModule();
+    Object.assign(module.sections[0], {
+      animation_id: "dragon-db-id",
+      animation_key: "animationDragon",
+      animation_config: { name: "dragon" },
+    });
+    const chapter = transformModuleToChapterFormat(module);
     const wrapper = mountReader(chapter);
     await wrapper.vm.$nextTick();
     const dragon = wrapper.find("#triggerAnimationDragon");
     expect(dragon.classes()).toContain("animationTrigger");
     expect(
       dragon.findAll("[data-paragraph-id]").map((p) => p.attributes("id"))
-    ).toEqual(["p0", "p1", "p2"]);
-    // The figure's own trigger nests inside it and comes later in document
-    // order, so it wins while both are active (last active wins).
+    ).toEqual(["p0"]);
+    // The next paragraph figure follows it without nested section triggers.
     const triggers = wrapper.findAll("section#s-intro .animationTrigger[id]");
     expect(triggers.map((t) => t.attributes("id"))).toEqual([
       "triggerAnimationDragon",
@@ -222,11 +226,16 @@ describe("TextComp: the intro's figures", () => {
     ]);
   });
 
-  it("draws Retina's section-level Dragon inline once on a phone", async () => {
+  it("draws Retina's lowered Dragon inline once on a phone", async () => {
     narrow = true;
     stubMatchMedia();
-    const chapter = transformModuleToChapterFormat(attentionModule());
-    chapter.intro[0].animation = { name: "dragon" };
+    const module = attentionModule();
+    Object.assign(module.sections[0], {
+      animation_id: "dragon-db-id",
+      animation_key: "animationDragon",
+      animation_config: { name: "dragon" },
+    });
+    const chapter = transformModuleToChapterFormat(module);
     const wrapper = mountReader(chapter);
     await wrapper.vm.$nextTick();
     expect(
@@ -242,8 +251,12 @@ describe("TextComp: the intro's figures", () => {
   it("binds each intro figure's authored hold for the pane (data-figure-hold)", async () => {
     const module = attentionModule();
     module.sections[0].paragraphs[1].content.animationFlags = { hold: 0 };
+    Object.assign(module.sections[0], {
+      animation_id: "dragon-db-id",
+      animation_key: "animationDragon",
+      animation_config: { name: "dragon", hold: "next" },
+    });
     const chapter = transformModuleToChapterFormat(module);
-    chapter.intro[0].animation = { name: "dragon", hold: "next" };
     const wrapper = mountReader(chapter);
     await wrapper.vm.$nextTick();
     // An authored 0 ("with its paragraph") is a value, not Automatic.
