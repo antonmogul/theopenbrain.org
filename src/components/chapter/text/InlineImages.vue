@@ -11,15 +11,32 @@
          its caption folded behind "Legend" under the picture. The desktop
          block below is as wide as the two-column text column (w-text),
          which a phone's column is not: it was cut off on the right. -->
-    <figure v-if="asShell" class="ii-figure my-12" data-inline-image>
-      <IllustrationPlaceholder :animation="shellRecord" inline bare />
+    <figure
+      v-if="asShell"
+      class="ii-figure my-12"
+      data-inline-image
+      :data-figure-number="numbered ? paragraph.imgNumber : null"
+    >
+      <IllustrationPlaceholder
+        :animation="shellRecord"
+        inline
+        :bare="!numbered"
+      />
     </figure>
     <div
       v-else
       class="no-select z-[60] mb-20 right-0 duration-100 border-y border-black flex flex-col justify-center items-center bg-white"
       :class="paragraph.imgWide ? 'w-full ii-wide' : 'w-text -ml-20'"
+      :data-figure-number="numbered ? paragraph.imgNumber : null"
     >
       <figure class="overflow-hidden flex flex-col h-full w-full">
+        <!-- A numbered image is one of the chapter's figures
+             (OPENBRAIN-79): the pane's "FIG 06 · Title" row above it. -->
+        <FigureHeading
+          v-if="numbered"
+          class="ii-heading"
+          :record="shellRecord"
+        />
         <img class="imageH object-contain" :src="imageUrl(paragraph.img)" />
         <div
           v-if="paragraph?.imgCap"
@@ -37,6 +54,8 @@ import { computed } from "vue";
 import { imageUrl } from "@/editor/media.mjs";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
+import FigureHeading from "@/components/chapter/Illus/FigureHeading.vue";
+import { railFigureLabel } from "@/helper/railFigure";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 
@@ -47,19 +66,28 @@ const props = defineProps({
 const narrow = useMediaQuery(READER_NARROW_QUERY);
 // A wide image keeps its own full-width block at every size.
 const asShell = computed(() => narrow.value && !props.paragraph?.imgWide);
-// The image as a figure record. It has no number or title of its own (the
-// chapter's numbered figures are database rows), so the shell is `bare`.
+// The image as a figure record. Its image block may carry a figureNumber
+// and a title (OPENBRAIN-79: the Retina's are numbered with the chapter's
+// other figures); without a number the shell is `bare`.
 const shellRecord = computed(() => ({
   id: `inline-image-${props.paragraph.id}`,
-  title: "",
+  title: props.paragraph.imgTitle || "",
+  figureNumber: props.paragraph.imgNumber,
   caption: props.paragraph.imgCap || "",
   images: [{ src: imageUrl(props.paragraph.img) }],
 }));
+const numbered = computed(() => railFigureLabel(shellRecord.value) !== "");
 </script>
 
 <style scoped>
 .ii-figure {
   width: 100%;
+}
+/* The heading starts on the caption's left edge, in the block's own rules. */
+.ii-heading.figure-heading {
+  padding: 0.875rem 1.75rem 0.875rem 3.125rem;
+  border-bottom: 1px solid #000;
+  background: transparent;
 }
 .ii-wide {
   margin-bottom: 0;

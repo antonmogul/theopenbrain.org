@@ -55,6 +55,15 @@ export function extractChapter1Meta(blocks) {
       if (block.caption) meta.imgCap = block.caption;
       if (block.closed) meta.imgClosed = block.closed;
       if (block.wide) meta.imgWide = true; // FullBleed (OPENBRAIN-72)
+      // A numbered image in the text is a figure of the chapter's series
+      // (OPENBRAIN-79): "FIG 06" and a short title, like a pane figure.
+      if (
+        block.figureNumber !== undefined &&
+        block.figureNumber !== null &&
+        block.figureNumber !== ""
+      )
+        meta.imgNumber = block.figureNumber;
+      if (block.title) meta.imgTitle = block.title;
     }
     if (block.type === "video" && block.youtubeId) {
       // A YouTube video in the prose (OPENBRAIN-70 D2); VideoEmbed renders it.

@@ -192,6 +192,10 @@ export const ImageBlock = Node.create({
       closed: { default: null },
       // Full width across the reader at desktop sizes (OPENBRAIN-72).
       wide: { default: null },
+      // Its place in the chapter's figure series and its short title
+      // (OPENBRAIN-79). No control yet: carried through an edit unchanged.
+      figureNumber: { default: null },
+      title: { default: null },
     };
   },
   parseHTML() {

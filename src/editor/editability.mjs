@@ -73,7 +73,11 @@ export function dashboardLockReason(content) {
       (b) =>
         !DASHBOARD_OK.has(b?.type) ||
         // Its converter keeps src/alt only; a caption would be lost.
-        (b.type === "image" && (b.caption || b.closed !== undefined))
+        (b.type === "image" &&
+          (b.caption ||
+            b.closed !== undefined ||
+            b.figureNumber != null ||
+            b.title))
     )
     .map((b) => b.type);
   if (!blocked.length) return null;

@@ -107,6 +107,45 @@ describe("InlineImages", () => {
     expect(wrapper.find(".imgDesription").text()).toBe(PARAGRAPH.imgCap);
   });
 
+  // OPENBRAIN-79: an image block with a figureNumber is one of the
+  // chapter's figures and is named like one at every width.
+  const NUMBERED = {
+    ...PARAGRAPH,
+    imgNumber: 9,
+    imgTitle: "Absorption spectra",
+  };
+
+  it("a numbered image has the shell's toolbar below the two-column reader", async () => {
+    await mountImage(NUMBERED, true);
+    const figure = wrapper.find("[data-inline-image]");
+    expect(figure.attributes("data-figure-number")).toBe("9");
+    expect(figure.find(".fig-toolbar .fig-label").text()).toBe("FIG 09");
+    expect(figure.find(".fig-toolbar .fig-name").text()).toBe(
+      "Absorption spectra"
+    );
+    // The expand button is the toolbar's; the row under the art is the legend's.
+    expect(figure.find(".fig-toolbar .fig-fs-btn").exists()).toBe(true);
+    expect(figure.find(".fig-legend-row--bare").exists()).toBe(false);
+    expect(figure.find(".fig-legend").text()).toBe(PARAGRAPH.imgCap);
+  });
+
+  it("a numbered image has the figure heading in the two-column reader", async () => {
+    await mountImage(NUMBERED, false);
+    const block = wrapper.find(".w-text");
+    expect(block.attributes("data-figure-number")).toBe("9");
+    expect(block.find(".figure-heading__label").text()).toBe("FIG 09");
+    expect(block.find(".figure-heading__title").text()).toBe(
+      "Absorption spectra"
+    );
+    expect(block.find(".imgDesription").text()).toBe(PARAGRAPH.imgCap);
+  });
+
+  it("an image without a number has no heading in the two-column reader", async () => {
+    await mountImage({ ...PARAGRAPH, imgTitle: "Absorption spectra" }, false);
+    expect(wrapper.find(".figure-heading").exists()).toBe(false);
+    expect(wrapper.find("[data-figure-number]").exists()).toBe(false);
+  });
+
   it("keeps a wide image's own block on a phone", async () => {
     await mountImage({ ...PARAGRAPH, imgWide: true }, true);
     expect(wrapper.find("[data-inline-image]").exists()).toBe(false);
