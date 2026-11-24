@@ -29,6 +29,7 @@
  */
 import {
   computed,
+  inject,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -45,6 +46,7 @@ import {
 import VideoEmbed from "../text/VideoEmbed.vue";
 import { reducedMotionPreferred } from "@/helper/readerJump";
 import { primeInlineLoop } from "@/helper/inlineVideo";
+import { FIGURE_TINT, imageTakesTint, tintTables } from "@/helper/figureTint";
 
 const props = defineProps({
   /* Normalised by figureImages(): [{ src, caption, alt }]. */
@@ -68,6 +70,9 @@ const props = defineProps({
   /* The figure's own say on the opening view ("grid" | "single"); empty
      leaves it to the size of the set. */
   start: { type: String, default: "" },
+  /* The figure asked for the chapter-colour wash (config.tintFade,
+     OPENBRAIN-80). It shows only where something drives it: the pane. */
+  wash: { type: Boolean, default: false },
 });
 
 /* The shown image, two-way so the shell can open its fullscreen dialog on
@@ -96,6 +101,32 @@ const fileLoop = (img) => (img?.loop && !reducedMotion.value ? img.loop : null);
 // Autoplay needs `muted` as the attribute too (iOS Safari reads the
 // attribute, not Vue's property), and play() once the sources are in.
 const primeLoop = primeInlineLoop;
+
+/*
+ * The chapter-colour wash (OPENBRAIN-80, helper/figureTint.js): a second
+ * copy of a still, recoloured by a duotone filter that never changes, over
+ * the natural one. The pane (useFigureTint) scrubs its opacity with the
+ * scroll; here it only takes the opacity of the moment as it mounts.
+ * Without the pane, a chapter colour or motion there is no copy at all.
+ */
+const tint = inject(FIGURE_TINT, null);
+const washId = `figwash-${useId()}`;
+// The chapter's ramp is on <html> before the reader mounts (the router and
+// ChapterView set it), and a chapter keeps one ramp.
+const washTables = ref(
+  props.wash
+    ? tintTables(globalThis.document?.documentElement?.dataset?.chapter)
+    : null
+);
+const washes = (img) =>
+  props.wash &&
+  !!tint &&
+  !!washTables.value &&
+  !reducedMotion.value &&
+  imageTakesTint(img);
+const primeWash = (el) => {
+  if (el && tint) el.style.opacity = String(tint.current());
+};
 const watchHref = (img) =>
   img?.youtube ? `https://www.youtube.com/watch?v=${img.youtube}` : "";
 const first = computed(() => props.images[0] || {});
@@ -519,6 +550,29 @@ onBeforeUnmount(() => {
         decoding="async"
         draggable="false"
       />
+      <img
+        v-if="washes(first)"
+        :key="'wash:' + first.src"
+        :ref="primeWash"
+        class="figimg-img figimg-wash"
+        :style="{ filter: `url(#${washId})` }"
+        :src="first.src"
+        alt=""
+        aria-hidden="true"
+        data-figure-wash
+        decoding="async"
+        draggable="false"
+      />
+      <svg v-if="washes(first)" class="figimg-wash-defs" aria-hidden="true">
+        <filter :id="washId" color-interpolation-filters="sRGB">
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncR type="table" :tableValues="washTables.r" />
+            <feFuncG type="table" :tableValues="washTables.g" />
+            <feFuncB type="table" :tableValues="washTables.b" />
+          </feComponentTransfer>
+        </filter>
+      </svg>
     </div>
     <p v-if="shownCaption" class="figimg-caption">
       {{ shownCaption }}
@@ -657,8 +711,34 @@ onBeforeUnmount(() => {
             decoding="async"
             draggable="false"
           />
+          <img
+            v-if="washes(current)"
+            :ref="primeWash"
+            class="figimg-img figimg-gallery-img figimg-wash"
+            :style="{ filter: `url(#${washId})` }"
+            :src="current.src"
+            alt=""
+            aria-hidden="true"
+            data-figure-wash
+            decoding="async"
+            draggable="false"
+          />
         </div>
       </transition>
+      <svg
+        v-if="wash && washTables"
+        class="figimg-wash-defs"
+        aria-hidden="true"
+      >
+        <filter :id="washId" color-interpolation-filters="sRGB">
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncR type="table" :tableValues="washTables.r" />
+            <feFuncG type="table" :tableValues="washTables.g" />
+            <feFuncB type="table" :tableValues="washTables.b" />
+          </feComponentTransfer>
+        </filter>
+      </svg>
       <button
         type="button"
         class="figimg-nav figimg-nav--prev"
@@ -872,6 +952,19 @@ onBeforeUnmount(() => {
   height: 100%;
   object-fit: scale-down;
   user-select: none;
+}
+/* The washed copy (OPENBRAIN-80): the same box as the picture under it, so
+   the two register; only its opacity ever changes, on a layer of its own. */
+.figimg-wash {
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+.figimg-wash-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 /* In the text column (fit off): the image sizes the figure, full width,
    so on a phone it runs edge to edge. */
