@@ -15,7 +15,11 @@
  * pin's lead-in, so every landing on the track is past it). Nothing here
  * runs on a clock except the copy's fade-in: the picture's flight is the
  * page's scroll position, forwards and back. Under reduced motion, and on
- * the phone's swipe track, the card is a still block before the box.
+ * the phone's swipe track, the card is a still block before the box, and
+ * nothing is said or shown twice: the card carries the box's title (the
+ * box's own heading is kept for screen readers only) and its picture (the
+ * track leaves that plate out; the card's expand button opens it full
+ * screen, where its legend is).
  *
  * This file is the part with no framework in it: which picture leads,
  * which words are quoted, and what the card shows at each point of its
@@ -24,6 +28,7 @@
 import { imageUrl } from "@/editor/media.mjs";
 import { plainText } from "@/helper/chapterTimeline";
 import { figureImages } from "@/helper/figureCycle";
+import { railPlatesOf } from "@/helper/railFigure";
 
 /** Screens of page scroll the card takes before the track's own lead-in. */
 export const CARD_SCREENS = 0.9;
@@ -64,6 +69,20 @@ export function cardLeadPicture(layout, record = null) {
   const image = figureImages(record)[0];
   if (!image || image.youtube) return null;
   return { src: imageUrl(image.src), alt: image.alt || "" };
+}
+
+/**
+ * Whether the track draws the lead picture as a plate of its own (an
+ * Explore picture, or an image figure of up to three stills: RailFigure),
+ * which is what a still card can take off the track (RailPart leaves the
+ * plate out, so the picture is not shown twice in a row). A figure the
+ * shell draws (a larger set) cannot give one image up: no still card then.
+ */
+export function cardLeadIsPlate(layout, record = null) {
+  const part = layout?.parts?.[0];
+  if (!part) return false;
+  if (part.paragraphs?.[0]?.explore?.image?.src) return true;
+  return !!railPlatesOf(record);
 }
 
 /** The id of the figure cardLeadPicture may need the record of, or "". */

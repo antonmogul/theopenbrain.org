@@ -11,6 +11,7 @@ import {
   cardExcerptOf,
   cardFrame,
   cardLeadFigureId,
+  cardLeadIsPlate,
   cardLeadPicture,
   cardRect,
 } from "../boxTitleCard";
@@ -163,6 +164,27 @@ describe("cardRect", () => {
       top: 100,
       width: 650,
       height: 600,
+    });
+  });
+
+  describe("cardLeadIsPlate", () => {
+    it("says whether a still card can take the lead picture off the track", () => {
+      const explore = box([
+        { id: "p1", explore: { title: "E", image: { src: "/img/b.jpg" } } },
+      ]);
+      expect(cardLeadIsPlate(explore)).toBe(true);
+      const figure = box([{ id: "p1", animation: { id: "f" } }]);
+      expect(cardLeadIsPlate(figure, { images: ["/a.jpg", "/b.jpg"] })).toBe(
+        true
+      );
+      // A larger set is the figure shell's: it cannot give one image up.
+      expect(
+        cardLeadIsPlate(figure, {
+          images: ["/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg"],
+        })
+      ).toBe(false);
+      expect(cardLeadIsPlate(figure, null)).toBe(false);
+      expect(cardLeadIsPlate(null)).toBe(false);
     });
   });
 });

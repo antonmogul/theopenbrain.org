@@ -35,11 +35,23 @@ describe("BoxTitleCard", () => {
     wrapper.unmount();
   });
 
+  it("offers the picture full screen when it is the only place it shows", async () => {
+    const wrapper = card({ variant: "simple", expandable: true });
+    await wrapper.get("[data-card-expand]").trigger("click");
+    expect(wrapper.emitted("expand")).toHaveLength(1);
+    wrapper.unmount();
+    // Over the pinned box the track's own picture has the button.
+    const pinned = card({ variant: "pinned", expandable: true });
+    expect(pinned.find("[data-card-expand]").exists()).toBe(false);
+    pinned.unmount();
+  });
+
   it("is the picture, the title and Skip on a phone", () => {
     const wrapper = card({ variant: "simple" });
     expect(wrapper.find(".tc-excerpt").exists()).toBe(false);
     expect(wrapper.find("[data-card-more]").exists()).toBe(false);
     expect(wrapper.find("[data-card-skip]").exists()).toBe(true);
+    expect(wrapper.find("[data-card-expand]").exists()).toBe(false);
     wrapper.unmount();
   });
 

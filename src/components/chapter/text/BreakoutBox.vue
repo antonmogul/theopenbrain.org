@@ -39,6 +39,7 @@ import {
   CARD_NEAR,
   cardExcerptOf,
   cardLeadFigureId,
+  cardLeadIsPlate,
   cardLeadPicture,
 } from "@/helper/boxTitleCard";
 import { useFigureRecords } from "@/composables/useFigureSources";
@@ -188,9 +189,24 @@ const {
 });
 const cardVariant = computed(() => {
   if (!cardPicture.value) return null;
-  if (mode.value === "swipe") return "simple";
-  return reduced.value ? "static" : "pinned";
+  const still = mode.value === "swipe" || reduced.value;
+  if (!still) return "pinned";
+  // A still card takes the picture off the track, which only a plate can
+  // give up.
+  if (!cardLeadIsPlate(layout.value, leadRecords.value[0] || null)) return null;
+  return mode.value === "swipe" ? "simple" : "static";
 });
+/* Under a still card nothing repeats: the card carries the box's title
+   (the box's own heading stays for screen readers and as the box's name)
+   and its lead picture (the first part leaves that plate off the track:
+   RailPart reads this; the card's expand button opens it full screen). */
+const stillCard = computed(
+  () => cardVariant.value === "simple" || cardVariant.value === "static"
+);
+provide("railLeadOnCard", stillCard);
+function expandCardPicture() {
+  trackEl.value?.querySelector("[data-rail-card-figure] .rf-expand")?.click();
+}
 // The track's half of the contract in helper/exploreRail.js.
 const trackAttrs = computed(() =>
   mode.value
@@ -316,8 +332,10 @@ onBeforeUnmount(() => arrival?.disconnect());
         :excerpt="cardExcerpt"
         :picture="cardPicture"
         :variant="cardVariant"
+        expandable
         @more="intoBox"
         @skip="keepGoing"
+        @expand="expandCardPicture"
       />
       <aside
         :id="section.id"
@@ -333,6 +351,7 @@ onBeforeUnmount(() => arrival?.disconnect());
           'bx--rail': railOn,
           'bx--swipe': swipeOn,
           'bx--tailed': hasTail,
+          'bx--carded': stillCard,
         }"
         :aria-labelledby="titleId"
         :data-box-card="cardVariant || undefined"
@@ -1317,6 +1336,27 @@ onBeforeUnmount(() => arrival?.disconnect());
 }
 .bx-card--still + .bx.bx {
   margin-top: 0;
+}
+/* The card carries the title: the box's own heading is not shown again
+   under it, only said (it is the box's accessible name). */
+.bx--carded .bx-hold {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Where the page stops at a box on iOS (the snap, above), it stops at the
+   card, which is where the box now starts and where its title is. */
+.bx-card--still {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scroll-margin-top: calc(var(--reader-topbar-h, 4rem) + 0.5rem);
+  scroll-margin-bottom: 75vh;
+}
+.bx-card--still + .bx.bx--swipe {
+  scroll-snap-align: none;
 }
 @media (max-width: 1023px) {
   .bx-pause--panel:not(.bx-pause--on) > .bx-card--still {

@@ -20,6 +20,11 @@
  *   picture, the title and Skip only, at most most of one screen (svh:
  *   a block in the flow never follows the address bar, OPENBRAIN-185).
  *
+ * A still card is the only place its title and picture are shown: the box
+ * under it hides its own heading and leaves the picture off its track
+ * (BreakoutBox, RailPart), and `expandable` puts the track's expand button
+ * on the card's corner instead.
+ *
  * The title and the quotation repeat what the box says (its own heading is
  * the box's name, its text follows), so they are hidden from assistive
  * technology; the two buttons are real and say what they do.
@@ -38,8 +43,11 @@ const props = defineProps({
   /** A pinned card's place in its scroll, 0 to 1, for a card nothing
    *  drives (stories, tests). BreakoutBox calls drive() instead. */
   progress: { type: Number, default: null },
+  /** A still card whose picture is not on the track after it: a button
+   *  opens the picture full screen (BreakoutBox answers `expand`). */
+  expandable: { type: Boolean, default: false },
 });
-defineEmits(["more", "skip"]);
+defineEmits(["more", "skip", "expand"]);
 
 const root = ref(null);
 const pictureEl = ref(null);
@@ -156,6 +164,28 @@ defineExpose({ drive });
           more<span class="sr-only">: read {{ title }}</span>
         </button>
       </div>
+      <button
+        v-if="expandable && variant !== 'pinned'"
+        class="tc-expand"
+        type="button"
+        title="Expand to full screen"
+        aria-label="Expand the picture to full screen"
+        data-card-expand
+        @click="$emit('expand')"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
+        </svg>
+      </button>
       <button
         class="tc-skip"
         type="button"
@@ -299,7 +329,28 @@ defineExpose({ drive });
     background: rgb(var(--color-chapter-pale, 255 255 255));
   }
 }
+/* On the picture's corner, the chip every picture on a track has. */
+.tc-expand {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.45);
+  border-radius: 0;
+  background: rgb(20 20 20 / 0.72);
+  color: #fff;
+  cursor: pointer;
+}
+.tc-expand:hover {
+  border-color: #fff;
+  background: rgb(20 20 20 / 0.9);
+}
 .tc-more:focus-visible,
+.tc-expand:focus-visible,
 .tc-skip:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;

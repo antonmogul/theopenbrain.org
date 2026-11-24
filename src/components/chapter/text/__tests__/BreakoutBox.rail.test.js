@@ -105,6 +105,7 @@ function mountBox({
                       title: p.explore?.title || "",
                       explore: !!p.explore,
                     },
+                    image: p.explore?.image || null,
                     index,
                     count: box.paragraphs.length,
                   },
@@ -452,6 +453,12 @@ describe("BreakoutBox rail", () => {
       const card = box.querySelector("[data-box-title-card]");
       // First in the box: its buttons come before the track.
       expect(box.firstElementChild).toBe(card);
+      // The track keeps its picture (the card's lands on it) and the box
+      // its heading.
+      expect(box.classList).not.toContain("bx--carded");
+      expect(
+        box.querySelector("[data-rail-part] [data-rail-figure]")
+      ).not.toBeNull();
       expect(card.getAttribute("data-card-variant")).toBe("pinned");
       expect(card.querySelector("img").getAttribute("src")).toBe(
         "/img/bust.jpg"
@@ -528,6 +535,19 @@ describe("BreakoutBox rail", () => {
       expect(card.element.nextElementSibling).toBe(w.find("aside.bx").element);
       expect(card.find(".tc-excerpt").exists()).toBe(false);
       expect(card.find("[data-card-more]").exists()).toBe(false);
+      // Nothing repeats: the card carries the title (the box's own heading
+      // is only said) and the picture, which the track leaves out and the
+      // card's button opens full screen.
+      expect(w.find("aside.bx").classes()).toContain("bx--carded");
+      expect(w.find("aside.bx h2.bx-title").text()).toBe(pictured.title);
+      expect(w.find("[data-rail-part] [data-rail-figure]").exists()).toBe(
+        false
+      );
+      const kept = w.find("[data-rail-card-figure] .rf-expand");
+      const pressed = vi.fn();
+      kept.element.addEventListener("click", pressed);
+      await card.find("[data-card-expand]").trigger("click");
+      expect(pressed).toHaveBeenCalledTimes(1);
       w.find(".bx-pause").element.getBoundingClientRect = () => ({
         bottom: 900,
       });
@@ -554,6 +574,10 @@ describe("BreakoutBox rail", () => {
       expect(card.getAttribute("data-card-variant")).toBe("static");
       expect(card.nextElementSibling).toBe(layer.querySelector("aside.bx"));
       expect(card.querySelector("[data-card-more]")).not.toBeNull();
+      expect(layer.querySelector("aside.bx").classList).toContain("bx--carded");
+      expect(
+        layer.querySelector("[data-rail-part] [data-rail-figure]")
+      ).toBeNull();
       expect(
         layer
           .querySelector("[data-rail-scroller]")

@@ -184,6 +184,14 @@ const MARKER = ".marker-start, .marker-end";
  * .marker-* lines); otherwise `el` itself.
  */
 export function readingStartOf(el) {
+  // A breakout box that opens on a still title card (BreakoutBox,
+  // OPENBRAIN-77) starts at the card, which carries its title.
+  const card = el?.previousElementSibling;
+  if (
+    el?.hasAttribute?.("data-box-card") &&
+    card?.matches?.("[data-box-title-card]")
+  )
+    return card;
   const skipMarkers = (node) => {
     while (node?.matches(MARKER)) node = node.nextElementSibling;
     return node;
