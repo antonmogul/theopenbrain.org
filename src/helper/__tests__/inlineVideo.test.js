@@ -49,7 +49,13 @@ describe("reader videos", () => {
       sources["/src/components/chapter/Illus/IllustrationPlaceholder.vue"];
     // One call, inside openFullscreen, which only the button's click runs.
     expect(shell.match(/requestFullscreen\(/g)).toHaveLength(1);
-    expect(shell.match(/openFullscreen\b/g)).toHaveLength(2);
-    expect(shell).toMatch(/@click="openFullscreen"/);
+    // Every use besides its definition is an expand button's click
+    // (the toolbar's, and the bare in-text figure's from OPENBRAIN-70).
+    const uses = shell.match(/[^\n]*\bopenFullscreen\b[^\n]*/g);
+    const calls = uses.filter(
+      (line) => !/function openFullscreen\(/.test(line)
+    );
+    expect(calls.length).toBeGreaterThan(0);
+    for (const line of calls) expect(line).toMatch(/@click="openFullscreen"/);
   });
 });
