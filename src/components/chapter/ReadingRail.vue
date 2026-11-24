@@ -64,7 +64,8 @@ const list = computed(() => props.records || animations.value);
 
 /** One per figure: { key, id, el, els, top, end, wait, kind, interactive,
  *  tip, name, stacked }
- *  (`id` is the trigger's, which a figure shown twice shares; `key` is the
+ *  (`top` is the line on which the figure comes on: `wait` below its
+ *  paragraph's top; `id` is the trigger's, which a figure shown twice shares; `key` is the
  *  mark's own). */
 const marks = ref([]);
 /** [top, bottom] of each full-width band, in the rail's own pixels. */
@@ -169,7 +170,12 @@ function measure() {
     // A scroll position when the figure holds, else "bottom <half>": its
     // paragraph's window.
     const end = figureEnd(el, triggers, list.value);
-    const top = rect.top - origin;
+    // Where the pane is clear for it: its paragraph's top, or further down
+    // when a box above still covers the pane (figureWait). The mark is
+    // drawn on that line, so it fills as it meets the reading point and
+    // not a third of a screen after passing it (OPENBRAIN-73).
+    const wait = figureWait(el, window, end);
+    const top = rect.top - origin + wait;
     const bottom = Math.min(
       limit,
       (typeof end === "number" ? end + half - window.scrollY : rect.bottom) -
@@ -193,9 +199,8 @@ function measure() {
       els: [el],
       top,
       end: bottom,
-      // How far past the reading line its paragraph goes before the pane
-      // is clear for it (a box above still covers the pane).
-      wait: figureWait(el, window, end),
+      // How far below its paragraph's top that line is.
+      wait,
       stacked: false,
       ...mark,
     });
@@ -495,8 +500,9 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-/* The marks: a small disc on the line at the top of each paragraph that
-   brings a figure in, in the section badge's manner (paper, an ink
+/* The marks: a small disc on the line where each figure comes on (the top
+   of its paragraph, or lower when a box above it must first leave the
+   pane), in the section badge's manner (paper, an ink
    hairline), with a pointer towards the pane and no words (Stuart, 11 Nov).
 
    The button is the strip of gutter beside the disc, not the disc: the

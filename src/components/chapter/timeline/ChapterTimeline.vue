@@ -9,7 +9,10 @@
  * Three states:
  *   rest  a 20px strip (REST_H, published as --reader-timeline-h so the
  *         figure pane stops above it; the sidebar keeps clear of PEEK_H)
- *         with the % read;
+ *         with the % read. Below 768px it is 28px (REST_H_PHONE, published
+ *         the same way) and its marks are larger, neighbouring paragraphs
+ *         sharing a dash (OPENBRAIN-72): one mark per paragraph in a phone's
+ *         width left each about a pixel tall;
  *   peek  pointer over it, keyboard focus in it, or a tap on touch: PEEK_H
  *         tall, with section labels, the content and "you" lanes, a preview
  *         card for the bar under the pointer and the map button;
@@ -45,7 +48,12 @@ import {
   watch,
 } from "vue";
 import { useMediaQuery } from "@/composables/useMediaQuery";
-import { PEEK_H, REST_H, sectionIndexOf } from "@/helper/chapterTimeline";
+import {
+  PEEK_H,
+  REST_H,
+  REST_H_PHONE,
+  sectionIndexOf,
+} from "@/helper/chapterTimeline";
 import TimelineBars from "./TimelineBars.vue";
 import TimelinePreview, {
   displayTitle,
@@ -87,6 +95,11 @@ const emit = defineEmits(["jump"]);
 // Bar heights in each state (px); the dock's own heights are REST_H/PEEK_H.
 const REST_BAR = 12;
 const PEEK_BAR = 52;
+// A phone's resting strip (OPENBRAIN-72): a taller bar area, and a slot at
+// least this wide for every mark (TimelineBars' minBar). The marks' own
+// sizes are the --tl-* tokens in the phone media query below.
+const REST_BAR_PHONE = 16;
+const MIN_BAR_PHONE = 10;
 // The bars' gutters: the % label and the map button live in the right one,
 // so the bars don't move between states.
 const BARS_LEFT = 16;
@@ -107,6 +120,9 @@ const finePointer = useMediaQuery("(hover: hover) and (pointer: fine)");
 // aim at, so a tap opens the scrubber (TimelineScrubber) rather than the peek.
 const phone = useMediaQuery("(max-width: 767px)");
 const scrubOpen = ref(false);
+// The phone never peeks, so its dock is always at its resting height.
+const restH = computed(() => (phone.value ? REST_H_PHONE : REST_H));
+const restBar = computed(() => (phone.value ? REST_BAR_PHONE : REST_BAR));
 const lastPointer = ref(""); // "mouse" | "touch", from the last press
 // Touch behaviour: no hover to peek with, or the reader just used a finger.
 const touchUI = computed(
@@ -485,10 +501,19 @@ watch(total, (n) => {
 
 /* ---- Layout contract ------------------------------------------------ */
 
+// The resting height everything else keeps clear of. It follows the width:
+// the media query answers on mount, and again when a window crosses 768px.
+let stopRestWatch = null;
+
 onMounted(() => {
-  document.documentElement.style.setProperty(
-    "--reader-timeline-h",
-    `${REST_H}px`
+  stopRestWatch = watch(
+    restH,
+    (h) =>
+      document.documentElement.style.setProperty(
+        "--reader-timeline-h",
+        `${h}px`
+      ),
+    { immediate: true }
   );
   document.documentElement.style.setProperty(
     "--reader-timeline-peek-h",
@@ -497,6 +522,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  stopRestWatch?.();
   document.documentElement.style.removeProperty("--reader-timeline-h");
   document.documentElement.style.removeProperty("--reader-timeline-peek-h");
   document.removeEventListener("pointerdown", onDocumentPointerDown, true);
@@ -512,7 +538,7 @@ onBeforeUnmount(() => {
     tabindex="-1"
     :class="{ 'is-open': open, 'is-touch': touchUI }"
     :style="{
-      height: `${open ? PEEK_H : REST_H}px`,
+      height: `${open ? PEEK_H : restH}px`,
       '--tl-peek-h': `${PEEK_H}px`,
     }"
     data-testid="chapter-timeline"
@@ -530,7 +556,8 @@ onBeforeUnmount(() => {
       :style="{ left: `${BARS_LEFT}px`, right: `${BARS_RIGHT}px` }"
       :model="model"
       :position="position"
-      :bar-height="open ? PEEK_BAR : REST_BAR"
+      :bar-height="open ? PEEK_BAR : restBar"
+      :min-bar="phone && !open ? MIN_BAR_PHONE : 0"
       :expanded="open"
       :cursor="open ? cursor : -1"
       :layers="layers"
@@ -662,6 +689,49 @@ onBeforeUnmount(() => {
 
 .ctl-bars:focus {
   outline: none;
+}
+
+/* A phone (OPENBRAIN-72). The strip is 28px (REST_H_PHONE) and its marks
+   are 4px dashes and 7px dots: TimelineBars reads these tokens, and groups
+   paragraphs so a dash has the room (MIN_BAR_PHONE). Only the dock: the
+   scrubber and the map are teleported out and keep their own sizes. */
+@media (max-width: 767px) {
+  .ctl {
+    --tl-mark-size: 4;
+    --tl-dot-size: 7;
+    --tl-dash-ratio: 2;
+    --tl-dash-radius: 2;
+    --tl-unread-opacity: 0.3;
+  }
+
+  .ctl-bars {
+    bottom: 6px;
+  }
+
+  .ctl:not(.is-open) .ctl-percent {
+    bottom: 8px;
+    font-size: var(--ui-size-11);
+  }
+}
+
+/* Under the dock, on touch screens (OPENBRAIN-72). iOS Safari moves a
+   `bottom: 0` element a frame or more after its toolbar slides away, and
+   on a zoomed display the dock's bottom edge can fall between device
+   pixels: either way a strip of the page shows under the dock, which is a
+   dark flickering line whenever a dark breakout box is behind it. The
+   dock's own ground carries on below its edge, off screen until that
+   strip opens. A fixed box adds nothing to the page's scroll height. */
+@media (hover: none), (max-width: 767px) {
+  .ctl::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 160px;
+    background: inherit;
+    pointer-events: none;
+  }
 }
 
 .ctl-bars:focus-visible {
