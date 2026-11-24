@@ -1,5 +1,11 @@
 <template>
-  <div class="w-full h-full flex justify-center items-start">
+  <div
+    class="w-full h-full flex justify-center items-start"
+    :class="{ 'flip-figure--inline': inline }"
+  >
+    <!-- Inline (in the text, below the two-column reader) the card is as
+         wide as the column, not a third of the window, which is the pane's
+         size: on a phone that left a 125px circle (OPENBRAIN-70). -->
     <div
       class="flip-card max-h-[835px] max-w-[835px]"
       :class="isFlip && 'flip'"
@@ -52,6 +58,7 @@ const flip = () => {
 
 const props = defineProps({
   animation: Object,
+  inline: { type: Boolean, default: false },
 });
 const video = toSlug(props.animation.video);
 const widthVideo = ref(
@@ -66,6 +73,25 @@ const heightVideo = widthVideo;
   width: calc(100vw / 3);
   height: calc(100vw / 3);
   perspective: 2000px;
+}
+
+/* In the text: the column's width (a circle, so never taller than a phone
+   screen), the flip arrow at the card's lower right corner. */
+.flip-figure--inline {
+  position: relative;
+  width: min(100%, 26rem);
+  margin-inline: auto;
+}
+.flip-figure--inline .flip-card {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+.flip-figure--inline .hoverState {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  transform: none;
 }
 
 .flip-card-inner {
