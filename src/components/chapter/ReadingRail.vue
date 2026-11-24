@@ -173,8 +173,9 @@ function measure() {
     // Where the pane is clear for it: its paragraph's top, or further down
     // when a box above still covers the pane (figureWait). The mark is
     // drawn on that line, so it fills as it meets the reading point and
-    // not a third of a screen after passing it (OPENBRAIN-73).
-    const wait = figureWait(el, window, end);
+    // not a third of a screen after passing it (OPENBRAIN-73). A paragraph
+    // that carries on the figure before it never waits (OPENBRAIN-76).
+    const wait = figureWait(el, window, end, triggers, list.value);
     const top = rect.top - origin + wait;
     const bottom = Math.min(
       limit,

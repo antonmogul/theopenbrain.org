@@ -231,7 +231,14 @@ function setupTriggers() {
       trigger,
       // Its top on the reading line, or a little later when a box, a
       // band or the opener above it is still over the pane (OPENBRAIN-195).
-      start: () => figureStart(trigger, window, end()),
+      start: () =>
+        figureStart(
+          trigger,
+          window,
+          end(),
+          animationTriggers,
+          animationList.value
+        ),
       end,
       markers: false,
       onToggle: (self) => {

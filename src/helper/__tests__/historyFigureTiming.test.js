@@ -10,6 +10,7 @@ import {
   figureRecordOfMedia,
   figureStart,
   figureWait,
+  sameFigureNeighbour,
   historyFigureEnd,
   normalizeFigureHold,
   parseFigureHold,
@@ -617,5 +618,126 @@ describe("a figure waits for the pane to be clear (OPENBRAIN-195)", () => {
     expect(
       figureWait(trigger, { ...win, matchMedia: () => ({ matches: false }) })
     ).toBe(0);
+  });
+});
+
+describe("one figure on several paragraphs is one stay (OPENBRAIN-76)", () => {
+  // The Retina's cell-types widget: three paragraphs in a row trigger it,
+  // 32px of margin between the first two, and the full-screen "Lateral
+  // organization" band inside the second, ending where the third starts.
+  // Then a paragraph with another widget.
+  const widgets = [
+    { id: "widget-upload:retina-retinal-cell-types", widgetId: "upload:a" },
+    { id: "widget-upload:retina-synaptic-architecture", widgetId: "upload:b" },
+  ];
+  const CELLS = "triggerAnimationwidget-upload:retina-retinal-cell-types";
+  const SYNAPSES = "triggerAnimationwidget-upload:retina-synaptic-architecture";
+  function page() {
+    document.body.innerHTML = `<div class="chapter-reader"><div class="figure-pane"></div><section>
+      <span id="${CELLS}" class="animationTrigger"></span>
+      <span id="${CELLS}" class="animationTrigger"><div class="fb-slot"></div></span>
+      <span id="${CELLS}" class="animationTrigger"></span>
+      <span id="${SYNAPSES}" class="animationTrigger"></span>
+    </section></div>`;
+    const place = (el, top, bottom) =>
+      (el.getBoundingClientRect = () => ({ top, bottom }));
+    place(document.querySelector(".figure-pane"), 64, 780);
+    place(document.querySelector("section"), -3000, 3000);
+    const triggers = [...document.querySelectorAll(".animationTrigger")];
+    place(triggers[0], -2500, -1500);
+    place(triggers[1], -1468, 400);
+    place(document.querySelector(".fb-slot"), -1000, 400);
+    place(triggers[2], 400, 1400);
+    place(triggers[3], 1432, 2000);
+    return triggers;
+  }
+  const win = { innerHeight: 800, scrollY: 5000 };
+
+  it("does not wait for the band when the paragraph before shows the same figure", () => {
+    const triggers = page();
+    // On its own it would wait for the band to leave the pane…
+    expect(figureWait(triggers[2], win)).toBe(336);
+    // …but the widget is already on.
+    expect(figureWait(triggers[2], win, undefined, triggers, widgets)).toBe(0);
+    expect(figureStart(triggers[2], win, undefined, triggers, widgets)).toBe(
+      "top 400"
+    );
+  });
+  it("stays on across the margin to the next paragraph of the same figure", () => {
+    const triggers = page();
+    // The next one's top (-1468) on the reading line, and a pixel more.
+    expect(figureEnd(triggers[0], triggers, widgets, win)).toBe(
+      5000 - 1468 + 1 - 400
+    );
+    // Abutting paragraphs overlap by that pixel too.
+    expect(figureEnd(triggers[1], triggers, widgets, win)).toBe(5001);
+  });
+  it("leaves the last paragraph of the run, and another figure's wait, alone", () => {
+    const triggers = page();
+    expect(figureEnd(triggers[2], triggers, widgets, win)).toBe("bottom 400");
+    expect(figureEnd(triggers[3], triggers, widgets, win)).toBe("bottom 400");
+    // A different figure under a band still waits for it.
+    document.querySelector(".fb-slot").getBoundingClientRect = () => ({
+      top: 500,
+      bottom: 1400,
+    });
+    expect(
+      figureWait(triggers[3], win, undefined, triggers, widgets)
+    ).toBeGreaterThan(0);
+  });
+  it("is not a run across sections, or between a container and what it wraps", () => {
+    const triggers = page();
+    const other = document.createElement("section");
+    document.querySelector(".chapter-reader").appendChild(other);
+    other.appendChild(triggers[2]);
+    expect(figureEnd(triggers[1], triggers, widgets, win)).toBe("bottom 400");
+    expect(figureWait(triggers[2], win, undefined, triggers, widgets)).toBe(
+      336
+    );
+    // A subsection header's trigger wraps its paragraph's: they overlap.
+    triggers[0].appendChild(triggers[1]);
+    expect(figureEnd(triggers[0], triggers, widgets, win)).toBe("bottom 400");
+  });
+  it("carries a held still over to its next paragraph as well", () => {
+    const triggers = page();
+    const stills = [
+      { id: "widget-upload:retina-retinal-cell-types", imageUrl: "/a.jpg" },
+    ];
+    // The band inside the second paragraph would end the first one's hold
+    // at its own bottom; it runs on to the second paragraph instead.
+    document
+      .querySelector("section")
+      .insertBefore(document.querySelector(".fb-slot"), triggers[1]);
+    document.querySelector(".fb-slot").getBoundingClientRect = () => ({
+      top: -1490,
+      bottom: -1470,
+    });
+    expect(figureEnd(triggers[0], triggers, stills, win)).toBe(
+      5000 - 1468 + 1 - 400
+    );
+  });
+  it("keeps every figure with its paragraph below 1024px", () => {
+    const triggers = page();
+    const narrow = { ...win, matchMedia: () => ({ matches: false }) };
+    expect(figureEnd(triggers[0], triggers, widgets, narrow)).toBe(
+      "bottom 400"
+    );
+  });
+});
+
+describe("sameFigureNeighbour", () => {
+  it("finds the paragraph before or after with the same figure, else null", () => {
+    document.body.innerHTML = `<section><span id="triggerAnimationA"></span><span id="triggeranimationa"></span><span id="triggerAnimationB"></span></section>`;
+    const triggers = [...document.querySelectorAll("span")];
+    const list = [{ id: "animationA" }, { id: "animationB" }];
+    expect(sameFigureNeighbour(triggers[0], triggers, list, 1)).toBe(
+      triggers[1]
+    );
+    expect(sameFigureNeighbour(triggers[1], triggers, list, -1)).toBe(
+      triggers[0]
+    );
+    expect(sameFigureNeighbour(triggers[1], triggers, list, 1)).toBeNull();
+    expect(sameFigureNeighbour(triggers[0], triggers, list, -1)).toBeNull();
+    expect(sameFigureNeighbour(triggers[0], undefined, list, 1)).toBeNull();
   });
 });
