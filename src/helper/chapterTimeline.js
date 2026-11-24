@@ -14,6 +14,8 @@
 export const READING_LINE = 0.4;
 /** px, the dock at rest (published as --reader-timeline-h). */
 export const REST_H = 20;
+/** px, the dock at rest below 768px, where its marks are larger (OPENBRAIN-72). */
+export const REST_H_PHONE = 28;
 /** px, the dock expanded (peek). */
 export const PEEK_H = 104;
 
@@ -432,8 +434,15 @@ function sectionRuns(items, sections) {
  * share a mark. No paragraph-length encoding or mixed paragraph buckets.
  * `x`/`w` are hit slots; the renderer centres the dot or dash inside each.
  * Gaps shrink on dense strips so every paragraph remains addressable.
+ *
+ * `minBar` (px, OPENBRAIN-72) is for a strip too narrow to give every
+ * paragraph a mark worth seeing (a phone's resting dock: a History
+ * paragraph gets about 1px): neighbouring paragraphs of a section then
+ * share a dash, as few to a dash as leaves each slot at least that wide.
+ * Widgets, breaks and boxes keep a dot of their own. Without it, or where
+ * the slots are already that wide, the layout is one mark per paragraph.
  */
-export function layoutBars(items, sections, width) {
+export function layoutBars(items, sections, width, { minBar = 0 } = {}) {
   const list = items || [];
   const n = list.length;
   if (!n || !(width > 0)) return { bars: [], indexAtX: () => (n ? 0 : -1) };
@@ -442,32 +451,59 @@ export function layoutBars(items, sections, width) {
   const boxes = new Set(
     (sections || []).filter((s) => s.kind === "box").map((s) => s.key)
   );
-  const bars = [];
-  for (const run of runs) {
-    const box = boxes.has(list[run.start].sectionKey);
-    for (let from = run.start; from < run.end; from++) {
-      const to = box ? run.end : from + 1;
+  const isBlock = (item) => item.kind === "widget" || item.kind === "break";
+
+  // The marks with up to `group` paragraphs to a dash, and each slot's width.
+  function build(group) {
+    const bars = [];
+    const push = (from, to, kind, run) =>
       bars.push({
         from,
         to,
         x: 0,
         w: 0,
         height: 1,
-        kind:
-          box || list[from].kind === "widget" || list[from].kind === "break"
-            ? "block"
-            : "text",
+        kind,
         sectionStart: from === run.start,
         sectionKey: list[from].sectionKey,
       });
-      if (box) break;
+    for (const run of runs) {
+      if (boxes.has(list[run.start].sectionKey)) {
+        push(run.start, run.end, "block", run);
+        continue;
+      }
+      let from = run.start;
+      while (from < run.end) {
+        if (isBlock(list[from])) {
+          push(from, from + 1, "block", run);
+          from += 1;
+          continue;
+        }
+        // A stretch of prose, cut into dashes of even size.
+        let end = from + 1;
+        while (group > 1 && end < run.end && !isBlock(list[end])) end++;
+        const count = Math.ceil((end - from) / group);
+        for (let k = 0; k < count; k++)
+          push(
+            from + Math.round((k * (end - from)) / count),
+            from + Math.round(((k + 1) * (end - from)) / count),
+            "text",
+            run
+          );
+        from = end;
+      }
     }
+    const gapTotal =
+      (bars.length - runs.length) * BAR_GAP + (runs.length - 1) * SECTION_GAP;
+    // Reserve at least half the width for marks, even for a very long chapter.
+    const gapScale = gapTotal ? Math.min(1, width / (2 * gapTotal)) : 1;
+    return { bars, gapScale, w: (width - gapTotal * gapScale) / bars.length };
   }
-  const gapTotal =
-    (bars.length - runs.length) * BAR_GAP + (runs.length - 1) * SECTION_GAP;
-  // Reserve at least half the width for marks, even for a very long chapter.
-  const gapScale = gapTotal ? Math.min(1, width / (2 * gapTotal)) : 1;
-  const w = (width - gapTotal * gapScale) / bars.length;
+
+  let built = build(1);
+  for (let group = 2; built.w < minBar && group <= n; group++)
+    built = build(group);
+  const { bars, gapScale, w } = built;
   let x = 0;
   for (const [i, bar] of bars.entries()) {
     if (i) x += (bar.sectionStart ? SECTION_GAP : BAR_GAP) * gapScale;

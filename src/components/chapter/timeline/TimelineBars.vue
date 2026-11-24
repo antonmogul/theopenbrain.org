@@ -40,6 +40,12 @@ const props = defineProps({
   layers: { type: Object, default: null },
   /** False: ignore the pointer (the host handles a tap itself). */
   interactive: { type: Boolean, default: true },
+  /**
+   * px. On a strip too narrow for a mark per paragraph, neighbouring
+   * paragraphs share a dash so each slot is at least this wide (layoutBars'
+   * `minBar`: the phone's resting dock, OPENBRAIN-72). 0: one per paragraph.
+   */
+  minBar: { type: Number, default: 0 },
 });
 
 const emit = defineEmits(["hover", "pick"]);
@@ -77,7 +83,9 @@ const layers = computed(() => props.layers || {});
 /* ---- Layout -------------------------------------------------------- */
 
 const layout = computed(() =>
-  layoutBars(items.value, sections.value, width.value)
+  layoutBars(items.value, sections.value, width.value, {
+    minBar: props.minBar,
+  })
 );
 const bars = computed(() => layout.value.bars);
 

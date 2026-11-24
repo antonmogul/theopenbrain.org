@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChapterTimeline from "@/components/chapter/timeline/ChapterTimeline.vue";
-import { REST_H, PEEK_H } from "@/helper/chapterTimeline";
+import { REST_H, REST_H_PHONE, PEEK_H } from "@/helper/chapterTimeline";
 import {
   stubBarsWidth,
   testBars,
@@ -495,6 +495,41 @@ describe("ChapterTimeline — page contract", () => {
     wrapper = null;
     expect(inline()).not.toContain("--reader-timeline-h");
     expect(inline()).not.toContain("--reader-timeline-peek-h");
+  });
+
+  it("rests taller below 768px, with larger marks, and says so (OPENBRAIN-72)", async () => {
+    const inline = () => document.documentElement.getAttribute("style") || "";
+    const original = window.matchMedia;
+    const listeners = new Set();
+    const mq = {
+      matches: true,
+      addEventListener: (_, fn) => listeners.add(fn),
+      removeEventListener: (_, fn) => listeners.delete(fn),
+    };
+    window.matchMedia = (query) =>
+      query === "(max-width: 767px)"
+        ? mq
+        : { matches: false, addEventListener() {}, removeEventListener() {} };
+    try {
+      mountTimeline();
+      await flushPromises();
+      expect(dock().attributes("style")).toContain(`height: ${REST_H_PHONE}px`);
+      expect(inline()).toContain(`--reader-timeline-h: ${REST_H_PHONE}px`);
+      const bars = wrapper.getComponent({ name: "TimelineBars" });
+      expect(bars.props("barHeight")).toBe(16);
+      expect(bars.props("minBar")).toBe(10);
+
+      // The window grows past 768px: the desktop strip and its clearance.
+      mq.matches = false;
+      listeners.forEach((fn) => fn({ matches: false }));
+      await flushPromises();
+      expect(dock().attributes("style")).toContain(`height: ${REST_H}px`);
+      expect(inline()).toContain(`--reader-timeline-h: ${REST_H}px`);
+      expect(bars.props("barHeight")).toBe(12);
+      expect(bars.props("minBar")).toBe(0);
+    } finally {
+      window.matchMedia = original;
+    }
   });
 
   it("is fixed to the bottom and hides on `hidden`", async () => {

@@ -2,8 +2,9 @@
  * The reading rail (OPENBRAIN-175): the marks on the line between the figure
  * pane and the text, from 1024px. Three things, one system:
  *
- * - a mark at every paragraph that brings something into the pane: a
- *   pointer towards the pane, which fills with colour while its figure is
+ * - a mark at every paragraph that brings something into the pane, on the
+ *   line where its figure comes on (so it fills as it meets the reading
+ *   point, OPENBRAIN-73): a pointer towards the pane, which fills with colour while its figure is
  *   on, one colour for a figure the reader looks at and another for one the
  *   reader operates (a widget, a film). Its name ("Figure 6: The cell
  *   doctrine, a gallery of 10 images") is its accessible name and the
