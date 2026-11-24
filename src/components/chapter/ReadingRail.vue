@@ -195,7 +195,7 @@ function measure() {
       end: bottom,
       // How far past the reading line its paragraph goes before the pane
       // is clear for it (a box above still covers the pane).
-      wait: figureWait(el, window, end),
+      wait: figureWait(el, window, end, triggers, list.value),
       stacked: false,
       ...mark,
     });
