@@ -33,6 +33,8 @@ import {
   figureStart,
 } from "@/helper/historyFigureTiming";
 import { figurePaneGround } from "@/helper/figurePane";
+import { wantsTintFade } from "@/helper/figureTint";
+import { useFigureTint } from "@/composables/useFigureTint";
 import { keepRefreshInstant } from "@/helper/refreshScroll";
 import { holdVideoFullscreen } from "@/helper/videoFullscreen";
 import { readerScrollLocked } from "@/helper/readerScrollLock";
@@ -136,6 +138,14 @@ let layoutObserver = null;
 let fontSet = null;
 let unmounted = false;
 let videoFullscreen = null;
+// The window of the figure that is on, when it takes the chapter-colour
+// wash (OPENBRAIN-80): its own trigger's measured start and end.
+let tintTrigger = null;
+const figureTint = useFigureTint({
+  pane: () => paneElement.value,
+  span: () =>
+    tintTrigger ? { start: tintTrigger.start, end: tintTrigger.end } : null,
+});
 
 function updateActiveFigure() {
   if (videoFullscreen?.held() || readerScrollLocked()) return;
@@ -147,9 +157,10 @@ function updateActiveFigure() {
   // The figure's own id, so a key the editor made (`image-…`, `widget-…`,
   // whose trigger reads `triggerAnimationimage-…`) matches its record too.
   const key = current?.trigger.id.replace(/^trigger/i, "");
-  activeAnimation.value = current
-    ? (figureRecordFor(key, animationList.value)?.id ?? key).toLowerCase()
-    : null;
+  const record = current ? figureRecordFor(key, animationList.value) : null;
+  tintTrigger = wantsTintFade(record) ? current : null;
+  if (tintTrigger) figureTint.schedule();
+  activeAnimation.value = current ? (record?.id ?? key).toLowerCase() : null;
   store.animationActive = !!activeAnimation.value;
 }
 
@@ -356,6 +367,7 @@ onBeforeUnmount(() => {
     trigger.kill();
   }
   activeTriggers.clear();
+  tintTrigger = null;
   activeAnimation.value = null;
   store.animationActive = false;
 });

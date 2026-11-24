@@ -50,6 +50,9 @@ export function figureImages(animation) {
       // 18 Nov: Plato and Aristotle; scripts/figures/encode-figure-loop.sh).
       const loop = figureLoop(item.loop);
       if (loop && !out.youtube) out.loop = loop;
+      // A picture that is already a duotone (the designers' posters) stays
+      // out of its figure's chapter-colour wash (OPENBRAIN-80).
+      if (item.tint === false) out.tint = false;
       // A picture with a figure number of its own, in a figure that holds
       // two figures (Descartes' box: the skull in Paris is Figure D, the
       // piece in Lund Figure E; Stuart, 18 Nov, OPENBRAIN-202).
