@@ -197,6 +197,7 @@
         <IllustrationFlip
           v-else-if="!animation.multiple && animation.flip"
           :animation="animation"
+          :inline="inline"
         />
         <IllustrationSwitch
           v-if="!animation.multiple && !animation.flip && animation.switch"

@@ -6,7 +6,16 @@
     :enabled="!!paragraph.imgWide"
     :viewport="!!paragraph.imgWide"
   >
+    <!-- Below the two-column reader an image in the text is a figure like
+         any other (OPENBRAIN-70): the figure shell, as wide as the page,
+         its caption folded behind "Legend" under the picture. The desktop
+         block below is as wide as the two-column text column (w-text),
+         which a phone's column is not: it was cut off on the right. -->
+    <figure v-if="asShell" class="ii-figure my-12" data-inline-image>
+      <IllustrationPlaceholder :animation="shellRecord" inline bare />
+    </figure>
     <div
+      v-else
       class="no-select z-[60] mb-20 right-0 duration-100 border-y border-black flex flex-col justify-center items-center bg-white"
       :class="paragraph.imgWide ? 'w-full ii-wide' : 'w-text -ml-20'"
     >
@@ -24,14 +33,34 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { imageUrl } from "@/editor/media.mjs";
 import FullBleed from "@/components/chapter/FullBleed.vue";
-defineProps({
+import IllustrationPlaceholder from "@/components/chapter/Illus/IllustrationPlaceholder.vue";
+import { useMediaQuery } from "@/composables/useMediaQuery";
+import { READER_NARROW_QUERY } from "@/helper/readerLayout";
+
+const props = defineProps({
   paragraph: Object,
 });
+
+const narrow = useMediaQuery(READER_NARROW_QUERY);
+// A wide image keeps its own full-width block at every size.
+const asShell = computed(() => narrow.value && !props.paragraph?.imgWide);
+// The image as a figure record. It has no number or title of its own (the
+// chapter's numbered figures are database rows), so the shell is `bare`.
+const shellRecord = computed(() => ({
+  id: `inline-image-${props.paragraph.id}`,
+  title: "",
+  caption: props.paragraph.imgCap || "",
+  images: [{ src: imageUrl(props.paragraph.img) }],
+}));
 </script>
 
 <style scoped>
+.ii-figure {
+  width: 100%;
+}
 .ii-wide {
   margin-bottom: 0;
 }
