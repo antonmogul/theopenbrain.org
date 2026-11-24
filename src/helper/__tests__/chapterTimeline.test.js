@@ -3,6 +3,7 @@ import {
   PEEK_H,
   READING_LINE,
   REST_H,
+  REST_H_PHONE,
   barHeight,
   buildTimeline,
   layoutBars,
@@ -24,6 +25,7 @@ describe("timeline constants", () => {
   it("publishes the reading line and the dock heights", () => {
     expect(READING_LINE).toBe(0.4);
     expect(REST_H).toBe(20);
+    expect(REST_H_PHONE).toBe(28);
     expect(PEEK_H).toBe(104);
   });
 });
@@ -872,6 +874,59 @@ describe("layoutBars", () => {
     return { items, sections };
   }
   const right = (bars) => bars[bars.length - 1].x + bars[bars.length - 1].w;
+
+  describe("minBar (a phone's resting strip, OPENBRAIN-72)", () => {
+    it("changes nothing where every slot is already that wide", () => {
+      const { items, sections } = fixture([3, 2]);
+      expect(layoutBars(items, sections, 106, { minBar: 10 }).bars).toEqual(
+        layoutBars(items, sections, 106).bars
+      );
+    });
+
+    it("lets neighbouring paragraphs share a dash until slots are that wide", () => {
+      const { items, sections } = fixture([40, 60, 50]);
+      const plain = layoutBars(items, sections, 295);
+      expect(plain.bars).toHaveLength(150);
+      expect(plain.bars[0].w).toBeLessThan(2);
+
+      const { bars, indexAtX } = layoutBars(items, sections, 295, {
+        minBar: 10,
+      });
+      expect(bars.length).toBeLessThan(30);
+      for (const bar of bars) expect(bar.w).toBeGreaterThanOrEqual(10);
+      expect(right(bars)).toBeCloseTo(295);
+      // Every paragraph is in exactly one dash, in order, and no dash
+      // crosses a section.
+      expect(bars[0].from).toBe(0);
+      bars.forEach((bar, i) => {
+        expect(bar.to).toBeGreaterThan(bar.from);
+        expect(bar.to).toBe(bars[i + 1]?.from ?? 150);
+        expect(items[bar.to - 1].sectionKey).toBe(bar.sectionKey);
+      });
+      expect(bars.filter((b) => b.sectionStart).map((b) => b.from)).toEqual([
+        0, 40, 100,
+      ]);
+      // As few to a dash as it takes: one fewer would be too narrow.
+      const size = Math.max(...bars.map((b) => b.to - b.from));
+      expect(size).toBeGreaterThan(1);
+      expect(indexAtX(bars[1].x + 1)).toBe(bars[1].from);
+    });
+
+    it("keeps a dot for each widget and break between the shared dashes", () => {
+      const { items, sections } = fixture([60, 60], (i) =>
+        i === 10 ? { kind: "widget" } : i === 70 ? { kind: "break" } : {}
+      );
+      const { bars } = layoutBars(items, sections, 295, { minBar: 10 });
+      const blocks = bars.filter((b) => b.kind === "block");
+      expect(blocks.map((b) => [b.from, b.to])).toEqual([
+        [10, 11],
+        [70, 71],
+      ]);
+      expect(bars.some((b) => b.kind === "text" && b.to - b.from > 1)).toBe(
+        true
+      );
+    });
+  });
 
   it("draws one equal bar per item with 1px gaps and 4px before a section", () => {
     const { items, sections } = fixture([3, 2]);
