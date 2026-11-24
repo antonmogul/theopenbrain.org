@@ -6675,24 +6675,24 @@
       "title": "ON and OFF bipolar cells",
       "ramp": "perc",
       "status": "published",
-      "bytes": 1565345,
-      "sha256": "b1089271cc03b41a2e0b216269e9485265a4762a5d2f31ae7806b83696cb98bf"
+      "bytes": 1566557,
+      "sha256": "9632853c9ca0ef5ef8dcca0d011a5c1909bf4ed044daad025c47e5e0a5ab2ea1"
     },
     {
       "slug": "retina-photoreceptors",
       "title": "Photoreceptors",
       "ramp": "perc",
       "status": "published",
-      "bytes": 680949,
-      "sha256": "ecf2d457e9f675b7d81497d4107a475aec43f04a8664e39b2189ca04c0a9c886"
+      "bytes": 681967,
+      "sha256": "36383fae3f432b96955f402ebb212b6b19e631954ee803c5f66ad8312661d5b7"
     },
     {
       "slug": "retina-phototransduction",
       "title": "Phototransduction",
       "ramp": "perc",
       "status": "published",
-      "bytes": 973654,
-      "sha256": "3ef98b4595248f76068b705199cc7f1bfd0e7d00265d698380ee97eb8de0799b"
+      "bytes": 974483,
+      "sha256": "fab9508a0085833621093bd43e9b1dbe6da6c2c30a16bd34310c3228b406935d"
     },
     {
       "slug": "retina-pupillary-light-reflex",

@@ -203,8 +203,15 @@ onBeforeUnmount(() => {
   font: 0.875rem/1.4 var(--sp-sans);
 }
 
-/* Narrow screens: the layers above their mosaic. */
+/* Narrow screens: the layers above their mosaic, and the caption in a band
+   of its own under both. It used to lie over the mosaic's lower half
+   (Stuart on his phone, 20 Nov: "the legend kind of gets in the way of
+   seeing the bottom half", OPENBRAIN-70). The band is always there, so the
+   pictures don't resize as captions come and go. */
 @container figure (max-width: 760px) {
+  .sp {
+    --sp-caption-h: 8.75rem;
+  }
   .sp .sp-title {
     left: 1rem;
     top: 1rem;
@@ -212,6 +219,7 @@ onBeforeUnmount(() => {
   .sp-halves {
     flex-direction: column;
     padding-top: 3.5rem;
+    bottom: var(--sp-caption-h);
   }
   .sp-left,
   .sp-right {
@@ -231,10 +239,21 @@ onBeforeUnmount(() => {
     margin: 1rem;
   }
   .sp-caption {
-    left: 1rem;
-    bottom: 1rem;
-    padding-right: 1rem;
-    background: rgb(143 158 157 / 0.85);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    height: var(--sp-caption-h);
+    max-width: none;
+    padding: 0.75rem 1rem;
+    overflow-y: auto;
+    border-top: 1px solid var(--sp-ink);
+  }
+  .sp-caption:empty {
+    display: block;
+  }
+  .sp-info {
+    font-size: 0.8125rem;
   }
 }
 </style>

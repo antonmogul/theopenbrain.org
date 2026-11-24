@@ -51,6 +51,12 @@ export { FIGURE_HOLDS, normalizeFigureHold };
  *   part of the trigger: the figure stays through the room and the next
  *   trigger moves down.
  *
+ * - One figure on several paragraphs in a row (the Retina's widgets) is one
+ *   stay (OPENBRAIN-76, sameFigureNeighbour): each paragraph's window runs
+ *   on to the next one's top, across the margin or the band between them,
+ *   and the next one never waits for a cover. The pane has nothing to
+ *   change, so it must not empty and bring the same figure back.
+ *
  * figureEnd is called by ScrollTrigger on every refresh, so font, image and
  * viewport reflow is measured.
  */
@@ -180,6 +186,38 @@ export function figureRecordFor(key, records = []) {
 }
 
 /**
+ * The trigger read just before (`step` -1) or after (+1) `trigger`, when it
+ * names the same figure in the same section; else null. `triggers` is the
+ * reader's, in reading order. A trigger that wraps this one, or that this
+ * one wraps (a subsection header's and its paragraphs'), is not a neighbour:
+ * those overlap, and the inner one wins while it is on.
+ *
+ * The two are then one stay (OPENBRAIN-76). The Retina's cell-types widget
+ * is triggered by four paragraphs in a row with the full-screen "Lateral
+ * organization" figure inside the third: the fourth waited for that band to
+ * leave the pane (figureWait), so the widget showed under the departing
+ * band, went away for 300px and came back (Stuart, 20 Nov: "a clunky reload
+ * of the previously-shown retinal cross section").
+ */
+export function sameFigureNeighbour(trigger, triggers, records, step) {
+  const at = triggers?.indexOf(trigger) ?? -1;
+  if (at < 0) return null;
+  const figure = (el) => {
+    const key = el.id.replace(/^trigger/i, "");
+    return String(figureRecordFor(key, records)?.id ?? key).toLowerCase();
+  };
+  for (let i = at + step; i >= 0 && i < triggers.length; i += step) {
+    const other = triggers[i];
+    if (other.contains(trigger) || trigger.contains(other)) continue;
+    return figure(other) === figure(trigger) &&
+      other.closest("section") === trigger.closest("section")
+      ? other
+      : null;
+  }
+  return null;
+}
+
+/**
  * How far past the reading line a figure's trigger must go before the pane
  * is clear for it, in pixels of scroll; 0 for most figures (OPENBRAIN-195).
  *
@@ -195,12 +233,21 @@ export function figureRecordFor(key, records = []) {
  * screen is kept for it before it leaves. `end` is what figureEnd gave for
  * it (a scroll position when it holds), else it leaves with its paragraph.
  */
-export function figureWait(trigger, win = window, end = undefined) {
+export function figureWait(
+  trigger,
+  win = window,
+  end = undefined,
+  triggers = undefined,
+  records = undefined
+) {
   if (
     typeof win.matchMedia === "function" &&
     !win.matchMedia(READER_WIDE_QUERY).matches
   )
     return 0;
+  // A paragraph that carries on the figure of the one before it (given the
+  // reader's `triggers` and `records`) never waits: that figure is on.
+  if (sameFigureNeighbour(trigger, triggers, records, -1)) return 0;
   const half = win.innerHeight / 2;
   const rect = trigger.getBoundingClientRect();
   const scope =
@@ -232,9 +279,15 @@ export function figureWait(trigger, win = window, end = undefined) {
  * later at which the cover above it has left the pane (figureWait; `end`
  * as there).
  */
-export function figureStart(trigger, win = window, end = undefined) {
+export function figureStart(
+  trigger,
+  win = window,
+  end = undefined,
+  triggers = undefined,
+  records = undefined
+) {
   const half = win.innerHeight / 2;
-  const wait = figureWait(trigger, win, end);
+  const wait = figureWait(trigger, win, end, triggers, records);
   if (!wait) return `top ${half}`;
   return trigger.getBoundingClientRect().top + win.scrollY - half + wait;
 }
@@ -251,12 +304,20 @@ export function figureEnd(trigger, triggers, records, win = window) {
     !win.matchMedia(READER_WIDE_QUERY).matches
   )
     return fallback;
+  const rect = trigger.getBoundingClientRect();
+  // A figure the next paragraph carries on stays until that paragraph has
+  // taken over: one pixel past its top, so the two windows overlap and no
+  // scroll position falls between them.
+  const next = sameFigureNeighbour(trigger, triggers, records, 1);
+  const handover = next ? next.getBoundingClientRect().top + 1 : -Infinity;
+  const carried = next
+    ? Math.max(rect.bottom, handover) + win.scrollY - win.innerHeight / 2
+    : fallback;
   const record = figureRecordFor(trigger.id.replace(/^trigger/i, ""), records);
   const hold = resolveFigureHold(record, trigger.dataset?.figureHold);
-  if (!hold) return fallback;
+  if (!hold) return carried;
   const section = trigger.closest("section");
-  if (!section) return fallback;
-  const rect = trigger.getBoundingClientRect();
+  if (!section) return carried;
   const top = rect.top;
   const boundaries = [holdLimit(section)];
   if (Number.isFinite(hold))
@@ -284,7 +345,7 @@ export function figureEnd(trigger, triggers, records, win = window) {
   // trigger starts at or below its bottom, so the next figure is still never
   // delayed.
   return (
-    Math.max(top + 1, rect.bottom, Math.min(...boundaries)) +
+    Math.max(top + 1, rect.bottom, Math.min(...boundaries), handover) +
     win.scrollY -
     win.innerHeight / 2
   );

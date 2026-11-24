@@ -396,6 +396,23 @@ html[data-ob-fit].tob-choices .tob-stage { align-content: stretch; }
 html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
 .tob-seg { border-radius: 0 !important; }
 </style>
+
+<!-- Open Brain book (OPENBRAIN-71): phones: a tighter heading, caption and legend leave the animation most of the frame; the title the book already prints above the frame is kept for screen readers only. -->
+<style>
+@media (max-width: 470px) and (max-device-width: 767px) {
+  html.tob-site .tob-head { gap: 6px 12px; padding: 8px var(--tob-left) 6px; }
+  html.tob-site .tob-title { font-size: 16px; line-height: 22px; }
+  html.tob-site[data-ob-fit]:not([data-ob-fullscreen]) .tob-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  html.tob-site .tob-seg button { min-height: 36px; }
+  html.tob-site .tob-caption { gap: 6px 12px; padding: 8px 8px 8px 10px; font-size: 13px; line-height: 18px; }
+  html.tob-site .tob-ctl { width: 36px; height: 36px; }
+  html.tob-site .tob-canvas { padding: 6px var(--tob-left) 4px; }
+  html.tob-site .tob-legend { padding: 4px var(--tob-left) 10px; font-size: 11px; line-height: 14px; letter-spacing: .2px; }
+  html.tob-site .tob-legend ul { gap: 5px; }
+  html.tob-site .tob-chip { min-height: 32px; padding: 3px 9px 3px 6px; gap: 6px; }
+  html.tob-site .tob-chip svg { width: 16px; height: 16px; }
+}
+</style>
 </head>
 <body>
 

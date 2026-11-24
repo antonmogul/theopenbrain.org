@@ -13,6 +13,7 @@ import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { STAGE_LAYER_ID } from "@/helper/stageLayer";
 import { toSlug, addH, removeH } from "@/helper/general";
+import { READER_WIDE_QUERY } from "@/helper/readerLayout";
 import { markersEnabled } from "@/helper/debugFlags";
 import { sectionLabelMap } from "@/composables/useChapterOutline";
 import { authorCardsForModule } from "@/helper/chapterAuthors";
@@ -445,8 +446,12 @@ onMounted(() => {
       const illuHighlights = document.getElementsByClassName("animationMarker");
 
       for (const highlight of illuHighlights) {
-        const onMouseOver = (event) => addH(event);
-        const onMouseLeave = (event) => removeH(event);
+        // Words light the pane's figure. Below the two-column reader the
+        // figure is elsewhere on the page and has its own chips, so the
+        // word does nothing there (a tap fires mouseover too).
+        const beside = () => window.matchMedia(READER_WIDE_QUERY).matches;
+        const onMouseOver = (event) => beside() && addH(event);
+        const onMouseLeave = (event) => beside() && removeH(event);
         highlight.addEventListener("mouseover", onMouseOver);
         highlight.addEventListener("mouseleave", onMouseLeave);
         markerListeners.push({ highlight, onMouseOver, onMouseLeave });

@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import manifest from "./fixtures/retinaTobPhoneFit.json";
-import { atWidgetsDb } from "./helpers/retinaWidgetsDb.mjs";
+import { atPhoneFit, atWidgetsDb } from "./helpers/retinaWidgetsDb.mjs";
 const require = createRequire(import.meta.url);
 const harness = process.env.HISTORY_SQL_HARNESS;
 const sql = readFileSync(
@@ -15,7 +15,9 @@ const baseSql = readFileSync(
   "supabase/migrations/20261120066200_retina_widgets_db.sql",
   "utf8"
 );
-const file = (slug) => readFileSync(`src/widgets/uploads/${slug}.html`, "utf8");
+// As 066210 published them: without the later OPENBRAIN-71 phone blocks.
+const file = (slug) =>
+  atPhoneFit(readFileSync(`src/widgets/uploads/${slug}.html`, "utf8"));
 const md5 = (text) => createHash("md5").update(text).digest("hex");
 async function fresh() {
   const { PGlite } = require(harness);

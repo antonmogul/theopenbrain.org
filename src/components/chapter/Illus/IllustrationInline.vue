@@ -180,7 +180,18 @@ const posterSrc = computed(
         aria-label="View illustration fullscreen"
         @click="expanded = true"
       >
-        ⛶
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
+        </svg>
       </button>
     </figcaption>
 
@@ -261,11 +272,15 @@ const posterSrc = computed(
 </template>
 
 <style scoped>
+/* The heading as the figure shell draws it in the text column
+   (IllustrationPlaceholder's inline toolbar): on the page's own ground, no
+   band, the expand icon at the end of the row (OPENBRAIN-70). */
 .illu-inline .figure-heading {
   flex: 1;
   min-width: 0;
   width: auto;
-  padding-inline: 0;
+  padding: 0;
+  background: transparent;
 }
 
 .illu-inline {
@@ -304,7 +319,29 @@ const posterSrc = computed(
   contain: layout paint;
 }
 
-.illu-expand,
+/* The shell's 28px expand button; a finger gets 44px around it. */
+.illu-expand {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  background: transparent;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-line));
+  border-radius: var(--radius-control);
+}
+.illu-expand::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+.illu-expand:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
 .illu-inline__close {
   display: inline-flex;
   align-items: center;

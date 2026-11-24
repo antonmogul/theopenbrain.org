@@ -396,6 +396,23 @@ html[data-ob-fit].tob-choices .tob-stage { align-content: stretch; }
 html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
 .tob-seg { border-radius: 0 !important; }
 </style>
+
+<!-- Open Brain book (OPENBRAIN-71): phones: a smaller legend and tighter caption and step rows leave the animation most of the frame. -->
+<style>
+@media (max-width: 470px) and (max-device-width: 767px) {
+  .tob-head { padding: 8px var(--tob-left); }
+  .tob-caption { gap: 6px 12px; padding: 8px var(--tob-left); font-size: 15px; line-height: 21px; }
+  .tob-caption-text { padding: 0; }
+  .tob-ctl { width: 38px; height: 38px; }
+  .tob-dots { padding: 8px var(--tob-left) 0; }
+  .tob-dot { height: 34px; }
+  .tob-canvas { padding: 8px var(--tob-left) 6px; }
+  .tob-legend { padding: 8px var(--tob-left) 10px; font-size: 11px; line-height: 14px; letter-spacing: .2px; }
+  .tob-legend ul { gap: 5px; }
+  .tob-chip { min-height: 32px; padding: 3px 9px 3px 6px; gap: 6px; }
+  .tob-chip svg { width: 16px; height: 16px; }
+}
+</style>
 </head>
 <body>
 
