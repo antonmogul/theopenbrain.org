@@ -7,8 +7,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   RAIL_BOXES_BY_SLUG,
-  RAIL_WIDOW_GROW,
-  RAIL_WIDOW_LINES,
   boxIsRail,
   clearRailColumns,
   fitRailColumns,
@@ -22,7 +20,7 @@ import {
   railScrolledForX,
   railStopIndex,
   railStops,
-  railWidowRoom,
+  railWidowTrim,
   railXForScrolled,
   railXOf,
   revealInRail,
@@ -367,30 +365,35 @@ describe("revealInRail", () => {
   });
 });
 
-describe("railWidowRoom", () => {
-  it("offers the lines each earlier page must take, and one more", () => {
-    // One stray line after two pages: each takes a line (28px, and 2px of
-    // slack), or two if a paragraph's margin came with it.
-    expect(railWidowRoom({ remainder: 30, columns: 3, line: 28 })).toEqual([
-      30, 58,
-    ]);
-    // Three lines after one page: that page takes all three.
-    expect(railWidowRoom({ remainder: 84, columns: 2, line: 28 })).toEqual([
-      86,
-    ]);
+describe("railWidowTrim", () => {
+  it("shares a stray last page out over the pages before it", () => {
+    // Pages of 15 lines; two of them and one line: 31 lines over three
+    // pages is 11 a page, so each gives up four.
+    expect(
+      railWidowTrim({ remainder: 30, columns: 3, line: 28, height: 420 })
+    ).toBe(112);
+    // One page and three lines: nine lines a page.
+    expect(
+      railWidowTrim({ remainder: 84, columns: 2, line: 28, height: 420 })
+    ).toBe(168);
   });
 
-  it("leaves a last page that is a real page, or one too dear to merge", () => {
-    expect(railWidowRoom({ remainder: 300, columns: 3, line: 28 })).toEqual([]);
-    // Four lines after one page would cost it four lines: over the limit.
-    expect(railWidowRoom({ remainder: 112, columns: 2, line: 28 })).toEqual([]);
-    expect(RAIL_WIDOW_LINES).toBe(4);
-    expect(RAIL_WIDOW_GROW).toBe(3);
+  it("leaves a last page that is a real page", () => {
+    expect(
+      railWidowTrim({ remainder: 300, columns: 3, line: 28, height: 420 })
+    ).toBe(0);
+    // Five lines is a page of its own.
+    expect(
+      railWidowTrim({ remainder: 140, columns: 2, line: 28, height: 420 })
+    ).toBe(0);
   });
 
-  it("has nothing to merge on a single page", () => {
-    expect(railWidowRoom({ remainder: 30, columns: 1, line: 28 })).toEqual([]);
-    expect(railWidowRoom()).toEqual([]);
+  it("has nothing to do for one page, or with nothing measured", () => {
+    expect(
+      railWidowTrim({ remainder: 30, columns: 1, line: 28, height: 420 })
+    ).toBe(0);
+    expect(railWidowTrim({ remainder: 30, columns: 2, line: 28 })).toBe(0);
+    expect(railWidowTrim()).toBe(0);
   });
 });
 
@@ -502,29 +505,45 @@ describe("fitRailColumns", () => {
     expect(short.hasAttribute("data-rail-whole")).toBe(false);
   });
 
-  it("merges a swipe part's stray last page into the pages before it", () => {
-    // Two pages and one line; a line more on each page takes it in.
+  it("evens a swipe part's stray last page out with the pages before it", () => {
+    // Pages of 500px (16 lines); two and one line. 33 lines over three
+    // pages is 11 a page: each page gives five lines, 150px.
     const { scroller, el } = block({
       mode: "swipe",
       view: 400,
       lay: (el) =>
-        parseFloat(el.style.getPropertyValue("--rp-extra")) >= 30
-          ? [530, 530]
+        parseFloat(el.style.getPropertyValue("--rp-extra")) <= -150
+          ? [330, 330, 330]
           : [500, 500, 30],
     });
     fitRailColumns(scroller);
-    expect(el.style.getPropertyValue("--rp-extra")).toBe("32px");
-    // The track grows by the same, and the block is its two pages wide.
-    expect(scroller.style.getPropertyValue("--rail-extra")).toBe("32px");
-    expect(parseFloat(el.style.width)).toBeCloseTo(850.5, 1);
+    expect(el.style.getPropertyValue("--rp-extra")).toBe("-150px");
+    // The track keeps its height (it is what is left of one screen), and
+    // the block is its three pages wide.
+    expect(scroller.style.getPropertyValue("--rail-extra")).toBe("");
+    expect(parseFloat(el.style.width)).toBeCloseTo(1300.5, 1);
     // A swipe page is filled from the top, never centred.
     expect(el.style.height).toBe("");
     clearRailColumns(scroller);
     expect(el.style.getPropertyValue("--rp-extra")).toBe("");
-    expect(scroller.style.getPropertyValue("--rail-extra")).toBe("");
   });
 
-  it("leaves a swipe part whose last page is a real page, or cannot be merged", () => {
+  it("gives a line back when the evened pages spill onto one more", () => {
+    const { scroller, el } = block({
+      mode: "swipe",
+      view: 400,
+      lay: (el) => {
+        const extra = parseFloat(el.style.getPropertyValue("--rp-extra")) || 0;
+        if (extra <= -150) return [330, 330, 330, 20];
+        if (extra <= -120) return [360, 360, 300];
+        return [500, 500, 30];
+      },
+    });
+    fitRailColumns(scroller);
+    expect(el.style.getPropertyValue("--rp-extra")).toBe("-120px");
+  });
+
+  it("leaves a swipe part whose last page is a real page, or cannot be evened out", () => {
     const real = block({
       mode: "swipe",
       view: 400,
@@ -534,11 +553,14 @@ describe("fitRailColumns", () => {
     expect(real.el.style.getPropertyValue("--rp-extra")).toBe("");
     expect(real.scroller.style.getPropertyValue("--rail-extra")).toBe("");
     expect(parseFloat(real.el.style.width)).toBeCloseTo(1300.5, 1);
-    // The room is tried and given back when the page is still there.
+    // The cut is tried and given back when it only makes another page.
     const stuck = block({
       mode: "swipe",
       view: 400,
-      lay: () => [500, 500, 30],
+      lay: (el) =>
+        parseFloat(el.style.getPropertyValue("--rp-extra")) < 0
+          ? [400, 400, 200, 30]
+          : [500, 500, 30],
     });
     fitRailColumns(stuck.scroller);
     expect(stuck.el.style.getPropertyValue("--rp-extra")).toBe("");

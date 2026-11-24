@@ -67,7 +67,6 @@
  *   --rail-figures-w                                 on a part
  *   width, height, --rp-extra, data-rail-fill        on a part's text
  *   data-rail-whole                                  on a short paragraph
- *   --rail-extra                                     on the track
  */
 
 import { railPlatesHeight, railPlatesWidth } from "@/helper/railFigure";
@@ -375,37 +374,29 @@ export const RAIL_WHOLE_LINES = 7;
  *  column stays one column instead of being balanced over two. */
 export const RAIL_SINGLE_FILL = 0.67;
 /** On a swipe track, a last page of text with up to this many lines is a
- *  remainder to merge into the pages before it… */
+ *  remainder to even out with the pages before it. */
 export const RAIL_WIDOW_LINES = 4;
-/** …when that costs each of them no more than this many lines of height. */
-export const RAIL_WIDOW_GROW = 3;
-
 /**
- * The heights to try, in px, for merging a swipe part's last page of text
- * into the pages before it (Stuart, 14 Nov: "there is one section for a
- * paragraph … that only has a single word"). The last page holds
- * `remainder` px of text; the `columns - 1` pages before it share it out,
- * each growing by whole lines. Empty when there is nothing to merge: one
- * page, a last page that is a real page (more than RAIL_WIDOW_LINES), or
- * a remainder that would cost more than RAIL_WIDOW_GROW lines a page. The
- * caller tries each in turn and keeps the first that loses the page.
- * @param {{ remainder: number, columns: number, line: number }} text
- * @returns {number[]}
+ * How much shorter, in px, to make each of a swipe part's pages of text so
+ * that its last page is not a stray few lines (OPENBRAIN-74). A swipe box
+ * is one screen of the phone, so its track cannot grow to take a remainder
+ * in: the lines are shared out instead, the
+ * full pages each giving a few to the last. 0 when there is nothing to do:
+ * one page, a last page that is a real page (more than RAIL_WIDOW_LINES),
+ * or pages already too short to give anything.
+ * @param {{ remainder: number, columns: number, line: number, height: number }} text
+ *   `height` is a page's, `remainder` the text on the last one.
+ * @returns {number}
  */
-export function railWidowRoom({ remainder, columns, line } = {}) {
-  if (!(columns >= 2) || !(remainder > 0) || !(line > 0)) return [];
+export function railWidowTrim({ remainder, columns, line, height } = {}) {
+  if (!(columns >= 2) || !(remainder > 0) || !(line > 0)) return 0;
   const lines = Math.max(1, Math.round(remainder / line));
-  if (lines > RAIL_WIDOW_LINES) return [];
-  const out = [];
-  // A paragraph that starts the last page brings its margin with it: one
-  // more line of room is tried before giving up.
-  for (
-    let each = Math.ceil(lines / (columns - 1));
-    each <= RAIL_WIDOW_GROW && out.length < 2;
-    each += 1
-  )
-    out.push(Math.ceil(each * line) + 2);
-  return out;
+  if (lines > RAIL_WIDOW_LINES) return 0;
+  const perPage = Math.floor((Number(height) || 0) / line);
+  if (perPage < 2) return 0;
+  const total = (columns - 1) * perPage + lines;
+  const cut = perPage - Math.ceil(total / columns);
+  return cut > 0 ? Math.floor(cut * line) : 0;
 }
 
 const lineOf = (style) => {
@@ -511,33 +502,37 @@ function fitTrackText(el) {
 }
 
 /* A swipe track: a page for every column. A last page that is only a few
-   lines is merged into the pages before it: they grow by a line or two
-   (--rp-extra on the text, and the track by the most any part needs,
-   --rail-extra, which fitRailColumns sets), so no page is a stray word.
-   Returns the room this part took. */
+   lines is evened out with the pages before it: they each give it a line
+   or two (a negative --rp-extra on the text), so no page is a stray word
+   and the track, which is what is left of one screen, keeps its height
+   (OPENBRAIN-74; it used to grow by --rail-extra to take the page in). */
 function fitSwipeText(el) {
   el.style.width = "";
   el.style.height = "";
   el.style.removeProperty("--rp-extra");
   let m = columnsOf(el);
-  if (!m) return 0;
-  let extra = 0;
-  for (const room of railWidowRoom({
+  if (!m) return;
+  const line = lineOf(m.style);
+  const trim = railWidowTrim({
     remainder: m.last,
     columns: m.columns,
-    line: lineOf(m.style),
-  })) {
-    el.style.setProperty("--rp-extra", `${room}px`);
-    const merged = columnsOf(el);
-    if (merged && merged.columns < m.columns) {
-      m = merged;
-      extra = room;
+    line,
+    height: m.height,
+  });
+  // The count is in whole lines, and the text has headings, gaps between
+  // paragraphs and short paragraphs that are kept whole: pages cut that
+  // far can spill onto one more. Give back a line at a time until the
+  // part is the pages it was.
+  for (let cut = trim; cut >= line - 1; cut -= line) {
+    el.style.setProperty("--rp-extra", `${-Math.round(cut)}px`);
+    const evened = columnsOf(el);
+    if (evened && evened.columns <= m.columns) {
+      m = evened;
       break;
     }
     el.style.removeProperty("--rp-extra");
   }
   widen(el, m);
-  return extra;
 }
 
 /**
@@ -552,17 +547,9 @@ function fitSwipeText(el) {
 export function fitRailColumns(scroller) {
   if (!scroller?.querySelectorAll) return;
   const swipe = scroller.getAttribute("data-rail-mode") === "swipe";
-  let extra = 0;
   for (const el of scroller.querySelectorAll("[data-rail-columns]")) {
-    if (swipe) extra = Math.max(extra, fitSwipeText(el));
+    if (swipe) fitSwipeText(el);
     else fitTrackText(el);
-  }
-  // Written only when it changes: it sets the track's height, which the
-  // rail's ResizeObserver hears.
-  const now = extra > 0 ? `${extra}px` : "";
-  if (scroller.style.getPropertyValue("--rail-extra") !== now) {
-    if (now) scroller.style.setProperty("--rail-extra", now);
-    else scroller.style.removeProperty("--rail-extra");
   }
 }
 
@@ -679,5 +666,4 @@ export function clearRailColumns(scroller) {
   }
   for (const el of scroller?.querySelectorAll?.("[data-rail-part]") || [])
     el.style.removeProperty("--rail-figures-w");
-  scroller?.style?.removeProperty("--rail-extra");
 }

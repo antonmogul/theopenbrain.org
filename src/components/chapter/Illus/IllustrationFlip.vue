@@ -5,10 +5,17 @@
       :class="isFlip && 'flip'"
     >
       <div class="flip-card-inner">
+        <!-- Without playsinline, iPhone Safari opens an autoplaying
+             video in its full-screen player (OPENBRAIN-74). -->
         <video
+          :ref="primeInlineLoop"
           autoplay
           muted
           loop
+          playsinline
+          webkit-playsinline
+          disablepictureinpicture
+          disableremoteplayback
           :width="widthVideo"
           :height="heightVideo"
           class="rounded-full flip-card-front"
@@ -40,6 +47,7 @@
 <script setup>
 import { ref } from "vue";
 import { toSlug } from "@/helper/general";
+import { primeInlineLoop } from "@/helper/inlineVideo";
 
 import FlipIcon from "@/icons/custom/FlipIcon.vue";
 import SourceElement from "../../UI/SourceElement.vue";

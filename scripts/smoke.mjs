@@ -1009,7 +1009,12 @@ async function main() {
                   for (const node of text.querySelectorAll("*"))
                     for (const r of node.getClientRects()) {
                       if (!r.width || !r.height) continue;
-                      const page = Math.round(r.left / (box.width || 1));
+                      // The page a fragment starts on: floor, not round, or a
+                      // footnote mark in the right half of the last page is
+                      // read as a page of its own (OPENBRAIN-74).
+                      const page = Math.floor(
+                        (r.left - box.left + 1) / (box.width || 1)
+                      );
                       pages.set(
                         page,
                         Math.max(pages.get(page) || 0, r.bottom - top)

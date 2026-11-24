@@ -30,6 +30,13 @@
  * which is ignored, so scrolling past the contents does not flick through
  * the pictures.
  *
+ * In one column only the picture on show is in the page (OPENBRAIN-74).
+ * The pictures are 1440 × 1920, about 11 MB each once decoded; seven of them
+ * stacked and decoded off the main thread was more than an iPhone keeps, so
+ * Safari dropped and re-decoded the one on show while the page scrolled and
+ * the chapter colour behind it flashed through. Nothing points at a row on a
+ * touch screen, so the others were never seen there anyway.
+ *
  * A chapter with no section art keeps OpenerToc (ChapterOpener decides).
  */
 import {
@@ -81,6 +88,12 @@ const fit = ref(1); // what every gap is multiplied by, so the list fits
 const scrolls = ref(false); // too short even so: the list scrolls in itself
 const armed = ref(false); // the other pictures may load
 const still = ref(false); // reduced motion
+const wide = ref(true); // the two-column reader: picture beside the list
+
+/* Which pictures are in the page: all of them beside the list, where
+   pointing swaps them; in one column the one on show and the one it fades
+   in over (see the note at the top). */
+const mounted = (i) => wide.value || i === shown.value || i === under.value;
 
 const shown = computed(() => pictureOf(props.outline[active.value] || {}));
 watch(shown, (now, before) => {
@@ -152,8 +165,17 @@ function onRow(i, entry, event) {
 
 let observer = null;
 let resizer = null;
+let wideQuery = null;
+const onWide = () => {
+  wide.value = !!wideQuery?.matches;
+};
 onMounted(() => {
   still.value = reducedMotionPreferred();
+  wideQuery = window.matchMedia?.(READER_WIDE_QUERY) || null;
+  if (wideQuery) {
+    onWide();
+    wideQuery.addEventListener?.("change", onWide);
+  }
   measure();
   // The column's room changes with the window, the rows' heights with the
   // width and the fonts arriving.
@@ -179,6 +201,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   observer?.disconnect();
   resizer?.disconnect();
+  wideQuery?.removeEventListener?.("change", onWide);
 });
 // The outline arrives after the module; start again from its first section.
 watch(
@@ -210,19 +233,20 @@ defineExpose({ active, fit, scrolls, measure });
   >
     <!-- The pictures repeat what the list says, so they are not announced. -->
     <div class="otoc__art" aria-hidden="true">
-      <img
-        v-for="(picture, i) in pictures"
-        :key="picture.src"
-        class="otoc__pic"
-        :class="{ 'is-on': i === shown, 'is-under': i === under }"
-        :style="
-          picture.position ? { objectPosition: picture.position } : undefined
-        "
-        :src="armed || i === shown ? picture.src : undefined"
-        alt=""
-        decoding="async"
-        draggable="false"
-      />
+      <template v-for="(picture, i) in pictures" :key="picture.src">
+        <img
+          v-if="mounted(i)"
+          class="otoc__pic"
+          :class="{ 'is-on': i === shown, 'is-under': i === under }"
+          :style="
+            picture.position ? { objectPosition: picture.position } : undefined
+          "
+          :src="armed || i === shown ? picture.src : undefined"
+          alt=""
+          :decoding="wide ? 'async' : 'sync'"
+          draggable="false"
+        />
+      </template>
     </div>
 
     <span v-if="pictures[shown]?.placeholder" class="otoc__placeholder"
@@ -473,6 +497,13 @@ defineExpose({ active, fit, scrolls, measure });
   }
   .otoc__pic {
     object-position: center 30%;
+  }
+  /* A finished animation that still fills keeps the picture on a layer of
+     its own, which iOS throws away and repaints as the page scrolls
+     (OPENBRAIN-74). The picture ends where it rests, so nothing has to
+     fill. */
+  .otoc__pic.is-on {
+    animation-fill-mode: backwards;
   }
   .otoc__column {
     padding: 2rem 0 2.5rem;

@@ -54,6 +54,7 @@ import {
   scrollToY,
   setJumpHistory,
 } from "@/helper/readerJump";
+import { keepReadingPlace } from "@/helper/keepPlace";
 import {
   restoreAfterLayout,
   scrollTopForReadingPercent,
@@ -347,6 +348,14 @@ async function landOnHash(generation) {
   stopHashLanding = holdLanding(el, { align: "top" }) || null;
 }
 onBeforeUnmount(() => stopHashLanding?.());
+
+// The reader's place survives a turned phone or a resized window
+// (OPENBRAIN-74, helper/keepPlace.js).
+let stopKeepingPlace = null;
+onMounted(() => {
+  stopKeepingPlace = keepReadingPlace();
+});
+onBeforeUnmount(() => stopKeepingPlace?.());
 
 async function initializeChapterExperience() {
   const moduleId = currentModuleId.value;
