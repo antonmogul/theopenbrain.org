@@ -20,6 +20,9 @@
 //   note                     — optional production note (what art to source)
 //   images: [{ src, caption?, alt? }]  — real artwork; replaces the placeholder
 //   galleryStart: "grid" | "single"    — a set's opening view (else by its size)
+//   tintFade: true           — in the pane, its photographs open washed in
+//                              the chapter colour and clear with the scroll
+//                              (OPENBRAIN-80, helper/figureTint.js)
 //
 // The legend is folded behind a "Legend" control wherever the figure is
 // shown, so the artwork gets the room and legends of different lengths never
@@ -41,6 +44,7 @@ import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
 import { figureImages, galleryStartView } from "@/helper/figureCycle";
 import { useFigureLegend } from "@/composables/useFigureLegend";
 import { railFigureLabel } from "@/helper/railFigure";
+import { wantsTintFade } from "@/helper/figureTint";
 
 const props = defineProps({
   animation: { type: Object, required: true },
@@ -299,6 +303,7 @@ function closeFullscreen() {
           :start="animation.galleryStart || ''"
           :fit="!inline"
           :suspended="isFullscreen"
+          :wash="!inline && wantsTintFade(animation)"
           legend-above
         />
         <div v-else class="fig-placeholder">

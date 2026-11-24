@@ -11,7 +11,9 @@
  * off and hides the play button; the Autoplay story switches it to app
  * motion so the gallery turns.
  */
+import { computed, provide } from "vue";
 import FigureImages from "../FigureImages.vue";
+import { FIGURE_TINT } from "@/helper/figureTint";
 import { chapterFrame } from "../../__stories__/chapterFixtures";
 import {
   FIG2_IMAGES,
@@ -267,4 +269,43 @@ export const VideoPlayer = {
     label: "FIG",
     title: "Rita Levi-Montalcini",
   },
+};
+
+/** The chapter-colour wash (OPENBRAIN-80): a figure whose row says
+ *  `config.tintFade` opens in the pane as a duotone in the chapter colour,
+ *  and the reader's scroll clears it to the natural picture. The pane drives
+ *  it; here the `washAmount` control stands in for the scroll (1 = as the
+ *  figure arrives, 0 = cleared). Try the other chapters in the toolbar.
+ *  No wash under reduced motion. */
+export const Washed = {
+  globals: { reduceMotion: false, chapter: "fund" },
+  args: {
+    images: [
+      {
+        src: "/publicAssets/images/foundations/hm-brain.jpg",
+        alt: "The brain of H.M.",
+      },
+    ],
+    label: "FIG 26",
+    title: "The brain of H.M.",
+    wash: true,
+    washAmount: 0.7,
+  },
+  argTypes: {
+    washAmount: { control: { type: "range", min: 0, max: 1, step: 0.05 } },
+  },
+  render: (args) => ({
+    components: { FigureImages },
+    setup() {
+      provide(FIGURE_TINT, { current: () => args.washAmount });
+      const props = computed(() => {
+        const { washAmount: _amount, ...rest } = args;
+        return rest;
+      });
+      return { args, props };
+    },
+    template: `<div class="figure-pane--dark" style="height: 100vh; padding: 2rem; background: var(--color-dark-surface)">
+      <FigureImages :key="args.washAmount" v-bind="props" />
+    </div>`,
+  }),
 };
