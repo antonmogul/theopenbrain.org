@@ -2,7 +2,7 @@
   "header": {
     "source": "published chapter export",
     "chapter": "the-retina",
-    "exportedAt": "2026-11-20",
+    "exportedAt": "2026-11-24",
     "exportedBy": "scripts/history-full-reader-export.mjs",
     "counts": {
       "sections": 13,
@@ -533,8 +533,10 @@
           {
             "src": "GABAergic",
             "type": "image",
+            "title": "Starburst amacrine cells",
             "closed": true,
-            "caption": "For a given starburst amacrine cell, its distal processes are predominantly activated by visual stimuli moving away from the soma. In turn, it’s processes in different quadrants specifically connect to nearby direction selective ganglion cells with a preferred direction opposite to preferred direction of the starburst processes that connect to it. Adapted from Briggman et al., Nature, 2011."
+            "caption": "For a given starburst amacrine cell, its distal processes are predominantly activated by visual stimuli moving away from the soma. In turn, it’s processes in different quadrants specifically connect to nearby direction selective ganglion cells with a preferred direction opposite to preferred direction of the starburst processes that connect to it. Adapted from Briggman et al., Nature, 2011.",
+            "figureNumber": 19
           }
         ]
       },
@@ -740,8 +742,10 @@
           {
             "src": "retinoRecipientRegions",
             "type": "image",
+            "title": "Retinal projections",
             "closed": true,
-            "caption": "Different retinal cell types (shown in different colors) can project to various retino-recipient regions in the brain (schematized as A, B and C). Some ganglion cells predominantly project to a single brain region, whereas others project to multiple regions. Adapted from Martersteck et al., Cell Reports. 2017."
+            "caption": "Different retinal cell types (shown in different colors) can project to various retino-recipient regions in the brain (schematized as A, B and C). Some ganglion cells predominantly project to a single brain region, whereas others project to multiple regions. Adapted from Martersteck et al., Cell Reports. 2017.",
+            "figureNumber": 23
           }
         ]
       },
@@ -765,8 +769,10 @@
           {
             "src": "ONOFFLamina",
             "type": "image",
+            "title": "ON and OFF layers",
             "closed": false,
-            "caption": ""
+            "caption": "",
+            "figureNumber": 13
           }
         ],
         "animationFlags": { "hold": "next", "stage": "Bipolar cells" }
@@ -848,8 +854,10 @@
           {
             "src": "bipolarCellTerminal",
             "type": "image",
+            "title": "Bipolar cell responses",
             "closed": true,
-            "caption": "Example bipolar cell responses to a light stimulus that is being presented at a fixed frequency. Some bipolar cells respond in a more transient manner, while others are more sustained. Adapted from Baden et al., Nature Reviews Neuroscience, 2014."
+            "caption": "Example bipolar cell responses to a light stimulus that is being presented at a fixed frequency. Some bipolar cells respond in a more transient manner, while others are more sustained. Adapted from Baden et al., Nature Reviews Neuroscience, 2014.",
+            "figureNumber": 15
           }
         ]
       },
@@ -1277,8 +1285,10 @@
           {
             "src": "ramonYCajal",
             "type": "image",
+            "title": "Cajal's avian retina",
             "closed": false,
-            "caption": "Drawing by Santiago Ramon y Cajal of the avian retina, with the fovea being just out of view on the right side of the image (1901). Here, we only outline the most relevant portions of the figure. A-G, retinal layers, from photoreceptor outer segments through to the retinal ganglion cell axons. a, cones. b, rods. c, horizontal cells. d, e, bipolar cells. f, g, ganglion cells. i, amacrine cells."
+            "caption": "Drawing by Santiago Ramon y Cajal of the avian retina, with the fovea being just out of view on the right side of the image (1901). Here, we only outline the most relevant portions of the figure. A-G, retinal layers, from photoreceptor outer segments through to the retinal ganglion cell axons. a, cones. b, rods. c, horizontal cells. d, e, bipolar cells. f, g, ganglion cells. i, amacrine cells.",
+            "figureNumber": 34
           }
         ]
       },
@@ -1566,8 +1576,10 @@
           {
             "src": "RodBySchultze",
             "type": "image",
+            "title": "Rod and cone",
             "closed": true,
-            "caption": "Rod, left, and cone, right, from a human retina. Drawing by Max Schutlze, 1873."
+            "caption": "Rod, left, and cone, right, from a human retina. Drawing by Max Schutlze, 1873.",
+            "figureNumber": 6
           }
         ]
       },
@@ -1787,8 +1799,10 @@
           {
             "src": "waveLength",
             "type": "image",
+            "title": "Absorption spectra",
             "closed": true,
-            "caption": "The normalized absorption spectra of rod (R) and cone photoreceptors (S, short wavelength - blue; M, medium wavelength, green; L, long wavelength, red)."
+            "caption": "The normalized absorption spectra of rod (R) and cone photoreceptors (S, short wavelength - blue; M, medium wavelength, green; L, long wavelength, red).",
+            "figureNumber": 9
           }
         ],
         "animationFlags": { "hold": "next" }
@@ -4308,8 +4322,10 @@
           {
             "src": "testSpotLuminance",
             "type": "image",
+            "title": "Light adaptation",
             "closed": true,
-            "caption": "At a given mean luminance intensity (eg. in a room of a given light level), the retina can only signal changes in brightness over roughy 2-3 orders of magnitude. However, when the mean luminance level of the environment changes, the retina adapts so that it can encode instantaneous changes in light levels from the new mean luminance. Adapted from Purves et al., Neuroscience, 2017."
+            "caption": "At a given mean luminance intensity (eg. in a room of a given light level), the retina can only signal changes in brightness over roughy 2-3 orders of magnitude. However, when the mean luminance level of the environment changes, the retina adapts so that it can encode instantaneous changes in light levels from the new mean luminance. Adapted from Purves et al., Neuroscience, 2017.",
+            "figureNumber": 25
           }
         ]
       },
@@ -4447,7 +4463,7 @@
         "source": "Eyerounds.org",
         "states": [],
         "fullscreen": false,
-        "figureNumber": 25
+        "figureNumber": 32
       },
       "file_size_bytes": 33792,
       "scientific_domain": "disease",
@@ -4473,7 +4489,7 @@
         "source": "Xu et al., 2021, Biomed Eng Online",
         "states": [],
         "fullscreen": false,
-        "figureNumber": 22
+        "figureNumber": 29
       },
       "file_size_bytes": 33792,
       "scientific_domain": "disease",
@@ -4497,7 +4513,7 @@
         "caption": "Stare at the cross for 30 seconds, then close your eyes or look at a white wall and notice how the colours change.",
         "illuImage": true,
         "fullHeight": true,
-        "figureNumber": 14
+        "figureNumber": 18
       },
       "file_size_bytes": 30720,
       "scientific_domain": "circuits",
@@ -4523,7 +4539,7 @@
         "source": "Ramasy et al., 2021, PeerJ Computer Science",
         "states": [],
         "fullscreen": false,
-        "figureNumber": 24
+        "figureNumber": 31
       },
       "file_size_bytes": 33792,
       "scientific_domain": "disease",
@@ -4571,7 +4587,7 @@
         "loop": true,
         "source": "Artistic reinterpretaton",
         "fullscreen": false,
-        "figureNumber": 18
+        "figureNumber": 24
       },
       "file_size_bytes": 813056,
       "scientific_domain": "movement",
@@ -4621,7 +4637,7 @@
         "source": "Viewpoint online",
         "states": [],
         "fullscreen": false,
-        "figureNumber": 23
+        "figureNumber": 30
       },
       "file_size_bytes": 33792,
       "scientific_domain": "disease",
@@ -4675,7 +4691,7 @@
         "video": "normal-vision",
         "states": [],
         "fullscreen": false,
-        "figureNumber": 21
+        "figureNumber": 28
       },
       "file_size_bytes": 33792,
       "scientific_domain": "disease",
@@ -4699,7 +4715,7 @@
         "caption": "Current-voltage relationship from the outer segment of an isolated salamander rod. Voltage was held at the dark level and current was measured 20 ms after switching to the new light level. Curve 1 – dark. Curve 2 – half-saturating light. Curve 3 – Saturating light. Adapted from Baylor and Nunn (1986).",
         "diagramType": "chart",
         "placeholder": true,
-        "figureNumber": 8
+        "figureNumber": 10
       },
       "file_size_bytes": null,
       "scientific_domain": null,
@@ -4734,7 +4750,7 @@
         ],
         "caption": "Neuroblasts divide and migrate as the developing retina generates its neuronal layers and assembles retinal circuits.",
         "placeholder": true,
-        "figureNumber": 19
+        "figureNumber": 26
       },
       "file_size_bytes": null,
       "scientific_domain": null,
@@ -4761,7 +4777,7 @@
         "highlight": true,
         "fullscreen": false,
         "iconPraefix": "retinalCellTypes",
-        "figureNumber": 10,
+        "figureNumber": 12,
         "clickTriggered": true
       },
       "file_size_bytes": 44032,
@@ -4789,7 +4805,7 @@
         "highlight": true,
         "fullscreen": false,
         "iconPraefix": "retinalCellTypes",
-        "figureNumber": 9,
+        "figureNumber": 11,
         "clickTriggered": true
       },
       "file_size_bytes": 44032,
@@ -4810,7 +4826,7 @@
       "css_class_name": null,
       "interaction_type": "auto_loop",
       "component_name": "IllustrationComp",
-      "config": { "loop": false, "fullscreen": false, "figureNumber": 12 },
+      "config": { "loop": false, "fullscreen": false, "figureNumber": 16 },
       "file_size_bytes": null,
       "scientific_domain": "circuits",
       "load_priority": "high"
@@ -4835,7 +4851,7 @@
         "source": "Hamel Orphanet Journal of Rare Diseases 2006 1:40 doi:10.1186/1750-1172-1-40)",
         "states": [],
         "fullscreen": false,
-        "figureNumber": 26
+        "figureNumber": 33
       },
       "file_size_bytes": 33792,
       "scientific_domain": "disease",
@@ -4855,7 +4871,7 @@
       "css_class_name": null,
       "interaction_type": "youtube_embed",
       "component_name": "IllustrationComp",
-      "config": { "illuImage": true, "figureNumber": 20 },
+      "config": { "illuImage": true, "figureNumber": 27 },
       "file_size_bytes": null,
       "scientific_domain": "development",
       "load_priority": "lazy"
@@ -4876,7 +4892,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "widgetId": "upload:retina-center-surround",
-        "figureNumber": 13
+        "figureNumber": 17
       },
       "file_size_bytes": null,
       "scientific_domain": "retina",
@@ -4898,7 +4914,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "widgetId": "upload:retina-light-sensitive-ganglion-cells",
-        "figureNumber": 17
+        "figureNumber": 22
       },
       "file_size_bytes": null,
       "scientific_domain": "retina",
@@ -4920,7 +4936,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "widgetId": "upload:retina-object-motion-sensitivity",
-        "figureNumber": 15
+        "figureNumber": 20
       },
       "file_size_bytes": null,
       "scientific_domain": "retina",
@@ -4942,7 +4958,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "widgetId": "upload:retina-on-off-bipolar-cells",
-        "figureNumber": 11
+        "figureNumber": 14
       },
       "file_size_bytes": null,
       "scientific_domain": "retina",
@@ -4964,7 +4980,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "widgetId": "upload:retina-photoreceptors",
-        "figureNumber": 7
+        "figureNumber": 8
       },
       "file_size_bytes": null,
       "scientific_domain": "retina",
@@ -5008,7 +5024,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "widgetId": "upload:retina-rod-vs-cone-circuits",
-        "figureNumber": 16
+        "figureNumber": 21
       },
       "file_size_bytes": null,
       "scientific_domain": "retina",
@@ -5030,7 +5046,7 @@
       "component_name": "IllustrationWidget",
       "config": {
         "widgetId": "upload:retina-synaptic-architecture",
-        "figureNumber": 6
+        "figureNumber": 7
       },
       "file_size_bytes": null,
       "scientific_domain": "retina",
