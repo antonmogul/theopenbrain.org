@@ -24,8 +24,24 @@
  * goes through the --bx-* custom properties set per treatment on the frame,
  * so the four looks are one set of rules, and the pause's room (also
  * painted in the box's colour) follows along. */
-import { computed, inject, onBeforeUnmount, provide, ref, watch } from "vue";
+import {
+  computed,
+  inject,
+  onBeforeUnmount,
+  provide,
+  ref,
+  unref,
+  watch,
+} from "vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
+import BoxTitleCard from "./BoxTitleCard.vue";
+import {
+  CARD_NEAR,
+  cardExcerptOf,
+  cardLeadFigureId,
+  cardLeadPicture,
+} from "@/helper/boxTitleCard";
+import { useFigureRecords } from "@/composables/useFigureSources";
 import {
   DARK_BOX_TREATMENTS,
   boxTreatmentFor,
@@ -106,8 +122,50 @@ const parts = computed(() =>
    box's track says how far along it is. */
 const named = computed(() => !!layout.value?.named);
 const hasTail = computed(() => !!mode.value && !!layout.value?.tail.length);
+
+/* The title card (OPENBRAIN-77, helper/boxTitleCard.js): a sideways box
+   whose first part leads with a picture opens on that picture. On the
+   pinned track the card lies over the box for the first stretch of the pin
+   and the page's scroll plays it (driveCard); under reduced motion and on
+   the phone's swipe track it is a still block before the box. Not while a
+   creator is editing: the card would lie over the text being edited. */
+const editing = inject("isCreator", null);
+const cardEl = ref(null);
+const leadFigureId = computed(() =>
+  wantsRail.value ? cardLeadFigureId(layout.value) : ""
+);
+const leadRecords = useFigureRecords(() =>
+  leadFigureId.value ? [leadFigureId.value] : []
+);
+const cardPicture = computed(() =>
+  mode.value && !unref(editing)
+    ? cardLeadPicture(layout.value, leadRecords.value[0] || null)
+    : null
+);
+const cardExcerpt = computed(() =>
+  cardPicture.value ? cardExcerptOf(layout.value) : ""
+);
+/* How far past its pin the box is, as the card last heard it. */
+let cardScrolled = -Infinity;
+let cardIntro = 0;
+/* The track's own lead image: where the card's picture lands. */
+const leadTarget = () =>
+  trackEl.value
+    ?.querySelector("[data-rail-part]")
+    ?.querySelector("[data-rail-figure] img") || null;
+function driveCard(scrolled, intro) {
+  cardScrolled = scrolled;
+  cardIntro = intro;
+  if (!intro) return;
+  cardEl.value?.drive?.({
+    progress: scrolled / intro,
+    near: scrolled > -(window.innerHeight || 0) * CARD_NEAR,
+    target: leadTarget(),
+  });
+}
 const {
   pinned,
+  reduced,
   room,
   lead,
   stickyTop,
@@ -119,11 +177,19 @@ const {
   next,
   prev,
   goToPart,
+  enter,
 } = useExploreRail({
   mode,
   pauseEl,
   boxEl,
   scrollerEl: trackEl,
+  card: () => !!cardPicture.value,
+  onDrive: driveCard,
+});
+const cardVariant = computed(() => {
+  if (!cardPicture.value) return null;
+  if (mode.value === "swipe") return "simple";
+  return reduced.value ? "static" : "pinned";
 });
 // The track's half of the contract in helper/exploreRail.js.
 const trackAttrs = computed(() =>
@@ -155,6 +221,45 @@ function keepGoing() {
       (window.scrollY || window.pageYOffset || 0) -
       readerTopInset()
   );
+}
+
+/* "more": into the box. On the pinned track that is the start of the
+   track, past the card (and focus goes with it: the button is about to be
+   out of sight); for a still card, the box below it. */
+let entering = false;
+function intoBox() {
+  if (cardVariant.value === "pinned") {
+    entering = true;
+    enter();
+    trackEl.value?.focus?.({ preventScroll: true });
+    setTimeout(() => (entering = false), 0);
+    return;
+  }
+  const el = boxEl.value;
+  if (!el) return;
+  scrollToY(
+    () =>
+      el.getBoundingClientRect().top +
+      (window.scrollY || window.pageYOffset || 0) -
+      readerTopInset()
+  );
+}
+/* Keyboard focus that lands in the box while the card still covers it
+   (Tab past Skip, a link in the first part) would be focus on something
+   the reader cannot see: the page goes to the track at once. A timer, so
+   the track's own answer to the focus comes first (a later part scrolls
+   into view and the page follows it there). */
+function onBoxFocus(event) {
+  if (cardVariant.value !== "pinned" || entering) return;
+  if (event.target?.closest?.("[data-box-title-card]")) return;
+  const covering = () =>
+    cardIntro > 0 &&
+    cardScrolled < cardIntro &&
+    cardScrolled > -(window.innerHeight || 0);
+  if (!covering()) return;
+  setTimeout(() => {
+    if (covering()) enter({ instant: true });
+  }, 0);
 }
 
 /* The cues pulse once, the first time the reader reaches them (CSS; off
@@ -202,6 +307,18 @@ onBeforeUnmount(() => arrival?.disconnect());
       :data-treatment="treatment"
       :data-rail-pause="mode ? '' : undefined"
     >
+      <!-- The title card as a still block before the box (reduced motion,
+           phones): helper/boxTitleCard.js. -->
+      <BoxTitleCard
+        v-if="cardVariant && cardVariant !== 'pinned'"
+        class="bx-card bx-card--still"
+        :title="section.title"
+        :excerpt="cardExcerpt"
+        :picture="cardPicture"
+        :variant="cardVariant"
+        @more="intoBox"
+        @skip="keepGoing"
+      />
       <aside
         :id="section.id"
         ref="boxEl"
@@ -218,7 +335,22 @@ onBeforeUnmount(() => arrival?.disconnect());
           'bx--tailed': hasTail,
         }"
         :aria-labelledby="titleId"
+        :data-box-card="cardVariant || undefined"
+        @focusin="onBoxFocus"
       >
+        <!-- The title card over the pinned box: first in the box, so its
+             two buttons come before the track in the tab order. -->
+        <BoxTitleCard
+          v-if="cardVariant === 'pinned'"
+          ref="cardEl"
+          class="bx-card"
+          :title="section.title"
+          :excerpt="cardExcerpt"
+          :picture="cardPicture"
+          variant="pinned"
+          @more="intoBox"
+          @skip="keepGoing"
+        />
         <div class="bx-hold">
           <header class="bx-intro">
             <!-- No "Breakout box B" line over the title (Stuart, 14 Nov,
@@ -1175,6 +1307,21 @@ onBeforeUnmount(() => arrival?.disconnect());
   }
   40% {
     transform: translateY(4px);
+  }
+}
+/* A still title card (OPENBRAIN-77) sits on top of its box as one block:
+   the box's top margin moves above the card, and below the two-column
+   reader the card bleeds to the viewport as the panel under it does. */
+.bx-pause:not(.bx-pause--on) > .bx-card--still {
+  margin-top: 2.5rem;
+}
+.bx-card--still + .bx.bx {
+  margin-top: 0;
+}
+@media (max-width: 1023px) {
+  .bx-pause--panel:not(.bx-pause--on) > .bx-card--still {
+    width: var(--app-w, 100vw);
+    margin-left: calc(50% - var(--app-w, 100vw) / 2);
   }
 }
 /* What follows the track (the Penfield binder), on the box's ground so
