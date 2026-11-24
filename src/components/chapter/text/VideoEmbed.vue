@@ -39,6 +39,7 @@ const caption = computed(() => props.video.caption || props.video.title || "");
         :key="video.src"
         controls
         playsinline
+        webkit-playsinline
         preload="none"
         :poster="video.poster"
         :aria-label="title"

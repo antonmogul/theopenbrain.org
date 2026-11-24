@@ -44,6 +44,7 @@ import {
 } from "@/helper/figureCycle";
 import VideoEmbed from "../text/VideoEmbed.vue";
 import { reducedMotionPreferred } from "@/helper/readerJump";
+import { primeInlineLoop } from "@/helper/inlineVideo";
 
 const props = defineProps({
   /* Normalised by figureImages(): [{ src, caption, alt }]. */
@@ -94,14 +95,7 @@ const loopSrc = (img) => {
 const fileLoop = (img) => (img?.loop && !reducedMotion.value ? img.loop : null);
 // Autoplay needs `muted` as the attribute too (iOS Safari reads the
 // attribute, not Vue's property), and play() once the sources are in.
-function primeLoop(el) {
-  if (!el) return;
-  el.muted = true;
-  el.defaultMuted = true;
-  el.setAttribute("muted", "");
-  const started = el.play?.();
-  if (started && typeof started.catch === "function") started.catch(() => {});
-}
+const primeLoop = primeInlineLoop;
 const watchHref = (img) =>
   img?.youtube ? `https://www.youtube.com/watch?v=${img.youtube}` : "";
 const first = computed(() => props.images[0] || {});
@@ -500,6 +494,7 @@ onBeforeUnmount(() => {
         autoplay
         loop
         playsinline
+        webkit-playsinline
         disablepictureinpicture
         disableremoteplayback
         preload="auto"
@@ -638,6 +633,7 @@ onBeforeUnmount(() => {
             autoplay
             loop
             playsinline
+            webkit-playsinline
             disablepictureinpicture
             disableremoteplayback
             preload="auto"

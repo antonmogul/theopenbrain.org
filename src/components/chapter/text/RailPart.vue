@@ -384,15 +384,15 @@ const label = computed(() =>
   width: 100cqw;
   padding: 0 var(--rp-gutter);
 }
-/* The pages of text are the track's height less the room the track took
-   to merge a part's stray last page (--rail-extra, BreakoutBox), plus this
-   part's own share of it (--rp-extra): only a part with a remainder grows
-   (fitRailColumns), so the others' pages break where they did. */
+/* The pages of text are the track's height, less what this part's pages
+   each give up so that its last one is not a stray few lines (--rp-extra,
+   negative: fitRailColumns, OPENBRAIN-74). Only a part with a remainder is
+   cut, so the others' pages break where they did. */
 .rp--swipe .rp-text {
   box-sizing: content-box;
   align-self: flex-start;
   width: calc(100cqw - 2 * var(--rp-gutter));
-  height: calc(100% - var(--rail-extra, 0px) + var(--rp-extra, 0px));
+  height: calc(100% + var(--rp-extra, 0px));
   padding: 0 var(--rp-gutter);
   column-width: calc(100cqw - 2 * var(--rp-gutter));
   column-gap: calc(2 * var(--rp-gutter));

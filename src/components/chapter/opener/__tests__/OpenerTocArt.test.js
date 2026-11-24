@@ -361,4 +361,29 @@ describe("temporary artwork", () => {
     mountToc();
     expect(wrapper.find(".otoc__placeholder").exists()).toBe(false);
   });
+
+  it("keeps only the picture on show in the page in one column (OPENBRAIN-74)", async () => {
+    // Seven 1440 × 1920 pictures stacked were more than an iPhone keeps
+    // decoded: the one on show flashed as the page scrolled.
+    const original = window.matchMedia;
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+    try {
+      mountToc();
+      await wrapper.vm.$nextTick();
+      const pictures = wrapper.findAll(".otoc__pic");
+      expect(pictures).toHaveLength(1);
+      expect(pictures[0].classes()).toContain("is-on");
+      expect(pictures[0].attributes("decoding")).toBe("sync");
+      // A tap on another section: its picture over the one before, no more.
+      await rows()[1].trigger("click");
+      expect(wrapper.findAll(".otoc__pic").length).toBeLessThanOrEqual(2);
+      expect(shownPicture()).toContain("where-is-my-mind");
+    } finally {
+      window.matchMedia = original;
+    }
+  });
 });

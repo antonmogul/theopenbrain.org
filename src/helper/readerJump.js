@@ -333,11 +333,30 @@ const HOLD_EVERY_MS = 100;
  * instantly, whenever the anchor has moved, for `ms` at most, and lets go
  * as soon as the reader scrolls, touches or presses a key. Returns a stop
  * function (false if !el); `align` as jumpToElement, "top" by default.
+ *
+ * `place` (OPENBRAIN-74, helper/keepPlace.js) lands somewhere other than an
+ * alignment: a function answering the scrollY wanted now, asked again at
+ * every look since the page is still moving. `onStop` hears the hold end,
+ * with true when the reader ended it.
  */
-export function holdLanding(el, { ms = HOLD_MS, align = "top" } = {}) {
+export function holdLanding(
+  el,
+  { ms = HOLD_MS, align = "top", place = null, onStop = null } = {}
+) {
   if (!el?.getBoundingClientRect) return false;
-  if (align === "top") el = readingStartOf(el);
+  if (align === "top" && !place) el = readingStartOf(el);
   const want = () => {
+    if (place) {
+      const y = Number(place());
+      const room = Math.max(
+        0,
+        document.documentElement.scrollHeight -
+          (window.innerHeight || document.documentElement.clientHeight || 0)
+      );
+      return Number.isFinite(y)
+        ? Math.min(room, Math.max(0, Math.round(y)))
+        : window.scrollY || window.pageYOffset || 0;
+    }
     const rect = el.getBoundingClientRect();
     const scrollY = window.scrollY || window.pageYOffset || 0;
     const inset = readerTopInset();
@@ -355,17 +374,22 @@ export function holdLanding(el, { ms = HOLD_MS, align = "top" } = {}) {
     return Math.min(max, Math.max(0, Math.round(top)));
   };
   let timer = null;
-  const stop = () => {
+  const stop = (event) => {
+    if (timer === null) return;
     clearInterval(timer);
     timer = null;
     for (const type of READER_INPUT)
       window.removeEventListener(type, stop, true);
+    onStop?.(!!event?.type);
   };
   const land = () => {
     if (!el.isConnected) return stop();
     const top = want();
     const now = window.scrollY || window.pageYOffset || 0;
-    if (Math.abs(now - top) > 2) window.scrollTo({ top, behavior: "auto" });
+    // "instant" for a place: "auto" follows html:focus-within's smooth
+    // scrolling, and a place kept through a rotation must not animate.
+    if (Math.abs(now - top) > 2)
+      window.scrollTo({ top, behavior: place ? "instant" : "auto" });
   };
   stopLanding?.();
   land();

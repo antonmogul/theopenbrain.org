@@ -944,13 +944,14 @@ onBeforeUnmount(() => arrival?.disconnect());
    a time, snapping to the points the box draws (.bx-snap). Its height is
    in svh, never dvh: a block in the flow that follows the phone's address
    bar moves the page under the reader (OPENBRAIN-185). A size container,
-   so each page sizes from it (100cqw is a page). --rail-extra is the line
-   or two the track grows by so that no part ends on a page of a few stray
-   words (fitRailColumns, OPENBRAIN-194). */
+   so each page sizes from it (100cqw is a page). No part ends on a page
+   of a few stray words: fitRailColumns evens its pages out (OPENBRAIN-194,
+   74). This height is the one for a screen too short to hold the box (a
+   phone on its side); on any other the box is one screen, below. */
 .bx.bx--swipe:not(.bx--floating) .bx-body {
   position: relative;
-  height: calc(clamp(22rem, 62vh, 40rem) + var(--rail-extra, 0px));
-  height: calc(clamp(22rem, 62svh, 40rem) + var(--rail-extra, 0px));
+  height: clamp(22rem, 62vh, 40rem);
+  height: clamp(22rem, 62svh, 40rem);
   margin: 0.5rem 0 0;
   padding: 0;
   overflow-x: auto;
@@ -994,6 +995,64 @@ onBeforeUnmount(() => arrival?.disconnect());
 @supports (-webkit-touch-callout: none) {
   :global(html:has(.bx--swipe[data-section-slug])) {
     scroll-snap-type: y proximity;
+  }
+}
+/* One screen (Stuart, 20 Nov: "On my phone, I can't see the whole vertical
+   extent of the side scroll at once", OPENBRAIN-74). The box, heading,
+   track and buttons together, is as tall as what the reader sees with its
+   top resting where a jump or the snap leaves it (1rem under the top bar:
+   index.css's scroll-margin-top, readerJump's breathing room) and the
+   timeline strip below it: the track is what the heading and the buttons leave. A
+   picture is fitted to its page and the text is cut into pages of that
+   height, so everything is on screen at once and only sideways moves. svh,
+   the screen with the address bar showing: the box then fits whether or
+   not the bar is there, and never changes height as it comes and goes
+   (OPENBRAIN-185). Not on a screen under 560px tall, where the heading and
+   buttons would leave the track nothing, and never more than a tablet's
+   page needs. */
+@media (min-height: 560px) {
+  .bx.bx--swipe:not(.bx--floating) {
+    --bx-screen: calc(
+      100vh - var(--reader-topbar-h, 4rem) - var(--reader-timeline-h, 0px) -
+        1rem
+    );
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: min(var(--bx-screen), 56rem);
+    padding-top: 1rem;
+    padding-bottom: 0.75rem;
+  }
+  @supports (height: 100svh) {
+    .bx.bx--swipe:not(.bx--floating) {
+      --bx-screen: calc(
+        100svh - var(--reader-topbar-h, 4rem) - var(--reader-timeline-h, 0px) -
+          1rem
+      );
+    }
+  }
+  .bx.bx--swipe:not(.bx--floating) .bx-hold,
+  .bx.bx--swipe:not(.bx--floating) .bx-swipe-nav {
+    flex: none;
+  }
+  .bx.bx--swipe:not(.bx--floating) .bx-intro {
+    padding-top: 0.5rem;
+  }
+  .bx.bx--swipe:not(.bx--floating) .bx-title {
+    font-size: 1.25rem;
+  }
+  .bx.bx--swipe:not(.bx--floating) .bx-body {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+  }
+  .bx.bx--swipe:not(.bx--floating) .bx-swipe-nav {
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+    padding-top: 0.375rem;
+  }
+  .bx.bx--swipe:not(.bx--floating) .bx-cue {
+    min-height: 44px;
   }
 }
 .bx.bx--swipe .bx-body:focus-visible {
