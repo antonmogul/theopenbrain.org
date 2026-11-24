@@ -1,0 +1,17 @@
+[
+  {
+    "slug": "retina-on-off-bipolar-cells",
+    "beforeMd5": "2a6ec0fc170ce3005e1838e2764fc8df",
+    "afterMd5": "9067f39e6a0020e2eeeaa181480195ae"
+  },
+  {
+    "slug": "retina-photoreceptors",
+    "beforeMd5": "c89ee0b922aaa7e45ea1374b2b34b529",
+    "afterMd5": "0610fb04a5e62868efd72bb8191fe2f3"
+  },
+  {
+    "slug": "retina-phototransduction",
+    "beforeMd5": "96214ba74dc9802499b2bcf6764d7463",
+    "afterMd5": "7ad37d8ecb86210e9c0a329fe3ba90e6"
+  }
+]

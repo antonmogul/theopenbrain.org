@@ -632,16 +632,21 @@ h4 {
 }
 
 /* punkte Text */
-.active > .animationMarker,
-.active > * > .animationMarker,
-.active > * > * > .animationMarker,
-.active > * > * > * > .animationMarker {
-  background-color: transparent;
-  border: solid black;
-  /* padding: 0 0.3125rem 0 0.3125rem; */
-  cursor: pointer;
-  padding: 0.125rem 0.25rem;
-  /* border-radius: 9999px; */
+/* Only beside the figure pane. Below the two-column reader the figure is
+   further down the page, so the word is plain text and the figure carries
+   its own labelled chips (OPENBRAIN-71). */
+@media (min-width: 1024px) {
+  .active > .animationMarker,
+  .active > * > .animationMarker,
+  .active > * > * > .animationMarker,
+  .active > * > * > * > .animationMarker {
+    background-color: transparent;
+    border: solid black;
+    /* padding: 0 0.3125rem 0 0.3125rem; */
+    cursor: pointer;
+    padding: 0.125rem 0.25rem;
+    /* border-radius: 9999px; */
+  }
 }
 
 .animationMarkerClick.active {

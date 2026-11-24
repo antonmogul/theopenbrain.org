@@ -457,6 +457,18 @@ html[data-ob-fit].tob-choices .tob-view { align-self: stretch; }
   html[data-ob-fit].tob-picker .tob-picks { flex: none; }
 }
 </style>
+
+<!-- Open Brain book (OPENBRAIN-71): phones: the part names are bordered buttons with a pressed state and a one-line prompt. -->
+<style>
+@media (max-width: 470px) and (max-device-width: 767px) {
+  .tob-picker-single .tob-picks { display: flex; flex-flow: row wrap; align-items: stretch; gap: 6px; padding: 2px var(--tob-left) 8px; }
+  .tob-picker-single .tob-picks::before { content: "Tap a part to highlight it"; flex: 1 1 100%; padding-bottom: 2px; font: 400 11px/16px var(--tob-mono); letter-spacing: .2px; color: rgba(0, 0, 0, .66); }
+  .tob-picker-single .tob-picks button { min-height: 40px; padding: 4px 12px; border: 1px solid #000; background: #fff; letter-spacing: .2px; transition: background-color .15s, border-color .15s; }
+  .tob-picker-single .tob-picks button span { padding: 0; border: 0; }
+  .tob-picker-single .tob-picks button:active { background: rgba(0, 0, 0, .12); }
+  .tob-picker-single .tob-picks button[aria-pressed="true"] { background: var(--tob-highlight); font-weight: 600; }
+}
+</style>
 </head>
 <body>
 
