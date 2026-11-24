@@ -85,13 +85,42 @@ const picture = computed(() => {
     ? null
     : [{ src, alt: props.image.alt || "", caption: props.legend }];
 });
-const pictures = computed(() => props.figures.length + (picture.value ? 1 : 0));
+/* The box opens on a still title card that shows its lead picture
+   (BreakoutBox provides railLeadOnCard, OPENBRAIN-77): the first part then
+   leaves that plate out, so the picture is not on the card and again right
+   after it. It is kept as a figure nobody sees (`onCard`), which is what
+   the card's expand button opens: the full-screen view, with its legend. */
+const leadOnCard = inject("railLeadOnCard", null);
+const onCard = computed(() => {
+  if (props.index !== 0 || !unref(leadOnCard)) return null;
+  if (picture.value)
+    return { own: true, images: picture.value, name: props.part.title };
+  const fig = drawn.value[0];
+  if (!fig?.plates) return null;
+  return {
+    own: false,
+    images: [fig.plates[0]],
+    label: fig.label || railFigureLabel(fig.plates[0]),
+    title: fig.title || fig.plates[0].title || "",
+    caption: fig.caption,
+  };
+});
+const shownPicture = computed(() => (onCard.value?.own ? null : picture.value));
+const shownFigures = computed(() => {
+  if (!onCard.value || onCard.value.own) return drawn.value;
+  const [first, ...rest] = drawn.value;
+  const left = first.plates.slice(1);
+  return left.length ? [{ ...first, plates: left }, ...rest] : rest;
+});
+const pictures = computed(
+  () => shownFigures.value.length + (shownPicture.value ? 1 : 0)
+);
 /* Every image the part shows. Two or more want the room: the text beside
    them is then one column wide, not two. */
 const plates = computed(
   () =>
-    (picture.value ? 1 : 0) +
-    drawn.value.reduce((sum, fig) => sum + (fig.plates?.length || 1), 0)
+    (shownPicture.value ? 1 : 0) +
+    shownFigures.value.reduce((sum, fig) => sum + (fig.plates?.length || 1), 0)
 );
 
 const titleId = computed(() => `rail-part-title-${props.part.id}`);
@@ -120,14 +149,26 @@ const label = computed(() =>
     :aria-labelledby="part.title ? titleId : undefined"
     :aria-label="label"
   >
+    <!-- The picture the box's title card shows: not on the track, but
+         here for the card's expand button (its full-screen view). -->
     <RailFigure
-      v-if="picture"
+      v-if="onCard"
+      class="rp-on-card"
+      data-rail-card-figure
+      :images="onCard.images"
+      :label="onCard.label"
+      :title="onCard.title"
+      :caption="onCard.caption"
+      :name="onCard.name"
+    />
+    <RailFigure
+      v-if="shownPicture"
       class="rp-figure rp-picture"
       data-rail-figure
-      :images="picture"
+      :images="shownPicture"
       :name="part.title"
     />
-    <template v-for="fig in drawn" :key="fig.id">
+    <template v-for="fig in shownFigures" :key="fig.id">
       <RailFigure
         v-if="fig.plates"
         class="rp-figure"
@@ -237,6 +278,9 @@ const label = computed(() =>
      label of a set of plates can stay in view on the phone's track. */
   overflow: hidden;
   overflow: clip;
+}
+.rp > .rp-on-card {
+  display: none;
 }
 /* A labelled picture is never narrower than its label needs. */
 .rp-figure:not(.rp-picture) {

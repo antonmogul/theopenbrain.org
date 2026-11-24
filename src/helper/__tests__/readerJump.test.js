@@ -446,6 +446,18 @@ describe("focusElement", () => {
 });
 
 describe("readingStartOf", () => {
+  it("is the still title card a breakout box opens on (OPENBRAIN-77)", () => {
+    const pause = document.createElement("div");
+    pause.innerHTML =
+      '<div data-box-title-card></div><aside data-box-card="simple"></aside>';
+    const [card, box] = pause.children;
+    expect(readingStartOf(box)).toBe(card);
+    // A pinned card is inside its box, which is where the box starts.
+    box.setAttribute("data-box-card", "pinned");
+    card.remove();
+    expect(readingStartOf(box)).toBe(box);
+  });
+
   /* A <section> as SectionComp renders it: with a figure transition it
      opens with the dev markers around a 200vh spacer, then the number and
      the title. `spacerHeight` 0 is the spacer's display: none below 1024px. */

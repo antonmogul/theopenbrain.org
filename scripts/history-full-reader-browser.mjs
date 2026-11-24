@@ -689,11 +689,13 @@ try {
               .evaluateAll((imgs) =>
                 imgs
                   // A gallery's thumbnails and grid tiles repeat its slides
-                  // by design; an uploaded widget draws its own.
+                  // by design; an uploaded widget draws its own. The box's
+                  // title card opens on its lead picture, which then lands
+                  // on the track's own (OPENBRAIN-77).
                   .filter(
                     (img) =>
                       !img.closest(
-                        ".figimg-thumbnails, .figimg-grid, .wb-stage, iframe"
+                        ".figimg-thumbnails, .figimg-grid, .wb-stage, iframe, [data-box-title-card]"
                       )
                   )
                   .map((img) => new URL(img.src).pathname)

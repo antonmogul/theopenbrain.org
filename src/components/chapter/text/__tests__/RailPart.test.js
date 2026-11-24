@@ -213,4 +213,71 @@ describe("RailPart", () => {
     // A page for each plate.
     expect(fig.attributes("style")).toContain("--rf-count: 2");
   });
+
+  /* The box opens on a still title card (OPENBRAIN-77): the lead picture
+     is on the card, so the first part leaves it off the track. */
+  describe("under a still title card", () => {
+    const carded = (props) =>
+      mount(RailPart, {
+        props: { part: { id: "p1", title: "", explore: false }, ...props },
+        global: {
+          stubs,
+          provide: { exploreRail: ref("swipe"), railLeadOnCard: ref(true) },
+        },
+      });
+
+    it("leaves a figure's only image out, and keeps it for the card's expand button", async () => {
+      const w = carded({ figures: ["figK"] });
+      await nextTick();
+      expect(w.findAll("[data-rail-figure]")).toHaveLength(0);
+      expect(w.find(".rp").classes()).toContain("rp--no-picture");
+      const kept = w.find("[data-rail-card-figure]");
+      expect(kept.exists()).toBe(true);
+      expect(kept.find("img").attributes("src")).toContain("k.jpg");
+      // The card's button presses this one: the full-screen view opens.
+      await kept.find(".rf-expand").trigger("click");
+      expect(w.find(".stub-dialog").exists()).toBe(true);
+      w.unmount();
+    });
+
+    it("leaves out only the first image of a set, under the figure's label", async () => {
+      const w = carded({ figures: ["figE"] });
+      await nextTick();
+      const shown = w.findAll("[data-rail-figure] img");
+      expect(shown.map((img) => img.attributes("src"))).toEqual([
+        "/img/e2.jpg",
+      ]);
+      expect(w.find("[data-rail-figure] .rf-label").text()).toBe("FIG E");
+      expect(w.find("[data-rail-card-figure] img").attributes("src")).toBe(
+        "/img/e1.jpg"
+      );
+      w.unmount();
+    });
+
+    it("leaves an Explore part's own picture out", async () => {
+      const w = carded({
+        part: { id: "p1", title: "Hippocrates’ view", explore: true },
+        image: { src: "/img/bust.jpg", alt: "A bust" },
+      });
+      await nextTick();
+      expect(w.findAll("[data-rail-figure]")).toHaveLength(0);
+      expect(w.find("[data-rail-card-figure] img").attributes("src")).toBe(
+        "/img/bust.jpg"
+      );
+      w.unmount();
+    });
+
+    it("touches nothing in a later part, or a figure the shell draws", async () => {
+      const later = carded({ figures: ["figK"], index: 1, count: 2 });
+      await nextTick();
+      expect(later.findAll("[data-rail-figure]")).toHaveLength(1);
+      expect(later.find("[data-rail-card-figure]").exists()).toBe(false);
+      later.unmount();
+      const shell = carded({ figures: ["figMany"] });
+      await nextTick();
+      expect(shell.findAll("[data-rail-figure]")).toHaveLength(1);
+      expect(shell.find("[data-rail-card-figure]").exists()).toBe(false);
+      shell.unmount();
+    });
+  });
 });

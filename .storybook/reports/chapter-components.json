@@ -1,8 +1,8 @@
 {
   "scope": "src/components/chapter/**/*.vue",
   "taxonomy": "Chapter",
-  "sourceCount": 83,
-  "coveredCount": 83,
+  "sourceCount": 84,
+  "coveredCount": 84,
   "excludedCount": 0,
   "excluded": [],
   "groups": {
@@ -10,7 +10,7 @@
     "Highlighting": 6,
     "Demos": 4,
     "Illustrations": 18,
-    "Text": 26
+    "Text": 27
   },
   "components": [
     {
@@ -252,6 +252,11 @@
       "source": "src/components/chapter/sidebar/NotebookTab.vue",
       "storyFile": "src/components/chapter/sidebar/__stories__/NotebookTab.stories.js",
       "story": "Default"
+    },
+    {
+      "source": "src/components/chapter/text/BoxTitleCard.vue",
+      "storyFile": "src/components/chapter/text/__stories__/BoxTitleCard.stories.js",
+      "story": "Pinned"
     },
     {
       "source": "src/components/chapter/text/BreakImages.vue",

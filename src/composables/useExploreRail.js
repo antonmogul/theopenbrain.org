@@ -18,8 +18,18 @@
  * moves the page. It is a native swipe with scroll snapping, a page at a
  * time; this only sizes the columns, counts the pages (BreakoutBox draws a
  * snap point for each) and turns them for the buttons.
+ *
+ * The title card (OPENBRAIN-77, helper/boxTitleCard.js). A box that opens
+ * on its lead picture spends the first stretch of its pin on that card:
+ * `intro` px of page scroll, which is simply more lead-in. Everything that
+ * maps between the page and the track (drive, onTrackScroll, goTo, and
+ * railLandingY through data-rail-lead) uses the lead-in with the card's
+ * stretch in it, so every landing on the track is past the card, and the
+ * pause spacer is longer by the same amount. `onDrive` hears how far past
+ * its pin the box is on every scroll, which is what moves the card.
  */
 import { computed, nextTick, onBeforeUnmount, ref, toValue, watch } from "vue";
+import { CARD_SCREENS } from "@/helper/boxTitleCard";
 import {
   RAIL_LEAD,
   clearRailColumns,
@@ -46,11 +56,22 @@ import { readerScrollLocked } from "@/helper/readerScrollLock";
  *   pauseEl: import("vue").Ref<HTMLElement|null>,      // .bx-pause
  *   boxEl: import("vue").Ref<HTMLElement|null>,        // the sticky box
  *   scrollerEl: import("vue").Ref<HTMLElement|null>,   // the track
+ *   card?: import("vue").MaybeRefOrGetter<boolean>,    // opens on a title card
+ *   onDrive?: (scrolled: number, intro: number) => void, // px past the pin
  * }} opts
  */
-export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
+export function useExploreRail({
+  mode,
+  pauseEl,
+  boxEl,
+  scrollerEl,
+  card = false,
+  onDrive = null,
+}) {
   const max = ref(0);
   const lead = ref(0);
+  /** Px of the pin's scroll the title card takes, before the lead-in. */
+  const intro = ref(0);
   const stickyTop = ref(0);
   const reduced = ref(false);
   const active = ref(0);
@@ -77,15 +98,22 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
   const swipe = computed(() => how.value === "swipe");
   /** The page's scroll drives the track. */
   const pinned = computed(
-    () => how.value === "track" && !reduced.value && max.value > 0
+    () =>
+      how.value === "track" &&
+      !reduced.value &&
+      (max.value > 0 || intro.value > 0)
   );
+  /** Px of page scroll before the track moves: the card, then the lead-in. */
+  const runIn = computed(() => lead.value + intro.value);
   /** The pause spacer's height in px (0: leave it to the box's CSS). */
-  const room = computed(() =>
-    pinned.value ? railRoom({ lead: lead.value, max: max.value }) : 0
-  );
+  const room = computed(() => {
+    if (!pinned.value) return 0;
+    if (!intro.value) return railRoom({ lead: lead.value, max: max.value });
+    return Math.round(intro.value + 2 * lead.value + max.value);
+  });
 
   const scrollY = () => window.scrollY || window.pageYOffset || 0;
-  const geometry = () => ({ lead: lead.value, max: max.value });
+  const geometry = () => ({ lead: runIn.value, max: max.value });
   /** The page scrollY at which the box pins. */
   const pinY = () =>
     (pauseEl.value?.getBoundingClientRect().top || 0) +
@@ -117,6 +145,7 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
     const pause = pauseEl.value;
     if (!pinned.value || !scroller || !pause) return;
     const scrolled = stickyTop.value - pause.getBoundingClientRect().top;
+    onDrive?.(scrolled, intro.value);
     const x = railXForScrolled(scrolled, geometry());
     expected = x;
     if (Math.abs(scroller.scrollLeft - x) > 0.5) scroller.scrollLeft = x;
@@ -155,6 +184,10 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
     view = scroller.clientWidth;
     max.value = railMax(scroller);
     lead.value = Math.round((window.innerHeight || 0) * RAIL_LEAD);
+    intro.value =
+      how.value === "track" && !reduced.value && toValue(card)
+        ? Math.round((window.innerHeight || 0) * CARD_SCREENS)
+        : 0;
     stickyTop.value = parseFloat(getComputedStyle(boxEl.value).top) || 0;
     // Each part's start at scrollLeft 0, whatever the track is at now.
     starts = [...scroller.querySelectorAll("[data-rail-part]")].map((part) => {
@@ -222,6 +255,16 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
   const goToPart = (i) => goTo(starts[i] ?? 0);
   /** Go to an element on the track (a paragraph, a figure). */
   const goToElement = (el) => goTo(railXOf(el, scrollerEl.value));
+  /** Into the track, past the title card: its start, or where it is now
+   *  when something else has already moved it. */
+  function enter({ instant = false } = {}) {
+    const x = scrollerEl.value?.scrollLeft || 0;
+    if (!instant || !pinned.value) return goTo(x);
+    window.scrollTo({
+      top: Math.round(pinY() + railScrolledForX(x, geometry())),
+      behavior: "instant",
+    });
+  }
 
   function start() {
     const scroller = scrollerEl.value;
@@ -274,6 +317,7 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
     clearRailColumns(scroller);
     pauseEl.value?.style.removeProperty("--rail-progress");
     max.value = 0;
+    intro.value = 0;
     expected = null;
     starts = [];
     stops = [0];
@@ -291,6 +335,14 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
     },
     { immediate: true, flush: "post" }
   );
+  // The card came or went (its picture's record arrived): the pin's length
+  // changes with it.
+  watch(
+    () => !!toValue(card),
+    () => {
+      if (listening) queueMeasure();
+    }
+  );
   onBeforeUnmount(() => {
     disposed = true;
     stopListening();
@@ -298,8 +350,12 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
 
   return {
     pinned,
+    reduced,
     room,
-    lead,
+    // What the track's contract calls its lead (data-rail-lead): all the
+    // page scroll before the track moves, the card's stretch included.
+    lead: runIn,
+    intro,
     stickyTop,
     active,
     atStart,
@@ -310,6 +366,7 @@ export function useExploreRail({ mode, pauseEl, boxEl, scrollerEl }) {
     prev,
     goToPart,
     goToElement,
+    enter,
     measure,
   };
 }

@@ -81,6 +81,7 @@ function mountBox({
   chapterSlug = HISTORY,
   props = {},
   after = null,
+  provide = {},
 } = {}) {
   return mount(BreakoutBox, {
     attachTo: document.body,
@@ -104,6 +105,7 @@ function mountBox({
                       title: p.explore?.title || "",
                       explore: !!p.explore,
                     },
+                    image: p.explore?.image || null,
                     index,
                     count: box.paragraphs.length,
                   },
@@ -114,7 +116,9 @@ function mountBox({
         ]),
       ...(after ? { after } : {}),
     },
-    global: { provide: { chapterSlug: computed(() => chapterSlug) } },
+    global: {
+      provide: { chapterSlug: computed(() => chapterSlug), ...provide },
+    },
   });
 }
 
@@ -419,5 +423,186 @@ describe("BreakoutBox rail", () => {
     await flushPromises();
     expect(layer.querySelector(".bx-after")).toBeNull();
     plain.unmount();
+  });
+
+  /* The title card (OPENBRAIN-77): a box whose first part leads with a
+     picture opens on it. */
+  describe("title card", () => {
+    const pictured = {
+      ...section,
+      paragraphs: [
+        {
+          id: "p1",
+          text: "<p>It is thus with regard to the disease called Sacred: it appears to me to be nowise more divine nor more sacred than other diseases.</p>",
+          explore: {
+            title: "Hippocrates’ view on epilepsy",
+            image: { src: "/img/bust.jpg", alt: "A bust" },
+          },
+        },
+        part("p2", "Humoral theory"),
+      ],
+    };
+
+    it("lies over the pinned box, and its scroll is part of the pin", async () => {
+      const layer = addStageLayer();
+      const w = mountBox({ box: pictured });
+      await flushPromises();
+      const pause = layer.querySelector(".bx-pause");
+      const box = pause.querySelector("aside.bx");
+      expect(box.getAttribute("data-box-card")).toBe("pinned");
+      const card = box.querySelector("[data-box-title-card]");
+      // First in the box: its buttons come before the track.
+      expect(box.firstElementChild).toBe(card);
+      // The track keeps its picture (the card's lands on it) and the box
+      // its heading.
+      expect(box.classList).not.toContain("bx--carded");
+      expect(
+        box.querySelector("[data-rail-part] [data-rail-figure]")
+      ).not.toBeNull();
+      expect(card.getAttribute("data-card-variant")).toBe("pinned");
+      expect(card.querySelector("img").getAttribute("src")).toBe(
+        "/img/bust.jpg"
+      );
+      expect(card.querySelector(".tc-excerpt").textContent).toContain(
+        "It is thus with regard"
+      );
+      // The box keeps its own heading, which is its name.
+      expect(box.querySelector("h2.bx-title").textContent).toBe(pictured.title);
+
+      // The same layout as the test above: 1700 of travel, a 900px screen.
+      const track = pause.querySelector("[data-rail-scroller]");
+      layOut(track, { client: 1440, scroll: 3140 });
+      const [one, two] = track.querySelectorAll("[data-rail-part]");
+      one.getBoundingClientRect = () => ({ left: 0 - track.scrollLeft });
+      two.getBoundingClientRect = () => ({ left: 1310 - track.scrollLeft });
+      pause.getBoundingClientRect = () => ({ top: 2000, bottom: 9000 });
+      box.style.top = "64px";
+      Object.defineProperty(window, "innerHeight", {
+        value: 900,
+        configurable: true,
+      });
+      window.dispatchEvent(new Event("resize"));
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      await flushPromises();
+
+      // The card takes 0.9 of the screen (810) before the 180px lead-in:
+      // the track's contract counts both, so every landing is past it.
+      expect(track.getAttribute("data-rail-pinned")).toBe("1");
+      expect(track.getAttribute("data-rail-lead")).toBe("990");
+      expect(pause.querySelector(".bx-pause-room").style.height).toBe(
+        `${810 + 2 * 180 + 1700}px`
+      );
+      // Far below the pin: the picture arrives alone.
+      expect(card.getAttribute("data-card-state")).toBe("arriving");
+
+      pause.querySelector('.bx-rail-arrow[aria-label="Next"]').click();
+      expect(window.scrollTo).toHaveBeenLastCalledWith({
+        top: 1936 + 990 + 1310,
+        behavior: "smooth",
+      });
+      // "more": the start of the track.
+      card.querySelector("[data-card-more]").click();
+      expect(window.scrollTo).toHaveBeenLastCalledWith({
+        top: 1936 + 990,
+        behavior: "smooth",
+      });
+      // Skip: past the box (its frame's bottom, under the top bar).
+      card.querySelector("[data-card-skip]").click();
+      const skip = window.scrollTo.mock.lastCall[0];
+      expect(skip.behavior).toBe("smooth");
+      expect(skip.top).toBeGreaterThan(8000);
+
+      // The page pins the box and scrolls on through the card.
+      pause.getBoundingClientRect = () => ({ top: 64 - 100 });
+      window.dispatchEvent(new Event("scroll"));
+      await flushPromises();
+      expect(card.getAttribute("data-card-state")).toBe("open");
+      expect(track.scrollLeft).toBe(0);
+      pause.getBoundingClientRect = () => ({ top: 64 - 990 - 500 });
+      window.dispatchEvent(new Event("scroll"));
+      await flushPromises();
+      expect(card.getAttribute("data-card-state")).toBe("done");
+      expect(track.scrollLeft).toBe(500);
+      w.unmount();
+      window.dispatchEvent(new Event("wheel"));
+    });
+
+    it("is a still block before the box on a phone: picture, title, Skip", async () => {
+      const w = mountBox({ box: pictured });
+      await flushPromises();
+      const card = w.find("[data-box-title-card]");
+      expect(card.attributes("data-card-variant")).toBe("simple");
+      expect(card.element.nextElementSibling).toBe(w.find("aside.bx").element);
+      expect(card.find(".tc-excerpt").exists()).toBe(false);
+      expect(card.find("[data-card-more]").exists()).toBe(false);
+      // Nothing repeats: the card carries the title (the box's own heading
+      // is only said) and the picture, which the track leaves out and the
+      // card's button opens full screen.
+      expect(w.find("aside.bx").classes()).toContain("bx--carded");
+      expect(w.find("aside.bx h2.bx-title").text()).toBe(pictured.title);
+      expect(w.find("[data-rail-part] [data-rail-figure]").exists()).toBe(
+        false
+      );
+      const kept = w.find("[data-rail-card-figure] .rf-expand");
+      const pressed = vi.fn();
+      kept.element.addEventListener("click", pressed);
+      await card.find("[data-card-expand]").trigger("click");
+      expect(pressed).toHaveBeenCalledTimes(1);
+      w.find(".bx-pause").element.getBoundingClientRect = () => ({
+        bottom: 900,
+      });
+      await card.find("[data-card-skip]").trigger("click");
+      expect(window.scrollTo).toHaveBeenLastCalledWith(
+        expect.objectContaining({ behavior: "smooth" })
+      );
+      w.unmount();
+      window.dispatchEvent(new Event("wheel"));
+    });
+
+    it("is a still block under reduced motion, with nothing pinned", async () => {
+      const layer = addStageLayer();
+      window.matchMedia = () => ({
+        matches: true, // desktop, and reduced motion
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      });
+      const w = mountBox({ box: pictured });
+      await flushPromises();
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      await flushPromises();
+      const card = layer.querySelector("[data-box-title-card]");
+      expect(card.getAttribute("data-card-variant")).toBe("static");
+      expect(card.nextElementSibling).toBe(layer.querySelector("aside.bx"));
+      expect(card.querySelector("[data-card-more]")).not.toBeNull();
+      expect(layer.querySelector("aside.bx").classList).toContain("bx--carded");
+      expect(
+        layer.querySelector("[data-rail-part] [data-rail-figure]")
+      ).toBeNull();
+      expect(
+        layer
+          .querySelector("[data-rail-scroller]")
+          .getAttribute("data-rail-pinned")
+      ).toBe("0");
+      w.unmount();
+    });
+
+    it("leaves a box with no lead picture, or one being edited, as it was", async () => {
+      const layer = addStageLayer();
+      const plain = mountBox();
+      await flushPromises();
+      expect(layer.querySelector("[data-box-title-card]")).toBeNull();
+      expect(
+        layer.querySelector("aside.bx").hasAttribute("data-box-card")
+      ).toBe(false);
+      plain.unmount();
+
+      const edited = mountBox({
+        box: pictured,
+        provide: { isCreator: computed(() => true) },
+      });
+      await flushPromises();
+      expect(layer.querySelector("[data-box-title-card]")).toBeNull();
+      edited.unmount();
+    });
   });
 });
