@@ -68,6 +68,19 @@
         </div>
       </div>
 
+      <!-- Inline, the words in the text that light a part of this figure
+           (accommodation, vergence) are out of sight by the time the reader
+           reaches it, so the figure carries them as its own chips
+           (OPENBRAIN-71). -->
+      <StateElement
+        v-if="inline && markerChips.length"
+        :states="markerChips.map((chip) => chip.label)"
+        :activeState="activeMarker"
+        inline
+        hint="Tap a name to highlight it"
+        class="w-full"
+        @onClick="setMarker"
+      />
       <div
         v-if="animation.switches || animation.states"
         :class="inline ? 'w-full' : ''"
@@ -80,6 +93,7 @@
             :praefix="info.iconPraefix"
             :iconsIndex="info.icons"
             :inline="inline"
+            :hint="info.highlight ? 'Tap a name to highlight it' : ''"
             @onClick="setState"
           />
           <StateElementBlock
@@ -361,6 +375,39 @@ const setState = (event) => {
   }
 };
 
+// The figure's parts a word in the text lights up on hover (TextComp's
+// `.animationMarker` spans, matched by id to a `<id>Highlight` layer). Only
+// figures without states of their own: those already have a chip per part.
+const markerChips = ref([]);
+const activeMarker = ref(undefined);
+function findMarkerChips() {
+  if (!inline.value || info.states || info.switches) return;
+  const names = new Set();
+  for (const el of root.value?.querySelectorAll('[class*="Highlight"]') || [])
+    for (const name of el.classList)
+      if (name.endsWith("Highlight")) names.add(name.slice(0, -9));
+  markerChips.value = [...names]
+    .filter((name) =>
+      document.getElementById(name)?.classList.contains("animationMarker")
+    )
+    .sort()
+    .map((name) => ({
+      name,
+      label: name.charAt(0).toUpperCase() + name.slice(1),
+    }));
+}
+const setMarker = ({ index }) => {
+  const lit = activeMarker.value;
+  const light = (i, on) => {
+    for (const el of parts(`${markerChips.value[i].name}Highlight`))
+      el.classList.toggle("highlightIllu", on);
+  };
+  if (lit !== undefined) light(lit, false);
+  // Pressing the lit chip again clears it.
+  activeMarker.value = lit === index ? undefined : index;
+  if (activeMarker.value !== undefined) light(index, true);
+};
+
 const setBlockState = (index) => {
   let newState = !activeState.value[index];
   activeState.value.splice(index, 1, newState);
@@ -430,6 +477,7 @@ onMounted(async () => {
     const dimensions = animationLottie.animationData;
     if (dimensions?.w > 0 && dimensions?.h > 0)
       artRatio.value = `${dimensions.w} / ${dimensions.h}`;
+    findMarkerChips();
     for (const element of parts("highlighterIllu")) {
       // Bind only this instance's SVG, and remove the same handlers on teardown.
       const name = [...element.classList].find((value) =>

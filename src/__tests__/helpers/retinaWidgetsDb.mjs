@@ -5,8 +5,14 @@ export const migration = "20261120066200_retina_widgets_db.sql";
 export const sql = readFileSync(`supabase/migrations/${migration}`, "utf8");
 // Historical replay tests compare the file as 066200 published it, before
 // the separate guarded phone-fit repair.
-export const atWidgetsDb = (html) =>
+// The file as 066210 left it, before the phone blocks of OPENBRAIN-71.
+export const atPhoneFit = (html) =>
   html.replace(
+    /\n<!-- Open Brain book \(OPENBRAIN-71\):[^\n]+ -->\n<style>\n[\s\S]*?<\/style>\n(?=<\/head>)/,
+    ""
+  );
+export const atWidgetsDb = (html) =>
+  atPhoneFit(html).replace(
     /\n<!-- Open Brain book \(OPENBRAIN-62b\):[^\n]+ -->\n<style>\n[\s\S]*?<\/style>\n(?=<\/head>)/,
     ""
   );
