@@ -554,6 +554,36 @@ try {
         mountedFigures.add(key);
         await overflow(page);
       }
+      // Images in the text that carry a number are figures of the same
+      // series (OPENBRAIN-79): each shows its own label once, at every width.
+      const numberedImages = fixture.paragraphs.flatMap((paragraph) =>
+        (paragraph.content?.blocks || []).filter(
+          (block) =>
+            block.type === "image" &&
+            block.figureNumber != null &&
+            block.figureNumber !== ""
+        )
+      );
+      for (const block of numberedImages) {
+        const number = String(block.figureNumber);
+        const label = `FIG ${/^\d+$/.test(number) ? number.padStart(2, "0") : number}`;
+        result.current = `image ${block.src} ${label}`;
+        const image = page.locator(`[data-figure-number="${number}"]`);
+        await expect(image, `${label}: one image in the text`).toHaveCount(1);
+        await scroll(page, image);
+        await expect(
+          image
+            .locator(".fig-label, .figure-heading__label")
+            .filter({ hasText: new RegExp(`^${label}$`, "i"), visible: true }),
+          `${block.src}: exactly one visible ${label}`
+        ).toHaveCount(1);
+        if (block.title)
+          await expect(image).toContainText(block.title, { ignoreCase: true });
+        await overflow(page);
+      }
+      result.steps.push(
+        `${numberedImages.length} numbered images in the text labelled once`
+      );
       expect(mountedFigures.size).toBe(fixture.animations.length);
       const numbered = fixture.animations.filter(
         (a) => a.config?.figureNumber != null && a.config.figureNumber !== ""

@@ -132,7 +132,10 @@ function marksFor(p) {
         "Figure",
     });
   if (p.img)
-    marks.push({ type: "image", title: clip(plainText(p.imgCap)) || "Image" });
+    marks.push({
+      type: "image",
+      title: p.imgTitle || clip(plainText(p.imgCap)) || "Image",
+    });
   if (p.video) marks.push({ type: "video", title: p.video.title || "Video" });
   return marks;
 }

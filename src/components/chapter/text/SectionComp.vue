@@ -192,6 +192,13 @@
                 :is-creator="isCreator"
                 @save="handleParagraphSave"
               />
+              <!-- A paragraph's own figure comes before its image, as in the pane, so figure numbers read in order on a phone (OPENBRAIN-79). -->
+              <!-- In a rail part the figures lead the part (RailPart). -->
+              <IllustrationInline
+                v-if="!rail && !paragraph.explore && inlineFigureFor(paragraph)"
+                :key="'inline' + paragraph.id"
+                :animation-id="paragraph.animation.id"
+              />
               <InlineImages
                 :paragraph="paragraph"
                 :key="'images' + paragraph.id"
@@ -202,12 +209,6 @@
                 :key="paragraph.id"
                 v-if="paragraph.animationFull"
                 :paragraph="paragraph"
-              />
-              <!-- In a rail part the figures lead the part (RailPart). -->
-              <IllustrationInline
-                v-if="!rail && !paragraph.explore && inlineFigureFor(paragraph)"
-                :key="'inline' + paragraph.id"
-                :animation-id="paragraph.animation.id"
               />
             </component>
           </component>

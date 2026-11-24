@@ -123,7 +123,15 @@ export function blocksToDoc(blocks) {
     } else if (b.type === "image") {
       content.push({
         type: "imageBlock",
-        attrs: pick(b, ["src", "alt", "caption", "closed", "wide"]),
+        attrs: pick(b, [
+          "src",
+          "alt",
+          "caption",
+          "closed",
+          "wide",
+          "figureNumber",
+          "title",
+        ]),
       });
     } else if (b.type === "widget") {
       content.push({ type: "widgetBlock", attrs: pick(b, WIDGET_ATTRS) });

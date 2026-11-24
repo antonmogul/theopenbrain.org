@@ -227,8 +227,18 @@ export function buildSearchIndex(text, opts = {}) {
     const legends = [plainText(p.imgCap), plainText(p.explore?.legend)].filter(
       Boolean
     );
-    if (legends.length)
-      add({ kind: "figure", id, tag: "Fig", where, body: legends.join(" ") });
+    // A numbered image in the text is named like a pane figure
+    // (OPENBRAIN-79), and is found by its title even without a legend.
+    const imgTitle = p.img ? plainText(p.imgTitle) : "";
+    if (legends.length || imgTitle)
+      add({
+        kind: "figure",
+        id,
+        tag: figureTag(p.img ? p.imgNumber : undefined),
+        where,
+        ...(imgTitle ? { title: imgTitle } : {}),
+        body: legends.join(" "),
+      });
   }
   return entries;
 }

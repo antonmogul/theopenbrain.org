@@ -110,6 +110,12 @@
                 :content="subSubParagraph"
                 :data-timeline-id="subSubParagraph.id"
               />
+              <!-- A paragraph's own figure comes before its image, as in the pane, so figure numbers read in order on a phone (OPENBRAIN-79). -->
+              <IllustrationInline
+                v-if="inlineFigureFor(subSubParagraph)"
+                :key="'inline' + subSubParagraph.id"
+                :animation-id="subSubParagraph.animation.id"
+              />
               <InlineImages
                 :paragraph="subSubParagraph"
                 v-if="subSubParagraph.img"
@@ -122,11 +128,6 @@
                 :key="subSubParagraph.id"
                 v-if="subSubParagraph.animationFull"
                 :paragraph="subSubParagraph"
-              />
-              <IllustrationInline
-                v-if="inlineFigureFor(subSubParagraph)"
-                :key="'inline' + subSubParagraph.id"
-                :animation-id="subSubParagraph.animation.id"
               />
             </div>
             <StartEndIcon :paragraph="subSubParagraph" art="end" />

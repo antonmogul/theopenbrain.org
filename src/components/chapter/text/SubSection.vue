@@ -141,6 +141,12 @@
               :is-creator="isCreator"
               @save="handleSave"
             />
+            <!-- A paragraph's own figure comes before its image, as in the pane, so figure numbers read in order on a phone (OPENBRAIN-79). -->
+            <IllustrationInline
+              v-if="inlineFigureFor(subParagraph)"
+              :key="'inline' + subParagraph.id"
+              :animation-id="subParagraph.animation.id"
+            />
             <InlineImages
               :paragraph="subParagraph"
               :key="'images' + subParagraph.id"
@@ -151,11 +157,6 @@
               :key="subParagraph.animationFull"
               v-if="subParagraph.animationFull"
               :paragraph="subParagraph"
-            />
-            <IllustrationInline
-              v-if="inlineFigureFor(subParagraph)"
-              :key="'inline' + subParagraph.id"
-              :animation-id="subParagraph.animation.id"
             />
           </template>
           <StartEndIcon :paragraph="subParagraph" art="end" />
