@@ -131,11 +131,11 @@ describe("readerTopInset", () => {
     expect(readerTopInset()).toBe(80);
   });
 
-  it("falls back to brand.css's 4rem when the token can't be read", () => {
-    expect(readerTopInset()).toBe(80);
+  it("falls back to brand.css's 3rem when the token can't be read", () => {
+    expect(readerTopInset()).toBe(64);
     // calc() needs layout to resolve; there is none here.
     root.style.setProperty("--reader-topbar-h", "calc(2rem + 8px)");
-    expect(readerTopInset()).toBe(80);
+    expect(readerTopInset()).toBe(64);
   });
 });
 
@@ -234,9 +234,9 @@ describe("jumpToElement", () => {
     setViewport({ scrollY: 1000 });
     const el = placed(500);
     expect(jumpToElement(el)).toBe(true);
-    // 500 in the viewport + 1000 scrolled − (64 + 16).
+    // 500 in the viewport + 1000 scrolled − (48 + 16).
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 1420,
+      top: 1436,
       behavior: "smooth",
     });
     expect(el.classList.contains("ob-flash")).toBe(false);
@@ -296,7 +296,7 @@ describe("jumpToElement", () => {
       jumpToElement(el);
       expect(scroller.scrollLeft).toBe(1310);
       expect(window.scrollTo).toHaveBeenCalledWith({
-        top: 2300 + 1000 - 80,
+        top: 2300 + 1000 - 64,
         behavior: "instant",
       });
     });
@@ -306,7 +306,7 @@ describe("jumpToElement", () => {
     root.setAttribute("data-reduce-motion", "1");
     jumpToElement(placed(500));
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 420,
+      top: 436,
       behavior: "instant",
     });
   });
@@ -324,7 +324,7 @@ describe("jumpToElement", () => {
     setViewport({ scrollY: 0, innerHeight: 800 });
     jumpToElement(placed(1000, 700), { align: "center" });
     expect(window.scrollTo).toHaveBeenCalledWith(
-      expect.objectContaining({ top: 920 })
+      expect.objectContaining({ top: 936 })
     );
   });
 
@@ -602,7 +602,7 @@ describe("scrollToY", () => {
     el.getBoundingClientRect = () => ({ top: 2400 - 900, height: 100 });
     scrollEnd(900);
     expect(window.scrollTo).toHaveBeenLastCalledWith({
-      top: 2400 - 80,
+      top: 2400 - 64,
       behavior: "smooth",
     });
   });
@@ -614,7 +614,7 @@ describe("jumpToId", () => {
     el.setAttribute("data-timeline-id", "break-1");
     expect(jumpToId("break-1", { flash: true })).toBe(true);
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 420,
+      top: 436,
       behavior: "smooth",
     });
     expect(el.classList.contains("ob-flash")).toBe(true);
@@ -673,14 +673,14 @@ describe("holdLanding (a chapter opened at a #hash, OPENBRAIN-145)", () => {
     let docTop = 3000;
     const stop = holdLanding(anchored(() => docTop));
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 3000 - 80,
+      top: 3000 - 64,
       behavior: "auto",
     });
     // Late layout pushes the anchor 600px down: held, instantly.
     docTop = 3600;
     vi.advanceTimersByTime(100);
     expect(window.scrollTo).toHaveBeenLastCalledWith({
-      top: 3600 - 80,
+      top: 3600 - 64,
       behavior: "auto",
     });
     expect(window.scrollTo).toHaveBeenCalledTimes(2);
@@ -724,7 +724,7 @@ describe("holdLanding (a chapter opened at a #hash, OPENBRAIN-145)", () => {
     document.body.appendChild(section);
     const stop = holdLanding(section);
     expect(window.scrollTo).toHaveBeenLastCalledWith({
-      top: 1700 - 80,
+      top: 1700 - 64,
       behavior: "auto",
     });
     stop();

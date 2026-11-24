@@ -135,10 +135,10 @@
      laptop widths so the floor above still gives a readable line. */
   --reader-gutter-l: 2rem;
   --reader-gutter-r: 2rem;
-  /* Matches the rendered app-bar height (bar-row content + hairline, 63px;
-     the progress track moved to the chapter timeline, OPENBRAIN-128).
-     Keep in sync if the bar's padding / button size changes. */
-  --reader-topbar-h: 4rem;
+  /* The reader's top bar: ReaderTopBar takes its height from this token
+     (48px: a slim bar around 44px targets, OPENBRAIN-78), so the two cannot
+     disagree. */
+  --reader-topbar-h: 3rem;
   /* Breathing room in the reader (OPENBRAIN-131); index.css applies it.
      The space after each chapter section is its bottom padding: 6rem in one
      column, 20rem from 1024px (the block below), where the pinned figure

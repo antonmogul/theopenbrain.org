@@ -180,17 +180,22 @@ const HELP = {
   min: 1,
 };
 /*
- * The rest of the bar Stuart asked for on 11 Nov (OPENBRAIN-197): the
- * chapter search where the chapter number and section menu were, and the
- * book's logo as the link home. Both at every width; the horizontal-scroll
- * check holds them on the bar at 390px.
+ * The rest of the bar (OPENBRAIN-197, then Maura's bar, OPENBRAIN-78): the
+ * chapter search, the book's mark as the button that opens the contents
+ * drawer, and TOOLS, whose row holds the "?" above. All at every width;
+ * the horizontal-scroll check holds them on the bar at 390px.
  */
 const SEARCH = {
   selector: '.reader-top-bar [data-testid="reader-search"]',
   min: 1,
 };
 const LOGO = {
-  selector: '.reader-top-bar a.wordmark [data-testid="book-logo"] svg',
+  selector:
+    '.reader-top-bar button.reader-menu-btn [data-testid="book-logo"] svg',
+  min: 1,
+};
+const TOOLS = {
+  selector: '.reader-top-bar [data-testid="reader-tools-button"]',
   min: 1,
 };
 /*
@@ -232,7 +237,15 @@ const ROUTES = [
     name: "foundations",
     minText: 2000,
     needsData: true,
-    expectCount: [TIMELINE, HERO_READY, HELP, SEARCH, LOGO, AUTHOR_LINKS],
+    expectCount: [
+      TIMELINE,
+      HERO_READY,
+      HELP,
+      SEARCH,
+      LOGO,
+      TOOLS,
+      AUTHOR_LINKS,
+    ],
     /*
      * The first breakout box must paint from the viewport's left edge at
      * every two-column width (Stuart, 1 Oct: "the 'full screen' breakout
@@ -301,6 +314,7 @@ const ROUTES = [
       HELP,
       SEARCH,
       LOGO,
+      TOOLS,
       AUTHOR_LINKS,
     ],
     /*

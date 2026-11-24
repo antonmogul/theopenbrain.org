@@ -1,14 +1,26 @@
 <script setup>
-// Navigation drawer — rebuilt to the New Design Ideas prototype (NavDrawer in
-// prototype.jsx): focused reading-navigator. Continue card → JUMP TO chapter
-// list with progress → user footer. Auth is an in-drawer form (shared
-// AuthForm.vue, variant="drawer") revealed by the footer's Sign in; the
-// current chapter expands to its authored heading outline. Open state is the existing useGeneral.activeMenu so
-// all current triggers (ReaderTopBar menu button, BottomNav, router) work
-// unchanged. Token-driven; replaces the legacy violet MainNav.
+/*
+ * The contents drawer (OPENBRAIN-78; Maura's sketch of 23 Nov, idea 3).
+ *
+ * The book's mark in the reader's top bar opens it, from the left, on the
+ * chapter's dark surface: "See full table of contents" and a home icon,
+ * the book's numbered chapters with the one being read opened to its
+ * sections (the section being read marked in the chapter's colour), and
+ * the reader's account at the foot, or Sign in. Its close button is a ✕
+ * exactly over the mark that opened it. The page dims behind it.
+ *
+ * "See full table of contents" shows the chapter library (ChaptersLibrary,
+ * what /chapters shows) in the space to the drawer's right, inside the
+ * same overlay; below LIBRARY_MIN_W there is no such space and the link
+ * goes to /chapters.
+ *
+ * Open state is useGeneral.activeMenu, as before. It must not move the
+ * page under it: no filter on the page, lockReaderScroll (OPENBRAIN-145).
+ */
 import {
   ref,
   computed,
+  defineAsyncComponent,
   onMounted,
   onBeforeUnmount,
   nextTick,
@@ -22,95 +34,62 @@ import { findReaderAnchor, jumpToElement } from "@/helper/readerJump";
 import { useAuthStore } from "@/stores/auth";
 import { useAuth } from "@/composables/useAuth";
 import { toSlug } from "@/helper/general";
-import BookLogo from "@/components/brand/BookLogo.vue";
-import MenuEye from "@/components/brand/MenuEye.vue";
+import { dashboardForRole } from "@/router/guards";
+import { authedRequest } from "@/services/api/client";
 import AuthForm from "@/components/Navigation/AuthForm.vue";
+import CloseIcon from "@/icons/custom/CloseIcon.vue";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { useHomeRoute } from "@/composables/useHomeRoute";
+
+// Its own chunk: the library and the contents it draws load on first use.
+const ChaptersLibrary = defineAsyncComponent(
+  () => import("@/components/book/ChaptersLibrary.vue")
+);
+
+// The library needs room beside the 320px drawer.
+const LIBRARY_MIN_W = 768;
 
 const router = useRouter();
 const route = useRoute();
 const textStore = useText();
 const store = useGeneral();
 const authStore = useAuthStore();
-const { user, profile, isAuthenticated } = useAuth();
+const { user, profile, isAuthenticated, isCreator, userRole, signOut } =
+  useAuth();
 const { modules, fetchCatalog } = useChapterCatalog();
 const homeRoute = useHomeRoute();
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Every chapter, The Retina included, comes from the Supabase catalog
-// (OPENBRAIN-33 removed the synthetic local "Chapter 1" entry that used to
-// shadow the real module row).
-const chapters = computed(() =>
-  [...modules.value].sort((a, b) => a.order_index - b.order_index)
-);
-
-// All-chapter reading progress keyed by module_id (mirrors ChaptersView).
-const progressByModule = ref({});
-
-async function loadProgress() {
-  if (!user.value?.id) return;
-  // Read the session token the same way the rest of the app does.
-  const sessionRaw = (() => {
-    try {
-      const ref = supabaseUrl?.match(/https:\/\/([^.]+)/)?.[1];
-      return JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`) || "null");
-    } catch {
-      return null;
-    }
-  })();
-  const token = sessionRaw?.access_token;
-  if (!token) return;
+/*
+ * The chapters: the published catalog, and for a creator the drafts too,
+ * greyed and marked (RLS shows drafts to creators only). Nothing is listed
+ * that the database does not hold.
+ */
+const drafts = ref([]);
+let draftsAsked = false;
+async function loadDrafts() {
+  if (draftsAsked || !isCreator?.value) return;
+  draftsAsked = true;
   try {
-    const res = await fetch(
-      `${supabaseUrl}/rest/v1/reading_progress?user_id=eq.${user.value.id}&select=module_id,scroll_position,is_completed,last_accessed_at`,
-      { headers: { apikey: supabaseKey, Authorization: `Bearer ${token}` } }
+    const rows = await authedRequest(
+      "modules?status=eq.draft&select=*&order=order_index.asc"
     );
-    if (!res.ok) return;
-    const rows = await res.json();
-    const map = {};
-    for (const r of rows) map[r.module_id] = r;
-    progressByModule.value = map;
+    drafts.value = (rows || []).map((d) => ({ ...d, isDraft: true }));
   } catch (err) {
-    console.warn("NavDrawer: progress fetch failed", err);
+    draftsAsked = false;
+    console.warn("NavDrawer: draft fetch failed", err);
   }
 }
+const chapters = computed(() =>
+  [...modules.value, ...drafts.value].sort(
+    (a, b) => (a.order_index ?? 0) - (b.order_index ?? 0)
+  )
+);
 
-function progressFor(mod) {
-  return progressByModule.value[mod.id];
-}
-function percentFor(mod) {
-  return Math.round(progressFor(mod)?.scroll_position || 0);
-}
-function statusFor(mod) {
-  const p = progressFor(mod);
-  if (!p) return null;
-  if (p.is_completed) return "done";
-  if ((p.scroll_position || 0) > 0) return "reading";
-  return null;
-}
-
-// Continue = most-recently-accessed incomplete chapter.
-const continueChapter = computed(() => {
-  const rows = Object.values(progressByModule.value).filter(
-    (r) => !r.is_completed && (r.scroll_position || 0) > 0
-  );
-  if (!rows.length) return null;
-  rows.sort((a, b) =>
-    (b.last_accessed_at || "").localeCompare(a.last_accessed_at || "")
-  );
-  const mod = chapters.value.find((c) => c.id === rows[0].module_id);
-  if (!mod) return null;
-  return { mod, percent: Math.round(rows[0].scroll_position || 0) };
-});
-
-const displayName = computed(() => profile.value?.full_name || "Reader");
+const displayName = computed(
+  () => profile.value?.full_name || user.value?.email || "Reader"
+);
 const initials = computed(() => {
-  const n = displayName.value || user.value?.email || "?";
+  const n = profile.value?.full_name?.trim() || user.value?.email || "?";
   return n
     .split(/\s+/)
     .map((w) => w[0])
@@ -118,6 +97,7 @@ const initials = computed(() => {
     .join("")
     .toUpperCase();
 });
+const dashboard = computed(() => dashboardForRole(userRole?.value));
 
 const currentSlug = computed(() =>
   route.name === "chapter" ? route.params.slug : null
@@ -128,19 +108,17 @@ const outline = computed(() => {
     return [];
   return buildOutline(textStore.text);
 });
-// Where the reader is, marked in the outline: the top bar's section menu
-// did this until the search field took its place (OPENBRAIN-197).
-// store.currentSubChapter is the slug of the section title TextComp's
-// trigger last crossed.
+// Where the reader is, marked in the outline. store.currentSubChapter is
+// the slug of the section title TextComp's trigger last crossed.
 const isReading = (section) =>
   !!store.currentSubChapter &&
   store.currentSubChapter === toSlug(section.title || "");
-const drawerRef = ref(null);
+
+const overlayRef = ref(null);
 const closeButtonRef = ref(null);
-// The close button is the menu's eye, closed (OPENBRAIN-197). It mounts
-// open and closes a frame later, so the eye the reader pressed is seen to
-// shut as the drawer comes in.
-const eyeClosed = ref(false);
+const contentsLinkRef = ref(null);
+const libraryCloseRef = ref(null);
+const libraryOpen = ref(false);
 let opener = null;
 let releaseScroll = null;
 let restoreOnClose = true;
@@ -171,6 +149,33 @@ function goChapter(chapter) {
   if (chapter.slug === currentSlug.value) jumpTo("#chapter-toc");
   else go(`/chapter/${chapter.order_index}/${chapter.slug}`);
 }
+
+/* ── "See full table of contents" ── */
+const roomForLibrary = () =>
+  typeof window !== "undefined" && window.innerWidth >= LIBRARY_MIN_W;
+async function onContentsLink() {
+  if (!roomForLibrary()) return go("/chapters");
+  if (libraryOpen.value) return closeLibrary();
+  libraryOpen.value = true;
+  await nextTick();
+  libraryCloseRef.value?.focus({ preventScroll: true });
+}
+async function closeLibrary() {
+  if (!libraryOpen.value) return;
+  libraryOpen.value = false;
+  await nextTick();
+  contentsLinkRef.value?.focus({ preventScroll: true });
+}
+// A link inside the library: the route change closes the drawer, but a
+// link to the page already open changes nothing, so close here.
+function onLibraryClick(event) {
+  if (event.target?.closest?.("a[href]")) close({ restoreFocus: false });
+}
+// The window narrowed under an open library: nowhere to show it.
+function onResize() {
+  if (libraryOpen.value && !roomForLibrary()) libraryOpen.value = false;
+}
+
 watch(
   () => store.activeMenu,
   async (open) => {
@@ -180,13 +185,12 @@ watch(
       opener = document.activeElement;
       restoreOnClose = true;
       releaseScroll ||= lockReaderScroll();
+      loadDrafts();
       await nextTick();
-      if (!unmounted && store.activeMenu && epoch === focusEpoch) {
+      if (!unmounted && store.activeMenu && epoch === focusEpoch)
         closeButtonRef.value?.focus({ preventScroll: true });
-        eyeClosed.value = true;
-      }
     } else {
-      eyeClosed.value = false;
+      libraryOpen.value = false;
       releaseScroll?.();
       releaseScroll = null;
       const target = opener;
@@ -201,10 +205,9 @@ watch(
   () => route.fullPath,
   () => close({ restoreFocus: false })
 );
-// In-drawer auth (restored from the old MainNav so login lives in the hamburger
-// nav, not a separate screen). The form itself + validation + auth calls live
-// in the shared AuthForm (audit #19); the drawer just owns the tabs, the
-// open/close chrome, and the post-login behavior (close the drawer).
+
+// In-drawer auth: the form, its validation and the auth calls live in the
+// shared AuthForm; the drawer owns the tabs and what happens after login.
 const showAuth = ref(false);
 
 function openSignIn() {
@@ -218,22 +221,33 @@ function onAuthLogin() {
   close();
 }
 
+async function logOut() {
+  close({ restoreFocus: false });
+  // signOut clears the local session even when the server call fails
+  // (offline), so the reader is signed out either way: leave, and only log
+  // the failure (as AccountMenu does).
+  const { error: err } = (await signOut()) || {};
+  if (err) console.warn("[nav drawer] server sign-out failed", err);
+  router.push("/");
+}
+
+const FOCUSABLE =
+  'button:not([disabled]), a[href], input:not([disabled]), select, [tabindex="0"]';
 function onKey(e) {
   if (!store.activeMenu || e.defaultPrevented) return;
   if (e.key === "Escape") {
     e.preventDefault();
-    close();
+    // The library first, then the drawer.
+    if (libraryOpen.value) closeLibrary();
+    else close();
     return;
   }
-  if (e.key !== "Tab" || !drawerRef.value) return;
-  const buttons = [
-    ...drawerRef.value.querySelectorAll(
-      'button:not([disabled]), a[href], input:not([disabled]), [tabindex="0"]'
-    ),
-  ];
-  const first = buttons[0];
-  const last = buttons[buttons.length - 1];
-  const inside = drawerRef.value.contains(document.activeElement);
+  // Tab stays inside the overlay: the drawer, and the library beside it.
+  if (e.key !== "Tab" || !overlayRef.value) return;
+  const stops = [...overlayRef.value.querySelectorAll(FOCUSABLE)];
+  const first = stops[0];
+  const last = stops[stops.length - 1];
+  const inside = overlayRef.value.contains(document.activeElement);
   if (e.shiftKey && (!inside || document.activeElement === first)) {
     e.preventDefault();
     last?.focus();
@@ -245,12 +259,13 @@ function onKey(e) {
 
 onMounted(() => {
   fetchCatalog();
-  loadProgress();
   window.addEventListener("keydown", onKey);
+  window.addEventListener("resize", onResize);
 });
 onBeforeUnmount(() => {
   unmounted = true;
   window.removeEventListener("keydown", onKey);
+  window.removeEventListener("resize", onResize);
   releaseScroll?.();
   releaseScroll = null;
 });
@@ -259,18 +274,21 @@ onBeforeUnmount(() => {
 <template>
   <Teleport to="body">
     <Transition name="drawer">
-      <div v-if="store.activeMenu" class="nav-backdrop" @click.self="close">
+      <div
+        v-if="store.activeMenu"
+        ref="overlayRef"
+        class="nav-backdrop"
+        :class="{ 'has-library': libraryOpen }"
+        @click.self="close()"
+      >
         <aside
-          ref="drawerRef"
           class="drawer"
           role="dialog"
           aria-modal="true"
           aria-label="Navigation"
         >
-          <!-- Header -->
-          <!-- The closed eye sits where the top bar's open eye is, so the
-               button the reader pressed is the one that closes the menu
-               (Stuart, 11 Nov; OPENBRAIN-197). Then the book's logo. -->
+          <!-- The ✕ sits exactly over the top bar's mark, so the button the
+               reader pressed is the one that closes the drawer. -->
           <div class="drawer-head">
             <button
               ref="closeButtonRef"
@@ -278,69 +296,67 @@ onBeforeUnmount(() => {
               type="button"
               aria-label="Close chapter menu"
               title="Close"
-              @click="close"
+              @click="close()"
             >
-              <MenuEye :closed="eyeClosed" />
+              <CloseIcon :width="20" :height="20" />
             </button>
+          </div>
+
+          <div class="drawer-top">
+            <a
+              ref="contentsLinkRef"
+              href="/chapters"
+              class="contents-link"
+              :class="{ 'is-open': libraryOpen }"
+              data-testid="drawer-contents-link"
+              @click.prevent="onContentsLink"
+            >
+              See full table of contents
+            </a>
             <router-link
               :to="homeRoute"
-              class="wordmark"
-              aria-label="The Open Brain, home"
-              @click="close"
+              class="home-link"
+              aria-label="Home"
+              title="Home"
+              @click="close({ restoreFocus: false })"
             >
-              <BookLogo class="wordmark-logo" />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3.5 11 12 4l8.5 7" />
+                <path d="M5.5 9.5V20h4.75v-5.5h3.5V20h4.75V9.5" />
+              </svg>
             </router-link>
           </div>
 
-          <!-- Continue -->
-          <template v-if="continueChapter">
-            <p class="eyebrow">Continue</p>
-            <button
-              class="continue-card"
-              type="button"
-              @click="
-                go(
-                  `/chapter/${continueChapter.mod.order_index}/${continueChapter.mod.slug}`
-                )
-              "
+          <nav class="chapter-list" aria-label="Chapters">
+            <div
+              v-for="ch in chapters"
+              :key="ch.id"
+              class="chapter"
+              :class="{
+                'is-current': ch.slug === currentSlug,
+                'is-draft': ch.isDraft,
+              }"
             >
-              <span class="cover-mini" />
-              <span class="continue-meta">
-                <span class="continue-ch">
-                  CH
-                  {{ String(continueChapter.mod.order_index).padStart(2, "0") }}
-                  · {{ continueChapter.percent }}%
-                </span>
-                <span class="continue-title">Resume reading</span>
-              </span>
-            </button>
-          </template>
-
-          <hr class="rule" />
-
-          <!-- Jump to -->
-          <p class="eyebrow">Jump to</p>
-          <div class="chapter-list">
-            <div v-for="ch in chapters" :key="ch.id">
               <button
                 class="chapter-row"
                 type="button"
                 :aria-current="ch.slug === currentSlug ? 'page' : undefined"
                 @click="goChapter(ch)"
               >
-                <span class="ch-num">{{
-                  String(ch.order_index).padStart(2, "0")
-                }}</span>
+                <span class="ch-num">{{ ch.order_index }}</span
+                >{{ " " }}
                 <span class="ch-title">{{ ch.title }}</span>
-                <span
-                  v-if="statusFor(ch) === 'done'"
-                  class="ch-done"
-                  aria-label="Completed"
-                  >✓</span
-                >
-                <span v-else-if="statusFor(ch) === 'reading'" class="ch-pct"
-                  >{{ percentFor(ch) }}%</span
-                >
+                <span v-if="ch.isDraft" class="ch-draft">Draft</span>
               </button>
               <nav
                 v-if="ch.slug === currentSlug && outline.length"
@@ -369,324 +385,418 @@ onBeforeUnmount(() => {
                 </div>
               </nav>
             </div>
-          </div>
+          </nav>
 
-          <hr class="rule" />
-
-          <!-- Footer -->
-          <div v-if="isAuthenticated" class="user-footer">
-            <span class="avatar" aria-hidden="true">{{ initials }}</span>
-            <div class="user-meta">
-              <div class="user-name">{{ displayName }}</div>
-              <router-link to="/settings" class="user-sub" @click="close">
-                {{ user?.email }} · settings
-              </router-link>
-            </div>
-          </div>
-          <!-- Anonymous: in-drawer auth (login / register / forgot) -->
-          <template v-else>
-            <button
-              v-if="!showAuth"
-              class="signin-btn"
-              type="button"
-              @click="openSignIn"
-            >
-              Sign in
-            </button>
-
-            <div v-else class="auth">
-              <div class="auth-tabs">
-                <button
-                  class="auth-tab"
-                  :class="{ active: authStore.authView === 'login' }"
-                  type="button"
-                  @click="authStore.setView('login')"
+          <!-- The account, which was a button in the top bar. -->
+          <div class="drawer-foot">
+            <div v-if="isAuthenticated" class="user-footer">
+              <span class="avatar" aria-hidden="true">{{ initials }}</span>
+              <div class="user-meta">
+                <div class="user-name">{{ displayName }}</div>
+                <div
+                  v-if="user?.email && user.email !== displayName"
+                  class="user-sub"
                 >
-                  Login
-                </button>
-                <button
-                  class="auth-tab"
-                  :class="{ active: authStore.authView === 'register' }"
-                  type="button"
-                  @click="authStore.setView('register')"
-                >
-                  Sign Up
-                </button>
+                  {{ user.email }}
+                </div>
+                <div class="user-links">
+                  <router-link
+                    :to="dashboard"
+                    @click="close({ restoreFocus: false })"
+                    >Dashboard</router-link
+                  >
+                  <router-link
+                    to="/settings"
+                    @click="close({ restoreFocus: false })"
+                    >Settings</router-link
+                  >
+                  <button type="button" @click="logOut">Log out</button>
+                </div>
               </div>
-
-              <AuthForm
-                variant="drawer"
-                :view="authStore.authView"
-                @set-view="authStore.setView"
-                @login-success="onAuthLogin"
-              />
             </div>
-          </template>
+            <!-- Signed out: in-drawer auth (login / register / forgot) -->
+            <template v-else>
+              <button
+                v-if="!showAuth"
+                class="signin-btn"
+                type="button"
+                @click="openSignIn"
+              >
+                Sign in
+              </button>
 
-          <!-- Team links. A plain anchor, not a router-link: Storybook is a
-               static build served beside the app (dist/storybook, see
-               railway.json and public/serve.json), so it needs a real page
-               load. The explicit file keeps its relative assets resolving. -->
-          <p class="team-links">
-            <a href="/storybook/index.html" target="_blank" rel="noopener"
-              >Storybook · design system</a
-            >
-          </p>
+              <div v-else class="auth">
+                <div class="auth-tabs">
+                  <button
+                    class="auth-tab"
+                    :class="{ active: authStore.authView === 'login' }"
+                    type="button"
+                    @click="authStore.setView('login')"
+                  >
+                    Login
+                  </button>
+                  <button
+                    class="auth-tab"
+                    :class="{ active: authStore.authView === 'register' }"
+                    type="button"
+                    @click="authStore.setView('register')"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+
+                <AuthForm
+                  variant="drawer"
+                  :view="authStore.authView"
+                  @set-view="authStore.setView"
+                  @login-success="onAuthLogin"
+                />
+              </div>
+            </template>
+
+            <!-- A plain anchor, not a router-link: Storybook is a static
+                 build served beside the app (dist/storybook, see
+                 railway.json and public/serve.json), so it needs a real
+                 page load. The explicit file keeps its assets resolving. -->
+            <p class="team-links">
+              <a href="/storybook/index.html" target="_blank" rel="noopener"
+                >Storybook · design system</a
+              >
+            </p>
+          </div>
         </aside>
+
+        <!-- The chapter library, in the space beside the drawer. A <div>,
+             never a <section>: inside the reader a section is a screen
+             tall (index.css). -->
+        <div
+          v-if="libraryOpen"
+          class="library"
+          role="region"
+          aria-label="Full table of contents"
+          data-testid="drawer-library"
+          @click="onLibraryClick"
+        >
+          <button
+            ref="libraryCloseRef"
+            type="button"
+            class="library-close"
+            aria-label="Close the table of contents, back to the page"
+            title="Back to the page"
+            @click.stop="close()"
+          >
+            <CloseIcon :width="18" :height="18" />
+          </button>
+          <ChaptersLibrary embedded />
+        </div>
       </div>
     </Transition>
   </Teleport>
 </template>
 
 <style scoped>
+/* The page dims behind the drawer. No blur and no filter: the page must
+   not move or repaint as a layer under it (OPENBRAIN-145). */
 .nav-backdrop {
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: rgba(0, 0, 0, 0.4);
-  /* The page softens behind the drawer here, not with a filter on the
-     page itself, which collapsed the scrolled document (OPENBRAIN-145). */
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  display: flex;
+  background: rgb(0 0 0 / 0.55);
 }
 
 .drawer {
-  width: 380px;
-  max-width: 100%;
-  height: 100vh;
-  background: rgb(var(--color-paper));
-  color: rgb(var(--color-ink));
-  font-family: var(--font-body);
-  padding: 24px;
+  --d-ink: 255 255 255;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  border-right: 1px solid rgb(var(--color-line));
+  flex-shrink: 0;
+  width: 320px;
+  max-width: calc(100% - 44px);
+  height: 100%;
+  background: rgb(var(--color-dark-surface));
+  color: rgb(var(--d-ink));
+  font-family: var(--font-ui);
+  border-right: 1px solid rgb(var(--d-ink) / 0.1);
   overflow: hidden;
+  /* The page hyphenates (index.css); a list of titles should not. */
+  hyphens: manual;
+  -webkit-hyphens: manual;
 }
 
-/* The head sits exactly over the reader's top bar: the close button on the
-   bar's menu button (18px in, 9px down; 8px and 5px below 900px), the logo
-   where the bar's is. The drawer's padding is 24px, so pull it back. */
+/* As tall as the reader's top bar and padded like it, so the ✕ lands on
+   the mark (10px in; 4px on a phone). */
 .drawer-head {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin: -15px 0 -1px -6px;
-}
-.wordmark {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  border-radius: var(--radius-control);
-  text-decoration: none;
-  color: rgb(var(--color-ink));
-}
-.wordmark-logo {
-  --logo-h: 40px;
-}
-.wordmark:focus-visible {
-  outline: 2px solid rgb(var(--color-accent));
-  outline-offset: 2px;
-}
-@media (max-width: 900px) {
-  .drawer-head {
-    gap: 8px;
-    margin: -19px 0 0 -16px;
-  }
+  flex-shrink: 0;
+  height: var(--reader-topbar-h, 3rem);
+  padding: 0 10px;
+  border-bottom: 1px solid rgb(var(--d-ink) / 0.1);
+  box-sizing: border-box;
 }
 .close-btn {
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border: 1px solid rgb(var(--color-line));
+  padding: 0;
+  border: 0;
   border-radius: var(--radius-control);
   background: transparent;
-  color: rgb(var(--color-ink));
+  color: inherit;
   cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition: border-color 0.12s ease;
-}
-.close-btn:hover {
-  border-color: rgb(var(--color-ink));
 }
 
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgb(var(--color-mute));
-  margin: 0;
-}
-
-.rule {
-  border: 0;
-  border-top: 1px solid rgb(var(--color-line));
-  margin: 0;
-}
-
-/* Continue card */
-.continue-card {
+/* "See full table of contents" and home. */
+.drawer-top {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: var(--radius-control);
-  background: transparent;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.12s ease;
-}
-.continue-card:hover {
-  border-color: rgb(var(--color-ink));
-}
-.cover-mini {
-  width: 50px;
-  aspect-ratio: 3 / 4;
   flex-shrink: 0;
-  border-radius: var(--radius-control);
-  background: linear-gradient(
-    135deg,
-    rgb(var(--color-accent) / 0.25),
-    rgb(var(--color-complete) / 0.25)
-  );
+  padding: 4px 10px 4px 20px;
+  background: rgb(var(--color-dark-surface-2));
 }
-.continue-meta {
+.contents-link {
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.continue-ch {
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--d-ink) / 0.8);
   font-family: var(--font-mono);
-  font-size: var(--ui-size-10);
-  color: rgb(var(--color-mute));
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
 }
-.continue-title {
-  font-family: var(--font-body);
-  font-size: var(--ui-size-16);
-  font-weight: 500;
+.contents-link.is-open {
+  color: rgb(var(--color-chapter-soft));
+}
+.home-link {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-control);
+  color: rgb(var(--d-ink) / 0.8);
 }
 
-/* Jump-to chapter list */
+/* The chapters. */
 .chapter-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow: auto;
-  overscroll-behavior: contain;
   flex: 1;
+  min-height: 0;
+  padding: 8px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.chapter.is-current {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  background: rgb(var(--color-dark-surface-2));
 }
 .chapter-row {
   display: grid;
-  grid-template-columns: 32px 1fr auto;
-  gap: 12px;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  gap: 0.25rem;
   align-items: baseline;
-  padding: 8px 4px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem 1.25rem;
   border: 0;
   background: transparent;
-  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  font-size: var(--ui-size-15);
+  line-height: 1.3;
   text-align: left;
-  transition: padding-left 0.12s ease;
+  cursor: pointer;
 }
-.chapter-row:hover {
-  padding-left: 8px;
+.chapter-row[aria-current="page"] {
+  font-weight: 600;
 }
 .ch-num {
+  font-variant-numeric: tabular-nums;
+}
+/* A draft: greyed, and said so. Only creators are shown one. */
+.chapter.is-draft .ch-num,
+.chapter.is-draft .ch-title {
+  color: rgb(var(--d-ink) / 0.6);
+}
+.ch-draft {
   font-family: var(--font-mono);
-  font-size: var(--ui-size-11);
-  color: rgb(var(--color-mute));
-}
-.ch-title {
-  font-family: var(--font-body);
-  font-size: var(--ui-size-15);
-}
-.ch-done {
-  color: rgb(var(--color-complete));
-}
-.ch-pct {
-  font-family: var(--font-mono);
-  font-size: 0.5625rem;
-  color: rgb(var(--color-accent));
+  font-size: var(--ui-size-10);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-warn));
 }
 
-/* Footer */
+.chapter-outline {
+  padding: 0 1.25rem 0 2.5rem;
+}
+.outline-section,
+.outline-subsection {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.5rem 0.625rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--d-ink) / 0.8);
+  font: inherit;
+  font-size: var(--ui-size-14);
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+.outline-subsection {
+  padding-left: 1.75rem;
+  color: rgb(var(--d-ink) / 0.62);
+  font-size: var(--ui-size-13);
+}
+.outline-label {
+  margin-right: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  color: rgb(var(--d-ink) / 0.55);
+}
+/* The section being read, in the chapter's colour: its main step down the
+   left edge, and its soft step for the words (the main step is 3:1 on
+   this ground, too little for text). */
+.outline-section[aria-current="location"] {
+  color: rgb(var(--color-chapter-soft));
+  box-shadow: inset 2px 0 0 rgb(var(--color-chapter));
+}
+.outline-section[aria-current="location"] .outline-label {
+  color: inherit;
+}
+
+@media (hover: hover) {
+  .close-btn:hover,
+  .home-link:hover,
+  .library-close:hover {
+    background: rgb(255 255 255 / 0.1);
+  }
+  .contents-link:hover,
+  .chapter-row:hover .ch-title,
+  .outline-section:hover,
+  .outline-subsection:hover,
+  .user-links a:hover,
+  .user-links button:hover,
+  .team-links a:hover {
+    color: rgb(var(--d-ink));
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+}
+
+/* The foot: the account. */
+.drawer-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+  max-height: 70%;
+  padding: 14px 20px 16px;
+  border-top: 1px solid rgb(var(--d-ink) / 0.1);
+  overflow-y: auto;
+}
 .user-footer {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 .avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
   width: 36px;
   height: 36px;
   border-radius: 999px;
   background: rgb(var(--color-complete));
   color: #0a3d33;
-  display: grid;
-  place-items: center;
   font-family: var(--font-mono);
   font-size: var(--ui-size-12);
   font-weight: 600;
-  flex-shrink: 0;
+}
+.user-meta {
+  min-width: 0;
 }
 .user-name {
-  font-family: var(--font-body);
   font-size: var(--ui-size-14);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 .user-sub {
   font-family: var(--font-mono);
-  font-size: var(--ui-size-10);
-  color: rgb(var(--color-mute));
-  text-decoration: none;
+  font-size: var(--ui-size-11);
+  line-height: 1.4;
+  color: rgb(var(--d-ink) / 0.62);
+  overflow-wrap: anywhere;
 }
-.user-sub:hover {
-  color: rgb(var(--color-accent));
+.user-links {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1rem;
+  margin: 0 0 0 -0.25rem;
+}
+.user-links a,
+.user-links button {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: rgb(var(--d-ink) / 0.8);
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: lowercase;
+  cursor: pointer;
 }
 
-/* Team links (Storybook · Styleguide): quiet, last thing in the drawer. */
 .team-links {
-  display: flex;
-  gap: 0.5rem;
   margin: 0;
   font-family: var(--font-mono);
   font-size: var(--ui-size-10);
-  text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgb(var(--color-mute));
+  text-transform: uppercase;
+  color: rgb(var(--d-ink) / 0.55);
 }
 .team-links a {
   color: inherit;
   text-decoration: none;
 }
-.team-links a:hover,
-.team-links a:focus-visible {
-  color: rgb(var(--color-accent));
-}
 
 .signin-btn {
   align-self: flex-start;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgb(var(--d-ink));
+  border-radius: var(--radius-control);
+  background: rgb(var(--d-ink));
+  color: rgb(var(--color-dark-surface));
   font-family: var(--font-mono);
   font-size: var(--ui-size-11);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 10px 18px;
-  border-radius: var(--radius-control);
-  background: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
-  border: 1px solid rgb(var(--color-ink));
+  text-transform: uppercase;
   cursor: pointer;
 }
 .signin-btn:hover {
-  background: rgb(var(--color-ink) / 0.85);
+  background: rgb(var(--d-ink) / 0.85);
 }
 
-/* In-drawer auth (login / register / forgot) */
+/* In-drawer auth (login / register / forgot): AuthForm's drawer skin is
+   drawn for paper, so the form sits on a paper card here. */
 .auth {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
 }
 .auth-tabs {
   display: flex;
@@ -694,15 +804,16 @@ onBeforeUnmount(() => {
 }
 .auth-tab {
   flex: 1;
-  font-family: var(--font-mono);
-  font-size: 0.65625rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  min-height: 36px;
   padding: 8px 0;
-  background: transparent;
   border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
+  background: transparent;
   color: rgb(var(--color-mute));
+  font-family: var(--font-mono);
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   transition:
     background 0.12s ease,
@@ -715,7 +826,55 @@ onBeforeUnmount(() => {
   border-color: rgb(var(--color-ink));
 }
 
-/* Slide-in 320ms */
+/* The library: the rest of the overlay, scrolling inside itself. */
+.library {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgb(var(--color-dark-surface));
+}
+.library-close {
+  position: sticky;
+  top: 2px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 2px 10px -46px auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: rgb(var(--color-dark-surface));
+  color: #fff;
+  cursor: pointer;
+}
+
+.close-btn:focus-visible,
+.contents-link:focus-visible,
+.home-link:focus-visible,
+.chapter-row:focus-visible,
+.outline-section:focus-visible,
+.outline-subsection:focus-visible,
+.user-links a:focus-visible,
+.user-links button:focus-visible,
+.team-links a:focus-visible,
+.signin-btn:focus-visible,
+.library-close:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: -2px;
+}
+
+@media (max-width: 640px) {
+  .drawer-head {
+    padding: 0 4px;
+  }
+}
+
+/* In from the left, 320ms. */
 .drawer-enter-active,
 .drawer-leave-active {
   transition: opacity 0.32s ease;
@@ -734,55 +893,11 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion="0"]) .drawer-enter-active,
+  :root:not([data-reduce-motion="0"]) .drawer-leave-active,
   :root:not([data-reduce-motion="0"]) .drawer-enter-active .drawer,
   :root:not([data-reduce-motion="0"]) .drawer-leave-active .drawer {
     transition: none;
   }
-}
-.chapter-outline {
-  margin: 0.25rem 0 1rem 1rem;
-  padding-left: 0.75rem;
-  border-left: 1px solid rgb(var(--color-line));
-}
-.outline-section,
-.outline-subsection {
-  display: block;
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.5rem 0.25rem;
-  text-align: left;
-  font: inherit;
-  font-size: var(--ui-size-14);
-  color: inherit;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-.outline-subsection {
-  padding-left: 1.5rem;
-  color: rgb(var(--color-mute));
-}
-.outline-label {
-  margin-right: 0.5rem;
-  font-family: var(--font-mono);
-}
-/* The section being read: the chapter's colour down its left edge. */
-.outline-section[aria-current="location"] {
-  font-weight: 600;
-  box-shadow: inset 2px 0 0 rgb(var(--color-chapter-deep, var(--color-ink)));
-  padding-left: 0.625rem;
-}
-.outline-section:hover,
-.outline-subsection:hover {
-  color: rgb(var(--color-accent));
-}
-.outline-section:focus-visible,
-.outline-subsection:focus-visible,
-.close-btn:focus-visible {
-  outline: 2px solid rgb(var(--color-accent));
-  outline-offset: 1px;
-}
-.chapter-row[aria-current="page"] {
-  background: rgb(var(--color-chapter-pale));
 }
 </style>

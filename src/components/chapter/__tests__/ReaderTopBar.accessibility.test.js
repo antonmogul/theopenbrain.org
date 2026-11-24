@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import ReaderTopBar from "@/components/chapter/ReaderTopBar.vue";
 
@@ -60,21 +60,25 @@ vi.mock("@/composables/useReaderSidebar", async () => {
   };
 });
 
-vi.mock("@/composables/useHomeRoute", () => ({
-  useHomeRoute: () => "/chapters",
-}));
-
-// The account menu has its own tests (AccountMenu.test.js).
-vi.mock("@/components/Navigation/AccountMenu.vue", () => ({
-  default: { name: "AccountMenu", render: () => null },
-}));
-
 const mountBar = (props = {}) =>
   mount(ReaderTopBar, {
     props,
     attachTo: document.body,
     global: { stubs: { RouterLink: true } },
   });
+
+const tools = (wrapper) => wrapper.get(".tools");
+const toolsButton = (wrapper) =>
+  wrapper.get('[data-testid="reader-tools-button"]');
+const isOpen = (wrapper) =>
+  toolsButton(wrapper).attributes("aria-expanded") === "true";
+// happy-dom has no real pointer; the handlers read pointerType.
+const point = (wrapper, type, pointerType = "mouse") => {
+  const event = new Event(type);
+  event.pointerType = pointerType;
+  tools(wrapper).element.dispatchEvent(event);
+  return wrapper.vm.$nextTick();
+};
 
 beforeEach(() => {
   generalStore.activeMenu = false;
@@ -83,83 +87,64 @@ beforeEach(() => {
 });
 
 describe("ReaderTopBar accessibility", () => {
-  // Stuart, 11 Nov (OPENBRAIN-197): "where it currently says something like
-  // 'Ch 1 Where is my mind?', we can remove that, and replace with a search
-  // bar."
-  it("has the chapter search where the chapter number and section menu were", () => {
+  // Maura's sketch, 23 Nov (OPENBRAIN-78): a slim dark bar; the book's mark
+  // and a search icon on the left, TOOLS on the right.
+  it("is the mark, the search and TOOLS, in that order", () => {
     const wrapper = mountBar();
-    expect(wrapper.find(".chapter-eyebrow").exists()).toBe(false);
-    expect(wrapper.find(".section-jump").exists()).toBe(false);
-    expect(wrapper.find("#reader-section-menu").exists()).toBe(false);
-    const search = wrapper.get('[data-testid="reader-search"]');
     const row = [...wrapper.get(".bar-row").element.children];
-    // After the logo, before the spacer that pushes help to the right end.
-    expect(row.indexOf(search.element)).toBeGreaterThan(
-      row.indexOf(wrapper.get(".wordmark").element)
+    const at = (selector) => row.indexOf(wrapper.get(selector).element);
+    expect(at(".reader-menu-btn")).toBe(0);
+    expect(at('[data-testid="reader-search"]')).toBeGreaterThan(
+      at(".reader-menu-btn")
     );
-    expect(row.indexOf(search.element)).toBeLessThan(
-      row.indexOf(wrapper.get(".spacer").element)
-    );
+    expect(at(".spacer")).toBeGreaterThan(at('[data-testid="reader-search"]'));
+    expect(at(".tools")).toBeGreaterThan(at(".spacer"));
+    // No account button: the account is in the drawer's foot.
+    expect(wrapper.find(".account").exists()).toBe(false);
     const input = wrapper.get('[data-testid="reader-search-input"]');
     expect(input.attributes("role")).toBe("combobox");
     expect(input.attributes("aria-label")).toBe("Search this chapter");
     wrapper.unmount();
   });
 
-  // The wordmark used to be inside the menu button (one control, no home
-  // link). Stuart found the two indistinguishable, so the wordmark is the
-  // logo, a link home, and the menu button alone opens the menu
-  // (OPENBRAIN-145; ReaderTopBar.wordmark.test.js).
-  it("the chapter-menu control is a button on its own", async () => {
+  it("takes its height from --reader-topbar-h, on the dark surface", () => {
+    const bar = rule(source, ".reader-top-bar");
+    expect(bar).toMatch(/height:\s*var\(--reader-topbar-h/);
+    expect(bar).toMatch(/box-sizing:\s*border-box/);
+    expect(bar).toMatch(/--bar-bg:\s*var\(--color-dark-surface\)/);
+  });
+
+  it("the mark is a button that opens the chapter menu", async () => {
     const wrapper = mountBar();
     const menu = wrapper.get('[aria-label="Open chapter menu"]');
     expect(menu.element.tagName).toBe("BUTTON");
-    expect(menu.find(".wordmark").exists()).toBe(false);
+    expect(menu.attributes("aria-haspopup")).toBe("dialog");
     expect(menu.attributes("aria-expanded")).toBe("false");
     await menu.trigger("click");
     expect(generalStore.activeMenu).toBe(true);
     wrapper.unmount();
   });
 
-  // Reading progress moved to the chapter timeline's slider (OPENBRAIN-128;
-  // its aria-valuenow is tested in timeline/__tests__/ChapterTimeline.test.js).
-  it("no longer carries a progress bar of its own", () => {
+  // Reading progress moved to the chapter timeline's slider (OPENBRAIN-128).
+  it("carries no progress bar of its own", () => {
     const wrapper = mountBar();
     expect(wrapper.find('[role="progressbar"]').exists()).toBe(false);
-    expect(wrapper.find(".progress-track").exists()).toBe(false);
     wrapper.unmount();
   });
 
-  // The draft notice was a fixed ribbon under the bar, over
-  // TextComp's centred Edit chapter toggle and edit bar. It is now a badge
-  // in the bar's own row, after the logo.
   it("marks a draft in the bar itself, telling screen readers who can see it", () => {
     const wrapper = mountBar({ isDraft: true });
     const badge = wrapper.get('[data-testid="draft-badge"]');
     expect(badge.element.closest(".bar-row")).not.toBeNull();
     expect(badge.attributes("role")).toBe("status");
-    expect(badge.text()).toContain("Draft");
-    expect(badge.get(".sr-only").text()).toContain(
-      "only creators can see this chapter"
-    );
-    // Right after the logo.
-    expect(
-      badge.element.previousElementSibling.classList.contains("wordmark")
-    ).toBe(true);
-    wrapper.unmount();
-  });
-
-  // At 320px the 47px badge pushed the account menu off the bar. Below
-  // 400px it is an amber dot whose word stays for screen readers.
-  it("keeps the draft notice whole for screen readers when it shrinks to a dot", () => {
-    const wrapper = mountBar({ isDraft: true });
-    const badge = wrapper.get('[data-testid="draft-badge"]');
-    // The visible word is its own element, so the narrow rule can hide it
-    // visually without hiding it from screen readers.
     expect(badge.get(".draft-badge-label").text()).toBe("Draft");
     expect(badge.text().replace(/\s+/g, " ")).toBe(
       "Draft, only creators can see this chapter"
     );
+    // Right after the mark.
+    expect(
+      badge.element.previousElementSibling.classList.contains("reader-menu-btn")
+    ).toBe(true);
     wrapper.unmount();
   });
 
@@ -169,21 +154,12 @@ describe("ReaderTopBar accessibility", () => {
     const dot = rule(narrow, ".draft-badge");
     expect(dot).toMatch(/width:\s*8px/);
     expect(dot).toMatch(/height:\s*8px/);
-    expect(dot).toMatch(/padding:\s*0/);
     expect(dot).toMatch(/border-radius:\s*50%/);
     const label = rule(narrow, ".draft-badge-label");
     expect(label).toMatch(/position:\s*absolute/);
-    expect(label).toMatch(/width:\s*1px/);
     expect(label).toMatch(/clip:\s*rect\(0,\s*0,\s*0,\s*0\)/);
     // Not display:none, which would take the word from screen readers too.
     expect(label).not.toMatch(/display:\s*none/);
-  });
-
-  it("on a phone shows the book without the words and keeps the right-hand controls together", () => {
-    const phone = mediaBlock("(max-width: 640px)");
-    expect(rule(phone, ".wordmark-logo")).toMatch(/--logo-crop:\s*1/);
-    // The free space goes before the search button, not after it.
-    expect(rule(phone, ".spacer")).toMatch(/order:\s*-1/);
   });
 
   it("shows no draft badge on a published chapter", () => {
@@ -192,52 +168,202 @@ describe("ReaderTopBar accessibility", () => {
     wrapper.unmount();
   });
 
-  // Stuart, 11 Nov (OPENBRAIN-197): "replace 'info', 'notebook', and 'chat'
-  // on the top right with a question mark".
-  it("has no Info / Notebook / Chat buttons of its own, signed in or not", () => {
-    for (const isAuthenticated of [true, false]) {
-      const wrapper = mountBar({ isAuthenticated });
-      expect(wrapper.find(".tool-buttons").exists()).toBe(false);
-      expect(wrapper.find(".tool-btn").exists()).toBe(false);
+  describe("on the chapter cover", () => {
+    const frame = window.requestAnimationFrame;
+    beforeEach(() => {
+      window.requestAnimationFrame = (fn) => (Promise.resolve().then(fn), 1);
+    });
+    afterEach(() => {
+      window.requestAnimationFrame = frame;
+      window.scrollY = 0;
+    });
+    const scrollTo = async (y) => {
+      window.scrollY = y;
+      window.dispatchEvent(new Event("scroll"));
+      await flushPromises();
+    };
+
+    it("is not shown until the reader has scrolled past the cover's top", async () => {
+      const wrapper = mountBar({ hideOnCover: true });
+      const bar = wrapper.get(".reader-top-bar");
+      expect(bar.classes()).toContain("is-cover");
+      expect(bar.attributes("data-cover")).toBe("hidden");
+      await scrollTo(400);
+      expect(bar.classes()).not.toContain("is-cover");
+      expect(bar.attributes("data-cover")).toBeUndefined();
+      await scrollTo(0);
+      expect(bar.classes()).toContain("is-cover");
       wrapper.unmount();
-    }
+    });
+
+    it("stays where it is, hidden with opacity, and shows for keyboard focus", () => {
+      const css = source.slice(source.indexOf("<style"));
+      const hidden = rule(
+        css,
+        ".reader-top-bar.is-cover:not(.is-held):not(:focus-within)"
+      );
+      expect(hidden).toMatch(/opacity:\s*0/);
+      expect(hidden).toMatch(/pointer-events:\s*none/);
+      // Its controls stay focusable, and its box stays measurable.
+      expect(hidden).not.toMatch(/visibility|display|transform/);
+    });
+
+    it("is held while its drawer or its tools are open", async () => {
+      const wrapper = mountBar({ hideOnCover: true });
+      const bar = wrapper.get(".reader-top-bar");
+      expect(bar.classes()).not.toContain("is-held");
+      await toolsButton(wrapper).trigger("click");
+      expect(bar.classes()).toContain("is-held");
+      wrapper.unmount();
+    });
+
+    it("is always shown where there is no cover", () => {
+      const wrapper = mountBar();
+      expect(wrapper.get(".reader-top-bar").classes()).not.toContain(
+        "is-cover"
+      );
+      wrapper.unmount();
+    });
   });
 
-  // The "?" moved from the chapter cover, where it scrolled away, to the
-  // bar's right end (Stuart, 12 Nov; OPENBRAIN-189).
+  describe("TOOLS", () => {
+    it("is a disclosure button, first in the document and last on screen", () => {
+      const wrapper = mountBar();
+      const button = toolsButton(wrapper);
+      expect(button.text()).toBe("Tools");
+      expect(button.attributes("aria-expanded")).toBe("false");
+      const row = wrapper.get(`#${button.attributes("aria-controls")}`);
+      expect(row.attributes("role")).toBe("group");
+      expect(row.attributes("aria-label")).toBe("Reader tools");
+      // Tab reaches TOOLS, then walks the row it opened.
+      expect(tools(wrapper).element.firstElementChild).toBe(button.element);
+      expect(rule(source, ".tools")).toMatch(/flex-direction:\s*row-reverse/);
+      wrapper.unmount();
+    });
+
+    it("the closed row is out of the tab order, and keeps its place", () => {
+      const css = source.slice(source.indexOf("<style"));
+      expect(rule(css, ".tools-row")).toMatch(/visibility:\s*hidden/);
+      expect(rule(css, ".tools.is-open .tools-row")).toMatch(
+        /visibility:\s*visible/
+      );
+      // "Back to reading" lives in the row and must outlast it.
+      expect(rule(css, ".tools-row :deep(.listen-return)")).toMatch(
+        /visibility:\s*visible/
+      );
+    });
+
+    it("opens while a mouse points at it and closes a moment after it leaves", async () => {
+      vi.useFakeTimers();
+      const wrapper = mountBar();
+      await point(wrapper, "pointerenter");
+      expect(isOpen(wrapper)).toBe(true);
+      expect(tools(wrapper).classes()).toContain("is-open");
+      await point(wrapper, "pointerleave");
+      expect(isOpen(wrapper)).toBe(true);
+      vi.advanceTimersByTime(300);
+      await wrapper.vm.$nextTick();
+      expect(isOpen(wrapper)).toBe(false);
+      vi.useRealTimers();
+      wrapper.unmount();
+    });
+
+    it("on touch is a tap toggle, and a tap elsewhere closes it", async () => {
+      const wrapper = mountBar();
+      await point(wrapper, "pointerenter", "touch");
+      expect(isOpen(wrapper)).toBe(false);
+      await toolsButton(wrapper).trigger("click");
+      expect(isOpen(wrapper)).toBe(true);
+      await toolsButton(wrapper).trigger("click");
+      expect(isOpen(wrapper)).toBe(false);
+
+      await toolsButton(wrapper).trigger("click");
+      expect(isOpen(wrapper)).toBe(true);
+      const down = new Event("pointerdown", { bubbles: true });
+      down.pointerType = "touch";
+      document.body.dispatchEvent(down);
+      await wrapper.vm.$nextTick();
+      expect(isOpen(wrapper)).toBe(false);
+      wrapper.unmount();
+    });
+
+    it("opens for keyboard focus, and Escape closes it with focus on TOOLS", async () => {
+      const wrapper = mountBar();
+      const button = toolsButton(wrapper);
+      const matches = button.element.matches.bind(button.element);
+      button.element.matches = (selector) =>
+        selector === ":focus-visible" ? true : matches(selector);
+      button.element.focus();
+      await wrapper.vm.$nextTick();
+      expect(isOpen(wrapper)).toBe(true);
+      await button.trigger("keydown", { key: "Escape" });
+      expect(isOpen(wrapper)).toBe(false);
+      expect(document.activeElement).toBe(button.element);
+      wrapper.unmount();
+    });
+
+    it("signed out offers Listen and help; signed in, Info, Notebook and Chat too", () => {
+      const names = (wrapper) =>
+        wrapper
+          .get("#reader-tools")
+          .findAll(".tool-btn")
+          .map((b) => b.attributes("data-tool") || "help");
+      const out = mountBar({ isAuthenticated: false });
+      expect(names(out)).toEqual(["help"]);
+      out.unmount();
+      const signedIn = mountBar({ isAuthenticated: true });
+      expect(names(signedIn)).toEqual(["info", "notebook", "chat", "help"]);
+      for (const tool of signedIn.findAll("[data-tool]"))
+        expect(tool.attributes("aria-controls")).toBe("reader-sidebar");
+      signedIn.unmount();
+    });
+
+    it("a tool opens that tab of the reader's panel, with focus on TOOLS first", async () => {
+      const wrapper = mountBar({ isAuthenticated: true });
+      await toolsButton(wrapper).trigger("click");
+      // ReaderSidebar gives focus back, on close, to whatever had it when
+      // it opened: TOOLS, which is always there; the row's buttons are not.
+      sidebar.open.mockImplementationOnce((tab) => {
+        expect(document.activeElement).toBe(toolsButton(wrapper).element);
+        sidebar.activeTab.value = tab;
+        sidebar.isOpen.value = true;
+      });
+      await wrapper.get('[data-tool="notebook"]').trigger("click");
+      await flushPromises();
+      expect(sidebar.open).toHaveBeenCalledWith("notebook");
+      expect(
+        wrapper.get('[data-tool="notebook"]').attributes("aria-current")
+      ).toBe("true");
+      expect(
+        wrapper.get('[data-tool="info"]').attributes("aria-current")
+      ).toBeUndefined();
+      wrapper.unmount();
+    });
+
+    it("opens as a sheet under the bar on a phone", () => {
+      const phone = mediaBlock("(max-width: 640px)");
+      const sheet = rule(phone, ".tools-row");
+      expect(sheet).toMatch(/position:\s*absolute/);
+      expect(sheet).toMatch(/top:\s*100%/);
+      expect(sheet).toMatch(/flex-wrap:\s*wrap/);
+    });
+  });
+
+  // The "?" (OPENBRAIN-189), now the last of the Tools row.
   describe("help", () => {
-    it("is a named 44px control at the bar's right end, before the account menu", () => {
+    it("is a named 44px control in the Tools row", () => {
       const wrapper = mountBar();
       const help = wrapper.get('[data-testid="reader-help-button"]');
       expect(help.element.tagName).toBe("BUTTON");
-      expect(help.attributes("aria-label")).toMatch(/^Help/);
+      expect(help.attributes("aria-label")).toBe("Help and animations");
       expect(help.attributes("aria-haspopup")).toBe("dialog");
       expect(help.attributes("aria-expanded")).toBe("false");
-      expect(help.element.closest(".bar-row")).not.toBeNull();
-      // After the spacer: the right end of the bar.
-      const row = [...wrapper.get(".bar-row").element.children];
-      expect(row.indexOf(help.element)).toBeGreaterThan(
-        row.indexOf(wrapper.get(".spacer").element)
-      );
-      expect(rule(source, ".help-btn")).toMatch(/min-width:\s*44px/);
-      expect(rule(source, ".help-btn")).toMatch(/min-height:\s*44px/);
+      expect(help.element.closest("#reader-tools")).not.toBeNull();
+      expect(source).toMatch(/min-width:\s*44px;\s*min-height:\s*44px/);
       wrapper.unmount();
     });
 
-    it("is there for readers who are not signed in, without the tools", async () => {
-      const wrapper = mountBar({ isAuthenticated: false });
-      const help = wrapper.get('[data-testid="reader-help-button"]');
-      expect(help.attributes("aria-label")).toBe("Help and animations");
-      await help.trigger("click");
-      await flushPromises();
-      expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="reader-help-tools"]').exists()).toBe(
-        false
-      );
-      wrapper.unmount();
-    });
-
-    it("opens a named panel, takes focus into it and gives it back on Escape", async () => {
+    it("opens a named panel, takes focus into it, holds the row open and gives focus back on Escape", async () => {
       const wrapper = mountBar();
       const help = wrapper.get('[data-testid="reader-help-button"]');
       await help.trigger("click");
@@ -250,9 +376,13 @@ describe("ReaderTopBar accessibility", () => {
         document.getElementById(panel.attributes("aria-labelledby")).textContent
       ).toMatch(/How to read this book/);
       expect(document.activeElement).toBe(panel.element);
-      // The animations switch is in it.
+      expect(isOpen(wrapper)).toBe(true);
+      // The animations switch is in it; the tools are in the row, not here.
       expect(panel.find('input[type="radio"][value="device"]').exists()).toBe(
         true
+      );
+      expect(wrapper.find('[data-testid="reader-help-tools"]').exists()).toBe(
+        false
       );
 
       await panel.trigger("keydown", { key: "Escape" });
@@ -270,7 +400,6 @@ describe("ReaderTopBar accessibility", () => {
       await wrapper.get('[aria-label="Close help"]').trigger("click");
       await flushPromises();
       expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(false);
-      expect(document.activeElement).toBe(help.element);
 
       await help.trigger("click");
       await flushPromises();
@@ -279,61 +408,6 @@ describe("ReaderTopBar accessibility", () => {
         .trigger("click");
       await flushPromises();
       expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(false);
-      wrapper.unmount();
-    });
-
-    it("signed in, offers Info, Notebook and Chat as buttons in the panel", async () => {
-      const wrapper = mountBar({ isAuthenticated: true });
-      const help = wrapper.get('[data-testid="reader-help-button"]');
-      expect(help.attributes("aria-label")).toBe(
-        "Help, Info, Notebook and Chat"
-      );
-      await help.trigger("click");
-      await flushPromises();
-      const tools = wrapper
-        .get('[data-testid="reader-help-tools"]')
-        .findAll("button");
-      expect(tools.map((t) => t.attributes("data-tool"))).toEqual([
-        "info",
-        "notebook",
-        "chat",
-      ]);
-      expect(
-        tools.map((t) => t.get(".reader-help__tool-title").text())
-      ).toEqual(["Info", "Notebook", "Chat"]);
-      for (const tool of tools)
-        expect(tool.attributes("aria-controls")).toBe("reader-sidebar");
-      wrapper.unmount();
-    });
-
-    it("a tool opens that tab of the reader's panel, with focus back on the “?” first", async () => {
-      const wrapper = mountBar({ isAuthenticated: true });
-      const help = wrapper.get('[data-testid="reader-help-button"]');
-      await help.trigger("click");
-      await flushPromises();
-      // ReaderSidebar gives focus back, on close, to whatever had it when it
-      // opened: that must be the "?", not a button of a panel that is gone.
-      sidebar.open.mockImplementationOnce((tab) => {
-        expect(document.activeElement).toBe(help.element);
-        expect(wrapper.find('[data-testid="reader-help"]').exists()).toBe(
-          false
-        );
-        sidebar.activeTab.value = tab;
-        sidebar.isOpen.value = true;
-      });
-      await wrapper.get('[data-tool="notebook"]').trigger("click");
-      await flushPromises();
-      expect(sidebar.open).toHaveBeenCalledWith("notebook");
-
-      // Opened again, the panel marks the tab that is showing.
-      await help.trigger("click");
-      await flushPromises();
-      expect(
-        wrapper.get('[data-tool="notebook"]').attributes("aria-current")
-      ).toBe("true");
-      expect(
-        wrapper.get('[data-tool="info"]').attributes("aria-current")
-      ).toBeUndefined();
       wrapper.unmount();
     });
 

@@ -120,9 +120,9 @@ async function answer(value) {
       <strong class="motion-notice__lead">{{
         outcome === "on" ? "Animations are on." : "Animations stay off."
       }}</strong>
-      Change this any time under
+      Change this any time under Tools, then
       <span class="motion-notice__key" aria-hidden="true">?</span
-      ><span class="motion-notice__sr">Help</span> in the top bar.
+      ><span class="motion-notice__sr">Help</span>, in the top bar.
     </p>
   </aside>
 </template>

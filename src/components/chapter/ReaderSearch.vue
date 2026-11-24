@@ -14,8 +14,13 @@
  * the results, Enter goes, Escape closes. It is a combobox over a listbox,
  * so focus stays in the field and the active row is announced.
  *
- * Below 640px the bar has no room for a field: a search button opens one
+ * The field is behind the search icon at every width (OPENBRAIN-78): the
+ * icon opens it inline, beside itself, and a second press puts it away.
+ * Below 640px the bar has no room beside the icon, so the field is laid
  * across the whole bar, with its own close.
+ *
+ * It takes the bar's ink from --bar-ink / --bar-bg (ReaderTopBar), and
+ * falls back to the page's ink and paper on its own.
  */
 import {
   computed,
@@ -54,7 +59,7 @@ const query = ref("");
 const used = ref(false);
 // The results are showing.
 const open = ref(false);
-// Phones: the field is laid over the bar.
+// The field is out from behind its icon.
 const expanded = ref(false);
 const active = ref(0);
 
@@ -114,6 +119,7 @@ function onFocus() {
 }
 
 async function expand() {
+  if (expanded.value) return close({ refocus: true });
   use();
   expanded.value = true;
   emit("open");
@@ -213,7 +219,7 @@ defineExpose({ close });
     data-testid="reader-search"
     @focusout="onFocusOut"
   >
-    <!-- Phones: the field is behind this button. -->
+    <!-- The field is behind this button. -->
     <button
       ref="toggle"
       type="button"
@@ -349,17 +355,24 @@ defineExpose({ close });
 
 <style scoped>
 .reader-search {
+  --search-ink: var(--bar-ink, var(--color-ink));
+  --search-bg: var(--bar-bg, var(--color-paper));
   position: relative;
-  flex: 1 1 14rem;
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
   min-width: 0;
-  max-width: 26rem;
   /* The page hyphenates (index.css); a results list should not. */
   hyphens: manual;
   -webkit-hyphens: manual;
 }
+.reader-search.is-expanded {
+  flex: 1 1 14rem;
+  max-width: 26rem;
+}
 
 .search-toggle {
-  display: none;
+  display: grid;
   place-items: center;
   flex-shrink: 0;
   width: 44px;
@@ -368,39 +381,41 @@ defineExpose({ close });
   border: 0;
   border-radius: var(--radius-control);
   background: transparent;
-  color: rgb(var(--color-ink));
+  color: rgb(var(--search-ink));
   cursor: pointer;
 }
 /* Not on touch, where a hover sticks after the tap. */
 @media (hover: hover) {
   .search-toggle:hover {
-    background: rgb(var(--color-ink) / 0.05);
+    background: rgb(var(--search-ink) / 0.1);
   }
 }
 
+/* The field: a line of type on the bar, ruled underneath, no box. */
 .search-field {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
   height: 36px;
-  padding: 0 4px 0 10px;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: var(--radius-control);
-  background: rgb(var(--color-paper));
-  color: rgb(var(--color-ink));
+  padding: 0 0 0 4px;
+  border-bottom: 1px solid rgb(var(--search-ink) / 0.35);
+  color: rgb(var(--search-ink));
   transition: border-color 0.12s ease;
 }
-.search-field:hover {
-  border-color: rgb(var(--color-mute));
+.reader-search.is-expanded .search-field {
+  display: flex;
 }
 .search-field:focus-within {
-  border-color: rgb(var(--color-ink));
-  outline: 3px solid rgb(var(--color-accent));
-  outline-offset: 2px;
+  border-bottom-color: rgb(var(--color-accent));
+  box-shadow: 0 1px 0 rgb(var(--color-accent));
 }
+/* The icon that opened the field stands for it from 640px up. */
 .search-glass {
+  display: none;
   flex-shrink: 0;
-  color: rgb(var(--color-mute));
+  color: rgb(var(--search-ink) / 0.65);
 }
 .search-input {
   flex: 1;
@@ -417,7 +432,7 @@ defineExpose({ close });
   outline: none;
 }
 .search-input::placeholder {
-  color: rgb(var(--color-mute));
+  color: rgb(var(--search-ink) / 0.65);
   font-family: var(--font-mono);
   font-size: var(--ui-size-11);
   letter-spacing: 0.08em;
@@ -430,9 +445,9 @@ defineExpose({ close });
   width: 20px;
   height: 20px;
   margin-right: 4px;
-  border: 1px solid rgb(var(--color-line));
+  border: 1px solid rgb(var(--search-ink) / 0.35);
   border-radius: 3px;
-  color: rgb(var(--color-mute));
+  color: rgb(var(--search-ink) / 0.65);
   font-family: var(--font-mono);
   font-size: var(--ui-size-11);
   line-height: 1;
@@ -447,29 +462,33 @@ defineExpose({ close });
   border: 0;
   border-radius: var(--radius-control);
   background: transparent;
-  color: rgb(var(--color-mute));
+  color: rgb(var(--search-ink) / 0.65);
   cursor: pointer;
 }
 .search-close:hover {
-  color: rgb(var(--color-ink));
-  background: rgb(var(--color-ink) / 0.05);
+  color: rgb(var(--search-ink));
+  background: rgb(var(--search-ink) / 0.1);
 }
 .search-toggle:focus-visible,
 .search-close:focus-visible {
-  outline: 3px solid rgb(var(--color-accent));
-  outline-offset: 2px;
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: -3px;
 }
 
-/* The results: under the field, as wide as a line of reading. An overlay,
-   so dvh is right here (never in the flow). */
+/* The results: under the field, as wide as a line of reading, on paper
+   like the bar's other panels. An overlay, so dvh is right here (never in
+   the flow). */
 .search-panel {
   position: absolute;
-  top: calc(100% + 16px);
+  top: calc(100% + 8px);
   left: 0;
   z-index: 50;
   width: max(100%, 30rem);
-  max-width: calc(100vw - 36px);
-  max-height: calc(100dvh - 5.5rem - var(--reader-timeline-h, 0px));
+  max-width: calc(100vw - 20px);
+  max-height: calc(
+    100dvh - var(--reader-topbar-h, 3rem) - 1.5rem -
+      var(--reader-timeline-h, 0px)
+  );
   display: flex;
   flex-direction: column;
   background: rgb(var(--color-paper));
@@ -558,26 +577,30 @@ defineExpose({ close });
 }
 
 @media (max-width: 640px) {
-  .reader-search {
+  .reader-search,
+  .reader-search.is-expanded {
     position: static;
     flex: 0 0 auto;
     max-width: none;
   }
-  .search-toggle {
-    display: grid;
-  }
-  .search-field {
-    display: none;
-  }
   /* Open: the field across the whole bar, over the other controls. */
   .reader-search.is-expanded .search-field {
-    display: flex;
     position: absolute;
     z-index: 2;
-    top: 5px;
-    left: 8px;
-    right: 8px;
-    height: 44px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    padding: 0 4px 0 14px;
+    border-bottom: 0;
+    background: rgb(var(--search-bg));
+  }
+  .search-field:focus-within {
+    box-shadow: inset 0 -2px 0 rgb(var(--color-accent));
+  }
+  .search-glass {
+    display: block;
   }
   .search-key {
     display: none;

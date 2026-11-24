@@ -4,6 +4,9 @@
  * button. Both drawings are the 2023 Retina chapter's own; one becomes the
  * other in a 180 ms blink, at once under reduced motion (the toolbar's
  * Motion control shows that).
+ *
+ * Not on the bar since OPENBRAIN-78 (24 Nov): the book's mark opens the
+ * drawer there and a ✕ closes it. The eye is kept for whoever wants it.
  */
 import MenuEye from "../MenuEye.vue";
 
