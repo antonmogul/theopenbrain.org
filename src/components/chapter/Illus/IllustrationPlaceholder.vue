@@ -47,6 +47,10 @@ const props = defineProps({
   /* Rendered in the text column (IllustrationInline), where the shell takes
      the height its content needs rather than filling a fixed pane. */
   inline: { type: Boolean, default: false },
+  /* An image in the text with no number or title of its own (InlineImages,
+     OPENBRAIN-70): no toolbar row. The expand button moves to the row under
+     the artwork, beside the legend's control. Only with `inline`. */
+  bare: { type: Boolean, default: false },
 });
 
 // A breakout box is its own column: the figure keeps to it, and its title
@@ -75,6 +79,9 @@ const type = computed(
 const figureLabel = computed(() => railFigureLabel(props.animation) || "FIG");
 
 const title = computed(() => props.animation.title || "Untitled figure");
+// The fullscreen dialog's name: a bare image has neither label nor title.
+const dialogLabel = computed(() => (props.bare ? "" : figureLabel.value));
+const dialogName = computed(() => (props.bare ? "Illustration" : title.value));
 const images = computed(() => figureImages(props.animation));
 const caption = computed(
   () => props.animation.caption || props.animation.description || ""
@@ -194,6 +201,7 @@ function closeFullscreen() {
       }"
     >
       <header
+        v-if="!bare"
         class="fig-toolbar"
         :class="{
           'fig-toolbar--pane': inPane,
@@ -284,8 +292,8 @@ function closeFullscreen() {
           v-if="images.length"
           :images="images"
           :caption="caption"
-          :label="figureLabel"
-          :title="title"
+          :label="dialogLabel"
+          :title="bare ? '' : title"
           v-model:index="galleryIndex"
           v-model:view="galleryView"
           :start="animation.galleryStart || ''"
@@ -310,11 +318,13 @@ function closeFullscreen() {
       <!-- In the text column: the legend's control under the artwork, and
            the legend under it once it is opened. -->
       <div
-        v-if="inline && images.length && legend"
+        v-if="inline && images.length && (legend || bare)"
         class="fig-legend-row"
+        :class="{ 'fig-legend-row--bare': bare }"
         @keydown.esc="closeLegend"
       >
         <button
+          v-if="legend"
           type="button"
           class="fig-legend-btn"
           :aria-expanded="legendPinned ? 'true' : 'false'"
@@ -337,7 +347,29 @@ function closeFullscreen() {
             <path d="M2 6.5l3-3 3 3" />
           </svg>
         </button>
+        <button
+          v-if="bare"
+          class="fig-fs-btn"
+          type="button"
+          title="Expand to full screen"
+          aria-label="Expand to full screen"
+          @click="openFullscreen"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
+          </svg>
+        </button>
         <figcaption
+          v-if="legend"
           :id="legendId"
           class="fig-legend"
           :class="{
@@ -360,7 +392,7 @@ function closeFullscreen() {
     <!-- The shared reader dialog owns scroll lock, focus and navigation. -->
     <DemoModal
       :show="isFullscreen"
-      :title="`${figureLabel}: ${title}`"
+      :title="[dialogLabel, dialogName].filter(Boolean).join(': ')"
       wide
       :ground="dialogGround"
       @close="closeFullscreen"
@@ -368,8 +400,8 @@ function closeFullscreen() {
       <!-- On the dark ground the heading is the pane's toolbar: the label
            in amber, then the title, both mono. -->
       <template v-if="dialogGround === 'dark'" #title>
-        <span class="fs-label">{{ figureLabel }}</span>
-        <span class="fs-name">{{ title }}</span>
+        <span v-if="dialogLabel" class="fs-label">{{ dialogLabel }}</span>
+        <span class="fs-name">{{ dialogName }}</span>
       </template>
       <div class="fs-content">
         <div
@@ -380,8 +412,8 @@ function closeFullscreen() {
             v-if="images.length"
             :images="images"
             :caption="caption"
-            :label="figureLabel"
-            :title="title"
+            :label="dialogLabel"
+            :title="bare ? '' : title"
             v-model:index="galleryIndex"
             v-model:view="galleryView"
             :start="animation.galleryStart || ''"
@@ -562,6 +594,28 @@ function closeFullscreen() {
   .fig-legend-row .fig-legend-btn {
     height: 2.75rem;
     padding: 0 0.75rem;
+  }
+}
+/* A bare image (no toolbar): the legend's control and the expand button
+   share the row under the artwork, the legend under both when open. */
+.fig-legend-row--bare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+.fig-legend-row--bare .fig-legend-btn {
+  grid-column: 1;
+  justify-self: start;
+}
+.fig-legend-row--bare .fig-fs-btn {
+  grid-column: 2;
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+  color: inherit;
+}
+@media (pointer: coarse) {
+  .fig-legend-row--bare .fig-fs-btn {
+    width: 2.75rem;
+    height: 2.75rem;
   }
 }
 .fig-legend-caret {
