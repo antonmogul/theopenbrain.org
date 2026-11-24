@@ -358,6 +358,24 @@ describe("a mark is a control", () => {
     expect(fixtures.jump.mock.calls[0][0].style.top).toBe("2322px");
   });
 
+  it("draws a waiting figure's mark where it comes on, not at its paragraph's top", async () => {
+    // Stuart, 22 Nov: the mark "doesn't become purple till well after it
+    // has passed this dot" (OPENBRAIN-73). The same page as above: the
+    // figure comes on 320px after its paragraph's top meets the reading
+    // point, so that is where its mark and its ribbon start.
+    page(
+      [
+        ["AnimationFig1", 2000, 600, { active: true }],
+        ["AnimationFig2", 3000, 300],
+      ],
+      [[1000, 920]]
+    );
+    const rail = await mountRail();
+    const tops = rail.findAll(".rr-mark").map((mark) => mark.element.style.top);
+    expect(tops).toEqual(["2320px", "3000px"]);
+    expect(spans(rail)).toEqual([["2320px", "280px"]]);
+  });
+
   it("is one tab stop: the figure that is on, else the first", async () => {
     page([
       ["AnimationFig1", 1000, 300],
