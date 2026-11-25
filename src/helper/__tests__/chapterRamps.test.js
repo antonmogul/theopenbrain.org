@@ -10,7 +10,14 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { extractTokens } from "../../../scripts/tokens/extract.mjs";
-import { AA_TEXT, RAMPS, RAMP_HEX, rampGround } from "@/helper/chapterTheme";
+import {
+  AA_TEXT,
+  PAPER_HEX,
+  RAMPS,
+  RAMP_HEX,
+  rampGround,
+  rampLink,
+} from "@/helper/chapterTheme";
 import { contrastRatio } from "@/helper/contrast";
 import { widgetTokens } from "@/widgets/uploaded/widgetHost";
 
@@ -63,6 +70,52 @@ describe("RAMP_HEX, the one ramp table", () => {
       );
       expect(ratio, ramp).toBeGreaterThanOrEqual(AA_TEXT);
     }
+  });
+
+  it("colours a link in the text with the step that reads on paper at AA, and with no step where none does (OPENBRAIN-91)", () => {
+    expect(rampLink("fund")).toBe("main");
+    expect(rampLink("move")).toBe("deep");
+    expect(rampLink("lear")).toBe("deep");
+    // Teal and amber: 2.74:1 and 2.83:1 at their deep step.
+    expect(rampLink("perc")).toBe(null);
+    expect(rampLink("deve")).toBe(null);
+    expect(rampLink("nope")).toBe(null);
+    expect(up(PAPER_HEX)).toBe(tokens.color.light.paper);
+    for (const ramp of RAMPS) {
+      const step = rampLink(ramp);
+      if (step)
+        expect(
+          contrastRatio(RAMP_HEX[ramp][step], PAPER_HEX),
+          ramp
+        ).toBeGreaterThanOrEqual(AA_TEXT);
+    }
+  });
+
+  it("index.css gives each ramp the --reader-link that rampLink names, on light paper only", () => {
+    const css = read("src/index.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const TOKEN = { main: "--color-chapter", deep: "--color-chapter-deep" };
+    const found = {};
+    for (const [, selectors, token] of css.matchAll(
+      /([^{}]+)\{\s*--reader-link:\s*var\((--color-chapter(?:-deep)?)\);\s*\}/g
+    ))
+      for (const selector of selectors.split(",")) {
+        const [, ramp] = selector.match(/\[data-chapter="(\w+)"\]/) || [];
+        expect(selector, "a ramp, light theme").toMatch(
+          /^\s*:root\[data-chapter="\w+"\]:not\(\[data-theme="dark"\]\)\s*$/
+        );
+        found[ramp] = token;
+      }
+    const expected = {};
+    for (const ramp of RAMPS)
+      if (rampLink(ramp)) expected[ramp] = TOKEN[rampLink(ramp)];
+    expect(found).toEqual(expected);
+    // The links themselves fall back to the accent where there is none.
+    expect(css).toMatch(
+      /\.citation-ref \{\s*color: rgb\(var\(--reader-link, var\(--color-accent\)\)\);/
+    );
+    expect(read("src/components/chapter/text/ReferenceList.vue")).toMatch(
+      /\.ref-list__source:visited \{\s*color: rgb\(var\(--reader-link, var\(--color-accent\)\)\);/
+    );
   });
 
   it("is what the widget kit hands uploaded widgets, plate included", () => {

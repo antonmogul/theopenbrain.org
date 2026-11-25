@@ -375,18 +375,19 @@ const headingId = computed(
                   title="Full screen"
                   @click="openModal"
                 >
+                  <!-- The figure toolbar's expand icon (IllustrationPlaceholder
+                       .fig-fs-btn), so the book has one (OPENBRAIN-91). -->
                   <svg
                     aria-hidden="true"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="1.7"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
                   >
-                    <path
-                      d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"
-                    />
+                    <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
                   </svg>
                 </button>
               </template>
@@ -418,16 +419,15 @@ const headingId = computed(
                 <svg
                   v-if="kind === 'inline'"
                   aria-hidden="true"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="1.7"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
                 >
-                  <path
-                    d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"
-                  />
+                  <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
                 </svg>
                 <span v-else>Open interactive</span>
               </button>
@@ -772,7 +772,10 @@ const headingId = computed(
 }
 /* The band's toolbar (Figma 68:264), the figure toolbar's row on the dark
    pane: the bare expand icon, then the credit in mono caps. It was a
-   boxed button pinned top right over the widget. */
+   boxed button pinned top right over the widget. The icon is the pane's
+   own, drawing and colour (Maura, 25 Nov, OPENBRAIN-91: "consistent with
+   the ones on the left side"): the four corners in the label's amber,
+   white on a wash under the pointer. */
 .wb-body--full .wb-foot {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -794,15 +797,22 @@ const headingId = computed(
   padding: 0; /* .wb-btn's padding is declared later and would squash it */
   border-color: transparent;
   background: transparent;
-  color: #fff;
+  color: rgb(var(--color-warn));
 }
+/* The phrenology widget draws the button in its own footer (its `actions`
+   slot): beside the citation it is the same 28px button, and on a phone,
+   in the widget's legend row, a finger's 44px. */
 .wb-body--full .wb-btn--legend {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  margin: 0;
+}
+@media (max-width: 759.98px) {
+  .wb-body--full .wb-btn--legend {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0;
+  }
 }
 .wb-body--full .wb-btn--expand svg {
   width: 14px;
@@ -811,6 +821,7 @@ const headingId = computed(
 .wb-body--full .wb-btn--expand:hover {
   border-color: transparent;
   background: rgb(255 255 255 / 0.1);
+  color: #fff;
 }
 .wb-body--full .wb-credit {
   order: 0;

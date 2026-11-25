@@ -138,9 +138,11 @@ async function follow(event, url) {
 .reading-links li:last-child {
   border-bottom: 1px solid rgb(var(--color-line));
 }
+/* The chapter's link colour, as its citations and references
+   (--reader-link, index.css; OPENBRAIN-91), else the accent. */
 a,
 a:visited {
-  color: rgb(var(--color-accent));
+  color: rgb(var(--reader-link, var(--color-accent)));
   text-decoration: underline;
   text-underline-offset: 0.2em;
   overflow-wrap: anywhere;

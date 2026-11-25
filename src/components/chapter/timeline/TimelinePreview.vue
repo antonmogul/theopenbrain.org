@@ -359,10 +359,10 @@ const style = computed(() =>
   color: rgb(var(--color-mute));
 }
 
+/* No rule in the chapter's colour before it (Maura, 25 Nov,
+   OPENBRAIN-91): the number in ink is enough to start the line. */
 .tl-preview-num {
   flex-shrink: 0;
-  padding-left: 7px;
-  border-left: 2px solid rgb(var(--tl-accent));
   color: rgb(var(--color-ink));
   font-variant-numeric: tabular-nums;
 }

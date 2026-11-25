@@ -4,17 +4,22 @@
  * and the text, from 1024px (helper/readingRail.js has the idea and the
  * rules). It sits in TextComp's #container, before the reading point
  * (`.reading-line`, TextComp's own element, still switched on and off by its
- * ScrollTrigger), and draws three layers on the divider:
+ * ScrollTrigger), and draws two layers on the divider:
  *
  * - `.rr-spans`: the ribbon of the figure that is on, under the reading point,
- * - `.rr-point`: the one-off pulse and beam at the reading point when the
- *   pane changes (Web Animations, never under reduced motion),
  * - `.rr-marks`: a button per figure, over the reading point: a pointer
  *   towards the pane with no words (OPENBRAIN-195), filled while its figure
  *   is on, in the chapter's colour for a figure to look at and in the
  *   interaction accent for one to operate (a square rather than a round
  *   mark too, so the difference is not colour alone). A hover or keyboard
  *   focus brings up its name.
+ *
+ * When a figure comes on its mark is at the reading point, and it swells a
+ * little as it fills (CSS, on `[data-showing]`), staying that size while
+ * its figure is in the pane. Maura, 25 Nov (OPENBRAIN-91): "the ripple
+ * effect could be replaced with a more subtle interaction, like the center
+ * increasing in size". It replaced a ring that left the reading point and a
+ * beam that ran into the pane.
  *
  * It measures the pane's own triggers and never decides what shows:
  * IllustrationsComp sets `.active` on a trigger while its figure is on, and
@@ -41,7 +46,7 @@ import {
   figureRecordFor,
   figureWait,
 } from "@/helper/historyFigureTiming";
-import { jumpToElement, reducedMotionPreferred } from "@/helper/readerJump";
+import { jumpToElement } from "@/helper/readerJump";
 import {
   cutSpan,
   railMarkFor,
@@ -55,8 +60,6 @@ const props = defineProps({
 });
 
 const root = ref(null);
-const ring = ref(null);
-const beam = ref(null);
 const landing = ref(null);
 const wide = useMediaQuery(READER_WIDE_QUERY);
 const { animations, fetchAnimations } = useAnimations();
@@ -82,10 +85,7 @@ let classObserver = null;
 let layoutObserver = null;
 let domObserver = null;
 let measureTimer = null;
-let armTimer = null;
-let armed = false;
 let unmounted = false;
-let running = [];
 const settle = [];
 
 const visible = computed(() => marks.value.filter((mark) => !mark.stacked));
@@ -228,38 +228,6 @@ function remeasure() {
   }, 60);
 }
 
-/* One quiet motion when the pane changes: a ring leaves the reading point
-   and a beam runs from it into the pane. Not while one is still running (a
-   jump crosses many figures), not before the page has settled, and never
-   under reduced motion. */
-function pulse() {
-  if (!armed || reducedMotionPreferred()) return;
-  if (!reader().querySelector?.(".reading-line.is-on")) return;
-  if (running.some((animation) => animation.playState === "running")) return;
-  if (typeof ring.value?.animate !== "function") return;
-  const timing = { duration: 620, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" };
-  running = [
-    ring.value.animate(
-      [
-        { transform: "translate(-50%, -50%) scale(1)", opacity: 0.9 },
-        { transform: "translate(-50%, -50%) scale(3.4)", opacity: 0 },
-      ],
-      timing
-    ),
-    beam.value.animate(
-      [
-        { transform: "translateY(-50%) scaleX(0)", opacity: 1 },
-        { transform: "translateY(-50%) scaleX(1)", opacity: 1, offset: 0.55 },
-        { transform: "translateY(-50%) scaleX(1)", opacity: 0 },
-      ],
-      timing
-    ),
-  ];
-}
-
-watch(showing, (key) => {
-  if (key) pulse();
-});
 watch([wide, list], () => nextTick(measure));
 
 /* Bring a figure's paragraph to the reading point, where its figure shows.
@@ -318,7 +286,6 @@ onMounted(async () => {
     });
   }
   for (const ms of [400, 1200, 2500]) settle.push(setTimeout(remeasure, ms));
-  armTimer = setTimeout(() => (armed = true), 1500);
   await nextTick();
   measure();
 });
@@ -331,9 +298,7 @@ onBeforeUnmount(() => {
   layoutObserver?.disconnect();
   domObserver?.disconnect();
   clearTimeout(measureTimer);
-  clearTimeout(armTimer);
   for (const timer of settle.splice(0)) clearTimeout(timer);
-  for (const animation of running.splice(0)) animation.cancel?.();
 });
 </script>
 
@@ -355,10 +320,6 @@ onBeforeUnmount(() => {
         />
       </div>
       <span ref="landing" class="rr-landing" aria-hidden="true" />
-      <div class="rr-point" aria-hidden="true">
-        <span ref="ring" class="rr-ring" />
-        <span ref="beam" class="rr-beam" />
-      </div>
       <nav
         v-if="visible.length"
         class="rr-marks"
@@ -404,7 +365,7 @@ onBeforeUnmount(() => {
 <style scoped>
 /* On the divider: the prose column's left edge, as the reading point and
    the column itself have it (--app-w minus --reader-prose-w). A box with no
-   size and no stacking context of its own, so its three layers stack with
+   size and no stacking context of its own, so its two layers stack with
    the reading point (z 31) inside TextComp's #container. */
 .reading-rail {
   position: absolute;
@@ -464,43 +425,6 @@ onBeforeUnmount(() => {
   height: 0;
 }
 
-/* The reading point's pulse: fixed at mid-screen on the line, like the dot
-   it starts from. Nothing shows until the pane changes. */
-.rr-point {
-  position: fixed;
-  z-index: 31;
-  top: 50vh;
-  left: calc(var(--app-w, 100vw) - var(--reader-prose-w));
-  width: 0;
-  height: 0;
-}
-.rr-ring {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0.875rem;
-  height: 0.875rem;
-  border: 1.5px solid rgb(var(--color-chapter));
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-}
-.rr-beam {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 5.5rem;
-  height: 2px;
-  background: linear-gradient(
-    to left,
-    rgb(var(--color-chapter)) 45%,
-    rgb(var(--color-chapter) / 0)
-  );
-  transform: translateY(-50%) scaleX(0);
-  transform-origin: right;
-  opacity: 0;
-}
-
 /* The marks: a small disc on the line where each figure comes on (the top
    of its paragraph, or lower when a box above it must first leave the
    pane), in the section badge's manner (paper, an ink
@@ -546,11 +470,14 @@ onBeforeUnmount(() => {
   background: rgb(var(--color-paper));
   color: rgb(var(--color-ink));
   pointer-events: none;
+  /* `scale`, not `transform`: the translate above keeps the disc on the
+     line. The curve runs a touch past the size and settles. */
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
     border-radius 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    scale 0.2s cubic-bezier(0.34, 1.5, 0.64, 1);
 }
 /* A figure to operate is a square mark: the second colour is not the only
    difference (a reader who can't tell violet from magenta, or a chapter
@@ -576,11 +503,13 @@ onBeforeUnmount(() => {
   outline-offset: 2px;
 }
 /* The figure in the pane now: the mark fills, in the chapter's colour for a
-   figure to look at… */
+   figure to look at, and is a fifth larger (20px to 24px) for as long as
+   its figure stays: it swells as it meets the reading point (OPENBRAIN-91). */
 .rr-mark[data-showing] .rr-pill {
   border-color: rgb(var(--color-chapter-ground));
   background: rgb(var(--color-chapter-ground));
   color: rgb(var(--color-chapter-on));
+  scale: 1.2;
 }
 /* …and in the interaction accent for one to operate. White on the magenta
    is 4.1:1; the accent stands 4.1:1 off the paper and 4.2:1 off the dark
@@ -631,6 +560,8 @@ onBeforeUnmount(() => {
   transition-delay: 0s;
 }
 
+/* Reduced motion: no unrolling, no fades, and the mark keeps its size (it
+   still fills). */
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-reduce-motion="0"]) .rr-span {
     animation: none;
@@ -640,6 +571,12 @@ onBeforeUnmount(() => {
   :root:not([data-reduce-motion="0"]) .rr-tip {
     transition: none;
   }
+  :root:not([data-reduce-motion="0"]) .rr-mark[data-showing] .rr-pill {
+    scale: 1;
+  }
+}
+:root[data-reduce-motion="1"] .rr-mark[data-showing] .rr-pill {
+  scale: 1;
 }
 :root[data-reduce-motion="1"] .rr-span {
   animation: none;

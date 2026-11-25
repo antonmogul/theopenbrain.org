@@ -81,6 +81,25 @@ export function rampGround(ramp) {
   return contrastRatio(r.main, r.on) >= AA_TEXT ? "main" : "deep";
 }
 
+/**
+ * The step a link in the chapter's text takes on white paper (OPENBRAIN-91;
+ * Maura, 25 Nov: "make the link color purple as well instead of pink"):
+ * `main` where it reaches AA as text (fund, 4.67:1), else `deep` (move
+ * 5.96:1, lear 6.31:1), else null: neither step of the teal or the amber
+ * can be read as text on white (2.74:1 and 2.83:1 at best), so those
+ * chapters keep the interaction accent for their links. Derived like
+ * rampGround; index.css carries the answer as --reader-link and the test
+ * pins it to this.
+ */
+export const PAPER_HEX = "#ffffff";
+export function rampLink(ramp) {
+  const r = RAMP_HEX[ramp];
+  if (!r) return null;
+  if (contrastRatio(r.main, PAPER_HEX) >= AA_TEXT) return "main";
+  if (contrastRatio(r.deep, PAPER_HEX) >= AA_TEXT) return "deep";
+  return null;
+}
+
 // Human names as the Assets Library labels them (chapter-primary-colors).
 export const RAMP_NAMES = Object.freeze({
   fund: "Fundamentals",

@@ -197,11 +197,13 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-ink));
   overflow-wrap: anywhere;
 }
-/* Reference links are the accent in both states: a visited DOI took the
-   browser's purple beside unvisited magenta (Stuart, 1 Oct, OPENBRAIN-145). */
+/* Reference links are one colour in both states: a visited DOI took the
+   browser's purple beside unvisited magenta (Stuart, 1 Oct, OPENBRAIN-145).
+   The colour is the chapter's link colour, as in the text and the reference
+   list (--reader-link, index.css; OPENBRAIN-91), else the accent. */
 .ct-text :deep(a),
 .ct-text :deep(a:visited) {
-  color: rgb(var(--color-accent));
+  color: rgb(var(--reader-link, var(--color-accent)));
   text-decoration: underline;
 }
 .citation-tooltip {
@@ -245,7 +247,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 4px;
   font-size: var(--ui-size-12);
-  color: rgb(var(--color-accent));
+  color: rgb(var(--reader-link, var(--color-accent)));
   text-decoration: none;
 }
 
