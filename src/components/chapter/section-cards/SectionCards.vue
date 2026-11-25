@@ -8,11 +8,12 @@
  * The card. A layer the size of the figure pane, straight after it in the
  * page, so everything that covers the pane (the opener, full-width bands)
  * covers this too. It shows a section's card (SectionCard: the section's
- * picture, number and title) while helper/sectionCard.js says the reader is
- * between the last section's text and this section's first figure, and only
+ * picture) while helper/sectionCard.js says the reader is between the last section's text and this section's first figure, and only
  * while the pane itself is empty: a figure still holding wins, and the card
  * leaves over the first figure as it fades in. Only chapters with section
  * art have cards (helper/sectionArt.js), only at the two-column width.
+ * If the first figure uses the same still, publish its card window to the
+ * pane instead: it mounts the real figure early and scrubs just its wash.
  *
  * The heading. Each section's number and title come in as they enter the
  * screen (the number grows into place, the title rises), once. The page is
@@ -32,10 +33,17 @@ import { reducedMotionPreferred } from "@/helper/readerJump";
 import { hasSectionCard, sectionArtFor } from "@/helper/sectionArt";
 import {
   FIGURE_LINE,
+  START_LINE,
   MIN_RUN,
   cardState,
-  titleShare,
+  sectionCardFigure,
 } from "@/helper/sectionCard";
+import { useAnimations } from "@/composables/useAnimations";
+import {
+  figureEnd,
+  figureRecordFor,
+  figureWait,
+} from "@/helper/historyFigureTiming";
 import SectionCard from "./SectionCard.vue";
 
 const props = defineProps({
@@ -57,6 +65,9 @@ const READER_END = "[data-reader-end]";
 /** A section this many screens below gets its picture fetched. */
 const PRELOAD_SCREENS = 3;
 
+const emit = defineEmits(["handoff"]);
+const { animations, fetchAnimations } = useAnimations();
+const handoffWindows = ref([]);
 const store = useGeneral();
 const wide = useMediaQuery(READER_WIDE_QUERY);
 const still = ref(false);
@@ -74,7 +85,7 @@ const cards = computed(() =>
 );
 
 const rootEl = ref(null);
-const showing = ref(null); // { card, progress, title } while one is due
+const showing = ref(null); // { card, progress, figure } while one is due
 // A figure in the pane wins; the card waits its turn.
 const current = computed(() =>
   showing.value && wide.value && !store.animationActive ? showing.value : null
@@ -115,7 +126,12 @@ function place() {
       el.setAttribute("data-section-card-room", "");
       room.add(el);
     }
-    return [{ card, el, before, end }];
+    const record = end?.classList.contains("animationTrigger")
+      ? figureRecordFor(end.id.replace(/^trigger/i, ""), animations.value)
+      : null;
+    return [
+      { card, el, before, end, figure: sectionCardFigure(card.art, record) },
+    ];
   });
 }
 
@@ -125,33 +141,54 @@ const preloaded = new Set();
 function update() {
   if (!cards.value.length || !wide.value) {
     showing.value = null;
+    handoffWindows.value = [];
     return;
   }
   if (stale || places.some((p) => !p.el.isConnected)) place();
   const screen = window.innerHeight;
+  const triggers = [
+    ...reader().querySelectorAll(".animationTrigger[id]"),
+  ].filter(
+    (node) => /^trigger/i.test(node.id) && !node.closest("[data-breakout-box]")
+  );
   let next = null;
-  for (const { card, el, before, end } of places) {
+  const windows = [];
+  for (const { card, el, before, end, figure } of places) {
     const box = el.getBoundingClientRect();
     if (box.top < screen * PRELOAD_SCREENS && !preloaded.has(card.art.src)) {
       preloaded.add(card.art.src);
       new Image().src = card.art.src;
     }
-    const state = cardState(
-      {
-        // The section before stops where its text does: its gap is padding.
-        gapStart: before
-          ? before.getBoundingClientRect().bottom - padBottom(before)
-          : box.top,
-        top: box.top,
-        end: end ? end.getBoundingClientRect().top : box.bottom - padBottom(el),
-      },
-      screen
-    );
+    // The same figureStart wait as the pane, including any covering band.
+    const endY = end
+      ? end.getBoundingClientRect().top +
+        (figure
+          ? figureWait(
+              end,
+              window,
+              figureEnd(end, triggers, animations.value),
+              triggers,
+              animations.value
+            )
+          : 0)
+      : box.bottom - padBottom(el);
+    const gapStart = before
+      ? before.getBoundingClientRect().bottom - padBottom(before)
+      : box.top;
+    const state = cardState({ gapStart, top: box.top, end: endY }, screen);
+    if (figure && endY - box.top >= MIN_RUN) {
+      windows.push({
+        id: figure.id.toLowerCase(),
+        start: gapStart + window.scrollY - screen * START_LINE,
+        end: endY + window.scrollY - screen * FIGURE_LINE,
+        still: still.value,
+      });
+    }
     if (state.on)
       next = {
         card,
         progress: state.progress,
-        title: titleShare(box.top, screen),
+        figure,
       };
   }
   if (
@@ -161,6 +198,7 @@ function update() {
   )
     next = null;
   showing.value = next;
+  handoffWindows.value = windows;
 }
 
 let frame = 0;
@@ -245,23 +283,11 @@ function attach(triesLeft = 12) {
   onLayout();
   armEntrance();
 }
-/* The card's number is set light, a face nothing else on the page uses.
-   Fetched when the first card came in, it finished mid-scroll, and the pane
-   answers every font load with a ScrollTrigger refresh (IllustrationsComp),
-   which stops a smooth jump where it is: a jump from the contents to a
-   later section never arrived. So the face is asked for now, with the
-   page's other fonts. */
-function fetchNumberFace() {
-  const root = rootEl.value;
-  if (!root || typeof document.fonts?.load !== "function") return;
-  const family = getComputedStyle(root).fontFamily;
-  if (family) document.fonts.load(`300 1em ${family}`, "0123456789");
-}
 function start() {
   stop();
   if (!cards.value.length) return;
   still.value = reducedMotionPreferred();
-  fetchNumberFace();
+  fetchAnimations();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onLayout);
   attach();
@@ -278,6 +304,7 @@ function stop() {
   for (const el of room) el.removeAttribute("data-section-card-room");
   room.clear();
   places = [];
+  handoffWindows.value = [];
   stale = true;
   showing.value = null;
 }
@@ -286,6 +313,10 @@ onMounted(start);
 onBeforeUnmount(stop);
 watch(cards, start, { flush: "post" });
 watch(wide, onLayout);
+watch(animations, onLayout);
+watch(handoffWindows, (windows) => emit("handoff", { windows }), {
+  flush: "sync",
+});
 
 defineExpose({ update, current });
 </script>
@@ -301,13 +332,10 @@ defineExpose({ update, current });
   >
     <transition name="section-card">
       <SectionCard
-        v-if="current"
+        v-if="current && !current.figure"
         :key="current.card.id"
         :art="current.card.art"
-        :label="current.card.label"
-        :title="current.card.title"
         :progress="current.progress"
-        :title-share="current.title"
         :still="still"
       />
     </transition>
@@ -327,8 +355,6 @@ defineExpose({ update, current });
 }
 .section-cards {
   overflow: hidden;
-  /* The card's own family, here so the number's face can be asked for
-     before any card is up (fetchNumberFace). */
   font-family: var(--font-ui);
 }
 .section-card-enter-active {

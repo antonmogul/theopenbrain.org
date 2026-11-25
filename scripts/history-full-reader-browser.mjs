@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { checkSectionHandoff } from "./check-section-handoff.mjs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { chromium, expect } from "@playwright/test";
@@ -541,6 +542,17 @@ try {
             .toBeGreaterThan(0);
           await noOverflow(page);
           await shot(page, result, "opener");
+        }
+      );
+      await step(
+        result,
+        "section card keeps its first still in place without repeated words",
+        async () => {
+          await checkSectionHandoff(page);
+          await expect(
+            page.locator(".sec-card__num, .sec-card__title")
+          ).toHaveCount(0);
+          await shot(page, result, "section-card-handoff");
         }
       );
       await step(

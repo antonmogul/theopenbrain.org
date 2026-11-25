@@ -423,6 +423,7 @@ watch(
 );
 
 const figureVersion = ref(0);
+const sectionHandoff = ref(null);
 
 // Load chapter data from Supabase by slug
 async function loadChapter() {
@@ -811,10 +812,14 @@ async function handleDeleteHighlight(highlightId) {
       <!-- text -->
       <!-- Re-keyed when Edit mode changes a paragraph's figure, so the pane
            re-wires its scroll triggers (OPENBRAIN-65). -->
-      <Illustration :key="figureVersion" />
+      <Illustration :key="figureVersion" :section-handoff="sectionHandoff" />
       <!-- Over the pane while the reader crosses into a section, when the
            chapter has section art (OPENBRAIN-174). -->
-      <SectionCards :module="chapterData" :text="storeText.text" />
+      <SectionCards
+        :module="chapterData"
+        :text="storeText.text"
+        @handoff="sectionHandoff = $event"
+      />
       <!-- Dark opener: cover, title, numbered TOC (OPENBRAIN-32). Publishes
            its height as --opener-h so the text column starts below it. -->
       <ChapterOpener :module="chapterData" :text="storeText.text" />

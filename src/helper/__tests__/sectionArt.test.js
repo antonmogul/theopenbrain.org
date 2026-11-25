@@ -123,3 +123,16 @@ it("preserves the strict temporary-art flag without labelling real art", () => {
     sectionArtFor("any", { art: { ...own, placeholder: false } }).placeholder
   ).toBeUndefined();
 });
+
+it("keeps known original sources for a stored designer export, never for replacement art", () => {
+  const slug = "where-is-my-mind";
+  const original = sectionArtFor(HISTORY, { slug });
+  const stored = sectionArtFor(HISTORY, { slug, art: { src: original.src } });
+  expect(stored.figureSources).toContain(
+    "/publicAssets/images/foundations/fig01-skull-cutout-v2.webp"
+  );
+  expect(
+    sectionArtFor(HISTORY, { slug, art: { src: "/new-picture.webp" } })
+      .figureSources
+  ).toBeUndefined();
+});

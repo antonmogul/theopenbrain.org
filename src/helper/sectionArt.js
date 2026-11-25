@@ -29,6 +29,11 @@ export const SECTION_ART_BY_SLUG = Object.freeze({
     },
     "where-is-my-mind": {
       src: `${FOUNDATIONS}/where-is-my-mind.webp`,
+      // The designer export is a crop/duotone of this original still.
+      figureSources: [
+        "/publicAssets/images/foundations/fig01-skull-cutout.webp",
+        "/publicAssets/images/foundations/fig01-skull-cutout-v2.webp",
+      ],
       alt: "An engraving of a skull with a square opening cut into its brow",
     },
     "do-different-parts": {
@@ -91,6 +96,11 @@ export function sectionArtFor(chapterSlug, section) {
     const art = { src: src.trim(), alt: typeof alt === "string" ? alt : "" };
     if (typeof position === "string" && position.trim())
       art.position = position.trim();
+    // The published row can carry the same designer export as the map.
+    // Keep its known originals only while that exact export is still used.
+    const known = SECTION_ART_BY_SLUG[chapterSlug]?.[section?.slug];
+    if (known?.src === art.src && known.figureSources)
+      art.figureSources = known.figureSources;
     if (section.art.placeholder === true) art.placeholder = true;
     return art;
   }

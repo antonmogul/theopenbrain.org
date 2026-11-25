@@ -51,6 +51,7 @@ const props = defineProps({
   /* Rendered in the text column (IllustrationInline), where the shell takes
      the height its content needs rather than filling a fixed pane. */
   inline: { type: Boolean, default: false },
+  sectionWash: { type: Boolean, default: false },
   /* An image in the text with no number or title of its own (InlineImages,
      OPENBRAIN-70): no toolbar row. The expand button moves to the row under
      the artwork, beside the legend's control. Only with `inline`. */
@@ -303,7 +304,7 @@ function closeFullscreen() {
           :start="animation.galleryStart || ''"
           :fit="!inline"
           :suspended="isFullscreen"
-          :wash="!inline && wantsTintFade(animation)"
+          :wash="!inline && (sectionWash || wantsTintFade(animation))"
           legend-above
         />
         <div v-else class="fig-placeholder">
