@@ -254,6 +254,29 @@ describe("a figure that fills its pane (OPENBRAIN-84)", () => {
   });
 });
 
+describe("an image's own focal point (OPENBRAIN-87)", () => {
+  it("keeps focus on an image that has one, written as two percentages", () => {
+    const [video, plate, bad, bare] = figureImages({
+      images: [
+        { src: "/a.webp", youtube: "g4-6A8u8QBc", focus: " 50% 30% " },
+        { src: "/b.jpg", focus: "20% 0%" },
+        { src: "/c.jpg", focus: "top" },
+        "/d.jpg",
+      ],
+    });
+    expect(video.focus).toBe("50% 30%");
+    expect(plate.focus).toBe("20% 0%");
+    expect(bad).not.toHaveProperty("focus");
+    expect(bare).not.toHaveProperty("focus");
+  });
+
+  it("is not the figure's fill: an image's focus alone fills nothing", () => {
+    expect(figureFill({ images: [{ src: "/a.jpg", focus: "20% 0%" }] })).toBe(
+      ""
+    );
+  });
+});
+
 describe("an image's own figure number (OPENBRAIN-202)", () => {
   it("keeps figureNumber and title on an image that has one", () => {
     expect(

@@ -53,6 +53,11 @@ export function figureImages(animation) {
       // A picture that is already a duotone (the designers' posters) stays
       // out of its figure's chapter-colour wash (OPENBRAIN-80).
       if (item.tint === false) out.tint = false;
+      // A focal point of its own, "50% 20%": the part that stays in view
+      // where the picture is cropped to fill a box, its thumbnail and a
+      // video's poster (OPENBRAIN-87; Maura, 25 Nov: no faces cut off).
+      const focus = focalPoint(item.focus);
+      if (focus) out.focus = focus;
       // A picture with a figure number of its own, in a figure that holds
       // two figures (Descartes' box: the skull in Paris is Figure D, the
       // piece in Lund Figure E; Stuart, 18 Nov, OPENBRAIN-202).
@@ -92,18 +97,23 @@ export function figureLoop(value) {
   return out;
 }
 
+/** "50% 30%" as written when it is a focal point, "" for anything else. */
+function focalPoint(value) {
+  const match =
+    typeof value === "string" &&
+    value.trim().match(/^(\d{1,3}(?:\.\d+)?)%\s+(\d{1,3}(?:\.\d+)?)%$/);
+  if (!match) return "";
+  const [x, y] = [Number(match[1]), Number(match[2])];
+  return x <= 100 && y <= 100 ? `${x}% ${y}%` : "";
+}
+
 /**
  * A focal point, "50% 30%" (across, down): the part of a picture that stays
  * in view when it is cropped to fill a box. Two percentages from 0 to 100;
  * anything else is the centre.
  */
 export function figureFocus(value) {
-  const match =
-    typeof value === "string" &&
-    value.trim().match(/^(\d{1,3}(?:\.\d+)?)%\s+(\d{1,3}(?:\.\d+)?)%$/);
-  if (!match) return "50% 50%";
-  const [x, y] = [Number(match[1]), Number(match[2])];
-  return x <= 100 && y <= 100 ? `${x}% ${y}%` : "50% 50%";
+  return focalPoint(value) || "50% 50%";
 }
 
 /**

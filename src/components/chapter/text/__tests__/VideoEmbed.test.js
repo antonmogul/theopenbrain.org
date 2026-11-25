@@ -27,6 +27,25 @@ describe("shared chapter video presentation", () => {
     );
     w.unmount();
   });
+  it("fills the frame with the poster, around its focal point, under the one play mark", async () => {
+    const video = {
+      youtubeId: "g4-6A8u8QBc",
+      title: "Brenda",
+      poster: "/b.webp",
+    };
+    const w = mount(VideoEmbed, { props: { video } });
+    const poster = w.get(".ve-poster-image");
+    expect(poster.element.style.objectPosition).toBe("50% 50%");
+    expect(w.get(".ve-play").classes()).toContain("play-mark");
+    expect(w.text()).not.toContain("▶");
+    await w.setProps({ video: { ...video, focus: "50% 30%" } });
+    expect(poster.element.style.objectPosition).toBe("50% 30%");
+    await w.setProps({ video: { ...video, focus: "top" } });
+    expect(poster.element.style.objectPosition).toBe("50% 50%");
+    await w.setProps({ video: { ...video, posterPlay: "corner" } });
+    expect(w.get(".ve-play").classes()).toContain("play-mark");
+    w.unmount();
+  });
   it("keeps the active player when a gallery redraw supplies the same source", async () => {
     const video = { youtubeId: "KbA3RLz3xUQ", title: "Huxley", start: 2 };
     const w = mount(VideoEmbed, { props: { video } });
