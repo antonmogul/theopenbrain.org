@@ -3,7 +3,9 @@
  * then 20261111180200_history_penfield_binder_v2.sql (OPENBRAIN-178),
  * 20261112190000_history_penfield_binder_v3.sql (OPENBRAIN-191) and
  * 20261117196000_history_penfield_binder_v4.sql (OPENBRAIN-196), each of which
- * replaces the upload's HTML; the last carries the widget file as it is now.
+ * replaces the upload's HTML; v5, v6 and v7 follow it, with v7 carrying the
+ * widget file as it is now (OPENBRAIN-89). The fixture browser CI SQL list
+ * already includes this replay test.
  * HISTORY_SQL_HARNESS=/absolute/path/to/@electric-sql/pglite npm test --
  * --pool=forks src/__tests__/historyPenfieldBinder.sql.test.js (the SQL run is
  * skipped without it; the file check always runs).
@@ -40,6 +42,10 @@ const sqlV6 = readFileSync(
   "supabase/migrations/20261119480100_history_penfield_binder_v6.sql",
   "utf8"
 );
+const sqlV7 = readFileSync(
+  "supabase/migrations/20261124078900_history_penfield_binder_v7.sql",
+  "utf8"
+);
 const fileV5 = htmlInVersion5();
 function htmlInVersion5() {
   return sqlV5.slice(sqlV5.indexOf("$w$") + 3, sqlV5.lastIndexOf("$w$"));
@@ -56,6 +62,7 @@ const fileV1 = htmlIn(sql);
 const fileV2 = htmlIn(sqlV2);
 const fileV3 = htmlIn(sqlV3);
 const fileV4 = htmlIn(sqlV4);
+const fileV6 = htmlIn(sqlV6);
 const json = (html, id) =>
   JSON.parse(
     html.match(
@@ -81,11 +88,11 @@ const onlyTheUpload = (text) => {
 
 describe("Penfield binder migrations", () => {
   it("the latest carries the widget file as it is in src/widgets/uploads", () => {
-    expect(htmlIn(sqlV6)).toBe(file);
+    expect(htmlIn(sqlV7)).toBe(file);
   });
 
   it("states the file's size and hash", () => {
-    expect(sqlV6).toContain(
+    expect(sqlV7).toContain(
       `-- ${Buffer.byteLength(file, "utf8")} bytes, sha256 ${createHash("sha256").update(file).digest("hex")}`
     );
   });
@@ -96,7 +103,8 @@ describe("Penfield binder migrations", () => {
     expect(fileV3).toContain("Version:  3 (2026-11-12)");
     expect(fileV4).toContain("Version:  4 (2026-11-17)");
     expect(fileV5).toContain("Version:  5 (2026-11-18)");
-    expect(file).toContain("Version:  6 (2026-11-19)");
+    expect(fileV6).toContain("Version:  6 (2026-11-19)");
+    expect(file).toContain("Version:  7 (2026-11-25)");
   });
 
   it("version 6 removes only the visible close words and retains accessible labels", () => {
@@ -105,7 +113,7 @@ describe("Penfield binder migrations", () => {
       /<span aria-hidden="true">Close(?: the binder)?<\/span>/
     );
     expect((file.match(/aria-label="Close the binder"/g) || []).length).toBe(2);
-    expect(file).toBe(
+    expect(fileV6).toBe(
       fileV5
         .replace("Version:  5 (2026-11-18)", "Version:  6 (2026-11-19)")
         .replace(
@@ -113,6 +121,12 @@ describe("Penfield binder migrations", () => {
           "\n"
         )
     );
+  });
+
+  it("version 7 changes only the upload and preserves case data and archive assets", () => {
+    onlyTheUpload(sqlV7);
+    expect(json(file, "cases")).toEqual(json(fileV6, "cases"));
+    expect(json(file, "assets")).toEqual(json(fileV6, "assets"));
   });
 
   describe("version 5 (OPENBRAIN-202)", () => {
@@ -428,7 +442,8 @@ describe.skipIf(!harness || !existsSync(harness))(
         [sqlV3, fileV3],
         [sqlV4, fileV4],
         [sqlV5, fileV5],
-        [sqlV6, file],
+        [sqlV6, fileV6],
+        [sqlV7, file],
       ]) {
         await db.exec(text);
         const next = await row();
@@ -446,9 +461,9 @@ describe.skipIf(!harness || !existsSync(harness))(
       }
     });
 
-    it("version 6 alone, on a database without the upload, publishes it", async () => {
+    it("version 7 alone, on a database without the upload, publishes it", async () => {
       const db = await makeDb();
-      await db.exec(sqlV6);
+      await db.exec(sqlV7);
       const { rows } = await db.query(
         "select slug, status, ramp, html from widget_uploads"
       );
