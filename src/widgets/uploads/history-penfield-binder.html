@@ -4,8 +4,12 @@
   Title:    Penfield's case binder
   Chapter:  History (Foundations of Neuroscience), Box "Wilder Penfield and the Montreal Procedure"
   Author:   Stuart Trenholm · Design: Malpeso Studio (Widget Library Figma, page 1.2, "Binder" frames 107:56–107:1052)
-  Version:  6 (2026-11-19)
-  Changes:  5 (18 Nov 2026). Typos from the source scan: "1" read for "I" in A. Bra.
+  Version:  7 (2026-11-25)
+  Changes:  7 (25 Nov 2026). Clicking the map page puts the archive pieces back.
+            The clip grips the note, turning tabs stay behind their page,
+            the heading has more room, and a clear numbered dot replaces ripples.
+            6 (19 Nov 2026). Icon-only close controls, with accessible labels kept.
+            5 (18 Nov 2026). Typos from the source scan: "1" read for "I" in A. Bra.
             point 17 (Stuart), N.C. point 19 and G.E. point 3, and "]" for "I" in
             S. Be. point 17.
             4 (17 Nov 2026). Stuart's three points. The binder can be closed: "Close" on
@@ -95,6 +99,7 @@
       .head {
         display: grid;
         gap: 8px;
+        margin-bottom: 20px;
         justify-items: center;
         text-align: center;
       }
@@ -355,8 +360,22 @@
         opacity: 0.85;
       }
       .mk[data-on] i {
-        width: calc(31 * var(--u));
-        height: calc(31 * var(--u));
+        width: calc(38 * var(--u));
+        height: calc(38 * var(--u));
+        opacity: 1;
+      }
+      .mk[data-on] {
+        mix-blend-mode: normal;
+        z-index: 1;
+      }
+      .mk b {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        font: 700 max(14px, calc(20 * var(--u))) / 1 var(--mono);
+        color: #000;
+        opacity: 0;
+      }
+      .mk[data-on] b {
         opacity: 1;
       }
       .map[data-near] {
@@ -468,7 +487,7 @@
       .note svg {
         position: absolute;
         left: 38%;
-        top: calc(-9px * var(--n));
+        top: calc(-3px * var(--n));
         width: calc(10px * var(--n));
         height: calc(29px * var(--n));
       }
@@ -520,15 +539,6 @@
       .probe.is-following img {
         filter: drop-shadow(calc(6 * var(--u)) calc(9 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.26));
         transition-duration: 0.2s;
-      }
-      /* The stimulation: rings spread from the point the probe touches. */
-      .pulse {
-        position: absolute;
-        width: calc(31 * var(--u));
-        height: calc(31 * var(--u));
-        border: max(1.5px, calc(2.5 * var(--u))) solid var(--c);
-        border-radius: 50%;
-        pointer-events: none;
       }
       .probe[data-off] {
         opacity: 0;
@@ -736,7 +746,9 @@
       /* A page's index tab turns with it: a picture of the tab on each face of
          the leaf. Its place on the leaf is the tab's place on the right; turned
          over on the rings, that is its place on the left. The tabs themselves
-         wait out of sight and take their new side as the leaf lands. */
+         wait out of sight and take their new side as the leaf lands. Both
+         copies sit just inside their face, tucked under its edge throughout
+         the turn, matching the resting tabs beneath the cover. */
       .tab.is-turning {
         visibility: hidden;
       }
@@ -747,10 +759,10 @@
         cursor: default;
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
-        transform: translateZ(1px);
+        transform: translateZ(-1px);
       }
       .leaf .tab--back {
-        transform: rotateY(180deg) translateZ(1px);
+        transform: rotateY(180deg) translateZ(-1px);
       }
       .leaf .tab .leaf__shade {
         background: rgba(0, 0, 0, 0.45);
@@ -1540,6 +1552,11 @@
             `<span class="eph__open" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 1H1v3.5M7.5 1H11v3.5M1 7.5V11h3.5M11 7.5V11H7.5"/></svg><span class="eph__n"></span><span class="eph__o">Open</span></span>`
         );
         const pos = { dx: 0, dy: 0 };
+        slot.reset = () => {
+          pos.dx = pos.dy = 0;
+          b.style.setProperty("--z", String(n + 1));
+          place();
+        };
         const place = () => {
           b.style.setProperty("--dx", pos.dx.toFixed(1));
           b.style.setProperty("--dy", pos.dy.toFixed(1));
@@ -1625,6 +1642,13 @@
         const ids = archiveOf(state.c);
         for (const slot of SLOTS) slot.show(ids[slot.kind]);
       }
+      // A press on the beige page clears the map without interfering with
+      // dragging, enlarging an archive piece, or selecting a stimulation point.
+      left.addEventListener("click", (ev) => {
+        if (ev.target.closest(".eph") || state.busy) return;
+        for (const slot of SLOTS) slot.reset();
+        zTop = 4;
+      });
 
       /* ── The picture or the document, large ── */
       const lb = $("lb");
@@ -1841,7 +1865,7 @@
               el(
                 "span",
                 { class: "mk", "data-p": p.id, "aria-hidden": "true", style: `left:${h.x}%;top:${h.y}%` },
-                "<i></i>"
+                `<i></i><b>${esc(p.id)}</b>`
               )
             );
         paintPoint();
@@ -1890,7 +1914,7 @@
       }
 
       /* ── The stimulation: the probe travels to the point and touches it,
-         rings spread from the point, and the report is typed on. ── */
+         the numbered dot becomes clear, and the report is typed on. ── */
       const wait = (ms) => new Promise((done) => setTimeout(done, ms));
       let act = 0; // the latest stimulation; an older one stops when a newer starts
       async function stimulate({ fromAfar = false } = {}) {
@@ -1927,31 +1951,10 @@
           if (me !== act) return;
           probe.classList.remove("is-air"); // touches down
           markOn();
-          pulse(at.h);
           await wait(150);
           if (me !== act) return;
         } else restProbe(); // a point the map doesn't show: the probe is put away
         reveal();
-      }
-      function pulse(h) {
-        for (const delay of [0, 170]) {
-          const ring = el("span", {
-            class: "pulse",
-            "aria-hidden": "true",
-            style: `left:${h.x}%;top:${h.y}%`,
-          });
-          $("map").append(ring);
-          ring
-            .animate(
-              [
-                { transform: "translate(-50%, -50%) scale(0.5)", opacity: 0.8 },
-                { transform: "translate(-50%, -50%) scale(3.4)", opacity: 0 },
-              ],
-              { duration: 760, delay, easing: "cubic-bezier(0.2, 0.6, 0.3, 1)", fill: "both" }
-            )
-            .finished.catch(() => {})
-            .then(() => ring.remove());
-        }
       }
       // The heading is typed on, a letter at a time; the report follows.
       function reveal() {
