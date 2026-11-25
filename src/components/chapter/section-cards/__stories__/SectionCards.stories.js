@@ -3,8 +3,7 @@
  * into a section (OPENBRAIN-174).
  *
  * SectionCard is the card itself, in a box the pane's shape: the section's
- * picture, its title and its number, with `progress` (the picture settling)
- * and `titleShare` (the title giving way to the heading) as controls.
+ * picture with `progress` (the picture settling) as a control.
  *
  * InAReader mounts SectionCards beside a stand-in for the reader's text: two
  * sections with the gap between them. Scroll the story and the card comes in
@@ -25,14 +24,10 @@ export default {
   parameters: { layout: "fullscreen" },
   argTypes: {
     progress: { control: { type: "range", min: 0, max: 1, step: 0.01 } },
-    titleShare: { control: { type: "range", min: 0, max: 1, step: 0.01 } },
   },
   args: {
     art: art("basic-functional-unit"),
-    label: "3",
-    title: "What's the basic functional unit of the brain?",
     progress: 0.4,
-    titleShare: 1,
     still: false,
   },
   render: (args) => ({
@@ -44,19 +39,8 @@ export default {
 
 export const Card = {};
 
-/** The heading has arrived beside it: the title has handed over. */
-export const TitleHandedOver = { args: { titleShare: 0, progress: 0.9 } };
-
 /** Reduced motion: the picture at its size, nothing rises. */
 export const Still = { args: { still: true } };
-
-export const TwoDigits = {
-  args: {
-    art: art("how-neurons-communicate"),
-    label: "12",
-    title: "How do neurons communicate?",
-  },
-};
 
 const text = {
   intro: [{ id: "sc-intro", title: "History", sectionTitle: "Introduction" }],
@@ -110,7 +94,7 @@ export const InAReader = {
 
 /** Closing words uses exactly the same card treatment as the other sections. */
 export const ClosingWords = {
-  args: { art: art("closing-words"), label: "5", title: "Closing words" },
+  args: { art: art("closing-words") },
 };
 
 export const Placeholder = {
@@ -119,7 +103,5 @@ export const Placeholder = {
       src: "/publicAssets/images/the-retina/sections/placeholder-story-of-the-eye.webp",
       placeholder: true,
     },
-    label: "1",
-    title: "Story of the eye",
   },
 };

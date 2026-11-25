@@ -39,6 +39,31 @@ import { keepRefreshInstant } from "@/helper/refreshScroll";
 import { holdVideoFullscreen } from "@/helper/videoFullscreen";
 import { readerScrollLocked } from "@/helper/readerScrollLock";
 
+const props = defineProps({ sectionHandoff: { type: Object, default: null } });
+// A matching card is the actual figure mounted early. It stays the same
+// Vue instance across the reading line; the toolbar reserves its real row.
+const preview = computed(() => {
+  if (!panelShows.value || activeAnimation.value) return null;
+  // Read the current scroll against cached document coordinates even before
+  // SectionCards' next RAF. Reverse crossing must never unmount the still.
+  const y = window.scrollY;
+  const span = props.sectionHandoff?.windows?.find(
+    (s) => y >= s.start && y < s.end
+  );
+  return span
+    ? {
+        id: span.id,
+        progress: span.still ? 1 : (y - span.start) / (span.end - span.start),
+      }
+    : null;
+});
+const displayedAnimation = computed(
+  () => activeAnimation.value || preview.value?.id || null
+);
+const hasSectionWash = (id) =>
+  props.sectionHandoff?.windows?.some((s) => s.id === id.toLowerCase()) ||
+  false;
+
 // Panel figures rebuilt as figure widgets (full-screen ones render in the
 // text through FullScreenIllustration).
 const isPanelWidget = (a) => !a.fullscreen && !!figureWidgetFor(a.id);
@@ -143,9 +168,21 @@ let videoFullscreen = null;
 let tintTrigger = null;
 const figureTint = useFigureTint({
   pane: () => paneElement.value,
+  opacity: () =>
+    preview.value
+      ? 1 - preview.value.progress
+      : hasSectionWash(activeAnimation.value || "")
+        ? 0
+        : null,
   span: () =>
     tintTrigger ? { start: tintTrigger.start, end: tintTrigger.end } : null,
 });
+
+watch(
+  () => props.sectionHandoff,
+  () => figureTint.schedule(),
+  { flush: "post" }
+);
 
 function updateActiveFigure() {
   if (videoFullscreen?.held() || readerScrollLocked()) return;
@@ -385,7 +422,7 @@ onBeforeUnmount(() => {
     class="figure-pane hidden reader:block reader:fixed reader:left-0 reader:w-illus reader:z-30 pointer-events-none font-mono reader:top-[var(--reader-topbar-h)] reader:h-[calc(100vh-var(--reader-topbar-h)-var(--reader-timeline-h,0px))]"
     :class="`figure-pane--${ground}`"
     :data-ground="ground"
-    :data-figure-key="activeAnimation || undefined"
+    :data-figure-key="displayedAnimation || undefined"
   >
     <template v-for="sequence in sequences" :key="sequence.successor.id">
       <TransitionWidgetSequence
@@ -407,8 +444,13 @@ onBeforeUnmount(() => {
       <template v-if="!isPanelWidget(animation) && usesFigureShell(animation)">
         <transition name="fade" mode="out-in">
           <IllustrationPlaceholder
-            v-if="activeAnimation === animation.id.toLowerCase()"
+            v-if="displayedAnimation === animation.id.toLowerCase()"
             :animation="animation"
+            :section-wash="hasSectionWash(animation.id)"
+            :data-section-card="preview ? '' : undefined"
+            :inert="preview ? true : undefined"
+            :aria-hidden="preview ? 'true' : undefined"
+            :class="{ 'section-figure-preview': !!preview }"
             class="w-full h-full"
           />
         </transition>
@@ -503,3 +545,14 @@ onBeforeUnmount(() => {
      contract the children's on-dark rules and the stories key on, so a
      wrapper carrying the class must get it without this component loaded. -->
 <style scoped></style>
+
+<style>
+/* Keep the exact toolbar height while the section card shows only art. */
+.section-figure-preview .fig-toolbar {
+  visibility: hidden;
+  pointer-events: none;
+}
+.section-figure-preview {
+  pointer-events: none;
+}
+</style>

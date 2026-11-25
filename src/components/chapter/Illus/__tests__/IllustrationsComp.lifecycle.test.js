@@ -66,6 +66,7 @@ async function settle() {
   await vi.advanceTimersByTimeAsync(500);
 }
 beforeEach(() => {
+  vi.restoreAllMocks();
   fixtures.triggers.length = 0;
   ScrollTrigger.refresh.mockClear();
   fixtures.fetch.mockReset().mockResolvedValue([]);
@@ -87,6 +88,47 @@ afterEach(() => {
 });
 
 describe("reader figure lifecycle", () => {
+  it("keeps the same shell mounted from a section card into its first figure and back", async () => {
+    vi.spyOn(window, "matchMedia").mockReturnValue({
+      matches: true,
+      addEventListener() {},
+      removeEventListener() {},
+    });
+    document
+      .querySelector("#container")
+      .insertAdjacentHTML(
+        "beforeend",
+        '<span id="triggerAnimationimage-ab12" class="animationTrigger"></span>'
+      );
+    const id = "image-ab12";
+    const pane = mountPane({
+      props: { sectionHandoff: { windows: [{ id, start: -100, end: 100 }] } },
+    });
+    await settle();
+    const shell = () => pane.findComponent({ name: "IllustrationPlaceholder" });
+    const instance = shell().vm;
+    expect(shell().attributes("data-section-card")).toBe("");
+    expect(shell().props("sectionWash")).toBe(true);
+    toggle(
+      fixtures.triggers.find(
+        (t) => t.trigger.id === "triggerAnimationimage-ab12"
+      ),
+      true
+    );
+    await flushPromises();
+    expect(shell().vm).toBe(instance);
+    expect(shell().attributes("data-section-card")).toBeUndefined();
+    toggle(
+      fixtures.triggers.find(
+        (t) => t.trigger.id === "triggerAnimationimage-ab12"
+      ),
+      false
+    );
+    await flushPromises();
+    expect(shell().vm).toBe(instance);
+    expect(shell().attributes("data-section-card")).toBe("");
+  });
+
   it("never registers breakout artwork with the pinned figure pane", async () => {
     mountPane();
     await settle();

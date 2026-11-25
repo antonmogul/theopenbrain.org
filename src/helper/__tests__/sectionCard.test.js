@@ -1,12 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
   FIGURE_LINE,
-  HEADING_IN,
-  HEADING_UP,
   MIN_RUN,
   START_LINE,
   cardState,
-  titleShare,
+  sectionCardFigure,
 } from "@/helper/sectionCard";
 
 /*
@@ -80,25 +78,45 @@ describe("cardState", () => {
   });
 });
 
-describe("titleShare", () => {
-  it("is whole while the heading is low on the screen", () => {
-    expect(titleShare(SCREEN, SCREEN)).toBe(1);
-    expect(titleShare(SCREEN * HEADING_IN, SCREEN)).toBe(1);
+describe("sectionCardFigure", () => {
+  const record = { id: "image-one", imageUrl: "/skull.webp" };
+  it("matches the actual first still by exact source in any chapter", () => {
+    expect(sectionCardFigure({ src: "/skull.webp" }, record)).toBe(record);
+    for (const filename of [
+      "fig01-skull-cutout.webp",
+      "fig01-skull-cutout-v2.webp",
+    ]) {
+      const skull = {
+        ...record,
+        imageUrl: `/publicAssets/images/foundations/${filename}`,
+      };
+      expect(
+        sectionCardFigure(
+          {
+            src: "/publicAssets/images/foundations/sections/where-is-my-mind.webp",
+          },
+          skull
+        )
+      ).toBe(skull);
+      expect(sectionCardFigure({ src: "/replacement.webp" }, skull)).toBeNull();
+    }
   });
-
-  it("is gone once the heading has come up", () => {
-    expect(titleShare(SCREEN * HEADING_UP, SCREEN)).toBe(0);
-    expect(titleShare(0, SCREEN)).toBe(0);
-    expect(titleShare(-300, SCREEN)).toBe(0);
-  });
-
-  it("goes evenly between the two", () => {
-    const mid = (SCREEN * (HEADING_IN + HEADING_UP)) / 2;
-    expect(titleShare(mid, SCREEN)).toBeCloseTo(0.5, 5);
-  });
-
-  it("shows the title when it cannot tell", () => {
-    expect(titleShare(NaN, SCREEN)).toBe(1);
-    expect(titleShare(100, 0)).toBe(1);
+  it("keeps the separate card when the first figure or its media changes", () => {
+    expect(sectionCardFigure({ src: "/other.webp" }, record)).toBeNull();
+    for (const extra of [
+      { widgetId: "skull" },
+      { fullscreen: true },
+      { scroll: true },
+      { switch: true },
+      { images: [{ src: "/skull.webp", youtube: "g4-6A8u8QBc" }] },
+      { images: ["/skull.webp", "/other.webp"] },
+    ]) {
+      expect(
+        sectionCardFigure({ src: "/skull.webp" }, { ...record, ...extra })
+      ).toBeNull();
+    }
+    expect(
+      sectionCardFigure({ src: "/skull.webp", placeholder: true }, record)
+    ).toBeNull();
   });
 });

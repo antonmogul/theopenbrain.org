@@ -11,6 +11,7 @@
  *   pane()  the pane's element
  *   span()  { start, end } of the figure that is on, in page pixels, or
  *           null when that figure takes no wash
+ *   opacity() optional override for a matching section card, null outside it
  *
  * It provides FIGURE_TINT to the pane's figures: `current()` is the wash's
  * opacity now, which a washed copy takes as it mounts (a figure arriving,
@@ -19,10 +20,12 @@
 import { onBeforeUnmount, onMounted, provide } from "vue";
 import { FIGURE_TINT, tintAt } from "@/helper/figureTint";
 
-export function useFigureTint({ pane, span }) {
+export function useFigureTint({ pane, span, opacity }) {
   let frame = 0;
 
   function current() {
+    const override = opacity?.();
+    if (override != null) return override;
     const s = span();
     return s ? tintAt(window.scrollY, s.start, s.end, window.innerHeight) : 0;
   }
@@ -31,7 +34,7 @@ export function useFigureTint({ pane, span }) {
     frame = 0;
     // Nothing to scrub when the figure on takes no wash; a figure on its
     // way out keeps the look it left with.
-    if (!span()) return;
+    if (!span() && opacity?.() == null) return;
     const value = String(current());
     for (const el of pane()?.querySelectorAll("[data-figure-wash]") || []) {
       if (el.closest(".fade-leave-active")) continue;
