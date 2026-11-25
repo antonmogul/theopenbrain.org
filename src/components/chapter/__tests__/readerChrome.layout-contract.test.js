@@ -45,8 +45,12 @@ describe("the chapter menu keeps the reader's place (7 Oct, item 1)", () => {
     expect(routerView).not.toMatch(/blur-|grayscale|filter/);
   });
 
-  it("softens the page from the drawer's backdrop instead", () => {
-    expect(rule(drawer, ".nav-backdrop")).toMatch(/backdrop-filter:\s*blur/);
+  // The page dims behind the drawer (OPENBRAIN-78): the backdrop's own
+  // colour, nothing applied to the page.
+  it("dims the page from the drawer's backdrop instead", () => {
+    const backdrop = rule(drawer, ".nav-backdrop");
+    expect(backdrop).toMatch(/background:\s*rgb\(0 0 0 \/ 0\.\d+\)/);
+    expect(backdrop).not.toMatch(/(^|[\s;{])filter:/);
   });
 });
 

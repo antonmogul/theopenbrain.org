@@ -7,7 +7,7 @@ const props = defineProps({
   /** Story/test override; the reader uses main#text. */
   rootId: { type: String, default: "text" },
 });
-const emit = defineEmits(["open"]);
+const emit = defineEmits(["open", "toggle"]);
 const route = inject(routeLocationKey, null);
 const {
   supported,
@@ -50,6 +50,8 @@ async function show() {
   await nextTick();
   panel.value?.focus();
 }
+// The bar keeps its Tools row open while these controls are (OPENBRAIN-78).
+watch(open, (value) => emit("toggle", value));
 watch(
   () => route?.fullPath,
   () => {

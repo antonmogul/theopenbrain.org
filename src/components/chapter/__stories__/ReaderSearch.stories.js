@@ -5,7 +5,8 @@
  * paragraphs, breakout boxes, widgets, figure titles and legends), lists
  * the results under the field with the words marked, and jumps to one
  * through readerJump. "/" focuses it, the arrows move, Enter goes, Escape
- * closes. Below 640px it is a search button that opens a full-width field.
+ * closes. The field is behind the search icon at every width
+ * (OPENBRAIN-78): beside it from 640px, across the whole bar below.
  *
  * Here it stands alone over a small chapter; see ReaderTopBar's Search
  * stories for it in the bar.
@@ -44,7 +45,7 @@ export default {
   }),
 };
 
-/** At rest: the field, its placeholder and the "/" key hint. */
+/** At rest: the search icon alone. */
 export const Default = {};
 
 /** Typing: headings first, then figures, then the text, the words marked. */

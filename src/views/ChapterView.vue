@@ -792,6 +792,7 @@ async function handleDeleteHighlight(highlightId) {
         v-if="isSupabaseChapter"
         :is-authenticated="isAuthenticated"
         :is-draft="isDraft"
+        hide-on-cover
       />
 
       <div v-if="readingSaveError" class="save-error" role="alert">

@@ -60,7 +60,7 @@ const WAYS = [
   },
   {
     title: "Find your way",
-    body: "The strip along the bottom is the whole chapter: press it to jump anywhere. Search the chapter from the top bar (press /). The eye, top left, lists every chapter and section.",
+    body: "The strip along the bottom is the whole chapter: press it to jump anywhere. Search the chapter from the top bar (press /). The book, top left, lists every chapter and section.",
   },
   {
     title: "Mark it up",

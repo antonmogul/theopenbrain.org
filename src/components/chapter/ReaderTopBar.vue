@@ -1,12 +1,26 @@
 <script setup>
-import { ref, computed, nextTick } from "vue";
+/*
+ * The reader's top bar (OPENBRAIN-78; Maura's sketch of 23 Nov, idea 3).
+ *
+ * A slim dark bar. Left: the book's mark, which opens the contents drawer
+ * (NavDrawer) and is a ✕ while it is open, then the chapter search behind
+ * its icon. Right: one word, TOOLS. Pointing at it, or reaching it with the
+ * keyboard, opens a row to its left: Listen, then Info / Notebook / Chat
+ * for a signed-in reader, then "?" (ReaderHelp). On touch TOOLS is a tap
+ * toggle. The account moved into the drawer's foot.
+ *
+ * On the chapter's cover the bar is not shown (`hideOnCover`): it appears
+ * once the reader has scrolled past COVER_REVEAL_Y, and at once when focus
+ * enters it, so the keyboard reaches it from the cover too. It is hidden
+ * with opacity alone: its box stays where it is, so nothing that measures
+ * the bar moves.
+ */
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
-import { useHomeRoute } from "@/composables/useHomeRoute";
 import { useMotionPreference } from "@/composables/useMotionPreference";
-import AccountMenu from "@/components/Navigation/AccountMenu.vue";
 import BookLogo from "@/components/brand/BookLogo.vue";
-import MenuEye from "@/components/brand/MenuEye.vue";
+import CloseIcon from "@/icons/custom/CloseIcon.vue";
 import ReaderHelp from "./ReaderHelp.vue";
 import ReaderSearch from "./ReaderSearch.vue";
 import ReaderListen from "./ReaderListen.vue";
@@ -21,55 +35,161 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** The reader: no bar while the chapter's cover is at the top. */
+  hideOnCover: {
+    type: Boolean,
+    default: false,
+  },
 });
 
+// How far the page scrolls before the bar shows on a cover: one bar.
+const COVER_REVEAL_Y = 48;
+// The row stays this long after the pointer leaves, so a diagonal move
+// from TOOLS to an item does not drop it.
+const HOVER_LINGER_MS = 220;
+
 const store = useGeneral();
-// Where the logo goes: /chapters when signed in, the home page otherwise.
-const homeRoute = useHomeRoute();
 const {
   open: openSidebar,
   isOpen: sidebarOpen,
   activeTab,
 } = useReaderSidebar();
 
-// The bar since 11 Nov (Stuart, OPENBRAIN-197): an eye for the menu, the
-// book's logo, a search field where "Ch 1 · Where is my mind?" was, and one
-// "?" for help and the reader's tools. The section menu that stood there is
-// not lost: the eye opens the drawer, which lists every section of this
-// chapter and marks the one being read, and the timeline along the bottom
-// names it too.
-const searchRef = ref(null);
+/* ── The cover ── */
+// Known at setup, so a chapter opened at its cover never paints the bar.
+const atCover = () =>
+  props.hideOnCover &&
+  (window.scrollY || window.pageYOffset || 0) < COVER_REVEAL_Y;
+const onCover = ref(atCover());
+let coverFrame = 0;
+function measureCover() {
+  coverFrame = 0;
+  onCover.value = atCover();
+}
+function onScroll() {
+  if (!coverFrame) coverFrame = requestAnimationFrame(measureCover);
+}
 
-// Help (OPENBRAIN-189): the "?" at the bar's right end, on every screen.
-// It was a button on the chapter cover, which scrolled away with it
-// (Stuart, 12 Nov: "it scrolls up and disappears"). It opens ReaderHelp
-// under the bar. While the device asks for less motion and the reader has
-// not been asked about it, the button carries a dot: the notice itself is
-// on the cover, which a reader who lands mid-chapter never sees.
-//
-// For a signed-in reader it is also the way to Info, Notebook and Chat
-// (OPENBRAIN-197; Stuart: "replace 'info', 'notebook', and 'chat' on the
-// top right with a question mark, which all accomplishes the same thing").
+/* ── Tools ── */
+const TOOLS = [
+  { key: "info", label: "Info" },
+  { key: "notebook", label: "Notebook" },
+  { key: "chat", label: "Chat" },
+];
+const toolsRef = ref(null);
+const toolsButtonRef = ref(null);
+const hovered = ref(false);
+const focusInside = ref(false);
+const pinned = ref(false);
+// Escape, or a second press: closed until the pointer or focus leaves.
+const dismissed = ref(false);
+const listenOpen = ref(false);
+let lastPointer = "mouse";
+let lingerTimer = 0;
+
+// The tab the floating panel is showing.
+const activeTool = computed(() => (sidebarOpen.value ? activeTab.value : null));
+
+/* ── Help: the "?" at the row's end (OPENBRAIN-189) ── */
 const { noticePending } = useMotionPreference();
 const showHelp = ref(false);
 const helpButtonRef = ref(null);
 const helpRef = ref(null);
-const helpLabel = computed(() => {
-  const what = props.isAuthenticated
-    ? "Help, Info, Notebook and Chat"
-    : "Help and animations";
-  return noticePending.value
-    ? `${what}. Animations are off on this device.`
-    : what;
-});
-// The tool the floating panel is showing, for the help panel's list.
-const activeTool = computed(() => (sidebarOpen.value ? activeTab.value : null));
+const helpLabel = computed(() =>
+  noticePending.value
+    ? "Help and animations. Animations are off on this device."
+    : "Help and animations"
+);
+
+const toolsOpen = computed(
+  () =>
+    showHelp.value ||
+    listenOpen.value ||
+    (!dismissed.value && (hovered.value || focusInside.value || pinned.value))
+);
+// The bar is shown on the cover while something of its own is open.
+const held = computed(() => toolsOpen.value || store.activeMenu);
+
+function onToolsEnter(event) {
+  lastPointer = event.pointerType || "mouse";
+  if (lastPointer !== "mouse") return;
+  clearTimeout(lingerTimer);
+  dismissed.value = false;
+  hovered.value = true;
+}
+function onToolsLeave(event) {
+  if ((event.pointerType || "mouse") !== "mouse") return;
+  clearTimeout(lingerTimer);
+  lingerTimer = setTimeout(() => {
+    hovered.value = false;
+    // A dismissal lasts until both the pointer and focus have left.
+    if (!focusInside.value) dismissed.value = false;
+  }, HOVER_LINGER_MS);
+}
+// Only focus the keyboard brought: a mouse press on TOOLS focuses it too,
+// and the row must not stay open on that alone once the pointer has left.
+function onToolsFocusIn(event) {
+  let visible = true;
+  try {
+    visible = event.target.matches(":focus-visible");
+  } catch {
+    // No :focus-visible in this engine: treat focus as the keyboard's.
+  }
+  if (visible) focusInside.value = true;
+}
+function onToolsFocusOut(event) {
+  if (toolsRef.value?.contains(event.relatedTarget)) return;
+  focusInside.value = false;
+  if (!hovered.value) dismissed.value = false;
+}
+/*
+ * A press on TOOLS. Touch and keyboard: a plain toggle. A mouse is already
+ * holding the row open by pointing, so its first press pins the row (it
+ * stays when the pointer leaves) and its second closes it.
+ */
+function onToolsClick() {
+  if (pinned.value) {
+    pinned.value = false;
+    dismissed.value = true;
+  } else if (toolsOpen.value && lastPointer !== "mouse") {
+    dismissed.value = true;
+  } else if (toolsOpen.value && !hovered.value) {
+    // Keyboard, on a row its own focus opened.
+    dismissed.value = true;
+  } else {
+    dismissed.value = false;
+    pinned.value = true;
+  }
+}
+function onPointerDownAnywhere(event) {
+  lastPointer = event.pointerType || "mouse";
+  if (!pinned.value) return;
+  if (toolsRef.value?.contains(event.target)) return;
+  if (helpRef.value?.$el?.contains?.(event.target)) return;
+  pinned.value = false;
+}
+function closeTools() {
+  pinned.value = false;
+  dismissed.value = true;
+}
+function onToolsKeydown(event) {
+  if (event.key !== "Escape" || !toolsOpen.value) return;
+  event.stopPropagation();
+  closeTools();
+  toolsButtonRef.value?.focus();
+}
+
+// Focus a control of the row, or TOOLS when the row has closed under it.
+function focusInRow(el) {
+  el?.focus?.();
+  if (document.activeElement !== el) toolsButtonRef.value?.focus();
+}
 
 async function closeHelp({ restoreFocus = true } = {}) {
   if (!showHelp.value) return;
   showHelp.value = false;
   await nextTick();
-  if (restoreFocus) helpButtonRef.value?.focus();
+  if (restoreFocus) focusInRow(helpButtonRef.value);
 }
 
 async function toggleHelp() {
@@ -80,13 +200,14 @@ async function toggleHelp() {
   helpRef.value?.$el?.focus?.();
 }
 
-// Info / Notebook / Chat: the help closes and focus goes back to the "?"
-// first, so the panel that opens remembers the "?" as what to return to
-// (ReaderSidebar gives focus back to whatever had it), not a button that
-// is gone.
+// Info / Notebook / Chat. Focus goes to TOOLS first: ReaderSidebar gives
+// focus back, on close, to whatever had it, and TOOLS is always there,
+// where the row's own buttons are not.
 async function openTool(key) {
-  await closeHelp();
+  await closeHelp({ restoreFocus: false });
+  toolsButtonRef.value?.focus();
   openSidebar(key);
+  pinned.value = false;
 }
 
 function onHelpKeydown(event) {
@@ -102,17 +223,31 @@ function onHelpFocusOut(event) {
   if (next === helpButtonRef.value) return;
   closeHelp({ restoreFocus: false });
 }
+
+onMounted(() => {
+  measureCover();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  document.addEventListener("pointerdown", onPointerDownAnywhere, true);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", onScroll);
+  document.removeEventListener("pointerdown", onPointerDownAnywhere, true);
+  cancelAnimationFrame(coverFrame);
+  clearTimeout(lingerTimer);
+});
 </script>
 
 <template>
-  <div class="reader-top-bar" data-testid="reader-top-bar">
-    <!-- Single app-bar row (prototype AppBar). Reading progress lives in the
-         chapter timeline docked at the bottom (OPENBRAIN-128). -->
+  <div
+    class="reader-top-bar"
+    :class="{ 'is-cover': onCover, 'is-held': held }"
+    :data-cover="onCover ? 'hidden' : undefined"
+    data-testid="reader-top-bar"
+  >
     <div class="bar-row">
-      <!-- Menu: the eye opens the drawer (chapter list + this chapter's
-           outline). It is the 2023 Retina chapter's open eye, and it
-           closes while the drawer is open; the drawer's own close button
-           is the closed eye in the same place (OPENBRAIN-197). -->
+      <!-- The book's mark opens the drawer: every chapter, this chapter's
+           sections, the account. It is a ✕ while the drawer is open; the
+           drawer's own close button sits exactly over it. -->
       <button
         type="button"
         class="reader-menu-btn"
@@ -120,26 +255,16 @@ function onHelpFocusOut(event) {
         aria-haspopup="dialog"
         :aria-expanded="store.activeMenu"
         title="Chapters and sections"
+        data-testid="reader-menu-button"
         @click="store.activeMenu = true"
       >
-        <MenuEye :closed="store.activeMenu" />
+        <CloseIcon v-if="store.activeMenu" :width="20" :height="20" />
+        <BookLogo v-else mark class="menu-logo" />
       </button>
-      <!-- The book's logo, a link home: /chapters when signed in
-           (OPENBRAIN-145). Below 640px it is the book alone. -->
-      <router-link
-        :to="homeRoute"
-        class="wordmark"
-        aria-label="The Open Brain, home"
-        title="The Open Brain"
-      >
-        <BookLogo class="wordmark-logo" />
-      </router-link>
 
       <!-- Only creators can open a draft (useChapter gate + RLS), so this
-           reminds them readers can't see it yet (OPENBRAIN-51). In the bar,
-           where it collides with nothing: as a ribbon under the bar it hid
-           TextComp's Edit chapter toggle and edit bar. Below 400px it is an
-           amber dot, its word kept for screen readers, so the bar fits. -->
+           reminds them readers can't see it yet (OPENBRAIN-51). Below 400px
+           it is an amber dot, its word kept for screen readers. -->
       <span
         v-if="isDraft"
         class="draft-badge"
@@ -151,45 +276,92 @@ function onHelpFocusOut(event) {
         ><span class="sr-only">, only creators can see this chapter</span>
       </span>
 
-      <!-- Search this chapter (OPENBRAIN-197), where the chapter number
-           and the section menu were. -->
-      <ReaderSearch
-        ref="searchRef"
-        @open="closeHelp({ restoreFocus: false })"
-      />
+      <!-- Search this chapter (OPENBRAIN-197), behind its icon. -->
+      <ReaderSearch @open="closeHelp({ restoreFocus: false })" />
 
       <div class="spacer"></div>
 
-      <ReaderListen @open="closeHelp({ restoreFocus: false })" />
-
-      <!-- Help: how the book reads, the animations setting (OPENBRAIN-189)
-           and, signed in, Info / Notebook / Chat (OPENBRAIN-197). Here, not
-           on the cover, so it is always in reach; a 44px target around a
-           32px key. -->
-      <button
-        ref="helpButtonRef"
-        type="button"
-        class="help-btn"
-        :class="{ open: showHelp }"
-        :aria-label="helpLabel"
-        aria-haspopup="dialog"
-        :aria-expanded="showHelp"
-        aria-controls="reader-help"
-        title="Help"
-        data-testid="reader-help-button"
-        @click="toggleHelp"
+      <!-- TOOLS first in the document, so Tab reaches it and then walks the
+           row it opened; on screen the row is to its left. -->
+      <div
+        ref="toolsRef"
+        class="tools"
+        :class="{ 'is-open': toolsOpen }"
+        @pointerenter="onToolsEnter"
+        @pointerleave="onToolsLeave"
+        @focusin="onToolsFocusIn"
+        @focusout="onToolsFocusOut"
+        @keydown="onToolsKeydown"
       >
-        <span class="help-btn-key" aria-hidden="true">?</span>
-        <span
-          v-if="noticePending"
-          class="help-btn-dot"
-          aria-hidden="true"
-          data-testid="reader-help-dot"
-        ></span>
-      </button>
+        <button
+          ref="toolsButtonRef"
+          type="button"
+          class="tools-btn"
+          :aria-expanded="toolsOpen"
+          aria-controls="reader-tools"
+          data-testid="reader-tools-button"
+          @click="onToolsClick"
+        >
+          Tools
+          <span
+            v-if="noticePending"
+            class="notice-dot"
+            aria-hidden="true"
+            data-testid="reader-tools-dot"
+          ></span>
+        </button>
 
-      <!-- Account: back to the dashboard, settings, log out (OPENBRAIN-90) -->
-      <AccountMenu />
+        <div
+          id="reader-tools"
+          class="tools-row"
+          role="group"
+          aria-label="Reader tools"
+          data-testid="reader-tools"
+        >
+          <ReaderListen
+            class="tools-listen"
+            @open="closeHelp({ restoreFocus: false })"
+            @toggle="listenOpen = $event"
+          />
+          <template v-if="isAuthenticated">
+            <button
+              v-for="tool in TOOLS"
+              :key="tool.key"
+              type="button"
+              class="tool-btn"
+              :class="{ 'is-active': activeTool === tool.key }"
+              aria-controls="reader-sidebar"
+              :aria-current="activeTool === tool.key ? 'true' : undefined"
+              :data-tool="tool.key"
+              @click="openTool(tool.key)"
+            >
+              {{ tool.label }}
+            </button>
+          </template>
+          <!-- Help: how the book reads and the animations setting. -->
+          <button
+            ref="helpButtonRef"
+            type="button"
+            class="tool-btn help-btn"
+            :class="{ 'is-active': showHelp }"
+            :aria-label="helpLabel"
+            aria-haspopup="dialog"
+            :aria-expanded="showHelp"
+            aria-controls="reader-help"
+            title="Help"
+            data-testid="reader-help-button"
+            @click="toggleHelp"
+          >
+            <span aria-hidden="true">?</span>
+            <span
+              v-if="noticePending"
+              class="notice-dot"
+              aria-hidden="true"
+              data-testid="reader-help-dot"
+            ></span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Help panel -->
@@ -198,10 +370,7 @@ function onHelpFocusOut(event) {
         v-if="showHelp"
         ref="helpRef"
         class="help-panel"
-        :tools="isAuthenticated"
-        :active-tool="activeTool"
         @close="closeHelp()"
-        @tool="openTool"
         @keydown="onHelpKeydown"
         @focusout="onHelpFocusOut"
       />
@@ -217,83 +386,73 @@ function onHelpFocusOut(event) {
 </template>
 
 <style scoped>
-/* Reader app bar — prototype AppBar: single row, paper, bottom hairline:
-   the menu eye, the logo, search, help, account (OPENBRAIN-197). The
-   progress line that ran along its top edge is now the chapter timeline
-   (OPENBRAIN-128). */
+/* A slim dark bar: the chapter's dark surface (the opener's, the figure
+   pane's), white ink. Its height is the token's, so --reader-topbar-h
+   (brand.css) is true by construction and every jump and sticky offset
+   that reads it lands under the bar. The --bar-* values are read by the
+   search field inside it. */
 .reader-top-bar {
+  --bar-ink: 255 255 255;
+  --bar-bg: var(--color-dark-surface);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  /* The bar sizes to its content; the token (brand.css) is tuned to match this
-     rendered height so the figure pane / prose offsets stay aligned. Use a
-     box that exactly fits: bar-row content + the 1px hairline. */
   z-index: 45;
-  background: rgb(var(--color-paper));
-  border-bottom: 1px solid rgb(var(--color-line));
-  color: rgb(var(--color-ink));
+  box-sizing: border-box;
+  height: var(--reader-topbar-h, 3rem);
+  background: rgb(var(--bar-bg));
+  border-bottom: 1px solid rgb(var(--bar-ink) / 0.1);
+  color: rgb(var(--bar-ink));
+  transition: opacity 0.2s ease;
 }
 
-/* Single bar row. 9px of padding took over the 2px progress track's share,
-   so the bar still renders 63px tall (9 + 44 + 9 + the hairline) and
-   --reader-topbar-h (4rem) still clears it. */
+/* On the cover: not shown, and not in the pointer's way. Opacity only, so
+   the bar keeps its box. Focus inside it (Tab from the top of the page)
+   shows it, as does anything of its own that is open. */
+.reader-top-bar.is-cover:not(.is-held):not(:focus-within) {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .bar-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 9px 18px;
+  gap: 4px;
+  height: 100%;
+  padding: 0 10px;
 }
 
 .reader-menu-btn {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 0.5rem;
-  border: 1px solid rgb(var(--color-line));
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
   border-radius: var(--radius-control);
   background: transparent;
-  color: rgb(var(--color-ink));
+  color: inherit;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: border-color 0.12s ease;
-}
-
-.reader-menu-btn:hover {
-  border-color: rgb(var(--color-ink));
-}
-
-/* The logo, a link home (OPENBRAIN-145, 197). Its own 44px target, no
-   frame, so it reads as a logo rather than a second menu button. The
-   artwork is 40px tall in the 44px row: the book, then "the open brain
-   .org" in the designers' own lettering. */
-.wordmark {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 0.375rem;
-  margin-left: -0.375rem;
-  border-radius: var(--radius-control);
-  text-decoration: none;
-  color: rgb(var(--color-ink));
-  flex-shrink: 0;
   transition: background 0.12s ease;
 }
 
-.wordmark:hover {
-  background: rgb(var(--color-ink) / 0.05);
+.menu-logo {
+  --logo-h: 30px;
 }
 
-.wordmark-logo {
-  --logo-h: 40px;
+@media (hover: hover) {
+  .reader-menu-btn:hover {
+    background: rgb(var(--bar-ink) / 0.1);
+  }
 }
 
-/* Draft: the warn amber the old bottom-left ribbon used, with near-black
-   text in both themes (the amber does not change with the theme). */
+/* Draft: the warn amber, near-black text (the amber does not change with
+   the theme). */
 .draft-badge {
   flex-shrink: 0;
+  margin: 0 6px;
   padding: 3px 7px;
   border-radius: var(--radius-control);
   background: rgb(var(--color-warn));
@@ -311,63 +470,116 @@ function onHelpFocusOut(event) {
   flex: 1;
 }
 
-/* Help: the "?" (OPENBRAIN-189). A 32px key in a 44px target, framed in
-   the hairline like the menu button at the other end, so the account
-   button beside it stays the one ink-framed control. */
-.help-btn {
+/* TOOLS, and the row it opens to its left (row-reverse: TOOLS is first in
+   the document and last on screen). */
+.tools {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tools-btn,
+.tool-btn,
+.tools-row :deep(.listen-toggle) {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   flex-shrink: 0;
   min-width: 44px;
   min-height: 44px;
-  padding: 0;
+  padding: 0 0.875rem;
   border: 0;
-  background: transparent;
-  color: rgb(var(--color-ink));
-  cursor: pointer;
-}
-
-.help-btn-key {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgb(var(--color-line));
   border-radius: var(--radius-control);
+  background: transparent;
+  color: rgb(var(--bar-ink));
   font-family: var(--font-mono);
-  font-size: var(--ui-size-13);
+  font-size: var(--ui-size-12);
+  font-weight: 600;
+  letter-spacing: 0.1em;
   line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
   transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    color 0.12s ease;
+    color 0.12s ease,
+    background 0.12s ease;
 }
 
-.help-btn:hover .help-btn-key {
-  border-color: rgb(var(--color-ink));
+.help-btn {
+  justify-content: center;
+  padding: 0;
 }
 
-.help-btn.open .help-btn-key {
-  background: rgb(var(--color-ink));
-  border-color: rgb(var(--color-ink));
-  color: rgb(var(--color-paper));
+/* Open: TOOLS in the interaction accent. */
+.tools.is-open .tools-btn {
+  color: rgb(var(--color-accent));
 }
 
-/* Something here wants a look: animations are off on this device and the
-   reader has not been asked (useMotionPreference). Amber with a dark rim,
-   as the draft dot: amber alone is ~2:1 on paper. */
-.help-btn-dot {
+.tool-btn.is-active,
+.tools-row :deep(.listen-toggle.is-playing),
+.tools-row :deep(.listen-toggle[aria-expanded="true"]) {
+  color: rgb(var(--color-accent));
+}
+
+@media (hover: hover) {
+  .tool-btn:hover,
+  .tools-row :deep(.listen-toggle:hover) {
+    background: rgb(var(--bar-ink) / 0.1);
+  }
+}
+
+/* The row. Closed, it keeps its place and is hidden with `visibility`, so
+   its controls leave the tab order; ReaderListen's "Back to reading"
+   button lives inside it and must outlast it. Nothing here is transformed
+   or faded as a whole: either would capture that fixed button and the
+   panels that hang from the bar. */
+.tools-row {
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+}
+
+.tools.is-open .tools-row {
+  visibility: visible;
+}
+
+.tools-row :deep(.listen-return) {
+  visibility: visible;
+}
+
+.tools-row > .tool-btn,
+.tools-row :deep(.listen-toggle) {
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+.tools.is-open .tools-row > .tool-btn,
+.tools.is-open .tools-row :deep(.listen-toggle) {
+  opacity: 1;
+}
+
+/* ReaderListen hides its word below 640px for the old bar; here it is one
+   of the row's words at every width. */
+.tools-row :deep(.listen-word) {
+  display: inline;
+}
+
+/* Something wants a look: animations are off on this device and the reader
+   has not been asked (useMotionPreference). On TOOLS, and on the "?" it
+   leads to. */
+.notice-dot {
   position: absolute;
-  top: 3px;
+  top: 9px;
   right: 3px;
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: rgb(var(--color-warn));
-  box-shadow:
-    inset 0 0 0 1px rgb(10 10 10 / 0.5),
-    0 0 0 2px rgb(var(--color-paper));
 }
 
 /* Help panel: under the bar's right end; ReaderHelp draws the panel. It
@@ -375,10 +587,10 @@ function onHelpFocusOut(event) {
 .help-panel {
   position: absolute;
   top: calc(100% + 6px);
-  right: 18px;
+  right: 10px;
   z-index: 50;
   width: 23rem;
-  max-width: calc(100vw - 36px);
+  max-width: calc(100vw - 20px);
   max-height: calc(100dvh - 100% - var(--reader-timeline-h, 0px) - 18px);
 }
 
@@ -401,40 +613,36 @@ function onHelpFocusOut(event) {
 }
 
 .reader-menu-btn:focus-visible,
-.help-btn:focus-visible,
-.wordmark:focus-visible {
-  outline: 3px solid rgb(var(--color-accent));
-  outline-offset: 2px;
+.tools-btn:focus-visible,
+.tool-btn:focus-visible,
+.tools-row :deep(.listen-toggle:focus-visible) {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: -3px;
 }
 
-@media (max-width: 900px) {
-  .bar-row {
-    gap: 8px;
-    padding: 5px 8px;
-  }
-}
-
-/* A phone: the book without the words, the search behind its button
-   (ReaderSearch), and the row's free space before the search button so the
-   three controls on the right sit together. */
+/* A phone: the mark, the search icon and TOOLS on the bar; the row opens
+   as a sheet under it, wrapping if it must. */
 @media (max-width: 640px) {
-  .wordmark {
-    padding: 0 0.125rem;
-    margin-left: 0;
+  .bar-row {
+    padding: 0 4px;
   }
 
-  .wordmark-logo {
-    --logo-crop: 1;
+  .tools-row {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    padding: 2px 4px 6px;
+    background: rgb(var(--bar-bg));
+    border-bottom: 1px solid rgb(var(--bar-ink) / 0.1);
+    box-shadow: 0 12px 24px rgb(0 0 0 / 0.25);
   }
 
-  .spacer {
-    order: -1;
-  }
-
-  .reader-menu-btn,
-  .wordmark,
-  .draft-badge {
-    order: -2;
+  .tool-btn,
+  .tools-row :deep(.listen-toggle) {
+    padding: 0 0.625rem;
   }
 
   .help-panel {
@@ -445,20 +653,14 @@ function onHelpFocusOut(event) {
   }
 }
 
-/* At 320px the 47px Draft badge pushed the account menu off the bar
-   (OPENBRAIN-128). Below 400px it is an amber dot, its word hidden the
-   .sr-only way so screen readers still hear "Draft". */
+/* Below 400px the Draft badge is an amber dot, its word hidden the
+   .sr-only way so screen readers still hear "Draft" (OPENBRAIN-128). */
 @media (max-width: 399px) {
-  .bar-row {
-    gap: 6px;
-  }
-
   .draft-badge {
     width: 8px;
     height: 8px;
     padding: 0;
     border-radius: 50%;
-    /* A dark rim: amber alone is ~2:1 on light paper (3:1 for a graphic). */
     box-shadow: inset 0 0 0 1px rgb(10 10 10 / 0.5);
   }
 
@@ -472,6 +674,14 @@ function onHelpFocusOut(event) {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion="0"]) .reader-top-bar,
+  :root:not([data-reduce-motion="0"]) .tools-row > .tool-btn,
+  :root:not([data-reduce-motion="0"]) .tools-row :deep(.listen-toggle) {
+    transition: none;
   }
 }
 </style>

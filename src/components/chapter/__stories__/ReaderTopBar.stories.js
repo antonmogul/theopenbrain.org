@@ -1,18 +1,16 @@
 /*
- * Chapter/ReaderShell/ReaderTopBar — the reader's app bar, as Stuart asked
- * for it on 11 Nov (OPENBRAIN-197): the menu button, an open eye that
- * closes while the drawer is open (chapter list + this chapter's outline);
- * the book's logo, a link home (/chapters when signed in; OPENBRAIN-145);
- * the chapter search, where the chapter number and the section menu were
- * (Chapter/ReaderShell/ReaderSearch); one "?" for help, the animations
- * setting and, signed in, Info / Notebook / Chat
- * (Chapter/ReaderShell/ReaderHelp); and the account menu. Reading progress
- * is the chapter timeline docked at the bottom
- * (Chapter/ReaderShell/ChapterTimeline, OPENBRAIN-128). A draft chapter
- * carries a Draft badge after the logo.
+ * Chapter/ReaderShell/ReaderTopBar — the reader's top bar (OPENBRAIN-78;
+ * Maura's sketch of 23 Nov): a slim dark bar. Left, the book's mark, which
+ * opens the contents drawer (Foundations/Navigation/NavDrawer) and is a ✕
+ * while it is open, then the chapter search behind its icon
+ * (Chapter/ReaderShell/ReaderSearch). Right, TOOLS: pointing at it or
+ * reaching it with the keyboard opens a row to its left, a tap toggles it
+ * on touch. The row is Listen, then Info / Notebook / Chat for a signed-in
+ * reader, then "?" (Chapter/ReaderShell/ReaderHelp). A draft chapter
+ * carries a Draft badge after the mark. The account is in the drawer.
  *
- * Signed in and signed out differ only in what the "?" offers and in the
- * account menu, so the bar is the same width in both.
+ * In the reader (`hideOnCover`) the bar is not shown while the chapter's
+ * cover is at the top; keyboard focus shows it there.
  */
 import { useGeneral, useText } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
@@ -23,8 +21,6 @@ export default {
   title: "Chapter/ReaderShell/ReaderTopBar",
   component: ReaderTopBar,
   tags: ["autodocs"],
-  // Signed in, so the account menu is the reader's initials as in the app;
-  // the signed-out stories turn it off.
   parameters: {
     layout: "fullscreen",
     auth: { authenticated: true, role: "student", name: "Maya Chen" },
@@ -32,19 +28,28 @@ export default {
   args: {
     isAuthenticated: true,
     isDraft: false,
+    hideOnCover: false,
     menuOpen: false,
   },
   argTypes: {
-    isAuthenticated: { control: "boolean" },
+    isAuthenticated: {
+      control: "boolean",
+      description: "Signed in: Info, Notebook and Chat join the Tools row.",
+    },
     isDraft: {
       control: "boolean",
       description:
-        "An unpublished chapter (only creators can open one): a Draft badge after the logo.",
+        "An unpublished chapter (only creators can open one): a Draft badge after the mark.",
+    },
+    hideOnCover: {
+      control: "boolean",
+      description:
+        "The reader's setting: no bar until the page has scrolled 48px, or focus enters the bar.",
     },
     menuOpen: {
       control: "boolean",
       description:
-        "Story-only: the drawer is open (useGeneral.activeMenu), so the eye is closed.",
+        "Story-only: the drawer is open (useGeneral.activeMenu), so the mark is a ✕.",
     },
   },
   render: (args) => ({
@@ -61,98 +66,95 @@ export default {
         <ReaderTopBar
           :is-authenticated="args.isAuthenticated"
           :is-draft="args.isDraft"
+          :hide-on-cover="args.hideOnCover"
         />
       </div>`,
   }),
 };
 
-/** Signed in, on a desktop. */
-export const Desktop = {};
-
-/** Signed out: the same bar; the "?" opens help alone. */
-export const SignedOut = {
-  args: { isAuthenticated: false },
-  parameters: { auth: { authenticated: false } },
+const settle = (ms = 300) => new Promise((r) => setTimeout(r, ms));
+/* A press on TOOLS pins the row open (a tap, on touch). */
+const openTools = async ({ canvasElement }) => {
+  canvasElement.querySelector('[data-testid="reader-tools-button"]')?.click();
+  await settle();
+};
+/* The "?" at the row's end opens the help panel (OPENBRAIN-189). */
+const openHelp = async (context) => {
+  await openTools(context);
+  context.canvasElement
+    .querySelector('[data-testid="reader-help-button"]')
+    ?.click();
+  await settle();
 };
 
-/** The drawer is open: the eye is closed (the drawer itself is App's). */
+/** At rest, signed in: the mark, the search icon, TOOLS. */
+export const Desktop = {};
+
+/** Tools open, signed in: Listen, Info, Notebook, Chat, "?"; TOOLS in the accent. */
+export const ToolsOpen = { play: openTools };
+
+/** Tools open, signed out: Listen and "?" only. */
+export const ToolsOpenSignedOut = {
+  args: { isAuthenticated: false },
+  parameters: { auth: { authenticated: false } },
+  play: openTools,
+};
+
+/** The drawer is open: the mark is a ✕ (the drawer itself is App's). */
 export const MenuOpen = {
   args: { menuOpen: true },
 };
 
-/**
- * A draft, as a creator sees it: the badge sits in the bar's row, so it
- * clears TextComp's Edit chapter toggle and edit bar under the bar.
- */
+/** A draft, as a creator sees it: the badge after the mark. */
 export const Draft = {
   args: { isDraft: true },
 };
 
-/**
- * The draft badge at phone width: below 400px the badge is an amber dot
- * (the word stays for screen readers), so the account menu stays on the bar.
- */
+/** On the chapter's cover: nothing, until the page scrolls or Tab reaches the bar. */
+export const OnCover = {
+  args: { hideOnCover: true },
+};
+
+/** On the cover with keyboard focus in the bar: shown. */
+export const OnCoverFocused = {
+  args: { hideOnCover: true },
+  play: async ({ canvasElement }) => {
+    canvasElement.querySelector(".reader-menu-btn")?.focus();
+    await settle();
+  },
+};
+
+/** A phone: the mark, the search icon and TOOLS fit at 375. */
+export const Mobile = {
+  globals: { viewport: { value: "phone" } },
+};
+
+/** A phone, Tools open: the row is a sheet under the bar. */
+export const ToolsOpenMobile = {
+  globals: { viewport: { value: "phone" } },
+  play: openTools,
+};
+
+/** The draft badge at phone width: below 400px it is an amber dot. */
 export const DraftMobile = {
   args: { isDraft: true },
   globals: { viewport: { value: "phone" } },
 };
 
-/** A phone: the eye, the book, then search, help and account together. */
-export const Mobile = {
-  globals: { viewport: { value: "phone" } },
-};
-
-/** A phone, signed out. */
-export const MobileSignedOut = {
-  args: { isAuthenticated: false },
-  parameters: { auth: { authenticated: false } },
-  globals: { viewport: { value: "phone" } },
-};
-
-/** Searching: results under the field, the words marked. */
+/** Search open: the field inline beside its icon, results under it. */
 export const Search = { play: typeQuery("brain") };
 
-/** Searching on a phone: the field takes the whole bar. */
+/** Search on a phone: the field takes the whole bar. */
 export const SearchMobile = {
   globals: { viewport: { value: "phone" } },
   play: typeQuery("descartes"),
 };
 
-/* Open the help panel the "?" opens (OPENBRAIN-189). */
-const openHelp = async ({ canvasElement }) => {
-  canvasElement.querySelector('[data-testid="reader-help-button"]')?.click();
-  await new Promise((r) => setTimeout(r, 300));
-};
-
-/**
- * The "?" at the bar's right end opens the reader's help: how the book
- * reads and the animations setting (OPENBRAIN-189). It moved here from the
- * chapter cover, where it scrolled away.
- */
-export const HelpOpen = {
-  args: { isAuthenticated: false },
-  parameters: { auth: { authenticated: false } },
-  play: openHelp,
-};
-
-/**
- * Signed in, the same panel opens with Info, Notebook and Chat: they were
- * three words in the bar until 11 Nov (OPENBRAIN-197).
- */
-export const HelpOpenSignedIn = {
-  play: openHelp,
-};
+/** Help, from the "?" in the row: how the book reads, and animations. */
+export const HelpOpen = { play: openHelp };
 
 /** The help panel on a phone: the bar's width less 8px each side. */
 export const HelpOpenMobile = {
-  args: { isAuthenticated: false },
-  parameters: { auth: { authenticated: false } },
-  globals: { viewport: { value: "phone" } },
-  play: openHelp,
-};
-
-/** Signed in, on a phone. */
-export const HelpOpenSignedInMobile = {
   globals: { viewport: { value: "phone" } },
   play: openHelp,
 };

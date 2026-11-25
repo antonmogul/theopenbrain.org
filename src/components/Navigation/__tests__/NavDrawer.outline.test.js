@@ -32,6 +32,9 @@ vi.mock("@/composables/useAuth", async () => {
       user: ref(null),
       profile: ref(null),
       isAuthenticated: ref(false),
+      isCreator: ref(false),
+      userRole: ref(null),
+      signOut: vi.fn(),
     }),
   };
 });
@@ -89,6 +92,7 @@ beforeEach(() => {
       stubs: {
         Transition: true,
         AuthForm: true,
+        ChaptersLibrary: true,
         RouterLink: { props: ["to"], template: '<a :href="to"><slot /></a>' },
       },
     },
@@ -133,27 +137,116 @@ describe("reader menu outline", () => {
     ).toBeNull();
   });
 
-  // Stuart, 11 Nov: the open eye opens the menu "and then the 'close eye'
-  // once it's open to close it"; "remove the globe and 'the open brain' and
-  // replace with our logo."
-  it("closes from the closed eye, first in the drawer, beside the book's logo", async () => {
+  // The book's mark in the bar opens the drawer and "becomes" a ✕: the
+  // drawer's own close button, first in it, over the mark (OPENBRAIN-78).
+  it("closes from the ✕, first in the drawer, where the bar's mark is", async () => {
     await open();
     const head = document.querySelector(".drawer-head");
     const close = head.firstElementChild;
     expect(close.tagName).toBe("BUTTON");
     expect(close.getAttribute("aria-label")).toBe("Close chapter menu");
-    expect(
-      close.querySelector('[data-testid="menu-eye"]').getAttribute("data-eye")
-    ).toBe("closed");
+    expect(close.querySelector("svg")).not.toBeNull();
     expect(document.activeElement).toBe(close);
-    const home = head.querySelector("a.wordmark");
-    expect(home.getAttribute("href")).toBe("/chapters");
-    expect(home.getAttribute("aria-label")).toMatch(/home/i);
-    expect(home.querySelector('[data-testid="book-logo"] svg')).not.toBeNull();
     expect(head.textContent.trim()).toBe("");
     close.click();
     await flushPromises();
     expect(state.store.activeMenu).toBe(false);
+  });
+
+  it("has the full table of contents link and a home icon above the chapters", async () => {
+    await open();
+    const top = document.querySelector(".drawer-top");
+    const link = top.querySelector('[data-testid="drawer-contents-link"]');
+    expect(link.textContent.trim()).toBe("See full table of contents");
+    expect(link.getAttribute("href")).toBe("/chapters");
+    const home = top.querySelector("a.home-link");
+    expect(home.getAttribute("href")).toBe("/chapters");
+    expect(home.getAttribute("aria-label")).toBe("Home");
+    expect(
+      top.compareDocumentPosition(document.querySelector(".chapter-list")) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it("numbers the chapters as the book does", async () => {
+    await open();
+    expect(
+      [...document.querySelectorAll(".chapter-row")].map((row) =>
+        row.textContent.replace(/\s+/g, " ").trim()
+      )
+    ).toEqual(["1 History", "2 The Retina"]);
+  });
+
+  describe("See full table of contents", () => {
+    const width = window.innerWidth;
+    afterEach(() => {
+      window.innerWidth = width;
+    });
+
+    it("on a phone goes to /chapters", async () => {
+      window.innerWidth = 375;
+      await open();
+      document.querySelector('[data-testid="drawer-contents-link"]').click();
+      await flushPromises();
+      expect(state.push).toHaveBeenCalledWith("/chapters");
+      expect(state.store.activeMenu).toBe(false);
+    });
+
+    it("with room, shows the library beside the drawer; Escape closes it, then the drawer", async () => {
+      window.innerWidth = 1280;
+      await open();
+      const link = document.querySelector(
+        '[data-testid="drawer-contents-link"]'
+      );
+      link.click();
+      await flushPromises();
+      expect(state.push).not.toHaveBeenCalled();
+      const library = document.querySelector('[data-testid="drawer-library"]');
+      expect(library).not.toBeNull();
+      // Inside the overlay, after the drawer, not inside the dialog.
+      expect(library.parentElement).toBe(
+        document.querySelector(".nav-backdrop")
+      );
+      expect(library.closest('[role="dialog"]')).toBeNull();
+      expect(document.activeElement).toBe(
+        library.querySelector(".library-close")
+      );
+
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", cancelable: true })
+      );
+      await flushPromises();
+      expect(
+        document.querySelector('[data-testid="drawer-library"]')
+      ).toBeNull();
+      expect(state.store.activeMenu).toBe(true);
+      expect(document.activeElement).toBe(link);
+
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", cancelable: true })
+      );
+      await flushPromises();
+      expect(state.store.activeMenu).toBe(false);
+    });
+
+    it("the library's own close goes back to the page", async () => {
+      window.innerWidth = 1280;
+      await open();
+      document.querySelector('[data-testid="drawer-contents-link"]').click();
+      await flushPromises();
+      document.querySelector(".library-close").click();
+      await flushPromises();
+      expect(state.store.activeMenu).toBe(false);
+    });
+  });
+
+  it("signed out, the foot offers Sign in", async () => {
+    await open();
+    const foot = document.querySelector(".drawer-foot");
+    expect(foot.querySelector(".signin-btn").textContent.trim()).toBe(
+      "Sign in"
+    );
+    expect(foot.querySelector(".user-footer")).toBeNull();
   });
 
   it("jumps within the reader through readerJump and closes the drawer without changing chapters", async () => {
@@ -184,8 +277,8 @@ describe("reader menu outline", () => {
       expect(target.scrollIntoView).not.toHaveBeenCalled();
       expect(scrollTo).toHaveBeenCalledTimes(1);
       const { top } = scrollTo.mock.calls[0][0];
-      // 1200 from the top, landed 64 + 16 below the viewport's top edge.
-      expect(top).toBe(1200 - 80);
+      // 1200 from the top, landed 48 + 16 below the viewport's top edge.
+      expect(top).toBe(1200 - 64);
       expect(document.activeElement).toBe(target);
     } finally {
       window.scrollTo = originalScrollTo;
