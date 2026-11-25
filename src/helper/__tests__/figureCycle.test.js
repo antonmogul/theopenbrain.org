@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
+  figureFill,
+  figureFocus,
   figureImages,
   figureLoop,
   usesFigureShell,
@@ -196,6 +198,59 @@ describe("figure loops (OPENBRAIN-201)", () => {
     });
     expect(img.youtube).toBe("abcdefghijk");
     expect(img.loop).toBeUndefined();
+  });
+});
+
+describe("a figure that fills its pane (OPENBRAIN-84)", () => {
+  const LOOP = { mp4: "/a.mp4", width: 960, height: 1280 };
+  const film = { images: [{ src: "/poster.webp", loop: LOOP }] };
+
+  it("reads a focal point as two percentages, the centre otherwise", () => {
+    expect(figureFocus("50% 15%")).toBe("50% 15%");
+    expect(figureFocus("  0%   100% ")).toBe("0% 100%");
+    expect(figureFocus("33.5% 7%")).toBe("33.5% 7%");
+    for (const bad of [
+      undefined,
+      null,
+      "",
+      "top",
+      "50%",
+      "50 15",
+      "50% 150%",
+      "-5% 10%",
+      "50% 15%; background: url(x)",
+      { x: 50, y: 15 },
+    ])
+      expect(figureFocus(bad), String(bad)).toBe("50% 50%");
+  });
+
+  it("is off unless the row says fill: true", () => {
+    expect(figureFill(film)).toBe("");
+    expect(figureFill({ ...film, focus: "50% 15%" })).toBe("");
+    expect(figureFill({ ...film, fill: "true" })).toBe("");
+    expect(figureFill({ ...film, fill: 1 })).toBe("");
+    expect(figureFill(null)).toBe("");
+  });
+
+  it("gives a single picture or film its focal point, the centre by default", () => {
+    expect(figureFill({ ...film, fill: true, focus: "50% 15%" })).toBe(
+      "50% 15%"
+    );
+    expect(figureFill({ ...film, fill: true })).toBe("50% 50%");
+    expect(figureFill({ imageUrl: "/still.jpg", fill: true })).toBe("50% 50%");
+  });
+
+  it("leaves galleries, YouTube items and rows without artwork whole", () => {
+    expect(
+      figureFill({ images: [{ src: "/a.jpg" }, { src: "/b.jpg" }], fill: true })
+    ).toBe("");
+    expect(
+      figureFill({
+        images: [{ src: "/p.jpg", youtube: "abcdefghijk" }],
+        fill: true,
+      })
+    ).toBe("");
+    expect(figureFill({ placeholder: true, fill: true })).toBe("");
   });
 });
 
