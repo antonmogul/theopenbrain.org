@@ -1023,6 +1023,26 @@ async function main() {
                       `${slug} has a plate without its bottom control row`
                     );
                 }
+                // A late font or credit disclosure can grow the footer
+                // between fits. The picture must give up height immediately.
+                for (const plate of track.querySelectorAll(
+                  "[data-rail-plate]"
+                )) {
+                  const bar = plate.querySelector("[data-rail-figure-bar]");
+                  const img = plate.querySelector("img");
+                  if (!bar || !img || !plate.getClientRects().length) continue;
+                  const saved = bar.style.paddingBottom;
+                  bar.style.paddingBottom = "40px";
+                  const r = img.getBoundingClientRect();
+                  if (
+                    r.height &&
+                    (r.top < box.top - 1 || r.bottom > box.bottom + 1)
+                  )
+                    out.push(
+                      `${slug}: a late footer pushes its image outside the track`
+                    );
+                  bar.style.paddingBottom = saved;
+                }
                 for (const gallery of track.querySelectorAll(
                   ".figimg--gallery"
                 )) {

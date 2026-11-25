@@ -229,6 +229,7 @@ function open(i) {
   color: var(--bx-ink, rgb(var(--color-ink)));
 }
 .rf-bar {
+  flex: none;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) auto;
   gap: 0.5rem;
@@ -297,9 +298,12 @@ function open(i) {
   justify-content: center;
   gap: var(--rf-gap, 1rem);
   min-height: 0;
+  max-height: 100%;
 }
+/* The footer can grow after fitting (fonts or opening a credit). Let the
+   image give up height immediately, before the next rail measurement. */
 .rf[data-rail-fitted] .rf-plates {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
 }
 .rf-plate {
   display: flex;
@@ -307,6 +311,7 @@ function open(i) {
   justify-content: center;
   flex: calc(var(--rf-ratio, 1) * 100) 1 0;
   min-width: 0;
+  min-height: 0;
   max-height: 100%;
 }
 .rf-frame {

@@ -200,15 +200,11 @@ const label = computed(() =>
 
 <style scoped>
 /* ── On the pinned track (from the two-column breakpoint) ────────────────
-   The columns are sized so a whole number of them shows beside the
-   pictures when the part is at the left: --rail-fit of them fill the
-   track's view (--rail-view: its width less the gutters and the next
-   part's peek, set by BreakoutBox, like the gutter and the peek
-   themselves), so the first screen of a part never ends in half a column.
-   One column on a narrow track, two from a laptop (about 1200px, where each
-   is some 33 characters wide), three on a very wide screen; one beside two
-   or more images, which want the room (.rp--pictures). Lengths in cq* and
-   the @container rules are the track's (a size container). */
+   Every box uses the same responsive text measure; a part can continue
+   beyond the view and the rail's next stop brings the rest into view.
+   --rail-fit is how many columns the initial block balances across. The
+   picture budget still leaves room for the text beside it, and the track
+   measures the real picture widths for its total travel. */
 .rp {
   --rail-fit: 1;
   /* A picture's column until the track has sized it to its image
