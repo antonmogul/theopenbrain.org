@@ -1,6 +1,7 @@
 /*
  * RailFigure (OPENBRAIN-194): a picture on a side-scrolling box's track is
- * just the picture. Its label and title, its images as plates, a button on
+ * just the picture. Its images as plates, its label and title under them
+ * (OPENBRAIN-83), a button on
  * each that opens the book's viewer full screen (where the legend is), and
  * the legends kept in the document for screen readers. No Legend control,
  * thumbnails, play/pause or view-all.
@@ -124,6 +125,47 @@ describe("RailFigure", () => {
     const w = mountFigure({ images: two, label: "FIG E" }, "swipe");
     expect(w.classes()).toContain("rf--swipe");
     expect(w.attributes("style")).toContain("--rf-count: 2");
+    w.unmount();
+  });
+
+  // Maura, 25 Nov (OPENBRAIN-83): "could we always place them at the
+  // bottom, like we do on the regular half-and-half screen?"
+  it("names the figure under its picture, as the figure pane does", () => {
+    for (const mode of ["track", "swipe"]) {
+      const w = mountFigure(
+        {
+          label: "FIG B",
+          title: "The rete mirabile",
+          images: [{ src: "/img/b.jpg", alt: "", caption: "" }],
+        },
+        mode
+      );
+      const bar = w.find("[data-rail-figure-bar]").element;
+      const plates = w.find(".rf-plates").element;
+      expect(
+        plates.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+      // The expand button is on that row, after the picture in tab order.
+      expect(bar.querySelector("button.rf-expand")).not.toBeNull();
+      w.unmount();
+    }
+  });
+
+  it("knows its tallest image once all have loaded, so a phone's page can put the name right under it", async () => {
+    const w = mountFigure({ images: two, label: "FIG E" }, "swipe");
+    const load = async (i, width, height) => {
+      const img = w.findAll("[data-rail-plate] img")[i];
+      Object.defineProperty(img.element, "naturalWidth", { value: width });
+      Object.defineProperty(img.element, "naturalHeight", { value: height });
+      await img.trigger("load");
+    };
+    await load(0, 1500, 1000);
+    // One image is still unknown: the row keeps the whole page.
+    expect(w.classes()).not.toContain("rf--sized");
+    expect(w.attributes("style")).not.toContain("--rf-ratio-min");
+    await load(1, 800, 1000);
+    expect(w.classes()).toContain("rf--sized");
+    expect(w.attributes("style")).toContain("--rf-ratio-min: 0.8");
     w.unmount();
   });
 

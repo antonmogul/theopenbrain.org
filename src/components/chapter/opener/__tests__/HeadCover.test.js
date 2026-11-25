@@ -228,6 +228,20 @@ describe("OpenerHero with a head cover", () => {
     w.unmount();
   });
 
+  // OPENBRAIN-83: the cover bleeds past the hero so its scroll blur has no
+  // dark edge; the head stays in the hero's own box, and its paper fills
+  // the bleed.
+  it("lays the head out in the hero's own box, on its paper", async () => {
+    const w = mountHero();
+    await flushPromises();
+    const cover = w.find(".opener-hero__cover");
+    expect(cover.find(".opener-hero__stage > .head-cover").exists()).toBe(true);
+    expect(cover.attributes("style")).toMatch(
+      /background-color:\s*(#F8F2E4|rgb\(248, 242, 228\))/i
+    );
+    w.unmount();
+  });
+
   it("falls back to the chapter cover when the artwork is missing", async () => {
     assetOk.mockResolvedValue(false);
     const w = mountHero();

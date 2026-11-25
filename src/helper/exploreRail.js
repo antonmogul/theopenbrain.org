@@ -586,7 +586,7 @@ const unfitPlates = (fig) => {
 };
 
 /* A figure of plates (RailFigure) on the pinned track: as wide as its
-   images are at the height the track leaves under its label, up to the
+   images are at the height the track leaves over its label, up to the
    most RailPart's CSS allows it (max-width: what the text beside it can
    spare); the row of plates is then exactly the images' height, and the
    figure is centred in the track. Waits for every image's size. */

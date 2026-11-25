@@ -508,6 +508,24 @@ describe("PapyrusCase", () => {
     expect(css).toMatch(/\.pc-edge\s*\{[^}]*display:\s*none/);
   });
 
+  // Maura, 25 Nov (OPENBRAIN-83): the back of the card is the chapter's
+  // colour at full strength, read in the ink brand.css pairs with it.
+  it("turns to a back in the chapter's own colour and its ink", () => {
+    const css = readFileSync(
+      resolve(__dirname, "../papyrus/PapyrusCase.vue"),
+      "utf8"
+    )
+      .split("<style scoped>")[1]
+      .replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(css).toMatch(/--pc-back:\s*rgb\(var\(--color-chapter-ground\b/);
+    expect(css).toMatch(/--pc-back-ink:\s*rgb\(var\(--color-chapter-on\b/);
+    expect(css).toMatch(
+      /\.pc-face--back\s*\{[^}]*background:\s*var\(--pc-back\);[^}]*color:\s*var\(--pc-back-ink\)/
+    );
+    // Nothing mixes the colour down any more.
+    expect(css).not.toMatch(/--pc-back:[^;]*color-mix/);
+  });
+
   it("offers the whole screen only where the browser has it", async () => {
     const without = mountPapyrus();
     expect(without.find(".pc-expand").exists()).toBe(false);
