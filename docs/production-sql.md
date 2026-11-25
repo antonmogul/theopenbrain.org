@@ -6,8 +6,8 @@ Project ref: `ocenwbkdzmxhsvwlornp` ("The Open Brain V2").
 
 ## Pending — OPENBRAIN-89
 
-| Migration | State | Release order |
-| --- | --- | --- |
+| Migration                                       | State   | Release order                                                                                                                                                                                               |
+| ----------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `20261124078900_history_penfield_binder_v7.sql` | Pending | Content only; safe before or after deploy. Replaces only the Penfield upload HTML: page-click archive reset, aligned clip, continuous tab stacking, more heading space, and a numbered dot without ripples. |
 
 ## Pushed 2026-11-20 — OPENBRAIN-67
