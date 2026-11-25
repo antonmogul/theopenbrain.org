@@ -19,10 +19,11 @@ const phase = flag("phase", "after");
 mkdirSync(out, { recursive: true });
 const results = [];
 const errors = [];
+const browserControlWarnings = [];
 const save = () =>
   writeFileSync(
     `${out}/${phase}-copies.json`,
-    JSON.stringify({ results, errors }, null, 2)
+    JSON.stringify({ results, errors, browserControlWarnings }, null, 2)
   );
 
 for (const engine of [chromium, webkit]) {
@@ -41,7 +42,18 @@ for (const engine of [chromium, webkit]) {
     const open = async (p) => {
       p.on("pageerror", (e) => errors.push(`${engine.name()}: ${e.message}`));
       p.on("console", (m) => {
-        if (m.type() === "error") errors.push(`${engine.name()}: ${m.text()}`);
+        if (m.type() !== "error") return;
+        // Playwright's macOS WebKit cannot load its own video-control
+        // placard icons at non-default DPR. Keep the exact diagnostics in
+        // evidence; these browser-owned blob icons are not app errors.
+        if (
+          engine === webkit &&
+          /^Button failed to load, iconName = (invalid|pip|airplay)-placard, layoutTraits = \[MacOSLayoutTraits Inline\], src = blob:/.test(
+            m.text()
+          )
+        )
+          browserControlWarnings.push(m.text());
+        else errors.push(`${engine.name()}: ${m.text()}`);
       });
       await p.goto(`${base}/chapter/2/the-retina`);
       await p.locator(".fb-slot--column").first().waitFor();
@@ -202,6 +214,7 @@ console.log(
     cases: results.length,
     duplicateCases: duplicates.length,
     errors: errors.length,
+    browserControlWarnings: browserControlWarnings.length,
   })
 );
 if (!process.argv.includes("--allow-duplicates"))
