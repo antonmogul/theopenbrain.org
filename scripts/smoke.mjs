@@ -978,10 +978,10 @@ async function main() {
                 );
             }
           }
-          // The pictures on a track (OPENBRAIN-194): just the images. No
-          // Legend control, no gallery for a set of two or three, every
-          // image inside the track's height; and on a phone no part ends
-          // on a page of one stray line.
+          // The pictures on a track: one bottom row per plate, with the
+          // expand and folded legend/credit controls (OPENBRAIN-88). No
+          // gallery for a set of two or three; images stay inside the
+          // track, and phone text never ends on a page of one stray line.
           problems.push(
             ...(await page.evaluate(() => {
               const out = [];
@@ -991,9 +991,38 @@ async function main() {
                 const slug = track.closest("[data-section-slug]")?.dataset
                   .sectionSlug;
                 const box = track.getBoundingClientRect();
-                for (const btn of track.querySelectorAll(".fig-legend-btn"))
-                  if (btn.getClientRects().length)
-                    out.push(`${slug} shows a Legend control on its track`);
+                for (const btn of track.querySelectorAll(".fig-legend-btn")) {
+                  if (!btn.getClientRects().length) continue;
+                  const bar = btn.closest(".fig-toolbar");
+                  const art = btn
+                    .closest(".fig-shell")
+                    ?.querySelector(".fig-area");
+                  if (
+                    !bar ||
+                    !art ||
+                    bar.getBoundingClientRect().top <
+                      art.getBoundingClientRect().bottom - 1
+                  )
+                    out.push(
+                      `${slug} has a gallery legend outside its bottom row`
+                    );
+                }
+                for (const plate of track.querySelectorAll(
+                  "[data-rail-plate]"
+                )) {
+                  if (!plate.getClientRects().length) continue;
+                  const bar = plate.querySelector("[data-rail-figure-bar]");
+                  const art = plate.querySelector(".rf-frame");
+                  if (
+                    !bar?.querySelector(".rf-expand") ||
+                    !art ||
+                    bar.getBoundingClientRect().top <
+                      art.getBoundingClientRect().bottom - 1
+                  )
+                    out.push(
+                      `${slug} has a plate without its bottom control row`
+                    );
+                }
                 for (const gallery of track.querySelectorAll(
                   ".figimg--gallery"
                 )) {
