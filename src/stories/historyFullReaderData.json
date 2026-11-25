@@ -6006,16 +6006,16 @@
       "title": "Penfield's case binder",
       "ramp": "fund",
       "status": "published",
-      "bytes": 1318730,
-      "sha256": "5abecec1feb8af697773adeda17d968405e8b09650d8fde245c55b48265bddc4"
+      "bytes": 1319024,
+      "sha256": "6dfba3b76a2107ab7e2194c3d112899f455210041a1a2f84cbe1884db0d661e2"
     },
     {
       "slug": "loewi-vagusstoff",
       "title": "Loewi's Vagusstoff, 1921",
       "ramp": "fund",
       "status": "published",
-      "bytes": 3070067,
-      "sha256": "4b0c1b497fafd5b63ebcb98045a24dae99365988e9e773316810c5a62d333e1c"
+      "bytes": 3073203,
+      "sha256": "fcabcacd93155d07f5b624ff091f1b87e839776a623a6f447af56e707948d638"
     }
   ]
 }
