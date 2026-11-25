@@ -328,5 +328,104 @@ describe("reader menu outline", () => {
     state.route.name = "chapters";
     await open();
     expect(document.querySelector(".chapter-outline")).toBeNull();
+    expect(document.querySelector(".outline-toggle")).toBeNull();
+  });
+
+  // Stuart, 24 Nov: the drawer opens on this chapter's sections, which
+  // fills it; a chevron on the chapter's row folds them away so the other
+  // chapters are in view (OPENBRAIN-81).
+  describe("folding the current chapter's sections", () => {
+    const toggle = () => document.querySelector(".outline-toggle");
+    const outline = () => document.querySelector(".chapter-outline");
+    const shown = (el) => el.style.display !== "none";
+
+    it("has one chevron, on the current chapter's row, open and wired to the outline", async () => {
+      await open();
+      const toggles = document.querySelectorAll(".outline-toggle");
+      expect(toggles).toHaveLength(1);
+      const button = toggles[0];
+      expect(button.tagName).toBe("BUTTON");
+      expect(button.getAttribute("type")).toBe("button");
+      expect(button.getAttribute("aria-expanded")).toBe("true");
+      expect(button.getAttribute("aria-label")).toBe("History sections");
+      expect(button.getAttribute("aria-controls")).toBe(outline().id);
+      expect(outline().id).toBeTruthy();
+      // Beside the row it folds, never inside it: a button in a button is
+      // not reachable.
+      const head = button.closest(".chapter-head");
+      expect(head.querySelector('.chapter-row[aria-current="page"]')).not.toBe(
+        null
+      );
+      expect(button.closest(".chapter-row")).toBeNull();
+      // The other chapters are plain rows.
+      const rows = document.querySelectorAll(".chapter-row");
+      expect(rows[1].parentElement.querySelector(".outline-toggle")).toBeNull();
+    });
+
+    it("folds to the chapter list and opens again, keeping focus on the chevron", async () => {
+      await open();
+      const button = toggle();
+      button.focus();
+      button.click();
+      await flushPromises();
+      expect(button.getAttribute("aria-expanded")).toBe("false");
+      expect(shown(outline())).toBe(false);
+      expect(button.getAttribute("title")).toBe("Show sections");
+      // The same element, still focused, and the drawer still open.
+      expect(toggle()).toBe(button);
+      expect(document.activeElement).toBe(button);
+      expect(state.store.activeMenu).toBe(true);
+      expect(state.push).not.toHaveBeenCalled();
+      // Every chapter is still listed, the current one still marked.
+      expect(document.querySelectorAll(".chapter-row")).toHaveLength(2);
+      expect(
+        document.querySelector('.chapter-row[aria-current="page"]')
+      ).not.toBeNull();
+
+      button.click();
+      await flushPromises();
+      expect(button.getAttribute("aria-expanded")).toBe("true");
+      expect(shown(outline())).toBe(true);
+      expect(button.getAttribute("title")).toBe("Hide sections");
+    });
+
+    it("opens expanded every time the drawer opens", async () => {
+      await open();
+      toggle().click();
+      await flushPromises();
+      expect(shown(outline())).toBe(false);
+
+      state.store.activeMenu = false;
+      await flushPromises();
+      await open();
+      expect(toggle().getAttribute("aria-expanded")).toBe("true");
+      expect(shown(outline())).toBe(true);
+    });
+
+    it("the chapter's row still goes to its contents when folded", async () => {
+      const target = document.createElement("div");
+      target.id = "chapter-toc";
+      document.body.appendChild(target);
+      const originalScrollTo = window.scrollTo;
+      window.scrollTo = vi.fn();
+      try {
+        await open();
+        toggle().click();
+        await flushPromises();
+        document.querySelector('.chapter-row[aria-current="page"]').click();
+        await flushPromises();
+        expect(state.store.activeMenu).toBe(false);
+        expect(state.push).not.toHaveBeenCalled();
+      } finally {
+        window.scrollTo = originalScrollTo;
+      }
+    });
+
+    it("has no chevron until the chapter's sections have loaded", async () => {
+      state.text.text = { sections: [] };
+      await open();
+      expect(toggle()).toBeNull();
+      expect(outline()).toBeNull();
+    });
   });
 });
