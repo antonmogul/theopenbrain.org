@@ -74,4 +74,42 @@ describe("FigureImages: a figure's own loop", () => {
     mountOne({ fit: false });
     expect(wrapper.find(".figimg--flow video.figimg-loop").exists()).toBe(true);
   });
+
+  /* OPENBRAIN-84: the film (or its still) covers the pane, cropped around
+     its focal point. */
+  it("fills its container around the focal point when asked", () => {
+    mountOne({ fill: "50% 15%" });
+    const figure = wrapper.get(".figimg");
+    expect(figure.classes()).toContain("figimg--fill");
+    expect(figure.element.style.getPropertyValue("--figimg-focus")).toBe(
+      "50% 15%"
+    );
+    expect(wrapper.find(".figimg--fill video.figimg-loop").exists()).toBe(true);
+  });
+
+  it("fills with the still under reduced motion", () => {
+    document.documentElement.setAttribute("data-reduce-motion", "1");
+    mountOne({ fill: "50% 15%" });
+    expect(wrapper.find(".figimg--fill img.figimg-img").exists()).toBe(true);
+  });
+
+  it("shows the whole film by default, in the text column and in the dialog", () => {
+    for (const props of [
+      {},
+      { fill: "50% 15%", fit: false },
+      { fill: "50% 15%", large: true },
+    ]) {
+      mountOne(props);
+      const figure = wrapper.get(".figimg");
+      expect(figure.classes()).not.toContain("figimg--fill");
+      expect(figure.element.style.getPropertyValue("--figimg-focus")).toBe("");
+      wrapper.unmount();
+    }
+    wrapper = null;
+  });
+
+  it("never crops a gallery", () => {
+    mountOne({ images: [PLATO, { src: "/b.jpg" }], fill: "50% 15%" });
+    expect(wrapper.find(".figimg--fill").exists()).toBe(false);
+  });
 });
