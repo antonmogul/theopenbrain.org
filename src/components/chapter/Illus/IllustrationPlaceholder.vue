@@ -868,10 +868,11 @@ function closeFullscreen() {
 :is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--art {
   padding: 1rem 1.5rem 0;
 }
-/* A figure that fills the pane starts right under the top bar (Maura,
-   25 Nov, OPENBRAIN-84). */
+/* A figure that fills the pane starts right under the top bar and runs to
+   the pane's sides (Maura, 25 Nov, OPENBRAIN-84): it opts out of the side
+   margins pictures keep (OPENBRAIN-83). */
 :is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--fill {
-  padding-top: 0;
+  padding: 0;
 }
 /* Label and title become grid items of the toolbar, so the icon can lead
    the row and the legend can sit under the title. */
