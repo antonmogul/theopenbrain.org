@@ -861,14 +861,19 @@ function closeFullscreen() {
   align-items: start;
   padding: 1.875rem 0.875rem;
 }
-/* The artwork keeps a little air under the top bar (Anton, 11 Nov). */
+/* The artwork keeps a little air under the top bar (Anton, 11 Nov), and
+   stands clear of the pane's sides (Maura, 25 Nov, OPENBRAIN-83: a wide
+   picture, the Edwin Smith papyrus, ran from edge to edge). 1.5rem is the
+   papyrus card's own margin, so the picture and the card that follows it
+   in the pane share their edges. */
 :is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--art {
-  padding-top: 1rem;
+  padding: 1rem 1.5rem 0;
 }
-/* A figure that fills the pane starts right under the top bar (Maura,
-   25 Nov, OPENBRAIN-84). */
+/* A figure that fills the pane starts right under the top bar and runs to
+   the pane's sides (Maura, 25 Nov, OPENBRAIN-84): it opts out of the side
+   margins pictures keep (OPENBRAIN-83). */
 :is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--fill {
-  padding-top: 0;
+  padding: 0;
 }
 /* Label and title become grid items of the toolbar, so the icon can lead
    the row and the legend can sit under the title. */

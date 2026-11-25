@@ -11,9 +11,10 @@
  * (content.explore.image) leads too, unless a figure already shows that
  * file (the rete mirabile's card image is Figure C's).
  *
- * A picture here is just the picture (Stuart, 14 Nov; OPENBRAIN-194): its
- * label and title, the image as large as the track allows, and a button
- * that opens it full screen, where its legend is. No legend and no Legend
+ * A picture here is just the picture (Stuart, 14 Nov; OPENBRAIN-194): the
+ * image as large as the track allows, its label and title under it
+ * (OPENBRAIN-83), and a button that opens it full screen, where its legend
+ * is. No legend and no Legend
  * control on the track; a figure of two or three images shows them all,
  * with no thumbnails, play/pause or view-all (RailFigure, for the figures
  * helper/railFigure.js can draw as plates). Anything else, a video or a
@@ -304,8 +305,11 @@ const label = computed(() =>
   min-width: 0;
   margin-inline: 0;
 }
+/* The figure's name goes under its picture, as in the figure pane and as
+   RailFigure has it (OPENBRAIN-83). */
 .rp-figure :deep(.fig-shell--inline .fig-toolbar) {
-  padding-inline: 0;
+  order: 1;
+  padding: 0.75rem 0 0;
 }
 /* No Legend control on the track: the legend is in the full-screen view
    (Stuart, 14 Nov). It stays in the document, folded as the shell folds

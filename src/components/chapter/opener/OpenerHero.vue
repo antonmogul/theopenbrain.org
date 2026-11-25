@@ -64,8 +64,15 @@ const showReactive = computed(
 const ownGround = computed(
   () => showReactive.value && props.reactive.kind === "head"
 );
+// Two layers of the one picture (the styles below say why): the first is the
+// cover as it has always been laid out, the second fills the blur's bleed.
+// A head has no picture here, so its own paper fills the bleed.
 const coverStyle = computed(() => ({
-  backgroundImage: ownGround.value ? "none" : `url(${props.cover})`,
+  backgroundImage: ownGround.value
+    ? "none"
+    : `url(${props.cover}), url(${props.cover})`,
+  backgroundColor:
+    ownGround.value && props.reactive.paper ? props.reactive.paper : undefined,
   filter: reducedMotion.value
     ? "none"
     : `blur(${(scrollProgress.value * 8).toFixed(2)}px)`,
@@ -102,17 +109,21 @@ function scrollDown() {
       :aria-label="title ? `Cover image for ${title}` : 'Chapter cover image'"
       :style="coverStyle"
     >
-      <!-- Inside the cover so the scroll blur and the scrim cover it too. -->
-      <HeadCover
-        v-if="ownGround"
-        :spec="reactive"
-        @state="reactiveState = $event"
-      />
-      <ReactiveCover
-        v-else-if="showReactive"
-        :spec="reactive"
-        @state="reactiveState = $event"
-      />
+      <!-- Inside the cover so the scroll blur and the scrim cover it too;
+           in the stage, which is the hero's own box, so the cover's bleed
+           moves nothing they draw. -->
+      <div class="opener-hero__stage">
+        <HeadCover
+          v-if="ownGround"
+          :spec="reactive"
+          @state="reactiveState = $event"
+        />
+        <ReactiveCover
+          v-else-if="showReactive"
+          :spec="reactive"
+          @state="reactiveState = $event"
+        />
+      </div>
     </div>
     <div class="opener-hero__scrim" :style="{ opacity: scrimOpacity }" />
 
@@ -155,13 +166,29 @@ function scrollDown() {
   overflow: hidden;
   background: rgb(var(--color-dark-surface));
 }
+/* The cover runs past the hero on every side (OPENBRAIN-83). A blurred
+   box fades out at its edges, and as the cover blurred on scroll its last
+   pixels faded into the dark ground behind it: a shadow along the cover's
+   foot, where the contents begin (Maura, 25 Nov). The fade now happens in
+   the bleed, which the hero clips. The bleed is three times the widest
+   blur (8px), about as far as a blur reaches.
+   The picture is painted twice so that nothing moves: once in the hero's
+   own box (the content box, the layout it always had), and once over the
+   whole of the larger box, under it, to give the bleed something to blur. */
 .opener-hero__cover {
+  --hero-bleed: 24px;
   position: absolute;
-  inset: 0;
+  inset: calc(-1 * var(--hero-bleed));
+  padding: var(--hero-bleed);
   background-repeat: no-repeat;
   background-position: center 20%;
   background-size: cover;
+  background-origin: content-box, border-box;
   will-change: filter;
+}
+.opener-hero__stage {
+  position: absolute;
+  inset: var(--hero-bleed);
 }
 .opener-hero__scrim {
   position: absolute;

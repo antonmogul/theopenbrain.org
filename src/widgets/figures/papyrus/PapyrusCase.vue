@@ -465,9 +465,12 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* The figure pane's own dark ground (the History redesign); the card's
-   front is the Figma's plate, its back the chapter's colour mixed into the
-   dark. Small type in the chapter's colour takes the ramp's soft tone: the
-   main step is 3.6:1 on this ground, the soft one 7.6:1. */
+   front is the Figma's plate, its back the chapter's colour itself, solid
+   (Maura, 25 Nov, OPENBRAIN-83), with the ink that ramp is read in: the
+   pair brand.css keeps at AA for body text (--color-chapter-ground and
+   --color-chapter-on; in History white on #8D4CF6, 4.67:1). Small type in
+   the chapter's colour on the dark takes the ramp's soft tone: the main
+   step is 3.6:1 on this ground, the soft one 7.6:1. */
 .pc {
   --pc-bg: rgb(var(--color-dark-surface, 28 28 28));
   --pc-plate: #272727;
@@ -476,7 +479,8 @@ onBeforeUnmount(() => {
   --pc-ink-tab: #fbf8ff;
   --pc-accent: var(--widget-accent, rgb(var(--color-chapter)));
   --pc-accent-soft: var(--widget-accent-soft, rgb(var(--color-chapter-soft)));
-  --pc-back: #382a4f;
+  --pc-back: rgb(var(--color-chapter-ground, 141 76 246));
+  --pc-back-ink: rgb(var(--color-chapter-on, 255 255 255));
   --pc-sans: var(--font-ui, "IBM Plex Sans", system-ui, sans-serif);
   --pc-mono: var(--font-mono, "IBM Plex Mono", ui-monospace, monospace);
   --pc-ease: cubic-bezier(0.3, 0.85, 0.25, 1);
@@ -492,11 +496,6 @@ onBeforeUnmount(() => {
   background: var(--pc-bg);
   color: var(--pc-ink);
   font-family: var(--pc-mono);
-}
-@supports (color: color-mix(in srgb, red, blue)) {
-  .pc {
-    --pc-back: color-mix(in srgb, var(--pc-accent) 22%, #202020);
-  }
 }
 .pc p {
   margin: 0;
@@ -674,6 +673,11 @@ onBeforeUnmount(() => {
 }
 .pc-face--back {
   background: var(--pc-back);
+  color: var(--pc-back-ink);
+}
+/* On the chapter's colour its soft tone is too close to read. */
+.pc-face--back .pc-label {
+  color: inherit;
 }
 .is-3d .pc-face {
   -webkit-backface-visibility: hidden;
@@ -795,7 +799,7 @@ onBeforeUnmount(() => {
 .pc .pc-translation {
   max-width: 62ch;
   margin: auto 0;
-  color: var(--pc-ink);
+  color: var(--pc-back-ink);
   font-size: clamp(0.875rem, 1.95cqw, 1.0625rem);
   line-height: 1.45;
   letter-spacing: 0.007em;

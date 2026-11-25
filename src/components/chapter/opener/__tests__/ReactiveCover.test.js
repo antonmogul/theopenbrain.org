@@ -216,6 +216,16 @@ describe("OpenerHero with a reactive cover", () => {
     w.unmount();
   });
 
+  // OPENBRAIN-83: the picture is painted twice, once in the hero's own box
+  // and once under it across the bleed the scroll blur fades into.
+  it("paints the cover in its own box and again across the blur's bleed", () => {
+    const w = mount(OpenerHero, { props: { cover: "/x.jpg" } });
+    const style = w.get(".opener-hero__cover").attributes("style");
+    expect(style.match(/\/x\.jpg/g)).toHaveLength(2);
+    expect(style).not.toContain("background-color");
+    w.unmount();
+  });
+
   it("has no data-reactive-cover without a record", () => {
     const w = mount(OpenerHero, { props: { cover: "/x.jpg" } });
     expect(w.get(".opener-hero").attributes("data-reactive-cover")).toBe(

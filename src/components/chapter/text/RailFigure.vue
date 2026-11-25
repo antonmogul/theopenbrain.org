@@ -8,8 +8,8 @@
  * images bigger", and of a figure with two photographs, "you see the
  * images, plus their thumbnails, plus the pause/array buttons, then the
  * figure legends. This is too much for just 2 photos." So a figure of one
- * to three stills is its label and title (when it has them), then its
- * images as plates, and nothing else: no legend, no thumbnails, no
+ * to three stills is its images as plates, then its label and title (when
+ * it has them) under them, and nothing else: no legend, no thumbnails, no
  * play/pause, no view-all. Every image has a button that opens it full
  * screen, and the legend is there (the book's ordinary viewer, in the
  * dialog). The legends stay in the document for screen readers.
@@ -22,11 +22,14 @@
  *   --rp-figure-w, --rp-plates-h); until it has, the images fit the column
  *   the CSS gives them.
  * - "swipe" (a phone): every plate is a page as wide as the track, its
- *   image as large as the page allows, the label kept in view above them.
+ *   image as large as the page allows, the label kept in view under them.
  *
- * A single image under a label has its expand button on the label's row,
- * where every figure in the book has it; otherwise (an unlabelled picture,
- * or one of several) the button sits on the image's corner.
+ * The label's row is under the picture, where the figure pane has it
+ * (Maura, 25 Nov, OPENBRAIN-83: "could we always place them at the bottom,
+ * like we do on the regular half-and-half screen?"). A single image with a
+ * label has its expand button on that row, where every figure in the book
+ * has it; otherwise (an unlabelled picture, or one of several) the button
+ * sits on the image's corner.
  */
 import { computed, inject, ref, unref } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
@@ -82,6 +85,17 @@ function onLoad(i, event) {
 }
 const plateStyle = (i) =>
   ratios.value[i] ? { "--rf-ratio": String(ratios.value[i]) } : undefined;
+/* The tallest image's ratio, once every image has loaded: on the phone's
+   pages the row of plates is then as tall as that image and no taller, so
+   the label sits under the picture and not at the page's foot. */
+const tallest = computed(() => {
+  const all = props.images.map((_, i) => ratios.value[i] || 0);
+  return all.length && all.every((r) => r > 0) ? Math.min(...all) : 0;
+});
+const figureStyle = computed(() => ({
+  "--rf-count": props.images.length,
+  ...(tallest.value ? { "--rf-ratio-min": String(tallest.value) } : {}),
+}));
 
 /* Full screen: the book's viewer, on the image that was opened, on the
    ground the chapter's figure pane has (as the figure shell's dialog). */
@@ -107,39 +121,16 @@ function open(i) {
     class="rf"
     :class="[
       `rf--${mode}`,
-      { 'rf--set': images.length > 1, 'rf--bare': !hasBar },
+      {
+        'rf--set': images.length > 1,
+        'rf--bare': !hasBar,
+        'rf--sized': tallest > 0,
+      },
     ]"
-    :style="{ '--rf-count': images.length }"
+    :style="figureStyle"
     :data-rail-plates="images.length"
     :aria-label="figureName"
   >
-    <header v-if="hasBar" class="rf-bar" data-rail-figure-bar>
-      <p class="rf-heading">
-        <span v-if="label" class="rf-label">{{ label }}</span>
-        <span v-if="title" class="rf-name">{{ title }}</span>
-      </p>
-      <button
-        v-if="barExpand"
-        class="rf-expand"
-        type="button"
-        title="Expand to full screen"
-        :aria-label="expandLabel(0)"
-        @click="open(0)"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-          aria-hidden="true"
-        >
-          <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
-        </svg>
-      </button>
-    </header>
     <div class="rf-plates">
       <div
         v-for="(image, i) in images"
@@ -193,6 +184,35 @@ function open(i) {
         </div>
       </div>
     </div>
+    <!-- The figure's name, under its picture as in the figure pane
+         (OPENBRAIN-83). -->
+    <footer v-if="hasBar" class="rf-bar" data-rail-figure-bar>
+      <p class="rf-heading">
+        <span v-if="label" class="rf-label">{{ label }}</span>
+        <span v-if="title" class="rf-name">{{ title }}</span>
+      </p>
+      <button
+        v-if="barExpand"
+        class="rf-expand"
+        type="button"
+        title="Expand to full screen"
+        :aria-label="expandLabel(0)"
+        @click="open(0)"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
+        </svg>
+      </button>
+    </footer>
     <!-- The legend is read with the figure; sighted readers find it in the
          full-screen view. -->
     <figcaption v-if="legends.length" class="sr-only">
@@ -242,7 +262,7 @@ function open(i) {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-bottom: 0.75rem;
+  padding-top: 0.75rem;
 }
 .rf-heading {
   display: flex;
@@ -327,7 +347,7 @@ function open(i) {
   color: rgb(var(--color-warn));
 }
 
-/* The plates: a row as tall as the figure has left under its label, a size
+/* The plates: a row as tall as the figure has left over its label, a size
    container, so each image's frame can be exactly the image (as wide as its
    plate, or as wide as the row's height allows, whichever is less) and the
    corner button sits on the picture, not on a letterbox. */
@@ -371,8 +391,14 @@ function open(i) {
 /* ── On the phone's swipe track: a page for every plate ─────────────────── */
 .rf.rf--swipe {
   --rf-gutter: var(--reader-gutter-l, 1.25rem);
-  justify-content: flex-start;
   width: calc(var(--rf-count, 1) * 100cqw);
+}
+/* Once the images' sizes are known the row is as tall as the tallest of
+   them at the page's width, or as tall as the page has if that is less:
+   the label is then right under the picture, and the two are centred on
+   the page together (OPENBRAIN-83). Until then the row takes the page. */
+.rf--swipe.rf--sized .rf-plates {
+  flex: 0 1 calc((100cqw - 2 * var(--rf-gutter)) / var(--rf-ratio-min));
 }
 /* The label stays in view while the plates of a set go by. */
 .rf--swipe .rf-bar {
