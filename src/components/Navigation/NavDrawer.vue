@@ -9,6 +9,11 @@
  * the reader's account at the foot, or Sign in. Its close button is a ✕
  * exactly over the mark that opened it. The page dims behind it.
  *
+ * The chapter being read has a chevron beside its row that folds its
+ * sections away, leaving the list of chapters (OPENBRAIN-81). The drawer
+ * always opens with them showing, and the row stays at the top of the list
+ * while its sections scroll under it, so the chevron is always in reach.
+ *
  * "See full table of contents" shows the chapter library (ChaptersLibrary,
  * what /chapters shows) in the space to the drawer's right, inside the
  * same overlay; below LIBRARY_MIN_W there is no such space and the link
@@ -114,6 +119,15 @@ const isReading = (section) =>
   !!store.currentSubChapter &&
   store.currentSubChapter === toSlug(section.title || "");
 
+// The current chapter's sections fold away behind its chevron, so the
+// reader can look across the chapters (OPENBRAIN-81). Open again every time
+// the drawer opens, and for a new chapter.
+const OUTLINE_ID = "drawer-chapter-outline";
+const outlineOpen = ref(true);
+watch(currentSlug, () => {
+  outlineOpen.value = true;
+});
+
 const overlayRef = ref(null);
 const closeButtonRef = ref(null);
 const contentsLinkRef = ref(null);
@@ -182,6 +196,7 @@ watch(
     if (unmounted) return;
     const epoch = ++focusEpoch;
     if (open) {
+      outlineOpen.value = true;
       opener = document.activeElement;
       restoreOnClose = true;
       releaseScroll ||= lockReaderScroll();
@@ -345,21 +360,53 @@ onBeforeUnmount(() => {
               :class="{
                 'is-current': ch.slug === currentSlug,
                 'is-draft': ch.isDraft,
+                'is-folded': ch.slug === currentSlug && !outlineOpen,
               }"
             >
-              <button
-                class="chapter-row"
-                type="button"
-                :aria-current="ch.slug === currentSlug ? 'page' : undefined"
-                @click="goChapter(ch)"
-              >
-                <span class="ch-num">{{ ch.order_index }}</span
-                >{{ " " }}
-                <span class="ch-title">{{ ch.title }}</span>
-                <span v-if="ch.isDraft" class="ch-draft">Draft</span>
-              </button>
+              <div class="chapter-head">
+                <button
+                  class="chapter-row"
+                  type="button"
+                  :aria-current="ch.slug === currentSlug ? 'page' : undefined"
+                  @click="goChapter(ch)"
+                >
+                  <span class="ch-num">{{ ch.order_index }}</span
+                  >{{ " " }}
+                  <span class="ch-title">{{ ch.title }}</span>
+                  <span v-if="ch.isDraft" class="ch-draft">Draft</span>
+                </button>
+                <!-- The chapter being read: its sections fold away. The
+                     name stays the same and aria-expanded says the state. -->
+                <button
+                  v-if="ch.slug === currentSlug && outline.length"
+                  type="button"
+                  class="outline-toggle"
+                  data-testid="drawer-outline-toggle"
+                  :aria-expanded="outlineOpen"
+                  :aria-controls="OUTLINE_ID"
+                  :aria-label="`${ch.title} sections`"
+                  :title="outlineOpen ? 'Hide sections' : 'Show sections'"
+                  @click="outlineOpen = !outlineOpen"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+              </div>
               <nav
                 v-if="ch.slug === currentSlug && outline.length"
+                v-show="outlineOpen"
+                :id="OUTLINE_ID"
                 class="chapter-outline"
                 :aria-label="`${ch.title} contents`"
               >
@@ -582,17 +629,77 @@ onBeforeUnmount(() => {
 }
 
 /* The chapters. */
+/* The 8px above and below the list are margins on its first and last
+   chapter, not padding on the scroller: a scroller's padding insets what
+   sticks in it, and the current chapter's row must stick flush with the
+   list's top edge. */
 .chapter-list {
   flex: 1;
   min-height: 0;
-  padding: 8px 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+.chapter:first-child {
+  margin-top: 8px;
+}
+.chapter:last-child {
+  margin-bottom: 8px;
 }
 .chapter.is-current {
   margin-bottom: 8px;
   padding-bottom: 8px;
   background: rgb(var(--color-dark-surface-2));
+}
+/* Folded, the chapter being read is one marked row among the others. */
+.chapter.is-current.is-folded {
+  padding-bottom: 0;
+}
+/* The row and, on the chapter being read, the chevron that folds its
+   sections away. That row stays at the top of the list while its sections
+   scroll under it, so the chevron is in reach from anywhere in a long
+   chapter. */
+.chapter-head {
+  display: flex;
+  align-items: stretch;
+}
+.chapter.is-current .chapter-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgb(var(--color-dark-surface-2));
+}
+/* A hairline under it, where the sections pass beneath. */
+.chapter.is-current:not(.is-folded) .chapter-head {
+  box-shadow: 0 1px 0 rgb(var(--d-ink) / 0.1);
+}
+.chapter-head .chapter-row {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+/* Under the home icon: 44px, 10px in from the drawer's edge. */
+.outline-toggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  min-height: 44px;
+  margin-right: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: rgb(var(--d-ink) / 0.8);
+  cursor: pointer;
+}
+.outline-toggle svg {
+  transition: transform 0.16s ease;
+}
+.outline-toggle[aria-expanded="false"] svg {
+  transform: rotate(-90deg);
+}
+.chapter-head .chapter-row:not(:last-child) {
+  padding-right: 0.5rem;
 }
 .chapter-row {
   display: grid;
@@ -673,8 +780,12 @@ onBeforeUnmount(() => {
 @media (hover: hover) {
   .close-btn:hover,
   .home-link:hover,
+  .outline-toggle:hover,
   .library-close:hover {
     background: rgb(255 255 255 / 0.1);
+  }
+  .outline-toggle:hover {
+    color: rgb(var(--d-ink));
   }
   .contents-link:hover,
   .chapter-row:hover .ch-title,
@@ -857,6 +968,7 @@ onBeforeUnmount(() => {
 .contents-link:focus-visible,
 .home-link:focus-visible,
 .chapter-row:focus-visible,
+.outline-toggle:focus-visible,
 .outline-section:focus-visible,
 .outline-subsection:focus-visible,
 .user-links a:focus-visible,
@@ -896,7 +1008,8 @@ onBeforeUnmount(() => {
   :root:not([data-reduce-motion="0"]) .drawer-enter-active,
   :root:not([data-reduce-motion="0"]) .drawer-leave-active,
   :root:not([data-reduce-motion="0"]) .drawer-enter-active .drawer,
-  :root:not([data-reduce-motion="0"]) .drawer-leave-active .drawer {
+  :root:not([data-reduce-motion="0"]) .drawer-leave-active .drawer,
+  :root:not([data-reduce-motion="0"]) .outline-toggle svg {
     transition: none;
   }
 }

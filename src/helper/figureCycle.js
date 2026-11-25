@@ -92,6 +92,38 @@ export function figureLoop(value) {
   return out;
 }
 
+/**
+ * A focal point, "50% 30%" (across, down): the part of a picture that stays
+ * in view when it is cropped to fill a box. Two percentages from 0 to 100;
+ * anything else is the centre.
+ */
+export function figureFocus(value) {
+  const match =
+    typeof value === "string" &&
+    value.trim().match(/^(\d{1,3}(?:\.\d+)?)%\s+(\d{1,3}(?:\.\d+)?)%$/);
+  if (!match) return "50% 50%";
+  const [x, y] = [Number(match[1]), Number(match[2])];
+  return x <= 100 && y <= 100 ? `${x}% ${y}%` : "50% 50%";
+}
+
+/**
+ * A figure can fill its pane (OPENBRAIN-84; Maura, 25 Nov: Plato and
+ * Aristotle): `config.fill: true` on its row, with `config.focus` as the
+ * focal point. The picture or film then covers the whole pane above the
+ * toolbar row, edge to edge from under the top bar, cropped around that
+ * point. Returns the focal point, or "" for a figure that keeps its whole
+ * picture: every figure without the flag, a gallery (its stage has arrows
+ * and thumbnails to keep clear of) and a YouTube item (a player is not
+ * cropped). Only the pane uses it: the text column and the fullscreen
+ * dialog always show the whole picture.
+ */
+export function figureFill(animation) {
+  if (animation?.fill !== true) return "";
+  const images = figureImages(animation);
+  if (images.length !== 1 || images[0].youtube) return "";
+  return figureFocus(animation.focus);
+}
+
 /** A YouTube video id (11 characters), or "" for anything else. */
 export function youtubeId(value) {
   return typeof value === "string" && /^[\w-]{11}$/.test(value) ? value : "";

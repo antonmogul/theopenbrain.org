@@ -23,6 +23,10 @@
 //   tintFade: true           — in the pane, its photographs open washed in
 //                              the chapter colour and clear with the scroll
 //                              (OPENBRAIN-80, helper/figureTint.js)
+//   fill: true, focus: "50% 15%" — in the pane, a single picture or film
+//                              covers the whole pane above the toolbar row,
+//                              cropped around the focal point (OPENBRAIN-84,
+//                              figureFill in helper/figureCycle.js)
 //
 // The legend is folded behind a "Legend" control wherever the figure is
 // shown, so the artwork gets the room and legends of different lengths never
@@ -41,7 +45,11 @@ import { ref, computed, inject, nextTick, useId } from "vue";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FigureImages from "@/components/chapter/Illus/FigureImages.vue";
-import { figureImages, galleryStartView } from "@/helper/figureCycle";
+import {
+  figureFill,
+  figureImages,
+  galleryStartView,
+} from "@/helper/figureCycle";
 import { useFigureLegend } from "@/composables/useFigureLegend";
 import { railFigureLabel } from "@/helper/railFigure";
 import { wantsTintFade } from "@/helper/figureTint";
@@ -90,6 +98,9 @@ const images = computed(() => figureImages(props.animation));
 const caption = computed(
   () => props.animation.caption || props.animation.description || ""
 );
+// A figure that fills the pane (config.fill): its focal point, or "". Never
+// in the text column, and the fullscreen dialog is not told about it.
+const fill = computed(() => (props.inline ? "" : figureFill(props.animation)));
 // The gallery's current image and view (all the images, or one), shared by
 // the pane and the fullscreen dialog so expanding opens on the same plate
 // in the same view (OPENBRAIN-144, OPENBRAIN-177).
@@ -291,7 +302,10 @@ function closeFullscreen() {
       </header>
 
       <!-- Diagram area: the artwork, or a placeholder until it lands -->
-      <div class="fig-area" :class="{ 'fig-area--art': images.length }">
+      <div
+        class="fig-area"
+        :class="{ 'fig-area--art': images.length, 'fig-area--fill': fill }"
+      >
         <FigureImages
           v-if="images.length"
           :images="images"
@@ -304,6 +318,7 @@ function closeFullscreen() {
           :fit="!inline"
           :suspended="isFullscreen"
           :wash="!inline && wantsTintFade(animation)"
+          :fill="fill"
           legend-above
         />
         <div v-else class="fig-placeholder">
@@ -852,6 +867,11 @@ function closeFullscreen() {
    in the pane share their edges. */
 :is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--art {
   padding: 1rem 1.5rem 0;
+}
+/* A figure that fills the pane starts right under the top bar (Maura,
+   25 Nov, OPENBRAIN-84). */
+:is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--fill {
+  padding-top: 0;
 }
 /* Label and title become grid items of the toolbar, so the icon can lead
    the row and the legend can sit under the title. */
