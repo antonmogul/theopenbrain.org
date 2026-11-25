@@ -88,9 +88,9 @@ describe("the divider, its dot and the figure marks share one x (1 Oct, item 3; 
       /left:\s*calc\(var\(--app-w, 100vw\) - var\(--reader-prose-w\)\);/
     );
     expect(layer).toMatch(/width:\s*0/);
-    // The pulse is fixed at the reading point, on the same x.
-    expect(rule(rail, ".rr-point")).toMatch(divider);
-    expect(rule(rail, ".rr-point")).toMatch(/top:\s*50vh/);
+    // Nothing of the rail's is fixed at the reading point since the ring
+    // and beam went (OPENBRAIN-91): the marks ride the page.
+    expect(rail).not.toMatch(/\.rr-(?:point|ring|beam)\b/);
     // It mounts before the reading point, which its state restyles.
     expect(textComp).toMatch(
       /<ReadingRail \/>\s*<div class="reading-line" aria-hidden="true" \/>/
@@ -116,6 +116,27 @@ describe("the divider, its dot and the figure marks share one x (1 Oct, item 3; 
     expect(
       rule(indexCss, ".reading-rail[data-showing] ~ .reading-line")
     ).toMatch(/background:\s*rgb\(var\(--color-chapter\)\)/);
+  });
+
+  it("the mark of the figure that came on swells, about 200ms, and not under reduced motion (OPENBRAIN-91)", () => {
+    expect(rule(rail, ".rr-mark[data-showing] .rr-pill")).toMatch(
+      /scale:\s*1\.2;/
+    );
+    // `scale`, so the translate that centres the disc on the line stands.
+    expect(rule(rail, ".rr-pill")).toMatch(
+      /transform:\s*translate\(-50%, -50%\)/
+    );
+    expect(rule(rail, ".rr-pill")).toMatch(
+      /scale 0\.2s cubic-bezier\(0\.34, 1\.5, 0\.64, 1\)/
+    );
+    // Both ways of asking for less motion: the device's (unless the reader
+    // chose animations on) and the reader's own switch.
+    expect(rail).toMatch(
+      /:root:not\(\[data-reduce-motion="0"\]\) \.rr-mark\[data-showing\] \.rr-pill \{\s*scale:\s*1;/
+    );
+    expect(rail).toMatch(
+      /:root\[data-reduce-motion="1"\] \.rr-mark\[data-showing\] \.rr-pill \{\s*scale:\s*1;/
+    );
   });
 
   it("a mark's button is the gutter beside its pill, so a press on the pane's edge stays the pane's", () => {
@@ -151,10 +172,14 @@ describe("reference links are one colour, visited or not (1 Oct, item 4)", () =>
     ["ReferenceList text links", refList, ".ref-list__text :deep(a:visited)"],
     ["ReferenceList source link", refList, ".ref-list__source:visited"],
     ["FurtherReading links", further, "a:visited"],
-  ])("%s take the accent in the visited state too", (_, css, selector) => {
+  ])("%s take the link colour in the visited state too", (_, css, selector) => {
     const at = css.indexOf(selector);
     expect(at, selector).toBeGreaterThan(-1);
     const block = css.slice(at, css.indexOf("}", at));
-    expect(block).toMatch(/color:\s*rgb\(var\(--color-accent\)\)/);
+    // The chapter's link colour, or the accent where a chapter has none
+    // (OPENBRAIN-91; index.css sets --reader-link per ramp).
+    expect(block).toMatch(
+      /color:\s*rgb\(var\(--reader-link, var\(--color-accent\)\)\)/
+    );
   });
 });

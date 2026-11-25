@@ -26,6 +26,11 @@
  *     --widget-body-min-h: 0), so it fills the stage at any screen
  *     (Stuart, 24 Sep: "the skull feels small for no reason").
  *
+ *   • Long source text scrolls in its place and fades out at its foot while
+ *     there is more below (OPENBRAIN-91); the fade goes at the end.
+ *   • The citation under the skull is as wide as the skull, and starts
+ *     where it does (OPENBRAIN-91).
+ *
  * Art: the real Figma engravings live in
  *   public/publicAssets/images/phrenology/skull-{anterior|lateral|posterior}.png
  * and the maps in regions-{front|side|back}.svg (the lines-*.png layers are
@@ -127,6 +132,7 @@ onBeforeUnmount(() => {
  * by a transform. It moves on selectedIdx, before the skull turns. (It was
  * measured from each label with a ResizeObserver, and animated its width.)
  */
+const rootEl = ref(null); // the widget's own root
 const stageEl = ref(null); // perspective wrapper
 const skullEl = ref(null); // the yawing card
 const regionsEl = ref(null); // the clickable region layer (SVG)
@@ -198,6 +204,7 @@ function presentSheet(animate) {
 // Crossing the breakpoint with a region open: the sheet appears or the
 // card goes back beside the skull, with no rise.
 watch(narrow, async (isNarrow) => {
+  fitCaption();
   if (!activeRegion.value) return;
   if (!isNarrow) {
     closeSheet();
@@ -205,7 +212,92 @@ watch(narrow, async (isNarrow) => {
   }
   await nextTick();
   if (!disposed && panelEl.value) presentSheet(false);
+  if (!disposed) watchMore();
 });
+
+/* ── "There is more below" ────────────────────────────────────────────────
+ * Maura, 25 Nov (OPENBRAIN-91): "add a fade at the bottom … to show there's
+ * more text if you scroll … It should disappear once you reach the end."
+ * The text scrolls in the card beside the skull, and in the sheet's body on
+ * a phone; whichever it is fades out at its foot (a CSS mask, so it works
+ * on either surface) while it can still be scrolled down.
+ */
+const moreBelow = ref(false);
+const END_SLACK_PX = 2; // rounded scroll positions stop a hair short
+function measureMore() {
+  const el = narrow.value ? scrollEl.value : panelEl.value;
+  moreBelow.value =
+    Boolean(el) &&
+    el.scrollHeight - el.clientHeight - el.scrollTop > END_SLACK_PX;
+}
+// The card's room changes with the window, the full-screen view and the
+// sheet's detents; its text with the organ.
+const moreObserver =
+  typeof ResizeObserver === "function" ? new ResizeObserver(measureMore) : null;
+function watchMore() {
+  moreObserver?.disconnect();
+  for (const el of [panelEl.value, scrollEl.value])
+    if (el) moreObserver?.observe(el);
+  measureMore();
+}
+onBeforeUnmount(() => moreObserver?.disconnect());
+
+/* ── The citation's width ─────────────────────────────────────────────────
+ * Maura, 25 Nov (OPENBRAIN-91): "make the caption narrower, so it only goes
+ * as wide as the image". The skull is as wide as the height it is given
+ * allows, centred in its column, which CSS cannot tell the footer (a
+ * sibling of the sized body). So the footer is placed from the stage's own
+ * box, measured in layout pixels (the skull's yaw is a transform on a child
+ * and does not move them), less the margin the engraving keeps inside its
+ * picture. The write waits a frame, out of the observer's own delivery,
+ * since a narrower citation is a taller footer and so a slightly smaller
+ * skull.
+ *
+ * ART_INSET is that margin as a share of the picture's width, each side:
+ * the front view's (its skull runs from 83 to 816 of 900px; the side and
+ * back views' are wider, 55–845 and 60–839). One number for the three, the
+ * narrowest skull's, so the citation never runs wider than the skull and
+ * does not re-wrap (and resize the skull) when the view turns.
+ */
+const ART_INSET = 0.092;
+const captionBox = ref(null); // { left, width } in px, or null: full width
+let captionFrame = 0;
+function fitCaption() {
+  captionFrame = 0;
+  const stage = stageEl.value;
+  const box = stage?.offsetWidth || 0;
+  const next =
+    box > 0 && !narrow.value
+      ? {
+          left: Math.round(stage.offsetLeft + box * ART_INSET),
+          width: Math.round(box * (1 - 2 * ART_INSET)),
+        }
+      : null;
+  const now = captionBox.value;
+  if (next?.left === now?.left && next?.width === now?.width) return;
+  captionBox.value = next;
+}
+const captionObserver =
+  typeof ResizeObserver === "function"
+    ? new ResizeObserver(() => {
+        if (!captionFrame) captionFrame = requestAnimationFrame(fitCaption);
+      })
+    : null;
+onMounted(() => {
+  if (stageEl.value) captionObserver?.observe(stageEl.value);
+});
+onBeforeUnmount(() => {
+  captionObserver?.disconnect();
+  cancelAnimationFrame(captionFrame);
+});
+const captionStyle = computed(() =>
+  captionBox.value
+    ? {
+        marginLeft: `${captionBox.value.left}px`,
+        width: `${captionBox.value.width}px`,
+      }
+    : undefined
+);
 
 const activeView = computed(() => views.value[activeIdx.value] ?? null);
 const engravingSrc = computed(() =>
@@ -402,6 +494,7 @@ async function selectRegion(shape) {
   panelEl.value.scrollTop = 0;
   if (scrollEl.value) scrollEl.value.scrollTop = 0;
   if (narrow.value) presentSheet(true);
+  watchMore();
   panelTween = gsap.fromTo(
     panelEl.value,
     { opacity: 0.7 },
@@ -413,6 +506,8 @@ function closePanel(instant = false) {
   panelTween?.kill();
   closeSheet();
   activeRegion.value = null;
+  moreObserver?.disconnect();
+  moreBelow.value = false;
   if (!instant && previousRegionElement?.isConnected)
     previousRegionElement.focus();
   previousRegionElement = null;
@@ -451,7 +546,7 @@ watch(activeRegion, (region) => {
 </script>
 
 <template>
-  <div class="widget-root phreno" @keydown="onKeydown">
+  <div ref="rootEl" class="widget-root phreno" @keydown="onKeydown">
     <header class="phreno__chrome">
       <div class="phreno__views">
         <nav
@@ -563,12 +658,17 @@ watch(activeRegion, (region) => {
         v-if="activeRegion"
         ref="panelEl"
         class="card"
-        :class="{ 'card--sheet': narrow, 'is-dragging': sheetDragging }"
+        :class="{
+          'card--sheet': narrow,
+          'card--more': moreBelow,
+          'is-dragging': sheetDragging,
+        }"
         :role="narrow ? 'dialog' : undefined"
         :tabindex="narrow ? -1 : undefined"
         :data-detent="narrow ? sheetDetent : undefined"
         :style="narrow ? { '--sheet-f': sheetFraction } : undefined"
         :aria-label="`${activeRegion.n}. ${organTitle(activeRegion)}`"
+        @scroll.passive="measureMore"
       >
         <div
           v-if="narrow"
@@ -597,7 +697,7 @@ watch(activeRegion, (region) => {
         >
           ✕
         </button>
-        <div ref="scrollEl" class="card__body">
+        <div ref="scrollEl" class="card__body" @scroll.passive="measureMore">
           <h3 class="card__title">
             {{ activeRegion.n }} · {{ organTitle(activeRegion) }}
           </h3>
@@ -666,9 +766,14 @@ watch(activeRegion, (region) => {
       </div>
     </div>
 
-    <footer v-if="!narrow" class="phreno__foot">
+    <footer
+      v-if="!narrow"
+      class="phreno__foot"
+      :class="{ 'phreno__foot--fitted': captionBox }"
+      :style="captionStyle"
+    >
       <slot name="actions" />
-      <span>{{ PHRENOLOGY_CITATION }}</span>
+      <span class="phreno__source">{{ PHRENOLOGY_CITATION }}</span>
     </footer>
   </div>
 </template>
@@ -891,6 +996,39 @@ watch(activeRegion, (region) => {
   overflow-y: auto;
   overscroll-behavior: auto;
 }
+/* "There is more below": the scroller fades out over its last 3.5rem, into
+   whatever it stands on. The mask is always there and a fade's height
+   taller than the box, so its fade is parked below the foot; with more to
+   read it is the box's own height and the fade comes up into view. On the
+   sheet the body is the scroller (and the sheet's shadow must not be
+   masked). */
+.card:not(.card--sheet),
+.card--sheet .card__body {
+  --more-fade: 3.5rem;
+  mask-image: linear-gradient(
+    to bottom,
+    #000 calc(100% - var(--more-fade)),
+    transparent
+  );
+  mask-repeat: no-repeat;
+  mask-position: top;
+  mask-size: 100% calc(100% + var(--more-fade));
+  transition: mask-size 0.2s ease;
+}
+.card--more:not(.card--sheet),
+.card--sheet.card--more .card__body {
+  mask-size: 100% 100%;
+}
+:root[data-reduce-motion="1"] .card:not(.card--sheet),
+:root[data-reduce-motion="1"] .card--sheet .card__body {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion="0"]) .card:not(.card--sheet),
+  :root:not([data-reduce-motion="0"]) .card--sheet .card__body {
+    transition: none;
+  }
+}
 .card-instruction {
   align-self: start;
   margin: 9rem 0 0;
@@ -1018,14 +1156,26 @@ watch(activeRegion, (region) => {
 .phreno__foot {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  /* The expand icon leads the row on the citation's first line, as it does
+     the figure toolbar in the pane. */
+  align-items: flex-start;
+  gap: 0.5rem;
+  box-sizing: border-box;
   padding: 0.75rem 2rem 1rem;
   font-family: var(--font-mono, monospace);
   font-size: 0.71875rem;
   line-height: 1.3;
   letter-spacing: 0.06em;
   color: var(--bone);
+}
+/* As wide as the skull and under it (fitCaption sets the left edge and the
+   width): the row's own side padding goes. */
+.phreno__foot--fitted {
+  padding-left: 0;
+  padding-right: 0;
+}
+.phreno__source {
+  min-width: 0;
   opacity: 0.7;
 }
 

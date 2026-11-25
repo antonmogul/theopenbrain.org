@@ -336,6 +336,110 @@ describe("source-backed embedded skull", () => {
     });
   });
 
+  describe("Maura's 25 Nov notes (OPENBRAIN-91)", () => {
+    // What a scroller reports, which happy-dom leaves at zero.
+    function scrollBox(el, { scrollHeight, clientHeight }) {
+      Object.defineProperty(el, "scrollHeight", {
+        configurable: true,
+        value: scrollHeight,
+      });
+      Object.defineProperty(el, "clientHeight", {
+        configurable: true,
+        value: clientHeight,
+      });
+    }
+    async function open(w, label) {
+      await w
+        .findAll(".region")
+        .find((r) => r.attributes("aria-label") === label)
+        .trigger("click");
+      await flushPromises();
+    }
+
+    it("fades the foot of the source text while there is more below, and not at its end", async () => {
+      const w = await skull();
+      await open(w, "19. Individuality");
+      const card = w.find(".card");
+      // Text that fits has nothing to fade.
+      expect(card.classes()).not.toContain("card--more");
+
+      scrollBox(card.element, { scrollHeight: 900, clientHeight: 500 });
+      await card.trigger("scroll");
+      expect(card.classes()).toContain("card--more");
+
+      card.element.scrollTop = 200;
+      await card.trigger("scroll");
+      expect(card.classes()).toContain("card--more");
+
+      // The end, a rounded pixel short of it included.
+      card.element.scrollTop = 399;
+      await card.trigger("scroll");
+      expect(card.classes()).not.toContain("card--more");
+
+      // Closing the card leaves nothing behind for the next organ.
+      card.element.scrollTop = 0;
+      await card.trigger("scroll");
+      await w.find(".card__close").trigger("click");
+      await open(w, "13. Benevolence");
+      expect(w.find(".card").classes()).not.toContain("card--more");
+    });
+
+    it("fades with a mask on the scroller, parked below its foot at the end, with no ease under reduced motion", () => {
+      const code = readFileSync(
+        path.resolve("src/views/PhrenologyView.vue"),
+        "utf8"
+      );
+      // Beside the skull the card scrolls; in the phone sheet its body does.
+      expect(code).toMatch(
+        /\.card:not\(\.card--sheet\),\s*\.card--sheet \.card__body \{[^}]*mask-image: linear-gradient\(\s*to bottom,\s*#000 calc\(100% - var\(--more-fade\)\),\s*transparent\s*\);[^}]*mask-size: 100% calc\(100% \+ var\(--more-fade\)\);/
+      );
+      expect(code).toMatch(
+        /\.card--more:not\(\.card--sheet\),\s*\.card--sheet\.card--more \.card__body \{\s*mask-size: 100% 100%;/
+      );
+      expect(code).toMatch(
+        /:root\[data-reduce-motion="1"\] \.card:not\(\.card--sheet\),\s*:root\[data-reduce-motion="1"\] \.card--sheet \.card__body \{\s*transition: none;/
+      );
+    });
+
+    it("sets the citation under the skull, as wide as the skull is drawn", async () => {
+      const observed = [];
+      vi.stubGlobal(
+        "ResizeObserver",
+        class {
+          constructor(callback) {
+            this.callback = callback;
+          }
+          observe(el) {
+            observed.push({ el, callback: this.callback });
+          }
+          disconnect() {}
+        }
+      );
+      vi.stubGlobal("requestAnimationFrame", (fn) => {
+        fn();
+        return 1;
+      });
+      vi.stubGlobal("cancelAnimationFrame", () => {});
+      const w = await skull();
+      const foot = w.find(".phreno__foot");
+      // Unmeasured, it keeps its full-width row.
+      expect(foot.classes()).not.toContain("phreno__foot--fitted");
+
+      const stage = w.find(".stage").element;
+      const watching = observed.find((o) => o.el === stage);
+      expect(watching).toBeDefined();
+      Object.defineProperty(stage, "offsetLeft", { value: 32 });
+      Object.defineProperty(stage, "offsetWidth", { value: 654 });
+      watching.callback();
+      await flushPromises();
+      // The front skull runs from 9.2% to 90.8% of its picture.
+      expect(foot.classes()).toContain("phreno__foot--fitted");
+      expect(foot.element.style.marginLeft).toBe("92px");
+      expect(foot.element.style.width).toBe("534px");
+      expect(foot.find(".phreno__source").text()).toContain("1815");
+    });
+  });
+
   it("sizes itself by the height it is given, with no disclaimer (OPENBRAIN-147)", async () => {
     const w = await skull();
     // The chapter's full-screen band sets --widget-body-min-h: 0 and the

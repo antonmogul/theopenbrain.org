@@ -125,12 +125,14 @@ const entries = computed(() =>
 .ref-list__text :deep(.ref-title) {
   color: rgb(var(--color-ink));
 }
-/* One colour for every reference link, visited or not (OPENBRAIN-145). */
+/* One colour for every reference link, visited or not (OPENBRAIN-145):
+   the chapter's, as the citations in the text have it (--reader-link,
+   index.css; OPENBRAIN-91), and the accent where a chapter has none. */
 .ref-list__text :deep(a),
 .ref-list__text :deep(a:visited),
 .ref-list__source,
 .ref-list__source:visited {
-  color: rgb(var(--color-accent));
+  color: rgb(var(--reader-link, var(--color-accent)));
   overflow-wrap: anywhere;
 }
 .ref-list__links {
