@@ -1007,16 +1007,34 @@ sup:hover {
   fill: rgb(var(--color-paper));
 }
 
+/* Links in a chapter's text and its reference list take the chapter's
+   colour, not the interaction accent (Maura, 25 Nov, OPENBRAIN-91: "make
+   the link color purple as well instead of pink"): the step of the ramp
+   that reads as text on white paper at AA, which is the main one for fund
+   (4.67:1) and the deep one for move and lear (5.96:1, 6.31:1). Neither
+   step of perc's teal or deve's amber gets there, so those chapters have
+   no --reader-link and their links keep the accent, as does the dark
+   theme, whose paper is dark. helper/chapterTheme.js `rampLink` derives
+   this and chapterRamps.test.js holds the two together. */
+:root[data-chapter="fund"]:not([data-theme="dark"]) {
+  --reader-link: var(--color-chapter);
+}
+:root[data-chapter="move"]:not([data-theme="dark"]),
+:root[data-chapter="lear"]:not([data-theme="dark"]) {
+  --reader-link: var(--color-chapter-deep);
+}
+
 /* Citation reference superscripts (Supabase chapters) */
 .citation-ref {
-  color: rgb(var(--color-accent));
+  color: rgb(var(--reader-link, var(--color-accent)));
   cursor: pointer;
   font-weight: 600;
   position: relative;
 }
 .citation-ref:hover {
+  background: rgb(var(--reader-link, var(--color-accent)));
   text-decoration: underline;
-  text-decoration-color: rgb(var(--color-accent));
+  text-decoration-color: rgb(var(--reader-link, var(--color-accent)));
 }
 .citation-flash {
   animation: citationPulse 1.5s ease;

@@ -424,7 +424,7 @@ describe("a mark is a control", () => {
   });
 });
 
-describe("the pulse at the reading point", () => {
+describe("when the pane changes (OPENBRAIN-91)", () => {
   const animate = vi.fn(() => ({ playState: "running", cancel: vi.fn() }));
   beforeEach(() => {
     animate.mockClear();
@@ -434,43 +434,25 @@ describe("the pulse at the reading point", () => {
     delete HTMLElement.prototype.animate;
   });
 
-  it("plays once when the pane changes, and not again while it runs", async () => {
+  it("marks the figure that came on and plays nothing else: no ring, no beam", async () => {
     page([
       ["AnimationFig1", 1000, 300],
       ["AnimationFig2", 2000, 300],
     ]);
-    await mountRail();
+    const wrapper = await mountRail();
     await vi.advanceTimersByTimeAsync(1600);
+    expect(wrapper.find(".rr-point").exists()).toBe(false);
+
     await toggle("AnimationFig1", true);
-    // The ring and the beam.
-    expect(animate).toHaveBeenCalledTimes(2);
+    const marks = wrapper.findAll(".rr-mark");
+    // The swell is CSS on the showing mark (its pill's `scale`).
+    expect(marks[0].attributes("data-showing")).toBe("");
+    expect(marks[1].attributes("data-showing")).toBeUndefined();
+
     await toggle("AnimationFig1", false);
     await toggle("AnimationFig2", true);
-    expect(animate).toHaveBeenCalledTimes(2);
-  });
-
-  it("waits until the page has settled", async () => {
-    page([["AnimationFig1", 1000, 300]]);
-    await mountRail();
-    await toggle("AnimationFig1", true);
-    expect(animate).not.toHaveBeenCalled();
-  });
-
-  it("never plays under reduced motion, or while the reading point is off", async () => {
-    page([
-      ["AnimationFig1", 1000, 300],
-      ["AnimationFig2", 2000, 300],
-    ]);
-    await mountRail();
-    await vi.advanceTimersByTimeAsync(1600);
-    fixtures.reduced = true;
-    await toggle("AnimationFig1", true);
-    expect(animate).not.toHaveBeenCalled();
-
-    fixtures.reduced = false;
-    document.querySelector(".reading-line").classList.remove("is-on");
-    await toggle("AnimationFig1", false);
-    await toggle("AnimationFig2", true);
+    expect(marks[0].attributes("data-showing")).toBeUndefined();
+    expect(marks[1].attributes("data-showing")).toBe("");
     expect(animate).not.toHaveBeenCalled();
   });
 });

@@ -1,8 +1,9 @@
 /*
  * Chapter/Text/ChapterFunding — who funded the chapter, under its authors
- * (OPENBRAIN-200). The line is set like the authors' affiliations; the
- * funder's logo below it is the link, in a new tab. Data from
- * helper/chapterCredits.js (`creditsForModule`).
+ * (OPENBRAIN-200). A row built like an author's, on a light grey panel:
+ * the funder's logo on the left (the link, in a new tab, with no ground of
+ * its own), the line on its right in the authors' face (OPENBRAIN-91).
+ * Data from helper/chapterCredits.js (`creditsForModule`).
  */
 import ChapterFunding from "../ChapterFunding.vue";
 import ChapterAuthors from "../ChapterAuthors.vue";
@@ -57,6 +58,12 @@ export const UnderAuthors = {
     template: `<div style="max-width:35rem;"><ChapterAuthors :authors="authors" /><ChapterFunding v-bind="args" /></div>`,
   }),
   globals: { chapter: "fund" },
+};
+
+/** The Retina: the Vision Science Research Network's wider logo. */
+export const Retina = {
+  args: { funding: creditsForModule({ slug: "the-retina" }).funding },
+  globals: { chapter: "perc" },
 };
 
 /** A funder with no logo is the line alone. */
