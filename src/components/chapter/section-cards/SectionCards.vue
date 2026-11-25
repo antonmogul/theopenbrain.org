@@ -8,7 +8,8 @@
  * The card. A layer the size of the figure pane, straight after it in the
  * page, so everything that covers the pane (the opener, full-width bands)
  * covers this too. It shows a section's card (SectionCard: the section's
- * picture) while helper/sectionCard.js says the reader is between the last section's text and this section's first figure, and only
+ * picture) while helper/sectionCard.js says the reader is between the last
+ * section's text and this section's first figure, and only
  * while the pane itself is empty: a figure still holding wins, and the card
  * leaves over the first figure as it fades in. Only chapters with section
  * art have cards (helper/sectionArt.js), only at the two-column width.
@@ -177,9 +178,27 @@ function update() {
       : box.top;
     const state = cardState({ gapStart, top: box.top, end: endY }, screen);
     if (figure && endY - box.top >= MIN_RUN) {
+      let start = gapStart + window.scrollY - screen * START_LINE;
+      // The preceding figure wins until its actual hold ends. Start the
+      // wash there too, so it has not mostly cleared behind that figure.
+      const previous = triggers[triggers.indexOf(end) - 1];
+      if (
+        previous &&
+        figureRecordFor(previous.id.replace(/^trigger/i, ""), animations.value)
+      ) {
+        const previousEnd = figureEnd(previous, triggers, animations.value);
+        start = Math.max(
+          start,
+          typeof previousEnd === "number"
+            ? previousEnd
+            : previous.getBoundingClientRect().bottom +
+                window.scrollY -
+                screen * FIGURE_LINE
+        );
+      }
       windows.push({
         id: figure.id.toLowerCase(),
-        start: gapStart + window.scrollY - screen * START_LINE,
+        start,
         end: endY + window.scrollY - screen * FIGURE_LINE,
         still: still.value,
       });
