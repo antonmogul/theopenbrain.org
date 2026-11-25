@@ -353,8 +353,20 @@ export function exploreFor(content) {
 
 export function transformParagraph(p) {
   const blocks = p.content?.blocks || [];
-  const contentResult = contentBlocksToHTML(blocks);
   const meta = extractChapter1Meta(blocks);
+  // InlineImages owns the image extracted into meta.img, including its
+  // narrow/desktop layout switch. Rendering that block into v-html as
+  // well creates an oversized copy above the figure (OPENBRAIN-85).
+  // The legacy metadata holds the last image only: keep any earlier
+  // images in the prose, and retain every stored block for the editor.
+  const imageIndex = meta.img
+    ? blocks.map((block) => block?.type).lastIndexOf("image")
+    : -1;
+  const contentResult = contentBlocksToHTML(
+    imageIndex < 0
+      ? blocks
+      : blocks.map((block, index) => (index === imageIndex ? null : block))
+  );
 
   const para = {
     id: p.id,
