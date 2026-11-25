@@ -1,3 +1,7 @@
+import { figureImages } from "./figureCycle";
+import { imageTakesTint } from "./figureTint";
+import { SECTION_ART_ORIGINALS } from "./sectionArt";
+
 /*
  * When a section's card is in the figure pane (OPENBRAIN-174). Pure: the
  * caller (SectionCards.vue) measures the page and asks.
@@ -53,18 +57,31 @@ export function cardState(box, screen, minRun = MIN_RUN) {
   };
 }
 
-/** The card's title is whole while the section's heading is below this share of the screen… */
-export const HEADING_IN = 0.86;
-/** …and gone once the heading has come up to this one. */
-export const HEADING_UP = 0.62;
-
-/**
- * How much of the card's title shows, 1 → 0: it gives way to the section's
- * own heading as that comes up the screen beside it, so the title is never
- * set twice side by side. `top` is the section's top (viewport y).
+/** The first pane figure can carry the card when it is the same still.
+ * Baked section exports declare their originals in SECTION_ART_ORIGINALS; ordinary
+ * art matches by src. A different first figure, film or gallery keeps its
+ * own card. Never guess identity from a title or a filename fragment.
  */
-export function titleShare(top, screen) {
-  if (!Number.isFinite(top) || !(screen > 0)) return 1;
-  const share = (top / screen - HEADING_UP) / (HEADING_IN - HEADING_UP);
-  return Math.min(1, Math.max(0, share));
+export function sectionCardFigure(art, record) {
+  const images = figureImages(record);
+  if (
+    !art ||
+    art.placeholder ||
+    images.length !== 1 ||
+    !imageTakesTint(images[0])
+  )
+    return null;
+  if (
+    record.widgetId ||
+    record.fullscreen ||
+    record.scroll ||
+    record.isTransition ||
+    record.switch
+  )
+    return null;
+  return [art.src, ...(SECTION_ART_ORIGINALS[art.src] || [])].includes(
+    images[0].src
+  )
+    ? record
+    : null;
 }

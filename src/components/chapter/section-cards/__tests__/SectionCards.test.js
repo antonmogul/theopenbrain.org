@@ -4,6 +4,16 @@ import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
 import { useGeneral } from "@/stores";
 import SectionCards from "../SectionCards.vue";
+const figures = vi.hoisted(() => ({ records: [] }));
+vi.mock("@/composables/useAnimations", async () => {
+  const { ref } = await import("vue");
+  return {
+    useAnimations: () => ({
+      animations: ref(figures.records),
+      fetchAnimations: vi.fn(),
+    }),
+  };
+});
 
 /*
  * Section cards (OPENBRAIN-174): the card in the figure pane while the
@@ -88,6 +98,7 @@ async function scrolled() {
 const card = () => wrapper.findComponent({ name: "SectionCard" });
 
 beforeEach(() => {
+  figures.records = [];
   setActivePinia(createPinia());
   store = useGeneral();
   wide = true;
@@ -143,21 +154,10 @@ describe("SectionCards", () => {
     layOut(600);
     await scrolled();
     expect(card().exists()).toBe(true);
-    expect(card().props("label")).toBe("2");
-    expect(card().props("title")).toBe(text.sections[1].title);
+    expect(card().find(".sec-card__words").exists()).toBe(false);
     expect(card().props("art").src).toMatch(/basic-functional-unit\.webp$/);
     expect(card().props("progress")).toBeGreaterThan(0);
-    // The heading is still below the screen: the title is whole.
-    expect(card().props("titleShare")).toBe(1);
     expect(card().attributes("aria-hidden")).toBe("true");
-  });
-
-  it("hands its title over as the heading comes up beside it", async () => {
-    mountCards();
-    layOut(100); // the section's top is at 420 of 900
-    await scrolled();
-    expect(card().exists()).toBe(true);
-    expect(card().props("titleShare")).toBe(0);
   });
 
   it("leaves when the section's first figure reaches the figure line", async () => {
@@ -268,19 +268,25 @@ describe("SectionCards", () => {
     expect(document.fonts.load).not.toHaveBeenCalled();
   });
 
-  it("asks for the number's light face up front, not when a card comes in", async () => {
-    // A font finishing mid-scroll makes the pane refresh its triggers,
-    // which stops a smooth jump from the contents where it is.
+  it("hands a matching first still to the pane throughout the card window", async () => {
+    figures.records = [{ id: "animationFig12", imageUrl: "/skull.webp" }];
+    const chapter = structuredClone(text);
+    chapter.sections[1].art = { src: "/skull.webp" };
     mountCards();
-    expect(document.fonts.load).toHaveBeenCalledTimes(1);
-    expect(document.fonts.load).toHaveBeenCalledWith(
-      '300 1em "IBM Plex Sans", sans-serif',
-      "0123456789"
-    );
+    await wrapper.setProps({ text: chapter });
     layOut(600);
     await scrolled();
-    expect(card().exists()).toBe(true);
-    expect(document.fonts.load).toHaveBeenCalledTimes(1);
+    expect(card().exists()).toBe(false);
+    const state = () => wrapper.emitted("handoff").at(-1)[0];
+    expect(state().windows[0].id).toBe("animationfig12");
+    const early = state().windows[0].end;
+    layOut(100);
+    await scrolled();
+    expect(state().windows[0].end).toBeLessThan(early);
+    store.animationActive = true;
+    await nextTick();
+    expect(state().windows[0].id).toBe("animationfig12");
+    expect(document.fonts.load).not.toHaveBeenCalled();
   });
 
   it("goes with the pane while the reader's scroll is driven", async () => {

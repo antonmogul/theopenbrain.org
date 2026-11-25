@@ -123,3 +123,11 @@ it("preserves the strict temporary-art flag without labelling real art", () => {
     sectionArtFor("any", { art: { ...own, placeholder: false } }).placeholder
   ).toBeUndefined();
 });
+
+it("keeps renderer identity outside the persisted art shape", () => {
+  const slug = "where-is-my-mind";
+  const original = sectionArtFor(HISTORY, { slug });
+  expect(Object.keys(original).sort()).toEqual(["alt", "src"]);
+  const stored = sectionArtFor(HISTORY, { slug, art: { src: original.src } });
+  expect(Object.keys(stored).sort()).toEqual(["alt", "src"]);
+});

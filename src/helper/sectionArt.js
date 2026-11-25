@@ -59,6 +59,16 @@ export const SECTION_ART_BY_SLUG = Object.freeze({
   }),
 });
 
+/** Known originals behind baked designer exports. Kept outside the
+ * persisted section-art map: this is renderer identity, not database art.
+ */
+export const SECTION_ART_ORIGINALS = Object.freeze({
+  [`${FOUNDATIONS}/where-is-my-mind.webp`]: [
+    "/publicAssets/images/foundations/fig01-skull-cutout.webp",
+    "/publicAssets/images/foundations/fig01-skull-cutout-v2.webp",
+  ],
+});
+
 /** Sections that never get a card in the pane: the back matter. */
 export const NO_SECTION_CARD = Object.freeze([
   "introduction",
