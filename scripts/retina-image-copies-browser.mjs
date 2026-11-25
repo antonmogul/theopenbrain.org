@@ -60,6 +60,26 @@ for (const engine of [chromium, webkit]) {
       await p.waitForTimeout(700);
     };
     const measure = async (p, scenario) => {
+      // Resize and matchMedia delivery are separate tasks in WebKit. Wait
+      // for Vue's selected layout and the reader's width transition before
+      // measuring geometry; a persistent overflow still fails this wait.
+      await p.waitForFunction(
+        () => {
+          const narrow = matchMedia("(max-width: 1023px)").matches;
+          const slots = [
+            ...document.querySelectorAll(".fb-slot--column"),
+          ].filter((slot) => slot.querySelector(".ii-figure, .w-text"));
+          return (
+            slots.length === 8 &&
+            slots.every((slot) =>
+              slot.querySelector(narrow ? ".ii-figure" : ".w-text")
+            ) &&
+            document.documentElement.scrollWidth <= innerWidth + 1
+          );
+        },
+        null,
+        { timeout: 5000 }
+      );
       // Visibility means laid out, including below the current fold: every
       // figure in the chapter is checked at every width, not only one screenshot.
       const data = await p.evaluate(() => {
