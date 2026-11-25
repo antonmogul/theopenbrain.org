@@ -73,6 +73,11 @@ const props = defineProps({
   /* The figure asked for the chapter-colour wash (config.tintFade,
      OPENBRAIN-80). It shows only where something drives it: the pane. */
   wash: { type: Boolean, default: false },
+  /* The focal point ("50% 15%") of a single picture or film that fills its
+     container, cropped around that point (figureFill, OPENBRAIN-84); empty
+     shows the whole picture. Only where the container has a fixed height
+     (`fit`) and not in the dialog. */
+  fill: { type: String, default: "" },
 });
 
 /* The shown image, two-way so the shell can open its fullscreen dialog on
@@ -130,6 +135,7 @@ const primeWash = (el) => {
 const watchHref = (img) =>
   img?.youtube ? `https://www.youtube.com/watch?v=${img.youtube}` : "";
 const first = computed(() => props.images[0] || {});
+const fills = computed(() => !!props.fill && props.fit && !props.large);
 const figureName = computed(
   () => [props.label, props.title].filter(Boolean).join(": ") || "Figure"
 );
@@ -485,7 +491,12 @@ onBeforeUnmount(() => {
   <div
     v-if="!isSet"
     class="figimg"
-    :class="{ 'figimg--large': large, 'figimg--flow': !fit }"
+    :class="{
+      'figimg--large': large,
+      'figimg--flow': !fit,
+      'figimg--fill': fills,
+    }"
+    :style="fills ? { '--figimg-focus': fill } : undefined"
   >
     <div class="figimg-stage">
       <VideoEmbed
@@ -978,6 +989,13 @@ onBeforeUnmount(() => {
   height: auto;
   max-height: 85vh;
   object-fit: contain;
+}
+/* Filling the pane (config.fill, OPENBRAIN-84): the picture or film covers
+   the stage, cropped around its focal point, instead of fitting inside it.
+   The washed copy shares the box, so the two still register. */
+.figimg--fill .figimg-img {
+  object-fit: cover;
+  object-position: var(--figimg-focus, 50% 50%);
 }
 /* A film over its poster: no controls, nothing to pick up or drag. */
 .figimg-loop {

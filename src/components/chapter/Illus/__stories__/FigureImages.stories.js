@@ -70,6 +70,10 @@ export default {
       description:
         "The opening view. Empty opens on the first image (galleryStartView); a figure row asks for the grid with config.galleryStart.",
     },
+    fill: {
+      description:
+        'The focal point ("50% 15%": across, down) of a single picture or film that covers its container, cropped around that point (a figure row\'s config.fill and config.focus, through figureFill). Empty shows the whole picture. Only with `fit`, never in the dialog.',
+    },
     view: {
       control: false,
       description:
@@ -269,6 +273,37 @@ export const VideoPlayer = {
     label: "FIG",
     title: "Rita Levi-Montalcini",
   },
+};
+
+/** A figure that fills its pane (OPENBRAIN-84; Maura, 25 Nov): a row with
+ *  `config.fill` covers the whole stage with its one picture or film,
+ *  cropped around `config.focus` (across, down), instead of fitting inside
+ *  it. Plato and Aristotle, focal point just above the two heads: resize
+ *  the canvas, or try another `fill`, and the heads stay in frame. The film
+ *  plays with Motion set to "App motion"; under reduced motion the same
+ *  crop holds its still. Empty `fill` shows the whole picture. */
+export const FillsThePane = {
+  args: {
+    images: [
+      {
+        src: "/publicAssets/video/foundations/plato-aristotle-loop.webp",
+        alt: "Two robed philosophers walk side by side under an arch. Plato holds up a brain; Aristotle holds a heart in his open hand.",
+        loop: {
+          webm: "/publicAssets/video/foundations/plato-aristotle-loop.webm",
+          mp4: "/publicAssets/video/foundations/plato-aristotle-loop.mp4",
+          width: 960,
+          height: 1280,
+        },
+      },
+    ],
+    label: "FIG 06",
+    title: "Plato, Aristotle, and the debate of head vs. heart",
+    legendAbove: true,
+    fill: "50% 15%",
+  },
+  render: chapterFrame(FigureImages, {
+    template: `<div class="figure-pane--dark" style="height:100vh;"><StoryComponent v-bind="args" /></div>`,
+  }),
 };
 
 /** The chapter-colour wash (OPENBRAIN-80): a figure whose row says
