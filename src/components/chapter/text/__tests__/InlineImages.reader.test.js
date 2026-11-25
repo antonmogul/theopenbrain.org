@@ -91,4 +91,16 @@ describe("image blocks through the real reader", () => {
     // reader hands one image to the separate InlineImages renderer.
     expect(contentBlocksToHTML(blocks).text).toContain("waveLength.png");
   });
+
+  it("does not join citation runs across the extracted image", () => {
+    const blocks = [
+      { type: "blockquote", content: "A quotation" },
+      { type: "citation_ref", number: 1 },
+      image,
+      { type: "citation_ref", number: 2 },
+    ];
+    expect(transformParagraph(row(blocks)).text).toBe(
+      '<blockquote>A quotation<sup class="citation-ref" data-ref="1">1</sup></blockquote><sup class="citation-ref" data-ref="2">2</sup>'
+    );
+  });
 });

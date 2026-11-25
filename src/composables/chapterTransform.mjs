@@ -363,7 +363,9 @@ export function transformParagraph(p) {
     ? blocks.map((block) => block?.type).lastIndexOf("image")
     : -1;
   const contentResult = contentBlocksToHTML(
-    imageIndex < 0 ? blocks : blocks.filter((_, index) => index !== imageIndex)
+    imageIndex < 0
+      ? blocks
+      : blocks.map((block, index) => (index === imageIndex ? null : block))
   );
 
   const para = {
