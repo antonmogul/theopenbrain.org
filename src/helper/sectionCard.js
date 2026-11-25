@@ -1,5 +1,6 @@
 import { figureImages } from "./figureCycle";
 import { imageTakesTint } from "./figureTint";
+import { SECTION_ART_ORIGINALS } from "./sectionArt";
 
 /*
  * When a section's card is in the figure pane (OPENBRAIN-174). Pure: the
@@ -57,7 +58,7 @@ export function cardState(box, screen, minRun = MIN_RUN) {
 }
 
 /** The first pane figure can carry the card when it is the same still.
- * Baked section exports declare their original in art.figureSources; ordinary
+ * Baked section exports declare their originals in SECTION_ART_ORIGINALS; ordinary
  * art matches by src. A different first figure, film or gallery keeps its
  * own card. Never guess identity from a title or a filename fragment.
  */
@@ -78,7 +79,9 @@ export function sectionCardFigure(art, record) {
     record.switch
   )
     return null;
-  return [art.src, ...(art.figureSources || [])].includes(images[0].src)
+  return [art.src, ...(SECTION_ART_ORIGINALS[art.src] || [])].includes(
+    images[0].src
+  )
     ? record
     : null;
 }

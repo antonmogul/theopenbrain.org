@@ -124,15 +124,10 @@ it("preserves the strict temporary-art flag without labelling real art", () => {
   ).toBeUndefined();
 });
 
-it("keeps known original sources for a stored designer export, never for replacement art", () => {
+it("keeps renderer identity outside the persisted art shape", () => {
   const slug = "where-is-my-mind";
   const original = sectionArtFor(HISTORY, { slug });
+  expect(Object.keys(original).sort()).toEqual(["alt", "src"]);
   const stored = sectionArtFor(HISTORY, { slug, art: { src: original.src } });
-  expect(stored.figureSources).toContain(
-    "/publicAssets/images/foundations/fig01-skull-cutout-v2.webp"
-  );
-  expect(
-    sectionArtFor(HISTORY, { slug, art: { src: "/new-picture.webp" } })
-      .figureSources
-  ).toBeUndefined();
+  expect(Object.keys(stored).sort()).toEqual(["alt", "src"]);
 });

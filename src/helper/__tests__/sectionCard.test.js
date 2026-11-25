@@ -82,12 +82,24 @@ describe("sectionCardFigure", () => {
   const record = { id: "image-one", imageUrl: "/skull.webp" };
   it("matches the actual first still by exact source in any chapter", () => {
     expect(sectionCardFigure({ src: "/skull.webp" }, record)).toBe(record);
-    expect(
-      sectionCardFigure(
-        { src: "/violet.webp", figureSources: ["/skull.webp"] },
-        record
-      )
-    ).toBe(record);
+    for (const filename of [
+      "fig01-skull-cutout.webp",
+      "fig01-skull-cutout-v2.webp",
+    ]) {
+      const skull = {
+        ...record,
+        imageUrl: `/publicAssets/images/foundations/${filename}`,
+      };
+      expect(
+        sectionCardFigure(
+          {
+            src: "/publicAssets/images/foundations/sections/where-is-my-mind.webp",
+          },
+          skull
+        )
+      ).toBe(skull);
+      expect(sectionCardFigure({ src: "/replacement.webp" }, skull)).toBeNull();
+    }
   });
   it("keeps the separate card when the first figure or its media changes", () => {
     expect(sectionCardFigure({ src: "/other.webp" }, record)).toBeNull();
