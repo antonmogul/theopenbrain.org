@@ -53,7 +53,7 @@ describe("ExploreCard", () => {
     expect(w.find("img").attributes("alt")).toBe("A woodcut.");
     expect(w.find("figcaption").text()).toBe("Woodcut, 1574.");
     expect(w.find("h3").text()).toBe("Humoral theory");
-    const btn = w.find("button");
+    const btn = w.find(".xc-btn");
     expect(btn.text()).toContain("Explore more about humoral theory");
     expect(btn.attributes("aria-expanded")).toBe("false");
     expect(btn.attributes("aria-controls")).toBe("explore-panel-p1");
@@ -66,14 +66,14 @@ describe("ExploreCard", () => {
   it("opens and closes on the button, and re-measures the page", async () => {
     refresh.mockClear();
     const w = mountCard();
-    await w.find("button").trigger("click");
+    await w.find(".xc-btn").trigger("click");
     await nextTick();
-    expect(w.find("button").attributes("aria-expanded")).toBe("true");
+    expect(w.find(".xc-btn").attributes("aria-expanded")).toBe("true");
     expect(w.find("#explore-panel-p1").attributes("hidden")).toBeUndefined();
-    expect(w.find("button").text()).toContain("Hide");
+    expect(w.find(".xc-btn").text()).toContain("Hide");
     expect(refresh).toHaveBeenCalledTimes(1);
-    await w.find("button").trigger("click");
-    expect(w.find("button").attributes("aria-expanded")).toBe("false");
+    await w.find(".xc-btn").trigger("click");
+    expect(w.find(".xc-btn").attributes("aria-expanded")).toBe("false");
     expect(w.find("#explore-panel-p1").attributes("hidden")).toBeDefined();
   });
 
@@ -84,7 +84,7 @@ describe("ExploreCard", () => {
     });
     expect(w.find("figure").exists()).toBe(false);
     expect(w.find(".xc").classes()).toContain("xc--no-image");
-    expect(w.find("button").attributes("aria-expanded")).toBe("true");
+    expect(w.find(".xc-btn").attributes("aria-expanded")).toBe("true");
   });
 
   // OPENBRAIN-187: the rete mirabile's card image is Figure C's only image.

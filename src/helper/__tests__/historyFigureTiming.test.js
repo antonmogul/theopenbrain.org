@@ -55,6 +55,27 @@ describe("History static-figure reading intervals", () => {
       expect(historyFigureEnd(first, triggers, records, viewport)).toBe(550);
     }
   );
+  it("keeps a still mounted until a teleported rail reaches the pane top", () => {
+    const { section, first, triggers } = fixture();
+    const reader = document.createElement("div");
+    reader.className = "chapter-reader";
+    document.body.appendChild(reader);
+    reader.appendChild(section);
+    const pane = document.createElement("div");
+    pane.className = "figure-pane";
+    pane.getBoundingClientRect = () => ({ top: 48 });
+    reader.appendChild(pane);
+    const slot = document.createElement("div");
+    slot.className = "fb-slot";
+    slot.setAttribute("data-pane-box-exit", "");
+    slot.getBoundingClientRect = () => ({ top: 750, bottom: 3000 });
+    section.appendChild(slot);
+    triggers[1].getBoundingClientRect = () => ({ top: 1400, bottom: 1500 });
+    // No rail DOM in the slot: FullBleed teleports it to the stage layer.
+    expect(figureEnd(first, triggers, records, viewport)).toBe(902);
+    slot.removeAttribute("data-pane-box-exit");
+    expect(figureEnd(first, triggers, records, viewport)).toBe(550);
+  });
   it("remeasures boundaries after viewport or chapter reflow", () => {
     const { first, second, triggers } = fixture();
     second.getBoundingClientRect = () => ({ top: 1500, bottom: 1600 });

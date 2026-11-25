@@ -277,6 +277,7 @@ export function useExploreRail({
     scroller.addEventListener("scroll", onTrackScroll, { passive: true });
     // An image arriving changes how the columns break.
     scroller.addEventListener("load", queueMeasure, true);
+    scroller.addEventListener("toggle", queueMeasure, true);
     if (typeof ResizeObserver === "function") {
       resizeObserver = new ResizeObserver(queueMeasure);
       resizeObserver.observe(scroller);
@@ -310,6 +311,7 @@ export function useExploreRail({
     bound = null;
     scroller?.removeEventListener("scroll", onTrackScroll);
     scroller?.removeEventListener("load", queueMeasure, true);
+    scroller?.removeEventListener("toggle", queueMeasure, true);
     resizeObserver?.disconnect();
     mutationObserver?.disconnect();
     motionObserver?.disconnect();

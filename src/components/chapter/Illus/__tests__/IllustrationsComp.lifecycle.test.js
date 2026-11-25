@@ -186,8 +186,8 @@ describe("reader figure lifecycle", () => {
     });
     document.dispatchEvent(new Event("fullscreenchange"));
     await vi.advanceTimersByTimeAsync(250);
-    frames.shift()();
-    frames.shift()();
+    // The pane exit and fullscreen restoration each schedule frames.
+    for (let i = 0; frames.length && i < 10; i++) frames.shift()();
     raf.mockRestore();
     expect(ScrollTrigger.refresh).toHaveBeenCalled();
     expect(fixtures.store.animationActive).toBe(true);

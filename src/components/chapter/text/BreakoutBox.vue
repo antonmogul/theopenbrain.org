@@ -114,6 +114,7 @@ const mode = computed(() => {
 const railOn = computed(() => mode.value === "track");
 const swipeOn = computed(() => mode.value === "swipe");
 provide("exploreRail", mode);
+provide("breakoutBox", true);
 const parts = computed(() =>
   mode.value
     ? layout.value.parts.map((part) => ({ id: part.id, title: part.title }))
@@ -309,6 +310,7 @@ onBeforeUnmount(() => arrival?.disconnect());
   <FullBleed
     ref="fullBleed"
     :data-listen-box-slot="section.id"
+    :data-pane-box-exit="mode === 'track' ? '' : undefined"
     v-slot="{ floating }"
     :stage-attrs="{ 'data-breakout-box': section.id }"
   >

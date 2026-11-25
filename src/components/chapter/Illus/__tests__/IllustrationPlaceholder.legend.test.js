@@ -36,7 +36,10 @@ let host;
 /* Mounted inside a stand-in for the reader: `.chapter-reader` with the
    figure pane, whose data-ground is what a figure anywhere in the chapter
    takes its dialog's ground from. */
-function mountShell(animation, { inline = false, ground, inPane = true } = {}) {
+function mountShell(
+  animation,
+  { inline = false, ground, inPane = true, boxed = false } = {}
+) {
   host = document.createElement("div");
   host.className = "chapter-reader";
   const pane = document.createElement("div");
@@ -48,7 +51,7 @@ function mountShell(animation, { inline = false, ground, inPane = true } = {}) {
   wrapper = mount(IllustrationPlaceholder, {
     props: { animation, inline },
     attachTo: inPane ? pane : column,
-    global: { stubs: { Transition: true } },
+    global: { stubs: { Transition: true }, provide: { breakoutBox: boxed } },
   });
   return wrapper;
 }
@@ -70,6 +73,18 @@ afterEach(() => {
 });
 
 describe("figure shell: the legend folded in the pane", () => {
+  it("keeps a boxed gallery's controls and credit in the bottom toolbar", async () => {
+    mountShell(TEN, { inline: true, inPane: false, boxed: true });
+    expect(wrapper.findAll(".fig-legend-btn")).toHaveLength(1);
+    expect(toolbar().find(".fig-fs-btn").exists()).toBe(true);
+    expect(toolbar().find(".fig-legend-btn").exists()).toBe(true);
+    expect(toolbar().find(".fig-legend").classes()).toContain(
+      "fig-legend--folds"
+    );
+    await button().trigger("click");
+    expect(button().attributes("aria-expanded")).toBe("true");
+    expect(legend().classes()).not.toContain("fig-legend--folds");
+  });
   it("keeps the legend in the document, folded behind a labelled control", () => {
     mountShell(SINGLE);
     // Still there for a screen reader, as the figure's caption.

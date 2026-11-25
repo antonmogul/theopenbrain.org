@@ -30,6 +30,7 @@
  * technology; the two buttons are real and say what they do.
  */
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import Button from "@/components/dashboard/shared/Button.vue";
 import { cardFrame, cardRect } from "@/helper/boxTitleCard";
 
 const props = defineProps({
@@ -186,7 +187,7 @@ defineExpose({ drive });
           <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
         </svg>
       </button>
-      <button
+      <Button
         class="tc-skip"
         type="button"
         data-card-skip
@@ -206,7 +207,7 @@ defineExpose({ drive });
         >
           <path d="M8 3v10M4 9l4 4 4-4" />
         </svg>
-      </button>
+      </Button>
     </div>
   </div>
 </template>
@@ -303,23 +304,10 @@ defineExpose({ drive });
   content: "…";
 }
 .tc-skip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  --color-ink: 255 255 255;
+  --color-paper: var(--color-dark-surface);
   min-height: 44px;
   margin-top: auto;
-  padding: 0 1.25rem;
-  border: 1px solid #fff;
-  border-radius: 999px;
-  background: #fff;
-  color: rgb(var(--color-dark-surface));
-  font: 400 var(--ui-size-11) / 1 var(--font-mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
 }
 @media (hover: hover) {
   .tc-more:hover {

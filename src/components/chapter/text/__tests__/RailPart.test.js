@@ -147,7 +147,7 @@ describe("RailPart", () => {
     expect(w.find(".stub-dialog p").text()).toBe("Woodcut, 1574.");
   });
 
-  it("draws an image figure as its label and its image: no Legend control", async () => {
+  it("draws an image figure with its label and legend control below", async () => {
     const w = mountPart({ figures: ["figK"] });
     await nextTick();
     const fig = w.find('[data-rail-figure-id="figK"]');
@@ -159,7 +159,7 @@ describe("RailPart", () => {
     expect(fig.find("button").attributes("aria-label")).toBe(
       "Expand to full screen"
     );
-    expect(fig.text()).not.toContain("Legend");
+    expect(fig.find(".rf-bar summary").text()).toBe("Legend");
     expect(fig.find("figcaption.sr-only").text()).toBe(
       "The four humours, a diagram."
     );

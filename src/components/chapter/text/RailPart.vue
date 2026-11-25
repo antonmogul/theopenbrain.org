@@ -241,16 +241,9 @@ const label = computed(() =>
   /* Never wider than a comfortable line (36rem is about 58 characters of
      the box's text); where one column would be, a second one shows in
      part instead. */
-  --rail-col: max(
-    14rem,
-    min(
-      36rem,
-      calc(
-        (var(--rail-view, 100cqw) - var(--rail-lead) - var(--rail-figures-w)) /
-          var(--rail-fit) - var(--rail-col-gap)
-      )
-    )
-  );
+  /* One reading measure across every box, independent of image widths.
+     fitRailColumns adds whole columns when the text needs more room. */
+  --rail-col: clamp(19rem, 40cqw, 35rem);
   display: flex;
   gap: var(--rail-col-gap);
   height: 100%;
@@ -311,14 +304,14 @@ const label = computed(() =>
   order: 1;
   padding: 0.75rem 0 0;
 }
-/* No Legend control on the track: the legend is in the full-screen view
-   (Stuart, 14 Nov). It stays in the document, folded as the shell folds
-   it, so a screen reader still reads it with the figure. */
+/* A gallery uses the same bottom row as a plate, including its folded
+   legend and credit details (OPENBRAIN-88). */
 .rp-figure :deep(.fig-legend-row) {
   padding: 0;
 }
-.rp-figure :deep(.fig-legend-row .fig-legend-btn) {
-  display: none;
+.rp-figure :deep(.fig-toolbar .fig-legend-btn) {
+  grid-column: 4;
+  grid-row: 1;
 }
 /* What gives in a shell figure taller than the track: a single image, or
    a gallery's stage box (its image fits inside it). Fitted by

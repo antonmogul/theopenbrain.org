@@ -134,6 +134,9 @@ const legend = computed(() => {
 // under the title, as the redesign draws it. In the text column there is no
 // look: the legend opens under the artwork on a tap.
 const inPane = computed(() => !props.inline);
+const barLegend = computed(
+  () => inPane.value || (inBreakoutBox && !props.bare)
+);
 const legendId = `fig-legend-${useId()}`;
 // In the text column the legend is part of the page, so opening it moves
 // what follows: scroll-linked figures re-measure, as for an Explore card.
@@ -253,7 +256,7 @@ function closeFullscreen() {
             <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
           </svg>
         </button>
-        <template v-if="inPane && images.length && legend">
+        <template v-if="barLegend && images.length && legend">
           <button
             type="button"
             class="fig-legend-btn"
@@ -285,7 +288,7 @@ function closeFullscreen() {
             :id="legendId"
             class="fig-legend"
             :class="{
-              'fig-legend--folds': legendFloats,
+              'fig-legend--folds': legendFolded,
               'fig-legend--reserve': legendSizers.length,
               'is-open': legendOpen,
             }"
@@ -339,7 +342,7 @@ function closeFullscreen() {
       <!-- In the text column: the legend's control under the artwork, and
            the legend under it once it is opened. -->
       <div
-        v-if="inline && images.length && (legend || bare)"
+        v-if="inline && !barLegend && images.length && (legend || bare)"
         class="fig-legend-row"
         :class="{ 'fig-legend-row--bare': bare }"
         @keydown.esc="closeLegend"
@@ -852,7 +855,8 @@ function closeFullscreen() {
 :is(.figure-pane--dark, .figure-pane--paper) .fig-shell {
   background: transparent;
 }
-:is(.figure-pane--dark, .figure-pane--paper) .fig-toolbar {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-toolbar,
+.fig-shell--boxed .fig-toolbar {
   order: 1;
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
@@ -878,12 +882,15 @@ function closeFullscreen() {
 /* Label and title become grid items of the toolbar, so the icon can lead
    the row and the legend can sit under the title. */
 :is(.figure-pane--dark, .figure-pane--paper) .fig-toolbar-left,
+.fig-shell--boxed .fig-toolbar-left,
+.fig-shell--boxed .fig-heading,
 :is(.figure-pane--dark, .figure-pane--paper) .fig-heading {
   display: contents;
 }
 /* The bare 14px icon flush with the padding, in the label's amber; the
    28px hit area reaches 7px around it, into the padding. */
-:is(.figure-pane--dark, .figure-pane--paper) .fig-fs-btn {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-fs-btn,
+.fig-shell--boxed .fig-fs-btn {
   grid-row: 1;
   grid-column: 1;
   margin: -7px;
@@ -897,7 +904,8 @@ function closeFullscreen() {
 }
 /* The label's column is 50px in the Figma, so the title starts at 94px
    whatever the number. */
-:is(.figure-pane--dark, .figure-pane--paper) .fig-label {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-label,
+.fig-shell--boxed .fig-label {
   grid-row: 1;
   grid-column: 2;
   min-width: 3.125rem;
@@ -905,14 +913,16 @@ function closeFullscreen() {
   line-height: 1.3;
   color: rgb(var(--figure-toolbar-accent, var(--color-warn)));
 }
-:is(.figure-pane--dark, .figure-pane--paper) .fig-name {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-name,
+.fig-shell--boxed .fig-name {
   grid-row: 1;
   grid-column: 3;
   font-weight: 600;
   line-height: 1.3;
   color: rgb(var(--figure-pane-ink));
 }
-:is(.figure-pane--dark, .figure-pane--paper) .fig-legend {
+:is(.figure-pane--dark, .figure-pane--paper) .fig-legend,
+.fig-shell--boxed .fig-legend {
   grid-row: 2;
   grid-column: 3 / -1;
   font-family: var(--font-mono);
@@ -920,6 +930,21 @@ function closeFullscreen() {
   line-height: 1.3;
   letter-spacing: 0.06em;
   color: rgb(var(--figure-pane-ink));
+}
+.fig-shell--boxed .fig-name,
+.fig-shell--boxed .fig-legend {
+  color: inherit;
+}
+.fig-shell--boxed .fig-legend-btn {
+  grid-row: 1;
+  grid-column: 4;
+  margin-top: -5px;
+  padding-inline: 0;
+  border-color: transparent;
+  color: var(--bx-ink, inherit);
+}
+.fig-shell--boxed .fig-fs-btn {
+  color: var(--bx-fig-label, inherit);
 }
 /* The legend's control ends the row, bare like the expand icon; amber while
    the legend is kept open. */
