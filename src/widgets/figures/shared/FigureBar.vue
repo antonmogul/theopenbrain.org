@@ -231,7 +231,7 @@ const {
   overscroll-behavior: contain;
   padding: 1rem 0.875rem;
   border-top: 1px solid color-mix(in srgb, var(--fbar-ink) 14%, transparent);
-  background: rgb(var(--color-dark-surface, 28 28 28) / 0.94);
+  background: rgb(var(--color-figure-ground, 39 39 39) / 0.94);
   line-height: 1.45;
   backdrop-filter: blur(8px);
   animation: fbar-legend-in 0.16s ease;

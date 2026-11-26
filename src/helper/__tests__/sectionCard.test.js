@@ -101,6 +101,31 @@ describe("sectionCardFigure", () => {
       expect(sectionCardFigure({ src: "/replacement.webp" }, skull)).toBeNull();
     }
   });
+  // OPENBRAIN-86: the brain of H.M. The figure's picture names the cover as
+  // its own washed copy, so the cover and the figure are one picture.
+  it("matches a figure whose picture names the section's art as its wash", () => {
+    const cover =
+      "/publicAssets/images/foundations/sections/closing-words-v2.webp";
+    const brain = {
+      id: "animationFoundationsClosingHM",
+      fill: true,
+      images: [
+        {
+          src: "/publicAssets/images/foundations/hm-brain-v3.webp",
+          wash: cover,
+        },
+      ],
+    };
+    expect(sectionCardFigure({ src: cover }, brain)).toBe(brain);
+    // Another cover, or a picture with no wash of its own, is not it.
+    expect(sectionCardFigure({ src: "/other-cover.webp" }, brain)).toBeNull();
+    expect(
+      sectionCardFigure(
+        { src: cover },
+        { ...brain, images: [{ src: brain.images[0].src }] }
+      )
+    ).toBeNull();
+  });
   it("keeps the separate card when the first figure or its media changes", () => {
     expect(sectionCardFigure({ src: "/other.webp" }, record)).toBeNull();
     for (const extra of [

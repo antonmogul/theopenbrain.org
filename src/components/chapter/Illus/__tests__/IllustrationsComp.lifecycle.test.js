@@ -129,6 +129,39 @@ describe("reader figure lifecycle", () => {
     expect(shell().attributes("data-section-card")).toBe("");
   });
 
+  // OPENBRAIN-86: the card's window is read live, the trigger's start is
+  // ScrollTrigger's rounded one. Between them the still must stay mounted.
+  it("holds the card through the pixels between its window's end and the figure's trigger", async () => {
+    vi.spyOn(window, "matchMedia").mockReturnValue({
+      matches: true,
+      addEventListener() {},
+      removeEventListener() {},
+    });
+    document
+      .querySelector("#container")
+      .insertAdjacentHTML(
+        "beforeend",
+        '<span id="triggerAnimationimage-ab12" class="animationTrigger"></span>'
+      );
+    const id = "image-ab12";
+    const shell = (pane) =>
+      pane.findComponent({ name: "IllustrationPlaceholder" });
+    // The window ended 0.4px above the scroll position (0); the trigger
+    // has not started.
+    const gap = mountPane({
+      props: { sectionHandoff: { windows: [{ id, start: -100, end: -0.4 }] } },
+    });
+    await settle();
+    expect(shell(gap).exists()).toBe(true);
+    expect(shell(gap).attributes("data-section-card")).toBe("");
+    // Well past it, the card is off.
+    const past = mountPane({
+      props: { sectionHandoff: { windows: [{ id, start: -100, end: -20 }] } },
+    });
+    await settle();
+    expect(shell(past).exists()).toBe(false);
+  });
+
   it("never registers breakout artwork with the pinned figure pane", async () => {
     mountPane();
     await settle();

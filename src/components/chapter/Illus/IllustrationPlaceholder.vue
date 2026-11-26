@@ -982,7 +982,7 @@ function closeFullscreen() {
   padding: 1rem 0.875rem 1rem 5.875rem;
   border: 0;
   border-top: 1px solid rgb(var(--figure-pane-ink) / 0.14);
-  background: rgb(var(--color-dark-surface) / 0.94);
+  background: rgb(var(--color-figure-ground) / 0.94);
   line-height: 1.45;
   backdrop-filter: blur(8px);
 }

@@ -41,6 +41,14 @@ import { holdVideoFullscreen } from "@/helper/videoFullscreen";
 import { readerScrollLocked } from "@/helper/readerScrollLock";
 
 const props = defineProps({ sectionHandoff: { type: Object, default: null } });
+// The card's window ends where the figure's own trigger starts, but the two
+// are measured apart: ScrollTrigger rounds its start to a whole pixel and
+// keeps the one from its last refresh, the window is read live. A pixel
+// could fall between them, with neither on: the still was unmounted and
+// faded back in at the reading line (Closing words at 1440 × 900,
+// OPENBRAIN-86). So the card holds on a few pixels past its end; the
+// figure's trigger takes over inside that, and the card is off beyond it.
+const HANDOFF_OVERLAP = 8;
 // A matching card is the actual figure mounted early. It stays the same
 // Vue instance across the reading line; the toolbar reserves its real row.
 const preview = computed(() => {
@@ -49,12 +57,14 @@ const preview = computed(() => {
   // SectionCards' next RAF. Reverse crossing must never unmount the still.
   const y = window.scrollY;
   const span = props.sectionHandoff?.windows?.find(
-    (s) => y >= s.start && y < s.end
+    (s) => y >= s.start && y < s.end + HANDOFF_OVERLAP
   );
   return span
     ? {
         id: span.id,
-        progress: span.still ? 1 : (y - span.start) / (span.end - span.start),
+        progress: span.still
+          ? 1
+          : Math.min(1, (y - span.start) / (span.end - span.start)),
       }
     : null;
 });
