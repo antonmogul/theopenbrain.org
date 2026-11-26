@@ -28,8 +28,16 @@
  * chapter-colour overlay is for section openers only, and clearing it with
  * the scroll makes sense only where a section's picture is the figure that
  * follows it. That case is the section card's hand-over (SectionCards,
- * helper/sectionCard.js), which drives this same washed copy; the flag
- * stays for a figure that opts in.
+ * helper/sectionCard.js); the flag stays for a figure that opts in.
+ *
+ * The hand-over has no washed copy (Maura, 26 Nov, OPENBRAIN-93: a copy
+ * tints a cutout's own pixels and leaves the pane dark around it). There
+ * the figure shell lays a white ground under the picture and the chapter
+ * colour over it, multiplied, both the size of the art box
+ * (IllustrationPlaceholder, `veiled`). A blend is right in that one place
+ * because the shell owns everything under it: the ground is its own and
+ * the art box is isolated. What the two ways share is the driver: every
+ * `[data-figure-wash]` in the pane gets the same opacity from the scroll.
  *
  * Pure functions; useFigureTint drives them from the scroll.
  */

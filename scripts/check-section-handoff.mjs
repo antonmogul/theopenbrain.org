@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 
 /** Real reader regression: the card and first figure must keep the same
  * image element, box and fit through the reading line in both directions.
+ * The card's colour is the opener's wash (OPENBRAIN-93): a white ground
+ * under the picture and the chapter colour multiplied over it, both the
+ * size of the art box, clearing together.
  * Runs in the hosted History fixture and against a local preview.
  * `slug` is the section whose first figure carries its card: History's
  * first section by default, "closing-words" once its row names the cover
@@ -37,6 +40,48 @@ export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
   const bounds = await image.boundingBox();
   const fit = await image.evaluate((el) => getComputedStyle(el).objectFit);
   assert.equal(await page.locator(".section-figure-preview").count(), 1);
+  const wash = page.locator(".figure-pane [data-figure-wash]");
+  const veil = await page.evaluate(() => {
+    const pane = document.querySelector(".figure-pane");
+    const box = (el) => {
+      const r = el.getBoundingClientRect();
+      return [r.left, r.top, r.right, r.bottom];
+    };
+    const ground = pane.querySelector(".fig-veil--ground");
+    const colour = pane.querySelector(".fig-veil--colour");
+    const picture = pane.querySelector(".figimg-img");
+    if (!ground || !colour || !picture) return null;
+    const after = (a, b) =>
+      !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    return {
+      pane: box(pane),
+      ground: box(ground),
+      colour: box(colour),
+      picture: box(picture),
+      groundColour: getComputedStyle(ground).backgroundColor,
+      groundUnder: Number(getComputedStyle(ground).zIndex) < 0,
+      colourOver: after(picture, colour),
+      blend: getComputedStyle(colour).mixBlendMode,
+      scope: getComputedStyle(ground.parentElement).isolation,
+    };
+  });
+  assert(veil, "the opener's wash has a ground and a colour layer");
+  assert.equal(await wash.count(), 2, "and nothing else is washed");
+  assert.equal(veil.groundColour, "rgb(255, 255, 255)", "white ground");
+  assert(veil.groundUnder, "the ground is under the picture");
+  assert(veil.colourOver, "the colour is over the picture");
+  assert.equal(veil.blend, "multiply");
+  assert.equal(veil.scope, "isolate", "multiplied with the art box only");
+  assert.deepEqual(veil.colour, veil.ground, "the two layers share one box");
+  assert.equal(veil.ground[0], veil.pane[0], "the wash reaches the left edge");
+  assert.equal(veil.ground[2], veil.pane[2], "and the right edge");
+  assert(
+    veil.ground[0] <= veil.picture[0] &&
+      veil.ground[1] <= veil.picture[1] &&
+      veil.ground[2] >= veil.picture[2] &&
+      veil.ground[3] >= veil.picture[3],
+    "the wash covers the whole picture"
+  );
   let previous = 1;
   const frames = [];
   for (let y = start; y <= end + 100; y += 50) {
@@ -54,10 +99,14 @@ export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
       await image.evaluate((el) => getComputedStyle(el).objectFit),
       fit
     );
-    const wash = page.locator(".figure-pane [data-figure-wash]");
-    const opacity = (await wash.count())
-      ? Number(await wash.evaluate((el) => el.style.opacity))
-      : 0;
+    const opacities = await wash.evaluateAll((els) =>
+      els.map((el) => Number(el.style.opacity))
+    );
+    const opacity = opacities[0] ?? 0;
+    assert(
+      opacities.every((o) => o === opacity),
+      "the ground and the colour clear together"
+    );
     assert(opacity <= previous + 0.001, "wash clears monotonically");
     previous = opacity;
     frames.push({ y, opacity });

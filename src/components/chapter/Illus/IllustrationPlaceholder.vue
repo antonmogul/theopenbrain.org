@@ -55,13 +55,20 @@ import {
 } from "@/helper/figureCycle";
 import { useFigureLegend } from "@/composables/useFigureLegend";
 import { railFigureLabel } from "@/helper/railFigure";
-import { wantsTintFade } from "@/helper/figureTint";
+import {
+  FIGURE_TINT,
+  imageTakesTint,
+  wantsTintFade,
+} from "@/helper/figureTint";
+import { reducedMotionPreferred } from "@/helper/readerJump";
 
 const props = defineProps({
   animation: { type: Object, required: true },
   /* Rendered in the text column (IllustrationInline), where the shell takes
      the height its content needs rather than filling a fixed pane. */
   inline: { type: Boolean, default: false },
+  /* The pane is showing this figure as its section's card (SectionCards'
+     hand-over): its art box opens in the chapter's colour. See `veiled`. */
   sectionWash: { type: Boolean, default: false },
   /* An image in the text with no number or title of its own (InlineImages,
      OPENBRAIN-70): no toolbar row. The expand button moves to the row under
@@ -105,6 +112,33 @@ const caption = computed(
 // A figure that fills the pane (config.fill): its focal point, or "". Never
 // in the text column, and the fullscreen dialog is not told about it.
 const fill = computed(() => (props.inline ? "" : figureFill(props.animation)));
+/*
+ * The section opener's wash (Maura, 26 Nov, OPENBRAIN-93). A figure that is
+ * also its section's card opens with its whole art box in the chapter's
+ * colour: a white ground under the picture and the chapter colour over it,
+ * multiplied, so a cutout (the trepanned skull) stands on a full field of
+ * colour instead of being tinted alone on the dark pane. The two layers
+ * clear together with the scroll and leave the picture on the pane's
+ * ground; the picture itself is never touched, so it cannot move.
+ *
+ * Both carry `data-figure-wash`, which is all the pane's scroll driver
+ * looks for (useFigureTint): it writes one opacity to every such element,
+ * and each takes the opacity of the moment as it mounts. Like the washed
+ * copy before it, there is none without the pane or under reduced motion.
+ */
+const tint = inject(FIGURE_TINT, null);
+const veiled = computed(
+  () =>
+    props.sectionWash &&
+    !props.inline &&
+    !!tint &&
+    images.value.length === 1 &&
+    imageTakesTint(images.value[0]) &&
+    !reducedMotionPreferred()
+);
+const primeVeil = (el) => {
+  if (el && tint) el.style.opacity = String(tint.current());
+};
 // The gallery's current image and view (all the images, or one), shared by
 // the pane and the fullscreen dialog so expanding opens on the same plate
 // in the same view (OPENBRAIN-144, OPENBRAIN-177).
@@ -311,8 +345,19 @@ function closeFullscreen() {
       <!-- Diagram area: the artwork, or a placeholder until it lands -->
       <div
         class="fig-area"
-        :class="{ 'fig-area--art': images.length, 'fig-area--fill': fill }"
+        :class="{
+          'fig-area--art': images.length,
+          'fig-area--fill': fill,
+          'fig-area--veiled': veiled,
+        }"
       >
+        <span
+          v-if="veiled"
+          :ref="primeVeil"
+          class="fig-veil fig-veil--ground"
+          data-figure-wash
+          aria-hidden="true"
+        ></span>
         <FigureImages
           v-if="images.length"
           :images="images"
@@ -324,7 +369,7 @@ function closeFullscreen() {
           :start="animation.galleryStart || ''"
           :fit="!inline"
           :suspended="isFullscreen"
-          :wash="!inline && (sectionWash || wantsTintFade(animation))"
+          :wash="!inline && !sectionWash && wantsTintFade(animation)"
           :fill="fill"
           legend-above
         />
@@ -340,6 +385,14 @@ function closeFullscreen() {
             <span class="note-tag">NOTE</span> {{ animation.note }}
           </p>
         </div>
+        <!-- After the artwork's v-if / v-else pair, never between them. -->
+        <span
+          v-if="veiled"
+          :ref="primeVeil"
+          class="fig-veil fig-veil--colour"
+          data-figure-wash
+          aria-hidden="true"
+        ></span>
       </div>
 
       <!-- In the text column: the legend's control under the artwork, and
@@ -771,6 +824,34 @@ function closeFullscreen() {
 }
 .fs-area.fig-area--art {
   padding: 1.25rem;
+}
+/* The section opener's wash (OPENBRAIN-93): two layers the size of the art
+   box, padding included, so the colour reaches the pane's edges whatever
+   margins the picture keeps. The white ground goes under the picture and
+   the chapter colour over it, multiplied: white turns into the colour,
+   the picture's darks stay dark. `isolation` makes the art box the whole
+   of what the colour multiplies with, so the result is the same on any
+   ground and while the shell itself is fading in. Only their opacity ever
+   changes (useFigureTint), and they start cleared. */
+.fig-area--veiled {
+  position: relative;
+  isolation: isolate;
+}
+.fig-veil {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+.fig-veil--ground {
+  z-index: -1;
+  background: #fff;
+}
+.fig-veil--colour {
+  z-index: 1;
+  background: rgb(var(--color-chapter));
+  mix-blend-mode: multiply;
 }
 .fig-placeholder {
   display: flex;
