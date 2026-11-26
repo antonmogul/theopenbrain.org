@@ -19,12 +19,39 @@ const card = (props = {}) =>
   });
 
 describe("BoxTitleCard", () => {
+  it("uses layers only when pinned and a flat original on phones or reduced motion", async () => {
+    const w = card({
+      variant: "pinned",
+      layers: [
+        { src: "/back.webp", depth: 0 },
+        { src: "/front.webp", depth: 1 },
+      ],
+    });
+    expect(w.findAll("[data-card-layer]")).toHaveLength(2);
+    w.vm.drive({ progress: 0.5 });
+    expect(w.findAll("[data-card-layer]")[1].element.style.transform).toContain(
+      "-28.00px"
+    );
+    for (const variant of ["static", "simple"]) {
+      await w.setProps({ variant });
+      expect(w.findAll("[data-card-layer]")).toHaveLength(0);
+      expect(w.get("[data-card-flat]").attributes("src")).toBe(
+        base.picture.src
+      );
+    }
+    await w.setProps({ picture: { src: "", alt: "Composite" } });
+    expect(w.findAll("[data-card-composite]")).toHaveLength(2);
+    expect(w.findAll("[data-card-composite]")[1].element.style.transform).toBe(
+      ""
+    );
+    w.unmount();
+  });
   it("shows the picture, the title, the quotation, more and Skip", async () => {
     const wrapper = card({ variant: "static" });
     expect(wrapper.attributes("data-card-variant")).toBe("static");
     expect(wrapper.attributes("data-card-state")).toBeUndefined();
-    // The picture repeats the box's own figure: decorative here.
-    expect(wrapper.get("img").attributes("alt")).toBe("");
+    // Authored title-card artwork can differ from the track figure.
+    expect(wrapper.get("img").attributes("alt")).toBe("A bust");
     expect(wrapper.get(".tc-title").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get(".tc-excerpt").text()).toBe(base.excerpt);
     await wrapper.get("[data-card-more]").trigger("click");
@@ -59,7 +86,7 @@ describe("BoxTitleCard", () => {
     const wrapper = card({ variant: "pinned", progress: 0 });
     await wrapper.vm.$nextTick();
     expect(wrapper.attributes("data-card-state")).toBe("open");
-    expect(wrapper.element.style.getPropertyValue("--tc-copy")).toBe("1.000");
+    expect(wrapper.element.style.getPropertyValue("--tc-copy")).toBe("0.000");
     await wrapper.setProps({ progress: 0.6 });
     expect(wrapper.element.style.getPropertyValue("--tc-copy")).toBe("0.000");
     expect(wrapper.attributes("data-card-state")).toBe("open");
@@ -69,7 +96,7 @@ describe("BoxTitleCard", () => {
   });
 
   it("waits for the box to be near before the words come in, and hides the track's own picture while it flies", () => {
-    const wrapper = card({ variant: "pinned" });
+    const wrapper = card({ variant: "pinned", flyToLead: true });
     wrapper.vm.drive({ progress: -0.5, near: false });
     expect(wrapper.attributes("data-card-state")).toBe("arriving");
     // A landing place with a size: the picture flies to it.
@@ -93,12 +120,51 @@ describe("BoxTitleCard", () => {
     wrapper.vm.drive({ progress: 0.7, target: img });
     expect(plate.style.visibility).toBe("hidden");
     const pic = wrapper.get(".tc-picture").element;
-    expect(parseFloat(pic.style.width)).toBeGreaterThan(300);
-    expect(parseFloat(pic.style.width)).toBeLessThan(1000);
-    wrapper.vm.drive({ progress: 1, target: img });
-    expect(plate.style.visibility).toBe("");
+    expect(pic.style.transform).toContain("translate3d(");
+    expect(pic.style.transform).toContain("scale(");
     expect(pic.style.width).toBe("");
+    // An authored painting is not the bust underneath: fade in place,
+    // release any hidden track plate and never fly into its column.
     wrapper.unmount();
+    const different = card({ variant: "pinned", flyToLead: false });
+    different.element.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 800,
+    });
+    different.vm.drive({ progress: 0.7, target: img });
+    const painting = different.get(".tc-picture").element;
+    expect(painting.style.transform).toBe("");
+    expect(Number(painting.style.opacity)).toBeGreaterThan(0);
+    expect(Number(painting.style.opacity)).toBeLessThan(1);
+    expect(plate.style.visibility).toBe("");
+    different.vm.drive({ progress: 0.95, target: img });
+    expect(Number(painting.style.opacity)).toBe(0);
+    different.unmount();
     plate.remove();
+  });
+
+  it("restores the track image when the matching card finishes flying", () => {
+    const wrapper = card({ variant: "pinned", flyToLead: true });
+    const img = document.createElement("img");
+    img.getBoundingClientRect = () => ({
+      left: 60,
+      top: 200,
+      width: 300,
+      height: 400,
+    });
+    wrapper.element.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 800,
+    });
+    wrapper.vm.drive({ progress: 0.7, target: img });
+    expect(img.style.visibility).toBe("hidden");
+    wrapper.vm.drive({ progress: 1, target: img });
+    expect(img.style.visibility).toBe("");
+    expect(wrapper.get(".tc-picture").element.style.transform).toBe("");
+    wrapper.unmount();
   });
 });

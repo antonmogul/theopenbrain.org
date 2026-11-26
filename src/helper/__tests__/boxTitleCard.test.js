@@ -115,7 +115,7 @@ describe("cardExcerpt", () => {
 describe("cardFrame", () => {
   it("holds, then lets the words go, then lands the picture", () => {
     expect(cardFrame(0)).toEqual({
-      copy: 1,
+      copy: 0,
       move: 0,
       scrim: 1,
       ground: 1,
@@ -145,7 +145,7 @@ describe("cardFrame", () => {
     for (let p = 0; p <= 1.2; p += 0.05) {
       const f = cardFrame(p);
       expect(f.move).toBeGreaterThanOrEqual(last.move);
-      expect(f.copy).toBeLessThanOrEqual(last.copy);
+      if (p > CARD_HOLD) expect(f.copy).toBeLessThanOrEqual(last.copy);
       expect(f.ground).toBeLessThanOrEqual(last.ground);
       last = f;
     }

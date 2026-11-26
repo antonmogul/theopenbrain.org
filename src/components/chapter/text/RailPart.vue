@@ -143,7 +143,10 @@ const label = computed(() =>
         'rp--pictures': plates > 1,
       },
     ]"
-    :style="{ '--rail-figures': pictures }"
+    :style="{
+      '--rail-figures': pictures,
+      transform: 'translate3d(var(--rail-visual-offset, 0px), 0, 0)',
+    }"
     data-rail-part
     :data-explore="part.explore ? part.id : undefined"
     role="group"

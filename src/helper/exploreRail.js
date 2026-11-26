@@ -295,6 +295,9 @@ const num = (el, name) => Number(el?.getAttribute?.(name)) || 0;
 
 /** The furthest a track scrolls. */
 export function railMax(scroller) {
+  const measured = scroller?.getAttribute?.("data-rail-max");
+  if (measured !== null && measured !== undefined && measured !== "")
+    return Math.max(0, Number(measured) || 0);
   return Math.max(
     0,
     (scroller?.scrollWidth || 0) - (scroller?.clientWidth || 0)
@@ -310,7 +313,11 @@ export function railXOf(el, scroller) {
   if (!el?.getBoundingClientRect || !scroller?.getBoundingClientRect) return 0;
   const pad = parseFloat(getComputedStyle(scroller).paddingLeft) || 0;
   const origin = scroller.getBoundingClientRect().left - scroller.scrollLeft;
-  const at = (node) => node.getBoundingClientRect().left - origin - pad;
+  // The visual follow is transform-only; jump geometry reads the native
+  // layout position, including while a previous scroll is still settling.
+  const visualOffset = num(scroller, "data-rail-visual-offset");
+  const at = (node) =>
+    node.getBoundingClientRect().left - origin - pad - visualOffset;
   const max = railMax(scroller);
   let x = at(el);
   const part = el.closest?.("[data-rail-part]");
@@ -335,7 +342,12 @@ export const railOf = (el) => el?.closest?.("[data-rail-scroller]") || null;
  * page (reduced motion, a swipe track: see revealInRail).
  */
 export function railLandingY(el, win = globalThis.window) {
-  const scroller = railOf(el);
+  // A box heading is sticky and sits outside the track: its viewport top
+  // cannot locate the start of a box after the reader has travelled across.
+  const cardHeading = el?.matches?.('[data-box-card="pinned"]');
+  const scroller = cardHeading
+    ? el.querySelector("[data-rail-scroller]")
+    : railOf(el);
   if (!scroller || !win) return null;
   if (scroller.getAttribute("data-rail-pinned") !== "1") return null;
   const pause = scroller.closest("[data-rail-pause]");
@@ -345,10 +357,12 @@ export function railLandingY(el, win = globalThis.window) {
     pause.getBoundingClientRect().top +
     scrollY -
     num(scroller, "data-rail-top") +
-    railScrolledForX(railXOf(el, scroller), {
-      lead: num(scroller, "data-rail-lead"),
-      max: railMax(scroller),
-    })
+    (cardHeading
+      ? num(scroller, "data-rail-card-read")
+      : railScrolledForX(railXOf(el, scroller), {
+          lead: num(scroller, "data-rail-lead"),
+          max: railMax(scroller),
+        }))
   );
 }
 

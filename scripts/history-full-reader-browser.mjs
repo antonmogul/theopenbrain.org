@@ -112,6 +112,16 @@ async function readerReady(page) {
     timeout: 20000,
   });
   await expect(page.locator("[data-breakout-box]")).toHaveCount(boxes.length);
+  // Reduced motion never mounts parallax layers or schedules a pinned card.
+  await expect(
+    page.locator('[data-box-title-card][data-card-variant="pinned"]')
+  ).toHaveCount(0);
+  await expect(page.locator("[data-card-layer]")).toHaveCount(0);
+  const flatCards = page.locator("[data-box-title-card]");
+  expect(await flatCards.count()).toBeGreaterThan(0);
+  for (const card of await flatCards.all()) {
+    await expect(card.locator("[data-card-flat]")).toHaveCount(1);
+  }
   await page.evaluate(() => document.fonts.ready);
   // Both real reader components deliberately register GSAP triggers after 500ms.
   await page.waitForTimeout(1000);

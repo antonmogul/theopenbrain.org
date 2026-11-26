@@ -1,3 +1,4 @@
+import { normalizeBoxCard } from "@/helper/boxCard.mjs";
 /**
  * Data for the chapter block page, /dashboard/chapters/:slug (OPENBRAIN-60).
  *
@@ -527,6 +528,18 @@ export function useChapterEditor(slug) {
     });
   }
 
+  async function setBoxCard(id, card) {
+    return withSaving(async () => {
+      const sec = sections.value.find((x) => x.id === id);
+      if (!isBox(sec)) throw new Error("Only breakout boxes have title cards.");
+      if (!("box_card" in sec))
+        throw new Error("Title cards need a database update.");
+      const before = sec.box_card ?? null;
+      await patchSection(id, { box_card: normalizeBoxCard(card) });
+      pushUndo("Title card", () => patchSection(id, { box_card: before }));
+    });
+  }
+
   async function patchSection(id, body) {
     const rows = await authedRequest(`sections?id=eq.${id}`, {
       method: "PATCH",
@@ -985,6 +998,7 @@ export function useChapterEditor(slug) {
     renameSection,
     setBoxPlacement,
     setBoxTreatment,
+    setBoxCard,
     isBox,
     addSection,
     moveSection,

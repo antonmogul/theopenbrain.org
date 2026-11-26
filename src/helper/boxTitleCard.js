@@ -31,14 +31,16 @@ import { figureImages } from "@/helper/figureCycle";
 import { railPlatesOf } from "@/helper/railFigure";
 
 /** Screens of page scroll the card takes before the track's own lead-in. */
-export const CARD_SCREENS = 0.9;
+export const CARD_SCREENS = 1.1;
 /** The part of that scroll in which nothing moves: the card is read. */
-export const CARD_HOLD = 0.3;
+export const CARD_HOLD = 0.42;
 /** By this point of it the words are gone and only the picture travels. */
-export const CARD_COPY_OUT = 0.55;
+export const CARD_COPY_OUT = 0.6;
 /** The copy fades in once the box is within this much of a screen of its
  *  pin (it is the picture alone that arrives). */
 export const CARD_NEAR = 0.3;
+/** A named-box jump opens with readable copy, after the image-only arrival. */
+export const CARD_READ = 0.25;
 /** The longest quotation, in characters. */
 export const CARD_EXCERPT_MAX = 220;
 /** A first sentence shorter than this brings the second with it. */
@@ -144,9 +146,11 @@ export function cardExcerptOf(layout) {
  */
 export function cardFrame(progress) {
   const p = clamp01(progress);
-  const move = ease(clamp01((p - CARD_HOLD) / (1 - CARD_HOLD)));
+  const move = ease(clamp01((p - CARD_HOLD) / (0.9 - CARD_HOLD)));
   return {
-    copy: 1 - clamp01((p - CARD_HOLD) / (CARD_COPY_OUT - CARD_HOLD)),
+    copy:
+      clamp01((p - 0.1) / (CARD_READ - 0.1)) *
+      (1 - clamp01((p - CARD_HOLD) / (CARD_COPY_OUT - CARD_HOLD))),
     move,
     scrim: 1 - move,
     ground: 1 - ease(clamp01((move - 0.3) / 0.7)),
