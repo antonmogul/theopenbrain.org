@@ -892,7 +892,7 @@ onBeforeUnmount(() => {
   width: min(100%, 70rem);
 }
 /* The card is up to half as wide again here, so its translation is set
-   larger rather than narrower: the lines keep to about 85 characters and
+   larger rather than narrower: the lines keep to about 70 characters and
    the padding stays equal on both sides. */
 .pc:fullscreen .pc-translation {
   font-size: clamp(0.875rem, 2.1cqw, 1.625rem);
