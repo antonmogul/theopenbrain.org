@@ -339,7 +339,20 @@ export function figureEnd(trigger, triggers, records, win = window) {
   for (const band of section.querySelectorAll(FIGURE_BANDS)) {
     if (trigger.contains(band)) continue;
     const bandTop = band.getBoundingClientRect().top;
-    if (bandTop > top) boundaries.push(bandTop);
+    if (bandTop > top) {
+      // The pane travels up with a rail box, rather than disappearing when
+      // the box reaches mid-screen. Keep the still mounted until it has
+      // moved entirely above the pane; the title card uses its own clock.
+      const rail = band.hasAttribute("data-pane-box-exit");
+      const pane = section
+        .closest(".chapter-reader")
+        ?.querySelector(".figure-pane");
+      const exit =
+        rail && pane
+          ? win.innerHeight / 2 - pane.getBoundingClientRect().top
+          : 0;
+      boundaries.push(bandTop + exit);
+    }
   }
   // Never shorter than its paragraph's window. Anything not inside the
   // trigger starts at or below its bottom, so the next figure is still never

@@ -34,6 +34,7 @@
  */
 import { computed, nextTick, ref } from "vue";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import RailFigure from "./RailFigure.vue";
 import { imageUrl } from "@/editor/media.mjs";
 import { shownBy, useFigureSources } from "@/composables/useFigureSources";
 
@@ -85,18 +86,19 @@ function toggle() {
       <div v-if="figureLeads" class="xc-figure xc-figure--live">
         <slot name="figure" />
       </div>
-      <figure v-else-if="explore.image" class="xc-figure">
-        <img
-          class="xc-img"
-          :src="imageUrl(explore.image.src)"
-          :alt="explore.image.alt || ''"
-          loading="lazy"
-          decoding="async"
-        />
-        <figcaption v-if="explore.legend" class="xc-legend">
-          {{ explore.legend }}
-        </figcaption>
-      </figure>
+      <RailFigure
+        v-else-if="explore.image"
+        class="xc-figure"
+        inline
+        :images="[
+          {
+            src: imageUrl(explore.image.src),
+            alt: explore.image.alt || '',
+            caption: explore.legend || '',
+          },
+        ]"
+        :name="explore.title"
+      />
       <div class="xc-lead">
         <p class="xc-kicker">Explore</p>
         <h3 :id="titleId" class="xc-title">{{ explore.title }}</h3>

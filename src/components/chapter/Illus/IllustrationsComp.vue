@@ -34,6 +34,7 @@ import {
 } from "@/helper/historyFigureTiming";
 import { figurePaneGround } from "@/helper/figurePane";
 import { wantsTintFade } from "@/helper/figureTint";
+import { usePaneBoxExit } from "@/composables/usePaneBoxExit";
 import { useFigureTint } from "@/composables/useFigureTint";
 import { keepRefreshInstant } from "@/helper/refreshScroll";
 import { holdVideoFullscreen } from "@/helper/videoFullscreen";
@@ -86,6 +87,7 @@ keepRefreshInstant(ScrollTrigger);
 
 const activeAnimation = ref(null);
 const paneElement = ref(null);
+usePaneBoxExit(paneElement);
 // The pane's ground (OPENBRAIN-152): the chapter's dark surface, unless a
 // figure this chapter triggers was drawn for the paper page (the 2023 Lottie
 // line art; helper/figurePane.js). Dark until the triggers are read, which
@@ -554,7 +556,14 @@ onBeforeUnmount(() => {
      is styled in src/index.css with the other reader rules: it is the
      contract the children's on-dark rules and the stories key on, so a
      wrapper carrying the class must get it without this component loaded. -->
-<style scoped></style>
+<style scoped>
+.figure-pane > :deep(*) {
+  translate: 0 var(--pane-box-y, 0px);
+}
+.figure-pane[data-box-cut] > :deep(*) {
+  visibility: hidden;
+}
+</style>
 
 <style>
 /* Keep the exact toolbar height while the section card shows only art. */

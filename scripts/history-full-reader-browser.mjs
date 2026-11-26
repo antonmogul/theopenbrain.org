@@ -54,7 +54,7 @@ const figureWidgets = fixture.paragraphs.flatMap((paragraph) => {
 });
 const SANDBOX_SERVICE_WORKER =
   /^Failed to read the 'serviceWorker' property from 'Navigator': Service worker is disabled because the context is sandboxed/;
-const paneSelector = '.chapter-reader > [class~="reader:fixed"]';
+const paneSelector = ".chapter-reader > .figure-pane";
 const manifest = {
   commit: process.env.GITHUB_SHA,
   runId: process.env.GITHUB_RUN_ID,
@@ -227,7 +227,9 @@ async function assertNoBoxLeakage(page) {
 // The boundary below is figureEnd's (src/helper/historyFigureTiming.js) for a
 // still image on Automatic: the next trigger or full-width band (FIGURE_BANDS)
 // outside this one, else the section's end, never before its own bottom. An
-// authored hold (content.animationFlags.hold, OPENBRAIN-131) adds `bottom +
+// arriving track box carries the still to the pane's top (OPENBRAIN-88), so
+// that band's boundary includes the distance from reading line to pane top.
+// An authored hold (content.animationFlags.hold, OPENBRAIN-131) adds `bottom +
 // hold screens` to it: History rows carry none, so if one ever does, add that
 // term here in the same change.
 // Its start is figureStart's (OPENBRAIN-195): the trigger's top on the
@@ -254,6 +256,9 @@ async function timing(page, result, number) {
       const top = rect.top + scrollY;
       const bottom = rect.bottom + scrollY;
       const section = element.closest("section");
+      const paneTop = document
+        .querySelector(paneSelector)
+        .getBoundingClientRect().top;
       const boundaries = [
         ...section.querySelectorAll(
           ".animationTrigger[id], .fb-slot:not(.fb-slot--column), .wb"
@@ -263,10 +268,17 @@ async function timing(page, result, number) {
           (item) =>
             item !== element &&
             !element.contains(item) &&
-            !item.closest("[data-breakout-box]")
+            !item.closest("[data-breakout-box]") &&
+            item.getBoundingClientRect().top + scrollY > top + 1
         )
-        .map((item) => item.getBoundingClientRect().top + scrollY)
-        .filter((y) => y > top + 1);
+        .map((item) => {
+          const at = item.getBoundingClientRect().top + scrollY;
+          // A track box takes the figure up with it. Its departure boundary
+          // is the pane's top, not the reading line halfway down the screen.
+          return item.hasAttribute("data-pane-box-exit")
+            ? at + innerHeight / 2 - paneTop
+            : at;
+        });
       const covers = [
         ...element
           .closest(".chapter-reader")
@@ -277,9 +289,6 @@ async function timing(page, result, number) {
         .filter((item) => !item.contains(element) && !element.contains(item))
         .map((item) => item.getBoundingClientRect().bottom + scrollY)
         .filter((y) => y <= top + 1);
-      const paneTop = document
-        .querySelector(paneSelector)
-        .getBoundingClientRect().top;
       const cover = covers.length ? Math.max(...covers) : null;
       const boundary = Math.max(
         bottom,
@@ -288,6 +297,13 @@ async function timing(page, result, number) {
           ...boundaries
         )
       );
+      const railArrival = [...section.querySelectorAll("[data-pane-box-exit]")]
+        .map((item) => item.getBoundingClientRect().top + scrollY)
+        .find(
+          (at) =>
+            at > top + 1 &&
+            Math.abs(at + innerHeight / 2 - paneTop - boundary) < 1
+        );
       // The most it may wait: a quarter of a screen of its stay is kept.
       const most = boundary - top - 0.25 * innerHeight;
       const wait =
@@ -306,6 +322,7 @@ async function timing(page, result, number) {
         paneTop,
         bottom,
         boundary,
+        railArrival,
         readingLine: innerHeight / 2,
         scrollY,
       };
@@ -380,6 +397,16 @@ async function timing(page, result, number) {
       ).toBeLessThanOrEqual(live.paneTop + 1);
   }
   await shot(page, result, `static-figure-${number}-last-lines`);
+  if ((await measure()).railArrival !== undefined) {
+    await sample("rail-arrival", (geometry) => geometry.railArrival + 5);
+    // This lane uses reduced motion: the still remains mounted for the
+    // departure interval, but the pane cuts it as soon as the box arrives.
+    await expect(trigger).toHaveClass(/active/);
+    await expect(page.locator(paneSelector)).toHaveAttribute(
+      "data-box-cut",
+      ""
+    );
+  }
   await sample("after-boundary", (geometry) => geometry.boundary + 5);
   await expect(trigger).not.toHaveClass(/active/);
   await expect

@@ -601,10 +601,11 @@ function fitPlates(fig, plates) {
   });
   if (!row || ratios.some((r) => !(r > 0))) return;
   const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
-  const bar = fig.querySelector("[data-rail-figure-bar]");
+  const bars = [...fig.querySelectorAll("[data-rail-figure-bar]")];
   // Twice: the label's row may wrap differently at the new width.
   for (let pass = 0; pass < 2; pass += 1) {
-    const room = fig.clientHeight - (bar?.offsetHeight || 0);
+    const room =
+      fig.clientHeight - Math.max(0, ...bars.map((bar) => bar.offsetHeight));
     const width = Math.ceil(railPlatesWidth(ratios, room, gap));
     if (!(width > 0)) return unfitPlates(fig);
     fig.style.setProperty("--rp-figure-w", `${width}px`);

@@ -3,16 +3,10 @@
  * RailFigure — a picture on a breakout box's side-scrolling track
  * (OPENBRAIN-194; which figures are drawn this way is helper/railFigure.js).
  *
- * Just the images. Stuart, 14 Nov: "you can get rid of the 'legend' button
- * and legend in the side scrolling breakout boxes, and then can make the
- * images bigger", and of a figure with two photographs, "you see the
- * images, plus their thumbnails, plus the pause/array buttons, then the
- * figure legends. This is too much for just 2 photos." So a figure of one
- * to three stills is its images as plates, then its label and title (when
- * it has them) under them, and nothing else: no legend, no thumbnails, no
- * play/pause, no view-all. Every image has a button that opens it full
- * screen, and the legend is there (the book's ordinary viewer, in the
- * dialog). The legends stay in the document for screen readers.
+ * One to three still images as plates, without gallery thumbnails or
+ * playback controls. Every plate has a row underneath with its figure
+ * number, title, expand control and folded legend/credit details
+ * (OPENBRAIN-88). Unnumbered Explore images use that same row.
  *
  * Two layouts, by the box's mode (BreakoutBox provides it as exploreRail):
  * - "track": the plates side by side, as tall as the track allows, the
@@ -22,14 +16,12 @@
  *   --rp-figure-w, --rp-plates-h); until it has, the images fit the column
  *   the CSS gives them.
  * - "swipe" (a phone): every plate is a page as wide as the track, its
- *   image as large as the page allows, the label kept in view under them.
+ *   image as large as the page allows, its own label underneath.
  *
  * The label's row is under the picture, where the figure pane has it
  * (Maura, 25 Nov, OPENBRAIN-83: "could we always place them at the bottom,
- * like we do on the regular half-and-half screen?"). A single image with a
- * label has its expand button on that row, where every figure in the book
- * has it; otherwise (an unlabelled picture, or one of several) the button
- * sits on the image's corner.
+ * like we do on the regular half-and-half screen?"). Every plate has its own row, including unnumbered Explore pictures and
+ * each page of a swipe set. The legend and its credit details open there.
  */
 import { computed, inject, ref, unref } from "vue";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
@@ -47,14 +39,16 @@ const props = defineProps({
   caption: { type: String, default: "" },
   /** The dialog's name when the figure has neither label nor title. */
   name: { type: String, default: "" },
+  inline: { type: Boolean, default: false },
 });
 
 const boxRail = inject("exploreRail", null);
-const mode = computed(() => unref(boxRail) || "track");
+const mode = computed(() =>
+  props.inline ? "flow" : unref(boxRail) || "track"
+);
 
 const hasBar = computed(() => !!(props.label || props.title));
-/* One image under a label: the button is on the label's row. */
-const barExpand = computed(() => hasBar.value && props.images.length === 1);
+
 const figureName = computed(
   () =>
     [props.label, props.title].filter(Boolean).join(": ") ||
@@ -62,8 +56,7 @@ const figureName = computed(
     props.images[0]?.alt ||
     "Figure"
 );
-/* A plate that is a figure of its own ("FIG E", OPENBRAIN-202) is named
-   on its picture; the figure then has no shared label row. */
+/* Each plate may carry its own figure number (Descartes: D and E). */
 const plateLabel = (image) => railFigureLabel(image);
 const plateName = (image) =>
   [plateLabel(image), image?.title].filter(Boolean).join(": ");
@@ -148,17 +141,10 @@ function open(i) {
             draggable="false"
             @load="onLoad(i, $event)"
           />
-          <p
-            v-if="plateLabel(image)"
-            class="rf-plate-name"
-            data-rail-plate-label
-          >
-            <span class="rf-label">{{ plateLabel(image) }}</span>
-            <span v-if="image.title" class="rf-name">{{ image.title }}</span>
-          </p>
+        </div>
+        <footer class="rf-bar" data-rail-figure-bar>
           <button
-            v-if="!barExpand"
-            class="rf-expand rf-expand--on"
+            class="rf-expand"
             type="button"
             title="Expand to full screen"
             :aria-label="
@@ -181,38 +167,24 @@ function open(i) {
               <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
             </svg>
           </button>
-        </div>
+          <p
+            class="rf-heading"
+            :data-rail-plate-label="plateLabel(image) ? '' : undefined"
+          >
+            <span v-if="plateLabel(image) || label" class="rf-label">{{
+              plateLabel(image) || label
+            }}</span>
+            <span class="rf-name">{{
+              image.title || title || name || image.alt
+            }}</span>
+          </p>
+          <details v-if="legendOf(image)" class="rf-details">
+            <summary>Legend</summary>
+            <p>{{ legendOf(image) }}</p>
+          </details>
+        </footer>
       </div>
     </div>
-    <!-- The figure's name, under its picture as in the figure pane
-         (OPENBRAIN-83). -->
-    <footer v-if="hasBar" class="rf-bar" data-rail-figure-bar>
-      <p class="rf-heading">
-        <span v-if="label" class="rf-label">{{ label }}</span>
-        <span v-if="title" class="rf-name">{{ title }}</span>
-      </p>
-      <button
-        v-if="barExpand"
-        class="rf-expand"
-        type="button"
-        title="Expand to full screen"
-        :aria-label="expandLabel(0)"
-        @click="open(0)"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-          aria-hidden="true"
-        >
-          <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
-        </svg>
-      </button>
-    </footer>
     <!-- The legend is read with the figure; sighted readers find it in the
          full-screen view. -->
     <figcaption v-if="legends.length" class="sr-only">
@@ -257,11 +229,12 @@ function open(i) {
   color: var(--bx-ink, rgb(var(--color-ink)));
 }
 .rf-bar {
-  display: flex;
   flex: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: start;
+  width: 100%;
   padding-top: 0.75rem;
 }
 .rf-heading {
@@ -271,86 +244,53 @@ function open(i) {
   min-width: 0;
   margin: 0;
   font-family: var(--font-mono);
-  line-height: 1.45;
+  line-height: 1.3;
   text-transform: uppercase;
 }
 .rf-label {
   flex: none;
-  font-size: 0.65625rem;
+  font-size: var(--ui-size-11);
   letter-spacing: 0.12em;
   color: var(--bx-fig-label, rgb(var(--color-mute)));
 }
 .rf-name {
-  font-size: 0.71875rem;
+  font-size: var(--ui-size-12);
   letter-spacing: 0.06em;
-  text-wrap: balance;
 }
 .rf-expand {
   display: grid;
-  flex: none;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 28px;
+  height: 28px;
+  margin-top: -5px;
   padding: 0;
-  border: 1px solid var(--bx-hairline, rgb(var(--color-line)));
-  border-radius: 0;
+  border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--bx-fig-label, currentColor);
   cursor: pointer;
 }
 .rf-expand:hover {
-  border-color: currentColor;
   background: var(--bx-wash, rgb(var(--color-ink) / 0.06));
 }
-/* Inside the button: the figure clips at its edge, where the button is. */
-.rf-expand:focus-visible {
+.rf-expand:focus-visible,
+.rf-details summary:focus-visible {
   outline: 2px solid currentColor;
-  outline-offset: -4px;
+  outline-offset: -2px;
 }
-/* On the image's corner: its own dark chip, so it reads on any picture and
-   on any box's ground. */
-.rf-expand--on {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+.rf-details {
+  display: contents;
+  font: 400 var(--ui-size-11) / 1.4 var(--font-mono);
+}
+.rf-details summary {
+  cursor: pointer;
+  min-height: 28px;
+}
+.rf-details p {
+  grid-column: 2 / -1;
   margin: 0;
-  border-color: rgb(255 255 255 / 0.45);
-  background: rgb(20 20 20 / 0.72);
-  color: #fff;
+  max-height: 12rem;
+  overflow-y: auto;
 }
-.rf-expand--on:hover {
-  border-color: #fff;
-  background: rgb(20 20 20 / 0.9);
-}
-.rf-expand--on:focus-visible {
-  outline-color: #fff;
-}
-/* A plate's own figure name, on the picture's foot: its own dark chip like
-   the expand button, so it reads on any picture. */
-.rf-plate-name {
-  position: absolute;
-  left: 0.5rem;
-  bottom: 0.5rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  max-width: calc(100% - 1rem);
-  margin: 0;
-  padding: 0.375rem 0.625rem;
-  font-family: var(--font-mono);
-  line-height: 1.35;
-  text-transform: uppercase;
-  background: rgb(20 20 20 / 0.78);
-  color: #fff;
-}
-.rf-plate-name .rf-label {
-  color: rgb(var(--color-warn));
-}
-
-/* The plates: a row as tall as the figure has left over its label, a size
-   container, so each image's frame can be exactly the image (as wide as its
-   plate, or as wide as the row's height allows, whichever is less) and the
-   corner button sits on the picture, not on a letterbox. */
 .rf-plates {
   display: flex;
   flex: 1 1 0;
@@ -358,28 +298,27 @@ function open(i) {
   justify-content: center;
   gap: var(--rf-gap, 1rem);
   min-height: 0;
-  container-type: size;
+  max-height: 100%;
 }
-/* Once the track has sized the figure to its images, the row is exactly
-   their height and the figure (label and images together) is centred. */
+/* The footer can grow after fitting (fonts or opening a credit). Let the
+   image give up height immediately, before the next rail measurement. */
 .rf[data-rail-fitted] .rf-plates {
-  flex: 0 0 var(--rp-plates-h);
+  flex: 0 1 auto;
 }
 .rf-plate {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   flex: calc(var(--rf-ratio, 1) * 100) 1 0;
-  /* One cell exactly the plate's size: the frame's percentages need a
-     definite cell (WebKit sizes an auto one by the frame). */
-  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
-  place-items: center;
   min-width: 0;
-  height: 100%;
+  min-height: 0;
+  max-height: 100%;
 }
 .rf-frame {
-  position: relative;
-  width: min(100%, calc(100cqh * var(--rf-ratio, 1)));
-  max-height: 100%;
+  width: 100%;
+  min-height: 0;
   aspect-ratio: var(--rf-ratio, 1);
+  max-height: var(--rp-plates-h, 100%);
 }
 .rf-img {
   display: block;
@@ -387,26 +326,9 @@ function open(i) {
   height: 100%;
   object-fit: contain;
 }
-
-/* ── On the phone's swipe track: a page for every plate ─────────────────── */
 .rf.rf--swipe {
   --rf-gutter: var(--reader-gutter-l, 1.25rem);
   width: calc(var(--rf-count, 1) * 100cqw);
-}
-/* Once the images' sizes are known the row is as tall as the tallest of
-   them at the page's width, or as tall as the page has if that is less:
-   the label is then right under the picture, and the two are centred on
-   the page together (OPENBRAIN-83). Until then the row takes the page. */
-.rf--swipe.rf--sized .rf-plates {
-  flex: 0 1 calc((100cqw - 2 * var(--rf-gutter)) / var(--rf-ratio-min));
-}
-/* The label stays in view while the plates of a set go by. */
-.rf--swipe .rf-bar {
-  position: sticky;
-  left: 0;
-  box-sizing: border-box;
-  width: 100cqw;
-  padding-inline: var(--rf-gutter);
 }
 .rf--swipe .rf-plates {
   gap: 0;
@@ -415,6 +337,16 @@ function open(i) {
   box-sizing: border-box;
   flex: 1 1 0;
   padding-inline: var(--rf-gutter);
+}
+.rf--flow {
+  height: auto;
+}
+.rf--flow .rf-plates {
+  flex: none;
+}
+.rf--flow .rf-bar {
+  box-sizing: border-box;
+  padding: 0.75rem;
 }
 
 /* Full screen. */

@@ -200,15 +200,11 @@ const label = computed(() =>
 
 <style scoped>
 /* ── On the pinned track (from the two-column breakpoint) ────────────────
-   The columns are sized so a whole number of them shows beside the
-   pictures when the part is at the left: --rail-fit of them fill the
-   track's view (--rail-view: its width less the gutters and the next
-   part's peek, set by BreakoutBox, like the gutter and the peek
-   themselves), so the first screen of a part never ends in half a column.
-   One column on a narrow track, two from a laptop (about 1200px, where each
-   is some 33 characters wide), three on a very wide screen; one beside two
-   or more images, which want the room (.rp--pictures). Lengths in cq* and
-   the @container rules are the track's (a size container). */
+   Every box uses the same responsive text measure; a part can continue
+   beyond the view and the rail's next stop brings the rest into view.
+   --rail-fit is how many columns the initial block balances across. The
+   picture budget still leaves room for the text beside it, and the track
+   measures the real picture widths for its total travel. */
 .rp {
   --rail-fit: 1;
   /* A picture's column until the track has sized it to its image
@@ -241,16 +237,9 @@ const label = computed(() =>
   /* Never wider than a comfortable line (36rem is about 58 characters of
      the box's text); where one column would be, a second one shows in
      part instead. */
-  --rail-col: max(
-    14rem,
-    min(
-      36rem,
-      calc(
-        (var(--rail-view, 100cqw) - var(--rail-lead) - var(--rail-figures-w)) /
-          var(--rail-fit) - var(--rail-col-gap)
-      )
-    )
-  );
+  /* One reading measure across every box, independent of image widths.
+     fitRailColumns adds whole columns when the text needs more room. */
+  --rail-col: clamp(19rem, 40cqw, 35rem);
   display: flex;
   gap: var(--rail-col-gap);
   height: 100%;
@@ -311,14 +300,14 @@ const label = computed(() =>
   order: 1;
   padding: 0.75rem 0 0;
 }
-/* No Legend control on the track: the legend is in the full-screen view
-   (Stuart, 14 Nov). It stays in the document, folded as the shell folds
-   it, so a screen reader still reads it with the figure. */
+/* A gallery uses the same bottom row as a plate, including its folded
+   legend and credit details (OPENBRAIN-88). */
 .rp-figure :deep(.fig-legend-row) {
   padding: 0;
 }
-.rp-figure :deep(.fig-legend-row .fig-legend-btn) {
-  display: none;
+.rp-figure :deep(.fig-toolbar .fig-legend-btn) {
+  grid-column: 4;
+  grid-row: 1;
 }
 /* What gives in a shell figure taller than the track: a single image, or
    a gallery's stage box (its image fits inside it). Fitted by

@@ -77,7 +77,7 @@ describe("RailFigure", () => {
       caption: "The figure's legend.",
     });
     expect(w.attributes("data-rail-plates")).toBe("2");
-    expect(w.find(".rf-bar button").exists()).toBe(false);
+    expect(w.findAll(".rf-bar button")).toHaveLength(2);
     const buttons = w.findAll("[data-rail-plate] button");
     expect(buttons.map((b) => b.attributes("aria-label"))).toEqual([
       "Expand image 1 of 2 to full screen",
@@ -95,19 +95,58 @@ describe("RailFigure", () => {
     w.unmount();
   });
 
-  it("gives an unlabelled picture no bar: the button is on its corner", () => {
+  it("gives an unnumbered Explore picture a row under the image", () => {
     const w = mountFigure({
       images: [{ src: "/img/bust.jpg", alt: "A bust", caption: "A bust." }],
       name: "Hippocrates’ view on epilepsy",
     });
-    expect(w.find(".rf-bar").exists()).toBe(false);
-    expect(w.classes()).toContain("rf--bare");
-    expect(w.find("[data-rail-plate] button").classes()).toContain(
-      "rf-expand--on"
+    expect(w.find(".rf-bar .rf-name").text()).toBe(
+      "Hippocrates’ view on epilepsy"
     );
+    expect(w.classes()).toContain("rf--bare");
+    expect(w.find(".rf-frame button").exists()).toBe(false);
     expect(w.attributes("aria-label")).toBe("Hippocrates’ view on epilepsy");
     w.unmount();
   });
+
+  it.each(["track", "swipe"])(
+    "keeps each numbered plate's name, expand and credit together in %s",
+    (mode) => {
+      const w = mountFigure(
+        {
+          images: [
+            {
+              src: "/d.jpg",
+              figureNumber: "D",
+              title: "Paris skull",
+              caption: "Credit: Paris.",
+            },
+            {
+              src: "/e.jpg",
+              figureNumber: "E",
+              title: "Lund skull",
+              caption: "Credit: Lund.",
+            },
+          ],
+        },
+        mode
+      );
+      const plates = w.findAll("[data-rail-plate]");
+      expect(plates.map((p) => p.find(".rf-bar .rf-label").text())).toEqual([
+        "FIG D",
+        "FIG E",
+      ]);
+      expect(plates.map((p) => p.find(".rf-bar details p").text())).toEqual([
+        "Credit: Paris.",
+        "Credit: Lund.",
+      ]);
+      for (const plate of plates) {
+        expect(plate.find(".rf-frame button").exists()).toBe(false);
+        expect(plate.find(".rf-bar button").exists()).toBe(true);
+      }
+      w.unmount();
+    }
+  );
 
   it("sizes a plate by its image once it has loaded", async () => {
     const w = mountFigure({ images: two, label: "FIG E" });
@@ -141,7 +180,7 @@ describe("RailFigure", () => {
         mode
       );
       const bar = w.find("[data-rail-figure-bar]").element;
-      const plates = w.find(".rf-plates").element;
+      const plates = w.find(".rf-frame").element;
       expect(
         plates.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING
       ).toBeTruthy();
