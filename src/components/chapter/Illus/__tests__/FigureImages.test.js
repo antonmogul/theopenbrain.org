@@ -72,6 +72,47 @@ describe("FigureImages", () => {
     expect(wrapper.findAll(".ve-play")).toHaveLength(1);
   });
 
+  it("crops a thumbnail and a poster around the image's focal point (OPENBRAIN-87)", async () => {
+    const video = {
+      src: "/brenda.webp",
+      youtube: "g4-6A8u8QBc",
+      play: "player",
+      posterPlay: "corner",
+      focus: "50% 30%",
+    };
+    mountSet({ images: [SET[0], video], start: "single" });
+    const thumbs = wrapper.findAll(".figimg-thumbnail-image");
+    expect(thumbs[0].element.style.objectPosition).toBe("");
+    expect(thumbs[1].element.style.objectPosition).toBe("50% 30%");
+    await dots()[1].trigger("click");
+    expect(wrapper.get(".ve-poster-image").element.style.objectPosition).toBe(
+      "50% 30%"
+    );
+  });
+
+  it("draws every play control with the one play mark (OPENBRAIN-87)", async () => {
+    const video = { src: "/v.jpg", youtube: "g4-6A8u8QBc", play: "player" };
+    mountSet({ images: [SET[0], video], start: "single" });
+    // A video's thumbnail, and the slideshow's own button: pause while it
+    // runs, play once the reader stops it.
+    const marks = () =>
+      wrapper.findAll(".play-mark").map((m) => m.attributes("data-icon"));
+    expect(dots()[1].find(".play-mark").exists()).toBe(true);
+    expect(dots()[0].find(".play-mark").exists()).toBe(false);
+    const play = () => wrapper.get(".figimg-play .play-mark");
+    expect(play().attributes("data-icon")).toBe("pause");
+    expect(play().classes()).toContain("play-mark--cut");
+    await wrapper.get(".figimg-play").trigger("click");
+    expect(play().attributes("data-icon")).toBe("play");
+    // The grid's tile for the video carries it too.
+    await wrapper.get(".figimg-all").trigger("click");
+    expect(wrapper.findAll(".figimg-tile")[1].find(".play-mark").exists()).toBe(
+      true
+    );
+    expect(marks()).not.toContain(undefined);
+    expect(wrapper.text()).not.toContain("▶");
+  });
+
   it("shows one image on its own, without a gallery or controls", () => {
     wrapper = mount(FigureImages, {
       props: { images: SET.slice(0, 1), caption: "Shared legend" },

@@ -4,12 +4,21 @@
  * block (OPENBRAIN-70 D2). Nothing loads from YouTube until the reader
  * presses play: the card is local, then a youtube-nocookie player replaces
  * it (allowed by the CSP in index.html).
+ *
+ * The poster fills the frame (OPENBRAIN-87; Maura, 25 Nov: "fill the whole
+ * container, even if they get cropped, as long as no faces get cut off"):
+ * it is cropped to the frame's 16:9 around `video.focus`, a focal point
+ * like "50% 0%" (across, down), the centre without one. The play control is
+ * the reader's one play mark (PlayMark), in the corner on a designer's
+ * poster and in the middle of a plain card.
  */
 import { computed, ref, watch } from "vue";
 import { youTubeEmbedUrl } from "@/editor/video.mjs";
+import { figureFocus } from "@/helper/figureCycle";
+import PlayMark from "../PlayMark.vue";
 
 const props = defineProps({
-  /** { youtubeId?, src?, poster?, posterPlay?: "corner", title?, caption?, start? } */
+  /** { youtubeId?, src?, poster?, posterPlay?: "corner", focus?, title?, caption?, start? } */
   video: { type: Object, required: true },
   showCaption: { type: Boolean, default: true },
 });
@@ -29,6 +38,7 @@ const src = computed(() =>
 );
 const title = computed(() => props.video.title || "Video");
 const caption = computed(() => props.video.caption || props.video.title || "");
+const focus = computed(() => figureFocus(props.video.focus));
 </script>
 
 <template>
@@ -68,10 +78,11 @@ const caption = computed(() => props.video.caption || props.video.title || "");
         <img
           v-if="video.poster"
           class="ve-poster-image"
+          :style="{ objectPosition: focus }"
           :src="video.poster"
           alt=""
         />
-        <span class="ve-play" aria-hidden="true">▶</span>
+        <PlayMark class="ve-play" />
         <span class="ve-title">{{ title }}</span>
         <span class="ve-note">YouTube · plays here</span>
       </button>
@@ -88,6 +99,8 @@ const caption = computed(() => props.video.caption || props.video.title || "");
 }
 .ve-frame {
   position: relative;
+  /* The play mark is sized from the frame's width (cqi). */
+  container-type: inline-size;
   aspect-ratio: 16 / 9;
   border: 1px solid rgb(var(--color-ink));
   background: rgb(var(--color-dark-surface, 28 28 28));
@@ -129,7 +142,8 @@ const caption = computed(() => props.video.caption || props.video.title || "");
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  /* Fill the frame, cropped around the focal point (objectPosition). */
+  object-fit: cover;
   opacity: 0.4;
 }
 .ve-poster > span {
@@ -145,27 +159,16 @@ const caption = computed(() => props.video.caption || props.video.title || "");
   position: absolute;
   top: 3%;
   left: 3%;
-  width: clamp(36px, 13%, 64px);
-  height: auto;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #fff;
-  color: rgb(var(--color-chapter));
 }
 .ve-poster--corner .ve-title,
 .ve-poster--corner .ve-note {
   display: none;
 }
+/* The one play mark, a seventh or so of the frame across: 64px in the
+   figure pane, down to 36px on a small frame (a breakout box's column). */
 .ve-play {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 0;
-  background: rgb(var(--color-accent));
-  font-size: var(--ui-size-20);
-  padding-left: 4px;
-  transition: transform 0.15s ease;
+  --play-mark-size: clamp(36px, 13cqi, 64px);
+  --play-mark-shadow: 0 2px 14px rgb(0 0 0 / 0.28);
 }
 .ve-poster:hover .ve-play,
 .ve-poster:focus-visible .ve-play {
