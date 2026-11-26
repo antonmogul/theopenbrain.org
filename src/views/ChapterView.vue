@@ -47,7 +47,7 @@ import { useChapterTimeline } from "@/composables/useChapterTimeline";
 import { useAuth } from "@/composables/useAuth";
 import { useChapterCatalog } from "@/composables/useChapterCatalog";
 import { applyChapterRamp, rampForModule } from "@/helper/chapterTheme";
-import { coverForModule } from "@/helper/chapterCover";
+import { coverForModule, coverInkForModule } from "@/helper/chapterCover";
 import {
   findReaderAnchor,
   holdLanding,
@@ -793,6 +793,7 @@ async function handleDeleteHighlight(highlightId) {
         v-if="isSupabaseChapter"
         :is-authenticated="isAuthenticated"
         :is-draft="isDraft"
+        :cover-ink="coverInkForModule(chapterData)"
         hide-on-cover
       />
 

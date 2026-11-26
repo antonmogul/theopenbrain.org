@@ -20,7 +20,14 @@
  * with opacity alone: its box stays where it is, so nothing that measures
  * the bar moves.
  */
-import { ref, computed, nextTick, onMounted, onBeforeUnmount } from "vue";
+import {
+  ref,
+  computed,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+} from "vue";
 import { useGeneral } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useMotionPreference } from "@/composables/useMotionPreference";
@@ -45,10 +52,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** The actual cover's ink; the bar always keeps its own white ink. */
+  coverInk: { type: String, default: "#fff" },
 });
 
 // How far the page scrolls before the bar shows on a cover: one bar.
 const COVER_REVEAL_Y = 56;
+const COVER_INK_FADE_Y = 40;
 // The row stays this long after the pointer leaves, so a diagonal move
 // from TOOLS to an item does not drop it.
 const HOVER_LINGER_MS = 220;
@@ -66,9 +76,22 @@ const atCover = () =>
   props.hideOnCover &&
   (window.scrollY || window.pageYOffset || 0) < COVER_REVEAL_Y;
 const onCover = ref(atCover());
+const coverScroll = ref(window.scrollY || 0);
+const coverLink = ref(null);
+const menuButton = ref(null);
+const barHasFocus = ref(false);
+const logoTarget = ref({ x: 12.8, y: 11.5, height: 32 });
+let logoObserver;
+function measureLogoTarget() {
+  const rect = menuButton.value
+    ?.querySelector(".book-logo")
+    ?.getBoundingClientRect();
+  if (rect?.height) logoTarget.value = rect;
+}
 let coverFrame = 0;
 function measureCover() {
   coverFrame = 0;
+  coverScroll.value = Math.max(0, window.scrollY || 0);
   onCover.value = atCover();
 }
 function onScroll() {
@@ -100,7 +123,7 @@ const activeTool = computed(() => (sidebarOpen.value ? activeTab.value : null));
 const rowCount = computed(() => 2 + (props.isAuthenticated ? TOOLS.length : 0));
 
 /* ── Help: the "?" at the row's end (OPENBRAIN-189) ── */
-const { noticePending } = useMotionPreference();
+const { noticePending, animationsOn } = useMotionPreference();
 const showHelp = ref(false);
 const helpButtonRef = ref(null);
 const helpRef = ref(null);
@@ -118,6 +141,36 @@ const toolsOpen = computed(
 );
 // The bar is shown on the cover while something of its own is open.
 const held = computed(() => toolsOpen.value || store.activeMenu);
+const coverLogoVisible = computed(
+  () => props.hideOnCover && onCover.value && !held.value && !barHasFocus.value
+);
+const coverLogoStyle = computed(() => {
+  const progress = animationsOn.value
+    ? Math.min(1, coverScroll.value / COVER_REVEAL_Y)
+    : 0;
+  return {
+    "--cover-progress": progress,
+    "--cover-ink": props.coverInk,
+    "--cover-ink-blend": `${
+      Math.max(
+        0,
+        (progress * COVER_REVEAL_Y - COVER_INK_FADE_Y) /
+          (COVER_REVEAL_Y - COVER_INK_FADE_Y)
+      ) * 100
+    }%`,
+    "--cover-target-x": `${logoTarget.value.x}px`,
+    "--cover-target-y": `${logoTarget.value.y}px`,
+    "--cover-target-h": `${logoTarget.value.height}px`,
+  };
+});
+// Keep keyboard focus on navigation when a focused cover link hands over.
+watch(coverLogoVisible, (visible) => {
+  if (!visible && document.activeElement === coverLink.value)
+    menuButton.value?.focus({ preventScroll: true });
+});
+function onBarFocusOut(event) {
+  barHasFocus.value = event.currentTarget.contains(event.relatedTarget);
+}
 
 function onToolsEnter(event) {
   lastPointer = event.pointerType || "mouse";
@@ -235,10 +288,19 @@ function onHelpFocusOut(event) {
 
 onMounted(() => {
   measureCover();
+  measureLogoTarget();
+  if (typeof ResizeObserver !== "undefined") {
+    logoObserver = new ResizeObserver(measureLogoTarget);
+    logoObserver.observe(menuButton.value);
+    logoObserver.observe(menuButton.value.parentElement);
+  }
+  window.addEventListener("resize", measureLogoTarget);
   window.addEventListener("scroll", onScroll, { passive: true });
   document.addEventListener("pointerdown", onPointerDownAnywhere, true);
 });
 onBeforeUnmount(() => {
+  logoObserver?.disconnect();
+  window.removeEventListener("resize", measureLogoTarget);
   window.removeEventListener("scroll", onScroll);
   document.removeEventListener("pointerdown", onPointerDownAnywhere, true);
   cancelAnimationFrame(coverFrame);
@@ -247,17 +309,36 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <a
+    v-if="hideOnCover"
+    v-show="coverLogoVisible"
+    ref="coverLink"
+    :href="isAuthenticated ? '/chapters' : '/'"
+    class="cover-logo-link"
+    :style="coverLogoStyle"
+    aria-label="The Open Brain home"
+    data-testid="cover-logo-link"
+  >
+    <BookLogo icon class="cover-logo" />
+  </a>
   <div
     class="reader-top-bar"
-    :class="{ 'is-cover': onCover, 'is-held': held }"
+    :class="{
+      'is-cover': onCover,
+      'is-held': held,
+      'has-cover-logo': hideOnCover,
+    }"
     :data-cover="onCover ? 'hidden' : undefined"
     data-testid="reader-top-bar"
+    @focusin="barHasFocus = true"
+    @focusout="onBarFocusOut"
   >
     <div class="bar-row">
       <!-- The book's mark opens the drawer: every chapter, this chapter's
            sections, the account. It is a ✕ while the drawer is open; the
            drawer's own close button sits exactly over it. -->
       <button
+        ref="menuButton"
         type="button"
         class="reader-menu-btn"
         aria-label="Open chapter menu"
@@ -404,6 +485,59 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* The 2023 Retina cover: 90px high, left 50px, top 15px. The endpoint is
+   measured from the actual bar mark, including its border and font scale. */
+.cover-logo-link {
+  --cover-start-h: 90px;
+  --cover-start-x: 50px;
+  --cover-start-y: 15px;
+  position: fixed;
+  z-index: 45;
+  left: calc(
+    var(--cover-start-x) + (var(--cover-target-x) - var(--cover-start-x)) *
+      var(--cover-progress)
+  );
+  top: calc(
+    var(--cover-start-y) + (var(--cover-target-y) - var(--cover-start-y)) *
+      var(--cover-progress)
+  );
+  color: var(--cover-ink);
+  /* Keep the cover's ink through 40px, then reach the bar's white at 56px.
+     One artwork changes ink, so the mark never doubles during the fade. */
+  color: color-mix(in srgb, var(--cover-ink), white var(--cover-ink-blend));
+  border-radius: var(--radius-control);
+}
+.cover-logo-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.cover-logo {
+  --logo-h: calc(
+    var(--cover-start-h) + (var(--cover-target-h) - var(--cover-start-h)) *
+      var(--cover-progress)
+  );
+  --logo-wordmark-opacity: calc(1 - var(--cover-progress));
+  /* At rest the original artwork's 1.5-unit stroke; at the endpoint the
+     bar's icon weight, including its extra brain outline. */
+  --logo-stroke: calc(
+    var(--logo-h) * 0.0143954 * (1 - var(--cover-progress)) + 0.85px *
+      var(--cover-progress)
+  );
+  --logo-brain-opacity: var(--cover-progress);
+  --logo-brain-stroke: 1.25px;
+}
+@media (max-width: 639px) {
+  .cover-logo-link {
+    --cover-start-h: 60px;
+    --cover-start-x: 20px;
+  }
+}
+/* One frame, one mark: the cover and bar swap together. An opacity tween
+   on the whole bar would leave the newly arrived mark briefly invisible. */
+.reader-top-bar.has-cover-logo {
+  transition: none;
+}
+
 /* A dark bar, white ink, on its own ground: --color-topbar (#131313), a
    step darker than the opener and the figure pane under it. Its height is
    the token's, so --reader-topbar-h (brand.css) is true by construction
