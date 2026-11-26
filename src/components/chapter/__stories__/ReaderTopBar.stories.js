@@ -44,7 +44,7 @@ export default {
     hideOnCover: {
       control: "boolean",
       description:
-        "The reader's setting: no bar until the page has scrolled 48px, or focus enters the bar.",
+        "The reader's setting: the full cover logo shrinks into the bar over 56px; focus in the bar shows it immediately.",
     },
     menuOpen: {
       control: "boolean",
@@ -62,7 +62,7 @@ export default {
       return { args };
     },
     template: `
-      <div style="min-height:36rem; background:rgb(var(--color-bg));">
+      <div :style="{ minHeight: args.hideOnCover ? '180vh' : '36rem', background: args.hideOnCover ? '#202020' : 'rgb(var(--color-bg))' }">
         <ReaderTopBar
           :is-authenticated="args.isAuthenticated"
           :is-draft="args.isDraft"

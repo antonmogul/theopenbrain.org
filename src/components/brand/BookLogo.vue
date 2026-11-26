@@ -86,6 +86,11 @@ const svg = raw
   width: calc(var(--logo-h) * 2.9616);
   max-width: none;
 }
+/* The original artwork's first group is the wordmark. Cover chrome can
+   fade it independently without duplicating or redrawing the book. */
+.book-logo :deep(svg > g:first-of-type) {
+  opacity: var(--logo-wordmark-opacity, 1);
+}
 .book-logo :deep(path),
 .book-logo :deep(polygon) {
   fill: currentColor;
@@ -119,5 +124,6 @@ const svg = raw
 .book-logo--icon :deep(.logo-brain) {
   display: inline;
   stroke-width: var(--logo-brain-stroke, 1.25px);
+  opacity: var(--logo-brain-opacity, 1);
 }
 </style>
