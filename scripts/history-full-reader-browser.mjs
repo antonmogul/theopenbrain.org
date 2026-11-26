@@ -54,7 +54,7 @@ const figureWidgets = fixture.paragraphs.flatMap((paragraph) => {
 });
 const SANDBOX_SERVICE_WORKER =
   /^Failed to read the 'serviceWorker' property from 'Navigator': Service worker is disabled because the context is sandboxed/;
-const paneSelector = '.chapter-reader > [class~="reader:fixed"]';
+const paneSelector = ".chapter-reader > .figure-pane";
 const manifest = {
   commit: process.env.GITHUB_SHA,
   runId: process.env.GITHUB_RUN_ID,
@@ -229,8 +229,7 @@ async function assertNoBoxLeakage(page) {
 // outside this one, else the section's end, never before its own bottom. An
 // arriving track box carries the still to the pane's top (OPENBRAIN-88), so
 // that band's boundary includes the distance from reading line to pane top.
-// An
-// authored hold (content.animationFlags.hold, OPENBRAIN-131) adds `bottom +
+// An authored hold (content.animationFlags.hold, OPENBRAIN-131) adds `bottom +
 // hold screens` to it: History rows carry none, so if one ever does, add that
 // term here in the same change.
 // Its start is figureStart's (OPENBRAIN-195): the trigger's top on the
