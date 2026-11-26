@@ -947,17 +947,19 @@ sup:hover {
 .figure-pane--paper {
   background: rgb(var(--color-bg));
 }
-/* The dark pane: the chapter's dark surface, the one the opener and the
-   widget bands use, with white ink (the Figma's "white" is --color-paper,
+/* The dark pane: the figures' own ground, a step lighter than the dark
+   surface of the opener, the widget bands and the breakout boxes, so a
+   figure and a box beside it read as two things (Maura, 25 Nov,
+   OPENBRAIN-86), with white ink (the Figma's "white" is --color-paper,
    near-black in the dark theme, so like OpenerToc and .wb-band this is
    literal). --figure-pane-ink is the triplet the children mix from. */
 .figure-pane--dark {
   --figure-pane-ink: 255 255 255;
-  background: rgb(var(--color-dark-surface));
+  background: rgb(var(--color-figure-ground));
   color: rgb(var(--figure-pane-ink));
 }
 /* In the dark theme the page is already the dark surface, and darker
-   (#0e1313) than --color-dark-surface (#1c1c1c): painting the pane #1c1c1c
+   (#0e1313) than --color-figure-ground (#272727): painting the pane that
    there would float it as a lighter panel beside the #161c1c text column,
    the design's dark-beside-light inverted. So the pane keeps the theme's
    own ground and ink, as it did before; only the label's amber and the

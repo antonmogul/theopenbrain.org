@@ -2,15 +2,18 @@ import assert from "node:assert/strict";
 
 /** Real reader regression: the card and first figure must keep the same
  * image element, box and fit through the reading line in both directions.
- * Runs in the hosted History fixture and against a local preview. */
-export async function checkSectionHandoff(page) {
+ * Runs in the hosted History fixture and against a local preview.
+ * `slug` is the section whose first figure carries its card: History's
+ * first section by default, "closing-words" once its row names the cover
+ * as its picture's wash (OPENBRAIN-86). */
+export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
   const width = await page.evaluate(() => innerWidth);
   if (width < 1024) {
     assert.equal(await page.locator("[data-section-card]").count(), 0);
     return;
   }
   const trigger = page
-    .locator('[data-section-slug="where-is-my-mind"] .animationTrigger')
+    .locator(`[data-section-slug="${slug}"] .animationTrigger`)
     .first();
   const end = await trigger.evaluate(
     (el) => el.getBoundingClientRect().top + scrollY - innerHeight / 2

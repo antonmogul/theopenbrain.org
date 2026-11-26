@@ -34,6 +34,19 @@ describe("figureImages", () => {
     expect(figureImages({ images: [] })).toEqual([]);
     expect(figureImages(null)).toEqual([]);
   });
+
+  // OPENBRAIN-86: a picture can bring its washed copy, the same frame as a
+  // duotone file (the brain of H.M. and its section cover).
+  it("keeps a picture's baked wash, and only a usable one", () => {
+    const [brain] = figureImages({
+      images: [{ src: "/brain.webp", wash: " /brain-violet.webp " }],
+    });
+    expect(brain.wash).toBe("/brain-violet.webp");
+    for (const wash of [true, "", "  ", 3, null])
+      expect(
+        figureImages({ images: [{ src: "/brain.webp", wash }] })[0]
+      ).not.toHaveProperty("wash");
+  });
 });
 
 describe("usesFigureShell", () => {

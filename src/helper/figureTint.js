@@ -20,6 +20,17 @@
  * their alpha. The filter never changes, so the browser rasterises the copy
  * once and the scroll only moves an opacity.
  *
+ * A picture can instead bring that copy as a file, `wash` on its image: the
+ * same frame on the same pixel grid, already a duotone. Then no filter is
+ * used at all (OPENBRAIN-86, the brain of H.M.).
+ *
+ * No record asks for `tintFade` today. Maura, 25 Nov (OPENBRAIN-86): the
+ * chapter-colour overlay is for section openers only, and clearing it with
+ * the scroll makes sense only where a section's picture is the figure that
+ * follows it. That case is the section card's hand-over (SectionCards,
+ * helper/sectionCard.js), which drives this same washed copy; the flag
+ * stays for a figure that opts in.
+ *
  * Pure functions; useFigureTint drives them from the scroll.
  */
 import { RAMP_HEX } from "./chapterTheme.js";

@@ -13,7 +13,7 @@
  * Pure functions, so the rules are testable without mounting anything.
  */
 
-/** Normalise whatever the row carries into [{ src, caption, alt, youtube?, loop? }]. */
+/** Normalise whatever the row carries into [{ src, caption, alt, youtube?, loop?, wash? }]. */
 export function figureImages(animation) {
   if (!animation) return [];
   const raw =
@@ -53,6 +53,11 @@ export function figureImages(animation) {
       // A picture that is already a duotone (the designers' posters) stays
       // out of its figure's chapter-colour wash (OPENBRAIN-80).
       if (item.tint === false) out.tint = false;
+      // Or it brings its wash with it: the same frame as a duotone, on the
+      // same pixel grid (the H.M. brain and its section cover,
+      // OPENBRAIN-86). The pane then fades that copy, not a filtered one.
+      if (typeof item.wash === "string" && item.wash.trim())
+        out.wash = item.wash.trim();
       // A focal point of its own, "50% 20%": the part that stays in view
       // where the picture is cropped to fill a box, its thumbnail and a
       // video's poster (OPENBRAIN-87; Maura, 25 Nov: no faces cut off).

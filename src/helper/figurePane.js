@@ -3,9 +3,11 @@
  *
  * The History redesign (Figma Yv7WvZSoabK2t5fNtsChvf, "Latest Version",
  * 2733:58923) puts the reader's figure pane on the chapter's dark surface:
- * the artwork sits on --color-dark-surface, its "FIG 05" label in
- * --color-warn, and the text column stays paper. It applies to every
- * chapter, not just History (Anton, 27 Oct).
+ * the artwork sits on a dark ground, its "FIG 05" label in --color-warn,
+ * and the text column stays paper. It applies to every chapter, not just
+ * History (Anton, 27 Oct). That ground is --color-figure-ground (#272727),
+ * a step lighter than the --color-dark-surface it started on, so figures
+ * read apart from the breakout boxes (Maura, 25 Nov, OPENBRAIN-86).
  *
  * The 2023 Retina figures can't take it yet: they are Lottie line art drawn
  * for the paper page (black strokes on nothing: 706 strokes and 590 fills in
@@ -13,7 +15,7 @@
  * of them, so a blanket black-to-white swap would wreck ON & OFF's dark
  * field), their state icons are black SVGs, and two figure-widget families
  * sit "on the reader's own ground" with black ink (SwitchFigure,
- * TransitionFigure). On #1c1c1c that art vanishes. So a chapter that still
+ * TransitionFigure). On the dark ground that art vanishes. So a chapter that still
  * triggers any of it keeps the paper pane it was drawn for, decided from the
  * chapter's own triggers rather than a slug list: the day its art is redrawn
  * (as the Figma did for the papyrus, OB_Fig4_2_white) the pane goes dark on

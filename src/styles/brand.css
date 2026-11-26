@@ -43,6 +43,13 @@
      rather than the same black (white on it is 14.35:1). The widget kit
      hands uploaded widgets the same value as --ob-plate-2 (widgetHost.js). */
   --color-dark-surface-2: 42 42 42; /* #2A2A2A */
+  /* The ground figures sit on (OPENBRAIN-86; Maura, 25 Nov: "so they're
+     differentiated from the breakout boxes"): the reader's figure pane, the
+     figure widgets that draw their own ground in it, the section cards and
+     the figure's fullscreen dialog. Breakout boxes, widget bands, the
+     opener and the top bar stay on --color-dark-surface. White on it is
+     14.9:1. */
+  --color-figure-ground: 39 39 39; /* #272727 */
 
   /* Corner radius for every control and surface (buttons, chips, badges,
      inputs, cards, panels, tooltips, modals). The book is square-cornered,

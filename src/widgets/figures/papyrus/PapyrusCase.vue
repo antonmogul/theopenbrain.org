@@ -464,16 +464,18 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* The figure pane's own dark ground (the History redesign); the card's
-   front is the Figma's plate, its back the chapter's colour itself, solid
+/* The figure pane's own dark ground (the History redesign; #272727 since
+   OPENBRAIN-86, which was the card's plate, so the plate moved up by the
+   same step the Figma had between them, 11 levels); the card's front is
+   that plate, its back the chapter's colour itself, solid
    (Maura, 25 Nov, OPENBRAIN-83), with the ink that ramp is read in: the
    pair brand.css keeps at AA for body text (--color-chapter-ground and
    --color-chapter-on; in History white on #8D4CF6, 4.67:1). Small type in
    the chapter's colour on the dark takes the ramp's soft tone: the main
    step is 3.6:1 on this ground, the soft one 7.6:1. */
 .pc {
-  --pc-bg: rgb(var(--color-dark-surface, 28 28 28));
-  --pc-plate: #272727;
+  --pc-bg: rgb(var(--color-figure-ground, 39 39 39));
+  --pc-plate: #323232;
   --pc-track: #3f3f3f;
   --pc-ink: #ffffff;
   --pc-ink-tab: #fbf8ff;

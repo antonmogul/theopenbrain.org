@@ -132,9 +132,16 @@ const washTables = ref(
 const washes = (img) =>
   props.wash &&
   !!tint &&
-  !!washTables.value &&
+  (!!img?.wash || !!washTables.value) &&
   !reducedMotion.value &&
   imageTakesTint(img);
+// A picture can bring its washed copy as a file (`wash`, the same frame on
+// the same pixel grid: OPENBRAIN-86, the brain of H.M.), as every other
+// duotone in the book is baked. Otherwise the copy is the picture itself
+// through the chapter's duotone filter.
+const filtered = (img) => washes(img) && !img.wash;
+const washStyle = (img) =>
+  img?.wash ? undefined : { filter: `url(#${washId})` };
 const primeWash = (el) => {
   if (el && tint) el.style.opacity = String(tint.current());
 };
@@ -573,15 +580,15 @@ onBeforeUnmount(() => {
         :key="'wash:' + first.src"
         :ref="primeWash"
         class="figimg-img figimg-wash"
-        :style="{ filter: `url(#${washId})` }"
-        :src="first.src"
+        :style="washStyle(first)"
+        :src="first.wash || first.src"
         alt=""
         aria-hidden="true"
         data-figure-wash
         decoding="async"
         draggable="false"
       />
-      <svg v-if="washes(first)" class="figimg-wash-defs" aria-hidden="true">
+      <svg v-if="filtered(first)" class="figimg-wash-defs" aria-hidden="true">
         <filter :id="washId" color-interpolation-filters="sRGB">
           <feColorMatrix type="saturate" values="0" />
           <feComponentTransfer>
@@ -732,8 +739,8 @@ onBeforeUnmount(() => {
             v-if="washes(current)"
             :ref="primeWash"
             class="figimg-img figimg-gallery-img figimg-wash"
-            :style="{ filter: `url(#${washId})` }"
-            :src="current.src"
+            :style="washStyle(current)"
+            :src="current.wash || current.src"
             alt=""
             aria-hidden="true"
             data-figure-wash
