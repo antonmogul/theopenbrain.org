@@ -70,7 +70,13 @@ describe("author links (code and fixture)", () => {
   });
 
   it("the History fixture carries the links, and the reader shows the same with or without them", () => {
-    expect(fixture.module.authors).toEqual([
+    // The live rows carry photo: null until photos arrive; a null photo
+    // reads the same as none (authorCardsForModule falls back to initials).
+    const withoutNulls = (authors) =>
+      authors.map((a) =>
+        Object.fromEntries(Object.entries(a).filter(([, v]) => v !== null))
+      );
+    expect(withoutNulls(fixture.module.authors)).toEqual([
       { ...NAGUIB, url: url("Naguib Mechawar") },
       { ...STUART_HISTORY, url: url("Stuart Trenholm") },
     ]);
