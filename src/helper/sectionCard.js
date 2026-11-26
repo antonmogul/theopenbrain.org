@@ -61,7 +61,9 @@ export function cardState(box, screen, minRun = MIN_RUN) {
  * Baked section exports declare their originals in SECTION_ART_ORIGINALS; ordinary
  * art matches by src; and a figure whose picture names the section's art as
  * its own washed copy (`wash`, OPENBRAIN-86: the brain of H.M.) says so
- * itself. A different first figure, film or gallery keeps its own card.
+ * itself. Since OPENBRAIN-93 that only identifies the picture: the
+ * hand-over colours every figure the same way, in the shell, and shows no
+ * copy. A different first figure, film or gallery keeps its own card.
  * Never guess identity from a title or a filename fragment.
  */
 export function sectionCardFigure(art, record) {

@@ -798,8 +798,12 @@ onBeforeUnmount(() => {
   margin-top: 0.5rem;
   overflow: hidden auto;
 }
+/* The translation runs the card's full width, so the card's padding is the
+   same on both sides of it (Maura, 26 Nov, OPENBRAIN-93: a 62ch cap left
+   21px on the left and 76px or more on the right). The card is never wide
+   enough here for the lines to grow too long: 47.5rem is about 85
+   characters. */
 .pc .pc-translation {
-  max-width: 62ch;
   margin: auto 0;
   color: var(--pc-back-ink);
   font-size: clamp(0.875rem, 1.95cqw, 1.0625rem);
@@ -886,6 +890,12 @@ onBeforeUnmount(() => {
 }
 .pc:fullscreen .pc-card {
   width: min(100%, 70rem);
+}
+/* The card is up to half as wide again here, so its translation is set
+   larger rather than narrower: the lines keep to about 70 characters and
+   the padding stays equal on both sides. */
+.pc:fullscreen .pc-translation {
+  font-size: clamp(0.875rem, 2.1cqw, 1.625rem);
 }
 .pc::backdrop {
   background: #000;

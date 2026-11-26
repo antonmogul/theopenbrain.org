@@ -6,8 +6,10 @@
  * a "Legend" control (OPENBRAIN-177); in the text column it stays in the
  * flow. Purely prop-driven.
  */
+import { computed, provide } from "vue";
 import { FIG19, FIG21, FIG15 } from "./g2MediaFixtures";
 import IllustrationPlaceholder from "../IllustrationPlaceholder.vue";
+import { FIGURE_TINT } from "@/helper/figureTint";
 import { illustrationFrame } from "../../__stories__/chapterFixtures";
 import {
   FIG6_ALL_IMAGES,
@@ -186,6 +188,79 @@ export const OnTheDarkPaneSingle = {
 
 /** On the dark pane: artwork still pending. */
 export const OnTheDarkPanePending = { render: darkPaneFrame };
+
+/* The section opener's wash, with the `washAmount` control standing in for
+   the reader's scroll (the pane drives it: useFigureTint). */
+const openerWash = (args) => ({
+  components: { IllustrationPlaceholder },
+  setup() {
+    provide(FIGURE_TINT, { current: () => args.washAmount });
+    const props = computed(() => {
+      const { washAmount: _amount, ...rest } = args;
+      return rest;
+    });
+    return { args, props };
+  },
+  template: `<div class="figure-pane figure-pane--dark font-mono" style="position:relative;height:720px;overflow:hidden;display:flex;">
+    <IllustrationPlaceholder :key="args.washAmount" v-bind="props" class="w-full h-full" />
+  </div>`,
+});
+const washAmount = { control: { type: "range", min: 0, max: 1, step: 0.05 } };
+
+/** A figure that is also its section's card (OPENBRAIN-93): the whole art
+ *  box opens in the chapter's colour, a white ground under the picture and
+ *  the colour multiplied over it, so a cutout stands on a full field of
+ *  colour. The scroll clears the two together and leaves the picture on the
+ *  pane's ground; the picture itself never changes. `washAmount`: 1 as the
+ *  section arrives, 0 once the figure has taken over. None under reduced
+ *  motion. */
+export const SectionOpenerWash = {
+  globals: { reduceMotion: false, chapter: "fund" },
+  args: {
+    sectionWash: true,
+    washAmount: 1,
+    animation: {
+      id: "animationFoundationsFig1",
+      figureNumber: 2,
+      diagramType: "illustration",
+      title: "Trepanned Inca skull",
+      caption: "A skull with a square opening cut into its brow.",
+      images: [
+        {
+          src: "/publicAssets/images/foundations/fig01-skull-cutout-v2.webp",
+          alt: "An engraving of a skull with a square opening cut into its brow",
+        },
+      ],
+    },
+  },
+  argTypes: { washAmount },
+  render: openerWash,
+};
+
+/** The same wash on a photograph that fills the pane: nothing of the white
+ *  ground shows, and the colour multiplies the photograph itself. */
+export const SectionOpenerWashPhotograph = {
+  globals: { reduceMotion: false, chapter: "fund" },
+  args: {
+    sectionWash: true,
+    washAmount: 1,
+    animation: {
+      id: "animationFoundationsClosingHM",
+      figureNumber: 26,
+      diagramType: "photo",
+      title: "The brain of H.M.",
+      fill: true,
+      images: [
+        {
+          src: "/publicAssets/images/foundations/hm-brain-v3.webp",
+          alt: "A human brain seen from the side",
+        },
+      ],
+    },
+  },
+  argTypes: { washAmount },
+  render: openerWash,
+};
 
 /** Generic Retina media use the same toolbar geometry while keeping paper. */
 export const RetinaPaperPane = {
