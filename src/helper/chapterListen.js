@@ -89,10 +89,10 @@ export function speechChunks(text, limit = 220) {
  * over), and Chrome adds three of its own. The short list keeps the few a
  * reader would choose, by name, since every device has a different set.
  *
- * 0 offers every voice, as today. The short list is waiting for Maura's
- * yes: set this to 4 to apply it.
+ * 0 offers every voice. Four since 26 Nov (Maura's note d62a283f, approved
+ * by Anton): the preferred voices the device has, then its other voices.
  */
-export const LISTEN_VOICE_LIMIT = 0;
+export const LISTEN_VOICE_LIMIT = 4;
 
 // The voices worth offering, best first. A device has only some of them:
 // Apple's (macOS, iOS), Chrome's, then Microsoft's (Windows, Edge).
