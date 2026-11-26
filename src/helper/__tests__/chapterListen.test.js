@@ -103,9 +103,10 @@ describe("shortVoiceList", () => {
   ].map((name) => voice(name));
   const names = (list) => list.map((v) => v.name);
 
-  it("is off until the short list is approved: every voice is offered", () => {
-    expect(LISTEN_VOICE_LIMIT).toBe(0);
-    expect(shortVoiceList(mac)).toBe(mac);
+  it("offers the approved short list of four by default (Anton, 26 Nov)", () => {
+    expect(LISTEN_VOICE_LIMIT).toBe(4);
+    expect(shortVoiceList(mac)).toHaveLength(4);
+    expect(shortVoiceList(mac, { limit: 0 })).toBe(mac);
   });
 
   it("keeps the preferred voices, in the device's order", () => {
