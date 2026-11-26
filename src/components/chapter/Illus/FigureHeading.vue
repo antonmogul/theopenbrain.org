@@ -43,6 +43,11 @@ const label = computed(() => railFigureLabel(props.record));
   --heading-accent: var(--color-warn);
   background: rgb(var(--color-dark-surface));
 }
+/* In the pane the row is on the figures' ground (OPENBRAIN-86); in a widget
+   band (`ground="dark"`) it stays on the band's dark surface. */
+.figure-pane--dark .figure-heading {
+  background: rgb(var(--color-figure-ground));
+}
 .figure-pane--paper .figure-heading {
   background: rgb(var(--color-bg));
   --heading-ink: var(--color-ink);

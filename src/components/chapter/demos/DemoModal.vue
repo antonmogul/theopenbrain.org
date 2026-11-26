@@ -335,7 +335,7 @@ onBeforeUnmount(() => {
    not). The ground is repeated because .demo-panel's own paper outranks
    the global class. */
 .demo-panel--dark {
-  background: rgb(var(--color-dark-surface));
+  background: rgb(var(--color-figure-ground));
 }
 :root[data-theme="dark"] .demo-panel--dark {
   background: rgb(var(--color-bg));

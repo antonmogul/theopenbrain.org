@@ -59,8 +59,10 @@ export function cardState(box, screen, minRun = MIN_RUN) {
 
 /** The first pane figure can carry the card when it is the same still.
  * Baked section exports declare their originals in SECTION_ART_ORIGINALS; ordinary
- * art matches by src. A different first figure, film or gallery keeps its
- * own card. Never guess identity from a title or a filename fragment.
+ * art matches by src; and a figure whose picture names the section's art as
+ * its own washed copy (`wash`, OPENBRAIN-86: the brain of H.M.) says so
+ * itself. A different first figure, film or gallery keeps its own card.
+ * Never guess identity from a title or a filename fragment.
  */
 export function sectionCardFigure(art, record) {
   const images = figureImages(record);
@@ -79,9 +81,8 @@ export function sectionCardFigure(art, record) {
     record.switch
   )
     return null;
-  return [art.src, ...(SECTION_ART_ORIGINALS[art.src] || [])].includes(
-    images[0].src
-  )
+  return images[0].wash === art.src ||
+    [art.src, ...(SECTION_ART_ORIGINALS[art.src] || [])].includes(images[0].src)
     ? record
     : null;
 }

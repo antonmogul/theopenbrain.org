@@ -53,6 +53,33 @@ describe("FigureImages: the chapter-colour wash", () => {
     ).toBe("A photograph");
   });
 
+  // OPENBRAIN-86: a picture that brings its washed copy as a file (the
+  // same frame, already a duotone) shows that file, with no filter at all.
+  it("lays a picture's own baked copy over it, unfiltered", () => {
+    const BAKED = { ...STILL, wash: "/photo-violet.webp" };
+    mountImages({ wash: true, images: [BAKED] });
+    expect(washes()).toHaveLength(1);
+    const copy = washes()[0];
+    expect(copy.attributes("src")).toBe("/photo-violet.webp");
+    expect(copy.element.style.filter).toBe("");
+    expect(copy.element.style.opacity).toBe("0.75");
+    expect(wrapper.find("filter").exists()).toBe(false);
+    expect(
+      wrapper.find(".figimg-img:not(.figimg-wash)").attributes("src")
+    ).toBe(STILL.src);
+  });
+
+  it("needs no chapter colour for a baked copy", () => {
+    document.documentElement.removeAttribute("data-chapter");
+    mountImages({ wash: true, images: [{ ...STILL, wash: "/violet.webp" }] });
+    expect(washes()).toHaveLength(1);
+  });
+
+  it("shows a baked copy only where the figure asked for the wash", () => {
+    mountImages({ images: [{ ...STILL, wash: "/violet.webp" }] });
+    expect(washes()).toHaveLength(0);
+  });
+
   it("has no copy unless the figure asked", () => {
     mountImages({});
     expect(washes()).toHaveLength(0);

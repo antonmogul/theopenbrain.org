@@ -277,7 +277,7 @@ function onImgError(e) {
 /* The figure pane's own dark ground (the History redesign), light type, the
    chapter's accent, the pane toolbar's amber. */
 .tr {
-  --tr-bg: rgb(var(--color-dark-surface, 28 28 28));
+  --tr-bg: rgb(var(--color-figure-ground, 39 39 39));
   --tr-ink: #ffffff;
   --tr-ink-soft: rgb(255 255 255 / 0.66);
   --tr-accent: var(--widget-accent, rgb(var(--color-chapter)));

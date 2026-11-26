@@ -40,7 +40,7 @@ defineProps({
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: rgb(var(--color-dark-surface));
+  background: rgb(var(--color-figure-ground));
   color: #fff;
   font-family: var(--font-ui);
   /* The pane this sits in may be queried for its width. */
