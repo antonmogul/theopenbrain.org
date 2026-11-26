@@ -96,7 +96,7 @@ describe("BoxTitleCard", () => {
   });
 
   it("waits for the box to be near before the words come in, and hides the track's own picture while it flies", () => {
-    const wrapper = card({ variant: "pinned" });
+    const wrapper = card({ variant: "pinned", flyToLead: true });
     wrapper.vm.drive({ progress: -0.5, near: false });
     expect(wrapper.attributes("data-card-state")).toBe("arriving");
     // A landing place with a size: the picture flies to it.
@@ -123,10 +123,48 @@ describe("BoxTitleCard", () => {
     expect(pic.style.transform).toContain("translate3d(");
     expect(pic.style.transform).toContain("scale(");
     expect(pic.style.width).toBe("");
-    wrapper.vm.drive({ progress: 1, target: img });
-    expect(plate.style.visibility).toBe("");
-    expect(pic.style.transform).toBe("");
+    // An authored painting is not the bust underneath: fade in place,
+    // release any hidden track plate and never fly into its column.
     wrapper.unmount();
+    const different = card({ variant: "pinned", flyToLead: false });
+    different.element.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 800,
+    });
+    different.vm.drive({ progress: 0.7, target: img });
+    const painting = different.get(".tc-picture").element;
+    expect(painting.style.transform).toBe("");
+    expect(Number(painting.style.opacity)).toBeGreaterThan(0);
+    expect(Number(painting.style.opacity)).toBeLessThan(1);
+    expect(plate.style.visibility).toBe("");
+    different.vm.drive({ progress: 0.95, target: img });
+    expect(Number(painting.style.opacity)).toBe(0);
+    different.unmount();
     plate.remove();
+  });
+
+  it("restores the track image when the matching card finishes flying", () => {
+    const wrapper = card({ variant: "pinned", flyToLead: true });
+    const img = document.createElement("img");
+    img.getBoundingClientRect = () => ({
+      left: 60,
+      top: 200,
+      width: 300,
+      height: 400,
+    });
+    wrapper.element.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 800,
+    });
+    wrapper.vm.drive({ progress: 0.7, target: img });
+    expect(img.style.visibility).toBe("hidden");
+    wrapper.vm.drive({ progress: 1, target: img });
+    expect(img.style.visibility).toBe("");
+    expect(wrapper.get(".tc-picture").element.style.transform).toBe("");
+    wrapper.unmount();
   });
 });

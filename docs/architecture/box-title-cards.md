@@ -26,6 +26,8 @@ All fields are optional. Null falls back to the current lead picture and opening
 
 Pinned desktop cards render layers; phones and reduced motion render the original `image`, or a static stack when no original is supplied. An image without layers remains flat. A new card image does not delete an existing, different figure from the box. Its fullscreen control opens its own artwork.
 
+The card flies into part 1's figure only when its flat image source matches that lead figure's source. Different artwork, including layers without a matching flat image, fades in place with the card's ground as the track appears; it never hides or flies into the track's own figure. The same source-match check controls still-card deduplication.
+
 The chapter editor's box placement controls use MediaPicker/ImageUpload and the existing chapter-media bucket. A committed input change emits one undoable `setBoxCard` PATCH; preview scrubbing does not save. Before migration the editor disables the controls. Existing published-edit confirmation and section RLS remain in place.
 
 ## Motion and landing contract

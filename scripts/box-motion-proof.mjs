@@ -1,5 +1,5 @@
 // Read-only browser evidence against a preview or production reader.
-import { chromium } from "@playwright/test";
+import { chromium, expect } from "@playwright/test";
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 const base = process.env.PROOF_BASE || "http://127.0.0.1:4294";
 const out = process.env.PROOF_OUT || "box-motion-proof-artifacts";
@@ -77,17 +77,47 @@ for (const viewport of [
         innerHeight * 0.2
       );
     });
+    const frames = [];
     for (let delta = -160; delta <= end; delta += 40) {
       await page.evaluate(
         (y) => window.scrollTo({ top: y, behavior: "instant" }),
         pin + delta
       );
       await page.waitForTimeout(230);
+      frames.push(
+        await pause.evaluate((e, delta) => {
+          const card = e.querySelector("[data-box-title-card]");
+          const picture = card.querySelector(".tc-picture");
+          const lead = e.querySelector(
+            "[data-rail-part] [data-rail-figure] img"
+          );
+          return {
+            delta,
+            transform: getComputedStyle(picture).transform,
+            opacity: Number(getComputedStyle(picture).opacity),
+            state: card.dataset.cardState,
+            leadVisibility: getComputedStyle(lead).visibility,
+            leadSrc: lead.getAttribute("src"),
+          };
+        }, delta)
+      );
       await page.screenshot({
         path: `${dir}/${String(delta + 160).padStart(4, "0")}.jpg`,
         type: "jpeg",
         quality: 65,
       });
+    }
+    await writeFile(`${dir}/handoff.json`, JSON.stringify(frames, null, 2));
+    if (process.env.PROOF_MIGRATED) {
+      if (slug === "sacred-disease") {
+        expect(frames.every((f) => f.transform === "none")).toBe(true);
+        expect(frames.every((f) => f.leadVisibility === "visible")).toBe(true);
+        expect(frames.some((f) => f.opacity > 0 && f.opacity < 1)).toBe(true);
+      } else {
+        expect(frames.some((f) => f.transform !== "none")).toBe(true);
+        expect(frames.some((f) => f.leadVisibility === "hidden")).toBe(true);
+        expect(frames.at(-1).leadVisibility).toBe("visible");
+      }
     }
   }
   await page.close();

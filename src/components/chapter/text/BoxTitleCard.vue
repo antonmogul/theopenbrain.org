@@ -41,6 +41,8 @@ const props = defineProps({
   /** { src, alt }: the box's lead picture. */
   picture: { type: Object, required: true },
   layers: { type: Array, default: () => [] },
+  /** Fly only when the flat card image is the track's first lead image. */
+  flyToLead: { type: Boolean, default: false },
   /** "pinned" | "static" | "simple". */
   variant: { type: String, default: "static" },
   /** A pinned card's place in its scroll, 0 to 1, for a card nothing
@@ -90,7 +92,8 @@ function drive({ progress = 0, near = true, target = null } = {}) {
 
   const flying = frame.move > 0 && !frame.done;
   const box = flying ? el.getBoundingClientRect() : null;
-  const to = flying ? target?.getBoundingClientRect?.() : null;
+  const to =
+    flying && props.flyToLead ? target?.getBoundingClientRect?.() : null;
   if (box && to && to.width > 1 && to.height > 1) {
     // Fit the travelling composition without stretching people/artwork as
     // the target column changes aspect ratio. The source frame stays fixed.
@@ -118,8 +121,8 @@ function drive({ progress = 0, near = true, target = null } = {}) {
       progress < 0.88 ? target.closest?.("[data-rail-plate]") || target : null
     );
   } else {
-    // Nowhere to land (the image has not loaded, a figure with no still):
-    // the picture stays where it is and clears with the box's colour.
+    // Different artwork (or no loaded landing image): fade in place with
+    // the ground, leaving the track's own figure visible throughout.
     pic.style.transform = "";
     pic.style.opacity = flying ? frame.ground.toFixed(3) : "";
     show(null);

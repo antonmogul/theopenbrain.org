@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { computed, h } from "vue";
 import BreakoutBox from "../BreakoutBox.vue";
+import BoxTitleCard from "../BoxTitleCard.vue";
 import RailPart from "../RailPart.vue";
 import { RAIL_MIN_HEIGHT_QUERY } from "@/helper/exploreRail";
 import { STAGE_DESKTOP_QUERY, STAGE_LAYER_ID } from "@/helper/stageLayer";
@@ -442,6 +443,39 @@ describe("BreakoutBox rail", () => {
         part("p2", "Humoral theory"),
       ],
     };
+
+    it.each([
+      ["derived lead", null, true],
+      ["same authored flat", { image: { src: "/img/bust.jpg" } }, true],
+      ["different flat", { image: { src: "/painting.webp" } }, false],
+      [
+        "different layered artwork",
+        {
+          image: { src: "/painting.webp" },
+          layers: [{ src: "/layer.webp", depth: 1 }],
+        },
+        false,
+      ],
+      [
+        "layers without a flat image",
+        { layers: [{ src: "/layer.webp", depth: 1 }] },
+        false,
+      ],
+      [
+        "layers with the matching flat",
+        {
+          image: { src: "/img/bust.jpg" },
+          layers: [{ src: "/layer.webp", depth: 1 }],
+        },
+        true,
+      ],
+    ])("only flies the matching lead: %s", async (_, box_card, flies) => {
+      addStageLayer();
+      const w = mountBox({ box: { ...pictured, box_card } });
+      await flushPromises();
+      expect(w.findComponent(BoxTitleCard).props("flyToLead")).toBe(flies);
+      w.unmount();
+    });
 
     it("lies over the pinned box, and its scroll is part of the pin", async () => {
       const layer = addStageLayer();

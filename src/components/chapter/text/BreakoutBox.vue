@@ -218,8 +218,9 @@ const stillCard = computed(
 );
 const ownsLead = computed(
   () =>
+    !!cardPicture.value?.src &&
     cardPicture.value?.src ===
-    cardLeadPicture(layout.value, leadRecords.value[0] || null)?.src
+      cardLeadPicture(layout.value, leadRecords.value[0] || null)?.src
 );
 provide(
   "railLeadOnCard",
@@ -417,6 +418,7 @@ onBeforeUnmount(() => arrival?.disconnect());
           :excerpt="cardExcerpt"
           :picture="cardPicture"
           :layers="ownCard?.layers || []"
+          :fly-to-lead="ownsLead"
           variant="pinned"
           @more="intoBox"
           @skip="keepGoing"
