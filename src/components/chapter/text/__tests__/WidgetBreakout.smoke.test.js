@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 /* Stub the widget loaders so the test never pulls a 1,500-line view into
    happy-dom. The contract under test is when/where a widget mounts, not what
@@ -330,6 +332,16 @@ describe("WidgetBreakout — full-bleed stage (OPENBRAIN-37)", () => {
     expect(band.querySelector(".wb-kicker")).toBeNull();
     expect(band.querySelector(".wb-foot")).toBeNull();
     const trigger = band.querySelector(".wb-btn--legend");
+    // The pane's own expand icon, the four corners (OPENBRAIN-91), not the
+    // arrows the band used to draw.
+    const paneIcon = readFileSync(
+      resolve(__dirname, "../../Illus/IllustrationPlaceholder.vue"),
+      "utf8"
+    ).match(/class="fig-fs-btn"[\s\S]*?<path d="([^"]+)"/)[1];
+    expect(trigger.querySelector("svg path").getAttribute("d")).toBe(paneIcon);
+    expect(trigger.querySelector("svg").getAttribute("viewBox")).toBe(
+      "0 0 14 14"
+    );
     trigger.focus();
     trigger.click();
     await flushPromises();

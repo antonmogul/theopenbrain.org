@@ -796,6 +796,12 @@ onBeforeUnmount(() => arrival?.disconnect());
 .bx--panel :deep(.bx-body a) {
   text-decoration-color: currentColor;
 }
+/* The hover chip stays the accent in a panel: in the text it is the link's
+   own colour (--reader-link, OPENBRAIN-91), which on a panel in the
+   chapter's colour would be the ground itself. */
+.bx--panel :deep(.citation-ref:hover) {
+  background: rgb(var(--color-accent));
+}
 /* An Explore card (ExploreCard.vue) on a dark plate (dark, plate) is the
    plate's own colour inside a hairline, its image plain on the dark as the
    Figma lays it (duotoned art comes baked into the asset, OPENBRAIN-153);

@@ -4,6 +4,7 @@
  * --pool=forks src/__tests__/historyLoewiV6.sql.test.js (the SQL runs are
  * skipped without it; the file checks always run).
  */
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -15,7 +16,8 @@ const read = (path) => readFileSync(path, "utf8");
 const htmlIn = (text) =>
   text.slice(text.indexOf("$w$") + "$w$".length, text.lastIndexOf("$w$"));
 const sql = read("supabase/migrations/20261124077500_history_loewi_v6.sql");
-const file = read("src/widgets/uploads/loewi-vagusstoff.html");
+// Historical v6 payload: v7 now owns equality with the current widget file.
+const file = htmlIn(sql);
 // What the row holds before this migration: v5, live since 20 Nov.
 const previous = htmlIn(
   read("supabase/migrations/20261120550000_history_loewi_v5.sql")
@@ -23,8 +25,9 @@ const previous = htmlIn(
 const payload = htmlIn(sql);
 
 describe("Loewi v6 migration", () => {
-  it("carries the current file and changes only the book block", () => {
-    expect(payload).toBe(file);
+  it("is the exact baseline v7 replaces and changes only the book block", () => {
+    const v7 = read("supabase/migrations/20261125099000_history_loewi_v7.sql");
+    expect(v7).toContain(createHash("md5").update(payload).digest("hex"));
     const outsideBook = (html) =>
       html.replace(/<!-- Open Brain book:[\s\S]*?(?=<div class="fig">)/, "");
     expect(outsideBook(file)).toBe(outsideBook(previous));

@@ -3,15 +3,16 @@
  * pane and the text (OPENBRAIN-175), from 1024px: a pointer at every
  * paragraph that brings something into the pane (no words since
  * OPENBRAIN-195: round for a figure to look at, square for one to operate,
- * its name in a tooltip), filled while its figure is on, a ribbon
+ * its name in a tooltip), filled and a fifth larger while its figure is on
+ * (it swells as its figure comes on, OPENBRAIN-91), a ribbon
  * down the line for as long as the figure that is on stays, and the reading
  * point at mid-screen, a bead on that ribbon. A mark is a button: it brings
  * its paragraph to the reading point; the arrow keys walk the figures.
  *
  * The stories stand in for the reader: IllustrationsComp sets `.active` on
- * a trigger while its figure is on, here it is written into the markup. The
- * one-off pulse at the reading point needs a figure to change, so it shows
- * in the chapter, not here. Below 1024px the rail draws nothing.
+ * a trigger while its figure is on, here it is written into the markup, so
+ * the swell itself (a figure coming on) shows in the chapter, not here.
+ * Below 1024px the rail draws nothing.
  */
 import ReadingRail from "../ReadingRail.vue";
 
