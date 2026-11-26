@@ -26,6 +26,11 @@
  * put while plates of different heights go by (Stuart, 1 Oct). The box has
  * a fixed height in the pane and the fullscreen dialog (`fit`), and a fixed
  * aspect ratio inline in the text column (flow), for the same reason.
+ *
+ * The thumbnails are all one size: each picture fills its thumbnail, cropped
+ * around its focal point (`focus` on the image, the centre without one), so
+ * the row's gaps are even whatever shapes the plates are (OPENBRAIN-87;
+ * Maura, 25 Nov). The stage and the grid still show every picture whole.
  */
 import {
   computed,
@@ -44,6 +49,7 @@ import {
   youtubeLoopUrl,
 } from "@/helper/figureCycle";
 import VideoEmbed from "../text/VideoEmbed.vue";
+import PlayMark from "../PlayMark.vue";
 import { reducedMotionPreferred } from "@/helper/readerJump";
 import { primeInlineLoop } from "@/helper/inlineVideo";
 import { FIGURE_TINT, imageTakesTint, tintTables } from "@/helper/figureTint";
@@ -515,6 +521,7 @@ onBeforeUnmount(() => {
           title: altFor(first),
           poster: first.src,
           posterPlay: first.posterPlay,
+          focus: first.focus,
           start: first.start,
         }"
         :show-caption="false"
@@ -656,9 +663,7 @@ onBeforeUnmount(() => {
         <span class="figimg-tile-n" aria-hidden="true">{{
           tileNumber(i)
         }}</span>
-        <span v-if="img.youtube" class="figimg-tile-video" aria-hidden="true"
-          >▶</span
-        >
+        <PlayMark v-if="img.youtube" class="figimg-tile-video" />
       </button>
     </div>
 
@@ -680,6 +685,7 @@ onBeforeUnmount(() => {
               title: altFor(current),
               poster: current.src,
               posterPlay: current.posterPlay,
+              focus: current.focus,
               start: current.start,
             }"
             :show-caption="false"
@@ -818,17 +824,13 @@ onBeforeUnmount(() => {
         >
           <img
             class="figimg-thumbnail-image"
+            :style="img.focus ? { objectPosition: img.focus } : undefined"
             :src="img.src"
             alt=""
             loading="lazy"
             draggable="false"
           />
-          <span
-            v-if="img.youtube"
-            class="figimg-thumbnail-video"
-            aria-hidden="true"
-            >▶</span
-          >
+          <PlayMark v-if="img.youtube" class="figimg-thumbnail-video" />
         </button>
       </div>
 
@@ -849,27 +851,9 @@ onBeforeUnmount(() => {
             :title="autoplay ? 'Pause slideshow' : 'Play slideshow'"
             @click="togglePlay"
           >
-            <svg
-              v-if="autoplay"
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <rect x="2" y="1.5" width="3" height="9" />
-              <rect x="7" y="1.5" width="3" height="9" />
-            </svg>
-            <svg
-              v-else
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M3 1.5v9l7.5-4.5z" />
-            </svg>
+            <!-- The reader's one play mark, in the ink of whatever ground
+                 the gallery is on. -->
+            <PlayMark cut :icon="autoplay ? 'pause' : 'play'" />
             <!-- The 15 s to the next image, drawn along the button's foot. -->
             <span
               v-if="running"
@@ -1187,8 +1171,7 @@ onBeforeUnmount(() => {
 }
 /* The image's number, on a chip of its own so it reads over any plate; the
    one last looked at carries the chapter colour. */
-.figimg-tile-n,
-.figimg-tile-video {
+.figimg-tile-n {
   position: absolute;
   top: 0;
   padding: 0.125rem 0.3125rem;
@@ -1203,7 +1186,11 @@ onBeforeUnmount(() => {
 .figimg-tile-n {
   left: 0;
 }
+/* A video's tile: the play mark, as tall as the number's chip. */
 .figimg-tile-video {
+  --play-mark-size: calc(var(--ui-size-10) * 1.3 + 0.25rem);
+  position: absolute;
+  top: 0;
   right: 0;
 }
 .figimg-tile.is-current .figimg-tile-n {
@@ -1244,11 +1231,13 @@ onBeforeUnmount(() => {
   background: rgb(var(--color-paper));
   cursor: pointer;
 }
+/* Every thumbnail the same size: the picture fills it, cropped around its
+   focal point (OPENBRAIN-87). */
 .figimg-thumbnail-image {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 .figimg-thumbnail:hover {
   border-color: rgb(var(--color-line));
@@ -1257,13 +1246,13 @@ onBeforeUnmount(() => {
   border-color: rgb(var(--color-chapter, var(--color-accent)));
   background: rgb(var(--color-chapter, var(--color-accent)) / 0.12);
 }
+/* A video's thumbnail: the play mark in the picture's corner (the padding
+   box is 3px outside the picture). */
 .figimg-thumbnail-video {
+  --play-mark-size: 1rem;
   position: absolute;
-  right: 2px;
-  bottom: 2px;
-  background: rgb(var(--color-paper));
-  color: rgb(var(--color-ink));
-  font-size: var(--ui-size-10);
+  right: 3px;
+  bottom: 3px;
 }
 .figimg-player {
   position: absolute;
@@ -1332,8 +1321,22 @@ onBeforeUnmount(() => {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
-/* On: the slideshow is playing, the grid is showing. */
-.figimg-play[data-state="playing"],
+/* Play and pause are the play mark, filling the button: the one filled
+   control in the row, as on the Loewi figure's player. Playing shows as the
+   pause bars and the clock along the foot. */
+.figimg-play {
+  border: 0;
+}
+.figimg-play .play-mark {
+  --play-mark-size: 100%;
+}
+.figimg-play:hover {
+  background: transparent;
+}
+.figimg-play:hover .play-mark {
+  opacity: 0.84;
+}
+/* On: the grid is showing. */
 .figimg-all[aria-pressed="true"] {
   border-color: rgb(var(--color-chapter, var(--color-accent)));
   background: rgb(var(--color-chapter, var(--color-accent)) / 0.16);

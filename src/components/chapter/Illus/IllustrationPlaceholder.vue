@@ -18,7 +18,10 @@
 //   title: "Edwin Smith papyrus"  — diagram name in the toolbar + frame
 //   description / caption    — optional supporting line
 //   note                     — optional production note (what art to source)
-//   images: [{ src, caption?, alt? }]  — real artwork; replaces the placeholder
+//   images: [{ src, caption?, alt?, focus? }]  — real artwork; replaces the
+//                              placeholder. An image's own focus ("50% 30%")
+//                              is what its gallery thumbnail and a video's
+//                              poster keep when they crop it (OPENBRAIN-87)
 //   galleryStart: "grid" | "single"    — a set's opening view (else by its size)
 //   tintFade: true           — in the pane, its photographs open washed in
 //                              the chapter colour and clear with the scroll
