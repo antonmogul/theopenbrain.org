@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import ReaderTopBar from "@/components/chapter/ReaderTopBar.vue";
+import { usePreferences } from "@/composables/usePreferences";
 
 const source = readFileSync(resolve(__dirname, "../ReaderTopBar.vue"), "utf8");
 // The body of `@media <query> { ... }` (up to the next @media or the end).
@@ -201,12 +202,79 @@ describe("ReaderTopBar accessibility", () => {
     afterEach(() => {
       window.requestAnimationFrame = frame;
       window.scrollY = 0;
+      usePreferences().reduceMotion.value = "auto";
     });
     const scrollTo = async (y) => {
       window.scrollY = y;
       window.dispatchEvent(new Event("scroll"));
       await flushPromises();
     };
+
+    it("fades cover ink into the bar's white only over the last 16px", async () => {
+      const wrapper = mountBar({ hideOnCover: true, coverInk: "#1c1c1c" });
+      const style = wrapper.get('[data-testid="cover-logo-link"]').element
+        .style;
+      expect(style.getPropertyValue("--cover-ink")).toBe("#1c1c1c");
+      await scrollTo(40);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("0%");
+      await scrollTo(48);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("50%");
+      await scrollTo(56);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("100%");
+      usePreferences().reduceMotion.value = "on";
+      await scrollTo(48);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("0%");
+      wrapper.unmount();
+    });
+
+    it("scrubs one home logo into the bar at 56px and restores it on reverse scroll", async () => {
+      const wrapper = mountBar({ hideOnCover: true });
+      const link = wrapper.get('[data-testid="cover-logo-link"]');
+      expect(link.attributes("href")).toBe("/");
+      expect(link.isVisible()).toBe(true);
+      await scrollTo(28);
+      expect(link.element.style.getPropertyValue("--cover-progress")).toBe(
+        "0.5"
+      );
+      await scrollTo(56);
+      expect(link.isVisible()).toBe(false);
+      expect(wrapper.get(".reader-top-bar").classes()).not.toContain(
+        "is-cover"
+      );
+      await scrollTo(0);
+      expect(link.isVisible()).toBe(true);
+      wrapper.unmount();
+    });
+
+    it("keeps the full logo still with animations off, including a live preference change", async () => {
+      const wrapper = mountBar({ hideOnCover: true, isAuthenticated: true });
+      const link = wrapper.get('[data-testid="cover-logo-link"]');
+      expect(link.attributes("href")).toBe("/chapters");
+      await scrollTo(28);
+      usePreferences().reduceMotion.value = "on";
+      await flushPromises();
+      expect(link.element.style.getPropertyValue("--cover-progress")).toBe("0");
+      expect(link.isVisible()).toBe(true);
+      await scrollTo(56);
+      expect(link.isVisible()).toBe(false);
+      wrapper.unmount();
+    });
+
+    it("hands focused navigation to the bar and hides the cover while bar controls have focus", async () => {
+      const wrapper = mountBar({ hideOnCover: true });
+      const link = wrapper.get('[data-testid="cover-logo-link"]');
+      link.element.focus();
+      await scrollTo(56);
+      expect(document.activeElement).toBe(
+        wrapper.get(".reader-menu-btn").element
+      );
+      await scrollTo(0);
+      expect(link.isVisible()).toBe(false);
+      document.activeElement.blur();
+      await flushPromises();
+      expect(link.isVisible()).toBe(true);
+      wrapper.unmount();
+    });
 
     it("is not shown until the reader has scrolled past the cover's top", async () => {
       const wrapper = mountBar({ hideOnCover: true });

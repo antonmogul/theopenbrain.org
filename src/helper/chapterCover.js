@@ -272,3 +272,12 @@ export function reactiveCoverForModule(module) {
     normalizeReactiveCover(REACTIVE_COVER_BY_SLUG[module.slug])
   );
 }
+
+/** Cover chrome follows the cover's ink, never a chapter-name colour rule.
+ * An explicit cover.ink wins; a head supplies the ink for its own paper.
+ * Photographs, Lotties and covers without ink metadata default to white. */
+export function coverInkForModule(module) {
+  if (isUsableUrl(module?.cover?.ink)) return module.cover.ink.trim();
+  const reactive = reactiveCoverForModule(module);
+  return reactive?.kind === "head" && reactive.ink ? reactive.ink : "#fff";
+}

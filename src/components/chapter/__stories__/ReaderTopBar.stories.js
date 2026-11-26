@@ -16,6 +16,7 @@ import { useGeneral, useText } from "@/stores";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import ReaderTopBar from "../ReaderTopBar.vue";
 import { SEARCH_CHAPTER, typeQuery } from "./searchFixtures";
+import { HISTORY_HEAD } from "@/helper/chapterCover";
 
 export default {
   title: "Chapter/ReaderShell/ReaderTopBar",
@@ -29,9 +30,13 @@ export default {
     isAuthenticated: true,
     isDraft: false,
     hideOnCover: false,
+    coverInk: "#fff",
+    coverGround: "#202020",
     menuOpen: false,
   },
   argTypes: {
+    coverInk: { control: "color" },
+    coverGround: { control: "color" },
     isAuthenticated: {
       control: "boolean",
       description: "Signed in: Info, Notebook and Chat join the Tools row.",
@@ -44,7 +49,7 @@ export default {
     hideOnCover: {
       control: "boolean",
       description:
-        "The reader's setting: no bar until the page has scrolled 48px, or focus enters the bar.",
+        "The reader's setting: the full cover logo shrinks into the bar over 56px; focus in the bar shows it immediately.",
     },
     menuOpen: {
       control: "boolean",
@@ -62,11 +67,12 @@ export default {
       return { args };
     },
     template: `
-      <div style="min-height:36rem; background:rgb(var(--color-bg));">
+      <div :style="{ minHeight: args.hideOnCover ? '180vh' : '36rem', background: args.hideOnCover ? args.coverGround : 'rgb(var(--color-bg))' }">
         <ReaderTopBar
           :is-authenticated="args.isAuthenticated"
           :is-draft="args.isDraft"
           :hide-on-cover="args.hideOnCover"
+          :cover-ink="args.coverInk"
         />
       </div>`,
   }),
@@ -110,9 +116,18 @@ export const Draft = {
   args: { isDraft: true },
 };
 
-/** On the chapter's cover: nothing, until the page scrolls or Tab reaches the bar. */
+/** On the chapter's cover: the full logo shrinks into the bar on scroll. */
 export const OnCover = {
   args: { hideOnCover: true },
+};
+
+/** A cover's own paper and ink; the mark blends to white before handoff. */
+export const OnLightCover = {
+  args: {
+    hideOnCover: true,
+    coverInk: HISTORY_HEAD.ink,
+    coverGround: HISTORY_HEAD.paper,
+  },
 };
 
 /** On the cover with keyboard focus in the bar: shown. */
