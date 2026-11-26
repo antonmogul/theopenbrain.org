@@ -167,6 +167,8 @@ const currentModuleId = computed(() => {
   return transformedData.value?.moduleId || null;
 });
 
+provide("readerModuleId", currentModuleId);
+
 // All chapters are now Supabase chapters
 const isSupabaseChapter = computed(() => true);
 

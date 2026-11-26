@@ -41,6 +41,7 @@ import {
   ref,
   watch,
 } from "vue";
+import { useReaderEvents } from "@/composables/useReaderEvents";
 import DemoModal from "@/components/chapter/demos/DemoModal.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
@@ -63,6 +64,10 @@ const props = defineProps({
 // The gate covers both the upload request and the component/iframe mount.
 const launchCard = computed(() => props.placement?.launchCard || null);
 const activated = ref(false);
+const recordEvent = useReaderEvents();
+watch(activated, (value) => {
+  if (value) recordEvent("widget_open", props.placement?.widgetId);
+});
 const canLoad = computed(() => !launchCard.value || activated.value);
 
 const requestedId = computed(() => props.placement?.widgetId || "");
@@ -176,6 +181,9 @@ const Widget = computed(() =>
 );
 
 const modalOpen = ref(false);
+watch(modalOpen, (value) => {
+  if (value) recordEvent("widget_open", props.placement?.widgetId);
+});
 const legendExpand = ref(null);
 let modalHref = "";
 let restoreLegendFocus = false;
@@ -276,6 +284,10 @@ const headingId = computed(
     class="wb noHighlight"
     :class="[`wb--${kind}`, { 'wb--unavailable': !embeddable }]"
     :data-widget-breakout="widgetId"
+    @pointerdown.capture="
+      kind === 'inline' && recordEvent('widget_open', widgetId)
+    "
+    @keydown.capture="kind === 'inline' && recordEvent('widget_open', widgetId)"
     :aria-labelledby="headingId"
   >
     <!-- One block for both kinds. For inline widgets it is the dark band

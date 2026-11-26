@@ -1,0 +1,21 @@
+name: Study partner service
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20.20.0
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --prefix server
+      - run: npm run build --prefix server
+      - run: npm test --prefix server
+      - run: node --import ./server/node_modules/tsx/dist/loader.mjs scripts/study-partner-eval.mjs

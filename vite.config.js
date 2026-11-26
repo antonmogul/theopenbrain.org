@@ -15,6 +15,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
+  const studyUrl = process.env.VITE_STUDY_PARTNER_URL;
+  const studyOrigin = studyUrl ? new URL(studyUrl).origin : "";
+
   // https://vitejs.dev/config/
   return defineConfig({
     build: {
@@ -45,6 +48,17 @@ export default ({ mode }) => {
       },
     },
     plugins: [
+      {
+        name: "study-partner-csp",
+        transformIndexHtml(html) {
+          return studyOrigin
+            ? html.replace(
+                "connect-src 'self'",
+                `connect-src 'self' ${studyOrigin}`
+              )
+            : html;
+        },
+      },
       vue({
         template: {
           compilerOptions: {

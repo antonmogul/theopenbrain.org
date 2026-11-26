@@ -18,7 +18,9 @@ import {
   onMounted,
   provide,
   ref,
+  watch,
 } from "vue";
+import { useReaderEvents } from "@/composables/useReaderEvents";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
 import { WIDGET_FIT } from "@/widgets/uploaded/widgetHost";
 import { railFigureLabel } from "@/helper/railFigure";
@@ -32,6 +34,7 @@ const props = defineProps({
 const emit = defineEmits(["ready"]);
 
 const stage = ref(null);
+const recordEvent = useReaderEvents();
 const stageHeight = ref(0);
 provide(WIDGET_FIT, stageHeight);
 
@@ -49,6 +52,13 @@ onMounted(() => {
 onBeforeUnmount(() => observer?.disconnect());
 
 const available = computed(() => hasEmbed(props.animation.widgetId));
+watch(
+  [available, () => props.preload],
+  ([ready, preload]) => {
+    if (ready && !preload) recordEvent("widget_open", props.animation.widgetId);
+  },
+  { immediate: true }
+);
 const view = computed(() =>
   available.value
     ? defineAsyncComponent(embedLoader(props.animation.widgetId))
@@ -61,7 +71,12 @@ const view = computed(() =>
     class="iw pointer-events-auto"
     :aria-label="animation.title || 'Interactive'"
   >
-    <div ref="stage" class="iw-stage">
+    <div
+      ref="stage"
+      class="iw-stage"
+      @pointerdown.capture="recordEvent('widget_open', animation.widgetId)"
+      @keydown.capture="recordEvent('widget_open', animation.widgetId)"
+    >
       <component
         :is="view"
         v-if="view"

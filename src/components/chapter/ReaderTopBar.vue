@@ -1,4 +1,5 @@
 <script setup>
+import { studyPartnerEnabled } from "@/helper/studyPartner";
 /*
  * The reader's top bar (OPENBRAIN-78; Maura's sketch of 23 Nov, idea 3).
  *
@@ -102,8 +103,11 @@ function onScroll() {
 const TOOLS = [
   { key: "info", label: "Info" },
   { key: "notebook", label: "Notebook" },
-  { key: "chat", label: "Chat" },
-];
+  { key: "chat", label: "Study partner" },
+].filter((tool) => tool.key !== "chat" || studyPartnerEnabled);
+const visibleTools = computed(() =>
+  TOOLS.filter((tool) => props.isAuthenticated || tool.key === "chat")
+);
 const toolsRef = ref(null);
 const toolsButtonRef = ref(null);
 const hovered = ref(false);
@@ -120,7 +124,7 @@ const activeTool = computed(() => (sidebarOpen.value ? activeTab.value : null));
 // How many items the row holds: Listen, a signed-in reader's three, "?".
 // Each item carries its place counted from TOOLS (--i), which the opening
 // and the folding stagger by.
-const rowCount = computed(() => 2 + (props.isAuthenticated ? TOOLS.length : 0));
+const rowCount = computed(() => 2 + visibleTools.value.length);
 
 /* ── Help: the "?" at the row's end (OPENBRAIN-189) ── */
 const { noticePending, animationsOn } = useMotionPreference();
@@ -420,14 +424,14 @@ onBeforeUnmount(() => {
             @open="closeHelp({ restoreFocus: false })"
             @toggle="listenOpen = $event"
           />
-          <template v-if="isAuthenticated">
+          <template v-if="visibleTools.length">
             <button
-              v-for="(tool, at) in TOOLS"
+              v-for="(tool, at) in visibleTools"
               :key="tool.key"
               type="button"
               class="tool-btn"
               :class="{ 'is-active': activeTool === tool.key }"
-              :style="{ '--i': TOOLS.length - at }"
+              :style="{ '--i': visibleTools.length - at }"
               aria-controls="reader-sidebar"
               :aria-current="activeTool === tool.key ? 'true' : undefined"
               :data-tool="tool.key"

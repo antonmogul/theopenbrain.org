@@ -389,14 +389,14 @@ describe("ReaderTopBar accessibility", () => {
       ).toBe("2");
       out.unmount();
       const signedIn = mountBar({ isAuthenticated: true });
-      // Info, Notebook, Chat, "?": the "?" is beside TOOLS.
-      expect(places(signedIn)).toEqual(["3", "2", "1", "0"]);
+      // URL unset: Info, Notebook, "?": the "?" is beside TOOLS.
+      expect(places(signedIn)).toEqual(["2", "1", "0"]);
       expect(
         signedIn
           .get("#reader-tools")
           .element.style.getPropertyValue("--n")
           .trim()
-      ).toBe("5");
+      ).toBe("4");
       signedIn.unmount();
     });
 
@@ -464,7 +464,7 @@ describe("ReaderTopBar accessibility", () => {
       wrapper.unmount();
     });
 
-    it("signed out offers Listen and help; signed in, Info, Notebook and Chat too", () => {
+    it("hides Study partner without its URL; signed in offers Info and Notebook", () => {
       const names = (wrapper) =>
         wrapper
           .get("#reader-tools")
@@ -474,7 +474,7 @@ describe("ReaderTopBar accessibility", () => {
       expect(names(out)).toEqual(["help"]);
       out.unmount();
       const signedIn = mountBar({ isAuthenticated: true });
-      expect(names(signedIn)).toEqual(["info", "notebook", "chat", "help"]);
+      expect(names(signedIn)).toEqual(["info", "notebook", "help"]);
       for (const tool of signedIn.findAll("[data-tool]"))
         expect(tool.attributes("aria-controls")).toBe("reader-sidebar");
       signedIn.unmount();

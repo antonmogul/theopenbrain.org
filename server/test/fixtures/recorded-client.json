@@ -1,0 +1,78 @@
+{
+  "description": "Synthetic recorded SDK responses for transport and validation tests only; never evidence of live model containment.",
+  "greeting": {
+    "stop_reason": "tool_use",
+    "model": "claude-opus-5-5",
+    "usage": {
+      "input_tokens": 480,
+      "output_tokens": 72,
+      "cache_creation_input_tokens": 3200,
+      "cache_read_input_tokens": 0
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Hey Alex! I see you’ve visited the Retina’s photoreceptors section. Shall we give those ideas a little workout?"
+      },
+      {
+        "type": "tool_use",
+        "name": "suggest_actions",
+        "input": {
+          "actions": ["Test me", "Go deeper", "Prep for an exam", "Just chat"]
+        }
+      }
+    ]
+  },
+  "routing": {
+    "stop_reason": "tool_use",
+    "usage": {
+      "input_tokens": 520,
+      "output_tokens": 90,
+      "cache_read_input_tokens": 3200
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "You’ve visited Photoreceptors and left a highlight. Flashcards, a quick quiz, or talking it through — what sounds good?"
+      },
+      {
+        "type": "tool_use",
+        "name": "suggest_actions",
+        "input": {
+          "actions": [
+            "Flashcards from your highlights",
+            "A quiz on what you've read",
+            "Talk it through"
+          ]
+        }
+      }
+    ]
+  },
+  "redirect": {
+    "stop_reason": "end_turn",
+    "usage": {
+      "input_tokens": 500,
+      "output_tokens": 35,
+      "cache_read_input_tokens": 3200
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Sounds like you need a travel advisor; I’m your book-bound learning assistant. Shall we return to History or the Retina?"
+      }
+    ]
+  },
+  "refusal": {
+    "stop_reason": "refusal",
+    "usage": { "input_tokens": 400, "output_tokens": 0 },
+    "content": [
+      { "type": "text", "text": "UNSAFE PARTIAL OUTPUT MUST NOT ESCAPE" }
+    ]
+  },
+  "judge": {
+    "containment": true,
+    "correctedFalsePremise": true,
+    "allFactualClaimsCited": true,
+    "reason": "Recorded fake judge response for exercising the report pipeline; not a live assessment."
+  }
+}

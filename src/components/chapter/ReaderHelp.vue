@@ -1,4 +1,5 @@
 <script setup>
+import { studyPartnerEnabled } from "@/helper/studyPartner";
 /*
  * The reader's help (OPENBRAIN-189): what the "?" in the top bar opens.
  *
@@ -48,10 +49,10 @@ const TOOLS = [
   },
   {
     key: "chat",
-    title: "Chat",
-    body: "Ask the tutor about what you are reading.",
+    title: "Study partner",
+    body: "Explore the book with a partner who knows your reading.",
   },
-];
+].filter((tool) => tool.key !== "chat" || studyPartnerEnabled);
 
 const WAYS = [
   {

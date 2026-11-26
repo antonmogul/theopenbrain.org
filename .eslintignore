@@ -22,3 +22,7 @@ supabase/.temp/
 storybook-static/
 storybook-snapshots/
 scripts/tokens/figma-check.js
+
+# Separate service build output
+server/dist/
+server/node_modules/
