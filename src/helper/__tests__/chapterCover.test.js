@@ -5,7 +5,51 @@ import {
   DEFAULT_COVER,
   normalizeReactiveCover,
   reactiveCoverForModule,
+  coverInkForModule,
+  HISTORY_HEAD,
 } from "@/helper/chapterCover";
+
+describe("coverInkForModule", () => {
+  it("uses a head's own ink for any chapter slug", () => {
+    expect(
+      coverInkForModule({
+        slug: "any-new-chapter",
+        cover: { reactive: HISTORY_HEAD },
+      })
+    ).toBe(HISTORY_HEAD.ink);
+    expect(coverInkForModule({ slug: "foundations-of-neuroscience" })).toBe(
+      HISTORY_HEAD.ink
+    );
+  });
+
+  it("uses explicit cover ink ahead of a head's paper ink", () => {
+    expect(
+      coverInkForModule({ cover: { ink: " #223344 ", reactive: HISTORY_HEAD } })
+    ).toBe("#223344");
+  });
+
+  it("defaults to white for a picture, Lottie or missing metadata", () => {
+    for (const module of [
+      null,
+      {},
+      { slug: "the-retina" },
+      { cover: { ink: "  " } },
+      { slug: "attention-and-working-memory" },
+      { slug: "stress" },
+    ]) {
+      expect(coverInkForModule(module)).toBe("#fff");
+    }
+  });
+
+  it("does not force dark ink when History is given a different cover", () => {
+    expect(
+      coverInkForModule({
+        slug: "foundations-of-neuroscience",
+        cover: { reactive: null },
+      })
+    ).toBe("#fff");
+  });
+});
 
 describe("coverForModule", () => {
   it("prefers the module's own cover column when set", () => {

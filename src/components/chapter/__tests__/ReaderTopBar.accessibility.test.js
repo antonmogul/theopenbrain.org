@@ -210,6 +210,23 @@ describe("ReaderTopBar accessibility", () => {
       await flushPromises();
     };
 
+    it("fades cover ink into the bar's white only over the last 16px", async () => {
+      const wrapper = mountBar({ hideOnCover: true, coverInk: "#1c1c1c" });
+      const style = wrapper.get('[data-testid="cover-logo-link"]').element
+        .style;
+      expect(style.getPropertyValue("--cover-ink")).toBe("#1c1c1c");
+      await scrollTo(40);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("0%");
+      await scrollTo(48);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("50%");
+      await scrollTo(56);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("100%");
+      usePreferences().reduceMotion.value = "on";
+      await scrollTo(48);
+      expect(style.getPropertyValue("--cover-ink-blend")).toBe("0%");
+      wrapper.unmount();
+    });
+
     it("scrubs one home logo into the bar at 56px and restores it on reverse scroll", async () => {
       const wrapper = mountBar({ hideOnCover: true });
       const link = wrapper.get('[data-testid="cover-logo-link"]');

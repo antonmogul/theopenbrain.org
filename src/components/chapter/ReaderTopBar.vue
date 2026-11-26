@@ -52,10 +52,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** The actual cover's ink; the bar always keeps its own white ink. */
+  coverInk: { type: String, default: "#fff" },
 });
 
 // How far the page scrolls before the bar shows on a cover: one bar.
 const COVER_REVEAL_Y = 56;
+const COVER_INK_FADE_Y = 40;
 // The row stays this long after the pointer leaves, so a diagonal move
 // from TOOLS to an item does not drop it.
 const HOVER_LINGER_MS = 220;
@@ -147,6 +150,14 @@ const coverLogoStyle = computed(() => {
     : 0;
   return {
     "--cover-progress": progress,
+    "--cover-ink": props.coverInk,
+    "--cover-ink-blend": `${
+      Math.max(
+        0,
+        (progress * COVER_REVEAL_Y - COVER_INK_FADE_Y) /
+          (COVER_REVEAL_Y - COVER_INK_FADE_Y)
+      ) * 100
+    }%`,
     "--cover-target-x": `${logoTarget.value.x}px`,
     "--cover-target-y": `${logoTarget.value.y}px`,
     "--cover-target-h": `${logoTarget.value.height}px`,
@@ -490,11 +501,14 @@ onBeforeUnmount(() => {
     var(--cover-start-y) + (var(--cover-target-y) - var(--cover-start-y)) *
       var(--cover-progress)
   );
-  color: white;
+  color: var(--cover-ink);
+  /* Keep the cover's ink through 40px, then reach the bar's white at 56px.
+     One artwork changes ink, so the mark never doubles during the fade. */
+  color: color-mix(in srgb, var(--cover-ink), white var(--cover-ink-blend));
   border-radius: var(--radius-control);
 }
 .cover-logo-link:focus-visible {
-  outline: 2px solid white;
+  outline: 2px solid currentColor;
   outline-offset: 4px;
 }
 .cover-logo {

@@ -13,6 +13,8 @@ const base = flag("base", "http://localhost:5295");
 const stories = flag("stories", "http://localhost:4295");
 const out = flag("out", "cover-logo-artifacts");
 const engine = flag("engine", "chromium");
+const only = flag("only", "").split(",").filter(Boolean);
+const widths = flag("widths", "").split(",").filter(Boolean).map(Number);
 process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY = "1";
 await mkdir(out, { recursive: true });
 const browser = await { chromium, webkit }[engine].launch();
@@ -24,7 +26,7 @@ const cases = [
   ["retina", `${base}/chapter/2/the-retina`],
   ["attention", story("chapter-cover-logo--attention-creator")],
   ["stress", story("chapter-cover-logo--stress-creator")],
-];
+].filter(([name]) => !only.length || only.includes(name));
 const sizes =
   engine === "webkit"
     ? [[375, 704]]
@@ -42,6 +44,15 @@ const near = (actual, wanted, label) =>
 
 async function state(page) {
   return page.evaluate(() => {
+    // Normalize CSS color-mix()/rgb() into comparable rendered sRGB bytes.
+    const rgb = (color) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 1;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, 1, 1);
+      return Array.from(ctx.getImageData(0, 0, 1, 1).data).slice(0, 3);
+    };
     const cover = document.querySelector(".cover-logo");
     const link = document.querySelector(".cover-logo-link");
     const mark = document.querySelector(".menu-logo");
@@ -52,6 +63,8 @@ async function state(page) {
       cover: cover.getBoundingClientRect().toJSON(),
       mark: mark.getBoundingClientRect().toJSON(),
       visible: css.display !== "none",
+      ink: rgb(getComputedStyle(cover).color),
+      barInk: rgb(getComputedStyle(mark).color),
       barOpacity: Number(getComputedStyle(bar).opacity),
       wordmark: Number(
         getComputedStyle(cover.querySelector("svg > g")).opacity
@@ -76,6 +89,7 @@ async function scroll(page, y) {
 try {
   for (const [name, url] of cases) {
     for (const [width, height] of sizes) {
+      if (widths.length && !widths.includes(width)) continue;
       const context = await browser.newContext({
         viewport: { width, height },
         isMobile: width < 640,
@@ -135,11 +149,29 @@ try {
       assert.ok(
         frames[1].wordmark < 1 && frames[2].wordmark < frames[1].wordmark
       );
-      for (const y of [55, 56, 55, 0]) {
+      const coverInk = name === "history" ? [28, 28, 28] : [255, 255, 255];
+      for (const frame of frames.slice(0, 3))
+        assert.deepEqual(frame.ink, coverInk);
+      const seam = [];
+      for (const y of [48, 55, 56, 55, 0]) {
         await scroll(page, y);
         const current = await state(page);
         assert.equal(current.visible, y < 56, "reverse scroll ownership");
+        if (y === 48) {
+          current.ink.forEach((channel, index) =>
+            assert.ok(
+              Math.abs(channel - (coverInk[index] + 255) / 2) <= 1,
+              "cover ink is halfway to white at 48px"
+            )
+          );
+        }
+        if (y > 0 && !seam.some((frame) => frame.scrollY === y)) {
+          const file = `${engine}-${name}-${width}x${height}-seam-${y}.png`;
+          await page.screenshot({ path: `${out}/${file}`, timeout: 20000 });
+          seam.push({ ...current, file });
+        }
         if (y === 56) {
+          assert.deepEqual(current.ink, current.barInk, "same ink at handoff");
           near(current.endpoint.x, current.mark.x, "handoff x");
           near(current.endpoint.y, current.mark.y, "handoff y");
           near(current.endpoint.height, current.mark.height, "handoff height");
@@ -191,6 +223,11 @@ try {
       near(reduced.cover.height, resting.cover.height, "reduced motion height");
       near(reduced.cover.x, resting.cover.x, "reduced motion x");
       assert.equal(reduced.wordmark, 1);
+      assert.deepEqual(
+        reduced.ink,
+        coverInk,
+        "reduced motion preserves cover ink"
+      );
       await page.screenshot({
         path: `${out}/${engine}-${name}-${width}-reduced.png`,
         timeout: 20000,
@@ -204,6 +241,7 @@ try {
         height,
         engine,
         frames,
+        seam,
         keyboard: "passed",
         reverseScroll: "passed",
         reducedMotion: "passed",
