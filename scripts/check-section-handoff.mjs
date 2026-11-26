@@ -65,23 +65,40 @@ export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
       scope: getComputedStyle(ground.parentElement).isolation,
     };
   });
-  assert(veil, "the opener's wash has a ground and a colour layer");
-  assert.equal(await wash.count(), 2, "and nothing else is washed");
-  assert.equal(veil.groundColour, "rgb(255, 255, 255)", "white ground");
-  assert(veil.groundUnder, "the ground is under the picture");
-  assert(veil.colourOver, "the colour is over the picture");
-  assert.equal(veil.blend, "multiply");
-  assert.equal(veil.scope, "isolate", "multiplied with the art box only");
-  assert.deepEqual(veil.colour, veil.ground, "the two layers share one box");
-  assert.equal(veil.ground[0], veil.pane[0], "the wash reaches the left edge");
-  assert.equal(veil.ground[2], veil.pane[2], "and the right edge");
-  assert(
-    veil.ground[0] <= veil.picture[0] &&
-      veil.ground[1] <= veil.picture[1] &&
-      veil.ground[2] >= veil.picture[2] &&
-      veil.ground[3] >= veil.picture[3],
-    "the wash covers the whole picture"
+  // Under reduced motion there is no wash at all (the plain still), which
+  // is how the hosted fixture runs: check that, then only the geometry.
+  const reduced = await page.evaluate(
+    () =>
+      document.documentElement.dataset.reduceMotion === "1" ||
+      (document.documentElement.dataset.reduceMotion !== "0" &&
+        matchMedia("(prefers-reduced-motion: reduce)").matches)
   );
+  if (reduced) {
+    assert.equal(veil, null, "no wash under reduced motion");
+    assert.equal(await wash.count(), 0, "nothing is washed");
+  } else {
+    assert(veil, "the opener's wash has a ground and a colour layer");
+    assert.equal(await wash.count(), 2, "and nothing else is washed");
+    assert.equal(veil.groundColour, "rgb(255, 255, 255)", "white ground");
+    assert(veil.groundUnder, "the ground is under the picture");
+    assert(veil.colourOver, "the colour is over the picture");
+    assert.equal(veil.blend, "multiply");
+    assert.equal(veil.scope, "isolate", "multiplied with the art box only");
+    assert.deepEqual(veil.colour, veil.ground, "the two layers share one box");
+    assert.equal(
+      veil.ground[0],
+      veil.pane[0],
+      "the wash reaches the left edge"
+    );
+    assert.equal(veil.ground[2], veil.pane[2], "and the right edge");
+    assert(
+      veil.ground[0] <= veil.picture[0] &&
+        veil.ground[1] <= veil.picture[1] &&
+        veil.ground[2] >= veil.picture[2] &&
+        veil.ground[3] >= veil.picture[3],
+      "the wash covers the whole picture"
+    );
+  }
   let previous = 1;
   const frames = [];
   for (let y = start; y <= end + 100; y += 50) {
