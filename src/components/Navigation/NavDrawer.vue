@@ -313,7 +313,7 @@ onBeforeUnmount(() => {
               title="Close"
               @click="close()"
             >
-              <CloseIcon :width="20" :height="20" />
+              <CloseIcon class="close-icon" :width="20" :height="20" />
             </button>
           </div>
 
@@ -335,13 +335,15 @@ onBeforeUnmount(() => {
               title="Home"
               @click="close({ restoreFocus: false })"
             >
+              <!-- One set with the bar's mark and search icon: 20px in a
+                   1.25px line (OPENBRAIN-92). -->
               <svg
-                width="18"
-                height="18"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.6"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 aria-hidden="true"
@@ -570,16 +572,22 @@ onBeforeUnmount(() => {
   -webkit-hyphens: manual;
 }
 
-/* As tall as the reader's top bar and padded like it, so the ✕ lands on
-   the mark (10px in; 4px on a phone). */
+/* As tall as the reader's top bar, padded like it and on its ground
+   (--color-topbar, OPENBRAIN-92), so the ✕ lands on the mark (10px in; 4px
+   on a phone) and the bar runs on across the drawer. */
 .drawer-head {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  height: var(--reader-topbar-h, 3rem);
+  height: var(--reader-topbar-h, 3.5rem);
   padding: 0 10px;
+  background: rgb(var(--color-topbar));
   border-bottom: 1px solid rgb(var(--d-ink) / 0.1);
   box-sizing: border-box;
+}
+/* The bar's own ✕: the line of its icons. */
+.close-icon {
+  stroke-width: 1.5;
 }
 .close-btn {
   display: grid;

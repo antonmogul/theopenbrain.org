@@ -107,11 +107,36 @@ describe("ReaderTopBar accessibility", () => {
     wrapper.unmount();
   });
 
-  it("takes its height from --reader-topbar-h, on the dark surface", () => {
+  // Maura, 25 Nov (OPENBRAIN-92): "the navbar background should be #131313".
+  it("takes its height from --reader-topbar-h, on its own ground", () => {
     const bar = rule(source, ".reader-top-bar");
     expect(bar).toMatch(/height:\s*var\(--reader-topbar-h/);
     expect(bar).toMatch(/box-sizing:\s*border-box/);
-    expect(bar).toMatch(/--bar-bg:\s*var\(--color-dark-surface\)/);
+    expect(bar).toMatch(/--bar-bg:\s*var\(--color-topbar\)/);
+    const brand = readFileSync(
+      resolve(__dirname, "../../../styles/brand.css"),
+      "utf8"
+    );
+    expect(brand).toMatch(/--color-topbar:\s*19 19 19;/);
+    // 56px: the 44px targets with 6px above and below.
+    expect(brand).toMatch(/--reader-topbar-h:\s*3\.5rem;/);
+  });
+
+  // "The stroke on the brain, book, home and search icons should match
+  // optically" (OPENBRAIN-92): the mark is drawn as a line icon.
+  it("draws the mark as a line icon, the brain's line the search icon's weight", () => {
+    const wrapper = mountBar();
+    const logo = wrapper.get('[data-testid="book-logo"]');
+    expect(logo.classes()).toContain("book-logo--icon");
+    expect(logo.find("path.logo-brain").exists()).toBe(true);
+    const mark = rule(source, ".menu-logo");
+    expect(mark).toMatch(/--logo-brain-stroke:\s*1\.25px/);
+    expect(mark).toMatch(/--logo-stroke:\s*0\.85px/);
+    // The search icon: 20px of a 24 box at 1.5, which is 1.25px.
+    const glass = wrapper.get('[data-testid="reader-search-toggle"] svg');
+    expect(glass.attributes("width")).toBe("20");
+    expect(glass.attributes("stroke-width")).toBe("1.5");
+    wrapper.unmount();
   });
 
   it("the mark is a button that opens the chapter menu", async () => {
@@ -251,6 +276,75 @@ describe("ReaderTopBar accessibility", () => {
       expect(rule(css, ".tools-row :deep(.listen-return)")).toMatch(
         /visibility:\s*visible/
       );
+    });
+
+    // Maura, 25 Nov (OPENBRAIN-92): "open from right to left like an
+    // accordion... slide back in the same way". happy-dom has no layout or
+    // transitions, so the CSS holds it.
+    it("opens out of TOOLS item by item, and never moves the row itself", () => {
+      const css = source.slice(source.indexOf("<style"));
+      const wide = mediaBlock("(min-width: 641px)");
+      // Each rule names the buttons and Listen's; the last selector is
+      // the one before the brace.
+      const item = rule(wide, ".tools-row :deep(.listen-toggle)");
+      expect(item).toMatch(/clip-path:\s*inset\(0 0 0 100%\)/);
+      expect(item).toMatch(/transform:\s*translateX\(/);
+      expect(item).toMatch(/--tools-delay:/);
+      const open = rule(
+        wide,
+        ".tools.is-open .tools-row :deep(.listen-toggle)"
+      );
+      expect(open).toMatch(/clip-path:\s*inset\(0\)/);
+      expect(open).toMatch(/transform:\s*none/);
+      // The row: visibility only, at every width. A transform, a filter, a
+      // clip or an opacity on it would capture "Back to reading" and the
+      // panels that hang from the bar.
+      for (const block of [css, wide])
+        for (const selector of [".tools-row", ".tools.is-open .tools-row"])
+          expect(rule(block, selector)).not.toMatch(
+            /transform|opacity|clip-path|filter|overflow|contain/
+          );
+      // It stays visible until the last item has folded away.
+      expect(rule(wide, ".tools-row")).toMatch(/transition:\s*visibility 0s/);
+    });
+
+    it("counts each item from TOOLS, so the opening can stagger", () => {
+      const places = (wrapper) =>
+        wrapper
+          .get("#reader-tools")
+          .findAll(".tool-btn")
+          .map((b) => b.element.style.getPropertyValue("--i").trim());
+      const out = mountBar({ isAuthenticated: false });
+      expect(places(out)).toEqual(["0"]);
+      expect(
+        out.get("#reader-tools").element.style.getPropertyValue("--n").trim()
+      ).toBe("2");
+      out.unmount();
+      const signedIn = mountBar({ isAuthenticated: true });
+      // Info, Notebook, Chat, "?": the "?" is beside TOOLS.
+      expect(places(signedIn)).toEqual(["3", "2", "1", "0"]);
+      expect(
+        signedIn
+          .get("#reader-tools")
+          .element.style.getPropertyValue("--n")
+          .trim()
+      ).toBe("5");
+      signedIn.unmount();
+    });
+
+    it("does not animate under reduced motion, the reader's or the device's", () => {
+      const css = source.slice(source.indexOf("<style"));
+      // The reader's own "animations off". The rule lists several
+      // selectors: find it by its first.
+      const own = css.slice(css.indexOf(':root[data-reduce-motion="1"]'));
+      expect(own.slice(0, own.indexOf("}"))).toMatch(
+        /\.tools-row > \.tool-btn,[\s\S]*transition:\s*none/
+      );
+      const device = mediaBlock("(prefers-reduced-motion: reduce)");
+      expect(device).toMatch(
+        /:root:not\(\[data-reduce-motion="0"\]\) \.tools-row,/
+      );
+      expect(device).toMatch(/transition:\s*none/);
     });
 
     it("opens while a mouse points at it and closes a moment after it leaves", async () => {

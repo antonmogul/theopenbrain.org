@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 
@@ -171,10 +173,6 @@ describe("ReaderSearch", () => {
       target.dispatchEvent(event);
       return event;
     };
-    // happy-dom has no layout: give the field one, as on a wide screen.
-    Object.defineProperty(input().element, "offsetParent", {
-      get: () => document.body,
-    });
     expect(press(document.body).defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(input().element);
 
@@ -184,6 +182,108 @@ describe("ReaderSearch", () => {
     other.focus();
     expect(press(other).defaultPrevented).toBe(false);
     expect(document.activeElement).toBe(other);
+  });
+
+  it("“/” opens a field that is behind its icon and cannot take focus yet", async () => {
+    // Closed, the field is visibility:hidden (display:none on a phone).
+    const focus = input().element.focus.bind(input().element);
+    input().element.focus = () => {
+      if (wrapper.classes().includes("is-expanded")) focus();
+    };
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "/", cancelable: true })
+    );
+    await flushPromises();
+    expect(wrapper.classes()).toContain("is-expanded");
+    expect(document.activeElement).toBe(input().element);
+  });
+
+  // Maura, 25 Nov (OPENBRAIN-92): "on hover, the search line should open
+  // and the text should slide in from the left with smooth easing. The
+  // line can stay white instead of the accent color."
+  describe("pointing at it", () => {
+    const source = readFileSync(
+      resolve(__dirname, "../ReaderSearch.vue"),
+      "utf8"
+    );
+    const css = source.slice(source.indexOf("<style"));
+    const rule = (block, selector) => {
+      const at = block.indexOf(`${selector} {`);
+      return at < 0 ? "" : block.slice(at, block.indexOf("}", at));
+    };
+    const wide = css.slice(
+      css.indexOf("@media (min-width: 641px) {"),
+      css.indexOf("@media (max-width: 640px) {")
+    );
+    const point = (type, pointerType = "mouse") => {
+      const event = new Event(type);
+      event.pointerType = pointerType;
+      wrapper.element.dispatchEvent(event);
+      return wrapper.vm.$nextTick();
+    };
+
+    it("shows the field while a mouse points at it, and no longer", async () => {
+      await point("pointerenter");
+      expect(wrapper.classes()).toContain("is-peek");
+      // Seen, not used: the button still says closed, nothing is indexed.
+      expect(
+        wrapper
+          .get('[data-testid="reader-search-toggle"]')
+          .attributes("aria-expanded")
+      ).toBe("false");
+      await point("pointerleave");
+      expect(wrapper.classes()).not.toContain("is-peek");
+    });
+
+    it("is not opened by a finger passing over it", async () => {
+      await point("pointerenter", "touch");
+      expect(wrapper.classes()).not.toContain("is-peek");
+    });
+
+    it("stays open once the reader is in it, and closes empty when they leave", async () => {
+      await point("pointerenter");
+      await input().trigger("focus");
+      await point("pointerleave");
+      expect(wrapper.classes()).toContain("is-expanded");
+      await wrapper.trigger("focusout", { relatedTarget: null });
+      expect(wrapper.classes()).not.toContain("is-expanded");
+    });
+
+    it("opens the line out of the icon and slides the words in from the left", () => {
+      const closed = rule(wide, ".search-field");
+      expect(closed).toMatch(/width:\s*0;/);
+      expect(closed).toMatch(/overflow:\s*hidden/);
+      // Out of the tab order while closed, as when it was not drawn.
+      expect(closed).toMatch(/visibility:\s*hidden/);
+      expect(closed).toMatch(/transition:\s*width /);
+      const open = rule(wide, ".reader-search.is-peek .search-field");
+      expect(open).toMatch(/width:\s*23rem/);
+      expect(open).toMatch(/visibility:\s*visible/);
+      expect(rule(wide, ".search-input")).toMatch(/transform:\s*translateX\(-/);
+      expect(rule(wide, ".reader-search.is-peek .search-key")).toMatch(
+        /transform:\s*none/
+      );
+    });
+
+    it("rules the field in white, in it or not", () => {
+      const focused = rule(css, ".search-field:focus-within");
+      expect(focused).toMatch(
+        /border-bottom-color:\s*rgb\(var\(--search-ink\)\)/
+      );
+      expect(css).not.toMatch(/\.search-field[^{]*\{[^}]*--color-accent/);
+    });
+
+    it("does not animate under reduced motion", () => {
+      expect(css).toMatch(
+        /:root\[data-reduce-motion="1"\] \.search-field,[\s\S]*?transition:\s*none/
+      );
+      const device = css.slice(
+        css.indexOf("@media (prefers-reduced-motion: reduce) {")
+      );
+      expect(device).toMatch(
+        /:root:not\(\[data-reduce-motion="0"\]\) \.search-field,/
+      );
+    });
   });
 
   it("on a phone the field is behind a named button that opens it and focuses it", async () => {

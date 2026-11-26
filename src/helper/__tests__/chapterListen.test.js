@@ -1,6 +1,8 @@
 import { describe, it, expect, afterEach } from "vitest";
 import {
+  LISTEN_VOICE_LIMIT,
   extractChapterSpeech,
+  shortVoiceList,
   speechChunks,
   speechStartIndex,
 } from "../chapterListen";
@@ -78,5 +80,66 @@ describe("chapter speech extraction", () => {
     expect(speechChunks("x".repeat(600)).map((c) => c.length)).toEqual([
       220, 220, 160,
     ]);
+  });
+});
+
+// OPENBRAIN-92 (Maura, 25 Nov): "keep a smaller voice library".
+describe("shortVoiceList", () => {
+  const voice = (name, extra = {}) => ({ name, voiceURI: name, ...extra });
+  // A Mac in Chrome, in the order the browser lists them.
+  const mac = [
+    "Albert",
+    "Bad News",
+    "Bells",
+    "Daniel",
+    "Eddy (English (UK))",
+    "Fred",
+    "Karen",
+    "Moira",
+    "Samantha",
+    "Zarvox",
+    "Google US English",
+    "Google UK English Female",
+  ].map((name) => voice(name));
+  const names = (list) => list.map((v) => v.name);
+
+  it("is off until the short list is approved: every voice is offered", () => {
+    expect(LISTEN_VOICE_LIMIT).toBe(0);
+    expect(shortVoiceList(mac)).toBe(mac);
+  });
+
+  it("keeps the preferred voices, in the device's order", () => {
+    expect(names(shortVoiceList(mac, { limit: 4 }))).toEqual([
+      "Daniel",
+      "Karen",
+      "Samantha",
+      "Google US English",
+    ]);
+  });
+
+  it("never takes away the voice the reader chose", () => {
+    const list = shortVoiceList(mac, { limit: 4, keep: "Zarvox" });
+    expect(names(list)).toEqual(["Daniel", "Karen", "Samantha", "Zarvox"]);
+  });
+
+  it("on a device with none of the names, keeps its default and skips novelties", () => {
+    const device = [
+      voice("Bells"),
+      voice("English United Kingdom"),
+      voice("English India"),
+      voice("English United States", { default: true }),
+      voice("English Australia"),
+      voice("English Nigeria"),
+    ];
+    expect(names(shortVoiceList(device, { limit: 3 }))).toEqual([
+      "English United Kingdom",
+      "English India",
+      "English United States",
+    ]);
+  });
+
+  it("leaves a device with few voices alone", () => {
+    const few = mac.slice(0, 3);
+    expect(shortVoiceList(few, { limit: 4 })).toBe(few);
   });
 });

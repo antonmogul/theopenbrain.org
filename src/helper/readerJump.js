@@ -28,8 +28,8 @@ const READER_INPUT = [
   "keydown",
   "popstate",
 ];
-// --reader-topbar-h's value in brand.css (3rem), for when it can't be read.
-const TOPBAR_FALLBACK = 48;
+// --reader-topbar-h's value in brand.css (3.5rem), for when it can't be read.
+const TOPBAR_FALLBACK = 56;
 // Breathing room under the top bar: the 1rem of scroll-margin-top.
 const TOP_GAP = 16;
 

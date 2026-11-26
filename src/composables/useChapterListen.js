@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
 import {
   extractChapterSpeech,
+  shortVoiceList,
   speechChunks,
   speechStartIndex,
 } from "@/helper/chapterListen";
@@ -48,9 +49,12 @@ export function useChapterListen({
 
   function loadVoices() {
     if (!supported) return;
-    voices.value = synth
-      .getVoices()
-      .filter((v) => /^en(?:[-_]|$)/i.test(v.lang));
+    // Every English voice, or the short list once it is approved
+    // (LISTEN_VOICE_LIMIT, OPENBRAIN-92); the reader's own always stays.
+    voices.value = shortVoiceList(
+      synth.getVoices().filter((v) => /^en(?:[-_]|$)/i.test(v.lang)),
+      { keep: voiceURI.value }
+    );
   }
   function cancel() {
     generation += 1;

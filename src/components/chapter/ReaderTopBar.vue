@@ -9,6 +9,11 @@
  * for a signed-in reader, then "?" (ReaderHelp). On touch TOOLS is a tap
  * toggle. The account moved into the drawer's foot.
  *
+ * Maura's notes of 25 Nov (OPENBRAIN-92): the bar is #131313 and 56px;
+ * the mark is drawn as a line icon, its strokes weighed against the search
+ * and home icons'; the Tools row opens out of TOOLS from right to left, an
+ * item after the next, and folds back the same way.
+ *
  * On the chapter's cover the bar is not shown (`hideOnCover`): it appears
  * once the reader has scrolled past COVER_REVEAL_Y, and at once when focus
  * enters it, so the keyboard reaches it from the cover too. It is hidden
@@ -43,7 +48,7 @@ const props = defineProps({
 });
 
 // How far the page scrolls before the bar shows on a cover: one bar.
-const COVER_REVEAL_Y = 48;
+const COVER_REVEAL_Y = 56;
 // The row stays this long after the pointer leaves, so a diagonal move
 // from TOOLS to an item does not drop it.
 const HOVER_LINGER_MS = 220;
@@ -89,6 +94,10 @@ let lingerTimer = 0;
 
 // The tab the floating panel is showing.
 const activeTool = computed(() => (sidebarOpen.value ? activeTab.value : null));
+// How many items the row holds: Listen, a signed-in reader's three, "?".
+// Each item carries its place counted from TOOLS (--i), which the opening
+// and the folding stagger by.
+const rowCount = computed(() => 2 + (props.isAuthenticated ? TOOLS.length : 0));
 
 /* ── Help: the "?" at the row's end (OPENBRAIN-189) ── */
 const { noticePending } = useMotionPreference();
@@ -258,8 +267,13 @@ onBeforeUnmount(() => {
         data-testid="reader-menu-button"
         @click="store.activeMenu = true"
       >
-        <CloseIcon v-if="store.activeMenu" :width="20" :height="20" />
-        <BookLogo v-else mark class="menu-logo" />
+        <CloseIcon
+          v-if="store.activeMenu"
+          class="menu-close"
+          :width="20"
+          :height="20"
+        />
+        <BookLogo v-else mark icon class="menu-logo" />
       </button>
 
       <!-- Only creators can open a draft (useChapter gate + RLS), so this
@@ -317,19 +331,22 @@ onBeforeUnmount(() => {
           role="group"
           aria-label="Reader tools"
           data-testid="reader-tools"
+          :style="{ '--n': rowCount }"
         >
           <ReaderListen
             class="tools-listen"
+            :style="{ '--i': rowCount - 1 }"
             @open="closeHelp({ restoreFocus: false })"
             @toggle="listenOpen = $event"
           />
           <template v-if="isAuthenticated">
             <button
-              v-for="tool in TOOLS"
+              v-for="(tool, at) in TOOLS"
               :key="tool.key"
               type="button"
               class="tool-btn"
               :class="{ 'is-active': activeTool === tool.key }"
+              :style="{ '--i': TOOLS.length - at }"
               aria-controls="reader-sidebar"
               :aria-current="activeTool === tool.key ? 'true' : undefined"
               :data-tool="tool.key"
@@ -344,6 +361,7 @@ onBeforeUnmount(() => {
             type="button"
             class="tool-btn help-btn"
             :class="{ 'is-active': showHelp }"
+            style="--i: 0"
             :aria-label="helpLabel"
             aria-haspopup="dialog"
             :aria-expanded="showHelp"
@@ -386,21 +404,21 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* A slim dark bar: the chapter's dark surface (the opener's, the figure
-   pane's), white ink. Its height is the token's, so --reader-topbar-h
-   (brand.css) is true by construction and every jump and sticky offset
-   that reads it lands under the bar. The --bar-* values are read by the
-   search field inside it. */
+/* A dark bar, white ink, on its own ground: --color-topbar (#131313), a
+   step darker than the opener and the figure pane under it. Its height is
+   the token's, so --reader-topbar-h (brand.css) is true by construction
+   and every jump and sticky offset that reads it lands under the bar. The
+   --bar-* values are read by the search field inside it. */
 .reader-top-bar {
   --bar-ink: 255 255 255;
-  --bar-bg: var(--color-dark-surface);
+  --bar-bg: var(--color-topbar);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 45;
   box-sizing: border-box;
-  height: var(--reader-topbar-h, 3rem);
+  height: var(--reader-topbar-h, 3.5rem);
   background: rgb(var(--bar-bg));
   border-bottom: 1px solid rgb(var(--bar-ink) / 0.1);
   color: rgb(var(--bar-ink));
@@ -438,8 +456,18 @@ onBeforeUnmount(() => {
   transition: background 0.12s ease;
 }
 
+/* The mark as a line icon (BookLogo `icon`): 32px tall, the book's lines
+   0.85px and the brain's 1.25px, so the brain weighs what the book does and
+   both what the search icon beside them does (20px, 1.25px). The ✕ that
+   stands in for it is drawn in the same line. */
 .menu-logo {
-  --logo-h: 30px;
+  --logo-h: 32px;
+  --logo-stroke: 0.85px;
+  --logo-brain-stroke: 1.25px;
+}
+
+.menu-close {
+  stroke-width: 1.5;
 }
 
 @media (hover: hover) {
@@ -563,6 +591,60 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
+/* From 641px the row opens out of TOOLS like an accordion, right to left
+   (OPENBRAIN-92; Maura, 25 Nov), and folds back the same way. The row
+   itself still only changes `visibility`; each item is uncovered from its
+   right edge by its own clip while it slides the last few pixels into
+   place, the one beside TOOLS first (--i, counted from TOOLS; --n, how
+   many). Folding runs the other way round, the far end first, and the row
+   stays visible until the last item is covered. A clip and a transform on
+   a button capture nothing: the Listen panel and "Back to reading" are
+   its siblings, not its children. */
+@media (min-width: 641px) {
+  .tools {
+    --tools-time: 260ms;
+    --tools-step: 30ms;
+    --tools-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tools.is-open {
+    --tools-time: 360ms;
+    --tools-step: 50ms;
+    --tools-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tools-row {
+    transition: visibility 0s linear
+      calc(var(--tools-time) + (var(--n, 1) - 1) * var(--tools-step));
+  }
+
+  .tools.is-open .tools-row {
+    transition: none;
+  }
+
+  /* The delay is worked out on the item, where --i is: a custom property
+     is computed where it is declared, and on .tools there is no --i. */
+  .tools-row > .tool-btn,
+  .tools-row :deep(.listen-toggle) {
+    --tools-delay: calc((var(--n, 1) - 1 - var(--i, 0)) * var(--tools-step));
+    clip-path: inset(0 0 0 100%);
+    transform: translateX(0.875rem);
+    transition:
+      clip-path var(--tools-time) var(--tools-ease) var(--tools-delay),
+      transform var(--tools-time) var(--tools-ease) var(--tools-delay),
+      opacity calc(var(--tools-time) * 0.6) ease var(--tools-delay),
+      color 0.12s ease,
+      background 0.12s ease;
+  }
+
+  .tools.is-open .tools-row > .tool-btn,
+  .tools.is-open .tools-row :deep(.listen-toggle) {
+    --tools-delay: calc(var(--i, 0) * var(--tools-step));
+    clip-path: inset(0);
+    transform: none;
+  }
+}
+
 /* ReaderListen hides its word below 640px for the old bar; here it is one
    of the row's words at every width. */
 .tools-row :deep(.listen-word) {
@@ -677,8 +759,18 @@ onBeforeUnmount(() => {
   }
 }
 
+/* Reduced motion: the row is simply there, and simply gone. The reader's
+   own "animations off" needs saying too: brand.css shortens every
+   duration for it, but not the delays the accordion staggers by. */
+:root[data-reduce-motion="1"] .tools-row,
+:root[data-reduce-motion="1"] .tools-row > .tool-btn,
+:root[data-reduce-motion="1"] .tools-row :deep(.listen-toggle) {
+  transition: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-reduce-motion="0"]) .reader-top-bar,
+  :root:not([data-reduce-motion="0"]) .tools-row,
   :root:not([data-reduce-motion="0"]) .tools-row > .tool-btn,
   :root:not([data-reduce-motion="0"]) .tools-row :deep(.listen-toggle) {
     transition: none;
