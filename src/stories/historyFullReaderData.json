@@ -2,12 +2,12 @@
   "header": {
     "source": "published chapter export",
     "chapter": "foundations-of-neuroscience",
-    "exportedAt": "2026-11-11",
+    "exportedAt": "2026-11-26",
     "exportedBy": "scripts/history-full-reader-export.mjs",
     "counts": {
-      "sections": 15,
+      "sections": 14,
       "boxes": 7,
-      "paragraphs": 81,
+      "paragraphs": 80,
       "figureLinks": 38,
       "animations": 38,
       "widgetBlocks": 2,
@@ -46,14 +46,106 @@
       {
         "url": "https://douglas.research.mcgill.ca/naguib-mechawar",
         "name": "Naguib Mechawar",
+        "photo": null,
         "affiliation": "Douglas Mental Health University Institute; Department of Psychiatry, McGill University"
       },
       {
         "url": "https://www.trenholmlab.com",
         "name": "Stuart Trenholm",
+        "photo": null,
         "affiliation": "Montreal Neurological Institute, McGill University"
       }
-    ]
+    ],
+    "cover": {
+      "image": "/publicAssets/images/attention-matisse-reader.jpg",
+      "reactive": {
+        "fit": [470, 40, 1540, 1660],
+        "ink": "#1c1c1c",
+        "lid": {
+          "at": [991, 305],
+          "src": "/publicAssets/images/covers/foundations-hero/head/lid.webp",
+          "pivot": [1264.6, 459.3],
+          "outline": "/publicAssets/images/covers/foundations-hero/head/lidS.webp"
+        },
+        "body": {
+          "at": [783, 354],
+          "fps": 12,
+          "frames": [
+            "/publicAssets/images/covers/foundations-hero/head/body/00.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/01.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/02.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/03.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/04.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/05.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/06.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/07.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/08.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/09.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/10.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/11.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/12.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/13.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/14.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/15.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/16.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/17.webp",
+            "/publicAssets/images/covers/foundations-hero/head/body/18.webp"
+          ]
+        },
+        "hand": {
+          "src": "/publicAssets/images/covers/foundations-hero/head/hand.webp",
+          "tip": [20, 874],
+          "size": [1102, 998],
+          "scale": 1.2
+        },
+        "keys": {
+          "keys": [
+            [0, 0, 0, 46, 74],
+            [-1.1, -1, 0, 44, 72],
+            [-5.5, -5.6, 0.16, 41, 71],
+            [-14.1, -13.8, 0.85, 37, 70],
+            [-35.2, -34.8, 2.6, 29, 63],
+            [-112.3, -106.1, 6.5, 8, 28],
+            [-195.1, -178.3, 4.7, -13, -7],
+            [-218.9, -200.1, 3.9, -20, -17],
+            [-229.4, -209.9, 3.7, -22, -21],
+            [-234.1, -214.2, 3.8, -24, -23],
+            [-235, -215.3, 3.75, -24, -24],
+            [-235, -215.3, 3.75, -24, -24]
+          ],
+          "open": 16,
+          "first": 5
+        },
+        "kind": "head",
+        "oval": {
+          "at": [1106, 345],
+          "src": "/publicAssets/images/covers/foundations-hero/head/oval.webp"
+        },
+        "size": [2680, 1732],
+        "work": { "x": 1470, "y": 400, "rx": 2, "ry": 1 },
+        "brain": {
+          "at": [1100, 321],
+          "src": "/publicAssets/images/covers/foundations-hero/head/brain.webp"
+        },
+        "paper": "#F8F2E4",
+        "poster": "/publicAssets/images/covers/foundations-hero/head/poster.webp"
+      }
+    },
+    "credits": {
+      "funding": {
+        "url": "https://www.mcgill.ca/neuro/",
+        "logo": {
+          "alt": "The Neuro, Montreal Neurological Institute-Hospital",
+          "src": "/publicAssets/images/funders/the-neuro.webp",
+          "width": 640,
+          "height": 219
+        },
+        "text": "This chapter was funded by The Montreal Neurological Institute (The Neuro)."
+      },
+      "acknowledgements": [
+        "Web development by Mogul (Anton Morrison). Graphic design by Studio Malpeso (Sonia, Maura, Karen and Naz). We thank Dr. Joseph Rochford for peer review. ST acknowledges funding from the Canada Research Chairs program."
+      ]
+    }
   },
   "sections": [
     {
@@ -69,7 +161,12 @@
       "split_screen": false,
       "parent_section_id": null,
       "anchor_paragraph_id": null,
-      "box_treatment": null
+      "box_treatment": null,
+      "art": {
+        "alt": "A 1519 woodcut of the body's organs, with the brain's cells drawn around it",
+        "src": "/publicAssets/images/foundations/sections/introduction.webp"
+      },
+      "rail": null
     },
     {
       "id": "history-section-where-is-my-mind",
@@ -84,7 +181,12 @@
       "split_screen": false,
       "parent_section_id": null,
       "anchor_paragraph_id": null,
-      "box_treatment": null
+      "box_treatment": null,
+      "art": {
+        "alt": "An engraving of a skull with a square opening cut into its brow",
+        "src": "/publicAssets/images/foundations/sections/where-is-my-mind.webp"
+      },
+      "rail": null
     },
     {
       "id": "history-section-do-different-parts",
@@ -99,7 +201,12 @@
       "split_screen": false,
       "parent_section_id": null,
       "anchor_paragraph_id": null,
-      "box_treatment": null
+      "box_treatment": null,
+      "art": {
+        "alt": "The surface of a brain exposed during an operation, with numbered tags on it",
+        "src": "/publicAssets/images/foundations/sections/do-different-parts.webp"
+      },
+      "rail": null
     },
     {
       "id": "history-section-basic-functional-unit",
@@ -114,7 +221,12 @@
       "split_screen": false,
       "parent_section_id": null,
       "anchor_paragraph_id": null,
-      "box_treatment": null
+      "box_treatment": null,
+      "art": {
+        "alt": "A drawing of layers of neurons and their branching fibres",
+        "src": "/publicAssets/images/foundations/sections/basic-functional-unit.webp"
+      },
+      "rail": null
     },
     {
       "id": "history-section-how-neurons-communicate",
@@ -129,7 +241,12 @@
       "split_screen": false,
       "parent_section_id": null,
       "anchor_paragraph_id": null,
-      "box_treatment": null
+      "box_treatment": null,
+      "art": {
+        "alt": "An engraving of a frog's legs wired to an electrical machine on a table",
+        "src": "/publicAssets/images/foundations/sections/how-neurons-communicate.webp"
+      },
+      "rail": null
     },
     {
       "id": "history-section-closing-words",
@@ -144,7 +261,12 @@
       "split_screen": false,
       "parent_section_id": null,
       "anchor_paragraph_id": null,
-      "box_treatment": null
+      "box_treatment": null,
+      "art": {
+        "alt": "A human brain seen from the side",
+        "src": "/publicAssets/images/foundations/sections/closing-words-v2.webp"
+      },
+      "rail": null
     },
     {
       "id": "history-section-box-descartes",
@@ -159,7 +281,9 @@
       "split_screen": false,
       "parent_section_id": "history-section-do-different-parts",
       "anchor_paragraph_id": "history-section-do-different-parts-p4",
-      "box_treatment": null
+      "box_treatment": "dark",
+      "art": null,
+      "rail": true
     },
     {
       "id": "history-section-box-rete-mirabile",
@@ -174,7 +298,9 @@
       "split_screen": false,
       "parent_section_id": "history-section-where-is-my-mind",
       "anchor_paragraph_id": "history-section-where-is-my-mind-p10",
-      "box_treatment": null
+      "box_treatment": "dark",
+      "art": null,
+      "rail": true
     },
     {
       "id": "history-section-box-psychosurgery",
@@ -189,7 +315,9 @@
       "split_screen": false,
       "parent_section_id": "history-section-do-different-parts",
       "anchor_paragraph_id": "history-section-do-different-parts-p16",
-      "box_treatment": null
+      "box_treatment": "dark",
+      "art": null,
+      "rail": true
     },
     {
       "id": "history-section-box-electrical-stim",
@@ -204,7 +332,9 @@
       "split_screen": false,
       "parent_section_id": "history-section-do-different-parts",
       "anchor_paragraph_id": "history-section-do-different-parts-p15",
-      "box_treatment": null
+      "box_treatment": "dark",
+      "art": null,
+      "rail": true
     },
     {
       "id": "history-section-box-penfield",
@@ -219,7 +349,9 @@
       "split_screen": false,
       "parent_section_id": "history-section-do-different-parts",
       "anchor_paragraph_id": "history-section-do-different-parts-p18",
-      "box_treatment": null
+      "box_treatment": "dark",
+      "art": null,
+      "rail": true
     },
     {
       "id": "history-section-box-ngf",
@@ -234,7 +366,9 @@
       "split_screen": false,
       "parent_section_id": "history-section-basic-functional-unit",
       "anchor_paragraph_id": "history-section-basic-functional-unit-p7",
-      "box_treatment": null
+      "box_treatment": "dark",
+      "art": null,
+      "rail": true
     },
     {
       "id": "history-section-box-sacred-disease",
@@ -249,7 +383,9 @@
       "split_screen": false,
       "parent_section_id": "history-section-where-is-my-mind",
       "anchor_paragraph_id": "history-section-where-is-my-mind-p6",
-      "box_treatment": null
+      "box_treatment": "dark",
+      "art": null,
+      "rail": true
     },
     {
       "id": "history-section-references",
@@ -264,22 +400,13 @@
       "split_screen": false,
       "parent_section_id": null,
       "anchor_paragraph_id": null,
-      "box_treatment": null
-    },
-    {
-      "id": "history-section-further-reading",
-      "module_id": "history-fixture-module",
-      "title": "Further reading:",
-      "slug": "further-reading",
-      "order_index": 15,
-      "introduction_text": null,
-      "animation_id": null,
-      "animation_config": null,
-      "fullscreen": false,
-      "split_screen": false,
-      "parent_section_id": null,
-      "anchor_paragraph_id": null,
-      "box_treatment": null
+      "box_treatment": null,
+      "art": {
+        "alt": "Brenda Milner, a portrait photograph",
+        "src": "/publicAssets/images/foundations/sections/references-milner.webp",
+        "position": "50% 67%"
+      },
+      "rail": null
     }
   ],
   "paragraphs": [
@@ -879,9 +1006,9 @@
       },
       "content_text": "Upon discovering axonal growth cones in the developing nervous system—which he referred to as “like a living battering-ram, soft and flexible, which advances mechanically, pushing aside the obstacles that it finds in its way until it reaches its peripheral destination”—Ramón y Cajal proposed a chemoaffinity, or “neurotropic” hypothesis to explain how axons figured out where to project. This was an astute prediction considering that Ramón y Cajal based it on static images he observed under his microscope.",
       "order_index": 1,
-      "has_animation": false,
-      "animation_id": null,
-      "animation_trigger": null,
+      "has_animation": true,
+      "animation_id": "history-animation-animationFoundationsNgfLeviMontalcini",
+      "animation_trigger": "auto",
       "is_subsection_header": false,
       "subsection_level": 0
     },
@@ -908,9 +1035,9 @@
       },
       "content_text": "In the 1950s, working at Washington University, first with Viktor Hamburger then with Stanley Cohen, Rita Levi-Montalcini made a series of breakthroughs that led to the discovery of the first-ever growth factor. Earlier, as a postgraduate student working in Turin, she had performed experiments which suggested that developing neurons required intact peripheral target tissues to survive. At Washington University, Levi-Montalcini set out to understand what the nature of this interaction between developing neuron and target area was. By implanting tumors into chick embryos, she found that the embr",
       "order_index": 2,
-      "has_animation": true,
-      "animation_id": "history-animation-animationFoundationsNgfLeviMontalcini",
-      "animation_trigger": "auto",
+      "has_animation": false,
+      "animation_id": null,
+      "animation_trigger": null,
       "is_subsection_header": false,
       "subsection_level": 0
     },
@@ -1072,7 +1199,6 @@
             "type": "widget",
             "blurb": "Explore what having your brain electrically stimulated by Penfield was like.",
             "title": "Find out what it was like to be Dr. Wilder Penfield",
-            "credit": "Interactive by The Open Brain",
             "widgetId": "upload:history-penfield-binder",
             "fullScreen": true,
             "placementId": "foundations-case-cabinet"
@@ -1403,7 +1529,7 @@
         "explore": {
           "image": {
             "alt": "A 1574 woodcut: a figure split down the middle, ringed by the four humours with their elements and zodiac signs.",
-            "src": "/publicAssets/images/foundations/thurneysser-four-humours-1574.jpg"
+            "src": "/publicAssets/images/foundations/thurneysser-four-humours-1574-v2.webp"
           },
           "title": "Humoral theory",
           "legend": "The four humours and their corresponding elements and zodiacal signs. Woodcut in Quinta Essentia by Leonhart Thurneysser (1574). Credit: Wikimedia Commons.",
@@ -1818,7 +1944,6 @@
             "blurb": "Click on different parts of the skull to explore Gall and Spurzheim's model of localization of brain function.",
             "route": "/phrenology",
             "title": "Explore phrenology",
-            "credit": "Interactive by The Open Brain",
             "widgetId": "phrenology",
             "fullScreen": true,
             "placementId": "foundations-phrenology"
@@ -1981,36 +2106,6 @@
       "has_animation": true,
       "animation_id": "history-animation-animationFoundationsMilnerHM",
       "animation_trigger": "auto",
-      "is_subsection_header": false,
-      "subsection_level": 0
-    },
-    {
-      "id": "history-section-further-reading-p0",
-      "section_id": "history-section-further-reading",
-      "content": {
-        "blocks": [
-          {
-            "type": "further_reading",
-            "links": [
-              {
-                "url": "#ref-29",
-                "text": "29. Gross — Brain, Vision, Memory: Tales in the History of Neuroscience"
-              },
-              {
-                "url": "#ref-8",
-                "text": "8. Finger — Origins of Neuroscience: A History of Explorations Into Brain Function"
-              },
-              { "url": "#ref-2", "text": "2. Gross — A Hole in the Head" }
-            ],
-            "title": "For a broader overview of the history of neuroscience, see these resources."
-          }
-        ]
-      },
-      "content_text": "For a broader overview of the history of neuroscience, see these resources.",
-      "order_index": 0,
-      "has_animation": false,
-      "animation_id": null,
-      "animation_trigger": null,
       "is_subsection_header": false,
       "subsection_level": 0
     },
@@ -2900,17 +2995,19 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/hm-brain.jpg?v=2",
+      "image_file_url": "/publicAssets/images/foundations/hm-brain-v3.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
       "interaction_type": "static_image",
       "component_name": "IllustrationPlaceholder",
       "config": {
+        "fill": true,
         "images": [
           {
             "alt": "A preserved human brain seen from the side, on a black surface against a pale grey background.",
-            "src": "/publicAssets/images/foundations/hm-brain.jpg?v=2"
+            "src": "/publicAssets/images/foundations/hm-brain-v3.webp",
+            "wash": "/publicAssets/images/foundations/sections/closing-words-v2.webp"
           }
         ],
         "caption": "The brain of Henry Molaison (H.M.).",
@@ -2930,7 +3027,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig01-skull-cutout.webp",
+      "image_file_url": "/publicAssets/images/foundations/fig01-skull-cutout-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -2941,7 +3038,7 @@
         "images": [
           {
             "alt": "An Incan skull with a square trepanation opening in the forehead.",
-            "src": "/publicAssets/images/foundations/fig01-skull-cutout.webp"
+            "src": "/publicAssets/images/foundations/fig01-skull-cutout-v2.webp"
           }
         ],
         "caption": "An Incan skull, acquired by Squier and studied by Broca. It is now housed at the American Museum of Natural History (Squier, 1877).",
@@ -2961,7 +3058,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig10-01.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig10-01-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -2971,7 +3068,7 @@
         "images": [
           {
             "alt": "A top-down drawing of a dog's brain marked with symbols where stimulation moved muscles.",
-            "src": "/publicAssets/images/foundations/fig10-01.jpg"
+            "src": "/publicAssets/images/foundations/fig10-01-v2.webp"
           }
         ],
         "caption": "Top-down drawing of a dog’s brain from Fritsch and Hitzig’s 1870 paper. Symbols indicate locations of electrical brain stimulation in motor cortex. The region marked ∆ activated neck muscles. Areas marked + moved the forepaw. Areas marked # activated the hindpaw. Facial muscles were activated when the areas marked O were stimulated. Image source: Wellcome Collection.",
@@ -2991,7 +3088,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig11-01-abc.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig11-01-abc-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3001,7 +3098,7 @@
         "images": [
           {
             "alt": "Drawings of Goltz's dog brain (A and B) and Ferrier's monkey brain (C) after lesions.",
-            "src": "/publicAssets/images/foundations/fig11-01-abc.jpg"
+            "src": "/publicAssets/images/foundations/fig11-01-abc-v2.webp"
           }
         ],
         "caption": "Anatomical drawings of Goltz’s dog (left, A and B) and Ferrier’s monkey (right, C) that were presented at the Seventh International Medical Congress in 1881. Modified from Gowers WR, Klein E, Schaefer AE, Langley JN. Preliminary report. Transactions of the International Medical Congress 1881. Volume 1.",
@@ -3021,17 +3118,19 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig12-01.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig12-01-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
       "interaction_type": "static_image",
       "component_name": "IllustrationPlaceholder",
       "config": {
+        "fill": true,
+        "focus": "50% 30%",
         "images": [
           {
             "alt": "A replica of van Leeuwenhoek's microscope: a small brass plate with a lens and a specimen pin.",
-            "src": "/publicAssets/images/foundations/fig12-01.jpg"
+            "src": "/publicAssets/images/foundations/fig12-01-v2.webp"
           }
         ],
         "caption": "Replica van Leeuwenhoek microscope. Source: Wikipedia.",
@@ -3046,22 +3145,24 @@
     {
       "id": "history-animation-animationFoundationsFig13",
       "animation_key": "animationFoundationsFig13",
-      "title": "Deiters' nerve cell (axon & dendrites)",
+      "title": "Deiters' nerve cells",
       "description": null,
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig13-01.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig13-01-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
       "interaction_type": "static_image",
       "component_name": "IllustrationPlaceholder",
       "config": {
+        "fill": true,
+        "focus": "60% 70%",
         "images": [
           {
             "alt": "Deiters' drawings of four spinal cord neurons, showing the axon and branching dendrites.",
-            "src": "/publicAssets/images/foundations/fig13-01.jpg"
+            "src": "/publicAssets/images/foundations/fig13-01-v2.webp"
           }
         ],
         "caption": "Deiters’ neuron drawings. (1) A large neuron in the ventral horn of the spinal cord. (2) A medium-sized neuron cell from the dorsal horn of the spinal cord. (3) Part of another cell. (4) A smaller neuron (Dieters, 1865).",
@@ -3141,7 +3242,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig16-01.jpg?v=2",
+      "image_file_url": "/publicAssets/images/foundations/fig16-01-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3151,7 +3252,7 @@
         "images": [
           {
             "alt": "Cajal's drawing of the visual pathway from retina to thalamus and cortex, with lettered parts.",
-            "src": "/publicAssets/images/foundations/fig16-01.jpg?v=2"
+            "src": "/publicAssets/images/foundations/fig16-01-v2.webp"
           }
         ],
         "caption": "A Ramón y Cajal drawing from 1902 showing from showing retinal circuitry (A) retinal projections (B) to lateral geniculate nucleus (D) and superior colliculus (E) from a rodent. Thalamic neurons project (K) onward to visual cortex (G), which then projects to higher cortical areas (N). Note the arrows indicating Ramon Y Cajal’s suggestions for the directional flow of signals in the brain. Source: The Cajal Institute, Cajal Legacy, Spanish National Research Council (CSIC), Madrid, Spain.",
@@ -3196,7 +3297,7 @@
     {
       "id": "history-animation-animationFoundationsFig18",
       "animation_key": "animationFoundationsFig18",
-      "title": "The synapse under electron microscopy",
+      "title": "The first picture of a chemical synapse",
       "description": null,
       "media_type": "image",
       "lottie_file_url": null,
@@ -3320,7 +3421,7 @@
     {
       "id": "history-animation-animationFoundationsFig21",
       "animation_key": "animationFoundationsFig21",
-      "title": "Eccles' stretch-reflex circuit",
+      "title": "Neuronal excitability and synaptic transmission",
       "description": null,
       "media_type": "image",
       "lottie_file_url": null,
@@ -3335,10 +3436,12 @@
         "images": [
           {
             "alt": "Video: an interview with Andrew Huxley.",
-            "src": "https://i.ytimg.com/vi/KbA3RLz3xUQ/hqdefault.jpg",
+            "src": "/publicAssets/images/foundations/thumbs/andrew-huxley.webp",
             "play": "player",
+            "focus": "50% 60%",
             "caption": "Andrew Huxley interviewed by Alan Macfarlane. Video: Alan Macfarlane.",
-            "youtube": "KbA3RLz3xUQ"
+            "youtube": "KbA3RLz3xUQ",
+            "posterPlay": "corner"
           },
           {
             "alt": "A diagram of interneuron G inhibiting motor neuron M through pathway I.",
@@ -3425,7 +3528,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig05-01-pig.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig05-01-pig-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3435,7 +3538,7 @@
         "images": [
           {
             "alt": "A woodcut of Galen dissecting a pig on a table before a crowd of onlookers.",
-            "src": "/publicAssets/images/foundations/fig05-01-pig.jpg"
+            "src": "/publicAssets/images/foundations/fig05-01-pig-v2.webp"
           }
         ],
         "caption": "Galen dissecting a pig. From Opera omnia latine in septem classes digesta, published in 1565. Source: Wellcome Collection.",
@@ -3550,7 +3653,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig08-01.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig08-01-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3560,7 +3663,7 @@
         "images": [
           {
             "alt": "A skull in profile covered with numbered regions, each an organ of a mental faculty.",
-            "src": "/publicAssets/images/foundations/fig08-01.jpg"
+            "src": "/publicAssets/images/foundations/fig08-01-v2.webp"
           }
         ],
         "caption": "Gall’s organology. Source: Gall and Spurzheim, Anatomie et Physiologie, 1810-1819.",
@@ -3580,7 +3683,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/fig09-01.jpg",
+      "image_file_url": "/publicAssets/images/foundations/fig09-01-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3590,7 +3693,7 @@
         "images": [
           {
             "alt": "The left side of Leborgne's preserved brain, with a lesion in the frontal lobe.",
-            "src": "/publicAssets/images/foundations/fig09-01.jpg"
+            "src": "/publicAssets/images/foundations/fig09-01-v2.webp"
           }
         ],
         "caption": "A photograph of the left side of Louis Victor Leborgne’s (aka Tan) brain. MRI analysis of Leborgne’s brain in 2007 revealed additional damage not visible from the brain surface that may have contributed to his aphasia. Source: Dronkers et al., Brain, 2007.",
@@ -3620,12 +3723,16 @@
         "images": [
           {
             "alt": "A skull covered in handwritten inscriptions, said to be Descartes'.",
-            "src": "/publicAssets/images/foundations/figa-01.jpg"
+            "src": "/publicAssets/images/foundations/figa-01.jpg",
+            "title": "Descartes' skull, Musée de l'homme",
+            "figureNumber": "D"
           },
           {
             "alt": "A piece of skull on display, said to be part of Descartes'.",
             "src": "/publicAssets/images/foundations/figb-01.jpg",
-            "caption": "A piece of skull, purported to be Descartes’, on display at Lund’s Historical Museum. Source: Johann SWE/Atlas Obscura."
+            "title": "Piece of Descartes' skull, Lund",
+            "caption": "A piece of skull, purported to be Descartes’, on display at Lund’s Historical Museum. Source: Johann SWE/Atlas Obscura.",
+            "figureNumber": "E"
           }
         ],
         "caption": "A skull, with writing all over it, purported to be Descartes’. There is controversy over whether this skull, which is housed at the Musée de l’homme in Paris is really Descartes’ skull, as another museum in Lund claims to have a piece of Descartes’ real skull.  Source: Musée de l’homme.",
@@ -3769,7 +3876,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/figg-01.jpg",
+      "image_file_url": "/publicAssets/images/foundations/figg-01-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3779,7 +3886,7 @@
         "images": [
           {
             "alt": "A drawing of Mary Rafferty's head showing the erosion of her skull.",
-            "src": "/publicAssets/images/foundations/figg-01.jpg"
+            "src": "/publicAssets/images/foundations/figg-01-v2.webp"
           }
         ],
         "caption": "A drawing of Mary Rafferty’s cranial erosion. Source: Bartholow, 1874.",
@@ -3854,7 +3961,7 @@
     {
       "id": "history-animation-animationFoundationsIntroWoodcut",
       "animation_key": "animationFoundationsIntroWoodcut",
-      "title": "Woodcut from Lorenz Fries, Spiegel der Artzny, 1519",
+      "title": "Renaissance era drawing of human anatomy",
       "description": null,
       "media_type": "image",
       "lottie_file_url": null,
@@ -3942,7 +4049,7 @@
       "interaction_type": "click_states",
       "component_name": "IllustrationWidget",
       "config": {
-        "credit": "Stuart Trenholm, after Loewi (1921), Figure 1",
+        "credit": "After Loewi (1921), Figure 1",
         "kicker": "Otto’s dream experiment",
         "widgetId": "upload:loewi-vagusstoff",
         "figureNumber": 24
@@ -3959,7 +4066,7 @@
       "media_type": "image",
       "lottie_file_url": null,
       "video_file_url": null,
-      "image_file_url": "/publicAssets/images/foundations/hm-brenda-milner.jpg",
+      "image_file_url": "/publicAssets/images/foundations/hm-brenda-milner-v2.webp",
       "youtube_id": null,
       "gsap_config": null,
       "css_class_name": null,
@@ -3969,15 +4076,17 @@
         "images": [
           {
             "alt": "Black-and-white portrait of Brenda Milner.",
-            "src": "/publicAssets/images/foundations/hm-brenda-milner.jpg",
+            "src": "/publicAssets/images/foundations/hm-brenda-milner-v2.webp",
             "caption": "Brenda Milner."
           },
           {
             "alt": "Video: History of Neuroscience, Brenda Milner.",
-            "src": "https://i.ytimg.com/vi/g4-6A8u8QBc/hqdefault.jpg",
+            "src": "/publicAssets/images/foundations/thumbs/brenda-milner.webp",
             "play": "player",
+            "focus": "50% 30%",
             "caption": "History of Neuroscience: Brenda Milner. Video: Society for Neuroscience.",
-            "youtube": "g4-6A8u8QBc"
+            "youtube": "g4-6A8u8QBc",
+            "posterPlay": "corner"
           },
           {
             "alt": "Surgeons in masks and gowns operating, William Beecher Scoville among them.",
@@ -4023,10 +4132,12 @@
         "images": [
           {
             "alt": "Video: History of Neuroscience, Rita Levi-Montalcini.",
-            "src": "https://i.ytimg.com/vi/WgkAR-vrJpM/hqdefault.jpg",
+            "src": "/publicAssets/images/foundations/thumbs/rita-levi-montalcini.webp",
             "play": "player",
+            "focus": "50% 0%",
             "start": 2,
-            "youtube": "WgkAR-vrJpM"
+            "youtube": "WgkAR-vrJpM",
+            "posterPlay": "corner"
           }
         ],
         "caption": "History of Neuroscience: Rita Levi-Montalcini. Video: Society for Neuroscience.",
@@ -4149,7 +4260,7 @@
     {
       "id": "history-animation-animationFoundationsPlatoAristotle",
       "animation_key": "animationFoundationsPlatoAristotle",
-      "title": "Plato and Aristotle",
+      "title": "Plato, Aristotle, and the debate of head vs. heart",
       "description": null,
       "media_type": "image",
       "lottie_file_url": null,
@@ -4161,6 +4272,8 @@
       "interaction_type": "static_image",
       "component_name": "IllustrationPlaceholder",
       "config": {
+        "fill": true,
+        "focus": "50% 15%",
         "images": [
           {
             "alt": "Two robed philosophers walk side by side under an arch. Plato, older and white-bearded, in red and purple, holds up a brain; Aristotle, in blue and brown, holds a heart in his open hand.",
