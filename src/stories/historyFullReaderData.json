@@ -166,7 +166,8 @@
         "alt": "A 1519 woodcut of the body's organs, with the brain's cells drawn around it",
         "src": "/publicAssets/images/foundations/sections/introduction.webp"
       },
-      "rail": null
+      "rail": null,
+      "box_card": null
     },
     {
       "id": "history-section-where-is-my-mind",
@@ -186,7 +187,8 @@
         "alt": "An engraving of a skull with a square opening cut into its brow",
         "src": "/publicAssets/images/foundations/sections/where-is-my-mind.webp"
       },
-      "rail": null
+      "rail": null,
+      "box_card": null
     },
     {
       "id": "history-section-do-different-parts",
@@ -206,7 +208,8 @@
         "alt": "The surface of a brain exposed during an operation, with numbered tags on it",
         "src": "/publicAssets/images/foundations/sections/do-different-parts.webp"
       },
-      "rail": null
+      "rail": null,
+      "box_card": null
     },
     {
       "id": "history-section-basic-functional-unit",
@@ -226,7 +229,8 @@
         "alt": "A drawing of layers of neurons and their branching fibres",
         "src": "/publicAssets/images/foundations/sections/basic-functional-unit.webp"
       },
-      "rail": null
+      "rail": null,
+      "box_card": null
     },
     {
       "id": "history-section-how-neurons-communicate",
@@ -246,7 +250,8 @@
         "alt": "An engraving of a frog's legs wired to an electrical machine on a table",
         "src": "/publicAssets/images/foundations/sections/how-neurons-communicate.webp"
       },
-      "rail": null
+      "rail": null,
+      "box_card": null
     },
     {
       "id": "history-section-closing-words",
@@ -266,7 +271,8 @@
         "alt": "A human brain seen from the side",
         "src": "/publicAssets/images/foundations/sections/closing-words-v2.webp"
       },
-      "rail": null
+      "rail": null,
+      "box_card": null
     },
     {
       "id": "history-section-box-descartes",
@@ -283,7 +289,14 @@
       "anchor_paragraph_id": "history-section-do-different-parts-p4",
       "box_treatment": "dark",
       "art": null,
-      "rail": true
+      "rail": true,
+      "box_card": {
+        "image": {
+          "alt": "A skull covered in handwritten inscriptions, said to be Descartes'.",
+          "src": "/publicAssets/images/foundations/figa-01.jpg"
+        },
+        "enabled": false
+      }
     },
     {
       "id": "history-section-box-rete-mirabile",
@@ -300,7 +313,13 @@
       "anchor_paragraph_id": "history-section-where-is-my-mind-p10",
       "box_treatment": "dark",
       "art": null,
-      "rail": true
+      "rail": true,
+      "box_card": {
+        "image": {
+          "alt": "A diagram of Galen's physiology, with the rete mirabile at the base of the brain.",
+          "src": "/publicAssets/images/foundations/figc-01.jpg"
+        }
+      }
     },
     {
       "id": "history-section-box-psychosurgery",
@@ -317,7 +336,13 @@
       "anchor_paragraph_id": "history-section-do-different-parts-p16",
       "box_treatment": "dark",
       "art": null,
-      "rail": true
+      "rail": true,
+      "box_card": {
+        "image": {
+          "alt": "Burckhardt's trepanation tools in their case.",
+          "src": "/publicAssets/images/foundations/fige-01.jpg"
+        }
+      }
     },
     {
       "id": "history-section-box-electrical-stim",
@@ -334,7 +359,13 @@
       "anchor_paragraph_id": "history-section-do-different-parts-p15",
       "box_treatment": "dark",
       "art": null,
-      "rail": true
+      "rail": true,
+      "box_card": {
+        "image": {
+          "alt": "A drawing of Mary Rafferty's head showing the erosion of her skull.",
+          "src": "/publicAssets/images/foundations/figg-01-v2.webp"
+        }
+      }
     },
     {
       "id": "history-section-box-penfield",
@@ -351,7 +382,13 @@
       "anchor_paragraph_id": "history-section-do-different-parts-p18",
       "box_treatment": "dark",
       "art": null,
-      "rail": true
+      "rail": true,
+      "box_card": {
+        "image": {
+          "alt": "Operative photograph of patient M.B.’s exposed cortex, with lettered paper markers at electrical stimulation sites.",
+          "src": "/publicAssets/images/foundations/narrative/penfield-operative-h.jpg"
+        }
+      }
     },
     {
       "id": "history-section-box-ngf",
@@ -368,7 +405,14 @@
       "anchor_paragraph_id": "history-section-basic-functional-unit-p7",
       "box_treatment": "dark",
       "art": null,
-      "rail": true
+      "rail": true,
+      "box_card": {
+        "image": {
+          "alt": "Video: History of Neuroscience, Rita Levi-Montalcini.",
+          "src": "/publicAssets/images/foundations/thumbs/rita-levi-montalcini.webp"
+        },
+        "enabled": false
+      }
     },
     {
       "id": "history-section-box-sacred-disease",
@@ -385,7 +429,36 @@
       "anchor_paragraph_id": "history-section-where-is-my-mind-p6",
       "box_treatment": "dark",
       "art": null,
-      "rail": true
+      "rail": true,
+      "box_card": {
+        "image": {
+          "alt": "Hippocrates refuses the gifts of Artaxerxes",
+          "src": "/publicAssets/images/foundations/boxes/hippocrates/original.webp",
+          "position": "50% 30%"
+        },
+        "layers": [
+          {
+            "alt": "Room and background",
+            "src": "/publicAssets/images/foundations/boxes/hippocrates/layer1.webp",
+            "depth": 0.12
+          },
+          {
+            "alt": "Crowd",
+            "src": "/publicAssets/images/foundations/boxes/hippocrates/layer2.webp",
+            "depth": 0.4
+          },
+          {
+            "alt": "Soft shadow",
+            "src": "/publicAssets/images/foundations/boxes/hippocrates/layer3.webp",
+            "depth": 0.65
+          },
+          {
+            "alt": "Hippocrates",
+            "src": "/publicAssets/images/foundations/boxes/hippocrates/layer4.webp",
+            "depth": 1
+          }
+        ]
+      }
     },
     {
       "id": "history-section-references",
@@ -406,7 +479,8 @@
         "src": "/publicAssets/images/foundations/sections/references-milner.webp",
         "position": "50% 67%"
       },
-      "rail": null
+      "rail": null,
+      "box_card": null
     }
   ],
   "paragraphs": [
