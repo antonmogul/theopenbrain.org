@@ -79,3 +79,59 @@ export function speechChunks(text, limit = 220) {
     return chunks;
   });
 }
+
+/*
+ * The Listen panel's voice list (OPENBRAIN-92; Maura, 25 Nov: "keep a
+ * smaller voice library").
+ *
+ * The panel offers every English voice the device has. A Mac has 43, most
+ * of them novelties (Bells, Boing, Zarvox, eight Eloquence voices twice
+ * over), and Chrome adds three of its own. The short list keeps the few a
+ * reader would choose, by name, since every device has a different set.
+ *
+ * 0 offers every voice, as today. The short list is waiting for Maura's
+ * yes: set this to 4 to apply it.
+ */
+export const LISTEN_VOICE_LIMIT = 0;
+
+// The voices worth offering, best first. A device has only some of them:
+// Apple's (macOS, iOS), Chrome's, then Microsoft's (Windows, Edge).
+const PREFERRED_VOICES = [
+  /^Samantha\b/i, // en-US
+  /^Daniel\b/i, // en-GB
+  /^Karen\b/i, // en-AU
+  /^Google US English/i,
+  /^Google UK English Female/i,
+  /^Google UK English Male/i,
+  /^Moira\b/i, // en-IE
+  /^Microsoft (?:Aria|Jenny|Sonia|Guy|Ryan|Libby)\b/i,
+];
+// Apple's novelty and Eloquence voices: never chosen to fill the list.
+const NOVELTY_VOICES =
+  /^(?:Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Zarvox|Fred|Junior|Kathy|Ralph|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley)\b/i;
+
+/**
+ * At most `limit` of a device's voices, in the device's order: the reader's
+ * saved voice first of all (a choice is never taken away), then the
+ * preferred names, the device's default, and any voice that is not a
+ * novelty. `limit` 0, or a device with no more than `limit`, gives them all.
+ * @param {Array<{ voiceURI: string, name: string, default?: boolean }>} voices
+ * @param {{ limit?: number, keep?: string }} [options] keep: a voiceURI
+ */
+export function shortVoiceList(
+  voices,
+  { limit = LISTEN_VOICE_LIMIT, keep = "" } = {}
+) {
+  if (!limit || voices.length <= limit) return voices;
+  const picked = new Set();
+  const add = (voice) => {
+    if (voice && picked.size < limit) picked.add(voice);
+  };
+  add(voices.find((v) => keep && v.voiceURI === keep));
+  for (const name of PREFERRED_VOICES)
+    add(voices.find((v) => name.test(v.name)));
+  add(voices.find((v) => v.default));
+  for (const v of voices) if (!NOVELTY_VOICES.test(v.name)) add(v);
+  for (const v of voices) add(v);
+  return voices.filter((v) => picked.has(v));
+}

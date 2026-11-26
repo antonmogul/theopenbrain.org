@@ -19,6 +19,11 @@
  * Below 640px the bar has no room beside the icon, so the field is laid
  * across the whole bar, with its own close.
  *
+ * From 641px pointing at the icon is enough to see it (OPENBRAIN-92; Maura,
+ * 25 Nov): the line opens out of the icon and the words slide in from the
+ * left, and both go back when the pointer leaves, unless the reader is in
+ * the field or has typed in it. The line is white, not the accent.
+ *
  * It takes the bar's ink from --bar-ink / --bar-bg (ReaderTopBar), and
  * falls back to the page's ink and paper on its own.
  */
@@ -61,6 +66,8 @@ const used = ref(false);
 const open = ref(false);
 // The field is out from behind its icon.
 const expanded = ref(false);
+// A mouse is pointing at the icon or the field: the field shows, no more.
+const peek = ref(false);
 const active = ref(0);
 
 const index = shallowRef([]);
@@ -112,10 +119,20 @@ function use() {
   if (!props.records) fetchAnimations().catch(() => {});
 }
 
+// A field the pointer opened becomes the reader's once they are in it.
 function onFocus() {
   use();
   open.value = true;
+  expanded.value = true;
   emit("open");
+}
+
+// Touch has no pointing: there the icon is a plain toggle.
+function onPointerEnter(event) {
+  if ((event.pointerType || "mouse") === "mouse") peek.value = true;
+}
+function onPointerLeave() {
+  peek.value = false;
 }
 
 async function expand() {
@@ -201,8 +218,9 @@ function onSlash(event) {
   if (event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.target?.closest?.(EDITABLE)) return;
   event.preventDefault();
-  if (input.value?.offsetParent) input.value.focus();
-  else expand();
+  // Behind its icon the field is hidden and cannot take focus: open it.
+  input.value?.focus();
+  if (document.activeElement !== input.value) expand();
 }
 
 onMounted(() => window.addEventListener("keydown", onSlash));
@@ -215,9 +233,15 @@ defineExpose({ close });
   <div
     ref="root"
     class="reader-search"
-    :class="{ 'is-expanded': expanded, 'is-open': showPanel }"
+    :class="{
+      'is-expanded': expanded,
+      'is-peek': peek,
+      'is-open': showPanel,
+    }"
     data-testid="reader-search"
     @focusout="onFocusOut"
+    @pointerenter="onPointerEnter"
+    @pointerleave="onPointerLeave"
   >
     <!-- The field is behind this button. -->
     <button
@@ -229,13 +253,15 @@ defineExpose({ close });
       data-testid="reader-search-toggle"
       @click="expand"
     >
+      <!-- 20px in a 1.25px line: the weight of the mark's brain beside it
+           and of the drawer's home icon (OPENBRAIN-92). -->
       <svg
-        width="18"
-        height="18"
+        width="20"
+        height="20"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="1.6"
+        stroke-width="1.5"
         stroke-linecap="round"
         aria-hidden="true"
       >
@@ -366,10 +392,6 @@ defineExpose({ close });
   hyphens: manual;
   -webkit-hyphens: manual;
 }
-.reader-search.is-expanded {
-  flex: 1 1 14rem;
-  max-width: 26rem;
-}
 
 .search-toggle {
   display: grid;
@@ -400,17 +422,20 @@ defineExpose({ close });
   min-width: 0;
   height: 36px;
   padding: 0 0 0 4px;
-  border-bottom: 1px solid rgb(var(--search-ink) / 0.35);
+  border-bottom: 1px solid rgb(var(--search-ink) / 0.6);
   color: rgb(var(--search-ink));
   transition: border-color 0.12s ease;
 }
 .reader-search.is-expanded .search-field {
   display: flex;
 }
+/* In the field: the line is full white and a pixel heavier. White, not
+   the accent (Maura, 25 Nov). */
 .search-field:focus-within {
-  border-bottom-color: rgb(var(--color-accent));
-  box-shadow: 0 1px 0 rgb(var(--color-accent));
+  border-bottom-color: rgb(var(--search-ink));
+  box-shadow: 0 1px 0 rgb(var(--search-ink));
 }
+
 /* The icon that opened the field stands for it from 640px up. */
 .search-glass {
   display: none;
@@ -486,7 +511,7 @@ defineExpose({ close });
   width: max(100%, 30rem);
   max-width: calc(100vw - 20px);
   max-height: calc(
-    100dvh - var(--reader-topbar-h, 3rem) - 1.5rem -
+    100dvh - var(--reader-topbar-h, 3.5rem) - 1.5rem -
       var(--reader-timeline-h, 0px)
   );
   display: flex;
@@ -576,6 +601,77 @@ defineExpose({ close });
   font-weight: inherit;
 }
 
+/* From 641px the field is always laid out beside its icon, closed to no
+   width and hidden, so it can open: the line grows out of the icon and the
+   words slide in from the left, under the field's own left edge. Closed, it
+   is `visibility: hidden` (once it has finished closing), so the input is
+   out of the tab order as it was when the field was not drawn at all. */
+@media (min-width: 641px) {
+  .search-field {
+    --search-time: 280ms;
+    --search-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex: 0 1 auto;
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition:
+      width var(--search-time) var(--search-ease),
+      visibility 0s linear var(--search-time),
+      border-color 0.12s ease;
+  }
+  .search-input,
+  .search-key {
+    opacity: 0;
+    transition:
+      transform var(--search-time) var(--search-ease),
+      opacity calc(var(--search-time) * 0.5) ease;
+  }
+  .search-input {
+    padding-left: 4px;
+    transform: translateX(-2.5rem);
+  }
+
+  .reader-search.is-expanded .search-field,
+  .reader-search.is-peek .search-field {
+    --search-time: 420ms;
+    --search-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    width: 23rem;
+    visibility: visible;
+    transition:
+      width var(--search-time) var(--search-ease),
+      visibility 0s,
+      border-color 0.12s ease;
+  }
+  .reader-search.is-expanded .search-input,
+  .reader-search.is-peek .search-input,
+  .reader-search.is-expanded .search-key,
+  .reader-search.is-peek .search-key {
+    opacity: 1;
+    transform: none;
+    transition:
+      transform var(--search-time) var(--search-ease) 60ms,
+      opacity calc(var(--search-time) * 0.6) ease 60ms;
+  }
+}
+
+/* Reduced motion: the field is there or it is not. Said for the reader's
+   own "animations off" as well: brand.css shortens durations for it, not
+   delays. */
+:root[data-reduce-motion="1"] .search-field,
+:root[data-reduce-motion="1"] .search-input,
+:root[data-reduce-motion="1"] .search-key {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduce-motion="0"]) .search-field,
+  :root:not([data-reduce-motion="0"]) .search-input,
+  :root:not([data-reduce-motion="0"]) .search-key {
+    transition: none;
+  }
+}
+
 @media (max-width: 640px) {
   .reader-search,
   .reader-search.is-expanded {
@@ -597,7 +693,7 @@ defineExpose({ close });
     background: rgb(var(--search-bg));
   }
   .search-field:focus-within {
-    box-shadow: inset 0 -2px 0 rgb(var(--color-accent));
+    box-shadow: inset 0 -2px 0 rgb(var(--search-ink));
   }
   .search-glass {
     display: block;

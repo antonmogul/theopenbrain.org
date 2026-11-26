@@ -277,8 +277,8 @@ describe("reader menu outline", () => {
       expect(target.scrollIntoView).not.toHaveBeenCalled();
       expect(scrollTo).toHaveBeenCalledTimes(1);
       const { top } = scrollTo.mock.calls[0][0];
-      // 1200 from the top, landed 48 + 16 below the viewport's top edge.
-      expect(top).toBe(1200 - 64);
+      // 1200 from the top, landed 56 + 16 below the viewport's top edge.
+      expect(top).toBe(1200 - 72);
       expect(document.activeElement).toBe(target);
     } finally {
       window.scrollTo = originalScrollTo;

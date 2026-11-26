@@ -50,6 +50,11 @@
      opener and the top bar stay on --color-dark-surface. White on it is
      14.9:1. */
   --color-figure-ground: 39 39 39; /* #272727 */
+  /* The reader's top bar and the head of its drawer (OPENBRAIN-92; Maura,
+     25 Nov: "the navbar background should be #131313"): a step darker than
+     the surfaces under it, so the bar reads as the book's edge and not as
+     one more panel. White on it is 18.6:1. */
+  --color-topbar: 19 19 19; /* #131313 */
 
   /* Corner radius for every control and surface (buttons, chips, badges,
      inputs, cards, panels, tooltips, modals). The book is square-cornered,
@@ -142,10 +147,11 @@
      laptop widths so the floor above still gives a readable line. */
   --reader-gutter-l: 2rem;
   --reader-gutter-r: 2rem;
-  /* The reader's top bar: ReaderTopBar takes its height from this token
-     (48px: a slim bar around 44px targets, OPENBRAIN-78), so the two cannot
-     disagree. */
-  --reader-topbar-h: 3rem;
+  /* The reader's top bar: ReaderTopBar takes its height from this token,
+     so the two cannot disagree. 56px: its 44px targets with 6px above and
+     below (OPENBRAIN-92; Maura, 25 Nov: "a little more padding to top and
+     bottom"; it was 48px, OPENBRAIN-78). */
+  --reader-topbar-h: 3.5rem;
   /* Breathing room in the reader (OPENBRAIN-131); index.css applies it.
      The space after each chapter section is its bottom padding: 6rem in one
      column, 20rem from 1024px (the block below), where the pinned figure

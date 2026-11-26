@@ -12,8 +12,13 @@ export default {
   component: BookLogo,
   tags: ["autodocs"],
   parameters: { layout: "padded" },
-  args: { mark: false, height: 44 },
+  args: { mark: false, icon: false, height: 44 },
   argTypes: {
+    icon: {
+      control: "boolean",
+      description:
+        "A line icon: strokes in screen pixels, the brain's a little heavier.",
+    },
     mark: {
       control: "boolean",
       description: "The book and brain alone, without the words.",
@@ -26,7 +31,7 @@ export default {
   render: (args) => ({
     components: { BookLogo },
     setup: () => ({ args }),
-    template: `<BookLogo :mark="args.mark" :style="{ '--logo-h': args.height + 'px' }" />`,
+    template: `<BookLogo :mark="args.mark" :icon="args.icon" :style="{ '--logo-h': args.height + 'px' }" />`,
   }),
 };
 
@@ -50,4 +55,28 @@ export const OnDark = {
       </div>`,
   }),
   args: { height: 64 },
+};
+
+/**
+ * The mark as a line icon (OPENBRAIN-92), as the reader's top bar draws it:
+ * 32px tall beside the search icon. The upper row is the icon, the lower
+ * the artwork's own hairline at the same size. The book's lines are
+ * 0.85px and the brain's 1.25px, the weight of the icons beside it.
+ */
+export const Icon = {
+  render: () => ({
+    components: { BookLogo },
+    template: `
+      <div style="display:grid; gap:16px; width:max-content; padding:16px 20px; background:rgb(var(--color-topbar, 19 19 19)); color:#fff;">
+        <div v-for="icon in [true, false]" :key="icon" style="display:flex; align-items:center; gap:20px;">
+          <BookLogo mark :icon="icon" style="--logo-h:32px" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
+          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 11 12 4l8.5 7" /><path d="M5.5 9.5V20h4.75v-5.5h3.5V20h4.75V9.5" />
+          </svg>
+        </div>
+      </div>`,
+  }),
 };
