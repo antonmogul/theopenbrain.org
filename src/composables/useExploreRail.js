@@ -29,7 +29,8 @@
  * its pin the box is on every scroll, which is what moves the card.
  */
 import { computed, nextTick, onBeforeUnmount, ref, toValue, watch } from "vue";
-import { CARD_SCREENS } from "@/helper/boxTitleCard";
+import { CARD_READ, CARD_SCREENS } from "@/helper/boxTitleCard";
+import { followBoxMotion } from "@/helper/boxCard.mjs";
 import {
   RAIL_LEAD,
   clearRailColumns,
@@ -90,8 +91,56 @@ export function useExploreRail({
   let resizeObserver = null;
   let mutationObserver = null;
   let motionObserver = null;
+  let motionQuery = null;
   let measureQueued = false;
   let disposed = false;
+  let frame = 0;
+  let previousTime = 0;
+  let visual = null;
+  let velocity = 0;
+  let target = 0;
+
+  function paint(scrolled) {
+    const scroller = scrollerEl.value;
+    if (!scroller) return;
+    const offset =
+      railXForScrolled(target, geometry()) -
+      railXForScrolled(scrolled, geometry());
+    scroller.dataset.railVisualOffset = String(offset);
+    scroller.style.setProperty("--rail-visual-offset", `${offset}px`);
+    onDrive?.(scrolled, intro.value);
+  }
+  function follow(time) {
+    frame = 0;
+    if (!pinned.value || disposed) return;
+    if (videoFullscreenHeld() || readerScrollLocked()) {
+      previousTime = 0;
+      return;
+    }
+    const next = followBoxMotion(
+      visual ?? target,
+      velocity,
+      target,
+      previousTime ? (time - previousTime) / 1000 : 1 / 60
+    );
+    previousTime = time;
+    visual = next.position;
+    velocity = next.velocity;
+    if (Math.abs(visual - target) < 0.1 && Math.abs(velocity) < 0.5) {
+      visual = target;
+      velocity = 0;
+      previousTime = 0;
+    } else frame = requestAnimationFrame(follow);
+    paint(visual);
+  }
+  function settle() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    previousTime = 0;
+    velocity = 0;
+    visual = target;
+    paint(target);
+  }
 
   const how = computed(() => toValue(mode) || null);
   const on = computed(() => !!how.value);
@@ -145,10 +194,24 @@ export function useExploreRail({
     const pause = pauseEl.value;
     if (!pinned.value || !scroller || !pause) return;
     const scrolled = stickyTop.value - pause.getBoundingClientRect().top;
-    onDrive?.(scrolled, intro.value);
+    const previous = target;
+    target = scrolled;
     const x = railXForScrolled(scrolled, geometry());
     expected = x;
     if (Math.abs(scroller.scrollLeft - x) > 0.5) scroller.scrollLeft = x;
+    // Native page/track coordinates remain 1:1. Only the child artwork and
+    // text transform follows behind; big jumps and off-stage boxes snap.
+    if (
+      visual === null ||
+      Math.abs(target - previous) > window.innerHeight * 0.75 ||
+      target < 0 ||
+      target > runIn.value + max.value
+    )
+      settle();
+    else {
+      paint(visual);
+      if (!frame) frame = requestAnimationFrame(follow);
+    }
     report(x);
   }
 
@@ -157,9 +220,12 @@ export function useExploreRail({
     if (videoFullscreenHeld() || readerScrollLocked()) return;
     const scroller = scrollerEl.value;
     if (!on.value || !scroller) return;
-    const x = scroller.scrollLeft;
+    const x = Math.min(max.value, scroller.scrollLeft);
+    if (scroller.scrollLeft > max.value) scroller.scrollLeft = x;
     if (pinned.value && (expected === null || Math.abs(x - expected) > 1.5)) {
       expected = x;
+      target = railScrolledForX(x, geometry());
+      settle();
       // "instant": the document's scroll-behavior is smooth (index.css).
       window.scrollTo({
         top: Math.round(pinY() + railScrolledForX(x, geometry())),
@@ -177,17 +243,23 @@ export function useExploreRail({
     // clamps its scrollLeft; a track the page does not drive keeps where
     // the reader left it.
     const keep = scroller.scrollLeft;
+    // Transform overflow must not inflate native travel on the next measure.
+    scroller.style.setProperty("--rail-visual-offset", "0px");
+    scroller.dataset.railVisualOffset = "0";
+    delete scroller.dataset.railMax;
     fitRailFigures(scroller);
     fitRailColumns(scroller);
     if (!pinned.value && scroller.scrollLeft !== keep)
       scroller.scrollLeft = keep;
     view = scroller.clientWidth;
     max.value = railMax(scroller);
+    scroller.dataset.railMax = String(max.value);
     lead.value = Math.round((window.innerHeight || 0) * RAIL_LEAD);
     intro.value =
       how.value === "track" && !reduced.value && toValue(card)
         ? Math.round((window.innerHeight || 0) * CARD_SCREENS)
         : 0;
+    scroller.dataset.railCardRead = String(Math.round(intro.value * CARD_READ));
     stickyTop.value = parseFloat(getComputedStyle(boxEl.value).top) || 0;
     // Each part's start at scrollLeft 0, whatever the track is at now.
     starts = [...scroller.querySelectorAll("[data-rail-part]")].map((part) => {
@@ -196,7 +268,8 @@ export function useExploreRail({
         part.getBoundingClientRect().left -
         scroller.getBoundingClientRect().left +
         scroller.scrollLeft -
-        pad;
+        pad -
+        Number(scroller.dataset.railVisualOffset || 0);
       return Math.min(max.value, Math.max(0, Math.round(x)));
     });
     stops = swipe.value
@@ -274,6 +347,8 @@ export function useExploreRail({
     window.addEventListener("scroll", drive, { passive: true });
     lastWidth = window.innerWidth || 0;
     window.addEventListener("resize", onResize);
+    motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    motionQuery.addEventListener?.("change", queueMeasure);
     scroller.addEventListener("scroll", onTrackScroll, { passive: true });
     // An image arriving changes how the columns break.
     scroller.addEventListener("load", queueMeasure, true);
@@ -307,7 +382,20 @@ export function useExploreRail({
     listening = false;
     window.removeEventListener("scroll", drive);
     window.removeEventListener("resize", onResize);
+    motionQuery?.removeEventListener?.("change", queueMeasure);
+    motionQuery = null;
     const scroller = bound;
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    visual = null;
+    velocity = 0;
+    previousTime = 0;
+    scroller?.style.removeProperty("--rail-visual-offset");
+    if (scroller) {
+      delete scroller.dataset.railVisualOffset;
+      delete scroller.dataset.railMax;
+      delete scroller.dataset.railCardRead;
+    }
     bound = null;
     scroller?.removeEventListener("scroll", onTrackScroll);
     scroller?.removeEventListener("load", queueMeasure, true);

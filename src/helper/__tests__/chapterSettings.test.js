@@ -135,13 +135,18 @@ describe("database chapter settings (OPENBRAIN-63)", () => {
           order_index: 2,
           rail: false,
           box_treatment: "dark",
+          box_card: { image: art, quote: "Own words" },
         },
       ],
     });
     const outline = buildOutline(text);
     expect(outline[0].art).toEqual(art);
     expect(outline[1].art).toEqual(art);
-    expect(text.sections[1]).toMatchObject({ rail: false, treatment: "dark" });
+    expect(text.sections[1]).toMatchObject({
+      rail: false,
+      treatment: "dark",
+      box_card: { image: art, quote: "Own words" },
+    });
     expect(sectionArtForChapter("other", outline)).toHaveProperty("section");
     expect(sectionArtFor("other", outline[1])).toEqual({ ...art, alt: "" });
   });

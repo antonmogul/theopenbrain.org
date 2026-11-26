@@ -681,6 +681,7 @@ export function transformModuleToChapterFormat(module) {
       slug: section.slug,
       title: section.title,
       ...(section.art !== undefined ? { art: section.art } : {}),
+      ...(section.box_card !== undefined ? { box_card: section.box_card } : {}),
       ...(typeof section.rail === "boolean" ? { rail: section.rail } : {}),
       // Foundations seeds its sidebars as sections slugged box-*; the reader
       // letters those as breakout boxes instead of numbering them.

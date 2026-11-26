@@ -297,6 +297,17 @@ function track({
 }
 
 describe("railXOf", () => {
+  it("ignores visual lag and its overflow when computing jump targets", () => {
+    const t = track();
+    const native = t.parts[1].getBoundingClientRect;
+    t.parts[1].getBoundingClientRect = () => ({
+      ...native(),
+      left: native().left + 60,
+    });
+    t.scroller.setAttribute("data-rail-visual-offset", "60");
+    t.scroller.setAttribute("data-rail-max", "1700");
+    expect(railXOf(t.parts[1], t.scroller)).toBe(1310);
+  });
   it("is a part's start, whatever the track is at", () => {
     const t = track();
     expect(railXOf(t.parts[1], t.scroller)).toBe(1310);
@@ -331,6 +342,15 @@ describe("railXOf", () => {
 });
 
 describe("railLandingY", () => {
+  it("lands a named pinned box at readable card copy, independent of its sticky top", () => {
+    const t = track();
+    const box = document.createElement("aside");
+    box.setAttribute("data-box-card", "pinned");
+    t.pause.appendChild(box);
+    box.appendChild(t.scroller);
+    t.scroller.setAttribute("data-rail-card-read", "248");
+    expect(railLandingY(box, { scrollY: 500 })).toBe(2000 + 500 - 64 + 248);
+  });
   it("is the scrollY that pins the box and brings the part across", () => {
     const t = track();
     Object.defineProperty(window, "scrollY", {

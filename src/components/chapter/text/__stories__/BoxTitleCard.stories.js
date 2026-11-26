@@ -80,6 +80,22 @@ export default {
 
 /** Arrived: the picture fills the box, darkened, under the words. */
 export const Pinned = {};
+const art = `${IMG}/boxes/hippocrates/`;
+const layered = {
+  picture: {
+    src: `${art}original.webp`,
+    alt: "Hippocrates refuses the gifts of Artaxerxes",
+  },
+  layers: [0.12, 0.4, 0.65, 1].map((depth, i) => ({
+    src: `${art}layer${i + 1}.webp`,
+    depth,
+  })),
+};
+export const Parallax = { args: { ...layered, progress: 0.35 } };
+export const ParallaxReducedMotion = {
+  args: { ...layered, variant: "static", progress: null },
+  render: still("100%"),
+};
 
 /** Half-way: the words have gone and the picture is on its way to its
  *  place on the track, which shows through the box's colour. */

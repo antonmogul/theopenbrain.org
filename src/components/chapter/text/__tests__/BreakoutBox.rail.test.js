@@ -485,25 +485,25 @@ describe("BreakoutBox rail", () => {
       await new Promise((resolve) => setTimeout(resolve, 5));
       await flushPromises();
 
-      // The card takes 0.9 of the screen (810) before the 180px lead-in:
+      // The card takes 1.1 of the screen (990) before the 180px lead-in:
       // the track's contract counts both, so every landing is past it.
       expect(track.getAttribute("data-rail-pinned")).toBe("1");
-      expect(track.getAttribute("data-rail-lead")).toBe("990");
+      expect(track.getAttribute("data-rail-lead")).toBe("1170");
       expect(pause.querySelector(".bx-pause-room").style.height).toBe(
-        `${810 + 2 * 180 + 1700}px`
+        `${990 + 2 * 180 + 1700}px`
       );
       // Far below the pin: the picture arrives alone.
       expect(card.getAttribute("data-card-state")).toBe("arriving");
 
       pause.querySelector('.bx-rail-arrow[aria-label="Next"]').click();
       expect(window.scrollTo).toHaveBeenLastCalledWith({
-        top: 1936 + 990 + 1310,
+        top: 1936 + 1170 + 1310,
         behavior: "smooth",
       });
       // "more": the start of the track.
       card.querySelector("[data-card-more]").click();
       expect(window.scrollTo).toHaveBeenLastCalledWith({
-        top: 1936 + 990,
+        top: 1936 + 1170,
         behavior: "smooth",
       });
       // Skip: past the box (its frame's bottom, under the top bar).
@@ -518,7 +518,7 @@ describe("BreakoutBox rail", () => {
       await flushPromises();
       expect(card.getAttribute("data-card-state")).toBe("open");
       expect(track.scrollLeft).toBe(0);
-      pause.getBoundingClientRect = () => ({ top: 64 - 990 - 500 });
+      pause.getBoundingClientRect = () => ({ top: 64 - 1170 - 500 });
       window.dispatchEvent(new Event("scroll"));
       await flushPromises();
       expect(card.getAttribute("data-card-state")).toBe("done");

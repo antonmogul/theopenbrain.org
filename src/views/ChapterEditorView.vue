@@ -18,6 +18,7 @@ import BlockPreview from "@/components/chapterEditor/BlockPreview.vue";
 import ParagraphEditor from "@/components/chapterEditor/ParagraphEditor.vue";
 import InsertMenu from "@/components/chapterEditor/InsertMenu.vue";
 import WidgetPicker from "@/components/chapterEditor/WidgetPicker.vue";
+import BoxCardEditor from "@/components/chapterEditor/BoxCardEditor.vue";
 import MediaPicker from "@/components/chapterEditor/MediaPicker.vue";
 import ChapterDetails from "@/components/chapterEditor/ChapterDetails.vue";
 import FigureSettings from "@/components/chapterEditor/FigureSettings.vue";
@@ -1051,6 +1052,25 @@ onMounted(async () => {
                   BOX_TREATMENT_NOTE
                 }}</small>
               </label>
+              <BoxCardEditor
+                :value="s.box_card"
+                :title="s.title"
+                :slug="ed.module.value?.slug || ''"
+                :media="ed.media.value"
+                :disabled="!('box_card' in s)"
+                @change="
+                  (card) =>
+                    whenLive(() =>
+                      attempt(
+                        () => ed.setBoxCard(s.id, card),
+                        'Title card saved.'
+                      )
+                    )
+                "
+                @uploaded="
+                  (media) => (ed.media.value = [...ed.media.value, media])
+                "
+              />
             </div>
           </header>
 

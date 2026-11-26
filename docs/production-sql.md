@@ -1,5 +1,12 @@
 # Production SQL: how migrations reach the database
 
+## Pending — OPENBRAIN-94
+
+| Migration | State | Release order |
+| --- | --- | --- |
+| `20261124079400_sections_box_card.sql` | Pending | Deploy this reader and its WebP assets first, then push SQL. Before SQL the reader derives existing cards and the editor explains the missing column; after SQL every box reads its own card. Existing sections RLS remains unchanged. |
+
+
 Migrations in `supabase/migrations/` are **not** applied by CI or by the Railway deploy. Merging a PR deploys the code; the SQL waits until someone pushes it. Since 2026-09-17 that push is one command, because the Supabase CLI is linked to the project.
 
 Project ref: `ocenwbkdzmxhsvwlornp` ("The Open Brain V2").

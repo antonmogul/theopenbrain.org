@@ -32,6 +32,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import Button from "@/components/dashboard/shared/Button.vue";
 import { cardFrame, cardRect } from "@/helper/boxTitleCard";
+import { layerTransform } from "@/helper/boxCard.mjs";
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -39,6 +40,7 @@ const props = defineProps({
   excerpt: { type: String, default: "" },
   /** { src, alt }: the box's lead picture. */
   picture: { type: Object, required: true },
+  layers: { type: Array, default: () => [] },
   /** "pinned" | "static" | "simple". */
   variant: { type: String, default: "static" },
   /** A pinned card's place in its scroll, 0 to 1, for a card nothing
@@ -54,6 +56,7 @@ const root = ref(null);
 const pictureEl = ref(null);
 /* "arriving" (the picture alone), "open" (the words are in), "done". */
 const state = ref("arriving");
+const copyVisible = ref(false);
 let hidden = null; // the track's own picture, out of sight while ours flies
 
 function show(el) {
@@ -73,36 +76,51 @@ function drive({ progress = 0, near = true, target = null } = {}) {
   const pic = pictureEl.value;
   if (!el || !pic || props.variant !== "pinned") return;
   const frame = cardFrame(progress);
+  copyVisible.value = near && frame.copy > 0.05;
   state.value = frame.done ? "done" : near ? "open" : "arriving";
   el.style.setProperty("--tc-copy", frame.copy.toFixed(3));
   el.style.setProperty("--tc-scrim", frame.scrim.toFixed(3));
   el.style.setProperty("--tc-ground", frame.ground.toFixed(3));
+  el.querySelectorAll("[data-card-layer]").forEach((layer, i) => {
+    layer.style.transform = layerTransform(
+      props.layers[i]?.depth || 0,
+      progress
+    );
+  });
 
   const flying = frame.move > 0 && !frame.done;
   const box = flying ? el.getBoundingClientRect() : null;
   const to = flying ? target?.getBoundingClientRect?.() : null;
   if (box && to && to.width > 1 && to.height > 1) {
+    // Fit the travelling composition without stretching people/artwork as
+    // the target column changes aspect ratio. The source frame stays fixed.
+    const scale = Math.min(to.width / box.width, to.height / box.height);
+    const width = box.width * scale;
+    const height = box.height * scale;
     const rect = cardRect(
       { left: 0, top: 0, width: box.width, height: box.height },
       {
-        left: to.left - box.left,
-        top: to.top - box.top,
-        width: to.width,
-        height: to.height,
+        left: to.left - box.left + (to.width - width) / 2,
+        top: to.top - box.top + (to.height - height) / 2,
+        width,
+        height,
       },
       frame.move
     );
-    pic.style.left = `${rect.left.toFixed(2)}px`;
-    pic.style.top = `${rect.top.toFixed(2)}px`;
-    pic.style.width = `${rect.width.toFixed(2)}px`;
-    pic.style.height = `${rect.height.toFixed(2)}px`;
-    pic.style.opacity = "";
+    // Transform only: layout and the rail's landing coordinates stay exact.
+    pic.style.transformOrigin = "0 0";
+    pic.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0) scale(${rect.width / box.width}, ${rect.height / box.height})`;
+    pic.style.opacity = String(
+      1 - Math.min(1, Math.max(0, (progress - 0.88) / 0.12))
+    );
     // One picture on screen: the track's own stays out until ours lands.
-    show(target.closest?.("[data-rail-plate]") || target);
+    show(
+      progress < 0.88 ? target.closest?.("[data-rail-plate]") || target : null
+    );
   } else {
     // Nowhere to land (the image has not loaded, a figure with no still):
     // the picture stays where it is and clears with the box's colour.
-    pic.style.left = pic.style.top = pic.style.width = pic.style.height = "";
+    pic.style.transform = "";
     pic.style.opacity = flying ? frame.ground.toFixed(3) : "";
     show(null);
   }
@@ -111,6 +129,10 @@ function drive({ progress = 0, near = true, target = null } = {}) {
 watch(
   () => [props.progress, props.variant],
   () => {
+    if (props.variant !== "pinned") {
+      show(null);
+      if (pictureEl.value) pictureEl.value.style.transform = "";
+    }
     if (props.progress !== null) drive({ progress: props.progress });
   },
   { flush: "post" }
@@ -135,17 +157,37 @@ defineExpose({ drive });
     <span class="tc-ground" aria-hidden="true"></span>
     <div ref="pictureEl" class="tc-picture">
       <img
+        v-if="picture.src && (variant !== 'pinned' || !layers.length)"
         class="tc-img"
         :src="picture.src"
-        alt=""
+        :alt="picture.alt || ''"
+        :style="{ objectPosition: picture.position }"
+        data-card-flat
         decoding="async"
         draggable="false"
       />
+      <template v-else>
+        <img
+          v-for="(layer, i) in layers"
+          :key="layer.src + i"
+          class="tc-img tc-layer"
+          :src="layer.src"
+          :alt="i === 0 ? picture.alt : ''"
+          :data-card-layer="variant === 'pinned' ? i : undefined"
+          :data-card-composite="variant !== 'pinned' ? i : undefined"
+          :style="{ objectPosition: picture.position }"
+          decoding="async"
+          draggable="false"
+        />
+      </template>
       <span class="tc-scrim" aria-hidden="true"
         ><span class="tc-scrim-in"></span
       ></span>
     </div>
-    <div class="tc-copy">
+    <div
+      class="tc-copy"
+      :inert="variant === 'pinned' && !copyVisible ? true : undefined"
+    >
       <div class="tc-copy-in">
         <p class="tc-title" aria-hidden="true">{{ title }}</p>
         <p
@@ -236,6 +278,10 @@ defineExpose({ drive });
   height: 100%;
   object-fit: cover;
   object-position: center 30%;
+}
+.tc-layer {
+  position: absolute;
+  inset: 0;
 }
 /* The darkening: always the dark surface, whatever the box's treatment,
    so the white words on it keep their contrast on any picture. */
@@ -358,7 +404,7 @@ defineExpose({ drive });
   opacity: var(--tc-ground, 1);
 }
 .tc--pinned .tc-picture {
-  will-change: left, top, width, height;
+  will-change: transform;
 }
 .tc--pinned .tc-scrim {
   opacity: var(--tc-scrim, 1);
@@ -374,13 +420,11 @@ defineExpose({ drive });
 .tc--pinned .tc-copy-in,
 .tc--pinned .tc-skip {
   opacity: 0;
-  transition: opacity 0.7s ease;
+  transition: none;
 }
 .tc--pinned .tc-copy-in {
   transform: translateY(0.75rem);
-  transition:
-    opacity 0.7s ease,
-    transform 0.7s ease;
+  transition: none;
 }
 .tc--pinned[data-card-state="open"] .tc-scrim-in,
 .tc--pinned[data-card-state="open"] .tc-copy-in,
@@ -390,7 +434,7 @@ defineExpose({ drive });
   transform: none;
 }
 .tc--pinned[data-card-state="open"] .tc-skip {
-  transition-delay: 0.25s;
+  transition-delay: 0s;
 }
 /* The words take no clicks until they are there, nor once they have gone;
    the card takes none at all once the track is the reader's. */

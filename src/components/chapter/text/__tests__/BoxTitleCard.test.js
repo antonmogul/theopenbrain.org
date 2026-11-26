@@ -19,12 +19,39 @@ const card = (props = {}) =>
   });
 
 describe("BoxTitleCard", () => {
+  it("uses layers only when pinned and a flat original on phones or reduced motion", async () => {
+    const w = card({
+      variant: "pinned",
+      layers: [
+        { src: "/back.webp", depth: 0 },
+        { src: "/front.webp", depth: 1 },
+      ],
+    });
+    expect(w.findAll("[data-card-layer]")).toHaveLength(2);
+    w.vm.drive({ progress: 0.5 });
+    expect(w.findAll("[data-card-layer]")[1].element.style.transform).toContain(
+      "-28.00px"
+    );
+    for (const variant of ["static", "simple"]) {
+      await w.setProps({ variant });
+      expect(w.findAll("[data-card-layer]")).toHaveLength(0);
+      expect(w.get("[data-card-flat]").attributes("src")).toBe(
+        base.picture.src
+      );
+    }
+    await w.setProps({ picture: { src: "", alt: "Composite" } });
+    expect(w.findAll("[data-card-composite]")).toHaveLength(2);
+    expect(w.findAll("[data-card-composite]")[1].element.style.transform).toBe(
+      ""
+    );
+    w.unmount();
+  });
   it("shows the picture, the title, the quotation, more and Skip", async () => {
     const wrapper = card({ variant: "static" });
     expect(wrapper.attributes("data-card-variant")).toBe("static");
     expect(wrapper.attributes("data-card-state")).toBeUndefined();
-    // The picture repeats the box's own figure: decorative here.
-    expect(wrapper.get("img").attributes("alt")).toBe("");
+    // Authored title-card artwork can differ from the track figure.
+    expect(wrapper.get("img").attributes("alt")).toBe("A bust");
     expect(wrapper.get(".tc-title").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get(".tc-excerpt").text()).toBe(base.excerpt);
     await wrapper.get("[data-card-more]").trigger("click");
@@ -59,7 +86,7 @@ describe("BoxTitleCard", () => {
     const wrapper = card({ variant: "pinned", progress: 0 });
     await wrapper.vm.$nextTick();
     expect(wrapper.attributes("data-card-state")).toBe("open");
-    expect(wrapper.element.style.getPropertyValue("--tc-copy")).toBe("1.000");
+    expect(wrapper.element.style.getPropertyValue("--tc-copy")).toBe("0.000");
     await wrapper.setProps({ progress: 0.6 });
     expect(wrapper.element.style.getPropertyValue("--tc-copy")).toBe("0.000");
     expect(wrapper.attributes("data-card-state")).toBe("open");
@@ -93,11 +120,12 @@ describe("BoxTitleCard", () => {
     wrapper.vm.drive({ progress: 0.7, target: img });
     expect(plate.style.visibility).toBe("hidden");
     const pic = wrapper.get(".tc-picture").element;
-    expect(parseFloat(pic.style.width)).toBeGreaterThan(300);
-    expect(parseFloat(pic.style.width)).toBeLessThan(1000);
+    expect(pic.style.transform).toContain("translate3d(");
+    expect(pic.style.transform).toContain("scale(");
+    expect(pic.style.width).toBe("");
     wrapper.vm.drive({ progress: 1, target: img });
     expect(plate.style.visibility).toBe("");
-    expect(pic.style.width).toBe("");
+    expect(pic.style.transform).toBe("");
     wrapper.unmount();
     plate.remove();
   });

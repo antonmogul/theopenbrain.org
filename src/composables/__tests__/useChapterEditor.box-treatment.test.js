@@ -19,6 +19,7 @@ function api({ refuse = false } = {}) {
       title: "Descartes",
       order_index: 1,
       box_treatment: "dark",
+      box_card: null,
     },
   ];
   authedRequest.mockImplementation(async (path, init = {}) => {
@@ -46,6 +47,32 @@ const box = (ed) => ed.sections.value.find((s) => s.id === "b1");
 
 describe("useChapterEditor.setBoxTreatment (OPENBRAIN-157)", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("persists an authored title card once and restores it with undo", async () => {
+    const { patches } = api();
+    const ed = useChapterEditor("s");
+    await ed.load();
+    const card = {
+      image: { src: "/own.webp", alt: "Own art" },
+      layers: [{ src: "/front.webp", depth: 0.8, alt: "Front" }],
+    };
+    await ed.setBoxCard("b1", card);
+    expect(patches).toHaveLength(1);
+    expect(box(ed).box_card).toEqual(card);
+    await ed.undo();
+    expect(box(ed).box_card).toBeNull();
+    expect(patches).toHaveLength(2);
+  });
+  it("does not accept an RLS-refused title card write or mutate local content", async () => {
+    api({ refuse: true });
+    const ed = useChapterEditor("s");
+    await ed.load();
+    await expect(ed.setBoxCard("b1", { quote: "Own words" })).rejects.toThrow(
+      /didn't allow/
+    );
+    expect(box(ed).box_card).toBeNull();
+    expect(ed.undoStack.value).toHaveLength(0);
+  });
 
   it("stores the choice on the section, shows it at once, and undo puts the old one back", async () => {
     const { patches, sections } = api();

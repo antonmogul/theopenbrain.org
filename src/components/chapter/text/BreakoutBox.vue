@@ -35,6 +35,8 @@ import {
 } from "vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 import BoxTitleCard from "./BoxTitleCard.vue";
+import DemoModal from "@/components/chapter/demos/DemoModal.vue";
+import { normalizeBoxCard } from "@/helper/boxCard.mjs";
 import {
   CARD_NEAR,
   cardExcerptOf,
@@ -139,13 +141,18 @@ const leadFigureId = computed(() =>
 const leadRecords = useFigureRecords(() =>
   leadFigureId.value ? [leadFigureId.value] : []
 );
+const ownCard = computed(() => normalizeBoxCard(props.section.box_card));
 const cardPicture = computed(() =>
-  mode.value && !unref(editing)
-    ? cardLeadPicture(layout.value, leadRecords.value[0] || null)
+  mode.value && !unref(editing) && ownCard.value?.enabled !== false
+    ? ownCard.value?.image ||
+      (ownCard.value?.layers?.length
+        ? { src: "", alt: ownCard.value.layers[0].alt }
+        : null) ||
+      cardLeadPicture(layout.value, leadRecords.value[0] || null)
     : null
 );
 const cardExcerpt = computed(() =>
-  cardPicture.value ? cardExcerptOf(layout.value) : ""
+  cardPicture.value ? (ownCard.value?.quote ?? cardExcerptOf(layout.value)) : ""
 );
 /* How far past its pin the box is, as the card last heard it. */
 let cardScrolled = -Infinity;
@@ -194,7 +201,12 @@ const cardVariant = computed(() => {
   if (!still) return "pinned";
   // A still card takes the picture off the track, which only a plate can
   // give up.
-  if (!cardLeadIsPlate(layout.value, leadRecords.value[0] || null)) return null;
+  if (
+    !ownCard.value?.image &&
+    !ownCard.value?.layers?.length &&
+    !cardLeadIsPlate(layout.value, leadRecords.value[0] || null)
+  )
+    return null;
   return mode.value === "swipe" ? "simple" : "static";
 });
 /* Under a still card nothing repeats: the card carries the box's title
@@ -204,8 +216,21 @@ const cardVariant = computed(() => {
 const stillCard = computed(
   () => cardVariant.value === "simple" || cardVariant.value === "static"
 );
-provide("railLeadOnCard", stillCard);
+const ownsLead = computed(
+  () =>
+    cardPicture.value?.src ===
+    cardLeadPicture(layout.value, leadRecords.value[0] || null)?.src
+);
+provide(
+  "railLeadOnCard",
+  computed(() => stillCard.value && ownsLead.value)
+);
+const cardExpanded = ref(false);
 function expandCardPicture() {
+  if (!ownsLead.value) {
+    cardExpanded.value = true;
+    return;
+  }
   trackEl.value?.querySelector("[data-rail-card-figure] .rf-expand")?.click();
 }
 // The track's half of the contract in helper/exploreRail.js.
@@ -268,6 +293,7 @@ function intoBox() {
    into view and the page follows it there). */
 function onBoxFocus(event) {
   if (cardVariant.value !== "pinned" || entering) return;
+  if (event.target === boxEl.value) return; // a named-box jump focuses its heading
   if (event.target?.closest?.("[data-box-title-card]")) return;
   const covering = () =>
     cardIntro > 0 &&
@@ -307,6 +333,27 @@ onBeforeUnmount(() => arrival?.disconnect());
 </script>
 
 <template>
+  <DemoModal
+    :show="cardExpanded"
+    :title="section.title"
+    ground="dark"
+    @close="cardExpanded = false"
+  >
+    <div class="bx-card-expanded">
+      <img
+        v-if="cardPicture?.src"
+        :src="cardPicture.src"
+        :alt="cardPicture.alt"
+      />
+      <template v-else
+        ><img
+          v-for="(layer, i) in ownCard?.layers || []"
+          :key="i"
+          :src="layer.src"
+          :alt="i === 0 ? layer.alt : ''"
+      /></template>
+    </div>
+  </DemoModal>
   <FullBleed
     ref="fullBleed"
     :data-listen-box-slot="section.id"
@@ -333,6 +380,7 @@ onBeforeUnmount(() => arrival?.disconnect());
         :title="section.title"
         :excerpt="cardExcerpt"
         :picture="cardPicture"
+        :layers="ownCard?.layers || []"
         :variant="cardVariant"
         expandable
         @more="intoBox"
@@ -368,6 +416,7 @@ onBeforeUnmount(() => arrival?.disconnect());
           :title="section.title"
           :excerpt="cardExcerpt"
           :picture="cardPicture"
+          :layers="ownCard?.layers || []"
           variant="pinned"
           @more="intoBox"
           @skip="keepGoing"
@@ -579,6 +628,19 @@ onBeforeUnmount(() => arrival?.disconnect());
 </template>
 
 <style scoped>
+.bx-card-expanded {
+  position: relative;
+  width: min(90vw, 70rem);
+  aspect-ratio: 1759/1334;
+  margin: auto;
+}
+.bx-card-expanded img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 /* The palette, one set per treatment, on the frame so the pause room and
    the box read the same properties. Pale: the chapter's palest ramp tone
    sets the box apart from the reading page (white), in every chapter's own
