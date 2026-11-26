@@ -13,6 +13,12 @@ const stories = Object.values(index.entries || {})
   .sort();
 const expectedConsoleErrors = new Map([
   [
+    "chapter-cover-logo--attention-student-denied",
+    [
+      /useChapter: Error fetching chapter: Error: Chapter with slug "attention-and-working-memory" not found/,
+    ],
+  ],
+  [
     "chapter-demos-labpanel--load-error",
     [/useCodeLabs: Error loading lab: Error: Lab not found/],
   ],
