@@ -141,6 +141,7 @@ const label = computed(() =>
         'rp--explore': part.explore,
         'rp--no-picture': !pictures,
         'rp--pictures': plates > 1,
+        'rp--screen': part.screen,
       },
     ]"
     :style="{
@@ -192,7 +193,11 @@ const label = computed(() =>
         <IllustrationInline :animation-id="fig.id" />
       </div>
     </template>
-    <div class="rp-text" data-rail-columns>
+    <div v-if="part.screen" class="rp-screen" :aria-label="part.title">
+      <h3 :id="titleId" class="sr-only">{{ part.title }}</h3>
+      <slot />
+    </div>
+    <div v-else class="rp-text" data-rail-columns>
       <h3 v-if="part.title" :id="titleId" class="rp-title">
         {{ part.title }}
       </h3>
@@ -202,6 +207,23 @@ const label = computed(() =>
 </template>
 
 <style scoped>
+.rp--screen {
+  flex: none;
+  width: var(--rail-view, 100cqw);
+  min-width: 0;
+}
+.rp-screen {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.rp-screen > :deep(span) {
+  display: contents;
+}
+.rp--swipe.rp--screen {
+  width: 100cqw;
+}
 /* ── On the pinned track (from the two-column breakpoint) ────────────────
    Every box uses the same responsive text measure; a part can continue
    beyond the view and the rail's next stop brings the rest into view.

@@ -14,6 +14,13 @@
 | `20261127100100_history_loewi_v8.sql`             | Pending | Content only; safe before or after deploy. Guards v7 HTML; caption body 14px, timeline keeps its existing full width.                                                     |
 | `20261127100200_history_descartes_title_card.sql` | Pending | Existing reader/assets already support it. Requires the OPENBRAIN-94 column/seed; changes only Descartes' `box_card.enabled` from false to true and preserves other keys. |
 
+## Pending — OPENBRAIN-98
+
+| Migration                                     | State   | Release order                                                                                                                                                                                                                                                  |
+| --------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261127079800_retina_colour_rail_parts.sql` | Pending | Deploy the reader, widget-part host and title-card assets first; apply this guarded upload update before the box content.                                                                                                                                      |
+| `20261127079810_retina_rail_boxes.sql`        | Pending | Apply after the upload update and the existing `sections.rail` / `sections.box_card` migrations. Moves eight existing paragraphs into seven anchored boxes, retaining IDs, figures, text and references; adds three colour-widget part paragraphs. No deletes. |
+
 ## Pending — OPENBRAIN-97
 
 | Migration                                      | State   | Release order                                                                                                                                                                                                                             |

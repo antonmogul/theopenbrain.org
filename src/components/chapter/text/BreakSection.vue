@@ -5,7 +5,7 @@ import { breakSectionDirections } from "@/helper/breakSectionPresentation";
 import BreakImages from "./BreakImages.vue";
 import FullBleed from "@/components/chapter/FullBleed.vue";
 
-const props = defineProps({ content: Object });
+const props = defineProps({ content: Object, railPart: Boolean });
 const infoIsOpen = ref(true);
 const infoId = `break-info-${useId()}`;
 const titleId = `break-title-${useId()}`;
@@ -19,7 +19,12 @@ const steps = computed(() => breakSectionDirections(props.content));
 
 <template>
   <BreakImages v-if="content.video" :video="content.video" />
-  <FullBleed v-else viewport>
+  <FullBleed
+    v-else
+    :viewport="!railPart"
+    :enabled="!railPart"
+    :class="{ 'break-rail': railPart }"
+  >
     <section
       class="break-demo noHighlight"
       :class="{ 'break-demo--plate': colorBlindness && !infoIsOpen }"
@@ -105,6 +110,16 @@ const steps = computed(() => breakSectionDirections(props.content));
 </template>
 
 <style scoped>
+.break-rail {
+  height: 100%;
+}
+.break-rail :deep(.fb-stage) {
+  height: 100%;
+}
+.break-rail .break-demo {
+  min-height: 0;
+  padding-bottom: 1rem;
+}
 .break-demo {
   position: relative;
   isolation: isolate;
@@ -178,11 +193,11 @@ const steps = computed(() => breakSectionDirections(props.content));
   height: 100%;
 }
 .blind-man {
-  height: clamp(64px, 12vw, 150px);
+  height: clamp(54.4px, 10.2vw, 127.5px);
   width: auto;
 }
 .blind-dragon {
-  width: clamp(95px, 22vw, 280px);
+  width: clamp(80.75px, 18.7vw, 238px);
   height: auto;
 }
 .color-plate {

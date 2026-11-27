@@ -49,6 +49,7 @@ const props = defineProps({
   shrinkToFit: { type: Boolean, default: true },
   /** Open an explanation once through a compatible widget's own controller. */
   initialExplanation: { type: Boolean, default: false },
+  part: { type: String, default: "" },
   eager: { type: Boolean, default: false },
   waitForArtwork: { type: Boolean, default: false },
   /** The frame is the full-screen dialog's: the widget is told so. */
@@ -93,6 +94,7 @@ const doc = computed(() =>
     reduceMotion: reduceMotion(),
     maxHeight: initialFit,
     initialExplanation: props.initialExplanation,
+    part: props.part,
     waitForArtwork: props.waitForArtwork,
     fullScreen: props.fullScreen,
     motionChoice: motionChoice.value,

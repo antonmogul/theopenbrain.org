@@ -1,0 +1,343 @@
+{
+  "boxes": [
+    {
+      "id": "ba809667-6a09-5748-8376-d897571dcea4",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "box-pupillary-light-reflex",
+      "title": "Pathway for the pupillary light reflex",
+      "parent_section_id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "anchor_paragraph_id": "8db9c849-1cbf-4217-a4cd-d0da1597705e",
+      "order_index": 100,
+      "rail": true,
+      "box_treatment": "dark",
+      "box_card": {
+        "enabled": true,
+        "image": {
+          "src": "/publicAssets/images/the-retina/boxes/eye-dilate.webp",
+          "alt": "Pupil constricting in response to light",
+          "video": "/publicAssets/images/the-retina/boxes/eye-dilate.mp4"
+        },
+        "quote": ""
+      },
+      "parentSlug": "story-of-the-eye",
+      "anchorOrder": 1
+    },
+    {
+      "id": "fc086d5b-c4ee-5fd3-8299-93edd1876b72",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "box-refractive-errors",
+      "title": "Refractive errors",
+      "parent_section_id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "anchor_paragraph_id": "8db9c849-1cbf-4217-a4cd-d0da1597705e",
+      "order_index": 101,
+      "rail": true,
+      "box_treatment": "dark",
+      "box_card": {
+        "enabled": true,
+        "image": {
+          "src": "/publicAssets/images/the-retina/boxes/glasses-apostle.webp",
+          "alt": "The Glasses Apostle, Conrad von Soest, 1403"
+        },
+        "quote": ""
+      },
+      "parentSlug": "story-of-the-eye",
+      "anchorOrder": 1
+    },
+    {
+      "id": "df881d2e-20d9-515b-a26f-c4af48ba63e4",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "box-blind-spot",
+      "title": "Blind spot",
+      "parent_section_id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "anchor_paragraph_id": "b0173343-657f-409f-b4bc-c4518baaefdd",
+      "order_index": 102,
+      "rail": true,
+      "box_treatment": "pale",
+      "box_card": {
+        "enabled": true,
+        "image": {
+          "src": "/publicAssets/images/the-retina/boxes/normal-both-eyes.webp",
+          "alt": "Perimetry showing the blind spot in each eye",
+          "fit": "contain",
+          "position": "50% 50%"
+        },
+        "quote": ""
+      },
+      "parentSlug": "organization-and-cell-types-in-the-retina",
+      "anchorOrder": 2
+    },
+    {
+      "id": "9113fbe3-d000-5b2e-a18f-d0c90b157ada",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "box-phototransduction",
+      "title": "Phototransduction",
+      "parent_section_id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "anchor_paragraph_id": "ca9f9ab9-ea8c-4404-bd96-7cb7c1270fe7",
+      "order_index": 103,
+      "rail": true,
+      "box_treatment": "dark",
+      "box_card": {
+        "enabled": true,
+        "image": {
+          "src": "/publicAssets/images/the-retina/boxes/schultze-rods-cones.webp",
+          "alt": "Max Schultze’s drawings of rods and cones",
+          "fit": "contain",
+          "position": "50% 50%"
+        },
+        "quote": ""
+      },
+      "parentSlug": "photoreceptors-and-phototransduction",
+      "anchorOrder": 4
+    },
+    {
+      "id": "6d82a922-5b2c-5828-a3c8-6ba462d2795c",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "box-visual-cycle",
+      "title": "The visual cycle",
+      "parent_section_id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "anchor_paragraph_id": "bb84d092-7ba2-4003-a1eb-1b5eb4ecf67e",
+      "order_index": 104,
+      "rail": true,
+      "box_treatment": "dark",
+      "box_card": {
+        "enabled": true,
+        "image": {
+          "src": "/publicAssets/images/the-retina/boxes/rhodopsin-warhol.webp",
+          "alt": "Rhodopsin in a grid of coloured panels"
+        },
+        "quote": ""
+      },
+      "parentSlug": "photoreceptors-and-phototransduction",
+      "anchorOrder": 8
+    },
+    {
+      "id": "f70d870f-11ad-5dff-acfb-63d8f4409b56",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "box-colour-vision",
+      "title": "Colour vision",
+      "parent_section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "anchor_paragraph_id": "fccf2f42-9f63-4c68-b8d9-24f67b239637",
+      "order_index": 105,
+      "rail": true,
+      "box_treatment": "dark",
+      "box_card": {
+        "enabled": true,
+        "image": {
+          "src": "/publicAssets/images/eyeDots.svg",
+          "alt": "Colour-blindness test plates with coloured numbers",
+          "fit": "contain",
+          "position": "50% 50%"
+        },
+        "quote": ""
+      },
+      "parentSlug": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+      "anchorOrder": 5
+    },
+    {
+      "id": "2868c6a7-f0de-5fed-bd93-d23b6536853e",
+      "module_id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+      "slug": "box-retinabox",
+      "title": "RetINaBox — build a retinal circuit",
+      "parent_section_id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "anchor_paragraph_id": "63f9a3e3-1f34-46a0-b973-92e282d5f386",
+      "order_index": 106,
+      "rail": true,
+      "box_treatment": "dark",
+      "box_card": {
+        "enabled": true,
+        "image": {
+          "src": "/publicAssets/images/widgets/retinabox-logo.svg",
+          "alt": "RetINaBox logo",
+          "fit": "contain",
+          "position": "50% 50%"
+        },
+        "quote": ""
+      },
+      "parentSlug": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+      "anchorOrder": 11
+    }
+  ],
+  "moves": [
+    {
+      "id": "2144a465-2440-4975-8f93-896894223513",
+      "from": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "beforeOrder": 2,
+      "to": "ba809667-6a09-5748-8376-d897571dcea4",
+      "order": 0,
+      "beforeContent": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "title": "Pathway for the pupillary light reflex",
+            "widgetId": "upload:retina-pupillary-light-reflex"
+          }
+        ]
+      },
+      "beforeLevel": 0,
+      "beforeHeader": false
+    },
+    {
+      "id": "21ee12e5-7bd0-4b62-9153-a71135facf99",
+      "from": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "beforeOrder": 3,
+      "to": "fc086d5b-c4ee-5fd3-8299-93edd1876b72",
+      "order": 0,
+      "beforeContent": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "title": "Refractive errors",
+            "widgetId": "upload:retina-refraction-errors"
+          }
+        ]
+      },
+      "beforeLevel": 0,
+      "beforeHeader": false
+    },
+    {
+      "id": "1a481649-da77-4450-afd2-1e331a5ab435",
+      "from": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "beforeOrder": 3,
+      "to": "df881d2e-20d9-515b-a26f-c4af48ba63e4",
+      "order": 0,
+      "beforeContent": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "Due to the optic nerve, each retina has a small region without photoreceptors, resulting in a blind spot in each eye’s visual field. In each eye’s visual field, the blind spot is located roughly 10° temporally (away from the nose) and has a size of approximately 6°<sup class=\"citation-ref\" data-ref=\"8\">8</sup>. The blind spot was first discovered in the 17th century by French physicist and priest Edme Marriott<sup class=\"citation-ref\" data-ref=\"9\">9</sup>. We tend not to notice our blind spots in part because our brain in so good at ‘filling in’ missing visual information. To find your own blind spot, try one of these two methods:"
+          },
+          {
+            "type": "break_section",
+            "steps": [
+              "Put your monitor an arm’s length away. Close your left eye and fix your right eye’s gaze on the ‘B’. Extend your right hand and block the ‘B’ with the tip of your index fingers. Slowly move your hand directly rightwards, and when it gets about halfway across the screen your fingertip should disappear.",
+              "Close your left eye and fix your right eye’s gaze on the ‘B’. Move closer and farther away from the screen until the ‘A’ disappears. Repeat with your left eye while fixating on the ‘A’ and the ‘B’ should disappeared."
+            ],
+            "title": "Blind spot"
+          }
+        ]
+      },
+      "beforeLevel": 1,
+      "beforeHeader": false
+    },
+    {
+      "id": "671e3832-e311-406d-821a-97f313f9db95",
+      "from": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "beforeOrder": 5,
+      "to": "9113fbe3-d000-5b2e-a18f-d0c90b157ada",
+      "order": 0,
+      "beforeContent": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "title": "Phototransduction",
+            "widgetId": "upload:retina-phototransduction"
+          }
+        ]
+      },
+      "beforeLevel": 2,
+      "beforeHeader": false
+    },
+    {
+      "id": "3ad0547d-a63d-4bda-8a43-057deabcd42b",
+      "from": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "beforeOrder": 10,
+      "to": "6d82a922-5b2c-5828-a3c8-6ba462d2795c",
+      "order": 0,
+      "beforeContent": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "title": "The visual cycle",
+            "widgetId": "upload:retina-visual-cycle"
+          }
+        ]
+      },
+      "beforeLevel": 2,
+      "beforeHeader": false
+    },
+    {
+      "id": "1dd1d2ae-f64f-4d19-8ead-f1a343bcae09",
+      "from": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "beforeOrder": 6,
+      "to": "f70d870f-11ad-5dff-acfb-63d8f4409b56",
+      "order": 0,
+      "beforeContent": {
+        "blocks": [
+          {
+            "type": "text",
+            "content": "One of the first written accounts of color blindness comes from John Dalton – of atomic theory fame – at the end of the 18th century. He noted that he and his brother were color blind, and he assembled a small list of other color blind people. Most happened to be males. Dalton hypothesized that his vitreous humour was tinted blue, and thus absorbed longer wavelengths<sup class=\"citation-ref\" data-ref=\"69\">69</sup>. He donated his eyes upon his death, but no pigment abnormalities were found with his vitreous humour nor his lens. It is now known that color vision starts with the three different types of cones (blue, green and red, as outlined above). It turns out that about 8% of males are red-green color blind, due to a genetic mutation leading to dysfunction of either red or green cones. Other types of color blindness exist, but are more rare. Genetic analysis in the 1990s of Dalton’s preserved eye tissue revealed that he was missing functional middle wavelength (green) cones<sup class=\"citation-ref\" data-ref=\"69\">69</sup>."
+          },
+          {
+            "type": "break_section",
+            "title": "Color blindness"
+          }
+        ]
+      },
+      "beforeLevel": 2,
+      "beforeHeader": false
+    },
+    {
+      "id": "4fd08f62-00c0-4ebe-8000-000000000001",
+      "from": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "beforeOrder": 7,
+      "to": "f70d870f-11ad-5dff-acfb-63d8f4409b56",
+      "order": 1,
+      "beforeContent": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "blurb": "Work from the electromagnetic spectrum down to cone opponency: how three pigment classes, and their overlap, become the colours we see.",
+            "route": "/color-vision",
+            "title": "Colour vision starts in the retina",
+            "widgetId": "upload:retina-color-vision",
+            "fullScreen": true,
+            "placementId": "retina-color-vision",
+            "fallbackWidgetId": "color-vision"
+          }
+        ]
+      },
+      "beforeLevel": 2,
+      "beforeHeader": false
+    },
+    {
+      "id": "4fd08f62-00c0-4ebe-8000-000000000003",
+      "from": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "beforeOrder": 13,
+      "to": "2868c6a7-f0de-5fed-bd93-d23b6536853e",
+      "order": 0,
+      "beforeContent": {
+        "blocks": [
+          {
+            "kind": "inline",
+            "type": "widget",
+            "blurb": "Wire photoreceptors, bipolar and ganglion cells yourself and watch how the circuit turns a light stimulus into spikes, or play one of the guided tutorials.",
+            "title": "RetINaBox — build a retinal circuit",
+            "widgetId": "upload:retina-retinabox",
+            "fullScreen": true,
+            "launchCard": {
+              "image": "/publicAssets/images/widgets/retinabox-logo.svg",
+              "button": "Load RetINaBox",
+              "prompt": "Explore how feature detectors are built in the retina."
+            },
+            "narrowKind": "breakout",
+            "placementId": "retina-retinabox",
+            "fallbackWidgetId": "retinabox"
+          }
+        ]
+      },
+      "beforeLevel": 1,
+      "beforeHeader": false
+    }
+  ],
+  "parts": [
+    ["spectrum", "The sliver we can see"],
+    ["cones", "One wavelength, 3 numbers"],
+    ["lights", "Three lights are enough"],
+    ["channel", "Losing a channel"]
+  ]
+}

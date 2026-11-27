@@ -10,6 +10,10 @@ export function normalizeBoxCard(value) {
     ? {
         src: imageUrl(value.image.src),
         alt: String(value.image.alt || ""),
+        ...(value.image.fit === "contain" ? { fit: "contain" } : {}),
+        ...(source(value.image.video)
+          ? { video: imageUrl(value.image.video) }
+          : {}),
         ...(typeof value.image.position === "string" &&
         /^\d+(?:\.\d+)?% \d+(?:\.\d+)?%$/.test(value.image.position)
           ? { position: value.image.position }

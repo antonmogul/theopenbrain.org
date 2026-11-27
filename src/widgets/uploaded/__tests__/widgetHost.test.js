@@ -18,6 +18,19 @@ import { embedLoader, hasEmbed } from "../../embeds.js";
 
 // Uploaded widgets run in a sandbox the book builds (OPENBRAIN-105).
 describe("buildWidgetDoc", () => {
+  it("passes a safe authored part to the sandbox without injecting host presentation", () => {
+    expect(
+      buildWidgetDoc("<html><head></head><body>Source</body></html>", {
+        part: "spectrum",
+      })
+    ).toContain('data-ob-part="spectrum"');
+    expect(
+      buildWidgetDoc("<html><head></head></html>", { part: 'x" onload="bad' })
+    ).not.toContain("data-ob-part=");
+    expect(buildWidgetDoc("<html><head></head></html>")).not.toContain(
+      "data-ob-part="
+    );
+  });
   it("waits for an authored Lottie and two paint opportunities before a prewarmed handoff", () => {
     const handlers = {},
       frames = [],

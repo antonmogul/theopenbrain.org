@@ -2,6 +2,7 @@
 import { createRequire } from "node:module";
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import railManifest from "./fixtures/retinaRailBoxes.json";
 import {
   retinaReaderChapter,
   retinaFigureConfig,
@@ -194,6 +195,107 @@ describe.skipIf(!harness || !existsSync(harness))(
         expect(
           (await db.query("select * from paragraphs order by id")).rows
         ).toEqual(result);
+      } finally {
+        await db.close();
+      }
+    });
+    it("applies after both Retina rail migrations without changing their boxes, parts or source prose", async () => {
+      const db = await fresh();
+      const upload = readFileSync(
+        "src/widgets/uploads/retina-color-vision.html",
+        "utf8"
+      );
+      const previousUpload = upload.replace(
+        /\/\* Open Brain rail parts \(OPENBRAIN-98\)[\s\S]*?(?=<\/style>)/,
+        ""
+      );
+      try {
+        await db.exec(`alter table sections add primary key (id), add column title text,
+          add column parent_section_id uuid, add column anchor_paragraph_id uuid,
+          add column order_index int, add column rail boolean,
+          add column box_treatment text, add column box_card jsonb;
+          alter table paragraphs add primary key (id), add column order_index int,
+          add column subsection_level int, add column is_subsection_header boolean;
+          create table widget_uploads(slug text primary key,html text,updated_at timestamptz);`);
+        for (const parent of new Set(
+          railManifest.boxes.map((box) => box.parent_section_id)
+        ))
+          await db.query(
+            "insert into sections(id,module_id,slug) values($1,$2,$3)",
+            [parent, moduleId, parent]
+          );
+        for (const move of railManifest.moves)
+          await db.query(
+            "insert into paragraphs(id,section_id,order_index,content,animation_id,subsection_level,is_subsection_header) values($1,$2,$3,$4,$5,$6,$7)",
+            [
+              move.id,
+              move.from,
+              move.beforeOrder,
+              move.beforeContent,
+              rows()[0].animation_id,
+              move.beforeLevel,
+              move.beforeHeader,
+            ]
+          );
+        await db.query("insert into widget_uploads(slug,html) values($1,$2)", [
+          "retina-color-vision",
+          previousUpload,
+        ]);
+        for (const migration of [
+          "20261127079800_retina_colour_rail_parts.sql",
+          "20261127079810_retina_rail_boxes.sql",
+        ])
+          await db.exec(
+            readFileSync(`supabase/migrations/${migration}`, "utf8")
+          );
+        const boxes = (
+          await db.query(
+            "select * from sections where slug like 'box-%' order by id"
+          )
+        ).rows;
+        const boxRows = (
+          await db.query(
+            "select p.* from paragraphs p join sections s on s.id=p.section_id where s.slug like 'box-%' order by p.id"
+          )
+        ).rows;
+        expect(boxes).toHaveLength(7);
+        expect(boxRows).toHaveLength(11);
+        expect(
+          (await db.query("select html from widget_uploads")).rows[0].html
+        ).toBe(upload);
+        await db.exec(sql);
+        for (const [id, , flags] of placements)
+          expect(
+            (await db.query("select content from paragraphs where id=$1", [id]))
+              .rows[0].content.animationFlags
+          ).toEqual(flags);
+        expect(
+          (
+            await db.query("select animation_id from paragraphs where id=$1", [
+              "03f92733-17dd-46a2-9131-c3c64875dba1",
+            ])
+          ).rows[0].animation_id
+        ).toBe(directionId);
+        expect(
+          (
+            await db.query(
+              "select * from sections where slug like 'box-%' order by id"
+            )
+          ).rows
+        ).toEqual(boxes);
+        expect(
+          (
+            await db.query(
+              "select p.* from paragraphs p join sections s on s.id=p.section_id where s.slug like 'box-%' order by p.id"
+            )
+          ).rows
+        ).toEqual(boxRows);
+        const after = (await db.query("select * from paragraphs order by id"))
+          .rows;
+        await db.exec(sql);
+        expect(
+          (await db.query("select * from paragraphs order by id")).rows
+        ).toEqual(after);
       } finally {
         await db.close();
       }

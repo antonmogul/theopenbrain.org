@@ -7,10 +7,15 @@ export const sql = readFileSync(`supabase/migrations/${migration}`, "utf8");
 // the separate guarded phone-fit repair.
 // The file as 066210 left it, before the phone blocks of OPENBRAIN-71.
 export const atPhoneFit = (html) =>
-  html.replace(
-    /\n<!-- Open Brain book \(OPENBRAIN-71\):[^\n]+ -->\n<style>\n[\s\S]*?<\/style>\n(?=<\/head>)/,
-    ""
-  );
+  html
+    .replace(
+      /\/\* Open Brain rail parts \(OPENBRAIN-98\)[\s\S]*?(?=<\/style>)/,
+      ""
+    )
+    .replace(
+      /\n<!-- Open Brain book \(OPENBRAIN-71\):[^\n]+ -->\n<style>\n[\s\S]*?<\/style>\n(?=<\/head>)/,
+      ""
+    );
 export const atWidgetsDb = (html) =>
   atPhoneFit(html).replace(
     /\n<!-- Open Brain book \(OPENBRAIN-62b\):[^\n]+ -->\n<style>\n[\s\S]*?<\/style>\n(?=<\/head>)/,

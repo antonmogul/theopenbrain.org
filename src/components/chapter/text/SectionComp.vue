@@ -162,6 +162,7 @@
                  breaks by it (they render no paragraph id; OPENBRAIN-128). -->
               <WidgetBreakout
                 v-if="paragraph.type === 'widget'"
+                :rail-part="!!group.part?.part.screen"
                 :placement="paragraph.widget"
                 :data-timeline-id="paragraph.id"
               />
@@ -226,6 +227,7 @@
             :key="'breakSection' + paragraph.id"
             v-else-if="paragraph.type === 'breakSection'"
             :content="paragraph"
+            :rail-part="!!group.part?.part.screen"
             :data-timeline-id="paragraph.id"
           />
           <StartEndIcon :paragraph="paragraph" art="end" />
