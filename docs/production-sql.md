@@ -1,5 +1,11 @@
 # Production SQL: how migrations reach the database
 
+## Pending — OPENBRAIN-99
+
+| Migration                                 | State   | Release order                                                                                                                                   |
+| ----------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261124079900_retina_reader_layout.sql` | Pending | Deploy the reader and retinal-waves poster first, then apply SQL; guarded reader defaults cover the interval. No upload changes or box changes. |
+
 ## Pending — OPENBRAIN-96
 
 | Migration                          | State   | Release order                                                                                                                                                                                                                             |

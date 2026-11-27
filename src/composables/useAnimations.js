@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { apiRequest as supabaseRest } from "@/services/api/client";
 import { clog, cgroup } from "@/helper/chapterDebug";
+import { retinaFigureConfig } from "@/helper/retinaReaderLayout.mjs";
 
 // Module-level cache so multiple components share the same data
 const animationsCache = new Map();
@@ -82,7 +83,12 @@ export function useAnimations() {
 
       // Transform each DB row to match the legacy animations.json format
       const transformed = animRows.map((row) => {
-        const config = row.config || {};
+        const config = retinaFigureConfig(
+          row.animation_key,
+          row.config || {},
+          row.youtube_id,
+          row.image_file_url
+        );
         const states = statesByAnim[row.id] || [];
         const variants = variantsByAnim[row.id] || [];
 

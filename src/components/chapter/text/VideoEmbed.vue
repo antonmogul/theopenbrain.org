@@ -19,7 +19,7 @@ import { useReaderEvents } from "@/composables/useReaderEvents";
 import PlayMark from "../PlayMark.vue";
 
 const props = defineProps({
-  /** { youtubeId?, src?, poster?, posterPlay?: "corner", focus?, title?, caption?, start? } */
+  /** { youtubeId?, src?, poster?, posterPlay?: "corner" | "chapter", focus?, title?, caption?, start? } */
   video: { type: Object, required: true },
   showCaption: { type: Boolean, default: true },
 });
@@ -46,15 +46,24 @@ const src = computed(() =>
 const title = computed(() => props.video.title || "Video");
 const caption = computed(() => props.video.caption || props.video.title || "");
 const focus = computed(() => figureFocus(props.video.focus));
+// The reader pressed Play: start this local film in the same user gesture,
+// keeping autoplay reserved for the book's muted ambient loops.
+function playLocal(el) {
+  if (el && playing.value) el.play()?.catch(() => {});
+}
 </script>
 
 <template>
-  <figure class="ve noHighlight">
+  <figure
+    class="ve noHighlight"
+    :class="{ 've--chapter': video.posterPlay === 'chapter' }"
+  >
     <div class="ve-frame">
       <video
-        v-if="video.src"
+        v-if="video.src && (video.posterPlay !== 'chapter' || playing)"
         :key="video.src"
         controls
+        :ref="playLocal"
         @play="recordPlay"
         playsinline
         webkit-playsinline
@@ -79,6 +88,7 @@ const focus = computed(() => figureFocus(props.video.focus));
         class="ve-poster"
         :class="{
           've-poster--corner': video.poster && video.posterPlay === 'corner',
+          've-poster--chapter': video.posterPlay === 'chapter',
         }"
         :aria-label="`Play video: ${title}`"
         @click="
@@ -95,11 +105,14 @@ const focus = computed(() => figureFocus(props.video.focus));
         />
         <PlayMark class="ve-play" />
         <span class="ve-title">{{ title }}</span>
-        <span class="ve-note">YouTube · plays here</span>
+        <span class="ve-note"
+          >{{ video.src ? "Video" : "YouTube" }} · plays here</span
+        >
       </button>
     </div>
     <figcaption v-if="showCaption && caption" class="ve-caption">
-      {{ caption }}
+      <span v-if="video.posterPlay === 'chapter'" class="ve-label">Video</span>
+      <span>{{ caption }}</span>
     </figcaption>
   </figure>
 </template>
@@ -174,6 +187,40 @@ const focus = computed(() => figureFocus(props.video.focus));
 .ve-poster--corner .ve-title,
 .ve-poster--corner .ve-note {
   display: none;
+}
+/* The same clean corner control and record row as History's films, with
+   the Retina's chapter-colour poster treatment. Playback is never tinted. */
+.ve-poster--chapter {
+  background: rgb(var(--color-chapter));
+}
+.ve-poster--chapter .ve-poster-image {
+  opacity: 1;
+  filter: grayscale(1);
+  mix-blend-mode: multiply;
+}
+.ve-poster--chapter .ve-play {
+  position: absolute;
+  top: 3%;
+  left: 3%;
+}
+.ve-poster--chapter .ve-title,
+.ve-poster--chapter .ve-note {
+  display: none;
+}
+.ve--chapter .ve-caption {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid rgb(var(--color-line));
+  font-size: var(--ui-size-12);
+  color: rgb(var(--color-ink));
+}
+.ve-label {
+  color: rgb(var(--color-chapter-deep));
+  text-transform: uppercase;
+  font-size: var(--ui-size-11);
+  letter-spacing: 0.1em;
 }
 /* The one play mark, a seventh or so of the frame across: 64px in the
    figure pane, down to 36px on a small frame (a breakout box's column). */

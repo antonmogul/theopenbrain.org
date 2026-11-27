@@ -18,6 +18,7 @@ import {
   normalizeFigureRoom,
 } from "../helper/figureHold.mjs";
 import { imageUrl } from "../editor/media.mjs";
+import { retinaReaderChapter } from "../helper/retinaReaderLayout.mjs";
 
 /**
  * Convert JSONB content blocks to HTML text
@@ -596,6 +597,7 @@ export function transformModuleToChapterFormat(module) {
   if (!module || !module.sections) {
     return null;
   }
+  module = retinaReaderChapter(module);
 
   // Deploy compatibility: numbered legacy bibliography blocks enter the same
   // references-section contract before the guarded data migration is applied.

@@ -84,6 +84,7 @@ const props = defineProps({
      shows the whole picture. Only where the container has a fixed height
      (`fit`) and not in the dialog. */
   fill: { type: String, default: "" },
+  paperBlend: { type: Boolean, default: false },
 });
 
 /* The shown image, two-way so the shell can open its fullscreen dialog on
@@ -508,6 +509,7 @@ onBeforeUnmount(() => {
       'figimg--large': large,
       'figimg--flow': !fit,
       'figimg--fill': fills,
+      'figimg--paper-blend': paperBlend,
     }"
     :style="fills ? { '--figimg-focus': fill } : undefined"
   >
@@ -992,6 +994,15 @@ onBeforeUnmount(() => {
 .figimg-loop {
   pointer-events: none;
   user-select: none;
+}
+/* Match the development loop's pale encoded ground to the paper pane. */
+.figure-pane--paper .figimg--paper-blend {
+  background: rgb(var(--color-bg));
+  isolation: isolate;
+}
+.figure-pane--paper .figimg--paper-blend .figimg-img {
+  filter: brightness(1.06);
+  mix-blend-mode: multiply;
 }
 .figimg-caption {
   flex: none;

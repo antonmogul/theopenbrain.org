@@ -27,6 +27,10 @@ export function breakVideoOf(block = {}, title = "", text = "") {
     slug,
     src,
     poster,
+    ...(["baden", "dowling-and-werblin"].includes(slug)
+      ? { posterPlay: "chapter" }
+      : {}),
+    ...(block.posterPlay ? { posterPlay: block.posterPlay } : {}),
     title: label,
     caption:
       block.caption ||

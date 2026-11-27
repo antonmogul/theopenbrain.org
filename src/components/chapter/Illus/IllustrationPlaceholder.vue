@@ -371,6 +371,7 @@ function closeFullscreen() {
           :suspended="isFullscreen"
           :wash="!inline && !sectionWash && wantsTintFade(animation)"
           :fill="fill"
+          :paper-blend="animation.paperBlend === true"
           legend-above
         />
         <div v-else class="fig-placeholder">
