@@ -329,10 +329,15 @@ export function buildTimeline(text, opts = {}) {
     if (Array.isArray(p.paragraphs)) {
       // A group: text.json's sub-sub groups and bare { paragraphs } wrappers
       // (the importer flattens both into rows, so live chapters have none).
+      // Its anchor slot precedes the group's children (SubSubSection).
+      if (p.id != null)
+        for (const box of boxesAfter.get(p.id) || []) walkBox(box);
       inContainer(p.animation, () => walkList(p.paragraphs));
-    } else emit(p);
-    if (p.id != null)
-      for (const box of boxesAfter.get(p.id) || []) walkBox(box);
+    } else {
+      emit(p);
+      if (p.id != null)
+        for (const box of boxesAfter.get(p.id) || []) walkBox(box);
+    }
   }
 
   function visitSub(sub) {
@@ -344,6 +349,10 @@ export function buildTimeline(text, opts = {}) {
       start: items.length,
     };
     if (entry.title) subsections.push(entry);
+    // A subsection heading has no paragraph bar, but can anchor a box.
+    // SubSection renders that box immediately after the heading.
+    if (sub.id != null)
+      for (const box of boxesAfter.get(sub.id) || []) walkBox(box);
     inContainer(sub.animation, () => walkList(sub.paragraphs));
     // A subsection-level full-screen figure plays after its paragraphs.
     if (sub.animationFull && items.length > entry.start)
