@@ -17,6 +17,13 @@ const log = ref(null);
 const flips = ref({});
 const answers = ref({});
 const historyOpen = ref(false);
+watch(
+  () => props.messages,
+  () => {
+    flips.value = {};
+    answers.value = {};
+  }
+);
 const { close } = useReaderSidebar();
 const auth = useAuthStore();
 function send(text = draft.value) {
