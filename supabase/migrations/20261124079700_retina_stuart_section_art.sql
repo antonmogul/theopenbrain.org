@@ -32,6 +32,7 @@ begin
     for target in
       select s.id, s.art from public.sections s join public.modules m on m.id=s.module_id
       where m.slug='the-retina' and m.status in ('published','draft') and s.slug=picture.slug
+      for update of s
     loop
       current_keys := jsonb_build_object('src', target.art->'src', 'alt', target.art->'alt',
         'position', target.art->'position', 'placeholder', target.art->'placeholder');
