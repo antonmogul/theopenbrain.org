@@ -996,11 +996,14 @@ onBeforeUnmount(() => {
   user-select: none;
 }
 /* Match the development loop's pale encoded ground to the paper pane. */
-.figure-pane--paper .figimg--paper-blend {
-  background: rgb(var(--color-bg));
+.figimg--paper-blend {
+  background: rgb(var(--loop-paper, var(--color-paper)));
   isolation: isolate;
 }
-.figure-pane--paper .figimg--paper-blend .figimg-img {
+.figure-pane--paper .figimg--paper-blend {
+  --loop-paper: var(--color-bg);
+}
+.figimg--paper-blend .figimg-img {
   filter: brightness(1.06);
   mix-blend-mode: multiply;
 }

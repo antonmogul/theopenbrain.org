@@ -498,6 +498,9 @@ function closeFullscreen() {
             v-model:index="galleryIndex"
             v-model:view="galleryView"
             :start="animation.galleryStart || ''"
+            :paper-blend="
+              animation.paperBlend === true && dialogGround === 'paper'
+            "
             large
           />
           <div v-else class="fig-placeholder">
