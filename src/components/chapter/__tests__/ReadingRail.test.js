@@ -108,6 +108,10 @@ const spans = (wrapper) =>
 
 beforeEach(() => {
   vi.useFakeTimers();
+  vi.stubGlobal("requestAnimationFrame", (callback) =>
+    setTimeout(() => callback(Date.now()), 16)
+  );
+  vi.stubGlobal("cancelAnimationFrame", (id) => clearTimeout(id));
   wide = true;
   fixtures.reduced = false;
   fixtures.jump.mockClear();
@@ -124,6 +128,7 @@ beforeEach(() => {
 afterEach(() => {
   wrappers.splice(0).forEach((wrapper) => wrapper.unmount());
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   document.body.innerHTML = "";
 });
 
@@ -454,5 +459,77 @@ describe("when the pane changes (OPENBRAIN-91)", () => {
     expect(marks[0].attributes("data-showing")).toBeUndefined();
     expect(marks[1].attributes("data-showing")).toBe("");
     expect(animate).not.toHaveBeenCalled();
+  });
+});
+
+describe("the arrow's stay (OPENBRAIN-101)", () => {
+  const center = (rail, index, origin) => {
+    const mark = rail.findAll(".rr-mark")[index].element;
+    return (
+      origin +
+      parseFloat(mark.style.top) +
+      (parseFloat(mark.style.translate.split(" ")[1]) || 0)
+    );
+  };
+
+  it("holds at the reading point across the ribbon, then hands over and returns on reverse scroll", async () => {
+    page([
+      ["AnimationFig1", 1000, 300, { end: 2000 - HALF }],
+      ["AnimationFig2", 2000, 300, { end: 3000 - HALF }],
+    ]);
+    const rail = await mountRail();
+    await vi.advanceTimersByTimeAsync(32);
+    let origin = 0;
+    rail.element.getBoundingClientRect = () => ({ top: origin });
+    const scroll = (top) => {
+      origin = -top;
+      window.scrollY = top;
+      place(document.getElementById("triggerAnimationFig1"), 1000 - top, 300);
+      place(document.getElementById("triggerAnimationFig2"), 2000 - top, 300);
+      window.dispatchEvent(new Event("scroll"));
+    };
+    scroll(700);
+    await toggle("AnimationFig1", true);
+    window.dispatchEvent(new Event("scroll"));
+    await vi.advanceTimersByTimeAsync(1200);
+    expect(center(rail, 0, origin)).toBeCloseTo(HALF, 0);
+
+    // Well past the first paragraph, the same arrow still relates its
+    // figure to the following text. No tween restarts while it is held.
+    scroll(1200);
+    await vi.advanceTimersByTimeAsync(32);
+    expect(center(rail, 0, origin)).toBeCloseTo(HALF, 0);
+
+    scroll(1700);
+    await toggle("AnimationFig1", false);
+    await toggle("AnimationFig2", true);
+    window.dispatchEvent(new Event("scroll"));
+    await vi.advanceTimersByTimeAsync(1200);
+    expect(center(rail, 1, origin)).toBeCloseTo(HALF, 0);
+    expect(center(rail, 0, origin)).toBeLessThan(0);
+
+    scroll(900);
+    await toggle("AnimationFig2", false);
+    await toggle("AnimationFig1", true);
+    window.dispatchEvent(new Event("scroll"));
+    await vi.advanceTimersByTimeAsync(1200);
+    expect(center(rail, 0, origin)).toBeCloseTo(HALF, 0);
+    expect(center(rail, 1, origin)).toBeCloseTo(1100, 0);
+  });
+
+  it("eases an incoming arrow, but takes the final position immediately with reduced motion", async () => {
+    page([["AnimationFig1", 1000, 300, { end: 2000 - HALF }]]);
+    const rail = await mountRail();
+    await vi.advanceTimersByTimeAsync(32);
+    rail.element.getBoundingClientRect = () => ({ top: -700 });
+    await toggle("AnimationFig1", true);
+    await vi.advanceTimersByTimeAsync(32);
+    expect(center(rail, 0, -700)).toBeGreaterThan(HALF);
+    fixtures.reduced = true;
+    document.documentElement.dataset.reduceMotion = "1";
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(32);
+    expect(center(rail, 0, -700)).toBe(HALF);
+    delete document.documentElement.dataset.reduceMotion;
   });
 });

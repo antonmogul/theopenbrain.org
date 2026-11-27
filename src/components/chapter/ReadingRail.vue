@@ -20,6 +20,9 @@
  * effect could be replaced with a more subtle interaction, like the center
  * increasing in size". It replaced a ring that left the reading point and a
  * beam that ran into the pane.
+ * OPENBRAIN-101: the arrow now stays at that point for its ribbon's window,
+ * handing over when the next figure comes on. Only the arrows follow the
+ * sketch's 85ms exponential easing; the page and figure timing are unchanged.
  *
  * It measures the pane's own triggers and never decides what shows:
  * IllustrationsComp sets `.active` on a trigger while its figure is on, and
@@ -46,7 +49,7 @@ import {
   figureRecordFor,
   figureWait,
 } from "@/helper/historyFigureTiming";
-import { jumpToElement } from "@/helper/readerJump";
+import { jumpToElement, reducedMotionPreferred } from "@/helper/readerJump";
 import {
   cutSpan,
   railMarkFor,
@@ -87,6 +90,55 @@ let domObserver = null;
 let measureTimer = null;
 let unmounted = false;
 const settle = [];
+let arrowFrame = null;
+let arrowTime = null;
+let motionObserver = null;
+let motionQuery = null;
+const arrowPositions = new Map();
+
+/* Maura's sketch eases its scroll with 1 - exp(-dt / 85), stopping within
+   0.15px. Here that easing belongs only to the arrows. Store viewport
+   positions, rather than easing a scroll offset: an arrow already at the
+   reading point then stays perfectly still while the prose scrolls. */
+function drawArrows(now) {
+  arrowFrame = null;
+  if (!root.value || !wide.value || unmounted) return;
+  const origin = root.value.getBoundingClientRect().top;
+  const half = window.innerHeight / 2;
+  const reduced = reducedMotionPreferred();
+  const dt = Math.min(64, arrowTime === null ? 16 : now - arrowTime);
+  const ease = reduced ? 1 : 1 - Math.exp(-dt / 85);
+  let moving = false;
+  const buttons = root.value.querySelectorAll(".rr-mark");
+  visible.value.forEach((mark, index) => {
+    const button = buttons[index];
+    if (!button) return;
+    const active = mark.key === showing.value;
+    const natural = origin + mark.top;
+    const previous = arrowPositions.get(mark.key);
+    // The outgoing arrow leaves above the viewport as the incoming arrow
+    // takes its place. It never traverses the entire earlier paragraph on
+    // a fast jump. Reverse scrolling brings its ordinary mark back.
+    const leaving = natural < -30 && (previous?.active || previous?.leaving);
+    const target = active
+      ? Math.max(natural, Math.min(half, origin + mark.end))
+      : leaving
+        ? -30
+        : natural;
+    let y = previous ? previous.y + (target - previous.y) * ease : target;
+    if (Math.abs(target - y) < 0.15 || reduced) y = target;
+    else moving = true;
+    button.style.translate = `0 ${y - natural}px`;
+    arrowPositions.set(mark.key, { y, active, leaving });
+  });
+  arrowTime = moving ? now : null;
+  if (moving) arrowFrame = requestAnimationFrame(drawArrows);
+}
+
+function moveArrows() {
+  if (arrowFrame === null && !unmounted)
+    arrowFrame = requestAnimationFrame(drawArrows);
+}
 
 const visible = computed(() => marks.value.filter((mark) => !mark.stacked));
 const current = computed(
@@ -115,6 +167,7 @@ function readShowing() {
   const on = at < 0 ? null : triggers[at];
   showing.value =
     (on && marks.value.find((mark) => mark.els.includes(on))?.key) || null;
+  moveArrows();
 }
 
 /* The figure records, once and only when there is a figure to name (a
@@ -140,6 +193,7 @@ function measure() {
     marks.value = [];
     bands.value = [];
     showing.value = null;
+    arrowPositions.clear();
     return;
   }
   const scope = reader();
@@ -207,6 +261,9 @@ function measure() {
     });
   }
   marks.value = found;
+  const keys = new Set(found.map((mark) => mark.key));
+  for (const key of arrowPositions.keys())
+    if (!keys.has(key)) arrowPositions.delete(key);
   if (typeof MutationObserver === "function") {
     classObserver ||= new MutationObserver(readShowing);
     for (const trigger of triggers)
@@ -216,6 +273,7 @@ function measure() {
       });
   }
   readShowing();
+  nextTick(moveArrows);
 }
 
 // Fonts, images and stages keep moving the text after it mounts; every
@@ -267,6 +325,16 @@ function onKey(event, index) {
 onMounted(async () => {
   ScrollTrigger.addEventListener?.("refresh", remeasure);
   window.addEventListener("resize", remeasure);
+  window.addEventListener("scroll", moveArrows, { passive: true });
+  motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  motionQuery.addEventListener?.("change", moveArrows);
+  if (typeof MutationObserver === "function") {
+    motionObserver = new MutationObserver(moveArrows);
+    motionObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-reduce-motion"],
+    });
+  }
   const scope = reader();
   const content = root.value?.parentElement;
   if (content && typeof ResizeObserver === "function") {
@@ -294,6 +362,11 @@ onBeforeUnmount(() => {
   unmounted = true;
   ScrollTrigger.removeEventListener?.("refresh", remeasure);
   window.removeEventListener("resize", remeasure);
+  window.removeEventListener("scroll", moveArrows);
+  motionQuery?.removeEventListener?.("change", moveArrows);
+  motionObserver?.disconnect();
+  if (arrowFrame !== null) cancelAnimationFrame(arrowFrame);
+  arrowPositions.clear();
   classObserver?.disconnect();
   layoutObserver?.disconnect();
   domObserver?.disconnect();
@@ -454,6 +527,9 @@ onBeforeUnmount(() => {
 }
 .rr-mark:focus-visible {
   outline: none;
+}
+.rr-mark[data-showing] {
+  z-index: 1;
 }
 .rr-pill {
   position: absolute;
