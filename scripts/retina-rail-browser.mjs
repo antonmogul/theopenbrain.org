@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved -- browser imports served by Vite */
-import { chromium, expect } from "@playwright/test";
+import { chromium, webkit, expect } from "@playwright/test";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 const out =
   process.env.PROOF_OUT ||
@@ -21,7 +21,9 @@ const html = await readFile(
   "utf8"
 );
 await mkdir(out, { recursive: true });
-const browser = await chromium.launch();
+const browser = await (
+  process.env.PROOF_ENGINE === "webkit" ? webkit : chromium
+).launch();
 const results = [];
 for (const viewport of [
   { width: 1920, height: 947 },

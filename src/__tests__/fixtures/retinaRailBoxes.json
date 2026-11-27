@@ -79,7 +79,7 @@
       "box_card": {
         "enabled": true,
         "image": {
-          "src": "/publicAssets/images/RodBySchultze.png",
+          "src": "/publicAssets/images/the-retina/boxes/schultze-rods-cones.webp",
           "alt": "Max Schultze’s drawings of rods and cones",
           "fit": "contain",
           "position": "50% 50%"

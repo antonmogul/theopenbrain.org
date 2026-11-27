@@ -24,7 +24,7 @@ The main Retina figure pane remains paper. Dark panels follow History and the ex
 
 ## Assets and release
 
-New images are derived from Stuart's supplied files in `/Volumes/Brain/artifacts/stuart-2026-11-26/images/images/`. The 13 MB perimetry SVG is rasterized at 1536×768 then encoded as WebP, with both fields retained. The original file stays in the source artifact folder. Existing Schultze, test-plate and RetINaBox artwork is reused.
+New images are derived from Stuart's supplied files in `/Volumes/Brain/artifacts/stuart-2026-11-26/images/images/`. The 13 MB perimetry SVG is rasterized at 1536×768 then encoded as WebP, with both fields retained. The original file stays in the source artifact folder. The existing Schultze drawing is flattened onto white for legibility on the dark card, keeping all its marks; the original remains untouched. Existing test-plate and RetINaBox artwork is reused.
 
 The eye loop is Greyson Orlando's public-domain [Eye dilate](https://commons.wikimedia.org/wiki/File:Eye_dilate.gif), converted to muted inline MP4 with a WebP still. It retains its original colours.
 

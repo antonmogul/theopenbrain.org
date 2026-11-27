@@ -95,7 +95,9 @@ const widgetId = computed(() =>
 // A placement can ask to be the card below the two-column reader, where a
 // desktop-sized tool would be squeezed into the column (narrowKind).
 const narrow = useMediaQuery(READER_NARROW_QUERY);
-const narrowed = computed(() => narrow.value && !!props.placement?.narrowKind);
+const narrowed = computed(
+  () => !props.railPart && narrow.value && !!props.placement?.narrowKind
+);
 const kind = computed(() => {
   if (props.railPart) return "inline";
   const k = narrowed.value ? props.placement.narrowKind : props.placement?.kind;
