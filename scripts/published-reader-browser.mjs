@@ -6,6 +6,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { chromium, webkit, expect } from "@playwright/test";
 import { readerChapter } from "./reader-fixture-chapters.mjs";
+import { retinaFigureConfig } from "../src/helper/retinaReaderLayout.mjs";
 
 assert.equal(
   process.env.GITHUB_ACTIONS,
@@ -19,6 +20,18 @@ const chapter = readerChapter();
 const engine = process.env.READER_ENGINE || "chromium";
 assert.ok(["chromium", "webkit"].includes(engine), `Unknown engine ${engine}`);
 const fixture = JSON.parse(await readFile(chapter.fixture, "utf8"));
+// The fixture stays a dated production export. During the deploy interval,
+// classify its records with the same read adapter as the actual reader;
+// artwork, bridge reports and record labels are still asserted below.
+fixture.animations = fixture.animations.map((animation) => ({
+  ...animation,
+  config: retinaFigureConfig(
+    animation.animation_key,
+    animation.config || {},
+    animation.youtube_id,
+    animation.image_file_url
+  ),
+}));
 const base = process.env.STORYBOOK_URL || "http://127.0.0.1:6010";
 assert.match(new URL(base).origin, /^http:\/\/127\.0\.0\.1:\d+$/);
 const output =
@@ -372,7 +385,9 @@ try {
           // Subsection-header figures follow the header's wrapper, while
           // ordinary paragraph figures are inside it. Both use this band's
           // authored widget id; the hidden desktop pane is never a candidate.
-          figure = page.locator(`[data-widget-breakout="${config.widgetId}"]`);
+          figure = page.locator(
+            `[data-widget-breakout="${config.widgetId}"][aria-labelledby="widget-breakout-${key}"]`
+          );
           await expect(figure).toHaveCount(1);
           await scroll(page, figure.locator("[data-widget-stage]").first());
         }
@@ -398,9 +413,25 @@ try {
         const uploadFrame = uploadEntry
           ? figure.getByTitle(uploadEntry.title, { exact: true })
           : null;
-        if (config.widgetId?.startsWith("upload:"))
+        if (config.widgetId?.startsWith("upload:")) {
           await upload(page, uploadFrame, result, key);
-        else if (animation.youtube_id) {
+          if (
+            [
+              "animationRetinalCellTypes2",
+              "animationRetinalCellTypes3",
+            ].includes(key)
+          )
+            await expect
+              .poll(
+                () =>
+                  uploadFrame
+                    .contentFrame()
+                    .locator(".tob-canvas svg[viewBox] g")
+                    .count(),
+                { timeout: 20000, message: `${key}: fitted upload artwork` }
+              )
+              .toBeGreaterThan(0);
+        } else if (animation.youtube_id) {
           const play = figure.getByRole("button", {
             name: `Play video: ${animation.title}`,
           });
