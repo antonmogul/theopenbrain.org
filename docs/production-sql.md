@@ -1,5 +1,11 @@
 # Production SQL: how migrations reach the database
 
+## Pending — OPENBRAIN-96
+
+| Migration                          | State   | Release order                                                                                                                                                                                                                             |
+| ---------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261124079600_reader_events.sql` | Pending | Additive owner-only telemetry; safe before code. Apply SQL, deploy separate Study partner API, verify live eval/auth, then set the static app's `VITE_STUDY_PARTNER_URL` and deploy it. Missing events table is tolerated during rollout. |
+
 ## Pending — OPENBRAIN-94
 
 | Migration                              | State   | Release order                                                                                                                                                                                                                          |

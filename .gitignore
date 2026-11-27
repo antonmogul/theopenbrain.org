@@ -67,3 +67,7 @@ scripts/references/.crossref-cache.json
 
 # feedback:locate screenshots (OPENBRAIN-204)
 .feedback/
+
+# Separate Study partner service
+server/node_modules/
+server/dist/

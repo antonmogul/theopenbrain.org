@@ -1,4 +1,5 @@
 <script setup>
+import { studyPartnerEnabled } from "@/helper/studyPartner";
 import { computed, ref, onBeforeUnmount, nextTick, watch } from "vue";
 import { useReaderSidebar } from "@/composables/useReaderSidebar";
 import { useDraggablePanel } from "@/composables/useDraggablePanel";
@@ -62,8 +63,8 @@ const {
 const tabs = [
   { key: "info", label: "Info" },
   { key: "notebook", label: "Notebook" },
-  { key: "chat", label: "Chat" },
-];
+  { key: "chat", label: "Study partner" },
+].filter((tool) => tool.key !== "chat" || studyPartnerEnabled);
 const tabRefs = ref([]);
 
 watch(isOpen, async (open) => {
@@ -273,7 +274,10 @@ function demoModalTitle() {
               v-else-if="activeTab === 'notebook'"
               :module-id="moduleId"
             />
-            <ChatTab v-else-if="activeTab === 'chat'" :module-id="moduleId" />
+            <ChatTab
+              v-else-if="activeTab === 'chat' && studyPartnerEnabled"
+              :module-id="moduleId"
+            />
           </KeepAlive>
         </div>
 

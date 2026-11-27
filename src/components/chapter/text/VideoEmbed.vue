@@ -15,6 +15,7 @@
 import { computed, ref, watch } from "vue";
 import { youTubeEmbedUrl } from "@/editor/video.mjs";
 import { figureFocus } from "@/helper/figureCycle";
+import { useReaderEvents } from "@/composables/useReaderEvents";
 import PlayMark from "../PlayMark.vue";
 
 const props = defineProps({
@@ -24,6 +25,12 @@ const props = defineProps({
 });
 
 const playing = ref(false);
+const recordEvent = useReaderEvents();
+const recordPlay = () =>
+  recordEvent(
+    "video_play",
+    props.video.youtubeId || props.video.src || props.video.title
+  );
 watch(
   // Watch the source values individually. FigureImages supplies a fresh
   // object on redraw (including fullscreen/visibility changes); that is
@@ -48,6 +55,7 @@ const focus = computed(() => figureFocus(props.video.focus));
         v-if="video.src"
         :key="video.src"
         controls
+        @play="recordPlay"
         playsinline
         webkit-playsinline
         preload="none"
@@ -73,7 +81,10 @@ const focus = computed(() => figureFocus(props.video.focus));
           've-poster--corner': video.poster && video.posterPlay === 'corner',
         }"
         :aria-label="`Play video: ${title}`"
-        @click="playing = true"
+        @click="
+          playing = true;
+          recordPlay();
+        "
       >
         <img
           v-if="video.poster"

@@ -16,6 +16,7 @@ import {
   WIDGET_FULLSCREEN,
   WIDGET_SCROLLABLE,
 } from "@/widgets/uploaded/widgetHost";
+import { useReaderEvents } from "@/composables/useReaderEvents";
 import CloseIcon from "@/icons/custom/CloseIcon.vue";
 
 const props = defineProps({
@@ -33,6 +34,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["close"]);
+const recordEvent = useReaderEvents();
 const panelRef = ref(null);
 const bodyRef = ref(null);
 const bodyHeight = ref(0);
@@ -139,6 +141,7 @@ watch(
       deactivate();
       return;
     }
+    recordEvent("figure_expand", props.title || "Figure");
     triggerElement = document.activeElement;
     releaseScroll ||= lockReaderScroll();
     const currentActivation = ++activation;
