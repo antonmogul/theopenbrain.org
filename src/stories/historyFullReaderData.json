@@ -6194,15 +6194,15 @@
       "ramp": "fund",
       "status": "published",
       "bytes": 1319024,
-      "sha256": "6dfba3b76a2107ab7e2194c3d112899f455210041a1a2f84cbe1884db0d661e2"
+      "sha256": "5f025c8a8b847ff253f4bbb237b0c419157aafec95b70f2f84f540558a0df6a6"
     },
     {
       "slug": "loewi-vagusstoff",
       "title": "Loewi's Vagusstoff, 1921",
       "ramp": "fund",
       "status": "published",
-      "bytes": 3073203,
-      "sha256": "fcabcacd93155d07f5b624ff091f1b87e839776a623a6f447af56e707948d638"
+      "bytes": 3073285,
+      "sha256": "04f09cfbad32ad9c8099b1e7bf06496b6f534cc6289b8e2bc9115a2e0ef85f03"
     }
   ]
 }
