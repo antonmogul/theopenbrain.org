@@ -84,6 +84,7 @@ const props = defineProps({
      shows the whole picture. Only where the container has a fixed height
      (`fit`) and not in the dialog. */
   fill: { type: String, default: "" },
+  paperBlend: { type: Boolean, default: false },
 });
 
 /* The shown image, two-way so the shell can open its fullscreen dialog on
@@ -508,6 +509,7 @@ onBeforeUnmount(() => {
       'figimg--large': large,
       'figimg--flow': !fit,
       'figimg--fill': fills,
+      'figimg--paper-blend': paperBlend,
     }"
     :style="fills ? { '--figimg-focus': fill } : undefined"
   >
@@ -993,6 +995,18 @@ onBeforeUnmount(() => {
   pointer-events: none;
   user-select: none;
 }
+/* Match the development loop's pale encoded ground to the paper pane. */
+.figimg--paper-blend {
+  background: rgb(var(--loop-paper, var(--color-paper)));
+  isolation: isolate;
+}
+.figure-pane--paper .figimg--paper-blend {
+  --loop-paper: var(--color-bg);
+}
+.figimg--paper-blend .figimg-img {
+  filter: brightness(1.06);
+  mix-blend-mode: multiply;
+}
 .figimg-caption {
   flex: none;
   margin: 0 auto;
@@ -1266,6 +1280,17 @@ onBeforeUnmount(() => {
 .figimg-player :deep(.ve-frame) {
   width: 100%;
   max-height: 100%;
+}
+/* A lone player sizes its inline figure, like a lone still image above.
+   Without this the absolute player leaves a zero-height stage on a phone,
+   and the following subsection covers the poster and its play control. */
+.figimg--flow:not(.figimg--gallery) .figimg-player {
+  position: relative;
+  inset: auto;
+  height: auto;
+}
+.figimg--flow:not(.figimg--gallery) .figimg-player :deep(.ve-frame) {
+  max-height: none;
 }
 
 /* The controls: counter, then play/pause and view all beside it. One row

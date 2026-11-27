@@ -24,6 +24,7 @@ describe("BreakView", () => {
     routeState.params = { video: "dowling-and-werblin" };
     const wrapper = mount(BreakView, { global: { stubs } });
     await flushPromises();
+    await wrapper.get('button[aria-label^="Play video:"]').trigger("click");
     const source = wrapper.find("video source");
     expect(source.attributes("src")).toBe(
       "/publicAssets/video/breakSections/dowling-and-werblin.mp4"
@@ -38,6 +39,7 @@ describe("BreakView", () => {
     routeState.params = { video: "baden" };
     const wrapper = mount(BreakView, { global: { stubs } });
     await flushPromises();
+    await wrapper.get('button[aria-label^="Play video:"]').trigger("click");
     expect(wrapper.find("video source").attributes("src")).toBe(
       "/publicAssets/videos/baden.mp4"
     );

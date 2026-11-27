@@ -372,6 +372,7 @@ function closeFullscreen() {
           :suspended="isFullscreen"
           :wash="!inline && !sectionWash && wantsTintFade(animation)"
           :fill="fill"
+          :paper-blend="animation.paperBlend === true"
           :data-section-zoom="veiled ? '' : undefined"
           :style="
             veiled ? { '--section-zoom': 1 + 0.08 * tint.current() } : undefined
@@ -502,6 +503,9 @@ function closeFullscreen() {
             v-model:index="galleryIndex"
             v-model:view="galleryView"
             :start="animation.galleryStart || ''"
+            :paper-blend="
+              animation.paperBlend === true && dialogGround === 'paper'
+            "
             large
           />
           <div v-else class="fig-placeholder">

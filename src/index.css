@@ -438,6 +438,14 @@ input {
 .chapter-reader h3.subT:not(.animationScrollAnchor) {
   padding-top: var(--reader-subsection-gap);
 }
+/* Stuart's Retina disease sequence (OPENBRAIN-99): give successive
+   conditions and their treatment paragraphs separate reading intervals. */
+.chapter-reader [data-section-slug="diseases-disorders-and-treatments"] {
+  --reader-subsection-gap: 2.5em;
+}
+.chapter-reader [data-section-slug="diseases-disorders-and-treatments"] p {
+  margin-bottom: 2em;
+}
 
 /* Anchor targets (sections, subsection spans, intro heading) land below the
    fixed top bar when reached from the opener's TOC or a hash (OPENBRAIN-32). */

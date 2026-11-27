@@ -5,6 +5,25 @@ import { breakVideos } from "@/stories/breakVideoFixtures";
 import BreakImages from "../BreakImages.vue";
 
 describe("shared chapter video presentation", () => {
+  it("keeps a chapter-colour local poster until play, then opens an inline native player", async () => {
+    const w = mount(VideoEmbed, {
+      props: {
+        video: {
+          src: "/baden.mp4",
+          poster: "/baden.webp",
+          title: "Tom Baden",
+          posterPlay: "chapter",
+        },
+      },
+    });
+    expect(w.find("video").exists()).toBe(false);
+    expect(w.get("button").classes()).toContain("ve-poster--chapter");
+    expect(w.get("figcaption").text()).toBe("VideoTom Baden");
+    await w.get("button").trigger("click");
+    expect(w.get("video").attributes()).toHaveProperty("playsinline");
+    expect(w.get("source").attributes("src")).toBe("/baden.mp4");
+    w.unmount();
+  });
   it("shows one corner play control on a clean poster and keeps keyboard playback", async () => {
     const w = mount(VideoEmbed, {
       props: {
@@ -97,8 +116,12 @@ describe("shared chapter video presentation", () => {
   });
   it.each(["neitz-myopia", "dowling-and-werblin"])(
     "retains %s's original source, poster and caption with deliberate native playback",
-    (slug) => {
+    async (slug) => {
       const w = mount(BreakImages, { props: { video: breakVideos[slug] } });
+      if (slug === "dowling-and-werblin") {
+        expect(w.find("video").exists()).toBe(false);
+        await w.get("button").trigger("click");
+      }
       const v = w.find("video");
       expect(w.find("source").attributes("src")).toBe(
         `/publicAssets/video/breakSections/${slug}.mp4`
@@ -107,7 +130,8 @@ describe("shared chapter video presentation", () => {
         `/publicAssets/images/breakVideos/${slug}.png`
       );
       expect(v.attributes("controls")).toBeDefined();
-      expect(v.attributes("autoplay")).toBeUndefined();
+      if (slug === "neitz-myopia")
+        expect(v.attributes("autoplay")).toBeUndefined();
       expect(v.attributes("muted")).toBeUndefined();
       expect(v.attributes("loop")).toBeUndefined();
       expect(w.find("figcaption").text()).toMatch(/Neitz|Dowling/);
