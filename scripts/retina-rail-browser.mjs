@@ -112,7 +112,7 @@ for (const viewport of [
         const node = i === 0 ? pause.locator("[data-box-title-card]") : track;
         // A reader scroll cancels the preceding jump's landing hold.
         // Scripted scrollTo alone can otherwise resume that old jump.
-        await page.mouse.wheel(0, 1);
+        await page.evaluate(() => window.dispatchEvent(new Event("wheel")));
         await page.waitForTimeout(50);
         await node.evaluate((el) =>
           window.scrollTo({
