@@ -192,7 +192,22 @@
                 :index="index + 1"
                 :is-creator="isCreator"
                 @save="handleParagraphSave"
-              />
+              >
+                <template #after-paragraph="{ paragraphId }">
+                  <div
+                    v-for="box in boxesAfter(paragraphId)"
+                    :key="box.id"
+                    class="anchored-box"
+                  >
+                    <SectionComp
+                      :section="box"
+                      :index="0"
+                      :label="sectionLabels?.[box.id || box.title]"
+                      :is-creator="isCreator"
+                    />
+                  </div>
+                </template>
+              </SubSection>
               <!-- A paragraph's own figure comes before its image, as in the pane, so figure numbers read in order on a phone (OPENBRAIN-79). -->
               <!-- In a rail part the figures lead the part (RailPart). -->
               <IllustrationInline

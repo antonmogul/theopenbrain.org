@@ -179,12 +179,20 @@ describe.each([
         (s) => s.kind === "box"
       );
       expect(transformedBoxes).toHaveLength(boxes.length);
+      const containsParagraph = (paragraphs, id) =>
+        (paragraphs || []).some(
+          (p) =>
+            p.id === id ||
+            containsParagraph(p.subSection, id) ||
+            containsParagraph(p.subSubSection, id) ||
+            containsParagraph(p.paragraphs, id)
+        );
       for (const box of transformedBoxes) {
         expect(box.anchored, box.id).toBe(true);
         expect(box.anchorParagraphId, box.id).toBeTruthy();
         const parent = transformed.sections.find((s) => s.id === box.parentId);
         expect(
-          parent.paragraphs.some((p) => p.id === box.anchorParagraphId),
+          containsParagraph(parent.paragraphs, box.anchorParagraphId),
           box.id
         ).toBe(true);
       }

@@ -402,6 +402,69 @@ describe("buildTimeline: render order", () => {
     expect(ids(model)).toEqual(["w1", "x1", "w1", "p2"]);
     expect(model.byId.get("w1")).toBe(0);
   });
+
+  it("keeps boxes on nested headings, prose and legacy groups in rendered order", () => {
+    const box = (anchor) => ({
+      id: `box-${anchor}`,
+      title: anchor,
+      kind: "box",
+      anchored: true,
+      anchorParagraphId: anchor,
+      paragraphs: [para(`body-${anchor}`)],
+    });
+    const model = buildTimeline({
+      sections: [
+        {
+          id: "s1",
+          title: "Nested",
+          paragraphs: [
+            para("before"),
+            {
+              subSection: [
+                {
+                  id: "header",
+                  title: "Heading",
+                  paragraphs: [
+                    para("sub"),
+                    {
+                      subSubSection: [
+                        para("deep"),
+                        {
+                          id: "group",
+                          paragraphs: [para("child")],
+                        },
+                      ],
+                    },
+                    para("after-sub"),
+                  ],
+                },
+              ],
+            },
+            para("after"),
+          ],
+        },
+        ...["header", "sub", "deep", "group", "child"].map(box),
+      ],
+    });
+    expect(ids(model)).toEqual([
+      "before",
+      "body-header",
+      "sub",
+      "body-sub",
+      "deep",
+      "body-deep",
+      "body-group",
+      "child",
+      "body-child",
+      "after-sub",
+      "after",
+    ]);
+    expect(
+      model.items
+        .filter((item) => item.sectionKey.startsWith("box-"))
+        .map((item) => item.sectionKey)
+    ).toEqual(["box-header", "box-sub", "box-deep", "box-group", "box-child"]);
+  });
 });
 
 describe("buildTimeline: items", () => {

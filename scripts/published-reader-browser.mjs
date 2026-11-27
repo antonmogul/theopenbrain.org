@@ -114,12 +114,13 @@ async function upload(page, frame, result, id) {
   await expect
     .poll(
       () =>
-        frame.evaluate(
-          (el) =>
-            window.__readerReports.find((r) => r.source === el.contentWindow)
-              ?.size
-        ),
-      { timeout: 20000, message: `${id}: size report` }
+        frame.evaluate((el) => {
+          const report = window.__readerReports.find(
+            (r) => r.source === el.contentWindow
+          );
+          return report?.ready && report.size;
+        }),
+      { timeout: 20000, message: `${id}: ready and size reports` }
     )
     .toBeTruthy();
   const report = await frame.evaluate((el) => {
@@ -700,10 +701,17 @@ try {
       result.steps.push("450px full-chapter label sweep");
       for (const { paragraph, block } of widgets) {
         result.current = `widget ${block.widgetId}`;
-        const band = page.locator(`[data-widget-breakout="${block.widgetId}"]`);
+        // One upload can have several independently placed rail parts (the
+        // published Colour vision box). Identify the paragraph, not the upload.
+        const band = page.locator(
+          `[data-timeline-id="${paragraph.id}"][data-widget-breakout="${block.widgetId}"]`
+        );
         await expect(band).toHaveCount(1);
         await scroll(page, band);
-        const stage = page.locator(`[data-widget-stage="${block.widgetId}"]`);
+        const pair = await band.locator(".wb-fb").getAttribute("data-fb-slot");
+        const stage = page.locator(
+          `[data-fb-stage="${pair}"] [data-widget-stage="${block.widgetId}"]`
+        );
         const launch = stage.locator(".wb-launch button");
         if (await launch.count()) await launch.click();
         let host = (await page.getByRole("dialog").count())
@@ -765,14 +773,34 @@ try {
         name: "Navigation",
         exact: true,
       });
-      for (const section of fixture.sections.filter(
+      // A box can share a title with a subsection (Phototransduction).
+      // Compare the complete title multiset, including those authored repeats,
+      // rather than treating a substring as a unique navigation target.
+      const outlineSections = fixture.sections.filter(
         (s) => s.slug !== "further-reading"
-      ))
-        await expect(
-          drawer
-            .locator(".outline-section, .outline-subsection")
-            .filter({ hasText: section.title })
-        ).toHaveCount(1);
+      );
+      const expectedTitles = [
+        ...outlineSections.map((s) => s.title.trim()),
+        ...fixture.paragraphs
+          .filter(
+            (p) =>
+              p.is_subsection_header &&
+              p.subsection_level === 1 &&
+              p.content_text &&
+              outlineSections.some((s) => s.id === p.section_id)
+          )
+          .map((p) => p.content_text.trim()),
+      ];
+      const actualTitles = await drawer
+        .locator(".outline-section, .outline-subsection")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const copy = node.cloneNode(true);
+            copy.querySelector(".outline-label")?.remove();
+            return copy.textContent.trim();
+          })
+        );
+      expect(actualTitles.sort()).toEqual(expectedTitles.sort());
       await page.keyboard.press("Escape");
       await overflow(page);
       expect(result.errors).toEqual([]);
