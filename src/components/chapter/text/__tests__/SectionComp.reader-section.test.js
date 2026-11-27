@@ -28,7 +28,7 @@ const BreakoutBox = defineComponent({
 });
 
 const paragraph = (id) => ({ id, text: `<p>${id}</p>` });
-const mountSection = (section, boxesAfter = () => []) =>
+const mountSection = (section, boxesAfter = () => [], stubs = {}) =>
   mount(SectionComp, {
     props: { section, index: 0, label: "1" },
     global: {
@@ -50,6 +50,7 @@ const mountSection = (section, boxesAfter = () => []) =>
         BreakSection: true,
         ReferenceList: true,
         EditableBlock: true,
+        ...stubs,
       },
     },
   });
@@ -65,6 +66,78 @@ beforeEach(() => {
 });
 
 describe("SectionComp: the reader-section class", () => {
+  it("renders nested anchored boxes once between their paragraph and the next prose", () => {
+    const ids = ["heading", "sub", "deep", "legacy", "legacy-paragraph"];
+    const boxes = ids.map((id) => ({
+      id: `box-${id}`,
+      kind: "box",
+      title: id,
+      paragraphs: [paragraph(`body-${id}`)],
+    }));
+    const w = mountSection(
+      {
+        id: "nested",
+        kind: "section",
+        title: "Nested",
+        paragraphs: [
+          paragraph("before"),
+          {
+            subSection: [
+              {
+                id: "heading",
+                title: "Heading",
+                paragraphs: [
+                  paragraph("sub"),
+                  {
+                    subSubSection: [
+                      paragraph("deep"),
+                      {
+                        id: "legacy",
+                        paragraphs: [paragraph("legacy-paragraph")],
+                      },
+                    ],
+                  },
+                  paragraph("sub-after"),
+                ],
+              },
+            ],
+          },
+          paragraph("after"),
+        ],
+      },
+      (id) => boxes.filter((b) => b.id === `box-${id}`),
+      { SubSection: false }
+    );
+    expect(
+      w.findAll("[data-box]").map((el) => el.attributes("data-box"))
+    ).toEqual(ids.map((id) => `box-${id}`));
+    expect(
+      w
+        .findAll("[data-paragraph-id], [data-box]")
+        .map(
+          (el) =>
+            el.attributes("data-paragraph-id") || el.attributes("data-box")
+        )
+    ).toEqual([
+      "before",
+      "box-heading",
+      "body-heading",
+      "sub",
+      "box-sub",
+      "body-sub",
+      "deep",
+      "box-deep",
+      "body-deep",
+      "box-legacy",
+      "body-legacy",
+      "legacy-paragraph",
+      "box-legacy-paragraph",
+      "body-legacy-paragraph",
+      "sub-after",
+      "after",
+    ]);
+    w.unmount();
+  });
   it("is on a chapter section's <section>", () => {
     const wrapper = mountSection({
       id: "s1",

@@ -2,7 +2,7 @@
   "header": {
     "source": "published chapter export",
     "chapter": "foundations-of-neuroscience",
-    "exportedAt": "2026-11-26",
+    "exportedAt": "2026-11-27",
     "exportedBy": "scripts/history-full-reader-export.mjs",
     "counts": {
       "sections": 14,
@@ -295,7 +295,7 @@
           "alt": "A skull covered in handwritten inscriptions, said to be Descartes'.",
           "src": "/publicAssets/images/foundations/figa-01.jpg"
         },
-        "enabled": false
+        "enabled": true
       }
     },
     {

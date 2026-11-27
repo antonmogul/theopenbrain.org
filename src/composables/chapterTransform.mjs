@@ -278,7 +278,7 @@ export function figureFor(p) {
 /**
  * Put breakout boxes where they belong (OPENBRAIN-70 A3, A4). A box with a
  * parent section follows that section in reading order; if its anchor
- * paragraph is one of the parent's top-level paragraphs it is also marked
+ * paragraph is anywhere in the parent's paragraph tree it is also marked
  * `anchored`, and SectionComp renders it right after that paragraph instead
  * of on its own. A parent's boxes come out in the order the reader meets
  * them, by anchor paragraph, unanchored ones last in their authored order
@@ -301,7 +301,16 @@ export function placeBoxes(sections) {
   for (const s of top) {
     out.push(s);
     const kids = children.get(s.id) || [];
-    const at = new Map((s.paragraphs || []).map((p, i) => [p.id, i]));
+    const at = new Map();
+    const visit = (paragraphs) => {
+      for (const p of paragraphs || []) {
+        if (p.id) at.set(p.id, at.size);
+        visit(p.subSection);
+        visit(p.subSubSection);
+        visit(p.paragraphs);
+      }
+    };
+    visit(s.paragraphs);
     const position = (box) =>
       box.anchorParagraphId && at.has(box.anchorParagraphId)
         ? at.get(box.anchorParagraphId)

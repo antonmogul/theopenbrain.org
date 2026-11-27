@@ -54,6 +54,7 @@
           />
         </template>
         <template v-else>
+          <slot name="after-paragraph" :paragraph-id="subSubSection.id" />
           <template
             v-for="subSubParagraph in subSubSection.paragraphs"
             :key="subSubParagraph.id"
@@ -131,6 +132,7 @@
               />
             </div>
             <StartEndIcon :paragraph="subSubParagraph" art="end" />
+            <slot name="after-paragraph" :paragraph-id="subSubParagraph.id" />
           </template>
         </template>
         <InlineImages :paragraph="subSubSection" v-if="subSubSection.img" />
@@ -159,6 +161,11 @@
         />
       </div>
       <StartEndIcon :paragraph="subSubSection" art="end" />
+      <slot
+        v-if="!subSubSection.paragraphs"
+        name="after-paragraph"
+        :paragraph-id="subSubSection.id"
+      />
     </template>
     <StartEndIcon :paragraph="subParagraph" art="end" />
   </div>

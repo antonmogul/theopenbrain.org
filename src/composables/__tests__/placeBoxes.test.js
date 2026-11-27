@@ -50,6 +50,70 @@ describe("placeBoxes", () => {
     const list = [sec("s1", 1), box("x", 2, "gone"), box("y", 3, "x")];
     expect(placeBoxes(list).map((s) => s.id)).toEqual(["s1", "x", "y"]);
   });
+
+  it("anchors and letters boxes at every depth in paragraph reading order", () => {
+    const parent = sec("nested", 1, {
+      paragraphs: [
+        { id: "top-before" },
+        {
+          subSection: [
+            {
+              id: "heading",
+              paragraphs: [
+                { id: "sub-before" },
+                {
+                  subSubSection: [
+                    { id: "deep" },
+                    { id: "legacy-group", paragraphs: [{ id: "legacy-deep" }] },
+                  ],
+                },
+                { id: "sub-after" },
+              ],
+            },
+          ],
+        },
+        { id: "top-after" },
+      ],
+    });
+    const anchors = [
+      "top-before",
+      "heading",
+      "sub-before",
+      "deep",
+      "legacy-group",
+      "legacy-deep",
+      "sub-after",
+      "top-after",
+    ];
+    const out = placeBoxes([
+      parent,
+      ...[...anchors]
+        .reverse()
+        .map((id, i) => box(`box-${id}`, i + 2, parent.id, id)),
+      box("same-anchor", 20, parent.id, "deep"),
+      box("missing", 21, parent.id, "other-section-paragraph"),
+    ]);
+    expect(out.slice(1).map((s) => s.id)).toEqual([
+      "box-top-before",
+      "box-heading",
+      "box-sub-before",
+      "box-deep",
+      "same-anchor",
+      "box-legacy-group",
+      "box-legacy-deep",
+      "box-sub-after",
+      "box-top-after",
+      "missing",
+    ]);
+    expect(out.slice(1, -1).every((s) => s.anchored)).toBe(true);
+    expect(out.at(-1).anchored).toBe(false);
+    const labels = sectionLabelMap(out);
+    expect([
+      labels["box-deep"],
+      labels["same-anchor"],
+      labels["box-top-after"],
+    ]).toEqual(["D", "E", "I"]);
+  });
 });
 
 // OPENBRAIN-142 (Stuart, 7 Oct: "reletter them in order (e.g., Descartes is

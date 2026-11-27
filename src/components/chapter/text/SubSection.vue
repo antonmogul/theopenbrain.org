@@ -58,6 +58,7 @@
       >
         {{ subSections.title }}
       </h3>
+      <slot name="after-paragraph" :paragraph-id="subSections.id" />
 
       <!-- subSection paragraph -->
       <template
@@ -140,7 +141,11 @@
               :sub-paragraph="subParagraph"
               :is-creator="isCreator"
               @save="handleSave"
-            />
+            >
+              <template #after-paragraph="anchor">
+                <slot name="after-paragraph" v-bind="anchor" />
+              </template>
+            </SubSubSection>
             <!-- A paragraph's own figure comes before its image, as in the pane, so figure numbers read in order on a phone (OPENBRAIN-79). -->
             <IllustrationInline
               v-if="inlineFigureFor(subParagraph)"
@@ -178,6 +183,7 @@
           />
         </span>
         <StartEndIcon :paragraph="subParagraph" art="end" />
+        <slot name="after-paragraph" :paragraph-id="subParagraph.id" />
         <FullScreenIllustration
           :key="subSections.animationFull"
           v-if="subSections.animationFull"

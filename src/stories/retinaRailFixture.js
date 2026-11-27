@@ -3,6 +3,14 @@ import published from "./retinaFullReaderData.json";
 import manifest from "../__tests__/fixtures/retinaRailBoxes.json";
 export function retinaRailFixture() {
   const fixture = structuredClone(published);
+  // A refreshed production export already contains these boxes and moves.
+  // Keep the historical preview story usable without replaying them twice.
+  if (
+    manifest.boxes.every((box) =>
+      fixture.sections.some((s) => s.slug === box.slug)
+    )
+  )
+    return fixture;
   for (const box of manifest.boxes) {
     const parent = fixture.sections.find((s) => s.slug === box.parentSlug);
     const id = `retina-section-${box.slug}`;
