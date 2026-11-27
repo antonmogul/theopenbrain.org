@@ -3,7 +3,7 @@
  */
 import assert from "node:assert/strict";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { chromium, webkit } from "@playwright/test";
+import { chromium, webkit, devices } from "@playwright/test";
 
 process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY = "1";
 const [mode, base, out, engine = "chromium"] = process.argv.slice(2);
@@ -25,9 +25,17 @@ try {
       ? [390]
       : [1331, 1920, 375, 390, 1024, 1440]) {
     const page = await browser.newPage({
+      ...(engine === "webkit" ? devices["iPhone 13"] : {}),
       viewport: {
         width,
-        height: width < 700 ? 704 : width === 1920 ? 947 : 992,
+        height:
+          width < 700
+            ? engine === "webkit"
+              ? 844
+              : 704
+            : width === 1920
+              ? 947
+              : 992,
       },
       isMobile: width < 700,
       hasTouch: width < 700,
