@@ -142,7 +142,11 @@ function open(i) {
             @load="onLoad(i, $event)"
           />
         </div>
-        <footer class="rf-bar" data-rail-figure-bar>
+        <footer
+          class="rf-bar"
+          :class="{ 'rf-bar--legend': !!legendOf(image) }"
+          data-rail-figure-bar
+        >
           <button
             class="rf-expand"
             type="button"
@@ -179,7 +183,22 @@ function open(i) {
             }}</span>
           </p>
           <details v-if="legendOf(image)" class="rf-details">
-            <summary>Legend</summary>
+            <summary>
+              <span>Legend</span>
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 10 10"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M2 6.5l3-3 3 3" />
+              </svg>
+            </summary>
             <p>{{ legendOf(image) }}</p>
           </details>
         </footer>
@@ -229,18 +248,20 @@ function open(i) {
   color: var(--bx-ink, rgb(var(--color-ink)));
 }
 .rf-bar {
+  position: relative;
   flex: none;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: 14px auto minmax(0, 1fr) auto;
   gap: 0.5rem;
   align-items: start;
   width: 100%;
   padding-top: 0.75rem;
 }
+.rf-bar--legend {
+  grid-template-columns: 14px auto minmax(0, 1fr) 4.5rem;
+}
 .rf-heading {
-  display: flex;
-  align-items: baseline;
-  gap: 0.625rem;
+  display: contents;
   min-width: 0;
   margin: 0;
   font-family: var(--font-mono);
@@ -248,21 +269,25 @@ function open(i) {
   text-transform: uppercase;
 }
 .rf-label {
+  grid-area: 1 / 2;
+  min-width: 3.125rem;
   flex: none;
   font-size: var(--ui-size-11);
   letter-spacing: 0.12em;
   color: var(--bx-fig-label, rgb(var(--color-mute)));
 }
 .rf-name {
+  grid-area: 1 / 3;
   font-size: var(--ui-size-12);
   letter-spacing: 0.06em;
 }
 .rf-expand {
+  grid-area: 1 / 1;
   display: grid;
   place-items: center;
   width: 28px;
   height: 28px;
-  margin-top: -5px;
+  margin: -7px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -278,18 +303,48 @@ function open(i) {
   outline-offset: -2px;
 }
 .rf-details {
-  display: contents;
+  grid-area: 2 / 3 / auto / -1;
   font: 400 var(--ui-size-11) / 1.4 var(--font-mono);
 }
 .rf-details summary {
+  position: absolute;
+  grid-area: auto;
+  top: 4px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
   cursor: pointer;
-  min-height: 28px;
+  height: 28px;
+  margin: 0 -0.5rem 0 0;
+  padding: 0 0.5rem;
+  list-style: none;
+  border: 1px solid transparent;
+  font: 600 0.65625rem / 1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bx-ink-soft, currentColor);
+}
+.rf-details summary::-webkit-details-marker {
+  display: none;
+}
+.rf-details summary:hover {
+  background: var(--bx-wash, rgb(var(--color-ink) / 0.06));
+  color: var(--bx-ink, currentColor);
+}
+.rf-details[open] summary {
+  color: var(--bx-fig-label, currentColor);
+}
+.rf-details[open] summary svg {
+  transform: rotate(180deg);
 }
 .rf-details p {
-  grid-column: 2 / -1;
   margin: 0;
   max-height: 12rem;
   overflow-y: auto;
+}
+.rf--bare .rf-name {
+  grid-column: 2 / 4;
 }
 .rf-plates {
   display: flex;

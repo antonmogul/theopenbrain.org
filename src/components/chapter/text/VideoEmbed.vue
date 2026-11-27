@@ -161,15 +161,15 @@ const focus = computed(() => figureFocus(props.video.focus));
   position: relative;
 }
 /* Maura's History JPGs are clean photographs; only her reference sheet
-   includes an icon. Draw exactly one control, in that sheet's top corner,
+   includes an icon. Draw exactly one control, in the thumbnail's corner,
    and leave the photograph undimmed and clear of text. */
 .ve-poster--corner .ve-poster-image {
   opacity: 1;
 }
 .ve-poster--corner .ve-play {
   position: absolute;
-  top: 3%;
-  left: 3%;
+  bottom: 3cqi;
+  right: 3cqi;
 }
 .ve-poster--corner .ve-title,
 .ve-poster--corner .ve-note {
@@ -179,7 +179,6 @@ const focus = computed(() => figureFocus(props.video.focus));
    figure pane, down to 36px on a small frame (a breakout box's column). */
 .ve-play {
   --play-mark-size: clamp(36px, 13cqi, 64px);
-  --play-mark-shadow: 0 2px 14px rgb(0 0 0 / 0.28);
 }
 .ve-poster:hover .ve-play,
 .ve-poster:focus-visible .ve-play {

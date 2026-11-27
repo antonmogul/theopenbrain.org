@@ -4,11 +4,8 @@
  * "This play button has a different size and padding than the one on the
  * thumbnails. Please choose one style and apply it to the whole page").
  *
- * The style is the one the Loewi figure already shows in the book: a white
- * square (the book's controls have no rounded corners; uploaded widgets get
- * the same rule from widgetHost) with the rounded triangle in the plate's
- * dark, the triangle 42% of the square and centred by its weight, as that
- * figure's large button has it. Every size is this one drawing scaled, so
+ * Maura's OPENBRAIN-100 follow-up: a white disc with the rounded triangle
+ * in the plate's dark, optically centred. Every size is one drawing scaled, so
  * the padding around the triangle is the same share of the button anywhere:
  * a video's poster, a gallery's thumbnail and tile, and the gallery's own
  * play and pause.
@@ -18,7 +15,7 @@
  * size with `--play-mark-size` (a length, or 100% of the control).
  *
  * `cut` is for a button on a ground this file cannot know (the dark pane,
- * paper below 1024px, a coloured breakout box): the square takes the ink it
+ * paper below 1024px, a coloured breakout box): the disc takes the ink it
  * is given and the triangle is a hole in it, so the ground shows through.
  * Over a picture the triangle is always the dark, so it reads on any photo.
  */
@@ -28,9 +25,9 @@ defineProps({
   cut: { type: Boolean, default: false },
 });
 
-/* One path, even-odd: the square, with the icon as a hole in it. The
+/* One path, even-odd: the disc, with the icon as a hole in it. The
    triangle is the Loewi figure's, scaled into a 100-unit square. */
-const SQUARE = "M0 0H100V100H0Z";
+const DISC = "M100 50A50 50 0 1 1 0 50A50 50 0 1 1 100 50Z";
 const ICONS = {
   play: "M37.7 32.3C37.7 29.8 40.5 28.2 42.7 29.5L73 47.1C75.2 48.4 75.2 51.6 73 52.9L42.7 70.5C40.5 71.8 37.7 70.2 37.7 67.7Z",
   pause:
@@ -47,7 +44,7 @@ const ICONS = {
     aria-hidden="true"
   >
     <svg viewBox="0 0 100 100" focusable="false">
-      <path fill-rule="evenodd" :d="SQUARE + (ICONS[icon] || ICONS.play)" />
+      <path fill-rule="evenodd" :d="DISC + (ICONS[icon] || ICONS.play)" />
     </svg>
   </span>
 </template>
@@ -60,10 +57,13 @@ const ICONS = {
   width: var(--play-mark-size, 2.5rem);
   aspect-ratio: 1;
   color: #fff;
-  /* The dark shows through the hole only: kept inside the square's edge, so
+  /* The dark shows through the hole only: kept inside the disc's edge, so
      no dark fringe is drawn around the white. */
-  background: linear-gradient(var(--play-mark-ink), var(--play-mark-ink))
-    center / 72% 72% no-repeat;
+  background: radial-gradient(
+    circle,
+    var(--play-mark-ink) 50%,
+    transparent 51%
+  );
   box-shadow: var(--play-mark-shadow, none);
   transition: transform 0.15s ease;
 }

@@ -40,6 +40,10 @@ export function useFigureTint({ pane, span, opacity }) {
       if (el.closest(".fade-leave-active")) continue;
       if (el.style.opacity !== value) el.style.opacity = value;
     }
+    for (const el of pane()?.querySelectorAll("[data-section-zoom]") || []) {
+      if (el.closest(".fade-leave-active")) continue;
+      el.style.setProperty("--section-zoom", String(1 + 0.08 * Number(value)));
+    }
   }
 
   function schedule() {

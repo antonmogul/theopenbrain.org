@@ -604,6 +604,30 @@ h4 {
   text-wrap: pretty;
   color: rgb(var(--color-ink) / 0.88);
 }
+/* History, Maura's OPENBRAIN-100 trial: medium purple extracts without a
+   vertical rule. Use the pale purple on dark box panels for readable ink;
+   the other chapters keep their existing quote treatments. */
+[data-chapter="fund"] .chapter-reader blockquote {
+  padding-inline: 0;
+  border: 0;
+  font-weight: 500;
+  color: rgb(var(--color-chapter));
+}
+[data-chapter="fund"] .chapter-reader .bx--panel blockquote {
+  color: rgb(var(--color-chapter-pale));
+}
+[data-chapter="fund"]
+  .chapter-reader
+  .bx--panel[data-treatment="pale"]
+  blockquote {
+  color: rgb(var(--color-chapter));
+}
+[data-chapter="fund"]
+  .chapter-reader
+  .bx--panel[data-treatment="chapter"]
+  blockquote {
+  color: var(--bx-ink);
+}
 /* Justified from the tablet width up; a phone's 30-character lines would
    open rivers between the words. */
 @media (min-width: 768px) {
