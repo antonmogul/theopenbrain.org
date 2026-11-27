@@ -773,14 +773,34 @@ try {
         name: "Navigation",
         exact: true,
       });
-      for (const section of fixture.sections.filter(
+      // A box can share a title with a subsection (Phototransduction).
+      // Compare the complete title multiset, including those authored repeats,
+      // rather than treating a substring as a unique navigation target.
+      const outlineSections = fixture.sections.filter(
         (s) => s.slug !== "further-reading"
-      ))
-        await expect(
-          drawer
-            .locator(".outline-section, .outline-subsection")
-            .filter({ hasText: section.title })
-        ).toHaveCount(1);
+      );
+      const expectedTitles = [
+        ...outlineSections.map((s) => s.title),
+        ...fixture.paragraphs
+          .filter(
+            (p) =>
+              p.is_subsection_header &&
+              p.subsection_level === 1 &&
+              p.content_text &&
+              outlineSections.some((s) => s.id === p.section_id)
+          )
+          .map((p) => p.content_text),
+      ];
+      const actualTitles = await drawer
+        .locator(".outline-section, .outline-subsection")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const copy = node.cloneNode(true);
+            copy.querySelector(".outline-label")?.remove();
+            return copy.textContent.trim();
+          })
+        );
+      expect(actualTitles.sort()).toEqual(expectedTitles.sort());
       await page.keyboard.press("Escape");
       await overflow(page);
       expect(result.errors).toEqual([]);
