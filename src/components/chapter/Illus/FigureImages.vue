@@ -1281,6 +1281,17 @@ onBeforeUnmount(() => {
   width: 100%;
   max-height: 100%;
 }
+/* A lone player sizes its inline figure, like a lone still image above.
+   Without this the absolute player leaves a zero-height stage on a phone,
+   and the following subsection covers the poster and its play control. */
+.figimg--flow:not(.figimg--gallery) .figimg-player {
+  position: relative;
+  inset: auto;
+  height: auto;
+}
+.figimg--flow:not(.figimg--gallery) .figimg-player :deep(.ve-frame) {
+  max-height: none;
+}
 
 /* The controls: counter, then play/pause and view all beside it. One row
    always: the link a video brings is cut short rather than wrapped, so the
