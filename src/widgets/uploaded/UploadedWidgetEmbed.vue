@@ -13,7 +13,12 @@
 import { computed, inject, onMounted, ref } from "vue";
 import WidgetFrame from "./WidgetFrame.vue";
 import { fetchUploadedWidget } from "./useUploadedWidgets";
-import { WIDGET_FIT, WIDGET_FULLSCREEN, WIDGET_SCROLLABLE } from "./widgetHost";
+import {
+  WIDGET_FIT,
+  WIDGET_FULLSCREEN,
+  WIDGET_SCROLLABLE,
+  WIDGET_PART,
+} from "./widgetHost";
 
 const props = defineProps({
   slug: { type: String, required: true },
@@ -24,6 +29,7 @@ const emit = defineEmits(["ready"]);
 const fit = inject(WIDGET_FIT, null);
 const scrollable = inject(WIDGET_SCROLLABLE, ref(false));
 const fullScreen = inject(WIDGET_FULLSCREEN, ref(false));
+const part = inject(WIDGET_PART, ref(""));
 const maxHeight = computed(() => (fit && fit.value > 0 ? fit.value : null));
 
 const widget = ref(null);
@@ -58,6 +64,7 @@ const ramp = computed(
       :max-height="maxHeight"
       :shrink-to-fit="!scrollable"
       :full-screen="fullScreen"
+      :part="part"
       :initial-explanation="slug === 'retina-refraction-errors'"
       :eager="eager"
       :wait-for-artwork="

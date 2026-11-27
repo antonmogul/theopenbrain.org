@@ -42,6 +42,44 @@ const box = (paragraphs, slug = "box-sacred-disease") => ({
 });
 
 describe("boxIsRail", () => {
+  it("accepts CMS opt-in widgets and demos in any chapter, retaining each stable jump target", () => {
+    const section = {
+      ...box(
+        [
+          prose("dalton"),
+          {
+            id: "spectrum",
+            type: "widget",
+            widget: { title: "The sliver we can see" },
+          },
+          { id: "blind", type: "breakSection", title: "Blind spot" },
+          prose("after"),
+        ],
+        "box-new"
+      ),
+      rail: true,
+    };
+    expect(boxIsRail(section, "any-chapter")).toBe(true);
+    const layout = railLayoutOf(section);
+    expect(layout.parts.map((p) => p.id)).toEqual([
+      "dalton",
+      "spectrum",
+      "blind",
+      "after",
+    ]);
+    expect(layout.parts.filter((p) => p.screen).map((p) => p.id)).toEqual([
+      "spectrum",
+      "blind",
+    ]);
+    expect(layout.tail).toEqual([]);
+    expect(boxIsRail({ ...section, rail: false }, "any-chapter")).toBe(false);
+    expect(
+      railLayoutOf({
+        ...section,
+        paragraphs: [{ id: "video", type: "breakSection", video: {} }],
+      })
+    ).toBeNull();
+  });
   it("is History's two Explore boxes and Stuart's five (12 Nov)", () => {
     expect(RAIL_BOXES_BY_SLUG[HISTORY]).toEqual([
       "box-sacred-disease",

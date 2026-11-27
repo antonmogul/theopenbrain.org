@@ -84,6 +84,7 @@ export function extractChapter1Meta(blocks) {
         blurb: block.blurb || "",
         credit: block.credit || "",
         route: block.route || "",
+        ...(block.part ? { part: block.part } : {}),
         ...(block.narrowKind ? { narrowKind: block.narrowKind } : {}),
         ...(block.fallbackWidgetId
           ? { fallbackWidgetId: block.fallbackWidgetId }

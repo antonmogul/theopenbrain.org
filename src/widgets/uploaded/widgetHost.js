@@ -220,6 +220,7 @@ export function buildWidgetDoc(
     reduceMotion = false,
     maxHeight = null,
     initialExplanation = false,
+    part = "",
     waitForArtwork = false,
     fullScreen = false,
     motionChoice = null,
@@ -239,6 +240,7 @@ export function buildWidgetDoc(
     `ipt>`;
   let doc = answerMotionQueries(html, motionChoice);
   const attrs =
+    (/^[a-z0-9-]{1,40}$/.test(part) ? ` data-ob-part="${part}"` : "") +
     (reduceMotion ? " data-ob-reduce-motion" : "") +
     (fit ? " data-ob-fit" : "") +
     (fullScreen ? " data-ob-fullscreen" : "");
@@ -320,6 +322,7 @@ export const WIDGET_FIT = Symbol("widgetFit");
 export const WIDGET_SCROLLABLE = Symbol("widgetScrollable");
 /** True inside the full-screen dialog (DemoModal → UploadedWidgetEmbed). */
 export const WIDGET_FULLSCREEN = Symbol("widgetFullScreen");
+export const WIDGET_PART = Symbol("widgetPart");
 
 /**
  * Checks we can make from the file alone (the Studio adds the ones that

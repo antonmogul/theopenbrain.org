@@ -1,5 +1,13 @@
 # Production SQL: how migrations reach the database
 
+## Pending — OPENBRAIN-98
+
+| Migration | State | Release order |
+| --- | --- | --- |
+| `20261127079800_retina_colour_rail_parts.sql` | Pending | Deploy the reader, widget-part host and title-card assets first; apply this guarded upload update before the box content. |
+| `20261127079810_retina_rail_boxes.sql` | Pending | Apply after the upload update and the existing `sections.rail` / `sections.box_card` migrations. Moves eight existing paragraphs into seven anchored boxes, retaining IDs, figures, text and references; adds three colour-widget part paragraphs. No deletes. |
+
+
 ## Pending — OPENBRAIN-96
 
 | Migration                          | State   | Release order                                                                                                                                                                                                                             |

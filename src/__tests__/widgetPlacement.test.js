@@ -23,6 +23,10 @@ describe("chapter widgets have one placement source", () => {
       "utf8"
     );
     upload = upload.replace(
+      /\/\* Open Brain rail parts \(OPENBRAIN-98\)[\s\S]*?(?=<\/style>)/,
+      ""
+    );
+    upload = upload.replace(
       /<!-- Open Brain upload \(OPENBRAIN-62\)\.[^\r\n]+ -->\r\n/,
       ""
     );
