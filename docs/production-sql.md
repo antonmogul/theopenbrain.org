@@ -1,5 +1,11 @@
 # Production SQL: how migrations reach the database
 
+## Pending — OPENBRAIN-97
+
+| Migration                                      | State   | Release order                                                                                                                                                                                                                             |
+| ---------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261124079700_retina_stuart_section_art.sql` | Pending | Deploy the eleven WebP assets first, then apply SQL. Replaces only the eleven author-selected Retina section placeholders; preserves other art metadata and aborts on edits to the four replaced keys. No figure records or prose change. |
+
 ## Pending — OPENBRAIN-96
 
 | Migration                          | State   | Release order                                                                                                                                                                                                                             |
