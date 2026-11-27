@@ -17,7 +17,10 @@ jobs:
   history-fixture-browser:
     name: History fixture Chromium assertions and screenshots
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    # The fresh published Retina fixture includes seven rails; its full reader
+    # pass took nearly 14 minutes on the hosted runner (27 Nov 2026). Leave
+    # room for the four-width rail assertions and their screenshot upload.
+    timeout-minutes: 45
     env:
       # Storybook aliases every API/auth client. No repository secrets are used.
       STORYBOOK_DISABLE_TELEMETRY: "1"

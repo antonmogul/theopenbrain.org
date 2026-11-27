@@ -15,7 +15,10 @@ await mkdir(out, { recursive: true });
 const browser = await chromium.launch();
 for (const width of [1920, 1440, 1331, 375]) {
   const page = await browser.newPage({
-    viewport: { width, height: width === 375 ? 704 : 947 },
+    viewport: {
+      width,
+      height: width === 375 ? 704 : width === 1440 ? 900 : 947,
+    },
     isMobile: width === 375,
     hasTouch: width === 375,
   });
@@ -103,13 +106,26 @@ for (const width of [1920, 1440, 1331, 375]) {
   await expect(color).toContainText("John Dalton");
   const track = color.locator("[data-rail-scroller]");
   for (let i = 1; i < 5; i++) {
+    console.log(`${width}: checking Colour vision part ${i}`);
     await track.evaluate((el, index) => {
       const part = el.querySelectorAll("[data-rail-part]")[index];
-      const x =
+      // Match railXOf / railLandingY: the visual follow is a transform,
+      // and a final part's start can be beyond the track's maximum travel.
+      // Raw geometry can overshoot the pin and unmount a lazy widget.
+      const at =
         part.getBoundingClientRect().left -
         el.getBoundingClientRect().left +
         el.scrollLeft -
-        parseFloat(getComputedStyle(el).paddingLeft);
+        parseFloat(getComputedStyle(el).paddingLeft) -
+        Number(el.dataset.railVisualOffset || 0);
+      const max = Number(
+        el.dataset.railMax ?? Math.max(0, el.scrollWidth - el.clientWidth)
+      );
+      const pageX =
+        el.dataset.railMode === "swipe" && el.clientWidth > 0
+          ? Math.floor((at + 2) / el.clientWidth) * el.clientWidth
+          : at;
+      const x = Math.max(0, Math.min(max, pageX));
       if (el.dataset.railPinned === "1") {
         const pause = el.closest("[data-rail-pause]");
         scrollTo({
