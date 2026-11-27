@@ -110,6 +110,10 @@ for (const viewport of [
     for (const [i, part] of captures.entries()) {
       if (viewport.width === 375 || viewport.reduced) {
         const node = i === 0 ? pause.locator("[data-box-title-card]") : track;
+        // A reader scroll cancels the preceding jump's landing hold.
+        // Scripted scrollTo alone can otherwise resume that old jump.
+        await page.mouse.wheel(0, 1);
+        await page.waitForTimeout(50);
         await node.evaluate((el) =>
           window.scrollTo({
             top: el.getBoundingClientRect().top + scrollY - 72,
@@ -123,6 +127,18 @@ for (const viewport of [
             Math.min(geometry.lead + geometry.max, geometry.lead * part)
         );
       await page.waitForTimeout(650);
+      if (viewport.width === 375 || viewport.reduced) {
+        const node = i === 0 ? pause.locator("[data-box-title-card]") : track;
+        await expect
+          .poll(
+            () =>
+              node.evaluate((el) =>
+                Math.abs(el.getBoundingClientRect().top - 72)
+              ),
+            { timeout: 5000 }
+          )
+          .toBeLessThan(4);
+      }
       await page.screenshot({
         path: `${out}/${prefix}-${i}.png`,
         animations: "disabled",
@@ -141,17 +157,29 @@ for (const viewport of [
       }, id);
       await page.waitForTimeout(1000);
       const landing = await page.evaluate(async (id) => {
-        const { findReaderAnchor } = await import("/src/helper/readerJump.js");
-        const { railXOf } = await import("/src/helper/exploreRail.js");
+        const { findReaderAnchor, readingStartOf, readerTopInset } =
+          await import("/src/helper/readerJump.js");
+        const { railXOf, railLandingY } =
+          await import("/src/helper/exploreRail.js");
         const el = findReaderAnchor(id),
           sc = el.closest("[data-rail-scroller]");
         return {
           x: sc.scrollLeft,
           wanted: railXOf(el, sc),
           top: sc.getBoundingClientRect().top,
+          y: scrollY,
+          wantedY:
+            railLandingY(el) ??
+            readingStartOf(el).getBoundingClientRect().top +
+              scrollY -
+              readerTopInset(),
         };
       }, id);
       expect(Math.abs(landing.x - landing.wanted), id).toBeLessThan(4);
+      expect(
+        Math.abs(landing.y - landing.wantedY),
+        `${id} vertical landing`
+      ).toBeLessThan(4);
       await page.screenshot({
         path: `${out}/${prefix}-part-${ids.indexOf(id)}.png`,
         animations: "disabled",
