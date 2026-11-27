@@ -1,5 +1,13 @@
 # Production SQL: how migrations reach the database
 
+## Pending — OPENBRAIN-100
+
+| Migration                                         | State   | Release order                                                                                                                                                             |
+| ------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261127100000_history_penfield_binder_v8.sql`   | Pending | Content only; safe before or after deploy. Guards v7 HTML and reserves text clearance below the paperclip.                                                                |
+| `20261127100100_history_loewi_v8.sql`             | Pending | Content only; safe before or after deploy. Guards v7 HTML; caption body 14px, timeline keeps its existing full width.                                                     |
+| `20261127100200_history_descartes_title_card.sql` | Pending | Existing reader/assets already support it. Requires the OPENBRAIN-94 column/seed; changes only Descartes' `box_card.enabled` from false to true and preserves other keys. |
+
 ## Pending — OPENBRAIN-97
 
 | Migration                                      | State   | Release order                                                                                                                                                                                                                             |

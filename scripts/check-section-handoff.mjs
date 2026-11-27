@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 
-/** Real reader regression: the card and first figure must keep the same
- * image element, box and fit through the reading line in both directions.
+/** Real reader regression: the card and first figure keep the same image
+ * element, layout box and fit through the reading line in both directions.
+ * OPENBRAIN-100: its visual box may gently zoom (1.08→1) with the wash.
  * The card's colour is the opener's wash (OPENBRAIN-93): a white ground
  * under the picture and the chapter colour multiplied over it, both the
  * size of the art box, clearing together.
@@ -28,18 +29,29 @@ export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
   // A previous figure keeps its authored hold into the gap. Find the
   // actual card interval rather than assuming it begins 400px early.
   let start = end - 600;
+  const preview = page.locator(
+    ".section-figure-preview:not(.fade-leave-active)"
+  );
   for (; start < end; start += 50) {
     await move(start);
-    if (await page.locator(".section-figure-preview").count()) break;
+    if (await preview.count()) break;
   }
   assert(start < end, "matching card appears before the first figure");
   await page.waitForTimeout(600);
   const image = page.locator(".figure-pane .figimg-img:not(.figimg-wash)");
   await image.waitFor({ state: "visible" });
   const original = await image.elementHandle();
-  const bounds = await image.boundingBox();
+  const layoutBox = () =>
+    image.evaluate((el) => ({
+      left: el.offsetLeft,
+      top: el.offsetTop,
+      width: el.offsetWidth,
+      height: el.offsetHeight,
+      position: getComputedStyle(el).objectPosition,
+    }));
+  const bounds = await layoutBox();
   const fit = await image.evaluate((el) => getComputedStyle(el).objectFit);
-  assert.equal(await page.locator(".section-figure-preview").count(), 1);
+  assert.equal(await preview.count(), 1);
   const wash = page.locator(".figure-pane [data-figure-wash]");
   const veil = await page.evaluate(() => {
     const pane = document.querySelector(".figure-pane");
@@ -57,7 +69,13 @@ export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
       pane: box(pane),
       ground: box(ground),
       colour: box(colour),
-      picture: box(picture),
+      // The zoom is clipped by the art box. Check the picture's visible
+      // portion, including at the edge of a full-bleed photograph.
+      picture: box(picture).map((v, i) =>
+        i < 2
+          ? Math.max(v, box(ground.parentElement)[i])
+          : Math.min(v, box(ground.parentElement)[i])
+      ),
       groundColour: getComputedStyle(ground).backgroundColor,
       groundUnder: Number(getComputedStyle(ground).zIndex) < 0,
       colourOver: after(picture, colour),
@@ -108,9 +126,9 @@ export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
       "same image node through hand-over"
     );
     assert.deepEqual(
-      await image.boundingBox(),
+      await layoutBox(),
       bounds,
-      "same image box through hand-over"
+      "same image layout through hand-over"
     );
     assert.equal(
       await image.evaluate((el) => getComputedStyle(el).objectFit),
@@ -126,16 +144,28 @@ export async function checkSectionHandoff(page, slug = "where-is-my-mind") {
     );
     assert(opacity <= previous + 0.001, "wash clears monotonically");
     previous = opacity;
-    frames.push({ y, opacity });
+    const scale = await image.evaluate((el) => {
+      const zoom = el.closest("[data-section-zoom]");
+      return zoom
+        ? Number(
+            getComputedStyle(zoom).transform.match(/matrix\(([^,]+)/)?.[1] || 1
+          )
+        : 1;
+    });
+    assert(
+      Math.abs(scale - (reduced ? 1 : 1 + 0.08 * opacity)) < 0.0001,
+      "zoom follows the wash without a second entrance"
+    );
+    frames.push({ y, opacity, scale });
   }
   assert.equal(previous, 0, "no second wash when the figure takes over");
-  assert.equal(await page.locator(".section-figure-preview").count(), 0);
+  assert.equal(await preview.count(), 0);
   await move(Math.max(start, end - 100));
   assert(
     await image.evaluate((el, first) => el === first, original),
     "reverse scroll keeps the same image node"
   );
-  assert.deepEqual(await image.boundingBox(), bounds);
+  assert.deepEqual(await layoutBox(), bounds);
   await original.dispose();
   return frames;
 }

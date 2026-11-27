@@ -318,10 +318,10 @@ onBeforeUnmount(() => {
   inset: 0;
   overflow: hidden;
 }
-/* The drawing's room: below the reader's top bar, above the timeline. */
+/* The cover hides the top bar: the hand must reach the screen's top edge. */
 .head-cover__stage {
   position: absolute;
-  inset: var(--reader-topbar-h, 0px) 0 var(--reader-timeline-h, 0px);
+  inset: 0 0 var(--reader-timeline-h, 0px);
   overflow: hidden;
   touch-action: auto;
 }

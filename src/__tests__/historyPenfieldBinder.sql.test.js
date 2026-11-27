@@ -46,6 +46,10 @@ const sqlV7 = readFileSync(
   "supabase/migrations/20261124078900_history_penfield_binder_v7.sql",
   "utf8"
 );
+const sqlV8 = readFileSync(
+  "supabase/migrations/20261127100000_history_penfield_binder_v8.sql",
+  "utf8"
+);
 const fileV5 = htmlInVersion5();
 function htmlInVersion5() {
   return sqlV5.slice(sqlV5.indexOf("$w$") + 3, sqlV5.lastIndexOf("$w$"));
@@ -63,6 +67,7 @@ const fileV2 = htmlIn(sqlV2);
 const fileV3 = htmlIn(sqlV3);
 const fileV4 = htmlIn(sqlV4);
 const fileV6 = htmlIn(sqlV6);
+const fileV7 = htmlIn(sqlV7);
 const json = (html, id) =>
   JSON.parse(
     html.match(
@@ -88,11 +93,11 @@ const onlyTheUpload = (text) => {
 
 describe("Penfield binder migrations", () => {
   it("the latest carries the widget file as it is in src/widgets/uploads", () => {
-    expect(htmlIn(sqlV7)).toBe(file);
+    expect(htmlIn(sqlV8)).toBe(file);
   });
 
   it("states the file's size and hash", () => {
-    expect(sqlV7).toContain(
+    expect(sqlV8).toContain(
       `-- ${Buffer.byteLength(file, "utf8")} bytes, sha256 ${createHash("sha256").update(file).digest("hex")}`
     );
   });
@@ -104,7 +109,8 @@ describe("Penfield binder migrations", () => {
     expect(fileV4).toContain("Version:  4 (2026-11-17)");
     expect(fileV5).toContain("Version:  5 (2026-11-18)");
     expect(fileV6).toContain("Version:  6 (2026-11-19)");
-    expect(file).toContain("Version:  7 (2026-11-25)");
+    expect(fileV7).toContain("Version:  7 (2026-11-25)");
+    expect(file).toContain("Version:  8 (2026-11-27)");
   });
 
   it("version 6 removes only the visible close words and retains accessible labels", () => {
@@ -443,7 +449,8 @@ describe.skipIf(!harness || !existsSync(harness))(
         [sqlV4, fileV4],
         [sqlV5, fileV5],
         [sqlV6, fileV6],
-        [sqlV7, file],
+        [sqlV7, fileV7],
+        [sqlV8, file],
       ]) {
         await db.exec(text);
         const next = await row();
@@ -469,7 +476,7 @@ describe.skipIf(!harness || !existsSync(harness))(
       );
       expect(rows).toHaveLength(1);
       expect(rows[0]).toMatchObject({ status: "published", ramp: "fund" });
-      expect(rows[0].html).toBe(file);
+      expect(rows[0].html).toBe(fileV7);
     });
 
     it("version 2 alone, on a database without the upload, publishes it", async () => {
