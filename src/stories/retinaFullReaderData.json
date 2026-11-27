@@ -6659,8 +6659,8 @@
       "title": "Colour vision",
       "ramp": "perc",
       "status": "published",
-      "bytes": 55687,
-      "sha256": "cae37ec4d5a3ba52fd8f53ff5e17d5d1a069a0b65542859a1411be12ab207a1c"
+      "bytes": 56245,
+      "sha256": "a5288f6853691e3dd246d82bc0004bca2633f1e90e6e36b5da7de9ead24355f2"
     },
     {
       "slug": "retina-direction-selectivity",

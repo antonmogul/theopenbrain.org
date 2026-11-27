@@ -42,6 +42,49 @@ const box = (paragraphs, slug = "box-sacred-disease") => ({
 });
 
 describe("boxIsRail", () => {
+  it("accepts CMS opt-in widgets and demos in any chapter, retaining each stable jump target", () => {
+    const section = {
+      ...box(
+        [
+          prose("dalton"),
+          {
+            id: "spectrum",
+            type: "widget",
+            widget: { title: "The sliver we can see", railPart: true },
+          },
+          {
+            id: "blind",
+            type: "breakSection",
+            title: "Blind spot",
+            railPart: true,
+          },
+          prose("after"),
+        ],
+        "box-new"
+      ),
+      rail: true,
+    };
+    expect(boxIsRail(section, "any-chapter")).toBe(true);
+    const layout = railLayoutOf(section);
+    expect(layout.parts.map((p) => p.id)).toEqual([
+      "dalton",
+      "spectrum",
+      "blind",
+      "after",
+    ]);
+    expect(layout.parts.filter((p) => p.screen).map((p) => p.id)).toEqual([
+      "spectrum",
+      "blind",
+    ]);
+    expect(layout.tail).toEqual([]);
+    expect(boxIsRail({ ...section, rail: false }, "any-chapter")).toBe(false);
+    expect(
+      railLayoutOf({
+        ...section,
+        paragraphs: [{ id: "video", type: "breakSection", video: {} }],
+      })
+    ).toBeNull();
+  });
   it("is History's two Explore boxes and Stuart's five (12 Nov)", () => {
     expect(RAIL_BOXES_BY_SLUG[HISTORY]).toEqual([
       "box-sacred-disease",
@@ -116,20 +159,24 @@ describe("railLayoutOf", () => {
     expect(rafferty.parts[0].paragraphs.map((p) => p.id)).toEqual(["r1", "r2"]);
   });
 
-  it("leaves a widget that ends the box after the track (the Penfield binder)", () => {
-    const binder = {
-      id: "w",
-      type: "widget",
-      widget: { widgetId: "upload:x" },
-    };
-    const layout = railLayoutOf(
-      box([figure("p1", "op"), figure("p2", "map"), binder])
-    );
-    expect(layout.parts.map((p) => p.id)).toEqual(["p1", "p2"]);
-    expect(layout.tail).toEqual([binder]);
-    // A box that is only a widget has nothing for a track.
-    expect(railLayoutOf(box([binder]))).toBeNull();
-  });
+  it.each([undefined, true])(
+    "leaves a widget after the track with rail=%s (the published Penfield binder)",
+    (rail) => {
+      const binder = {
+        id: "w",
+        type: "widget",
+        widget: { widgetId: "upload:x" },
+      };
+      const layout = railLayoutOf({
+        ...box([figure("p1", "op"), figure("p2", "map"), binder]),
+        rail,
+      });
+      expect(layout.parts.map((p) => p.id)).toEqual(["p1", "p2"]);
+      expect(layout.tail).toEqual([binder]);
+      // A box that is only a widget has nothing for a track.
+      expect(railLayoutOf(box([binder]))).toBeNull();
+    }
+  );
 
   it("holds no breaks, full-screen figures or widgets in the text", () => {
     expect(

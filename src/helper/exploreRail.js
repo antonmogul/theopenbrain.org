@@ -132,14 +132,38 @@ export function railLayoutOf(section) {
   if (section?.kind !== "box") return null;
   const all = [...(section.paragraphs || [])];
   const tail = [];
-  while (all.length && all[all.length - 1]?.type === "widget")
+  // CMS opt-in boxes can carry full-page interactives on the rail. Keep
+  // legacy History tails unchanged until their author opts in explicitly.
+  const screens = section.rail === true;
+  const screen = (p) =>
+    screens &&
+    (p?.railPart === true || p?.widget?.railPart === true) &&
+    (p?.type === "widget" || (p?.type === "breakSection" && !p.video));
+  while (
+    all.length &&
+    all[all.length - 1]?.type === "widget" &&
+    !screen(all[all.length - 1])
+  )
     tail.unshift(all.pop());
   if (!all.length) return null;
-  if (all.some((p) => offTrack(p) || p.type === "widget")) return null;
+  if (all.some((p) => !screen(p) && (offTrack(p) || p.type === "widget")))
+    return null;
 
   const parts = [];
   let open = null; // the part ordinary paragraphs are being added to
   for (const p of all) {
+    if (screen(p)) {
+      parts.push({
+        id: p.id,
+        title: p.widget?.title || p.title || "",
+        screen: true,
+        explore: false,
+        paragraphs: [p],
+        figures: [],
+      });
+      open = null;
+      continue;
+    }
     if (p.explore) {
       parts.push({
         id: p.id,

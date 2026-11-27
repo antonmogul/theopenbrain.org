@@ -47,7 +47,11 @@ import FullBleed from "@/components/chapter/FullBleed.vue";
 import { embedLoader, hasEmbed } from "@/widgets/embeds";
 import FigureHeading from "@/components/chapter/Illus/FigureHeading.vue";
 import { railFigureLabel } from "@/helper/railFigure";
-import { WIDGET_FIT, WIDGET_SCROLLABLE } from "@/widgets/uploaded/widgetHost";
+import {
+  WIDGET_FIT,
+  WIDGET_SCROLLABLE,
+  WIDGET_PART,
+} from "@/widgets/uploaded/widgetHost";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import { READER_NARROW_QUERY } from "@/helper/readerLayout";
 import {
@@ -58,11 +62,14 @@ import {
 const props = defineProps({
   /** The `widget` object of a `{ type: "widget" }` paragraph. */
   placement: { type: Object, required: true },
+  railPart: { type: Boolean, default: false },
 });
 
 // RetINaBox stays a quiet launch screen until the reader chooses to load it.
 // The gate covers both the upload request and the component/iframe mount.
-const launchCard = computed(() => props.placement?.launchCard || null);
+const launchCard = computed(() =>
+  props.railPart ? null : props.placement?.launchCard || null
+);
 const activated = ref(false);
 const recordEvent = useReaderEvents();
 watch(activated, (value) => {
@@ -88,8 +95,11 @@ const widgetId = computed(() =>
 // A placement can ask to be the card below the two-column reader, where a
 // desktop-sized tool would be squeezed into the column (narrowKind).
 const narrow = useMediaQuery(READER_NARROW_QUERY);
-const narrowed = computed(() => narrow.value && !!props.placement?.narrowKind);
+const narrowed = computed(
+  () => !props.railPart && narrow.value && !!props.placement?.narrowKind
+);
 const kind = computed(() => {
+  if (props.railPart) return "inline";
   const k = narrowed.value ? props.placement.narrowKind : props.placement?.kind;
   return k === "inline" ? "inline" : "breakout";
 });
@@ -100,6 +110,10 @@ const widgetStage = ref(null);
 const stageHeight = ref(0);
 provide(WIDGET_FIT, stageHeight);
 provide(WIDGET_SCROLLABLE, fullScreen);
+provide(
+  WIDGET_PART,
+  computed(() => props.placement?.part || "")
+);
 let stageObserver = null;
 watch(widgetStage, (el) => {
   stageObserver?.disconnect();
@@ -237,7 +251,7 @@ onMounted(() => {
         scheduleSync();
       }
     },
-    { rootMargin: "150% 0px" }
+    { rootMargin: props.railPart ? "0px" : "150% 0px" }
   );
   observer.observe(rootEl.value);
 });
@@ -282,7 +296,10 @@ const headingId = computed(
   <aside
     ref="rootEl"
     class="wb noHighlight"
-    :class="[`wb--${kind}`, { 'wb--unavailable': !embeddable }]"
+    :class="[
+      `wb--${kind}`,
+      { 'wb--unavailable': !embeddable, 'wb--rail': railPart },
+    ]"
     :data-widget-breakout="widgetId"
     @pointerdown.capture="
       kind === 'inline' && recordEvent('widget_open', widgetId)
@@ -298,8 +315,8 @@ const headingId = computed(
     <FullBleed
       ref="fullBleed"
       v-slot="{ floating }"
-      :enabled="kind === 'inline'"
-      :viewport="fullScreen"
+      :enabled="kind === 'inline' && !railPart"
+      :viewport="fullScreen && !railPart"
       class="wb-fb"
       :class="{ 'wb-slot': kind === 'inline' }"
     >
@@ -476,6 +493,17 @@ const headingId = computed(
 </template>
 
 <style scoped>
+.wb.wb--rail {
+  height: 100%;
+  margin: 0;
+  border: 0;
+}
+.wb--rail :deep(.fb-stage),
+.wb--rail .wb-fb,
+.wb--rail .wb-layout {
+  height: 100%;
+  min-height: 0;
+}
 .wb {
   --wb-pad: 1.5rem;
   /* Inside a chapter the card is the chapter's colour, not the global

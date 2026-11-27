@@ -30,7 +30,7 @@ describe("reader videos", () => {
     const tags = Object.entries(sources)
       .filter(([path]) => !path.includes("__"))
       .flatMap(([, source]) => source.match(/<video\b[^>]*>/g) || []);
-    expect(tags.length).toBe(4);
+    expect(tags.length).toBe(5);
     for (const tag of tags) {
       expect(tag).toMatch(/\bplaysinline\b/);
       expect(tag).toMatch(/\bwebkit-playsinline\b/);

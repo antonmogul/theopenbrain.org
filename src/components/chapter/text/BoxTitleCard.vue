@@ -33,6 +33,8 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import Button from "@/components/dashboard/shared/Button.vue";
 import { cardFrame, cardRect } from "@/helper/boxTitleCard";
 import { layerTransform } from "@/helper/boxCard.mjs";
+import { useReducedMotion } from "@/composables/useReducedMotion";
+import { primeInlineLoop } from "@/helper/inlineVideo";
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -55,6 +57,8 @@ const props = defineProps({
 defineEmits(["more", "skip", "expand"]);
 
 const root = ref(null);
+const reduced = useReducedMotion();
+const paused = ref(false);
 const pictureEl = ref(null);
 /* "arriving" (the picture alone), "open" (the words are in), "done". */
 const state = ref("arriving");
@@ -159,12 +163,31 @@ defineExpose({ drive });
   >
     <span class="tc-ground" aria-hidden="true"></span>
     <div ref="pictureEl" class="tc-picture">
+      <video
+        v-if="
+          picture.video &&
+          variant === 'pinned' &&
+          !reduced &&
+          !paused &&
+          state !== 'done'
+        "
+        :ref="primeInlineLoop"
+        class="tc-img"
+        :src="picture.video"
+        :poster="picture.src"
+        :aria-label="picture.alt"
+        autoplay
+        muted
+        loop
+        playsinline
+        webkit-playsinline
+      />
       <img
-        v-if="picture.src && (variant !== 'pinned' || !layers.length)"
+        v-else-if="picture.src && (variant !== 'pinned' || !layers.length)"
         class="tc-img"
         :src="picture.src"
         :alt="picture.alt || ''"
-        :style="{ objectPosition: picture.position }"
+        :style="{ objectPosition: picture.position, objectFit: picture.fit }"
         data-card-flat
         decoding="async"
         draggable="false"
@@ -192,6 +215,14 @@ defineExpose({ drive });
       :inert="variant === 'pinned' && !copyVisible ? true : undefined"
     >
       <div class="tc-copy-in">
+        <button
+          v-if="picture.video && variant === 'pinned' && !reduced"
+          type="button"
+          class="tc-more"
+          @click="paused = !paused"
+        >
+          {{ paused ? "Play image" : "Pause image" }}
+        </button>
         <p class="tc-title" aria-hidden="true">{{ title }}</p>
         <p
           v-if="excerpt && variant !== 'simple'"
