@@ -50,9 +50,14 @@ describe("boxIsRail", () => {
           {
             id: "spectrum",
             type: "widget",
-            widget: { title: "The sliver we can see" },
+            widget: { title: "The sliver we can see", railPart: true },
           },
-          { id: "blind", type: "breakSection", title: "Blind spot" },
+          {
+            id: "blind",
+            type: "breakSection",
+            title: "Blind spot",
+            railPart: true,
+          },
           prose("after"),
         ],
         "box-new"
@@ -154,20 +159,24 @@ describe("railLayoutOf", () => {
     expect(rafferty.parts[0].paragraphs.map((p) => p.id)).toEqual(["r1", "r2"]);
   });
 
-  it("leaves a widget that ends the box after the track (the Penfield binder)", () => {
-    const binder = {
-      id: "w",
-      type: "widget",
-      widget: { widgetId: "upload:x" },
-    };
-    const layout = railLayoutOf(
-      box([figure("p1", "op"), figure("p2", "map"), binder])
-    );
-    expect(layout.parts.map((p) => p.id)).toEqual(["p1", "p2"]);
-    expect(layout.tail).toEqual([binder]);
-    // A box that is only a widget has nothing for a track.
-    expect(railLayoutOf(box([binder]))).toBeNull();
-  });
+  it.each([undefined, true])(
+    "leaves a widget after the track with rail=%s (the published Penfield binder)",
+    (rail) => {
+      const binder = {
+        id: "w",
+        type: "widget",
+        widget: { widgetId: "upload:x" },
+      };
+      const layout = railLayoutOf({
+        ...box([figure("p1", "op"), figure("p2", "map"), binder]),
+        rail,
+      });
+      expect(layout.parts.map((p) => p.id)).toEqual(["p1", "p2"]);
+      expect(layout.tail).toEqual([binder]);
+      // A box that is only a widget has nothing for a track.
+      expect(railLayoutOf(box([binder]))).toBeNull();
+    }
+  );
 
   it("holds no breaks, full-screen figures or widgets in the text", () => {
     expect(

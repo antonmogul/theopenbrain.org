@@ -42,6 +42,7 @@ export function extractChapter1Meta(blocks) {
       meta.type = "breakSection";
       meta.title = block.title;
       meta.steps = block.steps;
+      if (block.railPart === true) meta.railPart = true;
       if (block.video) meta.video = block.video;
     }
     if (block.type === "break_video") {
@@ -85,6 +86,7 @@ export function extractChapter1Meta(blocks) {
         credit: block.credit || "",
         route: block.route || "",
         ...(block.part ? { part: block.part } : {}),
+        ...(block.railPart === true ? { railPart: true } : {}),
         ...(block.narrowKind ? { narrowKind: block.narrowKind } : {}),
         ...(block.fallbackWidgetId
           ? { fallbackWidgetId: block.fallbackWidgetId }

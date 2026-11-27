@@ -21,6 +21,9 @@ export function retinaRailFixture() {
       p.order_index = move.order;
       p.subsection_level = 0;
       p.is_subsection_header = false;
+      for (const block of p.content.blocks)
+        if (block.type === "widget" || block.type === "break_section")
+          block.railPart = true;
       // Preserve the source fixture ID too: jumps must survive the move.
       if (box.slug === "box-colour-vision" && move.order === 0)
         p.content.blocks = p.content.blocks.filter(
