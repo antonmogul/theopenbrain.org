@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { chromium, webkit, devices } from "@playwright/test";
+import { checkSectionHandoff } from "./check-section-handoff.mjs";
 
 process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY = "1";
 const [mode, base, out, engine = "chromium"] = process.argv.slice(2);
@@ -259,6 +260,11 @@ try {
           await page.keyboard.press("Escape");
         }
       }
+    }
+    if (mode === "after" && width === 1331) {
+      measurements.handoff = {};
+      for (const slug of ["where-is-my-mind", "closing-words"])
+        measurements.handoff[slug] = await checkSectionHandoff(page, slug);
     }
     const binder = page.locator(
       '[data-widget-stage="upload:history-penfield-binder"]'
