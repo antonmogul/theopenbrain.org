@@ -5,18 +5,18 @@ import { mount } from "@vue/test-utils";
 import PlayMark from "../PlayMark.vue";
 
 describe("PlayMark, the reader's one play button (OPENBRAIN-87)", () => {
-  it("is one drawing: a square with the icon as a hole in it", () => {
+  it("is one drawing: a disc with the icon as a hole in it", () => {
     const w = mount(PlayMark);
     expect(w.attributes("aria-hidden")).toBe("true");
     expect(w.attributes("data-icon")).toBe("play");
     expect(w.findAll("path")).toHaveLength(1);
     const path = w.get("path");
     expect(path.attributes("fill-rule")).toBe("evenodd");
-    expect(path.attributes("d")).toMatch(/^M0 0H100V100H0Z/);
+    expect(path.attributes("d")).toMatch(/^M100 50A50 50/);
     w.unmount();
   });
 
-  it("draws pause in the same square, and play for anything else", async () => {
+  it("draws pause in the same disc, and play for anything else", async () => {
     const w = mount(PlayMark, { props: { icon: "pause" } });
     const pause = w.get("path").attributes("d");
     expect(w.attributes("data-icon")).toBe("pause");

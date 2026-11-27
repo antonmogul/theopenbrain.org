@@ -36,7 +36,12 @@ const rule = (selector) => {
 
 describe("Loewi v7 migration", () => {
   it("carries the current file and changes only the book block", () => {
-    expect(payload).toBe(file);
+    expect(payload).toBe(
+      file.replace(
+        "/* v8 (OPENBRAIN-100): a quieter caption; the timeline already spans the pane. */\nhtml[data-ob-book] .cap p{font-size:14px;line-height:1.4}",
+        "html[data-ob-book] .cap p{font-size:16px;line-height:1.4}"
+      )
+    );
     const outsideBook = (html) =>
       html.replace(/<!-- Open Brain book:[\s\S]*?(?=<div class="fig">)/, "");
     expect(outsideBook(file)).toBe(outsideBook(previous));
@@ -147,7 +152,7 @@ describe.skipIf(!harness || !existsSync(harness))("Loewi v7 (SQL)", () => {
       const first = await rows(db);
       expect(first[0]).toMatchObject({
         slug: "loewi-vagusstoff",
-        html: file,
+        html: payload,
         title: "Loewi's Vagusstoff, 1921",
         author: "Stuart Trenholm",
         status: "published",

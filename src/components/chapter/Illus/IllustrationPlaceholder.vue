@@ -254,6 +254,7 @@ function closeFullscreen() {
       :class="{
         'fig-shell--inline': inline,
         'fig-shell--boxed': inline && inBreakoutBox,
+        'fig-shell--leborgne': animation.id === 'animationFoundationsFig9',
       }"
     >
       <header
@@ -371,6 +372,10 @@ function closeFullscreen() {
           :suspended="isFullscreen"
           :wash="!inline && !sectionWash && wantsTintFade(animation)"
           :fill="fill"
+          :data-section-zoom="veiled ? '' : undefined"
+          :style="
+            veiled ? { '--section-zoom': 1 + 0.08 * tint.current() } : undefined
+          "
           legend-above
         />
         <div v-else class="fig-placeholder">
@@ -837,6 +842,11 @@ function closeFullscreen() {
   position: relative;
   isolation: isolate;
 }
+.fig-area--veiled > [data-section-zoom] {
+  transform: scale(var(--section-zoom, 1));
+  transform-origin: 50% 40%;
+  will-change: transform;
+}
 .fig-veil {
   position: absolute;
   inset: 0;
@@ -956,6 +966,11 @@ function closeFullscreen() {
    in the pane share their edges. */
 :is(.figure-pane--dark, .figure-pane--paper) .fig-shell .fig-area--art {
   padding: 1rem 1.5rem 0;
+}
+:is(.figure-pane--dark, .figure-pane--paper)
+  .fig-shell--leborgne
+  .fig-area--art {
+  padding-inline: clamp(2.5rem, 4vw, 4rem);
 }
 /* A figure that fills the pane starts right under the top bar and runs to
    the pane's sides (Maura, 25 Nov, OPENBRAIN-84): it opts out of the side
