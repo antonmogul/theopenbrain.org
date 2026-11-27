@@ -281,12 +281,15 @@ try {
       };
     });
     await land('[id="triggeranimationfoundationsloewiwidget" i]', -0.05);
-    const loewi = page
+    const loewiFrame = page
       .locator(
-        '.figure-pane iframe:visible, [data-widget-stage="upload:loewi-vagusstoff"] iframe:visible'
+        width < 1024
+          ? '[data-widget-stage="upload:loewi-vagusstoff"] iframe'
+          : ".figure-pane iframe:visible"
       )
-      .first()
-      .contentFrame();
+      .first();
+    await loewiFrame.scrollIntoViewIfNeeded();
+    const loewi = loewiFrame.contentFrame();
     await loewi.locator(".transport").waitFor({ timeout: 30000 });
     await page.waitForTimeout(1500);
     await shot("c901ae53-loewi");
