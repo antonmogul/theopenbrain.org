@@ -325,11 +325,13 @@ const ROUTES = [
      */
     expectAbsent: ".marker-start, .marker-end, .marker-center",
     /*
-     * The inline RetINaBox stage must be VISIBLE full-bleed, not just laid
+     * The legacy inline RetINaBox stage must be VISIBLE full-bleed, not just laid
      * out full-bleed: its DOM width was already the window's while the
      * prose column's overflow clip hid everything left of the divider
      * (OPENBRAIN-37). Desktop widths only, and a data assertion (the stage
-     * exists only once the chapter content places it).
+     * exists only once the chapter content places it). OPENBRAIN-98 moves
+     * it onto a rail: there it must fill its screen part and paint across
+     * the viewport's left half, with no nested floating stage.
      */
     expectStage: {
       // The placement is Stuart's upload since OPENBRAIN-141; the Vue port
@@ -665,7 +667,45 @@ async function main() {
                 // point in its left half: with the clip bug elementFromPoint
                 // returned <html> there. The horizontal-scroll measurement is
                 // repeated with the real widget in the DOM.
-                el.scrollIntoView({ block: "center", behavior: "instant" });
+                const rail = el.closest("[data-rail-scroller]");
+                const part = el.closest("[data-rail-part]");
+                if (rail && part) {
+                  // Match the rail DOM contract used by railLandingY: a
+                  // pinned part's viewport top is not its page landing.
+                  const x = Math.max(
+                    0,
+                    Math.min(
+                      Number(rail.dataset.railMax) ||
+                        rail.scrollWidth - rail.clientWidth,
+                      part.getBoundingClientRect().left -
+                        rail.getBoundingClientRect().left +
+                        rail.scrollLeft -
+                        (parseFloat(getComputedStyle(rail).paddingLeft) || 0) -
+                        (Number(rail.dataset.railVisualOffset) || 0)
+                    )
+                  );
+                  const pause = rail.closest("[data-rail-pause]");
+                  if (rail.dataset.railPinned === "1" && pause) {
+                    scrollTo({
+                      top:
+                        pause.getBoundingClientRect().top +
+                        scrollY -
+                        Number(rail.dataset.railTop) +
+                        Number(rail.dataset.railLead) +
+                        x,
+                      behavior: "instant",
+                    });
+                  } else {
+                    rail.scrollLeft = x;
+                    rail.scrollIntoView({
+                      block: "center",
+                      behavior: "instant",
+                    });
+                  }
+                  await new Promise((resolve) => setTimeout(resolve, 700));
+                } else {
+                  el.scrollIntoView({ block: "center", behavior: "instant" });
+                }
                 const started = Date.now();
                 while (
                   el.querySelector(".wb-stage-placeholder") &&
@@ -696,7 +736,20 @@ async function main() {
                   mounted: !el.querySelector(".wb-stage-placeholder"),
                   left: Math.round(rect.left),
                   width: Math.round(rect.width),
+                  right: Math.round(rect.right),
                   clientWidth,
+                  presentation: rail && part ? "rail" : "full-bleed",
+                  contentWidth:
+                    rail && part
+                      ? Math.round(
+                          (
+                            el.closest(".rp-screen") || part
+                          ).getBoundingClientRect().width
+                        )
+                      : clientWidth,
+                  nestedFloatingStage: !!part?.querySelector(
+                    ".fb-stage--floating"
+                  ),
                   hitInside: !!hit && el.contains(hit),
                   hitWidget:
                     !!hitControl &&
@@ -843,18 +896,26 @@ async function main() {
             stageOk = false;
             failures.push(`${label}: ${stageCheck.selector} not in the DOM`);
           } else {
+            const onRail = st.presentation === "rail";
             const wideEnough =
-              st.width >= stageCheck.minWidthRatio * st.clientWidth;
+              st.width >= stageCheck.minWidthRatio * st.contentWidth &&
+              (!onRail || st.contentWidth >= st.clientWidth * 0.85);
+            const positionOk = onRail
+              ? st.left >= -1 &&
+                st.left < st.clientWidth * 0.25 &&
+                st.right <= st.clientWidth + 1 &&
+                !st.nestedFloatingStage
+              : st.left <= 1;
             if (
               !wideEnough ||
-              st.left > 1 ||
+              !positionOk ||
               !st.hitInside ||
               !st.hitWidget ||
               !st.mounted
             ) {
               stageOk = false;
               failures.push(
-                `${label}: inline stage mounted=${st.mounted} left=${st.left} width=${st.width}/${st.clientWidth} hit-inside=${st.hitInside} hit-widget=${st.hitWidget}`
+                `${label}: ${st.presentation} stage mounted=${st.mounted} left=${st.left} width=${st.width}/${st.contentWidth} viewport=${st.clientWidth} hit-inside=${st.hitInside} hit-widget=${st.hitWidget}`
               );
             }
           }
