@@ -1,0 +1,139 @@
+{
+  "module": {
+    "id": "2e3f5723-3a17-464a-9083-9128d3e3a9ee",
+    "slug": "the-retina",
+    "status": "published"
+  },
+  "sections": [
+    {
+      "id": "36adafd0-bc6a-4ebc-acc7-8270ea0c083b",
+      "slug": "introduction",
+      "art": {
+        "alt": "Placeholder image for The Retina; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-introduction.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "44abc9e0-eda6-4eca-b335-0d2301e26b14",
+      "slug": "story-of-the-eye",
+      "art": {
+        "alt": "Placeholder image for Story of the eye; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-story-of-the-eye.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "af170006-e4c6-441a-af6b-37cb9200f4da",
+      "slug": "organization-and-cell-types-in-the-retina",
+      "art": {
+        "alt": "Placeholder image for Organization and cell types in the retina; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-organization-and-cell-types-in-the-retina.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "a6b3dd86-a48b-47fe-a752-765924e9f1c7",
+      "slug": "references",
+      "art": {
+        "alt": "Placeholder image for Footnotes; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-footnotes.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "24c4fe32-8a58-461b-b9f1-a1c58e19f6e2",
+      "slug": "photoreceptors-and-phototransduction",
+      "art": {
+        "alt": "Placeholder image for Photoreceptors and phototransduction; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-photoreceptors-and-phototransduction.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "6af621e4-6ff0-4f27-8146-6aa72835c8f8",
+      "slug": "horizontal-cells-and-feedback",
+      "art": {
+        "alt": "Placeholder image for Horizontal cells and feedback; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-horizontal-cells-and-feedback.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "9497f217-b3e2-4688-a7cd-5360e2e779ca",
+      "slug": "bipolar-cells-diversify-photoreceptor-signals",
+      "art": {
+        "alt": "Placeholder image for Bipolar cells diversify photoreceptor signals; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-bipolar-cells-diversify-photoreceptor-signals.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "fa9a9189-d188-47cf-978a-092813998bbc",
+      "slug": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+      "art": {
+        "alt": "Placeholder image for Amacrine and ganglion cells – circuits, computations and output; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-amacrine-and-ganglion-cells-circuits-computations-and-output.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "9929c0a4-3574-470e-b8fc-4d5f65b4d763",
+      "slug": "retinal-vision-in-the-real-world",
+      "art": {
+        "alt": "Placeholder image for Retinal vision in the ‘real world’; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-retinal-vision-in-the-real-world.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "0a7c7c97-2cdf-41df-b869-c0bdbc1201d3",
+      "slug": "retinal-development",
+      "art": {
+        "alt": "Placeholder image for Retinal development; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-retinal-development.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "b996e1c4-d6b4-4542-bfe3-f4f92ffbbedc",
+      "slug": "diseases-disorders-and-treatments",
+      "art": {
+        "alt": "Placeholder image for Diseases, disorders, and treatments; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-diseases-disorders-and-treatments.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "8a4f70b1-0a50-4f7e-808c-58ef00b0438f",
+      "slug": "looking-forward",
+      "art": {
+        "alt": "Placeholder image for Looking forward; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-looking-forward.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    },
+    {
+      "id": "663ea8ad-591c-48bb-b3f3-a2815ca148ea",
+      "slug": "further-reading",
+      "art": {
+        "alt": "Placeholder image for Further reading:; temporary chapter-colour artwork",
+        "src": "/publicAssets/images/the-retina/sections/placeholder-further-reading.webp",
+        "position": "50% 50%",
+        "placeholder": true
+      }
+    }
+  ]
+}

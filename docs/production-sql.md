@@ -6,6 +6,12 @@
 | ----------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `20261124079900_retina_reader_layout.sql` | Pending | Deploy the reader and retinal-waves poster first, then apply SQL; guarded reader defaults cover the interval. No upload changes or box changes. |
 
+## Pending — OPENBRAIN-97
+
+| Migration                                      | State   | Release order                                                                                                                                                                                                                             |
+| ---------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261124079700_retina_stuart_section_art.sql` | Pending | Deploy the eleven WebP assets first, then apply SQL. Replaces only the eleven author-selected Retina section placeholders; preserves other art metadata and aborts on edits to the four replaced keys. No figure records or prose change. |
+
 ## Pending — OPENBRAIN-96
 
 | Migration                          | State   | Release order                                                                                                                                                                                                                             |

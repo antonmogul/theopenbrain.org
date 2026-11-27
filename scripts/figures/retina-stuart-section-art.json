@@ -1,0 +1,113 @@
+[
+  {
+    "note": "b5059e78",
+    "section": "introduction",
+    "source": "vesalius eye.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/vesalius-eye.webp",
+      "alt": "An anatomical plate of eyes by Vesalius",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "37e95212",
+    "section": "story-of-the-eye",
+    "source": null,
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/zinn-eye-plates.webp",
+      "alt": "Three anatomical plates of the eye by Johann Zinn",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "0b5629b3",
+    "section": "organization-and-cell-types-in-the-retina",
+    "source": "muller_retinae.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/muller-retina.webp",
+      "alt": "Müller’s drawings of the layers of the retina",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "21b40271",
+    "section": "photoreceptors-and-phototransduction",
+    "source": "muller_photoreceptors.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/muller-photoreceptors.webp",
+      "alt": "Müller’s drawings of rod and cone photoreceptors",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "f4368472",
+    "section": "horizontal-cells-and-feedback",
+    "source": "xin_bloomfield_1999_HCs.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/xin-bloomfield-horizontal-cells.webp",
+      "alt": "Horizontal cells in a retinal micrograph by Xin and Bloomfield",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "24dce559",
+    "section": "amacrine-and-ganglion-cells-circuits-computations-and-output",
+    "source": "famiglietti_1983_SAC.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/famiglietti-starburst-cell.webp",
+      "alt": "A starburst amacrine cell drawn by Famiglietti",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "d7d8310f",
+    "section": "retinal-vision-in-the-real-world",
+    "source": "Yarbus_1963.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/yarbus-eye-movements.webp",
+      "alt": "A portrait beside the eye movements recorded while viewing it, from Yarbus",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "1a8ca93f",
+    "section": "references",
+    "source": "John-Dowling-People-Behind-the-Science-2819534913.jpg",
+    "previous": "footnotes",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/john-dowling.webp",
+      "alt": "A portrait of John Dowling",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "f86a1607",
+    "section": "retinal-development",
+    "source": "cajal_retina_devo.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/cajal-retinal-development.webp",
+      "alt": "Cajal’s drawings of developing retinal cells",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "c9a838be",
+    "section": "diseases-disorders-and-treatments",
+    "source": null,
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/fundus-left-eye.webp",
+      "alt": "A fundus photograph of the left eye supplied by Stuart Trenholm",
+      "position": "50% 50%"
+    }
+  },
+  {
+    "note": "f31e40de",
+    "section": "looking-forward",
+    "source": "bookofthetentreatises.jpg",
+    "art": {
+      "src": "/publicAssets/images/the-retina/sections/book-of-ten-treatises.webp",
+      "alt": "An illustrated page from the Book of the Ten Treatises of the Eye",
+      "position": "50% 50%"
+    }
+  }
+]
