@@ -780,7 +780,7 @@ try {
         (s) => s.slug !== "further-reading"
       );
       const expectedTitles = [
-        ...outlineSections.map((s) => s.title),
+        ...outlineSections.map((s) => s.title.trim()),
         ...fixture.paragraphs
           .filter(
             (p) =>
@@ -789,7 +789,7 @@ try {
               p.content_text &&
               outlineSections.some((s) => s.id === p.section_id)
           )
-          .map((p) => p.content_text),
+          .map((p) => p.content_text.trim()),
       ];
       const actualTitles = await drawer
         .locator(".outline-section, .outline-subsection")
