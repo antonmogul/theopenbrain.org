@@ -82,7 +82,7 @@ describe("Study partner reader integration", () => {
     await wrapper.find("fieldset button").trigger("click");
     expect(wrapper.find(".sp-reveal").text()).toContain("A is supported.");
     await wrapper.setProps({
-      messages: structuredClone(wrapper.props("messages")),
+      messages: JSON.parse(JSON.stringify(wrapper.props("messages"))),
     });
     expect(wrapper.find(".sp-reveal").exists()).toBe(false);
     await wrapper.get("textarea").setValue("Keep my question");
