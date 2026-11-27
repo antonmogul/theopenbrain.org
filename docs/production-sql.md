@@ -8,6 +8,12 @@
 | `20261127100100_history_loewi_v8.sql`             | Pending | Content only; safe before or after deploy. Guards v7 HTML; caption body 14px, timeline keeps its existing full width.                                                     |
 | `20261127100200_history_descartes_title_card.sql` | Pending | Existing reader/assets already support it. Requires the OPENBRAIN-94 column/seed; changes only Descartes' `box_card.enabled` from false to true and preserves other keys. |
 
+## Pending — OPENBRAIN-97
+
+| Migration                                      | State   | Release order                                                                                                                                                                                                                             |
+| ---------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261124079700_retina_stuart_section_art.sql` | Pending | Deploy the eleven WebP assets first, then apply SQL. Replaces only the eleven author-selected Retina section placeholders; preserves other art metadata and aborts on edits to the four replaced keys. No figure records or prose change. |
+
 ## Pending — OPENBRAIN-96
 
 | Migration                          | State   | Release order                                                                                                                                                                                                                             |
