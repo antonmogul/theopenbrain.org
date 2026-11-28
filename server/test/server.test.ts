@@ -12,6 +12,7 @@ import {
   safeReply,
   validateTool,
   filterCitations,
+  TOOLS,
 } from "../src/model.js";
 import { fixtureRest, fakeModel, recorded, U, P, S } from "./fixture.js";
 const config = {
@@ -314,4 +315,29 @@ test("real SDK receives adaptive thinking, caching, auto strict tools and fallba
   assert.equal(sent.system[1].cache_control.ttl, "1h");
   assert.equal(reply.stop_reason, "end_turn");
   assert.equal(reply.usage.cache_read_input_tokens, 3200);
+});
+
+test("tool schemas sent to the API use only strict-mode keywords", () => {
+  const banned = ["minLength", "maxLength", "maxItems", "minimum", "maximum"];
+  const walk = (node: unknown, path: string) => {
+    if (!node || typeof node !== "object") return;
+    for (const [key, value] of Object.entries(node)) {
+      assert.ok(
+        !banned.includes(key),
+        `${path}.${key} is not allowed in strict tools`
+      );
+      if (key === "minItems")
+        assert.ok((value as number) <= 1, `${path}.minItems > 1`);
+      walk(value, `${path}.${key}`);
+    }
+  };
+  for (const tool of TOOLS) walk(tool.input_schema, tool.name);
+});
+
+test("full limits are still enforced locally", () => {
+  const corpus = { sources: new Set(["p1"]) } as any;
+  assert.equal(
+    validateTool("suggest_actions", { actions: [] }, corpus, []),
+    null
+  );
 });
