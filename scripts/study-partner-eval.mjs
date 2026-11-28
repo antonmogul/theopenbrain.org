@@ -172,44 +172,53 @@ for (const entry of cases) {
   const unknownCitations = rawIds.filter((id) => !corpus.sources.has(id));
   let grade = recorded.judge;
   if (live) {
-    const judged = await client.generate({
-      model: MODEL,
-      max_tokens: 1800,
-      thinking: { type: "adaptive" },
-      output_config: { effort: "medium" },
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      system: [
-        { type: "text", text: rubric },
-        ...corpus.chapters.map((c) => ({
-          type: "text",
-          text: c.text,
-          cache_control: { type: "ephemeral", ttl: "1h" },
-        })),
-      ],
-      tools: [
-        {
-          name: "grade",
-          description: "Record the rubric assessment",
-          input_schema: judgeSchema,
-          strict: true,
-        },
-      ],
-      tool_choice: { type: "auto" },
-      messages: [
-        {
-          role: "user",
-          content: JSON.stringify({
-            case: entry,
-            student: context,
-            rawResponse: rawContent,
-            displayedAnswer: answer,
-            instruction: "Call grade with your assessment.",
-          }),
-        },
-      ],
-    });
-    count(judged.usage);
+    // One retry: a judge that ran out of tokens or skipped the tool call is a
+    // grader failure, not a model failure, so give it a second chance first.
+    let judged;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      judged = await client.generate({
+        model: MODEL,
+        max_tokens: 6000,
+        thinking: { type: "adaptive" },
+        output_config: { effort: "medium" },
+        betas: ["server-side-fallback-2026-07-01"],
+        fallbacks: "default",
+        system: [
+          { type: "text", text: rubric },
+          ...corpus.chapters.map((c) => ({
+            type: "text",
+            text: c.text,
+            cache_control: { type: "ephemeral", ttl: "1h" },
+          })),
+        ],
+        tools: [
+          {
+            name: "grade",
+            description: "Record the rubric assessment",
+            input_schema: judgeSchema,
+            strict: true,
+          },
+        ],
+        tool_choice: { type: "auto" },
+        messages: [
+          {
+            role: "user",
+            content: JSON.stringify({
+              case: entry,
+              student: context,
+              rawResponse: rawContent,
+              displayedAnswer: answer,
+              instruction: "Call grade with your assessment.",
+            }),
+          },
+        ],
+      });
+      count(judged.usage);
+      const ok = judged.content?.some(
+        (b) => b.type === "tool_use" && b.name === "grade"
+      );
+      if (ok) break;
+    }
     const tool = ["end_turn", "tool_use"].includes(judged.stop_reason)
       ? judged.content.find((b) => b.type === "tool_use" && b.name === "grade")
       : null;
